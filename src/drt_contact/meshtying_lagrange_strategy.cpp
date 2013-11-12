@@ -187,19 +187,13 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vecto
   /**********************************************************************/
   // case 1: saddle point system
   //    -> constraint matrix with rowmap=Problemmap, colmap=LMmap
-  // case 2: two static condensations
+  // case 2: condensed system
   //    -> no explicit constraint matrix needed
-  // case 3: one static condensation
-  //    -> constraint matrix with rowmap=Problemmap, colmap=Slavemap
   /**********************************************************************/
   bool setup = true;
   INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
   if (systype==INPAR::CONTACT::system_condensed)
-  {
-#ifdef MESHTYINGTWOCON
     setup = false;
-#endif // #ifdef MESHTYINGTWOCON
-  }
 
   // build constraint matrix only if necessary
   if (setup)
@@ -210,25 +204,14 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vecto
     constrmt->Add(*mmatrix_,true,-1.0,1.0);
     constrmt->Complete(*gsdofrowmap_,*gdisprowmap_);
 
-    // transform constraint matrix
-    if (systype==INPAR::CONTACT::system_condensed)
-    {
-      // transform parallel row / column distribution
-      // (only necessary in the parallel redistribution case)
-      if (ParRedist()) conmatrix_ = MORTAR::MatrixRowColTransform(constrmt,ProblemDofs(),pgsdofrowmap_);
-      else             conmatrix_ = constrmt;
-    }
-    else
-    {
-      // transform parallel row distribution
-      // (only necessary in the parallel redistribution case)
-      Teuchos::RCP<LINALG::SparseMatrix> temp;
-      if (ParRedist()) temp = MORTAR::MatrixRowTransform(constrmt,ProblemDofs());
-      else             temp = constrmt;
+    // transform parallel row distribution
+    // (only necessary in the parallel redistribution case)
+    Teuchos::RCP<LINALG::SparseMatrix> temp;
+    if (ParRedist()) temp = MORTAR::MatrixRowTransform(constrmt,ProblemDofs());
+    else             temp = constrmt;
 
-      // always transform column GIDs of constraint matrix
-      conmatrix_ = MORTAR::MatrixColTransformGIDs(temp,glmdofrowmap_);
-    }
+    // always transform column GIDs of constraint matrix
+    conmatrix_ = MORTAR::MatrixColTransformGIDs(temp,glmdofrowmap_);
   }
 
   // time measurement
@@ -408,11 +391,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseO
   {
     // double-check if this is a dual LM system
     if (shapefcn!=INPAR::MORTAR::shape_dual) dserror("Condensation only for dual LM");
-        
-    //********************************************************************
-    // VERSION 1: CONDENSE LAGRANGE MULTIPLIERS AND SLAVE DOFS
-    //********************************************************************
-#ifdef MESHTYINGTWOCON
+
     // complete stiffness matrix
     // (this is a prerequisite for the Split2x2 methods to be called later)
     kteff->Complete();
@@ -685,256 +664,6 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseO
     /**********************************************************************/
     kteff = kteffnew;
     feff = feffnew;
-    
-    
-    //********************************************************************
-    // VERSION 2: CONDENSE ONLY LAGRANGE MULTIPLIERS
-    //********************************************************************
-#else
-    // complete stiffness matrix
-    // (this is a prerequisite for the Split2x2 methods to be called later)
-    kteff->Complete();
-      
-    /**********************************************************************/
-    /* Split kteff into 3x3 block matrix                                  */
-    /**********************************************************************/
-    // we want to split k into 3 groups s,m,n = 9 blocks
-    Teuchos::RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
-
-    // temporarily we need the blocks ksmsm, ksmn, knsm
-    // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-    Teuchos::RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
-
-    // some temporary RCPs
-    Teuchos::RCP<Epetra_Map> tempmap;
-    Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
-    Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
-    Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
-
-    // split into slave/master part + structure part
-    Teuchos::RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
-
-    /**********************************************************************/
-    /* Apply basis transformation to K and f                              */
-    /* (currently only needed for quadratic FE with linear dual LM)       */
-    /**********************************************************************/
-    if (Dualquadslave3d())
-    {
-#ifdef MORTARTRAFO
-      // basis transformation
-      dserror("ERROR: MORTARTRAFO not yet implemented for this case.");
-#endif // #ifdef MORTARTRAFO
-    }
-
-    if (ParRedist())
-    {
-      // split and transform to redistributed maps
-      LINALG::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-      ksmsm = MORTAR::MatrixRowColTransform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
-      ksmn  = MORTAR::MatrixRowTransform(ksmn,gsmdofrowmap_);
-      knsm  = MORTAR::MatrixColTransform(knsm,gsmdofrowmap_);
-    }
-    else
-    {
-      // only split, no need to transform
-      LINALG::SplitMatrix2x2(kteffmatrix,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-    }
-
-    // further splits into slave part + master part
-    LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
-    LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
-    LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
-
-    /**********************************************************************/
-    /* Split feff into 3 subvectors                                       */
-    /**********************************************************************/
-    // we want to split f into 3 groups s.m,n
-    Teuchos::RCP<Epetra_Vector> fs, fm, fn;
-
-    // temporarily we need the group sm
-    Teuchos::RCP<Epetra_Vector> fsm;
-
-    // do the vector splitting smn -> sm+n
-    LINALG::SplitVector(*ProblemDofs(),*feff,gsmdofrowmap_,fsm,gndofrowmap_,fn);
-
-    // we want to split fsm into 2 groups s,m
-    fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    
-    // do the vector splitting sm -> s+m
-    LINALG::SplitVector(*gsmdofrowmap_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
-
-    // store some stuff for static condensation of LM
-    fs_   = fs;
-    ksn_  = ksn;
-    ksm_  = ksm;
-    kss_  = kss;
-    
-    /**********************************************************************/
-    /* Build the final K and f blocks                                     */
-    /**********************************************************************/
-    // knn: nothing to do
-
-    // knm: nothing to do
-
-    // kns: nothing to do
-
-    // kmn: add T(mbar)*ksn
-    Teuchos::RCP<LINALG::SparseMatrix> kmnmod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-    kmnmod->Add(*kmn,false,1.0,1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhatmatrix_,true,*ksn,false,false,false,true);
-    kmnmod->Add(*kmnadd,false,1.0,1.0);
-    kmnmod->Complete(kmn->DomainMap(),kmn->RowMap());
-
-    // kmm: add T(mbar)*ksm
-    Teuchos::RCP<LINALG::SparseMatrix> kmmmod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-    kmmmod->Add(*kmm,false,1.0,1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhatmatrix_,true,*ksm,false,false,false,true);
-    kmmmod->Add(*kmmadd,false,1.0,1.0); 
-    kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
-
-    // kms: add T(mbar)*kss
-    Teuchos::RCP<LINALG::SparseMatrix> kmsmod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-    kmsmod->Add(*kms,false,1.0,1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> kmsadd = LINALG::MLMultiply(*mhatmatrix_,true,*kss,false,false,false,true);
-    kmsmod->Add(*kmsadd,false,1.0,1.0);
-    kmsmod->Complete(kms->DomainMap(),kms->RowMap());
-
-    // fn: nothing to do
-
-    // fs: subtract alphaf * old interface forces (t_n)
-    Teuchos::RCP<Epetra_Vector> tempvecs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    dmatrix_->Multiply(true,*zold_,*tempvecs);
-    tempvecs->Update(1.0,*fs,-alphaf_);
-
-    // fm: add alphaf * old interface forces (t_n)
-    Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    mmatrix_->Multiply(true,*zold_,*tempvecm);
-    fm->Update(alphaf_,*tempvecm,1.0); 
-    
-    // fm: add T(mbar)*fs
-    Teuchos::RCP<Epetra_Vector> fmmod = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    mhatmatrix_->Multiply(true,*tempvecs,*fmmod);
-    fmmod->Update(1.0,*fm,1.0);
-
-    /********************************************************************/
-    /* Transform the final K blocks                                     */
-    /********************************************************************/
-    // The row maps of all individual matrix blocks are transformed to
-    // the parallel layout of the underlying problem discretization.
-    // Of course, this is only necessary in the parallel redistribution
-    // case, where the meshtying interfaces have been redistributed
-    // independently of the underlying problem discretization.
-
-    if (ParRedist())
-    {
-      kmnmod = MORTAR::MatrixRowTransform(kmnmod,pgmdofrowmap_);
-      kmmmod = MORTAR::MatrixRowTransform(kmmmod,pgmdofrowmap_);
-      kmsmod = MORTAR::MatrixRowTransform(kmsmod,pgmdofrowmap_);
-    }
-
-    /**********************************************************************/
-    /* Global setup of kteffnew, feffnew (including meshtying)            */
-    /**********************************************************************/
-    Teuchos::RCP<LINALG::SparseMatrix> kteffnew = Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(),81,true,false,kteffmatrix->GetMatrixtype()));
-    Teuchos::RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*ProblemDofs());
-
-    // add n submatrices to kteffnew
-    kteffnew->Add(*knn,false,1.0,1.0);
-    kteffnew->Add(*knm,false,1.0,1.0);
-    kteffnew->Add(*kns,false,1.0,1.0);
-
-    // add m submatrices to kteffnew
-    kteffnew->Add(*kmnmod,false,1.0,1.0);
-    kteffnew->Add(*kmmmod,false,1.0,1.0);
-    kteffnew->Add(*kmsmod,false,1.0,1.0);
-
-    // add matrices D and M to kteffnew
-    kteffnew->Add(*conmatrix_,true,1.0,1.0);
-    
-    // FillComplete kteffnew (square)
-    kteffnew->Complete();
-
-    // add n subvector to feffnew
-    Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    LINALG::Export(*fn,*fnexp);
-    feffnew->Update(1.0,*fnexp,1.0);
-
-    // add m subvector to feffnew
-    Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    LINALG::Export(*fmmod,*fmmodexp);
-    feffnew->Update(1.0,*fmmodexp,1.0);
-
-    // add s subvector (constraints) to feffnew
-    
-    // VERSION 1: constraints for u (displacements)
-    //     (+) rotational invariance
-    //     (+) no initial stresses
-    // VERSION 2: constraints for x (current configuration)
-    //     (+) rotational invariance
-    //     (+) no initial stresses
-    // VERSION 3: mesh initialization (default)
-    //     (+) rotational invariance
-    //     (+) initial stresses
-    
-    // As long as we perform mesh initialization, there is no difference
-    // between versions 1 and 2, as the constraints are then exactly
-    // fulfilled in the reference configuration X already (version 3)!
-    
-#ifdef MESHTYINGUCONSTR
-    //**********************************************************************
-    // VERSION 1: constraints for u (displacements)
-    //**********************************************************************
-    // (nothing needs not be done, as the constraints for meshtying are
-    // LINEAR w.r.t. the displacements and in the first step, dis is zero.
-    // Thus, the right hand side of the constraint lines is ALWAYS zero!)
-    
-    /*
-    Teuchos::RCP<Epetra_Vector> tempvec1 = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    Teuchos::RCP<Epetra_Vector> tempvec2 = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*dis,*tempvec1);
-    dmatrix_->Multiply(false,*tempvec1,*tempvec2);
-    g_->Update(-1.0,*tempvec2,0.0);
-
-    Teuchos::RCP<Epetra_Vector> tempvec3 = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    Teuchos::RCP<Epetra_Vector> tempvec4 = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*dis,*tempvec3);
-    mmatrix_->Multiply(false,*tempvec3,*tempvec4);
-    g_->Update(1.0,*tempvec4,1.0);
-
-    Teuchos::RCP<Epetra_Vector> gexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    LINALG::Export(*g_,*gexp);
-    feffnew->Update(1.0,*gexp,1.0);
-    */
-
-  #else
-    //**********************************************************************
-    // VERSION 2: constraints for x (current configuration)
-    //**********************************************************************
-    Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
-    Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    AssembleCoords("slave",false,xs);
-    dmatrix_->Multiply(false,*xs,*Dxs);
-    g_->Update(-1.0,*Dxs,0.0);
-
-    Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
-    Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    AssembleCoords("master",false,xm);
-    mmatrix_->Multiply(false,*xm,*Mxm);
-    g_->Update(1.0,*Mxm,1.0);
-
-    Teuchos::RCP<Epetra_Vector> gexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    LINALG::Export(*g_,*gexp);
-    feffnew->Update(1.0,*gexp,1.0);
-
-  #endif // #ifdef MESHTYINGUCONSTR
-    
-    /**********************************************************************/
-    /* Replace kteff and feff by kteffnew and feffnew                     */
-    /**********************************************************************/
-    kteff = kteffnew;
-    feff = feffnew;
-#endif // #ifdef MESHTYINGTWOCON 
   }
   
   //**********************************************************************
@@ -1228,7 +957,6 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
     Teuchos::RCP<Epetra_Vector> disin = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_));
     if (gndofrowmap_->NumGlobalElements()) LINALG::Export(*disi,*disin);
     
-#ifdef MESHTYINGTWOCON
     /**********************************************************************/
     /* Update slave increment \Delta d_s                                  */
     /**********************************************************************/
@@ -1244,7 +972,6 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
     Teuchos::RCP<Epetra_Vector> disisexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
     LINALG::Export(*disis,*disisexp);
     disi->Update(1.0,*disisexp,1.0);
-#endif // #ifdef MESHTYINGTWOCON
 
     /**********************************************************************/
     /* Undo basis transformation to solution                              */
