@@ -193,26 +193,16 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOp
   kteff->Add(*dtm_,false,-pp,1.0);
   kteff->Add(*dtd_,false,pp,1.0);
   
+  //***************************************************************************
   // build constraint vector
-    
-  // VERSION 1: constraints for u (displacements)
-  //     (-) no rotational invariance
-  //     (+) no initial stresses
-  // VERSION 2: constraints for x (current configuration)
-  //     (+) rotational invariance
-  //     (-) initial stresses
-  // VERSION 3: mesh initialization (default)
-  //     (+) rotational invariance
-  //     (+) initial stresses
-  
-  // As long as we perform mesh initialization, there is no difference
-  // between versions 1 and 2, as the constraints are then exactly
-  // fulfilled in the reference configuration X already (version 3)!
-
-#ifdef MESHTYINGUCONSTR
-  //**********************************************************************
-  // VERSION 1: constraints for u (displacements)
-  //**********************************************************************
+  //***************************************************************************
+  // Since we enforce the meshtying constraint for the displacements u,
+  // and not for the configurations x (which would also be possible in theory),
+  // we avoid artificial initial stresses (+), but we might not guarantee
+  // exact rotational invariance (-). However, since we always apply the
+  // so-called mesh initialization procedure, we can then also guarantee
+  // exact rotational invariance (+).
+  //***************************************************************************
   Teuchos::RCP<Epetra_Vector> tempvec1 = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   Teuchos::RCP<Epetra_Vector> tempvec2 = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   LINALG::Export(*dis,*tempvec1);
@@ -224,24 +214,6 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOp
   LINALG::Export(*dis,*tempvec3);
   mmatrix_->Multiply(false,*tempvec3,*tempvec4);
   g_->Update(1.0,*tempvec4,1.0);
-  
-#else
-  //**********************************************************************
-  // VERSION 2: constraints for x (current configuration)
-  //**********************************************************************
-  Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
-  Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  AssembleCoords("slave",false,xs);
-  dmatrix_->Multiply(false,*xs,*Dxs);
-  g_->Update(-1.0,*Dxs,0.0);
-
-  Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
-  Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  AssembleCoords("master",false,xm);
-  mmatrix_->Multiply(false,*xm,*Mxm);
-  g_->Update(1.0,*Mxm,1.0);
-
-#endif // #ifdef MESHTYINGUCONSTR
   
   // update LM vector
   // (in the pure penalty case, zuzawa is zero)

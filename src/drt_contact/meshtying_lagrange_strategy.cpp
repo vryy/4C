@@ -481,59 +481,20 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseO
     ksm_  = ksm;
     kss_  = kss;
 
-    /**********************************************************************/
-    /* Build the constraint vector                                        */
-    /**********************************************************************/
-    // VERSION 1: constraints for u (displacements)
-    //     (+) rotational invariance
-    //     (+) no initial stresses
-    // VERSION 2: constraints for x (current configuration)
-    //     (+) rotational invariance
-    //     (+) no initial stresses
-    // VERSION 3: mesh initialization (default)
-    //     (+) rotational invariance
-    //     (+) initial stresses
+    //***************************************************************************
+    // build constraint vector
+    //***************************************************************************
+    // Since we enforce the meshtying constraint for the displacements u,
+    // and not for the configurations x (which would also be possible in theory),
+    // we avoid artificial initial stresses (+), but we might not guarantee
+    // exact rotational invariance (-). However, since we always apply the
+    // so-called mesh initialization procedure, we can then also guarantee
+    // exact rotational invariance (+).
+    //***************************************************************************
     
-    // As long as we perform mesh initialization, there is no difference
-    // between versions 1 and 2, as the constraints are then exactly
-    // fulfilled in the reference configuration X already (version 3)!
-    
-#ifdef MESHTYINGUCONSTR
-    // VERSION 1: constraints for u (displacements)
-    // (nothing needs not be done, as the constraints for meshtying are
+    // (nothing needs not be done here, as the constraints for meshtying are
     // LINEAR w.r.t. the displacements and in the first step, dis is zero.
-    // Thus, the right hand side of the constraint lines is ALWAYS zero!)
-    
-    /*
-    Teuchos::RCP<Epetra_Vector> tempvec1 = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    Teuchos::RCP<Epetra_Vector> tempvec2 = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*dis,*tempvec1);
-    dmatrix_->Multiply(false,*tempvec1,*tempvec2);
-    g_->Update(-1.0,*tempvec2,0.0);
-
-    Teuchos::RCP<Epetra_Vector> tempvec3 = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    Teuchos::RCP<Epetra_Vector> tempvec4 = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*dis,*tempvec3);
-    mmatrix_->Multiply(false,*tempvec3,*tempvec4);
-    g_->Update(1.0,*tempvec4,1.0);
-    */
-
-#else
-    // VERSION 2: constraints for x (current configuration)
-
-    Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
-    Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    AssembleCoords("slave",false,xs);
-    dmatrix_->Multiply(false,*xs,*Dxs);
-    g_->Update(-1.0,*Dxs,0.0);
-
-    Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
-    Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    AssembleCoords("master",false,xm);
-    mmatrix_->Multiply(false,*xm,*Mxm);
-    g_->Update(1.0,*Mxm,1.0);
-
-  #endif // #ifdef MESHTYINGUCONSTR
+    // Thus, the right hand side of the constraint rows is ALWAYS zero!)
     
     /**********************************************************************/
     /* Build the final K and f blocks                                     */
@@ -571,13 +532,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseO
     kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
 
     // fn: subtract kns*inv(D)*g
-#ifndef MESHTYINGUCONSTR
-    Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    invd_->Multiply(false,*g_,*tempvec);
-    Teuchos::RCP<Epetra_Vector> fnmod = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_));
-    kns->Multiply(false,*tempvec,*fnmod);
-    fnmod->Update(1.0,*fn,1.0);
-#endif
+    // (nothing needs to be done, since the right hand side g is ALWAYS zero)
 
     // fs: subtract alphaf * old interface forces (t_n)
     Teuchos::RCP<Epetra_Vector> tempvecs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -595,11 +550,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseO
     fmmod->Update(1.0,*fm,1.0);
 
     // fm: subtract kmsmod*inv(D)*g
-#ifndef MESHTYINGUCONSTR
-    Teuchos::RCP<Epetra_Vector> fmadd = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-    kmsmod->Multiply(false,*tempvec,*fmadd);
-    fmmod->Update(1.0,*fmadd,1.0);
-#endif  
+    // (nothing needs to be done, since the right hand side g is ALWAYS zero)
     
     // build identity matrix for slave dofs
     Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -647,11 +598,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseO
           
     // add n subvector to feffnew
     Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-#ifdef MESHTYINGUCONSTR
     LINALG::Export(*fn,*fnexp);
-#else
-    LINALG::Export(*fnmod,*fnexp);
-#endif
     feffnew->Update(1.0,*fnexp,1.0);
 
     // add m subvector to feffnew
@@ -779,9 +726,6 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   // build constraint rhs (=empty)
   Teuchos::RCP<Epetra_Vector> constrrhs = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_));
   constrrhs_ = constrrhs; // set constraint rhs vector
-#ifndef MESHTYINGUCONSTR
-  dserror("ERROR: Meshtying saddle point system only implemented for MESHTYINGUCONSTR");
-#endif // #ifndef MESHTYINGUCONSTR
   
   //**********************************************************************
   // Build and solve saddle point system
@@ -961,14 +905,6 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
     /* Update slave increment \Delta d_s                                  */
     /**********************************************************************/
     mhatmatrix_->Multiply(false,*disim,*disis);
-
-    // if constraint vector non-zero, we need an additonal term
-#ifndef MESHTYINGUCONSTR
-    Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    invd_->Multiply(false,*g_,*tempvec);
-    disis->Update(1.0,*tempvec,1.0);
-#endif // #ifndef MESHTYINGUNCONSTR
-
     Teuchos::RCP<Epetra_Vector> disisexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
     LINALG::Export(*disis,*disisexp);
     disi->Update(1.0,*disisexp,1.0);
