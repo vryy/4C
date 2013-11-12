@@ -411,7 +411,7 @@ double MAT::ThermoStVenantKirchhoff::GetMatParameterAtTempnp_T(
   //       = a + b . N_T . T_{n+1} + c . (N_T . T_{n+1})^2 + d . (N_T . T_{n+1})^3 + ...
   // with T: current scalar-valued temperature, T = N_T . T_{n+1}
 
-  // calculate derivative of E(T_{n+1}) w.r.t T_{n+1}
+  // calculate derivative of E(T_{n+1}) w.r.t. T_{n+1}
   // d(Param)/dT . Delta T = b . N_T + 2 . c . T . N_T + 3 . d . T^2 . N_T + ...
   //                       = ( b + 2 . c . T + 3 . d . T^2 + ...) . N_T
   //                       = parambytempnp . N_T
@@ -426,7 +426,7 @@ double MAT::ThermoStVenantKirchhoff::GetMatParameterAtTempnp_T(
     tempnp_pow *= tempnp;
   }
 
-  // return derivative of temperature-dependent material parameter w.r.t T_{n+1}
+  // return derivative of temperature-dependent material parameter w.r.t. T_{n+1}
   return parambytempnp;
 
 }  // GetMatParameterAtTempnp_T()
@@ -440,7 +440,7 @@ double MAT::ThermoStVenantKirchhoff::GetSTModulus_T(
   Teuchos::ParameterList& params
   ) const
 {
-  // build the derivative of the stress-temperature modulus w.r.t T_{n+1}
+  // build the derivative of the stress-temperature modulus w.r.t. T_{n+1}
   // m = - (2 . mu + 3 . lambda) . varalpha_T
   //   = - (2 . nu / ((1+nu)(1-2nu)) + 3 / (2 . (1+nu))) . varalpha_T . E(T)
   double stmodulus_T = 0.0;
@@ -474,7 +474,7 @@ double MAT::ThermoStVenantKirchhoff::GetSTModulus_T(
     //          (1+nu)*(1-2*nu)
     const double lambda = b1;
 
-    // build the derivative of the stress-temperature modulus w.r.t T_{n+1}
+    // build the derivative of the stress-temperature modulus w.r.t. T_{n+1}
     // m = -(2 . mu + 3 . lambda) . varalpha_T
     stmodulus_T = (-1) * (2 * mu + 3 * lambda) * thermexpans;
   }
@@ -487,7 +487,7 @@ double MAT::ThermoStVenantKirchhoff::GetSTModulus_T(
 
 
 /*----------------------------------------------------------------------*
- | calculates stresses with derived cmat w.r.t T_{n+1}       dano 05/13 |
+ | calculates stresses with derived cmat w.r.t. T_{n+1}       dano 05/13 |
  *----------------------------------------------------------------------*/
 void MAT::ThermoStVenantKirchhoff::GetMechStress_T(
   const LINALG::Matrix<6,1>* glstrain,
@@ -495,7 +495,7 @@ void MAT::ThermoStVenantKirchhoff::GetMechStress_T(
   LINALG::Matrix<6,1>* stress
   )
 {
-  // calculate derivative of cmat w.r.t T_{n+1}
+  // calculate derivative of cmat w.r.t. T_{n+1}
   LINALG::Matrix<6,6> cmat_T(false);
   GetCmatAtTempnp_T(cmat_T,params);
 
@@ -524,7 +524,7 @@ void MAT::ThermoStVenantKirchhoff::GetThermalStress_T(
   LINALG::Matrix<1,1> deltaT(true);
   deltaT.Update(*Ntemp,init);
 
-  // calculate derivative of ctemp w.r.t T_{n+1}
+  // calculate derivative of ctemp w.r.t. T_{n+1}
   LINALG::Matrix<6,1> ctemp_T(false);
   GetCthermoAtTempnp_T(ctemp_T,params);
 

@@ -858,7 +858,7 @@ void MAT::Damage::Evaluate(
         Hiso = GetIsoHardAtStrainbarnp(Rplast);
         // plasticity with nonlinear (piecewise linear) isotropic hardening
 
-        // get derivative of energy release rate w.r.t Dgamma
+        // get derivative of energy release rate w.r.t. Dgamma
         // d(-energyrelrate) / dDgamma = - Hiso(Rplast^m) . sigma_y(Rplast^m) / (3 . G)
         Ytan = - Hiso * sigma_y / (3 * G);
 
@@ -893,7 +893,7 @@ void MAT::Damage::Evaluate(
           break;
         }
 
-        // if load state is not converged, calculate derivatives w.r.t Dgamma
+        // if load state is not converged, calculate derivatives w.r.t. Dgamma
 
         // derviative of residual w.r.t. Dgamma
         // ResTan = (3 . G)/(q_tilde - sigma_y)

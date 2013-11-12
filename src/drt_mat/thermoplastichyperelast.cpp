@@ -740,8 +740,8 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
     // beta_0 = 1 + 1/(3 mubar) . d kappa_{n+1} / d astrain_{n+1}
     double beta0 = 1 + 1/(3 * mubar) * dkappa_dastrain;
 
-    // dDgamma/dT_{n+1} = sqrt(2/3) dsigma_y/dT / [ 2 . mubar . beta0 ]
-    double dDgamma_dT = sqrt(2/3.0) * dsigma_y_dT / (2 * mubar * beta0);
+    // dDgamma/dT_{n+1} = -sqrt(2/3) dsigma_y/dT / [ 2 . mubar . beta0 ]
+    double dDgamma_dT = -sqrt(2/3.0) * dsigma_y_dT / (2 * mubar * beta0);
 
     // spatial description:
     // 2 . dDgamma/dg = 1/beta0 . [ (1 - 2/3 || s || Dgamma / mubar ) . n

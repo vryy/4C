@@ -665,7 +665,7 @@ namespace ELEMENTS
 
     //! The parent element of this boundary element
     DRT::ELEMENTS::Thermo* parent_;
-    //! The local boundary element number of this surface w.r.t to the parent_ element
+    //! The local boundary element number of this surface w.r.t. to the parent_ element
     int lbeleid_;
 
   }; // class ThermoBoundary

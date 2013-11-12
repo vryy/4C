@@ -1953,7 +1953,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
           bopcouplS.MultiplyTN(fac_2, bop, couplstress_bar);
           for(int i=0; i<numdofperelement_; i++)
           {
-            for (int j=0;j<numdofperelement_;j++)
+            for (int j=0; j<numdofperelement_; j++)
             {
               // (24x24)             (24x1)       (1x24)
               (*stiffmatrix)(i,j) += bopcouplS(i,0) * htensor[j];
@@ -1967,7 +1967,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
           double fac_3 = detJ_w * (-1) * m_0 * (J_bar + 1/J_bar) * DeltaT * detF/detF_0;
           stiffmatrix->MultiplyTN(fac_3, bop, dCinv_dd, 1.0);
         }  //  m_thermoplhyperelast: additional linearisations due to dC_T/dd
-
       }  // if (stiffmatrix != NULL), fill k_dd
 
      /* =====================================================================*/
@@ -2139,11 +2138,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi_fbar(
         if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
         {
           const double stepsize = params.get<double>("delta time");
-          // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . 1/Dt . Cmat,T . N_temp) . detJ . w(gp)
+          // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . 1/Dt . dCmat/dT . N_temp) . detJ . w(gp)
           // (24x8)                            (24x6)         (6x1)    (1x8)
           LINALG::Matrix<numstr_,nen_> cmatn(true);
           cmatn.MultiplyNT(Cmat_kdT,shapefunct); // (6x8)=(6x1)(1x8)
-          stiffmatrix_kdT->MultiplyTN(detJ_w/(f_bar_factor*stepsize), bop, cmatn, 1.0);
+          stiffmatrix_kdT->MultiplyTN( (detJ_w / (f_bar_factor*stepsize) ), bop, cmatn, 1.0);
         }
       }  // (stiffmatrix_kdT != NULL)
 
@@ -2555,7 +2554,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::InitJacobianMapping()
       | dr   ds   dt |        | dt   dt   dt |
       +-            -+        +-            -+
      */
-    // derivatives of coordinates w.r.t material coordinates xjm_ = dx/ds
+    // derivatives of coordinates w.r.t. material coordinates xjm_ = dx/ds
     invJ_[gp].Multiply(deriv,xrefe);
     // xij_ = ds/dx
     detJ_[gp] = invJ_[gp].Invert();

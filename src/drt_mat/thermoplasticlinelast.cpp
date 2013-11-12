@@ -1151,7 +1151,7 @@ void MAT::ThermoPlasticLinElast::DissipationCouplCond(
 {
   // ----------------------------------- linearisation of D_mech for k_Td
 
-  // calculate the derivation of the dissipation w.r.t to the strains
+  // calculate the derivation of the dissipation w.r.t. to the strains
   // (dD_mech/dstrain)
   // = N_T^T . (- dDmech_kin/ dstrain + dDmech_iso/ dstrain )
   //

@@ -229,18 +229,18 @@ private:
     //! @name temperature-dependent material parameters E(T)
     //@{
 
-    //! calculates mechanical stress refering to linearisation of ctemp w.r.t T_{n+1}
+    //! calculates mechanical stress refering to linearisation of ctemp w.r.t. T_{n+1}
     void GetMechStress_T(
       const LINALG::Matrix<6,1>* glstrain,  //!< Green-Lagrange strains
       Teuchos::ParameterList& params,  //!< parameter list
-      LINALG::Matrix<6,1>* stress_T  //!< linearisation of mechanical stress w.r.t T
+      LINALG::Matrix<6,1>* stress_T  //!< linearisation of mechanical stress w.r.t. T
       );
 
-    //! calculates thermal stress refering to linearisation of ctemp w.r.t T_{n+1}
+    //! calculates thermal stress refering to linearisation of ctemp w.r.t. T_{n+1}
     void GetThermalStress_T(
       const LINALG::Matrix<1,1>* Ntemp,  //!< element temperature T_{n+1}
       Teuchos::ParameterList& params,  //!< parameter list
-      LINALG::Matrix<6,1>* stresstemp_T  //!< linearisation of thermal stress w.r.t T
+      LINALG::Matrix<6,1>* stresstemp_T  //!< linearisation of thermal stress w.r.t. T
       );
 
     //! calculates stress-temperature modulus
@@ -251,14 +251,14 @@ private:
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
     void GetCmatAtTempnp_T(
-      LINALG::Matrix<6,6>& derivcmat,  //!< linearisation of mechanical tangent w.r.t T
+      LINALG::Matrix<6,6>& derivcmat,  //!< linearisation of mechanical tangent w.r.t. T
       Teuchos::ParameterList params  //!< parameter list
       );
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
     void GetCthermoAtTempnp_T(
-      LINALG::Matrix<6,1>& derivctemp,  //!< linearisation of ctemp w.r.t T
+      LINALG::Matrix<6,1>& derivctemp,  //!< linearisation of ctemp w.r.t. T
       Teuchos::ParameterList& params  //!< parameter list
       );
       

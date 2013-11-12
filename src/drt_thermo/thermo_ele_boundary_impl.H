@@ -240,9 +240,9 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,1> xsi_;
     //! array for shape functions
     LINALG::Matrix<nen_,1> funct_;
-    //! array for shape function derivatives w.r.t r,s,t
+    //! array for shape function derivatives w.r.t. r,s,t
     LINALG::Matrix<nsd_,nen_> deriv_;
-    //! global derivatives of shape functions w.r.t x,y,z
+    //! global derivatives of shape functions w.r.t. x,y,z
     LINALG::Matrix<nsd_,nen_> derxy_;
     //! unit normal vector at integration point
     LINALG::Matrix<nsd_+1,1> normal_;

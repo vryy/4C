@@ -2953,25 +2953,25 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   for (int i=0; i<(int) dbc.size(); ++i)
   {
     // get nodes which have DBCs
-    const std::vector<int>* nodeids = dbc[i]->Nodes();
-    if (!nodeids)
+    const std::vector<int>* nodeids_withdbc = dbc[i]->Nodes();
+    if (!nodeids_withdbc)
       dserror("Condition does not have Node Ids");
 
     // loop over DBC nodes
-    for (int k=0; k<(int) (*nodeids).size(); ++k)
+    for (int k=0; k<(int) (*nodeids_withdbc).size(); ++k)
     {
-      int gid = (*nodeids)[k];
+      int gid = (*nodeids_withdbc)[k];
       // do only nodes which are in my discretisation
       if (StructureField()->Discretization()->NodeRowMap()->MyGID(gid) == false)
         continue;
 
+      // -------------------- evaluation in special direction, here z-direction
       // get node with global id gid
       DRT::Node* node = StructureField()->Discretization()->gNode(gid);
       if (!node)
         dserror("Cannot find node with gid %", gid);
       // check coordinates in z-direction, i.e. third value of X()
       double zcoord = node->X()[2];
-
       // possible push-back
       bool this_is_new_gid = true;
       // get the z-displacement DOFS located at the top surface (z=13.3335mm)
@@ -3008,7 +3008,8 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   // nodal reaction force at outer edge for whole support area
   Teuchos::RCP<Epetra_Vector> tension = Teuchos::rcp(
                                           new Epetra_Vector(
-                                                *newdofmap,
+                                                *newdofmap,  // map containing
+                                                             // all DOFs at top surf with DBC
                                                 false
                                                 )
                                           );
@@ -3093,7 +3094,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
       // i.e. set the index k to a value higher than available so that the loop stops
 
     }  // end point A(6.413/0/-13.3335)
-  }  //
+  }  // sum all nodes
   std::vector<double> necking_radius(1);
   necking_radius.at(0) = 0.0;
   if (necking_radius_dof.at(0) != -1)

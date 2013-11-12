@@ -1468,7 +1468,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
   // --------------------------------------------- loop over Gauss Points
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    // compute inverse Jacobian matrix and derivatives at GP w.r.t material
+    // compute inverse Jacobian matrix and derivatives at GP w.r.t. material
     // coordinates
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
     
@@ -1879,9 +1879,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
   bool young_temp = (params.get<int>("young_temp") == 1);
   LINALG::Matrix<nen_,1> Ndctemp_dTCrateNT(true);
 
-  // build the deformation gradient w.r.t material configuration
+  // build the deformation gradient w.r.t. material configuration
   LINALG::Matrix<nsd_,nsd_> defgrd(false);
-  // build the rate of the deformation gradient w.r.t material configuration
+  // build the rate of the deformation gradient w.r.t. material configuration
   LINALG::Matrix<nsd_,nsd_> defgrdrate(false);
   // inverse of deformation gradient
   LINALG::Matrix<nsd_,nsd_> invdefgrd(false);
@@ -1898,7 +1898,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
   // --------------------------------------------- loop over Gauss Points
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    // compute inverse Jacobian matrix and derivatives at GP w.r.t material
+    // compute inverse Jacobian matrix and derivatives at GP w.r.t. material
     // coordinates
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
     
@@ -1955,6 +1955,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
     // put the initial, material heatflux onto heatflux_
     heatflux_.Update(1.0, initialheatflux, 0.0);
     // from here on heatflux_ == -Q
+
+#ifdef THRASOUTPUT
+    std::cout << "CalculateCouplNlnFintCondCapa heatflux_ = " << heatflux_ << std::endl;
+    std::cout << "CalculateCouplNlnFintCondCapa Cinv = " << Cinv << std::endl;
+#endif  // THRASOUTPUT
 
     // -------------------------------------------------- post processing
     // store the temperature gradient for postprocessing
@@ -2031,9 +2036,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
 
 #ifdef THRASOUTPUT
     if (etempgrad != NULL)
-      std::cout << "CalculateCouplNlnFintCondCapa Nln etempgrad = " << *etempgrad << std::endl;
+      std::cout << "CalculateCouplNlnFintCondCapa etempgrad = " << *etempgrad << std::endl;
     if (eheatflux != NULL)
-      std::cout << "CalculateCouplNlnFintCondCapa Nln eheatflux = " << *eheatflux << std::endl;
+      std::cout << "CalculateCouplNlnFintCondCapa eheatflux = " << *eheatflux << std::endl;
     if (efint != NULL) std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnFintCondCapa PRIOR update: efint f_Td"<< *efint << std::endl;
     if (econd != NULL) std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnFintCondCapa PRIOR update: econd k_TT"<< *econd << std::endl;
 #endif  // THRASOUTPUT
@@ -2086,10 +2091,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
           //
           // k_TT += - N_T^T . dC_T/dT : C' . N_T . T . N_T
           econd->MultiplyNT(-fac_, Ndctemp_dTCrateNT, funct_, 1.0);
-        }
-      }  // m_thermostvenant && (young_temp == true)
+        }  // (econd != NULL)
 
+      }  // m_thermostvenant && (young_temp == true)
     }  // m_thermostvenant
+
     else if (structmat->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
     {
       Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplhyperelast
@@ -2159,7 +2165,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
 
       // efint += H_p term is added to fint within material call
 
-    }  // if (efint != NULL)
+    }  // (efint != NULL)
 
     // ------------------------------- integrate conductivity matrix k_TT
     // update conductivity matrix k_TT (with displacement dependent term)
@@ -2181,7 +2187,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
       econd->MultiplyNT( (fac_*ctempCdot), funct_, funct_, 1.0);
 
       // be aware: special terms of materials are added within material call
-    }  // if (econd != NULL)
+    }  // (econd != NULL)
 
     // --------------------------------------- capacity matrix m_capa
     // capacity matrix is idependent of deformation
@@ -2192,8 +2198,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
       //           (8x8)     (8x1)                 (1x8)
       // caution: funct_ implemented as (8,1)--> use transposed in code for
       // theoretic part
-      ecapa->MultiplyNT((fac_*capacoeff_),funct_,funct_,1.0);
-    }  // if (ecapa != NULL)
+      ecapa->MultiplyNT((fac_*capacoeff_), funct_, funct_, 1.0);
+    }  // (ecapa != NULL)
 
 #ifdef TSIMONOLITHASOUTPUT
     if (ele->Id() == 0)
@@ -2204,8 +2210,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
       std::cout << "Cratevct\n" << Cratevct << std::endl;
       std::cout << "defgrd\n" << defgrd << std::endl;
     }
-    std::cout << "heatflux_ CalculateCouplNlnFintCondCapa"<< heatflux_ << std::endl;
-    std::cout << "etemp_ CalculateCouplNlnFintCondCapa\n" << etemp_  << std::endl;
+    std::cout << "CalculateCouplNlnFintCondCapa heatflux_ = "<< heatflux_ << std::endl;
+    std::cout << "CalculateCouplNlnFintCondCapa etemp_ = " << etemp_ << std::endl;
 
     if (efint != NULL) std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnFintCondCapa: efint f_Td"<< *efint << std::endl;
     if (econd != NULL) std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnFintCondCapa: econd k_TT"<< *econd << std::endl;
@@ -2325,9 +2331,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
   // ------------------------------------------------ structural material
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
 
-  // build the deformation gradient w.r.t material configuration
+  // build the deformation gradient w.r.t. material configuration
   LINALG::Matrix<nsd_,nsd_> defgrd(false);
-  // build the rate of the deformation gradient w.r.t material configuration
+  // build the rate of the deformation gradient w.r.t. material configuration
   LINALG::Matrix<nsd_,nsd_> defgrdrate(false);
   // inverse of deformation gradient
   LINALG::Matrix<nsd_,nsd_> invdefgrd(true);
@@ -2344,7 +2350,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
   // ----------------------------------------- loop over Gauss Points
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    // compute inverse Jacobian matrix and derivatives at GP w.r.t material
+    // compute inverse Jacobian matrix and derivatives at GP w.r.t. material
     // coordinates
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
@@ -2661,7 +2667,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipation(
   // --------------------------------------------------- loop over Gauss Points
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    // compute inverse Jacobian matrix and derivatives at GP w.r.t material
+    // compute inverse Jacobian matrix and derivatives at GP w.r.t. material
     // coordinates
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
@@ -2800,7 +2806,7 @@ std::cout << "edisp\n" << edisp << std::endl;
   // --------------------------------------------- loop over Gauss Points
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    // compute inverse Jacobian matrix and derivatives at GP w.r.t material
+    // compute inverse Jacobian matrix and derivatives at GP w.r.t. material
     // coordinates
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
@@ -2816,9 +2822,9 @@ std::cout << "edisp\n" << edisp << std::endl;
     //      = (dD_mech/dstrain) : Lin [ strain ] . Inc_d
     //      = (dD_mech/dstrain) . B_d . Inc_d
     //
-    // --> perform the linearisation w.r.t to strains, NOT w.r.t to displacements
+    // --> perform the linearisation w.r.t. to strains, NOT w.r.t. to displacements
 
-    // calculate the derivation of the dissipation w.r.t to the strains
+    // calculate the derivation of the dissipation w.r.t. to the strains
     // (dD_mech/dstrain)
     // = N_T^T . (- dDmech_kin/ dstrain + dDmech_iso/ dstrain )
     // = - N_T^T . (d [ (sigma_{d,T} - beta) . strain^p' ]/ dstrain)
@@ -2942,18 +2948,18 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipation(
   if (intpoints.IP().nquad != nquad_)
     dserror("Trouble with number of Gauss points");
 
-  // initialise the deformation gradient w.r.t material configuration
+  // initialise the deformation gradient w.r.t. material configuration
   LINALG::Matrix<nsd_,nsd_> defgrd(false);
 
   // --------------------------------------------------- loop over Gauss Points
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    // compute inverse Jacobian matrix and derivatives at GP w.r.t material
+    // compute inverse Jacobian matrix and derivatives at GP w.r.t. material
     // coordinates
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
     // (material) deformation gradient F
-    // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    // F = d xcurr / d xrefe = xcurr^T . N_XYZ^T
     defgrd.MultiplyTT(xcurr,derxy_);
     double J = defgrd.Determinant();
 
@@ -2961,13 +2967,15 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipation(
     // plastic contribution thermoplastichyperelastic material
     
     // mechanical Dissipation
+    // Dmech_0 := sqrt(2/3) . sigma_y(T_{n+1}) . Dgamma/Dt . J
+    // with MechDiss := sqrt(2/3) . sigma_y(T_{n+1}) . Dgamma
     double Dmech = 0.0;
-    Dmech = thrplhyperelast->MechDiss(iquad)/stepsize;
+    Dmech = thrplhyperelast->MechDiss(iquad) / stepsize * J;
 
-    // derivative of Dmech w.r.t current temperatures
+    // derivative of Dmech w.r.t. current temperatures
     // contribution to k_TT
-    double Dmech_T = 0.0;
-    Dmech_T = thrplhyperelast->MechDiss_kTT(iquad)/stepsize * J;
+    double dDmech_dT = 0.0;
+    dDmech_dT = thrplhyperelast->MechDiss_kTT(iquad) / stepsize * J;
 
     // update/integrate internal force vector (coupling fraction towards displacements)
     if (efint != NULL)
@@ -2981,7 +2989,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipation(
     {
       // Contribution of dissipation to cond matirx
       // econd += - N_T^T . C^p_TT . N_T
-      econd->MultiplyNT((-fac_ * Dmech_T), funct_, funct_, 1.0);
+      econd->MultiplyNT((-fac_ * dDmech_dT), funct_, funct_, 1.0);
     }
 
 #ifdef TSIMONOLITHASOUTPUT
@@ -2994,7 +3002,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipation(
 
     // output of mechanical dissipation to fint
     LINALG::Matrix<nen_,1> fint_Dmech(false);
-    fint_Dmech.Update((-fac_ * Dmech),funct_, 0.0);
+    fint_Dmech.Update((-fac_ * Dmech), funct_, 0.0);
     std::cout << "CalculateCouplNlnDissipation: element No. = " << ele->Id() << " f_Td_Dmech "<< fint_Dmech << std::endl;
 #endif  // TSIMONOLITHASOUTPUT
 
@@ -3058,7 +3066,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipationCond(
   std::cout << "derxy_" << derxy_ << std::endl;
 #endif // THRASOUTPUT
 
-  // build the deformation gradient w.r.t material configuration
+  // build the deformation gradient w.r.t. material configuration
   LINALG::Matrix<nsd_,nsd_> defgrd(false);
   // inverse of deformation gradient
   LINALG::Matrix<nsd_,nsd_> invdefgrd(false);
@@ -3118,7 +3126,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipationCond(
   // --------------------------------------------------- loop over Gauss Points
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    // compute inverse Jacobian matrix and derivatives at GP w.r.t material
+    // compute inverse Jacobian matrix and derivatives at GP w.r.t. material
     // coordinates
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
@@ -3341,7 +3349,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
     +-            -+        +-            -+
    */
 
-  // derivatives at gp w.r.t material coordinates (N_XYZ in solid)
+  // derivatives at gp w.r.t. material coordinates (N_XYZ in solid)
   xjm_.MultiplyNT(deriv_,xyze_);
   // xij_ = J^{-T}
   // det = J^{-T} *
