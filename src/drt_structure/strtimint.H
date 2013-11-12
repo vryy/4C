@@ -689,7 +689,7 @@ namespace STR
     //! known velocity at \f$t_{n-1}\f$
     Teuchos::RCP<const Epetra_Vector> Velnm() { return (*vel_)(-1); }
 
-    //! known accelerations at \f$t_{n}\f$
+    //! unknown accelerations at \f$t_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> Accnp() { return accn_; }
 
     //! known accelerations at \f$t_{n}\f$

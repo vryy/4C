@@ -1299,6 +1299,8 @@ int STR::TimIntImpl::NewtonFull()
   return NewtonFullErrorCheck(linsolve_error);
 }
 
+/*----------------------------------------------------------------------*/
+/* error check for full Newton problems */
 int STR::TimIntImpl::NewtonFullErrorCheck(int linerror)
 {
   // if everything is fine print to screen and return
@@ -1342,7 +1344,8 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror)
   return 0;
 }
 
-
+/*----------------------------------------------------------------------*/
+/* error check for linear solver problems */
 int STR::TimIntImpl::LinSolveErrorCheck(int linerror)
 {
   // we only care about problems in the linear solver if we have a fancy divcont action

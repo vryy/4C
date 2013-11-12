@@ -157,7 +157,6 @@ namespace ADAPTER {
 
     virtual void ResizeMStepTimAda() = 0;
 
-
     //@}
 
     //! @name Misc
@@ -218,7 +217,6 @@ namespace ADAPTER {
     subjected to Dirichlet boundary conditions. For instance, the method is
     called by the monolithic FSI where fluid boundary conditions on the
     FSI interface have to be removed if it is a fluid split.
-
     */
     virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove) = 0;
 
@@ -270,15 +268,17 @@ namespace ADAPTER {
     /// set time step size and time
     virtual void SetInitialTimeStepAndTime(double timestepsize) = 0;
 
-    /// update displacement and evaluate elements
-    ///
-    /// there are two displacement increments possible
-    ///
-    /// x^n+1_i+1 = x^n+1_i + disiterinc  (sometimes referred to as residual increment), and
-    ///
-    /// x^n+1_i+1 = x^n     + disstepinc
-    ///
-    /// with n and i being time and Newton iteration step
+    /*!
+    \brief update displacement and evaluate elements
+
+    There are two displacement increments possible
+
+    \f$x^n+1_i+1 = x^n+1_i + disiterinc\f$  (sometimes referred to as residual increment), and
+
+    \f$x^n+1_i+1 = x^n     + disstepinc\f$
+
+    with \f$n\f$ and \f$i\f$ being time and Newton iteration step
+    */
     virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> disiterinc ///< displacement increment between Newton iteration i and i+1
         ) = 0;
@@ -346,21 +346,22 @@ namespace ADAPTER {
 
     //! @name Solver calls
 
-    /// nonlinear solve
-    ///
-    ///  Do the nonlinear solve for the time step. All boundary conditions have
-    ///  been set.
+    /*!
+    \brief nonlinear solve
+
+    Do the nonlinear solve for the time step. All boundary conditions have
+    been set.
+    */
     virtual int Solve() = 0;
 
-    /// linear structure solve with just a interface load
-    ///
-    ///  The very special solve done in steepest descent relaxation
-    ///  calculation (and matrix free Newton Krylov).
-    ///
-    /// \note Can only be called after a valid structural solve.
-//    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> iforce) = 0;
+    /*!
+    \brief linear structure solve with just a interface load
 
-    //! Linear structure solve with just an interface load
+    The very special solve done in steepest descent relaxation
+    calculation (and matrix free Newton Krylov).
+
+    \note Can only be called after a valid structural solve.
+    */
     virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
 
     /// get the linear solver object used for this field
