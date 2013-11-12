@@ -60,6 +60,7 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
 {
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+
   // access structural dynamic params list which will be possibly modified while creating the time integrator
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
@@ -91,18 +92,16 @@ FSI::MonolithicBase::~MonolithicBase()
 {
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBase::ReadRestart(int step)
 {
   StructureField()->ReadRestart(step);
-  FluidField()    .ReadRestart(step);
-  AleField()      .ReadRestart(step);
+  FluidField().ReadRestart(step);
+  AleField().ReadRestart(step);
 
-  SetTimeStep(FluidField().Time(),FluidField().Step());
+  SetTimeStep(FluidField().Time(), FluidField().Step());
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -113,8 +112,8 @@ void FSI::MonolithicBase::PrepareTimeStep()
   PrintHeader();
 
   StructureField()->PrepareTimeStep();
-  FluidField().     PrepareTimeStep();
-  AleField().       PrepareTimeStep();
+  FluidField().PrepareTimeStep();
+  AleField().PrepareTimeStep();
 }
 
 /*----------------------------------------------------------------------*/
@@ -124,7 +123,7 @@ void FSI::MonolithicBase::Update()
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   bool timeadapton = DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
 
-  if ( not timeadapton )
+  if (not timeadapton)
     StructureField()->Update(); // constant dt
   else
     StructureField()->Update(Time()); // variable/adaptive dt
@@ -133,14 +132,12 @@ void FSI::MonolithicBase::Update()
   AleField().Update();
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBase::PrepareOutput()
 {
   StructureField()->PrepareOutput();
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -151,8 +148,8 @@ void FSI::MonolithicBase::Output()
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
   StructureField()->Output();
-  FluidField().     Output();
-  AleField().       Output();
+  FluidField().Output();
+  AleField().Output();
 
   FluidField().LiftDrag();
 
@@ -164,14 +161,12 @@ void FSI::MonolithicBase::Output()
   }
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupsa_->MasterToSlave(iv);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -180,7 +175,6 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(Teuchos::RCP<Epetra
   return coupsa_->SlaveToMaster(iv);
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const
@@ -188,14 +182,12 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<Epet
   return coupsf_->MasterToSlave(iv);
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupsf_->SlaveToMaster(iv);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -225,14 +217,12 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<const 
   return coupsa_->MasterToSlave(iv);
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsa_->SlaveToMaster(iv);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -241,14 +231,12 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<cons
   return coupsf_->MasterToSlave(iv);
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsf_->SlaveToMaster(iv);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -284,7 +272,7 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
   // enable debugging
-  if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT")==1)
+  if (DRT::INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
   {
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
     //fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField().Discretization()));
@@ -311,7 +299,6 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
     InitTimIntAda(fsidyn);
   }
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -386,7 +373,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   const bool timeadapton = DRT::INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
 
   // Run time loop with constant or adaptive time step size (depending on the user's will)
-  if ( not timeadapton )
+  if (not timeadapton)
   {
     // call time loop with constant time step size
     TimeloopConstDt(interface);
@@ -449,7 +436,7 @@ void FSI::Monolithic::PrepareTimeloop()
   utils_ = Teuchos::rcp(new NOX::Utils(printParams));
 
   // write header of log-file
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
   {
     (*log_) << "# num procs      = " << Comm().NumProc() << "\n"
             << "# Method         = " << nlParams.sublist("Direction").get<std::string>("Method") << "\n"
@@ -464,17 +451,14 @@ void FSI::Monolithic::PrepareTimeloop()
   // do not allow monolithic in the pre-phase
   // allow monolithic in the post-phase
   {
-    double time = 0.0;
-    double dt = 0.0;
-    double pstime = -1.0;
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
     INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
     if (pstype != INPAR::STR::prestress_none)
     {
-      time   = StructureField()->GetTime();
-      dt     = StructureField()->GetTimeStepSize();
-      pstime = sdyn.get<double>("PRESTRESSTIME");
-      if (time+dt <= pstime) dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
+      const double pstime = sdyn.get<double>("PRESTRESSTIME");
+
+      if (Time() + Dt() <= pstime)
+        dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
     }
   }
 }
@@ -499,10 +483,10 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 
   Teuchos::Time timer("time step timer");
 
-  if (sdbg_!=Teuchos::null)
-    sdbg_->NewTimeStep(Step(),"struct");
-  if (fdbg_!=Teuchos::null)
-    fdbg_->NewTimeStep(Step(),"fluid");
+  if (sdbg_ != Teuchos::null)
+    sdbg_->NewTimeStep(Step(), "struct");
+  if (fdbg_ != Teuchos::null)
+    fdbg_->NewTimeStep(Step(), "fluid");
 
   // Single field predictors have been applied, so store the structural
   // interface displacement increment due to predictor or inhomogeneous
@@ -578,7 +562,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 void FSI::Monolithic::NonLinErrorCheck()
 {
   // if everything is fine, then return right now
-  if ( NoxStatus() == NOX::StatusTest::Converged )
+  if (NoxStatus() == NOX::StatusTest::Converged)
   {
     erroraction_ = FSI::Monolithic::erroraction_none;
     return;
@@ -594,7 +578,7 @@ void FSI::Monolithic::NonLinErrorCheck()
   const INPAR::FSI::DivContAct divcontype
     = DRT::INPUT::IntegralValue<INPAR::FSI::DivContAct>(fsidyn.sublist("TIMEADAPTIVITY"),("DIVERCONT"));
 
-  if ( NoxStatus() != NOX::StatusTest::Converged )
+  if (NoxStatus() != NOX::StatusTest::Converged)
   {
     switch (divcontype)
     {
@@ -613,7 +597,7 @@ void FSI::Monolithic::NonLinErrorCheck()
         erroraction_ = FSI::Monolithic::erroraction_continue;
 
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
-        if ( Comm().MyPID() == 0 )
+        if (Comm().MyPID() == 0)
         {
           IO::cout << "\n*** Nonlinear solver did not converge in " << noxiter_ << " iterations. Continue ...\n";
         }
@@ -627,13 +611,13 @@ void FSI::Monolithic::NonLinErrorCheck()
         numhalvestep_++;
 
         const bool timeadapton = DRT::INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
-        if ( not timeadapton )
+        if (not timeadapton)
         {
           dserror("Nonlinear solver wants to halve the time step size. This is not possible in a time integrator with constant Delta t.");
         }
 
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
-        if ( Comm().MyPID() == 0 )
+        if (Comm().MyPID() == 0)
         {
           IO::cout << "\n*** Nonlinear solver did not converge in " << noxiter_ << " iterations. Halve the time step size.\n";
         }
@@ -664,14 +648,14 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   Teuchos::RCP<const Epetra_Vector> fx;
   Teuchos::RCP<const Epetra_Vector> ax;
 
-  if (x!=Teuchos::null)
+  if (x != Teuchos::null)
   {
     ExtractFieldVectors(x,sx,fx,ax);
 
     if (sdbg_!=Teuchos::null)
     {
       sdbg_->NewIteration();
-      sdbg_->WriteVector("x",*StructureField()->Interface()->ExtractFSICondVector(sx));
+      sdbg_->WriteVector("x", *StructureField()->Interface()->ExtractFSICondVector(sx));
     }
   }
 
@@ -690,7 +674,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
   {
     Epetra_Time ta(Comm());
-    AleField()      .Evaluate(ax);
+    AleField().Evaluate(ax);
     Utils()->out() << "ale      : " << ta.ElapsedTime() << " sec\n";
   }
 
@@ -707,15 +691,13 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   Utils()->out() << "\n";
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps)
 {
   Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
-  blockrowdofmap_.Setup(*fullmap,maps);
+  blockrowdofmap_.Setup(*fullmap, maps);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -765,8 +747,6 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
   //Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
 
-
-
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   dirParams.set<std::string>("Method","User Defined");
   Teuchos::RCP<NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this,false);
@@ -794,9 +774,7 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   // adaptive tolerance settings for linear solver
   lsParams.set<double>("base tolerance",fsidyn.get<double>("BASETOL")); // relative tolerance
   lsParams.set<double>("adaptive distance",fsidyn.get<double>("ADAPTIVEDIST")); // adaptive distance
-
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -804,8 +782,8 @@ Teuchos::RCP<NOX::Direction::Generic>
 FSI::Monolithic::buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
                                 Teuchos::ParameterList& params) const
 {
-  Teuchos::RCP<NOX::FSI::Newton> newton = Teuchos::rcp(new NOX::FSI::Newton(gd,params));
-  for (unsigned i=0; i<statustests_.size(); ++i)
+  Teuchos::RCP<NOX::FSI::Newton> newton = Teuchos::rcp(new NOX::FSI::Newton(gd, params));
+  for (unsigned i = 0; i < statustests_.size(); ++i)
   {
     statustests_[i]->SetNewton(newton);
   }
@@ -866,9 +844,9 @@ void FSI::Monolithic::SetupRHS(Epetra_Vector& f, bool firstcall)
   {
     // Finally, we take care of Dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(f));
-    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(f.Map(),true));
-    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(dbcmaps_->CondMap()));
-    f.Update(1.0,*rhs,0.0);
+    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(f.Map(), true));
+    LINALG::ApplyDirichlettoSystem(rhs, zeros, *(dbcmaps_->CondMap()));
+    f.Update(1.0, *rhs, 0.0);
   }
 
   // NOX expects the 'positive' residual. The negative sign for the
@@ -897,9 +875,9 @@ void FSI::Monolithic::CombineFieldVectors(Epetra_Vector& v,
                                           Teuchos::RCP<const Epetra_Vector> fv,
                                           Teuchos::RCP<const Epetra_Vector> av)
 {
-  Extractor().AddVector(*sv,0,v);
-  Extractor().AddVector(*fv,1,v);
-  Extractor().AddVector(*av,2,v);
+  Extractor().AddVector(*sv, 0, v);
+  Extractor().AddVector(*fv, 1, v);
+  Extractor().AddVector(*av, 2, v);
 }
 
 /*----------------------------------------------------------------------*/
@@ -910,7 +888,6 @@ FSI::BlockMonolithic::BlockMonolithic(const Epetra_Comm& comm,
     precondreusecount_(0)
 {
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -923,7 +900,6 @@ bool FSI::BlockMonolithic::computeJacobian(const Epetra_Vector &x, Epetra_Operat
   return true;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
@@ -932,7 +908,7 @@ bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::computePreconditioner");
 
-  if (precondreusecount_<=0)
+  if (precondreusecount_ <= 0)
   {
     // Create preconditioner operator. The blocks are already there. This is
     // the perfect place to initialize the block preconditioners.
@@ -944,14 +920,13 @@ bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
 
   precondreusecount_ -= 1;
 
-  if (pcdbg_!=Teuchos::null)
+  if (pcdbg_ != Teuchos::null)
   {
     pcdbg_->NewLinearSystem();
   }
 
   return true;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
