@@ -66,7 +66,6 @@ Maintainer: Alexander Popp
 //#define CONTACTSTATUS             /* flag for contact segmentation measurement */
 //#define CONTACTEIG                /* flag for eigenvalue+condition analysis */
 //#define CONTACTFORCEREFCONFIG     /* flag for evaluation of forces in ref. config. */
-//#define CONTACTBASISTRAFO         /* flag for basis trafo of dual LM system */
 //#define CONTACTFDNORMAL           /* flag for FD check of normal derivative */
 //#define CONTACTFDMORTARD          /* flag for FD check of mortar matrix D */
 //#define CONTACTFDMORTARM          /* flag for FD check of mortar matrix M */

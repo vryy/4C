@@ -3657,18 +3657,6 @@ void CONTACT::WearLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
     Teuchos::RCP<Epetra_Vector> disin = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_));
     if (gndofrowmap_->NumGlobalElements()) LINALG::Export(*disi,*disin);
 
-#ifdef CONTACTBASISTRAFO
-    /**********************************************************************/
-    /* Update slave displacments from jump                                */
-    /**********************************************************************/
-    Teuchos::RCP<Epetra_Vector> adddisis = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    mhatmatrix_->Multiply(false,*disim,*adddisis);
-    disis->Update(1.0,*adddisis,1.0);
-    Teuchos::RCP<Epetra_Vector> adddisisexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    LINALG::Export(*adddisis,*adddisisexp);
-    disi->Update(1.0,*adddisisexp,1.0);
-#endif // #ifdef CONTACTBASISTRAFO
-
     // condensation has been performed for active LM only,
     // thus we construct a modified invd matrix here which
     // only contains the active diagonal block
