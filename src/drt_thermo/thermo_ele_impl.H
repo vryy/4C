@@ -220,7 +220,7 @@ namespace ELEMENTS
 
     //@}
 
-    //! @name TSI related stuff
+    //! @name geometrically linear TSI
 
     //! Calculate element vectors (internal/external) and a few matrices
     //! considering current displacement solution
@@ -236,7 +236,7 @@ namespace ELEMENTS
       LINALG::Matrix<nquad_,nsd_>* etempgrad,  //!< temperature gradients at Gauss points
       Teuchos::ParameterList& params
       );
-      
+
     //! calculate thermal-mechanical system matrix term needed in monolithic TSI
     void CalculateCouplCond(
       DRT::Element* ele,  //!< the element whose matrix is calculated
@@ -245,13 +245,13 @@ namespace ELEMENTS
       LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  //!< k_Tu matrix
       Teuchos::ParameterList& params
       );
-      
+
     //! build linear B-operator
     void CalculateBoplin(
       LINALG::Matrix<6,nsd_*nen_*numdofpernode_>* boplin,  //!< linear B-operator
       LINALG::Matrix<nsd_,nen_>* N_XYZ  //!< gradient-operator
       );
-    
+
     //! get corresponding structural material
     Teuchos::RCP<MAT::Material> GetSTRMaterial(
       DRT::Element* ele  //!< the element whose matrix is calculated
@@ -263,11 +263,10 @@ namespace ELEMENTS
       LINALG::Matrix<6,1>* strainvel  //!< strain rate
       );
 
-      
     //@}
 
-    //! @name thermoplasticity solved with TSI
-    
+    //! @name linear, small strain thermoplasticity solved with TSI
+
     //! calculate internal dissipation arising when a thermo-elasto-plastic
     //! material is used
     //! Clausius-Duhem inequality is no longer = 0, but > 0:
@@ -282,28 +281,6 @@ namespace ELEMENTS
     //! system matrix k_Td used in case of plastic material
     void CalculateCouplDissipationCond(
       DRT::Element* ele,  // the element whose matrix is calculated
-      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  // k_Td
-      Teuchos::ParameterList& params
-      );
-    
-    //! calculate internal dissipation arising when a thermo-elasto-plastic
-    //! material is used within geometrically nonlinear analysis
-    //! Clausius-Duhem inequality is no longer = 0, but > 0:
-    //! mechanical energy dissipates as heat
-    void CalculateCouplNlnDissipation(
-      DRT::Element* ele,  //!< the element whose matrix is calculated
-      std::vector<double>& disp,  // current displacements
-      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  // conductivity matrix
-      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
-      Teuchos::ParameterList& params
-      );
-      
-    //! calculate terms of dissipation for thermo-mechanical system matrix k_Td
-    //! used in case of plastic material within geometrically nonlinear analysis
-    void CalculateCouplNlnDissipationCond(
-      DRT::Element* ele,  // the element whose matrix is calculated
-      std::vector<double>& disp,  //!< current displacements
-      std::vector<double>& vel,  //!< current velocities
       LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  // k_Td
       Teuchos::ParameterList& params
       );
@@ -348,6 +325,14 @@ namespace ELEMENTS
       LINALG::Matrix<nsd_,nen_>* N_XYZ  //!< gradient-operator
       );
 
+    //! build linearisation of Jacobian w.r.t. d: dJ_dd
+    void CalculateLinearisationOfJacobian(
+      LINALG::Matrix<1,nsd_*nen_*numdofpernode_>& dJ_dd,  //  (o) dJ_dd
+      const double& J,  // Jacobian
+      const LINALG::Matrix<nsd_,nen_>& N_XYZ,  // linear gradient of shape functions
+      const LINALG::Matrix<nsd_,nsd_>& defgrd_inv  // inverse of F
+      );
+
     //! build derivatives of right Cauchy-Green deformation tensor C
     //! build the inverse of C^{-1} and the time derivative C'
     void CalculateCauchyGreens(
@@ -357,6 +342,32 @@ namespace ELEMENTS
       LINALG::Matrix<nsd_,nsd_>* defgrd,  //!< deformation gradient tensor
       LINALG::Matrix<nsd_,nsd_>* defgrdrate,  //!< velocity gradient tensor
       LINALG::Matrix<nsd_,nsd_>* invdefgrd  //!< inverse deformation gradient tensor
+      );
+
+    //@}
+
+    //! @name finite strain thermoplasticity solved with TSI
+
+    //! calculate internal dissipation arising when a thermo-elasto-plastic
+    //! material is used within geometrically nonlinear analysis
+    //! Clausius-Duhem inequality is no longer = 0, but > 0:
+    //! mechanical energy dissipates as heat
+    void CalculateCouplNlnDissipation(
+      DRT::Element* ele,  //!< the element whose matrix is calculated
+      std::vector<double>& disp,  // current displacements
+      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  // conductivity matrix
+      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
+      Teuchos::ParameterList& params
+      );
+
+    //! calculate terms of dissipation for thermo-mechanical system matrix k_Td
+    //! used in case of plastic material within geometrically nonlinear analysis
+    void CalculateCouplNlnDissipationCond(
+      DRT::Element* ele,  // the element whose matrix is calculated
+      std::vector<double>& disp,  //!< current displacements
+      std::vector<double>& vel,  //!< current velocities
+      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  // k_Td
+      Teuchos::ParameterList& params
       );
 
     //@}

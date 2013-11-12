@@ -1907,8 +1907,12 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
           double DeltaT = scalartemp - thrplastichyperelast->InitTemp();
 
           // ------------------------------------ calculate (J_bar + 1/J_bar),d
-          // dJ_bar / dd = J_bar . F_bar^{-T} . (detF_0/detF)^{1/3} .
-          //               [1/3 . H . F + B_L ]
+          // dJ_bar/dd = dJ_bar/dF_bar . dF_bar/dd
+          //           = J_bar . F_bar^{-T} . (detF_0/detF)^{1/3} . [1/3 . H . F + B_L]
+          //
+          // dJ/dd = dJ/dF : dF/dd = J . F^{-T} . N,X = J . F^{-T} . B_L
+          // dF_bar/dd = d[(detF_0/detF)^{1/3} . F]/dd
+          //           = d[(detF_0/detF)^{1/3}]/dd . F + (detF_0/detF)^{1/3} . dF/dd
 
           // prefactor
           // fac_1 = m_0 . (J_bar - 1/J_bar) . (N_T . T_{n+1} -T)
@@ -2351,15 +2355,15 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::CalculateBopVec(
   // F != F^T, i.e. Voigt notation NOT admissible
   // F (3x3) --> (9x1)
   LINALG::Matrix<nsd_*nsd_,1> defgrd_vec;
-  defgrd_vec(0)=defgrd(0,0);
-  defgrd_vec(1)=defgrd(0,1);
-  defgrd_vec(2)=defgrd(0,2);
-  defgrd_vec(3)=defgrd(1,0);
-  defgrd_vec(4)=defgrd(1,1);
-  defgrd_vec(5)=defgrd(1,2);
-  defgrd_vec(6)=defgrd(2,0);
-  defgrd_vec(7)=defgrd(2,1);
-  defgrd_vec(8)=defgrd(2,2);
+  defgrd_vec(0) = defgrd(0,0);
+  defgrd_vec(1) = defgrd(0,1);
+  defgrd_vec(2) = defgrd(0,2);
+  defgrd_vec(3) = defgrd(1,0);
+  defgrd_vec(4) = defgrd(1,1);
+  defgrd_vec(5) = defgrd(1,2);
+  defgrd_vec(6) = defgrd(2,0);
+  defgrd_vec(7) = defgrd(2,1);
+  defgrd_vec(8) = defgrd(2,2);
 
   // ------------------------ build N_X operator (w.r.t. material config)
   // N_XYZ (3x8) --> 9x24

@@ -421,7 +421,7 @@ void MAT::Robinson::Evaluate(
   // update current temperature at Gauss point
   // CCARAT: tempr --> so3_tsi_temper()
   for (int i=0; i<3; ++i) strain_t(i) = thermexpans * (scalartemp - tempinit);
-  // for (int i=3; i<6; ++i){ strain_t(i) = 2*E_xy = 2*E_yz = 2*E_zx = 0.0; }
+  // for (int i=3; i<6; ++i){ strain_t(i) = 2E_xy = 2E_yz = 2E_zx = 0.0; }
 
   // ------------------------------------------------- viscous strain
   // viscous strain strain_{n+1}^{v,i} at t_{n+1}
