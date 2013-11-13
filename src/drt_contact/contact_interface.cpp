@@ -72,12 +72,14 @@ wear_(false),
 tsi_(false)
 {
   // set frictional contact status
-  INPAR::CONTACT::FrictionType ftype = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(icontact,"FRICTION");
+  INPAR::CONTACT::FrictionType ftype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(icontact,"FRICTION");
   if (ftype != INPAR::CONTACT::friction_none)
     friction_ = true;
   
   // set wear contact status
-  INPAR::CONTACT::WearLaw wlaw = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(icontact,"WEARLAW");
+  INPAR::CONTACT::WearLaw wlaw =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(icontact,"WEARLAW");
   if (wlaw != INPAR::CONTACT::wear_none)
     wear_ = true;
 
@@ -700,12 +702,6 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
       }
     }//end RR
 
-  //OLD VERSION
-//  Teuchos::RCP<Epetra_Map> eold = Teuchos::rcp(new Epetra_Map(*Discret().ElementColMap()));
-//  Teuchos::RCP<Epetra_Map> nold = Teuchos::rcp(new Epetra_Map(*Discret().NodeColMap()));
-//  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_,eold,true);
-//  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_,nold,true);
-
   //NEW VERSION
   eextendedghosting_ = LINALG::MergeMap(eextendedghosting_,Init_SCE,true);
   nextendedghosting_ = LINALG::MergeMap(nextendedghosting_,Init_SCN,true);
@@ -745,6 +741,7 @@ void CONTACT::CoInterface::RoundRobinEvaluate()
   RoundRobinExtendGhosting(true);
 
   // Init Maps
+  // TODO: use initial_ele_colmap from abstract_strategy.H !!!
   Teuchos::RCP<Epetra_Map> Init_SCN  = Teuchos::rcp(new Epetra_Map(*SlaveColNodes()));
   Teuchos::RCP<Epetra_Map> Init_SCE  = Teuchos::rcp(new Epetra_Map(*SlaveColElements()));
   Teuchos::RCP<Epetra_Map> Init_MCN  = Teuchos::rcp(new Epetra_Map(*MasterColNodes()));
@@ -782,13 +779,6 @@ void CONTACT::CoInterface::RoundRobinEvaluate()
       }
     }//end RR
 
-  //OLD VERSION
-//  Teuchos::RCP<Epetra_Map> eold = Teuchos::rcp(new Epetra_Map(*Discret().ElementColMap()));
-//  Teuchos::RCP<Epetra_Map> nold = Teuchos::rcp(new Epetra_Map(*Discret().NodeColMap()));
-//  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_,eold,true);
-//  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_,nold,true);
-
-  //NEW VERSION
   eextendedghosting_ = LINALG::MergeMap(eextendedghosting_,Init_SCE,true);
   nextendedghosting_ = LINALG::MergeMap(nextendedghosting_,Init_SCN,true);
   eextendedghosting_ = LINALG::MergeMap(eextendedghosting_,Init_MCE,true);
@@ -1258,7 +1248,7 @@ void CONTACT::CoInterface::CreateSearchTree()
       }
       else
         dserror("Choosen parallel strategy not supported!");
-      
+
       // create binary tree object for contact search and setup tree
       binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap,Dim(),SearchParam()));
 
@@ -1322,7 +1312,6 @@ void CONTACT::CoInterface::Initialize()
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = static_cast<CoNode*>(node);
-
 
     // reset nodal Mortar maps
     for (int j=0;j<(int)((cnode->MoData().GetD()).size());++j)
@@ -6942,6 +6931,7 @@ void CONTACT::CoInterface::AssembleA(LINALG::SparseMatrix& aglobal)
       }
     }
   }
+
   return;
 }
 

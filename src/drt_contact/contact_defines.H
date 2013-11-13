@@ -49,8 +49,6 @@ Maintainer: Alexander Popp
 //#define CONSISTENTSTICK		        /* flag for consistent stick branch of the complementarity function */
 //#define CONSISTENTSLIP			      /* flag for consistent slip branch of the complementarity function */
 //#define OBJECTVARSLIPINCREMENT    /* flag for object-variant slip increment created in integrator*/
-#define SIMPLETANGENT               /* flag for simple tangent formulation*/
-//#define TANGENTCHECK              /* Check tangents from solution step n-1 to n --> enforcing same orientation */
 //#define CONTACTCONSTRAINTXYZ
 
 /************************************************************************/

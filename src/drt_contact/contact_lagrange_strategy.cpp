@@ -104,6 +104,11 @@ void CONTACT::CoLagrangeStrategy::Initialize()
 
 #else // CONTACTCONSTRAINTXYZ
 
+  // (re)setup global matrices containing fc derivatives
+  // must use FE_MATRIX type here, as we will do non-local assembly!
+  lindmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  linmmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+
   // (re)setup global tangent matrix
   tmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,3));
 
@@ -113,7 +118,6 @@ void CONTACT::CoLagrangeStrategy::Initialize()
   // inactive rhs for the saddle point problem
   Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_, *gactivedofs_);
   inactiverhs_ = LINALG::CreateVector(*gidofs, true);
-
 
   // further terms depend on friction case
   // (re)setup global matrix containing "no-friction"-derivatives
@@ -1226,6 +1230,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     interface_[i]->AssembleS(*smatrix_);
     interface_[i]->AssembleP(*pmatrix_);
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
+
     if (systype != INPAR::CONTACT::system_condensed)
     {
     	interface_[i]->AssembleInactiverhs(*inactiverhs_);
@@ -2254,8 +2259,7 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     mergedmt->Add(*trkzd,false,1.0,1.0);
     mergedmt->Add(*trkzz,false,1.0,1.0);
 
-
-    mergedmt->Complete();    
+    mergedmt->Complete();
        
     // build merged rhs
     Teuchos::RCP<Epetra_Vector> fresmexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));

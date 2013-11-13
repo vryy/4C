@@ -1481,7 +1481,6 @@ void MORTAR::MortarInterface::Evaluate(int rriter, const int step, const int ite
   // time scales directly with the proc number !
   ExportNodalNormals();
 
-
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
   Comm().Barrier();
@@ -1505,7 +1504,6 @@ void MORTAR::MortarInterface::Evaluate(int rriter, const int step, const int ite
       DRT::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
       MortarElement* melement = static_cast<MortarElement*>(ele2);
-      //std::cout << "Myrank= " << Comm().MyPID() <<"  id " << selement->Id() << " sele " << selement->Owner() << "  mele "  << melement->Id() << "  owner= "<< melement->Owner() << std::endl;
 
       melements.push_back(melement);
     }

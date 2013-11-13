@@ -228,7 +228,6 @@ void STRU_ALE::Algorithm::MergeWear(Teuchos::RCP<Epetra_Vector>& disinterface_s 
 
   disinterface_g->Update(1.0,*auxvector,true);
 
-
   return;
 }
 

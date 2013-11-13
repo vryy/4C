@@ -532,61 +532,68 @@ void CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
 
   Comm().Barrier();
   const double t_start2 = Teuchos::Time::wallTime();
-  InitEvalInterface();
+  InitMortar();
   Comm().Barrier();
   const double t_end2 = Teuchos::Time::wallTime()-t_start2;
+  if (Comm().MyPID()==0) std::cout << "    -->MortarInit  :\t" << t_end2 << " seconds\n";
+
+  Comm().Barrier();
+  const double t_start3 = Teuchos::Time::wallTime();
+  InitEvalInterface();
+  Comm().Barrier();
+  const double t_end3 = Teuchos::Time::wallTime()-t_start3;
   if (Comm().MyPID()==0)
   {
-    std::cout << "    -->Interfac:\t" << t_end2 << " seconds";
+    std::cout << "    -->Interface:\t" << t_end3 << " seconds";
     if ((int)tunbalance_.size()==0 && (int)eunbalance_.size()==0) std::cout << "\n";
     else std::cout << " (BALANCE: " << tunbalance_.back() << " " << eunbalance_.back() << ")\n";
   }
 
   Comm().Barrier();
-  const double t_start3 = Teuchos::Time::wallTime();
-  InitEvalMortar();
+  const double t_start4 = Teuchos::Time::wallTime();
+  AssembleMortar();
   Comm().Barrier();
-  const double t_end3 = Teuchos::Time::wallTime()-t_start3;
-  if (Comm().MyPID()==0) std::cout << "    -->Mortar  :\t" << t_end3 << " seconds\n";
+  const double t_end4 = Teuchos::Time::wallTime()-t_start4;
+  if (Comm().MyPID()==0) std::cout << "    -->AssembleMortar  :\t" << t_end4 << " seconds\n";
 
   // evaluate relative movement for friction
   Comm().Barrier();
-  const double t_start4 = Teuchos::Time::wallTime();
+  const double t_start5 = Teuchos::Time::wallTime();
   if (predictor) EvaluateRelMovPredict();
   else           EvaluateRelMov();
   Comm().Barrier();
-  const double t_end4 = Teuchos::Time::wallTime()-t_start4;
-  if (Comm().MyPID()==0) std::cout << "    -->RelMov  :\t" << t_end4 << " seconds\n";
+  const double t_end5 = Teuchos::Time::wallTime()-t_start5;
+  if (Comm().MyPID()==0) std::cout << "    -->RelMov  :\t" << t_end5 << " seconds\n";
 
   // update active set
   Comm().Barrier();
-  const double t_start5 = Teuchos::Time::wallTime();
+  const double t_start6 = Teuchos::Time::wallTime();
   if (!predictor) UpdateActiveSetSemiSmooth();
   Comm().Barrier();
-  const double t_end5 = Teuchos::Time::wallTime()-t_start5;
-  if (Comm().MyPID()==0) std::cout << "    -->ActivSet:\t" << t_end5 << " seconds\n";
+  const double t_end6 = Teuchos::Time::wallTime()-t_start6;
+  if (Comm().MyPID()==0) std::cout << "    -->ActivSet:\t" << t_end6 << " seconds\n";
 
   // apply contact forces and stiffness
   Comm().Barrier();
-  const double t_start6 = Teuchos::Time::wallTime();
+  const double t_start7 = Teuchos::Time::wallTime();
   Initialize();
   Comm().Barrier();
-  const double t_end6 = Teuchos::Time::wallTime()-t_start6;
-  if (Comm().MyPID()==0) std::cout << "    -->Initial :\t" << t_end6 << " seconds\n";
-
-  Comm().Barrier();
-  const double t_start7 = Teuchos::Time::wallTime();
-  Evaluate(kt,f,dis);
-  Comm().Barrier();
   const double t_end7 = Teuchos::Time::wallTime()-t_start7;
-  if (Comm().MyPID()==0) std::cout << "    -->Evaluate:\t" << t_end7 << " seconds\n";
+  if (Comm().MyPID()==0) std::cout << "    -->Initial :\t" << t_end7 << " seconds\n";
 
   Comm().Barrier();
   const double t_start8 = Teuchos::Time::wallTime();
-  InterfaceForces();
+  Evaluate(kt,f,dis);
   Comm().Barrier();
   const double t_end8 = Teuchos::Time::wallTime()-t_start8;
-  if (Comm().MyPID()==0) std::cout << "    -->IfForces:\t" << t_end8 << " seconds\n";
+  if (Comm().MyPID()==0) std::cout << "    -->Evaluate:\t" << t_end8 << " seconds\n";
+
+  Comm().Barrier();
+  const double t_start9 = Teuchos::Time::wallTime();
+  InterfaceForces();
+  Comm().Barrier();
+  const double t_end9 = Teuchos::Time::wallTime()-t_start9;
+  if (Comm().MyPID()==0) std::cout << "    -->IfForces:\t" << t_end9 << " seconds\n";
 
 #else
 
@@ -596,8 +603,25 @@ void CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
 
   // mortar initialization and evaluation
   SetState("displacement",dis);
-  InitEvalInterface();
-  InitEvalMortar();
+
+  //----------------------------------------------------------
+  // For selfcontact the master/slave sets are updated within the -
+  // contact search, see SelfBinaryTree.                          -
+  // Therefore, we have to initialize the mortar matrices after   -
+  // interface evaluations.                                       -
+  //---------------------------------------------------------------
+  if (IsSelfContact())
+  {
+    InitEvalInterface();         // evaluate mortar terms (integrate...)
+    InitMortar();                // initialize mortar matrices and vectors
+    AssembleMortar();            // assemble mortar terms into global matrices
+  }
+  else
+  {
+    InitMortar();                // initialize mortar matrices and vectors
+    InitEvalInterface();         // evaluate mortar terms (integrate...)
+    AssembleMortar();            // assemble mortar terms into global matrices
+  }
 
   // evaluate relative movement for friction
   if (predictor) EvaluateRelMovPredict();
@@ -607,8 +631,10 @@ void CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
   if (!predictor) UpdateActiveSetSemiSmooth();
 
   // apply contact forces and stiffness
-  Initialize();             // init lin-matrices
-  Evaluate(kt,f,dis);       // eval contact/fric
+  Initialize();                  // init lin-matrices
+  Evaluate(kt,f,dis);            // assemble lin. matrices, condensation ...
+
+  //only for debugging:
   InterfaceForces();
 
 #endif // #ifdef CONTACTTIME
@@ -752,6 +778,9 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
     //store required integration time
     inttime_+=interface_[i]->Inttime();
 
+    /************************************************************
+     *  Round Robin loop with evaluations after each iteration  *
+     ************************************************************/
     if (strat==INPAR::MORTAR::roundrobinevaluate)
     {
       // check redundant input
@@ -761,6 +790,9 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
       // this contains the evaluation as well as the rr loop
       interface_[i]->RoundRobinEvaluate();
     }
+    /************************************************************
+     *  Round Robin loop only for ghosting                      *
+     ************************************************************/
     else if(strat==INPAR::MORTAR::roundrobinghost)
     {
       // check redundant input
@@ -773,19 +805,22 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
       // second step --> evaluate
       interface_[i]->Evaluate(0,step_,iter_);
     }
+    /************************************************************
+     *  Creating bins and ghost all mele within adjacent bins   *
+     ************************************************************/
     else if(strat==INPAR::MORTAR::binningstrategy)
     {
       // check redundant input
       if (redundant != INPAR::MORTAR::redundant_none)
         dserror("Binning strategy only for none-redundant storage of interface!");
 
-      // *********************************************************************
       // required master elements are already ghosted (preparestepcontact) !!!
-      // *********************************************************************
-
       // call evaluation
       interface_[i]->Evaluate(0,step_,iter_);
     }
+    /************************************************************
+     *  Fully redundant ghosting of master side                 *
+     ************************************************************/
     else //std. evaluation for redundant ghosting
     {
       // evaluate
@@ -939,9 +974,9 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
 }
 
 /*----------------------------------------------------------------------*
- | initialize + evaluate mortar stuff for next Newton step    popp 11/09|
+ | initialize mortar stuff for next Newton step               popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::InitEvalMortar()
+void CONTACT::CoAbstractStrategy::InitMortar()
 {
   // for self contact, slave and master sets may have changed,
   // thus we have to update them before initializing D,M etc.
@@ -986,12 +1021,15 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
     // setup of dmatrixmod_
     dmatrixmod_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
   }
-  
-  // (re)setup global matrices containing fc derivatives
-  // must use FE_MATRIX type here, as we will do non-local assembly!
-  lindmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
-  linmmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Assemble mortar stuff for next Newton step                 popp 11/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::AssembleMortar()
+{
   // for all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -1059,8 +1097,9 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
   
   // set state and do mortar calculation
   SetState("displacement",vec);
+  InitMortar();
   InitEvalInterface();
-  InitEvalMortar();
+  AssembleMortar();
 
   
   // initialize init contact with nodal gap
@@ -1133,8 +1172,9 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
   
   // set state and do mortar calculation
   SetState("displacement",vec);
+  InitMortar();
   InitEvalInterface();
-  InitEvalMortar();
+  AssembleMortar();
   
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -1806,8 +1846,9 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
 
   // evaluate interface and restart mortar quantities
   // in the case of SELF CONTACT, also re-setup master/slave maps
+  InitMortar();
   InitEvalInterface();
-  InitEvalMortar();
+  AssembleMortar();
 
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS

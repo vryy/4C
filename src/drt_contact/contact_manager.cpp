@@ -711,9 +711,9 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       contact.get<double>("WEARCOEFF") <= 0.0)
     dserror("ERROR: No valid wear coefficient provided, must be equal or greater 0.");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(contact,"BOTH_SIDED_WEAR") !=  INPAR::CONTACT::wear_slave &&
-      Comm().NumProc() > 1)
-    dserror("ERROR: Both-sided wear only applicable in serial!");
+//  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(contact,"BOTH_SIDED_WEAR") !=  INPAR::CONTACT::wear_slave &&
+//      Comm().NumProc() > 1)
+//    dserror("ERROR: Both-sided wear only applicable in serial!");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(contact,"WEARLAW") != INPAR::CONTACT::wear_none &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") != INPAR::MORTAR::inttype_segments)

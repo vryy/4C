@@ -455,8 +455,8 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     stiffness K or the effective load vector f.
 
     */
-    void InitEvalMortar();
-
+    void InitMortar();
+    void AssembleMortar();
     /*!
     \brief Evaluate relative movement of contact bodies
 

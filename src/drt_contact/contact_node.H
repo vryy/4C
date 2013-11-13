@@ -126,16 +126,6 @@ public:
   virtual double* teta() { return teta_; }
 
   /*!
-  \brief Return current nodal tangent t_xi_old (only for slave side!) (length 3)
-  */
-  virtual double* txiold() { return txiold_; }
-
-  /*!
-  \brief Return current nodal tangent t_eta_old (only for slave side!) (length 3)
-  */
-  virtual double* tetaold() { return tetaold_; }
-
-  /*!
   \brief Return the weighted gap (scalar) of this node
   */
   virtual double& Getg() { return grow_; }
@@ -307,8 +297,6 @@ protected:
 
   double          txi_[3];         // nodal tangent t_xi for contact methods at newton step n
   double          teta_[3];        // nodal tangent t_eta for contact methods at newton step n
-  double          txiold_[3];      // nodal tangent t_xi for contact methods at newton step n-1
-  double          tetaold_[3];     // nodal tangent t_eta for contact methods at newton step n-1
   double          grow_;           // nodal entry of g vector
 
   bool            activeold_;   // true if cnode was in contact (last converged state n)
@@ -528,14 +516,6 @@ public:
 
   */
   virtual void InitializeDataContainer();
-
-  /*
-
-   Check orientation of tangent vectors txi and teta to the old vectors txiold,tetaold
-
-   */
-  void TangentCheck(bool* txirot, bool* tetarot,
-                    bool* txiflipped, bool* tetaflipped);
 
   /*!
   \brief Resets the data container of the node

@@ -466,7 +466,7 @@ public:
   (frictionless) we are only interested in the normal part, which makes
   g a scalar quantity here. Compare also the different definitions of g_
   in CONTACT::MtAbstractStrategy::MortarCoupling() -> gsdofrowmap_ and
-  in CONTACT::CoAbstractStrategy::InitEvalMortar() -> gsnoderowmap_!!!
+  in CONTACT::CoAbstractStrategy::InitMortar()/AssembleMortar() -> gsnoderowmap_!!!
   
   */
   virtual void AssembleG(Epetra_Vector& gglobal);

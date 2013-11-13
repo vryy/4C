@@ -174,26 +174,15 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg      = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
       Teuchos::RCP<Epetra_SerialDenseVector> gseg      = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
       Teuchos::RCP<Epetra_SerialDenseVector> scseg     = Teuchos::null;
-      Teuchos::RCP<Epetra_SerialDenseVector> mdisssegs = Teuchos::null;
-      Teuchos::RCP<Epetra_SerialDenseVector> mdisssegm = Teuchos::null;
-      Teuchos::RCP<Epetra_SerialDenseMatrix> aseg      = Teuchos::null;
-      Teuchos::RCP<Epetra_SerialDenseMatrix> bseg      = Teuchos::null;
 
       if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
         scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-      if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
-      {
-        mdisssegs = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-        mdisssegm = Teuchos::rcp(new Epetra_SerialDenseVector(ncol));
-        aseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-        bseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(ncol*Dim(),ncol*Dim()));
-      }
 
       // ***********************************************************
       //                   Integrate stuff !!!                    //
       // ***********************************************************
       if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),mdisssegs,mdisssegm,aseg,bseg);
+        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
       else /*(!CouplingInAuxPlane()*/
         integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg,scseg);
       // ***********************************************************
@@ -215,14 +204,6 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       // and matrix A and B
       if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
       {  
-        if(DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(imortar_,"FRICTION") != INPAR::CONTACT::friction_none)
-        {        
-          integrator.AssembleMechDissSlave(Comm(),SlaveElement(),*mdisssegs);
-          integrator.AssembleMechDissMaster(Comm(),MasterElement(),*mdisssegm);
-          integrator.AssembleA(Comm(),SlaveElement(),*aseg);
-          integrator.AssembleB(Comm(),MasterElement(),*bseg);
-        }
-        
         // dserror 
         if (!CouplingInAuxPlane()) 
           dserror("Tsi with contact only implemented for CouplingInAuxPlane");        
@@ -1436,7 +1417,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
     }
   }
   //**********************************************************************
-  // FAST INTEGRATION (ELEMENTS)
+  // ELEMENT-BASED INTEGRATION
   //**********************************************************************
   else if (IntType()==INPAR::MORTAR::inttype_elements || IntType()==INPAR::MORTAR::inttype_elements_BS)
   {

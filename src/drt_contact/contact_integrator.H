@@ -102,10 +102,11 @@ public:
 
   */
   void inline GP_D2(
+      MORTAR::MortarElement& sele,
        MORTAR::MortarElement& mele,
        LINALG::SerialDenseVector& lm2val,
        LINALG::SerialDenseVector& m2val,
-       double& dmxideta, double& dxdmxi,
+       double& jac,
        double& wgt,const Epetra_Comm& comm);
 
   /*!
@@ -444,6 +445,42 @@ public:
        const std::vector<std::vector<std::map<int,double> > >& dualmap);
 
   /*!
+  \brief evaluate matrix A for tsi-contact
+
+  */
+  void inline GP_TSI_A(
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& lmval,
+       double& jac,
+       double& wgt, int& nrow, int& ncol,
+       int& ndof);
+
+  /*!
+  \brief evaluate matrix B for tsi-contact
+
+  */
+  void inline GP_TSI_B(
+      MORTAR::MortarElement& mele,
+      LINALG::SerialDenseVector& mval,
+      double& jac,
+      double& wgt, int& ncol,
+      int& ndof);
+
+  /*!
+  \brief evaluate mechanical dissipation(tsi-contact)
+
+  */
+  void inline GP_TSI_MechDiss(
+      MORTAR::MortarElement& sele,
+      MORTAR::MortarElement& mele,
+      LINALG::SerialDenseVector& sval,
+      LINALG::SerialDenseVector& mval,
+      LINALG::SerialDenseVector& lmval,
+      double& jac, double& mechdiss,
+      double& wgt, int& nrow, int& ncol,
+      int& ndof, bool& thermolagmult);
+
+  /*!
   \brief evaluate wear + lin at GP
 
   */
@@ -604,10 +641,7 @@ public:
   void IntegrateDerivCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-     Teuchos::RCP<Epetra_SerialDenseVector> mdisssegs,
-     Teuchos::RCP<Epetra_SerialDenseVector> mdisssegm,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> aseg,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> bseg);
+     const Epetra_Comm& comm);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /

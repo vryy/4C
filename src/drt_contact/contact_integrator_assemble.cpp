@@ -75,11 +75,6 @@ bool CONTACT::CoIntegrator::AssembleD2(const Epetra_Comm& comm,
   {
     CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(mnodes[master]);
 
-    // only process slave node rows that belong to this proc
-    //std::cout << "owner= " << mnode->Owner() << "  current proc= " << comm.MyPID()<< std::endl;
-//    if (mnode->Owner() != comm.MyPID())
-//      continue;
-
     int mndof = mnode->NumDof();
 
     // loop over all dofs of the slave node
@@ -101,10 +96,7 @@ bool CONTACT::CoIntegrator::AssembleD2(const Epetra_Comm& comm,
           if(abs(val)>1e-12)
           {
             mnode->AddD2Value(mdof,col,val);
-            //set this master node as "involved" for both sided wear
             mnode->InvolvedM()=true;
-            //std::cout << "node= " << mnode->Id()<< std::endl;
-            //std::cout << "DOF FROM NODE " << *mnode->Dofs() << std::endl;
           }
         }
       }
@@ -660,6 +652,8 @@ bool CONTACT::CoIntegrator::AssembleMechDissSlave(const Epetra_Comm& comm,
                                                   MORTAR::MortarElement& sele,
                                                   Epetra_SerialDenseVector& mdissseg)
 {
+  dserror("This method is outdated!!!");
+
   // get adjacent slave node to assemble to
   DRT::Node** snodes = sele.Nodes();
   if (!snodes) dserror("ERROR: AssembleMechDissSlave: Null pointer for snodes!");
@@ -692,6 +686,8 @@ bool CONTACT::CoIntegrator::AssembleMechDissMaster(const Epetra_Comm& comm,
                                                    MORTAR::MortarElement& mele,
                                                    Epetra_SerialDenseVector& mdissseg)
 {
+  dserror("This method is outdated!!!");
+
   // get adjacent master node to assemble to
   DRT::Node** mnodes = mele.Nodes();
   if (!mnodes) dserror("ERROR: AssembleMechDissMaster: Null pointer for snodes!");
@@ -717,6 +713,8 @@ bool CONTACT::CoIntegrator::AssembleA(const Epetra_Comm& comm,
                                      MORTAR::MortarElement& sele,
                                      Epetra_SerialDenseMatrix& aseg)
 {
+  dserror("This method is outdated!!!");
+
   // get adjacent nodes to assemble to
   DRT::Node** snodes = sele.Nodes();
   if (!snodes)
@@ -772,6 +770,8 @@ bool CONTACT::CoIntegrator::AssembleB(const Epetra_Comm& comm,
                                      MORTAR::MortarElement& mele,
                                      Epetra_SerialDenseMatrix& bseg)
 {
+  dserror("This method is outdated!!!");
+
   // get adjacent nodes to assemble to
   DRT::Node** mnodes = mele.Nodes();
   if (!mnodes)

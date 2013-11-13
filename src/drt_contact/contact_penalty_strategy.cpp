@@ -139,6 +139,11 @@ void CONTACT::CoPenaltyStrategy::EvaluateRelMovPredict()
  *----------------------------------------------------------------------*/
 void CONTACT::CoPenaltyStrategy::Initialize()
 {
+  // (re)setup global matrices containing fc derivatives
+  // must use FE_MATRIX type here, as we will do non-local assembly!
+  lindmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  linmmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+
   // (re)setup global vector containing lagrange multipliers
   z_ = LINALG::CreateVector(*gsdofrowmap_, true);
   

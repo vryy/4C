@@ -115,7 +115,8 @@ public:
   stiffness K or the effective load vector f.
 
   */
-  void InitEvalMortar();
+  void InitMortar();
+  void AssembleMortar();
 
   /*!
   \brief Initialize general contact variables for next Newton step

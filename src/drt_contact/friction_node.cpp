@@ -412,10 +412,6 @@ void CONTACT::FriNode::AddD2Value(int& row, int& col, double& val)
   if (IsSlave()==true)
     dserror("ERROR: AddD2Value: function called for slave node %i", Id());
 
-  //std::cout << "in addd2value" << std::endl;
-
-  //std::cout << "MODATA= " << (int)MoData().GetD2().size() << std::endl;
-
   // check if this has been called before
   if ((int)FriDataPlus().GetD2().size()==0)
     FriDataPlus().GetD2().resize(NumDof());
@@ -423,8 +419,6 @@ void CONTACT::FriNode::AddD2Value(int& row, int& col, double& val)
   // check row index input
   if ((int)FriDataPlus().GetD2().size()<=row)
     dserror("ERROR: AddD2Value: tried to access invalid row index!");
-
-  //std::cout << "in addd2value 2" << std::endl;
 
   // add the pair (col,val) to the given row
   std::map<int,double>& d2map = FriDataPlus().GetD2()[row];
@@ -434,7 +428,7 @@ void CONTACT::FriNode::AddD2Value(int& row, int& col, double& val)
 }
 
 /*----------------------------------------------------------------------*
- |  Add a value to the 'ANodes' set                        gitterle 10/10|
+ |  Add a value to the 'ANodes' set                       gitterle 10/10|
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::AddANode(int node)
 {

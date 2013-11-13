@@ -180,6 +180,7 @@ class StrategyBase
     virtual bool ActiveSetConverged() = 0;
     virtual bool ActiveSetSemiSmoothConverged() = 0;
     virtual void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step, const int iter, bool predictor = false) = 0;
+    virtual void AssembleMortar() = 0;
     virtual void InitBinStrategyforTimestep(Teuchos::RCP<Epetra_Vector> vel) = 0;
     virtual void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap ) = 0;
     virtual double ConstraintNorm() = 0;
@@ -198,7 +199,7 @@ class StrategyBase
     virtual void ForceRefConfig() = 0;
     virtual bool Friction() = 0;
     virtual void InitEvalInterface() = 0;
-    virtual void InitEvalMortar() = 0;
+    virtual void InitMortar() = 0;
     virtual void Initialize() = 0;
     virtual void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;

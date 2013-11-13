@@ -281,8 +281,9 @@ void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
 {
   // mortar initialization and evaluation
   SetState("displacement",dis);
+  InitMortar();
   InitEvalInterface();
-  InitEvalMortar();
+  AssembleMortar();
 
   // evaluate relative movement for friction
   if (predictor) EvaluateRelMovPredict();

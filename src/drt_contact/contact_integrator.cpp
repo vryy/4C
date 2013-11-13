@@ -298,6 +298,9 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
       dmxideta = -0.5*mxia + 0.5*mxib;
 
     // evaluate linearizations *******************************************
+    // evaluate 2nd deriv of trace space shape functions (on slave element)
+    sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
+
     // evaluate the derivative dxdsxidsxi = Jac,xi
     double djacdxi[2] = {0.0, 0.0};
     static_cast<CONTACT::CoElement&>(sele).DJacDXi(djacdxi,sxi,ssecderiv);
@@ -317,9 +320,6 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     // evaluate the Jacobian derivative
     std::map<int,double> derivjac;
     sele.DerivJacobian(sxi,derivjac);
-
-    // evaluate 2nd deriv of trace space shape functions (on slave element)
-    sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
 
     //**********************************************************************
     // frequently reused quantities
@@ -358,8 +358,9 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
           mderiv,dsxideta,dxdsxi,wgt,jumpvalv,dsxigp,dmxigp,dslipgp);
 
     // both-sided wear specific stuff
+    double jacm = dmxideta*dxdmxi;
     if (WearSide() != INPAR::CONTACT::wear_slave)
-      GP_D2(mele,lm2val,m2val,dmxideta,dxdmxi,wgt,comm);
+      GP_D2(sele,mele,lm2val,m2val,jacm,wgt,comm);
 
     // std. wear for all wear-algorithm types
     if(wear)
@@ -2386,10 +2387,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D(
 void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-     Teuchos::RCP<Epetra_SerialDenseVector> mdisssegs,
-     Teuchos::RCP<Epetra_SerialDenseVector> mdisssegm,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> aseg,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> bseg)
+     const Epetra_Comm& comm)
 {
   bool slip_gp=false;
 #ifdef OBJECTVARSLIPINCREMENT
@@ -2450,6 +2448,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   LINALG::SerialDenseMatrix mderiv(ncol,2,true);
   LINALG::SerialDenseVector lmval(nrow);
   LINALG::SerialDenseMatrix lmderiv(nrow,2,true);
+
+  // for both-sided wear
+  LINALG::SerialDenseVector lm2val(ncol);
+  LINALG::SerialDenseMatrix lm2deriv(ncol,2,true);
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseMatrix ssecderiv(nrow,3);
@@ -2562,6 +2564,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     // evaluate Lagrange multiplier shape functions (on slave element)
     sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
 
+    // evaluate Lagrange multiplier shape functions (on slave element)
+    if (WearSide() != INPAR::CONTACT::wear_slave)
+      mele.EvaluateShapeLagMult(ShapeFcn(),mxi,lm2val,lm2deriv,ncol);
+
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
     mele.EvaluateShape(mxi,mval,mderiv,ncol);
@@ -2652,6 +2658,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       GP_3D_SlipIncr(sele,mele,sval,mval,lmval,scoord,mcoord,scoordold,mcoordold,sderiv,
            mderiv,jac,wgt,jumpvalv,dsxigp,dmxigp,dslipgp);
 
+    //*******************************
+    // WEAR stuff
+    //*******************************
     // std. wear for all wear-algorithm types --  mechdiss included
     if (wear or tsiprob)
       GP_3D_Wear(sele,mele,sval,sderiv,mval,mderiv,lmval,lmderiv,scoord,scoordold,mcoord,
@@ -2661,6 +2670,22 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     // integrate T and E matrix for discr. wear
     if (WearType() == INPAR::CONTACT::wear_discr)
       GP_TE(sele,lmval,sval,jac,wgt,jumpval);
+
+    // both-sided wear specific stuff
+    if (WearSide() != INPAR::CONTACT::wear_slave)
+      GP_D2(sele,mele,lm2val,mval,jac,wgt,comm);
+
+    //*******************************
+    // TSI stuff
+    //*******************************
+    if ((tsiprob and friction) and thermolagmult == true)
+      GP_TSI_A(sele,lmval,jac,wgt,nrow,ncol,ndof);
+
+    if ((tsiprob and friction) and thermolagmult == false)
+      GP_TSI_B(mele,mval,jac,wgt,ncol,ndof);
+
+    if(tsiprob and friction)
+      GP_TSI_MechDiss(sele,mele,sval,mval,lmval,jac,mechdiss,wgt,nrow,ncol,ndof,thermolagmult);
 
     //********************************************************************
     // compute cell linearization
@@ -2694,96 +2719,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       if(WearType() == INPAR::CONTACT::wear_discr)
         GP_3D_TE_Lin(iter,duallin,sele,sval,lmval,sderiv,lmderiv,jac,wgt,jumpval,dsxigp,jacintcellmap,
              dsliptmatrixgp,dualmap);
-    }
-
-    //********************************************************************
-    // thermo stuff without lin.
-    //********************************************************************
-    // evaluate matrix A for thermo-structure-interaction
-    // in the case of using thermal lagrange multipliers
-    if ((tsiprob and friction) and thermolagmult == true)
-    {
-      // loop over all aseg matrix entries
-      // !!! nrow represents the slave Lagrange multipliers !!!
-      // !!! ncol represents the dofs                       !!!
-      for (int j=0; j<nrow*ndof; ++j)
-      {
-        // integrate LinM and LinD
-        for (int k=0; k<ncol*ndof; ++k)
-        {
-          int jindex = (int)(j/ndof);
-          int kindex = (int)(k/ndof);
-
-          // multiply the two shape functions
-          double prod = lmval[jindex]*lmval[kindex];
-
-          // isolate the mseg entries to be filled and
-          // add current Gauss point's contribution to aseg
-          if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-          {
-            (*aseg)(j, k) += prod*jac*wgt;
-          }
-        }
-      } // nrow*ndof loop
-    }
-
-    // evaluate matrix B for thermo-structure-interaction
-    // in the case of NOT using thermal lagrange multipliers
-    if ((tsiprob and friction) and thermolagmult == false)
-    {
-      // loop over all bseg matrix entries
-      // !!! nrow represents the master shape functions     !!!
-      // !!! ncol represents the dofs                       !!!
-      for (int j=0; j<ncol*ndof; ++j)
-      {
-        // integrate bseg
-        for (int k=0; k<ncol*ndof; ++k)
-        {
-          int jindex = (int)(j/ndof);
-          int kindex = (int)(k/ndof);
-
-          // multiply the two shape functions
-          double prod = mval[jindex]*mval[kindex];
-
-          // isolate the bseg entries to be filled and
-          // add current Gauss point's contribution to bseg
-          if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-          {
-            (*bseg)(j, k) += prod*jac*wgt;
-          }
-        }
-      } // nrow*ndof loop
-    } // tsi
-
-    // tsi with contact
-    if(tsiprob and friction)
-    {
-      // compute cell mechanical dissipation / slave *********************
-      // loop over all mdisssegs vector entries
-      // nrow represents the slave side dofs !!!
-      for (int j=0;j<nrow;++j)
-      {
-        double prod;
-        if(thermolagmult==true) prod = lmval[j]*mechdiss;
-        else                    prod =  sval[j]*mechdiss;
-
-        // add current Gauss point's contribution to mdisssegs
-        (*mdisssegs)(j) += prod*jac*wgt;
-      }
-      // compute cell mechanical dissipation vector / slave **************
-
-      // compute cell jump vector / master *******************************
-      // loop over all mdisssegm vector entries
-      // ncol represents the master side dofs !!!
-      for (int j=0;j<ncol;++j)
-      {
-        double prod = mval[j]*mechdiss;
-
-        // add current Gauss point's contribution to mdisssegm
-        (*mdisssegm)(j) += prod*jac*wgt;
-      }
-      // compute cell mechanical dissipation vector / master *************
-    } // tsi with contact
+    }// end lin
   }
   //**********************************************************************
 
@@ -7175,10 +7111,11 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
  |  Compute entries for D2 matrix at GP                      farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_D2(
+    MORTAR::MortarElement& sele,
      MORTAR::MortarElement& mele,
      LINALG::SerialDenseVector& lm2val,
      LINALG::SerialDenseVector& m2val,
-     double& dmxideta, double& dxdmxi,
+     double& jac,
      double& wgt,const Epetra_Comm& comm)
 {
   int ncol=mele.NumNode();
@@ -7194,25 +7131,29 @@ void inline CONTACT::CoIntegrator::GP_D2(
     {
       CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(mnodes[j]);
 
-      if (cnode->Owner() != comm.MyPID()) continue;
-
-      for (int jdof=0;jdof<ndof ; ++jdof)
+      // IMPORTANT: assembling to node is only allowed for master nodes
+      //            associated to owned slave elements. This results
+      //            to an unique entry distribution!
+      if (sele.Owner() == comm.MyPID())
       {
-        for (int k=0;k<ncol;++k)
+        for (int jdof=0;jdof<ndof ; ++jdof)
         {
-          CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(mnodes[k]);
-
-          for(int kdof=0;kdof<ndof;++kdof)
+          for (int k=0;k<ncol;++k)
           {
-            int col=mnode->Dofs()[kdof];
+            CONTACT::FriNode* mnode = static_cast<CONTACT::FriNode*>(mnodes[k]);
 
-            // multiply the two shape functions
-            double prod = lm2val[j]*m2val[k]*dxdmxi*dmxideta*wgt;
-
-            if ((jdof==kdof) and (j==k))
+            for(int kdof=0;kdof<ndof;++kdof)
             {
-              cnode->InvolvedM()=true;
-              cnode->AddD2Value(jdof,col,prod);
+              int col=mnode->Dofs()[kdof];
+
+              // multiply the two shape functions
+              double prod = lm2val[j]*m2val[k]*jac*wgt;
+
+              if ((jdof==kdof) and (j==k))
+              {
+                if(abs(prod)>1e-12) cnode->InvolvedM()=true;
+                if(abs(prod)>1e-12) cnode->AddD2Value(jdof,col,prod);
+              }
             }
           }
         }
@@ -8144,6 +8085,157 @@ void inline CONTACT::CoIntegrator::GP_3D_Scaling_Lin(
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Compute entries for TSI matrix A                         farah 11/13|
+ |  Case of using thermal lagrange multipliers                          |
+ *----------------------------------------------------------------------*/
+void inline CONTACT::CoIntegrator::GP_TSI_A(
+    MORTAR::MortarElement& sele,
+    LINALG::SerialDenseVector& lmval,
+    double& jac,
+    double& wgt, int& nrow, int& ncol,
+    int& ndof)
+{
+  // get slave element nodes themselves
+  DRT::Node** snodes = sele.Nodes();
+  if(!snodes) dserror("ERROR: Null pointer!");
+
+  // loop over all aseg matrix entries
+  // !!! nrow represents the slave Lagrange multipliers !!!
+  // !!! ncol represents the dofs                       !!!
+  for (int j=0; j<nrow; ++j)
+  {
+    CONTACT::FriNode* fnode = static_cast<CONTACT::FriNode*>(snodes[j]);
+
+    //loop over slave dofs
+    for (int jdof=0;jdof<ndof;++jdof)
+    {
+      // integrate mseg
+      for (int k=0; k<ncol; ++k)
+      {
+        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(snodes[k]);
+
+        for (int kdof=0;kdof<ndof;++kdof)
+        {
+          int col = mnode->Dofs()[kdof];
+
+          // multiply the two shape functions
+          double prod = lmval[j]*lmval[k]*jac*wgt;
+
+          // dof to dof
+          if (jdof==kdof)
+          {
+            if(abs(prod)>1e-12) fnode->AddAValue(jdof,col,prod);
+            if(abs(prod)>1e-12) fnode->AddANode(mnode->Id());
+          }
+        }
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute entries for TSI matrix B                         farah 11/13|
+ |  Case of NOT using thermal lagrange multipliers                      |
+ *----------------------------------------------------------------------*/
+void inline CONTACT::CoIntegrator::GP_TSI_B(
+    MORTAR::MortarElement& mele,
+    LINALG::SerialDenseVector& mval,
+    double& jac,
+    double& wgt, int& ncol,
+    int& ndof)
+{
+  // get slave element nodes themselves
+  DRT::Node** mnodes = mele.Nodes();
+  if(!mnodes) dserror("ERROR: Null pointer!");
+
+  // loop over all bseg matrix entries
+  // !!! nrow represents the master shape functions     !!!
+  // !!! ncol represents the dofs                       !!!
+  for (int j=0; j<ncol; ++j)
+  {
+    CONTACT::FriNode* fnode = static_cast<CONTACT::FriNode*>(mnodes[j]);
+
+    //loop over slave dofs
+    for (int jdof=0;jdof<ndof;++jdof)
+    {
+      // integrate mseg
+      for (int k=0; k<ncol; ++k)
+      {
+        CONTACT::CoNode* mnode = static_cast<CONTACT::CoNode*>(mnodes[k]);
+
+        for (int kdof=0;kdof<ndof;++kdof)
+        {
+          int col = mnode->Dofs()[kdof];
+
+          // multiply the two shape functions
+          double prod = mval[j]*mval[k]*jac*wgt;
+
+          // dof to dof
+          if (jdof==kdof)
+          {
+            if(abs(prod)>1e-12) fnode->AddBValue(jdof,col,prod);
+            if(abs(prod)>1e-12) fnode->AddBNode(mnode->Id());
+          }
+        }
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute mechanical dissipation (TSI)                     farah 11/13|
+ *----------------------------------------------------------------------*/
+void inline CONTACT::CoIntegrator::GP_TSI_MechDiss(
+    MORTAR::MortarElement& sele,
+    MORTAR::MortarElement& mele,
+    LINALG::SerialDenseVector& sval,
+    LINALG::SerialDenseVector& mval,
+    LINALG::SerialDenseVector& lmval,
+    double& jac, double& mechdiss,
+    double& wgt, int& nrow, int& ncol,
+    int& ndof, bool& thermolagmult)
+{
+  // get slave element nodes themselves
+  DRT::Node** snodes = sele.Nodes();
+  if(!snodes) dserror("ERROR: Null pointer!");
+
+  // get slave element nodes themselves
+  DRT::Node** mnodes = mele.Nodes();
+  if(!mnodes) dserror("ERROR: Null pointer!");
+
+  // compute cell mechanical dissipation / slave *********************
+  // nrow represents the slave side dofs !!!
+  for (int j=0; j<nrow; ++j)
+  {
+    CONTACT::FriNode* fnode = static_cast<CONTACT::FriNode*>(snodes[j]);
+
+    double prod = 0.0;
+    if(thermolagmult==true) prod = lmval[j]*mechdiss*jac*wgt;
+    else                    prod =  sval[j]*mechdiss*jac*wgt;
+
+    if(abs(prod)>1e-12) fnode->AddMechDissValue(prod);
+  }
+
+  // compute cell mechanical dissipation / master *********************
+  // ncol represents the master side dofs !!!
+  for (int j=0;j<ncol;++j)
+  {
+    CONTACT::FriNode* fnode = static_cast<CONTACT::FriNode*>(mnodes[j]);
+
+    double prod = mval[j]*mechdiss*jac*wgt;
+
+    if(abs(prod)>1e-12) fnode->AddMechDissValue(prod);
+  }
+
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  Compute entries for E and T matrix at GP                 farah 09/13|
  *----------------------------------------------------------------------*/
