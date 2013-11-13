@@ -662,6 +662,15 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") != INPAR::MORTAR::lagmult_undefined)
     dserror("ERROR: Consistent dual shape functions in boundary elements only for linear shape functions.");
 
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_tresca &&
+      DRT::INPUT::IntegralValue<int>(contact,"FRLESS_FIRST")==true)
+    dserror("Frictionless first contact step with Tresca's law not yet implemented"); // hopefully coming soon, when Coulomb and Tresca are combined
+
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(contact,"WEARLAW") != INPAR::CONTACT::wear_none &&
+      DRT::INPUT::IntegralValue<int>(contact,"FRLESS_FIRST")==true)
+    dserror("Frictionless first contact step with wear not yet implemented");
+
+
   // *********************************************************************
   // thermal-structure-interaction contact
   // *********************************************************************

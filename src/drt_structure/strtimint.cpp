@@ -647,8 +647,8 @@ void STR::TimInt::PrepareSemiSmoothPlasticity()
     DRT::Element* actele = discret_->lColElement(i);
     if (   actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance()
         || actele->ElementType() == DRT::ELEMENTS::So_tet4PlastType::Instance()
-    || actele->ElementType() == DRT::ELEMENTS::So_hex8fbarPlastType::Instance()
-    || actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance()
+        || actele->ElementType() == DRT::ELEMENTS::So_hex8fbarPlastType::Instance()
+        || actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance()
        )
     {
       HavePlasticity_local=1;

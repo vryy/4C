@@ -2552,10 +2552,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
         {
           cnode->Active() = true;
           activesetconv_ = false;
-#ifdef CONTACTFRICTIONLESSFIRST
-       if (static_cast<FriNode*>(cnode)->CoData().ActiveOld()==false)
-         static_cast<FriNode*>(cnode)->FriData().Slip() = true;
-#endif
         }
       }
 
@@ -2610,18 +2606,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
                 // do nothing (slip was correct)
               else
               {
-#ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->CoData().ActiveOld()==false)
-                {}
-                else
-                {
-                 frinode->FriData().Slip() = false;
-                 activesetconv_ = false;
-                }
-#else
                 frinode->FriData().Slip() = false;
                 activesetconv_ = false;
-#endif
               }
             }
           } // if (ftype == INPAR::CONTACT::friction_tresca)
@@ -2653,18 +2639,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
                 // do nothing (slip was correct)
               else
               {
-#ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->CoData().ActiveOld()==false)
-                {}
-                else
-                {
-                 frinode->FriData().Slip() = false;
-                 activesetconv_ = false;
-                }
-#else
                 frinode->FriData().Slip() = false;
                 activesetconv_ = false;
-#endif
               }
             }
           } // if (ftype == INPAR::CONTACT::friction_coulomb)
@@ -2925,7 +2901,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         if (Dim()==3) euclidean = sqrt(sum[0]*sum[0]+sum[1]*sum[1]);
        }
 
-
       // check nodes of inactive set *************************************
       if (cnode->Active()==false)
       {
@@ -2946,10 +2921,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           {
             // nodes coming into contact
             static_cast<FriNode*>(cnode)->FriData().Slip() = true;
-#ifdef CONTACTFRICTIONLESSFIRST
-            if (static_cast<FriNode*>(cnode)->CoData().ActiveOld()==false)
-              static_cast<FriNode*>(cnode)->FriData().Slip() = true;
-#endif
           } 
         }
       }
@@ -3002,18 +2973,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
                // do nothing (slip was correct)
               else
               {
-#ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->CoData().ActiveOld()==false)
-                {}
-                else
-                {
-                 frinode->FriData().Slip() = false;
-                 activesetconv_ = false;
-                }
-#else
                 frinode->FriData().Slip() = false;
                 activesetconv_ = false;
-#endif
               }
             }
           } // if (fytpe=="tresca")
@@ -3044,18 +3005,8 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
               // do nothing (slip was correct)
               else
               {
-#ifdef CONTACTFRICTIONLESSFIRST
-                if(frinode->CoData().ActiveOld()==false)
-                {}
-                else
-                {
-                 frinode->FriData().Slip() = false;
-                 activesetconv_ = false;
-                }
-#else
                 frinode->FriData().Slip() = false;
                 activesetconv_ = false;
-#endif
               }
             }
           } // if (ftype == INPAR::CONTACT::friction_coulomb)

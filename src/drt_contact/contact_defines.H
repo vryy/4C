@@ -45,7 +45,6 @@ Maintainer: Alexander Popp
 /* Contact algorithm options                                            */
 /************************************************************************/
 
-//#define CONTACTFRICTIONLESSFIRST  /* flag for frictionless contact in first contact step */
 //#define CONTACTPSEUDO2D           /* flag for pseudo-3D in 2D situations (u_z=0)*/
 //#define CONSISTENTSTICK		        /* flag for consistent stick branch of the complementarity function */
 //#define CONSISTENTSLIP			      /* flag for consistent slip branch of the complementarity function */

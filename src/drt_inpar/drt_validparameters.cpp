@@ -1619,6 +1619,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                  INPAR::CONTACT::friction_coulomb,INPAR::CONTACT::friction_coulomb),
       &scontact);
 
+  setStringToIntegralParameter<int>("FRLESS_FIRST","No",
+      "If chosen the first time step of a newly in contact slave node is regarded as frictionless",
+                               yesnotuple,yesnovalue,&scontact);
+
   //DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
   //DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
 
