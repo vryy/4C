@@ -133,7 +133,7 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
         }
     }
 
-    os << flush;
+    os << std::flush;
     os.close();
 
     std::cout << "*** EXPORT nullspace: END ***" << std::endl;
