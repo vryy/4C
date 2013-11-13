@@ -1228,7 +1228,7 @@ void CONTACT::CoInterface::CreateSearchTree()
 
       // create binary tree object for self contact search
       // (NOTE THAT SELF CONTACT SEARCH IS NOT YET FULLY PARALLELIZED!)
-      binarytreeself_ = Teuchos::rcp(new CONTACT::SelfBinaryTree(Discret(),lComm(),elefullmap,Dim(),SearchParam(),IParams()));
+      binarytreeself_ = Teuchos::rcp(new CONTACT::SelfBinaryTree(Discret(),lComm(),elefullmap,Dim(),SearchParam()));
 
     }
     //*****TWO BODY CONTACT*****
