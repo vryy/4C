@@ -772,7 +772,7 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
 
     // make contact / meshtying modifications to lhs and rhs
     // (depending on whether this is a predictor step or not)
-    cmtman_->GetStrategy().ApplyForceStiffCmt(dis,stiff,fresm,predict);
+    cmtman_->GetStrategy().ApplyForceStiffCmt(dis,stiff,fresm,stepn_,iter_,predict);
 
     // scaling back
     fresm->Scale(-1.0);

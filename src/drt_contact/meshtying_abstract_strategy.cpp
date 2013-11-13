@@ -276,7 +276,8 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
  | global evaluation method called from time integrator      popp 06/09 |
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-     Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, bool predictor)
+     Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+     const int step, const int iter, bool predictor)
 {
   // mortar initialization and evaluation
   SetState("displacement",dis);
@@ -685,7 +686,10 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         break;
       }
       default:
+      {
         dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
+        break;
+      }
     } // switch
 
     // export global quantity to current interface slave dof row map
@@ -745,7 +749,10 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
           break;
         }
         default:
+        {
           dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
+          break;
+        }
         } // switch
       }
     }

@@ -210,7 +210,9 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     
     */
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<LINALG::SparseOperator>& kt,
-                            Teuchos::RCP<Epetra_Vector>& f, bool predictor = false);
+                            Teuchos::RCP<Epetra_Vector>& f,
+                            const int step, const int iter,
+                            bool predictor = false);
     
     /*!
     \brief Set current deformation state

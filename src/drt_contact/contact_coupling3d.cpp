@@ -1349,7 +1349,8 @@ dim_(dim),
 quad_(quad),
 imortar_(params),
 sele_(sele),
-mele_(mele)
+mele_(mele),
+ncells_(0)
 {
   // evaluate coupling
   EvaluateCoupling();

@@ -562,11 +562,9 @@ public:
   of the mortar matrices D and M are integrated. If the boolean flag "nonlinear"
   is set to true (only for contact), then nonlinear mortar coupling is performed
   including evaluation of the weighted gap g and linearizations of all mortar quantities.
-  
-  \param nonlinear (in): nonlinear mortar coupling flag
 
   */
-  virtual void Evaluate(int rriter=0);
+  virtual void Evaluate(int rriter=0, const int step=0, const int iter=0);
 
   /*!
   \brief Evaluate nodal normals

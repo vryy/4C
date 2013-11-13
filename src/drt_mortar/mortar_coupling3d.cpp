@@ -3465,8 +3465,7 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
   // construct unique filename for gmsh output
   // first index = time step index
   std::ostringstream filename;
-  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-  filename << "o/gmsh_output/" << filebase << "_cells_" << proc << ".pos";
+  filename << "o/gmsh_output/cells_" << proc << ".pos";
 
   // do output to file in c-style
   FILE* fp = NULL;

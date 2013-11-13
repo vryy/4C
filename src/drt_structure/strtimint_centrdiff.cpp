@@ -146,7 +146,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
   if (HaveContactMeshtying())
   {
     fcmtn_->PutScalar(0.0);
-    cmtman_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fcmtn_,false);
+    cmtman_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fcmtn_,stepn_,0,false);
   }
 
   // TIMING

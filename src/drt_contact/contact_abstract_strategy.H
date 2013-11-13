@@ -383,7 +383,9 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     
     */
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<LINALG::SparseOperator>& kt,
-                            Teuchos::RCP<Epetra_Vector>& f, bool predictor = false);
+                            Teuchos::RCP<Epetra_Vector>& f,
+                            const int step, const int iter,
+                            bool predictor = false);
     
     /*!
     \brief Set current deformation state
@@ -752,31 +754,33 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Vector> stresstangential_;  // vector of tangential contact forces at t_n+1
 
     // global storage fields
+    int step_;                // time step index
+    int iter_;                // nonlinear (Newton) iteration index
+
     bool isincontact_;        // flag indicating global contact status
     bool wasincontact_;       // flag indicating global contact status of this time step (history)
     bool wasincontactlts_;    // flag indicating global contact status of last time step
     bool isselfcontact_;      // flag indicating potential self contact
     bool friction_;           // flag for frictional contact
-    
+
     bool                                dualquadslave3d_; // flag indicating whether trafo should be applied
     Teuchos::RCP<LINALG::SparseMatrix>  trafo_;           // transformation matrix T for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix>  invtrafo_;        // inverse trafo matrix T^(-1) for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix>  dmatrixmod_;      // modified global Mortar matrix D
     Teuchos::RCP<LINALG::SparseMatrix>  doldmod_;         // modified global Mortar matrix Dold
     
-    // thero-structure-interaction with contact
+    // thermo-structure-interaction with contact
     bool tsi_;                                            // flag for thermo-structure interaction with contact
     Teuchos::RCP<LINALG::SparseMatrix>  amatrix_;         // global matrix A
     
     // contact with wear
     bool wear_;                                           // flag for contact with wear
     Teuchos::RCP<Epetra_Vector> w_;                       // current vector of discrete wear at t_n+1
-    Teuchos::RCP<Epetra_Vector> wincr_;               // Wear variables vector increment within SaddlePointSolve (this is NOT the increment of w_ between t_{n+1} and t_{n}!)
+    Teuchos::RCP<Epetra_Vector> wincr_;                   // Wear variables vector increment within SaddlePointSolve (this is NOT the increment of w_ between t_{n+1} and t_{n}!)
     Teuchos::RCP<Epetra_Vector> wearrhs_;
 
-
     double inttime_;                                      // integration time
-    std::vector<double > ivel_;                            // mean interface velocity
+    std::vector<double > ivel_;                           // mean interface velocity
 }; // class CoAbstractStrategy
 } // namespace CONTACT
 

@@ -1435,7 +1435,7 @@ void MORTAR::MortarInterface::SetElementAreas()
 /*----------------------------------------------------------------------*
  |  evaluate mortar coupling (public)                         popp 11/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::Evaluate(int rriter)
+void MORTAR::MortarInterface::Evaluate(int rriter, const int step, const int iter)
 {
   // interface needs to be complete
   if (!Filled() && Comm().MyPID()==0)
@@ -1462,8 +1462,7 @@ void MORTAR::MortarInterface::Evaluate(int rriter)
   // reset integration cell GMSH files
   int proc = Comm().MyPID();
   std::ostringstream filename;
-  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
-  filename << "o/gmsh_output/" << filebase << "_cells_" << proc << ".pos";
+  filename << "o/gmsh_output/cells_" << proc << ".pos";
   FILE* fp = fopen(filename.str().c_str(), "w");
   std::stringstream gmshfilecontent;
   gmshfilecontent << "View \"Integration Cells Proc " << proc << "\" {" << std::endl;
@@ -1532,6 +1531,26 @@ void MORTAR::MortarInterface::Evaluate(int rriter)
   gmshfilecontent2 << "};" << std::endl;
   fprintf(fp,gmshfilecontent2.str().c_str());
   fclose(fp);
+
+  // construct unique filename for gmsh output
+  // first index = time step index
+  std::ostringstream newfilename;
+  newfilename << "o/gmsh_output/cells_";
+  if (step<10)         newfilename << 0 << 0 << 0 << 0;
+  else if (step<100)   newfilename << 0 << 0 << 0;
+  else if (step<1000)  newfilename << 0 << 0;
+  else if (step<10000) newfilename << 0;
+  else if (step>99999) dserror("Gmsh output implemented for a maximum of 99.999 time steps");
+  newfilename << step;
+
+  // second index = Newton iteration index
+  newfilename << "_";
+  if (iter<10)      newfilename << 0;
+  else if (iter>99) dserror("Gmsh output implemented for a maximum of 99 iterations");
+  newfilename << iter << "_p" << proc << ".pos";
+
+  // rename file
+  rename(filename.str().c_str(),newfilename.str().c_str());
 #endif // #ifdef MORTARGMSHCELLS
     
   return;

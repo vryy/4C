@@ -62,6 +62,8 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(DRT::Discretization& probdiscret
                                                 int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
 MORTAR::StrategyBase(probdiscret,params,dim,comm,alphaf,maxdof),
 interface_(interface),
+step_(0),
+iter_(0),
 isincontact_(false),
 wasincontact_(false),
 wasincontactlts_(false),
@@ -508,8 +510,13 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
  | global evaluation method called from time integrator      popp 06/09 |
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-     Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, bool predictor)
+     Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+     const int step, const int iter, bool predictor)
 {
+  // update step and iteration counters
+  step_ = step;
+  iter_ = iter;
+
   /******************************************/
   /*     VERSION WITH TIME MEASUREMENT      */
   /******************************************/
@@ -589,7 +596,7 @@ void CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
 
   // mortar initialization and evaluation
   SetState("displacement",dis);
-  InitEvalInterface();         // RR-LOOP implemented here !!!
+  InitEvalInterface();
   InitEvalMortar();
 
   // evaluate relative movement for friction
@@ -764,7 +771,7 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
       interface_[i]->RoundRobinDetectGhosting();
 
       // second step --> evaluate
-      interface_[i]->Evaluate();
+      interface_[i]->Evaluate(0,step_,iter_);
     }
     else if(strat==INPAR::MORTAR::binningstrategy)
     {
@@ -777,12 +784,12 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
       // *********************************************************************
 
       // call evaluation
-      interface_[i]->Evaluate();
+      interface_[i]->Evaluate(0,step_,iter_);
     }
     else //std. evaluation for redundant ghosting
     {
       // evaluate
-      interface_[i]->Evaluate();
+      interface_[i]->Evaluate(0,step_,iter_);
     }
   } // end interface loop
 
