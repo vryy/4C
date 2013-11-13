@@ -129,7 +129,7 @@ ML_MAXLEVEL 2 //2
 ML_PRINT                        10
 ML_PROLONG_SMO 0.0 //1.33
 ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Jacobi //KLU
+ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 SGS
 ML_SMOOTHERMED                  SGS
 ML_SMOTIMES                     1 1 1 1 1                    
