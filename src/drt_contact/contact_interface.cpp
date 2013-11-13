@@ -1228,7 +1228,7 @@ void CONTACT::CoInterface::CreateSearchTree()
 
       // create binary tree object for self contact search
       // (NOTE THAT SELF CONTACT SEARCH IS NOT YET FULLY PARALLELIZED!)
-      binarytreeself_ = Teuchos::rcp(new CONTACT::SelfBinaryTree(Discret(),lComm(),elefullmap,Dim(),SearchParam()));
+      binarytreeself_ = Teuchos::rcp(new CONTACT::SelfBinaryTree(Discret(),lComm(),elefullmap,Dim(),SearchParam(),IParams()));
 
     }
     //*****TWO BODY CONTACT*****
@@ -2011,7 +2011,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
 
 /*----------------------------------------------------------------------*
  |  Evaluate relative movement (jump) of a slave node     gitterle 10/09|
- *----------------------------------------------------------------------*/
+ /*---------------------------------------------------------------------*/
 void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
                                           const Teuchos::RCP<LINALG::SparseMatrix> dmatrixmod,
                                           const Teuchos::RCP<LINALG::SparseMatrix> doldmod)
@@ -2034,6 +2034,13 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* cnode = static_cast<FriNode*>(node);
+
+    double symfac=1.;
+  #ifdef SCALEGEOQUANTATSYM
+    for (int j=0; j<3; j++)
+      if (cnode->DbcDofs()[j]==true)
+        symfac*=2.;
+  #endif
 
     // get some informatiom form the node
     double gap = cnode->CoData().Getg();
@@ -2174,7 +2181,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
 
       // write it to nodes
       for(int dim=0;dim<Dim();dim++)
-        cnode->FriData().jump()[dim] = jump[dim];
+        cnode->FriData().jump()[dim] = jump[dim] *symfac;
  
       // linearization of jump vector
 
@@ -2202,7 +2209,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
           for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
           {
             int col = csnode->Dofs()[dimrow];
-            double val = -(dik-dikold) / scalefac;
+            double val = -(dik-dikold) / scalefac *symfac;
             if (abs(val)>1e-14)
               cnode->AddDerivJumpValue(dimrow,col,val);
           }
@@ -2253,7 +2260,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
               dserror("Error in EvaluareRelMov(): No old D value exists");
             
             // write to node
-            cnode->AddDerivJumpValue(dim,Indices[j],Values[j]-ValueOld);
+            cnode->AddDerivJumpValue(dim,Indices[j],(Values[j]-ValueOld) *symfac);
           }  
         }
       }
@@ -2274,7 +2281,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
         for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
         {
             int col = cmnode->Dofs()[dimrow];
-            double val = (mik-mikold) / scalefac;
+            double val = (mik-mikold) / scalefac *symfac;
             if (abs(val)>1e-14)
               cnode->AddDerivJumpValue(dimrow,col,val);
         }
@@ -2305,7 +2312,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
           for(int dim=0;dim<cnode->NumDof();++dim)
           {
             int locid = (xsmod->Map()).LID(csnode->Dofs()[dim]);
-            double val =-colcurr->second*(*xsmod)[locid] / scalefac;
+            double val =-colcurr->second*(*xsmod)[locid] / scalefac *symfac;
             if (abs(val)>1e-14)
               cnode->AddDerivJumpValue(dim,col,val);
           }
@@ -2337,7 +2344,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
           // loop over dimensions
           for(int dimrow=0;dimrow<cnode->NumDof();++dimrow)
           {
-            double val =colcurr->second*mxi[dimrow] / scalefac;
+            double val =colcurr->second*mxi[dimrow] / scalefac *symfac;
             if (abs(val)>1e-14)
               cnode->AddDerivJumpValue(dimrow,col,val);
           }
@@ -2354,7 +2361,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
           if (!snode) dserror("ERROR: Cannot find node with gid %",gid);
           for (int dim=0; dim<cnode->NumDof(); dim++)
           {
-            double val=-jump[dim]/scalefac*dsccurr->second;
+            double val=-jump[dim]/scalefac*dsccurr->second *symfac;
             if (abs(val)>1e-14)
               cnode->AddDerivJumpValue(dim,gid,val);
           }
@@ -2373,7 +2380,9 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     } // active nodes
   } // loop over slave nodes
   return;
-}----------------------------------------------------------------*
+}
+
+/*----------------------------------------------------------------*
  |  Assemble slave coordinates (xs)                        gitterle 10/09|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod)
@@ -5996,7 +6005,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
   if (ftype == INPAR::CONTACT::friction_tresca)
   {
     // loop over all slip nodes of the interface
-    for (int i=0;i<slipnodes_->NumMyElements();++i)
+    for (int i=0; i<slipnodes_->NumMyElements();++i)
     {
       int gid = slipnodes_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
@@ -6600,7 +6609,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
                 linslipDISglobal.Assemble(val*txi[j],cnode->Dofs()[j],col);
 #else
             if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row,col);
-
 #endif
           }
         }
@@ -6657,7 +6665,12 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
 
       // check if node is initially active or, if initialization with nodal, gap,
       // the gap is smaller than the prescribed value
-      if (cnode->IsInitActive() or (initcontactbygap and cnode->CoData().Getg() < initcontactval))
+      if (
+          cnode->IsInitActive() or (initcontactbygap and cnode->CoData().Getg() < initcontactval)
+//          sqrt(cnode->X()[0]*cnode->X()[0]+cnode->X()[1]*cnode->X()[1])>65.
+//          (sqrt(cnode->X()[0]*cnode->X()[0]+cnode->X()[1]*cnode->X()[1])>12. && abs(cnode->X()[2]-10.5)<1.e-12)
+//          || abs(cnode->X()[2]-0.5)<1.e-12
+         )
       {
 /*
     	// **********************************************************************************
