@@ -558,7 +558,18 @@ namespace FSI
     //! method to reset the recently calculated step if time step size adaption is necessary
     void ResetStep();
 
-    //! method complementing the ResetStep() method, taking care of time and step counter
+    /*!
+    \brief method complementing the ResetStep() method, taking care of time and step counter
+
+    Structure field increments time and step at the end of the time step.
+    Fluid, ALE, and FSI do so right at the beginning. Thus, we have to decrement
+    time and step in the fluid field, ALE field, and FSI algorithm
+
+    \sa ResetStep()
+
+    \author mayr.mt
+    \date 10/2013
+    */
     void ResetTime();
 
     //! Set time step size in all fields (fsi routine, ale, fluid, structure)

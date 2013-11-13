@@ -121,7 +121,8 @@ namespace INPAR
     {
       timada_str_none,            ///< no time adaptivity based on structure field
       timada_str_expleuler,       ///< use explicit Euler as auxiliary time integrator
-      timada_str_adamsbashforth2  ///< use Adams-Bashforth-2 as auxiliary time integrator
+      timada_str_adamsbashforth2, ///< use Adams-Bashforth-2 as auxiliary time integrator
+      timada_str_zienkiewicz_xie  ///< use Zienkiewicz-Xie error estimator (1991)
     };
 
     /// Handling of non-converged nonlinear solver

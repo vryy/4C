@@ -78,18 +78,59 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   errtolstr_ = fsidyn.sublist("TIMEADAPTIVITY").get<double>("LOCERRTOLSTRUCTURE");
   errtolfl_ = fsidyn.sublist("TIMEADAPTIVITY").get<double>("LOCERRTOLFLUID");
 
-  strmethod_=  DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"),"AUXINTEGRATORSTRUCTURE");
-  flmethod_=  DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"),"AUXINTEGRATORFLUID");
+  strmethod_= DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"),"AUXINTEGRATORSTRUCTURE");
+  flmethod_= DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"),"AUXINTEGRATORFLUID");
 
-  if ( strmethod_ == INPAR::FSI::timada_str_adamsbashforth2 )
-    estorderstr_ = 2; //AB2
-  else
-    estorderstr_= 1;  //expl. Euler (or none)
+  switch (strmethod_)
+  {
+    case INPAR::FSI::timada_str_none:
+    case INPAR::FSI::timada_str_expleuler:
+    {
+      estorderstr_ = 1.0;
+      break;
+    }
+    case INPAR::FSI::timada_str_adamsbashforth2:
+    case INPAR::FSI::timada_str_zienkiewicz_xie:
+    {
+      estorderstr_ = 2.0;
+      break;
+    }
+    default:
+    {
+      dserror("Unknown auxiliary time integrator!");
+      break;
+    }
+  }
 
-  if (  flmethod_ == INPAR::FSI::timada_fld_adamsbashforth2 )
-    estorderfl_ = 2;  //AB2
-  else
-    estorderfl_= 1;   //expl. Euler (or none)
+  switch (flmethod_)
+  {
+    case INPAR::FSI::timada_fld_none:
+    case INPAR::FSI::timada_fld_expleuler:
+    {
+      estorderfl_ = 1.0;
+      break;
+    }
+    case INPAR::FSI::timada_fld_adamsbashforth2:
+    {
+      estorderfl_ = 2.0;
+      break;
+    }
+    default:
+    {
+      dserror("Unknown auxiliary time integrator!");
+      break;
+    }
+  }
+
+  /* In case of Zienkiewicz-Xie error indicator in structure, we have to make
+   * sure that the structure uses a Newmark-type time integrator. Otherwise, the
+   * error indicator is not applicable. */
+  if (strmethod_ == INPAR::FSI::timada_str_zienkiewicz_xie)
+  {
+    /* try to get the Newmark beta. This will lead to an dserror(), if the
+     * structural time integrator is not of Newmark-type. */
+    StructureField()->GetNewmarkBeta();
+  }
 
   //----------------------------------------------------------------------------
   // Handling of Dirichlet BCs in error estimation
@@ -116,10 +157,10 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   // Check whether input parameters make sense
   //---------------------------------------------------------------------------
   const double safetyfac = fsidyn.sublist("TIMEADAPTIVITY").get<double>("SAFETYFACTOR");
-  if ( safetyfac > 1.0 )
+  if (safetyfac > 1.0)
     dserror("SAFETYFACTOR in FSI DYNAMIC/TIMEADAPTIVITY is %f > 1.0 and, thus, to large.", safetyfac);
 
-  if ( dtmax_ <= dtmin_ )
+  if (dtmax_ <= dtmin_)
     dserror("DTMAX = %f has to be larger than DMIN = %f.", dtmax_, dtmin_);
 
   return;
@@ -145,12 +186,12 @@ void FSI::Monolithic::TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::R
   PrepareTimeloop();
 
   // the time loop
-  while ( NotFinished() )
+  while (NotFinished())
   {
     PrepareAdaptiveTimeStep();
 
     // time step adaptivity loop
-    while( StepNotAccepted() && adaptstep_ < adaptstepmax && (not dtminused_) )
+    while (StepNotAccepted() && adaptstep_ < adaptstepmax && (not dtminused_))
     {
       PrintHeaderRepeatedStep();
       PrepareTimeStep();
@@ -159,25 +200,31 @@ void FSI::Monolithic::TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::R
 
       /* continue with the next time step if the step has been repeated with the minimum
        * time step size --> no more refinement is possible anyway!*/
-      if ( dtminused_ ) //dtold_ <= dtmin_ && Dt() <= dtmin_ )
+      if (dtminused_)
       {
-        IO::cout<< "Time Step has already been calculated with minimum step size --> continue with next time step!" << "\n";
+        IO::cout<< "Time Step has already been calculated with minimum step size"
+                << " --> continue with next time step!"
+                << "\n";
         accepted_ = true;
       }
 
-      if ( StepNotAccepted() )
+      if (StepNotAccepted())
       {
-        if ( adaptstep_ >= adaptstepmax )
+        if (adaptstep_ >= adaptstepmax)
         {
-          if ( Comm().MyPID() == 0 )
-            IO::cout <<"adaptstep_ = "<< adaptstepmax << " --> Max. number of adaption iterations is reached: continuing with next time step! " << "\n";
+          if (Comm().MyPID() == 0)
+          {
+            IO::cout <<"adaptstep_ = "<< adaptstepmax
+                     << " --> Max. number of adaption iterations is reached: continuing with next time step! "
+                     << "\n";
+          }
         }
         else
         {
           ResetStep();
           ResetTime();
 
-          if( Comm().MyPID()==0 )
+          if (Comm().MyPID() == 0)
           {
             IO::cout << "Repeat current time step with dt = " << Dt()
                      << " based on " << adareason_ << ".\n";
@@ -209,7 +256,7 @@ void FSI::Monolithic::PrepareAdaptiveTimeStep()
   dtprevious_ = Dt();
 
   // if first time step, set initial time step size from input file
-  if ( Step()==0 )
+  if (Step() == 0)
   {
     // get initial time step size from input file
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
@@ -219,10 +266,10 @@ void FSI::Monolithic::PrepareAdaptiveTimeStep()
     SetDt(dtinit);
   }
 
-  if( Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
   {
-    IO::cout  << "\n"
-              << "+++++++++++++++++++++++++++++NEW TIME STEP+++++++++++++++++++++++++++++";
+    IO::cout << "\n"
+             << "+++++++++++++++++++++++++++++NEW TIME STEP+++++++++++++++++++++++++++++";
   }
 
   return;
@@ -232,13 +279,13 @@ void FSI::Monolithic::PrepareAdaptiveTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::PrintHeaderRepeatedStep() const
 {
-  if( adaptstep_!=0 && Comm().MyPID()==0 )
+  if (adaptstep_ != 0 && Comm().MyPID() == 0)
   {
-    IO::cout  << "__________REAPEATING TIME STEP " << Step()
-              << " WITH DT = " << Dt()
-              << " FOR THE " << adaptstep_
-              << ". TIME__________"
-              << "\n";
+    IO::cout << "__________REAPEATING TIME STEP " << Step()
+             << " WITH DT = " << Dt()
+             << " FOR THE " << adaptstep_
+             << ". TIME__________"
+             << "\n";
   }
 }
 
@@ -247,17 +294,17 @@ void FSI::Monolithic::PrintHeaderRepeatedStep() const
 void FSI::Monolithic::WriteAdaFileHeader() const
 {
   // write to adaptivity file
-  if ( Comm().MyPID()==0 && (not logada_.is_null()) )
+  if (Comm().MyPID() == 0 && (not logada_.is_null()))
   {
     (*logada_) << "Time Adaptivity in monolithic Fluid-Structure-Interaction:" << "\n"
-            << " - Error estimation method in fluid field: " << flmethod_  << "\n"
-            << " - Error estimation method in structure field: " << strmethod_  << "\n"
-            << "   (0 = None, 1 = Explicit Euler, 2 = Adams Bashforth 2)" << "\n"
-            << " - Error tolerance in fluid field: " << errtolfl_  << "\n"
-            << " - Error tolerance in structure field: " << errtolstr_  << "\n"
-            << " - Minimum allowed time step size DTMIN = " << dtmin_ << "\n"
-            << " - Maximum allowed time step size DTMAX = " << dtmax_ << "\n \n"
-            << "  step | time | \t dt  | \t #adaptiter |  dt of field  |  err str field  |  err str inner |  err str fsi | err fl field  |  err fl inner |  err fl fsi \n\n"
+               << " - Error estimation method in fluid field: " << flmethod_  << "\n"
+               << " - Error estimation method in structure field: " << strmethod_  << "\n"
+               << "   (0 = None, 1 = Explicit Euler, 2 = Adams Bashforth 2)" << "\n"
+               << " - Error tolerance in fluid field: " << errtolfl_  << "\n"
+               << " - Error tolerance in structure field: " << errtolstr_  << "\n"
+               << " - Minimum allowed time step size DTMIN = " << dtmin_ << "\n"
+               << " - Maximum allowed time step size DTMAX = " << dtmax_ << "\n \n"
+               << "  step | time | \t dt  | \t #adaptiter |  dt of field  |  err str field  |  err str inner |  err str fsi | err fl field  |  err fl inner |  err fl fsi \n\n"
       ;
   }
 }
@@ -266,15 +313,15 @@ void FSI::Monolithic::WriteAdaFileHeader() const
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::WriteAdaFile() const
 {
-  if ( logada_.is_null() )
+  if (logada_.is_null())
     dserror("No access to adaptivity file!");
 
-  if ( Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
   {
     (*logada_)  << Step()
                 << "\t" << Time()
                 << "\t\t" << dtold_
-                << "\t"   << adaptstep_ ;
+                << "\t" << adaptstep_ ;
 
     // Who is responsible for the new time step size?
     (*logada_)  << "\t"<< adareason_;
@@ -295,22 +342,22 @@ void FSI::Monolithic::WriteAdaFile() const
 void FSI::Monolithic::PrintAdaptivitySummary() const
 {
 
-  if( Comm().MyPID() == 0 )
+  if (Comm().MyPID() == 0)
   {
-    if ( Dt() != dtold_ ) // only if time step size has changed
+    if (Dt() != dtold_) // only if time step size has changed
     {
       IO::cout << "\n" << "New time step size " << Dt()
                << " is based on " << adareason_ << ".\n";
     }
 
-    if ( dtminused_ )
+    if (dtminused_)
     {
       IO::cout << "Time step " << Step()
                << " has been done with minimum time step size."
                << " No further refinement possible. Go to next time step.\n";
     }
 
-    if ( not StepNotAccepted() )
+    if (not StepNotAccepted())
       IO::cout << "Time step " << Step() << " has been accepted after " << adaptstep_ << " repetitions." << "\n";
     else
       IO::cout << "Time step " << Step() << " will be repeated with dt = " << Dt() << ".\n";
@@ -335,48 +382,52 @@ void FSI::Monolithic::AdaptTimeStepSize()
   // ---------------------------------------------------------------------------
 
   // check whether truncation error based time adaptivity is activated for at least one field
-  if ( not (strmethod_ == INPAR::FSI::timada_str_none && flmethod_ == INPAR::FSI::timada_fld_none) )
+  if (not (strmethod_ == INPAR::FSI::timada_str_none && flmethod_ == INPAR::FSI::timada_fld_none))
   {
     // Indicate local truncation errors in structure and fluid field
     IndicateLocalErrorNormsStructure();
     IndicateLocalErrorNormsFluid();
 
-    if (strmethod_ != INPAR::FSI::timada_str_none )
+    if (strmethod_ != INPAR::FSI::timada_str_none)
     {
       //calculate time step sizes resulting from errors in the structure field
-      dtstr_      = CalculateTimeStepSize(strnorm_, errtolstr_, estorderstr_);
-      dtstrfsi_   = CalculateTimeStepSize(strfsinorm_, errtolstr_, estorderstr_);
+      dtstr_ = CalculateTimeStepSize(strnorm_, errtolstr_, estorderstr_);
+      dtstrfsi_ = CalculateTimeStepSize(strfsinorm_, errtolstr_, estorderstr_);
       dtstrinner_ = CalculateTimeStepSize(strinnernorm_, errtolstr_, estorderstr_);
     }
 
-    if (flmethod_ != INPAR::FSI::timada_fld_none )
+    if (flmethod_ != INPAR::FSI::timada_fld_none)
     {
       //calculate time step sizes resulting from errors in the fluid field
-      dtfl_       = CalculateTimeStepSize(flnorm_, errtolfl_, estorderfl_);
-      dtflfsi_    = CalculateTimeStepSize(flfsinorm_, errtolfl_, estorderfl_);
-      dtflinner_  = CalculateTimeStepSize(flinnernorm_, errtolfl_, estorderfl_);
+      dtfl_ = CalculateTimeStepSize(flnorm_, errtolfl_, estorderfl_);
+      dtflfsi_ = CalculateTimeStepSize(flfsinorm_, errtolfl_, estorderfl_);
+      dtflinner_ = CalculateTimeStepSize(flinnernorm_, errtolfl_, estorderfl_);
     }
   }
 
   // ---------------------------------------------------------------------------
 
   // take care of possibly non-converged nonlinear solver
-  if ( erroraction_ == FSI::Monolithic::erroraction_halve_step && numhalvestep_ > 0 )
+  if (erroraction_ == FSI::Monolithic::erroraction_halve_step && numhalvestep_ > 0)
+  {
     dtnonlinsolver_ = std::max(Dt()/2, dtmin_);
-  else if ( erroraction_ == FSI::Monolithic::erroraction_none ) //&& numhalvestep_ > 0 )
+  }
+  else if (erroraction_ == FSI::Monolithic::erroraction_none) //&& numhalvestep_ > 0 )
   {
     dtnonlinsolver_ = std::min(std::max(1.1*Dt(), dtmin_), dtmax_);
     numhalvestep_ -= 1;
   }
   else
+  {
     dtnonlinsolver_ = Dt();
+  }
 
   // ---------------------------------------------------------------------------
 
   // Select new time step size
   dtnew = SelectTimeStepSize();
 
-  if ( dtnew <= dtmin_ && dtold_ <= dtmin_ )
+  if (dtnew <= dtmin_ && dtold_ <= dtmin_)
     dtminused_ = true;
 
   // Who is responsible for changing the time step size?
@@ -386,7 +437,7 @@ void FSI::Monolithic::AdaptTimeStepSize()
   accepted_ = SetAccepted();
 
   // take care of possibly non-converged nonlinear solver
-  if ( erroraction_ == FSI::Monolithic::erroraction_halve_step )
+  if (erroraction_ == FSI::Monolithic::erroraction_halve_step)
     accepted_ = false;
 
   // Finally, distribute new time step size to all participating fields/algorithms
@@ -401,15 +452,15 @@ void FSI::Monolithic::DetermineAdaReason(const double dt)
 {
   const std::string oldreason = adareason_;
 
-  if ( strmethod_ != INPAR::FSI::timada_str_none && (dt == dtstr_ || dt == dtstrfsi_ || dt == dtstrinner_) ) // structure field?
+  if (strmethod_ != INPAR::FSI::timada_str_none && (dt == dtstr_ || dt == dtstrfsi_ || dt == dtstrinner_)) // structure field?
     adareason_ = "Structure";
-  else if ( flmethod_ != INPAR::FSI::timada_fld_none && (dt == dtfl_ || dt == dtflfsi_ || dt == dtflinner_) ) // fluid field?
+  else if (flmethod_ != INPAR::FSI::timada_fld_none && (dt == dtfl_ || dt == dtflfsi_ || dt == dtflinner_)) // fluid field?
     adareason_ = "Fluid";
-  else if ( dt == dtnonlinsolver_ ) // Unconverged nonlinear solver?
+  else if (dt == dtnonlinsolver_) // Unconverged nonlinear solver?
     adareason_ = "Newton";
 
   // no change in time step size
-  if ( dt == dtold_ )
+  if (dt == dtold_)
     adareason_ = oldreason;
 
   return;
@@ -444,7 +495,7 @@ double FSI::Monolithic::CalculateTimeStepSize(const double errnorm,
   double dtnew = dtold_;
 
   // catch case that error norm is (very close to) zero
-  if ( errnorm < 1.0e-14 )
+  if (errnorm < 1.0e-14)
   {
     dtnew = std::min(dtmax, facmax * dtold_);
 
@@ -454,10 +505,10 @@ double FSI::Monolithic::CalculateTimeStepSize(const double errnorm,
   //----------------------------------------------------------------------
   // Calculate new time step size
   //----------------------------------------------------------------------
-  double fac = std::pow( errtol/errnorm, 1.0/(estorder+1.0) );
+  double fac = std::pow(errtol / errnorm, 1.0 / (estorder + 1.0));
 
   // take care of not-a-number cases
-  if ( isnan(fac) )
+  if (isnan(fac))
     fac = 1.0 / safetyfac;
 
   // modify scaling factor by safety factor in order to approach the desired
@@ -465,12 +516,12 @@ double FSI::Monolithic::CalculateTimeStepSize(const double errnorm,
   fac = fac * safetyfac;
 
   // limit factor by user given bounds
-  fac = std::max( fac, facmin );
-  fac = std::min( fac, facmax );
+  fac = std::max(fac, facmin);
+  fac = std::min(fac, facmax);
 
   // calculate the new time step size (limited by user given bounds)
-  dtnew = std::max( fac*dtold_, dtmin );
-  dtnew = std::min( dtnew, dtmax );
+  dtnew = std::max(fac * dtold_, dtmin);
+  dtnew = std::min(dtnew, dtmax);
   //----------------------------------------------------------------------
 
   // return the new time step size
@@ -496,14 +547,17 @@ void FSI::Monolithic::ExplicitEuler(const Epetra_Vector& xn,
 void FSI::Monolithic::IndicateLocalErrorNormsFluid()
 {
   // current state
-  Teuchos::RCP<Epetra_Vector> xn = Teuchos::rcp(new Epetra_Vector(*FluidField().Veln()));
-  Teuchos::RCP<Epetra_Vector> xnp = Teuchos::rcp(new Epetra_Vector(*FluidField().Velnp()));
-  Teuchos::RCP<Epetra_Vector> xndot = Teuchos::rcp(new Epetra_Vector(*FluidField().Accn()));
+  Teuchos::RCP<const Epetra_Vector> xn = Teuchos::rcp(new Epetra_Vector(*FluidField().Veln()));
+  Teuchos::RCP<const Epetra_Vector> xnp = Teuchos::rcp(new Epetra_Vector(*FluidField().Velnp()));
+  Teuchos::RCP<const Epetra_Vector> xndot = Teuchos::rcp(new Epetra_Vector(*FluidField().Accn()));
 
   // prepare vector for solution of auxiliary time step
   Teuchos::RCP<Epetra_Vector> extrapolation = Teuchos::rcp(new Epetra_Vector(*FluidField().DofRowMap(),true));
 
-  switch ( flmethod_ )
+  // ---------------------------------------------------------------------------
+
+  // calculate time step with auxiliary time integrator, i.e. the extrapolated solution
+  switch (flmethod_)
   {
     case INPAR::FSI::timada_fld_none:
     {
@@ -511,28 +565,28 @@ void FSI::Monolithic::IndicateLocalErrorNormsFluid()
     }
     case INPAR::FSI::timada_fld_expleuler:
     {
-      ExplicitEuler(*xn,*xndot,Dt(),*extrapolation);
+      ExplicitEuler(*xn, *xndot, Dt(), *extrapolation);
 
       break;
     }
     case INPAR::FSI::timada_fld_adamsbashforth2:
     {
-      if ( Step() >= 1 ) // AdamsBashforth2 only if at least second time step
+      if (Step() >= 1) // AdamsBashforth2 only if at least second time step
       {
         // Time step sizes of current and previous time step
         const double dt = Dt();
-        const double dto = dtprevious_;
+      const double dto = dtprevious_;
 
         // Acceleration from previous time step
         Teuchos::RCP<Epetra_Vector> accnm = Teuchos::rcp(new Epetra_Vector(*FluidField().ExtractVelocityPart(FluidField().Accnm())));
 
         // AdamsBashforth2 step with possibly different time step sizes
-        extrapolation->Update( 1.0, *xn, 0.0 );
-        extrapolation->Update( ( (2.0*dt*dto+dt*dt)/2*dto ), *xndot, -((dt*dt)/2.0*dto), *accnm, 1.0);
+        extrapolation->Update(1.0, *xn, 0.0);
+        extrapolation->Update(((2.0*dt*dto+dt*dt)/2*dto ), *xndot, -((dt*dt)/2.0*dto), *accnm, 1.0);
       }
       else // ExplicitEuler as starting algorithm
       {
-        ExplicitEuler(*xn,*xndot,Dt(),*extrapolation);
+        ExplicitEuler(*xn, *xndot, Dt(), *extrapolation);
       }
 
       break;
@@ -544,10 +598,13 @@ void FSI::Monolithic::IndicateLocalErrorNormsFluid()
     }
   }
 
-  if ( flmethod_ != INPAR::FSI::timada_fld_none )
+  // ---------------------------------------------------------------------------
+
+  // estimate the local error
+  if (flmethod_ != INPAR::FSI::timada_fld_none)
   {
     Teuchos::RCP<Epetra_Vector> error = Teuchos::rcp(new Epetra_Vector(*FluidField().DofRowMap(),true));
-    error->Update(1.0,*xnp,-1.0,*extrapolation,0.0);
+    error->Update(1.0, *xnp, -1.0, *extrapolation, 0.0);
 
     /*
      * the complete vector 'error' contains all velocity and pressure DOFs
@@ -557,26 +614,26 @@ void FSI::Monolithic::IndicateLocalErrorNormsFluid()
      */
 
     // set '0' on all pressure DOFs
-    Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(error->Map(),true));
-    LINALG::ApplyDirichlettoSystem(error,zeros,*(FluidField().PressureRowMap()));
+    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(error->Map(), true));
+    LINALG::ApplyDirichlettoSystem(error, zeros, *(FluidField().PressureRowMap()));
     // TODO: Do not misuse ApplyDirichlettoSystem()...works for this purpose here: writes zeros into all pressure DoFs
 
     // set '0' on Dirichlet DOFs
-    zeros = Teuchos::rcp(new Epetra_Vector(error->Map(),true));
-    LINALG::ApplyDirichlettoSystem(error,zeros,*(FluidField().GetDBCMapExtractor()->CondMap()));
+    zeros = Teuchos::rcp(new Epetra_Vector(error->Map(), true));
+    LINALG::ApplyDirichlettoSystem(error, zeros, *(FluidField().GetDBCMapExtractor()->CondMap()));
 
     // extrapolation of pressure not usable for error estimation --> extract velocity part of the
     //complete error vector i.e. interior and interface velocity DOFs
-    Teuchos::RCP<Epetra_Vector> errorvel
+    Teuchos::RCP<const Epetra_Vector> errorvel
       = Teuchos::rcp(new Epetra_Vector(*FluidField().ExtractVelocityPart(error)));
 
     // extract error at interface velocity DOFs
-    Teuchos::RCP<Epetra_Vector> errorvelinterface
+    Teuchos::RCP<const Epetra_Vector> errorvelinterface
       = FluidField().Interface()->ExtractFSICondVector(error);
 
     // in case of fluid split: extract other part of the full error vector
     // i.e. all interior velocity DOFs and the pressure DOFs at the interface
-    Teuchos::RCP<Epetra_Vector> errorvelinterior
+    Teuchos::RCP<const Epetra_Vector> errorvelinterior
       = FluidField().Interface()->ExtractOtherVector(error);
 
     // Compute a suitable norm of the error vectors
@@ -591,17 +648,17 @@ void FSI::Monolithic::IndicateLocalErrorNormsFluid()
     // Length scaling: We just need the non-DBC and the non-pressure DOFs.
     // Take care, that we do not divide by zero
 
-    if ( sqrt(errorvel->GlobalLength() - FluidField().GetDBCMapExtractor()->CondMap()->NumGlobalElements()) != 0 )
+    if (sqrt(errorvel->GlobalLength() - FluidField().GetDBCMapExtractor()->CondMap()->NumGlobalElements()) != 0)
       flnorm_ /= sqrt(errorvel->GlobalLength() - FluidField().GetDBCMapExtractor()->CondMap()->NumGlobalElements());
     else
       flnorm_ = 0.0;
 
-    if ( sqrt(errorvelinterface->GlobalLength() - numflfsidbcdofs_) != 0 )
+    if (sqrt(errorvelinterface->GlobalLength() - numflfsidbcdofs_) != 0)
       flfsinorm_ /= sqrt(errorvelinterface->GlobalLength() - numflfsidbcdofs_);
     else
       flfsinorm_ = 0.0;
 
-    if ( sqrt(errorvelinterior->GlobalLength() - FluidField().PressureRowMap()->NumGlobalElements() - (FluidField().GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numflfsidbcdofs_)) != 0 )
+    if (sqrt(errorvelinterior->GlobalLength() - FluidField().PressureRowMap()->NumGlobalElements() - (FluidField().GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numflfsidbcdofs_)) != 0)
       flinnernorm_ /= sqrt(errorvelinterior->GlobalLength() - FluidField().PressureRowMap()->NumGlobalElements() - (FluidField().GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numflfsidbcdofs_));
     else
       flinnernorm_ = 0.0;
@@ -624,14 +681,17 @@ void FSI::Monolithic::IndicateLocalErrorNormsFluid()
 void FSI::Monolithic::IndicateLocalErrorNormsStructure()
 {
   // current state
-  Teuchos::RCP<Epetra_Vector> xn = Teuchos::rcp(new Epetra_Vector(*StructureField()->Dispn()));
-  Teuchos::RCP<Epetra_Vector> xnp = Teuchos::rcp(new Epetra_Vector(*StructureField()->Dispnp()));
-  Teuchos::RCP<Epetra_Vector> xndot = Teuchos::rcp(new Epetra_Vector(*StructureField()->Veln()));
+  Teuchos::RCP<const Epetra_Vector> xn = Teuchos::rcp(new Epetra_Vector(*StructureField()->Dispn()));
+  Teuchos::RCP<const Epetra_Vector> xnp = Teuchos::rcp(new Epetra_Vector(*StructureField()->Dispnp()));
+  Teuchos::RCP<const Epetra_Vector> xndot = Teuchos::rcp(new Epetra_Vector(*StructureField()->Veln()));
 
   // prepare vector for solution of auxiliary time step
   Teuchos::RCP<Epetra_Vector> extrapolation = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(),true));
 
-  switch ( strmethod_ )
+  // ---------------------------------------------------------------------------
+
+  // calculate time step with auxiliary time integrator, i.e. the extrapolated solution
+  switch (strmethod_)
   {
     case INPAR::FSI::timada_str_none:
     {
@@ -639,30 +699,35 @@ void FSI::Monolithic::IndicateLocalErrorNormsStructure()
     }
     case INPAR::FSI::timada_str_expleuler:
     {
-      ExplicitEuler(*xn,*xndot,Dt(),*extrapolation);
+      ExplicitEuler(*xn, *xndot, Dt(), *extrapolation);
 
       break;
     }
     case INPAR::FSI::timada_str_adamsbashforth2:
     {
-      if ( Step() >= 1 ) // AdamsBashforth2 if at least second time step
+      if (Step() >= 1) // AdamsBashforth2 if at least second time step
       {
         // Time step sizes of current and previous time step
         const double dt = Dt();
-        const double dto = dtprevious_;
+      const double dto = dtprevious_;
 
         // velocity from previous time step
         Teuchos::RCP<Epetra_Vector> velnm = Teuchos::rcp(new Epetra_Vector(*StructureField()->Velnm()));
 
         // AdamsBashforth2 step with possibly different time step sizes
         extrapolation->Update(1.0, *xn, 0.0);
-        extrapolation->Update( ( (2.0*dt*dto+dt*dt)/2*dto ), *xndot, -((dt*dt)/2.0*dto), *velnm, 1.0 );
+        extrapolation->Update(((2.0*dt*dto+dt*dt)/2*dto), *xndot, -((dt*dt)/2.0*dto), *velnm, 1.0);
       }
       else // ExplicitEuler as starting algorithm
       {
-        ExplicitEuler(*xn,*xndot,Dt(),*extrapolation);
+        ExplicitEuler(*xn, *xndot, Dt(), *extrapolation);
       }
 
+      break;
+    }
+    case INPAR::FSI::timada_str_zienkiewicz_xie:
+    {
+      // No extrapolation needed for this error indicator
       break;
     }
     default:
@@ -672,11 +737,46 @@ void FSI::Monolithic::IndicateLocalErrorNormsStructure()
     }
   }
 
-  if ( strmethod_ != INPAR::FSI::timada_str_none )
-  {
-    Teuchos::RCP<Epetra_Vector> error = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(),true));
-    error->Update(1.0,*xnp,-1.0,*extrapolation,0.0);
+  // ---------------------------------------------------------------------------
 
+  // estimate the local error
+  Teuchos::RCP<Epetra_Vector> error = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(),true));
+  switch (strmethod_)
+  {
+    case INPAR::FSI::timada_str_none:
+    {
+      // do nothing
+      break;
+    }
+    case INPAR::FSI::timada_str_expleuler:
+    case INPAR::FSI::timada_str_adamsbashforth2:
+    {
+      error->Update(1.0, *xnp, -1.0, *extrapolation, 0.0);
+      break;
+    }
+    case INPAR::FSI::timada_str_zienkiewicz_xie:
+    {
+      /* Reference:
+       * Zienkiewicz, O. C. and Xie, Y. M: A simple error estimator and adaptive
+       * time stepping procedure for dynamic analysis, Earthquake Engng. Struct. Dyn.
+       * Vol. 20, pp. 871-887, 1991
+       */
+      error->Update(1.0, *StructureField()->Accnp(), -1.0, *StructureField()->Accn(), 0.0);
+      error->Scale(Dt() * Dt() * (StructureField()->GetNewmarkBeta() - (1.0 / 6.0)));
+      break;
+    }
+    default:
+    {
+      dserror("Unknown auxiliary time integration scheme for structure field.");
+      break;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+
+  // compute error norms
+  if (strmethod_ != INPAR::FSI::timada_str_none)
+  {
     /*
      * the complete vector 'error' contains all displacement DOFs
      * at the interface and in the interior domain, DBC and non-DBC DOFs.
@@ -685,15 +785,15 @@ void FSI::Monolithic::IndicateLocalErrorNormsStructure()
      */
 
     // set '0' on Dirichlet DOFs
-    Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(error->Map(),true));
-    LINALG::ApplyDirichlettoSystem(error,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
+    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(error->Map(), true));
+    LINALG::ApplyDirichlettoSystem(error, zeros, *(StructureField()->GetDBCMapExtractor()->CondMap()));
 
     //extract the condition part of the full error vector (i.e. only interface displacement DOFs)
-    Teuchos::RCP<Epetra_Vector> errorinterface
+    Teuchos::RCP<const Epetra_Vector> errorinterface
       = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->ExtractFSICondVector(error)));
 
     //in case of structure split: extract the other part of the full error vector (i.e. only interior displacement DOFs)
-    Teuchos::RCP<Epetra_Vector> errorinterior
+    Teuchos::RCP<const Epetra_Vector> errorinterior
       = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->ExtractOtherVector(error)));
 
     // Calculate a suitable norm of the error vectors
@@ -701,24 +801,24 @@ void FSI::Monolithic::IndicateLocalErrorNormsStructure()
     // But be careful with length scaling.
     error->Norm2(&strnorm_);
     errorinterface->Norm2(&strfsinorm_);
-    errorinterior ->Norm2(&strinnernorm_);
+    errorinterior->Norm2(&strinnernorm_);
 
     // -------------------------------------------------------------------------
 
     // normalize the norms with the correct lengths of the error vectors
     // For length scaling we just need the non-DBC and non-pressure DOFs.
     // Take care, that we do not divide by zero
-    if ( sqrt(error->GlobalLength() - StructureField()->GetDBCMapExtractor()->CondMap()->NumGlobalElements()) != 0 )
+    if (sqrt(error->GlobalLength() - StructureField()->GetDBCMapExtractor()->CondMap()->NumGlobalElements()) != 0)
       strnorm_ /= sqrt(error->GlobalLength() - StructureField()->GetDBCMapExtractor()->CondMap()->NumGlobalElements());
     else
       strnorm_ = 0.0;
 
-    if ( sqrt(errorinterface->GlobalLength() - numstrfsidbcdofs_) != 0 )
+    if (sqrt(errorinterface->GlobalLength() - numstrfsidbcdofs_) != 0)
       strfsinorm_ /= sqrt(errorinterface->GlobalLength() - numstrfsidbcdofs_);
     else
       strfsinorm_ = 0.0;
 
-    if ( sqrt(errorinterior->GlobalLength() - (StructureField()->GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numstrfsidbcdofs_)) != 0 )
+    if (sqrt(errorinterior->GlobalLength() - (StructureField()->GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numstrfsidbcdofs_)) != 0)
       strinnernorm_ /= sqrt(errorinterior->GlobalLength() - (StructureField()->GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numstrfsidbcdofs_));
     else
       strinnernorm_ = 0.0;
@@ -741,22 +841,20 @@ void FSI::Monolithic::IndicateLocalErrorNormsStructure()
 void FSI::Monolithic::ResetStep()
 {
   StructureField()->ResetStep();
-  FluidField().     ResetStep();
-  AleField().       ResetStep();
+  FluidField().ResetStep();
+  AleField().ResetStep();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::ResetTime()
 {
-  // Structure field increments time and step at the end of the time step, fluid
-  // and ALE do so right at the beginning. Thus, we have to decrement time and step
-  // in the fluid and ALE field
+  // Fluid and ALE
   FluidField().ResetTime(dtold_);
-  AleField().  ResetTime(dtold_);
+  AleField().ResetTime(dtold_);
 
   // FSI routine
-  SetTimeStep( Time()-dtold_, Step()-1 );
+  SetTimeStep(Time() - dtold_, Step() - 1);
 }
 
 /*----------------------------------------------------------------------*/
@@ -765,8 +863,8 @@ void FSI::Monolithic::SetDt(const double dtnew)
 {
   // single fields
   StructureField()->SetDt(dtnew);
-  FluidField().     SetDt(dtnew);
-  AleField().       SetDt(dtnew);
+  FluidField().SetDt(dtnew);
+  AleField().SetDt(dtnew);
 
   // FSI algorithm
   ADAPTER::AlgorithmBase::SetDt(dtnew);

@@ -202,6 +202,10 @@ namespace STR
     //! return time integration factor
     virtual const double TimIntParam() const {return 1.0 - theta_; }
 
+    //! return Newmark parameter \f$beta\f$
+    virtual const double GetNewmarkBeta() const
+    { dserror("Cannot return Newmark-beta. This is not a Newmark-type time integrator!"); return -1.0; }
+
     //! Linear error coefficent if 1st order accurate
     double MethodLinErrCoeff1()
     {

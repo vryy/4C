@@ -228,6 +228,9 @@ namespace ADAPTER {
     /// return time integration factor
     virtual const double TimIntParam() const = 0;
 
+    /// return Newmark parameter \f$beta\f$
+    virtual const double GetNewmarkBeta() const = 0;
+
     /// Get the current time
     virtual double GetTime() const = 0;
 

@@ -5697,11 +5697,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     tuple<std::string>(
                                         "None",
                                         "ExplicitEuler",
-                                        "AB2"),
+                                        "AB2",
+                                        "ZienkiewiczXie"),
                                     tuple<int>(
                                         INPAR::FSI::timada_str_none,
                                         INPAR::FSI::timada_str_expleuler,
-                                        INPAR::FSI::timada_str_adamsbashforth2),
+                                        INPAR::FSI::timada_str_adamsbashforth2,
+                                        INPAR::FSI::timada_str_zienkiewicz_xie),
                                     &fsiadapt);
 
   setStringToIntegralParameter<int>("DIVERCONT", "stop",

@@ -89,6 +89,9 @@ namespace STR
     //! return time integration factor
     virtual const double TimIntParam() const = 0;
 
+    //! return Newmark parameter \f$beta\f$
+    virtual const double GetNewmarkBeta() const = 0;
+
     //@}
 
     //! Do time integration of single step

@@ -96,6 +96,10 @@ namespace STR
     //! return time integration factor
     virtual const double TimIntParam() const { return 0.0; }
 
+    //! return Newmark parameter \f$beta\f$
+    virtual const double GetNewmarkBeta() const
+    { dserror("Cannot return Newmark-beta. This is not a Newmark-type time integrator!"); return -1.0; }
+
     //! Return linear error coefficient of displacements
     virtual double MethodLinErrCoeffDis()
     {

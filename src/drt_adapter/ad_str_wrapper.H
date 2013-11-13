@@ -181,6 +181,10 @@ namespace ADAPTER
     virtual const double TimIntParam() const
     { return structure_->TimIntParam(); }
 
+    /// return Newmark parameter \f$beta\f$
+    virtual const double GetNewmarkBeta() const
+    { return structure_->GetNewmarkBeta(); }
+
     //! Sets the current time \f$t_{n}\f$
     virtual void SetTime(const double time)
     { return structure_->SetTime(time); }
