@@ -657,6 +657,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
                             dJ_dus,
                             dCinv_dus,
                             dFinvdus_gradp,
+                            dFinvTdus,
                             erea_v,
                             sub_stiff,
                             sub_force,

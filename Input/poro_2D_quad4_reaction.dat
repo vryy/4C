@@ -244,7 +244,7 @@ FUNCT2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS porofluid NODE 4 QUANTITY velx VALUE 3.71349088601968805e-05 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 4 QUANTITY velx VALUE 3.71228487679154496e-05 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 34 QUANTITY vely VALUE 8.80643290762610994e-06 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 65 QUANTITY pressure VALUE -1.16755161092378552e-02 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -3.06983126603257683e-06 TOLERANCE 1e-8

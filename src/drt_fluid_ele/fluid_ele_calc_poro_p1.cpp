@@ -716,7 +716,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                         const DRT::UTILS::GaussIntegration &                            intpoints)
 {
   // definition of velocity-based momentum residual vectors
-  LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>  lin_resM_Dus(true);
+  LINALG::Matrix< my::nsd_, my::nen_ * my::nsd_>  lin_resM_Dus(true);
 
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
@@ -983,8 +983,8 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::PSPG(
     LINALG::Matrix<my::nen_, my::nen_*my::nsd_> &         estif_q_u,
     LINALG::Matrix<my::nen_,my::nen_> &                   ppmat,
     LINALG::Matrix<my::nen_,1> &                          preforce,
-    const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &   lin_resM_Du,
-    const LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &   lin_resM_Dp,
+    const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &    lin_resM_Du,
+    const LINALG::Matrix<my::nsd_,my::nen_> &             lin_resM_Dp,
     const double &                                        dphi_dp,
     const double &                                        fac3,
     const double &                                        timefacfac,
@@ -1046,8 +1046,9 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ReacStab(
     LINALG::Matrix<my::nen_*my::nsd_,my::nen_*my::nsd_> &     estif_u,
     LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &              estif_p_v,
     LINALG::Matrix<my::nsd_,my::nen_> &                       velforce,
-    LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &       lin_resM_Du,
-    const LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &   lin_resM_Dp,
+    LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &              lin_resM_Du,
+    const LINALG::Matrix<my::nsd_,my::nen_> &                 lin_resM_Dp,
+    const double &                                            dphi_dp,
     const double &                                            timefacfac,
     const double &                                            timefacfacpre,
     const double &                                            rhsfac,
@@ -1058,6 +1059,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ReacStab(
            velforce,
            lin_resM_Du,
            lin_resM_Dp,
+           dphi_dp,
            timefacfac,
            timefacfacpre,
            rhsfac,

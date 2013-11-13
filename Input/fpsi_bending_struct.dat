@@ -92,7 +92,7 @@ CONVTOL                         1e-06
 COUPALGO                        fpsi_monolithic_plain
 PARTITIONED                     monolithic // monolithic  RobinNeumann nocoupling
 ITEMAX                          100
-NUMSTEP                         10000000
+NUMSTEP                         4
 RESTARTEVRY                     3
 SHAPEDERIVATIVES                Yes // linearization with respect to ale mesh motion (obligatory for fpsi-problems)
 USESHAPEDERIVATIVES		Yes

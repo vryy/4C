@@ -274,28 +274,30 @@ protected:
 
     //! Compute element matrix entries: PSPG
     virtual void PSPG(
-        LINALG::Matrix<my::nen_, my::nen_*my::nsd_> &  estif_q_u,      ///< block (weighting function q x u)
-        LINALG::Matrix<my::nen_,my::nen_> &            ppmat,          ///< block (weighting function q x p)
-        LINALG::Matrix<my::nen_,1> &                   preforce,       ///< rhs forces pressure
-        const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &   lin_resM_Du,
-        const LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &   lin_resM_Dp,
-        const double &                                 fac3,           ///< factor for residual in current subgrid velocities
-        const double &                                 timefacfac,     ///< = timefac x fac
-        const double &                                 timefacfacpre, ///< = timefacpre x fac
-        const double &                                 rhsfac       ///< right-hand-side factor for residuals
+        LINALG::Matrix<my::nen_, my::nen_*my::nsd_> &        estif_q_u,      ///< block (weighting function q x u)
+        LINALG::Matrix<my::nen_,my::nen_> &                  ppmat,          ///< block (weighting function q x p)
+        LINALG::Matrix<my::nen_,1> &                         preforce,       ///< rhs forces pressure
+        const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &   lin_resM_Du,    ///< linearisation of the stabilization residual
+        const LINALG::Matrix<my::nsd_,my::nen_> &            lin_resM_Dp,    ///< linearisation of the stabilization residual w.r.t. pressure
+        const double &                                       dphi_dp,        ///< linearisation of porosity w.r.t. pressure
+        const double &                                       fac3,           ///< factor for residual in current subgrid velocities
+        const double &                                       timefacfac,     ///< = timefac x fac
+        const double &                                       timefacfacpre,  ///< = timefacpre x fac
+        const double &                                       rhsfac          ///< right-hand-side factor for residuals
         );
 
     //! Compute element matrix entries: reactive stabilization
     virtual void ReacStab(
         LINALG::Matrix<my::nen_*my::nsd_,my::nen_*my::nsd_> &  estif_u,        ///< block (weighting function v x u)
-        LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &       estif_p_v,      ///< block (weighting function v x p)
-        LINALG::Matrix<my::nsd_,my::nen_> &            velforce,       ///< rhs forces velocity
-        LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &       lin_resM_Du,    ///< linearisation of the stabilization residual
-        const LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &   lin_resM_Dp,
-        const double &                         timefacfac,     ///< = timefac x fac
-        const double &                         timefacfacpre,  ///< = timefacpre x fac
-        const double &                         rhsfac,      ///< right-hand-side factor for residuals
-        const double &                         fac3            ///< factor for residual in current subgrid velocities
+        LINALG::Matrix<my::nen_*my::nsd_,my::nen_> &           estif_p_v,      ///< block (weighting function v x p)
+        LINALG::Matrix<my::nsd_,my::nen_> &                    velforce,       ///< rhs forces velocity
+        LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &           lin_resM_Du,    ///< linearisation of the stabilization residual
+        const LINALG::Matrix<my::nsd_,my::nen_> &              lin_resM_Dp,    ///< linearisation of the stabilization residual w.r.t. pressure
+        const double &                                         dphi_dp,        ///< linearisation of porosity w.r.t. pressure
+        const double &                                         timefacfac,     ///< = timefac x fac
+        const double &                                         timefacfacpre,  ///< = timefacpre x fac
+        const double &                                         rhsfac,         ///< right-hand-side factor for residuals
+        const double &                                         fac3            ///< factor for residual in current subgrid velocities
         );
 
     double W_;

@@ -652,6 +652,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
                             dJ_dus,
                             dCinv_dus,
                             dFinvdus_gradp,
+                            dFinvTdus,
                             erea_v,
                             sub_stiff,
                             sub_force,

@@ -669,6 +669,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
                             dJ_dus,
                             dCinv_dus,
                             dFinvdus_gradp,
+                            dFinvTdus,
                             erea_v,
                             stiffmatrix,
                             force,
@@ -1578,27 +1579,28 @@ DRT::ELEMENTS::So3_Poro<so3_ele,distype>::  ComputeLinearizationOfJacobian(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
-    const int &                               gp,
-    const LINALG::Matrix<numnod_,1>&          shapefct,
-    const LINALG::Matrix<numdim_,numnod_>&    N_XYZ,
-    const double&                             J,
-    const double&                             press,
-    const double&                             porosity,
-    const LINALG::Matrix<numdim_,1>&          velint,
-    const LINALG::Matrix<numdim_,1>&          fvelint,
-    const LINALG::Matrix<numdim_,numdim_>&    fvelder,
-    const LINALG::Matrix<numdim_,numdim_>&    defgrd_inv,
-    const LINALG::Matrix<numstr_,numdof_>&    bop,
-    const LINALG::Matrix<numdim_,numdim_>&    C_inv,
-    const LINALG::Matrix<numdim_,1>&          Finvgradp,
-    const LINALG::Matrix<1,numdof_>&          dphi_dus,
-    const LINALG::Matrix<1,numdof_>&          dJ_dus,
-    const LINALG::Matrix<numstr_,numdof_>&    dCinv_dus,
-    const LINALG::Matrix<numdim_,numdof_>&    dFinvdus_gradp,
-    LINALG::Matrix<numdof_,numdof_>&          erea_v,
-    LINALG::Matrix<numdof_, numdof_>*         stiffmatrix,
-    LINALG::Matrix<numdof_,1>*                force,
-    LINALG::Matrix<numstr_,1>&                fstress)
+    const int &                                     gp,
+    const LINALG::Matrix<numnod_,1>&                shapefct,
+    const LINALG::Matrix<numdim_,numnod_>&          N_XYZ,
+    const double&                                   J,
+    const double&                                   press,
+    const double&                                   porosity,
+    const LINALG::Matrix<numdim_,1>&                velint,
+    const LINALG::Matrix<numdim_,1>&                fvelint,
+    const LINALG::Matrix<numdim_,numdim_>&          fvelder,
+    const LINALG::Matrix<numdim_,numdim_>&          defgrd_inv,
+    const LINALG::Matrix<numstr_,numdof_>&          bop,
+    const LINALG::Matrix<numdim_,numdim_>&          C_inv,
+    const LINALG::Matrix<numdim_,1>&                Finvgradp,
+    const LINALG::Matrix<1,numdof_>&                dphi_dus,
+    const LINALG::Matrix<1,numdof_>&                dJ_dus,
+    const LINALG::Matrix<numstr_,numdof_>&          dCinv_dus,
+    const LINALG::Matrix<numdim_,numdof_>&          dFinvdus_gradp,
+    const LINALG::Matrix<numdim_*numdim_,numdof_>&  dFinvTdus,
+    LINALG::Matrix<numdof_,numdof_>&                erea_v,
+    LINALG::Matrix<numdof_, numdof_>*               stiffmatrix,
+    LINALG::Matrix<numdof_,1>*                      force,
+    LINALG::Matrix<numstr_,1>&                      fstress)
 {
   const double detJ_w = detJ_[gp]*intpoints_.Weight(gp);
 
@@ -1606,31 +1608,36 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
   {
     //const double reacoeff = fluidmat_->ComputeReactionCoeff();
 
+    LINALG::Matrix<numdim_,numdim_> matreatensor(true);
     LINALG::Matrix<numdim_,numdim_> reatensor(true);
     LINALG::Matrix<numdim_,1> reafvel(true);
     LINALG::Matrix<numdim_,1> reavel(true);
-    fluidmat_->ComputeReactionTensor(reatensor);
-    reavel.Multiply(reatensor,velint);
-    reafvel.Multiply(reatensor,fvelint);
+    {
+      LINALG::Matrix<numdim_,numdim_> temp(true);
+      fluidmat_->ComputeReactionTensor(matreatensor);
+      temp.Multiply(1.0,matreatensor,defgrd_inv);
+      reatensor.MultiplyTN(defgrd_inv,temp);
+      reavel.Multiply(reatensor,velint);
+      reafvel.Multiply(reatensor,fvelint);
+    }
 
     for (int k=0; k<numnod_; k++)
     {
       const int fk = numdim_*k;
       const double fac = detJ_w* shapefct(k);
-      //const double v = fac * reacoeff * porosity * porosity* J;
-      const double v = fac * porosity * porosity* J;
+      const double v = fac * porosity * porosity* J * J;
 
       for(int j=0; j<numdim_; j++)
       {
 
         /*-------structure- fluid velocity coupling:  RHS
          "dracy-terms"
-         - reacoeff * J *  phi^2 *  v^f
+         - reacoeff * J^2 *  phi^2 *  v^f
          */
         (*force)(fk+j) += -v * reafvel(j);
 
         /* "reactive dracy-terms"
-         reacoeff * J *  phi^2 *  v^s
+         reacoeff * J^2 *  phi^2 *  v^s
          */
         (*force)(fk+j) += v * reavel(j);
 
@@ -1647,28 +1654,35 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
           for (int l=0; l<numdim_; l++)
           {
             /* additional "reactive darcy-term"
-             detJ * w(gp) * ( J * reacoeff * phi^2  ) * D(v_s)
+             detJ * w(gp) * ( J^2 * reacoeff * phi^2  ) * D(v_s)
              */
             erea_v(fk+j,fi+l) += v * reatensor(j,l) * shapefct(i);
 
-            /* additional "pressure gradient term" + "darcy-term"
+            /* additional "pressure gradient term"
              -  detJ * w(gp) * phi *  ( dJ/d(us) * F^-T * Grad(p) - J * d(F^-T)/d(us) *Grad(p) ) * D(us)
              - detJ * w(gp) * d(phi)/d(us) * J * F^-T * Grad(p) * D(us)
-             - detJ * w(gp) * (  dJ/d(us) * v^f * reacoeff * phi^2 + 2* J * reacoeff * phi * d(phi)/d(us) * v^f ) * D(us)
              */
             (*stiffmatrix)(fk+j,fi+l) += fac * (
                                               - porosity * dJ_dus(fi+l) * Finvgradp(j)
                                               - porosity * J * dFinvdus_gradp(j, fi+l)
                                               - dphi_dus(fi+l) * J * Finvgradp(j)
-                                              - reafvel(j) * porosity * ( porosity * dJ_dus(fi+l) + 2 * J * dphi_dus(fi+l) )
                                             )
             ;
 
-
             /* additional "reactive darcy-term"
-             detJ * w(gp) * (  dJ/d(us) * vs * reacoeff * phi^2 + 2* J * reacoeff * phi * d(phi)/d(us) * vs ) * D(us)
+               detJ * w(gp) * 2 * ( dJ/d(us) * vs * reacoeff * phi^2 + J * reacoeff * phi * d(phi)/d(us) * vs ) * D(us)
+             - detJ * w(gp) *  2 * ( J * dJ/d(us) * v^f * reacoeff * phi^2 + J * reacoeff * phi * d(phi)/d(us) * v^f ) * D(us)
              */
-            (*stiffmatrix)(fk+j,fi+l) += fac * porosity * reafvel(j) * ( porosity * dJ_dus(fi+l) + 2 * J * dphi_dus(fi+l) );
+            (*stiffmatrix)(fk+j,fi+l) += fac * J * porosity *  2 * ( reavel(j) - reafvel(j) ) *
+                                            ( porosity * dJ_dus(fi+l) + J * dphi_dus(fi+l) );
+            for (int m=0; m<numdim_; ++m)
+              for (int n=0; n<numdim_; ++n)
+                for (int p=0; p<numdim_; ++p)
+                  (*stiffmatrix)(fk+j,fi+l) += v * ( velint(p) - fvelint(p) ) * (
+                                                  dFinvTdus(j*numdim_+m,fi+l) * matreatensor(m,n) * defgrd_inv(n,p)
+                                                + defgrd_inv(m,j) * matreatensor(m,n) * dFinvTdus(p*numdim_+n,fi+l)
+                                                )
+                                              ;
           }
         }
       }
@@ -1852,14 +1866,18 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsOD(
 {
   double detJ_w = detJ_[gp]*intpoints_.Weight(gp);
 
-  //const double reacoeff = fluidmat_->ComputeReactionCoeff();
-
+  LINALG::Matrix<numdim_,numdim_> matreatensor(true);
   LINALG::Matrix<numdim_,numdim_> reatensor(true);
   LINALG::Matrix<numdim_,1> reafvel(true);
   LINALG::Matrix<numdim_,1> reavel(true);
-  fluidmat_->ComputeReactionTensor(reatensor);
-  reavel.Multiply(reatensor,velint);
-  reafvel.Multiply(reatensor,fvelint);
+  {
+    LINALG::Matrix<numdim_,numdim_> temp(true);
+    fluidmat_->ComputeReactionTensor(matreatensor);
+    temp.Multiply(1.0,matreatensor,defgrd_inv);
+    reatensor.MultiplyTN(defgrd_inv,temp);
+    reavel.Multiply(reatensor,velint);
+    reafvel.Multiply(reatensor,fvelint);
+  }
 
   //-----------inverse Right Cauchy-Green tensor as vector in voigt notation
   LINALG::Matrix<numstr_,1> C_inv_vec(true);
@@ -1903,16 +1921,17 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsOD(
          - 2 * reacoeff * J * v^f * phi * d(phi)/dp  Dp
          + 2 * reacoeff * J * v^s * phi * d(phi)/dp  Dp
          */
-        const double tmp = fac * J * 2 * porosity * dphi_dp * shapefct(k);
+        const double tmp = fac * J * J * 2 * porosity * dphi_dp * shapefct(k);
         (*stiffmatrix)(fi+j, fkp1+numdim_ ) += -tmp * reafvel(j);
 
         (*stiffmatrix)(fi+j, fkp1+numdim_ ) += tmp * reavel(j);
 
         /*-------structure- fluid velocity coupling:  "darcy-terms"
-         -reacoeff * J *  phi^2 *  Dv^f
+         -reacoeff * J * J *  phi^2 *  Dv^f
          */
+        const double v = fac * J * J * porosity * porosity;
         for(int l=0; l<numdim_; l++)
-          (*stiffmatrix)(fi+j, fkp1+l) += -fac * reatensor(j,l) * J * porosity * porosity * shapefct(k);
+          (*stiffmatrix)(fi+j, fkp1+l) += -v * reatensor(j,l) * shapefct(k);
       }
     }
   }

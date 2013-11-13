@@ -56,6 +56,8 @@ namespace MAT
         const double permeability_;
         /// flow type: Darcy or Darcy-Brinkman
         PoroFlowType type_;
+        /// flag indicating varying permeablity
+        const bool varyingpermeability_;
         
         /// create material instance of matching type with my parameters
         virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -185,9 +187,6 @@ namespace MAT
         return params_->permeability_;
       }
 
-      /// return permeability
-      //  double BulkModulus() const { return params_->bulkmodulus_; }
-
       /// evaluate material law
       void EvaluateViscStress(LINALG::Matrix<6,1>* stress,
                               LINALG::Matrix<6,6>* cmat,
@@ -201,6 +200,8 @@ namespace MAT
       {
         return params_;
       }
+
+      bool VaryingPermeablity() const {return params_->varyingpermeability_;}
 
     private:
 
