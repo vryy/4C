@@ -10,6 +10,7 @@ equations
 #include "volume_integration.H"
 
 #include "cut_boundingbox.H"
+#include "cut_kernel.H"
 
 /*-------------------------------------------------------------------------------------------------------------------*
   Create integration points on the facets of the volumecell by triangulating the facets
@@ -107,9 +108,8 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     Facet *fe = *i;
 
     std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_,true);
-    FacetIntegration faee1(fe,elem1_,position_,false,false);
 
-    std::vector<double> RefPlaneTemp = faee1.equation_plane(cornersLocal);
+    std::vector<double> RefPlaneTemp = KERNEL::EqnPlanePolygon(cornersLocal );
     eqnAllFacets[i-facete.begin()] = RefPlaneTemp;
 
     // consider only facet whose x-direction normal componenet is non-zero
@@ -409,7 +409,7 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
 
       return;
     }
-    dserror("negative volume predicted by the DirectDivergence integration rule; volume = %lf",volGlobal);
+    dserror("negative volume predicted by the DirectDivergence integration rule; volume = %0.20f",TotalInteg);
   }
 
 #ifdef DEBUGCUTLIBRARY //check the volume with the moment fitting and check the values

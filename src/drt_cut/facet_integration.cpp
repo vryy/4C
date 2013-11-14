@@ -18,6 +18,13 @@ equations
 *------------------------------------------------------------------------------------------------------*/
 std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector<std::vector<double> > cornersLocal)
 {
+#if 1  //Newell's method of determining equation of plane
+
+  std::vector<double> eqn_plane = KERNEL::EqnPlanePolygon( cornersLocal );
+#endif
+
+
+#if 0 // old method of deleting the inlin points etc etc..
   std::vector<double> eqn_plane(4);
   int cornSize = cornersLocal.size();
 
@@ -48,6 +55,7 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
   {
     eqn_plane = GEO::CUT::KERNEL::EqnPlanePolygon( ptlist );
   }
+#endif
 
   return eqn_plane;
 }
@@ -694,7 +702,9 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
   if(divergenceRule)
   {
     if(fabs(eqn_plane_[0])<TOL_EQN_PLANE)
+    {
       return;
+    }
   }
 
   if( !divergenceRule && !face1_->OnCutSide() )

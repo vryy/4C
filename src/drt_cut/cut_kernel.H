@@ -161,6 +161,12 @@ namespace GEO
 
       std::vector<double> EqnPlanePolygon( const std::vector<Point*>& ptlist, bool DeleteInlinePts = false );
 
+
+      /*!
+      \brief Compute the equation of plane of this polygon using Newell's method
+       */
+      std::vector<double> EqnPlanePolygon( const std::vector<std::vector<double> >& vertices );
+
       /*!
       \brief Find the equation of plane that contains these non-collinear points
       It must be noted while using this function to find equation of facets,

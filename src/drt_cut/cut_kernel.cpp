@@ -421,6 +421,41 @@ std::vector<double> GEO::CUT::KERNEL::EqnPlane( Point* & pt1, Point* & pt2, Poin
 }
 
 /*------------------------------------------------------------------------------------------------------------*
+           Newell's method of finding equation of plane of a polygon                               sudhakar 11/13
+       This method is applicable for convex, concave, and polygons with in-line vertices
+       Does not require deleting of any vertices ---> so very general and robust
+*-------------------------------------------------------------------------------------------------------------*/
+std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<std::vector<double> >& vertices )
+{
+  std::vector<double> eqn_plane(4), middle(3);
+  std::fill( eqn_plane.begin(), eqn_plane.end(), 0.0 );
+  std::fill( middle.begin(), middle.end(), 0.0 );
+
+  unsigned num_vert = vertices.size();
+
+  for( unsigned ii=0; ii<num_vert; ii++ )
+  {
+    const std::vector<double> pt1 = vertices[ii];
+    const std::vector<double> pt2 = vertices[(ii+1)%num_vert];
+
+    eqn_plane[0] += ( pt1[1] - pt2[1] ) * ( pt1[2] + pt2[2] );
+    eqn_plane[1] += ( pt1[2] - pt2[2] ) * ( pt1[0] + pt2[0] );
+    eqn_plane[2] += ( pt1[0] - pt2[0] ) * ( pt1[1] + pt2[1] );
+
+    for( unsigned jj=0; jj<3; jj++  )
+      middle[jj] += pt1[jj];
+  }
+
+  for( unsigned jj=0; jj<3; jj++  )
+  {
+    middle[jj] = middle[jj] / num_vert;
+    eqn_plane[3] += middle[jj] * eqn_plane[jj];
+  }
+
+  return eqn_plane;
+}
+
+/*------------------------------------------------------------------------------------------------------------*
            check whether the point "check" is inside the triangle formed by tri               sudhakar 05/12
                  uses barycentric coordinates as it is faster
 *-------------------------------------------------------------------------------------------------------------*/
