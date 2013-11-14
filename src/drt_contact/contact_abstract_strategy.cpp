@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_wear.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_colors.H"
@@ -1257,14 +1258,13 @@ void CONTACT::CoAbstractStrategy::EvaluateRelMov()
   if (Dualquadslave3d())
     invtrafo_->Multiply(false,*xsmod,*xsmod);
   
+  // evaluation of obj. invariant slip increment
   // do the evaluation on the interface
   // loop over all slave row nodes on the current interface
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-#ifndef OBJECTVARSLIPINCREMENT
-    interface_[i]->EvaluateRelMov(xsmod,dmatrixmod_,doldmod_);
-#endif
-  }
+  if (DRT::INPUT::IntegralValue<int>(Params(),"GP_SLIP_INCR")==false)
+    for (int i=0; i<(int)interface_.size(); ++i)
+      interface_[i]->EvaluateRelMov(xsmod,dmatrixmod_,doldmod_);
+
   return;
 }
 

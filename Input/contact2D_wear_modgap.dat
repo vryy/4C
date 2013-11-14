@@ -72,9 +72,6 @@ LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 FRICTION                        Coulomb
-WEARLAW                         Archard
-WEARTYPE                        explicit
-WEARCOEFF                       1e-6
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  10
 SEMI_SMOOTH_CT                  10
@@ -83,6 +80,10 @@ SHAPEFCN                        Dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 PARALLEL_REDIST                 Static
+-------------------------------------------------------------WEAR
+WEARLAW                         Archard
+WEARTYPE                        explicit
+WEARCOEFF                       1e-6
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.1
 NUMSTEP                         200

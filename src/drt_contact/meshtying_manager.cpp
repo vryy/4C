@@ -354,6 +354,8 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // read parameter lists from DRT::Problem
   const Teuchos::ParameterList& mortar    = DRT::Problem::Instance()->MortarCouplingParams();
   const Teuchos::ParameterList& meshtying = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& wearlist  = DRT::Problem::Instance()->WearParams();
+
   int dim = DRT::Problem::Instance()->NDim();
 
   // *********************************************************************
@@ -498,6 +500,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // store content of BOTH ParameterLists in local parameter list
   mtparams.setParameters(mortar);
   mtparams.setParameters(meshtying);
+  mtparams.setParameters(wearlist);
   mtparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // no parallel redistribution in the serial case

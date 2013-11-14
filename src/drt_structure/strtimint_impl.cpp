@@ -29,6 +29,7 @@ Maintainer: Alexander Popp
 #include "../drt_contact/meshtying_abstract_strategy.H"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "../drt_contact/contact_abstract_strategy.H"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_wear.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_beamcontact/beam3contact_defines.H"
 #include "../drt_constraint/constraint_manager.H"

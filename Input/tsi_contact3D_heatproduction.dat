@@ -39,9 +39,9 @@ STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_COUPLING_STRESS          No
 STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  Initial                       // None, Current
+THERM_HEATFLUX                  Initial                     // None, Current
 THERM_TEMPERATURE               Yes
-THERM_TEMPGRAD                  Initial                       // None, Current
+THERM_TEMPGRAD                  Initial                     // None, Current
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   3
 APPLICATION                     MortarContact
@@ -49,13 +49,14 @@ FRICTION                        coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  2000
 SEMI_SMOOTH_CT                  2000
-HEATTRANSSLAVE                  1000
-HEATTRANSMASTER                 100
 -------------------------------------------------------------MORTAR COUPLING
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 COUPLING_AUXPLANE               Yes
 PARALLEL_REDIST                 No
+-----------------------------------------------------------------TSI CONTACT
+HEATTRANSSLAVE                  1000
+HEATTRANSMASTER                 100
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 ADAPTCONV                       No
@@ -64,7 +65,7 @@ CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      Statics                       // Centr_Diff, Gen_EMM, Gen_Alfa, Static, Statics, GenAlpha, OneStepTheta, GEMM, AdamsBashforth2, EulerMaruyama, EulerImpStoch
+DYNAMICTYP                      Statics             // Centr_Diff, Gen_EMM, Gen_Alfa, Static, Statics, GenAlpha, OneStepTheta, GEMM, AdamsBashforth2, EulerMaruyama, EulerImpStoch
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no
@@ -85,14 +86,14 @@ PREDICT                         ConstDis
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
-STC_SCALING                     no                            // new parameter 220310
+STC_SCALING                     no         // new parameter 220310
 TIMESTEP                        0.0005
 TOLCONSTR                       1e-08
 TOLDISP                         1e-08
 TOLINCO                         1e-08
 TOLPRE                          1e-08
 TOLRES                          1e-08
-UZAWAALGO                       direct                        // iterative, changed to direct 220310
+UZAWAALGO                       direct     // iterative, changed to direct 220310
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08

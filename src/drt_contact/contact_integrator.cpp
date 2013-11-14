@@ -50,6 +50,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_wear.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
@@ -85,11 +86,6 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
      MORTAR::MortarElement& mele, double& mxia, double& mxib,
      const Epetra_Comm& comm)
 { 
-  bool slip_gp=false;
-#ifdef OBJECTVARSLIPINCREMENT
-  slip_gp=true;
-#endif
-
   // *********************************************************************
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
@@ -197,7 +193,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
   Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
   
-  if(wear or slip_gp==true)
+  if(wear or DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
   {
     scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
     mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,mele.NumNode()));
@@ -353,7 +349,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
       GP_2D_Scaling(sele,sval,dsxideta,wgt);
 
     // Creating the tangential relative slip increment (non-objective)
-    if(slip_gp)
+    if (DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
       GP_2D_SlipIncr(sele,mele,sval,mval,lmval,scoord,mcoord,scoordold,mcoordold,sderiv,
           mderiv,dsxideta,dxdsxi,wgt,jumpvalv,dsxigp,dmxigp,dslipgp);
 
@@ -396,7 +392,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
         GP_2D_Scaling_Lin(iter,sele,sval,sderiv,dsxideta,wgt,dsxigp,ximaps);
 
       // Lin tangential relative slip increment (non-objective)
-      if(slip_gp)
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
         GP_2D_SlipIncr_Lin(iter,sele,sval,lmval,sderiv,lmderiv,dsxideta,dxdsxi,dxdsxidsxi,wgt,
             jumpvalv,dsxigp,dslipgp,ximaps,derivjac,dualmap);
 
@@ -2389,11 +2385,6 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
      const Epetra_Comm& comm)
 {
-  bool slip_gp=false;
-#ifdef OBJECTVARSLIPINCREMENT
-  slip_gp=true;
-#endif
-
   // explicitely defined shapefunction type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
@@ -2468,7 +2459,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
 
   // get them in the case of tsi
-  if ((tsiprob and friction) or wear or slip_gp)
+  if ((tsiprob and friction) or wear or DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
   {
     scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
     mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,mele.NumNode()));
@@ -2654,7 +2645,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       GP_3D_Scaling(sele,sval,jac,wgt,sxi);
 
     // Creating the WEIGHTED tangential relative slip increment (non-objective)
-    if(slip_gp)
+    if (DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
       GP_3D_SlipIncr(sele,mele,sval,mval,lmval,scoord,mcoord,scoordold,mcoordold,sderiv,
            mderiv,jac,wgt,jumpvalv,dsxigp,dmxigp,dslipgp);
 
@@ -2706,7 +2697,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
             dsxigp,derivjacselexi);
 
       // Lin weighted slip
-      if(slip_gp)
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
         GP_3D_SlipIncr_Lin(iter,sele,sval,lmval,sderiv,lmderiv,jac,wgt,jumpvalv,jacintcellmap,
              dslipgp,dsxigp,dualmap);
 

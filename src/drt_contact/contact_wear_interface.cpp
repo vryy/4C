@@ -53,8 +53,10 @@ Maintainer: Philipp Farah
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
 
+//#include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_mortar.H"
-#include "../drt_inpar/inpar_contact.H"
+//#include "../drt_inpar/inpar_wear.H"
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 09/13|
  *----------------------------------------------------------------------*/
@@ -695,29 +697,30 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
       double znor = 0;
       double jumptxi = 0;
       double jumpteta = 0;
+      double* jump = cnode->FriData().jump();
+      double* txi = cnode->CoData().txi();
+      double* teta = cnode->CoData().teta();
 
       for (int i=0;i<Dim();i++)
         znor += n[i]*z[i];
 
-#ifdef OBJECTVARSLIPINCREMENT
-
+      // for slip
+      if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+      {
         jumptxi=cnode->FriData().jump_var()[0];
 
         if (Dim()==3)
           jumpteta=cnode->FriData().jump_var()[1];
-
-#else
-        double* jump = cnode->FriData().jump();
-        double* txi = cnode->CoData().txi();
-        double* teta = cnode->CoData().teta();
-
+      }
+      else
+      {
         // more information from node
         for (int i=0;i<Dim();i++)
         {
           jumptxi += txi[i]*jump[i];
           jumpteta += teta[i]*jump[i];
         }
-#endif
+      }
 
       // check for dimensions
       if(Dim()==2 and (jumpteta != 0.0))
@@ -768,127 +771,129 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
       // 3) Entries from differentiation with respect to displacements
       /******************************************************************/
 
-#ifdef OBJECTVARSLIPINCREMENT
-      std::vector<std::map<int,double> > derivjump_ = cnode->FriData().GetDerivVarJump();
-
-      //txi
-      for (colcurr=derivjump_[0].begin();colcurr!=derivjump_[0].end();++colcurr)
+      if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
       {
-        int col = colcurr->first;
-        double valtxi = - frcoeff * (znor - cn * wgap) * ct * (colcurr->second);
-        if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
-      }
-      //teta
-      for (colcurr=derivjump_[1].begin();colcurr!=derivjump_[1].end();++colcurr)
-      {
-        int col = colcurr->first;
-        double valteta = - frcoeff * (znor - cn * wgap) * ct * (colcurr->second);
-        if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
-      }
+        std::vector<std::map<int,double> > derivjump_ = cnode->FriData().GetDerivVarJump();
 
-      // ... old slip
-      // get linearization of jump vector
-     std::vector<std::map<int,double> > derivjump = cnode->FriData().GetDerivJump();
-
-     // loop over dimensions
-     for (int dim=0;dim<cnode->NumDof();++dim)
-     {
-#else
-     // ... old slip
-     // get linearization of jump vector
-    std::vector<std::map<int,double> > derivjump = cnode->FriData().GetDerivJump();
-
-    // loop over dimensions
-    for (int dim=0;dim<cnode->NumDof();++dim)
-    {
-      // loop over all entries of the current derivative map (jump)
-      for (colcurr=derivjump[dim].begin();colcurr!=derivjump[dim].end();++colcurr)
-      {
-        int col = colcurr->first;
-
-        double valtxi=0.0;
-        valtxi = - frcoeff * (znor - cn * wgap) * ct * txi[dim] * (colcurr->second);
-        // do not assemble zeros into matrix
-        if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
-
-        if (Dim()==3)
-        {
-          double valteta=0.0;
-          valteta = - frcoeff * (znor - cn * wgap) * ct * teta[dim] * (colcurr->second);
-          // do not assemble zeros into matrix
-          if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
-        }
-      }
-
-      // linearization first tangential direction *********************************
-      // loop over all entries of the current derivative map (txi)
-      for (colcurr=dtximap[dim].begin();colcurr!=dtximap[dim].end();++colcurr)
-      {
-        int col = colcurr->first;
-        double valtxi=0.0;
-        valtxi = - frcoeff*(znor-cn*wgap) * ct * jump[dim] * colcurr->second;
-
-
-        // do not assemble zeros into matrix
-        if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
-      }
-      // linearization second tangential direction *********************************
-      if (Dim()==3)
-      {
-        // loop over all entries of the current derivative map (teta)
-        for (colcurr=dtetamap[dim].begin();colcurr!=dtetamap[dim].end();++colcurr)
+        //txi
+        for (colcurr=derivjump_[0].begin();colcurr!=derivjump_[0].end();++colcurr)
         {
           int col = colcurr->first;
-          double valteta=0.0;
-          valteta = - frcoeff * (znor-cn*wgap) * ct * jump[dim] * colcurr->second;
-
-          // do not assemble zeros into matrix
-          if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
-        }
-      }
-#endif
-        // linearization of normal direction *****************************************
-        // loop over all entries of the current derivative map
-        for (colcurr=dnmap[dim].begin();colcurr!=dnmap[dim].end();++colcurr)
-        {
-          int col = colcurr->first;
-          double valtxi=0.0;
-          valtxi = - frcoeff * z[dim] * colcurr->second * ct * jumptxi;
-          // do not assemble zeros into matrix
+          double valtxi = - frcoeff * (znor - cn * wgap) * ct * (colcurr->second);
           if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
+        }
+        //teta
+        for (colcurr=derivjump_[1].begin();colcurr!=derivjump_[1].end();++colcurr)
+        {
+          int col = colcurr->first;
+          double valteta = - frcoeff * (znor - cn * wgap) * ct * (colcurr->second);
+          if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
+        }
 
+        // ... old slip
+        // get linearization of jump vector
+        std::vector<std::map<int,double> > derivjump = cnode->FriData().GetDerivJump();
+
+        // loop over dimensions
+        for (int dim=0;dim<cnode->NumDof();++dim)
+        {
+          // linearization of normal direction *****************************************
+          // loop over all entries of the current derivative map
+          for (colcurr=dnmap[dim].begin();colcurr!=dnmap[dim].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double valtxi=0.0;
+            valtxi = - frcoeff * z[dim] * colcurr->second * ct * jumptxi;
+            // do not assemble zeros into matrix
+            if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
+
+            if (Dim()==3)
+            {
+              double valteta=0.0;
+              valteta = - frcoeff * z[dim] * colcurr->second * ct * jumpteta;
+              // do not assemble zeros into matrix
+              if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
+            }
+          }
+        } // loop over all dimensions
+      }
+      else // std slip
+      {
+        // ... old slip
+        // get linearization of jump vector
+        std::vector<std::map<int,double> > derivjump = cnode->FriData().GetDerivJump();
+
+        // loop over dimensions
+        for (int dim=0;dim<cnode->NumDof();++dim)
+        {
+          // loop over all entries of the current derivative map (jump)
+          for (colcurr=derivjump[dim].begin();colcurr!=derivjump[dim].end();++colcurr)
+          {
+            int col = colcurr->first;
+
+            double valtxi=0.0;
+            valtxi = - frcoeff * (znor - cn * wgap) * ct * txi[dim] * (colcurr->second);
+            // do not assemble zeros into matrix
+            if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
+
+            if (Dim()==3)
+            {
+              double valteta=0.0;
+              valteta = - frcoeff * (znor - cn * wgap) * ct * teta[dim] * (colcurr->second);
+              // do not assemble zeros into matrix
+              if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
+            }
+          }
+
+          // linearization first tangential direction *********************************
+          // loop over all entries of the current derivative map (txi)
+          for (colcurr=dtximap[dim].begin();colcurr!=dtximap[dim].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double valtxi=0.0;
+            valtxi = - frcoeff*(znor-cn*wgap) * ct * jump[dim] * colcurr->second;
+
+            // do not assemble zeros into matrix
+            if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
+          }
+          // linearization second tangential direction *********************************
           if (Dim()==3)
           {
-            double valteta=0.0;
-            valteta = - frcoeff * z[dim] * colcurr->second * ct * jumpteta;
-            // do not assemble zeros into matrix
-            if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
-          }
-        }
-    } // loop over all dimensions
+            // loop over all entries of the current derivative map (teta)
+            for (colcurr=dtetamap[dim].begin();colcurr!=dtetamap[dim].end();++colcurr)
+            {
+              int col = colcurr->first;
+              double valteta=0.0;
+              valteta = - frcoeff * (znor-cn*wgap) * ct * jump[dim] * colcurr->second;
 
-    // linearization of weighted gap**********************************************
-    // loop over all entries of the current derivative map fixme
-    for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
-    {
-      int col = colcurr->first;
-      double valtxi=0.0;
-      valtxi = frcoeff * colcurr->second * ct * cn * jumptxi;
-      // do not assemble zeros into matrix
-      if (abs(valtxi)>1e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
-      if (Dim()==3)
-      {
-        double valteta=0.0;
-        valteta = frcoeff * colcurr->second * ct * cn * jumpteta;
-        // do not assemble zeros into matrix
-        if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
+              // do not assemble zeros into matrix
+              if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
+            }
+          }
+          // linearization of normal direction *****************************************
+          // loop over all entries of the current derivative map
+          for (colcurr=dnmap[dim].begin();colcurr!=dnmap[dim].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double valtxi=0.0;
+            valtxi = - frcoeff * z[dim] * colcurr->second * ct * jumptxi;
+            // do not assemble zeros into matrix
+            if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
+
+            if (Dim()==3)
+            {
+              double valteta=0.0;
+              valteta = - frcoeff * z[dim] * colcurr->second * ct * jumpteta;
+              // do not assemble zeros into matrix
+              if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
+            }
+          }
+        } // loop over all dimensions
       }
-    }
-    if(wearimpl_)
-    {
-      // linearization of weighted wear w.r.t. displacements **********************
-      std::map<int,double>& dwmap = cnode->CoData().GetDerivW();
-      for (colcurr=dwmap.begin();colcurr!=dwmap.end();++colcurr)
+
+      // linearization of weighted gap**********************************************
+      // loop over all entries of the current derivative map fixme
+      for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
       {
         int col = colcurr->first;
         double valtxi=0.0;
@@ -903,7 +908,26 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
           if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
         }
       }
-    } // if wearimpl_
+      if(wearimpl_)
+      {
+        // linearization of weighted wear w.r.t. displacements **********************
+        std::map<int,double>& dwmap = cnode->CoData().GetDerivW();
+        for (colcurr=dwmap.begin();colcurr!=dwmap.end();++colcurr)
+        {
+          int col = colcurr->first;
+          double valtxi=0.0;
+          valtxi = frcoeff * colcurr->second * ct * cn * jumptxi;
+          // do not assemble zeros into matrix
+          if (abs(valtxi)>1e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
+          if (Dim()==3)
+          {
+            double valteta=0.0;
+            valteta = frcoeff * colcurr->second * ct * cn * jumpteta;
+            // do not assemble zeros into matrix
+            if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
+          }
+        }
+      } // if wearimpl_
     } // loop over stick nodes
   }
   else
@@ -955,25 +979,28 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
       double jumptxi=0;
       double jumpteta=0;
 
-#ifdef OBJECTVARSLIPINCREMENT
-
-      jumptxi=cnode->FriData().jump_var()[0];
-
-      if (Dim()==3)
-        jumpteta=cnode->FriData().jump_var()[1];
-
-#else
       // more information from node
       double* txi = cnode->CoData().txi();
       double* teta = cnode->CoData().teta();
       double* jump = cnode->FriData().jump();
 
-      for (int i=0;i<Dim();i++)
+      // slip
+      if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
       {
-        jumptxi += txi[i]*jump[i];
-        jumpteta += teta[i]*jump[i];
+        jumptxi=cnode->FriData().jump_var()[0];
+
+        if (Dim()==3)
+          jumpteta=cnode->FriData().jump_var()[1];
       }
-#endif
+      else
+      {
+        for (int i=0;i<Dim();i++)
+        {
+          jumptxi += txi[i]*jump[i];
+          jumpteta += teta[i]*jump[i];
+        }
+      }
+
       // check for dimensions
       if(Dim()==2 and (jumpteta != 0.0))
         dserror ("ERROR: AssembleLinStick: jumpteta must be zero in 2D");
@@ -1009,84 +1036,86 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
 
       // Entries from differentiation with respect to displacements
       /*** 1 ************************************** tangent.deriv(jump) ***/
-#ifdef OBJECTVARSLIPINCREMENT
-      std::map<int,double> derivjump1 = cnode->FriData().GetDerivVarJump()[0];
-      std::map<int,double> derivjump2 = cnode->FriData().GetDerivVarJump()[1];
-
-      for (colcurr=derivjump1.begin();colcurr!=derivjump1.end();++colcurr)
+      if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
       {
-        int col = colcurr->first;
-        double valtxi = colcurr->second;
+        std::map<int,double> derivjump1 = cnode->FriData().GetDerivVarJump()[0];
+        std::map<int,double> derivjump2 = cnode->FriData().GetDerivVarJump()[1];
 
-        if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
-      }
-
-      if(Dim()==3)
-      {
-        for (colcurr=derivjump2.begin();colcurr!=derivjump2.end();++colcurr)
+        for (colcurr=derivjump1.begin();colcurr!=derivjump1.end();++colcurr)
         {
           int col = colcurr->first;
-          double valteta = colcurr->second;
+          double valtxi = colcurr->second;
 
-          if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
-        }
-      }
-
-#else
-      // get linearization of jump vector
-      std::vector<std::map<int,double> > derivjump = cnode->FriData().GetDerivJump();
-
-      if (derivjump.size()<1)
-        dserror ("AssembleLinStick: Derivative of jump is not exiting!");
-
-      // loop over dimensions
-      for (int dim=0;dim<cnode->NumDof();++dim)
-      {
-        // loop over all entries of the current derivative map (jump)
-        for (colcurr=derivjump[dim].begin();colcurr!=derivjump[dim].end();++colcurr)
-        {
-          int col = colcurr->first;
-          double valtxi = txi[dim]*colcurr->second;
-
-          // do not assemble zeros into matrix
           if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
-
-          if(Dim()==3)
-          {
-            double valteta = teta[dim]*colcurr->second;
-            if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
-          }
-        }
-      }
-
-      /*** 2 ************************************** deriv(tangent).jump ***/
-      // loop over dimensions
-      for (int j=0;j<Dim();++j)
-      {
-        // loop over all entries of the current derivative map (txi)
-        for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
-        {
-          int col = colcurr->first;
-          double val = jump[j]*colcurr->second;
-
-          // do not assemble zeros into s matrix
-          if (abs(val)>1.0e-12) linstickDISglobal.Assemble(val,row[0],col);
         }
 
         if(Dim()==3)
         {
-          // loop over all entries of the current derivative map (teta)
-          for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+          for (colcurr=derivjump2.begin();colcurr!=derivjump2.end();++colcurr)
+          {
+            int col = colcurr->first;
+            double valteta = colcurr->second;
+
+            if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
+          }
+        }
+      }
+      else // std slip
+      {
+        // get linearization of jump vector
+        std::vector<std::map<int,double> > derivjump = cnode->FriData().GetDerivJump();
+
+        if (derivjump.size()<1)
+          dserror ("AssembleLinStick: Derivative of jump is not exiting!");
+
+        // loop over dimensions
+        for (int dim=0;dim<cnode->NumDof();++dim)
+        {
+          // loop over all entries of the current derivative map (jump)
+          for (colcurr=derivjump[dim].begin();colcurr!=derivjump[dim].end();++colcurr)
+          {
+            int col = colcurr->first;
+            double valtxi = txi[dim]*colcurr->second;
+
+            // do not assemble zeros into matrix
+            if (abs(valtxi)>1.0e-12) linstickDISglobal.Assemble(valtxi,row[0],col);
+
+            if(Dim()==3)
+            {
+              double valteta = teta[dim]*colcurr->second;
+              if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
+            }
+          }
+        }
+
+        /*** 2 ************************************** deriv(tangent).jump ***/
+        // loop over dimensions
+        for (int j=0;j<Dim();++j)
+        {
+          // loop over all entries of the current derivative map (txi)
+          for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
           {
             int col = colcurr->first;
             double val = jump[j]*colcurr->second;
 
-            // do not assemble zeros into matrix
-            if (abs(val)>1.0e-12) linstickDISglobal.Assemble(val,row[1],col);
+            // do not assemble zeros into s matrix
+            if (abs(val)>1.0e-12) linstickDISglobal.Assemble(val,row[0],col);
+          }
+
+          if(Dim()==3)
+          {
+            // loop over all entries of the current derivative map (teta)
+            for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+            {
+              int col = colcurr->first;
+              double val = jump[j]*colcurr->second;
+
+              // do not assemble zeros into matrix
+              if (abs(val)>1.0e-12) linstickDISglobal.Assemble(val,row[1],col);
+            }
           }
         }
       }
-#endif
     }
   }
   return;
@@ -1191,31 +1220,34 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
         double jumptxi = 0;
         double jumpteta = 0;
         double euclidean = 0;
-
-  #ifdef OBJECTVARSLIPINCREMENT
-
-        jumptxi=cnode->FriData().jump_var()[0];
-
-        if (Dim()==3)
-          jumpteta=cnode->FriData().jump_var()[1];
-
-        for (int i=0;i<Dim();i++)
-        {
-          znor += n[i]*z[i];
-          ztxi += txi[i]*z[i];
-          zteta += teta[i]*z[i];
-        }
-  #else
         double* jump = cnode->FriData().jump();
-        for (int i=0;i<Dim();i++)
+
+        // for slip
+        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
         {
-          znor += n[i]*z[i];
-          ztxi += txi[i]*z[i];
-          zteta += teta[i]*z[i];
-          jumptxi += txi[i]*jump[i];
-          jumpteta += teta[i]*jump[i];
+          jumptxi=cnode->FriData().jump_var()[0];
+
+          if (Dim()==3)
+            jumpteta=cnode->FriData().jump_var()[1];
+
+          for (int i=0;i<Dim();i++)
+          {
+            znor += n[i]*z[i];
+            ztxi += txi[i]*z[i];
+            zteta += teta[i]*z[i];
+          }
         }
-  #endif
+        else
+        {
+          for (int i=0;i<Dim();i++)
+          {
+            znor += n[i]*z[i];
+            ztxi += txi[i]*z[i];
+            zteta += teta[i]*z[i];
+            jumptxi += txi[i]*jump[i];
+            jumpteta += teta[i]*jump[i];
+          }
+        }
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
         std::vector<double> sum1 (Dim()-1,0);
@@ -1393,31 +1425,34 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
       double jumptxi = 0;
       double jumpteta = 0;
       double euclidean = 0;
-
-#ifdef OBJECTVARSLIPINCREMENT
-
-      jumptxi=cnode->FriData().jump_var()[0];
-
-      if (Dim()==3)
-        jumpteta=cnode->FriData().jump_var()[1];
-
-      for (int i=0;i<Dim();i++)
-      {
-        znor += n[i]*z[i];
-        ztxi += txi[i]*z[i];
-        zteta += teta[i]*z[i];
-      }
-#else
       double* jump = cnode->FriData().jump();
-      for (int i=0;i<Dim();i++)
+
+      // for gp slip
+      if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
       {
-        znor += n[i]*z[i];
-        ztxi += txi[i]*z[i];
-        zteta += teta[i]*z[i];
-        jumptxi += txi[i]*jump[i];
-        jumpteta += teta[i]*jump[i];
+        jumptxi=cnode->FriData().jump_var()[0];
+
+        if (Dim()==3)
+          jumpteta=cnode->FriData().jump_var()[1];
+
+        for (int i=0;i<Dim();i++)
+        {
+          znor += n[i]*z[i];
+          ztxi += txi[i]*z[i];
+          zteta += teta[i]*z[i];
+        }
       }
-#endif
+      else
+      {
+        for (int i=0;i<Dim();i++)
+        {
+          znor += n[i]*z[i];
+          ztxi += txi[i]*z[i];
+          zteta += teta[i]*z[i];
+          jumptxi += txi[i]*jump[i];
+          jumpteta += teta[i]*jump[i];
+        }
+      }
 
       // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
       std::vector<double> sum1 (Dim()-1,0);
@@ -1623,83 +1658,87 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
 
         // 3) Entries from differentiation with respect to displacements
         /******************************************************************/
+        std::map<int,double> derivjump1, derivjump2;  // for gp slip
+        std::vector<std::map<int,double> > derivjump; // for dm slip
 
         /*** 01  ********* -Deriv(euclidean).ct.tangent.deriv(u)*ztan ***/
-#ifdef OBJECTVARSLIPINCREMENT
-        std::map<int,double> derivjump1 = cnode->FriData().GetDerivVarJump()[0];
-        std::map<int,double> derivjump2 = cnode->FriData().GetDerivVarJump()[1];
-
-        for (colcurr=derivjump1.begin();colcurr!=derivjump1.end();++colcurr)
+        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
         {
-          int col = colcurr->first;
-          double valtxi1 = (ztxi+ct*jumptxi)/euclidean*ct*colcurr->second*ztxi;
-          double valteta1 = (ztxi+ct*jumptxi)/euclidean*ct*colcurr->second*zteta;
+          derivjump1 = cnode->FriData().GetDerivVarJump()[0];
+          derivjump2 = cnode->FriData().GetDerivVarJump()[1];
 
-          if (abs(valtxi1)>1.0e-12) linslipDISglobal.Assemble(valtxi1,row[0],col);
-          if (abs(valteta1)>1.0e-12) linslipDISglobal.Assemble(valteta1,row[1],col);
-
-        }
-
-        if (Dim()==3)
-        {
-          for (colcurr=derivjump2.begin();colcurr!=derivjump2.end();++colcurr)
+          for (colcurr=derivjump1.begin();colcurr!=derivjump1.end();++colcurr)
           {
             int col = colcurr->first;
-            double valtxi2 = (zteta+ct*jumpteta)/euclidean*ct*colcurr->second*ztxi;
-            double valteta2 = (zteta+ct*jumpteta)/euclidean*ct*colcurr->second*zteta;
+            double valtxi1 = (ztxi+ct*jumptxi)/euclidean*ct*colcurr->second*ztxi;
+            double valteta1 = (ztxi+ct*jumptxi)/euclidean*ct*colcurr->second*zteta;
 
-            if (abs(valtxi2)>1.0e-12) linslipDISglobal.Assemble(valtxi2,row[0],col);
-            if (abs(valteta2)>1.0e-12) linslipDISglobal.Assemble(valteta2,row[1],col);
-          }
-        }
-
-#else
-        // get linearization of jump vector
-        std::vector<std::map<int,double> > derivjump = cnode->FriData().GetDerivJump();
-
-        // loop over dimensions
-        for (int dim=0;dim<cnode->NumDof();++dim)
-        {
-          // loop over all entries of the current derivative map (jump)
-          for (colcurr=derivjump[dim].begin();colcurr!=derivjump[dim].end();++colcurr)
-          {
-            int col = colcurr->first;
-
-            double valtxi1 = (ztxi+ct*jumptxi)/euclidean*ct*txi[dim]*colcurr->second*ztxi;
-            double valteta1 = (ztxi+ct*jumptxi)/euclidean*ct*txi[dim]*colcurr->second*zteta;
-            double valtxi2 = (zteta+ct*jumpteta)/euclidean*ct*teta[dim]*colcurr->second*ztxi;
-            double valteta2 = (zteta+ct*jumpteta)/euclidean*ct*teta[dim]*colcurr->second*zteta;
-
-#ifdef CONSISTENTSLIP
-            valtxi1   = valtxi1  / (znor - cn * wgap);
-            valteta1  = valteta1 / (znor - cn * wgap);
-            valtxi2   = valtxi2  / (znor - cn * wgap);
-            valteta2  = valteta2 / (znor - cn * wgap);
-#endif
-
-            // do not assemble zeros into matrix
             if (abs(valtxi1)>1.0e-12) linslipDISglobal.Assemble(valtxi1,row[0],col);
             if (abs(valteta1)>1.0e-12) linslipDISglobal.Assemble(valteta1,row[1],col);
-            if (abs(valtxi2)>1.0e-12) linslipDISglobal.Assemble(valtxi2,row[0],col);
-            if (abs(valteta2)>1.0e-12) linslipDISglobal.Assemble(valteta2,row[1],col);
+
           }
 
-#ifdef CONSISTENTSLIP
-          /*** Additional Terms ***/
-          // normal derivative
-          for (colcurr=dnmap[dim].begin();colcurr!=dnmap[dim].end();++colcurr)
+          if (Dim()==3)
           {
-            int col = colcurr->first;
-            double valtxi   = - euclidean * ztxi * z[dim] / pow(znor - cn * wgap, 2.0) * (colcurr->second);
-            double valteta  = - euclidean * zteta * z[dim] / pow(znor - cn * wgap, 2.0) * (colcurr->second);
+            for (colcurr=derivjump2.begin();colcurr!=derivjump2.end();++colcurr)
+            {
+              int col = colcurr->first;
+              double valtxi2 = (zteta+ct*jumpteta)/euclidean*ct*colcurr->second*ztxi;
+              double valteta2 = (zteta+ct*jumpteta)/euclidean*ct*colcurr->second*zteta;
 
-            // do not assemble zeros into s matrix
-            if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
-            if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
+              if (abs(valtxi2)>1.0e-12) linslipDISglobal.Assemble(valtxi2,row[0],col);
+              if (abs(valteta2)>1.0e-12) linslipDISglobal.Assemble(valteta2,row[1],col);
+            }
           }
-#endif
         }
-#endif
+        else //std slip
+        {
+          // get linearization of jump vector
+          derivjump = cnode->FriData().GetDerivJump();
+
+          // loop over dimensions
+          for (int dim=0;dim<cnode->NumDof();++dim)
+          {
+            // loop over all entries of the current derivative map (jump)
+            for (colcurr=derivjump[dim].begin();colcurr!=derivjump[dim].end();++colcurr)
+            {
+              int col = colcurr->first;
+
+              double valtxi1 = (ztxi+ct*jumptxi)/euclidean*ct*txi[dim]*colcurr->second*ztxi;
+              double valteta1 = (ztxi+ct*jumptxi)/euclidean*ct*txi[dim]*colcurr->second*zteta;
+              double valtxi2 = (zteta+ct*jumpteta)/euclidean*ct*teta[dim]*colcurr->second*ztxi;
+              double valteta2 = (zteta+ct*jumpteta)/euclidean*ct*teta[dim]*colcurr->second*zteta;
+
+  #ifdef CONSISTENTSLIP
+              valtxi1   = valtxi1  / (znor - cn * wgap);
+              valteta1  = valteta1 / (znor - cn * wgap);
+              valtxi2   = valtxi2  / (znor - cn * wgap);
+              valteta2  = valteta2 / (znor - cn * wgap);
+  #endif
+
+              // do not assemble zeros into matrix
+              if (abs(valtxi1)>1.0e-12) linslipDISglobal.Assemble(valtxi1,row[0],col);
+              if (abs(valteta1)>1.0e-12) linslipDISglobal.Assemble(valteta1,row[1],col);
+              if (abs(valtxi2)>1.0e-12) linslipDISglobal.Assemble(valtxi2,row[0],col);
+              if (abs(valteta2)>1.0e-12) linslipDISglobal.Assemble(valteta2,row[1],col);
+            }
+
+  #ifdef CONSISTENTSLIP
+            /*** Additional Terms ***/
+            // normal derivative
+            for (colcurr=dnmap[dim].begin();colcurr!=dnmap[dim].end();++colcurr)
+            {
+              int col = colcurr->first;
+              double valtxi   = - euclidean * ztxi * z[dim] / pow(znor - cn * wgap, 2.0) * (colcurr->second);
+              double valteta  = - euclidean * zteta * z[dim] / pow(znor - cn * wgap, 2.0) * (colcurr->second);
+
+              // do not assemble zeros into s matrix
+              if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
+              if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
+            }
+  #endif
+          }
+        }
 
 
 #ifdef CONSISTENTSLIP
@@ -1731,54 +1770,56 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
 
 
         /*** 02 ***************** frcoeff*znor*ct*tangent.deriv(jump) ***/
-#ifdef OBJECTVARSLIPINCREMENT
-
-        for (colcurr=derivjump1.begin();colcurr!=derivjump1.end();++colcurr)
+        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
         {
-          int col = colcurr->first;
-          double valtxi = -frcoeff*(znor-cn*wgap)*ct*colcurr->second;
-
-          if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
-        }
-
-        if (Dim()==3)
-        {
-          for (colcurr=derivjump2.begin();colcurr!=derivjump2.end();++colcurr)
+          for (colcurr=derivjump1.begin();colcurr!=derivjump1.end();++colcurr)
           {
             int col = colcurr->first;
-            double valteta = -frcoeff*(znor-cn*wgap)*ct*colcurr->second;
+            double valtxi = -frcoeff*(znor-cn*wgap)*ct*colcurr->second;
 
-            if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
-          }
-        }
-
-#else
-        // loop over dimensions
-        for (int dim=0;dim<cnode->NumDof();++dim)
-        {
-          // loop over all entries of the current derivative map (jump)
-          for (colcurr=derivjump[dim].begin();colcurr!=derivjump[dim].end();++colcurr)
-         {
-            int col = colcurr->first;
-
-            //std::cout << "val " << colcurr->second << std::endl;
-#ifdef CONSISTENTSLIP
-            double valtxi = - frcoeff * ct * txi[dim] * colcurr->second;
-            double valteta = - frcoeff * ct * teta[dim] * colcurr->second;
-#else
-            double valtxi = (-1)*(frcoeff*(znor-cn*wgap))*ct*txi[dim]*colcurr->second;
-            double valteta = (-1)*(frcoeff*(znor-cn*wgap))*ct*teta[dim]*colcurr->second;
-#endif
-            // do not assemble zeros into matrix
             if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
+          }
 
-            if (Dim()==3)
+          if (Dim()==3)
+          {
+            for (colcurr=derivjump2.begin();colcurr!=derivjump2.end();++colcurr)
             {
-             if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
+              int col = colcurr->first;
+              double valteta = -frcoeff*(znor-cn*wgap)*ct*colcurr->second;
+
+              if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
             }
           }
         }
-#endif
+        else // std. slip
+        {
+          // loop over dimensions
+          for (int dim=0;dim<cnode->NumDof();++dim)
+          {
+            // loop over all entries of the current derivative map (jump)
+            for (colcurr=derivjump[dim].begin();colcurr!=derivjump[dim].end();++colcurr)
+           {
+              int col = colcurr->first;
+
+              //std::cout << "val " << colcurr->second << std::endl;
+  #ifdef CONSISTENTSLIP
+              double valtxi = - frcoeff * ct * txi[dim] * colcurr->second;
+              double valteta = - frcoeff * ct * teta[dim] * colcurr->second;
+  #else
+              double valtxi = (-1)*(frcoeff*(znor-cn*wgap))*ct*txi[dim]*colcurr->second;
+              double valteta = (-1)*(frcoeff*(znor-cn*wgap))*ct*teta[dim]*colcurr->second;
+  #endif
+              // do not assemble zeros into matrix
+              if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
+
+              if (Dim()==3)
+              {
+               if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
+              }
+            }
+          }
+        }
+
         /*** 1 ********************************* euclidean.deriv(T).z ***/
         // loop over dimensions
         for (int j=0;j<Dim();++j)
@@ -1859,50 +1900,54 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
         }
 
         /*** 3 ****************** deriv(euclidean).deriv(T).jump.ztan ***/
-#ifdef OBJECTVARSLIPINCREMENT
-        //!!!!!!!!!!!!!!! DO NOTHING !!!!!!!
-#else
-        // loop over dimensions
-        for (int j=0;j<Dim();++j)
+        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
         {
-          // loop over all entries of the current derivative map (txi)
-          for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
+          //!!!!!!!!!!!!!!! DO NOTHING !!!!!!!
+        }
+        else
+        {
+          // loop over dimensions
+          for (int j=0;j<Dim();++j)
           {
-            int col = colcurr->first;
-            double valtxi = (ztxi+ct*jumptxi)/euclidean*ct*(colcurr->second)*jump[j]*ztxi;
-            double valteta = (ztxi+ct*jumptxi)/euclidean*ct*(colcurr->second)*jump[j]*zteta;
-
-#ifdef CONSISTENTSLIP
-            valtxi  = valtxi / (znor - cn*wgap);
-            valteta   = valteta / (znor - cn*wgap);
-#endif
-
-            // do not assemble zeros into s matrix
-            if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
-            if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
-          }
-
-          if(Dim()==3)
-          {
-            // loop over all entries of the current derivative map (teta)
-            for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+            // loop over all entries of the current derivative map (txi)
+            for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
             {
               int col = colcurr->first;
-              double valtxi = (zteta+ct*jumpteta)/euclidean*ct*(colcurr->second)*jump[j]*ztxi;
-              double valteta = (zteta+ct*jumpteta)/euclidean*ct*(colcurr->second)*jump[j]*zteta;
+              double valtxi = (ztxi+ct*jumptxi)/euclidean*ct*(colcurr->second)*jump[j]*ztxi;
+              double valteta = (ztxi+ct*jumptxi)/euclidean*ct*(colcurr->second)*jump[j]*zteta;
 
-#ifdef CONSISTENTSLIP
+  #ifdef CONSISTENTSLIP
               valtxi  = valtxi / (znor - cn*wgap);
               valteta   = valteta / (znor - cn*wgap);
-#endif
+  #endif
 
-              // do not assemble zeros into matrix
+              // do not assemble zeros into s matrix
               if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
               if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
             }
+
+            if(Dim()==3)
+            {
+              // loop over all entries of the current derivative map (teta)
+              for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+              {
+                int col = colcurr->first;
+                double valtxi = (zteta+ct*jumpteta)/euclidean*ct*(colcurr->second)*jump[j]*ztxi;
+                double valteta = (zteta+ct*jumpteta)/euclidean*ct*(colcurr->second)*jump[j]*zteta;
+
+  #ifdef CONSISTENTSLIP
+                valtxi  = valtxi / (znor - cn*wgap);
+                valteta   = valteta / (znor - cn*wgap);
+  #endif
+
+                // do not assemble zeros into matrix
+                if (abs(valtxi)>1.0e-12) linslipDISglobal.Assemble(valtxi,row[0],col);
+                if (abs(valteta)>1.0e-12) linslipDISglobal.Assemble(valteta,row[1],col);
+              }
+            }
           }
         }
-#endif
+
         /*** 4 ************************** (frcoeff*znor).deriv(T).z ***/
         // loop over all dimensions
         for (int j=0;j<Dim();++j)
@@ -1938,43 +1983,45 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
         }
 
         /*** 5 *********************** (frcoeff*znor).deriv(T).jump ***/
-#ifdef OBJECTVARSLIPINCREMENT
-        //!!!!!!!!!!!!!!! DO NOTHING
-#else
-        // loop over all dimensions
-        for (int j=0;j<Dim();++j)
+        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
         {
-          // loop over all entries of the current derivative map (txi)
-          for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
+          //!!!!!!!!!!!!!!! DO NOTHING !!!!!!!!!!!!!!!!!!!!!!
+        }
+        else
+        {
+          // loop over all dimensions
+          for (int j=0;j<Dim();++j)
           {
-            int col = colcurr->first;
-#ifdef CONSISTENTSLIP
-            double val = - frcoeff * ct * (colcurr->second) * jump[j];
-#else
-            double val = (-1)*(frcoeff*(znor-cn*wgap))*ct*(colcurr->second)*jump[j];
-#endif
-            // do not assemble zeros into matrix
-            if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row[0],col);
-          }
-
-          if(Dim()==3)
-          {
-            // loop over all entries of the current derivative map (teta)
-            for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+            // loop over all entries of the current derivative map (txi)
+            for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
             {
               int col = colcurr->first;
-#ifdef CONSISTENTSLIP
+  #ifdef CONSISTENTSLIP
               double val = - frcoeff * ct * (colcurr->second) * jump[j];
-#else
+  #else
               double val = (-1)*(frcoeff*(znor-cn*wgap))*ct*(colcurr->second)*jump[j];
-#endif
+  #endif
+              // do not assemble zeros into matrix
+              if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row[0],col);
+            }
 
-              // do not assemble zeros into s matrix
-              if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row[1],col);
+            if(Dim()==3)
+            {
+              // loop over all entries of the current derivative map (teta)
+              for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
+              {
+                int col = colcurr->first;
+  #ifdef CONSISTENTSLIP
+                double val = - frcoeff * ct * (colcurr->second) * jump[j];
+  #else
+                double val = (-1)*(frcoeff*(znor-cn*wgap))*ct*(colcurr->second)*jump[j];
+  #endif
+                // do not assemble zeros into s matrix
+                if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row[1],col);
+              }
             }
           }
         }
-#endif
 
 #ifndef CONSISTENTSLIP
         /*** 6 ******************* -frcoeff.Deriv(n).z(ztan+ct*utan) ***/
@@ -3315,17 +3362,19 @@ void CONTACT::WearInterface::Initialize()
       frinode->FriData().GetSNodes().clear();
       frinode->FriData().GetMNodes().clear();
 
-#ifdef OBJECTVARSLIPINCREMENT
-      // reset jump deriv.
-      for (int j=0 ;j<(int)((frinode->FriData().GetDerivVarJump()).size()); ++j )
-        (frinode->FriData().GetDerivVarJump())[j].clear();
+      // for gp slip
+      if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+      {
+        // reset jump deriv.
+        for (int j=0 ;j<(int)((frinode->FriData().GetDerivVarJump()).size()); ++j )
+          (frinode->FriData().GetDerivVarJump())[j].clear();
 
-      (frinode->FriData().GetDerivVarJump()).resize(2);
+        (frinode->FriData().GetDerivVarJump()).resize(2);
 
-      // reset jumps
-      frinode->FriData().jump_var()[0]=0.0;
-      frinode->FriData().jump_var()[1]=0.0;
-#endif
+        // reset jumps
+        frinode->FriData().jump_var()[0]=0.0;
+        frinode->FriData().jump_var()[1]=0.0;
+      }
 
       //************************************
       //              wear

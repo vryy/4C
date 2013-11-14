@@ -69,38 +69,6 @@ namespace INPAR
       friction_coulomb  ///< Coulomb friction law
     };
 
-    /// Type of contact wear law
-    /// (this enum represents the input file parameter WEAR)
-    enum WearLaw
-    {
-      wear_none,     ///< no wear
-      wear_archard   ///< Archard wear law
-    };
-
-    /// Definition of contact wear surface
-    /// (this enum represents the input file parameter BOTH_SIDED_WEAR)
-    enum WearSide
-    {
-      wear_slave,     ///< wear on slave side
-      wear_both_map  ///< map slave-side wear to master side
-    };
-
-    /// Definition of contact wear algorithm
-    /// (this enum represents the input file parameter WEARTYPE)
-    enum WearType
-    {
-      wear_impl,
-      wear_expl,
-      wear_discr
-    };
-
-    /// Definition of wear shape functions
-    /// (this enum represents the input file parameter WEAR_SHAPEFCN)
-    enum WearShape
-    {
-      wear_shape_dual,
-      wear_shape_standard
-    };
     /// Type of employed solving strategy
     /// (this enum represents the input file parameter STRATEGY)
     enum SolvingStrategy
@@ -129,7 +97,6 @@ namespace INPAR
       output_both     ///< print to screen and file
     };
 
-
     /// Type of analytical solution for error norm computation
     /// (this enum represents the input file parameter ERROR_NORMS)
     /// (more details on analytical solutions, see drt_contact/contact_analytical.cpp)
@@ -156,9 +123,9 @@ namespace INPAR
     /// (this enum represents the input file parameter BEAMS_OCTREEBBOX)
     enum OctreeType
     {
-      boct_none,         ///< no boundig box -> no octree
-      boct_aabb,     	 ///< axis aligned bounding boxes
-      boct_cobb,      	 ///< cylindrical oriented bounding boxes
+      boct_none,       ///< no boundig box -> no octree
+      boct_aabb,       ///< axis aligned bounding boxes
+      boct_cobb,       ///< cylindrical oriented bounding boxes
       boct_spbb        ///< spherical bounding boxes
     };
 

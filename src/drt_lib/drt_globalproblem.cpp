@@ -223,6 +223,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--THERMAL DYNAMIC/GENALPHA", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC/ONESTEPTHETA", *list);
   reader.ReadGidSection("--TSI DYNAMIC", *list);
+  reader.ReadGidSection("--TSI CONTACT", *list);
   reader.ReadGidSection("--POROELASTICITY DYNAMIC", *list);
   reader.ReadGidSection("--POROSCATRA CONTROL", *list);
   reader.ReadGidSection("--SSI CONTROL", *list);
@@ -265,6 +266,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--CAVITATION DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
   reader.ReadGidSection("--COHESIVE CRACK", *list);
+  reader.ReadGidSection("--WEAR", *list);
 
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);

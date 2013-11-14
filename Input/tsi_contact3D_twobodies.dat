@@ -38,9 +38,9 @@ STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_COUPLING_STRESS          No
 STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  Initial                       // None, Current
+THERM_HEATFLUX                  Initial                     // None, Current
 THERM_TEMPERATURE               Yes
-THERM_TEMPGRAD                  Initial                       // None, Current
+THERM_TEMPGRAD                  Initial                     // None, Current
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   3
 APPLICATION                     MortarContact
@@ -48,13 +48,14 @@ FRICTION                        coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  2000
 SEMI_SMOOTH_CT                  2000
-HEATTRANSSLAVE                  200
-HEATTRANSMASTER                 200
 -------------------------------------------------------------MORTAR COUPLING
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 COUPLING_AUXPLANE               Yes
 PARALLEL_REDIST                 No
+-----------------------------------------------------------------TSI CONTACT
+HEATTRANSSLAVE                  200
+HEATTRANSMASTER                 200
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 ADAPTCONV                       No

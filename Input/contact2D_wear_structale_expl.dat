@@ -56,10 +56,6 @@ LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 FRICTION                        Coulomb
-WEARLAW                         Archard
-WEARTYPE                        explicit
-BOTH_SIDED_WEAR                 none
-WEARCOEFF                       0.0003//1e-6//0.0003
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  100
 SEMI_SMOOTH_CT                  100
@@ -74,6 +70,11 @@ SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.4
 PARALLEL_REDIST                 dynamic
 //LM_DUAL_CONSISTENT              no
+------------------------------------------------------------------------WEAR
+WEARLAW                         Archard
+WEARTYPE                        explicit
+BOTH_SIDED_WEAR                 none
+WEARCOEFF                       0.0003//1e-6//0.0003
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ---------------------------------------------------------------FLUID DYNAMIC

@@ -3284,14 +3284,14 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
       } //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-#ifdef OBJECTVARSLIPINCREMENT
-      jumptxi=cnode->FriData().jump_var()[0];
-      jumpteta = 0.0;
+      if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+      {
+        jumptxi=cnode->FriData().jump_var()[0];
+        jumpteta = 0.0;
 
-      if (Dim()==3)
-        jumpteta=cnode->FriData().jump_var()[1];
-#endif
-
+        if (Dim()==3)
+          jumpteta=cnode->FriData().jump_var()[1];
+      }
     } // if cnode == Stick
 
     // store C in vector
@@ -3408,14 +3408,14 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
         } //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-  #ifdef OBJECTVARSLIPINCREMENT
-        jumptxi=kcnode->FriData().jump_var()[0];
-        jumpteta = 0.0;
+        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+        {
+          jumptxi=kcnode->FriData().jump_var()[0];
+          jumpteta = 0.0;
 
-        if (Dim()==3)
-          jumpteta=kcnode->FriData().jump_var()[1];
-  #endif
-
+          if (Dim()==3)
+            jumpteta=kcnode->FriData().jump_var()[1];
+        }
       } // if cnode == Slip
 
     newCtxi[k] = jumptxi;
@@ -3614,14 +3614,14 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
         } //  loop over master nodes
         // gp-wise slip !!!!!!!
 
-  #ifdef OBJECTVARSLIPINCREMENT
-        jumptxi=kcnode->FriData().jump_var()[0];
-        jumpteta = 0.0;
+        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+        {
+          jumptxi=kcnode->FriData().jump_var()[0];
+          jumpteta = 0.0;
 
-        if (Dim()==3)
-          jumpteta=kcnode->FriData().jump_var()[1];
-  #endif
-
+          if (Dim()==3)
+            jumpteta=kcnode->FriData().jump_var()[1];
+        }
       } // if cnode == Slip
 
     newCtxi[k] = jumptxi;
@@ -3821,13 +3821,14 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
       } //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-#ifdef OBJECTVARSLIPINCREMENT
-      jumptxi=cnode->FriData().jump_var()[0];
-      jumpteta = 0.0;
+      if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+      {
+        jumptxi=cnode->FriData().jump_var()[0];
+        jumpteta = 0.0;
 
-      if (Dim()==3)
-        jumpteta=cnode->FriData().jump_var()[1];
-#endif
+        if (Dim()==3)
+          jumpteta=cnode->FriData().jump_var()[1];
+      }
 
       // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
       std::vector<double> sum1 (Dim()-1,0);
@@ -3949,13 +3950,14 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
         } //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-  #ifdef OBJECTVARSLIPINCREMENT
-        jumptxi=kcnode->FriData().jump_var()[0];
-        jumpteta = 0.0;
+        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+        {
+          jumptxi=kcnode->FriData().jump_var()[0];
+          jumpteta = 0.0;
 
-        if (Dim()==3)
-          jumpteta=kcnode->FriData().jump_var()[1];
-  #endif
+          if (Dim()==3)
+            jumpteta=kcnode->FriData().jump_var()[1];
+        }
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
         std::vector<double> sum1 (Dim()-1,0);
@@ -4174,13 +4176,14 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
         } //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-  #ifdef OBJECTVARSLIPINCREMENT
-        jumptxi=kcnode->FriData().jump_var()[0];
-        jumpteta = 0.0;
+        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+        {
+          jumptxi=kcnode->FriData().jump_var()[0];
+          jumpteta = 0.0;
 
-        if (Dim()==3)
-          jumpteta=kcnode->FriData().jump_var()[1];
-  #endif
+          if (Dim()==3)
+            jumpteta=kcnode->FriData().jump_var()[1];
+        }
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
         std::vector<double> sum1 (Dim()-1,0);
@@ -4401,13 +4404,14 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
         } //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-  #ifdef OBJECTVARSLIPINCREMENT
-        jumptxi=kcnode->FriData().jump_var()[0];
-        jumpteta = 0.0;
+        if (DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR")==true)
+        {
+          jumptxi=kcnode->FriData().jump_var()[0];
+          jumpteta = 0.0;
 
-        if (Dim()==3)
-          jumpteta=kcnode->FriData().jump_var()[1];
-  #endif
+          if (Dim()==3)
+            jumpteta=kcnode->FriData().jump_var()[1];
+        }
 
         // evaluate euclidean norm ||vec(zt)+ct*vec(jumpt)||
         std::vector<double> sum1 (Dim()-1,0);
@@ -4415,7 +4419,6 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
         if (Dim()==3) sum1[1] = zteta+ct*jumpteta;
         if (Dim()==2) euclidean = abs(sum1[0]);
         if (Dim()==3) euclidean = sqrt(sum1[0]*sum1[0]+sum1[1]*sum1[1]);
-
      } // if cnode == Slip
 
       // store C in vector

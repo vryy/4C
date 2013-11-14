@@ -39,6 +39,7 @@ Maintainer: Alexander Popp
 #define CONTACT_INTEGRATOR_H
 
 #include "../drt_mortar/mortar_integrator.H"
+#include "../drt_inpar/inpar_wear.H"
 
 
 // forward declarations

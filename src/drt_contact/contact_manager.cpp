@@ -54,6 +54,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_mortar.H"
+#include "../drt_inpar/inpar_wear.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_io/io_control.H"
 
@@ -535,11 +536,16 @@ discret_(discret)
  *----------------------------------------------------------------------*/
 bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 {
-  // read parameter lists and problemtype from DRT::Problem
-  const Teuchos::ParameterList& mortar  = DRT::Problem::Instance()->MortarCouplingParams();
-  const Teuchos::ParameterList& contact = DRT::Problem::Instance()->ContactDynamicParams();
-  const Teuchos::ParameterList& stru    = DRT::Problem::Instance()->StructuralDynamicParams();
+  // read parameter lists from DRT::Problem
+  const Teuchos::ParameterList& mortar   = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& contact  = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& wearlist = DRT::Problem::Instance()->WearParams();
+  const Teuchos::ParameterList& tsic     = DRT::Problem::Instance()->TSIContactParams();
 
+  // structure params only for delta_t
+  const Teuchos::ParameterList& stru     = DRT::Problem::Instance()->StructuralDynamicParams();
+
+  // read Problem Type and Problem Dimension from DRT::Problem
   const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
   int dim = DRT::Problem::Instance()->NDim();
 
@@ -666,7 +672,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       DRT::INPUT::IntegralValue<int>(contact,"FRLESS_FIRST")==true)
     dserror("Frictionless first contact step with Tresca's law not yet implemented"); // hopefully coming soon, when Coulomb and Tresca are combined
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(contact,"WEARLAW") != INPAR::CONTACT::wear_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist,"WEARLAW") != INPAR::CONTACT::wear_none &&
       DRT::INPUT::IntegralValue<int>(contact,"FRLESS_FIRST")==true)
     dserror("Frictionless first contact step with wear not yet implemented");
 
@@ -677,12 +683,12 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   
   if (problemtype==prb_tsi &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") != INPAR::MORTAR::shape_standard &&
-      DRT::INPUT::IntegralValue<int>(contact,"THERMOLAGMULT")==false)
+      DRT::INPUT::IntegralValue<int>(tsic,"THERMOLAGMULT")==false)
     dserror("Thermal contact without Lagrange Multipliers only for standard shape functions");
 
   if (problemtype==prb_tsi &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_standard &&
-      DRT::INPUT::IntegralValue<int>(contact,"THERMOLAGMULT")==true)
+      DRT::INPUT::IntegralValue<int>(tsic,"THERMOLAGMULT")==true)
     dserror("Thermal contact with Lagrange Multipliers only for dual shape functions");
   
   // no parallel redistribution in for thermal-structure-interaction
@@ -699,29 +705,33 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // contact with wear
   // *********************************************************************
   
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(contact,"WEARLAW") == INPAR::CONTACT::wear_none &&
-      contact.get<double>("WEARCOEFF") != 0.0)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist,"WEARLAW") == INPAR::CONTACT::wear_none &&
+      wearlist.get<double>("WEARCOEFF") != 0.0)
     dserror("ERROR: Wear coefficient only necessary in the context of wear.");
   
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_none &&
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(contact,"WEARLAW") != INPAR::CONTACT::wear_none)
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist,"WEARLAW") != INPAR::CONTACT::wear_none)
     dserror("ERROR: Wear models only applicable to frictional contact.");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(contact,"WEARLAW") != INPAR::CONTACT::wear_none &&
-      contact.get<double>("WEARCOEFF") <= 0.0)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist,"WEARLAW") != INPAR::CONTACT::wear_none &&
+      wearlist.get<double>("WEARCOEFF") <= 0.0)
     dserror("ERROR: No valid wear coefficient provided, must be equal or greater 0.");
 
-//  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(contact,"BOTH_SIDED_WEAR") !=  INPAR::CONTACT::wear_slave &&
-//      Comm().NumProc() > 1)
-//    dserror("ERROR: Both-sided wear only applicable in serial!");
-
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(contact,"WEARLAW") != INPAR::CONTACT::wear_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist,"WEARLAW") != INPAR::CONTACT::wear_none &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") != INPAR::MORTAR::inttype_segments)
     dserror("ERROR: Calculation of wear only possible by employing segment-based integration!");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(contact,"WEARLAW") != INPAR::CONTACT::wear_none &&
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist,"WEARLAW") != INPAR::CONTACT::wear_none &&
       DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE") ==true)
     dserror("ERROR: Combination of LM_NODAL_SCALE and WEAR not (yet) implemented.");
+
+  if(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult &&
+     DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist,"WEARLAW") != INPAR::CONTACT::wear_none)
+    dserror("ERROR: Wear model only applicable in combination with Lagrange multiplier strategy.");
+
+  if(DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_tresca &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist,"WEARLAW") != INPAR::CONTACT::wear_none)
+    dserror("ERROR: Wear only for Coulomb friction!");
 
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
@@ -748,7 +758,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (mortar.get<double>("SEARCH_PARAM") == 0.0 && Comm().MyPID()==0)
     std::cout << ("Warning: Contact search called without inflation of bounding volumes\n") << std::endl;
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(contact,"BOTH_SIDED_WEAR") !=  INPAR::CONTACT::wear_slave)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(wearlist,"BOTH_SIDED_WEAR") !=  INPAR::CONTACT::wear_slave)
     std::cout << ("\n \n Warning: Contact with both-sided wear is still experimental !") << std::endl;
 
   // *********************************************************************
@@ -790,6 +800,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // store contents of BOTH ParameterLists in local parameter list
   cparams.setParameters(mortar);
   cparams.setParameters(contact);
+  cparams.setParameters(wearlist);
+  cparams.setParameters(tsic);
   cparams.set<double>("TIMESTEP",stru.get<double>("TIMESTEP"));
   cparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 

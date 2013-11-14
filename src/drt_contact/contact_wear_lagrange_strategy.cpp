@@ -53,6 +53,7 @@ Maintainer: Philipp Farah
 
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_wear.H"
 #include "../drt_io/io.H"
 
 #include "../linalg/linalg_solver.H"
@@ -4215,17 +4216,18 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
           tz[0] += frinode->CoData().txi()[i]*frinode->MoData().lm()[i];
           if(Dim()==3) tz[1] += frinode->CoData().teta()[i]*frinode->MoData().lm()[i];
 
-#ifndef OBJECTVARSLIPINCREMENT
-
-          tjump[0] += frinode->CoData().txi()[i]*frinode->FriData().jump()[i];
-          if(Dim()==3) tjump[1] += frinode->CoData().teta()[i]*frinode->FriData().jump()[i];
-#endif
+          if (DRT::INPUT::IntegralValue<int>(Params(),"GP_SLIP_INCR")==false)
+          {
+            tjump[0] += frinode->CoData().txi()[i]*frinode->FriData().jump()[i];
+            if(Dim()==3) tjump[1] += frinode->CoData().teta()[i]*frinode->FriData().jump()[i];
+          }
         }
 
-#ifdef OBJECTVARSLIPINCREMENT
-        tjump[0] = frinode->FriData().jump_var()[0];
-        if(Dim()==3) tjump[1] = frinode->FriData().jump_var()[1];
-#endif
+        if (DRT::INPUT::IntegralValue<int>(Params(),"GP_SLIP_INCR")==true)
+        {
+          tjump[0] = frinode->FriData().jump_var()[0];
+          if(Dim()==3) tjump[1] = frinode->FriData().jump_var()[1];
+        }
 
         // evaluate euclidean norm |tz+ct.tjump|
         std::vector<double> sum (Dim()-1,0);

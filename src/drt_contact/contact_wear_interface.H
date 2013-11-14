@@ -41,6 +41,7 @@ Maintainer: Philipp Farah
 #define CONTACT_WEAR_INTERFACE_H_
 
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_wear.H"
 #include "contact_interface.H"
 
 namespace CONTACT

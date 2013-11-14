@@ -319,6 +319,8 @@ public:
   const Teuchos::ParameterList& CavitationParams() const { return getParameterList()->sublist("CAVITATION DYNAMIC"); }
   const Teuchos::ParameterList& ParticleParams() const { return getParameterList()->sublist("PARTICLE DYNAMIC"); }
   const Teuchos::ParameterList& CrackParams() const { return getParameterList()->sublist("COHESIVE CRACK"); }
+  const Teuchos::ParameterList& WearParams() const { return getParameterList()->sublist("WEAR"); }
+  const Teuchos::ParameterList& TSIContactParams() const { return getParameterList()->sublist("TSI CONTACT"); }
 
   const Teuchos::ParameterList& SolverParams(int solverNr) const;
 

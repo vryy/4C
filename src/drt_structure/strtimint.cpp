@@ -222,7 +222,7 @@ STR::TimInt::TimInt
   disn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
-      (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
+      (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF")>0.0)
   {
     // material displacements Dm_{n+1} at t_{n+1}
     dismatn_ = LINALG::CreateVector(*DofRowMapView(),true);

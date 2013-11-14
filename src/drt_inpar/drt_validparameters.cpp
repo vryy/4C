@@ -50,6 +50,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_ssi.H"
 #include "../drt_inpar/inpar_cavitation.H"
 #include "../drt_inpar/inpar_crack.H"
+#include "../drt_inpar/inpar_wear.H"
 
 #include <AztecOO.h>
 
@@ -1623,44 +1624,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "If chosen the first time step of a newly in contact slave node is regarded as frictionless",
                                yesnotuple,yesnovalue,&scontact);
 
-  //DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
-  //DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
-
-  setStringToIntegralParameter<int>("WEARLAW","None","Type of wear law",
-      tuple<std::string>("None","none",
-                         "Archard","archard"),
-      tuple<int>(
-                 INPAR::CONTACT::wear_none, INPAR::CONTACT::wear_none,
-                 INPAR::CONTACT::wear_archard, INPAR::CONTACT::wear_archard),
-      &scontact);
-
-  setStringToIntegralParameter<int>("WEAR_SHAPEFCN","std","Type of employed set of shape functions for wear",
-        tuple<std::string>("Dual", "dual",
-                           "Standard", "standard", "std"),
-        tuple<int>(
-                INPAR::CONTACT::wear_shape_dual, INPAR::CONTACT::wear_shape_dual,
-                INPAR::CONTACT::wear_shape_standard, INPAR::CONTACT::wear_shape_standard, INPAR::CONTACT::wear_shape_standard),
-        &scontact);
-
-  DoubleParameter("WEARCOEFF",0.0,"Wear coefficient",&scontact);
-
-  setStringToIntegralParameter<int>("BOTH_SIDED_WEAR","No","Definition of wear side",
-        tuple<std::string>("No","no", "none" ,
-                           "Mapping","mapping", "map"),
-        tuple<int>(
-                INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave,
-                INPAR::CONTACT::wear_both_map, INPAR::CONTACT::wear_both_map,INPAR::CONTACT::wear_both_map),
-        &scontact);
-
-  setStringToIntegralParameter<int>("WEARTYPE","explicit","Definition of wear algorithm",
-        tuple<std::string>("impl","Impl", "implicit" ,
-                           "expl","Expl", "explicit",
-                           "discrete","wear_discrete", "wd"),
-        tuple<int>(
-                INPAR::CONTACT::wear_impl, INPAR::CONTACT::wear_impl, INPAR::CONTACT::wear_impl,
-                INPAR::CONTACT::wear_expl, INPAR::CONTACT::wear_expl,INPAR::CONTACT::wear_expl,
-                INPAR::CONTACT::wear_discr, INPAR::CONTACT::wear_discr, INPAR::CONTACT::wear_discr),
-        &scontact);
+  setStringToIntegralParameter<int>("GP_SLIP_INCR","No",
+      "If chosen the slip increment is computed gp-wise which results to a non-objective quantity, but this would be consistent to wear and tsi calculations.",
+                               yesnotuple,yesnovalue,&scontact);
 
   setStringToIntegralParameter<int>("STRATEGY","LagrangianMultipliers","Type of employed solving strategy",
         tuple<std::string>("LagrangianMultipliers","lagrange", "Lagrange",
@@ -1724,12 +1690,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::CONTACT::errornorms_thicksphere, INPAR::CONTACT::errornorms_thicksphere),
       &scontact);
 
-  DoubleParameter("HEATTRANSSLAVE",0.0,"Heat transfer parameter for slave side in thermal contact",&scontact);
-  DoubleParameter("HEATTRANSMASTER",0.0,"Heat transfer parameter for master side in thermal contact",&scontact);
-
-  setStringToIntegralParameter<int>("THERMOLAGMULT","Yes","Lagrange Multipliers are applied for thermo-contact",
-                               yesnotuple,yesnovalue,&scontact);
-
   setStringToIntegralParameter<int>("BEAMS_NEWGAP","No","choose between original or enhanced gapfunction",
                                yesnotuple,yesnovalue,&scontact);
 
@@ -1791,6 +1751,57 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TOLLAGR",1.0E-6,
                   "tolerance in the LM norm for the newton iteration (saddlepoint formulation only)",
                   &scontact);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for wear */
+  Teuchos::ParameterList& wear = list->sublist("WEAR",false,"");
+
+  setStringToIntegralParameter<int>("WEARLAW","None","Type of wear law",
+      tuple<std::string>("None","none",
+                         "Archard","archard"),
+      tuple<int>(
+                 INPAR::CONTACT::wear_none, INPAR::CONTACT::wear_none,
+                 INPAR::CONTACT::wear_archard, INPAR::CONTACT::wear_archard),
+      &wear);
+
+  setStringToIntegralParameter<int>("WEAR_SHAPEFCN","std","Type of employed set of shape functions for wear",
+        tuple<std::string>("Dual", "dual",
+                           "Standard", "standard", "std"),
+        tuple<int>(
+                INPAR::CONTACT::wear_shape_dual, INPAR::CONTACT::wear_shape_dual,
+                INPAR::CONTACT::wear_shape_standard, INPAR::CONTACT::wear_shape_standard, INPAR::CONTACT::wear_shape_standard),
+        &wear);
+
+  DoubleParameter("WEARCOEFF",0.0,"Wear coefficient",&wear);
+
+  setStringToIntegralParameter<int>("BOTH_SIDED_WEAR","No","Definition of wear side",
+        tuple<std::string>("No","no", "none" ,
+                           "Mapping","mapping", "map"),
+        tuple<int>(
+                INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave,
+                INPAR::CONTACT::wear_both_map, INPAR::CONTACT::wear_both_map,INPAR::CONTACT::wear_both_map),
+        &wear);
+
+  setStringToIntegralParameter<int>("WEARTYPE","explicit","Definition of wear algorithm",
+        tuple<std::string>("impl","Impl", "implicit" ,
+                           "expl","Expl", "explicit",
+                           "discrete","wear_discrete", "wd"),
+        tuple<int>(
+                INPAR::CONTACT::wear_impl, INPAR::CONTACT::wear_impl, INPAR::CONTACT::wear_impl,
+                INPAR::CONTACT::wear_expl, INPAR::CONTACT::wear_expl,INPAR::CONTACT::wear_expl,
+                INPAR::CONTACT::wear_discr, INPAR::CONTACT::wear_discr, INPAR::CONTACT::wear_discr),
+        &wear);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for tsi contact */
+  Teuchos::ParameterList& tsic = list->sublist("TSI CONTACT",false,"");
+
+  DoubleParameter("HEATTRANSSLAVE",0.0,"Heat transfer parameter for slave side in thermal contact",&tsic);
+  DoubleParameter("HEATTRANSMASTER",0.0,"Heat transfer parameter for master side in thermal contact",&tsic);
+
+  setStringToIntegralParameter<int>("THERMOLAGMULT","Yes","Lagrange Multipliers are applied for thermo-contact",
+                               yesnotuple,yesnovalue,&tsic);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");
 

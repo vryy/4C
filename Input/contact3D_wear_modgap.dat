@@ -60,13 +60,14 @@ FRICTION                        coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  200
 SEMI_SMOOTH_CT                  200
-WEARLAW                         Archard
-WEARCOEFF                       1e-3
 -------------------------------------------------------------MORTAR COUPLING
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.2
 COUPLING_AUXPLANE               Yes
 PARALLEL_REDIST                 Static
+------------------------------------------------------------------------WEAR
+WEARLAW                         Archard
+WEARCOEFF                       1e-3
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC

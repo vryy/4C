@@ -30,7 +30,7 @@ StruResultTest::StruResultTest(STR::TimInt& tintegrator)
   acc_  = tintegrator.Acc();
   strudisc_ = tintegrator.Discretization();
   if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
-      (DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
+      (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF")>0.0)
     dism_ = tintegrator.Dismat();
   else
     dism_=Teuchos::null;

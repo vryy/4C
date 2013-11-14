@@ -23,6 +23,7 @@ Maintainer: Philipp Farah
 
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_wear.H"
 
 #include "../drt_mortar/mortar_manager_base.H"
 
@@ -260,7 +261,7 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
   // FIX: This should be done in a different way
   //***********************************************************************
   INPAR::CONTACT::WearType wtype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(DRT::Problem::Instance()->ContactDynamicParams(),"WEARTYPE");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(DRT::Problem::Instance()->WearParams(),"WEARTYPE");
 
   if(wtype==INPAR::CONTACT::wear_impl)
     cstrategy.OutputWear();

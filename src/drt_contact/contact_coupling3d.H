@@ -40,6 +40,7 @@ Maintainer: Alexander Popp
 
 #include "../drt_mortar/mortar_coupling3d.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_wear.H"
 
 /*!
 \brief CONTACT: namespace of the BACI contact and meshtying algorithms
