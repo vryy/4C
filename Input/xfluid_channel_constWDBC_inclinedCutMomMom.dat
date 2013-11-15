@@ -1037,7 +1037,7 @@ NODE 220 COORD -1.00000000000000e+00 -3.000000000000000e-01 -3.000000000000000e-
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 118 QUANTITY velx VALUE 5.0e00 TOLERANCE 1e-09
 FLUID DIS fluid NODE 118 QUANTITY vely VALUE 0.0e00 TOLERANCE 1e-09
-FLUID DIS fluid NODE 118 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 118 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-09
 FLUID DIS fluid NODE 118 QUANTITY pressure VALUE 3.0e00 TOLERANCE 1e-07
 -------------------------------------------------------------------------END
 //                              END
