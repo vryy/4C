@@ -10,7 +10,8 @@ Maintainer: Jonas Biehler
             089 - 289-15276
 </pre>
 */
-
+// only compile this on the workstation as kaisers boost version is outdated an cant run this code
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
 /*----------------------------------------------------------------------*/
 /* definitions */
 #ifndef SMC_PARTICLE_H
@@ -144,6 +145,11 @@ namespace INVANA
   //! brief  log likelihood of last position
   double LogLikeOld_;
 
+   //! brief  log likelihood of current position
+  double LogPrior_;
+
+  //! brief  log prior of proposal  move
+  double LogPriorProp_;
 
   protected:
 
@@ -166,4 +172,9 @@ namespace INVANA
 } // EOF STR
 std::ostream& operator << (std::ostream& os, const STR::INVANA::SMCParticle& particle);
 
+#endif
+
+
+#else
+ // no code here
 #endif

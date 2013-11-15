@@ -262,7 +262,12 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::RedAirBloodScatraType::Instance().Name() << " "
     << DRT::ELEMENTS::RedAirBloodScatraLine3Type::Instance().Name() << " "
     << MAT::TopOptDensType::Instance().Name() << " "
+    // only compile this on the workstation as kaisers boost version is outdated an cant run this code
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
     << STR::INVANA::SMCParticleType::Instance().Name() << " "
+#else
+ // no code here
+#endif
 
     ;
   return s.str();

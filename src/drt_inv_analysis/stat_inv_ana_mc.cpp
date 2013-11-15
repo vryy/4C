@@ -39,6 +39,9 @@ Maintainer: Jonas Biehler
 #include "smc_particle_list.H"
 #include "../linalg/linalg_utils.H"
 
+// only compile this on the workstation as kaisers boost version is outdated an cant run this code
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
+
 /*----------------------------------------------------------------------*/
 /* standard constructor */
 STR::INVANA::StatInvAnaMC::StatInvAnaMC(Teuchos::RCP<DRT::Discretization> dis):
@@ -59,10 +62,10 @@ STR::INVANA::StatInvAnaMC::StatInvAnaMC(Teuchos::RCP<DRT::Discretization> dis):
 void STR::INVANA::StatInvAnaMC::Optimize()
 {
   // create particle list
-  int numparticles=120000;
+  int numparticles=120;
   Teuchos::RCP<SMCParticleList> my_particle_list = Teuchos::rcp(new SMCParticleList(numparticles, 2));
-  //unsigned int seed =(static_cast<unsigned>(std::time(0)));
-  unsigned int seed =110;
+  unsigned int seed =(static_cast<unsigned>(std::time(0)));
+  //unsigned int seed =110;
 
   my_particle_list->Initialize(seed);
 
@@ -118,21 +121,18 @@ void STR::INVANA::StatInvAnaMC::PropReweight(Teuchos::RCP<SMCParticleList> my_pa
   {
     Teuchos::RCP<SMCParticle> my_particle= my_particles->GetParticle(i);
     // compute proposal for LogLikeGamm
-    my_particle->LogLikeProp_= LogLike(*my_particle,false);
+    //my_particle->LogLikeProp_= LogLike(*my_particle,false);
+    my_particle->LogLikeProp_= LogLikeRealForwardProblem(*my_particle,false);
     my_particle->LogLikeGammaProp_= my_particles->GetGamma()* my_particle->LogLikeProp_;
     //my_particle->LogLikeProp_= LogLikeRealForwardProblem(*my_particle,false);
     //my_particle->LogLikeGammaProp_= gamma*my_particle->LogLikeProp_;
 
     if(!iteration) // init if we are in first iteration of SMC loop
     {
-     // my_particle->LogLike_= LogLikeRealForwardProblem(*my_particle,false);
-      my_particle->LogLike_= LogLike(*my_particle,false);
+      my_particle->LogLike_= LogLikeRealForwardProblem(*my_particle,false);
+      //my_particle->LogLike_= LogLike(*my_particle,false);
       my_particle->LogLikeGamma_= my_particles->GetGamma()*my_particle->LogLike_;
     }
-    //  my_particle->LogLikeGamma_= 0.0*LogLike(*my_particle,0.0,false);
-
-
-   // my_particle->weightprop_ = my_particle->weight_ + my_particle->LogLikeGammaProp_ - my_particle->LogLikeGamma_;
   }
  }
 void STR::INVANA::StatInvAnaMC::CheckReweight(Teuchos::RCP<SMCParticleList> my_particles, double& gamma)
@@ -142,6 +142,7 @@ void STR::INVANA::StatInvAnaMC::CheckReweight(Teuchos::RCP<SMCParticleList> my_p
 void STR::INVANA::StatInvAnaMC::PropMove(Teuchos::RCP <SMCParticleList> my_particle_list, int seed)
 {
   my_particle_list->PropMove(seed);
+  my_particle_list->CalcLogPriorProp();
 }
 
 void STR::INVANA::StatInvAnaMC::CheckPropMove(Teuchos::RCP <SMCParticleList> my_particle_list, int seed)
@@ -157,15 +158,16 @@ void STR::INVANA::StatInvAnaMC::CheckPropMove(Teuchos::RCP <SMCParticleList> my_
   {
     Teuchos::RCP<SMCParticle> my_particle= my_particle_list->GetParticle(i);
     // compute proposal for LogLikeGamma
-    my_particle->LogLikeProp_= LogLike(*my_particle,true);
-    //my_particle->LogLikeProp_= LogLikeRealForwardProblem(*my_particle,true);
+    //my_particle->LogLikeProp_= LogLike(*my_particle,true);
+    my_particle->LogLikeProp_= LogLikeRealForwardProblem(*my_particle,true);
 
     my_particle->LogLikeGammaProp_= my_particle_list->GetGamma()*my_particle->LogLikeProp_;
 
     // Metropolis-Hastings
     // compute pi_prop/pi_old
     //IO::cout << "LogLikeGammaProp_" << my_particle->LogLikeGammaProp_<< "my_particle->LogLikeGamma_ " << my_particle->LogLikeGamma_ << IO::endl;
-    alpha=exp(my_particle->LogLikeGammaProp_-my_particle->LogLikeGamma_); // in principle times prior but we have gauss
+    //IO::cout << "LogPriorProp_" << my_particle->LogPriorProp_<< "LogPrior_ " << my_particle->LogPrior_ << IO::endl;
+    alpha=exp(my_particle->LogPriorProp_+ my_particle->LogLikeGammaProp_-my_particle->LogPrior_ -my_particle->LogLikeGamma_); // in principle times prior but we have gauss
     double temp = zeroone_a();
     //IO::cout << "temp " << temp << "alpha " << alpha << IO::endl;
     if(temp < alpha)
@@ -179,10 +181,26 @@ void STR::INVANA::StatInvAnaMC::CheckPropMove(Teuchos::RCP <SMCParticleList> my_
   gcomm_->Barrier();
   gcomm_->Barrier();
   gcomm_->SumAll(&counter,&acceptance_rate,1);
+  gcomm_->Barrier();
+  gcomm_->Barrier();
+
+  my_particle_list->tau_curr_=(double)acceptance_rate/my_particle_list->GetNumGlobalParticles();
+  my_particle_list->sigma_curr_ = my_particle_list->sigma_curr_ + my_particle_list->gamma_sigma_*(my_particle_list->tau_curr_-my_particle_list->tau_target_);
+  if(my_particle_list->sigma_curr_<my_particle_list->sigma_min_)
+  {
+    my_particle_list->sigma_curr_=my_particle_list->sigma_min_;
+  }
+  else
+  {
+    if(my_particle_list->sigma_curr_>my_particle_list->sigma_max_)
+      my_particle_list->sigma_curr_=my_particle_list->sigma_max_;
+  }
 
   if(myglobalpid_==0)
+  {
     IO::cout << "ACCEPTANCE RATE........................................................" << ((double)acceptance_rate)/my_particle_list->GetNumGlobalParticles()*100 << IO::endl;
-
+    IO::cout << "SIGMACURR ............................................................." << my_particle_list->sigma_curr_ << IO::endl;
+  }
 
 }
 
@@ -223,10 +241,18 @@ double STR::INVANA::StatInvAnaMC::LogLikeRealForwardProblem(SMCParticle my_parti
       EvaluateError();
     // for now our target distribution is (exp(-objval))^gamma
     // hence we need gamma*(-objval)
-      return (-objval_);
+      //return (-(250.0/2+2)*log(objval_));
+			double numerator_like = boost::math::lgamma(10/2+2);
+			double denom_like = 7*log(0.000001+objval_  );
+			//IO::cout << "lagamma" << denom_like << IO::endl;
+      //return (-objval_);
+      return (numerator_like-denom_like);
     }
     else
+		{
+			IO::cout << " garbage " << IO::endl;
       return (-1000000);
+		}
 }
 
 
@@ -243,7 +269,7 @@ int STR::INVANA::StatInvAnaMC::SetMatParamsBasedOnParticle(SMCParticle my_partic
   // quick and dirty check if proposal is usefull
   for(unsigned int i=0; i< my_position.size();i++ )
   {
-    if(my_position.at(i)<0.2)
+    if(my_position.at(i)<0.05)
       return(1);
   }
   Teuchos::RCP<Epetra_MultiVector> params = Teuchos::null;
@@ -252,3 +278,8 @@ int STR::INVANA::StatInvAnaMC::SetMatParamsBasedOnParticle(SMCParticle my_partic
   return 0;
 
 }
+
+
+#else
+ // no code here
+#endif

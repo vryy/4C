@@ -17,6 +17,7 @@ Maintainer: Jonas Biehler
 #include "smc_particle.H"
 #include "smc_particle_list.H"
 #include <boost/random.hpp>
+#include <boost/math/distributions/lognormal.hpp>
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
@@ -26,6 +27,9 @@ Maintainer: Jonas Biehler
 #include "../drt_io/io_control.H"
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
+
+// only compile this on the workstation as kaisers boost version is outdated an cant run this code
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
@@ -141,19 +145,37 @@ STR::INVANA::SMCParticleList::SMCParticleList(int numparticles , int numparams)
   distributewithingroupsource_ = Teuchos::rcp(new Epetra_Map (numgroupparticles_,nummygroupparticles,&((*mygroupparticles_ids_)[0]),0,*(lcomm_) ));
   distributewithingrouptarget_ = Teuchos::rcp(new Epetra_Map (numgroupparticles_,numgroupparticles_,&((*mygroupparticles_ids_)[0]),0,*(lcomm_) ));
 
+  // init paramters for adpative variance control
+  tau_target_ =0.4;
+  //current acceptane rate
+  tau_curr_ = 0.0;
+  //
+  sigma_curr_ = 0.26;
+
+  //! brief max std in proposal distribution
+  sigma_max_ = 1.0;
+
+  //! brief min std in proposal distribution
+  sigma_min_ = 0.00001;
+
+  // brief scaling parameter for adaptive adjustment of std of proposal density
+  gamma_sigma_ = 0.1;
+
 }
 
 void STR::INVANA::SMCParticleList::Initialize(int seed)
 {
   // modify seed
-  seed =seed*1000*mygroup_;
-  boost::mt11213b mt_a;
+  seed =seed*1000*(mygroup_+1);
+  boost::random::mt11213b mt_a;
   mt_a.seed(seed);
   boost::normal_distribution<double> mynormal_dist_a(0.0,1.0);
   // use namespace random because the version in namespace boost is old and not working
   boost::random::lognormal_distribution<double> mylognormal_dist_a(0,0.5);
-  boost::variate_generator<boost::mt11213b&, boost::normal_distribution<double> > get_normal_a(mt_a, mynormal_dist_a);
-  boost::variate_generator<boost::mt11213b&, boost::random::lognormal_distribution<double> > get_lognormal_a(mt_a, mylognormal_dist_a);
+  // needed to get pdf function to work
+  boost::math::lognormal_distribution<double> my_second_lognormal_dist_a(0,0.5);
+  boost::variate_generator<boost::random::mt11213b&, boost::normal_distribution<double> > get_normal_a(mt_a, mynormal_dist_a);
+  boost::random::variate_generator<boost::random::mt11213b&, boost::random::lognormal_distribution<double> > get_lognormal_a(mt_a, mylognormal_dist_a);
 
 
   boost::mt19937 unif_a(static_cast<unsigned> (seed+4354354));
@@ -163,16 +185,19 @@ void STR::INVANA::SMCParticleList::Initialize(int seed)
    std::map<int,Teuchos::RCP <SMCParticle> >::iterator myit;
    for ( myit=global_plist_map_.begin() ; myit != global_plist_map_.end(); myit++ )
    {
+     double my_prior_value =1.0;
      // get dim and creaty dummy
      int my_size =  myit->second->GetSizeOfPosition();
      Teuchos::RCP<std::vector<double> > my_position = Teuchos::rcp(new std::vector<double>(my_size,0.0));
      for(int j= 0; j<my_size;j++)
          {
-           //my_position->at(j) = get_lognormal_a() ;
+           my_position->at(j) = get_lognormal_a()+0.1;
            //my_position->at(j) = get_normal_a();
-           my_position->at(j) = zeroone_a()*20-10;
+           //my_position->at(j) = zeroone_a()*2.0+0.5;
+           my_prior_value = my_prior_value* pdf(my_second_lognormal_dist_a,my_position->at(j)-0.1);
          }
      myit->second->SetPosition(*my_position);
+     myit->second->LogPrior_=log(my_prior_value);
    }
 
    DistributeAllParticles();
@@ -216,7 +241,7 @@ void STR::INVANA::SMCParticleList::ComputeGamma()
 
   int i=0;
   int maxiter= 1000;
-  double tol = 0.00001;
+  double tol = 0.0001;
   double a_km1=1.0;
   double b_km1=gamma_old_;
   double x_km1=1.0;
@@ -231,16 +256,16 @@ void STR::INVANA::SMCParticleList::ComputeGamma()
     // we want ESSprop = 0.95 *ESS_
     //ComputeESSProp updates ESSprop_
     ComputeESSProp(a_km1);
-    double function_a =-ESSprop_+0.95*ESS_;
+    double function_a =-ESSprop_+0.9*ESS_;
 
     ComputeESSProp(b_km1);
-    double function_b =-ESSprop_+0.95*ESS_;
+    double function_b =-ESSprop_+0.9*ESS_;
    // IO::cout << "function_a " << function_a << " a " << a_km1 << "function_b " << function_b << " b " << b_km1  << IO::endl;
 
     x_k=a_km1-function_a*((b_km1-a_km1)/(function_b-function_a)); //% aktueller Sekantenschnittpunkt
 
     ComputeESSProp(x_k);
-    y_k=-ESSprop_+0.95 *ESS_; //% Funktionswert der aktuellen Naeherung
+    y_k=-ESSprop_+0.9*ESS_; //% Funktionswert der aktuellen Naeherung
 
     diff=abs(x_k-x_km1);// % Differenz zwischen aktueller und letzter Naeherung (ab dem 2. Iterationsschritt)
 
@@ -255,6 +280,7 @@ void STR::INVANA::SMCParticleList::ComputeGamma()
   if(run_zero_)
   {
     gamma_=0.01;
+    ComputeESSProp(gamma_);
     run_zero_=false;
   }
   else
@@ -367,7 +393,7 @@ void STR::INVANA::SMCParticleList::CheckReweight(double & gamma)
   if(!globalmypid_)
   {
     ComputeGamma();
-    if(ESSprop_ < ESS_ *0.9)
+    if(ESSprop_ < ESS_ *0.8)
     {
       PrintToScreen(0);
       IO::cout << "ESSprop " << ESSprop_ << "ESS " << ESS_ << IO::endl;
@@ -581,7 +607,7 @@ void STR::INVANA::SMCParticleList::PropMove(int seed)
   seed =seed+1000*(mygroup_+1);
   boost::mt11213b mt_a;
   mt_a.seed(seed);
-  boost::normal_distribution<double> mynormal_dist_a(0,0.1);
+  boost::normal_distribution<double> mynormal_dist_a(0,sigma_curr_);
   // use namespace random because the version in namespace boost is old and not working
   //boost::random::lognormal_distribution<double> mylognormal_dist_a(0,0.5);
   boost::variate_generator<boost::mt11213b&, boost::normal_distribution<double> > get_normal_a(mt_a, mynormal_dist_a);
@@ -600,6 +626,32 @@ void STR::INVANA::SMCParticleList::PropMove(int seed)
 
   }
 }
+
+void STR::INVANA::SMCParticleList::CalcLogPriorProp()
+{
+
+  // use namespace rmath because the version in namespace boost is old and not working
+  boost::math::lognormal_distribution<double> mylognormal_dist_a(0,0.5);
+
+  std::map<int,Teuchos::RCP <SMCParticle> >::iterator myit;
+  for ( myit=global_plist_map_.begin() ; myit != global_plist_map_.end(); myit++ )
+  {
+    double my_prior_value = 1.0;
+    int my_size=myit->second->GetSizeOfPosition();
+    Teuchos::RCP<std::vector<double> > my_position_prop = Teuchos::rcp(new std::vector<double>(my_size,0.0));
+    for(int j= 0; j<my_size;j++)
+    {
+      //IO::cout << "Particle" << myit->first << "position j "<< j << "  "<< myit->second->GetPosition().at(j);
+      if(myit->second->GetPosition().at(j)-0.1<0.0)
+        my_prior_value = my_prior_value*0.0;
+      else
+        my_prior_value = my_prior_value*pdf(mylognormal_dist_a,myit->second->GetPosition().at(j)-0.1);
+    }
+    myit->second->LogPriorProp_=log(my_prior_value);
+
+  }
+}
+
 
 void STR::INVANA::SMCParticleList::GatherAllParticles()
 {
@@ -658,4 +710,9 @@ void STR::INVANA::SMCParticleList::DistributeAllParticles()
 }
 
 
+
+
+#else
+ // no code here
+#endif
 

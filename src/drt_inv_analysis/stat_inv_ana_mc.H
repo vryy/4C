@@ -9,6 +9,10 @@ Maintainer: Jonas Biehler
 </pre>
 */
 /*----------------------------------------------------------------------*/
+// only compile this on the workstation as kaisers boost version is outdated an cant run this code
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
+
+
 #ifndef STAT_INV_ANA_MC_H
 #define STAT_INV_ANA_MC_H
 
@@ -73,3 +77,6 @@ public:
 }  // namespace STR
 
 #endif /*INV_ANALYSIS_MC_H*/
+#else
+ // no code here
+#endif

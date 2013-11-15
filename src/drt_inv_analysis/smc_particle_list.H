@@ -23,6 +23,8 @@ Maintainer: Jonas Biehler
 #include "../drt_inpar/inpar_material.H"
 #include "Epetra_SerialDenseVector.h"
 
+// only compile this on the workstation as kaisers boost version is outdated an cant run this code
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
 
 // forward declarations
 namespace DRT
@@ -95,6 +97,9 @@ namespace INVANA
     //! \brief propose move using some markov kernel
     void PropMove(int seed);
 
+    //! \brief evaluate prior distribution at prop position
+    void CalcLogPriorProp();
+
     //! \brief metropolis hasting step
     void EvalPropMove(int seed);
 
@@ -115,6 +120,23 @@ namespace INVANA
     double ESSprop_;
 
 
+    //! brief target acceptance rate
+    double tau_target_;
+
+    //! brief current acceptane rate
+    double tau_curr_;
+
+    //! brief current std in proposal distribution
+    double sigma_curr_;
+
+    //! brief max std in proposal distribution
+    double sigma_max_;
+
+    //! brief min std in proposal distribution
+    double sigma_min_;
+
+    // brief scaling parameter for adaptive adjustment of std of proposal density
+    double gamma_sigma_;
 
      private:
 
@@ -176,6 +198,8 @@ namespace INVANA
       //! \brief ids of particles that belong to my np group
       Teuchos::RCP<std::vector<int> > mygroupparticles_ids_;
 
+
+
       //! \brief collect particles from all groups (gets data from proc 0 of groups)
       void GatherAllParticles();
 
@@ -191,4 +215,8 @@ namespace INVANA
 } // EOF STR
 
 
+#endif
+
+#else
+ // no code here
 #endif

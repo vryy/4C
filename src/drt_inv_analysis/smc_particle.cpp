@@ -21,6 +21,9 @@ Maintainer: Jonas Biehler
 #include "../drt_comm/comm_utils.H"
 #include "../drt_io/io_pstream.H"
 
+// only compile this on the workstation as kaisers boost version is outdated an cant run this code
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
+
 
 STR::INVANA::SMCParticleType STR::INVANA::SMCParticleType::instance_;
 
@@ -50,8 +53,11 @@ STR::INVANA::SMCParticle::SMCParticle(int numparams)
   LogLikeProp_=0.0;
   LogLike_=0.0;
   LogLikeOld_=0.0;
+  LogPrior_= 0.0;
+  LogPriorProp_= 0.0;
   position_.resize(numparams,0.0);
   positionprop_.resize(numparams,0.0);
+
 }
 
 /*----------------------------------------------------------------------*
@@ -69,6 +75,8 @@ LogLikeGammaOld_(old.LogLikeGammaOld_),
 LogLikeProp_(old.LogLikeProp_),
 LogLike_(old.LogLike_),
 LogLikeOld_(old.LogLikeOld_),
+LogPrior_(old.LogPrior_),
+LogPriorProp_(old.LogPriorProp_),
 positionprop_(old.positionprop_),
 position_(old.position_)
 {
@@ -101,9 +109,7 @@ void STR::INVANA::SMCParticle::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,type);
 
 
-  // add  position of particle
-  AddtoPack(data,position_);
-  AddtoPack(data,positionprop_);
+
   // get the rest
   AddtoPack(data,weightprop_);
   AddtoPack(data,weight_);
@@ -115,6 +121,12 @@ void STR::INVANA::SMCParticle::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,LogLikeProp_);
   AddtoPack(data,LogLike_);
   AddtoPack(data,LogLikeOld_);
+  AddtoPack(data,LogPrior_);
+  AddtoPack(data,LogPriorProp_);
+
+  // add  position of particle
+  AddtoPack(data,position_);
+  AddtoPack(data,positionprop_);
   return;
 }
 
@@ -131,9 +143,7 @@ void STR::INVANA::SMCParticle::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // extract position of particle
-  ExtractfromPack(position,data,position_);
-  ExtractfromPack(position,data,positionprop_);
+
   // get the rest
   weightprop_=ExtractDouble(position,data);
   weight_=ExtractDouble(position,data);
@@ -145,6 +155,13 @@ void STR::INVANA::SMCParticle::Unpack(const std::vector<char>& data)
   LogLikeProp_=ExtractDouble(position,data);
   LogLike_=ExtractDouble(position,data);
   LogLikeOld_=ExtractDouble(position,data);
+  LogPrior_=ExtractDouble(position,data);
+  LogPriorProp_=ExtractDouble(position,data);
+
+  // extract position of particle
+  ExtractfromPack(position,data,position_);
+  ExtractfromPack(position,data,positionprop_);
+
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -187,6 +204,16 @@ void STR::INVANA::SMCParticle::SetPositionProp(std::vector<double> new_position)
   positionprop_= new_position;
 }
 
+//void STR::INVANA::SMCParticle::SetLogPriorProp(double log_prior)/
+//{
+//  LogPriorProp_= log_prior;
+//}
+
+//void STR::INVANA::SMCParticle::SetLogPrior(double log_prior)
+//{
+////  LogPrior_= log_prior;
+//}
+
 void STR::INVANA::SMCParticle::ComputeWeightProp(double gamma)
 {
   weightprop_=weight_ + gamma*LogLikeProp_ - LogLikeGamma_;
@@ -213,6 +240,11 @@ void STR::INVANA::SMCParticle::AcceptMoveProp()
   LogLikeOld_=LogLike_;
   LogLike_=LogLikeProp_;
 
+  LogPrior_=LogPriorProp_;
   position_=positionprop_;
 }
 
+
+#else
+ // no code here
+#endif

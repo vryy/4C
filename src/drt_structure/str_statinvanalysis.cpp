@@ -43,6 +43,7 @@ void STR::statinvanalysis()
 
   switch(DRT::INPUT::IntegralValue<INPAR::STR::StatInvAnalysisType>(statinvp,"STAT_INV_ANALYSIS"))
   {
+
     case INPAR::STR::stat_inv_graddesc:
     {
       Teuchos::RCP<STR::INVANA::StatInvAnalysis>  ia = Teuchos::rcp(new STR::INVANA::StatInvAnaGradDesc(actdis));
@@ -52,6 +53,7 @@ void STR::statinvanalysis()
       DRT::Problem::Instance()->TestAll(actdis->Comm());
     }
     break;
+
     case INPAR::STR::stat_inv_lbfgs:
     {
       Teuchos::RCP<STR::INVANA::StatInvAnalysis>  ia = Teuchos::rcp(new STR::INVANA::StatInvAnaLBFGS(actdis));
@@ -63,10 +65,17 @@ void STR::statinvanalysis()
     break;
     case INPAR::STR::stat_inv_mc:
     {
+      // only compile this on the workstation as kaisers boost version is outdated an cant run this code
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
+    {
       Teuchos::RCP<STR::INVANA::StatInvAnalysis>  ia = Teuchos::rcp(new STR::INVANA::StatInvAnaMC(actdis));
       ia->Optimize();
     }
-    break;
+#else
+ dserror("Install new Boost version");
+#endif
+    }
+ break;
     default:
       dserror("Unknown type of statistical inverse analysis");
     break;
