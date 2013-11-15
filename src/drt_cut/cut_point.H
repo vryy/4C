@@ -170,9 +170,9 @@ public:
 
   void Plot( std::ostream & f, int nid = -50 )
   {
-    f << std::setprecision( 10 ) << x_[0] << " "
-      << std::setprecision( 10 ) << x_[1] << " "
-      << std::setprecision( 10 ) << x_[2] << " # "
+    f << std::setprecision( 19 ) << x_[0] << " "
+      << std::setprecision( 19 ) << x_[1] << " "
+      << std::setprecision( 19 ) << x_[2] << " # "
       << pid_<<" "
       <<nid;
     DumpDoubles( f, X(), 3 );
