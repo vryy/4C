@@ -744,6 +744,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     yesnotuple,yesnovalue,&ps);
 
   BoolParameter("REMODEL","No","Turn remodeling on/off",&ps);
+  BoolParameter("CALCINNERRADIUS","No","Compute inner radius for pure structural wall shear stress",&ps);
+  BoolParameter("LINEARCENTERLINE","No","Is the centerline linear? Only important when CALCINNERRADIUS is turned on",&ps);
+  setNumericStringParameter("CENTERLINEDIRECTION","-1","direction of linear centerline",&ps);
+  setNumericStringParameter("CENTERLINEPOINT","-1","point on linear centerline",&ps);
 
   IntParameter("MAXHULUMEN",0,"max HU value within the blood lumen",&ps);
   StringParameter("CENTERLINEFILE","name.txt",
@@ -3140,7 +3144,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::root_of_volume_u),
                                &fdyn_stab);
 
-  // this parameter selects the characteristic element length for tau_Mp and tau_C for 
+  // this parameter selects the characteristic element length for tau_Mp and tau_C for
   // all stabilization parameter definitions requiring such a length
   setStringToIntegralParameter<int>("CHARELELENGTH_PC",
                                "volume_equivalent_diameter",
@@ -3899,7 +3903,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     &fdyn_turbsgv);
 
   DoubleParameter("C_TURBPRANDTL",1.0,"(Constant) turbulent Prandtl number for the Smagorinsky model in scalar transport.",&fdyn_turbsgv);
-  
+
   setStringToIntegralParameter<int>("FILTER_WIDTH","CubeRootVol","The Vreman model requires a filter width.",
                                tuple<std::string>(
                                  "CubeRootVol",

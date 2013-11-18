@@ -809,7 +809,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
-  
+
    /*----------------------------------------------------------------------*/
   // viscohyperelastic material
   {
@@ -1311,7 +1311,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
     AddNamedReal(m,"KAPPA","fiber dispersion constant");
-    
+
     AppendMaterialDefinition(matlist,m);
   }
 
@@ -1342,7 +1342,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
-  
+
   /*--------------------------------------------------------------------*/
   // isochoric rate dependent viscos material, modified from Pioletti,1997
   {
@@ -1443,15 +1443,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"SMAX","maximal active stress");
     AddNamedReal(m,"KAPPA","dilatation modulus");
     AddNamedReal(m,"LIFETIME","lifetime of collagen fibers");
+    AddNamedReal(m,"GROWTHFAC","growth factor for stress");
     AddNamedReal(m,"HOMSTR","homeostatic target value of scalar stress measure");
-    AddNamedReal(m,"GROWTHFAC","growth factor");
+    AddNamedReal(m,"SHEARGROWTHFAC","growth factor for shear");
+    AddNamedReal(m,"HOMRAD","homeostatic target value of inner radius");
     AddNamedReal(m,"STARTTIME","at this time turnover of collagen starts");
     AddNamedString(m,"INTEGRATION","time integration scheme (Explicit, Implicit)","Explicit");
-    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
-    AddNamedString(m,"GROWTHFORCE","driving force of growth (Single, All)","Single");
-    AddNamedString(m,"INITSTRETCH","how to set stretches in the beginning (None, Homeo)","None");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration, only for implicit integration");
+    AddNamedString(m,"GROWTHFORCE","driving force of growth (Single, All, ElaCol)","Single");
+    AddNamedString(m,"ELASTINDEGRAD","how elastin is degraded (None, Rectangle, Time)","None");
+    AddNamedString(m,"MASSPROD","how mass depends on driving force (Lin, CosCos)","Lin");
+    AddNamedString(m,"INITSTRETCH","how to set stretches in the beginning (None, Homeo, UpdatePrestretch)","None");
     AddNamedInt(m,"CURVE","number of timecurve for increase of prestretch in time",0);
-    AddNamedString(m,"DEGOPTION","which degradation function (Lin, Cos, Exp)","Lin");
+    AddNamedString(m,"DEGOPTION","which degradation function (Lin, Cos, Exp, ExpVar)","Lin");
 
     AppendMaterialDefinition(matlist,m);
   }

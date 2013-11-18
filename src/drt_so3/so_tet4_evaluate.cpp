@@ -111,6 +111,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
   // check for patient specific data
   PATSPEC::GetILTDistance(Id(),params,discretization);
   PATSPEC::GetLocalRadius(Id(),params,discretization);
+  PATSPEC::GetInnerRadius(Id(),params,discretization);
 
   // what should the element do
   switch(act)
@@ -953,6 +954,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
 /* =============================================================================*
 ** CONST DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
 ** =============================================================================*/
+  const static std::vector<LINALG::Matrix<NUMNOD_SOTET4,1> > shapefcts = so_tet4_1gp_shapefcts();
   const static std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = so_tet4_1gp_derivs();
   const static std::vector<double> gpweights = so_tet4_1gp_weights();
 /* ============================================================================*/
@@ -970,9 +972,16 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
     **             [  x_4   y_4   z_4  ]
     */
   // current  displacements of element
+  LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xrefe;
   LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xdisp;
+  DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOTET4; ++i)
   {
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+
     xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
     xdisp(i,1) = disp[i*NODDOF_SOTET4+1];
     xdisp(i,2) = disp[i*NODDOF_SOTET4+2];
@@ -1122,7 +1131,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
     case INPAR::STR::strain_log:
     {
       if (elestrain == NULL) dserror("strain data not available");
-      
+
       /// the Eularian logarithmic strain is defined as the natural logarithm of the left stretch tensor [1,2]:
       /// \f[
       ///    e_{log} = e_{hencky} = ln (\mathbf{V}) = \sum_{i=1}^3 (ln \lambda_i) \mathbf{n}_i \otimes \mathbf{n}_i
@@ -1135,36 +1144,36 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
       ///
       /// \author HdV
       /// \date 08/13
-      
+
       // eigenvalue decomposition (from elasthyper.cpp)
       LINALG::Matrix<3,3> prstr2(true);  // squared principal stretches
       LINALG::Matrix<3,1> prstr(true);   // principal stretch
       LINALG::Matrix<3,3> prdir(true);   // principal directions
       LINALG::SYEV(cauchygreen,prstr2,prdir);
-      
+
       // THE principal stretches
       for (int al=0; al<3; ++al) prstr(al) = std::sqrt(prstr2(al,al));
-      
+
       // populating the logarithmic strain matrix
       LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> lnv(true);
-      
+
       // checking if cauchy green is correctly determined to ensure eigen vectors in correct direction
       // i.e. a flipped eigenvector is also a valid solution
       // C = \sum_{i=1}^3 (\lambda_i^2) \mathbf{n}_i \otimes \mathbf{n}_i
       LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> tempCG(true);
-      
+
       for (int k=0; k < 3; ++k)
       {
         double n_00, n_01, n_02, n_11, n_12, n_22 = 0.0;
-        
+
         n_00 = prdir(0,k)*prdir(0,k);
         n_01 = prdir(0,k)*prdir(1,k);
         n_02 = prdir(0,k)*prdir(2,k);
         n_11 = prdir(1,k)*prdir(1,k);
         n_12 = prdir(1,k)*prdir(2,k);
         n_22 = prdir(2,k)*prdir(2,k);
-        
-        // only compute the symmetric components from a single eigenvector, 
+
+        // only compute the symmetric components from a single eigenvector,
         // because eigenvalue directions are not consistent (it can be flipped)
         tempCG(0,0) += (prstr(k))*(prstr(k))*n_00;
         tempCG(0,1) += (prstr(k))*(prstr(k))*n_01;
@@ -1175,9 +1184,9 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
         tempCG(2,0) += (prstr(k))*(prstr(k))*n_02; // symmetry
         tempCG(2,1) += (prstr(k))*(prstr(k))*n_12; // symmetry
         tempCG(2,2) += (prstr(k))*(prstr(k))*n_22;
-        
+
         // Computation of the Logarithmic strain tensor
-        
+
         lnv(0,0) += (std::log(prstr(k)))*n_00;
         lnv(0,1) += (std::log(prstr(k)))*n_01;
         lnv(0,2) += (std::log(prstr(k)))*n_02;
@@ -1188,22 +1197,22 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
         lnv(2,1) += (std::log(prstr(k)))*n_12; // symmetry
         lnv(2,2) += (std::log(prstr(k)))*n_22;
       }
-      
-      // compare CG computed with deformation gradient with CG computed 
-      // with eigenvalues and -vectors to determine/ensure the correct 
+
+      // compare CG computed with deformation gradient with CG computed
+      // with eigenvalues and -vectors to determine/ensure the correct
       // orientation of the eigen vectors
       LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> diffCG(true);
 
       for (int i=0; i < 3; ++i)
         {
-          for (int j=0; j < 3; ++j) 
+          for (int j=0; j < 3; ++j)
             {
               diffCG(i,j) = cauchygreen(i,j)-tempCG(i,j);
               // the solution to this problem is to evaluate the cauchygreen tensor with tempCG computed with every combination of eigenvector orientations -- up to nine comparisons
-              if (diffCG(i,j) > 1e-10) dserror("eigenvector orientation error with the diffCG giving problems: %10.5e \n BUILD SOLUTION TO FIX IT",diffCG(i,j)); 
+              if (diffCG(i,j) > 1e-10) dserror("eigenvector orientation error with the diffCG giving problems: %10.5e \n BUILD SOLUTION TO FIX IT",diffCG(i,j));
             }
         }
-      
+
       (*elestrain)(gp,0) = lnv(0,0);
       (*elestrain)(gp,1) = lnv(1,1);
       (*elestrain)(gp,2) = lnv(2,2);
@@ -1271,6 +1280,17 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
+
+    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+    {
+      // gp reference coordinates
+      LINALG::Matrix<NUMNOD_SOTET4,1> funct(true);
+      funct = shapefcts[gp];
+      LINALG::Matrix<1,NUMDIM_SOTET4> point(true);
+      point.MultiplyTN(funct,xrefe);
+      params.set("gprefecoord",point);
+    }
+
     params.set<int>("gp",gp);
     params.set<int>("eleID",Id());
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());

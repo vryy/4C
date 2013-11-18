@@ -1617,7 +1617,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
   // correct iteration counter
   iter_ -= 1;
-	
+
 	// no linear solver error check implemented here, always passing 0
   return UzawaLinearNewtonFullErrorCheck(0);
 }
@@ -1636,7 +1636,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
     // print newton message on proc 0
     if (myrank_ == 0)
       conman_->PrintMonitorValues();
-      
+
     return 0;
   }
   // now some error checks
@@ -2881,6 +2881,12 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtracto
     // other parameters that might be needed by the elements
     p.set("total time", (*time_)[0]);
     p.set("delta time", (*dt_)[0]);
+
+    // compute new inner radius
+    discret_->ClearState();
+    discret_->SetState("displacement", (*dis_)(0));
+    PATSPEC::ComputeEleInnerRadius(discret_);
+
     if (pressure_ != Teuchos::null) p.set("volume", 0.0);
     // set vector values needed by elements
     discret_->ClearState();

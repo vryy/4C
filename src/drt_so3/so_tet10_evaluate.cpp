@@ -73,6 +73,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
   // check for patient specific data
   PATSPEC::GetILTDistance(Id(),params,discretization);
   PATSPEC::GetLocalRadius(Id(),params,discretization);
+  PATSPEC::GetInnerRadius(Id(),params,discretization);
 
   // what should the element do
   switch(act) {
@@ -957,6 +958,17 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
+
+    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+    {
+      // gp reference coordinates
+      LINALG::Matrix<NUMNOD_SOTET10,1> funct(true);
+      funct = shapefcts_4gp[gp];
+      LINALG::Matrix<1,NUMDIM_SOTET10> point(true);
+      point.MultiplyTN(funct,xrefe);
+      params.set("gprefecoord",point);
+    }
+
     params.set<int>("gp",gp);
     params.set<int>("eleID",Id());
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());

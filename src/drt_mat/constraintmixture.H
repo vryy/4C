@@ -89,18 +89,26 @@ namespace MAT
 //      const double massprodbasal_;
       /// lifetime of collagen fibers
       const double lifetime_;
+      /// growth factor for stress
+      const double growthfactor_;
       /// homeostatic target value of scalar stress measure
       const double homstress_;
-      /// growth factor
-      const double growthfactor_;
+      /// growth factor for shear
+      const double sheargrowthfactor_;
+      /// homeostatic target value of inner radius
+      const double homradius_;
       /// at this time turnover of collagen starts
       const double starttime_;
       /// time integration scheme (Explicit,Implicit)
       const std::string* integration_;
       /// tolerance for local Newton iteration
       const double abstol_;
-      /// driving force of growth (Single,All)
+      /// driving force of growth (Single,All,ElaCol)
       const std::string* growthforce_;
+      /// form of elastin  degradation
+      const std::string* elastindegrad_;
+      /// how mass depends on driving force
+      const std::string* massprodfunc_;
       /// how to set stretches in the beginning
       const std::string* initstretch_;
       /// number of timecurve for increase of prestretch in time
@@ -151,7 +159,7 @@ namespace MAT
     //@}
 
     /// Setup
-    void Setup(int ngp, const double massprodbasal);
+    void Setup(int ngp, const double massprodbasal, bool expvar);
 
   private:
 
@@ -171,6 +179,10 @@ namespace MAT
     void SetMass(int gp, double massprod, int idfiber);
     /// get mass production rates
     void GetMass(int gp, LINALG::Matrix<4,1>* massprod);
+    /// set vardegrad
+    void SetVarDegrad(int gp, int idfiber, double vardegrad);
+    /// get vardegrad
+    void GetVarDegrad(int gp, int idfiber, double* vardegrad);
     /// return number of gausspoints
     int NumGP() const { return numgp_;}
     //@}
@@ -181,6 +193,8 @@ namespace MAT
     double dt_;
     /// number of gausspoints
     int numgp_;
+    /// variable degradation of collagen?
+    bool expvar_;
     /// stretch of first collagen fiber family
     Teuchos::RCP<std::vector<double> > collagenstretch1_;
     /// stretch of second collagen fiber family
@@ -197,6 +211,15 @@ namespace MAT
     Teuchos::RCP<std::vector<double> > massprod3_;
     /// mass production rate of fourth fiber family
     Teuchos::RCP<std::vector<double> > massprod4_;
+    /// mass production rate of first fiber family
+    Teuchos::RCP<std::vector<double> > vardegrad1_;
+    /// mass production rate of second fiber family
+    Teuchos::RCP<std::vector<double> > vardegrad2_;
+    /// mass production rate of third fiber family
+    Teuchos::RCP<std::vector<double> > vardegrad3_;
+    /// mass production rate of fourth fiber family
+    Teuchos::RCP<std::vector<double> > vardegrad4_;
+
   };
 
   class ConstraintMixtureType : public DRT::ParObjectType
@@ -369,6 +392,8 @@ namespace MAT
     Teuchos::RCP<std::vector<LINALG::Matrix<4,1> > > localprestretch_;
     /// homeostatic stress for growth
     Teuchos::RCP<std::vector<LINALG::Matrix<4,1> > > localhomstress_;
+    /// homeostatic radius
+    double homradius_;
     /// list of fibers which have been overstretched and are deleted at the end of the time step (gp, idpast, idfiber)
     Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > deletemass_;
     /// indicates if material is initialized
@@ -385,7 +410,8 @@ namespace MAT
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
       const int firstiter,  ///< iteration index, different for explicit and implicit integration
-      double time  ///< time
+      double time,  ///< time
+      double elastin_survival   ///< amount of elastin which is still there
     );
 
     /// elastic response for one collagen fiber family
@@ -415,7 +441,10 @@ namespace MAT
     (
       const LINALG::Matrix<NUM_STRESS_3D,1> C,  ///< Cauchy-Green
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>* stress  ///< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
+      double time,  ///< time
+      double* currmassdens,  ///< current massdensity
+      double elastin_survival  ///< amount of elastin which is still there
     );
 
     /// elastic response for smooth muscle cells
@@ -445,6 +474,7 @@ namespace MAT
       LINALG::Matrix<3,3> defgrd,  ///< deformation gradient
       LINALG::Matrix<NUM_STRESS_3D,1> S,  ///< 2nd PK-stress
       LINALG::Matrix<4,1>* massstress,  ///< growth stress measure
+      double inner_radius,  ///< inner radius
       LINALG::Matrix<4,1>* massprodcomp  ///< mass production rate
     );
 
@@ -455,13 +485,30 @@ namespace MAT
       LINALG::Matrix<3,3> defgrd,  ///< deformation gradient
       LINALG::Matrix<NUM_STRESS_3D,1> S,  ///< 2nd PK-stress
       double* massstress,  ///< growth stress measure
+      double inner_radius,  ///< inner radius
       double* massprodcomp,  ///< mass production rate
       LINALG::Matrix<3,1> a,  ///< fiber vector
       const int idfiber  ///< number of fiber family 0,1,2,3
     );
 
+    /// function for massproduction
+    void MassFunction
+    (
+      double growthfac,  ///< growth factor K
+      double delta,  ///< difference in stress or wall shear stress
+      double mmax,  ///< maximal massproduction fac
+      double& massfac  ///< factor
+    );
+
     /// returns how much collagen has been degraded
     void Degradation(double t, double& degr);
+
+    /// function of elastin degradation (initial)
+    void ElastinDegradation
+    (
+      LINALG::Matrix<1,3> coord,   ///< gp coordinate in reference configuration
+      double& degr   ///< amount of elastin which is still left
+    );
 
     /// compute stress and cmat for implicit integration with whole stress as driving force
     void EvaluateImplicitAll

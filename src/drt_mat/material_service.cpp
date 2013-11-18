@@ -122,7 +122,7 @@ void MAT::AddtoCmatHolzapfelProduct(Epetra_SerialDenseMatrix& cmat,
 
  which yields the following product
 
-  - ( Cinv boeppel Cinv )_{abcd} = 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
+  - ( Cinv boeppel Cinv )_{abcd} = - 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
 
  For more details see Holzapfel p. 254
 

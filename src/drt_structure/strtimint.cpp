@@ -371,8 +371,8 @@ STR::TimInt::TimInt
   const Teuchos::ParameterList& patspec  = DRT::Problem::Instance()->PatSpecParams();
   if (DRT::INPUT::IntegralValue<int>(patspec,"PATSPEC"))
   {
-	pslist_ = Teuchos::rcp(new Teuchos::ParameterList());
-	pslist_->set("haveembedtissue", false);
+	  pslist_ = Teuchos::rcp(new Teuchos::ParameterList());
+	  pslist_->set("haveembedtissue", false);
     // check if patspeccond are already initialized
     // this is of relevance for Montecarlo Simulation
     std::vector<DRT::Condition*> pscond;
@@ -762,6 +762,11 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 
   // get initial internal force and stiffness and mass
   {
+    // compute new inner radius
+    discret_->ClearState();
+    discret_->SetState(0,"displacement",(*dis_)(0));
+    PATSPEC::ComputeEleInnerRadius(discret_);
+
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
@@ -1102,7 +1107,7 @@ void STR::TimInt::SetRestartState
   Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*discret_->NodeRowMap()));
   Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(*discret_->NodeColMap()));
 
-  // unpack nodes and elements 
+  // unpack nodes and elements
   discret_->UnPackMyElements(elementdata);
   int err =  discret_->FillComplete(true,true,true);
   if (err) dserror("FillComplete() returned err=%d",err);
@@ -2160,6 +2165,11 @@ void STR::TimInt::ApplyForceStiffInternal
   // set plasticity data
   if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(p);
 
+  // compute new inner radius
+  discret_->ClearState();
+  discret_->SetState(0,"displacement",dis);
+  PATSPEC::ComputeEleInnerRadius(discret_);
+
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState(0,"residual displacement", disi);
@@ -2228,6 +2238,11 @@ void STR::TimInt::ApplyForceStiffInternalAndInertial
 
     // set plasticity data
     if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(p);
+
+    // compute new inner radius
+    discret_->ClearState();
+    discret_->SetState(0,"displacement",dis);
+    PATSPEC::ComputeEleInnerRadius(discret_);
 
     discret_->ClearState();
     discret_->SetState(0,"residual displacement", disi);
@@ -2309,6 +2324,11 @@ void STR::TimInt::ApplyForceInternal
 
   // set plasticity data
   if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(p);
+
+  // compute new inner radius
+  discret_->ClearState();
+  discret_->SetState("displacement",dis);
+  PATSPEC::ComputeEleInnerRadius(discret_);
 
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
