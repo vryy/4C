@@ -51,22 +51,30 @@ namespace PATSPEC
 
   void ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis);
 
+  void InitializeMappingInnerSurface(Teuchos::RCP<DRT::Discretization> dis);
+
+  void ComputeEleInnerRadius(Teuchos::RCP<DRT::Discretization> dis);
+
   std::vector<double> GetCenterline(std::string filename);
 
   void ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Teuchos::ParameterList> params);
 
-  void GetILTDistance(const int eleid, 
-                      Teuchos::ParameterList& params, 
+  void GetILTDistance(const int eleid,
+                      Teuchos::ParameterList& params,
                       DRT::Discretization& dis);
 
-  void GetLocalRadius(const int eleid, 
-                      Teuchos::ParameterList& params, 
+  void GetLocalRadius(const int eleid,
+                      Teuchos::ParameterList& params,
+                      DRT::Discretization& dis);
+
+  void GetInnerRadius(const int eleid,
+                      Teuchos::ParameterList& params,
                       DRT::Discretization& dis);
 
   void PatspecOutput(Teuchos::RCP<IO::DiscretizationWriter> output_,
 		     Teuchos::RCP<DRT::Discretization> discret_,
 		     Teuchos::RCP<Teuchos::ParameterList> params);
-                      
+
   void CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
                             Teuchos::RCP<LINALG::SparseOperator> stiff,
                             Teuchos::RCP<Epetra_Vector> fint,
