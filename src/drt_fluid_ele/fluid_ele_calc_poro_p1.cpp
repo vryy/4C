@@ -718,6 +718,9 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
   // definition of velocity-based momentum residual vectors
   LINALG::Matrix< my::nsd_, my::nen_ * my::nsd_>  lin_resM_Dus(true);
 
+  // set element area or volume
+  const double vol = my::fac_;
+
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     lin_resM_Dus.Clear();
@@ -784,15 +787,15 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     //------------------ d( grad(\phi) ) / du_s = d\phi/(dJ du_s) * dJ/dx+ d\phi/dJ * dJ/(dx*du_s) + d\phi/(dp*du_s) * dp/dx
     LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradphi_dus(true);
 
+    // -------------------------(material) deformation gradient F = d my::xyze_ / d XYZE = my::xyze_ * N_XYZ_^T
+    LINALG::Matrix<my::nsd_,my::nsd_> defgrd(false);
+    defgrd.MultiplyNT(my::xyze_,my::N_XYZ_);
+
+    // inverse deformation gradient F^-1
+    LINALG::Matrix<my::nsd_,my::nsd_> defgrd_inv(false);
+    defgrd_inv.Invert(defgrd);
+
     {
-      // -------------------------(material) deformation gradient F = d my::xyze_ / d XYZE = my::xyze_ * N_XYZ_^T
-      LINALG::Matrix<my::nsd_,my::nsd_> defgrd(false);
-      defgrd.MultiplyNT(my::xyze_,my::N_XYZ_);
-
-      // inverse deformation gradient F^-1
-      LINALG::Matrix<my::nsd_,my::nsd_> defgrd_inv(false);
-      defgrd_inv.Invert(defgrd);
-
       //------------------------------------ build F^-T as vector 9x1
       LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec;
       for(int i=0; i<my::nsd_; i++)
@@ -838,19 +841,59 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     // parameters at integration point
     //----------------------------------------------------------------------
     // get material parameters at integration point
+    my::GetMaterialParamters(material);
 
-    if (my::fldpara_->MatGp())
+    my::ComputeSpatialReactionTerms(material,defgrd_inv);
+
+    //compute linearization of spatial reaction tensor w.r.t. structural displacements
     {
       Teuchos::RCP<const MAT::FluidPoro> actmat = Teuchos::rcp_static_cast<const MAT::FluidPoro>(material);
+      if(actmat->VaryingPermeablity())
+        dserror("varying material permeablity not yet supported!");
 
-      // set density at n+alpha_F/n+1 and n+alpha_M/n+1
-      //my::densaf_ = actmat->Density();
-      //my::densam_ = my::densaf_;
-
-      // calculate reaction coefficient
-      my::reacoeff_ = actmat->ComputeReactionCoeff() * my::porosity_;
+      my::reatensorlinODvel_.Clear();
+      my::reatensorlinODgridvel_.Clear();
+      for (int n =0; n<my::nen_; ++n)
+        for (int d =0; d<my::nsd_; ++d)
+        {
+          const int gid = my::nsd_ * n +d;
+          for (int i=0; i<my::nsd_; ++i)
+          {
+            my::reatensorlinODvel_(i, gid)     += dJ_dus(gid)/my::J_ * my::reavel_(i);
+            my::reatensorlinODgridvel_(i, gid) += dJ_dus(gid)/my::J_ * my::reagridvel_(i);
+            my::reatensorlinODvel_(i, gid)     += dphi_dus(gid)/my::porosity_ * my::reavel_(i);
+            my::reatensorlinODgridvel_(i, gid) += dphi_dus(gid)/my::porosity_ * my::reagridvel_(i);
+            for (int j=0; j<my::nsd_; ++j)
+            {
+              for (int k=0; k<my::nsd_; ++k)
+                for(int l=0; l<my::nsd_; ++l)
+                {
+                  my::reatensorlinODvel_(i, gid) += my::J_ * my::porosity_ *
+                                                my::velint_(j) *
+                                                   ( - defgrd_inv(k,d) * my::derxy_(i,n) * my::matreatensor_(k,l) * defgrd_inv(l,j)
+                                                     - defgrd_inv(k,i) *
+                                                     my::matreatensor_(k,l) * defgrd_inv(l,d) * my::derxy_(j,n)
+                                                    );
+                  my::reatensorlinODgridvel_(i, gid) += my::J_ * my::porosity_ *
+                                                    my::gridvelint_(j) *
+                                                       ( - defgrd_inv(k,d) * my::derxy_(i,n) * my::matreatensor_(k,l) * defgrd_inv(l,j)
+                                                         - defgrd_inv(k,i) *
+                                                         my::matreatensor_(k,l) * defgrd_inv(l,d) * my::derxy_(j,n)
+                                                        );
+                }
+            }
+          }
+        }
     }
-    else dserror("Fluid material parameters have to be evaluated at gauss point for porous flow!");
+
+    // get stabilization parameters at integration point
+    my::ComputeStabilizationParameters(vol);
+
+    // compute old RHS of momentum equation and subgrid scale velocity
+    my::ComputeOldRHSAndSubgridScaleVelocity();
+
+    // compute old RHS of continuity equation
+    my::ComputeOldRHSConti();
 
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
@@ -890,19 +933,36 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                         lin_resM_Dus,
                         ecoupl_p);
 
+    /*  reaction */
+    /*
+      /                           \
+     |                             |
+  -  |    sigma * v_f D(phi), v    |
+     |                             |
+      \                           /
+     */
     for (int ui=0; ui<my::nen_; ++ui)
     {
       for (int vi=0; vi<my::nen_; ++vi)
       {
         const int fvi = my::nsd_*vi;
-        const double tmp = my::funct_(vi)* my::reacoeff_/my::porosity_;
+        const double tmp = my::funct_(vi)/my::porosity_;
         for (int idim = 0; idim <my::nsd_; ++idim)
         {
-          ecouplp1_u(fvi+idim,ui) += timefacfac * tmp * my::velint_(idim) * my::funct_(ui);
+          ecouplp1_u(fvi+idim,ui) += timefacfac * tmp * my::reavel_(idim) * my::funct_(ui);
         } // end for (idim)
       } //vi
     } // ui
 
+    //transient terms
+    /*  reaction  and time derivative*/
+    /*
+      /                           \     /                           \
+     |                             |    |                             |
+  -  |    sigma * v_s D(phi), v    | +  |    D(phi), v                |
+     |                             |    |                             |
+      \                           /     \                           /
+     */
     if (not my::fldpara_->IsStationary())
     {
       for (int ui=0; ui<my::nen_; ++ui)
@@ -910,10 +970,10 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
         for (int vi=0; vi<my::nen_; ++vi)
         {
           const int fvi = my::nsd_*vi;
-          const double tmp = my::funct_(vi)* my::reacoeff_/my::porosity_;
+          const double tmp = my::funct_(vi)/my::porosity_;
           for (int idim = 0; idim <my::nsd_; ++idim)
           {
-            ecouplp1_u(fvi+idim,ui) += timefacfac * tmp * (-my::gridvelint_(idim)) * my::funct_(ui);
+            ecouplp1_u(fvi+idim,ui) += timefacfac * tmp * (-my::reagridvel_(idim)) * my::funct_(ui);
           } // end for (idim)
         } //vi
       } // ui
@@ -938,6 +998,13 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
 
     if( my::fldpara_->PoroContiPartInt() == false )
     {
+      /*
+        /                           \     /                             \
+       |                             |    |                              |
+       |    \nabla v_f D(phi), v     | +  |  (v_f-v_s) \nabla  D(phi), v |
+       |                             |    |                              |
+        \                           /     \                             /
+       */
       for (int ui=0; ui<my::nen_; ++ui)
       {
         for (int vi=0; vi<my::nen_; ++vi)
@@ -951,6 +1018,13 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     }
     else //my::fldpara_->PoroContiPartInt() == true
     {
+      /*
+          /                             \
+          |                              |
+       -  |  (v_f-v_s) \nabla  D(phi), v |
+          |                              |
+          \                             /
+       */
       for (int ui=0; ui<my::nen_; ++ui)
       {
         for (int vi=0; vi<my::nen_; ++vi)
@@ -959,7 +1033,13 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                                  ;
         }
       }
-
+      /*
+          /                             \
+          |                              |
+          |  \nabla v_s D(phi), v        |
+          |                              |
+          \                             /
+       */
       if (not my::fldpara_->IsStationary())
       {
         for (int ui=0; ui<my::nen_; ++ui)
