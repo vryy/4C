@@ -13,11 +13,11 @@ Maintainer: Anh-Tu Vuong
 */
 /*----------------------------------------------------------------------*/
 
-#include "fluid_ele_calc_poro.H"
 #include "fluid_ele.H"
-#include "fluid_ele_parameter.H"
 #include "fluid_ele_utils.H"
 #include "fluid_ele_action.H"
+#include "fluid_ele_calc_poro.H"
+#include "fluid_ele_parameter_poro.H"
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
@@ -42,39 +42,24 @@ Maintainer: Anh-Tu Vuong
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcPoro<distype> * DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance( bool create, int num )
+DRT::ELEMENTS::FluidEleCalcPoro<distype> * DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance( bool create )
 {
+  static FluidEleCalcPoro<distype> * instance;
   if ( create )
   {
-    if(static_cast<int>(MY::instances_.count(num))==0)
+    if ( instance==NULL )
     {
-      MY::instances_.insert(std::pair<int,std::map<int,MY* >* >(num, new std::map<int,MY* >));
-      MY::instances_.at(num)->insert(std::pair<int,MY* >((int)distype,new FluidEleCalcPoro<distype>(num)));
+      instance = new FluidEleCalcPoro<distype>();
     }
-    else if ( MY::instances_.count(num) > 0 and MY::instances_.at(num)->count((int)distype) == 0 )
-    {
-      MY::instances_.at(num)->insert(std::pair<int,MY* >((int)distype, new FluidEleCalcPoro<distype>(num)));
-    }
-
-    return static_cast<DRT::ELEMENTS::FluidEleCalcPoro<distype>* >(MY::instances_.at(num)->at((int)distype));
   }
   else
   {
-    if ( MY::instances_.at(num)->size())
-    {
-      delete MY::instances_.at(num)->at((int)distype);
-      MY::instances_.at(num)->erase((int)distype);
-
-      if ( !(MY::instances_.at(num)->size()) )
-        MY::instances_.erase(num);
-    }
-
-    return NULL;
+    if ( instance!=NULL )
+      delete instance;
+    instance = NULL;
   }
-
-  return NULL;
+  return instance;
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -83,15 +68,14 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( false, numporo_ );
+    Instance( false );
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro(int num)
-  : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(num),
+DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
+  : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(),
     visceff_(0.0),
     N_XYZ_(true),
     N_XYZ2_(true),
@@ -114,10 +98,9 @@ DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro(int num)
     reagridvel_(true),
     reaconvel_(true),
     dtaudphi_(true),
-    so_interface_(NULL),
-    numporo_(num)
+    so_interface_(NULL)
 {
-
+	my::fldpara_ = DRT::ELEMENTS::FluidEleParameterPoro::Instance();
 }
 
 /*----------------------------------------------------------------------*
@@ -278,7 +261,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
   LINALG::Matrix<my::nen_, 1> eprenp(true);
-  if (my::fldpara_->IsGenalphaNP())
+  if (my::fldparatimint_->IsGenalphaNP())
     my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
         &eprenp, "velnp");
 
@@ -302,7 +285,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   LINALG::Matrix<my::nen_,1> escaaf(true);
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &escaaf,"scaaf");
 
-  if (not my::fldpara_->IsGenalpha())
+  if (not my::fldparatimint_->IsGenalpha())
     eaccam.Clear();
 
   // ---------------------------------------------------------------------
@@ -423,7 +406,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
   LINALG::Matrix<my::nen_, 1> eprenp(true);
-  if (my::fldpara_->IsGenalphaNP())
+  if (my::fldparatimint_->IsGenalphaNP())
     this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
         &eprenp, "velnp");
 
@@ -518,7 +501,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   if (my::fldpara_->IsInconsistent() == true) my::is_higher_order_ele_ = false;
 
   // stationary formulation does not support ALE formulation
- // if (isale and my::fldpara_->IsStationary())
+ // if (isale and my::fldparatimint_->IsStationary())
  //   dserror("No ALE support within stationary fluid solver.");
 
   // ---------------------------------------------------------------------
@@ -587,7 +570,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
     my::is_higher_order_ele_ = false;
 
   // stationary formulation does not support ALE formulation
-  //if (isale and my::fldpara_->IsStationary())
+  //if (isale and my::fldparatimint_->IsStationary())
   //  dserror("No ALE support within stationary fluid solver.");
 
     // ---------------------------------------------------------------------
@@ -947,7 +930,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
                                     preforce);
 
   // now the porosity time derivative (different for standard poro and other poro elements)
-  if (my::fldpara_->IsStationary() == false)
+  if (my::fldparatimint_->IsStationary() == false)
   {
     // inertia terms on the right hand side for instationary fluids
     for (int vi=0; vi<my::nen_; ++vi)
@@ -979,7 +962,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
       preforce(vi)-= rhsfac * refporositydot * my::funct_(vi) ;
     }
 
-  } //if (my::fldpara_->IsStationary() == false)
+  } //if (my::fldparatimint_->IsStationary() == false)
 }
 
 /*----------------------------------------------------------------------*
@@ -1007,7 +990,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
   for (int j =0; j< my::nsd_; j++)
     grad_porosity_gridvelint += grad_porosity_(j) * gridvelint_(j);
 
-  if( my::fldpara_->PoroContiPartInt() == false )
+  if( static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false )
   {
     for (int vi=0; vi<my::nen_; ++vi)
     {
@@ -1102,7 +1085,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
 
     */
 
-    if (my::fldpara_->IsStationary() == false)
+    if (my::fldparatimint_->IsStationary() == false)
     {
       for (int vi=0; vi<my::nen_; ++vi)
       {
@@ -1180,7 +1163,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
       } // ui
     }  // vi
 
-    if (my::fldpara_->IsStationary() == false)
+    if (my::fldparatimint_->IsStationary() == false)
     {
       //transient porosity terms
       /*
@@ -1405,10 +1388,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
      //----------------------------------------------------------------------
      // set time-integration factors for left- and right-hand side
      //----------------------------------------------------------------------
-     const double timefacfac    = my::fldpara_->TimeFac()       * my::fac_;
-     const double timefacfacpre = my::fldpara_->TimeFacPre()    * my::fac_;
-     const double rhsfac        = my::fldpara_->TimeFacRhs()    * my::fac_;
-     //const double rhsfacpre     = my::fldpara_->TimeFacRhsPre() * my::fac_;
+     const double timefacfac    = my::fldparatimint_->TimeFac()       * my::fac_;
+     const double timefacfacpre = my::fldparatimint_->TimeFacPre()    * my::fac_;
+     const double rhsfac        = my::fldparatimint_->TimeFacRhs()    * my::fac_;
+     //const double rhsfacpre     = my::fldparatimint_->TimeFacRhsPre() * my::fac_;
 
      // set velocity-based momentum residual vectors to zero
      lin_resM_Du.Clear();
@@ -1464,11 +1447,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
      } // ui
 
      // inertia terms on the right hand side for instationary fluids
-     if (not my::fldpara_->IsStationary())
+     if (not my::fldparatimint_->IsStationary())
      {
        for (int idim = 0; idim <my::nsd_; ++idim)
        {
-         if (my::fldpara_->IsGenalpha()) resM_Du(idim)+=rhsfac*my::densam_*my::accint_(idim);
+         if (my::fldparatimint_->IsGenalpha()) resM_Du(idim)+=rhsfac*my::densam_*my::accint_(idim);
          else                            resM_Du(idim)+=my::fac_*my::densaf_*my::velint_(idim);
        }
 
@@ -1987,8 +1970,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
     // set time-integration factors for left- and right-hand side
     //----------------------------------------------------------------------
 
-    const double timefacfac = my::fldpara_->TimeFac() * my::fac_;
-    const double timefacfacpre = my::fldpara_->TimeFacPre() * my::fac_;
+    const double timefacfac = my::fldparatimint_->TimeFac() * my::fac_;
+    const double timefacfacpre = my::fldparatimint_->TimeFacPre() * my::fac_;
 
     //***********************************************************************************************
     // 1) coupling terms in momentum balance
@@ -2088,7 +2071,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
     \                           /        \                                           /
    */
 
-  if (not my::fldpara_->IsStationary())
+  if (not my::fldparatimint_->IsStationary())
   {
     for (int ui=0; ui<my::nen_; ++ui)
     {
@@ -2210,7 +2193,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
         dphi_dp,
         dphi_dJ,
         refporositydot,
-        my::fldpara_->TimeFac(),
+        my::fldparatimint_->TimeFac(),
         timefacfac);
   else if(my::nsd_ == 2)
     LinMeshMotion_2D_OD(
@@ -2218,7 +2201,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
         dphi_dp,
         dphi_dJ,
         refporositydot,
-        my::fldpara_->TimeFac(),
+        my::fldparatimint_->TimeFac(),
         timefacfac);
   else
     dserror("Linearization of the mesh motion is only available in 2D and 3D");
@@ -2242,7 +2225,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
     LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&              ecoupl_p
     )
 {
-  if (my::fldpara_->IsStationary() == false)
+  if (my::fldparatimint_->IsStationary() == false)
   {
     for (int vi=0; vi<my::nen_; ++vi)
     {
@@ -2259,7 +2242,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
     } // end for(idim)
   }
 
-  if( my::fldpara_->PoroContiPartInt() == false )
+  if( static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false )
   {
     //auxiliary variables
     LINALG::Matrix<1,my::nen_*my::nsd_> grad_porosity_us_velint;
@@ -2291,7 +2274,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
     } // vi
 
     //transient coupling terms
-    if (my::fldpara_->IsStationary() == false)
+    if (my::fldparatimint_->IsStationary() == false)
     {
       LINALG::Matrix<1,my::nen_*my::nsd_> grad_porosity_us_gridvelint;
       grad_porosity_us_gridvelint.MultiplyTN(gridvelint_,dgradphi_dus);
@@ -2374,7 +2357,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
     } // vi
 
     //transient coupling terms
-    if (my::fldpara_->IsStationary() == false)
+    if (my::fldparatimint_->IsStationary() == false)
     {
 
       /*
@@ -2538,7 +2521,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
   //*************************** linearisation of mesh motion in momentum balance**********************************
   // mass
 
-  if (my::fldpara_->IsStationary() == false)
+  if (my::fldparatimint_->IsStationary() == false)
   {
     for (int vi = 0; vi < my::nen_; ++vi)
     {
@@ -2566,26 +2549,26 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
     double v = my::fac_ * my::funct_(vi, 0);
     for (int ui = 0; ui < my::nen_; ++ui)
     {
-      ecoupl_u(vi * 3    , ui * 3    ) += v * ( - my::rhsmom_(0) * my::fldpara_->Dt()
-                                                     * my::fldpara_->Theta()) * my::derxy_(0, ui);
+      ecoupl_u(vi * 3    , ui * 3    ) += v * ( - my::rhsmom_(0) * my::fldparatimint_->Dt()
+                                                     * my::fldparatimint_->Theta()) * my::derxy_(0, ui);
       ecoupl_u(vi * 3    , ui * 3 + 1) += v * ( - my::rhsmom_(0)
-                                                     * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(1, ui);
+                                                     * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(1, ui);
       ecoupl_u(vi * 3    , ui * 3 + 2) += v * ( - my::rhsmom_(0)
-                                                     * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(2, ui);
+                                                     * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(2, ui);
 
       ecoupl_u(vi * 3 + 1, ui * 3    ) += v * ( - my::rhsmom_(1)
-                                           * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(0, ui);
+                                           * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(0, ui);
       ecoupl_u(vi * 3 + 1, ui * 3 + 1) += v * ( - my::rhsmom_(1)
-                                           * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(1, ui);
+                                           * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(1, ui);
       ecoupl_u(vi * 3 + 1, ui * 3 + 2) += v * ( - my::rhsmom_(1)
-                                           * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(2, ui);
+                                           * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(2, ui);
 
       ecoupl_u(vi * 3 + 2, ui * 3    ) += v * ( - my::rhsmom_(2)
-                                            * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(0, ui);
+                                            * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(0, ui);
       ecoupl_u(vi * 3 + 2, ui * 3 + 1) += v * ( - my::rhsmom_(2)
-                                            * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(1, ui);
+                                            * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(1, ui);
       ecoupl_u(vi * 3 + 2, ui * 3 + 2) += v * ( - my::rhsmom_(2)
-                                            * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(2, ui);
+                                            * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(2, ui);
     }
   }
 
@@ -3209,7 +3192,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
 {
   //*************************** linearisation of mesh motion in continuity equation**********************************
 
-  if( my::fldpara_->PoroContiPartInt() == false )
+  if( static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false )
   {
     // (porosity_)*div u
     for (int vi = 0; vi < my::nen_; ++vi)
@@ -3240,7 +3223,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
       }
     }
 
-    if (my::fldpara_->IsStationary() == false)
+    if (my::fldparatimint_->IsStationary() == false)
     {
       // (dphi_dJ*J)*div vs
       for (int vi = 0; vi < my::nen_; ++vi)
@@ -3307,7 +3290,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
   }
   else
   {
-    if (my::fldpara_->IsStationary() == false)
+    if (my::fldparatimint_->IsStationary() == false)
     {
       // (dphi_dJ*J+phi)*div vs
       for (int vi = 0; vi < my::nen_; ++vi)
@@ -3373,7 +3356,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
 
   }//partial integration
 
-  if (my::fldpara_->IsStationary() == false)
+  if (my::fldparatimint_->IsStationary() == false)
   {
     // dphi_dp*dp/dt + rhs
     for (int vi = 0; vi < my::nen_; ++vi)
@@ -3616,7 +3599,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
 
   //*************************** linearisation of mesh motion in momentum balance**********************************
   // mass
-  if (my::fldpara_->IsStationary() == false)
+  if (my::fldparatimint_->IsStationary() == false)
   {
     for (int vi = 0; vi < my::nen_; ++vi)
     {
@@ -3638,15 +3621,15 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
     double v = my::fac_ * my::funct_(vi, 0);
     for (int ui = 0; ui < my::nen_; ++ui)
     {
-      ecoupl_u(vi * 2    , ui * 2    ) += v * (- my::rhsmom_(0) * my::fldpara_->Dt()
-                                                     * my::fldpara_->Theta()) * my::derxy_(0, ui);
+      ecoupl_u(vi * 2    , ui * 2    ) += v * (- my::rhsmom_(0) * my::fldparatimint_->Dt()
+                                                     * my::fldparatimint_->Theta()) * my::derxy_(0, ui);
       ecoupl_u(vi * 2    , ui * 2 + 1) += v * (- my::rhsmom_(0)
-                                                     * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(1, ui);
+                                                     * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(1, ui);
 
       ecoupl_u(vi * 2 + 1, ui * 2    ) += v * (- my::rhsmom_(1)
-                                           * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(0, ui);
+                                           * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(0, ui);
       ecoupl_u(vi * 2 + 1, ui * 2 + 1) += v * (- my::rhsmom_(1)
-                                           * my::fldpara_->Dt() * my::fldpara_->Theta()) * my::derxy_(1, ui);
+                                           * my::fldparatimint_->Dt() * my::fldparatimint_->Theta()) * my::derxy_(1, ui);
     }
   }
 
@@ -3865,7 +3848,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
     const double &                                                    timefacfac  )
 {
 
-  if (my::fldpara_->IsStationary() == false)
+  if (my::fldparatimint_->IsStationary() == false)
   {
     // dphi_dp*dp/dt
     for (int vi = 0; vi < my::nen_; ++vi)
@@ -3891,7 +3874,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
     }
   }
 
-  if( my::fldpara_->PoroContiPartInt() == false )
+  if( static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false )
   {
 
     // (porosity)*div u
@@ -4101,7 +4084,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::PSPG(
     }
     else
     {
-      scal_grad_q=my::fldpara_->AlphaF()*fac3;
+      scal_grad_q=my::fldparatimint_->AlphaF()*fac3;
     }
 
     /* pressure stabilisation: inertia if not stationary*/
@@ -4311,7 +4294,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearization(
                                   const LINALG::Matrix<my::nsd_,1>&                  gradJ,
                                   LINALG::Matrix<my::nsd_,my::nen_>&                 dgradphi_dp)
 {
-  if( (my::fldpara_->PoroContiPartInt() == false) or visceff_)
+  if( (static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false) or visceff_)
   {
     //--linearization of porosity gradient w.r.t. pressure at gausspoint
     //d(grad(phi))/dp = dphi/(dJdp)* dJ/dx + d^2phi/(dp)^2 * dp/dx + dphi/dp* N,x
@@ -4345,7 +4328,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(
   //--------------------- linearization of porosity w.r.t. structure displacements
   dphi_dus.Update( dphi_dJ , dJ_dus );
 
-  if( (my::fldpara_->PoroContiPartInt() == false) or visceff_)
+  if( (static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false) or visceff_)
   {
     //---------------------d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
 
@@ -4541,7 +4524,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ReacStab(
   else
   {
     dserror("Is this factor correct? Check for bugs!");
-    reac_tau = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldpara_->AlphaF()*fac3;
+    reac_tau = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldparatimint_->AlphaF()*fac3;
   }
 
 
@@ -4639,8 +4622,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSAndSubgridScaleVeloc
   //----------------------------------------------------------------------
   // compute rhs for momentum equation and momentum residual
   // -> different for generalized-alpha and other time-integration schemes
-  //GetResidualMomentumEq(eaccam,my::fldpara_->TimeFac());
-  if (my::fldpara_->IsGenalpha())
+  //GetResidualMomentumEq(eaccam,my::fldparatimint_->TimeFac());
+  if (my::fldparatimint_->IsGenalpha())
   {
     // rhs of momentum equation: density*bodyforce at n+alpha_F
     my::rhsmom_.Update(my::densaf_,my::bodyforce_,0.0);
@@ -4657,24 +4640,24 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSAndSubgridScaleVeloc
   }
   else
   {
-    if (not my::fldpara_->IsStationary())
+    if (not my::fldparatimint_->IsStationary())
     {
       // rhs of instationary momentum equation:
       // density*theta*bodyforce at n+1 + density*(histmom/dt)
       //                                      f = rho * g
-        //my::rhsmom_.Update((my::densn_/my::fldpara_->Dt()),my::histmom_,my::densaf_*my::fldpara_->Theta(),my::bodyforce_);
-      my::rhsmom_.Update((my::densn_/my::fldpara_->Dt()/my::fldpara_->Theta()),my::histmom_,my::densaf_,my::bodyforce_);
+        //my::rhsmom_.Update((my::densn_/my::fldparatimint_->Dt()),my::histmom_,my::densaf_*my::fldparatimint_->Theta(),my::bodyforce_);
+      my::rhsmom_.Update((my::densn_/my::fldparatimint_->Dt()/my::fldparatimint_->Theta()),my::histmom_,my::densaf_,my::bodyforce_);
 
       // compute instationary momentum residual:
       // momres_old = u_(n+1)/dt + theta ( ... ) - my::histmom_/dt - theta*my::bodyforce_
       for (int rr=0;rr<my::nsd_;++rr)
       {
-        /*my::momres_old_(rr) = my::densaf_*my::velint_(rr)/my::fldpara_->Dt()
-                           +my::fldpara_->Theta()*(my::densaf_*conv_old_(rr)+my::gradp_(rr)
+        /*my::momres_old_(rr) = my::densaf_*my::velint_(rr)/my::fldparatimint_->Dt()
+                           +my::fldparatimint_->Theta()*(my::densaf_*conv_old_(rr)+my::gradp_(rr)
                            -2*visceff_*visc_old_(rr)+my::reacoeff_*my::velint_(rr))-my::rhsmom_(rr);*/
-        my::momres_old_(rr) = ((my::densaf_*my::velint_(rr)/my::fldpara_->Dt()
-                         +my::fldpara_->Theta()*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
-                         -2*visceff_*my::visc_old_(rr)+reaconvel_(rr)))/my::fldpara_->Theta())-my::rhsmom_(rr);
+        my::momres_old_(rr) = ((my::densaf_*my::velint_(rr)/my::fldparatimint_->Dt()
+                         +my::fldparatimint_->Theta()*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
+                         -2*visceff_*my::visc_old_(rr)+reaconvel_(rr)))/my::fldparatimint_->Theta())-my::rhsmom_(rr);
      }
     }
     else
@@ -4719,7 +4702,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
     // due to time factor and reaction coefficient
     double sigma_tot = my::reacoeff_;
     if (my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
-      sigma_tot += 1.0/my::fldpara_->TimeFac();
+      sigma_tot += 1.0/my::fldparatimint_->TimeFac();
 
     // calculate characteristic element length
     double h_u  = 0.0;
@@ -4756,14 +4739,14 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSConti()
   for (int j =0; j< my::nsd_; j++)
     grad_porosity_gridvelint += grad_porosity_(j) * gridvelint_(j);
 
-  if (my::fldpara_->IsStationary() == false)
+  if (my::fldparatimint_->IsStationary() == false)
   {
 
     // rhs of continuity equation
-    my::rhscon_ = 1.0/my::fldpara_->Dt()/my::fldpara_->Theta() * histcon_;
+    my::rhscon_ = 1.0/my::fldparatimint_->Dt()/my::fldparatimint_->Theta() * histcon_;
 
-    my::conres_old_ = my::fldpara_->Theta()*(my::vdiv_* porosity_ + vel_grad_porosity-grad_porosity_gridvelint)
-                      + press_/my::fldpara_->Dt()/my::fldpara_->Theta() - my::rhscon_;
+    my::conres_old_ = my::fldparatimint_->Theta()*(my::vdiv_* porosity_ + vel_grad_porosity-grad_porosity_gridvelint)
+                      + press_/my::fldparatimint_->Dt()/my::fldparatimint_->Theta() - my::rhscon_;
   }
   else
   {
@@ -4787,7 +4770,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDu(
     idim_nsd_p_idim[idim]=idim*my::nsd_+idim;
   }
 
-  if (my::fldpara_->IsStationary() == false)
+  if (my::fldparatimint_->IsStationary() == false)
   {
     const double fac_densam=my::fac_*my::densam_;
 
@@ -4860,7 +4843,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDp(
        }
    }
 
-  if (not my::fldpara_->IsStationary())
+  if (not my::fldparatimint_->IsStationary())
   {
     for (int ui=0; ui<my::nen_; ++ui)
      {
@@ -4927,7 +4910,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPoint(
   // (value at n+alpha_F for generalized-alpha scheme,
   //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
   //double press(true);
-  if(my::fldpara_->IsGenalphaNP())
+  if(my::fldparatimint_->IsGenalphaNP())
     press_ = my::funct_.Dot(eprenp);
   else
     press_ = my::funct_.Dot(epreaf);
@@ -4943,7 +4926,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPoint(
   // get pressure gradient at integration point
   // (value at n+alpha_F for generalized-alpha scheme,
   //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
-  if(my::fldpara_->IsGenalphaNP())
+  if(my::fldparatimint_->IsGenalphaNP())
     my::gradp_.Multiply(my::derxy_,eprenp);
   else
     my::gradp_.Multiply(my::derxy_,epreaf);
@@ -4993,7 +4976,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPoint(
 
   gridvdiv_ = 0.0;
 
-  if (not my::fldpara_->IsGenalphaNP())
+  if (not my::fldparatimint_->IsGenalphaNP())
   {
     for (int idim = 0; idim <my::nsd_; ++idim)
     {
@@ -5068,7 +5051,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPointOD(
   // (value at n+alpha_F for generalized-alpha scheme,
   //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
   //double press(true);
-  if(my::fldpara_->IsGenalphaNP())
+  if(my::fldparatimint_->IsGenalphaNP())
     press_ = my::funct_.Dot(eprenp);
   else
     press_ = my::funct_.Dot(epreaf);
@@ -5083,7 +5066,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPointOD(
   // get pressure gradient at integration point
   // (value at n+alpha_F for generalized-alpha scheme,
   //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
-  if(my::fldpara_->IsGenalphaNP())
+  if(my::fldparatimint_->IsGenalphaNP())
     my::gradp_.Multiply(my::derxy_,eprenp);
   else
     my::gradp_.Multiply(my::derxy_,epreaf);
@@ -5128,7 +5111,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPointOD(
   my::vdiv_ = 0.0;
 
   gridvdiv_ = 0.0;
-  if (not my::fldpara_->IsGenalphaNP())
+  if (not my::fldparatimint_->IsGenalphaNP())
   {
     for (int idim = 0; idim <my::nsd_; ++idim)
     {
@@ -5271,7 +5254,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<my::nsd_,my::nen_> evelnp(true);
   LINALG::Matrix<my::nen_,1>    eprenp(true);
-  if (my::fldpara_->IsGenalphaNP())
+  if (my::fldparatimint_->IsGenalphaNP())
     my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelnp, &eprenp,"velnp");
 
   //----------------------------------------------------------------------------
@@ -5306,7 +5289,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(
     // (value at n+alpha_F for generalized-alpha scheme,
     //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
     double preint(true);
-    if(my::fldpara_->IsGenalphaNP())
+    if(my::fldparatimint_->IsGenalphaNP())
       preint= my::funct_.Dot(eprenp);
     else
       preint = my::funct_.Dot(epreaf);
@@ -5324,7 +5307,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(
     //  the error is evaluated at the specific time of the used time integration scheme
     //  n+alpha_F for generalized-alpha scheme
     //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
-    const double t = my::fldpara_->Time();
+    const double t = my::fldparatimint_->Time();
 
     // Compute analytical solution
     switch(calcerr)

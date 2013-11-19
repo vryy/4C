@@ -17,6 +17,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_boundary_calc.H"
+#include "fluid_ele_boundary_factory.H"
 #include "fluid_ele_boundary_parent_calc.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -39,183 +40,49 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   // get the action required
   const FLD::BoundaryAction act = DRT::INPUT::get<FLD::BoundaryAction>(params,"action");
 
-  // get status of Ale
-  const bool isale = this->ParentElement()->IsAle();
+  // switch between different physical types as used below
+  std::string impltype = "std";
+  switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
+  {
+  case INPAR::FLUID::loma:    impltype = "std";  break;
+  case INPAR::FLUID::poro:    impltype = "poro"; break;
+  case INPAR::FLUID::poro_p1: impltype = "poro"; break;
+  case INPAR::FLUID::poro_p2: impltype = "poro"; break;
+  }
 
   switch(act)
   {
   case FLD::integrate_Shapefunction:
-  {
-    RCP<const Epetra_Vector> dispnp;
-    std::vector<double> mydispnp;
-
-    if (isale)
-    {
-      dispnp = discretization.GetState("dispnp");
-      if (dispnp!=Teuchos::null)
-      {
-        mydispnp.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-      }
-    }
-
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->IntegrateShapeFunction(
-        this,
-        params,
-        discretization,
-        lm,
-        elevec1,
-        mydispnp);
-    break;
-  }
   case FLD::calc_area:
-  {
-    if (this->Owner() == discretization.Comm().MyPID())
-      DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->AreaCalculation(
-          this,
-          params,
-          discretization,
-          lm);
-    break;
-  }
-  case FLD::calc_pressure_bou_int:
-  {
-    if(this->Owner() == discretization.Comm().MyPID())
-      DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->PressureBoundaryIntegral(
-          this,
-          params,
-          discretization,
-          lm);
-    break;
-  }
-  // general action to calculate the flow rate
   case FLD::calc_flowrate:
-  {
-    // pointer to class FluidEleParameter (access to the general parameter)
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
-    switch(fldpara->PhysicalType())
-    {
-    case INPAR::FLUID::incompressible:
-    {
-      DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ComputeFlowRate(
-          this,
-          params,
-          discretization,
-          lm,
-          elevec1);
-      break;
-    }
-    case INPAR::FLUID::poro:
-    {
-      DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->PoroFlowRate(
-          this,
-          params,
-          discretization,
-          lm,
-          elevec1);
-      break;
-    }
-    default:
-      dserror("action 'calc_flowrate' not implemented for this physical type");
-    break;
-    }
-    break;
-  }
   case FLD::flowratederiv:
-  {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->FlowRateDeriv(
-        this,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elemat2,
-        elevec1,
-        elevec2,
-        elevec3);
-    break;
-  }
   case FLD::Outletimpedance:
-  {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ImpedanceIntegration(
-        this,
-        params,
-        discretization,
-        lm,
-        elevec1);
-    break;
-  }
   case FLD::ba_calc_node_normal:
-  {
-    RCP<const Epetra_Vector> dispnp;
-    std::vector<double> mydispnp;
-
-    if (isale)
-    {
-      dispnp = discretization.GetState("dispnp");
-      if (dispnp!=Teuchos::null)
-      {
-        mydispnp.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-      }
-    }
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ElementNodeNormal(
-        this,
-        params,
-        discretization,
-        lm,
-        elevec1,
-        mydispnp);
-    break;
-  }
   case FLD::calc_node_curvature:
+  case FLD::calc_surface_tension:
+  case FLD::conservative_outflow_bc:
+  case FLD::calc_Neumann_inflow:
+  case FLD::calc_pressure_bou_int:
+  case FLD::center_of_mass_calc:
+  case FLD::traction_velocity_component:
+  case FLD::traction_Uv_integral_component:
+  case FLD::no_penetration:
+  case FLD::no_penetrationIDs:
+  case FLD::poro_boundary:
+  case FLD::poro_prescoupl:
+  case FLD::fpsi_coupling:
   {
-    RCP<const Epetra_Vector> dispnp;
-    std::vector<double> mydispnp;
-
-    if (isale)
-    {
-      dispnp = discretization.GetState("dispnp");
-      if (dispnp!=Teuchos::null)
-      {
-        mydispnp.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-      }
-    }
-
-    RCP<const Epetra_Vector> normals;
-    std::vector<double> mynormals;
-
-    normals = discretization.GetState("normals");
-    if (normals!=Teuchos::null)
-    {
-      mynormals.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*normals,mynormals,lm);
-    }
-
-    // what happens, if the mynormals vector is empty? (ehrl)
-    dserror("the action calc_node_curvature has not been called by now. What happens, if the mynormal vector is empty");
-
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ElementMeanCurvature(
-        this,
-        params,
-        discretization,
-        lm,
-        elevec1,
-        mydispnp,
-        mynormals);
-    break;
-  }
-  case FLD::flow_dep_pressure_bc:
-  {
-    DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->FlowDepPressureBC(
-        this,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elevec1);
-    break;
+  DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(),impltype)->EvaluateAction(
+      this,
+      params,
+      discretization,
+      lm,
+      elemat1,
+      elemat2,
+      elevec1,
+      elevec2,
+      elevec3);
+  break;
   }
   case FLD::enforce_weak_dbc:
   {
@@ -250,126 +117,9 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
-  case FLD::conservative_outflow_bc:
+  case FLD::flow_dep_pressure_bc:
   {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ConservativeOutflowConsistency(
-        this,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elevec1);
-    break;
-  }
-  case FLD::calc_Neumann_inflow:
-  {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->NeumannInflow(
-        this,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elevec1);
-    break;
-  }
-  case FLD::calc_surface_tension:
-  {
-    // employs the divergence theorem acc. to Saksono eq. (24) and does not
-    // require second derivatives.
-
-    RCP<const Epetra_Vector> dispnp;
-    std::vector<double> mydispnp;
-
-    dispnp = discretization.GetState("dispnp");
-    if (dispnp!=Teuchos::null)
-    {
-      mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-    }
-
-    // mynormals and mycurvature are not used in the function
-    std::vector<double> mynormals;
-    std::vector<double> mycurvature;
-
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ElementSurfaceTension(
-        this,
-        params,
-        discretization,
-        lm,
-        elevec1,
-        mydispnp,
-        mynormals,
-        mycurvature);
-    break;
-  }
-  case FLD::center_of_mass_calc:
-  {
-    // evaluate center of mass
-    if(this->Owner() == discretization.Comm().MyPID())
-      DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->CenterOfMassCalculation(
-          this,
-          params,
-          discretization,
-          lm);
-    break;
-  }
-  case FLD::traction_velocity_component:
-  {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->CalcTractionVelocityComponent(
-        this,
-        params,
-        discretization,
-        lm,
-        elevec1);
-    break;
-  }
-  case FLD::traction_Uv_integral_component:
-  {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ComputeNeumannUvIntegral(
-        this,
-        params,
-        discretization,
-        lm,
-        elevec1);
-    break;
-  }
-  case FLD::no_penetration:
-  {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->NoPenetration(
-        this,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elemat2,
-        elevec1,
-        elevec2);
-    break;
-  }
-  case FLD::no_penetrationIDs:
-  {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->NoPenetrationIDs(
-        this,
-        params,
-        discretization,
-        elevec1,
-        lm);
-    break;
-  }
-  case FLD::poro_boundary:
-  {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->PoroBoundary(
-        this,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elevec1);
-    break;
-  }
-  case FLD::poro_prescoupl:
-  {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->PressureCoupling(
+    DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->FlowDepPressureBC(
         this,
         params,
         discretization,
@@ -389,25 +139,16 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
     );
     break;
   }
-  case FLD::fpsi_coupling:
+  default:
   {
-    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->FPSICoupling(
-        this,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elevec1);
+    dserror("Unknown type of action for Fluid_Boundary!");
     break;
   }
-  default:
-    dserror("Unknown type of action for Fluid_Boundary!");
     break;
   } // end of switch(act)
 
   return 0;
 }
-
 
 /*----------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition       gjb 01/09 |
@@ -420,7 +161,7 @@ int DRT::ELEMENTS::FluidBoundary::EvaluateNeumann(
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
-  return DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->EvaluateNeumann(
+  return DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(),"std")->EvaluateNeumann(
       this,
       params,
       discretization,
@@ -457,30 +198,29 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(
     //       as input in the respective evaluate routines
     parent_->LocationVector(dis,la,doDirichlet);
     break;
+    //
+    // todo:
+    // the following hacky request for the discretization name is temporary!
+    // it will be replaced as soon as a specialized poro boundary element is
+    // implemented ! // rauch 11/13
+    //
   case FLD::calc_flowrate:
   {
-    // pointer to class FluidEleParameter (access to the general parameter)
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
-    switch(fldpara->PhysicalType())
-    {
-    case INPAR::FLUID::incompressible:
+    if(dis.Name() == "fluid")
     {
       DRT::Element::LocationVector(dis,la,doDirichlet);
-      break;
     }
-    case INPAR::FLUID::poro:
+    else if (dis.Name() == "porofluid")
     {
       // special cases: the boundary element assembles also into
       // the inner dofs of its parent element
       // note: using these actions, the element will get the parent location vector
       //       as input in the respective evaluate routines
       parent_->LocationVector(dis,la,doDirichlet);
-      break;
     }
-    default:
+    else
       dserror("action 'calc_flowrate' not implemented for this physical type");
-    break;
-    }
+
     break;
   }
   case FLD::ba_none:

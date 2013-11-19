@@ -463,6 +463,7 @@ void POROELAST::PoroBase::CalculateSurfPoro(const string& condstring)
     // other parameters that might be needed by the elements
     p.set("total time", Time());
     p.set("delta time", Dt());
+    p.set<int>("physical type" , INPAR::FLUID::poro);
 
     Teuchos::RCP<DRT::Discretization> structdis = StructureField()->Discretization();
     Teuchos::RCP<DRT::Discretization> fluiddis = FluidField()->Discretization();

@@ -358,47 +358,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   }
 
   // -------------------------------------------------------------------
-  // setup Krylov space projection if necessary
-  // -------------------------------------------------------------------
-
-  // sysmat might be singular (if we have a purely Dirichlet constrained
-  // problem, the pressure mode is defined only up to a constant)
-  // in this case, we need a basis vector for the nullspace/kernel
-
-  // get condition "KrylovSpaceProjection" from discretization
-  std::vector<DRT::Condition*> KSPcond;
-  discret_->GetCondition("KrylovSpaceProjection",KSPcond);
-  int numcond = KSPcond.size();
-  int numfluid = 0;
-
-  DRT::Condition* kspcond = NULL;
-  // check if for fluid Krylov projection is required
-  for(int icond = 0; icond < numcond; icond++)
-  {
-    const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
-    if (*name == "fluid")
-    {
-      numfluid++;
-      kspcond = KSPcond[icond];
-    }
-  }
-
-  // initialize variables for Krylov projection if necessary
-  if (numfluid == 1)
-  {
-    SetupKrylovSpaceProjection(kspcond);
-    if (myrank_ == 0)
-      std::cout << "\nSetup of KrylovSpaceProjection in fluid field\n" << std::endl;
-  }
-  else if (numfluid == 0)
-  {
-    updateprojection_ = false;
-    projector_ = Teuchos::null;
-  }
-  else
-    dserror("Received more than one KrylovSpaceCondition for fluid field");
-
-  // -------------------------------------------------------------------
   // Initialize the reduced models
   // -------------------------------------------------------------------
 
@@ -742,20 +701,86 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 
   // ---------------------------------------------------------------------
   // set general fluid parameter defined before
+  //
+  // here the parameters singleton instances are built and the parameters
+  // are set. Please make sure you never call one of:
+  //
+  // FluidEleParameterTimInt->Instance()
+  // FluidEleParameterStd->Instance()
+  // FluidEleParameterPoro->Instance()
+  //
+  // before you reach the following block !
+  //
+  // @ Benjamin
+  // todo: split timeintegration into OST,GENAPH, ... , Poro
+  //       -> remove if clauses below ( hacky !) // rauch 11/13
+  //
+  // SetElementTimeParameter() is called at first. This is important!
+  // SetElementGeneralFluidParameter() needs some time parameter for
+  // safety checks. These may become needless. Talk to Ursula ;-)s
+  //
   // ---------------------------------------------------------------------
-  SetElementGeneralFluidParameter();
   SetElementTimeParameter();
-  SetElementTurbulenceParameter();
-  if (physicaltype_ == INPAR::FLUID::loma)
-    SetElementLomaParameter();
+
   if (  (physicaltype_ == INPAR::FLUID::poro
       or physicaltype_ == INPAR::FLUID::poro_p1
       or physicaltype_ == INPAR::FLUID::poro_p2)
       and discret_->Name()=="porofluid")
     SetElementPoroParameter();
+  else
+  {
+    SetElementGeneralFluidParameter();
+    SetElementTurbulenceParameter();
+  }
+  if (physicaltype_ == INPAR::FLUID::loma)
+    SetElementLomaParameter();
   if (physicaltype_ == INPAR::FLUID::topopt)
     SetElementTopoptParameter();
 
+  // -------------------------------------------------------------------
+  // setup Krylov space projection if necessary
+  //
+  // moved to bottom of FluidImplicitTimeInt constructor to ensure that
+  // that the parameters are set initially in the block above.
+  // rauch 11/13
+  // -------------------------------------------------------------------
+
+  // sysmat might be singular (if we have a purely Dirichlet constrained
+  // problem, the pressure mode is defined only up to a constant)
+  // in this case, we need a basis vector for the nullspace/kernel
+
+  // get condition "KrylovSpaceProjection" from discretization
+  std::vector<DRT::Condition*> KSPcond;
+  discret_->GetCondition("KrylovSpaceProjection",KSPcond);
+  int numcond = KSPcond.size();
+  int numfluid = 0;
+
+  DRT::Condition* kspcond = NULL;
+  // check if for fluid Krylov projection is required
+  for(int icond = 0; icond < numcond; icond++)
+  {
+    const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
+    if (*name == "fluid")
+    {
+      numfluid++;
+      kspcond = KSPcond[icond];
+    }
+  }
+
+  // initialize variables for Krylov projection if necessary
+  if (numfluid == 1)
+  {
+    SetupKrylovSpaceProjection(kspcond);
+    if (myrank_ == 0)
+      std::cout << "\nSetup of KrylovSpaceProjection in fluid field\n" << std::endl;
+  }
+  else if (numfluid == 0)
+  {
+    updateprojection_ = false;
+    projector_ = Teuchos::null;
+  }
+  else
+    dserror("Received more than one KrylovSpaceCondition for fluid field");
 
   // ------------------------------------------------------------------------------
   // Check, if features are used with the locsys manager that are not supported,
@@ -2941,6 +2966,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
       eleparams.set("total time", time_);
       eleparams.set("delta time", dta_);
       eleparams.set<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
+      eleparams.set<int>("physical type",physicaltype_);
 
       discret_->ClearState();
       discret_->SetState("dispnp", dispnp_);
@@ -2961,6 +2987,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
       // set action for elements
       eleparams.set<int>("action",FLD::poro_prescoupl);
       eleparams.set<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
+      eleparams.set<int>("physical type",physicaltype_);
 
       discret_->ClearState();
       discret_->SetState("dispnp", dispnp_);
@@ -6177,27 +6204,11 @@ void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
   // set general element parameters
   eleparams.set("form of convective term",convform_);
   eleparams.set<int>("Linearisation",newton_);
-
-  if (discret_->Name()=="porofluid")
-    {
-      physicaltype_ = INPAR::FLUID::poro;
-      eleparams.set<int>("Physical Type",physicaltype_);
-    }
-    else if (discret_->Name()=="fluid" and DRT::Problem::Instance()->ProblemType()==prb_fpsi)
-    {
-      physicaltype_ = INPAR::FLUID::incompressible;
-      eleparams.set<int>("Physical Type",physicaltype_);
-    }
-    else
-      eleparams.set<int>("Physical Type", physicaltype_);
+  eleparams.set<int>("Physical Type", physicaltype_);
 
   // parameter for stabilization
   eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
   eleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
-  eleparams.sublist("POROUS-FLOW STABILIZATION") = params_->sublist("POROUS-FLOW STABILIZATION");
-
-  //set time integration scheme
-  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -6214,6 +6225,9 @@ void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
   Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_time_parameter);
+
+  //set time integration scheme
+  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
   // set general element parameters
   eleparams.set("dt",dta_);
@@ -6305,7 +6319,18 @@ void FLD::FluidImplicitTimeInt::SetElementPoroParameter()
 
   eleparams.set<int>("action",FLD::set_poro_parameter);
 
+  // set general element parameters
+  eleparams.set("form of convective term",convform_);
+  eleparams.set<int>("Linearisation",newton_);
+  eleparams.set<int>("Physical Type", physicaltype_);
+
+  // set poro specific element parameters
   eleparams.set<bool>("conti partial integration",params_->get<bool>("conti partial integration"));
+
+  // parameter for stabilization
+  eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
+  eleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
+  eleparams.sublist("POROUS-FLOW STABILIZATION") = params_->sublist("POROUS-FLOW STABILIZATION");
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);

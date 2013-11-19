@@ -17,6 +17,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_calc.H"
 #include "fluid_ele.H"
 #include "fluid_ele_parameter.H"
+#include "fluid_ele_parameter_timint.H"
 #include "fluid_ele_utils.H"
 #include "fluid_ele_action.H"
 
@@ -616,7 +617,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<nsd_,nen_> evelnp(true);
   LINALG::Matrix<nen_,1>    eprenp(true);
-  if (fldpara_->IsGenalphaNP())
+  if (fldparatimint_->IsGenalphaNP())
     ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnp, &eprenp,"velnp");
 
   //----------------------------------------------------------------------------
@@ -667,7 +668,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     // (value at n+alpha_F for generalized-alpha scheme,
     //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
     double preint(true);
-    if(fldpara_->IsGenalphaNP())
+    if(fldparatimint_->IsGenalphaNP())
       preint= funct_.Dot(eprenp);
     else
       preint = funct_.Dot(epreaf);
@@ -685,7 +686,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     //  the error is evaluated at the specific time of the used time integration scheme
     //  n+alpha_F for generalized-alpha scheme
     //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
-    const double t = fldpara_->Time();
+    const double t = fldparatimint_->Time();
 
     // Compute analytical solution
     switch(calcerr)
@@ -1077,7 +1078,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<nsd_,nen_> evelnp(true);
   LINALG::Matrix<nen_,1>    eprenp(true);
-  if (fldpara_->IsGenalphaNP())
+  if (fldparatimint_->IsGenalphaNP())
     ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnp, &eprenp,"velnp");
 
   LINALG::Matrix<nen_,1> escaaf(true);
@@ -1094,7 +1095,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   LINALG::Matrix<nen_,1>    escaam(true);
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eveln, &escaam,"scaam");
 
-  if (fldpara_->IsGenalpha()) eveln.Clear();
+  if (fldparatimint_->IsGenalpha()) eveln.Clear();
   else                            eaccam.Clear();
 
   // get additional state vectors for ALE case: grid displacement and vel.
@@ -1400,7 +1401,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     // get pressure gradient at integration point
     // (value at n+alpha_F for generalized-alpha scheme,
     //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
-    if(fldpara_->IsGenalphaNP())
+    if(fldparatimint_->IsGenalphaNP())
       gradp_.Multiply(derxy_,eprenp);
     else
       gradp_.Multiply(derxy_,epreaf);
@@ -1446,7 +1447,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 
     // compute divergence of velocity from previous iteration
     vdiv_ = 0.0;
-    if (not fldpara_->IsGenalphaNP())
+    if (not fldparatimint_->IsGenalphaNP())
     {
       for (int idim = 0; idim <nsd_; ++idim)
       {
@@ -1520,7 +1521,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       // compute additional Galerkin terms on right-hand side of continuity equation
       // -> different for generalized-alpha and other time-integration schemes
       ComputeGalRHSContEq(eveln,escaaf,escaam,escadtam,ele->IsAle());
-      if (not fldpara_->IsGenalpha()) dserror("Does ComputeGalRHSContEq() for ost really the right thing?");
+      if (not fldparatimint_->IsGenalpha()) dserror("Does ComputeGalRHSContEq() for ost really the right thing?");
       // remark: I think the term theta*u^n+1*nabla T^n+1 is missing.
       //         Moreover, the resulting conres_old_ should be multiplied by theta (see monres_old_).
 
@@ -1545,7 +1546,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     }
 
     // evaluate momentum residual once for all stabilization right hand sides
-    if (fldpara_->IsGenalpha())
+    if (fldparatimint_->IsGenalpha())
     {
       // get acceleration at time n+alpha_M at integration point
       accint_.Multiply(eaccam,funct_);
@@ -1558,16 +1559,16 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     }
     else
     {
-      rhsmom_.Update((densn_/fldpara_->Dt()),histmom_,densaf_*fldpara_->Theta(),bodyforce_);
+      rhsmom_.Update((densn_/fldparatimint_->Dt()),histmom_,densaf_*fldparatimint_->Theta(),bodyforce_);
       // and pressure gradient prescribed as body force
       // caution: not density weighted
-      rhsmom_.Update(fldpara_->Theta(),prescribedpgrad_,1.0);
+      rhsmom_.Update(fldparatimint_->Theta(),prescribedpgrad_,1.0);
       // compute instationary momentum residual:
       // momres_old = u_(n+1)/dt + theta ( ... ) - histmom_/dt - theta*bodyforce_
       for (int rr=0;rr<nsd_;++rr)
       {
-        momres_old_(rr) = (densaf_*velint_(rr)/fldpara_->Dt()
-                         +fldpara_->Theta()*(densaf_*conv_old_(rr)+gradp_(rr)
+        momres_old_(rr) = (densaf_*velint_(rr)/fldparatimint_->Dt()
+                         +fldparatimint_->Theta()*(densaf_*conv_old_(rr)+gradp_(rr)
                          -2*visceff_*visc_old_(rr)))-rhsmom_(rr);
       }
     }
@@ -2281,7 +2282,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
   // magnitude of dof perturbation
   const double epsilon=1e-14;
 
-  if(fldpara_->IsGenalphaNP())
+  if(fldparatimint_->IsGenalphaNP())
     dserror("FD check not available for NP genalpha!!");
 
   // make a copy of all input parameters potentially modified by Sysmat
@@ -2346,9 +2347,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
       {
         printf("pressure dof (%d) %f\n",nn,epsilon);
 
-        if (fldpara_->IsGenalpha())
+        if (fldparatimint_->IsGenalpha())
         {
-          checkepreaf(nn)+=fldpara_->AlphaF()*epsilon;
+          checkepreaf(nn)+=fldparatimint_->AlphaF()*epsilon;
         }
         else
         {
@@ -2359,10 +2360,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
       {
         printf("velocity dof %d (%d)\n",rr,nn);
 
-        if (fldpara_->IsGenalpha())
+        if (fldparatimint_->IsGenalpha())
         {
-          checkevelaf(rr,nn)+=fldpara_->AlphaF()*epsilon;
-          checkeaccam(rr,nn)+=fldpara_->AlphaM()/(fldpara_->Gamma()*fldpara_->Dt())*epsilon;
+          checkevelaf(rr,nn)+=fldparatimint_->AlphaF()*epsilon;
+          checkeaccam(rr,nn)+=fldparatimint_->AlphaM()/(fldparatimint_->Gamma()*fldparatimint_->Dt())*epsilon;
         }
         else
         {
@@ -2412,11 +2413,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
 
         // For af-generalized-alpha scheme, the residual vector for the
         // solution rhs is scaled on the time-integration level...
-        if (fldpara_->IsGenalpha())
+        if (fldparatimint_->IsGenalpha())
         {
-          val   =-(eforce(mm)   /(epsilon))*(fldpara_->Gamma()*fldpara_->Dt())/(fldpara_->AlphaM());
-          lin   =-(eforce(mm)   /(epsilon))*(fldpara_->Gamma()*fldpara_->Dt())/(fldpara_->AlphaM())+estif(mm,dof);
-          nonlin=-(checkvec1(mm)/(epsilon))*(fldpara_->Gamma()*fldpara_->Dt())/(fldpara_->AlphaM());
+          val   =-(eforce(mm)   /(epsilon))*(fldparatimint_->Gamma()*fldparatimint_->Dt())/(fldparatimint_->AlphaM());
+          lin   =-(eforce(mm)   /(epsilon))*(fldparatimint_->Gamma()*fldparatimint_->Dt())/(fldparatimint_->AlphaM())+estif(mm,dof);
+          nonlin=-(checkvec1(mm)/(epsilon))*(fldparatimint_->Gamma()*fldparatimint_->Dt())/(fldparatimint_->AlphaM());
         }
         else
         {

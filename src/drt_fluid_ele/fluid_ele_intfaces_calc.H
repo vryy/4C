@@ -18,8 +18,6 @@ Maintainer: Benedikt Schott
 
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "fluid_ele_parameter.H"
-
 
 namespace LINALG
 {
@@ -37,6 +35,7 @@ class DiscretizationFaces;
 namespace ELEMENTS
 {
   class FluidIntFace;
+  class FluidEleParameterTimInt;
 
 /// Interface base class for FluidIntFaceImpl
 /*!
@@ -112,7 +111,8 @@ public:
 template<DRT::Element::DiscretizationType distype>
 class FluidIntFaceImpl: public FluidIntFaceImplInterface
 {
-  friend class FluidEleParameter;
+  friend class FluidEleParameterTimInt;
+  friend class FluidEleParameterStd;
 
 public:
 
@@ -160,7 +160,7 @@ public:
 private:
 
   //! pointer to parameter list
-  Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;
+  DRT::ELEMENTS::FluidEleParameterTimInt* fldpara_;
 
   };  // end class FluidIntFaceImpl
 

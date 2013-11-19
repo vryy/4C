@@ -10,7 +10,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
             http://www.lnm.mw.tum.de
             089 - 289-15236/-245
 </pre>
-*/
+ */
 /*----------------------------------------------------------------------*/
 
 #ifndef FLUID_ELE_CALC_STD_H
@@ -26,24 +26,21 @@ namespace ELEMENTS
 template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcStd : public FluidEleCalc<distype>
 {
-    /// private constructor, since we are a Singleton.
-    FluidEleCalcStd(int num=0);
-
-    typedef FluidEleCalc<distype> my;
-    typedef FluidEleInterface MY;
+  typedef DRT::ELEMENTS::FluidEleCalc<distype> my;
 
 public:
-    virtual ~FluidEleCalcStd() {}
+  virtual ~FluidEleCalcStd() {}
 
-    /// Singleton access method
-    static FluidEleCalcStd<distype>* Instance( bool create=true, int num=0 );
+  /// Singleton access method
+  static FluidEleCalcStd<distype>* Instance( bool create=true );
 
-    /// called upon destruction
-    virtual void Done();
-
-    int num_;
+  /// called upon destruction
+  virtual void Done();
 
 private:
+  /// private constructor, since we are a Singleton.
+  FluidEleCalcStd();
+
 
 };
 }

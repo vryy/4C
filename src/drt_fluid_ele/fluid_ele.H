@@ -42,7 +42,11 @@ class Discretization;
 namespace ELEMENTS
 {
 
+class FluidEleParameterBase;
 class FluidEleParameter;
+class FluidEleParameterStd;
+class FluidEleParameterPoro;
+class FluidEleParameterTimInt;
 template<DRT::Element::DiscretizationType distype> class FluidEleCalc;
 template<DRT::Element::DiscretizationType distype> class FluidGenalphaResVMM;
 class FluidBoundary;
@@ -719,7 +723,8 @@ public:
   \param condstring (in) : Name of condition to be evaluated
   \param params (in)     : List of parameters for use at element level
   */
-  virtual void LocationVector(const Discretization&   dis,
+  virtual void LocationVector(
+                              const Discretization&   dis,
                               LocationArray&          la,
                               bool                    doDirichlet,
                               const std::string&      condstring,

@@ -1049,6 +1049,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
     params.set("delta time", Dt());
     params.set<POROELAST::coupltype>("coupling",POROELAST::fluidstructure);
     params.set("timescale",FluidField()->ResidualScaling());
+    params.set<int>("physical type", FluidField()->PhysicalType());
 
     FluidField()->Discretization()->ClearState();
     FluidField()->Discretization()->SetState(0,"dispnp",FluidField()->Dispnp());
@@ -1067,6 +1068,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
     // action for elements
     params.set<int>("action", FLD::poro_prescoupl);
     params.set<POROELAST::coupltype>("coupling",POROELAST::fluidstructure);
+    params.set<int>("physical type", FluidField()->PhysicalType());
 
     FluidField()->Discretization()->ClearState();
     FluidField()->Discretization()->SetState(0,"dispnp",FluidField()->Dispnp());

@@ -14,7 +14,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 /*----------------------------------------------------------------------*/
 
 #include "fluid_ele_calc_std.H"
-#include "fluid_ele_parameter.H"
+#include "fluid_ele_parameter_std.H"
 #include "../drt_inpar/inpar_fpsi.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -23,39 +23,24 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcStd<distype>* DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance( bool create, int num )
+DRT::ELEMENTS::FluidEleCalcStd<distype>* DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance( bool create )
 {
+  static FluidEleCalcStd<distype> * instance;
   if ( create )
-   {
-     if(static_cast<int>(MY::instances_.count(num))==0)
-     {
-         MY::instances_.insert(std::pair<int,std::map<int,MY* >* >(num, new std::map<int,MY* >));
-         MY::instances_.at(num)->insert(std::pair<int,MY* >((int)distype,new FluidEleCalcStd<distype>(num)));
-     }
-     else if ( MY::instances_.count(num) > 0 and MY::instances_.at(num)->count((int)distype) == 0 )
-     {
-       MY::instances_.at(num)->insert(std::pair<int,MY* >((int)distype, new FluidEleCalcStd<distype>(num)));
-     }
-
-     return static_cast<DRT::ELEMENTS::FluidEleCalcStd<distype>* >(MY::instances_.at(num)->at((int)distype));
-   }
-   else
-   {
-     if ( MY::instances_.at(num)->size())
-     {
-       delete MY::instances_.at(num)->at((int)distype);
-       MY::instances_.at(num)->erase((int)distype);
-
-       if ( !(MY::instances_.at(num)->size()) )
-         MY::instances_.erase(num);
-     }
-
-     return NULL;
-   }
-
-  return NULL;
+  {
+    if ( instance==NULL )
+    {
+      instance = new FluidEleCalcStd<distype>();
+    }
+  }
+  else
+  {
+    if ( instance!=NULL )
+      delete instance;
+    instance = NULL;
+  }
+  return instance;
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -64,18 +49,17 @@ void DRT::ELEMENTS::FluidEleCalcStd<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( false, num_ );
+    Instance( false );
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcStd<distype>::FluidEleCalcStd(int num)
-  : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(num),
-    num_(num)
+DRT::ELEMENTS::FluidEleCalcStd<distype>::FluidEleCalcStd()
+  : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
 {
-
+  my::fldpara_=DRT::ELEMENTS::FluidEleParameterStd::Instance();
 }
 
 /*----------------------------------------------------------------------*

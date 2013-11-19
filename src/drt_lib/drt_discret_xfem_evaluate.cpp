@@ -33,6 +33,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_xfem/dof_management_element.H"
 
 #include "../drt_inpar/inpar_xfem.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 /*----------------------------------------------------------------------*
  |  Evaluate edge-based integrals (public)               rasthofer 02/13|

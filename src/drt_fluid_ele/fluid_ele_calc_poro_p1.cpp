@@ -15,7 +15,7 @@
 #include "fluid_ele_calc_poro_p1.H"
 
 #include "fluid_ele.H"
-#include "fluid_ele_parameter.H"
+#include "fluid_ele_parameter_poro.H"
 #include "fluid_ele_utils.H"
 
 #include "../drt_mat/fluidporo.H"
@@ -30,37 +30,23 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcPoroP1<distype>* DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance( bool create, int num )
+DRT::ELEMENTS::FluidEleCalcPoroP1<distype>* DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance( bool create )
 {
+  static FluidEleCalcPoroP1<distype> * instance;
   if ( create )
   {
-    if(static_cast<int>(MY::instances_.count(num))==0)
+    if ( instance==NULL )
     {
-      MY::instances_.insert(std::pair<int,std::map<int,MY* >* >(num, new std::map<int,MY* >));
-      MY::instances_.at(num)->insert(std::pair<int,MY* >((int)distype,new FluidEleCalcPoroP1<distype>(num)));
+      instance = new FluidEleCalcPoroP1<distype>();
     }
-    else if ( MY::instances_.count(num) > 0 and MY::instances_.at(num)->count((int)distype) == 0 )
-    {
-      MY::instances_.at(num)->insert(std::pair<int,MY* >((int)distype, new FluidEleCalcPoroP1<distype>(num)));
-    }
-
-    return static_cast<DRT::ELEMENTS::FluidEleCalcPoroP1<distype>* >(MY::instances_.at(num)->at((int)distype));
   }
   else
   {
-    if ( MY::instances_.at(num)->size())
-    {
-      delete MY::instances_.at(num)->at((int)distype);
-      MY::instances_.at(num)->erase((int)distype);
-
-      if ( !(MY::instances_.at(num)->size()) )
-        MY::instances_.erase(num);
-    }
-
-    return NULL;
+    if ( instance!=NULL )
+      delete instance;
+    instance = NULL;
   }
-
-  return NULL;
+  return instance;
 }
 
 
@@ -71,16 +57,15 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( false, numporop1_ );
+    Instance( false );
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::FluidEleCalcPoroP1(int num)
-  : DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro(num),
-    numporop1_(num)
+DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::FluidEleCalcPoroP1()
+  : DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
 {
 
 }
@@ -149,7 +134,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
   LINALG::Matrix<my::nen_, 1> eprenp(true);
-  if (FluidEleCalc<distype>::fldpara_->IsGenalphaNP())
+  if (FluidEleCalc<distype>::fldparatimint_->IsGenalphaNP())
     my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
         &eprenp, "velnp");
 
@@ -173,7 +158,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(
   LINALG::Matrix<my::nen_,1> escaaf(true);
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &escaaf,"scaaf");
 
-  if (not FluidEleCalc<distype>::fldpara_->IsGenalpha())
+  if (not FluidEleCalc<distype>::fldparatimint_->IsGenalpha())
     eaccam.Clear();
 
   // ---------------------------------------------------------------------
@@ -314,7 +299,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluatePressureEquation(
                                     preforce);
 
   // now the porosity time derivative (different for standard poro and poro_p1 elements)
-  if (my::fldpara_->IsStationary() == false)
+  if (my::fldparatimint_->IsStationary() == false)
   {
     // inertia terms on the right hand side for instationary fluids
 
@@ -335,10 +320,10 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluatePressureEquation(
       //just update internal variables, no contribution to rhs
       const double porositydotn = my::funct_.Dot(*eporositydotn);
 
-      my::histcon_ = my::fldpara_->OmTheta() * my::fldpara_->Dt() * porositydotn;
+      my::histcon_ = my::fldparatimint_->OmTheta() * my::fldparatimint_->Dt() * porositydotn;
 
       //rhs from last time step
-      my::rhscon_ = 1.0/my::fldpara_->Dt()/my::fldpara_->Theta() * my::histcon_;
+      my::rhscon_ = 1.0/my::fldparatimint_->Dt()/my::fldparatimint_->Theta() * my::histcon_;
 
       //transient part of continuity equation residual
       my::conres_old_ += porositydot - my::rhscon_;
@@ -415,7 +400,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
   LINALG::Matrix<my::nen_, 1> eprenp(true);
-  if (my::fldpara_->IsGenalphaNP())
+  if (my::fldparatimint_->IsGenalphaNP())
     this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
         &eprenp, "velnp");
 
@@ -508,7 +493,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
     my::is_higher_order_ele_ = false;
 
   // stationary formulation does not support ALE formulation
-  //if (isale and my::fldpara_->IsStationary())
+  //if (isale and my::fldparatimint_->IsStationary())
   //  dserror("No ALE support within stationary fluid solver.");
 
     // ---------------------------------------------------------------------
@@ -898,8 +883,8 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
     //----------------------------------------------------------------------
-    const double timefacfac = my::fldpara_->TimeFac() * my::fac_;
-    const double timefacfacpre = my::fldpara_->TimeFacPre() * my::fac_;
+    const double timefacfac = my::fldparatimint_->TimeFac() * my::fac_;
+    const double timefacfacpre = my::fldparatimint_->TimeFacPre() * my::fac_;
 
     //***********************************************************************************************
     // 1) coupling terms in momentum balance
@@ -954,6 +939,8 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
       } //vi
     } // ui
 
+
+  if (not my::fldparatimint_->IsStationary())
     //transient terms
     /*  reaction  and time derivative*/
     /*
@@ -963,7 +950,6 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
      |                             |    |                             |
       \                           /     \                           /
      */
-    if (not my::fldpara_->IsStationary())
     {
       for (int ui=0; ui<my::nen_; ++ui)
       {
@@ -989,14 +975,14 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
       for (int j =0; j< my::nsd_; j++)
         derxy_convel(i) += my::derxy_(j,i) * my::velint_(j);
 
-    if (not my::fldpara_->IsStationary())
+    if (not my::fldparatimint_->IsStationary())
     {
       for (int i =0; i< my::nen_; i++)
         for (int j =0; j< my::nsd_; j++)
           derxy_convel(i) += my::derxy_(j,i) * (-my::gridvelint_(j));
     }
 
-    if( my::fldpara_->PoroContiPartInt() == false )
+    if( static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false )
     {
       /*
         /                           \     /                             \
@@ -1040,7 +1026,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
           |                              |
           \                             /
        */
-      if (not my::fldpara_->IsStationary())
+      if (not my::fldparatimint_->IsStationary())
       {
         for (int ui=0; ui<my::nen_; ++ui)
         {
@@ -1090,7 +1076,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::PSPG(
   }
   else
   {
-    scal_grad_q=my::fldpara_->AlphaF()*fac3;
+    scal_grad_q=my::fldparatimint_->AlphaF()*fac3;
   }
 
   for(int jdim=0;jdim<my::nsd_;++jdim)
@@ -1152,7 +1138,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ReacStab(
 //  else
 //  {
 //    dserror("Is this factor correct? Check for bugs!");
-//    reac_tau = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldpara_->AlphaF()*fac3;
+//    reac_tau = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldparatimint_->AlphaF()*fac3;
 //  }
 //
 //  for (int vi=0; vi<my::nen_; ++vi)

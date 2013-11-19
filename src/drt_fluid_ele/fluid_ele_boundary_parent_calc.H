@@ -29,7 +29,8 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #define FLUID_ELE_BOUNDARY_PARENT_CALC_H
 
 
-#include "fluid_ele_parameter.H"
+#include "fluid_ele_parameter_std.H"
+#include "fluid_ele_parameter_timint.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
@@ -94,9 +95,6 @@ namespace DRT
       /// Internal implementation class for FluidBoundaryParent elements
       static FluidBoundaryParentInterface* Impl(DRT::ELEMENTS::FluidBoundary* ele);
 
-    protected:
-      static std::map<int,std::map<int,FluidBoundaryParentInterface*> * > instances_;
-
     };
 
 
@@ -111,18 +109,17 @@ namespace DRT
     class FluidBoundaryParent: public FluidBoundaryParentInterface
     {
       friend class FluidEleParameter;
-      typedef FluidBoundaryParentInterface my;
 
     public:
 
       //! Singleton access method
-      static FluidBoundaryParentInterface* Instance(bool create=true, int num=0);
+      static FluidBoundaryParentInterface* Instance(bool create=true );
 
       /// called upon destruction
       virtual void Done();
 
       /// Constructor with number of nodes
-      FluidBoundaryParent(int num);
+      FluidBoundaryParent();
 
       void  FlowDepPressureBC(
         DRT::ELEMENTS::FluidBoundary*  surfele,
@@ -204,7 +201,9 @@ namespace DRT
 
 
       //! pointer to parameter list
-      Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;
+      DRT::ELEMENTS::FluidEleParameter* fldpara_;
+      DRT::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
+
 
       //! infinitesimal area element drs
       double drs_;
@@ -214,8 +213,6 @@ namespace DRT
       double visc_;
       //! density at t_(n+alpha_F) or t_(n+1)
       double densaf_;
-      //! num of fluid field in multi-fluid-field problems (only of importance for fpsi so far, default = 0)
-      double num_;
 
       //-----------------------------------------------------------------
       //-----------------------------------------------------------------

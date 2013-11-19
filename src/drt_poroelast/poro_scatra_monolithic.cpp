@@ -932,6 +932,7 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
   // other parameters that might be needed by the elements
   fparams.set("delta time", Dt());
   fparams.set("total time", Time());
+  fparams.set<int>("physical type" , INPAR::FLUID::poro);
 
   const Teuchos::RCP<DRT::Discretization>& porofluiddis = PoroField()->FluidField()->Discretization();
   porofluiddis->ClearState();

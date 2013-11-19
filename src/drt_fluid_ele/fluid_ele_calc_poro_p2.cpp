@@ -15,7 +15,7 @@
 #include "fluid_ele_calc_poro_p2.H"
 
 #include "fluid_ele.H"
-#include "fluid_ele_parameter.H"
+#include "fluid_ele_parameter_poro.H"
 #include "fluid_ele_utils.H"
 
 #include "../drt_mat/fluidporo.H"
@@ -31,38 +31,25 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcPoroP2<distype>* DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Instance( bool create, int num )
+DRT::ELEMENTS::FluidEleCalcPoroP2<distype>* DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Instance( bool create )
 {
+  static FluidEleCalcPoroP2<distype> * instance;
   if ( create )
   {
-    if(static_cast<int>(MY::instances_.count(num))==0)
+    if ( instance==NULL )
     {
-      MY::instances_.insert(std::pair<int,std::map<int,MY* >* >(num, new std::map<int,MY* >));
-      MY::instances_.at(num)->insert(std::pair<int,MY* >((int)distype,new FluidEleCalcPoroP2<distype>(num)));
+      instance = new FluidEleCalcPoroP2<distype>();
     }
-    else if ( MY::instances_.count(num) > 0 and MY::instances_.at(num)->count((int)distype) == 0 )
-    {
-      MY::instances_.at(num)->insert(std::pair<int,MY* >((int)distype, new FluidEleCalcPoroP2<distype>(num)));
-    }
-
-    return static_cast<DRT::ELEMENTS::FluidEleCalcPoroP2<distype>* >(MY::instances_.at(num)->at((int)distype));
   }
   else
   {
-    if ( MY::instances_.at(num)->size())
-    {
-      delete MY::instances_.at(num)->at((int)distype);
-      MY::instances_.at(num)->erase((int)distype);
-
-      if ( !(MY::instances_.at(num)->size()) )
-        MY::instances_.erase(num);
-    }
-
-    return NULL;
+    if ( instance!=NULL )
+      delete instance;
+    instance = NULL;
   }
-
-  return NULL;
+  return instance;
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -72,15 +59,15 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( false, numporop2_ );
+    Instance( false );
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::FluidEleCalcPoroP2(int num)
-  : DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro(num),
+DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::FluidEleCalcPoroP2()
+  : DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro(),
     W_(0.0),
     dW_dJ_(0.0)
 {
@@ -151,7 +138,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Evaluate(
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
   LINALG::Matrix<my::nen_, 1> eprenp(true);
-  if (FluidEleCalc<distype>::fldpara_->IsGenalphaNP())
+  if (FluidEleCalc<distype>::fldparatimint_->IsGenalphaNP())
     my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
         &eprenp, "velnp");
 
@@ -177,7 +164,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Evaluate(
   LINALG::Matrix<my::nen_,1> eporosity(true);
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &eporosity,"scaaf");
 
-  if (not FluidEleCalc<distype>::fldpara_->IsGenalpha())
+  if (not FluidEleCalc<distype>::fldparatimint_->IsGenalpha())
     eaccam.Clear();
 
   // ---------------------------------------------------------------------
@@ -294,7 +281,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
   LINALG::Matrix<my::nen_, 1> eprenp(true);
-  if (my::fldpara_->IsGenalphaNP())
+  if (my::fldparatimint_->IsGenalphaNP())
     this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
         &eprenp, "velnp");
 
@@ -478,7 +465,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::PSPG(
   }
   else
   {
-    scal_grad_q=my::fldpara_->AlphaF()*fac3;
+    scal_grad_q=my::fldparatimint_->AlphaF()*fac3;
   }
 
   for(int jdim=0;jdim<my::nsd_;++jdim)
@@ -539,7 +526,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::ReacStab(
   else
   {
     dserror("Is this factor correct? Check for bugs!");
-    reac_tau = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldpara_->AlphaF()*fac3;
+    reac_tau = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldparatimint_->AlphaF()*fac3;
   }
 
   for (int vi=0; vi<my::nen_; ++vi)
@@ -689,7 +676,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateODPoroScatra(
     my::is_higher_order_ele_ = false;
 
   // stationary formulation does not support ALE formulation
-  //if (isale and my::fldpara_->IsStationary())
+  //if (isale and my::fldparatimint_->IsStationary())
   //  dserror("No ALE support within stationary fluid solver.");
 
     // ---------------------------------------------------------------------
@@ -769,7 +756,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::SysmatPoroScatraOD(
     // get pressure at integration point
     // (value at n+alpha_F for generalized-alpha scheme,
     //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
-    if(my::fldpara_->IsGenalphaNP())
+    if(my::fldparatimint_->IsGenalphaNP())
       my::press_ = my::funct_.Dot(eprenp);
     else
       my::press_ = my::funct_.Dot(epreaf);
@@ -781,7 +768,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::SysmatPoroScatraOD(
     // get pressure gradient at integration point
     // (value at n+alpha_F for generalized-alpha scheme,
     //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
-    if(my::fldpara_->IsGenalphaNP())
+    if(my::fldparatimint_->IsGenalphaNP())
       my::gradp_.Multiply(my::derxy_,eprenp);
     else
       my::gradp_.Multiply(my::derxy_,epreaf);
@@ -817,7 +804,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::SysmatPoroScatraOD(
     my::vdiv_ = 0.0;
     // double dispdiv=0.0;
     my::gridvdiv_ = 0.0;
-    if (not my::fldpara_->IsGenalphaNP())
+    if (not my::fldparatimint_->IsGenalphaNP())
     {
       for (int idim = 0; idim <my::nsd_; ++idim)
       {
@@ -953,8 +940,8 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::SysmatPoroScatraOD(
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
     //----------------------------------------------------------------------
-    const double timefacfac = my::fldpara_->TimeFac() * my::fac_;
-    const double timefacfacpre = my::fldpara_->TimeFacPre() * my::fac_;
+    const double timefacfac = my::fldparatimint_->TimeFac() * my::fac_;
+    const double timefacfacpre = my::fldparatimint_->TimeFacPre() * my::fac_;
 
 
     for (int ui=0; ui<my::nen_; ++ui)
@@ -971,7 +958,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::SysmatPoroScatraOD(
     } // ui
 
 
-    if (not my::fldpara_->IsStationary())
+    if (not my::fldparatimint_->IsStationary())
     {
       for (int ui=0; ui<my::nen_; ++ui)
       {
@@ -997,14 +984,14 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::SysmatPoroScatraOD(
       for (int j =0; j< my::nsd_; j++)
         derxy_convel(i) += my::derxy_(j,i) * my::velint_(j);
 
-    if (not my::fldpara_->IsStationary())
+    if (not my::fldparatimint_->IsStationary())
     {
       for (int i =0; i< my::nen_; i++)
         for (int j =0; j< my::nsd_; j++)
           derxy_convel(i) += my::derxy_(j,i) * (-my::gridvelint_(j));
     }
 
-    if( my::fldpara_->PoroContiPartInt() == false )
+    if( static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false )
     {
       for (int ui=0; ui<my::nen_; ++ui)
       {
@@ -1028,7 +1015,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::SysmatPoroScatraOD(
         }
       }
 
-      if (not my::fldpara_->IsStationary())
+      if (not my::fldparatimint_->IsStationary())
       {
         for (int ui=0; ui<my::nen_; ++ui)
         {

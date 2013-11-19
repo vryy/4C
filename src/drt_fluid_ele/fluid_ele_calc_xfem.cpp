@@ -26,7 +26,7 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 #include "../linalg/linalg_utils.H"
 
 #include "fluid_ele.H"
-#include "fluid_ele_parameter.H"
+#include "fluid_ele_parameter_std.H"
 #include "fluid_ele_calc_xfem.H"
 
 #include "../drt_mat/newtonianfluid.H"
@@ -74,7 +74,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
   : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
 {
-
+  my::fldpara_=DRT::ELEMENTS::FluidEleParameterStd::Instance();
 }
 
 
@@ -308,7 +308,7 @@ int FluidEleCalcXFEM<distype>::ComputeError(
 
   const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
 
-  const double t = my::fldpara_->Time();
+  const double t = my::fldparatimint_->Time();
 
   //set element id
   my::eid_ = ele->Id();
@@ -827,7 +827,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
   const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
 
-  const double t = my::fldpara_->Time();
+  const double t = my::fldparatimint_->Time();
 
 
   //----------------------------------------------------------------------------
@@ -1190,7 +1190,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfacefluidfluidcoupling(
 
   const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
 
-  const double t = my::fldpara_->Time();
+  const double t = my::fldparatimint_->Time();
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -1815,7 +1815,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
 
         const double surf_fac = drs*iquad.Weight();
 
-        const double fac = surf_fac * my::fldpara_->TimeFac();
+        const double fac = surf_fac * my::fldparatimint_->TimeFac();
 
 
         //--------------------------------------------
@@ -2380,7 +2380,7 @@ void FluidEleCalcXFEM<distype>::MSH_EvaluateMatrices(
   //----------------------------------------------------------------------
 
   // TODO: check if this parameter should be fac*1.0*dt (full implicit stabilization)
-  const double timefacfac = my::fldpara_->TimeFac() * my::fac_;
+  const double timefacfac = my::fldparatimint_->TimeFac() * my::fac_;
 
   const double viscfac = 1.0/(2.0*my::visceff_);
 
@@ -2776,7 +2776,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
         const double surf_fac = drs*iquad.Weight();
 
-        const double timefacfac = surf_fac * my::fldpara_->TimeFac();
+        const double timefacfac = surf_fac * my::fldparatimint_->TimeFac();
 
 
         //--------------------------------------------
@@ -3326,8 +3326,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
         const double surf_fac = drs*iquad.Weight();
 
-        const double timefacfac = surf_fac * my::fldpara_->TimeFac();
-
+        const double timefacfac = surf_fac * my::fldparatimint_->TimeFac();
 
 
         // evaluate embedded element shape functions

@@ -14,7 +14,7 @@ Maintainer: Ursula Rasthofer
 #define FLUID_ELE_EVALUATE_UTILS_H
 
 #include "fluid_ele_action.H"
-#include "fluid_ele_parameter.H"
+#include "fluid_ele_parameter_std.H"
 #include "fluid_ele_utils.H"
 
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
@@ -1570,7 +1570,7 @@ void f3_calc_scatra_means(DRT::ELEMENTS::Fluid* ele,
  */
 template<int iel>
 void f3_apply_box_filter(DRT::ELEMENTS::Fluid*         ele,
-                         Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara,
+                         DRT::ELEMENTS::FluidEleParameterStd* fldpara,
                          std::vector<double>&          myvel,
                          std::vector<double>&          mytemp,
                          const double                  thermpress,
@@ -2044,7 +2044,7 @@ void f3_apply_box_filter(DRT::ELEMENTS::Fluid*         ele,
  */
 template<int iel>
 void f3_calc_smag_const_LijMij_and_MijMij(DRT::ELEMENTS::Fluid*  ele,
-                                        Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara,
+                                        DRT::ELEMENTS::FluidEleParameterStd* fldpara,
                                         RCP<Epetra_MultiVector>& col_filtered_vel,
                                         RCP<Epetra_MultiVector>& col_filtered_reynoldsstress,
                                         RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
@@ -2722,7 +2722,7 @@ void f3_calc_vreman_const(DRT::ELEMENTS::Fluid*  ele,
 */
 template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
 void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
-                    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara,
+                    DRT::ELEMENTS::FluidEleParameterStd* fldpara,
                     Teuchos::ParameterList&      params,
                     Teuchos::RCP<MAT::Material>  mat,
                     std::vector<double>&     vel,
@@ -3502,7 +3502,7 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
 //----------------------------------------------------------------------
 template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
 void f3_get_mf_nwc(DRT::ELEMENTS::Fluid* ele,
-                   Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara,
+                   DRT::ELEMENTS::FluidEleParameterStd* fldpara,
                    double&              Cai,
                    double&              vol,
                    std::vector<double>& vel,

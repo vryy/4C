@@ -15,7 +15,8 @@ Maintainer: Volker Gravemeier
 
 #include "fluid_ele_calc_loma.H"
 #include "fluid_ele.H"
-#include "fluid_ele_parameter.H"
+#include "fluid_ele_parameter_std.H"
+#include "fluid_ele_parameter_timint.H"
 #include "fluid_ele_utils.H"
 
 #include "../drt_geometry/position_array.H"
@@ -66,9 +67,8 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcLoma<distype>::FluidEleCalcLoma()
   : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
 {
-
+ my::fldpara_ =  DRT::ELEMENTS::FluidEleParameterStd::Instance();
 }
-
 
 /*----------------------------------------------------------------------*
  * Action type: Evaluate
@@ -164,7 +164,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
   LINALG::Matrix<my::nen_,1>    escaam(true);
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &eveln, &escaam,"scaam");
 
-  if (not my::fldpara_->IsGenalpha()) eaccam.Clear();
+  if (not my::fldparatimint_->IsGenalpha()) eaccam.Clear();
 
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
@@ -271,7 +271,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
   if (my::fldpara_->IsInconsistent() == true) my::is_higher_order_ele_ = false;
 
   // stationary formulation does not support ALE formulation
-  if (isale and my::fldpara_->IsStationary())
+  if (isale and my::fldparatimint_->IsStationary())
     dserror("No ALE support within stationary fluid solver.");
 
   // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
@@ -483,7 +483,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     lin_resC_DT.Clear();
 
     // transient term
-    if (not my::fldpara_->IsStationary())
+    if (not my::fldparatimint_->IsStationary())
     {
       const double scadtfacfac = my::scadtfac_*my::fac_;
       for (int ui=0; ui<my::nen_; ++ui)
@@ -493,7 +493,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     }
 
     // convective term
-    const double timefac_scaconvfacaf = my::fldpara_->TimeFac()*my::fac_*my::scaconvfacaf_;
+    const double timefac_scaconvfacaf = my::fldparatimint_->TimeFac()*my::fac_*my::scaconvfacaf_;
     for (int ui=0; ui<my::nen_; ++ui)
     {
       lin_resC_DT(ui) += timefac_scaconvfacaf*my::conv_c_(ui);
@@ -611,7 +611,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       lin_resE_DT.Clear();
 
       // transient term
-      if (not my::fldpara_->IsStationary())
+      if (not my::fldparatimint_->IsStationary())
       {
         const double densamfac = my::fac_*my::densam_;
         for (int ui=0; ui<my::nen_; ++ui)
@@ -621,7 +621,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       }
 
       // convective term
-      const double denstimefac = my::fldpara_->TimeFac()*my::fac_*my::densaf_;
+      const double denstimefac = my::fldparatimint_->TimeFac()*my::fac_*my::densaf_;
       for (int ui=0; ui<my::nen_; ++ui)
       {
         lin_resE_DT(ui) += denstimefac*my::conv_c_(ui);
@@ -642,7 +642,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
           }
         }
 
-        const double difftimefac = my::fldpara_->TimeFac()*my::fac_*my::diffus_;
+        const double difftimefac = my::fldparatimint_->TimeFac()*my::fac_*my::diffus_;
         for (int ui=0; ui<my::nen_; ++ui)
         {
           lin_resE_DT(ui) -= difftimefac*diff(ui);

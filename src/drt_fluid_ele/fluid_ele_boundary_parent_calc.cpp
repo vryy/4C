@@ -42,18 +42,15 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_inpar/inpar_fpsi.H"
 #include "../drt_inpar/inpar_material.H"
 
-std::map<int,std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface*> * > DRT::ELEMENTS::FluidBoundaryParentInterface::instances_;
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(DRT::ELEMENTS::FluidBoundary* ele)
 {
-  int num=0; // no specification needed so far; compare to FluidBoundaryImplInterface::Impl()
-
   switch (ele->Shape())
   {
   case DRT::Element::line2:
   {
-    return FluidBoundaryParent<DRT::Element::line2>::Instance(true,num);
+    return FluidBoundaryParent<DRT::Element::line2>::Instance(true);
   }
   /*case DRT::Element::line3:
   {
@@ -69,7 +66,7 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
   }*/
   case DRT::Element::quad4:
   {
-    return FluidBoundaryParent<DRT::Element::quad4>::Instance(true,num);
+    return FluidBoundaryParent<DRT::Element::quad4>::Instance(true);
   }
   /*case DRT::Element::quad8:
   {
@@ -105,39 +102,25 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParent<distype>::Instance(bool create, int num)
+DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParent<distype>::Instance(bool create )
 {
+  static FluidBoundaryParentInterface* instance;
   if ( create )
   {
-    if(static_cast<int>(my::instances_.count(num))==0)
+    if ( instance==NULL )
     {
-      my::instances_.insert(std::pair<int,std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface* > * >(num, new std::map<int,DRT::ELEMENTS::FluidBoundaryParentInterface*>));
-      my::instances_.at(num)->insert(std::pair<int,DRT::ELEMENTS::FluidBoundaryParent<distype>* >((int)distype,new FluidBoundaryParent<distype>(num)));
+      instance = new FluidBoundaryParent<distype>();
     }
-    else if ( my::instances_.count(num) > 0 and my::instances_.at(num)->count((int)distype) == 0 )
-    {
-      my::instances_.at(num)->insert(std::pair<int,DRT::ELEMENTS::FluidBoundaryParentInterface*>((int)distype, new FluidBoundaryParent<distype>(num)));
-    }
-
-    return my::instances_.at(num)->at((int)distype);
   }
   else
   {
-    if ( my::instances_.at(num)->size())
-    {
-      delete my::instances_.at(num)->at((int)distype);
-      my::instances_.at(num)->erase((int)distype);
-
-      if ( !my::instances_.at(num)->size())
-        my::instances_.erase(num);
-
-    }
-
-    return NULL;
+    if ( instance!=NULL )
+      delete instance;
+    instance = NULL;
   }
-
-  return NULL;
+  return instance;
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -147,23 +130,23 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( false, num_ );
+    Instance( false );
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidBoundaryParent<distype>::FluidBoundaryParent(int num)
+DRT::ELEMENTS::FluidBoundaryParent<distype>::FluidBoundaryParent()
   : DRT::ELEMENTS::FluidBoundaryParentInterface(),
     drs_(0.0),
     fac_(0.0),
     visc_(0.0),
-    densaf_(1.0),
-    num_(num)
+    densaf_(1.0)
 {
   // pointer to class FluidParentParameter (access to the general parameter)
-  fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance(num);
+  fldpara_ = DRT::ELEMENTS::FluidEleParameterStd::Instance();
+  fldparatimint_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
 
   return;
 }
@@ -451,8 +434,8 @@ template <DRT::Element::DiscretizationType bdistype,
   //---------------------------------------------------------------------
   // get time-integration parameters
   //---------------------------------------------------------------------
-  const double timefac    = fldpara_->TimeFac();
-  const double timefacrhs = fldpara_->TimeFacRhs();
+  const double timefac    = fldparatimint_->TimeFac();
+  const double timefacrhs = fldparatimint_->TimeFacRhs();
 
   //---------------------------------------------------------------------
   // get parent element data
@@ -919,7 +902,7 @@ template <DRT::Element::DiscretizationType bdistype,
   // apply time curve at (n+1) for all time integration schemes (dirichlet condition)
   // time_ in fluid3_parameter is time(n+alphaF) in the case of genalpha
   // therefore, it need to be reset to time(n+1)
-  const double time = fldpara_->Time()+(1-fldpara_->AlphaF())*fldpara_->Dt();
+  const double time = fldparatimint_->Time()+(1-fldparatimint_->AlphaF())*fldparatimint_->Dt();
   if (time < 0.0) usetime = false;
   const std::vector<int>* curve  = (*wdbc_cond).Get<std::vector<int> >("curve");
   int curvenum = -1;
@@ -961,9 +944,9 @@ template <DRT::Element::DiscretizationType bdistype,
   //---------------------------------------------------------------------
   // get time-integration parameters
   //---------------------------------------------------------------------
-  const double timefac    = fldpara_->TimeFac();
-  const double timefacpre = fldpara_->TimeFacPre();
-  const double timefacrhs = fldpara_->TimeFacRhs();
+  const double timefac    = fldparatimint_->TimeFac();
+  const double timefacpre = fldparatimint_->TimeFacPre();
+  const double timefacrhs = fldparatimint_->TimeFacRhs();
 
   //---------------------------------------------------------------------
   // get parent element data
@@ -1064,7 +1047,7 @@ template <DRT::Element::DiscretizationType bdistype,
   // parent velocity at n+1
   std::vector<double> mypvelnp(plm.size());
 
-  if (fldpara_->TimeAlgo() == INPAR::FLUID::timeint_npgenalpha)
+  if (fldparatimint_->TimeAlgo() == INPAR::FLUID::timeint_npgenalpha)
   {
     RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
     if (velnp==Teuchos::null) dserror("Cannot get state vector 'velnp'");
@@ -3245,7 +3228,7 @@ template <DRT::Element::DiscretizationType bdistype,
   // number of internal stress dofs is equivalent to number of second derivatives
   static const int numstressdof_= DRT::UTILS::DisTypeToNumDeriv2<pdistype>::numderiv2;
 
-  if(fldpara_->TimeAlgo()== INPAR::FLUID::timeint_afgenalpha)
+  if(fldparatimint_->TimeAlgo()== INPAR::FLUID::timeint_afgenalpha)
        dserror("The use of mixed hybrid boundary conditions and Afgenalpha has not been verified so far!");
 
   // --------------------------------------------------
@@ -3272,7 +3255,7 @@ template <DRT::Element::DiscretizationType bdistype,
 
   //TODO: which time (n+1) or (n+alphaF)
   // find out whether we will use a time curve
-  const double time = fldpara_->Time();
+  const double time = fldparatimint_->Time();
 
   // initialise scaling for distance to wall (Spalding)
   double hB_divided_by=1.0;
@@ -3376,7 +3359,7 @@ template <DRT::Element::DiscretizationType bdistype,
   if (vel==Teuchos::null) dserror("Cannot get state vector 'velaf'");
 
   // extract local node values for pressure and velocities from global vectors
-  if(fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha)
+  if(fldparatimint_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha)
   {
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
     if (velnp==Teuchos::null) dserror("Cannot get state vector 'velnp'");
@@ -4592,18 +4575,18 @@ template <DRT::Element::DiscretizationType bdistype,
   // BDF2:                      timefacrhs = 2/3 * dt
   // af-generalized-alpha:      timefacrhs = (1.0/alpha_M) * gamma * dt
   // Peters-generalized-alpha:  timefacrhs = 1.0
-  double timefacrhs  = fldpara_->TimeFacRhs();
+  double timefacrhs  = fldparatimint_->TimeFacRhs();
   // One-step-Theta:            timefacmat_u = theta*dt
   // BDF2:                      timefacmat_u = 2/3 * dt
   // af-generalized-alpha:      timefacmat_u = (alphaF/alpha_M) * gamma * dt
   // Peters-generalized-alpha:  timefacmat_u = alphaF* gamma * dt
-  double timefacmat_u= fldpara_->TimeFac();
+  double timefacmat_u= fldparatimint_->TimeFac();
   // One-step-Theta:            timefacmat_p = theta*dt
   // BDF2:                      timefacmat_p = 2/3 * dt
   // af-generalized-alpha:      timefacmat_p = (alphaF/alpha_M) * gamma * dt
   // Peters-generalized-alpha:  timefacmat_p = gamma * dt
   //double timefacmat_p= fldpara_->timefacmat_p_;
-  double timefacmat_p= fldpara_->TimeFacPre();
+  double timefacmat_p= fldparatimint_->TimeFacPre();
 
   // --------------------------------
   // rearrange to pattern uvwp uvwp ...

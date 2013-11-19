@@ -14,10 +14,11 @@ Maintainer: Benedikt Schott
 *----------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
 
-
-#include "fluid_ele_intfaces_calc.H"
-#include "fluid_ele_calc_intfaces_stab.H"
 #include "fluid_ele_action.H"
+#include "fluid_ele_intfaces_calc.H"
+#include "fluid_ele_parameter_timint.H"
+#include "fluid_ele_calc_intfaces_stab.H"
+
 #include "../drt_inpar/inpar_xfem.H"
 
 #include "../linalg/linalg_utils.H"
@@ -105,7 +106,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
 {
   // pointer to class FluidImplParameter (access to the general parameter)
-  fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance();
+  fldpara_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
 
   return;
 }
@@ -133,24 +134,24 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
 
   if(face_type == INPAR::XFEM::face_type_std)
   {
-    EOS_Pres         = (fldpara_->EOS_Pres()        == INPAR::FLUID::EOS_PRES_std_eos);
-    EOS_Conv_Stream  = (fldpara_->EOS_Conv_Stream() == INPAR::FLUID::EOS_CONV_STREAM_std_eos);
-    EOS_Conv_Cross   = (fldpara_->EOS_Conv_Cross()  == INPAR::FLUID::EOS_CONV_CROSS_std_eos);
-    EOS_Div_vel_jump = (fldpara_->EOS_Div()         == INPAR::FLUID::EOS_DIV_vel_jump_std_eos);
-    EOS_Div_div_jump = (fldpara_->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_std_eos);
+    EOS_Pres         = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Pres()        == INPAR::FLUID::EOS_PRES_std_eos);
+    EOS_Conv_Stream  = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Conv_Stream() == INPAR::FLUID::EOS_CONV_STREAM_std_eos);
+    EOS_Conv_Cross   = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Conv_Cross()  == INPAR::FLUID::EOS_CONV_CROSS_std_eos);
+    EOS_Div_vel_jump = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_vel_jump_std_eos);
+    EOS_Div_div_jump = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_std_eos);
 
     GP_visc          = false;
     GP_u_p_2nd       = false;
   }
   else if(face_type == INPAR::XFEM::face_type_ghost_penalty)
   {
-    EOS_Pres         = (fldpara_->EOS_Pres()        != INPAR::FLUID::EOS_PRES_none);
-    EOS_Conv_Stream  = (fldpara_->EOS_Conv_Stream() != INPAR::FLUID::EOS_CONV_STREAM_none);
-    EOS_Conv_Cross   = (fldpara_->EOS_Conv_Cross()  != INPAR::FLUID::EOS_CONV_CROSS_none);
-    EOS_Div_vel_jump = (fldpara_->EOS_Div()         == INPAR::FLUID::EOS_DIV_vel_jump_std_eos
-                     or fldpara_->EOS_Div()         == INPAR::FLUID::EOS_DIV_vel_jump_xfem_gp);
-    EOS_Div_div_jump = (fldpara_->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_std_eos
-                     or fldpara_->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_xfem_gp);
+    EOS_Pres         = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Pres()        != INPAR::FLUID::EOS_PRES_none);
+    EOS_Conv_Stream  = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Conv_Stream() != INPAR::FLUID::EOS_CONV_STREAM_none);
+    EOS_Conv_Cross   = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Conv_Cross()  != INPAR::FLUID::EOS_CONV_CROSS_none);
+    EOS_Div_vel_jump = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_vel_jump_std_eos
+                     or DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_vel_jump_xfem_gp);
+    EOS_Div_div_jump = (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_std_eos
+                     or DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_xfem_gp);
 
     GP_visc          = faceparams.get<bool>("visc_ghost_penalty", false);
     GP_u_p_2nd       = faceparams.get<bool>("u_p_ghost_penalty_2nd", false);

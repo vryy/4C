@@ -28,7 +28,8 @@ Maintainer: Benedikt Schott
 #define FLUID_ELE_CALC_INTFACES_STAB_H
 
 #include "fluid_ele.H"
-#include "fluid_ele_parameter.H"
+#include "fluid_ele_parameter_std.H"
+#include "fluid_ele_parameter_timint.H"
 
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
@@ -76,7 +77,7 @@ namespace DRT
       */
       virtual int EvaluateEdgeBasedStabilization(
           DRT::ELEMENTS::FluidIntFace*       intface,                   ///< internal face element
-          DRT::ELEMENTS::FluidEleParameter&  fldpara_,
+          DRT::ELEMENTS::FluidEleParameterTimInt&  fldpara_,
           Teuchos::ParameterList&            params,                    ///< parameter list
           DRT::Discretization&               discretization,            ///< discretization
           std::vector<int>&                  patchlm,                   ///< patch local map
@@ -179,7 +180,7 @@ namespace DRT
       */
       virtual int EvaluateEdgeBasedStabilization(
           DRT::ELEMENTS::FluidIntFace*       intface,                   ///< internal face element
-          DRT::ELEMENTS::FluidEleParameter&  fldpara,                   ///< fluid parameter
+          DRT::ELEMENTS::FluidEleParameterTimInt&  fldpara,                   ///< fluid parameter
           Teuchos::ParameterList&            params,                    ///< parameter list
           DRT::Discretization&               discretization,            ///< discretization
           std::vector<int>&                  patchlm,                   ///< patch local map

@@ -6103,8 +6103,10 @@ void FLD::XFluid::SetElementTimeParameter()
 
   Teuchos::ParameterList eleparams;
 
+  // set action
   eleparams.set<int>("action",FLD::set_time_parameter);
-
+  // set time integration scheme
+  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
   // set general element parameters
   eleparams.set("dt",dta_);
   eleparams.set("theta",theta_);

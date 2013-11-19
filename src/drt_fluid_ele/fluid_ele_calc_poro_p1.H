@@ -34,19 +34,19 @@ namespace ELEMENTS
 template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcPoroP1 : public FluidEleCalcPoro<distype>
 {
+  typedef FluidEleCalcPoro<distype> my;
 
-  typedef DRT::ELEMENTS::FluidEleInterface MY;
+private:
+
+  /// private Constructor since we are a Singleton.
+  FluidEleCalcPoroP1();
 
 public:
-    /// private Constructor since we are a Singleton.
-    FluidEleCalcPoroP1(int num);
-
-    typedef FluidEleCalcPoro<distype> my;
 
     virtual ~FluidEleCalcPoroP1() {}
 
     /// Singleton access method
-    static FluidEleCalcPoroP1<distype>* Instance( bool create=true, int num=0 );
+    static FluidEleCalcPoroP1<distype>* Instance( bool create=true );
 
     /// called upon destruction
     virtual void Done();
@@ -392,7 +392,6 @@ protected:
         const double &                                         fac3            ///< factor for residual in current subgrid velocities
         );
 
-    int numporop1_;
 };
 
 }//ELEMENTS

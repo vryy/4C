@@ -2927,7 +2927,6 @@ void FLD::XFluidFluid::PrepareTimeStep()
     else dserror("number of time step is wrong");
   }
 
-
   // -------------------------------------------------------------------
   //  Set time parameter for element call
   // -------------------------------------------------------------------
@@ -4710,8 +4709,10 @@ void FLD::XFluidFluid::SetElementTimeParameter()
 #ifdef D_FLUID3
   Teuchos::ParameterList eleparams;
 
+  // set action
   eleparams.set<int>("action",FLD::set_time_parameter);
-
+  // set time integration scheme
+  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
   // set general element parameters
   eleparams.set("dt",dta_);
   eleparams.set("theta",theta_);

@@ -58,289 +58,288 @@ namespace ELEMENTS
 
   \author schott
   \date 04/12
-*/
+ */
 template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcXFEM : public FluidEleCalc<distype>
 {
-    /// private Constructor since we are a Singleton.
-    FluidEleCalcXFEM();
+  /// private Constructor since we are a Singleton.
+  FluidEleCalcXFEM();
 
-    typedef FluidEleCalc<distype> my;
+  typedef FluidEleCalc<distype> my;
 
 public:
-    virtual ~FluidEleCalcXFEM() {}
+  virtual ~FluidEleCalcXFEM() {}
 
-    /// Singleton access method
-    static FluidEleCalcXFEM<distype> * Instance( bool create=true );
+  /// Singleton access method
+  static FluidEleCalcXFEM<distype> * Instance( bool create=true );
 
-    /// called upon destruction
-    virtual void Done();
+  /// called upon destruction
+  virtual void Done();
 
-    /// evaluate the XFEM cut element
-    virtual int EvaluateXFEM(DRT::ELEMENTS::Fluid*                             ele,
-                             DRT::Discretization &                             discretization,
-                             const std::vector<int> &                          lm,
-                             Teuchos::ParameterList&                           params,
-                             Teuchos::RCP<MAT::Material> &                     mat,
-                             Epetra_SerialDenseMatrix&                         elemat1_epetra,
-                             Epetra_SerialDenseMatrix&                         elemat2_epetra,
-                             Epetra_SerialDenseVector&                         elevec1_epetra,
-                             Epetra_SerialDenseVector&                         elevec2_epetra,
-                             Epetra_SerialDenseVector&                         elevec3_epetra,
-                             const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-                             std::string&                                      VCellGaussPts,
-                             const GEO::CUT::plain_volumecell_set &            cells,
-                             bool                                              offdiag = false);
+  /// evaluate the XFEM cut element
+  virtual int EvaluateXFEM(DRT::ELEMENTS::Fluid*                             ele,
+      DRT::Discretization &                             discretization,
+      const std::vector<int> &                          lm,
+      Teuchos::ParameterList&                           params,
+      Teuchos::RCP<MAT::Material> &                     mat,
+      Epetra_SerialDenseMatrix&                         elemat1_epetra,
+      Epetra_SerialDenseMatrix&                         elemat2_epetra,
+      Epetra_SerialDenseVector&                         elevec1_epetra,
+      Epetra_SerialDenseVector&                         elevec2_epetra,
+      Epetra_SerialDenseVector&                         elevec3_epetra,
+      const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+      std::string&                                      VCellGaussPts,
+      const GEO::CUT::plain_volumecell_set &            cells,
+      bool                                              offdiag = false);
 
-    /// evaluate the shape functions in the XFEM
-    virtual int IntegrateShapeFunctionXFEM(
-                             DRT::ELEMENTS::Fluid*                             ele,
-                             DRT::Discretization &                             discretization,
-                             const std::vector<int> &                          lm,
-                             Epetra_SerialDenseVector&                         elevec1_epetra,
-                             const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-                             std::string&                                      VCellGaussPts,
-                             const GEO::CUT::plain_volumecell_set &            cells);
+  /// evaluate the shape functions in the XFEM
+  virtual int IntegrateShapeFunctionXFEM(
+      DRT::ELEMENTS::Fluid*                             ele,
+      DRT::Discretization &                             discretization,
+      const std::vector<int> &                          lm,
+      Epetra_SerialDenseVector&                         elevec1_epetra,
+      const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+      std::string&                                      VCellGaussPts,
+      const GEO::CUT::plain_volumecell_set &            cells);
 
-    /// error computation
-    virtual int ComputeError(DRT::ELEMENTS::Fluid*         ele,
-                             Teuchos::ParameterList&       params,
-                             Teuchos::RCP<MAT::Material>&  mat,
-                             DRT::Discretization&          discretization,
-                             std::vector<int>&             lm,
-                             Epetra_SerialDenseVector&     ele_dom_norms);
+  /// error computation
+  virtual int ComputeError(DRT::ELEMENTS::Fluid*         ele,
+      Teuchos::ParameterList&       params,
+      Teuchos::RCP<MAT::Material>&  mat,
+      DRT::Discretization&          discretization,
+      std::vector<int>&             lm,
+      Epetra_SerialDenseVector&     ele_dom_norms);
 
-    virtual int ComputeError(DRT::ELEMENTS::Fluid*                ele,
-                             Teuchos::ParameterList&              params,
-                             Teuchos::RCP<MAT::Material>&         mat,
-                             DRT::Discretization&                 discretization,
-                             std::vector<int>&                    lm,
-                             Epetra_SerialDenseVector&            ele_dom_norms,
-                             const DRT::UTILS::GaussIntegration & intpoints);
+  virtual int ComputeError(DRT::ELEMENTS::Fluid*                ele,
+      Teuchos::ParameterList&              params,
+      Teuchos::RCP<MAT::Material>&         mat,
+      DRT::Discretization&                 discretization,
+      std::vector<int>&                    lm,
+      Epetra_SerialDenseVector&            ele_dom_norms,
+      const DRT::UTILS::GaussIntegration & intpoints);
 
-    virtual int ComputeErrorInterface(
-        DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
-        DRT::Discretization &                                               dis,               ///< background discretization
-        const std::vector<int> &                                            lm,                ///< element local map
-        Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
-        Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
-        DRT::Discretization &                                               cutdis,            ///< cut discretization
-        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
-        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
-        Teuchos::ParameterList&                                             params,            ///< parameter list
-        const GEO::CUT::plain_volumecell_set&                               vcSet              ///< volumecell sets in this element
-    );
+  virtual int ComputeErrorInterface(
+      DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
+      DRT::Discretization &                                               dis,               ///< background discretization
+      const std::vector<int> &                                            lm,                ///< element local map
+      Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
+      Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
+      DRT::Discretization &                                               cutdis,            ///< cut discretization
+      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
+      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+      std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
+      Teuchos::ParameterList&                                             params,            ///< parameter list
+      const GEO::CUT::plain_volumecell_set&                               vcSet              ///< volumecell sets in this element
+  );
 
-    virtual int ComputeErrorInterfacefluidfluidcoupling(
-        DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
-        DRT::Discretization &                                               dis,               ///< background discretization
-        const std::vector<int> &                                            lm,                ///< element local map
-        Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
-        Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
-        DRT::Discretization &                                               cutdis,            ///< cut discretization
-        DRT::Discretization &                                               embdis,            ///< embedded discretization
-        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
-        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
-        Teuchos::ParameterList&                                             params,            ///< parameter list
-        const GEO::CUT::plain_volumecell_set&                               vcSet,             ///< volumecell sets in this element
-        std::map<int,int> &                                                 boundary_emb_gid_map
-      );
+  virtual int ComputeErrorInterfacefluidfluidcoupling(
+      DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
+      DRT::Discretization &                                               dis,               ///< background discretization
+      const std::vector<int> &                                            lm,                ///< element local map
+      Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
+      Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
+      DRT::Discretization &                                               cutdis,            ///< cut discretization
+      DRT::Discretization &                                               embdis,            ///< embedded discretization
+      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
+      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+      std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
+      Teuchos::ParameterList&                                             params,            ///< parameter list
+      const GEO::CUT::plain_volumecell_set&                               vcSet,             ///< volumecell sets in this element
+      std::map<int,int> &                                                 boundary_emb_gid_map
+  );
 
-    /// add mixed/stress/hybrid (MSH) interface condition to element matrix and rhs
-    virtual void ElementXfemInterfaceMSH(
-        DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
-        DRT::Discretization &                                               dis,               ///< background discretization
-        const std::vector<int> &                                            lm,                ///< element local map
-        const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,         ///< background element integration points
-        DRT::Discretization &                                               cutdis,            ///< cut discretization
-        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
-        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
-        Teuchos::ParameterList&                                             params,            ///< parameter list
-        Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
-        Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
-        Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
-        std::string&                                                        VCellGaussPts,     ///< Method of volumecell gauss point generation
-        const GEO::CUT::plain_volumecell_set&                               vcSet,              ///< Volumecells present in the considered set
-        bool                                                                fluidfluidcoupling ///< Is this xfluidfluid problem?
-    );
+  /// add mixed/stress/hybrid (MSH) interface condition to element matrix and rhs
+  virtual void ElementXfemInterfaceMSH(
+      DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
+      DRT::Discretization &                                               dis,               ///< background discretization
+      const std::vector<int> &                                            lm,                ///< element local map
+      const std::vector<DRT::UTILS::GaussIntegration> &                   intpoints,         ///< background element integration points
+      DRT::Discretization &                                               cutdis,            ///< cut discretization
+      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
+      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+      std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
+      Teuchos::ParameterList&                                             params,            ///< parameter list
+      Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
+      Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
+      Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
+      std::string&                                                        VCellGaussPts,     ///< Method of volumecell gauss point generation
+      const GEO::CUT::plain_volumecell_set&                               vcSet,              ///< Volumecells present in the considered set
+      bool                                                                fluidfluidcoupling ///< Is this xfluidfluid problem?
+  );
 
-    /// add Nitsche (NIT) interface condition to element matrix and rhs
-    virtual void ElementXfemInterfaceNIT(
-        DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
-        DRT::Discretization &                                               dis,               ///< background discretization
-        const std::vector<int> &                                            lm,                ///< element local map
-        DRT::Discretization &                                               cutdis,            ///< cut discretization
-        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
-        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
-        Teuchos::ParameterList&                                             params,            ///< parameter list
-        Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
-        Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
-        Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
-        const GEO::CUT::plain_volumecell_set&                               vcSet,						 ///< volumecell sets in this element
-        bool                                                                fluidfluidcoupling ///< Is this xfluidfluid problem?
-    );
+  /// add Nitsche (NIT) interface condition to element matrix and rhs
+  virtual void ElementXfemInterfaceNIT(
+      DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
+      DRT::Discretization &                                               dis,               ///< background discretization
+      const std::vector<int> &                                            lm,                ///< element local map
+      DRT::Discretization &                                               cutdis,            ///< cut discretization
+      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
+      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+      std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
+      Teuchos::ParameterList&                                             params,            ///< parameter list
+      Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
+      Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
+      Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
+      const GEO::CUT::plain_volumecell_set&                               vcSet,						 ///< volumecell sets in this element
+      bool                                                                fluidfluidcoupling ///< Is this xfluidfluid problem?
+  );
 
-    /// add two-sided Nitsche (NIT2) interface condition to element matrix and rhs
-    virtual void ElementXfemInterfaceNIT2(
-        DRT::ELEMENTS::Fluid *                                              ele,
-        DRT::Discretization &                                               dis,
-        const std::vector<int> &                                            lm,
-        DRT::Discretization &                                               cutdis,
-        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,
-        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,
-        Teuchos::ParameterList&                                             params,
-        DRT::Discretization &                                               alediscret,
-        std::map<int,int> &                                                 boundary_emb_gid_map,
-        Epetra_SerialDenseMatrix&                                           elemat1_epetra,
-        Epetra_SerialDenseVector&                                           elevec1_epetra,
-        Epetra_SerialDenseMatrix&                                           Cuiui,
-        const GEO::CUT::plain_volumecell_set&                               vcSet
-      );
+  /// add two-sided Nitsche (NIT2) interface condition to element matrix and rhs
+  virtual void ElementXfemInterfaceNIT2(
+      DRT::ELEMENTS::Fluid *                                              ele,
+      DRT::Discretization &                                               dis,
+      const std::vector<int> &                                            lm,
+      DRT::Discretization &                                               cutdis,
+      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,
+      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,
+      std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,
+      Teuchos::ParameterList&                                             params,
+      DRT::Discretization &                                               alediscret,
+      std::map<int,int> &                                                 boundary_emb_gid_map,
+      Epetra_SerialDenseMatrix&                                           elemat1_epetra,
+      Epetra_SerialDenseVector&                                           elevec1_epetra,
+      Epetra_SerialDenseMatrix&                                           Cuiui,
+      const GEO::CUT::plain_volumecell_set&                               vcSet
+  );
 
-    ///
-    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *               ele,            ///< fluid element
-                                         DRT::Discretization &                dis,            ///< discretization
-                                         const std::vector<int> &             lm,             ///< local map
-                                         Epetra_SerialDenseVector&            elevec1_epetra, ///< element vector
-                                         const DRT::UTILS::GaussIntegration & intpoints       ///< integration points
-      );
+  ///
+  virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *               ele,            ///< fluid element
+      DRT::Discretization &                dis,            ///< discretization
+      const std::vector<int> &             lm,             ///< local map
+      Epetra_SerialDenseVector&            elevec1_epetra, ///< element vector
+      const DRT::UTILS::GaussIntegration & intpoints       ///< integration points
+  );
 
-    ///
-    virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *      ele,                ///< fluid element
-                                         DRT::Discretization &       dis,                ///< discretization
-                                         const std::vector<int> &    lm,                 ///< local map
-                                         Epetra_SerialDenseVector&   elevec1_epetra      ///< element vector
-      );
+  ///
+  virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid *      ele,                ///< fluid element
+      DRT::Discretization &       dis,                ///< discretization
+      const std::vector<int> &    lm,                 ///< local map
+      Epetra_SerialDenseVector&   elevec1_epetra      ///< element vector
+  );
 
 private:
-    //! evaluate analytical reference solution
-    void AnalyticalReference(
-        const int                               calcerr,     ///< which reference solution
-        LINALG::Matrix<my::nsd_,1> &            u,           ///< exact jump vector (coupled)
-        LINALG::Matrix<my::nsd_,my::nsd_> &     grad_u,      ///< exact velocity gradient
-        double &                                p,           ///< exact pressure
-        LINALG::Matrix<my::nsd_,1> &            xyzint,      ///< xyz position of gaussian point
-        const double &                          t,           ///< time
-        Teuchos::RCP<MAT::Material>             mat = Teuchos::null
-        );
+  //! evaluate analytical reference solution
+  void AnalyticalReference(
+      const int                               calcerr,     ///< which reference solution
+      LINALG::Matrix<my::nsd_,1> &            u,           ///< exact jump vector (coupled)
+      LINALG::Matrix<my::nsd_,my::nsd_> &     grad_u,      ///< exact velocity gradient
+      double &                                p,           ///< exact pressure
+      LINALG::Matrix<my::nsd_,1> &            xyzint,      ///< xyz position of gaussian point
+      const double &                          t,           ///< time
+      Teuchos::RCP<MAT::Material>             mat = Teuchos::null
+  );
 
-    //! build the patch coupling matrix Cuiui containing Cuiui for all cutting sides
-    void NIT_BuildPatchCuiui(
-        Epetra_SerialDenseMatrix &                              Cuiui,            ///< ui-ui patch coupling matrix containing Cuiui for all cutting sides
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> >&  Cuiui_coupling    ///< Cuiui matrices for all cutting sides
-    );
+  //! build the patch coupling matrix Cuiui containing Cuiui for all cutting sides
+  void NIT_BuildPatchCuiui(
+      Epetra_SerialDenseMatrix &                              Cuiui,            ///< ui-ui patch coupling matrix containing Cuiui for all cutting sides
+      std::map<int, std::vector<Epetra_SerialDenseMatrix> >&  Cuiui_coupling    ///< Cuiui matrices for all cutting sides
+  );
 
-    //! compute stabilization factors for Nitsche's method
-    void NIT_ComputeStabfac(
-        bool                            fluidfluidcoupling,
-        Teuchos::ParameterList&         params,            ///< parameter list
-        double &                        stabfac_visc,         ///< Nitsche stabilization factor
-        double &                        stabfac_conv,         ///< stabilization factor 2
-        const double                    NIT_stab_fac,
-        INPAR::XFEM::ConvStabScaling    conv_stab_scaling,
-        const double                    conv_stab_fac,
-        const double                    veln_normal,
-        const double                    gamma_ghost_penalty,
-        double &                        velgrad_interface_fac,
-        const double                    gamma_press_coupling,
-        double &                        press_coupling_fac,
-        bool                            nitsche_evp_,
-        int                             sid,
-        const double                    h_k
-    );
+  //! compute stabilization factors for Nitsche's method
+  void NIT_ComputeStabfac(
+      bool                            fluidfluidcoupling,
+      Teuchos::ParameterList&         params,            ///< parameter list
+      double &                        stabfac_visc,         ///< Nitsche stabilization factor
+      double &                        stabfac_conv,         ///< stabilization factor 2
+      const double                    NIT_stab_fac,
+      INPAR::XFEM::ConvStabScaling    conv_stab_scaling,
+      const double                    conv_stab_fac,
+      const double                    veln_normal,
+      const double                    gamma_ghost_penalty,
+      double &                        velgrad_interface_fac,
+      const double                    gamma_press_coupling,
+      double &                        press_coupling_fac,
+      bool                            nitsche_evp_,
+      int                             sid,
+      const double                    h_k
+  );
 
-    //! pre-compute the measure of the element's intersecting surface
-    double ComputeMeasSurf(
-        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary cell integration points
-        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells             ///< boundary cells
-    );
+  //! pre-compute the measure of the element's intersecting surface
+  double ComputeMeasSurf(
+      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary cell integration points
+      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells             ///< boundary cells
+  );
 
-    //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices
-    void PatchLocationVector(
-        std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
-        DRT::Discretization &                                   cutdis,                  ///< cut discretization
-        std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
-        std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
-        std::string                                                  coupl_method             ///< coupling method
-    );
+  //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices
+  void PatchLocationVector(
+      std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
+      DRT::Discretization &                                   cutdis,                  ///< cut discretization
+      std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
+      std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
+      std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
+      std::string                                                  coupl_method             ///< coupling method
+  );
 
-    //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices (for embedded coupling)
-    void PatchLocationVector(
-        std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
-        DRT::Discretization &                                   cutdis,                  ///< cut discretization
-        std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
-        std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
-        std::map<int,int> &                                     boundary_emb_gid_map,    ///< map between boundary sid and corresponding embedded element id
-        std::string                                                  coupl_method             ///< coupling method
-    );
+  //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices (for embedded coupling)
+  void PatchLocationVector(
+      std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
+      DRT::Discretization &                                   cutdis,                  ///< cut discretization
+      std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
+      std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
+      std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
+      std::map<int,int> &                                     boundary_emb_gid_map,    ///< map between boundary sid and corresponding embedded element id
+      std::string                                                  coupl_method             ///< coupling method
+  );
 
-    //! build traction vector w.r.t fluid domain
-    void buildTractionVector(
-        LINALG::Matrix<my::nsd_,1> &  traction,   ///< traction vector
-        double &                      press,      ///< pressure at gaussian point
-        LINALG::Matrix<my::nsd_,1> &  normal      ///< normal vector
-    );
+  //! build traction vector w.r.t fluid domain
+  void buildTractionVector(
+      LINALG::Matrix<my::nsd_,1> &  traction,   ///< traction vector
+      double &                      press,      ///< pressure at gaussian point
+      LINALG::Matrix<my::nsd_,1> &  normal      ///< normal vector
+  );
 
-    //! assemble side's interface force
-    void AssembleInterfaceForce(
-        Teuchos::RCP<Epetra_Vector>            iforcecol, ///< interface force column vector
-        DRT::Discretization &                  cutdis,    ///< cut discretization
-        std::vector<int> &                     lm,        ///< local dof map
-        Epetra_SerialDenseVector &             iforce     ///< interface force vector
-    );
+  //! assemble side's interface force
+  void AssembleInterfaceForce(
+      Teuchos::RCP<Epetra_Vector>            iforcecol, ///< interface force column vector
+      DRT::Discretization &                  cutdis,    ///< cut discretization
+      std::vector<int> &                     lm,        ///< local dof map
+      Epetra_SerialDenseVector &             iforce     ///< interface force vector
+  );
 
-    //! compute transformation factor for surface integration, normal, local and global gp coordinates
-    void ComputeSurfaceTransformation(
-        double &                    drs,         ///< surface transformation factor
-        LINALG::Matrix<3,1> &       x_gp_lin,    ///< global coordiantes of gaussian point
-        LINALG::Matrix<3,1> &       normal,      ///< normal vector on boundary cell
-        GEO::CUT::BoundaryCell *    bc,          ///< boundary cell
-        const LINALG::Matrix<2,1> & eta          ///< local coordinates of gaussian point w.r.t boundarycell
-    );
+  //! compute transformation factor for surface integration, normal, local and global gp coordinates
+  void ComputeSurfaceTransformation(
+      double &                    drs,         ///< surface transformation factor
+      LINALG::Matrix<3,1> &       x_gp_lin,    ///< global coordiantes of gaussian point
+      LINALG::Matrix<3,1> &       normal,      ///< normal vector on boundary cell
+      GEO::CUT::BoundaryCell *    bc,          ///< boundary cell
+      const LINALG::Matrix<2,1> & eta          ///< local coordinates of gaussian point w.r.t boundarycell
+  );
 
-    //! evaluate shape function and derivative at point with local coordinates rst
-    void EvalFuncAndDeriv( LINALG::Matrix<3,1> &  rst );
+  //! evaluate shape function and derivative at point with local coordinates rst
+  void EvalFuncAndDeriv( LINALG::Matrix<3,1> &  rst );
 
-    //! build volume-based K matrices for coupling stress fields
-    void MSH_Build_K_Matrices(
-        INPAR::XFEM::MSH_L2_Proj                                               msh_l2_proj,       ///< full or partial l2 projection for MSH method
-        const std::vector<DRT::UTILS::GaussIntegration> &                      intpoints,         ///< background element integration points
-        std::string &                                                          VCellGaussPts,     ///< volumecell gaussian points method
-        const GEO::CUT::plain_volumecell_set&                                  cells,             ///< volumecells in the present set
-        LINALG::Matrix<my::nsd_,my::nen_>&                                     evelaf,            ///< element velocity
-        LINALG::Matrix<my::nen_,1>&                                            epreaf,            ///< element pressure
-        LINALG::Matrix<my::nen_,my::nen_>&                                     bK_ss,             ///< block K_ss matrix
-        LINALG::Matrix<my::nen_,my::nen_>&                                     invbK_ss,          ///< inverse of block K_ss matrix
-        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su,              ///< K_su matrix
-        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs                ///< rhs vector
-        );
+  //! build volume-based K matrices for coupling stress fields
+  void MSH_Build_K_Matrices(
+      INPAR::XFEM::MSH_L2_Proj                                               msh_l2_proj,       ///< full or partial l2 projection for MSH method
+      const std::vector<DRT::UTILS::GaussIntegration> &                      intpoints,         ///< background element integration points
+      std::string &                                                          VCellGaussPts,     ///< volumecell gaussian points method
+      const GEO::CUT::plain_volumecell_set&                                  cells,             ///< volumecells in the present set
+      LINALG::Matrix<my::nsd_,my::nen_>&                                     evelaf,            ///< element velocity
+      LINALG::Matrix<my::nen_,1>&                                            epreaf,            ///< element pressure
+      LINALG::Matrix<my::nen_,my::nen_>&                                     bK_ss,             ///< block K_ss matrix
+      LINALG::Matrix<my::nen_,my::nen_>&                                     invbK_ss,          ///< inverse of block K_ss matrix
+      LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su,              ///< K_su matrix
+      LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs                ///< rhs vector
+  );
 
-    //! evaluate volume-based K matrix terms at Gaussian point
-    void MSH_EvaluateMatrices(
-        LINALG::Matrix<my::nsd_,my::nen_>&    evelaf,                                ///< element velocity
-        LINALG::Matrix<my::nen_,1>&           epreaf,                                ///< element pressure
-        LINALG::Matrix<my::nen_,my::nen_>&    bK_ss,                                 ///< block K_ss matrix
-        LINALG::Matrix<my::nen_,my::nen_>&    invbK_ss,                              ///< inverse of block K_ss matrix
-        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su, ///< K_su matrix
-        LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs   ///< rhs vector
-        );
+  //! evaluate volume-based K matrix terms at Gaussian point
+  void MSH_EvaluateMatrices(
+      LINALG::Matrix<my::nsd_,my::nen_>&    evelaf,                                ///< element velocity
+      LINALG::Matrix<my::nen_,1>&           epreaf,                                ///< element pressure
+      LINALG::Matrix<my::nen_,my::nen_>&    bK_ss,                                 ///< block K_ss matrix
+      LINALG::Matrix<my::nen_,my::nen_>&    invbK_ss,                              ///< inverse of block K_ss matrix
+      LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,6,(my::nsd_+1)>& K_su, ///< K_su matrix
+      LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs   ///< rhs vector
+  );
 
 
-    inline double HK(double vol)
-    {
-      // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
-      const double hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+  inline double HK(double vol)
+  {
+    // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
+    const double hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
-      return hk;
-    }
-
+    return hk;
+  }
 
 };
 

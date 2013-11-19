@@ -204,7 +204,7 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType ndistype>
 int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::EvaluateEdgeBasedStabilization(
     DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
-    DRT::ELEMENTS::FluidEleParameter&  fldpara,              ///< fluid parameter
+    DRT::ELEMENTS::FluidEleParameterTimInt&  fldpara,              ///< fluid parameter
     Teuchos::ParameterList&            params,               ///< parameter list
     DRT::Discretization&               discretization,       ///< discretization
     std::vector<int>&                  patchlm,              ///< patch local map
@@ -488,7 +488,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   double patch_hk = 0.0;
 
   // compute the element length w.r.t master and slave element
-  compute_patch_hk(patch_hk, pele, nele, intface, fldpara.EOS_element_length());
+  compute_patch_hk(patch_hk, pele, nele, intface, DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_element_length());
 
   // create object for computing Gaussian point dependent stabilization parameters
   FluidEdgeBasedStab EdgeBasedStabilization(patch_hk);
@@ -911,7 +911,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     // get normal velocity
     double normal_vel_lin_space = fabs(velintaf_.Dot(n_));
 
-    EdgeBasedStabilization.ComputeStabilizationParams(fldpara.EOS_WhichTau(),
+    EdgeBasedStabilization.ComputeStabilizationParams(DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_WhichTau(),
                                                       tau_grad, tau_u, tau_div, tau_p,
                                                       kinvisc, dens,
                                                       normal_vel_lin_space, max_vel_L2_norm,
@@ -961,7 +961,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
         if(GP_visc)         tau_vel += tau_grad;
 
         // just to be sure
-        if (fldpara.EOS_WhichTau() == INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
+        if (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_WhichTau() == INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
          tau_vel = tau_u;
       }
 
@@ -1022,7 +1022,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
       if(elemat_blocks.size() < 10) dserror("do not choose diagonal pattern for div_EOS stabilization!");
 
       if(!ghost_penalty_reconstruct and
-         fldpara.EOS_WhichTau() != INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
+          DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_WhichTau() != INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
       {
         // assemble divergence (EOS) stabilization terms for fluid
         div_EOS(  elematrix_mm,

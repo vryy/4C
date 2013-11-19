@@ -15,7 +15,7 @@
 
 #include "fluid_ele_poro.H"
 #include "fluid_ele_action.H"
-#include "fluid_ele_parameter.H"
+#include "fluid_ele_parameter_poro.H"
 
 #include "fluid_ele_factory.H"
 #include "fluid_ele_interface.H"
@@ -39,35 +39,11 @@ void DRT::ELEMENTS::FluidPoroEleType::PreEvaluate(DRT::Discretization&          
 {
   const FLD::Action action = DRT::INPUT::get<FLD::Action>(p,"action");
 
-  int num=0;
-  if(DRT::Problem::Instance()->ProblemType()==prb_fpsi)
-  {
-    if(dis.Name()=="fluid")
-    {
-      num=INPAR::FPSI::fluid;
-    }
-    else if(dis.Name()=="porofluid")
-    {
-      num=INPAR::FPSI::porofluid;
-    }
-   }
-  p.set<int>("numfield",num);
-
-  if (action == FLD::set_general_fluid_parameter)
-  {//this should be unnecessary when paramter lists are separated
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
-    fldpara->SetElementGeneralFluidParameter(p,dis.Comm().MyPID());
-  }
-  else if (action == FLD::set_time_parameter)
-  {//this should be unnecessary when paramter lists are separated
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
-    fldpara->SetElementTimeParameter(p);
-  }
   //poro specific actions
-  else if (action == FLD::set_poro_parameter)
+  if (action == FLD::set_poro_parameter)
   {
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
-    fldpara->SetElementPoroParameter(p);
+    DRT::ELEMENTS::FluidEleParameterPoro* fldpara = DRT::ELEMENTS::FluidEleParameterPoro::Instance();
+    fldpara->SetElementPoroParameter(p,dis.Comm().MyPID());
   }
   else
     //call standard fluid type

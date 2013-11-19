@@ -24,7 +24,6 @@ namespace MAT
   class StructPoro;
 }
 
-
 namespace DRT
 {
 namespace ELEMENTS
@@ -34,19 +33,19 @@ namespace ELEMENTS
 template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcPoroP2 : public FluidEleCalcPoro<distype>
 {
+  typedef FluidEleCalcPoro<distype> my;
 
-  typedef DRT::ELEMENTS::FluidEleInterface MY;
+private:
+
+  /// private Constructor since we are a Singleton.
+  FluidEleCalcPoroP2();
 
 public:
-    /// private Constructor since we are a Singleton.
-    FluidEleCalcPoroP2(int num);
-
-    typedef FluidEleCalcPoro<distype> my;
 
     virtual ~FluidEleCalcPoroP2() {}
 
     /// Singleton access method
-    static FluidEleCalcPoroP2<distype>* Instance( bool create=true, int num=0 );
+    static FluidEleCalcPoroP2<distype>* Instance( bool create=true );
 
     /// called upon destruction
     virtual void Done();
@@ -303,7 +302,6 @@ protected:
     double W_;
     double dW_dJ_;
 
-    int numporop2_;
 };
 
 }//ELEMENTS

@@ -757,6 +757,7 @@ void FPSI::Monolithic::ApplyCouplingTerms(Teuchos::RCP<LINALG::SparseOperator>  
   fparams.set("timestep",Step());
   fparams.set("iter",iter_);
   fparams.set("dt",fpsidynparams.get<double>("TIMESTEP"));
+  fparams.set<int>("physical type", INPAR::FLUID::poro);
   //std::cout<<"ResidualScaling() = "<<FluidField()->ResidualScaling()<<std::endl;
   //fparams.set("timescale",PoroField()->PoroFluidField()->TimeScaling());
 

@@ -19,29 +19,20 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_utils.H"
 #include "fluid_ele_interface.H"
 #include "fluid_ele_parameter.H"
+#include "fluid_ele_parameter_std.H"
+#include "fluid_ele_parameter_poro.H"
+#include "fluid_ele_parameter_timint.H"
 #include "fluid_ele_tds.H"
 
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
-#include "../drt_geometry/position_array.H"
+//#include "../drt_geometry/position_array.H"
 
 #include "../drt_inpar/inpar_fluid.H"
 
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../drt_mat/arrhenius_pv.H"
-#include "../drt_mat/carreauyasuda.H"
-#include "../drt_mat/ferech_pv.H"
-#include "../drt_mat/herschelbulkley.H"
-#include "../drt_mat/mixfrac.H"
-#include "../drt_mat/modpowerlaw.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/permeablefluid.H"
-#include "../drt_mat/sutherland.H"
-#include "../drt_mat/yoghurt.H"
-
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 #include "../drt_opti/topopt_fluidAdjoint3_interface.H"
 #include "../drt_opti/topopt_fluidAdjoint3_impl_parameter.H"
@@ -68,32 +59,29 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
 {
   const FLD::Action action = DRT::INPUT::get<FLD::Action>(p,"action");
 
-  int num=0;
-  p.set<int>("numfield",num);
-
   if (action == FLD::set_general_fluid_parameter)
   {
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
-    fldpara->SetElementGeneralFluidParameter(p,dis.Comm().MyPID());
+    DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
+    fldpara->SetElementStdFluidParameter(p,dis.Comm().MyPID());
   }
   else if (action == FLD::set_time_parameter)
   {
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
+    DRT::ELEMENTS::FluidEleParameterTimInt* fldpara = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
     fldpara->SetElementTimeParameter(p);
   }
   else if (action == FLD::set_turbulence_parameter)
   {
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
+    DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
     fldpara->SetElementTurbulenceParameter(p);
   }
   else if (action == FLD::set_loma_parameter)
   {
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
+    DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
     fldpara->SetElementLomaParameter(p);
   }
   else if (action == FLD::set_topopt_parameter)
   {
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance(num);
+    DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
     fldpara->SetElementTopoptParameter(p);
   }
   else if (action == FLD::set_general_adjoint_parameter)
@@ -127,7 +115,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
   const FLD::Action act = DRT::INPUT::get<FLD::Action>(params,"action");
 
   // get material
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   // get space dimensions
   const int nsd = DRT::UTILS::getDimension(Shape());
@@ -402,7 +390,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         std::vector<double> mytemp(nen);
         double thermpress = 0.0;
         // pointer to class FluidEleParameter (access to the general parameter)
-        Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+        DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
         if (fldpara->PhysicalType()==INPAR::FLUID::loma)
         {
           RCP<const Epetra_Vector> temp = discretization.GetState("T (trial)");
@@ -509,7 +497,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
             params.get<RCP<Epetra_MultiVector> >("col_filtered_modeled_subgrid_stress");
 
         // pointer to class FluidEleParameter (access to the general parameter)
-        Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+        DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
         // add potential loma specific vectors
         RCP<Epetra_MultiVector> col_filtered_dens_vel = Teuchos::null;
         RCP<Epetra_Vector> col_filtered_dens = Teuchos::null;
@@ -705,7 +693,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvel,lm);
 
         // pointer to class FluidEleParameter (access to the general parameter)
-        Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+        DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
 
         const DiscretizationType distype = this->Shape();
         switch (distype)
@@ -758,7 +746,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         double thermpress = params.get<double>("thermpress");
 
         // pointer to class FluidEleParameter
-        Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+        DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
 
         double Cai = 0.0;
         double vol = 0.0;
@@ -802,7 +790,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::set_mean_Cai:
     {
       // pointer to class FluidEleParameter
-      Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+      DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
       fldpara->SetCsgsPhi(params.get<double>("meanCai"));
     }
     break;

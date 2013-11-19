@@ -30,74 +30,75 @@ namespace ELEMENTS
 template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcLoma : public FluidEleCalc<distype>
 {
-    /// private Constructor since we are a Singleton.
-    FluidEleCalcLoma();
+  typedef DRT::ELEMENTS::FluidEleCalc<distype> my;
 
-    typedef FluidEleCalc<distype> my;
+public:
+  virtual ~FluidEleCalcLoma() {}
 
-  public:
-    virtual ~FluidEleCalcLoma() {}
+  /// Singleton access method
+  static FluidEleCalcLoma<distype> * Instance( bool create=true );
 
-    /// Singleton access method
-    static FluidEleCalcLoma<distype> * Instance( bool create=true );
+  /// called upon destruction
+  virtual void Done();
 
-    /// called upon destruction
-    virtual void Done();
+  virtual int Evaluate(DRT::ELEMENTS::Fluid*        ele,
+      DRT::Discretization &         discretization,
+      const std::vector<int> &      lm,
+      Teuchos::ParameterList&       params,
+      Teuchos::RCP<MAT::Material> & mat,
+      Epetra_SerialDenseMatrix&     elemat1_epetra,
+      Epetra_SerialDenseMatrix&     elemat2_epetra,
+      Epetra_SerialDenseVector&     elevec1_epetra,
+      Epetra_SerialDenseVector&     elevec2_epetra,
+      Epetra_SerialDenseVector&     elevec3_epetra,
+      bool                          offdiag = false);
 
-    virtual int Evaluate(DRT::ELEMENTS::Fluid*        ele,
-                         DRT::Discretization &         discretization,
-                         const std::vector<int> &      lm,
-                         Teuchos::ParameterList&       params,
-                         Teuchos::RCP<MAT::Material> & mat,
-                         Epetra_SerialDenseMatrix&     elemat1_epetra,
-                         Epetra_SerialDenseMatrix&     elemat2_epetra,
-                         Epetra_SerialDenseVector&     elevec1_epetra,
-                         Epetra_SerialDenseVector&     elevec2_epetra,
-                         Epetra_SerialDenseVector&     elevec3_epetra,
-                         bool                          offdiag = false);
+  /// Evaluate the element at specified gauss points for porous flow
+  virtual int EvaluateOD(DRT::ELEMENTS::Fluid*               ele,
+      DRT::Discretization &                discretization,
+      const std::vector<int> &             lm,
+      Teuchos::ParameterList&              params,
+      Teuchos::RCP<MAT::Material> &        mat,
+      Epetra_SerialDenseMatrix&            elemat1_epetra,
+      Epetra_SerialDenseMatrix&            elemat2_epetra,
+      Epetra_SerialDenseVector&            elevec1_epetra,
+      Epetra_SerialDenseVector&            elevec2_epetra,
+      Epetra_SerialDenseVector&            elevec3_epetra,
+      const DRT::UTILS::GaussIntegration & intpoints);
 
-    /// Evaluate the element at specified gauss points for porous flow
-    virtual int EvaluateOD(DRT::ELEMENTS::Fluid*               ele,
-                             DRT::Discretization &                discretization,
-                             const std::vector<int> &             lm,
-                             Teuchos::ParameterList&              params,
-                             Teuchos::RCP<MAT::Material> &        mat,
-                             Epetra_SerialDenseMatrix&            elemat1_epetra,
-                             Epetra_SerialDenseMatrix&            elemat2_epetra,
-                             Epetra_SerialDenseVector&            elevec1_epetra,
-                             Epetra_SerialDenseVector&            elevec2_epetra,
-                             Epetra_SerialDenseVector&            elevec3_epetra,
-                             const DRT::UTILS::GaussIntegration & intpoints);
+private:
 
-  private:
-    /*!
+  /// private Constructor since we are a Singleton.
+  FluidEleCalcLoma();
+
+  /*!
       \brief evaluation of off-diagonal matrix block for monolithic loma solver for fluid3 element
 
       Specific evaluate function without any knowledge about DRT objects. This
       way the element evaluation is independent of the specific mesh storage.
-     */
-    int EvaluateOD(Teuchos::ParameterList&              params,
-                                const LINALG::Matrix<my::nsd_,my::nen_> &    ebofoaf,
-                                const LINALG::Matrix<my::nsd_,my::nen_> &    eprescpgaf,
-                                LINALG::Matrix<(my::nsd_+1)*my::nen_,my::nen_> & elemat1,
-                                const LINALG::Matrix<my::nsd_,my::nen_> &    evelaf,
-                                const LINALG::Matrix<my::nen_,1>    &    epreaf,
-                                const LINALG::Matrix<my::nen_,1>    &    escaaf,
-                                const LINALG::Matrix<my::nsd_,my::nen_> &    emhist,
-                                const LINALG::Matrix<my::nsd_,my::nen_> &    eaccam,
-                                const LINALG::Matrix<my::nen_,1>    &    escadtam,
-                                const LINALG::Matrix<my::nen_,1>    &    escabofoaf,
-                                const LINALG::Matrix<my::nsd_,my::nen_> &    eveln,
-                                const LINALG::Matrix<my::nen_,1>    &    escaam,
-                                const LINALG::Matrix<my::nsd_,my::nen_> &    edispnp,
-                                const LINALG::Matrix<my::nsd_,my::nen_> &    egridv,
-                                Teuchos::RCP<MAT::Material>          mat,
-                                bool                                 isale,
-                                double                               CsDeltaSq,
-                                double                               CiDeltaSq,
-                                const DRT::UTILS::GaussIntegration & intpoints);
+   */
+  int EvaluateOD(Teuchos::ParameterList&              params,
+      const LINALG::Matrix<my::nsd_,my::nen_> &    ebofoaf,
+      const LINALG::Matrix<my::nsd_,my::nen_> &    eprescpgaf,
+      LINALG::Matrix<(my::nsd_+1)*my::nen_,my::nen_> & elemat1,
+      const LINALG::Matrix<my::nsd_,my::nen_> &    evelaf,
+      const LINALG::Matrix<my::nen_,1>    &    epreaf,
+      const LINALG::Matrix<my::nen_,1>    &    escaaf,
+      const LINALG::Matrix<my::nsd_,my::nen_> &    emhist,
+      const LINALG::Matrix<my::nsd_,my::nen_> &    eaccam,
+      const LINALG::Matrix<my::nen_,1>    &    escadtam,
+      const LINALG::Matrix<my::nen_,1>    &    escabofoaf,
+      const LINALG::Matrix<my::nsd_,my::nen_> &    eveln,
+      const LINALG::Matrix<my::nen_,1>    &    escaam,
+      const LINALG::Matrix<my::nsd_,my::nen_> &    edispnp,
+      const LINALG::Matrix<my::nsd_,my::nen_> &    egridv,
+      Teuchos::RCP<MAT::Material>          mat,
+      bool                                 isale,
+      double                               CsDeltaSq,
+      double                               CiDeltaSq,
+      const DRT::UTILS::GaussIntegration & intpoints);
 
-    /*!
+  /*!
       \brief calculate element matrix for off-diagonal matrix block for monolithic low-Mach-number solver
 
       \param ebofoaf          (i) body force at n+alpha_F/n+1
@@ -120,30 +121,33 @@ class FluidEleCalcLoma : public FluidEleCalc<distype>
       \param isale            (i) ALE flag
       \param intpoints        (i) Gaussian integration points
 
-      */
-    void SysmatOD(const LINALG::Matrix<my::nsd_,my::nen_> &    ebofoaf,
-                               const LINALG::Matrix<my::nsd_,my::nen_> &    eprescpgaf,
-                               const LINALG::Matrix<my::nsd_,my::nen_>&     evelaf,
-                               const LINALG::Matrix<my::nsd_,my::nen_>&     eveln,
-                               const LINALG::Matrix<my::nen_,1>&        epreaf,
-                               const LINALG::Matrix<my::nsd_,my::nen_>&     eaccam,
-                               const LINALG::Matrix<my::nen_,1>&        escaaf,
-                               const LINALG::Matrix<my::nen_,1>&        escaam,
-                               const LINALG::Matrix<my::nen_,1>&        escadtam,
-                               const LINALG::Matrix<my::nen_,1>&        escabofoaf,
-                               const LINALG::Matrix<my::nsd_,my::nen_>&     emhist,
-                               const LINALG::Matrix<my::nsd_,my::nen_>&     edispnp,
-                               const LINALG::Matrix<my::nsd_,my::nen_>&     egridv,
-                               LINALG::Matrix<(my::nsd_+1)*my::nen_,my::nen_>&  estif,
-                               const double                         thermpressaf,
-                               const double                         thermpressam,
-                               const double                         thermpressdtaf,
-                               const double                         thermpressdtam,
-                               Teuchos::RCP<const MAT::Material>    material,
-                               double&                              Cs_delta_sq,
-                               double&                              Ci_delta_sq,
-                               bool                                 isale,
-                               const DRT::UTILS::GaussIntegration & intpoints);
+   */
+  void SysmatOD(const LINALG::Matrix<my::nsd_,my::nen_> &    ebofoaf,
+      const LINALG::Matrix<my::nsd_,my::nen_> &    eprescpgaf,
+      const LINALG::Matrix<my::nsd_,my::nen_>&     evelaf,
+      const LINALG::Matrix<my::nsd_,my::nen_>&     eveln,
+      const LINALG::Matrix<my::nen_,1>&        epreaf,
+      const LINALG::Matrix<my::nsd_,my::nen_>&     eaccam,
+      const LINALG::Matrix<my::nen_,1>&        escaaf,
+      const LINALG::Matrix<my::nen_,1>&        escaam,
+      const LINALG::Matrix<my::nen_,1>&        escadtam,
+      const LINALG::Matrix<my::nen_,1>&        escabofoaf,
+      const LINALG::Matrix<my::nsd_,my::nen_>&     emhist,
+      const LINALG::Matrix<my::nsd_,my::nen_>&     edispnp,
+      const LINALG::Matrix<my::nsd_,my::nen_>&     egridv,
+      LINALG::Matrix<(my::nsd_+1)*my::nen_,my::nen_>&  estif,
+      const double                         thermpressaf,
+      const double                         thermpressam,
+      const double                         thermpressdtaf,
+      const double                         thermpressdtam,
+      Teuchos::RCP<const MAT::Material>    material,
+      double&                              Cs_delta_sq,
+      double&                              Ci_delta_sq,
+      bool                                 isale,
+      const DRT::UTILS::GaussIntegration & intpoints);
+
+  //! pointer to specific parameter lists
+  DRT::ELEMENTS::FluidEleParameterStd* fldpara_;
 
 };
 }

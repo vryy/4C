@@ -1366,8 +1366,9 @@ set(OBJS_DRT_B3_LIB
 )
 set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele.cpp
-  src/drt_fluid_ele/fluid_ele_interface.cpp
   src/drt_fluid_ele/fluid_ele_boundary_calc.cpp
+  src/drt_fluid_ele/fluid_ele_boundary_calc_std.cpp
+  src/drt_fluid_ele/fluid_ele_boundary_calc_poro.cpp
   src/drt_fluid_ele/fluid_ele_boundary_parent_calc.cpp
   src/drt_fluid_ele/fluid_ele_boundary.cpp
   src/drt_fluid_ele/fluid_ele_boundary_evaluate.cpp
@@ -1389,8 +1390,13 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_calc_xfem_coupling_impl.cpp
   src/drt_fluid_ele/fluid_ele_evaluate.cpp
   src/drt_fluid_ele/fluid_ele_factory.cpp
+  src/drt_fluid_ele/fluid_ele_boundary_factory.cpp
   src/drt_fluid_ele/fluid_ele_input.cpp
   src/drt_fluid_ele/fluid_ele_parameter.cpp
+    src/drt_fluid_ele/fluid_ele_parameter_base.cpp
+  src/drt_fluid_ele/fluid_ele_parameter_std.cpp
+  src/drt_fluid_ele/fluid_ele_parameter_poro.cpp
+  src/drt_fluid_ele/fluid_ele_parameter_timint.cpp
   src/drt_fluid_ele/fluid_ele_tds.cpp
   src/drt_fluid_ele/fluid_ele_poro.cpp
   src/drt_fluid_ele/fluid_ele_poro_evaluate.cpp

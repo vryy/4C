@@ -1,11 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_parameter.H
+\file fluid_ele_parameter_std.cpp
 
-\brief Evaluation of general fluid parameter
+\brief Evaluation of general fluid parameter for standard fluid
 
-FluidEleParameter::SetParameter(Teuchos::ParameterList& params)
-set all general fluid parameter once for all elements.
+       Poro specific parameters are defined in a derived class.
+       Since there are a couple of terms from the stdfluid called
+       by the porofluid this is  inevitable.
 
 <pre>
 Maintainers: Ursula Rasthofer & Volker Gravemeier
@@ -16,82 +17,36 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 
-
 #ifndef FLUID_ELE_PARAMETER_H
 #define FLUID_ELE_PARAMETER_H
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_RCP.hpp>
+#include "fluid_ele_parameter_base.H"
 
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_turbulence.H"
 
 namespace DRT
 {
 namespace ELEMENTS
 {
 
-/// Evaluation of general parameters (constant over time)
-class FluidEleParameter
+class FluidEleParameter : public FluidEleParameterBase
 {
+
 public:
 
-  //! Singleton access method
-  static Teuchos::RCP<FluidEleParameter> Instance(int num=0);
+  virtual ~FluidEleParameter() {}
 
   //! general fluid parameter are set
-  void SetElementGeneralFluidParameter(Teuchos::ParameterList& params,   //> parameter list
-                                       int myrank                        //> proc id
-      );
-
-  //! time parameter are set
-  void SetElementTimeParameter(Teuchos::ParameterList& params    //> parameter list
-      );
+  void SetElementStdFluidParameter(Teuchos::ParameterList& params,   //> parameter list
+                                   int myrank                        //> proc id
+                                  );
 
   //! turbulence parameters are set
   void SetElementTurbulenceParameter(Teuchos::ParameterList& params    //> parameter list
       );
 
-  //! loma parameters are set
-  void SetElementLomaParameter(Teuchos::ParameterList& params    //> parameter list
-      );
-
-  //! poro parameters are set
-  void SetElementPoroParameter(Teuchos::ParameterList& params    //> parameter list
-      );
-
-  //! poro parameters are set
+  //! topopt parameters are set
   void SetElementTopoptParameter(Teuchos::ParameterList& params    //> parameter list
       );
-
-  //! print parameter to screen
-  void PrintFluidParameter();
-
-  //! flag to (de)activate generalized-alpha time-integration scheme
-  bool IsGenalpha(){return is_genalpha_;};
-  /// Flags to switch on/off the different fluid formulations
-  //! flag to (de)activate generalized-alpha-np1 time-integration scheme
-  bool IsGenalphaNP(){return is_genalpha_np_;};
-  //! flag to (de)activate conservative formulation
-  bool IsConservative(){return is_conservative_;};
-  //! flag to (de)activate stationary formulation
-  bool IsStationary(){return is_stationary_;};
-  //! flag to (de)activate Newton linearization
-  bool IsNewton(){return is_newton_;};
-  //! flag to (de)activate second derivatives
-  bool IsInconsistent(){return is_inconsistent_;};
-  //! flag to (de)activate potential reactive terms
-  bool Reaction(){return reaction_;};
-  //! flag to (de)aktivate porous darcy flow
-  bool Darcy(){return darcy_;};
-  //! flag to (de)aktivate reaction due to topology optimization
-  bool ReactionTopopt(){return reaction_topopt_;};
-  //! flag to (de)aktivate reaction due to topology optimization
-  const double* TopoptParams(){return (double*)topopt_params_;};
-  //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
-  INPAR::FLUID::PhysicalType PhysicalType(){return physicaltype_;};
-  //! get the stabtype
-  INPAR::FLUID::StabType StabType(){return stabtype_;};
 
   /// parameter for residual stabilization
   //! Flag to (de)activate time-dependent subgrid stabilization
@@ -140,118 +95,44 @@ public:
   //! Flag to define tau for edge-based stabilization
   INPAR::FLUID::EOS_TauType EOS_WhichTau(){return EOS_whichtau_;};
 
-
   //! flag for material evaluation at Gaussian integration points
   bool MatGp(){return mat_gp_;};
   //! flag for stabilization parameter evaluation at Gaussian integration points
   bool TauGp(){return tau_gp_;};
 
-
-  /// parameters for the time integration
-  //! time algorithm
-  INPAR::FLUID::TimeIntegrationScheme TimeAlgo(){return timealgo_;};
-  //! actual time to evaluate the body BC
-  double Time(){return time_;};
-  //! time-step length
-  double Dt(){return dt_;};
-  //! timefac = dt_ * ("pseudo"-)theta_
-  double TimeFac(){return timefac_;};
-  //! factor for left-hand side due to one-step-theta time-integration scheme
-  double Theta(){return theta_;};
-  //! factor for right-hand side due to one-step-theta time-integration scheme
-  double OmTheta(){return omtheta_;};
-  //! generalised-alpha parameter (connecting velocity and acceleration)
-  double Gamma(){return gamma_;};
-  //! generalised-alpha parameter (velocity)
-  double AlphaF(){return alphaF_;};
-  //! generalised-alpha parameter (acceleration)
-  double AlphaM(){return alphaM_;};
-  //! generalised-alpha parameter, alphaF_*gamma_*dt_
-  double Afgdt(){return afgdt_;};
-  //! generalised-alpha parameter, gamma_/alphaM_*dt_
-  //! time integration factor for the right hand side (boundary elements)
-  double TimeFacRhs(){return timefacrhs_;};
-  //! time integration factor for the left hand side (pressure)
-  double TimeFacPre(){return timefacpre_;};
-
   /// constant parameters for the turbulence formulation
-  /// subgrid viscosity models
-  //! flag to define turbulence model
-  INPAR::FLUID::TurbModelAction TurbModAction(){return turb_mod_action_;};
-  double Cs(){return Cs_;};
-  bool CsAveraged(){return Cs_averaged_;};
-  double Ci(){return Ci_;};
-  void SetvanDriestdamping(double damping){van_Driest_damping_=damping; return;};
-  double VanDriestdamping(){return van_Driest_damping_;};
-  bool IncludeCi(){return include_Ci_;};
-  double ltau(){return l_tau_;};
-  //! scale similarity constant
-  double Cl(){return Cl_;};
-  /// multifractal subgrid-scales
-  double Csgs(){return Csgs_;};
-  double CsgsPhi(){double tmp = 0.0; if(not adapt_Csgs_phi_) tmp = Csgs_phi_; else tmp = Csgs_phi_*meanCai_; return tmp;};
-  double Alpha(){return alpha_;};
-  bool CalcN(){return CalcN_;};
-  double N(){return N_;};
-  enum INPAR::FLUID::RefVelocity RefVel(){return refvel_;};
-  enum INPAR::FLUID::RefLength RefLength(){return reflength_;};
-  double CNu(){return c_nu_;};
-  double CDiff(){return c_diff_;};
-  bool NearWallLimit(){return near_wall_limit_;};
-  bool NearWallLimitScatra(){return near_wall_limit_scatra_;};
-  bool BGp(){return B_gp_;};
-  double Beta(){return beta_;};
-  double MfsIsConservative(){return mfs_is_conservative_;};
-  double AdaptCsgsPhi(){return adapt_Csgs_phi_;};
-  void SetCsgsPhi(double meanCai){meanCai_ = meanCai; return;};
+   /// subgrid viscosity models
+   //! flag to define turbulence model
+   INPAR::FLUID::TurbModelAction TurbModAction(){return turb_mod_action_;};
+   double Cs(){return Cs_;};
+   bool CsAveraged(){return Cs_averaged_;};
+   double Ci(){return Ci_;};
+   void SetvanDriestdamping(double damping){van_Driest_damping_=damping; return;};
+   double VanDriestdamping(){return van_Driest_damping_;};
+   bool IncludeCi(){return include_Ci_;};
+   double ltau(){return l_tau_;};
+   //! scale similarity constant
+   double Cl(){return Cl_;};
+   /// multifractal subgrid-scales
+   double Csgs(){return Csgs_;};
+   double CsgsPhi(){double tmp = 0.0; if(not adapt_Csgs_phi_) tmp = Csgs_phi_; else tmp = Csgs_phi_*meanCai_; return tmp;};
+   double Alpha(){return alpha_;};
+   bool CalcN(){return CalcN_;};
+   double N(){return N_;};
+   enum INPAR::FLUID::RefVelocity RefVel(){return refvel_;};
+   enum INPAR::FLUID::RefLength RefLength(){return reflength_;};
+   double CNu(){return c_nu_;};
+   double CDiff(){return c_diff_;};
+   bool NearWallLimit(){return near_wall_limit_;};
+   bool NearWallLimitScatra(){return near_wall_limit_scatra_;};
+   bool BGp(){return B_gp_;};
+   double Beta(){return beta_;};
+   double MfsIsConservative(){return mfs_is_conservative_;};
+   double AdaptCsgsPhi(){return adapt_Csgs_phi_;};
+   void SetCsgsPhi(double meanCai){meanCai_ = meanCai; return;};
 
-  //! some loma specific parameters
-  //! flag for material update
-  bool UpdateMat(){return update_mat_;};
-  //! flag to (de)activate continuity SUPG term
-  bool ContiSUPG(){return conti_supg_;};
-  //! flag to (de)activate continuity cross-stress term -> residual-based VMM
-  INPAR::FLUID::CrossStress ContiCross(){return conti_cross_;};
-  //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
-  INPAR::FLUID::ReynoldsStress ContiReynolds(){return conti_reynolds_;};
-  //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
-  bool MultiFracLomaConti(){return multifrac_loma_conti_;};
 
-  //! some poro specific parameters
-  //! partial integration of porosity gradient in continuity equation
-  bool PoroContiPartInt(){return poro_conti_partint_;};
-
-private:
-
-  //! Flag SetGeneralParameter was called
-  bool set_general_fluid_parameter_;
-  /// Flags to switch on/off the different fluid formulations
-  //! flag to (de)activate generalized-alpha time-integration scheme
-  bool is_genalpha_;
-  /// Flags to switch on/off the different fluid formulations
-  //! flag to (de)activate generalized-alpha-np1 time-integration scheme
-  bool is_genalpha_np_;
-  //! flag to (de)activate conservative formulation
-  bool is_conservative_;
-  //! flag to (de)activate stationary formulation
-  bool is_stationary_;
-  //! flag to (de)activate Newton linearization
-  bool is_newton_;
-  //! flag to (de)activate second derivatives
-  bool is_inconsistent_;
-  //! flag to (de)activate potential reactive terms
-  bool reaction_;
-  //! flag to (de)aktivate porous darcy flow
-  bool darcy_;
-  //! flag to (de)aktivate reaction due to topology optimization
-  bool reaction_topopt_;
-  //! matrix with values for computation of porosity with respect to topopt density
-  double topopt_params_[3];
-  //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
-  INPAR::FLUID::PhysicalType physicaltype_;
-
-  /// parameter to switch the stabilization
-  INPAR::FLUID::StabType stabtype_;
+protected:
 
   /// parameter for residual based stabilizations
   //! Flag to (de)activate time-dependent subgrid stabilization
@@ -299,39 +180,11 @@ private:
   //! element length definition for edge-base stabilization
   INPAR::FLUID::EOS_ElementLength EOS_element_lenght_;
 
-
   /// parameter for evaluation of material and stabilization parameter
   //! flag for material evaluation at Gaussian integration points
   bool mat_gp_;
   //! flag for stabilization parameter evaluation at Gaussian integration points
   bool tau_gp_;
-
-  /// parameters for the time integration
-  //! time algorithm
-  INPAR::FLUID::TimeIntegrationScheme timealgo_;
-  //! actual time to evaluate the body BC
-  double time_;
-  //! time-step length
-  double dt_;
-  //! timefac = dt_ * ("pseudo"-)theta_
-  double timefac_;
-  //! factor for left-hand side due to one-step-theta time-integration scheme
-  double theta_;
-  //! factor for right-hand side due to one-step-theta time-integration scheme
-  double omtheta_;
-  //! generalised-alpha parameter (connecting velocity and acceleration)
-  double gamma_;
-  //! generalised-alpha parameter (velocity)
-  double alphaF_;
-  //! generalised-alpha parameter (acceleration)
-  double alphaM_;
-  //! generalised-alpha parameter, alphaF_*gamma_*dt_
-  double afgdt_;
-  //! generalised-alpha parameter, gamma_/alphaM_*dt_
-  //! time integration factor for the right hand side (boundary elements)
-  double timefacrhs_;
-  //! time integration factor for the left hand side (pressure)
-  double timefacpre_;
 
   /// constant parameters for the turbulence formulation
   /// subgrid viscosity models
@@ -367,33 +220,23 @@ private:
   bool adapt_Csgs_phi_;
   double meanCai_;
 
-  //! some loma specific parameters
-  //! flag for material update
-  bool update_mat_;
-  //! flag to (de)activate continuity SUPG term
-  bool conti_supg_;
-  //! flag to (de)activate continuity cross-stress term -> residual-based VMM
-  INPAR::FLUID::CrossStress conti_cross_;
-  //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
-  INPAR::FLUID::ReynoldsStress conti_reynolds_;
-  //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
-  bool multifrac_loma_conti_;
-
-  //! some poro specific parameters
-  //! partial integration of porosity gradient in continuity equation
-  bool poro_conti_partint_;
-
-  // private constructor
+  /// private Constructor since we are a Singleton.
   FluidEleParameter();
 
-  /// no copying
-  FluidEleParameter(const FluidEleParameter&);
+public:
 
-  /// no copying
-  FluidEleParameter& operator=(const FluidEleParameter&);
+  //! some loma specific parameters
+  //! flag for material update
+  virtual bool UpdateMat(){dserror("must be overridden by subclass"); return false;};
+  //! flag to (de)activate continuity SUPG term
+  virtual bool ContiSUPG(){dserror("must be overridden by subclass"); return false;};
+  //! flag to (de)activate continuity cross-stress term -> residual-based VMM
+  virtual INPAR::FLUID::CrossStress ContiCross(){dserror("must be overridden by subclass"); return (INPAR::FLUID::CrossStress)0;};
+  //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
+  virtual INPAR::FLUID::ReynoldsStress ContiReynolds(){dserror("must be overridden by subclass"); return (INPAR::FLUID::ReynoldsStress)0;};
+  //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
+  virtual bool MultiFracLomaConti(){dserror("must be overridden by subclass"); return false;};
 
-  /// the single instance
-  static std::map<int,Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> > instances_;
 };
 
 }

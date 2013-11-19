@@ -112,21 +112,11 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType(std::string problem)
 {
   if (problem == "std")
-  {
-    if(DRT::Problem::Instance()->ProblemType()==prb_fpsi)
-      return DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance(true,INPAR::FPSI::fluid);
-    else
-      return DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance();
-  }
+    return DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance();
   else if (problem == "loma")
     return DRT::ELEMENTS::FluidEleCalcLoma<distype>::Instance();
   else if (problem == "poro")
-  {
-    if(DRT::Problem::Instance()->ProblemType()==prb_fpsi)
-      return DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance(true,INPAR::FPSI::porofluid);
-    else
-      return DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance();
-  }
+    return DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance();
   else if (problem == "poro_p1")
     return DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance();
   else if (problem == "poro_p2")
@@ -135,7 +125,6 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
     dserror("Defined problem type does not exist!!");
 
   return NULL;
-
 }
 
 /*--------------------------------------------------------------------------*
@@ -229,4 +218,5 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
 
   return NULL;
 }
+
 

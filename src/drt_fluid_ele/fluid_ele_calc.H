@@ -16,6 +16,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #define FLUID_ELE_CALC_H
 
 #include "fluid_ele_interface.H"
+#include "fluid_ele_parameter_timint.H"
 
 // forward declarations
 namespace FLD
@@ -32,6 +33,9 @@ namespace DRT
 namespace ELEMENTS
 {
   class FluidEleParameter;
+  class FluidEleParameterStd;
+  class FluidEleParameterPoro;
+  class FluidEleParameterTimInt;
 
 
   /// Fluid element implementation
@@ -72,9 +76,11 @@ namespace ELEMENTS
   class FluidEleCalc : public FluidEleInterface
   {
     friend class FluidEleParameter;
+    friend class FluidEleParameterTimInt;
 
   public:
 
+    /// dtor
     virtual ~FluidEleCalc() {}
 
     //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
@@ -389,7 +395,7 @@ namespace ELEMENTS
 
   protected:
     /// private Constructor since we are a Singleton.
-    FluidEleCalc(int num=0);
+    FluidEleCalc();
 
     /*!
       \brief evaluate function for fluid element
@@ -999,8 +1005,10 @@ namespace ELEMENTS
     //! elements with only mixed second order derivatives are not counted as higher order elements
     //! (see definition of higher order elements in fluid3_ele_impl_utils.cpp)
     bool is_higher_order_ele_;
-    //! pointer to parameter list
-    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;
+    //! pointer to parameter lists
+    DRT::ELEMENTS::FluidEleParameter* fldpara_;
+    //! pointer to parameter list for time integration
+    DRT::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
     //! element type: nurbs
     bool isNurbs_;
     //! weights for nurbs elements
