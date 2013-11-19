@@ -1190,6 +1190,8 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
         double color = 1.0;
         if (element->Id() >= basisnodes_)
         {
+          if(eot != DRT::ELEMENTS::BeamCLType::Instance() && element->NumNode()!=2)
+            dserror("Crosslinker element has more than 2 nodes! No visualization has been implemented for such linkers!");
           //apply different colors for different crosslinkers
           if(crosslinkertype_!=Teuchos::null)
           {
@@ -1843,9 +1845,9 @@ void STATMECH::StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix
 
   // calculation of the third point lying in the direction of the rotated normal
   // height of the third point above the filament
-  double h = 0.33 * (statmechparams_.get<double> ("R_LINK", 0.0) + statmechparams_.get<double> ("DeltaR_LINK", 0.0));
+  double h = statmechparams_.get<double> ("R_LINK", 0.0)/3.0;
   for (int j=0; j<3; j++)
-    thirdpoint.at(j) = (coord(j, 0) + coord(j, element->NumNode() - 1)) / 2.0 + h * n(j);
+    thirdpoint.at(j) = (coord(j, 0) + coord(j, 1)) / 2.0 + h * n(j);
 
   gmshfilecontent << "SL(" << std::scientific << coord(0,0) << ","<< coord(1,0) << "," << coord(2,0) << ","
                   << thirdpoint.at(0) << ","<< thirdpoint.at(1) << "," << thirdpoint.at(2) << ")"
@@ -5984,19 +5986,16 @@ void STATMECH::StatMechManager::FilamentOrientations(const Epetra_Vector& discol
  *----------------------------------------------------------------------*/
 bool STATMECH::StatMechManager::CheckForKinkedVisual(int eleid)
 {
-  bool kinked = true;
   // if element is a crosslinker
   if(eleid>basisnodes_)
   {
-    DRT::Element *element = discret_->gElement(eleid);
-    int lid = discret_->NodeColMap()->LID(element->NodeIds()[0]);
-    for(int i=0; i<element->NumNode(); i++)
-      if((*filamentnumber_)[lid]!=(*filamentnumber_)[element->NodeIds()[i]])
-        kinked = false;
-    return kinked;
+    DRT::Element *element = discret_->lColElement(discret_->ElementColMap()->LID(eleid));
+    // note: choose first and last node since these two nodes definitely tell how the crosslinker element is bound
+    int nodelid0 = element->NodeIds()[0];
+    int nodelid1 = element->NodeIds()[element->NumNode()-1];
+    if((*filamentnumber_)[nodelid0]==(*filamentnumber_)[nodelid1])
+      return true;
   }
-  else
-    kinked = false;
-  return kinked;
+  return false;
 }//STATMECH::StatMechManager::CheckForKinkedVisual
 

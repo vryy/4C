@@ -17,13 +17,13 @@ Maintainer: Kei Müller
 /*----------------------------------------------------------------------*
  |  constructor (public)                                   mueller 09/13|
  *----------------------------------------------------------------------*/
-STATMECH::SEARCH::StatMechOctree::StatMechOctree(Teuchos::RCP<std::vector<double> > periodlength,
-                                                 Teuchos::RCP<DRT::Discretization>  discret,
-                                                 Teuchos::RCP<Epetra_Map>           bspotrowmap,
-                                                 Teuchos::RCP<Epetra_Map>           bspotcolmap,
-                                                 int                                treedepth,
-                                                 int                                minbboxesperoct,
-                                                 double                             bindingradius)
+STATMECH::SEARCH::Octree::Octree(Teuchos::RCP<std::vector<double> > periodlength,
+                                         Teuchos::RCP<DRT::Discretization>  discret,
+                                         Teuchos::RCP<Epetra_Map>           bspotrowmap,
+                                         Teuchos::RCP<Epetra_Map>           bspotcolmap,
+                                         int                                treedepth,
+                                         int                                minbboxesperoct,
+                                         double                             bindingradius)
 {
 	this->bsr_=bindingradius;
 	this->bspotrowmap_=bspotrowmap;
@@ -48,7 +48,7 @@ STATMECH::SEARCH::StatMechOctree::StatMechOctree(Teuchos::RCP<std::vector<double
 /*----------------------------------------------------------------------*
  |  build octree (public)                                  mueller 09/13|
  *----------------------------------------------------------------------*/
-void STATMECH::SEARCH::StatMechOctree::BuildOctree(const Teuchos::RCP<Epetra_MultiVector>& bspotpositions)
+void STATMECH::SEARCH::Octree::BuildOctree(const Teuchos::RCP<Epetra_MultiVector>& bspotpositions)
 {
   // initialize class vectors
 	allbboxes_ = Teuchos::rcp(new Epetra_MultiVector(*(bspotcolmap_),4, true));
@@ -74,7 +74,7 @@ void STATMECH::SEARCH::StatMechOctree::BuildOctree(const Teuchos::RCP<Epetra_Mul
 	}
 
 	//Initialize Tree that enables to find out in which octant a certain point lies (later)
-	RootNode_= new StatMechOctree::StatMechOctreeNode(rootbox);
+	RootNode_= new Octree::OctreeNode(rootbox);
 
   // Convert Epetra_MultiVector allbboxes_ to vector(vector<double>)
   std::vector<std::vector<double> > allbboxesstdvec(allbboxes_->MyLength(), std::vector<double>(allbboxes_->NumVectors(),0.0));
@@ -102,7 +102,7 @@ void STATMECH::SEARCH::StatMechOctree::BuildOctree(const Teuchos::RCP<Epetra_Mul
   position(0)=3.5;
   position(1)=4.5;
   position(2)=1;
-  StatMechOctreeNode::StatMechOctreeNode* pointer = BspotRootNode;
+  OctreeNode::OctreeNode* pointer = BspotRootNode;
   	bool HIT=false;
   	while(HIT==false)
   	{
@@ -177,21 +177,21 @@ void STATMECH::SEARCH::StatMechOctree::BuildOctree(const Teuchos::RCP<Epetra_Mul
     }
 
     // Communication
-    CommunicateMultiVector(*bboxinoctrow_, *bboxesinoctants_,true);
+    CommunicateMultiVector(bboxinoctrow_, bboxesinoctants_);
   }
   else
-    dserror("bspotOctree.cpp LINE 251 (buildbspotoctree()) -> maxdepthglobal=0 ");
+    dserror("(buildbspotoctree()) -> maxdepthglobal=0 ");
 }//End of BuildBspotOctree
 
 /*----------------------------------------------------------------------*
  |  Locate bounding box within octree (public)             mueller 09/13|
  *----------------------------------------------------------------------*/
-void STATMECH::SEARCH::StatMechOctree::LocateBoundingBox(std::vector<std::vector<double> >& allbboxesstdvec,
-                                      LINALG::Matrix<6,1>&                  lim,
-                                      std::vector<LINALG::Matrix<6,1> >&    OctreeLimits,
-                                      std::vector<std::vector<int> >&       bboxesinoctants,
-                                      int&                                  treedepth,
-                                      StatMechOctree::StatMechOctreeNode&   parentNode)
+void STATMECH::SEARCH::Octree::LocateBoundingBox(std::vector<std::vector<double> >& allbboxesstdvec,
+                                                 LINALG::Matrix<6,1>&               lim,
+                                                 std::vector<LINALG::Matrix<6,1> >& OctreeLimits,
+                                                 std::vector<std::vector<int> >&    bboxesinoctants,
+                                                 int&                               treedepth,
+                                                 Octree::OctreeNode&                parentNode)
 {
   // Center of octant
   LINALG::Matrix<3,1> center;
@@ -252,8 +252,8 @@ void STATMECH::SEARCH::StatMechOctree::LocateBoundingBox(std::vector<std::vector
     // Define temporary vector of same size as current allbboxesstdvec
     std::vector<std::vector<double> > bboxsubset;
     bboxsubset.clear();
-    //add children to StatMechOctree
-    StatMechOctreeNode* child = new StatMechOctree::StatMechOctreeNode(limits[oct]); //generates a child = new node with suboctant-limits
+    //add children to Octree
+    OctreeNode* child = new Octree::OctreeNode(limits[oct]); //generates a child = new node with suboctant-limits
     child->SetOctantID(-9);
     parentNode.AddChild(child);
 
@@ -278,7 +278,7 @@ void STATMECH::SEARCH::StatMechOctree::LocateBoundingBox(std::vector<std::vector
     }
     else // standard procedure without periodic boundary conditions
     {
-    	dserror("StatMechOctree is only implemented for periodic boundaries");
+    	dserror("Octree is only implemented for periodic boundaries");
     }
 
     // current tree depth
@@ -313,7 +313,7 @@ void STATMECH::SEARCH::StatMechOctree::LocateBoundingBox(std::vector<std::vector
               break; //leave after finding first empty slot
             }
         }
-        //Add Octant ID to StatMechOctreeNode
+        //Add Octant ID to OctreeNode
         child->SetOctantID((int)bboxesinoctants.size());
         // add bounding box IDs of this octant to the global vector
         bboxesinoctants.push_back(boxids);
@@ -330,8 +330,8 @@ void STATMECH::SEARCH::StatMechOctree::LocateBoundingBox(std::vector<std::vector
 /*----------------------------------------------------------------------*
  |  Locate positions in an octree already built (public)   mueller 09/13|
  *----------------------------------------------------------------------*/
-void STATMECH::SEARCH::StatMechOctree::LocatePositions(Teuchos::RCP<Epetra_MultiVector>& positions,
-                                                       Teuchos::RCP<Epetra_Map>          CLmap)
+void STATMECH::SEARCH::Octree::LocatePositions(Teuchos::RCP<Epetra_MultiVector>& positions,
+                                               Teuchos::RCP<Epetra_Map>          CLmap)
 {
   std::vector<std::vector<int> > clinoctants((int)bboxesinoctants_->MyLength());
 	LINALG::Matrix<6,1> lim;
@@ -340,7 +340,7 @@ void STATMECH::SEARCH::StatMechOctree::LocatePositions(Teuchos::RCP<Epetra_Multi
   {
 		for(int j=0;j<positions->MyLength();j++)
 		{		//Pointer on rootnode to start at beginnging of tree
-			StatMechOctree::StatMechOctreeNode* pointer = RootNode_;
+			Octree::OctreeNode* pointer = RootNode_;
 			//Flag indicating end of branch
 			bool HIT=false;
 
@@ -388,60 +388,45 @@ void STATMECH::SEARCH::StatMechOctree::LocatePositions(Teuchos::RCP<Epetra_Multi
   }
 
   //Communicate this multivector to make it redundant on all Procs
-  Epetra_MultiVector crosslinkerinoctantsrow((*bboxinoctrow_).Map(),maxCrosslinkerInOctantglobal,true);
-  CommunicateMultiVector(crosslinkerinoctantsrow, *crosslinkerinoctants_);
+  Teuchos::RCP<Epetra_MultiVector> crosslinkerinoctantsrow = Teuchos::rcp(new Epetra_MultiVector((*bboxinoctrow_).Map(),maxCrosslinkerInOctantglobal,true));
+  CommunicateMultiVector(crosslinkerinoctantsrow, crosslinkerinoctants_);
 
   return;
-}//end of LocatePositioms()
+}//end of LocatePositions()
 
 /*-----------------------------------------------------------------------*
- | communicate Vector to all Processors (private)          mueller 11/11 |
+ | communicate MultiVector to all Processors               mueller 11/11 |
  *-----------------------------------------------------------------------*/
-void STATMECH::SEARCH::StatMechOctree::CommunicateVector(Epetra_Vector& InVec, Epetra_Vector& OutVec, bool zerofy, bool doexport, bool doimport)
+void STATMECH::SEARCH::Octree::CommunicateMultiVector(Teuchos::RCP<Epetra_MultiVector> InVec,
+                                                      Teuchos::RCP<Epetra_MultiVector> OutVec,
+                                                      bool                             doexport,
+                                                      bool                             doimport,
+                                                      bool                             zerofy,
+                                                      bool                             exportinsert)
 {
-  /* zerofy InVec at the beginning of each search except for Proc 0
-   * for subsequent export and reimport. This way, we guarantee redundant information
-   * on all processors. */
-
   // first, export the values of OutVec on Proc 0 to InVecs of all participating processors
-  Epetra_Export exporter(OutVec.Map(), InVec.Map());
-  Epetra_Import importer(OutVec.Map(), InVec.Map());
+  Epetra_Export exporter(OutVec->Map(), InVec->Map());
+  Epetra_Import importer(OutVec->Map(), InVec->Map());
+
   if(doexport)
   {
     // zero out all vectors which are not Proc 0. Then, export Proc 0 data to InVec map.
     if(discret_->Comm().MyPID()!=0 && zerofy)
-      OutVec.PutScalar(0.0);
-    InVec.Export(OutVec, exporter, Add);
+      OutVec->PutScalar(0.0);
+    if(exportinsert)
+      InVec->Export(*OutVec, exporter, Insert);
+    else
+      InVec->Export(*OutVec, exporter, Add);
   }
   if(doimport)
-    OutVec.Import(InVec,importer,Insert);
+    OutVec->Import(*InVec,importer,Insert);
   return;
 }
-
-/*-----------------------------------------------------------------------*
- | communicate MultiVector to all Processors (private)     mueller 11/11 |
- *-----------------------------------------------------------------------*/
-void STATMECH::SEARCH::StatMechOctree::CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec, bool zerofy, bool doexport, bool doimport)
-{
-  // first, export the values of OutVec on Proc 0 to InVecs of all participating processors
-  Epetra_Export exporter(OutVec.Map(), InVec.Map());
-  Epetra_Import importer(OutVec.Map(), InVec.Map());
-  if(doexport)
-  {
-    // zero out all vectors which are not Proc 0. Then, export Proc 0 data to InVec map.
-    if(discret_->Comm().MyPID()!=0 && zerofy)
-      OutVec.PutScalar(0.0);
-    InVec.Export(OutVec, exporter, Add);
-  }
-  if(doimport)
-    OutVec.Import(InVec,importer,Insert);
-  return;
-};
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                   mueller 09/13|
  *----------------------------------------------------------------------*/
-STATMECH::SEARCH::StatMechOctree::StatMechOctreeNode::StatMechOctreeNode(LINALG::Matrix<6,1>& inlimits) //LINALG::Matrix<6,1> limits
+STATMECH::SEARCH::Octree::OctreeNode::OctreeNode(LINALG::Matrix<6,1>& inlimits) //LINALG::Matrix<6,1> limits
 {
 	this->limits=inlimits;
 	this->OctantID=-1;
@@ -451,7 +436,7 @@ STATMECH::SEARCH::StatMechOctree::StatMechOctreeNode::StatMechOctreeNode(LINALG:
  |Tell whether this node has children (suboctants)                      |
  |or is at the end of a branch (public)                    mueller 09/13|
  *----------------------------------------------------------------------*/
-int STATMECH::SEARCH::StatMechOctree::StatMechOctreeNode::HaveChildren()
+int STATMECH::SEARCH::Octree::OctreeNode::HaveChildren()
 {
 	return this->children.size();
 }
@@ -460,7 +445,7 @@ int STATMECH::SEARCH::StatMechOctree::StatMechOctreeNode::HaveChildren()
  |  return the limits of the octant associated                          |
  |  with this node (public)                                mueller 09/13|
  *----------------------------------------------------------------------*/
-LINALG::Matrix<6,1> STATMECH::SEARCH::StatMechOctree::StatMechOctreeNode::LimitsOfNode()
+LINALG::Matrix<6,1> STATMECH::SEARCH::Octree::OctreeNode::LimitsOfNode()
 {
 	return this->limits;
 }
@@ -468,7 +453,7 @@ LINALG::Matrix<6,1> STATMECH::SEARCH::StatMechOctree::StatMechOctreeNode::Limits
 /*----------------------------------------------------------------------*
  |  Add child   (public)                                   mueller 09/13|
  *----------------------------------------------------------------------*/
-void STATMECH::SEARCH::StatMechOctree::StatMechOctreeNode::AddChild(StatMechOctreeNode* new_node)
+void STATMECH::SEARCH::Octree::OctreeNode::AddChild(OctreeNode* new_node)
 {
 	this->children.push_back(new_node);
 }
@@ -476,7 +461,7 @@ void STATMECH::SEARCH::StatMechOctree::StatMechOctreeNode::AddChild(StatMechOctr
 /*----------------------------------------------------------------------*
  |  Set octant ID of an octree node (public)               mueller 09/13|
  *----------------------------------------------------------------------*/
-void STATMECH::SEARCH::StatMechOctree::StatMechOctreeNode::SetOctantID(int id)
+void STATMECH::SEARCH::Octree::OctreeNode::SetOctantID(int id)
 {
 	OctantID=id;
 }
@@ -484,7 +469,7 @@ void STATMECH::SEARCH::StatMechOctree::StatMechOctreeNode::SetOctantID(int id)
 /*----------------------------------------------------------------------*
  |  Get octant ID of an octree node(public)                mueller 09/13|
  *----------------------------------------------------------------------*/
-int STATMECH::SEARCH::StatMechOctree::StatMechOctreeNode::GetOctantID()
+int STATMECH::SEARCH::Octree::OctreeNode::GetOctantID()
 {
 	return this->OctantID;
 }

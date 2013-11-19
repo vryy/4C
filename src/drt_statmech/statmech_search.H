@@ -12,7 +12,6 @@ Maintainer: Kei Müller
 
 
 #include <Teuchos_RCP.hpp>
-#include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
@@ -35,35 +34,35 @@ namespace STATMECH
 namespace SEARCH
 {
 // object for octree-type search
-class StatMechOctree
+class Octree
 {
 	public:
 	//! \brief constructor
-  StatMechOctree(Teuchos::RCP<std::vector<double> > periodlength,
-                 Teuchos::RCP<DRT::Discretization> discret,
-                 Teuchos::RCP<Epetra_Map> bspotrowmap,
-                 Teuchos::RCP<Epetra_Map> bspotcolmap,
-                 int maxtreedepth,
-                 int minbboxesperoct,
-                 double bindingradius);
+  Octree(Teuchos::RCP<std::vector<double> > periodlength,
+         Teuchos::RCP<DRT::Discretization> discret,
+         Teuchos::RCP<Epetra_Map> bspotrowmap,
+         Teuchos::RCP<Epetra_Map> bspotcolmap,
+         int maxtreedepth,
+         int minbboxesperoct,
+         double bindingradius);
 
   //!\brief Destructor
-  virtual ~StatMechOctree() {};
+  virtual ~Octree() {};
 
-  class StatMechOctreeNode
+  class OctreeNode
   {
     private:
     int OctantID;
     LINALG::Matrix<6,1> limits;
     public:
     //Constructor
-    StatMechOctreeNode(LINALG::Matrix<6,1>& inlimits); //
+    OctreeNode(LINALG::Matrix<6,1>& inlimits); //
     //Destructor
-    virtual ~StatMechOctreeNode() {};
+    virtual ~OctreeNode() {};
 
-    std::vector<StatMechOctreeNode*>  children;
+    std::vector<OctreeNode*>  children;
     int HaveChildren();
-    void AddChild(StatMechOctreeNode* new_node);
+    void AddChild(OctreeNode* new_node);
     //BspotOctreeNode* GetChild(int i);
     void SetOctantID(int id);
     int GetOctantID();
@@ -86,7 +85,7 @@ class StatMechOctree
                          std::vector<LINALG::Matrix<6,1> >& OctreeLimits,
                          std::vector<std::vector<int> >&    bboxesinoctants,
                          int&                               treedepth,
-                         StatMechOctreeNode&                parentNode);
+                         OctreeNode&                        parentNode);
 
 private:
   //!\brief map of binding spots, row format
@@ -95,19 +94,13 @@ private:
   Teuchos::RCP<Epetra_Map> bspotcolmap_;
   //!\brief pointer to discretization
   Teuchos::RCP<DRT::Discretization> discret_;
-
-  /*! \brief comunicate Vector to all participating processors
-   *  \param InVec    (in) Source/Input vector
-   *  \param OutVec   (in) Target/Output vector
-   *  \param doexport (in) export flag
-   *  \param doimport (in) import flag */
-  void CommunicateVector(Epetra_Vector& InVec, Epetra_Vector& OutVec, bool zerofy=false, bool doexport=true, bool doimport=true);
-  /*! \brief comunicate MultiVector to all participating processors
-   *  \param InVec    (in) Source/Input vector
-   *  \param OutVec   (in) Target/Output vector
-   *  \param doexport (in) export flag
-   *  \param doimport (in) import flag */
-  void CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec, bool zerofy=false, bool doexport=true, bool doimport=true);
+  //! \brief comunicate MultiVector to all participating processors
+  void CommunicateMultiVector(Teuchos::RCP<Epetra_MultiVector> InVec,
+                              Teuchos::RCP<Epetra_MultiVector> OutVec,
+                              bool                             doexport=true,
+                              bool                             doimport=true,
+                              bool                             zerofy=true,
+                              bool                             exportinsert=false);
 
   //!\brief stores the IDs and the coordinates of all bounding boxes
   Teuchos::RCP<Epetra_MultiVector> allbboxes_;
@@ -132,7 +125,70 @@ private:
   //! \brief vector holding the dimensions of the periodic box
   Teuchos::RCP<std::vector<double> > periodlength_;
   //! \brief rootnode of the tree of RCP pointers that allow to reconstruct thedimensions of the octree. This is crucial in order to determine the Octant that belongs to a position (e.g. a crosslinker position)
-  StatMechOctree::StatMechOctreeNode* RootNode_;
+  Octree::OctreeNode* RootNode_;
+};
+
+// Binning strategy search
+class BinSearch
+{
+  public:
+    //! \brief constructor
+    BinSearch(Teuchos::RCP<DRT::Discretization> discret,
+              const std::vector<double>&        rootboxdim,
+              const std::vector<int>&           numbins);
+
+    //!\brief Destructor
+    virtual ~BinSearch() {};
+
+    class Bin
+    {
+      public:
+        Bin(const int& binid);
+        ~Bin() {};
+        const int& GetBinID() const {return binid_;}
+        const std::vector<int>& GetBinMembers() const {return binmembers_;}
+        void AddMember(const int& memberid);
+      private:
+        int binid_;
+        std::vector<int> binmembers_;
+    };
+
+    //!\brief assign given positions to bins
+    void AssignPositionsToBins(const Teuchos::RCP<Epetra_MultiVector>& positions);
+
+    const std::vector<int>& GetResolution() const { return resolution_;}
+
+    const LINALG::Matrix<6,1>& GetRootLimits() const { return rootlimits_;}
+
+    const Bin& GetBin(const int& binid) const {return bins_.at(binfullmap_->LID(binid));}
+
+    const int CalculateBinId(const std::vector<int>& indices);
+
+    const std::vector<int> GetSurroundingBins(const std::vector<int> indices);
+
+    bool HaveBin(const int& binid);
+
+  private:
+
+    void SetupRootBin(const std::vector<double>& rootboxdim);
+
+    void BuildBinMaps();
+
+    //! \brief comunicate MultiVector to all participating processors
+    void CommunicateMultiVector(Teuchos::RCP<Epetra_MultiVector> InVec,
+                                Teuchos::RCP<Epetra_MultiVector> OutVec,
+                                bool                             doexport=true,
+                                bool                             doimport=true,
+                                bool                             zerofy=true,
+                                bool                             exportinsert=false);
+
+    Teuchos::RCP<DRT::Discretization> discret_;
+    std::vector<int> resolution_;
+    Teuchos::RCP<Epetra_Map> binrowmap_;
+    Teuchos::RCP<Epetra_Map> binfullmap_;
+    LINALG::Matrix<6,1> rootlimits_;
+
+    std::vector<Bin> bins_;
 };
 }
 }

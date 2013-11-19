@@ -17,7 +17,6 @@ Maintainer: Kei Müller
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
-#include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_MultiVector.h"
 #include "Epetra_Map.h"
@@ -265,7 +264,7 @@ public:
 
   //! \brief checks orientation of crosslinker relative to linked filaments
   bool CheckOrientation(const LINALG::Matrix<3,1>       direction,
-                        const Epetra_MultiVector&       nodaltriadscol,
+                        const Epetra_MultiVector&       bspottriadscol,
                         const Epetra_SerialDenseMatrix& LID,
                         Teuchos::RCP<double>            phifil = Teuchos::null);
 
@@ -478,26 +477,43 @@ protected:
                                  Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager);
 
   /*! \brief Search neighbour filament nodes to a crosslink molecule (when crosslinker diffusion is simulated)
-   *  \param currentpositions     (in) column map node positions (fully overlapping)
-   *  \param nodeinpartition      (in) vector indicating the partition of the nodes
-   *  \param numbond              (in) vector holding the number of established bonds for each crosslink molecule
-   *  \param crosslinkerpositions (in) vector holding the positions of the crosslink molecules
-   *  \param crosslinkpartitions  (in) vector holding the information to which partial volume the crosslink molecules belong
-   *  \param bspottriadscol       (in) nodal triads as quaternions in column map format (fully overlapping)
-   *  \param neighboursLID        (in/out) vector holding the LIDs of the nodes close to crosslink molecules
+   *  \param currentpositions          (in) column map node positions (fully overlapping)
+   *  \param nodeinpartition           (in) vector indicating the partition of the nodes
+   *  \param numbondtrans              (in) vector holding the number of established bonds for each crosslink molecule
+   *  \param crosslinkerpositionstrans (in) vector holding the positions of the crosslink molecules
+   *  \param crosslinkpartitionstrans  (in) vector holding the information to which partial volume the crosslink molecules belong
+   *  \param bspottriadscol            (in) nodal triads as quaternions in column map format (fully overlapping)
+   *  \param neighboursLID             (in/out) vector holding the LIDs of the nodes close to crosslink molecules
    *  */
   void DetectBindingSpots(const Teuchos::RCP<Epetra_MultiVector>              bspotpositions,
                           const std::vector<std::vector<std::vector<int> > >& nodeinpartition,
-                          const Teuchos::RCP<Epetra_Vector>                   numbond,
-                          const Teuchos::RCP<Epetra_MultiVector>              crosslinkerpositions,
-                          const Teuchos::RCP<Epetra_MultiVector>              crosslinkpartitions,
+                          const Teuchos::RCP<Epetra_Vector>                   numbondtrans,
+                          const Teuchos::RCP<Epetra_MultiVector>              crosslinkerpositionstrans,
+                          const Teuchos::RCP<Epetra_MultiVector>              crosslinkpartitionstrans,
                           const Teuchos::RCP<Epetra_MultiVector>              bspottriadscol,
                           Teuchos::RCP<Epetra_MultiVector>&                   neighboursLID);
 
-  //! \brief rotation of a vector around a given fixed axis by angle phirot
+  //! \brief detect binding spots via octree
   void DetectBindingSpotsOctree(const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
                                 Teuchos::RCP<Epetra_MultiVector>       bspottriadscol,
                                 Teuchos::RCP<Epetra_MultiVector>&      neighbourslid);
+
+  //! \brief detect binding spots via binning strategy
+  void DetectBindingSpotsBinning(const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
+                                 Teuchos::RCP<Epetra_MultiVector>       bspottriadscol,
+                                 Teuchos::RCP<Epetra_MultiVector>&      neighbourslid);
+
+  //! \brief criterion with which all possible binding spots are gathered
+  void BindingSpotDistanceCriterion(const int&                             crossrowid,
+                                    const int&                             crosscollid,
+                                    const int&                             bspotlid,
+                                    const double&                          mindist,
+                                    const double&                          maxdist,
+                                    LINALG::Matrix<3,1>                    distance,
+                                    std::vector<std::vector<int> >&        neighbourbspotstransstd,
+                                    const Teuchos::RCP<Epetra_MultiVector> crosslinkerpositionstrans,
+                                    const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
+                                    const Teuchos::RCP<Epetra_MultiVector> bspottriadscol);
 
   //! \brief rotation of a vector around a given fixed axis by angle phirot
   void RotationAroundFixedAxis(LINALG::Matrix<3,1>& axis,
