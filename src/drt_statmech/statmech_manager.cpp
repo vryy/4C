@@ -302,7 +302,7 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     for(int i=0; i<(int)searchres_->size(); i++)
       searchres_->at(i) = (int)(floor((periodlength_->at(i)/Hmax) * (double)(statmechparams_.get<int>("SEARCHRES",1))));
 
-    cout<<"SEARCHRES: "<<searchres_->at(0)<<", "<<searchres_->at(1)<<", "<<searchres_->at(2)<<", "<<endl;
+    std::cout<<"SEARCHRES: "<<searchres_->at(0)<<", "<<searchres_->at(1)<<", "<<searchres_->at(2)<<", "<<std::endl;
   }
 
   // read times for actions and the corresponding step sizes from input file
