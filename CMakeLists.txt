@@ -26,6 +26,9 @@ include_directories("${PROJECT_BINARY_DIR}/src/headers")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
+# include all external (cmake) macros that we use
+INCLUDE(CheckCXXSourceRuns)
+
 # test for svn executable
 FIND_PROGRAM(Subversion_SVN_EXECUTABLE svn
   DOC "subversion command line client")
@@ -215,6 +218,13 @@ option (THROWELEMENTERRORS "throw errors at element level so all element error c
 if (THROWELEMENTERRORS)
   add_definitions("-DTHROWELEMENTERRORS")
 endif(THROWELEMENTERRORS)
+
+# Run some system checks
+FILE(GLOB _check_files "cmake/checks/*.cmake")
+FOREACH(_file ${_check_files})
+  MESSAGE(STATUS "Include ${_file}")
+  INCLUDE(${_file})
+ENDFOREACH()
 
 # these are the fedora 8 with openmpi paths
 

@@ -49,9 +49,24 @@ Maintainer: Michael Gee
 #include <cstdarg>
 #include <string>
 
-void cpp_dsassert_func(const std::string file, const int line, const bool test, const std::string string);
+extern "C" void cpp_dserror_func(const char* string, ...); // avoid constructing string from char*
 void cpp_dserror_func(const std::string string, ...);
 void cpp_dslatest(const std::string file, const int line);
+
+inline
+void cpp_dsassert_func(const char* file, const int line, const bool test, const char* string)
+{
+  // inline to avoid function call in release mode
+#ifdef DEBUG
+  if (!test)
+  {
+    cpp_dslatest(file, line);
+    cpp_dserror_func(string);
+  }
+#endif
+  return;
+} /* end of dsassert_func */
+
 #define dsassert(test, string) cpp_dsassert_func(__FILE__, __LINE__, test, string)
 #define dserror cpp_dslatest(__FILE__, __LINE__), cpp_dserror_func
 
