@@ -86,15 +86,8 @@ Maintainer: Alexander Popp
 //#define CONTACTFDMORTART          /* flag for FD check of mortar matrix T */
 //#define CONTACTFDMORTARE          /* flag for FD check of mortar matrix E */
 
-/************************************************************************/
-/* Printing and patient specific options                                */
-/************************************************************************/
-
 // PRINTING OF SPECIFIC INFORMATION
 //#define MASTERNODESINCONTACT           /* flag for printing master nodes in contact - CONTACTFORCEOUTPUT also has to be switched on*/
 //#define PRINTSTRUCTDEFORMEDNODECOORDS  /* flag for printing all nodes and xspatial in current configuration - only works for 1 processor*/
-
-// PRESTRESSING CUSTOMIZATIONS
-//#define RESTARTAFTERPRESTRESSING       /* flag for allowing restart with contact switched on after prestressing - NOTE: no contact has yet occured */
 
 #endif  // #ifndef CONTACT_DEFINES_H

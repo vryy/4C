@@ -3942,6 +3942,13 @@ void CONTACT::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<Epetra_Vect
 void CONTACT::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& reader,
                                                 Teuchos::RCP<Epetra_Vector> dis)
 {
+  // check whether this is a restart with contact of a previously
+  // non-contact simulation run (if yes, we have to be careful not
+  // to try to read certain, in this case non-existing, vectors
+  // such as the activetoggle or sliptoggle vectors, but rather
+  // initialize the restart active and slip sets as being empty)
+  bool restartwithcontact = DRT::INPUT::IntegralValue<int>(Params(),"RESTART_WITH_CONTACT");
+
   // set restart displacement state
   SetState("displacement", dis);
   SetState("olddisplacement", dis);
@@ -3965,24 +3972,20 @@ void CONTACT::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& read
     dmatrix_ = temp;
   }
 
-  // read restart information on actice set and slip set
+  // read restart information on actice set and slip set (leave sets empty
+  // if this is a restart with contact of a non-contact simulation run)
   Teuchos::RCP<Epetra_Vector> activetoggle =Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
-#ifndef RESTARTAFTERPRESTRESSING
-  reader.ReadVector(activetoggle,"activetoggle");
-#endif //RESTARTAFTERPRESTRESSING
+  if (!restartwithcontact) reader.ReadVector(activetoggle,"activetoggle");
 
   // friction
   Teuchos::RCP<Epetra_Vector> sliptoggle;
   Teuchos::RCP<Epetra_Vector> weightedwear;
   Teuchos::RCP<Epetra_Vector> realwear;
 
-  if(friction_)
+  if (friction_)
   {
     sliptoggle =Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
-#ifndef RESTARTAFTERPRESTRESSING
-    reader.ReadVector(sliptoggle,"sliptoggle");
-#endif //RESTARTAFTERPRESTRESSING
-
+    if (!restartwithcontact) reader.ReadVector(sliptoggle,"sliptoggle");
   }
 
   // wear
@@ -4035,12 +4038,12 @@ void CONTACT::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& read
 
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-#ifndef RESTARTAFTERPRESTRESSING
-  reader.ReadVector(LagrMult(),"lagrmultold");
-  reader.ReadVector(LagrMultOld(),"lagrmultold");
-#endif //RESTARTAFTERPRESTRESSING
+  if (!restartwithcontact) reader.ReadVector(LagrMult(),"lagrmultold");
+  if (!restartwithcontact) reader.ReadVector(LagrMultOld(),"lagrmultold");
+
+  // Lagrange multiplier increment is always zero (no restart value to be read)
+  zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
 
   // store restart information on Lagrange multipliers into nodes
   StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
@@ -4052,9 +4055,7 @@ void CONTACT::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& read
   if (st == INPAR::CONTACT::solution_auglag)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-#ifndef RESTARTAFTERPRESTRESSING
-    reader.ReadVector(LagrMultUzawa(),"lagrmultold");
-#endif //RESTARTAFTERPRESTRESSING
+    if (!restartwithcontact) reader.ReadVector(LagrMultUzawa(),"lagrmultold");
     StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
   }
 

@@ -1612,6 +1612,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   INPAR::CONTACT::app_beamcontact, INPAR::CONTACT::app_beamcontact),
        &scontact);
 
+  setStringToIntegralParameter<int>("RESTART_WITH_CONTACT","No","Must be chosen if a non-contact simulation is to be restarted with contact",
+                               yesnotuple,yesnovalue,&scontact);
+
   setStringToIntegralParameter<int>("FRICTION","None","Type of friction law",
       tuple<std::string>("None","none",
                          "Stick","stick",
