@@ -1722,8 +1722,12 @@ void STR::TimIntStatMech::StatMechPrintUpdate(const double& t_admin)
 {
   if(!myrank_ && printscreen_)
   {
-    std::cout<<"\nTime for update of crosslinkers                   : " << Teuchos::Time::wallTime() - t_admin<< " seconds";
-    std::cout<<"\nTotal number of elements after crosslinker update : "<<discret_->NumGlobalElements();
+    INPAR::STATMECH::LinkerModel linkermodel = DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"LINKERMODEL");
+    if(linkermodel != INPAR::STATMECH::linkermodel_none)
+    {
+      std::cout<<"\nTime for update of crosslinkers                   : " << Teuchos::Time::wallTime() - t_admin<< " seconds";
+      std::cout<<"\nTotal number of elements after crosslinker update : "<<discret_->NumGlobalElements();
+    }
     std::cout<<"\nNumber of unconverged steps since simulation start: "<<statmechman_->NumberOfUnconvergedSteps()<<"\n"<<std::endl;
   }
   return;
