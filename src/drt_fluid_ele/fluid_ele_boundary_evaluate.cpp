@@ -40,16 +40,6 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   // get the action required
   const FLD::BoundaryAction act = DRT::INPUT::get<FLD::BoundaryAction>(params,"action");
 
-  // switch between different physical types as used below
-  std::string impltype = "std";
-  switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
-  {
-  case INPAR::FLUID::loma:    impltype = "std";  break;
-  case INPAR::FLUID::poro:    impltype = "poro"; break;
-  case INPAR::FLUID::poro_p1: impltype = "poro"; break;
-  case INPAR::FLUID::poro_p2: impltype = "poro"; break;
-  }
-
   switch(act)
   {
   case FLD::integrate_Shapefunction:
@@ -66,13 +56,26 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   case FLD::center_of_mass_calc:
   case FLD::traction_velocity_component:
   case FLD::traction_Uv_integral_component:
-  case FLD::no_penetration:
-  case FLD::no_penetrationIDs:
-  case FLD::poro_boundary:
-  case FLD::poro_prescoupl:
+  {
+  DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(),"std")->EvaluateAction(
+      this,
+      params,
+      discretization,
+      lm,
+      elemat1,
+      elemat2,
+      elevec1,
+      elevec2,
+      elevec3);
+  break;
+  }
   case FLD::fpsi_coupling:
   {
-  DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(),impltype)->EvaluateAction(
+    //Note: the FluidEleBoundaryCalcPoro class is called here, as the method FPSICoupling() is
+    //implemented there.
+    //Todo: One could think about splitting this method in pure fluid and poro fluid part...
+    // vuong 11/13
+  DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(),"poro")->EvaluateAction(
       this,
       params,
       discretization,
@@ -141,10 +144,9 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   }
   default:
   {
-    dserror("Unknown type of action for Fluid_Boundary!");
+    dserror("Unknown type of action '%i' for Fluid Boundary", act);
     break;
   }
-    break;
   } // end of switch(act)
 
   return 0;
@@ -188,7 +190,6 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(
   switch(act)
   {
   case FLD::enforce_weak_dbc:
-  case FLD::poro_boundary:
   case FLD::mixed_hybrid_dbc:
   case FLD::flow_dep_pressure_bc:
   case FLD::fpsi_coupling:
@@ -198,31 +199,6 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(
     //       as input in the respective evaluate routines
     parent_->LocationVector(dis,la,doDirichlet);
     break;
-    //
-    // todo:
-    // the following hacky request for the discretization name is temporary!
-    // it will be replaced as soon as a specialized poro boundary element is
-    // implemented ! // rauch 11/13
-    //
-  case FLD::calc_flowrate:
-  {
-    if(dis.Name() == "fluid")
-    {
-      DRT::Element::LocationVector(dis,la,doDirichlet);
-    }
-    else if (dis.Name() == "porofluid")
-    {
-      // special cases: the boundary element assembles also into
-      // the inner dofs of its parent element
-      // note: using these actions, the element will get the parent location vector
-      //       as input in the respective evaluate routines
-      parent_->LocationVector(dis,la,doDirichlet);
-    }
-    else
-      dserror("action 'calc_flowrate' not implemented for this physical type");
-
-    break;
-  }
   case FLD::ba_none:
     dserror("No action supplied");
     break;

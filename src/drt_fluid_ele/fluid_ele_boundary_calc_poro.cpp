@@ -17,22 +17,15 @@ Maintainers: Anh-Tu Vuong and Andreas Rauch
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_poro.H"
 
-#include "../drt_inpar/inpar_fluid.H"
-#include "../drt_inpar/inpar_material.H"
-
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
-
 #include "../drt_geometry/position_array.H"
-
+//
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/permeablefluid.H"
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
 

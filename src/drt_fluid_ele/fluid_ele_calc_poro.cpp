@@ -100,7 +100,7 @@ DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
     dtaudphi_(true),
     so_interface_(NULL)
 {
-	my::fldpara_ = DRT::ELEMENTS::FluidEleParameterPoro::Instance();
+  my::fldpara_ = DRT::ELEMENTS::FluidEleParameterPoro::Instance();
 }
 
 /*----------------------------------------------------------------------*

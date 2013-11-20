@@ -51,6 +51,7 @@ public:
                       Epetra_SerialDenseVector&       elevec1,
                       Epetra_SerialDenseVector&       elevec2,
                       Epetra_SerialDenseVector&       elevec3);
+
   /*!
   \brief apply boundary integral for porous media problems
 
@@ -72,6 +73,19 @@ public:
       Epetra_SerialDenseMatrix&      elemat1,
       Epetra_SerialDenseVector&      elevec1);
 
+  /*!
+  \brief apply boundary pressure for porous media problems
+
+  \param params (in)        : ParameterList for communication between control routine
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+  */
   void PressureCoupling(
       DRT::ELEMENTS::FluidBoundary*   ele,
       Teuchos::ParameterList&         params,
@@ -80,8 +94,21 @@ public:
       Epetra_SerialDenseMatrix&       elemat1,
       Epetra_SerialDenseVector&       elevec1);
 
-  virtual void FPSICoupling(
-      DRT::ELEMENTS::FluidBoundary*   ele1,
+  /*!
+  \brief apply boundary coupling terms for FPSI problems
+
+  \param params (in)        : ParameterList for communication between control routine
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+  */
+  void FPSICoupling(
+      DRT::ELEMENTS::FluidBoundary*   ele,
       Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
       std::vector<int>&               lm,
@@ -104,39 +131,39 @@ public:
                               the controling method does not epxect the element to fill
                               this matrix.
   */
-void NoPenetration(
-    DRT::ELEMENTS::FluidBoundary*  ele,
-    Teuchos::ParameterList&    params,
-    DRT::Discretization&       discretization,
-    std::vector<int>&          lm,
-    Epetra_SerialDenseMatrix&  elemat1,
-    Epetra_SerialDenseMatrix&  elemat2,
-    Epetra_SerialDenseVector&  elevec1,
-    Epetra_SerialDenseVector&  elevec2);
+  void NoPenetration(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&    params,
+      DRT::Discretization&       discretization,
+      std::vector<int>&          lm,
+      Epetra_SerialDenseMatrix&  elemat1,
+      Epetra_SerialDenseMatrix&  elemat2,
+      Epetra_SerialDenseVector&  elevec1,
+      Epetra_SerialDenseVector&  elevec2);
 
-void NoPenetrationIDs(
-    DRT::ELEMENTS::FluidBoundary*  ele,
-    Teuchos::ParameterList&    params,
-    DRT::Discretization&       discretization,
-    Epetra_SerialDenseVector&        elevec1,
-    std::vector<int>&          lm);
+  void NoPenetrationIDs(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&    params,
+      DRT::Discretization&       discretization,
+      Epetra_SerialDenseVector&        elevec1,
+      std::vector<int>&          lm);
 
-/*!
-\brief apply no penetration boundary condition
+  /*!
+  \brief apply no penetration boundary condition
 
-\param params (in)        : ParameterList for communication between control routine
-\param discretization (in): A reference to the underlying discretization
-\param lm (in)            : location vector of this element
-\param elevec1 (out)      : vector to be filled by element. If NULL on input,
-                            the controling method does not epxect the element to fill
-                            this matrix.
-*/
-void ComputeFlowRate(
-    DRT::ELEMENTS::FluidBoundary*  ele,
-    Teuchos::ParameterList&    params,
-    DRT::Discretization&       discretization,
-    std::vector<int>&          lm,
-    Epetra_SerialDenseVector&  elevec1);
+  \param params (in)        : ParameterList for communication between control routine
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+  */
+  void ComputeFlowRate(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&    params,
+      DRT::Discretization&       discretization,
+      std::vector<int>&          lm,
+      Epetra_SerialDenseVector&  elevec1);
 
 
 private:

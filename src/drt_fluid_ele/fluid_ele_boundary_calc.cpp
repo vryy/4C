@@ -16,6 +16,9 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_utils.H"
 #include "fluid_ele_action.H"
 
+#include "fluid_ele_parameter.H"
+#include "fluid_ele_parameter_timint.H"
+
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_material.H"
 
@@ -310,9 +313,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
   }
   default:
   {
-    // do nothing
-  }
+    dserror("Unknown type of action for FluidBoundaryImpl!");
     break;
+  }
   } // end of switch(act)
 
 

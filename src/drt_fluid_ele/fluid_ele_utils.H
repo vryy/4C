@@ -15,6 +15,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 
 
 #include "../drt_lib/drt_element.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 
 
 namespace DRT

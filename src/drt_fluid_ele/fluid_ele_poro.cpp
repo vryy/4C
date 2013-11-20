@@ -175,7 +175,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidPoro::Lines()
 
   if (NumLine()>1) // 1D boundary element and 2D/3D parent element
   {
-    return DRT::UTILS::ElementBoundaryFactory<FluidBoundary,FluidPoro>(DRT::UTILS::buildLines,this);
+    return DRT::UTILS::ElementBoundaryFactory<FluidPoroBoundary,FluidPoro>(DRT::UTILS::buildLines,this);
   }
   else if (NumLine()==1) // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
   {
@@ -206,7 +206,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidPoro::Surfaces()
   // so we have to allocate new line elements:
 
   if (NumSurface() > 1)   // 2D boundary element and 3D parent element
-    return DRT::UTILS::ElementBoundaryFactory<FluidBoundary,FluidPoro>(DRT::UTILS::buildSurfaces,this);
+    return DRT::UTILS::ElementBoundaryFactory<FluidPoroBoundary,FluidPoro>(DRT::UTILS::buildSurfaces,this);
   else if (NumSurface() == 1) // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
   {
     // 2D (we return the element itself)

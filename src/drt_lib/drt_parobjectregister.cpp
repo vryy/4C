@@ -155,6 +155,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::FluidType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidPoroEleType::Instance().Name() << " "
     << DRT::ELEMENTS::FluidBoundaryType::Instance().Name() << " "
+    << DRT::ELEMENTS::FluidPoroBoundaryType::Instance().Name() << " "
     << DRT::ELEMENTS::Ale3Type::Instance().Name() << " "
     << DRT::ELEMENTS::NURBS::Ale3_NurbsType::Instance().Name() << " "
     << DRT::ELEMENTS::Ale2Type::Instance().Name() << " "

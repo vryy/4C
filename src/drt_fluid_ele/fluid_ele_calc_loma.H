@@ -146,9 +146,6 @@ private:
       bool                                 isale,
       const DRT::UTILS::GaussIntegration & intpoints);
 
-  //! pointer to specific parameter lists
-  DRT::ELEMENTS::FluidEleParameterStd* fldpara_;
-
 };
 }
 }

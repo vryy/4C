@@ -16,7 +16,6 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #define FLUID_ELE_CALC_H
 
 #include "fluid_ele_interface.H"
-#include "fluid_ele_parameter_timint.H"
 
 // forward declarations
 namespace FLD
@@ -33,10 +32,7 @@ namespace DRT
 namespace ELEMENTS
 {
   class FluidEleParameter;
-  class FluidEleParameterStd;
-  class FluidEleParameterPoro;
   class FluidEleParameterTimInt;
-
 
   /// Fluid element implementation
   /*!

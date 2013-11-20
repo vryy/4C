@@ -299,7 +299,9 @@ protected:
         const double &                                         fac3            ///< factor for residual in current subgrid velocities
         );
 
+    //! internal energy due to porosity change at gausspoint
     double W_;
+    //! derivative of internal energy due to porosity change w.r.t. Jacobian at gausspoint
     double dW_dJ_;
 
 };

@@ -1373,6 +1373,8 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_boundary_parent_calc.cpp
   src/drt_fluid_ele/fluid_ele_boundary.cpp
   src/drt_fluid_ele/fluid_ele_boundary_evaluate.cpp
+  src/drt_fluid_ele/fluid_ele_poro_boundary.cpp
+  src/drt_fluid_ele/fluid_ele_poro_boundary_evaluate.cpp
   src/drt_fluid_ele/fluid_ele_calc.cpp
   src/drt_fluid_ele/fluid_ele_calc_ale_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_general_service.cpp

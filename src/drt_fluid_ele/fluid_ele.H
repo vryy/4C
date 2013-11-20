@@ -25,7 +25,6 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 
 
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
@@ -128,7 +127,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Element* Clone() const;
+  virtual DRT::Element* Clone() const;
 
   /*!
   \brief Get shape type of element
@@ -293,7 +292,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(std::ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
   { return FluidType::Instance(); }
@@ -500,7 +499,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Element* Clone() const;
+  virtual DRT::Element* Clone() const;
 
   /*!
   \brief Get shape type of element
@@ -618,7 +617,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print(std::ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
   { return FluidBoundaryType::Instance(); }
@@ -649,7 +648,7 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(Teuchos::ParameterList&   params,
+  virtual int Evaluate(Teuchos::ParameterList&   params,
                DRT::Discretization&      discretization,
                std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
@@ -731,14 +730,14 @@ public:
                               Teuchos::ParameterList& params
                               ) const;
 
-private:
+protected:
+  //! The parent element of this surface
+  DRT::ELEMENTS::Fluid* parent_;
 
+private:
 
   // don't want = operator
   FluidBoundary& operator = (const FluidBoundary& old);
-
-  //! The parent element of this surface
-  DRT::ELEMENTS::Fluid* parent_;
 
   //! The local surface number of this surface w.r.t to the parent_ element
   int lsurface_;
