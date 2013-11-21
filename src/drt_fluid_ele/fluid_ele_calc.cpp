@@ -241,22 +241,30 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
   if (fldparatimint_->IsGenalphaNP())
     ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnp, &eprenp,"velnp");
 
-  LINALG::Matrix<nen_,1> escaaf(true);
-  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &escaaf,"scaaf");
-
-  LINALG::Matrix<nsd_,nen_> emhist(true);
-  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &emhist, NULL,"hist");
+  LINALG::Matrix<nsd_,nen_> eveln(true);
+  LINALG::Matrix<nen_,1>    epren(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eveln, &epren,"veln");
 
   LINALG::Matrix<nsd_,nen_> eaccam(true);
   LINALG::Matrix<nen_,1>    escadtam(true);
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eaccam, &escadtam,"accam");
 
-  LINALG::Matrix<nsd_,nen_> eveln(true);
-  LINALG::Matrix<nen_,1>    escaam(true);
-  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eveln, &escaam,"scaam");
+  LINALG::Matrix<nen_,1> escaaf(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &escaaf,"scaaf");
 
-  if (fldparatimint_->IsGenalpha()) eveln.Clear();
-  else                            eaccam.Clear();
+  LINALG::Matrix<nen_,1> escaam(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &escaam,"scaam");
+
+  LINALG::Matrix<nsd_,nen_> emhist(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &emhist, NULL,"hist");
+
+  // clear vectors not required for respective time-integration scheme
+  if (fldparatimint_->IsGenalpha())
+  {
+    eveln.Clear();
+    epren.Clear();
+  }
+  else eaccam.Clear();
 
   LINALG::Matrix<nen_,1> eporo(true);
   if ((params.getEntryPtr("topopt_density") != NULL) and // parameter exists and ...
@@ -383,6 +391,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
     escadtam,
     escabofoaf,
     eveln,
+    epren,
     escaam,
     edispnp,
     egridv,
@@ -429,6 +438,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
   const LINALG::Matrix<nen_,1>    &             escadtam,
   const LINALG::Matrix<nen_,1>    &             escabofoaf,
   const LINALG::Matrix<nsd_,nen_> &             eveln,
+  const LINALG::Matrix<nen_,1>    &             epren,
   const LINALG::Matrix<nen_,1>    &             escaam,
   const LINALG::Matrix<nsd_,nen_> &             edispnp,
   const LINALG::Matrix<nsd_,nen_> &             egridv,
@@ -506,6 +516,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
          evel_hat,
          ereynoldsstress_hat,
          epreaf,
+         epren,
          eprenp,
          eaccam,
          escaaf,
@@ -557,6 +568,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
   const LINALG::Matrix<nsd_,nen_>&              evel_hat,
   const LINALG::Matrix<nsd_*nsd_,nen_>&         ereynoldsstress_hat,
   const LINALG::Matrix<nen_,1>&                 epreaf,
+  const LINALG::Matrix<nen_,1>&                 epren,
   const LINALG::Matrix<nen_,1>&                 eprenp,
   const LINALG::Matrix<nsd_,nen_>&              eaccam,
   const LINALG::Matrix<nen_,1>&                 escaaf,
@@ -619,7 +631,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
   if (not fldpara_->MatGp() or not fldpara_->TauGp())
   {
 
-    GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+    GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
     // calculate all-scale or fine-scale subgrid viscosity at element center
     visceff_ = visc_;
@@ -650,8 +662,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     {
       // make sure to get material parameters at element center
       if (fldpara_->MatGp())
-        //GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam);
-        GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+        //GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
+        GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
       // provide necessary velocities and gradients at element center
       velint_.Multiply(evelaf,funct_);
@@ -866,7 +878,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     if (fldpara_->MatGp())
     {
 
-      GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+      GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
@@ -1055,6 +1067,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       // -> different for generalized-alpha and other time-integration schemes
       RecomputeGalAndComputeCrossRHSContEq();
     }
+    else if (fldpara_->PhysicalType() == INPAR::FLUID::artcomp)
+    {
+      // compute additional Galerkin terms on right-hand side of continuity equation
+      // -> different for generalized-alpha and other time-integration schemes
+      ComputeGalRHSContEqArtComp(epreaf,epren,escadtam);
+
+      // add to residual of continuity equation
+      conres_old_ -= rhscon_;
+    }
 
     // set velocity-based momentum residual vectors to zero
     lin_resM_Du.Clear();
@@ -1142,14 +1163,23 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
                               rhsfac);
     }
 
-    // 8) additional standard Galerkin terms for low-Mach-number flow
-    if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+    // 8) additional standard Galerkin terms for low-Mach-number flow and
+    //    artificial compressibility (only right-hand side in latter case)
+    if (fldpara_->PhysicalType() == INPAR::FLUID::loma or
+        fldpara_->PhysicalType() == INPAR::FLUID::artcomp)
     {
       LomaGalPart(estif_q_u,
                   preforce,
                   timefacfac,
                   rhsfac);
     }
+
+    // 9) additional standard Galerkin term for temporal derivative of pressure
+    //    in case of artificial compressibility (only left-hand side)
+    if (fldpara_->PhysicalType() == INPAR::FLUID::artcomp and
+        not fldparatimint_->IsStationary())
+      ArtCompPressureInertiaGalPartandContStab(estif_p_v,
+                                               ppmat);
 
     //----------------------------------------------------------------------
     // compute second version of velocity-based momentum residual containing
@@ -1159,7 +1189,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     StabLinGalMomResU(lin_resM_Du,
                       timefacfac);
 
-    // 9) PSPG term
+    // 10) PSPG term
     if (fldpara_->PSPG())
       {
       PSPG(estif_q_u,
@@ -1173,7 +1203,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
            *iquad);
     }
 
-    // 10) SUPG term as well as first part of Reynolds-stress term on
+    // 11) SUPG term as well as first part of Reynolds-stress term on
     //     left-hand side and Reynolds-stress term on right-hand side
     if(fldpara_->SUPG())
     {
@@ -1188,7 +1218,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
            rhsfac);
     }
 
-    // 11) reactive stabilization term
+    // 12) reactive stabilization term
    if (fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
    {
       ReacStab(estif_u,
@@ -1201,7 +1231,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
                fac3);
    }
 
-    // 12) viscous stabilization term
+    // 13) viscous stabilization term
     if (is_higher_order_ele_ and
         (fldpara_->VStab() != INPAR::FLUID::viscous_stab_none))
     {
@@ -1224,7 +1254,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 //    }
 
 
-    // 13) cross-stress term: second part on left-hand side (only for Newton
+    // 14) cross-stress term: second part on left-hand side (only for Newton
     //     iteration) as well as cross-stress term on right-hand side
     if(fldpara_->Cross() != INPAR::FLUID::cross_stress_stab_none)
     {
@@ -1238,7 +1268,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
                       fac3);
     }
 
-    // 14) Reynolds-stress term: second part on left-hand side
+    // 15) Reynolds-stress term: second part on left-hand side
     //     (only for Newton iteration)
     if (fldpara_->Reynolds() == INPAR::FLUID::reynolds_stress_stab and
         fldpara_->IsNewton())
@@ -1251,7 +1281,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
                          fac3);
     }
 
-    // 15) fine-scale subgrid-viscosity term
+    // 16) fine-scale subgrid-viscosity term
     //     (contribution only to right-hand-side vector)
     if(fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
     {
@@ -1261,7 +1291,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
                                     fssgviscfac);
     }
 
-    // 16) subgrid-stress term (scale similarity)
+    // 17) subgrid-stress term (scale similarity)
     //     (contribution only to right-hand-side vector)
     if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity)
     {
@@ -1284,7 +1314,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
                             fldpara_->Cl());
     }
 
-    // 17) subgrid-stress term (multifractal subgrid scales)
+    // 18) subgrid-stress term (multifractal subgrid scales)
     if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
     {
       MultfracSubGridScalesCross(
@@ -1753,7 +1783,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetMaterialParams(
   const double                       thermpressaf,
   const double                       thermpressam,
   const double                       thermpressdtaf,
-  const double                       thermpressdtam
+  const double                       thermpressdtam,
+  const double                       vol
 )
 {
 // initially set density values and values with respect to continuity rhs
@@ -1772,8 +1803,31 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
   // get constant dynamic viscosity
   visc_ = actmat->Viscosity();
 
-  // Varying Density
-  if (fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
+  // artificial compressibility
+  if (fldpara_->PhysicalType() == INPAR::FLUID::artcomp)
+  {
+    // get norm of convective velocity
+    const double vel_norm = convvelint_.Norm2();
+
+    // calculate characteristic element length
+    double h_u = 0.0;
+    double h_p = 0.0;
+    CalcCharEleLength(vol,vel_norm,h_u,h_p);
+
+    // get constant density
+    densaf_ = actmat->Density();
+    densam_ = densaf_;
+    densn_  = densaf_;
+
+    // compute compressibility parameter c² as squared value of
+    // maximum of convective velocity, viscous velocity and constant
+    // value 1/2, as proposed in Nithiarasu (2003)
+    double maxvel = std::max(vel_norm,(visc_/(h_p*densaf_)));
+    maxvel = std::max(maxvel,0.5);
+    scadtfac_ = 1.0/std::pow(maxvel,2);
+  }
+  // varying Density
+  else if (fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
   {
     const double density_0 = actmat->Density();
 
@@ -4053,7 +4107,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ContStab(
       conti_stab_and_vol_visc_rhs+=(2.0/3.0)*rhsfac*q_sq_;
   }
 
-  /* continuity stabilisation on left hand side */
+  /* continuity stabilisation on left-hand side */
   /*
               /                        \
              |                          |

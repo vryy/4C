@@ -1603,6 +1603,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   // set general vector values needed by elements
   discret_->ClearState();
   discret_->SetState("hist" ,hist_ );
+  discret_->SetState("veln" ,veln_ );
   discret_->SetState("accam",accam_);
   discret_->SetState("scaaf",scaaf_);
   discret_->SetState("scaam",scaam_);
@@ -1615,7 +1616,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     {
       //just for porous media
       discret_->SetState("dispn", dispn_);
-      discret_->SetState("veln", veln_);
       discret_->SetState("accnp", accnp_);
       discret_->SetState("accn", accn_);
     }
@@ -2423,23 +2423,34 @@ void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
   //       (i)           gamma      gamma * dt
   //
 
-  // extract the degrees of freedom associated with velocities
-  // only these are allowed to be updated, otherwise you will
-  // run into trouble in loma, where the 'pressure' component
-  // is used to store the acceleration of the temperature
-  Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
-  Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
-  Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
-
-  Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::rcp(new Epetra_Vector(onlyaccn->Map()));
-
+  // compute factors
   const double fact1 = 1.0/(gamma_*dta_);
   const double fact2 = 1.0 - (1.0/gamma_);
-  onlyaccnp->Update(fact2,*onlyaccn,0.0);
-  onlyaccnp->Update(fact1,*onlyvelnp,-fact1,*onlyveln,1.0);
 
-  // copy back into global vector
-  LINALG::Export(*onlyaccnp,*accnp_);
+  // consider both velocity and pressure degrees of freedom in case of
+  // artificial compressibility or
+  // extract and update only velocity degrees of freedom, since in
+  // low-Mach-number flow, 'pressure' components are used to store
+  // temporal derivatives of scalar/temperature values 
+  if (physicaltype_ == INPAR::FLUID::artcomp)
+  {
+    accnp_->Update(fact2,*accn_,0.0);
+    accnp_->Update(fact1,*velnp_,-fact1,*veln_,1.0);
+  }
+  else
+  {
+    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
+    Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
+    Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
+
+    Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::rcp(new Epetra_Vector(onlyaccn->Map()));
+
+    onlyaccnp->Update(fact2,*onlyaccn,0.0);
+    onlyaccnp->Update(fact1,*onlyvelnp,-fact1,*onlyveln,1.0);
+
+    // copy back into global vector
+    LINALG::Export(*onlyaccnp,*accnp_);
+  }
 
 } // FluidImplicitTimeInt::GenAlphaUpdateAcceleration
 
@@ -2449,14 +2460,24 @@ void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::GenAlphaIntermediateValues()
 {
+  // set intermediate values for acceleration and potential temporal
+  // derivatives
+  //
   //       n+alphaM                n+1                      n
   //    acc         = alpha_M * acc     + (1-alpha_M) *  acc
   //       (i)                     (i)
+
+  // consider both velocity and pressure degrees of freedom in case of
+  // artificial compressibility or
+  // extract and update only velocity degrees of freedom, since in
+  // low-Mach-number flow, 'pressure' components are used to store
+  // temporal derivatives of scalar/temperature values 
+  if (physicaltype_ == INPAR::FLUID::artcomp)
   {
-    // extract the degrees of freedom associated with velocities
-    // only these are allowed to be updated, otherwise you will
-    // run into trouble in loma, where the 'pressure' component
-    // is used to store the acceleration of the temperature
+    accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
+  }
+  else
+  {
     Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
     Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
 
@@ -2902,6 +2923,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // set general vector values needed by elements
   discret_->ClearState();
   discret_->SetState("hist" ,hist_ );
+  discret_->SetState("veln", veln_ );
   discret_->SetState("accam",accam_);
   discret_->SetState("scaaf",scaaf_);
   discret_->SetState("scaam",scaam_);
@@ -2916,7 +2938,6 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     {
       //just for poroelasticity
       discret_->SetState("dispn", dispn_);
-      discret_->SetState("veln", veln_);
       discret_->SetState("accnp", accnp_);
       discret_->SetState("accn", accn_);
       discret_->SetState("gridvn", gridvn_);
@@ -3143,6 +3164,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     if (not (    physicaltype_ == INPAR::FLUID::poro
               or physicaltype_ == INPAR::FLUID::poro_p1
               or physicaltype_ == INPAR::FLUID::poro_p2
+              or physicaltype_ == INPAR::FLUID::artcomp
             )
               or
             (    DRT::Problem::Instance()->ProblemType()==prb_fpsi
@@ -4198,6 +4220,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   // set general vector values needed by elements
   discret_->ClearState();
   discret_->SetState("hist" ,hist_ );
+  discret_->SetState("veln" ,veln_ );
   discret_->SetState("accam",accam_);
   // this vector contains only zeros unless SetIterLomaFields is called
   // as this function has not been called yet
@@ -5934,6 +5957,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     // set general vector values needed by elements
     discret_->ClearState();
     discret_->SetState("hist" ,hist_ );
+    discret_->SetState("veln" ,veln_ );
     discret_->SetState("accam",accam_);
     discret_->SetState("scaaf",scaaf_);
     discret_->SetState("scaam",scaam_);

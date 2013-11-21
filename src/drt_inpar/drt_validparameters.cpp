@@ -2687,6 +2687,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Physical Type",
                                tuple<std::string>(
                                  "Incompressible",
+                                 "Artificial_compressibility",
                                  "Varying_density",
                                  "Loma",
                                  "Boussinesq",
@@ -2697,6 +2698,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ),
                                tuple<int>(
                                      INPAR::FLUID::incompressible,
+                                     INPAR::FLUID::artcomp,
                                      INPAR::FLUID::varying_density,
                                      INPAR::FLUID::loma,
                                      INPAR::FLUID::boussinesq,

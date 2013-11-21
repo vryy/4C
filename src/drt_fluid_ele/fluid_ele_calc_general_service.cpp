@@ -1291,7 +1291,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   if (not fldpara_->MatGp() or not fldpara_->TauGp())
   {
 
-    GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+    GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
     // calculate all-scale or fine-scale subgrid viscosity at element center
     visceff_ = visc_;
@@ -1316,8 +1316,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     {
       // make sure to get material parameters at element center
       if (fldpara_->MatGp())
-        //GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam);
-        GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+        //GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam,vol);
+        GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
       // provide necessary velocities and gradients at element center
       velint_.Multiply(evelaf,funct_);
@@ -1468,7 +1468,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     // get material parameters at integration point
     if (fldpara_->MatGp())
     {
-      GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+      GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       visceff_ = visc_;
@@ -1489,7 +1489,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       {
         // make sure to get material parameters at gauss point
         if (not fldpara_->MatGp())
-          GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+          GetMaterialParams(mat,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
         // calculate parameters of multifractal subgrid-scales
         PrepareMultifractalSubgrScales(B_mfs, D_mfs, evelaf, fsevelaf, vol);

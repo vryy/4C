@@ -318,6 +318,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
   // set general vector values needed by elements
   discret.ClearState();
   discret.SetState("hist" ,hist_ );
+  discret.SetState("veln" ,veln_ );
   discret.SetState("accam",accam_);
   discret.SetState("scaaf",scaaf_);
   discret.SetState("scaam",scaam_);
@@ -332,9 +333,6 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     discret.SetState("velaf",velaf_);
   else
     discret.SetState("velaf",velnp_);
-
-  //discret.SetState("veln",veln_);
-
 
   // set general vector values of boundarydis needed by elements
   cutdiscret.ClearState();

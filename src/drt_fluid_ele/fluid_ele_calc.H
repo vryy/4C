@@ -415,6 +415,7 @@ namespace ELEMENTS
                          const LINALG::Matrix<nen_,1>    &             escadtam,
                          const LINALG::Matrix<nen_,1>    &             escabofoaf,
                          const LINALG::Matrix<nsd_,nen_> &             eveln,
+                         const LINALG::Matrix<nen_,1>    &             epren,
                          const LINALG::Matrix<nen_,1>    &             escaam,
                          const LINALG::Matrix<nsd_,nen_> &             edispnp,
                          const LINALG::Matrix<nsd_,nen_> &             egridv,
@@ -476,6 +477,7 @@ namespace ELEMENTS
                         const LINALG::Matrix<nsd_,nen_>&              evel_hat,
                         const LINALG::Matrix<nsd_*nsd_,nen_>&         ereynoldsstress_hat,
                         const LINALG::Matrix<nen_,1>&                 epreaf,
+                        const LINALG::Matrix<nen_,1>&                 epren,
                         const LINALG::Matrix<nen_,1>&                 eprenp,
                         const LINALG::Matrix<nsd_,nen_>&              eaccam,
                         const LINALG::Matrix<nen_,1>&                 escaaf,
@@ -537,7 +539,8 @@ namespace ELEMENTS
                            const double                       thermpressaf,   ///< thermodynamic pressure at time n+alpha_f / n+1
                            const double                       thermpressam,   ///< thermodynamic pressure at time n+alpha_m / n
                            const double                       thermpressdtaf, ///< time derivative of thermodynamic pressure at time n+alpha_f / n+1
-                           const double                       thermpressdtam  ///< time derivative of thermodynamic pressure at time n+alpha_m / n+1
+                           const double                       thermpressdtam,  ///< time derivative of thermodynamic pressure at time n+alpha_m / n+1
+                           const double                       vol              ///< element volume
                            );
 
     //! calculate stabilization parameter
@@ -840,6 +843,14 @@ namespace ELEMENTS
         bool                              isale     ///< flag for ALE case
         );
 
+    //! compute additional Galerkin terms on right-hand side of continuity equation
+    //! (only required for artificial compressibility)
+    void ComputeGalRHSContEqArtComp(
+        const LINALG::Matrix<nen_,1>&  epreaf,  ///< pressure at time n+alpha_F/n+1
+        const LINALG::Matrix<nen_,1>&  epren,   ///< pressure at time n
+        const LINALG::Matrix<nen_,1>&  escadtam ///< acceleration at time n+alpha_M/n
+        );
+
     //! compute residual of scalar equation and subgrid-scale part of scalar
     //! (only required for variable-density flow at low Mach number)
     void ComputeSubgridScaleScalar(
@@ -859,6 +870,12 @@ namespace ELEMENTS
         LINALG::Matrix<nen_,1> &           preforce,       ///< rhs forces pressure
         const double &                     timefacfac,     ///< = timefac x fac
         const double &                     rhsfac       ///< right-hand-side factor for residuals
+        );
+
+    //! Compute element matrix entries: artificial compressibility
+    void ArtCompPressureInertiaGalPartandContStab(
+        LINALG::Matrix<nen_*nsd_,nen_> &   estif_p_v,   ///< block (weighting function v x p)
+        LINALG::Matrix<nen_,nen_> &        ppmat        ///< block (weighting function q x p)
         );
 
     //! ale related methods

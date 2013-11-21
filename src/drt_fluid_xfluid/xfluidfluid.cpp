@@ -478,6 +478,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   // set general vector values needed by elements
   discret.ClearState();
   discret.SetState("hist" ,hist_ );
+  discret.SetState("veln" ,veln_ );
   discret.SetState("accam",accam_);
   discret.SetState("scaaf",scaaf_);
   discret.SetState("scaam",scaam_);
@@ -486,6 +487,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   // set general vector values needed by elements
   alediscret.ClearState();
   alediscret.SetState("hist" ,xfluid_.alehist_ );
+  alediscret.SetState("veln" ,xfluid_.aleveln_ );
   alediscret.SetState("accam",xfluid_.aleaccam_);
   alediscret.SetState("scaaf",xfluid_.alescaaf_);
   alediscret.SetState("scaam",xfluid_.alescaam_);

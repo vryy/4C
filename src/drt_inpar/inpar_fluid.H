@@ -27,6 +27,7 @@ namespace INPAR
     enum PhysicalType
     {
       incompressible,
+      artcomp,
       boussinesq,
       varying_density,
       loma,

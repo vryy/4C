@@ -384,7 +384,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
   // get material parameters at element center
   if (not my::fldpara_->MatGp() or not my::fldpara_->TauGp())
   {
-    my::GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+    my::GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
 
     // calculate all-scale subgrid viscosity at element center
     my::visceff_ = my::visc_;
@@ -436,7 +436,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     // get material parameters at integration point
     if (my::fldpara_->MatGp())
     {
-      my::GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+      my::GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol);
       // calculate all-scale or fine-scale subgrid viscosity at integration point
       my::visceff_ = my::visc_;
       if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or

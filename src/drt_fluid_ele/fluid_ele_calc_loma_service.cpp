@@ -115,6 +115,58 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeGalRHSContEq(
 
 
 template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeGalRHSContEqArtComp(
+    const LINALG::Matrix<nen_,1>&  epreaf,
+    const LINALG::Matrix<nen_,1>&  epren,
+    const LINALG::Matrix<nen_,1>&  escadtam)
+{
+  //----------------------------------------------------------------------
+  // compute additional Galerkin terms on right-hand side of continuity
+  // equation for artificial compressibility
+  //----------------------------------------------------------------------
+  /*
+
+            /                      \
+           |           1      dp   |
+       -   |    q ,   --- *  ----  |
+           |           c²    dt    |
+            \                     /
+            +----------------------+
+            Galerkin part of rhscon_
+  */
+
+  // terms different for general.-alpha and other time-int. schemes
+  if (fldparatimint_->IsGenalpha())
+  {
+    // time derivative of scalar (i.e., pressure in this case) at n+alpha_M
+    tder_sca_ = funct_.Dot(escadtam);
+
+    // add to rhs of continuity equation
+    rhscon_ = -scadtfac_*tder_sca_;
+  }
+  else
+  {
+    // instationary case
+    if (not fldparatimint_->IsStationary())
+    {
+      // scalar value (i.e., pressure in this case) at n+1
+      scaaf_ = funct_.Dot(epreaf);
+
+      // scalar value (i.e., pressure in this case) at n
+      scan_ = funct_.Dot(epren);
+
+      // add to rhs of continuity equation
+      // (prepared for later multiplication by theta*dt in
+      //  evaluation of element matrix and vector contributions)
+      rhscon_ = -scadtfac_*(scaaf_-scan_)/(fldparatimint_->Dt()*fldparatimint_->Theta());
+    }
+  }
+
+  return;
+}
+
+
+template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleScalar(
     const LINALG::Matrix<nen_,1>&             escaaf,
     const LINALG::Matrix<nen_,1>&             escaam)
@@ -672,6 +724,59 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::StabLinGalMomResU(
         for (int ui=0; ui<nen_; ++ui)
         {
           lin_resM_Du(nsd_idim_p_jdim,ui)+=v*viscs2_(nsd_idim_p_jdim, ui);
+        }
+      }
+    }
+  }
+
+  return;
+}
+
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalc<distype>::ArtCompPressureInertiaGalPartandContStab(
+    LINALG::Matrix<nen_*nsd_,nen_> &        estif_p_v,
+    LINALG::Matrix<nen_,nen_> &             ppmat)
+{
+  /* pressure inertia term if not is_stationary */
+  /*
+            /             \
+           |   1           |
+           |  ---  Dp , q  |
+           | beta²         |
+            \             /
+  */
+  double prefac = scadtfac_*fac_;
+  for (int ui=0; ui<nen_; ++ui)
+  {
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      ppmat(vi,ui) += prefac*funct_(ui)*funct_(vi);
+    } // vi
+  }  // ui
+
+  if (fldpara_->CStab())
+  {
+    /* continuity stabilisation on left-hand side for artificial compressibility */
+    /*
+                /                      \
+               |   1                   |
+          tauC |  --- Dp  , nabla o v  |
+               |   c²                  |
+                \                     /
+    */
+
+    prefac *= tau_(2);
+    
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = nsd_*vi;
+
+        for(int jdim=0;jdim<nsd_;++jdim)
+        {
+          estif_p_v(fvi+jdim,ui) += prefac*funct_(ui)*derxy_(jdim,vi) ;
         }
       }
     }
