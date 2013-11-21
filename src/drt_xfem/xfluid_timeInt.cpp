@@ -1611,26 +1611,21 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume( LINALG::Matrix<3,numnode_space_time
 
   LINALG::Matrix<nsd,numnode_space_time> deriv(true);
   LINALG::Matrix<nsd,nsd> xjm(true);
-  LINALG::Matrix<nsd,nsd> xji(true);
 
   DRT::UTILS::shape_function_deriv1<space_time_distype>(xsi,deriv);
 
   xjm.MultiplyNT(deriv,xyze_st);
 
   double det = 0.0;
-
-  try{
-    det = xji.Invert(xjm);
-  }
-  catch (std::runtime_error) {
-     // code that executes when exception-declaration is thrown
-     // in the try block
+  det = xjm.Determinant();
+  if ( abs(det) < 1E-14 )
+  {
+    successful = false;
 #ifdef DEBUG_TIMINT
-     IO::cout << "\t\t\t det for space-time side element (det == 0.0) => distorted flat st-element" << IO::endl;
+    IO::cout << "\t\t\t det for space-time side element (det == 0.0) => distorted flat st-element" << IO::endl;
 #endif
-     successful = false;
-     return successful;
-  };
+    return successful;
+  }
 
 #ifdef DEBUG_TIMINT
   const double wquad = intpoints_stab.IP().qwgt[0];
