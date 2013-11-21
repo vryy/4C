@@ -519,7 +519,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp( new RAPFactory() );
   AcFact->SetFactory("P",PFact);
   AcFact->SetFactory("R",RFact);
-  AcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
+  AcFact->SetParameter("RepairMainDiagonal", Teuchos::ParameterEntry(true));
 
   // transfer maps to coarser grids
   if(xSingleNodeAggMap != Teuchos::null) {

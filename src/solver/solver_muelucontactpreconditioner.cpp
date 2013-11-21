@@ -339,8 +339,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp( new RAPFactory(/*PFact, RFact*/) );
   AcFact->SetFactory("P",PFact);
   AcFact->SetFactory("R",RFact);
+  AcFact->SetParameter("RepairMainDiagonal", Teuchos::ParameterEntry(true));
   //AcFact->setVerbLevel(Teuchos::VERB_HIGH);
-  AcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
 
   // write out aggregates
   /*
