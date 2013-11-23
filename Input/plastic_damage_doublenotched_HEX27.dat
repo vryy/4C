@@ -186,7 +186,8 @@ PERMUTE_SYSTEM                  none
 SIMPLE_DAMPING                  1
 SOLVER                          UMFPACK //  Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 ----------------------------------------------------------MATERIALS
-MAT 1   MAT_Struct_Damage   YOUNG 206.9 NUE 0.29 DENS 0 SAMPLENUM 2 SIGMA_Y 0.45 0.65 EPSBAR_P 0.0 1.0 DAMDEN 0.0035 DAMEXP 1.0 DAMTHRESHOLD 1e10 TOL 1.0e-06  // [mm,kg,ms,GPa]
+  // [mm,kg,ms,GPa]
+MAT 1   MAT_Struct_Damage   YOUNG 206.9 NUE 0.29 DENS 0 SAMPLENUM 2 SIGMA_Y 0.45 0.65 EPSBAR_P 0.0 1.0 DAMDEN 0.0035 DAMEXP 1.0 DAMTHRESHOLD 1e10 KINHARD 0 KINHARD_REC 0 SATHARDENING 0 HARDEXPO 0 TOL 1.0e-06
 //MAT 1 MAT_Struct_PlasticLinElast YOUNG 206.9 NUE 0.29 DENS 0.0 YIELD 0.45 ISOHARD 0.2 KINHARD 0.0 TOL 1.0e-6
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5  t1 0.0 t2 5.0 // Tmax=5
