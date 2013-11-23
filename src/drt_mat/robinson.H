@@ -353,7 +353,7 @@ private:
     //! return density
     virtual double Density() const { return params_->density_; }
 
-    //! check if history variables are already initialized
+    //! check if history variables are already initialised
     bool Initialized() const
     {
       return ( isinit_ and (strainplcurr_!=Teuchos::null) );

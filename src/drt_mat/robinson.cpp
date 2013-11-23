@@ -160,14 +160,14 @@ void MAT::Robinson::Pack(DRT::PackBuffer& data) const
 
   // pack history data
   int numgp;
-  // if material is not initialized, i.e. start simulation, nothing to pack
+  // if material is not initialised, i.e. start simulation, nothing to pack
   if (!Initialized())
   {
     numgp=0;
   }
   else
   {
-    // if material is initialized (restart): size equates number of gausspoints
+    // if material is initialised (restart): size equates number of gausspoints
     numgp = strainpllast_->size();
   }
   AddtoPack(data,numgp); // Length of history vector(s)
@@ -217,7 +217,7 @@ void MAT::Robinson::Unpack(const std::vector<char>& data)
   int numgp;
   ExtractfromPack(position,data,numgp);
 
-  // if system is not yet initialized, the history vectors have to be intialized
+  // if system is not yet initialised, the history vectors have to be intialized
   if (numgp == 0)
     isinit_ = false;
 

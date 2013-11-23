@@ -1010,7 +1010,7 @@ void THR::TimInt::SetInitialField(
         // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
         int err1 = (*temp_)(0)->ReplaceMyValues(1,&initialval,&doflid);
         if (err1 != 0) dserror("dof not on proc");
-        // initialize also the solution vector. These values are a pretty good
+        // initialise also the solution vector. These values are a pretty good
         // guess for the solution after the first time step (much better than
         // starting with a zero vector)
         int err2 = tempn_->ReplaceMyValues(1,&initialval,&doflid);
@@ -1059,7 +1059,7 @@ void THR::TimInt::SetInitialField(
             Teuchos::RCP<Epetra_Vector> vec = (*temp_)(0);
             int err1 = vec->ReplaceMyValues(1,&temp0,&doflid);
             if (err1 != 0) dserror("dof not on proc");
-            // initialize also the solution vector. These values are a pretty good guess for the
+            // initialise also the solution vector. These values are a pretty good guess for the
             // solution after the first time step (much better than starting with a zero vector)
             int err2 = tempn_->ReplaceMyValues(1,&temp0,&doflid);
             if (err2 != 0) dserror("dof not on proc");

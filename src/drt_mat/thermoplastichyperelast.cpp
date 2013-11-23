@@ -124,14 +124,14 @@ void MAT::ThermoPlasticHyperElast::Pack(DRT::PackBuffer& data) const
 
   // pack history data
   int histsize;
-  // if material is not initialized, i.e. start simulation, nothing to pack
+  // if material is not initialised, i.e. start simulation, nothing to pack
   if (!Initialized())
   {
     histsize = 0;
   }
   else
   {
-    // if material is initialized (restart): size equates number of gausspoints
+    // if material is initialised (restart): size equates number of gausspoints
     histsize = defgrdlast_->size();
   }
 
@@ -198,7 +198,7 @@ void MAT::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
   int histsize;
   ExtractfromPack(position,data,histsize);
 
-  // if system is not yet initialized, the history vectors have to be intialized
+  // if system is not yet initialised, the history vectors have to be intialized
   if (histsize == 0)
     isinit_ = false;
 
@@ -221,7 +221,7 @@ void MAT::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
 
   for (int var=0; var<histsize; ++var)
   {
-    // initialize
+    // initialise
     LINALG::Matrix<3,3> tmp_matrix(true);
     LINALG::Matrix<NUM_STRESS_3D,1> tmp_vect(true);
     double tmp_scalar = 0.0;
@@ -256,7 +256,7 @@ void MAT::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
     ExtractfromPack(position, data, tmp_vect);
     thrplheat_kTd_->push_back(tmp_vect);
 
-    // current vectors have to be initialized
+    // current vectors have to be initialised
     defgrdcurr_->push_back(tmp_matrix);
     bebarcurr_->push_back(tmp_matrix);
     accplstraincurr_->push_back(tmp_scalar);
@@ -278,14 +278,14 @@ void MAT::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
 
 
 /*---------------------------------------------------------------------*
- | initialize / allocate internal variables (public)                   |
+ | initialise / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
 void MAT::ThermoPlasticHyperElast::Setup(
   int numgp,
   DRT::INPUT::LineDefinition* linedef
   )
 {
-  // initialize hist variables
+  // initialise hist variables
   defgrdlast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >);
   defgrdcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >);
 
@@ -498,7 +498,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   q_trial = sqrt(q_trial);
 
   // -------------------------- extract scalar-valued element temperature
-  // initialize temperature
+  // initialise temperature
   double scalartemp = 0.0;
   if (params.getEntryPtr("scalartemp") != NULL)
   {
@@ -555,7 +555,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   // mubar = 1/3 mu tr(bebar_{n+1}^{e,trial})
   double mubar = G * 1.0 / 3.0 * tracebebar;
 
-  // initialize incremental plastic multiplier Delta gamma
+  // initialise incremental plastic multiplier Delta gamma
   double Dgamma = 0.0;
 
   // unit spatial flow vector
@@ -606,7 +606,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
 
     // ------------ local Newton Raphson to determine plastic multiplier Dgamma
     
-    // initialize
+    // initialise
     const int itermax = 50;  // max. number of iterations
     int itnum = 0;  // iteration counter
 
@@ -926,7 +926,7 @@ void MAT::ThermoPlasticHyperElast::SetupCmatElastoPlastic(
   //              - 2/3 (I \otimes s_{n+1}^{trial} + s_{n+1}^{trial} \otimes I)
 
   // ---------------------------------------------------------- calculate terms
-  // initialize some variables
+  // initialise some variables
   LINALG::Matrix<3,3> tmp(false);
   // hardening exponent
   double hardexpo = params_->hardexpo_;
@@ -1147,7 +1147,7 @@ void MAT::ThermoPlasticHyperElast::SetupCthermo(
  *----------------------------------------------------------------------*/
 double MAT::ThermoPlasticHyperElast::STModulus()
 {
-  // initialize the parameters for the lame constants
+  // initialise the parameters for the lame constants
   const double ym = params_->youngs_;  // Young's modulus
   const double nu = params_->poissonratio_;  // Poisson's ratio
   const double kappa = ym / (3.0 * (1.0 - 2.0 * nu));  // bulk modulus

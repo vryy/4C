@@ -152,7 +152,7 @@ TSI::Monolithic::Monolithic(
   {
     cmtman_ = StructureField()->ContactManager();
 
-    // initialize thermal contact manager
+    // initialise thermal contact manager
     ThermoField()->PrepareThermoContact(StructureField()->ContactManager(),StructureField()->Discretization());
 
     // get thermal contact manager
@@ -549,7 +549,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 #endif // TSIMONOLITHASOUTPUT
   }
 
-  // else (x == Teuchos::null): initialize the system
+  // else (x == Teuchos::null): initialise the system
 #ifdef TSIMONOLITHASOUTPUT
   std::cout << "Tempnp vor UpdateNewton\n" << *(ThermoField()->Tempnp()) <<  std::endl;
   printf("Tempnp vor UpdateNewton ThermoField()->ExtractTempnp[0] %12.8f\n",(*ThermoField()->ExtractTempnp())[0]);
@@ -2156,7 +2156,7 @@ void TSI::Monolithic::RecoverStructThermLM()
   if (cmtman_ == Teuchos::null)
     return;
 
-  // initialize thermal Lagrange multiplier
+  // initialise thermal Lagrange multiplier
   // FIXGIT: this should be done before
   // for structural LM, this is done in within the structural field
   Teuchos::RCP<Epetra_Map> sthermdofs,athermdofs,mthermdofs;

@@ -132,14 +132,14 @@ void MAT::ThermoPlasticLinElast::Pack(DRT::PackBuffer& data) const
 
   // pack history data
   int histsize;
-  // if material is not initialized, i.e. start simulation, nothing to pack
+  // if material is not initialised, i.e. start simulation, nothing to pack
   if (!Initialized())
   {
     histsize=0;
   }
   else
   {
-    // if material is initialized (restart): size equates number of gausspoints
+    // if material is initialised (restart): size equates number of gausspoints
     histsize = strainpllast_->size();
   }
   AddtoPack(data,histsize); // Length of history vector(s)
@@ -196,7 +196,7 @@ void MAT::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
   int histsize;
   ExtractfromPack(position,data,histsize);
 
-  // if system is not yet initialized, the history vectors have to be intialized
+  // if system is not yet initialised, the history vectors have to be intialized
   if (histsize == 0)
     isinit_ = false;
 
@@ -239,7 +239,7 @@ void MAT::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
     ExtractfromPack(position,data,tmp_vect);
     strainelrate_->push_back(tmp_vect);
 
-    // current vectors have to be initialized
+    // current vectors have to be initialised
     strainplcurr_->push_back(tmp_vect);
     backstresscurr_->push_back(tmp_vect);
     strainbarplcurr_->push_back(tmp_scalar);
@@ -390,7 +390,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   // linear kinematic hardening modulus
   double Hkin = params_->kinhard_;
 
-  // initialize scalars
+  // initialise scalars
   // lame constant
   // shear modulus parameter mu == G
   double G = 0.0;
@@ -1362,11 +1362,11 @@ void MAT::ThermoPlasticLinElast::SetupCthermo(LINALG::Matrix<NUM_STRESS_3D,1>& c
  *----------------------------------------------------------------------*/
 double MAT::ThermoPlasticLinElast::STModulus()
 {
-  // initialize the parameters for the lame constants
+  // initialise the parameters for the lame constants
   const double ym  = params_->youngs_;
   const double pv  = params_->poissonratio_;
 
-  // initialize the thermal expansion coefficient
+  // initialise the thermal expansion coefficient
   const double thermexpans = params_->thermexpans_;
 
   // plane strain, rotational symmetry

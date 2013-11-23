@@ -102,7 +102,7 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
   //! build new external forces
   fextn_->PutScalar(0.0);
 
-  //! initialize tangent matrix to zero
+  //! initialise tangent matrix to zero
   tang_->Zero();
 
   // set initial external force vector of convective heat transfer boundary
@@ -113,7 +113,7 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
 
   ApplyForceExternal(timen_, (*temp_)(0), fextn_);
 
-  //! initialize internal forces
+  //! initialise internal forces
   fintn_->PutScalar(0.0);
 
   //! ordinary internal force and tangent

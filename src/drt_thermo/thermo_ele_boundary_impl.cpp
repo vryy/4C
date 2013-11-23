@@ -109,7 +109,7 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(
   int numdofpernode
   )
 : numdofpernode_(numdofpernode),
-  xyze_(true),  // initialize to zero
+  xyze_(true),
   xsi_(true),
   funct_(true),
   deriv_(true),

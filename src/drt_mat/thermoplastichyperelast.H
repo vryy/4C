@@ -252,7 +252,7 @@ namespace MAT
     LINALG::Matrix<NUM_STRESS_3D,1> CMat_kdT(int gp)
     const { return ( Cmat_kdT_->at(gp) ); }
 
-    //! check if history variables are already initialized
+    //! check if history variables are already initialised
     bool Initialized() const
     {
       return ( isinit_ and (defgrdcurr_ != Teuchos::null) );
@@ -268,7 +268,7 @@ namespace MAT
 
     //! @name Evaluation methods
 
-    //! initialize internal stress variables
+    //! initialise internal stress variables
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     //! update internal stress variables

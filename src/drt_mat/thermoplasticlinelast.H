@@ -267,7 +267,7 @@ private:
       )
     const { return ( strainbarplcurr_->at(gp) ); }
 
-    //! check if history variables are already initialized
+    //! check if history variables are already initialised
     bool Initialized() const
     {
       return ( isinit_ and (strainplcurr_!=Teuchos::null) );

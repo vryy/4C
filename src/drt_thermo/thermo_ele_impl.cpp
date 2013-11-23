@@ -223,7 +223,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     LINALG::Matrix<nen_*numdofpernode_,1> etemp(&(mytempnp[0]),true);  // view only!
     etemp_.Update(etemp);  // copy
   }
-  // initialize capacity matrix
+  // initialise capacity matrix
   ecapa_.Clear();
 
   // check for the action parameter
@@ -2140,7 +2140,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
     }  // m_thermoplhyperelast
 
     // --------------------------------------------- terms for r_T / k_TT
-    // scalar product: ctempcdot = -(m * I) : 1/2 C' = -C_T : 1/2 C'
+    // scalar product: ctempcdot = -C_T : 1/2 C'
     double ctempCdot = 0.0;
     for (int i=0; i<6; ++i)
       ctempCdot += ctemp(i,0) * (1/2.0) * Cratevct(i,0);

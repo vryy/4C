@@ -177,8 +177,8 @@ private:
 
     //! evaluate material
     virtual void Evaluate(
-      const LINALG::Matrix<3,3>* defgrd,
-      const LINALG::Matrix<NUM_STRESS_3D,1>* linstrain,
+      const LINALG::Matrix<3,3>* defgrd,  //!< deformation gradient
+      const LINALG::Matrix<NUM_STRESS_3D,1>* linstrain,  //!< linear total strains
       Teuchos::ParameterList& params,  //!< parameter list for communication
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  //!< 2nd PK-stress
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat  //!< material stiffness matrix
@@ -188,10 +188,10 @@ private:
     void Stress(
       const double p,  //!< volumetric stress tensor
       const LINALG::Matrix<NUM_STRESS_3D,1>& devstress,  //!< deviatoric stress tensor
-      LINALG::Matrix<NUM_STRESS_3D,1>& stress //!< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,1>& stress  //!< 2nd PK-stress
       );
 
-    //! calculate relative/over strees
+    //! calculate relative/over stress
     void RelStress(
       const LINALG::Matrix<NUM_STRESS_3D,1>& devstrain,  //!< deviatoric stress tensor
       const LINALG::Matrix<NUM_STRESS_3D,1>& beta,  //!< back stress tensor
@@ -233,17 +233,17 @@ private:
     //! return density
     virtual double Density() const { return params_->density_; }
 
-    //! Return accumulated strain at Gauss points
+    //! return accumulated strain at Gauss points
     //! use the old vector (last_) for postprocessing
     //! Output is called after(!!) Update, so that newest values are included in
     //! the old history vectors last_, while the current history vectors curr_
     //! are reset
     double AccumulatedStrain(
-      int gp
+      int gp  //!< current Gauss point
       )
-    const { return ( strainbarpllast_->at(gp) ); }
+    const { return strainbarpllast_->at(gp); }
 
-    //! check if history variables are already initialized
+    //! check if history variables are already initialised
     bool Initialized() const
     {
       return ( isinit_ and (strainplcurr_ != Teuchos::null) );
@@ -252,13 +252,17 @@ private:
     //! return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-    /// Return names of visualization data
+    //! return names of visualization data
     virtual void VisNames(std::map<std::string,int>& names);
 
-    /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp);
+    //! return visualization data
+    virtual bool VisData(
+      const std::string& name,
+      std::vector<double>& data,
+      int numgp
+      );
 
-    //! Finite difference check for debugging purposes
+    //! finite difference check for debugging purposes
     void FDCheck(
       LINALG::Matrix<NUM_STRESS_3D,1>& stress,  //!< updated stress sigma_n+1
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmatFD, //!< material tangent calculated with FD of stresses
@@ -291,7 +295,6 @@ private:
     Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > backstresslast_;  //!< \f${\beta}_{n}\f$
     //! current back stress at t_n+1
     Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > backstresscurr_;  //!< \f${\beta}_{n+1}\f$
-
 
     //! indicator if #Initialize routine has been called
     bool isinit_;

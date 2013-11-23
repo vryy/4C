@@ -266,10 +266,10 @@ double MAT::ThermoStVenantKirchhoff::STModulus(
   else
     Emod = params_->youngs_[0];
 
-  // initialize the parameters for the lame constants
+  // initialise the parameters for the lame constants
   const double pv  = params_->poissonratio_;
 
-  // initialize the thermal expansion coefficient
+  // initialise the thermal expansion coefficient
   const double thermexpans = params_->thermexpans_;
 
   // plane strain, rotational symmetry
