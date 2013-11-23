@@ -153,7 +153,7 @@ void MAT::ThermoPlasticHyperElast::Pack(DRT::PackBuffer& data) const
     AddtoPack(data, thrplheat_kTd_->at(var));
   }
 
-  AddtoPack(data,plastic_step_);
+  AddtoPack(data, plastic_step_);
 
   return;
 }  // Pack()
@@ -266,7 +266,7 @@ void MAT::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
   int plastic_step;
   ExtractfromPack(position,data,plastic_step);
 
-  // if it was already plastic before
+  // if it was already plastic before, set true
   if (plastic_step != 0) plastic_step_ = true;
 
   if (position != data.size())

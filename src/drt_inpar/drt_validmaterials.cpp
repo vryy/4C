@@ -637,6 +637,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DAMDEN","denominator of damage evoluation law");
     AddNamedReal(m,"DAMEXP","exponent of damage evoluation law");
     AddNamedReal(m,"DAMTHRESHOLD","damage threshold");
+    AddNamedReal(m,"KINHARD","kinematic hardening modulus, stress-like variable");
+    AddNamedReal(m,"KINHARD_REC","recovery factor, scalar-valued variable");
+    AddNamedReal(m,"SATHARDENING","saturation hardening");
+    AddNamedReal(m,"HARDEXPO","hardening exponent");
     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
 
     AppendMaterialDefinition(matlist,m);
