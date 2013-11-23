@@ -191,13 +191,6 @@ namespace STR
       return Teuchos::null;
     }
 
-    /// recalculate structural matrices for tsi simulations
-    virtual void TSIMatrix()
-    {
-      dserror("TSIMatrix() is not needed for explicit time integrators");
-      return;
-    }
-
     //! Prepare time step for coupled problems with monolithic approach
     virtual void PrepareTimeStep()
     {

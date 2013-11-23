@@ -654,13 +654,6 @@ namespace STR
 
     //@}
 
-    //! @name Thermo-structure-interaction specific methods
-    //@{
-    //! recalculate the structural matrices for tsi simulations
-    void TSIMatrix();
-
-    //@}
-
     //! @name Access methods
     //@{
 

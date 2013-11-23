@@ -183,9 +183,6 @@ namespace ADAPTER {
     virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
         Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) = 0;
 
-    /// recalculate structural matrices for tsi simulations
-    virtual void TSIMatrix() = 0;
-
     /// return contact/meshtying manager
     virtual Teuchos::RCP<MORTAR::ManagerBase> ContactManager() = 0;
 

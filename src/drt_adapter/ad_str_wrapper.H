@@ -111,10 +111,6 @@ namespace ADAPTER
     virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps, Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
     { return structure_->UseBlockMatrix(domainmaps, rangemaps); }
 
-    /// recalculate structural matrices for tsi simulations
-    virtual void TSIMatrix()
-    { return structure_->TSIMatrix(); }
-
     // access to contact/meshtying manager
     virtual Teuchos::RCP<MORTAR::ManagerBase> ContactManager()
     { return structure_->ContactManager(); }

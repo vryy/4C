@@ -884,9 +884,6 @@ namespace STR
     /// does.
     virtual void PreparePartitionStep() = 0;
 
-    /// recalculate structural matrices for tsi simulations
-    virtual void TSIMatrix() = 0;
-
     //@}
 
     //! @name volume coupling specific methods
