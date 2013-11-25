@@ -459,7 +459,7 @@ std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<std::ve
            check whether the point "check" is inside the triangle formed by tri               sudhakar 05/12
                  uses barycentric coordinates as it is faster
 *-------------------------------------------------------------------------------------------------------------*/
-bool GEO::CUT::KERNEL::PtInsideTriangle( std::vector<Point*> tri, Point* check )
+bool GEO::CUT::KERNEL::PtInsideTriangle( std::vector<Point*> tri, Point* check, bool DeleteInlinePts  )
 {
   if( tri.size()!=3 )
     dserror("expecting a triangle");
@@ -485,12 +485,21 @@ bool GEO::CUT::KERNEL::PtInsideTriangle( std::vector<Point*> tri, Point* check )
 
   if( fabs(Det) < 1e-35 )
   {
-    std::cout<<"value of det = "<<Det<<"\n";
-    std::cout << "triangle: " << "t1 " << t1
-              << "t2 " << t2
-              << "t3 " << t3 << std::endl;
-    std::cout << "point " << pt << std::endl;
-    dserror("the triangle is actually on a line. Verify tolerances in cut_tolerance.H\n");
+    if ( DeleteInlinePts )
+    {
+      std::cout<<"value of det = "<<Det<<"\n";
+      std::cout << "triangle: " << "t1 " << t1
+                << "t2 " << t2
+                << "t3 " << t3 << std::endl;
+      std::cout << "point " << pt << endl;
+      dserror("the triangle is actually on a line. Verify tolerances in cut_tolerance.H\n");
+    }
+    else
+    {
+      std::cout<<"value of det = "<<Det<<"\n";
+      std::cout<<"WARNING: the triangle is actually on a line. Verify tolerances in cut_tolerance.H\n";
+      return true;   // without deleting inlinepts, this can happen... it's not bad, but make sure that such a triangle is no ear
+    }
   }
 
   double invDenom = 1.0 / Det;

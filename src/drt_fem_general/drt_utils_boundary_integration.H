@@ -1003,7 +1003,8 @@ inline void BoundaryGPToParentGP3(
     pqxg.Shape(intpoints.M(),3);
 
     if(   (distype==DRT::Element::quad4 && pdistype==DRT::Element::hex8)
-       or (distype==DRT::Element::quad8 && pdistype==DRT::Element::hex20)) //schott 05/11
+       or (distype==DRT::Element::quad8 && pdistype==DRT::Element::hex20)
+       or (distype==DRT::Element::quad9 && pdistype==DRT::Element::hex27)) //schott 05/11
     {
       switch(beleid)
       {

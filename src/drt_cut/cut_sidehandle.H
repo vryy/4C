@@ -42,6 +42,12 @@ public:
    */
   virtual void CollectSides( plain_side_set & sides ) = 0;
 
+
+  /*!
+  \brief Gets all facets of a side
+   */
+  virtual void Facets(std::vector<Facet*> & facets) = 0;
+
   /*!
   \brief Get the Gaussian rule projected on the side. Not used now
    */
@@ -129,6 +135,19 @@ public:
     sides.insert( side_ );
   }
 
+  /// gets all facets of a linear side
+  virtual void Facets(std::vector<Facet*> & facets)
+  {
+
+    std::vector<Facet*> sidefacets = side_->Facets();
+    for ( std::vector<Facet*>::iterator i=sidefacets.begin(); i!=sidefacets.end(); ++i )
+    {
+      Facet * sidefacet = *i;
+      facets.push_back(sidefacet);
+    }
+  }
+
+
 private:
   Side * side_;
 };
@@ -153,6 +172,23 @@ public:
   virtual void CollectSides( plain_side_set & sides )
   {
     std::copy( subsides_.begin(), subsides_.end(), std::inserter( sides, sides.begin() ) );
+  }
+
+  /// gets all facets of a quadratic side
+  virtual void Facets(std::vector<Facet*> & facets)
+  {
+
+    for( std::vector<Side*>::iterator i=subsides_.begin(); i!=subsides_.end(); ++i)
+    {
+      Side * subside = *i;
+      std::vector<Facet*> sidefacets = subside->Facets();
+      for ( std::vector<Facet*>::iterator i=sidefacets.begin(); i!=sidefacets.end(); ++i )
+      {
+        Facet * sidefacet = *i;
+        facets.push_back(sidefacet);
+      }
+    }
+
   }
 
 protected:
@@ -198,7 +234,7 @@ class Quad8SideHandle : public QuadraticSideHandle
 {
 public:
 
-  Quad8SideHandle( Mesh & mesh, int sid, const std::vector<int> & nids );
+  Quad8SideHandle( Mesh & mesh, int sid, const std::vector<int> & nids, bool iscutside = true );
 
   virtual DRT::Element::DiscretizationType Shape()
   {
@@ -213,7 +249,7 @@ class Quad9SideHandle : public QuadraticSideHandle
 {
 public:
 
-  Quad9SideHandle( Mesh & mesh, int sid, const std::vector<int> & nids );
+  Quad9SideHandle( Mesh & mesh, int sid, const std::vector<int> & nids, bool iscutside = true );
 
   virtual DRT::Element::DiscretizationType Shape()
   {

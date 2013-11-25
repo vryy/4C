@@ -510,7 +510,7 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,   //
         if( reflInd==ind0 || reflInd==ind2 )
           continue;
 
-        if( KERNEL::PtInsideTriangle( tri, ptlist_[reflInd]) )
+        if( KERNEL::PtInsideTriangle( tri, ptlist_[reflInd], DeleteInlinePts) )
         {
           if ( ptlist_[reflInd] != ptlist_[ind0] and ptlist_[reflInd] != ptlist_[i] and ptlist_[reflInd] != ptlist_[ind2] )
           {

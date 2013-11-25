@@ -92,6 +92,20 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
     }
     break;
   }
+  case DRT::Element::quad9:
+  {
+
+    if(    surfele->ParentMasterElement()->Shape()==DRT::Element::hex27
+        && surfele->ParentSlaveElement()->Shape()== DRT::Element::hex27)
+    {
+      return FluidInternalSurfaceStab<DRT::Element::quad9,DRT::Element::hex27,DRT::Element::hex27>::Instance();
+    }
+    else
+    {
+      dserror("expected combination quad4/hex8/hex8 for surface/parent/neighbor pair");
+    }
+    break;
+  }
   // 2D:
   case DRT::Element::line2:
   {
@@ -2382,6 +2396,11 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
         FindOppositeSurface2D<8>(slavelocalid, p_surf_neighbor_s);
         FindConnectingLines2D<8>(connectivity_line_surf, masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
         break;
+      case 9: // quad9 surface
+        FindOppositeSurface2D<9>(masterlocalid, p_surf_neighbor_m);
+        FindOppositeSurface2D<9>(slavelocalid, p_surf_neighbor_s);
+        FindConnectingLines2D<9>(connectivity_line_surf, masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
+        break;
       default:
         dserror("unknown number of nodes for surface of parent element"); break;
       };
@@ -2407,7 +2426,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
         distance2D<4>(true, p_lines_nodes_m, h_e);
         break;
       case 8: // quad8 surface
-        distance2D<4>(true, p_lines_nodes_m, h_e);
+        distance2D<8>(true, p_lines_nodes_m, h_e);
+        break;
+      case 9: // quad9 surface
+        distance2D<9>(true, p_lines_nodes_m, h_e);
         break;
       default:
         dserror("unknown number of nodes for surface of parent element"); break;
@@ -2427,7 +2449,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
         distance2D<4>(false, p_lines_nodes_s, h_e);
         break;
       case 8: // quad8 surface (coming from hex20 element)
-        distance2D<4>(false, p_lines_nodes_s, h_e);
+        distance2D<8>(false, p_lines_nodes_s, h_e);
+        break;
+      case 9: // quad9 surface (coming from hex27 element)
+        distance2D<9>(false, p_lines_nodes_s, h_e);
         break;
       default:
         dserror("unknown number of nodes for surface of parent element"); break;
@@ -2454,6 +2479,9 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
           break;
         case 8: // quad8 surface
           diameter2D<8>(true, m_connectivity[p_surf], h_e);
+          break;
+        case 9: // quad9 surface
+          diameter2D<9>(true, m_connectivity[p_surf], h_e);
           break;
         default:
           dserror("unknown number of nodes for surface of parent element"); break;
@@ -2482,6 +2510,9 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
           break;
         case 8: // quad8 surface
           diameter2D<8>(false, s_connectivity[p_surf], h_e);
+          break;
+        case 9: // quad9 surface
+          diameter2D<9>(false, s_connectivity[p_surf], h_e);
           break;
         default:
           dserror("unknown number of nodes for surface of parent element"); break;

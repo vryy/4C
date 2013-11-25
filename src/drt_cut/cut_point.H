@@ -224,7 +224,7 @@ private:
   std::map<Edge*, double> t_;
 
   plain_edge_set cut_edges_;
-  plain_side_set cut_sides_;
+  plain_side_set cut_sides_;   // a set with all sides
   plain_element_set cut_elements_;
 
   plain_line_set lines_;

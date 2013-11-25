@@ -146,10 +146,26 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(D
     {
       return DefineProblemTypeXFEM<DRT::Element::hex20>(problem);
     }
-    //case DRT::Element::hex27:
-    //{
-    //  return DefineProblemTypeXFEM<DRT::Element::hex27>(problem);
-    //}
+    case DRT::Element::hex27:
+    {
+      return DefineProblemTypeXFEM<DRT::Element::hex27>(problem);
+    }
+    case DRT::Element::tet4:
+    {
+      return DefineProblemTypeXFEM<DRT::Element::tet4>(problem);
+    }
+    case DRT::Element::tet10:
+    {
+      return DefineProblemTypeXFEM<DRT::Element::tet10>(problem);
+    }
+//    case DRT::Element::wedge6:
+//    {
+//      return DefineProblemTypeXFEM<DRT::Element::wedge6>(problem);
+//    }
+//    case DRT::Element::pyramid5:
+//    {
+//      return DefineProblemTypeXFEM<DRT::Element::pyramid5>(problem);
+//    }
     default:
       dserror("Element shape %s not activated for XFEM problems. Just do it.",DRT::DistypeToString(distype).c_str());
       break;

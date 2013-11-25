@@ -1256,6 +1256,14 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
   sub8->setQuadCorners( mesh, nodes );
   sub8->setQuadShape( DRT::Element::hex20 );
   subelements_.push_back( sub8 );
+
+  // each subelement should know its parents id
+  for(std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * subelement = *i;
+    subelement->ParentId(eid);
+  }
+
 }
 
 GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const std::vector<int> & nodes )
@@ -1387,6 +1395,14 @@ GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const st
   sub8->setQuadCorners( mesh, nodes );
   sub8->setQuadShape( DRT::Element::hex27 );
   subelements_.push_back( sub8 );
+
+  // each subelement should know its parents id
+  for(std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * subelement = *i;
+    subelement->ParentId(eid);
+  }
+
 }
 
 GEO::CUT::Tet10ElementHandle::Tet10ElementHandle( Mesh & mesh, int eid, const std::vector<int> & nids )

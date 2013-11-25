@@ -802,7 +802,7 @@ GEO::CUT::Node * GEO::CUT::MeshIntersection::GetNode( int nid ) const
 /*--------------------------------------------------------------------------------------*
  * get the mesh's side based on node ids and return the side
  *-------------------------------------------------------------------------------------*/
-GEO::CUT::Side * GEO::CUT::MeshIntersection::GetSide( std::vector<int>& nodeids ) const
+GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::GetSide( std::vector<int>& nodeids ) const
 {
   return mesh_.GetSide( nodeids );
 }

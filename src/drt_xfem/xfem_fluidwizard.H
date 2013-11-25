@@ -88,7 +88,7 @@ public:
   GEO::CUT::ElementHandle* GetElement( DRT::Element * ele );
 
   //! get the sidehandle created within the cut
-  GEO::CUT::Side* GetSide( std::vector<int>& nodeids );
+  GEO::CUT::SideHandle* GetSide( std::vector<int> & nodeids );
 
   //! get the sidehandle created within the cut
   GEO::CUT::SideHandle* GetSideHandle( int sid );

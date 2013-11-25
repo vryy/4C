@@ -20,6 +20,7 @@ Maintainer: Benedikt Schott
 #include "../drt_lib/drt_discret_faces.H"
 
 #include "../drt_cut/cut_elementhandle.H"
+#include "../drt_cut/cut_sidehandle.H"
 #include "../drt_cut/cut_volumecell.H"
 
 #include "../drt_fluid_ele/fluid_ele.H"
@@ -64,7 +65,6 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
     bool                                   gmsh_eos_out      ///< stabilization gmsh output
 )
 {
-
 
   //====================================================================================================
   // implementation of edge-based fluid stabilization and ghost penalty
@@ -160,37 +160,41 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   // second case: element handles for both parent elements
   // two elements that are maybe cut
   //------------------------------------------------------------------------------
-  else if( p_master_handle != NULL and p_slave_handle != NULL)
+  else if (p_master_handle != NULL and p_slave_handle != NULL)
   {
     // linear elements
-    if(    p_master->Shape() == DRT::Element::hex8
+    if (p_master->Shape() == DRT::Element::hex8
         or p_master->Shape() == DRT::Element::tet4
         or p_master->Shape() == DRT::Element::wedge6
-        or p_master->Shape() == DRT::Element::pyramid5 )
+        or p_master->Shape() == DRT::Element::pyramid5)
     {
 
-      GEO::CUT::Side* side = GetCutSide(faceele);
+      GEO::CUT::SideHandle* side = GetCutSide(faceele);
 
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
-      const std::vector<GEO::CUT::Facet*> facets = side->Facets();
+      std::vector<GEO::CUT::Facet*> facets;
+      side->Facets(facets);
 
-      if(facets.size() == 0) dserror("there is no facet between two elements with elementhandle!");
+      if (facets.size() == 0)
+        dserror("there is no facet between two elements with elementhandle!");
 
       // each facet should have 2 volumecells
-      for(std::vector<GEO::CUT::Facet*>::const_iterator f=facets.begin(); f!=facets.end(); f++)
+      for (std::vector<GEO::CUT::Facet*>::const_iterator f = facets.begin();
+          f != facets.end(); f++)
       {
-        if((*f)->Position() == GEO::CUT::Point::outside /*or (*f)->Position() == GEO::CUT::Point::oncutsurface*/)
+        if ((*f)->Position()
+            == GEO::CUT::Point::outside /*or (*f)->Position() == GEO::CUT::Point::oncutsurface*/)
         {
 
           GEO::CUT::plain_volumecell_set vcs = (*f)->Cells();
 
           // how many volumecells found?
-          if(vcs.size() == 2) // standard XFEM case (facet between two vcs of two neighbouring cut elements
+          if (vcs.size() == 2) // standard XFEM case (facet between two vcs of two neighbouring cut elements
           {
             //------------------------ create nodal dof sets
             {
-              TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds" );
+              TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds");
 
               GEO::CUT::VolumeCell* vc1 = vcs[0];
               GEO::CUT::VolumeCell* vc2 = vcs[1];
@@ -202,21 +206,23 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
               int vc_ele2_id = vc2->ParentElement()->Id();
 
               // which element is the parent element
-              if(vc_ele1_id == p_master_id)
+              if (vc_ele1_id == p_master_id)
               {
                 nds_master = vc1->NodalDofSet();
-                nds_slave  = vc2->NodalDofSet();
+                nds_slave = vc2->NodalDofSet();
               }
-              else if(vc_ele2_id == p_master_id)
+              else if (vc_ele2_id == p_master_id)
               { // switch ele 1 <-> ele 2
                 nds_master = vc2->NodalDofSet();
-                nds_slave  = vc1->NodalDofSet();
+                nds_slave = vc1->NodalDofSet();
               }
-              else dserror("no element (ele1 and ele2) is the parent element!!! WHY?");
+              else
+                dserror(
+                    "no element (ele1 and ele2) is the parent element!!! WHY?");
 #else
-              for(size_t i=0; i< p_master_numnode; i++)  nds_master.push_back(0);
+              for(size_t i=0; i< p_master_numnode; i++) nds_master.push_back(0);
 
-              for(size_t i=0; i< p_slave_numnode; i++)   nds_slave.push_back(0);
+              for(size_t i=0; i< p_slave_numnode; i++) nds_slave.push_back(0);
 #endif
 
             }
@@ -225,40 +231,35 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             num_edgestab++;
 
             // at least one element has to be cut
-            if(p_master_handle->IsCut() or p_slave_handle->IsCut())
+            if (p_master_handle->IsCut() or p_slave_handle->IsCut())
             {
               num_ghostpenalty++;
 
               face_type = INPAR::XFEM::face_type_ghost_penalty;
             }
-            else face_type = INPAR::XFEM::face_type_std;
-
+            else
+              face_type = INPAR::XFEM::face_type_std;
 
             //--------------------------------------------------------------------------------------------
 
             // call evaluate and assemble routine
-            AssembleEdgeStabGhostPenalty( eleparams,
-                                          face_type,
-                                          faceele,
-                                          nds_master,
-                                          nds_slave,
-                                          *xdiscret,
-                                          systemmatrix,
-                                          systemvector);
+            AssembleEdgeStabGhostPenalty(eleparams, face_type, faceele,
+                nds_master, nds_slave, *xdiscret, systemmatrix, systemvector);
 
             //--------------------------------------------------------------------------------------------
 
           }
-          else if(vcs.size() == 1)
+          else if (vcs.size() == 1)
           {
             dserror("just one vcs reasonable?! face %d", faceele->Id());
           }
         } // facet outside
-        else if((*f)->Position() == GEO::CUT::Point::undecided)
+        else if ((*f)->Position() == GEO::CUT::Point::undecided)
         {
-          dserror("the position of this facet is undecided, how to stabilize???");
+          dserror(
+              "the position of this facet is undecided, how to stabilize???");
         }
-        else if((*f)->Position() == GEO::CUT::Point::oncutsurface)
+        else if ((*f)->Position() == GEO::CUT::Point::oncutsurface)
         {
 #ifdef DEBUG
           std::cout << "the position of this facet of face " << faceele->Id() << " is oncutsurface, we do not stabilize it!!! " << std::endl;
@@ -274,9 +275,140 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         }
 
       } // loop facets
-    } // hex 8 elements
-    else dserror("not supported for not hex8 elements");
+    } // if linear elements
+    else if (p_master->Shape() == DRT::Element::hex20
+        or p_master->Shape() == DRT::Element::hex27
+        or p_master->Shape() == DRT::Element::tet10)
+    {
+      GEO::CUT::SideHandle* side = GetCutSide(faceele);   // the side of the quadratic element
+      //-------------------------------- loop facets of this side -----------------------------
+      // facet of current side
+      std::vector<GEO::CUT::Facet*> facets;
 
+      side->Facets(facets);   // all facets of this quadratic element side
+      if (facets.size() == 0)
+        dserror("there is no facet between two elements with elementhandle!");
+      // each facet should have 2 volumecells
+      std::vector<std::vector<int> > all_used_nds_master;
+      std::vector<std::vector<int> > all_used_nds_slave;
+      for (std::vector<GEO::CUT::Facet*>::const_iterator f = facets.begin();
+          f != facets.end(); f++)
+      {
+        if ((*f)->Position()
+            == GEO::CUT::Point::outside /*or (*f)->Position() == GEO::CUT::Point::oncutsurface*/)
+        {
+          GEO::CUT::plain_volumecell_set vcs = (*f)->Cells();
+          // how many volumecells found?
+          if (vcs.size() == 2) // standard XFEM case (facet between two vcs of two neighbouring cut elements
+          {
+            //------------------------ create nodal dof sets
+            {
+              TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds");
+              GEO::CUT::VolumeCell* vc1 = vcs[0];
+              GEO::CUT::VolumeCell* vc2 = vcs[1];
+#ifdef DOFSETS_NEW
+              // get the parent element
+              int vc_ele1_id = vc1->ParentElement()->GetParentId();
+              int vc_ele2_id = vc2->ParentElement()->GetParentId();
+
+              // which element is the parent element
+              if (vc_ele1_id == p_master_id)
+              {
+                nds_master = vc1->NodalDofSet();
+                nds_slave = vc2->NodalDofSet();
+              }
+              else if (vc_ele2_id == p_master_id)
+              { // switch ele 1 <-> ele 2
+                nds_master = vc2->NodalDofSet();
+                nds_slave = vc1->NodalDofSet();
+              }
+              else
+              {
+                dserror(
+                    "no element (ele1 and ele2) is the parent element!!! WHY?");
+              }
+
+#else
+              for(size_t i=0; i< p_master_numnode; i++) nds_master.push_back(0);
+
+              for(size_t i=0; i< p_slave_numnode; i++) nds_slave.push_back(0);
+#endif
+            }
+            bool new_nds_master = true;
+            bool new_nds_slave = true;
+            for(std::vector<std::vector<int> >::iterator i=all_used_nds_master.begin(); i!=all_used_nds_master.end(); ++i)
+            {
+              std::vector<int> used_nds_master = *i;
+              if( used_nds_master==nds_master)
+              {
+                new_nds_master = false;
+              }
+            }
+            for(std::vector<std::vector<int> >::iterator i=all_used_nds_slave.begin(); i!=all_used_nds_slave.end(); ++i)
+            {
+              std::vector<int> used_nds_slave = *i;
+              if( used_nds_slave==nds_slave)
+              {
+                new_nds_slave = false;
+              }
+            }
+            if (new_nds_master==false and new_nds_slave==false)
+            {
+              continue;
+            }
+            if(new_nds_master==true)
+            {
+              all_used_nds_master.push_back(nds_master);
+            }
+            if(new_nds_slave==true)
+            {
+              all_used_nds_slave.push_back(nds_slave);
+            }
+            //------------------------
+            num_edgestab++;
+            // at least one element has to be cut
+            if (p_master_handle->IsCut() or p_slave_handle->IsCut())
+            {
+              num_ghostpenalty++;
+
+              face_type = INPAR::XFEM::face_type_ghost_penalty;
+            }
+            else
+              face_type = INPAR::XFEM::face_type_std;
+            //--------------------------------------------------------------------------------------------
+            // call evaluate and assemble routine
+            AssembleEdgeStabGhostPenalty(eleparams, face_type, faceele,
+                nds_master, nds_slave, *xdiscret, systemmatrix, systemvector);
+            //--------------------------------------------------------------------------------------------
+          }
+          else if (vcs.size() == 1)
+          {
+            dserror("just one vcs reasonable?! face %d", faceele->Id());
+          }
+        } // facet outside
+        else if ((*f)->Position() == GEO::CUT::Point::undecided)
+        {
+          dserror(
+              "the position of this facet is undecided, how to stabilize???");
+        }
+        else if ((*f)->Position() == GEO::CUT::Point::oncutsurface)
+        {
+#ifdef DEBUG
+          cout << "the position of this facet of face " << faceele->Id() << " is oncutsurface, we do not stabilize it!!! " << endl;
+#endif
+          // if a facet lies oncutsurface, then there is only one neighbor, we do not stabilize this facet
+          // REMARK: in case of one part of the facet is physical and the other part lies on cutsurface,
+          //         then the physical part is stabilized via another facet lying on the same fluid element's side
+        }
+        else
+        {
+          // facet is inside!
+          face_type = INPAR::XFEM::face_type_ghost;
+        }
+      } // loop facets
+    }
+    else
+      dserror("not supported for this elements");
   } // end second case: element handles for both parent elements
   //------------------------------------------------------------------------------
   // third case: element handle only for master element or for slave element available
@@ -289,19 +421,28 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
     if(    p_master->Shape() == DRT::Element::hex8
         or p_master->Shape() == DRT::Element::tet4
         or p_master->Shape() == DRT::Element::wedge6
-        or p_master->Shape() == DRT::Element::pyramid5 )
+        or p_master->Shape() == DRT::Element::pyramid5
+        or p_master->Shape() == DRT::Element::hex20
+        or p_master->Shape() == DRT::Element::hex27
+        or p_master->Shape() == DRT::Element::tet10)
     {
 
-      GEO::CUT::Side* side = GetCutSide(faceele);
+      GEO::CUT::SideHandle * side = GetCutSide(faceele);
 
       // facet of current side
-      const std::vector<GEO::CUT::Facet*> facets = side->Facets();
+      std::vector<GEO::CUT::Facet*> facets;
+      side->Facets(facets);
 
-      if(facets.size() != 1) dserror("there has to be 1 facet equal to the side");
+      if(    p_master->Shape() == DRT::Element::hex8
+          or p_master->Shape() == DRT::Element::tet4
+          or p_master->Shape() == DRT::Element::wedge6
+          or p_master->Shape() == DRT::Element::pyramid5)
+      {
+        if(facets.size() != 1) dserror("there has to be 1 facet equal to the side");
+      }
 
       // get the unique single facet
       GEO::CUT::Facet* f = facets[0];
-
       if(f->Position() == GEO::CUT::Point::outside /*or (*f)->Position() == GEO::CUT::Point::oncutsurface*/)
       {
 
@@ -318,16 +459,20 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
 
               // get the parent element
               int vc_ele_id = vc->ParentElement()->Id();
+              if(vc_ele_id==-1)
+              {
+                vc_ele_id = vc->ParentElement()->GetParentId();
+              }
 
 #ifdef DOFSETS_NEW
               // which element is the parent element
-              if(vc_ele_id == p_master_id)
+              if(p_master_handle != NULL)
               {
                 nds_master = vc->NodalDofSet();
 
                 for(size_t i=0; i< p_slave_numnode; i++)  nds_slave.push_back(0);
               }
-              else if(vc_ele_id == p_slave_id)
+              else if(p_slave_handle != NULL)
               {
                 for(size_t i=0; i< p_master_numnode; i++)  nds_master.push_back(0);
 
@@ -383,8 +528,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
           }
 
       } // if outside
-    } // if linear elements
-
+    }
   } // end last case
 
 
@@ -443,7 +587,7 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
  | get the cut side for face's element identified using the sorted      |
  | node ids                                                schott 04/12 |
  *----------------------------------------------------------------------*/
-GEO::CUT::Side* XFEM::XFEM_EdgeStab::GetCutSide(DRT::Element* faceele)
+GEO::CUT::SideHandle* XFEM::XFEM_EdgeStab::GetCutSide(DRT::Element* faceele)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: FindSide" );
@@ -456,8 +600,8 @@ GEO::CUT::Side* XFEM::XFEM_EdgeStab::GetCutSide(DRT::Element* faceele)
   {
     nodeids[inode] = faceele->NodeIds()[inode];
   }
-
   return wizard_->GetSide(nodeids);
+
 }
 
 

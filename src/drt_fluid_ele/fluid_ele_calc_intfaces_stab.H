@@ -352,7 +352,7 @@ namespace DRT
         }
 
 
-        if(numnode == 4 or numnode == 8) // quad4 surface and take the corner points also for quad8 surfaces
+        if(numnode == 4 or numnode == 8 or numnode == 9) // quad4 surface and take the corner points also for quad8 surfaces
         {
           double diam1 = 0.0;
           double diam2 = 0.0;
@@ -532,7 +532,7 @@ namespace DRT
     		  }
 
        	  }
-          if (numnode == 4 or numnode == 8)
+          if (numnode == 4 or numnode == 8 or numnode == 9)
           {
         	  double line0 = 0.0;
         	  double line1 = 0.0;
@@ -748,7 +748,7 @@ namespace DRT
     		                     int                             p_surf_neighbor_m,
     		                     int                             p_surf_neighbor_s)
       {
-    	  if ((numnode == 4) or (numnode == 8))
+    	  if (numnode == 4 or numnode == 8 or numnode == 9)
           {
     		    for (size_t i_line=0; i_line< connectivity_line_surf.size(); i_line++)
     		    {

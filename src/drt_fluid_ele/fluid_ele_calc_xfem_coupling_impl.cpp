@@ -4103,18 +4103,37 @@ template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8, DRT::Element:
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8, DRT::Element::quad8,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad4,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4, DRT::Element::quad4,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4, DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad4,3>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad8,3>;
+
 
 // pairs with numdof=4
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8, DRT::Element::quad4,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex8, DRT::Element::quad8,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad4,4>;
 template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex20, DRT::Element::quad8,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad4,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::hex27, DRT::Element::quad8,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4, DRT::Element::quad4,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet4, DRT::Element::quad8,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad4,4>;
+template class DRT::ELEMENTS::XFLUID::SideImpl<DRT::Element::tet10, DRT::Element::quad8,4>;
 
 
 template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex8, DRT::Element::hex8>;
 template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex8, DRT::Element::hex20>;
 template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex20, DRT::Element::hex8>;
 template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex20, DRT::Element::hex20>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex27, DRT::Element::hex8>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::hex27, DRT::Element::hex20>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet4, DRT::Element::hex8>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet4, DRT::Element::hex20>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet10, DRT::Element::hex8>;
+template class DRT::ELEMENTS::XFLUID::EmbImpl<DRT::Element::tet10, DRT::Element::hex20>;
 
 
 

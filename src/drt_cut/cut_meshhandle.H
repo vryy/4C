@@ -59,6 +59,12 @@ public:
   /// create a new element (elementhandle) of the background discretization and return the elementhandle, quadratic elements will create linear shadow elements
   ElementHandle * CreateElement( int eid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype );
 
+  /// create a new data structure for face oriented stabilization; the sides of the linear element are included into a sidehandle
+  void CreateElementSides(Element & element);
+
+  /// create a new data structure for face oriented stabilization; the sides of the quadratic element are included into a sidehandle
+  void CreateElementSides(const std::vector<int> & nids, DRT::Element::DiscretizationType distype);
+
   /*========================================================================*/
   //! @name Get-routines for nodes, cutter sides, elements and element sides
   /*========================================================================*/
@@ -73,7 +79,7 @@ public:
   ElementHandle * GetElement( int eid ) const;
 
   /// get the element' side of the mesh's element based on node ids
-  Side * GetSide( std::vector<int>& nodeids ) const;
+  SideHandle * GetSide( std::vector<int>& nodeids ) const;
 
   /*========================================================================*/
   //! @name Get method for private variables
@@ -93,6 +99,8 @@ private:
   std::map<int, Teuchos::RCP<QuadraticElementHandle> > quadraticelements_;   ///< map of element id and quadratic element handles
   std::map<int, LinearSideHandle> linearsides_;                              ///< map of cut side id and linear side handles
   std::map<int, Teuchos::RCP<QuadraticSideHandle> > quadraticsides_;         ///< map of cut side id and quadratic side handles
+  std::map<plain_int_set, LinearSideHandle > elementlinearsides_; ///< map of element side node ids and linear side handles
+  std::map<plain_int_set, Teuchos::RCP<QuadraticSideHandle> > elementquadraticsides_; ///< map of element side node ids and quadratic side handles
 };
 
 }

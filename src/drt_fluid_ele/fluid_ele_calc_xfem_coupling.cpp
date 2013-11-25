@@ -388,9 +388,9 @@ Teuchos::RCP<EmbCoupling<distype> > EmbCoupling<distype>::TwoSidedImpl(
 // create coupling objects just for 3D elements
 template class DRT::ELEMENTS::XFLUID::SideInterface<DRT::Element::hex8>;
 template class DRT::ELEMENTS::XFLUID::SideInterface<DRT::Element::hex20>;
-//template class DRT::ELEMENTS::XFLUID::SideInterface<DRT::Element::hex27>;
-//template class DRT::ELEMENTS::XFLUID::SideInterface<DRT::Element::tet4>;
-//template class DRT::ELEMENTS::XFLUID::SideInterface<DRT::Element::tet10>;
+template class DRT::ELEMENTS::XFLUID::SideInterface<DRT::Element::hex27>;
+template class DRT::ELEMENTS::XFLUID::SideInterface<DRT::Element::tet4>;
+template class DRT::ELEMENTS::XFLUID::SideInterface<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::XFLUID::SideInterface<DRT::Element::wedge6>;
 //template class DRT::ELEMENTS::XFLUID::SideInterface<DRT::Element::pyramid5>;
 
@@ -398,9 +398,9 @@ template class DRT::ELEMENTS::XFLUID::SideInterface<DRT::Element::hex20>;
 // create coupling objects just for 3D elements
 template class DRT::ELEMENTS::XFLUID::EmbCoupling<DRT::Element::hex8>;
 template class DRT::ELEMENTS::XFLUID::EmbCoupling<DRT::Element::hex20>;
-//template class DRT::ELEMENTS::XFLUID::EmbCoupling<DRT::Element::hex27>;
-//template class DRT::ELEMENTS::XFLUID::EmbCoupling<DRT::Element::tet4>;
-//template class DRT::ELEMENTS::XFLUID::EmbCoupling<DRT::Element::tet10>;
+template class DRT::ELEMENTS::XFLUID::EmbCoupling<DRT::Element::hex27>;
+template class DRT::ELEMENTS::XFLUID::EmbCoupling<DRT::Element::tet4>;
+template class DRT::ELEMENTS::XFLUID::EmbCoupling<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::XFLUID::EmbCoupling<DRT::Element::wedge6>;
 //template class DRT::ELEMENTS::XFLUID::EmbCoupling<DRT::Element::pyramid5>;
 

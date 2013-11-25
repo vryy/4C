@@ -113,7 +113,7 @@ public:
   private:
 
   //! get the cut side for face's element identified using the sorted node ids
-  GEO::CUT::Side* GetCutSide(DRT::Element* faceele);
+  GEO::CUT::SideHandle* GetCutSide(DRT::Element* faceele);
 
 
   Teuchos::RCP<XFEM::FluidWizard> wizard_;    ///< fluid wizard

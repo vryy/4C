@@ -206,7 +206,7 @@ public:
   Node * GetNode( int nid ) const;
 
   /// get the mesh's side based on node ids and return the side
-  Side * GetSide( std::vector<int>& nodeids ) const;
+  SideHandle * GetSide( std::vector<int>& nodeids ) const;
 
   /// get the mesh's side based on side id
   SideHandle * GetSide( int sid ) const;
@@ -225,7 +225,6 @@ public:
 
   /// get the cut mesh based on mesh id
   Mesh & CutMesh( int i=0 ) { return cut_mesh_[i]->LinearMesh(); }
-
 
   /*========================================================================*/
   //! @name GMSH output

@@ -206,7 +206,7 @@ GEO::CUT::ElementHandle * XFEM::FluidWizard::GetElement(
 /*-------------------------------------------------------------*
 * get the sidehandle created within the cut                 *
 *--------------------------------------------------------------*/
-GEO::CUT::Side * XFEM::FluidWizard::GetSide( std::vector<int>& nodeids)
+GEO::CUT::SideHandle * XFEM::FluidWizard::GetSide( std::vector<int> & nodeids)
 {
   return cut_->GetSide( nodeids );
 }

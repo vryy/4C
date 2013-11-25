@@ -66,7 +66,7 @@ namespace GEO
     /*!
     \brief Get this side (not from cut meshes) from the cut libraries
      */
-    GEO::CUT::Side * GetSide( std::vector<int>& nodeids );
+    GEO::CUT::SideHandle * GetSide( std::vector<int>& nodeids );
 
     /*!
     \brief Get this side (not from cut meshes) from the cut libraries

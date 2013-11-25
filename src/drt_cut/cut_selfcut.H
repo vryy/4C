@@ -53,7 +53,7 @@ public:
   bool MergeCoincidingNodes( Side* side1, Side*  side2 );
 
   /// opearations to modify the nodal ids of sides and corresponding edges are performed
-  void operationsForNodeMerging( std::vector<std::pair<const Node*,const Node*> > repl, Side* side, bool initial );
+  void operationsForNodeMerging( std::vector<std::pair<const Node*,const Node*> > repl, bool initial );
 
   /// templated function to delete "nod" by "replwith" in both edge and side data-structures
   template <typename A, typename B>
@@ -122,8 +122,15 @@ public:
   /// Status of the cutted sides for gmsh
   void CuttedSideStatusGmsh(const std::string & name);
 
-  /// Status of the cutmesh in gmsh for my CMGM
+  /// Status of the cutmesh in gmsh
+  void WallGmsh(const std::string & name);
+
+  /// Status of the cutmesh in gmsh for my CMGM (old)
   void SCmgmGmsh(const std::string & name);
+
+
+  /// Status of all sides in separates files for gmsh
+  void AllSingleGmsh( const std::string & location );
 
   /// Status of one problematic side for gmsh
   void ErrorGmsh(const std::string & name, Side & cutside);
@@ -175,6 +182,7 @@ public:
   void SideNodePlot(Side & side);
 
   void Debug(const std::string & viewname);
+
 
 private:
 

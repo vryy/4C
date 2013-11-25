@@ -177,7 +177,7 @@ namespace GEO
       /*!
       \brief Check whether the point "check" is inside the triangle formed by tri
       */
-      bool PtInsideTriangle( std::vector<Point*> tri, Point* check );
+      bool PtInsideTriangle( std::vector<Point*> tri, Point* check, bool DeleteInlinePts = false );
 
       /*!
       \brief Check whether the point "check" is inside the Quad

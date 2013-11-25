@@ -49,6 +49,7 @@ public:
       n->Register( this );
       points_.push_back( n->point() );
     }
+    parent_id_ = 0;
 
     // shadow elements are initialized separately
     isShadow_ = false;
@@ -312,6 +313,22 @@ public:
   void integrateSpecificFunctionsTessellation();
 
   /*!
+  \brief Assign the subelement his parent id
+   */
+  void ParentId( int id )
+  {
+    parent_id_ = id;
+  }
+
+  /*!
+  \brief Gets the parent id of the subelement
+   */
+  int GetParentId()
+  {
+    return parent_id_;
+  }
+
+  /*!
    \brief set this element as shadow element
    */
   void setAsShadowElem(){ isShadow_ = true; }
@@ -376,6 +393,9 @@ private:
   plain_facet_set facets_;
 
   plain_volumecell_set cells_;
+
+  /// if it is a subelement, this is the element of the parent element
+  int parent_id_;
 
   /// For originally linear elements, this just stores the corner points. However, if this linear element is derived from
   // a Quadratic element, then this contains the corner points of quad element.
