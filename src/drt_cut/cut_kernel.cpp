@@ -491,7 +491,7 @@ bool GEO::CUT::KERNEL::PtInsideTriangle( std::vector<Point*> tri, Point* check, 
       std::cout << "triangle: " << "t1 " << t1
                 << "t2 " << t2
                 << "t3 " << t3 << std::endl;
-      std::cout << "point " << pt << endl;
+      std::cout << "point " << pt << std::endl;
       dserror("the triangle is actually on a line. Verify tolerances in cut_tolerance.H\n");
     }
     else
