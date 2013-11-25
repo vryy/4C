@@ -6,8 +6,8 @@
 <pre>
 Maintainer: Marc Hirschvogel
             hirschvogel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
+            http://www.mhpc.mw.tum.de
+            089 - 289-10363
 </pre>
 
 *----------------------------------------------------------------------*/

@@ -6,8 +6,8 @@
 <pre>
 Maintainer: Marc Hirschvogel
             hirschvogel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
+            http://www.mhpc.mw.tum.de
+            089 - 289-10363
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -71,7 +71,6 @@ myrank_(actdisc_->Comm().MyPID())
 
     // importer
     windkimpo_ = Teuchos::rcp(new Epetra_Export(*redwindkesselmap_,*windkesselmap_));
-    //std::cout << "" << *redwindkesselmap_ << std::endl;
 
     //initialize Windkessel stiffness and offdiagonal matrices
     windkesselstiffness_=Teuchos::rcp(new LINALG::SparseMatrix(*windkesselmap_,numWindkesselID_,false,true));

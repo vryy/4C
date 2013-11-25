@@ -23,7 +23,7 @@ This library contains and makes use of software copyrighted by Sandia Corporatio
 and distributed under LGPL licence. Licensing does not apply to this or any
 other third party software used here.
 
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
+Questions? Contact Prof. Dr. Michael W. Gee (gee@lnm.mw.tum.de)
                    or
                    Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
@@ -35,8 +35,8 @@ http://www.lnm.mw.tum.de
 <pre>
 Maintainer: Marc Hirschvogel
             hirschvogel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
+            http://www.mhpc.mw.tum.de
+            089 - 289-10363
 
 </pre>
 
