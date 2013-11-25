@@ -182,6 +182,15 @@ namespace STR
       Teuchos::ParameterList pcon   //!< Parameterlist containing scale factors for matrix entries
     );
 
+    //! Evaluate forces due to Windkessel bcs
+    void ApplyForceStiffWindkessel
+    (
+      const double time,  //!< evaluation time
+      const Teuchos::RCP<Epetra_Vector> dis,  //!< last evaluated displacements
+      const Teuchos::RCP<Epetra_Vector> disn,  //!< evaluation displacements
+      Teuchos::ParameterList pcon   //!< Parameterlist containing scale factors for matrix entries
+    );
+
     //! Evaluate _certain_ surface stresses and stiffness
     //!
     //! The Evaluation happens internal-force-like.
@@ -531,6 +540,9 @@ namespace STR
     //! Update step for constraints
     void UpdateStepConstraint();
 
+    //! Update step for Windkessel
+    void UpdateStepWindkessel();
+
     //! @name Output
     //@{
 
@@ -600,11 +612,19 @@ namespace STR
 
     //! Return bool indicating if constraints are defined
     bool HaveConstraint();
+    //! Return bool indicating if Windkessel bcs are defined
+    bool HaveWindkessel();
 
     //! Return Teuchos::rcp to ConstraintManager conman_
     const RCP< ::UTILS::ConstrManager> GetConstraintManager()
     {
       return conman_;
+    }
+
+    //! Return Teuchos::rcp to WindkesselManager windkman_
+    const RCP< ::UTILS::WindkesselManager> GetWindkesselManager()
+    {
+      return windkman_;
     }
 
     //! Get type of thickness scaling for thin shell structures
@@ -627,6 +647,13 @@ namespace STR
     virtual void UpdateIterIncrConstr
     (
       Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
+    );
+
+    //! Update iteration
+    //! Add residual increment to pressures stored in Windkessel manager
+    virtual void UpdateIterIncrWindkessel
+    (
+      Teuchos::RCP<Epetra_Vector> presincr ///< pressure increment
     );
 
     //@}
@@ -806,12 +833,14 @@ namespace STR
                          //!< with Lagrange multipliers
     int uzawaitermax_;  //!< maximally permitted Uzawa iterations
     double tolcon_;  //!< tolerance constraint
+    double tolwindk_;  //!< tolerance Windkessel
     int iter_;  //!< iteration step
     double normcharforce_;  //!< characteristic norm for residual force
     double normchardis_;  //!< characteristic norm for residual displacements
     double normfres_;  //!< norm of residual forces
     double normdisi_;  //!< norm of residual displacements
     double normcon_;  //!< norm of constraint
+    double normwindk_;  //!< norm of Windkessel
     double normpfres_; //!< norm of residual pressure forces
     double normpres_; //!< norm of residual pressures
     double normcontconstr_;  //!< norm of contact/meshtying constraint rhs (contact/meshtying in saddlepoint formulation only)

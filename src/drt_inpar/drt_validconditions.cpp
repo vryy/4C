@@ -3142,6 +3142,45 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(surfredairtis);
 
+  /*--------------------------------------------------------------------*/
+  // Monolithic coupling of 3D structure and 0D Windkessel
+
+  Teuchos::RCP<ConditionDefinition> windkesselcondition =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF WINDKESSEL CONDITIONS",
+                                         "WindkesselStructureCond",
+                                         "Surface Windkessel",
+                                         DRT::Condition::WindkesselStructure,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  AddNamedInt(windkesselcondition,"id");
+  AddNamedReal(windkesselcondition,"resistance");
+  AddNamedReal(windkesselcondition,"compliance");
+
+  condlist.push_back(windkesselcondition);
+
+  /*--------------------------------------------------------------------*/
+  // Monolithic coupling of 3D structure and 0D Windkessel
+
+  std::vector<Teuchos::RCP<ConditionComponent> > windkstructcomponents;
+
+  windkstructcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  Teuchos::RCP<ConditionDefinition> surfwindkstruct =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF WINDKESSEL STRUCTURE COUPLING CONDITIONS",
+                                         "SurfaceNeumann",
+                                         "structure windkessel coupling surface condition",
+                                         DRT::Condition::WindkesselStructureCoupling,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<windkstructcomponents.size(); ++i)
+  {
+    surfwindkstruct->AddComponent(windkstructcomponents[i]);
+  }
+
+  condlist.push_back(surfwindkstruct);
+
 
   /*--------------------------------------------------------------------*/
   // Prescribed BC for reduced dimensional airways

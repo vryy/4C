@@ -248,6 +248,15 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
   // theta-interpolate state vectors
   EvaluateMidState();
 
+  // add forces and stiffness due to Windkessel bcs
+  // necessarily has to be done BEFORE fextm_ is built, since the Windkessel manager calls EvaluateNeumann and thus
+  // the correct application and linearization of the follower load is needed !!! (mhv 11/2013)
+  ParameterList pwindk;
+  pwindk.set("scale_timint", theta_);
+  pwindk.set("scale_gamma", theta_);
+  pwindk.set("time_step_size", (*dt_)[0]);
+  ApplyForceStiffWindkessel(timen_, (*dis_)(0), disn_, pwindk);
+
   // build new external forces
   fextn_->PutScalar(0.0);
   ApplyForceExternal(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
@@ -545,6 +554,9 @@ void STR::TimIntOneStepTheta::UpdateStepState()
 
   // update constraints
   UpdateStepConstraint();
+
+  // update constraints
+  UpdateStepWindkessel();
 
   // update contact / meshtying
   UpdateStepContactMeshtying();

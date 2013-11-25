@@ -268,6 +268,15 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
   // build predicted mid-state by last converged state and predicted target state
   EvaluateMidState();
 
+  // add forces and stiffness due to Windkessel bcs
+  // necessarily has to be done BEFORE fextm_ is built, since the Windkessel manager calls EvaluateNeumann and thus
+  // the correct application and linearization of the follower load is needed !!! (mhv 11/2013)
+  ParameterList pwindk;
+  pwindk.set("scale_timint", (1.0-alphaf_));
+  pwindk.set("scale_gamma", gamma_);
+  pwindk.set("time_step_size", (*dt_)[0]);
+  ApplyForceStiffWindkessel(timen_, (*dis_)(0), disn_, pwindk);
+
   // ************************** (1) EXTERNAL FORCES ***************************
 
   // build new external forces
@@ -583,6 +592,9 @@ void STR::TimIntGenAlpha::UpdateStepState()
 
   // update constraints
   UpdateStepConstraint();
+
+  // update Windkessel
+  UpdateStepWindkessel();
 
   // update contact / meshtying
   UpdateStepContactMeshtying();

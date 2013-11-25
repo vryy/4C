@@ -165,6 +165,8 @@ public:
     VolumeMonitor_3D,
     AreaMonitor_3D,
     AreaMonitor_2D,
+    WindkesselStructure,
+    WindkesselStructureCoupling,
     ImpedanceCond,
     Impedance_Calb_Cond,
     MPC_NodeOnPlane_3D,

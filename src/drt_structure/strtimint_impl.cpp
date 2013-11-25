@@ -34,6 +34,8 @@ Maintainer: Alexander Popp
 #include "../drt_beamcontact/beam3contact_defines.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
+#include "../drt_constraint/windkessel_manager.H"
+#include "../drt_constraint/windkesselsolver.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_lib/drt_locsys.H"
@@ -89,12 +91,14 @@ STR::TimIntImpl::TimIntImpl
   uzawaparam_(sdynparams.get<double>("UZAWAPARAM")),
   uzawaitermax_(sdynparams.get<int>("UZAWAMAXITER")),
   tolcon_(sdynparams.get<double>("TOLCONSTR")),
+  tolwindk_(sdynparams.get<double>("TOLWINDKESSEL")),
   iter_(-1),
   normcharforce_(0.0),
   normchardis_(0.0),
   normfres_(0.0),
   normdisi_(0.0),
   normcon_(0.0),
+  normwindk_(0.0),
   normpfres_(0.0),
   normpres_(0.0),
   normcontconstr_(0.0),  // < norm of contact constraints (saddlepoint formulation)
@@ -111,17 +115,17 @@ STR::TimIntImpl::TimIntImpl
 
   // verify: if system has constraints implemented with Lagrange multipliers,
   // then Uzawa-type solver is used
-  if ( conman_->HaveConstraintLagr())
+  if ( conman_->HaveConstraintLagr() or windkman_->HaveWindkessel())
   {
     if ( (itertype_ != INPAR::STR::soltech_newtonuzawalin)
          and (itertype_ != INPAR::STR::soltech_newtonuzawanonlin) )
-      dserror("Chosen solution technique %s does not work constrained.",
+      dserror("Chosen solution technique %s does not work constrained or with Windkessel bc.",
               INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
   else if ( (itertype_ == INPAR::STR::soltech_newtonuzawalin)
             or (itertype_ == INPAR::STR::soltech_newtonuzawanonlin) )
   {
-    dserror("Chosen solution technique %s does only work constrained.",
+    dserror("Chosen solution technique %s does only work constrained or with Windkessel bc.",
             INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
 
@@ -753,6 +757,24 @@ void STR::TimIntImpl::ApplyForceStiffConstraint
 }
 
 /*----------------------------------------------------------------------*/
+/* evaluate forces due to Windkessel bcs */
+void STR::TimIntImpl::ApplyForceStiffWindkessel
+(
+  const double time,
+  const Teuchos::RCP<Epetra_Vector> dis,
+  const Teuchos::RCP<Epetra_Vector> disn,
+  Teuchos::ParameterList pwindk
+)
+{
+  if (windkman_->HaveWindkessel())
+  {
+    windkman_->StiffnessAndInternalForces(time, dis, disn, pwindk);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to contact / meshtying */
 void STR::TimIntImpl::ApplyForceStiffContactMeshtying
 (
@@ -913,6 +935,13 @@ bool STR::TimIntImpl::Converged()
     cc = normcon_ < tolcon_;
   }
 
+  // check Windkessel
+  bool wk = true;
+  if (windkman_->HaveWindkessel())
+  {
+    wk = normwindk_ < tolwindk_;
+  }
+
   // check contact (active set)
   bool ccontact = true;
   if (HaveContactMeshtying())
@@ -1055,7 +1084,7 @@ bool STR::TimIntImpl::Converged()
 
 
   // return things
-  return (conv and cc and ccontact and cplast);
+  return (conv and cc and wk and ccontact and cplast);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1441,6 +1470,14 @@ void STR::TimIntImpl::UpdateStepConstraint()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void STR::TimIntImpl::UpdateStepWindkessel()
+{
+  if (windkman_ -> HaveWindkessel())
+    windkman_->UpdateTimeStep();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void STR::TimIntImpl::UpdateStepSurfstress()
 {
   if (surfstressman_ -> HaveSurfStress())
@@ -1456,6 +1493,13 @@ bool STR::TimIntImpl::HaveConstraint()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+bool STR::TimIntImpl::HaveWindkessel()
+{
+  return windkman_->HaveWindkessel();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void STR::TimIntImpl::UpdateIterIncrConstr
 (
   Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
@@ -1465,158 +1509,314 @@ void STR::TimIntImpl::UpdateIterIncrConstr
 }
 
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STR::TimIntImpl::UpdateIterIncrWindkessel
+(
+  Teuchos::RCP<Epetra_Vector> presincr ///< pressure increment
+)
+{
+  windkman_->UpdatePres(presincr);
+}
+
+/*----------------------------------------------------------------------*/
 /* do linearised Uzawa iterations with full NRI
  * originally by tk 11/07 */
 int STR::TimIntImpl::UzawaLinearNewtonFull()
 {
-  // allocate additional vectors and matrices
-  Teuchos::RCP<Epetra_Vector> conrhs
-    = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
-
-  Teuchos::RCP<Epetra_Vector> lagrincr
-    = Teuchos::rcp(new Epetra_Vector(*(conman_->GetConstraintMap())));
-
-  // check whether we have a sanely filled stiffness matrix
-  if (not stiff_->Filled())
+  if (conman_->HaveConstraint())
   {
-    dserror("Effective stiffness matrix must be filled here");
+		// allocate additional vectors and matrices
+		Teuchos::RCP<Epetra_Vector> conrhs
+			= Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
+
+		Teuchos::RCP<Epetra_Vector> lagrincr
+			= Teuchos::rcp(new Epetra_Vector(*(conman_->GetConstraintMap())));
+
+		// check whether we have a sanely filled stiffness matrix
+		if (not stiff_->Filled())
+		{
+			dserror("Effective stiffness matrix must be filled here");
+		}
+
+		// initialise equilibrium loop
+		iter_ = 1;
+		normfres_ = CalcRefNormForce();
+		// normdisi_ was already set in predictor; this is strictly >0
+		normcon_ = conman_->GetErrorNorm();
+		timer_->ResetStartTime();
+
+		// equilibrium iteration loop
+		while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+		{
+			// make negative residual
+			fres_->Scale(-1.0);
+
+			//    // uncomplete stiffness matrix, so stuff can be inserted again
+			//    stiff_->UnComplete();
+
+			// transform to local co-ordinate systems
+			if (locsysman_ != Teuchos::null)
+				locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+
+			// apply Dirichlet BCs to system of equations
+			disi_->PutScalar(0.0);  // Useful? depends on solver and more
+			LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+																		 GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+
+			// prepare residual Lagrange multiplier
+			lagrincr->PutScalar(0.0);
+
+			// *********** time measurement ***********
+			double dtcpu = timer_->WallTime();
+			// *********** time measurement ***********
+
+			//Use STC preconditioning on system matrix
+			STCPreconditioning();
+
+			// get constraint matrix with and without Dirichlet zeros
+			Teuchos::RCP<LINALG::SparseMatrix> constr =
+					(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(conman_->GetConstrMatrix()));
+			Teuchos::RCP<LINALG::SparseMatrix> constrT =
+					Teuchos::rcp(new LINALG::SparseMatrix (*constr));
+
+			constr->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
+
+			// Apply STC on constraint matrices of desired
+			if(stcscale_ != INPAR::STR::stc_none)
+			{
+				//std::cout<<"scaling constraint matrices"<<std::endl;
+				constrT=LINALG::MLMultiply(*stcmat_,true,*constrT,false,false,false,true);
+				if (stcscale_ == INPAR::STR::stc_currsym)
+				{
+					constr = LINALG::MLMultiply(*stcmat_,true,*constr,false,false,false,true);;
+				}
+			}
+			// Call constraint solver to solve system with zeros on diagonal
+			consolv_->Solve(SystemMatrix(), constr, constrT,
+											disi_, lagrincr,
+											fres_, conrhs);
+
+			//recover unscaled solution
+			RecoverSTCSolution();
+
+			// *********** time measurement ***********
+			dtsolve_ = timer_->WallTime() - dtcpu;
+			// *********** time measurement ***********
+
+			// transform back to global co-ordinate system
+			if (locsysman_ != Teuchos::null)
+				locsysman_->RotateLocalToGlobal(disi_);
+
+			// update Lagrange multiplier
+			conman_->UpdateLagrMult(lagrincr);
+			// update end-point displacements etc
+			UpdateIter(iter_);
+
+			// compute residual forces #fres_ and stiffness #stiff_
+			// which contain forces and stiffness of constraints
+			EvaluateForceStiffResidual();
+			// compute residual and stiffness of constraint equations
+			conrhs = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
+
+			// blank residual at (locally oriented) Dirichlet DOFs
+			// rotate to local co-ordinate systems
+			if (locsysman_ != Teuchos::null)
+				locsysman_->RotateGlobalToLocal(fres_);
+
+			// extract reaction forces
+			// reactions are negative to balance residual on DBC
+			freact_->Update(-1.0, *fres_, 0.0);
+			dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+			// rotate reaction forces back to global co-ordinate system
+			if (locsysman_ != Teuchos::null)
+				locsysman_->RotateLocalToGlobal(freact_);
+
+			// blank residual at DOFs on Dirichlet BC
+			dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+			// rotate back to global co-ordinate system
+			if (locsysman_ != Teuchos::null)
+				locsysman_->RotateLocalToGlobal(fres_);
+
+			// build residual force norm
+			normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+			// build residual displacement norm
+			normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+			// build residual Lagrange multiplier norm
+			normcon_ = conman_->GetErrorNorm();
+
+			if (pressure_ != Teuchos::null)
+			{
+				Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
+				Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
+				normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+				normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+
+				pres = pressure_->ExtractCondVector(disi_);
+				disp = pressure_->ExtractOtherVector(disi_);
+				normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+				normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+			}
+			else
+			{
+				// build residual force norm
+				normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+				// build residual displacement norm
+				normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+			}
+
+			// print stuff
+			PrintNewtonIter();
+
+			// increment equilibrium loop index
+			iter_ += 1;
+		}  // end equilibrium loop
+
+		// correct iteration counter
+		iter_ -= 1;
   }
-
-  // initialise equilibrium loop
-  iter_ = 1;
-  normfres_ = CalcRefNormForce();
-  // normdisi_ was already set in predictor; this is strictly >0
-  normcon_ = conman_->GetErrorNorm();
-  timer_->ResetStartTime();
-
-  // equilibrium iteration loop
-  while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+  else if (windkman_->HaveWindkessel())
   {
-    // make negative residual
-    fres_->Scale(-1.0);
+	  // allocate additional vectors and matrices
+	  Teuchos::RCP<Epetra_Vector> windkrhs
+		= Teuchos::rcp(new Epetra_Vector(*(windkman_->GetWindkesselRHS())));
 
-//    // uncomplete stiffness matrix, so stuff can be inserted again
-//    stiff_->UnComplete();
+	  Teuchos::RCP<Epetra_Vector> presincr
+		= Teuchos::rcp(new Epetra_Vector(*(windkman_->GetWindkesselMap())));
 
-    // transform to local co-ordinate systems
-    if (locsysman_ != Teuchos::null)
-      locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+	  // check whether we have a sanely filled stiffness matrix
+	  if (not stiff_->Filled())
+	  {
+		dserror("Effective stiffness matrix must be filled here");
+	  }
 
-    // apply Dirichlet BCs to system of equations
-    disi_->PutScalar(0.0);  // Useful? depends on solver and more
-    LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
-                                   GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+	  // initialise equilibrium loop
+	  iter_ = 1;
+	  normfres_ = CalcRefNormForce();
+	  // normdisi_ was already set in predictor; this is strictly >0
+	  normwindk_ = windkman_->GetWindkesselRHSNorm();
+	  timer_->ResetStartTime();
 
-    // prepare residual Lagrange multiplier
-    lagrincr->PutScalar(0.0);
+	  // equilibrium iteration loop
+	  while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+	  {
+			// make negative residual
+			fres_->Scale(-1.0);
 
-    // *********** time measurement ***********
-    double dtcpu = timer_->WallTime();
-    // *********** time measurement ***********
+		  // uncomplete stiffness matrix, so stuff can be inserted again
+		  // stiff_->UnComplete();
 
-    //Use STC preconditioning on system matrix
-    STCPreconditioning();
+			// transform to local co-ordinate systems
+			if (locsysman_ != Teuchos::null)
+				locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
 
-    // get constraint matrix with and without Dirichlet zeros
-    Teuchos::RCP<LINALG::SparseMatrix> constr =
-        (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(conman_->GetConstrMatrix()));
-    Teuchos::RCP<LINALG::SparseMatrix> constrT =
-        Teuchos::rcp(new LINALG::SparseMatrix (*constr));
+			// apply Dirichlet BCs to system of equations
+			disi_->PutScalar(0.0);  // Useful? depends on solver and more
+			LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+											 GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
-    constr->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
+			// *********** time measurement ***********
+			double dtcpu = timer_->WallTime();
+			// *********** time measurement ***********
 
-    // Apply STC on constraint matrices of desired
-    if(stcscale_ != INPAR::STR::stc_none)
-    {
-      //std::cout<<"scaling constraint matrices"<<std::endl;
-      constrT=LINALG::MLMultiply(*stcmat_,true,*constrT,false,false,false,true);
-      if (stcscale_ == INPAR::STR::stc_currsym)
-      {
-        constr = LINALG::MLMultiply(*stcmat_,true,*constr,false,false,false,true);;
-      }
-    }
-    // Call constraint solver to solve system with zeros on diagonal
-    consolv_->Solve(SystemMatrix(), constr, constrT,
-                    disi_, lagrincr,
-                    fres_, conrhs);
+			//Use STC preconditioning on system matrix
+			STCPreconditioning();
 
-    //recover unscaled solution
-    RecoverSTCSolution();
+			// prepare residual pressure
+			presincr->PutScalar(0.0);
+			// get Windkessel matrix with and without Dirichlet zeros
+			Teuchos::RCP<LINALG::SparseMatrix> windkstiff =
+				(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(windkman_->GetWindkesselStiffness()));
+			Teuchos::RCP<LINALG::SparseMatrix> coupoffdiag_vol_d =
+				(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(windkman_->GetCoupOffdiagVolD()));
+			Teuchos::RCP<LINALG::SparseMatrix> coupoffdiag_fext_p =
+				(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(windkman_->GetCoupOffdiagFextP()));
 
-    // *********** time measurement ***********
-    dtsolve_ = timer_->WallTime() - dtcpu;
-    // *********** time measurement ***********
+			coupoffdiag_vol_d->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
+			coupoffdiag_fext_p->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
 
-    // transform back to global co-ordinate system
-    if (locsysman_ != Teuchos::null)
-      locsysman_->RotateLocalToGlobal(disi_);
+			//std::cout << "" << *coupoffdiag_vol_d << std::endl;
+			//std::cout << "" << *coupoffdiag_fext_p << std::endl;
 
-    // update Lagrange multiplier
-    conman_->UpdateLagrMult(lagrincr);
-    // update end-point displacements etc
-    UpdateIter(iter_);
+			// Call Windkessel solver to solve system
+			windksolv_->Solve(SystemMatrix(), coupoffdiag_vol_d, coupoffdiag_fext_p, windkstiff,
+							disi_, presincr,
+							fres_, windkrhs);
 
-    // compute residual forces #fres_ and stiffness #stiff_
-    // which contain forces and stiffness of constraints
-    EvaluateForceStiffResidual();
-    // compute residual and stiffness of constraint equations
-    conrhs = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
+			// *********** time measurement ***********
+			dtsolve_ = timer_->WallTime() - dtcpu;
+			// *********** time measurement ***********
 
-    // blank residual at (locally oriented) Dirichlet DOFs
-    // rotate to local co-ordinate systems
-    if (locsysman_ != Teuchos::null)
-      locsysman_->RotateGlobalToLocal(fres_);
+			// transform back to global co-ordinate system
+			if (locsysman_ != Teuchos::null)
+				locsysman_->RotateLocalToGlobal(disi_);
 
-    // extract reaction forces
-    // reactions are negative to balance residual on DBC
-    freact_->Update(-1.0, *fres_, 0.0);
-    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
-    // rotate reaction forces back to global co-ordinate system
-    if (locsysman_ != Teuchos::null)
-      locsysman_->RotateLocalToGlobal(freact_);
+			// update pressure
+			windkman_->UpdatePres(presincr);
+			// update end-point displacements, velocities, accelerations
+			UpdateIter(iter_);
 
-    // blank residual at DOFs on Dirichlet BC
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
-    // rotate back to global co-ordinate system
-    if (locsysman_ != Teuchos::null)
-      locsysman_->RotateLocalToGlobal(fres_);
+			// compute residual forces #fres_ and stiffness #stiff_
+			// which contain forces and stiffness of Windkessels
+			EvaluateForceStiffResidual();
+			// compute residual of Windkessel
+			windkrhs = Teuchos::rcp(new Epetra_Vector(*(windkman_->GetWindkesselRHS())));
 
-    // build residual force norm
-    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
-    // build residual displacement norm
-    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
-    // build residual Lagrange multiplier norm
-    normcon_ = conman_->GetErrorNorm();
+			// blank residual at (locally oriented) Dirichlet DOFs
+			// rotate to local co-ordinate systems
+			if (locsysman_ != Teuchos::null)
+				locsysman_->RotateGlobalToLocal(fres_);
 
-    if (pressure_ != Teuchos::null)
-    {
-      Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
-      Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
-      normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+			// extract reaction forces
+			// reactions are negative to balance residual on DBC
+			freact_->Update(-1.0, *fres_, 0.0);
+			dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+			// rotate reaction forces back to global co-ordinate system
+			if (locsysman_ != Teuchos::null)
+				locsysman_->RotateLocalToGlobal(freact_);
 
-      pres = pressure_->ExtractCondVector(disi_);
-      disp = pressure_->ExtractOtherVector(disi_);
-      normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
-      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
-    }
-    else
-    {
-      // build residual force norm
-      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
-      // build residual displacement norm
-      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
-    }
+			// blank residual at DOFs on Dirichlet BC
+			dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+			// rotate back to global co-ordinate system
+			if (locsysman_ != Teuchos::null)
+				locsysman_->RotateLocalToGlobal(fres_);
 
-    // print stuff
-    PrintNewtonIter();
+			// build residual force norm
+			normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+			// build residual displacement norm
+			normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+			// build residual pressure norm
+			normwindk_ = windkman_->GetWindkesselRHSNorm();
 
-    // increment equilibrium loop index
-    iter_ += 1;
-  }  // end equilibrium loop
+			if (pressure_ != Teuchos::null)
+			{
+				Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
+				Teuchos::RCP<Epetra_Vector> disp = pressure_->ExtractOtherVector(fres_);
+				normpfres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+				normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
 
-  // correct iteration counter
-  iter_ -= 1;
+				pres = pressure_->ExtractCondVector(disi_);
+				disp = pressure_->ExtractOtherVector(disi_);
+				normpres_ = STR::AUX::CalculateVectorNorm(iternorm_, pres);
+				normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disp);
+			}
+			else
+			{
+				// build residual force norm
+				normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+				// build residual displacement norm
+				normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+			}
+
+			// print stuff
+			PrintNewtonIter();
+
+			// increment equilibrium loop index
+			iter_ += 1;
+	  }  // end equilibrium loop
+
+	  // correct iteration counter
+	  iter_ -= 1;
+  }
 
 	// no linear solver error check implemented here, always passing 0
   return UzawaLinearNewtonFullErrorCheck(0);
@@ -1636,6 +1836,10 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
     // print newton message on proc 0
     if (myrank_ == 0)
       conman_->PrintMonitorValues();
+
+		//print Windkessel output
+    if (windkman_->HaveWindkessel())
+    	windkman_->PrintPresFlux();
 
     return 0;
   }
@@ -2473,6 +2677,12 @@ void STR::TimIntImpl::PrintNewtonIterHeader
     oss << std::setw(16)<< "abs-constr-norm";
   }
 
+  // add Windkessel norm
+  if (windkman_->HaveWindkessel())
+  {
+    oss << std::setw(16)<< "abs-windk-norm";
+  }
+
   if (itertype_==INPAR::STR::soltech_ptc)
   {
     oss << std::setw(16)<< "        PTC-dti";
@@ -2618,6 +2828,12 @@ void STR::TimIntImpl::PrintNewtonIterText
   if (conman_->HaveConstraintLagr())
   {
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normcon_;
+  }
+
+  // add Windkessel norm
+  if (windkman_->HaveWindkessel())
+  {
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normwindk_;
   }
 
   if (itertype_==INPAR::STR::soltech_ptc)

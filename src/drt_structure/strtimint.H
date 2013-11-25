@@ -57,6 +57,8 @@ namespace UTILS
 {
   class ConstrManager;
   class ConstraintSolver;
+  class WindkesselManager;
+  class WindkesselSolver;
   class SurfStressManager;
 //  class GrowthDisplManager;
 }
@@ -770,8 +772,14 @@ namespace STR
     //! are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;
 
+    //! are there any Windkessel bcs?
+    virtual bool HaveWindkessel() = 0;
+
     //! get constraint manager defined in the structure
     virtual const RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
+
+    //! get Windkessel manager defined in the structure
+    virtual const RCP<UTILS::WindkesselManager> GetWindkesselManager() = 0;
 
     //! get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
@@ -1052,6 +1060,10 @@ namespace STR
     //! whatever constraints
     Teuchos::RCP<UTILS::ConstrManager> conman_;  //!< constraint manager
     Teuchos::RCP<UTILS::ConstraintSolver> consolv_;  //!< constraint solver
+
+    // for Windkessel bcs
+    Teuchos::RCP<UTILS::WindkesselManager> windkman_;  //!< Windkessel manager
+    Teuchos::RCP<UTILS::WindkesselSolver> windksolv_;  //!< Windkessel solver
 
     //! surface stresses
     Teuchos::RCP<UTILS::SurfStressManager> surfstressman_;

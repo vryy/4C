@@ -60,6 +60,7 @@ namespace MORTAR
 namespace UTILS
 {
   class ConstrManager;
+  class WindkesselManager;
 }
 
 namespace STR
@@ -195,8 +196,14 @@ namespace ADAPTER {
     /// are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;
 
+    /// are there any Windkessel bcs?
+    virtual bool HaveWindkessel() = 0;
+
     /// get constraint manager defined in the structure
     virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
+
+    /// get Windkessel manager defined in the structure
+    virtual const Teuchos::RCP<UTILS::WindkesselManager> GetWindkesselManager() = 0;
 
     /// Get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
@@ -292,6 +299,10 @@ namespace ADAPTER {
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
     virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr) = 0;
+
+    /// Update iteration
+    /// Add residual increment to pressures stored in Windkessel manager
+    virtual void UpdateIterIncrWindkessel(Teuchos::RCP<Epetra_Vector> presincr) = 0;
 
     /// Access to output object
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;

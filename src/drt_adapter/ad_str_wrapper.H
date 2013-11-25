@@ -127,9 +127,17 @@ namespace ADAPTER
     virtual bool HaveConstraint()
     { return structure_->HaveConstraint(); }
 
+    /// are there any Windkessel bcs?
+    virtual bool HaveWindkessel()
+    { return structure_->HaveWindkessel(); }
+
     /// get constraint manager defined in the structure
     virtual const Teuchos::RCP< UTILS::ConstrManager> GetConstraintManager()
     { return structure_->GetConstraintManager(); }
+
+    /// get Windkessel manager defined in the structure
+    virtual const Teuchos::RCP< UTILS::WindkesselManager> GetWindkesselManager()
+    { return structure_->GetWindkesselManager(); }
 
     /// get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo()
@@ -247,6 +255,10 @@ namespace ADAPTER
     /// update iteration; add residual increment to Lagrange multipliers stored in Constraint manager
     virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr)
     { structure_->UpdateIterIncrConstr(lagrincr); }
+
+    /// update iteration; add residual increment to pressures stored in Windkessel manager
+    virtual void UpdateIterIncrWindkessel(Teuchos::RCP<Epetra_Vector> presincr)
+    { structure_->UpdateIterIncrWindkessel(presincr); }
 
     /// access to output object
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()

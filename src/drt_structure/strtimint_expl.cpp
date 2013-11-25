@@ -21,6 +21,7 @@ Maintainer: Alexander Popp
 #include "strtimint_expl.H"
 #include "stru_aux.H"
 #include "../drt_constraint/constraint_manager.H"
+#include "../drt_constraint/windkessel_manager.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_inpar/inpar_contact.H"

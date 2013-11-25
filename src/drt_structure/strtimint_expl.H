@@ -252,10 +252,24 @@ namespace STR
       return false;
     };
 
+    /// are there any Windkessel bcs?
+    virtual bool HaveWindkessel()
+    {
+      dserror("HaveWindkessel() has not been tested for explicit time integrators");
+      return false;
+    };
+
     //! Return Teuchos::rcp to ConstraintManager conman_
     virtual const RCP< ::UTILS::ConstrManager> GetConstraintManager()
     {
       dserror("GetConstraintManager() has not been tested for explicit time integrators");
+      return Teuchos::null;
+    };
+
+    //! Return Teuchos::rcp to WindkesselManager conman_
+    virtual const RCP< ::UTILS::WindkesselManager> GetWindkesselManager()
+    {
+      dserror("GetWindkesselManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
@@ -279,6 +293,15 @@ namespace STR
     )
     {
       dserror("UpdateIterIncrConstr() has not been tested for explicit time integrators");
+      return;
+    }
+
+    virtual void UpdateIterIncrWindkessel
+    (
+      Teuchos::RCP<Epetra_Vector> presincr ///< pressure increment
+    )
+    {
+      dserror("UpdateIterIncrWindkessel() has not been tested for explicit time integrators");
       return;
     }
 

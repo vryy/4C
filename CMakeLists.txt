@@ -563,6 +563,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
   src/drt_adapter/ad_str_structure.cpp
   src/drt_adapter/ad_str_constr_merged.cpp
+  src/drt_adapter/ad_str_windkessel_merged.cpp
   src/drt_adapter/ad_str_lung.cpp
   src/drt_adapter/ad_str_redairway.cpp
   src/drt_adapter/ad_str_timint_adaptive.cpp
@@ -1336,6 +1337,10 @@ set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/multipointconstraint2.cpp
   src/drt_constraint/multipointconstraint3.cpp
   src/drt_constraint/multipointconstraint3penalty.cpp
+  src/drt_constraint/windkessel.cpp
+  src/drt_constraint/windkessel_manager.cpp
+  src/drt_constraint/windkesseldofset.cpp
+  src/drt_constraint/windkesselsolver.cpp
 )
 set(OBJS_DRT_IO_LIB
   src/drt_io/io.cpp

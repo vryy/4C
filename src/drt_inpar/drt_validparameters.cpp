@@ -1055,6 +1055,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TOLCONSTR",1.0E-08,
                   "tolerance in the constr error norm for the newton iteration",
                   &sdyn);
+  DoubleParameter("TOLWINDKESSEL",1.0E-08,
+                  "tolerance in the Windkessel error norm for the newton iteration",
+                  &sdyn);
   IntParameter("MAXITER",50,
                "maximum number of iterations allowed for Newton-Raphson iteration before failure",
                &sdyn);
