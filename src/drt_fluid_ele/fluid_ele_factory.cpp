@@ -22,10 +22,6 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_calc_poro_p2.H"
 #include "fluid_ele_calc_xfem.H"
 
-#include "../drt_inpar/inpar_fpsi.H"
-
-#include "../drt_lib/drt_globalproblem.H"
-
 
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer Jan13 |
