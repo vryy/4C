@@ -82,6 +82,9 @@ public:
   // Solve call for biofilm growth
   virtual void SolveBioGr();
 
+  // Solve call for Wear structale problems
+  virtual void SolveWear();
+
 private:
 
   /// element call

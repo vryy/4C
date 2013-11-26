@@ -80,6 +80,15 @@ namespace INPAR
       wear_shape_dual,
       wear_shape_standard
     };
+
+    /// Definition of wear-ALE coupling algorithm
+    /// (this enum represents the input file parameter WEAR_COUPALGO)
+    enum WearCoupAlgo
+    {
+      wear_stagg,
+      wear_iterstagg,
+      wear_monolithic
+    };
   }  // namespace CONTACT
 }  // namespace INPAR
 

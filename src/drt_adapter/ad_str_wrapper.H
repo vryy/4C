@@ -380,8 +380,8 @@ namespace ADAPTER
     { return structure_->DispMat(); }
 
     /// apply material displacements to structure field (structure with ale)
-    virtual void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat)
-    { structure_->ApplyDisMat(dismat); }
+    virtual void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat, bool iterated=false)
+    { structure_->ApplyDisMat(dismat, iterated); }
 
     //@}
 

@@ -95,7 +95,8 @@ class StrategyBase
       dm,
       pentrac,
       wear,
-      wupdate
+      wupdate,
+      wold
     };
     //@}
 

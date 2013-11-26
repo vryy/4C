@@ -981,7 +981,7 @@ namespace STR
    Teuchos::RCP<Epetra_Vector> DispMat() { return dismatn_; }
 
     //! apply material displacements to structure field (structure with ale)
-    void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat);
+    void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat, bool iterated = false);
 
     //@}
 

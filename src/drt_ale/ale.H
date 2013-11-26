@@ -157,6 +157,9 @@ public:
   // Solve call for biofilm growth
   virtual void SolveBioGr() = 0;
 
+  // Solve call for wear structale problems
+  virtual void SolveWear() {};
+
   /// get the linear solver object used for this field
   Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 

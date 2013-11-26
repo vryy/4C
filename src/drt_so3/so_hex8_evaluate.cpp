@@ -3028,10 +3028,13 @@ void DRT::ELEMENTS::So_hex8::AdvectionMapElement(double* XMat1,
                                                  double* XMesh1,
                                                  double* XMesh2,
                                                  double* XMesh3,
-                                                 RCP<const Epetra_Vector> disp,
+                                                 RCP<const Epetra_Vector> disp, // curr spat. displ.
                                                  RCP<const Epetra_Vector> dispmat,
                                                  LocationArray& la,
-                                                 bool& found)
+                                                 bool& found,
+                                                 double e1,
+                                                 double e2,
+                                                 double e3)
 {
   LINALG::SerialDenseVector funct(NUMNOD_SOH8);
   LINALG::SerialDenseMatrix xcure(NUMDIM_SOH8,NUMNOD_SOH8);
@@ -3044,6 +3047,7 @@ void DRT::ELEMENTS::So_hex8::AdvectionMapElement(double* XMat1,
   std::vector<double> mydispmat(la[0].lm_.size());
   DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,la[0].lm_);
 
+  // spatial configuration of this element!
   for (int k=0; k<NUMNOD_SOH8; ++k)
   {
     xcure(0,k) = Nodes()[k]->X()[0]+ mydisp[k*NUMDIM_SOH8+0];
@@ -3052,7 +3056,6 @@ void DRT::ELEMENTS::So_hex8::AdvectionMapElement(double* XMat1,
   }
 
   // first estimation for parameter space coordinates
-  double e1,e2,e3;
   e1=0.0;
   e2=0.0;
   e3=0.0;
@@ -3138,26 +3141,25 @@ void DRT::ELEMENTS::So_hex8::AdvectionMapElement(double* XMat1,
   // if material parameters are within the element, evaluate material
   // coordinates
   if (e1>=-1-1e-8 and e1<=1+1e-8 and e2>=-1-1e-8 and e2<=1+1e-8  and e3>=-1-1e-8 and e3<=1+1e-8 )
-  {
     found = true;
 
-    double xmat1=0;
-    double xmat2=0;
-    double xmat3=0;
+  double xmat1=0;
+  double xmat2=0;
+  double xmat3=0;
 
-    DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,Shape());
+  DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,Shape());
 
-    for (int k=0; k<NUMNOD_SOH8; ++k)
-    {
-      xmat1 += funct(k) * (Nodes()[k]->X()[0] + mydispmat[k*NUMDIM_SOH8+0]);
-      xmat2 += funct(k) * (Nodes()[k]->X()[1] + mydispmat[k*NUMDIM_SOH8+1]);
-      xmat3 += funct(k) * (Nodes()[k]->X()[2] + mydispmat[k*NUMDIM_SOH8+2]);
-    }
-
-    *XMat1 = xmat1;
-    *XMat2 = xmat2;
-    *XMat3 = xmat3;
+  for (int k=0; k<NUMNOD_SOH8; ++k)
+  {
+    xmat1 += funct(k) * (Nodes()[k]->X()[0] + mydispmat[k*NUMDIM_SOH8+0]);
+    xmat2 += funct(k) * (Nodes()[k]->X()[1] + mydispmat[k*NUMDIM_SOH8+1]);
+    xmat3 += funct(k) * (Nodes()[k]->X()[2] + mydispmat[k*NUMDIM_SOH8+2]);
   }
+
+  *XMat1 = xmat1;
+  *XMat2 = xmat2;
+  *XMat3 = xmat3;
+
   return;
 }
 

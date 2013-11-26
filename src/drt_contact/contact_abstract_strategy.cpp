@@ -1344,6 +1344,11 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         vectorglobal = WearVar();
         break;
       }
+      case MORTAR::StrategyBase::wold:
+      {
+        vectorglobal = WearVar();
+        break;
+      }
       case MORTAR::StrategyBase::lmuzawa:
       {
         vectorglobal = LagrMultUzawa();
@@ -1455,6 +1460,20 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
           // store updated wcurr into node
           FriNode* fnode = static_cast<FriNode*>(cnode);
           fnode->FriDataPlus().wcurr()[(int)(dof/Dim())] = (*vectorinterface)[locindex[(int)(dof/Dim())]];
+          dof=dof+Dim()-1;
+          break;
+        }
+        case MORTAR::StrategyBase::wold:
+        {
+          // throw a dserror if node is Active and DBC
+          if (cnode->IsDbc() && cnode->Active())
+            dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+          // explicity set global Lag. Mult. to zero for D.B.C nodes
+          if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
+
+          // store updated wcurr into node
+          FriNode* fnode = static_cast<FriNode*>(cnode);
+          fnode->FriDataPlus().wold()[(int)(dof/Dim())] += (*vectorinterface)[locindex[(int)(dof/Dim())]];
           dof=dof+Dim()-1;
           break;
         }

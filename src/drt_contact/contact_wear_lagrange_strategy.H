@@ -239,6 +239,8 @@ public:
   */
   void UpdateActiveSetSemiSmooth();
 
+
+  void UpdateWearDiscret(bool store);
   /*!
   \brief Return vector of wear (t_n+1)
 

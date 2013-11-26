@@ -672,7 +672,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     virtual void UpdateActiveSetSemiSmooth() = 0;
     virtual void UpdateAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
-    
+
     //@}
     
     //! @name Empty functions (meshtying)
@@ -697,6 +697,10 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     //@}
     
     
+    //empty functions wear
+    virtual void UpdateWearDiscret(bool store) = 0;
+
+
   protected:
 
     // don't want cctor (= operator impossible anyway for abstract class)

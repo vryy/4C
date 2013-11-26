@@ -2579,7 +2579,8 @@ void STR::TimInt::SetForceInterface
 /*----------------------------------------------------------------------*/
 /* apply the new material_displacements                      mgit 05/11 */
 void STR::TimInt::ApplyDisMat(
-  Teuchos::RCP<Epetra_Vector> dismat
+  Teuchos::RCP<Epetra_Vector> dismat,
+  bool iterated
   )
 {
   // FIXGIT: This is done only for nonzero entries --> try to store the zero-entries to !!!
@@ -2593,6 +2594,7 @@ void STR::TimInt::ApplyDisMat(
        (*dismatn_)[k]=(*dismat)[k];
      }
    }
+
    return;
  }
 

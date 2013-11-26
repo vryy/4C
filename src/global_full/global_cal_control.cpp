@@ -27,7 +27,7 @@ Maintainer: Michael Gee
 #include "../drt_tsi/tsi_dyn.H"
 #include "../drt_art_net/art_net_dyn_drt.H"
 #include "../drt_red_airways/red_airways_dyn_drt.H"
-#include "../drt_stru_ale/stru_ale_dyn.H"
+#include "../drt_wear/wear_dyn.H"
 #include "../drt_poroelast/poro_dyn.H"
 #include "../drt_fpsi/fpsi_dyn.H"
 #include "../drt_ssi/ssi_dyn.H"
@@ -126,7 +126,7 @@ void ntacal()
       break;
 
     case prb_struct_ale:
-      stru_ale_dyn_drt(restart);
+      wear_dyn_drt(restart);
       break;
 
     case prb_poroelast:

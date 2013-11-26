@@ -2003,7 +2003,9 @@ void DRT::ELEMENTS::Wall1::AdvectionMapElement(double* XMat1,
                                                RCP<const Epetra_Vector> disp,
                                                RCP<const Epetra_Vector> dispmat,
                                                LocationArray& la,
-                                               bool& found)
+                                               bool& found,
+                                               double e1,
+                                               double e2)
 {
     // arrays
     const int numnode = NumNode();
@@ -2025,7 +2027,6 @@ void DRT::ELEMENTS::Wall1::AdvectionMapElement(double* XMat1,
     }
 
     // material coordinates
-    double e1,e2;
     e1=0.0;
     e2=0.0;
 
@@ -2099,28 +2100,26 @@ void DRT::ELEMENTS::Wall1::AdvectionMapElement(double* XMat1,
     // if material parameters are within the element, evaluate material
     // coordinates
     if (e1>=-1-1e-8 and e1<=1+1e-8 and e2>=-1-1e-8 and e2<=1+1e-8)
-    {
-
       found = true;
 
-      double xmat1=0;
-      double xmat2=0;
+    double xmat1=0;
+    double xmat2=0;
 
-      // gaussian points
-      const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+    // gaussian points
+    const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
-      DRT::UTILS::shape_function_2D       (funct,e1,e2,Shape());
+    DRT::UTILS::shape_function_2D       (funct,e1,e2,Shape());
 
-      for (int k=0; k<numnode; ++k)
-      {
-        xmat1 += funct(k) * (Nodes()[k]->X()[0] + mydispmat[k*2+0]);
-        xmat2 += funct(k) * (Nodes()[k]->X()[1] + mydispmat[k*2+1]);
-      }
+    for (int k=0; k<numnode; ++k)
+    {
+      xmat1 += funct(k) * (Nodes()[k]->X()[0] + mydispmat[k*2+0]);
+      xmat2 += funct(k) * (Nodes()[k]->X()[1] + mydispmat[k*2+1]);
+    }
 
-      *XMat1 = xmat1;
-      *XMat2 = xmat2;
-  }
-  return;
+    *XMat1 = xmat1;
+    *XMat2 = xmat2;
+
+    return;
 }
 
 /*----------------------------------------------------------------------*/

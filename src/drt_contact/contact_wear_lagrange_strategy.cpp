@@ -4510,3 +4510,34 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Update Wear rhs for seq. staggered paritioned sol.       farah 11/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::WearLagrangeStrategy::UpdateWearDiscret(bool store)
+{
+  if (store)
+  {
+    StoreNodalQuantities(MORTAR::StrategyBase::wold);
+  }
+  else
+  {
+    // loop over all interfaces
+    for(int i=0;i<(int)interface_.size();++i)
+    {
+      for (int j=0; j<(int)interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+      {
+        int gid = interface_[i]->SlaveRowNodes()->GID(j);
+        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        FriNode* cnode = static_cast<FriNode*>(node);
+
+        cnode->FriDataPlus().wcurr()[0]=0.0;
+        cnode->FriDataPlus().wold()[0]=0.0;
+      }
+    }
+  }
+
+
+  return;
+}

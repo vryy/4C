@@ -234,6 +234,9 @@ class CoPenaltyStrategy : public CoAbstractStrategy
 
   //@}
   
+  //wear
+  void UpdateWearDiscret(bool store){};
+
 protected:
 
   // don't want = operator and cctor

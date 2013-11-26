@@ -230,6 +230,22 @@ void ALE::AleLinear::Solve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void ALE::AleLinear::SolveWear()
+{
+  Teuchos::ParameterList eleparams;
+  eleparams.set("total time", time_);
+  eleparams.set("delta time", dt_);
+
+  if (incremental_)
+    EvaluateElements();
+
+  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
+
+  solver_->Solve(sysmat_->EpetraOperator(),dispnp_,residual_,true);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void ALE::AleLinear::SolveBioGr()
 {
   solver_->Solve(sysmat_->EpetraOperator(),dispnp_,residual_,true);

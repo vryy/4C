@@ -261,6 +261,10 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     //std::vector<Teuchos::RCP<CONTACT::WearInterface> > WearInterfaces() {return std::vector<Teuchos::RCP<CONTACT::WearInterface> >(NULL);};
     //@}
 
+
+    //wear
+    void UpdateWearDiscret(bool store) {};
+
   protected:
 
     // don't want = operator and cctor

@@ -182,6 +182,8 @@ wear_(0.0),
 deltawear_(0.0)
 {
   wcurr_[0] = 0.0;
+  wold_[0]  = 0.0;
+
   return;
 }
 

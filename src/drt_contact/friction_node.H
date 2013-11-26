@@ -301,6 +301,11 @@ public:
    \brief Return current discrete wear in step n+1 (only for slave side!) (length 1)
    */
    virtual double* wcurr() { return wcurr_; }
+
+   /*!
+   \brief Return old discrete wear in time step i (only for slave side!) (length 1)
+   */
+   virtual double* wold() { return wold_; }
   //@}
 
 protected:
@@ -316,7 +321,8 @@ protected:
   // wear related quantities
   double                                  wear_;         // weighted wear
   double                                  deltawear_;    // deltawear
-  double                                  wcurr_[1];        // current discrete wear value (n+1)
+  double                                  wcurr_[1];       // current discrete wear value (n+1)
+  double                                  wold_[1];        // old discrete wear value (i) - for paritioned solution scheme
 
   std::vector<std::map<int,double> >      trows_;        // nodal rows of T matrix
   std::vector<std::map<int,double> >      erows_;        // nodal rows of E matrix

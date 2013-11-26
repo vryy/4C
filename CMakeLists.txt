@@ -1586,9 +1586,10 @@ set(OBJS_GRAPH_TEST
   tests/graph_test/graph_test_output.cpp
   tests/graph_test/graph_test_find_cycles.cpp
 )
-set(OBJS_DRT_STRU_ALE
-  src/drt_stru_ale/stru_ale_algorithm.cpp  
-  src/drt_stru_ale/stru_ale_dyn.cpp
+set(OBJS_DRT_WEAR
+  src/drt_wear/wear_algorithm.cpp
+  src/drt_wear/wear_dyn.cpp
+  src/drt_wear/wear_partitioned.cpp  
 )  
 set(OBJS_DRT_POROELAST
   src/drt_poroelast/poro_dyn.cpp
@@ -1738,7 +1739,7 @@ add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
 add_library(alg_loma ${OBJS_DRT_LOMA})
 add_library(alg_tsi ${OBJS_DRT_TSI})
-add_library(alg_stru_ale ${OBJS_DRT_STRU_ALE})
+add_library(alg_wear ${OBJS_DRT_WEAR})
 add_library(alg_poroelast ${OBJS_DRT_POROELAST})
 add_library(alg_fpsi ${OBJS_DRT_FPSI})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
@@ -1751,7 +1752,7 @@ set(MULTIFIELD_LIBRARIES
   alg_fsi_xfem
   alg_loma
   alg_tsi
-  alg_stru_ale
+  alg_wear
   alg_poroelast
   alg_fpsi
   alg_fs3i

@@ -1802,6 +1802,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                 INPAR::CONTACT::wear_discr, INPAR::CONTACT::wear_discr, INPAR::CONTACT::wear_discr),
         &wear);
 
+  setStringToIntegralParameter<int>("WEAR_COUPALGO","stagg","Definition of wear (ALE) coupling algorithm",
+        tuple<std::string>("stagg","s",
+                           "iterstagg","is",
+                           "monolithic","mono"),
+        tuple<int>(
+                INPAR::CONTACT::wear_stagg, INPAR::CONTACT::wear_stagg,
+                INPAR::CONTACT::wear_iterstagg, INPAR::CONTACT::wear_iterstagg,
+                INPAR::CONTACT::wear_monolithic, INPAR::CONTACT::wear_monolithic),
+        &wear);
+
   /*----------------------------------------------------------------------*/
   /* parameters for tsi contact */
   Teuchos::ParameterList& tsic = list->sublist("TSI CONTACT",false,"");

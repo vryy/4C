@@ -380,9 +380,9 @@ void CONTACT::WearInterface::AssembleLinE_D(LINALG::SparseMatrix& lineglobal)
       if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
       FriNode* csnode = static_cast<FriNode*>(snode);
 
-      // current Lagrange multipliers
+      // current wear - wear from last converged iteration step (partitioned scheme)
       double w = 0.0;
-      w=csnode->FriDataPlus().wcurr()[0];
+      w=(csnode->FriDataPlus().wcurr()[0] + csnode->FriDataPlus().wold()[0]);
 
       // Mortar matrix T derivatives
       std::map<int,double>& thisdderive = fnode->FriDataPlus().GetDerivE()[sgid];
@@ -1374,7 +1374,6 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
       {
         scderiv=true;
         scalefac=cnode->MoData().GetScale();
-
       }
 
       // check for Dimension of derivative maps
@@ -3123,9 +3122,8 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
       Epetra_SerialDenseVector w_i(1);
 
       w_owner[0] = cnode->Owner();
-      w_i[0]     = - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
+      w_i[0]     = - cnode->FriDataPlus().wold()[0] - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
       w_gid[0]   = cnode->Dofs()[0];//inactivedofs->GID(2*i);
-
 
       if (abs(w_i[0])>1e-12) LINALG::Assemble(inactiverhs, w_i, w_gid, w_owner);
     }
@@ -3196,7 +3194,7 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
         Epetra_SerialDenseVector w_i(1);
 
         w_owner[0] = fnode->Owner();
-        w_i[0]     = - (csnode->FriDataPlus().wcurr()[0]) * (p->second);
+        w_i[0]     = (- (csnode->FriDataPlus().wold()[0]) - (csnode->FriDataPlus().wcurr()[0])) * (p->second);
         w_gid[0]   = fnode->Dofs()[0];
 
         if (abs(w_i[0])>1e-12) LINALG::Assemble(rhs, w_i, w_gid, w_owner);

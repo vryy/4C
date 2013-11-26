@@ -197,7 +197,10 @@ public:
                            Teuchos::RCP<const Epetra_Vector> disp,
                            Teuchos::RCP<const Epetra_Vector> dispmat,
                            LocationArray& la,
-                           bool& found);
+                           bool& found,
+                           double e1,
+                           double e2,
+                           double e3);
 
   /*!
   \brief Destructor
