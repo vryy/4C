@@ -130,8 +130,9 @@ void STR::TimIntPrestress::UpdateStepElement()
 /* only necessary for dynamic restart! */
 void STR::TimIntPrestress::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
-  output->WriteVector("fexternal", fextn_);
+  output->WriteVector("fexternal",fextn_);
   output->WriteVector("fint",fintn_);
+  output->WriteVector("finert",zeros_);
   return;
 }
 
