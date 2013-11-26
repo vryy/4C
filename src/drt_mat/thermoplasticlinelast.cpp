@@ -1033,19 +1033,20 @@ void MAT::ThermoPlasticLinElast::SetupCmatElastoPlastic(
   //      = eta^{trial}_{n+1} / || eta^{trial}_{n+1} ||
 
   // ------------------------------------------------------------ tangent
-  // loop strains (columns)
-  for (int k=0; k<6; ++k)
+
+  if (q != 0.0)
   {
-    // loop stresses (rows)
-    for (int i=0; i<6; ++i)
+    // loop strains (columns)
+    for (int k=0; k<6; ++k)
     {
-      if (q != 0.0)
+      // loop stresses (rows)
+      for (int i=0; i<6; ++i)
       {
         epfac3 =  heaviside * 6 * G * G * ( Dgamma / q - 1.0 / (3 * G + Hkin + Hiso) );
         cmat(i,k) += epfac3 * Nbar(i) * Nbar(k);
-      }  // (q != 0.0)
-    } // end rows, loop i
-  }  // end columns, loop k
+      } // end rows, loop i
+    }  // end columns, loop k
+  }  // (q != 0.0)
 
 #ifdef DEBUGMATERIAL
 //  std::cout << "Ende SetupCmatElastPlast" << std::endl;

@@ -841,15 +841,12 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(
     {
       // only first plastic call is output at screen for every processor
       // visualisation of whole plastic behaviour via PLASTIC_STRAIN in postprocessing
-      if (plastic_step_ == false)
+      if ( (plastic_step_ == false) and (gp == 0) )
       {
-        if ( (plastic_step_ == false) and (gp == 0) )
-          std::cout << "damage starts to evolve in element = " << eleID << std::endl;
+        std::cout << "damage starts to evolve in element = " << eleID << std::endl;
 
         plastic_step_ = true;
       }
-      if (gp == 0)
-        std::cout << "damage starts to evolve in element = " << eleID << std::endl;
 
 #ifdef DEBUGMATERIAL
         std::cout << "Damage has to be considered for current load step and ele = "
@@ -2478,21 +2475,21 @@ void MAT::Damage::SetupCmatElastoPlastic(
 
       // ------------------------------------------------ second plastic term
 
-      // loop strains (columns)
-      for (int k=0; k<6; ++k)
+      if (q_tilde != 0.0)
       {
-        // ---------------------------------------------------------- tangent
-        // loop stresses (rows)
-        for (int i=0; i<6; ++i)
+        // loop strains (columns)
+        for (int k=0; k<6; ++k)
         {
-          if (q_tilde != 0.0)
+          // ---------------------------------------------------------- tangent
+          // loop stresses (rows)
+          for (int i=0; i<6; ++i)
           {
             epfac3 =  heaviside * 6 * G * G * ( Dgamma / q_tilde - 1.0 / (3 * G + Hiso) );
             // here: Nbar = s^{trial}_{n+1} / || s^{trial}_{n+1} ||
             cmat(i,k) += epfac3 * Nbar(i) * Nbar(k);
-          }  // (q != 0.0)
-        }  // end rows, loop i
-      }  // end columns, loop k
+          }  // end rows, loop i
+        }  // end columns, loop k
+      }  // (q != 0.0)
 
       // complete material tangent C_ep available
 
@@ -2648,10 +2645,14 @@ void MAT::Damage::SetupCmatElastoPlastic(
 
       // a = 2G . sigma_y . omega / q_tilde
       double a = 0.0;
-      a = (2.0 * G * sigma_y * omega) / q_tilde;
       // b = 2G . (a1 . Hiso . omega + a4 . sigma_y - sigma_y . omega / q_tilde
       double b = 0.0;
-      b = 2.0 * G * (a1 * Hiso * omega + a4 * sigma_y - sigma_y * omega / q_tilde);
+
+      if (q_tilde != 0.0)
+      {
+        a = (2.0 * G * sigma_y * omega) / q_tilde;
+        b = 2.0 * G * (a1 * Hiso * omega + a4 * sigma_y - sigma_y * omega / q_tilde);
+      }
       // c = bulk . (a2 . Hiso . omega + a3 . sigma_y) / sqrt(3/2)
       double c = 0.0;
       c = bulk * (a2 * Hiso * omega + a3 * sigma_y) / sqrt(3.0/2.0);
@@ -2671,12 +2672,7 @@ void MAT::Damage::SetupCmatElastoPlastic(
       // contribution: Id4^#
       cmat.Update(a, id4sharp, 1.0);
       // contribution: Id \otimes Id
-      double epfac = 0.0;
-      epfac = a / (-3.0);
-      if (q_tilde != 0.0)
-      {
-        cmat.MultiplyNT(epfac, id2, id2, 1.0);
-      }
+      cmat.MultiplyNT( (a / (-3.0)), id2, id2, 1.0);
       cmat.MultiplyNT(b, Nbar, Nbar, 1.0);
       cmat.MultiplyNT(c, Nbar, id2, 1.0);
       cmat.MultiplyNT(d, id2, Nbar, 1.0);

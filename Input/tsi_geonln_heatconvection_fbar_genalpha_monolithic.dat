@@ -123,7 +123,7 @@ LINEAR_SOLVER                   1
 MAXTIME                         4.0
 NORMCOMBI_RESFINC               Coupl_And_Singl               // And,Or,{Coupl_}{Or,And}_Singl
 NORM_INC                        Abs                           // Abs,Rel
-NORM_RESF                       Rel                           // Abs,RelIter0
+NORM_RESF                       Rel                           // Abs,Mix
 NUMSTEP                         10                            // 400,800
 RESTARTEVRY                     2
 TIMESTEP                        0.1                           // 0.05
