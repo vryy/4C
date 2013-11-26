@@ -198,7 +198,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   {
     if(ele->ParentElement()->Shape()==DRT::Element::quad4)
     {
-      FPSICoupling<DRT::Element::quad4>(
+      this->FPSICoupling<DRT::Element::quad4>(
           ele,
           params,
           discretization,
@@ -217,7 +217,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   {
     if(ele->ParentElement()->Shape()==DRT::Element::hex8)
     {
-      FPSICoupling<DRT::Element::hex8>(
+      this->FPSICoupling<DRT::Element::hex8>(
           ele,
           params,
           discretization,
@@ -653,7 +653,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     }
 
     // evaluate my::unitnormal_ , my::deriv_, ...
-    EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
 
     // my::fac_ = intpoints.IP().qwgt[gpid]*my::drs_ done in EvalShapeFuncAtBouIntPoint()
     const double timefac       = my::fldparatimint_->TimeFac();
@@ -1563,7 +1563,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   {
     if(ele->ParentElement()->Shape()==DRT::Element::quad4)
     {
-      ComputeFlowRate<DRT::Element::quad4>(
+      this->ComputeFlowRate<DRT::Element::quad4>(
           ele,
           params,
           discretization,
@@ -1580,7 +1580,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   {
     if(ele->ParentElement()->Shape()==DRT::Element::quad9)
     {
-      ComputeFlowRate<DRT::Element::quad9>(
+      this->ComputeFlowRate<DRT::Element::quad9>(
           ele,
           params,
           discretization,
@@ -1598,7 +1598,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   {
     if(ele->ParentElement()->Shape()==DRT::Element::hex8)
     {
-      ComputeFlowRate<DRT::Element::hex8>(
+      this->ComputeFlowRate<DRT::Element::hex8>(
           ele,
           params,
           discretization,
@@ -1615,7 +1615,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   {
     if(ele->ParentElement()->Shape()==DRT::Element::tet4)
     {
-      ComputeFlowRate<DRT::Element::tet4>(
+      this->ComputeFlowRate<DRT::Element::tet4>(
           ele,
           params,
           discretization,
@@ -1632,7 +1632,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   {
     if(ele->ParentElement()->Shape()==DRT::Element::tet10)
     {
-      ComputeFlowRate<DRT::Element::tet10>(
+      this->ComputeFlowRate<DRT::Element::tet10>(
           ele,
           params,
           discretization,
@@ -1649,7 +1649,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   {
     if(ele->ParentElement()->Shape()==DRT::Element::hex27)
     {
-      ComputeFlowRate<DRT::Element::hex27>(
+      this->ComputeFlowRate<DRT::Element::hex27>(
           ele,
           params,
           discretization,
@@ -1847,7 +1847,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
 
     my::velint_.Multiply(evelnp,my::funct_);
     gridvelint.Multiply(egridvel,my::funct_);
@@ -1993,7 +1993,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
 
     for (int inode=0; inode<my::bdrynen_; ++inode)
     {
@@ -2065,7 +2065,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
       // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
       // Computation of the unit normal vector at the Gauss points is not activated here
       // Computation of nurb specific stuff is not activated here
-      EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+      this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
 
       // dxyzdrs vector -> normal which is not normalized
       LINALG::Matrix<my::bdrynsd_,my::nsd_> dxyzdrs(0.0);
@@ -2198,7 +2198,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
 
     for (int inode=0; inode<my::bdrynen_; ++inode)
     {
@@ -2560,7 +2560,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
 
     const double timefacpre = my::fldparatimint_->TimeFacPre() ;
     const double timefacfacpre = my::fldparatimint_->TimeFacPre() * my::fac_;
@@ -2791,7 +2791,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
 
     const double timefac       = my::fldparatimint_->TimeFac() ;
     const double timefacfac    = my::fldparatimint_->TimeFac() * my::fac_;
