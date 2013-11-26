@@ -110,7 +110,6 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
 
   // get the parent element
   int p_master_id = p_master->Id();
-  int p_slave_id  = p_slave->Id();
 
   std::vector<int> nds_master;
   nds_master.reserve(p_master_numnode);
