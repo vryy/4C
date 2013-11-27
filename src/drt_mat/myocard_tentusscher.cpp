@@ -579,7 +579,7 @@ double Myocard_TenTusscher::ComputeReactionCoeff(const double phi, const double 
   a_[53] =  c_[19]*(s_[0] - a_[43]);
   a_[58] = ( c_[32]*(s_[0] - a_[33]))/(1.0+(exp(((25.0 - s_[0])/5.98))));
   a_[57] = ( c_[30]*s_[3])/(s_[3]+c_[31]);
-  a_[12] = (VOI_ -  (floor((VOI_/c_[6])))*c_[6]>=c_[5]&&VOI_ -  (floor((VOI_/c_[6])))*c_[6]<=c_[5]+c_[7] ? - c_[8] : 0.0); // EXTERNAL STIMULUS
+  a_[12] = 0.0; //(VOI_ -  (floor((VOI_/c_[6])))*c_[6]>=c_[5]&&VOI_ -  (floor((VOI_/c_[6])))*c_[6]<=c_[5]+c_[7] ? - c_[8] : 0.0); // EXTERNAL STIMULUS
 
   // Compute reaction coefficient (I_K1 + I_to + I_Kr + I_Ks + I_CaL + I_NaK + I_Na + I_b_Na + I_NaCa + I_b_Ca + I_p_K + I_stim)
   // ---------------------------------------------------------------------------------------------------------------------------
@@ -648,7 +648,12 @@ int Myocard_TenTusscher::GetNumberOfInternalStateVariables() const
 double Myocard_TenTusscher::GetInternalState(const int k) const
 {
   double val=0.0;
-  val = s0_[k];
+  if(k==-1)
+  {
+    val = s0_[3]; // Free cytoplasmatic calcium concentration
+  }else{
+    val = s0_[k];
+  }
   return val;
 }
 

@@ -114,6 +114,10 @@ Myocard_Minimal::Myocard_Minimal(const double eps_deriv_myocard,const std::strin
     dserror("Parameters for tissue type not supported for minimal model (only Epi,Atria)");
   }
 
+  // Variables for electromechanical coupling
+   mechanical_activation_ = 0.0;; // to store the variable for activation (phi in this case=)
+   act_thres_ = 0.5; // activation threshold (so that activation = 1.0 if mechanical_activation_ >= act_thres_)
+
 
 }
 
@@ -153,6 +157,10 @@ double Myocard_Minimal::ComputeReactionCoeff(const double phi, const double dt)
 
     reacoeff = (Jfi_ + Jso_ + Jsi_);
 
+    // Store necessary variables for mechanical activation and electromechanical coupling
+    mechanical_activation_ = phi;
+
+
   return reacoeff;
 }
 
@@ -171,6 +179,10 @@ double Myocard_Minimal::GetInternalState(const int k) const
 {
   double val=0.0;
   switch(k){
+    case -1:{ // Compute activation function for electromechanical coupling
+      if(mechanical_activation_>=act_thres_) val = 1.0;
+      break;
+    }
     case 0: {val=v_; break;}
     case 1: {val=w_; break;}
     case 2: {val=s_; break;}

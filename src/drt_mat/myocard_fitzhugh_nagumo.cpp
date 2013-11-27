@@ -37,6 +37,7 @@ Myocard_Fitzhugh_Nagumo::Myocard_Fitzhugh_Nagumo(const double eps_deriv_myocard,
 {
   // Initial condition
   r0_ = 0.0; r_ = r0_ ;
+  mechanical_activation_ = 0.0;
 
   eps_deriv_ = eps_deriv_myocard;
 
@@ -46,6 +47,11 @@ Myocard_Fitzhugh_Nagumo::Myocard_Fitzhugh_Nagumo(const double eps_deriv_myocard,
   c1_=0.26;
   c2_=0.1;
   d_=1.0;
+
+
+  // Variables for electromechanical coupling
+   mechanical_activation_ = 0.0;; // to store the variable for activation (phi in this case=)
+   act_thres_ = 0.2; // activation threshold (so that activation = 1.0 if mechanical_activation_ >= act_thres_)
 
 }
 
@@ -57,7 +63,12 @@ double Myocard_Fitzhugh_Nagumo::ComputeReactionCoeff(const double phi, const dou
      J1_ = c1_*phi*(phi-a_)*(phi-1.0);
      J2_ = c2_*phi*r_;
      reacoeff = J1_+J2_;
+
+     // For electromechanics
+      mechanical_activation_ = phi;
+
      return reacoeff;
+
 }
 
 /*----------------------------------------------------------------------*
@@ -73,9 +84,13 @@ int Myocard_Fitzhugh_Nagumo::GetNumberOfInternalStateVariables() const
  *----------------------------------------------------------------------*/
 double Myocard_Fitzhugh_Nagumo::GetInternalState(const int k) const
 {
-  double val=0.0;
+  double val = 0.0;
   switch(k){
-    case 0: {val=r_; break;}
+  case -1:{ // Compute activation function for electromechanical coupling
+    if(mechanical_activation_>=act_thres_) val = 1.0;
+    break;
+  }
+  case 0: {val = r_; break;}
   }
   return val;
 }

@@ -1253,6 +1253,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"MAX_ACTIVATION","Maximal value for the rescaled activation");
     AddNamedReal(m,"MIN_ACTIVATION","Minimal value for the rescaled activation");
     AddNamedInt(m,"SOURCE_ACTIVATION","Where the activation comes from: 0=scatra , >0 Id for FUNCT");
+    AddNamedReal(m,"ACTIVATION_THRES","Threshold for activation (contraction starts when activation function is larger than this value, relaxes otherwise)");
     AddNamedReal(m,"GAMMA","azimuth angle", true);
     AddNamedReal(m,"THETA","polar angle", true);
     AddNamedInt(m,"INIT","initialization mode for fiber alignment", 1, true);

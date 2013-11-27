@@ -131,29 +131,9 @@ private:
   double Tau_winf_;// = 0.07;
   double w_infs_;// = 0.94;
 
-
-  /*
-
-  /// initial variables and ionic concentrations TNNP
-  double m_; /// fast Na current
-  double h_; /// fast Na current
-  double j_; /// fast Na current
-  double r_; /// transient outward current
-  double s_; /// transient outward current
-  double x_r1_; /// rapid delayed rectifier current
-  double x_r2_; /// rapid delayed rectifier current
-  double x_s_; /// slow delayed rectifier current
-  double d_; /// L-type Ca2+ current
-  double f_; /// L-type Ca2+ current
-  double f_Ca_; /// L-type Ca2+ current
-  double g_; /// Ca2+ dynamics
-
-  double Na_i_; /// Sodium concentration
-  double K_i_; /// Potassium concentration
-  double Ca_i_; /// free Calcium concentration
-  double Ca_sr_; /// free Calcium concentration in sarcoplasmatic reticulum
-
-*/
+  // Variables for electromechanical coupling
+  double mechanical_activation_; // to store the variable for activation (phi in this case=)
+  double act_thres_ ; // activation threshold (so that activation = 1.0 if mechanical_activation_ >= act_thres_)
 
 }; // Myocard_Minimal
 

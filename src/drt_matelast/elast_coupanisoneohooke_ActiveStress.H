@@ -56,6 +56,8 @@ namespace ELASTIC
       double maxactiv_;
       /// Minimal value for rescaling the activation curve
       double minactiv_;
+      /// Threshold for stress activation function
+      double activationthreshold_;
       /// Where the activation comes from: 0=scatra , >0 Id for FUNCT
       int sourceactiv_;
       /// azimute angle of spherical coordinates

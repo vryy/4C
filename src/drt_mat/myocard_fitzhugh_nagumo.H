@@ -104,6 +104,11 @@ private:
   double c2_;
   double d_;
 
+  // Variables for electromechanical coupling
+  double mechanical_activation_; // to store the variable for activation (phi in this case=)
+  double act_thres_ ; // activation threshold (so that activation = 1.0 if mechanical_activation_ >= act_thres_)
+
+
 }; // Myocard_Fitzhugh_Nagumo
 
 

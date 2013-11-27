@@ -84,6 +84,13 @@ namespace MAT
       return 0.0;
     }
 
+    /// return internal state
+    virtual double GetInternalState(int k) const
+    {
+      dserror("The material you are using does not provide an internal state");
+      return 0.0;
+    }
+
     /// Set elementwise material parameters
     virtual void Init(double val, std::string name){dserror("not implemented in this material");};
   };

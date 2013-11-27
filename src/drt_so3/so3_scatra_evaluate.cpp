@@ -66,6 +66,13 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
        params.set<double>("scalar",meantemp);
 
     }
+   // Get pointer for scatra material in the same element
+    RCP<DRT::Discretization> scatradis = Teuchos::null;
+    scatradis = DRT::Problem::Instance()->GetDis("scatra");
+    DRT::Element* scatraele = scatradis->gElement(Id());
+    Teuchos::RCP<MAT::Material> scatramat = Teuchos::rcp_dynamic_cast<MAT::Material>(scatraele->Material());
+    params.set< Teuchos::RCP<MAT::Material> >("scatramat",scatramat);
+
   }
   Teuchos::RCP<std::vector<double> >xrefe = Teuchos::rcp(new std::vector<double>(3));
   DRT::Node** nodes = Nodes();

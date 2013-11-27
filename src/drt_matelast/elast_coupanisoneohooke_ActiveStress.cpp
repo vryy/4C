@@ -18,6 +18,7 @@ Maintainer: Cristobal Bertoglio
 /* headers */
 #include "elast_coupanisoneohooke_ActiveStress.H"
 #include "../drt_mat/matpar_material.H"
+#include "../drt_mat/material.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -33,6 +34,7 @@ MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress::CoupAnisoNeoHooke_ActiveStres
   tauc0_(matdata->GetDouble("TAUC0")),
   maxactiv_(matdata->GetDouble("MAX_ACTIVATION")),
   minactiv_(matdata->GetDouble("MIN_ACTIVATION")),
+  activationthreshold_(matdata->GetDouble("ACTIVATION_THRES")),
   sourceactiv_(matdata->GetInt("SOURCE_ACTIVATION")),
   gamma_(matdata->GetDouble("GAMMA")),
   theta_(matdata->GetDouble("THETA")),
@@ -184,17 +186,25 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::AddStressAnisoPrincipal(
 {
    double dt = params.get("delta time",1.0);
 
-   double activationFunction_ = 0.0;
-   if(params_->sourceactiv_==0) activationFunction_=params.get<double>("scalar",1.0);
+   double activationFunction = 0.0;
+   Teuchos::RCP<MAT::Material> scatramat;
+   if(params_->sourceactiv_==0) activationFunction=params.get<double>("scalar",0.0);
+   else if(params_->sourceactiv_==-1){
+     scatramat= params.get< Teuchos::RCP<MAT::Material> >("scatramat",Teuchos::null);
+     if(scatramat !=Teuchos::null) {
+       double excitContractCoupingVariable = scatramat->GetInternalState(-1);
+       if(excitContractCoupingVariable >= params_->activationthreshold_) activationFunction = 1.0;
+     }
+   }
    else{
      double time_ = params.get<double>("total time",0.0);
      Teuchos::RCP<std::vector<double> >  pos_ = params.get<Teuchos::RCP<std::vector<double> > >("position");
      const double* coordgpref_ = &(*pos_)[0];
-     activationFunction_ = DRT::Problem::Instance()->Funct(params_->sourceactiv_-1).Evaluate(0,coordgpref_,time_,NULL);
+     activationFunction = DRT::Problem::Instance()->Funct(params_->sourceactiv_-1).Evaluate(0,coordgpref_,time_,NULL);
    }
-   activationFunction_ = activationFunction_*(params_->maxactiv_-params_->minactiv_)+params_->minactiv_;
-   double abs_u_ = abs(activationFunction_);
-   double absplus_u_ = abs_u_*(activationFunction_>0.0);
+   activationFunction = activationFunction*(params_->maxactiv_-params_->minactiv_)+params_->minactiv_;
+   double abs_u_ = abs(activationFunction);
+   double absplus_u_ = abs_u_*(activationFunction>0.0);
    tauc_ =  (tauc_last_/dt + params_->sigma_*absplus_u_)/(1/dt + abs_u_);
    stress.Update(tauc_, A_, 1.0);
 
