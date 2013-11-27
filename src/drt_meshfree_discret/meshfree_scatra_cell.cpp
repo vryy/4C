@@ -15,7 +15,6 @@ Maintainer: Keijo Nissen
 #include "meshfree_scatra_cell.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
-//#include "../drt_lib/drt_utils.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -183,6 +182,13 @@ DRT::Element* DRT::ELEMENTS::MeshfreeTransport::Clone() const
   return newelement;
 }
 
+/*--------------------------------------------------------------------------*
+ |  dtor                                                 (public) nis Jan12 |
+ *--------------------------------------------------------------------------*/
+DRT::ELEMENTS::MeshfreeTransport::~MeshfreeTransport()
+{
+  return;
+}
 
 /*--------------------------------------------------------------------------*
  |  create material class                                (public) nis Jan12 |
@@ -263,16 +269,6 @@ int DRT::ELEMENTS::MeshfreeTransport::NumVolume() const
 {
   return DRT::UTILS::getNumberOfElementVolumes(distype_);
 }
-
-
-/*--------------------------------------------------------------------------*
- |  dtor                                                 (public) nis Jan12 |
- *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::MeshfreeTransport::~MeshfreeTransport()
-{
-  return;
-}
-
 
 /*--------------------------------------------------------------------------*
  |  print this element                                   (public) nis Jan12 |
@@ -363,7 +359,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Volum
 
 
 /*--------------------------------------------------------------------------*
- |  Pack data (public)                                            nis Jan12 |
+ |  Pack data                                            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 void DRT::ELEMENTS::MeshfreeTransport::Pack(DRT::PackBuffer& data) const
 {
@@ -388,7 +384,7 @@ void DRT::ELEMENTS::MeshfreeTransport::Pack(DRT::PackBuffer& data) const
 
 
 /*--------------------------------------------------------------------------*
- |  Unpack data                                           (public)nis Jan12 |
+ |  Unpack data                                          (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 void DRT::ELEMENTS::MeshfreeTransport::Unpack(const std::vector<char>& data)
 {

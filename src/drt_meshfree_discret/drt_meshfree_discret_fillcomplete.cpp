@@ -58,9 +58,9 @@ int DRT::MESHFREE::MeshfreeDiscretization::FillComplete(bool assigndegreesoffree
   // this rather puzzling return style is copied from base class discret
   int ret = 0;
 
-  if (!filled_)
+  if (!Filled())
   {
-    // this rather puzzling return style is copied from base class discret
+    // fill parent discretization
     ret = DRT::Discretization::FillComplete(false,false,false);
 
     // (re)build map of knots knotrowmap_, knotcolmap_, knotrowptr, knotcolptr, and knotghoptr
@@ -72,7 +72,7 @@ int DRT::MESHFREE::MeshfreeDiscretization::FillComplete(bool assigndegreesoffree
     // (re)construct node -> element pointers
     BuildKnotToElementPointers();
 
-    // second assign nodes to geometry if not assigned
+    // assign nodes to geometry
     AssignNodesToKnotsAndCells();
 
     // Assign degrees of freedom to elements and nodes
@@ -84,17 +84,6 @@ int DRT::MESHFREE::MeshfreeDiscretization::FillComplete(bool assigndegreesoffree
     // (Re)build the geometry of the boundary conditions
     if (doboundaryconditions) BoundaryConditionsGeometry();
   }
-//  else
-//  {
-//    if (!assigned_)
-//    {
-//      // second assign nodes to geometry if not assigned
-//      AssignNodesToKnotsAndCells();
-//
-//      // Assign degrees of freedom to elements and nodes
-//      AssignDegreesOfFreedom(0);
-//    }
-//  }
 
   return ret;
 }

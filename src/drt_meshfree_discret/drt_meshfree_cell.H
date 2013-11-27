@@ -78,113 +78,6 @@ public:
   //! @name Enums and Friends
   /*========================================================================*/
 
-//  /*------------------------------------------------------------------------*/
-//  /*!
-//   * \brief Cell shape type
-//   *///                                                   (public) nis Feb12
-//  /*------------------------------------------------------------------------*/
-//  enum MeshfreeDiscretizationType
-//  {
-//    hex8,                       // 8 noded hexahedra
-//    tet4,                       // 4 noded tetrahedra
-//    quad4,                      // 4 noded quadrilateral
-//    tri3,                       // 3 noded triangle
-//    line2,                      // 2 noded line
-//    point1,                     // 1 noded point
-//    dis_none,                   // unknown dis type
-//    max_distype                 // end marker. must be the last entry
-//  };
-//    voroh8,                     // voronoi cell, initially 8 noded hexahedra
-//    vorot4,                     // voronoi cell, initially 4 noded tetrahedra
-//    voroq4,                     // voronoi cell, initially 4 noded quadrilateral
-//    vorot3,                     // voronoi cell, initially 3 noded triangle
-//    vorol2,                     // voronoi cell, initially 2 noded line
-//    vorop1,                     // voronoi cell, initially 1 noded point
-//
-//  };
-
-
-//  /*========================================================================*/
-//  //! @name Location data classes
-//  /*========================================================================*/
-//
-//  /*------------------------------------------------------------------------*/
-//  /*!
-//   * \brief Location data for one dof set
-//   *
-//   * A helper that manages location vectors. Required since there can be an
-//   * arbitrary number of location vectors, matching the number of dofsets in
-//   * the discretization.
-//   *
-//   * \author Keijo Nissen (nissen@lnm.mw.tum.de)
-//   *
-//   * \date January, 2012
-//   *///                                                   (public) nis Jan12
-//  /*------------------------------------------------------------------------*/
-//  class LocationData
-//  {
-//  public:
-//
-//    /// clear all vectors
-//    void Clear() { lm_.clear(); lmdirich_.clear(); lmowner_.clear(); stride_.clear(); }
-//
-//    /// return number of dofs collected
-//    int Size() const { return lm_.size(); }
-//
-//    /// global dof numbers of cellal dofs
-//    std::vector<int> lm_;
-//
-//    /// Dirichlet on/off flags
-//    std::vector<int> lmdirich_;
-//
-//    /// Owner of dof (that is owner of knot or cell the dof belongs to)
-//    std::vector<int> lmowner_;
-//
-//    /// Nodal stride (that is, how many dofs are guaranteed to be contigous in the system matrix)
-//    vector<int> stride_;
-//  };
-//
-//
-//  /*------------------------------------------------------------------------*/
-//  /*!
-//   * \brief Location data for all dof sets
-//   *
-//   * A helper that manages location vectors. Required since there can be an
-//   * arbitrary number of location vectors, matching the number of dofsets in
-//   * the discretization.
-//   *
-//   * \author Keijo Nissen (nissen@lnm.mw.tum.de)
-//   *
-//   * \date January, 2012
-//   *///                                                   (public) nis Jan12
-//  /*------------------------------------------------------------------------*/
-//  class LocationArray
-//  {
-//  public:
-//
-//    /// constructed with number of dofsets in discretization
-//    explicit LocationArray(int size)
-//      : data_(size)
-//    {
-//    }
-//
-//    /// clear all location entries
-//    void Clear()
-//    {
-//      for (unsigned i=0; i<data_.size(); ++i)
-//        data_[i].Clear();
-//    }
-//
-//    /// access location entry
-//    LocationData& operator[](int i) { return data_[i]; }
-//
-//    /// number of location entries, that is number of dofsets in discretization
-//    int Size() const { return data_.size(); }
-//
-//  private:
-//    std::vector<LocationData> data_;
-//  };
-
   /*========================================================================*/
   //! @name Constructors and destructors and related methods
   /*========================================================================*/
@@ -255,9 +148,6 @@ public:
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
   virtual void Unpack(const std::vector<char>& data);
-
-  // return CellType instance
-  //virtual DRT::MESHFREE::CellType & CellType() const = 0;
 
   /*========================================================================*/
   //! @name Query methods
@@ -426,33 +316,6 @@ private:
   Teuchos::RCP<Teuchos::ParameterList> params_;
 
 }; // class Cell
-
-//  /*
-//   * \brief translate distype to std::string for screen output
-//   */
-//  inline std::string DistypeToString(const DRT::MESHFREE::Cell::MeshfreeDiscretizationType distype)
-//  {
-//      std::string s = "";
-//      switch (distype)
-//      {
-//      case DRT::MESHFREE::Cell::dis_none:   s = "DIS_NONE";  break;
-//      case DRT::MESHFREE::Cell::hex8:       s = "HEX8";  break;
-//      case DRT::MESHFREE::Cell::quad4:      s = "QUAD4";  break;
-//      case DRT::MESHFREE::Cell::tri3:       s = "TRI3";  break;
-//      case DRT::MESHFREE::Cell::line2:      s = "LINE2";  break;
-//      case DRT::MESHFREE::Cell::point1:     s = "POINT1";  break;
-//      case DRT::MESHFREE::Cell::max_distype:s = "MAX_DISTYPE";  break;
-//      default:
-//          std::cout << distype << std::endl;
-//          dserror("no std::string for this distype defined!");
-//      };
-//      return s;
-//  }
-//
-//  /*
-//   * \brief translate distype std::string to enum
-//   */
-//  DRT::MESHFREE::Cell::MeshfreeDiscretizationType StringToDistype(std::string name);
 
 } // namespace MESHFREE
 } // namespace DRT

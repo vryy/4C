@@ -17,7 +17,6 @@ Maintainer: Keijo Nissen
 
 #include "drt_meshfree_cell.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace DRT
 {
@@ -265,7 +264,8 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get number of degrees of freedom of a certain node
+   * \brief Get number of degrees of freedom of a certain node in case of
+   *        multiple dofsets!
    *        (implements pure virtual DRT::Element)
    *
    * The element decides how many degrees of freedom its nodes must have. As
@@ -315,7 +315,10 @@ public:
    *
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual int NumDofPerElement() const { return 0; }
+  virtual int NumDofPerElement() const
+  {
+    return 0;
+  }
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -417,25 +420,25 @@ public:
    *   o Evaluation of condif system matrix and residual for the stationary fluid solver
    * </pre>
    *
-   * \param params (in/out): ParameterList for communication between control routine
-   *                         and elements
+   * \param params (in/out)    : ParameterList for communication between
+   *                             control routine and elements
    * \param discretization (in): A reference to the underlying discretization
-   * \param lm (in):         location vector of this element
-   * \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-   *                         the controling method does not epxect the element to fill
-   *                         this matrix.
-   * \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-   *                         the controling method does not epxect the element to fill
-   *                         this matrix.
-   * \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-   *                         the controlling method does not epxect the element
-   *                         to fill this vector
-   * \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-   *                         the controlling method does not epxect the element
-   *                         to fill this vector
-   * \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-   *                         the controlling method does not epxect the element
-   *                         to fill this vector
+   * \param lm (in)            : location vector of this element
+   * \param elemat1 (out)      : matrix to be filled by element. If NULL on
+   *                             input, the controling method does not epxect
+   *                             the element to fill this matrix.
+   * \param elemat2 (out)      : matrix to be filled by element. If NULL on
+   *                             input, the controling method does not epxect
+   *                             the element to fill this matrix.
+   * \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+   *                             input, the controling method does not epxect
+   *                             the element to fill this vector.
+   * \param elevec2 (out)      : vector to be filled by element. If NULL on input,
+   *                             input, the controling method does not epxect
+   *                             the element to fill this vector.
+   * \param elevec3 (out)      : vector to be filled by element. If NULL on input,
+   *                             input, the controling method does not epxect
+   *                             the element to fill this vector.
    * \return 0 if successful, negative otherwise
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
@@ -453,7 +456,7 @@ public:
   /*!
    * \brief Evaluate a Neumann boundary condition
    *
-   * this method evaluates a surfaces Neumann condition on the shell element
+   * this method evaluates a surfaces Neumann condition on this element
    *
    * \param params (in/out)    : ParameterList for communication between control routine
    *                             and elements
@@ -465,7 +468,7 @@ public:
    * \return 0 if successful, negative otherwise
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               std::vector<int>&         lm,
@@ -485,7 +488,7 @@ private:
   int numdofpernode_;
 
   //! the element discretization type
-  DiscretizationType distype_;
+  DRT::Element::DiscretizationType distype_;
 
 }; // class MeshfreeTransport
 
@@ -542,6 +545,7 @@ private:
 class MeshfreeTransportBoundary : public DRT::MESHFREE::Cell
 {
 public:
+
   /*========================================================================*/
   //! @name Constructors and destructors and related methods
   /*========================================================================*/
@@ -631,7 +635,7 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Pack dummy class for - not supported
+   * \brief Pack dummy class - not supported
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
   virtual void Pack(DRT::PackBuffer& data) const;
@@ -785,7 +789,7 @@ private:
   MeshfreeTransport* parent_;
 
   /*------------------------------------------------------------------------*/
-  //! The local boundary element number of this surface w.r.t to the parent_ element
+  //! The local boundary element number of this surface w.r.t. the parent_ element
   /*------------------------------------------------------------------------*/
   int lbeleid_;
 

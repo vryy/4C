@@ -304,10 +304,6 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignSingleNode(const double* const
                                                              const int & myrank,
                                                              std::map<int, std::map<int,int> > & procmap)
 {
-//  std::cout << "==================================" << std::endl;
-//  std::cout << "We're in AssignSingleNode()." << std::endl;
-//  std::cout << "numele = " << numele << std::endl;
-
   // initialisiation of auxiliary pointers
   // (kept to minimum because of recursive calling)
   DRT::MESHFREE::MeshfreeNode** knots;    // pointer to vector of pointers of knots
@@ -354,9 +350,6 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignSingleNode(const double* const
 
     } // end if new element
   } // end for all elements
-
-//  std::cout << "End of AssignSingleNode()" << std::endl;
-//  std::cout << "==================================" << std::endl;
   return;
 }
 
@@ -365,13 +358,14 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignSingleNode(const double* const
  *--------------------------------------------------------------------------*/
 void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToKnotsAndCells()
 {
-  if (knot_.size()==0) return;
+  if (knot_.size()==0)
+  {
+    assigned_ = true;
+    return; // dserror("No knot to assign nodes to in meshfree discret.");
+  }
 
   if (assigned_)
-  {
-    std::cout << "Nothing to assign in discret." << std::endl;
-    return;
-  }
+    return; // dserror("Already assigned nodes in meshfree discret. You shouldn't be here.");
 
   // clear all nodal information in all cells - just to make sure
   Unassign();
@@ -461,12 +455,12 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToKnotsAndCells()
       } // end proc-loop
     } // end if parallel
     break;
-  } // case nodeassigntype_==procwise
+  } // end case nodeassigntype_==procwise
   case INPAR::MESHFREE::blockwise:
   {
     dserror("Blockwise assignment of nodes to elements not yet implemented.");
     break;
-  } // case nodeassigntype_==blockwise
+  } // end case nodeassigntype_==blockwise
   default:
     dserror("Invalid node assignment type.");
   } // end switch (nodeassigntype_)
@@ -637,21 +631,3 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
   }
   return;
 }
-
-/*--------------------------------------------------------------------------*
- |  Link nodes to integration cells                      (public) nis Oct11 |
- *--------------------------------------------------------------------------*/
-//void DRT::MeshfreeDiscretization::MakeNear()
-//{
-//  return;
-//}
-//
-//void DRT::MeshfreeDiscretization::MakeNear(std::vector<DRT::Element*> ele)
-//{
-//  return;
-//}
-//
-//void DRT::MeshfreeDiscretization::MakeNear(RCP<DRT::Element> ele)
-//{
-//  return;
-//}

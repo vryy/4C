@@ -51,10 +51,10 @@ public:
   virtual double GetRange(){return range_;};
 
   virtual int GetMeshfreeBasisFunction(
-    LINALG::SerialDenseVector       & funct_ , //!< (o) basis functions values
-    LINALG::SerialDenseMatrix       & deriv_ , //!< (o) spatial derivatives of basis functions
+    LINALG::SerialDenseVector       & funct , //!< (o) basis functions values
+    LINALG::SerialDenseMatrix       & deriv , //!< (o) spatial derivatives of basis functions
     const LINALG::SerialDenseMatrix & diffx  ,  //!< (i) distance vector between node and integration point
-    const int                       & dimensKN      //!< (i) dimension
+    const int                       & dimension      //!< (i) dimension
   ) const = 0;
 
 protected:
@@ -77,7 +77,7 @@ private:
   // forward declaration of DualProblem class
   template<int dim> class DualProblem;
   // DualProblem is a friend of the MaxEntProblem
-  template<int dim> friend class DualProblem;
+//  template<int dim> friend class DualProblem;
 
 public:
   //! ctor
@@ -86,17 +86,17 @@ public:
   );
 
   int GetMeshfreeBasisFunction(
-    LINALG::SerialDenseVector       & funct_ , //!< (o) basis functions values
-    LINALG::SerialDenseMatrix       & deriv_ , //!< (o) spatial derivatives of basis functions
+    LINALG::SerialDenseVector       & funct , //!< (o) basis functions values
+    LINALG::SerialDenseMatrix       & deriv , //!< (o) spatial derivatives of basis functions
     const LINALG::SerialDenseMatrix & diffx  , //!< (i) distance vector between node and integration point
     const int                       & dim      //!< (i) dimension
   ) const
   {
     switch (dim)
     {
-    case 1: return this->dual1d_->maxent_basisfunction(funct_, deriv_, diffx);
-    case 2: return this->dual2d_->maxent_basisfunction(funct_, deriv_, diffx);
-    case 3: return this->dual3d_->maxent_basisfunction(funct_, deriv_, diffx);
+    case 1: return this->dual1d_->maxent_basisfunction(funct, deriv, diffx);
+    case 2: return this->dual2d_->maxent_basisfunction(funct, deriv, diffx);
+    case 3: return this->dual3d_->maxent_basisfunction(funct, deriv, diffx);
     default: {dserror("fucked up!"); return -1;}
     };
   };
@@ -118,7 +118,14 @@ private:
    *
    * \author Keijo Nissen (nissen@lnm.mw.tum.de)
    *
-   * \date March, 2012
+   * \date Januar, 2013
+   *
+   * The rather awkward implementation as a member class with internal
+   * classes makes it possible to solve the max-ent problem for different dual
+   * functions. This is important for non-standard problems, e.g. for signed
+   * basis functions, non-partition-of-unity basis functions, or modification
+   * for the weighting basis functions to ensure Newton-stability at high
+   * Peclet numbers.
    */
   /*==========================================================================*/
   template<int dim>
@@ -138,8 +145,8 @@ private:
      *///                                                           nis Mar12
     /*--------------------------------------------------------------------------*/
     int maxent_basisfunction(
-      LINALG::SerialDenseVector       & funct_ , //!< (o) basis functions values
-      LINALG::SerialDenseMatrix       & deriv_ , //!< (o) spatial derivatives of basis functions
+      LINALG::SerialDenseVector       & funct , //!< (o) basis functions values
+      LINALG::SerialDenseMatrix       & deriv , //!< (o) spatial derivatives of basis functions
       LINALG::SerialDenseMatrix const & diffx    //!< (i) distance vector between node and integration point
     );
 
@@ -147,7 +154,6 @@ private:
     /*--------------------------------------------------------------------------*/
     /*!
      * \brief  function to compute the prior function and derivatives
-     *         (independent of dim, thus not in member class DualProblem)
      *///                                                              nis Mar12
     /*--------------------------------------------------------------------------*/
     void SetPriorFunctDeriv(
@@ -159,7 +165,6 @@ private:
     /*--------------------------------------------------------------------------*/
     /*!
      * \brief  function to compute the compliance condition and derivatives
-     *         (independent of dim, thus not in member class DualProblem)
      *///                                                              nis Mar12
     /*--------------------------------------------------------------------------*/
     void SetComplCondFunctDeriv(
@@ -168,57 +173,93 @@ private:
       LINALG::SerialDenseMatrix        const & diffx   //!< (i) distance vector between node and integration point
     ) const;
 
-    //! update of dual problem for non-negative functions with
-    //! partition-of-unity constraint (reduced problem - see Arroyo2006)
-    void DualParamsNonNegPU(
-      LINALG::SerialDenseVector       & funct_, //!< (o) basis functions values
-      LINALG::Matrix<dim,1>           & r     , //!< (o) derivative of dual function
-      LINALG::Matrix<dim,dim>         & J     , //!< (o) inverted Hessian of dual function
-      int                       const & na    , //!< (i) number of nodes
-      LINALG::SerialDenseVector const & q     , //!< (i) prior functions
-      LINALG::SerialDenseMatrix  & c     , //!< (i) constraints
-      LINALG::Matrix<dim,1>     const & lam     //!< (i) argmax of dual problem
-    );
+    /*--------------------------------------------------------------------------*/
+    /*!
+     * \brief  Virtual base class for specific routine for updating parameters
+     *         and evaluating spatial derivatives
+     *
+     * \author Keijo Nissen (nissen@lnm.mw.tum.de)
+     *
+     * \date Januar, 2013
+     */
+    /*--------------------------------------------------------------------------*/
+    class DualProblemType
+    {
+    public:
+      //! pure virtual function to update dual problem
+      virtual void UpdateParams(
+        LINALG::SerialDenseVector       & ,
+        LINALG::Matrix<dim,1>           & ,
+        LINALG::Matrix<dim,dim>         & ,
+        int                       const & ,
+        LINALG::SerialDenseVector const & ,
+        LINALG::SerialDenseMatrix       & ,
+        LINALG::Matrix<dim,1>     const &
+      ) = 0;
 
-    //! spatial derivatives for non-negative functions with partition-of-unity constraint
-    void DerivsNonNegPU(
-      LINALG::SerialDenseVector              const & funct_, //!< (i) basis functions values
-      LINALG::SerialDenseMatrix                    & deriv_, //!< (o) spatial derivatives of basis functions
-      LINALG::Matrix<dim,1>                  const & lam   , //!< (i) argmax of dual problem
-      LINALG::Matrix<dim,dim>                const & Jinv  , //!< (i) inverted Hessian of dual function at maximum
-      LINALG::SerialDenseVector              const & q     , //!< (i) prior functions
-      LINALG::SerialDenseMatrix              const & dxq   , //!< (i) spatial derivatives of prior functions
-      LINALG::SerialDenseMatrix              const & c     , //!< (i) constraints
-      std::vector<LINALG::SerialDenseMatrix> const & dxc     //!< (i) spatial derivatives of constraints
-    );
+      //! pure virtual function to get spatial derivatives of basis functions
+      virtual void GetDerivs(
+        LINALG::SerialDenseVector              const & ,
+        LINALG::SerialDenseMatrix                    & ,
+        LINALG::Matrix<dim,1>                  const & ,
+        LINALG::Matrix<dim,dim>                const & ,
+        LINALG::SerialDenseVector              const & ,
+        LINALG::SerialDenseMatrix              const & , // = q_{a,i}/q_a
+        LINALG::SerialDenseMatrix              const & ,
+        std::vector<LINALG::SerialDenseMatrix> const &
+      ) = 0;
+    };
+
+    /*--------------------------------------------------------------------------*/
+    /*!
+     * \brief Class to provide standard routine for updating parameters
+     *        and evaluating spatial derivatives (for non-negativity and
+     *        partition-of-unity)
+     *
+     * \author Keijo Nissen (nissen@lnm.mw.tum.de)
+     *
+     * \date Januar, 2013
+     */
+    /*--------------------------------------------------------------------------*/
+    class DualStandard : public DualProblemType
+    {
+    public:
+      //! standard update of dual problem
+      //! (for non-negative basis functions, reduced due to partition-of-unity
+      //!  constraint - see Arroyo2006)
+      void UpdateParams(
+        LINALG::SerialDenseVector       & funct, //!< (o) basis functions values
+        LINALG::Matrix<dim,1>           & r    , //!< (o) derivative of dual function
+        LINALG::Matrix<dim,dim>         & J    , //!< (o) inverted Hessian of dual function
+        int                       const & na   , //!< (i) number of nodes
+        LINALG::SerialDenseVector const & q    , //!< (i) prior functions
+        LINALG::SerialDenseMatrix       & c    , //!< (i) constraints (should be const
+                                                 //! but not possible due to LINALG::Matrix-view
+                                                 //! on colums)
+        LINALG::Matrix<dim,1>     const & lam    //!< (i) argmax of dual problem
+      );
+
+      //! computes spatial derivatives for standard problem
+      void GetDerivs(
+        LINALG::SerialDenseVector              const & funct, //!< (i) basis functions values
+        LINALG::SerialDenseMatrix                    & deriv, //!< (o) spatial derivatives of basis functions
+        LINALG::Matrix<dim,1>                  const & lam  , //!< (i) argmax of dual problem
+        LINALG::Matrix<dim,dim>                const & Jinv , //!< (i) inverted Hessian of dual function at maximum
+        LINALG::SerialDenseVector              const & q    , //!< (i) prior functions
+        LINALG::SerialDenseMatrix              const & dxq  , //!< (i) spatial derivatives of prior functions
+        LINALG::SerialDenseMatrix              const & c    , //!< (i) constraints
+        std::vector<LINALG::SerialDenseMatrix> const & dxc    //!< (i) spatial derivatives of constraints
+      );
+    };
 
     /*------------------------------------------------------------------------*/
-    //! explicite this pointer; this pointer of MaxEntProblem is thus also
-    //known in DualProblem.
+
+    //! explicite this_-pointer; this_-pointer of MaxEntProblem is thus also known in DualProblem.
     MaxEntProblem* this_;
 
-    //! function pointer to function updating parameters of (reduced) dual problem
-    void (DualProblem::*UpdateParams)(
-      LINALG::SerialDenseVector       & ,
-      LINALG::Matrix<dim,1>           & ,
-      LINALG::Matrix<dim,dim>         & ,
-      int                       const & ,
-      LINALG::SerialDenseVector const & ,
-      LINALG::SerialDenseMatrix & ,
-      LINALG::Matrix<dim,1>     const &
-    );
-
-    //! function pointer to a function computing basis function derivatives
-    void (DualProblem::*GetDerivs)(
-      LINALG::SerialDenseVector              const & ,
-      LINALG::SerialDenseMatrix                    & ,
-      LINALG::Matrix<dim,1>                  const & ,
-      LINALG::Matrix<dim,dim>                const & ,
-      LINALG::SerialDenseVector              const & ,
-      LINALG::SerialDenseMatrix              const & , // = q_{a,i}/q_a
-      LINALG::SerialDenseMatrix              const & ,
-      std::vector<LINALG::SerialDenseMatrix> const &
-    );
+    //! pointer to DualProblemType to specify routine for updating parameters
+    //! and evaluating spatial derivatives
+    Teuchos::RCP<DualProblemType> dualprob_;
 
   }; // end member class DualProblem
 
@@ -241,7 +282,7 @@ private:
     //! tolerance at which Newton is considered to be converged
   double NewtonTol_;
   //! maximum number of Newton steps
-  double NewtonMax_;
+  int NewtonMax_;
 }; // end  class MaxEntProblem
 
 } // end MESHFREE
