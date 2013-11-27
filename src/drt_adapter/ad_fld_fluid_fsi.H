@@ -10,7 +10,7 @@ Can only be used in conjunction with fluidimplicittimeint!
 Maintainer: Matthias Mayr
             mayr@lnm.mw.tum.de
             http://www.mhpc.mw.tum.de
-            089 - 289-15262
+            089 - 289-10362
 </pre>
 */
 /*----------------------------------------------------------------------*/
