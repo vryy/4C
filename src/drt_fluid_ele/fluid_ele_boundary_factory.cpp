@@ -1,17 +1,15 @@
-/*--------------------------------------------------------------------------*/
-/*!
+/*!----------------------------------------------------------------------
 \file fluid_ele_boundary_factory.cpp
 
-\brief Factory of fluid boundary elements
+\brief factory for fluid boundary evaluation
 
 <pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15240
+Maintainers: Ursula Rasthofer & Volker Gravemeier
+             {rasthofer,vgravem}@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15236/-245
 </pre>
-*/
-/*--------------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 
 #include "fluid_ele_boundary_factory.H"
 #include "fluid_ele_boundary_calc_std.H"
@@ -22,7 +20,7 @@ Maintainer: Andreas Rauch
 
 
 /*--------------------------------------------------------------------------*
- |                                                     (public) rauch 11/13 |
+ |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundaryImplInterface* DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(DRT::Element::DiscretizationType distype, std::string problem)
 {
@@ -79,7 +77,7 @@ DRT::ELEMENTS::FluidBoundaryImplInterface* DRT::ELEMENTS::FluidBoundaryFactory::
   return NULL;
 }
 /*--------------------------------------------------------------------------*
- |                                                     (public) rauch 11/13 |
+ |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidBoundaryImplInterface* DRT::ELEMENTS::FluidBoundaryFactory::DefineProblemType(std::string problem)

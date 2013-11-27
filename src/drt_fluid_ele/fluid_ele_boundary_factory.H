@@ -1,17 +1,16 @@
-/*--------------------------------------------------------------------------*/
-/*!
-\file fluid_ele_factory.H
+/*!----------------------------------------------------------------------
+\file fluid_ele_boundary_factory.H
 
-\brief Factory of fluid boundary elements
+\brief factory for fluid boundary evaluation
 
 <pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15240
+Maintainers: Ursula Rasthofer & Volker Gravemeier
+             {rasthofer,vgravem}@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15236/-245
 </pre>
-*/
-/*--------------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
+
 
 #ifndef FLUID_ELE_BOUNDARY_FACTORY_H
 #define FLUID_ELE_BOUNDARY_FACTORY_H

@@ -35,6 +35,7 @@ class DiscretizationFaces;
 namespace ELEMENTS
 {
   class FluidIntFace;
+  class FluidEleParameter;
   class FluidEleParameterTimInt;
 
 /// Interface base class for FluidIntFaceImpl
@@ -159,8 +160,10 @@ public:
 
 private:
 
-  //! pointer to parameter list
-  DRT::ELEMENTS::FluidEleParameterTimInt* fldpara_;
+  //! pointer to parameter lists
+  DRT::ELEMENTS::FluidEleParameter* fldpara_;
+  //! pointer to parameter list for time integration
+  DRT::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
 
   };  // end class FluidIntFaceImpl
 

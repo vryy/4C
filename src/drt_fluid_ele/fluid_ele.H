@@ -41,13 +41,11 @@ class Discretization;
 namespace ELEMENTS
 {
 
-class FluidEleParameterBase;
 class FluidEleParameter;
 class FluidEleParameterStd;
 class FluidEleParameterPoro;
 class FluidEleParameterTimInt;
 template<DRT::Element::DiscretizationType distype> class FluidEleCalc;
-template<DRT::Element::DiscretizationType distype> class FluidGenalphaResVMM;
 class FluidBoundary;
 class FluidIntFace;
 

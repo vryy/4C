@@ -67,7 +67,7 @@ DRT::ELEMENTS::FluidEleParameterPoro::FluidEleParameterPoro()
 //---------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidEleParameterPoro::SetElementPoroParameter( Teuchos::ParameterList& params, int myrank)
 {
-  SetElementStdFluidParameter(params,myrank);
+  SetElementGeneralFluidParameter(params,myrank);
 
   set_fluid_parameter_poro_ = true;
   poro_conti_partint_ = params.get<bool>("conti partial integration",false);

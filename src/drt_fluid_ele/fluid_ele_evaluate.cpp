@@ -31,8 +31,6 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_inpar/inpar_fluid.H"
 
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-
 
 #include "../drt_opti/topopt_fluidAdjoint3_interface.H"
 #include "../drt_opti/topopt_fluidAdjoint3_impl_parameter.H"
@@ -62,7 +60,7 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
   if (action == FLD::set_general_fluid_parameter)
   {
     DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
-    fldpara->SetElementStdFluidParameter(p,dis.Comm().MyPID());
+    fldpara->SetElementGeneralFluidParameter(p,dis.Comm().MyPID());
   }
   else if (action == FLD::set_time_parameter)
   {

@@ -16,6 +16,7 @@ Maintainer: Benedikt Schott
 
 #include "fluid_ele_action.H"
 #include "fluid_ele_intfaces_calc.H"
+#include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
 #include "fluid_ele_calc_intfaces_stab.H"
 
@@ -105,8 +106,10 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::Done()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
 {
+  // pointer to class FluidImplParameterTimInt (access to the time-integration parameter)
+  fldparatimint_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
   // pointer to class FluidImplParameter (access to the general parameter)
-  fldpara_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
+  fldpara_ = DRT::ELEMENTS::FluidEleParameterStd::Instance();
 
   return;
 }
@@ -462,6 +465,7 @@ int DRT::ELEMENTS::FluidIntFaceImpl<distype>::EvaluateInternalFaces(   DRT::ELEM
   {
     return DRT::ELEMENTS::FluidIntFaceStab::Impl(intface)->EvaluateEdgeBasedStabilization(
       intface,
+      *fldparatimint_,
       *fldpara_,
       params,
       discretization,

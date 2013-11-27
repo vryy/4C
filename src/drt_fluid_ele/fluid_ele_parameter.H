@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_parameter_std.cpp
+\file fluid_ele_parameter.H
 
-\brief Evaluation of general fluid parameter for standard fluid
+\brief Setting of general fluid parameter for element evaluation
 
-       Poro specific parameters are defined in a derived class.
-       Since there are a couple of terms from the stdfluid called
-       by the porofluid this is  inevitable.
+This file has to contain all parameters called in fluid_ele_calc.cpp.
+Additional parameters required in derived classes of FluidEleCalc have to
+be set in problem specific parameter lists derived from this class.
 
 <pre>
 Maintainers: Ursula Rasthofer & Volker Gravemeier
@@ -20,7 +20,11 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #ifndef FLUID_ELE_PARAMETER_H
 #define FLUID_ELE_PARAMETER_H
 
-#include "fluid_ele_parameter_base.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_lib/drt_singletondestruction.H"
+#include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_turbulence.H"
+#include "fluid_ele_parameter_timint.H"
 
 
 namespace DRT
@@ -28,26 +32,60 @@ namespace DRT
 namespace ELEMENTS
 {
 
-class FluidEleParameter : public FluidEleParameterBase
+class FluidEleParameter : public DRT::SingletonDestruction
 {
 
 public:
 
   virtual ~FluidEleParameter() {}
 
+  /// called upon destruction
+  virtual void Done() = 0;
+
+  /*========================================================================*/
+  //! @name set-routines
+  /*========================================================================*/
+
   //! general fluid parameter are set
-  void SetElementStdFluidParameter(Teuchos::ParameterList& params,   //> parameter list
-                                   int myrank                        //> proc id
-                                  );
+  void SetElementGeneralFluidParameter(Teuchos::ParameterList& params,   //> parameter list
+                                       int myrank);                      //> proc id
 
   //! turbulence parameters are set
-  void SetElementTurbulenceParameter(Teuchos::ParameterList& params    //> parameter list
-      );
+  void SetElementTurbulenceParameter(Teuchos::ParameterList& params);   //> parameter list
+
+  /// set loma parameters
+  void SetElementLomaParameter(Teuchos::ParameterList& params);   //> parameter list
 
   //! topopt parameters are set
-  void SetElementTopoptParameter(Teuchos::ParameterList& params    //> parameter list
-      );
+  void SetElementTopoptParameter(Teuchos::ParameterList& params);   //> parameter list
 
+  /*========================================================================*/
+  //! @name access-routines
+  /*========================================================================*/
+
+  /*--------------------------*/
+  //! @name general parameters
+  /*--------------------------*/
+
+  //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq, poro)
+  INPAR::FLUID::PhysicalType PhysicalType(){return physicaltype_;};
+  //! flag to (de)activate conservative formulation
+  bool IsConservative(){return is_conservative_;};
+  //! flag to (de)activate Newton linearization
+  bool IsNewton(){return is_newton_;};
+  //! flag to (de)activate second derivatives
+  bool IsInconsistent(){return is_inconsistent_;};
+  //! flag to (de)activate potential reactive terms
+  bool Reaction(){return reaction_;};
+  //! flag to (de)aktivate porous darcy flow
+  bool Darcy(){return darcy_;};
+
+  /*--------------------------*/
+  //! @name stabilization parameters
+  /*--------------------------*/
+
+  //! get the stabtype
+  INPAR::FLUID::StabType StabType(){return stabtype_;};
   /// parameter for residual stabilization
   //! Flag to (de)activate time-dependent subgrid stabilization
   INPAR::FLUID::SubscalesTD Tds(){return tds_;};
@@ -73,10 +111,6 @@ public:
   INPAR::FLUID::CharEleLengthU CharEleLengthU(){return charelelengthu_;};
   //! Flag to define characteristic element length for tau_Mp and tau_C
   INPAR::FLUID::CharEleLengthPC CharEleLengthPC(){return charelelengthpc_;};
-  //! flag to (de)activate fine-scale subgrid viscosity
-  INPAR::FLUID::FineSubgridVisc Fssgv(){return fssgv_;};
-  // Flag to Vreman filter method
-  INPAR::FLUID::VremanFiMethod Vrfi(){return vrfi_;};
   //! (sign) factor for viscous and reactive stabilization terms
   double ViscReaStabFac(){return viscreastabfac_;};
 
@@ -100,6 +134,10 @@ public:
   //! flag for stabilization parameter evaluation at Gaussian integration points
   bool TauGp(){return tau_gp_;};
 
+  /*--------------------------*/
+  //! @name turbulence model
+  /*--------------------------*/
+
   /// constant parameters for the turbulence formulation
    /// subgrid viscosity models
    //! flag to define turbulence model
@@ -111,6 +149,10 @@ public:
    double VanDriestdamping(){return van_Driest_damping_;};
    bool IncludeCi(){return include_Ci_;};
    double ltau(){return l_tau_;};
+   //! flag to (de)activate fine-scale subgrid viscosity
+   INPAR::FLUID::FineSubgridVisc Fssgv(){return fssgv_;};
+   // Flag to Vreman filter method
+   INPAR::FLUID::VremanFiMethod Vrfi(){return vrfi_;};
    //! scale similarity constant
    double Cl(){return Cl_;};
    /// multifractal subgrid-scales
@@ -131,8 +173,59 @@ public:
    double AdaptCsgsPhi(){return adapt_Csgs_phi_;};
    void SetCsgsPhi(double meanCai){meanCai_ = meanCai; return;};
 
+   /*--------------------------*/
+   //! @name loma parameters
+   /*--------------------------*/
+
+   //! flag for material update
+   virtual bool UpdateMat(){return update_mat_;};
+   //! flag to (de)activate continuity SUPG term
+   virtual bool ContiSUPG(){return conti_supg_;};
+   //! flag to (de)activate continuity cross-stress term -> residual-based VMM
+   virtual INPAR::FLUID::CrossStress ContiCross(){return conti_cross_;};
+   //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
+   virtual INPAR::FLUID::ReynoldsStress ContiReynolds(){return conti_reynolds_;};
+   //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
+   virtual bool MultiFracLomaConti(){return multifrac_loma_conti_;};
+
+   /*--------------------------*/
+   //! @name topopt parameters
+   /*--------------------------*/
+
+   //! flag to (de)aktivate reaction due to topology optimization
+   bool ReactionTopopt(){return reaction_topopt_;};
+   //! flag to (de)aktivate reaction due to topology optimization
+   const double* TopoptParams(){return (double*)topopt_params_;};
+
 
 protected:
+
+   /*--------------------------*/
+   //! @name general parameters
+   /*--------------------------*/
+
+   //! Flag SetGeneralParameter was called
+   bool set_general_fluid_parameter_;
+
+   //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq, Poro)
+   INPAR::FLUID::PhysicalType physicaltype_;
+   //! parameter to switch the stabilization
+   INPAR::FLUID::StabType stabtype_;
+   /// Flags to switch on/off the different fluid formulations
+   //! flag to (de)activate conservative formulation
+   bool is_conservative_;
+   //! flag to (de)activate Newton linearization
+   bool is_newton_;
+   //! flag to (de)activate second derivatives
+   bool is_inconsistent_;
+   //! flag to (de)activate potential reactive terms
+   bool reaction_;
+   //! flag to (de)aktivate porous darcy flow
+   bool darcy_;
+
+   /*--------------------------*/
+   //! @name stabilization parameters
+   /*--------------------------*/
 
   /// parameter for residual based stabilizations
   //! Flag to (de)activate time-dependent subgrid stabilization
@@ -159,10 +252,6 @@ protected:
   INPAR::FLUID::CharEleLengthU charelelengthu_;
   //! Flag to define characteristic element length for tau_Mp and tau_C
   INPAR::FLUID::CharEleLengthPC charelelengthpc_;
-  //! flag to (de)activate fine-scale subgrid viscosity
-  INPAR::FLUID::FineSubgridVisc fssgv_;
-  // flag to Vreman filter method
-  INPAR::FLUID::VremanFiMethod vrfi_;
   //! (sign) factor for viscous and reactive stabilization terms
   double viscreastabfac_;
 
@@ -186,6 +275,10 @@ protected:
   //! flag for stabilization parameter evaluation at Gaussian integration points
   bool tau_gp_;
 
+  /*--------------------------*/
+  //! @name turbulence model
+  /*--------------------------*/
+
   /// constant parameters for the turbulence formulation
   /// subgrid viscosity models
   //! flag to define turbulence model
@@ -200,6 +293,10 @@ protected:
   double van_Driest_damping_;
   //! channel length to normalize the normal wall distance
   double l_tau_;
+  //! flag to (de)activate fine-scale subgrid viscosity
+  INPAR::FLUID::FineSubgridVisc fssgv_;
+  // flag to Vreman filter method
+  INPAR::FLUID::VremanFiMethod vrfi_;
   //! scale similarity constant
   double Cl_;
   /// multifractal subgrid-scales
@@ -220,22 +317,37 @@ protected:
   bool adapt_Csgs_phi_;
   double meanCai_;
 
+  /*--------------------------*/
+  //! @name loma parameters
+  /*--------------------------*/
+
+  //! flag for material update
+  bool update_mat_;
+  //! flag to (de)activate continuity SUPG term
+  bool conti_supg_;
+  //! flag to (de)activate continuity cross-stress term -> residual-based VMM
+  INPAR::FLUID::CrossStress conti_cross_;
+  //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
+  INPAR::FLUID::ReynoldsStress conti_reynolds_;
+  //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
+  bool multifrac_loma_conti_;
+
+  /*--------------------------*/
+  //! @name topopt parameters
+  /*--------------------------*/
+
+  //! flag to (de)activate reaction due to topology optimization
+  bool reaction_topopt_;
+  //! matrix with values for computation of porosity with respect to topopt density
+  double topopt_params_[3];
+
   /// private Constructor since we are a Singleton.
   FluidEleParameter();
 
-public:
+private:
 
-  //! some loma specific parameters
-  //! flag for material update
-  virtual bool UpdateMat(){dserror("must be overridden by subclass"); return false;};
-  //! flag to (de)activate continuity SUPG term
-  virtual bool ContiSUPG(){dserror("must be overridden by subclass"); return false;};
-  //! flag to (de)activate continuity cross-stress term -> residual-based VMM
-  virtual INPAR::FLUID::CrossStress ContiCross(){dserror("must be overridden by subclass"); return (INPAR::FLUID::CrossStress)0;};
-  //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
-  virtual INPAR::FLUID::ReynoldsStress ContiReynolds(){dserror("must be overridden by subclass"); return (INPAR::FLUID::ReynoldsStress)0;};
-  //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
-  virtual bool MultiFracLomaConti(){dserror("must be overridden by subclass"); return false;};
+  //! access time-integration parameters
+  DRT::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
 
 };
 

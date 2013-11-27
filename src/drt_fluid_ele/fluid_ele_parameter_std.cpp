@@ -1,14 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_parameter_loma.H
+\file fluid_ele_parameter_std.cpp
 
-\brief Evaluation of general fluid parameter for loma
-
-       As it is currently not feasible to split std and loma terms
-       this class holds the loma specific paramters. Though this
-       class provides the construction methods of the stdfluid it
-       is nice to keep the loma parameters separated, since they are
-       definitely not needed for poro / fpsi problems.
+\brief Setting of general fluid parameter for element evaluation
 
 <pre>
 Maintainers: Ursula Rasthofer & Volker Gravemeier
@@ -56,45 +50,8 @@ void DRT::ELEMENTS::FluidEleParameterStd::Done()
 //    constructor
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleParameterStd::FluidEleParameterStd()
-  : DRT::ELEMENTS::FluidEleParameter::FluidEleParameter(),
-    update_mat_(false),
-    conti_supg_(true),
-    conti_cross_(INPAR::FLUID::cross_stress_stab_none),
-    conti_reynolds_(INPAR::FLUID::reynolds_stress_stab_none),
-    multifrac_loma_conti_(false)
+  : DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
 {
 }
 
-//----------------------------------------------------------------------*
-//  set loma parameters                                  rasthofer 03/12|
-//---------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterStd::SetElementLomaParameter( Teuchos::ParameterList& params )
-{
-  // get parameter lists
-  Teuchos::ParameterList& lomaparams = params.sublist("LOMA");
-  Teuchos::ParameterList& stabparams = params.sublist("RESIDUAL-BASED STABILIZATION");
-  Teuchos::ParameterList& turbmodelparamsmfs = params.sublist("MULTIFRACTAL SUBGRID SCALES");
 
-  //---------------------------------------------------------------------------------
-  // material update with subgrid-scale temperature
-  //---------------------------------------------------------------------------------
-
-  update_mat_ = lomaparams.get<bool>("update material",false);
-
-  //---------------------------------------------------------------------------------
-  // parameter for additional rbvmm terms in continuity equation
-  //---------------------------------------------------------------------------------
-
-  conti_supg_     = DRT::INPUT::IntegralValue<int>(stabparams,"LOMA_CONTI_SUPG");
-  conti_cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stabparams,"LOMA_CONTI_CROSS_STRESS");
-  conti_reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stabparams,"LOMA_CONTI_REYNOLDS_STRESS");
-
-  //---------------------------------------------------------------------------------
-  // parameter for additional multifractal subgrid-scale terms
-  //---------------------------------------------------------------------------------
-
-  if (turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
-   multifrac_loma_conti_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"LOMA_CONTI");
-
-  return;
-}

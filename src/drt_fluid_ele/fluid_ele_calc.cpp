@@ -143,6 +143,8 @@ DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
 
   // pointer to class FluidEleParameter (access to the general parameter)
   fldparatimint_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
+  // initialize also general parameter list, also it will be overwritten in derived subclasses
+  fldpara_ = DRT::ELEMENTS::FluidEleParameterStd::Instance();
 
   // Nurbs
   isNurbs_ = IsNurbs<distype>::isnurbs;
@@ -1819,7 +1821,7 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
     densam_ = densaf_;
     densn_  = densaf_;
 
-    // compute compressibility parameter c² as squared value of
+    // compute compressibility parameter cï¿½ as squared value of
     // maximum of convective velocity, viscous velocity and constant
     // value 1/2, as proposed in Nithiarasu (2003)
     double maxvel = std::max(vel_norm,(visc_/(h_p*densaf_)));

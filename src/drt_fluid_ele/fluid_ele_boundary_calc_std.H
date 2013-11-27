@@ -1,16 +1,16 @@
 /*!----------------------------------------------------------------------
-\file fluid_ele_boundary_calc_Std.H
-\brief
+\file fluid_ele_boundary_calc_std.cpp
 
-evaluate boundary conditions not requiring parent-element evaluations
+\brief evaluation of fluid terms at integration points
 
 <pre>
-Maintainers: Anh-Tu Vuong & Andreas Rauch
-             {vuong,rauch}@lnm.mw.tum.de
+Maintainers: Ursula Rasthofer & Volker Gravemeier
+             {rasthofer,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15264/-15240
+             089 - 289-15236/-245
 </pre>
 *----------------------------------------------------------------------*/
+
 #ifndef FLUID_ELE_BOUNDARY_CALC_STD_H
 #define FLUID_ELE_BOUNDARY_CALC_STD_H
 
@@ -39,7 +39,7 @@ public:
   virtual ~FluidEleBoundaryCalcStd() {};
 
   /// called upon destruction
-  virtual void Done();
+  void Done();
 
 private:
   /// private constructor since we are singleton

@@ -67,7 +67,9 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcLoma<distype>::FluidEleCalcLoma()
   : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
 {
- my::fldpara_ =  DRT::ELEMENTS::FluidEleParameterStd::Instance();
+  // we use the standard parameter list here, since there are not any additional
+  // loma-specific parameters required in this derived class
+  my::fldpara_ =  DRT::ELEMENTS::FluidEleParameterStd::Instance();
 }
 
 /*----------------------------------------------------------------------*

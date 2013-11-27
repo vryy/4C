@@ -218,7 +218,8 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType ndistype>
 int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::EvaluateEdgeBasedStabilization(
     DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
-    DRT::ELEMENTS::FluidEleParameterTimInt&  fldpara,              ///< fluid parameter
+    DRT::ELEMENTS::FluidEleParameterTimInt&  fldparatimint,       ///< time-integration parameter
+    DRT::ELEMENTS::FluidEleParameter&  fldpara,                   ///< general paramter
     Teuchos::ParameterList&            params,               ///< parameter list
     DRT::Discretization&               discretization,       ///< discretization
     std::vector<int>&                  patchlm,              ///< patch local map
@@ -284,7 +285,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   double timefacrhs = 0.0;
 
   // full matrix pattern (implicit) for streamline and div-stab
-  if (fldpara.TimeAlgo()==INPAR::FLUID::timeint_one_step_theta)
+  if (fldparatimint.TimeAlgo()==INPAR::FLUID::timeint_one_step_theta)
   {
 //    if (fldpara.TimeAlgo()==INPAR::FLUID::timeint_one_step_theta and fldpara.Theta()!=1.0)
 //      dserror("Read remark!");
@@ -296,23 +297,23 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     // fully implicit integration of j_stream(u_h,v_h)
     // Literature: E.Burman, M.A.Fernandez 2009
     // "Finite element methods with symmetric stabilization for the transient convection-diffusion-reaction equation"
-    timefac    = fldpara.Dt(); // set theta = 1.0
-    timefacpre = fldpara.Dt(); // set theta = 1.0
-    timefacrhs = fldpara.Dt(); // set theta = 1.0
+    timefac    = fldparatimint.Dt(); // set theta = 1.0
+    timefacpre = fldparatimint.Dt(); // set theta = 1.0
+    timefacrhs = fldparatimint.Dt(); // set theta = 1.0
   }
-  else if (fldpara.IsGenalpha())
+  else if (fldparatimint.IsGenalpha())
   {
-    timefac      = fldpara.TimeFac();     // timefac_ = theta_*dt_;
-    timefacpre   = fldpara.TimeFacPre();  // special factor for pressure terms in genalpha time integration
-    timefacrhs   = fldpara.TimeFacRhs();  // factor for rhs (for OST: also theta_*dt_), modified just for genalpha time integration
+    timefac      = fldparatimint.TimeFac();     // timefac_ = theta_*dt_;
+    timefacpre   = fldparatimint.TimeFacPre();  // special factor for pressure terms in genalpha time integration
+    timefacrhs   = fldparatimint.TimeFacRhs();  // factor for rhs (for OST: also theta_*dt_), modified just for genalpha time integration
   }
-  else if (fldpara.TimeAlgo()==INPAR::FLUID::timeint_bdf2)
+  else if (fldparatimint.TimeAlgo()==INPAR::FLUID::timeint_bdf2)
   {
-    timefac    = fldpara.Dt(); // set theta = 1.0
-    timefacpre = fldpara.Dt(); // set theta = 1.0
-    timefacrhs = fldpara.Dt(); // set theta = 1.0
+    timefac    = fldparatimint.Dt(); // set theta = 1.0
+    timefacpre = fldparatimint.Dt(); // set theta = 1.0
+    timefacrhs = fldparatimint.Dt(); // set theta = 1.0
   }
-  else if (fldpara.IsStationary())
+  else if (fldparatimint.IsStationary())
   {
     timefac    = 1.0;
     timefacpre = 1.0;
@@ -395,7 +396,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
 
 
-  if(fldpara.IsGenalphaNP())
+  if(fldparatimint.IsGenalphaNP())
   {
     // velocities (intermediate time step, n+1)
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
@@ -502,7 +503,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   double patch_hk = 0.0;
 
   // compute the element length w.r.t master and slave element
-  compute_patch_hk(patch_hk, pele, nele, intface, DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_element_length());
+  compute_patch_hk(patch_hk, pele, nele, intface, fldpara.EOS_element_length());
 
   // create object for computing Gaussian point dependent stabilization parameters
   FluidEdgeBasedStab EdgeBasedStabilization(patch_hk);
@@ -925,7 +926,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     // get normal velocity
     double normal_vel_lin_space = fabs(velintaf_.Dot(n_));
 
-    EdgeBasedStabilization.ComputeStabilizationParams(DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_WhichTau(),
+    EdgeBasedStabilization.ComputeStabilizationParams(fldpara.EOS_WhichTau(),
                                                       tau_grad, tau_u, tau_div, tau_p,
                                                       kinvisc, dens,
                                                       normal_vel_lin_space, max_vel_L2_norm,
@@ -969,13 +970,13 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
         if(EOS_conv_cross)  tau_vel += tau_u * 1.0; // that's still wrong
         if(EOS_div_vel_jump)
         {
-          if (fldpara.IsGenalphaNP()) dserror("No combined divergence and streamline(EOS) stabilization for np-gen alpha");
+          if (fldparatimint.IsGenalphaNP()) dserror("No combined divergence and streamline(EOS) stabilization for np-gen alpha");
           else tau_vel += tau_div;
         }
         if(GP_visc)         tau_vel += tau_grad;
 
         // just to be sure
-        if (DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_WhichTau() == INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
+        if (fldpara.EOS_WhichTau() == INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
          tau_vel = tau_u;
       }
 
@@ -1036,7 +1037,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
       if(elemat_blocks.size() < 10) dserror("do not choose diagonal pattern for div_EOS stabilization!");
 
       if(!ghost_penalty_reconstruct and
-          DRT::ELEMENTS::FluidEleParameterStd::Instance()->EOS_WhichTau() != INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
+         fldpara.EOS_WhichTau() != INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
       {
         // assemble divergence (EOS) stabilization terms for fluid
         div_EOS(  elematrix_mm,

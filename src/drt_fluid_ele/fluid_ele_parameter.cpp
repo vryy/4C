@@ -1,13 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_parameter_std.cpp
+\file fluid_ele_parameter.cpp
 
-\brief Evaluation of general fluid parameter for standard fluid
+\brief Setting of general fluid parameter for element evaluation
 
-       Poro specific parameters are defined in a derived class.
-       Since there are a couple of terms from the stdfluid called
-       by the porofluid this is  inevitable.
-
+This file has to contain all parameters called in fluid_ele_calc.cpp.
+Additional parameters required in derived classes of FluidEleCalc have to
+be set in problem specific parameter lists derived from this class.
 <pre>
 Maintainers: Ursula Rasthofer & Volker Gravemeier
              {rasthofer,vgravem}@lnm.mw.tum.de
@@ -16,8 +15,8 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
+
 #include "fluid_ele_parameter.H"
-#include "fluid_ele_parameter_base.H"
 #include <string>
 #include <iostream>
 #include "../drt_lib/drt_dserror.H"
@@ -27,7 +26,14 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 //    constructor
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
-  : DRT::ELEMENTS::FluidEleParameterBase::FluidEleParameterBase(),
+  : set_general_fluid_parameter_(false),
+    physicaltype_(INPAR::FLUID::incompressible),
+    stabtype_(INPAR::FLUID::stabtype_nostab), // stabilization parameters
+    is_conservative_(false),
+    is_newton_(false),
+    is_inconsistent_(false),
+    reaction_(false),
+    darcy_(false),
     tds_(INPAR::FLUID::subscales_quasistatic),
     transient_(INPAR::FLUID::inertia_stab_drop),
     pspg_(true),
@@ -37,7 +43,8 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     cross_(INPAR::FLUID::cross_stress_stab_none),
     reynolds_(INPAR::FLUID::reynolds_stress_stab_none),
     whichtau_(INPAR::FLUID::tau_not_defined),
-    fssgv_(INPAR::FLUID::no_fssgv),
+    charelelengthu_(INPAR::FLUID::streamlength_u),
+    charelelengthpc_(INPAR::FLUID::volume_equivalent_diameter_pc),
     viscreastabfac_(0.0),
     EOS_pres_(INPAR::FLUID::EOS_PRES_none),
     EOS_conv_stream_(INPAR::FLUID::EOS_CONV_STREAM_none),
@@ -54,6 +61,8 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     include_Ci_(false),
     van_Driest_damping_(1.0),
     l_tau_(0.0),
+    fssgv_(INPAR::FLUID::no_fssgv),
+    vrfi_(INPAR::FLUID::cuberootvol),
     Cl_(0.0),
     Csgs_(0.0),
     Csgs_phi_(0.0),
@@ -70,236 +79,315 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     beta_(0.0),
     mfs_is_conservative_(false),
     adapt_Csgs_phi_(false),
-    meanCai_(0.0)
+    meanCai_(0.0),
+    update_mat_(false),
+    conti_supg_(true),
+    conti_cross_(INPAR::FLUID::cross_stress_stab_none),
+    conti_reynolds_(INPAR::FLUID::reynolds_stress_stab_none),
+    multifrac_loma_conti_(false),
+    reaction_topopt_(false)
 {
-
+  // we have to know the time parameters here to check for illegal combinations
+  fldparatimint_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
 }
 
 //----------------------------------------------------------------------*
 //  set general parameters                                   ehrl 04/10 |
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameter::SetElementStdFluidParameter( Teuchos::ParameterList& params,
-                                                                        int myrank )
+void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
+  Teuchos::ParameterList& params,
+  int myrank )
 {
-  // call method from base class
-  SetElementGeneralFluidParameter(params,myrank);
+  if(set_general_fluid_parameter_ == false)
+    set_general_fluid_parameter_ = true;
+  // For turbulent inflow generation,
+  // this function is indeed two times called.
+  // In this sepcial case, calling this function twice
+  // is ok!
+  else
+  {
+    if (myrank == 0)
+      std::cout << std::endl <<
+      (" Warning: general fluid parameters should be set only once!!\n "
+       " If you run a turbulent inflow generation, calling this function twice is ok!\n ")
+      << std::endl << std::endl;
+  }
 
- if (fldparatimint_->IsGenalphaNP() and physicaltype_ == INPAR::FLUID::loma)
-   dserror("the combination Np_Gen_Alpha and loma is not supported");
+  // set flag for type of linearization (fixed-point-like or Newton)
+  //std::string newtonstr   = params.get<std::string>("Linearisation");
+  if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params, "Linearisation")==INPAR::FLUID::Newton)
+    is_newton_       = true;
 
- if (not fldparatimint_->IsGenalpha() and physicaltype_ == INPAR::FLUID::loma)
-   dserror("the combination OST and loma is said to be supported but does not work!!");
+  // set flags for formuation of the convective velocity term (conservative or convective)
+  std::string convformstr = params.get<std::string>("form of convective term");
+  if (convformstr =="conservative")
+  {
+    is_conservative_ = true;
+    if(myrank==0)
+    {
+      std::cout << std::endl << "Warning: \n"
+      "a) Using PSPG stabilization yields a conservative formulation (Hughes & Wells 2005)\n"
+      "b) Instablities may occur for complex flow situations" << std::endl;
+     }
+   }
 
- if (fldparatimint_->IsGenalphaNP() and is_conservative_)
-   dserror("the combination Np_Gen_Alpha and conservative flow is not supported");
+  // set flag for physical type of fluid flow
+  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type");
+  if (((physicaltype_ == INPAR::FLUID::loma) or (physicaltype_ == INPAR::FLUID::varying_density))
+       and (fldparatimint_->IsStationary() == true))
+     dserror("physical type is not supported in stationary FLUID implementation.");
 
- if (not fldparatimint_->IsStationary() and is_conservative_ and physicaltype_ != INPAR::FLUID::incompressible)
- {
-   if (myrank == 0)
-     std::cout << std::endl << "Warning: missing time derivative terms in conservative formulation for variable density flows!" << std::endl;
- }
+  if (fldparatimint_->IsGenalphaNP() and physicaltype_ == INPAR::FLUID::loma)
+    dserror("the combination Np_Gen_Alpha and loma is not supported");
 
- // ---------------------------------------------------------------------
- // get control parameters for stabilization and higher-order elements
- //----------------------------------------------------------------------
- Teuchos::ParameterList& stablist = params.sublist("RESIDUAL-BASED STABILIZATION");
- Teuchos::ParameterList& stablist_edgebased = params.sublist("EDGE-BASED STABILIZATION");
+  if (not fldparatimint_->IsGenalpha() and physicaltype_ == INPAR::FLUID::loma)
+    dserror("the combination OST and loma is said to be supported but does not work!!");
 
- stabtype_ = DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(stablist, "STABTYPE");
+  if (fldparatimint_->IsGenalphaNP() and is_conservative_)
+    dserror("the combination Np_Gen_Alpha and conservative flow is not supported");
 
- if (stabtype_ == INPAR::FLUID::stabtype_residualbased)
- {
-   // no safety check necessary since all options are used
-   tds_      = DRT::INPUT::IntegralValue<INPAR::FLUID::SubscalesTD>(stablist,"TDS");
-   transient_= DRT::INPUT::IntegralValue<INPAR::FLUID::Transient>(stablist,"TRANSIENT");
-   pspg_     = DRT::INPUT::IntegralValue<int>(stablist,"PSPG");
-   supg_     = DRT::INPUT::IntegralValue<int>(stablist,"SUPG");
-   vstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
-   rstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::RStab>(stablist,"RSTAB");
-   graddiv_  = DRT::INPUT::IntegralValue<int>(stablist,"GRAD_DIV");
-   cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
-   reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
+  if (not fldparatimint_->IsStationary() and is_conservative_ and physicaltype_ != INPAR::FLUID::incompressible)
+  {
+    if (myrank == 0)
+      std::cout << std::endl << "Warning: missing time derivative terms in conservative formulation for variable density flows!" << std::endl;
+  }
 
-   // overrule higher_order_ele if input-parameter is set
-   // this might be interesting for fast (but slightly
-   // less accurate) computations
-   is_inconsistent_ = DRT::INPUT::IntegralValue<int>(stablist,"INCONSISTENT");
-   //-------------------------------
-   // get tau definition
-   //-------------------------------
+  // ---------------------------------------------------------------------
+  // get control parameters for stabilization and higher-order elements
+  //----------------------------------------------------------------------
+  Teuchos::ParameterList& stablist = params.sublist("RESIDUAL-BASED STABILIZATION");
+  Teuchos::ParameterList& stablist_edgebased = params.sublist("EDGE-BASED STABILIZATION");
 
-   whichtau_ =  DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(stablist,"DEFINITION_TAU");
-   // check if tau can be handled
-   if (not(whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins or
-                        INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
-                        INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
-                        INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
-                        INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
-                        INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
-                        INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
-                        INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
-                        INPAR::FLUID::tau_shakib_hughes_codina or
-                        INPAR::FLUID::tau_shakib_hughes_codina_wo_dt or
-                        INPAR::FLUID::tau_codina or
-                        INPAR::FLUID::tau_codina_wo_dt or
-                        INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-                        INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+  stabtype_ = DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(stablist, "STABTYPE");
+
+  if (stabtype_ == INPAR::FLUID::stabtype_residualbased)
+  {
+    // no safety check necessary since all options are used
+    tds_      = DRT::INPUT::IntegralValue<INPAR::FLUID::SubscalesTD>(stablist,"TDS");
+    transient_= DRT::INPUT::IntegralValue<INPAR::FLUID::Transient>(stablist,"TRANSIENT");
+    pspg_     = DRT::INPUT::IntegralValue<int>(stablist,"PSPG");
+    supg_     = DRT::INPUT::IntegralValue<int>(stablist,"SUPG");
+    vstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
+    rstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::RStab>(stablist,"RSTAB");
+    graddiv_  = DRT::INPUT::IntegralValue<int>(stablist,"GRAD_DIV");
+    cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
+    reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
+
+    // overrule higher_order_ele if input-parameter is set
+    // this might be interesting for fast (but slightly
+    // less accurate) computations
+    is_inconsistent_ = DRT::INPUT::IntegralValue<int>(stablist,"INCONSISTENT");
+    //-------------------------------
+    // get tau definition
+    //-------------------------------
+
+    whichtau_ =  DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(stablist,"DEFINITION_TAU");
+    // check if tau can be handled
+    if (not(whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
+                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
+                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+                         INPAR::FLUID::tau_shakib_hughes_codina or
+                         INPAR::FLUID::tau_shakib_hughes_codina_wo_dt or
+                         INPAR::FLUID::tau_codina or
+                         INPAR::FLUID::tau_codina_wo_dt or
+                         INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+                         INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
          dserror("Definition of Tau cannot be handled by the element");
 
-   // set correct stationary definition of stabilization parameter automatically
-   if (fldparatimint_->IsStationary())
-   {
-     if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins)
-       whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt;
-     else if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen)
-       whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt;
-     else if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled)
-       whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt;
-     else if (whichtau_ == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall)
-       whichtau_ = INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt;
-     else if (whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina)
-       whichtau_ = INPAR::FLUID::tau_shakib_hughes_codina_wo_dt;
-     else if (whichtau_ == INPAR::FLUID::tau_codina)
-       whichtau_ = INPAR::FLUID::tau_codina_wo_dt;
-     else if (whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
-       whichtau_ = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
-   }
+    // set correct stationary definition of stabilization parameter automatically
+    if (fldparatimint_->IsStationary())
+    {
+      if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins)
+        whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt;
+      else if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen)
+        whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt;
+      else if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled)
+        whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt;
+      else if (whichtau_ == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall)
+        whichtau_ = INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt;
+      else if (whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina)
+        whichtau_ = INPAR::FLUID::tau_shakib_hughes_codina_wo_dt;
+      else if (whichtau_ == INPAR::FLUID::tau_codina)
+        whichtau_ = INPAR::FLUID::tau_codina_wo_dt;
+      else if (whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
+        whichtau_ = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
+    }
 
-   // get and check characteristic element length for stabilization parameter tau_Mu
-   charelelengthu_ = DRT::INPUT::IntegralValue<INPAR::FLUID::CharEleLengthU>(stablist,"CHARELELENGTH_U");
-   if (not(charelelengthu_ == INPAR::FLUID::streamlength_u or
-                            INPAR::FLUID::volume_equivalent_diameter_u or
-                            INPAR::FLUID::root_of_volume_u))
-     dserror("Unknown characteristic element length for tau_Mu!");
+    // get and check characteristic element length for stabilization parameter tau_Mu
+    charelelengthu_ = DRT::INPUT::IntegralValue<INPAR::FLUID::CharEleLengthU>(stablist,"CHARELELENGTH_U");
+    if (not(charelelengthu_ == INPAR::FLUID::streamlength_u or
+                               INPAR::FLUID::volume_equivalent_diameter_u or
+                               INPAR::FLUID::root_of_volume_u))
+      dserror("Unknown characteristic element length for tau_Mu!");
 
-   // get and check characteristic element length for stabilization parameter
-   // tau_Mp and tau_C
-   charelelengthpc_ = DRT::INPUT::IntegralValue<INPAR::FLUID::CharEleLengthPC>(stablist,"CHARELELENGTH_PC");
-   if (not(charelelengthpc_ == INPAR::FLUID::streamlength_pc or
-                            INPAR::FLUID::volume_equivalent_diameter_pc or
-                            INPAR::FLUID::root_of_volume_pc))
-     dserror("Unknown characteristic element length for tau_Mp and tau_C!");
+    // get and check characteristic element length for stabilization parameter
+    // tau_Mp and tau_C
+    charelelengthpc_ = DRT::INPUT::IntegralValue<INPAR::FLUID::CharEleLengthPC>(stablist,"CHARELELENGTH_PC");
+    if (not(charelelengthpc_ == INPAR::FLUID::streamlength_pc or
+                                INPAR::FLUID::volume_equivalent_diameter_pc or
+                                INPAR::FLUID::root_of_volume_pc))
+      dserror("Unknown characteristic element length for tau_Mp and tau_C!");
 
-   // in case of viscous and/or reactive stabilization, decide whether to use
-   // GLS or USFEM and ensure compatibility of respective definitions
-   if (vstab_ == INPAR::FLUID::viscous_stab_usfem or
-       vstab_ == INPAR::FLUID::viscous_stab_usfem_only_rhs)
-   {
-     viscreastabfac_ = -1.0;
-     if (rstab_ == INPAR::FLUID::reactive_stab_gls)
-       dserror("inconsistent reactive and viscous stabilization!");
-   }
-   else if (vstab_ == INPAR::FLUID::viscous_stab_gls or
-       vstab_ == INPAR::FLUID::viscous_stab_gls_only_rhs)
-   {
-     viscreastabfac_ = 1.0;
-     if (rstab_ == INPAR::FLUID::reactive_stab_usfem)
-       dserror("inconsistent reactive and viscous stabilization!");
-   }
-   else if (vstab_ == INPAR::FLUID::viscous_stab_none)
-   {
-     if (rstab_ == INPAR::FLUID::reactive_stab_usfem)    viscreastabfac_ = -1.0;
-     else if (rstab_ == INPAR::FLUID::reactive_stab_gls) viscreastabfac_ =  1.0;
-   }
+    // in case of viscous and/or reactive stabilization, decide whether to use
+    // GLS or USFEM and ensure compatibility of respective definitions
+    if (vstab_ == INPAR::FLUID::viscous_stab_usfem or
+        vstab_ == INPAR::FLUID::viscous_stab_usfem_only_rhs)
+    {
+      viscreastabfac_ = -1.0;
+      if (rstab_ == INPAR::FLUID::reactive_stab_gls)
+        dserror("inconsistent reactive and viscous stabilization!");
+    }
+    else if (vstab_ == INPAR::FLUID::viscous_stab_gls or
+             vstab_ == INPAR::FLUID::viscous_stab_gls_only_rhs)
+    {
+      viscreastabfac_ = 1.0;
+      if (rstab_ == INPAR::FLUID::reactive_stab_usfem)
+        dserror("inconsistent reactive and viscous stabilization!");
+    }
+    else if (vstab_ == INPAR::FLUID::viscous_stab_none)
+    {
+      if (rstab_ == INPAR::FLUID::reactive_stab_usfem)    viscreastabfac_ = -1.0;
+      else if (rstab_ == INPAR::FLUID::reactive_stab_gls) viscreastabfac_ =  1.0;
+    }
 
-   // case of xfem check whether additional xfem-stabilization terms in the form of
-   // edge-based terms are activated (i.e., ghost penalties)
-   if (stablist_edgebased.get<std::string>("EOS_PRES") == "xfem_gp" or
-       stablist_edgebased.get<std::string>("EOS_CONV_STREAM") == "xfem_gp" or
-       stablist_edgebased.get<std::string>("EOS_CONV_CROSS") == "xfem_gp" or
-       stablist_edgebased.get<std::string>("EOS_DIV") == "xfem_gp")
-   {
-       EOS_pres_         = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Pres>(stablist_edgebased,"EOS_PRES");
-       EOS_conv_stream_  = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Stream>(stablist_edgebased,"EOS_CONV_STREAM");
-       EOS_conv_cross_   = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Cross>(stablist_edgebased,"EOS_CONV_CROSS");
-       EOS_div_          = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Div>(stablist_edgebased,"EOS_DIV");
+    // case of xfem check whether additional xfem-stabilization terms in the form of
+    // edge-based terms are activated (i.e., ghost penalties)
+    if (stablist_edgebased.get<std::string>("EOS_PRES") == "xfem_gp" or
+        stablist_edgebased.get<std::string>("EOS_CONV_STREAM") == "xfem_gp" or
+        stablist_edgebased.get<std::string>("EOS_CONV_CROSS") == "xfem_gp" or
+        stablist_edgebased.get<std::string>("EOS_DIV") == "xfem_gp")
+    {
+      EOS_pres_         = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Pres>(stablist_edgebased,"EOS_PRES");
+      EOS_conv_stream_  = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Stream>(stablist_edgebased,"EOS_CONV_STREAM");
+      EOS_conv_cross_   = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Cross>(stablist_edgebased,"EOS_CONV_CROSS");
+      EOS_div_          = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Div>(stablist_edgebased,"EOS_DIV");
 
-       EOS_whichtau_       = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(stablist_edgebased, "EOS_DEFINITION_TAU");
-   }
-   // setting the EOS element length outside of the if-statement is not very beautiful,
-   // but there is an input parameter in the XFEM STABILIZATION section, which requires that
-   // this parameter has been set
-   EOS_element_lenght_ = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(stablist_edgebased, "EOS_H_DEFINITION");
- }
- else if (stabtype_ == INPAR::FLUID::stabtype_edgebased)
- {
-   if (myrank==0)
-   {
-     IO::cout << "+----------------------------------------------------------------------------------+\n";
-     IO::cout << " Edge-based stabilization: all residual-based stabilization terms are switched off!\n";
-     IO::cout << "+----------------------------------------------------------------------------------+\n" << IO::endl;
-   }
-   //---------------------------------
-   // if edge-based stabilization is selected, all residual-based stabilization terms
-   // are switched off
-   pspg_ = false;
-   supg_ = false;
-   vstab_ = INPAR::FLUID::viscous_stab_none;
-   rstab_ = INPAR::FLUID::reactive_stab_none;
-   graddiv_ = false;
-   cross_ = INPAR::FLUID::cross_stress_stab_none;
-   reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
-   tds_ = INPAR::FLUID::subscales_quasistatic;
-   transient_ = INPAR::FLUID::inertia_stab_drop;
-   is_inconsistent_ = false;
+      EOS_whichtau_       = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(stablist_edgebased, "EOS_DEFINITION_TAU");
+    }
+    // setting the EOS element length outside of the if-statement is not very beautiful,
+    // but there is an input parameter in the XFEM STABILIZATION section, which requires that
+    // this parameter has been set
+    EOS_element_lenght_ = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(stablist_edgebased, "EOS_H_DEFINITION");
+  }
+  else if (stabtype_ == INPAR::FLUID::stabtype_edgebased)
+  {
+    if (myrank==0)
+    {
+      IO::cout << "+----------------------------------------------------------------------------------+\n";
+      IO::cout << " Edge-based stabilization: all residual-based stabilization terms are switched off!\n";
+      IO::cout << "+----------------------------------------------------------------------------------+\n" << IO::endl;
+    }
+    //---------------------------------
+    // if edge-based stabilization is selected, all residual-based stabilization terms
+    // are switched off
+    pspg_ = false;
+    supg_ = false;
+    vstab_ = INPAR::FLUID::viscous_stab_none;
+    rstab_ = INPAR::FLUID::reactive_stab_none;
+    graddiv_ = false;
+    cross_ = INPAR::FLUID::cross_stress_stab_none;
+    reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
+    tds_ = INPAR::FLUID::subscales_quasistatic;
+    transient_ = INPAR::FLUID::inertia_stab_drop;
+    is_inconsistent_ = false;
 
-   // --------------------------------
-   // edge-based fluid stabilization can be used as standard fluid stabilization or
-   // as ghost-penalty stabilization in addition to residual-based stabilizations in the XFEM
+    // --------------------------------
+    // edge-based fluid stabilization can be used as standard fluid stabilization or
+    // as ghost-penalty stabilization in addition to residual-based stabilizations in the XFEM
 
-   // set parameters if single stabilization terms are switched on/off or which type of stabilization is chosen
-   EOS_pres_         = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Pres>(stablist_edgebased,"EOS_PRES");
-   EOS_conv_stream_  = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Stream>(stablist_edgebased,"EOS_CONV_STREAM");
-   EOS_conv_cross_   = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Cross>(stablist_edgebased,"EOS_CONV_CROSS");
-   EOS_div_          = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Div>(stablist_edgebased,"EOS_DIV");
+    // set parameters if single stabilization terms are switched on/off or which type of stabilization is chosen
+    EOS_pres_         = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Pres>(stablist_edgebased,"EOS_PRES");
+    EOS_conv_stream_  = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Stream>(stablist_edgebased,"EOS_CONV_STREAM");
+    EOS_conv_cross_   = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Cross>(stablist_edgebased,"EOS_CONV_CROSS");
+    EOS_div_          = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Div>(stablist_edgebased,"EOS_DIV");
 
-   EOS_element_lenght_ = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(stablist_edgebased, "EOS_H_DEFINITION");
-   EOS_whichtau_       = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(stablist_edgebased, "EOS_DEFINITION_TAU");
+    EOS_element_lenght_ = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(stablist_edgebased, "EOS_H_DEFINITION");
+    EOS_whichtau_       = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(stablist_edgebased, "EOS_DEFINITION_TAU");
 
- }
- else if (stabtype_ == INPAR::FLUID::stabtype_nostab)
- {
-   if (myrank==0)
-   {
-     IO::cout << "+----------------------------------------------------------------------------------+\n";
-     IO::cout << "+                                   WARNING\n";
-     IO::cout << " No stabilization selected: all stabilization terms are switched off!\n";
-     IO::cout << "                            BACI says: Good luck!\n";
-     IO::cout << "+----------------------------------------------------------------------------------+\n" << IO::endl;
-   }
-   pspg_ = false;
-   supg_ = false;
-   vstab_ = INPAR::FLUID::viscous_stab_none;
-   rstab_ = INPAR::FLUID::reactive_stab_none;
-   graddiv_ = false;
-   cross_ = INPAR::FLUID::cross_stress_stab_none;
-   reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
-   tds_ = INPAR::FLUID::subscales_quasistatic;
-   transient_ = INPAR::FLUID::inertia_stab_drop;
-   is_inconsistent_ = false;
- }
- else
-  dserror("Unknown stabilization type");
+  }
+  else if (stabtype_ == INPAR::FLUID::stabtype_nostab)
+  {
+    if (myrank==0)
+    {
+      IO::cout << "+----------------------------------------------------------------------------------+\n";
+      IO::cout << "+                                   WARNING\n";
+      IO::cout << " No stabilization selected: all stabilization terms are switched off!\n";
+      IO::cout << "                            BACI says: Good luck!\n";
+      IO::cout << "+----------------------------------------------------------------------------------+\n" << IO::endl;
+    }
+    pspg_ = false;
+    supg_ = false;
+    vstab_ = INPAR::FLUID::viscous_stab_none;
+    rstab_ = INPAR::FLUID::reactive_stab_none;
+    graddiv_ = false;
+    cross_ = INPAR::FLUID::cross_stress_stab_none;
+    reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
+    tds_ = INPAR::FLUID::subscales_quasistatic;
+    transient_ = INPAR::FLUID::inertia_stab_drop;
+    is_inconsistent_ = false;
+  }
+  else
+   dserror("Unknown stabilization type");
 
 
- //---------------------------------
- // safety checks for time-dependent subgrid scales
- if ((tds_ == INPAR::FLUID::subscales_time_dependent) or (transient_ != INPAR::FLUID::inertia_stab_drop))
- {
-   if (not fldparatimint_->IsGenalphaNP())
-     dserror("time dependent subscales does not work for OST/AfGenAlpha/BDF2/Stationary. \nOne need to look for bugs");
- }
+  //---------------------------------
+  // safety checks for time-dependent subgrid scales
+  if ((tds_ == INPAR::FLUID::subscales_time_dependent) or (transient_ != INPAR::FLUID::inertia_stab_drop))
+  {
+    if (not fldparatimint_->IsGenalphaNP())
+      dserror("time dependent subscales does not work for OST/AfGenAlpha/BDF2/Stationary. \nOne need to look for bugs");
+  }
 
- //---------------------------------
- // set flags for potential evaluation of tau and material law at int. point
- // default value: evaluation at element center
- const std::string tauloc = stablist.get<std::string>("EVALUATION_TAU");
- if (tauloc == "integration_point") tau_gp_ = true;
- else                               tau_gp_ = false;
- const std::string matloc = stablist.get<std::string>("EVALUATION_MAT");
- if (matloc == "integration_point") mat_gp_ = true;
- else                               mat_gp_ = false;
+  //---------------------------------
+  // set flags for potential evaluation of tau and material law at int. point
+  // default value: evaluation at element center
+  const std::string tauloc = stablist.get<std::string>("EVALUATION_TAU");
+  if (tauloc == "integration_point") tau_gp_ = true;
+  else                               tau_gp_ = false;
+  const std::string matloc = stablist.get<std::string>("EVALUATION_MAT");
+  if (matloc == "integration_point") mat_gp_ = true;
+  else                               mat_gp_ = false;
 
+  return;
+}
+
+//----------------------------------------------------------------------*
+//  set loma parameters                                  rasthofer 03/12|
+//---------------------------------------------------------------------*/
+void DRT::ELEMENTS::FluidEleParameter::SetElementLomaParameter( Teuchos::ParameterList& params )
+{
+  // get parameter lists
+  Teuchos::ParameterList& lomaparams = params.sublist("LOMA");
+  Teuchos::ParameterList& stabparams = params.sublist("RESIDUAL-BASED STABILIZATION");
+  Teuchos::ParameterList& turbmodelparamsmfs = params.sublist("MULTIFRACTAL SUBGRID SCALES");
+
+  //---------------------------------------------------------------------------------
+  // material update with subgrid-scale temperature
+  //---------------------------------------------------------------------------------
+
+  update_mat_ = lomaparams.get<bool>("update material",false);
+
+  //---------------------------------------------------------------------------------
+  // parameter for additional rbvmm terms in continuity equation
+  //---------------------------------------------------------------------------------
+
+  conti_supg_     = DRT::INPUT::IntegralValue<int>(stabparams,"LOMA_CONTI_SUPG");
+  conti_cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stabparams,"LOMA_CONTI_CROSS_STRESS");
+  conti_reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stabparams,"LOMA_CONTI_REYNOLDS_STRESS");
+
+  //---------------------------------------------------------------------------------
+  // parameter for additional multifractal subgrid-scale terms
+  //---------------------------------------------------------------------------------
+
+  if (turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+   multifrac_loma_conti_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"LOMA_CONTI");
+
+  return;
 }
 
 //----------------------------------------------------------------------*

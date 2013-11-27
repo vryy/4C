@@ -1,13 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_parameter_timint.cpp
+\file fluid_ele_parameter_timint.H
 
-\brief Evaluation of general fluid parameter for time integration
+\brief Setting of time-integration parameters in fluid element evaluation
 
 This class provides the fluid element parameter for the time integration,
 which are unique and equal for every fluid in the problem. Time integration
-with different parameters in more than one fluid field is not supported so
-far.
+with different parameters in more than one fluid field is not yet supported.
 
 <pre>
 Maintainers: Ursula Rasthofer & Volker Gravemeier
@@ -22,7 +21,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #define FLUID_ELE_PARAMETER_TIMINT_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "fluid_ele_parameter_interface.H"
+#include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_inpar/inpar_fluid.H"
 
 namespace DRT
@@ -31,7 +30,7 @@ namespace ELEMENTS
 {
 
 /// Evaluation of general parameters (constant over time)
-class FluidEleParameterTimInt : public FluidEleParameterInterface
+class FluidEleParameterTimInt : public DRT::SingletonDestruction
 {
 public:
 
@@ -39,7 +38,7 @@ public:
   static FluidEleParameterTimInt* Instance(bool create=true);
 
   //! Singleton destruction method called from global problem
-  virtual void Done();
+  void Done();
 
   //! dtor
   ~FluidEleParameterTimInt() {}
@@ -126,14 +125,9 @@ private:
   //! time integration factor for the left hand side (pressure)
   double timefacpre_;
 
-private:
-
   // private constructor
   FluidEleParameterTimInt();
-  /// no copying
-  FluidEleParameterTimInt(const FluidEleParameterTimInt&);
-  /// no copying
-  FluidEleParameterTimInt& operator=(const FluidEleParameterTimInt&);
+
 
 }; // class FluidEleParameterTimInt
 

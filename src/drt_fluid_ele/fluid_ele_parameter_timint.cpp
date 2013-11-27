@@ -2,12 +2,11 @@
 /*!
 \file fluid_ele_parameter_timint.cpp
 
-\brief Evaluation of general fluid parameter for time integration
+\brief Setting of time-integration parameters in fluid element evaluation
 
 This class provides the fluid element parameter for the time integration,
 which are unique and equal for every fluid in the problem. Time integration
-with different parameters in more than one fluid field is not supported so
-far.
+with different parameters in more than one fluid field is not yet supported.
 
 <pre>
 Maintainers: Ursula Rasthofer & Volker Gravemeier
@@ -81,12 +80,12 @@ DRT::ELEMENTS::FluidEleParameterTimInt::FluidEleParameterTimInt()
 }
 
 //----------------------------------------------------------------------*/
-// set time parameters which are equal for every fluid      rauch 11/13 |
+// set time parameters which are equal for every fluid  rasthofer 11/13 |
 //----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter( Teuchos::ParameterList& params )
 {
   // second check: timealgo
-  // work around to use SetTimeParameter in GenaAlpha (Neumann BC)
+  // work around to use SetTimeParameter in GenAlpha (Neumann BC)
   if(set_general_fluid_timeparameter_ == false)
   {
     set_general_fluid_timeparameter_ = true;
@@ -221,7 +220,7 @@ void DRT::ELEMENTS::FluidEleParameterTimInt::SetElementTimeParameter( Teuchos::P
 }
 
 //----------------------------------------------------------------------*/
-// print fluid time parameter to screen                     rauch 11/13 |
+// print fluid time parameter to screen                 rasthofer 11/13 |
 //----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidEleParameterTimInt::PrintFluidTimeParameter()
 {

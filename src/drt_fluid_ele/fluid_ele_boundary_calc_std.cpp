@@ -1,16 +1,16 @@
 /*!----------------------------------------------------------------------
-\file fluid_ele_boundary_calc_std.cpp
-\brief
+\file fluid_ele_boundary_calc.H
 
-evaluate boundary conditions not requiring parent-element evaluations
+\brief evaluation of fluid terms at integration points
 
 <pre>
-Maintainers: Anh-Tu Vuong & Andreas Rauch
-             {vuong,rauch}@lnm.mw.tum.de
+Maintainers: Ursula Rasthofer & Volker Gravemeier
+             {rasthofer,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15264/-15240
+             089 - 289-15236/-245
 </pre>
 *----------------------------------------------------------------------*/
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "fluid_ele.H"
@@ -57,7 +57,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::FluidEleBoundaryCalcStd()
   : DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 {
-  // pointer to class FluidImplParameterTimInt
+  // pointer to class FluidImplParameter
   my::fldpara_ = DRT::ELEMENTS::FluidEleParameterStd::Instance();
 }
 

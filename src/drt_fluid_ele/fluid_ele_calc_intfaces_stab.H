@@ -77,7 +77,8 @@ namespace DRT
       */
       virtual int EvaluateEdgeBasedStabilization(
           DRT::ELEMENTS::FluidIntFace*       intface,                   ///< internal face element
-          DRT::ELEMENTS::FluidEleParameterTimInt&  fldpara_,
+          DRT::ELEMENTS::FluidEleParameterTimInt&  fldparatimint,       ///< time-integration parameter
+          DRT::ELEMENTS::FluidEleParameter&  fldpara,                   ///< general paramter
           Teuchos::ParameterList&            params,                    ///< parameter list
           DRT::Discretization&               discretization,            ///< discretization
           std::vector<int>&                  patchlm,                   ///< patch local map
@@ -180,7 +181,8 @@ namespace DRT
       */
       virtual int EvaluateEdgeBasedStabilization(
           DRT::ELEMENTS::FluidIntFace*       intface,                   ///< internal face element
-          DRT::ELEMENTS::FluidEleParameterTimInt&  fldpara,                   ///< fluid parameter
+          DRT::ELEMENTS::FluidEleParameterTimInt&  fldparatimint,       ///< time-integration parameter
+          DRT::ELEMENTS::FluidEleParameter&  fldpara,                   ///< general paramter
           Teuchos::ParameterList&            params,                    ///< parameter list
           DRT::Discretization&               discretization,            ///< discretization
           std::vector<int>&                  patchlm,                   ///< patch local map

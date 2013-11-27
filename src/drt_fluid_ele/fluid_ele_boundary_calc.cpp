@@ -16,7 +16,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_utils.H"
 #include "fluid_ele_action.H"
 
-#include "fluid_ele_parameter.H"
+#include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
 
 #include "../drt_inpar/inpar_fluid.H"
@@ -63,6 +63,8 @@ DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 {
   // pointer to class FluidImplParameterTimInt for time integration
   fldparatimint_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
+  // initialize also general parameter list, also it will be overwritten in derived subclasses
+  fldpara_ = DRT::ELEMENTS::FluidEleParameterStd::Instance();
 
   return;
 }
