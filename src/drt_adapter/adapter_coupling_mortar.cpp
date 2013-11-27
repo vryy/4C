@@ -113,8 +113,8 @@ void ADAPTER::CouplingMortar::Setup(
   // check for invalid parameter values
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
     if(myrank== 0) dserror("Mortar coupling adapter only works for dual shape functions");
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(input,"INTTYPE") != INPAR::MORTAR::inttype_segments)
-    if(myrank== 0) dserror("Mortar coupling adapter only works for segment-based integration");
+  //if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(input,"INTTYPE") != INPAR::MORTAR::inttype_segments)
+    //if(myrank== 0) dserror("Mortar coupling adapter only works for segment-based integration");
   if (DRT::INPUT::IntegralValue<int>(input,"LM_NODAL_SCALE")==true)
     if(myrank== 0) dserror("Mortar coupling adapter does not work with LM_NODAL_SCALE");
 
@@ -131,8 +131,8 @@ void ADAPTER::CouplingMortar::Setup(
   // fully redundant here in the mortar ADAPTER. This makes applications such
   // as SlidingALE much easier, whereas it would not be needed for others.)
   INPAR::MORTAR::RedundantStorage redundant =DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(input,"REDUNDANT_STORAGE");
-  if (redundant != INPAR::MORTAR::redundant_all)
-    if(myrank== 0) dserror("Mortar coupling adapter only works for redundant slave and master storage");
+  //if (redundant != INPAR::MORTAR::redundant_all)
+    //if(myrank== 0) dserror("Mortar coupling adapter only works for redundant slave and master storage");
   Teuchos::RCP<MORTAR::MortarInterface> interface = Teuchos::rcp(new MORTAR::MortarInterface(0, comm, dim, input, redundant));
 
   // number of dofs per node based on the coupling vector coupleddof
