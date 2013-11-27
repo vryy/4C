@@ -145,7 +145,7 @@ std::ostream& NOX::FSI::GenericNormF::print(std::ostream& stream, int indent) co
          << " < " << NOX::Utils::sciformat(trueTolerance_, 3)
          << "\n";
 
-  // Note: All norms are hard-coded absolute norms. So, we do not neet to print
+  // Note: All norms are hard-coded absolute norms. So, we do not need to print
   // this.                                                      mayt.mt 01/2012
 
   return stream;
@@ -365,7 +365,6 @@ NOX::StatusTest::StatusType NOX::FSI::GenericNormUpdate::checkStatus(const NOX::
 /*----------------------------------------------------------------------*/
 double NOX::FSI::GenericNormUpdate::computeNorm(const Epetra_Vector& v)
 {
-  //NOX::Epetra::Vector vec(Teuchos::rcp(&v,false),NOX::Epetra::Vector::CreateView);
   NOX::Epetra::Vector vec(v);
   int n = (scaleType_ == Scaled) ? vec.length() : 0;
 

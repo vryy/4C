@@ -151,6 +151,7 @@ namespace FSI
     //! Norm of F to be compared to trueTolerance
     double normF_;
 
+    //! name of this test
     std::string name_;
   };
 
@@ -277,7 +278,7 @@ namespace FSI
 
     virtual std::ostream& print(std::ostream& stream, int indent = 0) const;
 
-    /* @name Accessor Functions
+    /* @name Access Functions
        Used to query current values of variables in the status test.
     */
     //@{
@@ -315,6 +316,7 @@ namespace FSI
     //! Norm of the update to be compared to trueTolerance
     double normUpdate_;
 
+    //! name of this test
     std::string name_;
   };
 
@@ -355,7 +357,12 @@ namespace FSI
   class MinIters : public NOX::StatusTest::Generic {
   public:
 
-    //! Constructor. Specify the minimum number of nonlinear solver iterations, \f$k_{\min}\f$ ands optinally an error stream for printing errors.
+    /*! \brief Constructor
+     *
+     *  Specify the minimum number of nonlinear solver iterations, \f$k_{\min}\f$
+     *  and optionally an error stream for printing errors.
+     *
+     */
     MinIters(int minIterations, const NOX::Utils* u = NULL);
 
     //! Destructor.
@@ -373,9 +380,9 @@ namespace FSI
     virtual int getMinIters() const;
 
     /*!
-      \brief Returns the current number of iterations taken by the solver.
+    \brief Returns the current number of iterations taken by the solver.
 
-      Returns -1 if the status of this test is NOX::StatusTest::Unevaluated.
+    Returns -1 if the status of this test is NOX::StatusTest::Unevaluated.
     */
     virtual int getNumIters() const;
 
@@ -387,7 +394,7 @@ namespace FSI
     //! Current number of iterations (if known)
     int niters;
 
-    //! %Status
+    //! Status
     NOX::StatusTest::StatusType status;
 
     //! Ostream used to print errors
