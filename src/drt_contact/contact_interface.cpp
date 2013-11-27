@@ -2002,7 +2002,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
 
 /*----------------------------------------------------------------------*
  |  Evaluate relative movement (jump) of a slave node     gitterle 10/09|
- /*---------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
                                           const Teuchos::RCP<LINALG::SparseMatrix> dmatrixmod,
                                           const Teuchos::RCP<LINALG::SparseMatrix> doldmod)
@@ -2374,8 +2374,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
 }
 
 /*----------------------------------------------------------------*
- |  Assemble slave coordinates (xs)                        gitterle 10/09|
- *----------------------------------------------------------------------*/
+ |  Assemble slave coordinates (xs)                 gitterle 10/09|
+ *----------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod)
 {
    
@@ -2504,7 +2504,7 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate regularized normal forces (nodes)                 popp 05/09|
+ |  Evaluate regularized normal forces (nodes)                popp 05/09|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
                                                  bool& localactivesetchange)
@@ -2646,7 +2646,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate regularized tangential forces                 gitterle 10/09|
+ |  Evaluate regularized tangential forces                gitterle 10/09|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
 {
@@ -2996,7 +2996,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate regularized tangential forces (Aug. Lagr.)    gitterle 10/09|
+ |  Evaluate regularized tangential forces (Aug. Lagr.)   gitterle 10/09|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
 {
@@ -5003,9 +5003,9 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
   return;
 }
 
-/*----------------------------------------------------------------------*
-|  Assemble matrix LinSlip with tangential+D+M derivatives    mgit 02/09|
-*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*
+ | Assemble matrix LinSlip with tangential+D+M derivatives  mgit 02/09 |
+ *---------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
     LINALG::SparseMatrix& linslipDISglobal,
     Epetra_Vector& linslipRHSglobal)
@@ -6929,7 +6929,7 @@ bool CONTACT::CoInterface::SplitActiveDofs()
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble matrix A                                      gitterle 12/10|
+ |  Assemble matrix A                                     gitterle 12/10|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleA(LINALG::SparseMatrix& aglobal)
 {
