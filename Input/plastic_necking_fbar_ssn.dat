@@ -60,7 +60,7 @@ NORMCOMBI_DISPPRES              Or
 MAXITER                         50
 MINITER                         2
 NLNSOL                          ptc
-PREDICT                         ConstDis
+PREDICT                         TangDis
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 ALPHA_F                         0.5

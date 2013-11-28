@@ -429,6 +429,9 @@ namespace ELEMENTS
     // for a slightly simpler implementation, we use Delta alpha^k=-Delta D^p instead of Delta D^p
     Teuchos::RCP<std::vector<LINALG::Matrix<5,1> > > DalphaK_last_iter_;
 
+    // plastic increment at each Gauss point at converged time step (needed for tangential predictor)
+    Teuchos::RCP<std::vector<LINALG::Matrix<5,1> > > DalphaK_last_timestep_;
+
     // accumulated plastic strain for each Gauss point at last converged state
     Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > last_alpha_isotropic_;
 
@@ -461,8 +464,11 @@ namespace ELEMENTS
     // f_b at each Gauss point for recovery of inner variables
     Teuchos::RCP<std::vector<LINALG::Matrix<8,1> > > fbetaHill_;
 
-    //
+    // plastic increment at each Gauss point at last Newton iteration
     Teuchos::RCP<std::vector<LINALG::Matrix<8,1> > > mDLp_last_iter_;
+
+    // plastic increment at each Gauss point at converged time step (needed for tangential predictor)
+    Teuchos::RCP<std::vector<LINALG::Matrix<8,1> > > mDLp_last_timestep_;
 
     // accumulated plastic strain increment for each Gauss point
     Teuchos::RCP<std::vector<double> > deltaAlphaI_;

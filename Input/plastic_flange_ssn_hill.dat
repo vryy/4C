@@ -59,7 +59,7 @@ TOLRES                          1.0e-5
 NORMCOMBI_DISPPRES              Or
 MAXITER                         50
 MINITER                         2
-NLNSOL                          ptc
+NLNSOL                          fullnewton
 PREDICT                         TangDis
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
@@ -74,8 +74,6 @@ GAMMA                           0.5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-AZPREC                         ILU
-AZSOLVE                        GMRES
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0  INITYIELD 0.275 ISOHARD 0.1 EXPISOHARD 0.0 INFYIELD 0.275 KINHARD 0.0 CPL 175 STAB_S 1.0  rY_11 1.0 rY_22 0.99544 rY_33 0.99544 rY_12 0.65161 rY_23 0.57385 rY_13 0.65161 PL_SPIN_ETA -50
 MAT 2 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
@@ -85,8 +83,6 @@ CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 1  FACTOR 0 1
 FUNCT1 EXPR 0 0 0 FUNCTION (-x/sqrt(x*x+y*y))
 -------------------------------------------------------------FUNCT2
 FUNCT2 EXPR 0 0 0 FUNCTION (-y/sqrt(x*x+y*y))
-
-
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  5

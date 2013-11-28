@@ -362,9 +362,19 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
     for (int i=0; i<numgpt_; i++)
     {
       if (HaveHillPlasticity())
-        mDLp_last_iter_->at(i).Clear();
+      {
+        mDLp_last_iter_->at(i)=mDLp_last_timestep_->at(i);
+        KbbInvHill_->at(i).Clear();
+        KbdHill_->at(i).Clear();
+        fbetaHill_->at(i).Clear();
+      }
       else
-        DalphaK_last_iter_->at(i).Clear();
+      {
+        DalphaK_last_iter_->at(i)=DalphaK_last_timestep_->at(i);
+        KbbInv_->at(i).Clear();
+        Kbd_->at(i).Clear();
+        fbeta_->at(i).Clear();
+      }
     }
     break;
   }
@@ -2551,6 +2561,10 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
     LINALG::Matrix<3,3> invdefgrd;
     double detF=invdefgrd.Invert(defgrd);
 
+    // check for element distortion
+    if (detF<=0. || detF_0<=0.)
+      dserror("element distortion too large");
+
     // F_bar deformation gradient =(detF_0/detF)^1/3*F
     LINALG::Matrix<3,3> defgrd_bar(defgrd);
     double f_bar_factor=pow(detF_0/detF,1/3.);
@@ -3259,6 +3273,11 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
     defgrd.MultiplyTT(xcurr,N_XYZ);
     LINALG::Matrix<3,3> invdefgrd;
     double detF=invdefgrd.Invert(defgrd);
+
+    // check for element distortion
+    if (detF<=0. || detF_0<=0.)
+      dserror("element distortion too large");
+
 
     // F_bar deformation gradient =(detF_0/detF)^1/3*F
     LINALG::Matrix<3,3> defgrd_bar(defgrd);
@@ -4791,7 +4810,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformation_nln()
       last_plastic_defgrd_inverse_->at(gp).Multiply(tmp,FpLast);
       last_plastic_defgrd_inverse_->at(gp).Invert();
     }
-    DalphaK_last_iter_->at(gp).Clear();
+
+    DalphaK_last_timestep_->at(gp)=DalphaK_last_iter_->at(gp);
     KbbInv_->at(gp).Clear();
     Kbd_->at(gp).Clear();
     fbeta_->at(gp).Clear();
@@ -4853,7 +4873,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformationHill_nln
       last_plastic_defgrd_inverse_->at(gp).Multiply(tmp,FpLast);
       last_plastic_defgrd_inverse_->at(gp).Invert();
     }
-    mDLp_last_iter_->at(gp).Clear();
+    mDLp_last_timestep_->at(gp)=mDLp_last_iter_->at(gp);
     KbbInvHill_->at(gp).Clear();
     KbdHill_->at(gp).Clear();
     fbetaHill_->at(gp).Clear();
