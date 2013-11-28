@@ -393,7 +393,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         else if ((*f)->Position() == GEO::CUT::Point::oncutsurface)
         {
 #ifdef DEBUG
-          cout << "the position of this facet of face " << faceele->Id() << " is oncutsurface, we do not stabilize it!!! " << endl;
+          std::cout << "the position of this facet of face " << faceele->Id() 
+										<< " is oncutsurface, we do not stabilize	it!!! " << std::endl;
 #endif
           // if a facet lies oncutsurface, then there is only one neighbor, we do not stabilize this facet
           // REMARK: in case of one part of the facet is physical and the other part lies on cutsurface,
