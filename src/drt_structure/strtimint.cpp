@@ -51,7 +51,6 @@ Maintainer: Alexander Popp
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_constraint/windkessel_manager.H"
-#include "../drt_constraint/windkesselsolver.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_statmech/statmech_manager.H"
@@ -270,21 +269,14 @@ STR::TimInt::TimInt
   // initialize Windkessel manager
   windkman_ = Teuchos::rcp(new UTILS::WindkesselManager(discret_,
                                                   (*dis_)(0),
-                                                  sdynparams));
+                                                  sdynparams,
+                                                  *solver_,
+                                                  dbcmaps_));
 
   // initialize constraint solver if constraints are defined
   if (conman_->HaveConstraint())
   {
     consolv_ = Teuchos::rcp(new UTILS::ConstraintSolver(discret_,
-                                                        *solver_,
-                                                        dbcmaps_,
-                                                        sdynparams));
-  }
-
-  // initialize Windkessel solver if Windkessel bcs are defined
-  if (windkman_->HaveWindkessel())
-  {
-    windksolv_ = Teuchos::rcp(new UTILS::WindkesselSolver(discret_,
                                                         *solver_,
                                                         dbcmaps_,
                                                         sdynparams));

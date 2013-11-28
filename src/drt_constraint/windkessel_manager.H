@@ -1,7 +1,19 @@
 /*!----------------------------------------------------------------------
-\file windkessel_manager.H
+\file windkessel_manager.cpp
 
-\brief Class controlling Windkessel functions and containing the necessary data
+\brief Class controlling Windkessel boundary conditions and containing the necessary data
+
+**************************************************************************************************************************
+Monolithic coupling of a two-element Windkessel governed by
+
+c dp/dt + p/r + Q(d) = 0 (c: compliance, r: resistance, Q = dV/dt: flux, p: pressure variable)
+
+is coupled with the standard structure
+
+M a + C v + f_int(d) - f_ext(d,p) = 0,
+
+with Q being a function of the displacement vector d and f_ext additionally being a function of the Windkessel pressure p.
+**************************************************************************************************************************
 
 <pre>
 Maintainer: Marc Hirschvogel
@@ -15,7 +27,6 @@ Maintainer: Marc Hirschvogel
 #ifndef WINDKESSEL_MANAGER_H
 #define WINDKESSEL_MANAGER_H
 
-#include "../drt_adapter/adapter_algorithmbase.H"
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Epetra_Operator.h>
@@ -24,10 +35,6 @@ Maintainer: Marc Hirschvogel
 
 using namespace Teuchos;
 
-namespace ADAPTER
-{
-  class StructureWindkesselMerged;
-}
 namespace DRT
 {
   class Condition;
@@ -42,7 +49,9 @@ namespace LINALG
 {
 	class SparseMatrix;
   class SparseOperator;
+  class MapExtractor;
   class MultiMapExtractor;
+  class Solver;
 }
 
 namespace UTILS
@@ -63,7 +72,9 @@ namespace UTILS
     (
       RCP<DRT::Discretization> disc,  ///< standard discretization
       RCP<Epetra_Vector> disp,  ///< current displacement
-      ParameterList param  ///<  parameterlist from time integration algorithm
+      ParameterList param,  ///<  parameterlist from time integration algorithm
+      LINALG::Solver& solver,  ///< Solver to solve linear subproblem in iteration
+      RCP<LINALG::MapExtractor> dbcmaps  ///< Map extractor for Dirichlet DOFs
     );
     /*!
         \brief Destructor
@@ -252,18 +263,34 @@ namespace UTILS
                         Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
 
 
+    void SolverSetup
+    (
+      RCP<DRT::Discretization> discr,
+      LINALG::Solver& solver,
+      RCP<LINALG::MapExtractor> dbcmaps,
+      ParameterList params
+    );
+
+
+    void Solve
+    (
+      RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+      RCP<LINALG::SparseMatrix> coupoffdiag_vol_d,
+      RCP<LINALG::SparseMatrix> coupoffdiag_fext_p,
+      RCP<LINALG::SparseMatrix> windkstiff,
+      RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
+      RCP<Epetra_Vector> disppres,     ///< pressure increment to compute
+      const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
+      const RCP<Epetra_Vector> rhswindk     ///< Windkessel errors
+    );
+
+
   private:
 
     // don't want = operator, cctor and destructor
     WindkesselManager operator = (const WindkesselManager& old);
     WindkesselManager(const WindkesselManager& old);
 
-    // underlying structure
-    Teuchos::RCP< ::ADAPTER::StructureWindkesselMerged> structure_;
-    //Teuchos::RCP<Epetra_Vector> couppres_;
-
-    /// map between coupling ID and conditions on structure
-    std::map<int,DRT::Condition*> coupcond_;
 
     RCP<DRT::Discretization> actdisc_; ///< discretization where elements of Windkessel boundary live in
     RCP<WindkesselDofSet> windkesseldofset_; ///< degrees of freedom of pressures
@@ -298,6 +325,10 @@ namespace UTILS
     bool havewindkessel_;  ///< are there Windkessel bcs at all?
     RCP<Windkessel> rc_;
     int myrank_;
+    RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
+    int counter_;  ///< counts how often #Solve is called
+    RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle -- monitor its target change!
+    RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
 
   }; //class
 }

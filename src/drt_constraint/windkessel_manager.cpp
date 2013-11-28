@@ -1,7 +1,19 @@
 /*!----------------------------------------------------------------------
 \file windkessel_manager.cpp
 
-\brief Class controlling Windkessel functions and containing the necessary data
+\brief Class controlling Windkessel boundary conditions and containing the necessary data
+
+**************************************************************************************************************************
+Monolithic coupling of a two-element Windkessel governed by
+
+c dp/dt + p/r + Q(d) = 0 (c: compliance, r: resistance, Q = dV/dt: flux, p: pressure variable)
+
+is coupled with the standard structure
+
+M a + C v + f_int(d) - f_ext(d,p) = 0,
+
+with Q being a function of the displacement vector d and f_ext additionally being a function of the Windkessel pressure p.
+**************************************************************************************************************************
 
 <pre>
 Maintainer: Marc Hirschvogel
@@ -12,10 +24,13 @@ Maintainer: Marc Hirschvogel
 
 *----------------------------------------------------------------------*/
 
-
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <stdio.h>
 #include <iostream>
 
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_str_windkessel_merged.H"
@@ -33,10 +48,15 @@ UTILS::WindkesselManager::WindkesselManager
 (
   RCP<DRT::Discretization> discr,
   RCP<Epetra_Vector> disp,
-  ParameterList params):
+  ParameterList params,
+  LINALG::Solver& solver,
+  RCP<LINALG::MapExtractor> dbcmaps):
 actdisc_(discr),
 myrank_(actdisc_->Comm().MyPID())
 {
+
+	//setup solver
+	SolverSetup(discr,solver,dbcmaps,params);
   //----------------------------------------------------------------------------
   //---------------------------------------------------------Windkessel Conditions!
 
@@ -337,5 +357,110 @@ void UTILS::WindkesselManager::PrintPresFlux() const
 		}
 	}
 
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  set-up (public)                                             tk 11/07|
+ *----------------------------------------------------------------------*/
+void UTILS::WindkesselManager::SolverSetup
+(
+  RCP<DRT::Discretization> discr,
+  LINALG::Solver& solver,
+  RCP<LINALG::MapExtractor> dbcmaps,
+  ParameterList params
+)
+{
+
+  solver_ = Teuchos::rcp(&solver,false);
+  counter_ = 0;
+
+  return;
+}
+
+
+
+void UTILS::WindkesselManager::Solve
+(
+  RCP<LINALG::SparseMatrix> stiff,
+  RCP<LINALG::SparseMatrix> coupoffdiag_vol_d,
+  RCP<LINALG::SparseMatrix> coupoffdiag_fext_p,
+  RCP<LINALG::SparseMatrix> windkstiff,
+  RCP<Epetra_Vector> dispinc,
+  RCP<Epetra_Vector> presinc,
+  const RCP<Epetra_Vector> rhsstand,
+  const RCP<Epetra_Vector> rhswindk
+)
+{
+
+
+	/*// get Windkessel matrix with and without Dirichlet zeros
+	Teuchos::RCP<LINALG::SparseMatrix> windkstiff =
+		(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetWindkesselStiffness()));
+	Teuchos::RCP<LINALG::SparseMatrix> coupoffdiag_vol_d =
+		(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetCoupOffdiagVolD()));
+	Teuchos::RCP<LINALG::SparseMatrix> coupoffdiag_fext_p =
+		(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetCoupOffdiagFextP()));
+
+	coupoffdiag_vol_d->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
+	coupoffdiag_fext_p->ApplyDirichlet(*(dbcmaps_->CondMap()),false);*/
+
+
+  // define maps of standard dofs and additional pressures
+  RCP<Epetra_Map> standrowmap = Teuchos::rcp(new Epetra_Map(stiff->RowMap()));
+  RCP<Epetra_Map> windkrowmap = Teuchos::rcp(new Epetra_Map(windkstiff->RowMap()));
+  //RCP<Epetra_Map> windkrowmap = Teuchos::rcp(new Epetra_Map(coupoffdiag_fext_p->DomainMap()));
+
+  // merge maps to one large map
+  RCP<Epetra_Map> mergedmap = LINALG::MergeMap(standrowmap,windkrowmap,false);
+  // define MapExtractor
+  LINALG::MapExtractor mapext(*mergedmap,standrowmap,windkrowmap);
+
+  // initialize large SparseMatrix and Epetra_Vectors
+  RCP<LINALG::SparseMatrix> mergedmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap,81));
+  RCP<Epetra_Vector> mergedrhs = Teuchos::rcp(new Epetra_Vector(*mergedmap));
+  RCP<Epetra_Vector> mergedsol = Teuchos::rcp(new Epetra_Vector(*mergedmap));
+  // ONLY compatability
+  // dirichtoggle_ changed and we need to rebuild associated DBC maps
+  if (dirichtoggle_ != Teuchos::null)
+    dbcmaps_ = LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
+
+  // fill merged matrix using Add
+  mergedmatrix -> Add(*stiff,false,1.0,1.0);
+  mergedmatrix -> Add(*coupoffdiag_vol_d,true,1.0,1.0);
+  mergedmatrix -> Add(*coupoffdiag_fext_p,false,1.0,1.0);
+  mergedmatrix -> Add(*windkstiff,false,1.0,1.0);
+  mergedmatrix -> Complete(*mergedmap,*mergedmap);
+
+  //std::cout << "" << *coupoffdiag_vol_d << std::endl;
+  //std::cout << "" << *coupoffdiag_fext_p << std::endl;
+  //std::cout << "" << *windkstiff << std::endl;
+  //std::cout << "" << *rhswindk << std::endl;
+
+  // fill merged vectors using Export
+  LINALG::Export(*rhswindk,*mergedrhs);
+  mergedrhs -> Scale(-1.0);
+  LINALG::Export(*rhsstand,*mergedrhs);
+
+#if 0
+    const int myrank=(actdisc_->Comm().MyPID());
+    const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*mergedmatrix),Ifpack_GMRES, 100);
+    // computation of significant digits might be completely bogus, so don't take it serious
+    const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
+    const int sign_digits = (int)floor(tmp);
+    if (!myrank)
+      std::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits<<std::endl;
+#endif
+
+  // solve
+  solver_->Solve(mergedmatrix->EpetraMatrix(),mergedsol,mergedrhs,true,counter_==0);
+  solver_->ResetTolerance();
+  // store results in smaller vectors
+  mapext.ExtractCondVector(mergedsol,dispinc);
+  mapext.ExtractOtherVector(mergedsol,presinc);
+
+  counter_++;
   return;
 }

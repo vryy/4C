@@ -35,7 +35,6 @@ Maintainer: Alexander Popp
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_constraint/windkessel_manager.H"
-#include "../drt_constraint/windkesselsolver.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_lib/drt_locsys.H"
@@ -1734,11 +1733,8 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 			coupoffdiag_vol_d->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
 			coupoffdiag_fext_p->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
 
-			//std::cout << "" << *coupoffdiag_vol_d << std::endl;
-			//std::cout << "" << *coupoffdiag_fext_p << std::endl;
-
 			// Call Windkessel solver to solve system
-			windksolv_->Solve(SystemMatrix(), coupoffdiag_vol_d, coupoffdiag_fext_p, windkstiff,
+			windkman_->Solve(SystemMatrix(), coupoffdiag_vol_d, coupoffdiag_fext_p, windkstiff,
 							disi_, presincr,
 							fres_, windkrhs);
 

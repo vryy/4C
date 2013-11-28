@@ -58,7 +58,6 @@ namespace UTILS
   class ConstrManager;
   class ConstraintSolver;
   class WindkesselManager;
-  class WindkesselSolver;
   class SurfStressManager;
 //  class GrowthDisplManager;
 }
@@ -1063,7 +1062,6 @@ namespace STR
 
     // for Windkessel bcs
     Teuchos::RCP<UTILS::WindkesselManager> windkman_;  //!< Windkessel manager
-    Teuchos::RCP<UTILS::WindkesselSolver> windksolv_;  //!< Windkessel solver
 
     //! surface stresses
     Teuchos::RCP<UTILS::SurfStressManager> surfstressman_;
