@@ -15,9 +15,9 @@ Maintainer: Kei Müller
 #include "beam3contact_defines.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_sparsematrix.H"
-
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_contact.H"
 #include <Teuchos_Time.hpp>
 
@@ -78,23 +78,23 @@ dofoffset_(dofoffset)
     periodicBC_ = false;
 
   // determine bounding box type
-  switch(DRT::INPUT::IntegralValue<INPAR::CONTACT::OctreeType>(params, "BEAMS_OCTREE"))
+  switch(DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(params, "BEAMS_OCTREE"))
   {
-    case INPAR::CONTACT::boct_aabb:
+    case INPAR::BEAMCONTACT::boct_aabb:
     {
       if(!discret_.Comm().MyPID())
         std::cout<<"Search routine:\nOctree + Axis Aligned BBs"<<std::endl;
       boundingbox_ = Beam3ContactOctTree::axisaligned;
     }
       break;
-    case INPAR::CONTACT::boct_cobb:
+    case INPAR::BEAMCONTACT::boct_cobb:
     {
       if(!discret_.Comm().MyPID())
         std::cout<<"Search routine:\nOctree + Cylindrical Oriented BBs"<<std::endl;
       boundingbox_ = Beam3ContactOctTree::cyloriented;
     }
       break;
-    case INPAR::CONTACT::boct_spbb:
+    case INPAR::BEAMCONTACT::boct_spbb:
     {
       if(!discret_.Comm().MyPID())
         std::cout<<"Search routine:\nOctree + Spherical BBs"<<std::endl;

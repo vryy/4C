@@ -820,7 +820,7 @@ void STR::TimIntStatMech::NewtonFull()
 
   INPAR::CONTACT::SolvingStrategy soltype = INPAR::CONTACT::solution_penalty;
 //  if(HaveBeamContact())
-//    soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->InputParameters(),"STRATEGY");
+//    soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
 //  if(printscreen_ && !isconverged_ &&  !myrank_ && soltype != INPAR::CONTACT::solution_auglag)
 //    std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
 
@@ -1294,7 +1294,7 @@ void STR::TimIntStatMech::PTC()
 
   INPAR::CONTACT::SolvingStrategy soltype = INPAR::CONTACT::solution_penalty;
   if(HaveBeamContact())
-    soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->InputParameters(),"STRATEGY");
+    soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
   if(printscreen_ && !isconverged_ &&  !myrank_ && soltype != INPAR::CONTACT::solution_auglag)
     std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
   if(isconverged_  && !myrank_ && printscreen_)
@@ -1371,7 +1371,7 @@ void STR::TimIntStatMech::PTCConvergenceStatus(int& numiter, int& maxiter, bool 
     // configurations arise, where (especially in network simulations) the constraint is fullfilled by almost all of the contact
     // pairs except for a very tiny number of pairs (often only 1 pair), where one radius is significantly smaller than the other
     // (pair linker/filament).
-//    INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->InputParameters(),"STRATEGY");
+//    INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
 //    if(soltype==INPAR::CONTACT::solution_auglag)
 //    {
 //      double cnorm = 1e6;
@@ -1507,7 +1507,7 @@ void STR::TimIntStatMech::ConvergenceStatusUpdate(bool converged, bool increases
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::BeamContactPrepareStep()
 {
-  if(HaveBeamContact() && DRT::INPUT::IntegralValue<int>(beamcman_->InputParameters(),"BEAMS_NEWGAP"))
+  if(HaveBeamContact() && DRT::INPUT::IntegralValue<int>(beamcman_->BeamContactParameters(),"BEAMS_NEWGAP"))
   {
     // set normal vector of last time "normal_" to old normal vector "normal_old_" (maybe this go inside the do loop?)
       beamcman_->ShiftAllNormal();
@@ -1522,7 +1522,7 @@ void STR::TimIntStatMech::BeamContactPrepareStep()
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::BeamContactNonlinearSolve()
 {
-  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->InputParameters(),"STRATEGY");
+  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
   switch (soltype)
   {
     //solving strategy using regularization with penalty method (nonlinear solution approach: ordinary NEWTON (PTC))
@@ -1567,8 +1567,8 @@ void STR::TimIntStatMech::BeamContactPenalty()
 void STR::TimIntStatMech::BeamContactAugLag()
 {
   // get tolerance and maximum number of Uzawa steps from input file
-  double eps = beamcman_->InputParameters().get<double>("UZAWACONSTRTOL");
-  int maxuzawaiter = beamcman_->InputParameters().get<int>("UZAWAMAXSTEPS");
+  double eps = beamcman_->GeneralContactParameters().get<double>("UZAWACONSTRTOL");
+  int maxuzawaiter = beamcman_->GeneralContactParameters().get<int>("UZAWAMAXSTEPS");
 
   // Initialize Lagrange Multipliers and Uzawa iteration counter for the Augmented Lagrangian loop
   beamcman_->ResetAlllmuzawa();

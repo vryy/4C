@@ -109,26 +109,6 @@ namespace INPAR
       errornorms_thicksphere ///< error norms for thick pressurized sphere problem
     };
 
-    /// Application of a smoothed tangent field
-    /// (this enum represents the input file parameter BEAMS_SMOOTHING)
-    enum Smoothing
-    {
-      bsm_none,         ///< no smoothing
-      bsm_smoothed,     ///< smoothing for all pairs
-      bsm_partially,    ///< smoothing only for pairs which are not found with "no smoothing"
-      bsm_cpp           ///< smoothing only for the closest point projection; element evaluation without smoothing"
-    };
-
-    /// Beam Contact Octree  and Bounding Box Type
-    /// (this enum represents the input file parameter BEAMS_OCTREEBBOX)
-    enum OctreeType
-    {
-      boct_none,       ///< no boundig box -> no octree
-      boct_aabb,       ///< axis aligned bounding boxes
-      boct_cobb,       ///< cylindrical oriented bounding boxes
-      boct_spbb        ///< spherical bounding boxes
-    };
-
     // problemtype to avoid use of drt_globalproblem.H
     enum Problemtype
     {

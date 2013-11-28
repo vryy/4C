@@ -83,6 +83,7 @@ LINEAR_SOLVER                   2
 APPLICATION                     BeamContact
 STRATEGY                        Penalty
 PENALTYPARAM                    1e+5
+----------------------------------------------------------------BEAM CONTACT
 BEAMS_NEWGAP                    Yes
 BEAMS_SMOOTHING                 cpp
 --------------------------------------------------------------------SOLVER 1

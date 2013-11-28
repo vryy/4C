@@ -2146,7 +2146,7 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
   //********************************************************************
   // strategy type
   INPAR::CONTACT::SolvingStrategy soltype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->InputParameters(),"STRATEGY");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
 
   // unknown types of nonlinear iteration schemes
   if (itertype_ != INPAR::STR::soltech_newtonfull)
@@ -2174,8 +2174,8 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
   else if (soltype == INPAR::CONTACT::solution_auglag)
   {
     // get tolerance and maximum number of Uzawa steps from input file
-    double eps = beamcman_->InputParameters().get<double>("UZAWACONSTRTOL");
-    int maxuzawaiter = beamcman_->InputParameters().get<int>("UZAWAMAXSTEPS");
+    double eps = beamcman_->GeneralContactParameters().get<double>("UZAWACONSTRTOL");
+    int maxuzawaiter = beamcman_->GeneralContactParameters().get<int>("UZAWAMAXSTEPS");
 
     // outer Augmented Lagrangian iteration (Uzawa)
     do
@@ -2226,7 +2226,7 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
   }
 
   // decide whether the original or the modified gapfunction definition is used
-  bool newgapfunction =  DRT::INPUT::IntegralValue<int>(beamcman_->InputParameters(),"BEAMS_NEWGAP");
+  bool newgapfunction =  DRT::INPUT::IntegralValue<int>(beamcman_->BeamContactParameters(),"BEAMS_NEWGAP");
 
   // if the modified gap function definition is used the normal vector of the last time step has to be stored
   if (newgapfunction) {beamcman_->ShiftAllNormal();}

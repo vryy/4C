@@ -51,6 +51,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_cavitation.H"
 #include "../drt_inpar/inpar_crack.H"
 #include "../drt_inpar/inpar_wear.H"
+#include "../drt_inpar/inpar_beamcontact.H"
 
 #include <AztecOO.h>
 
@@ -1697,33 +1698,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::CONTACT::errornorms_thicksphere, INPAR::CONTACT::errornorms_thicksphere),
       &scontact);
 
-  setStringToIntegralParameter<int>("BEAMS_NEWGAP","No","choose between original or enhanced gapfunction",
-                               yesnotuple,yesnovalue,&scontact);
-
-  setStringToIntegralParameter<int>("BEAMS_SMOOTHING","None","Application of smoothed tangent field",
-       tuple<std::string>("None","none",
-                          "Smoothed","smoothed",
-                          "Partially","partially",
-                          "Cpp", "cpp"),
-       tuple<int>(
-                  INPAR::CONTACT::bsm_none,INPAR::CONTACT::bsm_none,
-                  INPAR::CONTACT::bsm_smoothed,INPAR::CONTACT::bsm_smoothed,
-                  INPAR::CONTACT::bsm_partially,INPAR::CONTACT::bsm_partially,
-                  INPAR::CONTACT::bsm_cpp,INPAR::CONTACT::bsm_cpp),
-       &scontact);
-
-  // enable octree search and determine type of bounding box (aabb = axis aligned, cobb = cylindrical oriented)
-  setStringToIntegralParameter<int>("BEAMS_OCTREE","None","octree and bounding box type for octree search routine",
-       tuple<std::string>("None","none","octree_axisaligned","octree_cylorient","octree_spherical"),
-       tuple<int>(INPAR::CONTACT::boct_none,INPAR::CONTACT::boct_none,
-                  INPAR::CONTACT::boct_aabb,INPAR::CONTACT::boct_cobb,INPAR::CONTACT::boct_spbb),
-       &scontact);
-
-  DoubleParameter("BEAMS_EXTFAC",1.05,"extrusion factor of the bounding box",&scontact);
-  DoubleParameter("BEAMS_RADFAC",1.05,"radius extrusion factor of the bounding box",&scontact);
-  IntParameter("BEAMS_TREEDEPTH",6,"max, tree depth of the octree",&scontact);
-  IntParameter("BEAMS_BOXESINOCT",8,"max number of bounding boxes in any leaf octant",&scontact);
-
   setStringToIntegralParameter<int>("INITCONTACTBYGAP","No","Initialize init contact by weighted gap vector",
                                yesnotuple,yesnovalue,&scontact);
 
@@ -1818,6 +1792,37 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("THERMOLAGMULT","Yes","Lagrange Multipliers are applied for thermo-contact",
                                yesnotuple,yesnovalue,&tsic);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for beam contact */
+  Teuchos::ParameterList& beamcontact = list->sublist("BEAM CONTACT",false,"");
+
+  setStringToIntegralParameter<int>("BEAMS_NEWGAP","No","choose between original or enhanced gapfunction",
+                               yesnotuple,yesnovalue,&beamcontact);
+
+  setStringToIntegralParameter<int>("BEAMS_SMOOTHING","None","Application of smoothed tangent field",
+       tuple<std::string>("None","none",
+                          "Smoothed","smoothed",
+                          "Partially","partially",
+                          "Cpp", "cpp"),
+       tuple<int>(
+                  INPAR::BEAMCONTACT::bsm_none,INPAR::BEAMCONTACT::bsm_none,
+                  INPAR::BEAMCONTACT::bsm_smoothed,INPAR::BEAMCONTACT::bsm_smoothed,
+                  INPAR::BEAMCONTACT::bsm_partially,INPAR::BEAMCONTACT::bsm_partially,
+                  INPAR::BEAMCONTACT::bsm_cpp,INPAR::BEAMCONTACT::bsm_cpp),
+       &beamcontact);
+
+  // enable octree search and determine type of bounding box (aabb = axis aligned, cobb = cylindrical oriented)
+  setStringToIntegralParameter<int>("BEAMS_OCTREE","None","octree and bounding box type for octree search routine",
+       tuple<std::string>("None","none","octree_axisaligned","octree_cylorient","octree_spherical"),
+       tuple<int>(INPAR::BEAMCONTACT::boct_none,INPAR::BEAMCONTACT::boct_none,
+                  INPAR::BEAMCONTACT::boct_aabb,INPAR::BEAMCONTACT::boct_cobb,INPAR::BEAMCONTACT::boct_spbb),
+       &beamcontact);
+
+  DoubleParameter("BEAMS_EXTFAC",1.05,"extrusion factor of the bounding box",&beamcontact);
+  DoubleParameter("BEAMS_RADFAC",1.05,"radius extrusion factor of the bounding box",&beamcontact);
+  IntParameter("BEAMS_TREEDEPTH",6,"max, tree depth of the octree",&beamcontact);
+  IntParameter("BEAMS_BOXESINOCT",8,"max number of bounding boxes in any leaf octant",&beamcontact);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");

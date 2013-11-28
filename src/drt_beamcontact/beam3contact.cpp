@@ -13,6 +13,7 @@ Maintainer: Christoph Meier
 
 #include "beam3contact.H"
 #include "beam3contact_defines.H"
+#include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
@@ -133,7 +134,7 @@ bool CONTACT::Beam3contact::PreEvaluation(int beams_smoothing, std::map<int,LINA
 
   xicontact_.Size(2);
   elementscolinear_ = false;
-    if (beams_smoothing != INPAR::CONTACT::bsm_none)
+    if (beams_smoothing != INPAR::BEAMCONTACT::bsm_none)
     {
          CalculateNodalTangents(currentpositions);
     }
@@ -377,7 +378,7 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
       //std::cout << "Xi/Eta: " << eta[0] << " / " << eta[1] << std::endl;
       // update contact point tangents and their derivatives
 
-      if (beams_smoothing != INPAR::CONTACT::bsm_none)
+      if (beams_smoothing != INPAR::BEAMCONTACT::bsm_none)
       {ComputeTangentsAndDerivs(t1,t2,dt1,dt2,funct1,funct2,deriv1,deriv2,numnode1, numnode2);
 
       // some trial output
@@ -525,7 +526,7 @@ void CONTACT::Beam3contact::EvaluateNewtonF(std::vector<double>& f, const std::v
 
 
 
-  if (beams_smoothing == INPAR::CONTACT::bsm_none)
+  if (beams_smoothing == INPAR::BEAMCONTACT::bsm_none)
     {
   for (int i=0;i<NDIM;i++)
   {
@@ -569,7 +570,7 @@ void CONTACT::Beam3contact::EvaluateNewtonGradF(LINALG::Matrix<2,2>& df, const s
   
   // evaluate df
   // see Wriggers, Computational Contact Mechanics, equation (12.7)
-  if (beams_smoothing == INPAR::CONTACT::bsm_none)
+  if (beams_smoothing == INPAR::BEAMCONTACT::bsm_none)
       {
         for(int i=0;i<NDIM;i++)
         {

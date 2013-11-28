@@ -5835,7 +5835,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
     }
 
     // reduce number of contact pairs to zero again to avoid unnecessary computations
-    if(beamcmanager!=Teuchos::null && !(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ContactDynamicParams(), "BEAMS_NEWGAP")))
+    if(beamcmanager!=Teuchos::null && !(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BeamContactParams(), "BEAMS_NEWGAP")))
       beamcmanager->ResetPairs();
 
     //Gmsh output

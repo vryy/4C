@@ -321,6 +321,7 @@ public:
   const Teuchos::ParameterList& CrackParams() const { return getParameterList()->sublist("COHESIVE CRACK"); }
   const Teuchos::ParameterList& WearParams() const { return getParameterList()->sublist("WEAR"); }
   const Teuchos::ParameterList& TSIContactParams() const { return getParameterList()->sublist("TSI CONTACT"); }
+  const Teuchos::ParameterList& BeamContactParams() const { return getParameterList()->sublist("BEAM CONTACT"); }
 
   const Teuchos::ParameterList& SolverParams(int solverNr) const;
 

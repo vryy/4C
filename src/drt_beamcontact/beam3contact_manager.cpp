@@ -15,6 +15,7 @@ Maintainer: Christoph Meier
 #include "beam3contact.H"
 #include "beam3contact_defines.H"
 #include "beam3contact_octtree.H"
+#include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -152,8 +153,9 @@ constrnorm_(0.0)
   int cdmin = cddofs->MinAllGID();
   dofoffset_ = cdmin - pdmin;
 
-  // read parameter list from DRT::Problem
-  scontact_ = DRT::Problem::Instance()->ContactDynamicParams();
+  // read parameter lists from DRT::Problem
+  sbeamcontact_ = DRT::Problem::Instance()->BeamContactParams();
+  scontact_     = DRT::Problem::Instance()->ContactDynamicParams();
   
   // check input parameters
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact_,"APPLICATION") != INPAR::CONTACT::app_beamcontact)
@@ -177,11 +179,11 @@ constrnorm_(0.0)
   }
 
   // initialize octtree for contact search
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::OctreeType>(scontact_,"BEAMS_OCTREE") != INPAR::CONTACT::boct_none)
+  if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(sbeamcontact_,"BEAMS_OCTREE") != INPAR::BEAMCONTACT::boct_none)
   {
     if (!pdiscret_.Comm().MyPID())
       std::cout << "Penalty parameter      = " << currentpp_ << std::endl;
-    tree_ = Teuchos::rcp(new Beam3ContactOctTree(scontact_,pdiscret_,*cdiscret_,dofoffset_));
+    tree_ = Teuchos::rcp(new Beam3ContactOctTree(sbeamcontact_,pdiscret_,*cdiscret_,dofoffset_));
   }
   else
   {
@@ -317,12 +319,12 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   //}
 
   // decide wether the tangent field should be smoothed or not
-  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(scontact,"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
+  const Teuchos::ParameterList& sbeamcontact = DRT::Problem::Instance()->BeamContactParams();
+  if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Smoothing>(sbeamcontact,"BEAMS_SMOOTHING") == INPAR::BEAMCONTACT::bsm_none)
   {
     //std::cout << "Test BEAMS_SMOOTHING 2" << INPAR::CONTACT::bsm_none << std::endl;
   }
-  int beams_smoothing = DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(scontact,"BEAMS_SMOOTHING");
+  int beams_smoothing = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Smoothing>(sbeamcontact,"BEAMS_SMOOTHING");
 
   // Loop over all pairs
   for (int i=0;i<(int)pairs_.size();++i)
@@ -352,7 +354,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     // evaluate additional contact forces and stiffness
     if (firstisincolmap || secondisincolmap)
     {
-      bool newgapfunction = DRT::INPUT::IntegralValue<int>(InputParameters(),"BEAMS_NEWGAP");
+      bool newgapfunction = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_NEWGAP");
       pairs_[i]->Evaluate(*stiffc_,*fc_,currentpp_,newgapfunction,contactpairmap_,beams_smoothing);
     }
   }
@@ -853,7 +855,7 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   outputpairs_ = pairs_;
     
   // clear potential contact pairs
-  bool newgapfunction = DRT::INPUT::IntegralValue<int>(InputParameters(),"BEAMS_NEWGAP");
+  bool newgapfunction = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_NEWGAP");
   if (!newgapfunction)
   {
     pairs_.clear();
@@ -888,7 +890,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
   {
     // check if Uzawa index is needed or not
     INPAR::CONTACT::SolvingStrategy soltype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InputParameters(),"STRATEGY");
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(GeneralContactParameters(),"STRATEGY");
 
     if (soltype==INPAR::CONTACT::solution_auglag)
     {
@@ -1220,7 +1222,7 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
   // update penalty parameter if necessary
   // (only possible for AUGMENTED LAGRANGE strategy)
   bool updatepp = false;
-  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InputParameters(),"STRATEGY");
+  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(GeneralContactParameters(),"STRATEGY");
   if (soltype==INPAR::CONTACT::solution_auglag)
       updatepp = IncreaseCurrentpp(globnorm);
   
@@ -1273,7 +1275,7 @@ void CONTACT::Beam3cmanager::UpdateAlllmuzawa()
 void CONTACT::Beam3cmanager::ResetCurrentpp()
 {
   // get initial value from input file and reset
-  currentpp_ = InputParameters().get<double>("PENALTYPARAM");
+  currentpp_ = GeneralContactParameters().get<double>("PENALTYPARAM");
   
   return;
 }

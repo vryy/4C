@@ -122,10 +122,16 @@ public:
   inline const Teuchos::RCP<Beam3ContactOctTree> OcTree() const {return tree_; }
 
   /*!
-  \brief Get list of contact input parameters
+  \brief Get list of beam contact input parameters
 
   */
-  inline const Teuchos::ParameterList& InputParameters() { return scontact_; }
+  inline const Teuchos::ParameterList& BeamContactParameters() { return sbeamcontact_; }
+
+  /*!
+  \brief Get list of general contact input parameters
+
+  */
+  inline const Teuchos::ParameterList& GeneralContactParameters() { return scontact_; }
 
   /*!
   \brief Get current constraint norm
@@ -329,7 +335,10 @@ private:
   std::map<std::pair<int,int>, RCP<Beam3contact> > contactpairmap_;
   //std::map<int, RCP<Beam3contact> > contactpairmap_;
 
-  //! parameter list for contact
+  //! parameter list for beam contact options
+  Teuchos::ParameterList sbeamcontact_;
+
+  //! parameter list for general contact options
   Teuchos::ParameterList scontact_;
 
   //! search radius
