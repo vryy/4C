@@ -143,18 +143,6 @@ public:
   //! @name 2D and 3D integration methods
 
   /*!
-  \brief Build all integrals and linearizations on a 1D or 2D
-         slave element (i.e. only D, LinD possible).
-
-  This method is outdated!!! We now obtain the D-matrix by
-  integrating the mortar segments (just like the M-matrix entries).
-
-  */
-  virtual void IntegrateDerivSlave2D3D(
-      MORTAR::MortarElement& sele, double* sxia, double* sxib,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg);
-
-  /*!
   \brief Perform mortar-integration without previous segmentation -- 2D
 
   */

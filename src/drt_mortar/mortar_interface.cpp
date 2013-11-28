@@ -1954,44 +1954,6 @@ bool MORTAR::MortarInterface::EvaluateSearchBinarytree()
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate Mortar matrix D on slave element (public)       popp 01/08|
- *----------------------------------------------------------------------*/
-bool MORTAR::MortarInterface::IntegrateSlave(MORTAR::MortarElement& sele)
-{
-  //**********************************************************************
-  dserror("ERROR: IntegrateSalve method is outdated!");
-  //**********************************************************************
-
-  // create an integrator instance with correct NumGP and Dim
-  MORTAR::MortarIntegrator integrator(imortar_,sele.Shape());
-
-  // create correct integration limits
-  double sxia[2] = {0.0, 0.0};
-  double sxib[2] = {0.0, 0.0};
-  if (sele.Shape()==DRT::Element::tri3 || sele.Shape()==DRT::Element::tri6)
-  {
-    // parameter space is [0,1] for triangles
-    sxib[0] = 1.0; sxib[1] = 1.0;
-  }
-  else
-  {
-    // parameter space is [-1,1] for quadrilaterals
-    sxia[0] = -1.0; sxia[1] = -1.0;
-    sxib[0] =  1.0; sxib[1] =  1.0;
-  }
-
-  // do the element integration (integrate and linearize D)
-  int nrow = sele.NumNode();
-  Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-  integrator.IntegrateDerivSlave2D3D(sele,sxia,sxib,dseg);
-
-  // do the assembly into the slave nodes
-  integrator.AssembleD(Comm(),sele,*dseg);
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
  |  Integrate matrix M and gap g on slave/master overlap      popp 11/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement* sele,

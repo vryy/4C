@@ -707,94 +707,10 @@ void MORTAR::MortarIntegrator::EleBased_Integration(
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate and linearize D on a slave element (2D / 3D)    popp 02/09|
- |  This method integrates the element D matrix and stores it in dseg.  |
- |  Moreover, derivatives LinD are built and stored directly into the   |
- |  adajcent nodes. (Thus this method combines EVERYTHING before done   |
- |  aperarately in IntegrateD and DerivD!)                              |
- |  ********** modified version: responds to ShapeFcn() ***   popp 05/09|
- *----------------------------------------------------------------------*/
-void MORTAR::MortarIntegrator::IntegrateDerivSlave2D3D(
-      MORTAR::MortarElement& sele, double* sxia, double* sxib,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg)
-{
-  //**********************************************************************
-  dserror("ERROR: IntegrateDerivSlave2D3D method is outdated!");
-  //**********************************************************************
-
-  // explicitely defined shapefunction type needed
-  if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateDerivSlave2D3D called without specific shape function defined!");
-    
-  //check input data
-  if (!sele.IsSlave())
-    dserror("ERROR: IntegrateDerivSlave2D3D called on a non-slave MortarElement!");
-  if ((sxia[0]<-1.0) || (sxia[1]<-1.0) || (sxib[0]>1.0) || (sxib[1]>1.0))
-    dserror("ERROR: IntegrateDerivSlave2D3D called with infeasible slave limits!");
-
-  // number of nodes (slave)
-  int nrow = sele.NumNode();
-  int ncol = sele.NumNode();
-  int ndof = static_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
-
-  // create empty objects for shape fct. evaluation
-  LINALG::SerialDenseVector val(nrow);
-  LINALG::SerialDenseMatrix deriv(nrow,2,true);
-  LINALG::SerialDenseVector lmval(nrow);
-  LINALG::SerialDenseMatrix lmderiv(nrow,2,true);
-
-  //**********************************************************************
-  // loop over all Gauss points for integration
-  //**********************************************************************
-  for (int gp=0;gp<nGP();++gp)
-  {
-    // coordinates and weight
-    double eta[2] = {Coordinate(gp,0), 0.0};
-    if (Dim()==3) eta[1] = Coordinate(gp,1);
-    double wgt = Weight(gp);
-
-    // evaluate trace space and Lagrange multiplier shape functions
-    sele.EvaluateShape(eta,val,deriv,nrow);
-    sele.EvaluateShapeLagMult(ShapeFcn(),eta,lmval,lmderiv,nrow);
-
-    // evaluate the Jacobian det
-    double dxdsxi = sele.Jacobian(eta);
-
-    // compute element D matrix ******************************************
-    // loop over all dtemp matrix entries
-    // nrow represents the Lagrange multipliers !!!
-    // ncol represents the dofs !!!
-    for (int j=0;j<nrow*ndof;++j)
-    {
-      for (int k=0;k<ncol*ndof;++k)
-      {
-        int jindex = (int)(j/ndof);
-        int kindex = (int)(k/ndof);
-
-        // multiply the two shape functions
-        double prod = lmval[jindex]*val[kindex];
-
-        // isolate the dseg entries to be filled
-        // (both the main diagonal and every other secondary diagonal)
-        // and add current Gauss point's contribution to dseg
-        if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-          (*dseg)(j,k) += prod*dxdsxi*wgt;
-      }
-    }
-    // compute element D matrix ******************************************
-  }
-  //**********************************************************************
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Integrate and linearize a 1D slave / master overlap (2D)  popp 02/09|
- |  This method integrates the overlap M matrix and weighted gap g~     |
+ |  This method integrates the overlap D/M matrix and weighted gap g~   |
  |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
- |  LinM and Ling are built and stored directly into the adjacent nodes.|
- |  (Thus this method combines EVERYTHING before done separately in     |
- |  IntegrateM, IntegrateG, DerivM and DerivG!)                         |
+ |  LinD/M and Ling are built and stored directly into adjacent nodes.  |
  *----------------------------------------------------------------------*/
 void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
      MORTAR::MortarElement& sele, double& sxia, double& sxib,

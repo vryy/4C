@@ -599,16 +599,7 @@ public:
   virtual bool EvaluateSearchBinarytree();
 
   /*!
-  \brief Integrate Mortar matrix D on slave element
-
-  This method is outdated!!! We now obtain the D-matrix by
-  integrating the mortar segments (just like the M-matrix entries).
-
-  */
-  virtual bool IntegrateSlave(MORTAR::MortarElement& sele);
-
-  /*!
-  \brief Integrate Mortar matrix M and gap g on slave/master overlaps
+  \brief Integrate Mortar matrices D and M and gap g on slave/master overlaps
   
   */
   virtual bool IntegrateCoupling(MORTAR::MortarElement* sele,
