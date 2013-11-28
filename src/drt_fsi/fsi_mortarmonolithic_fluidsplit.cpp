@@ -1971,26 +1971,26 @@ void FSI::MortarMonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
 double FSI::MortarMonolithicFluidSplit::SelectTimeStepSize() const
 {
   // get time step size suggestions based on some error norms
-	const double dtstr = GetAdaStrDt();         // based on all structure DOFs
-	const double dtstrfsi = GetAdaStrFSIDt();   // based on structure FSI DOFs
-	const double dtflinner = GetAdaFlInnerDt(); // based on inner fluid DOFs
-	const double dtnonlinsolver = GetAdaNonLinSolverDt(); // based on non-convergence of nonlinear solver
+  const double dtstr = GetAdaStrDt(); // based on all structure DOFs
+  const double dtstrfsi = GetAdaStrFSIDt(); // based on structure FSI DOFs
+  const double dtflinner = GetAdaFlInnerDt(); // based on inner fluid DOFs
+  const double dtnonlinsolver = GetAdaNonLinSolverDt(); // based on non-convergence of nonlinear solver
 
-	// determine minimum
-	double dt = std::min(std::min(dtstr, dtstrfsi), dtflinner);
+  // determine minimum
+  double dt = std::min(std::min(dtstr, dtstrfsi), dtflinner);
 
 	// Time adaptivity not based on fluid: use structural suggestions only
-	if ( flmethod_ == INPAR::FSI::timada_fld_none ) { dt = std::min(dtstr, dtstrfsi); }
+	if (flmethod_ == INPAR::FSI::timada_fld_none) { dt = std::min(dtstr, dtstrfsi); }
 
 	// Time adaptivity not based on structure: use fluid suggestions only
-	if ( strmethod_ == INPAR::FSI::timada_str_none ) { dt = dtflinner; }
+	if (strmethod_ == INPAR::FSI::timada_str_none) { dt = dtflinner; }
 
   // compare to time step size of non-converged nonlinear solver
-	if ( GetErrorAction() == FSI::Monolithic::erroraction_halve_step )
+	if (GetErrorAction() == FSI::Monolithic::erroraction_halve_step)
 	  dt = std::min(dt, dtnonlinsolver);
 
   // Time adaptivity based only on non-convergence of nonlinear solver
-  if ( flmethod_ == INPAR::FSI::timada_fld_none && strmethod_ == INPAR::FSI::timada_str_none )
+  if (flmethod_ == INPAR::FSI::timada_fld_none && strmethod_ == INPAR::FSI::timada_str_none)
     dt = dtnonlinsolver;
 
 	return dt;
@@ -2006,11 +2006,11 @@ bool FSI::MortarMonolithicFluidSplit::SetAccepted() const
 	bool accepted = std::max(strnorm,strfsinorm) < errtolstr_ && flinnernorm < errtolfl_;
 
 	// in case error estimation in the fluid field is turned off:
-	if ( flmethod_ == INPAR::FSI::timada_fld_none )
+	if (flmethod_ == INPAR::FSI::timada_fld_none)
 	  accepted = std::max(strnorm,strfsinorm) < errtolstr_ ;
 
 	// in case error estimation in the structure field is turned off:
-	if ( strmethod_ == INPAR::FSI::timada_str_none )
+	if (strmethod_ == INPAR::FSI::timada_str_none)
 	  accepted = flinnernorm < errtolfl_;
 
 	return accepted;

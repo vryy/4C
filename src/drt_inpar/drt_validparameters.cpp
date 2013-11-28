@@ -5728,12 +5728,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                         "None",
                                         "ExplicitEuler",
                                         "AB2",
-                                        "ZienkiewiczXie"),
+                                        "ZienkiewiczXie",
+                                        "LimitDisInc"),
                                     tuple<int>(
                                         INPAR::FSI::timada_str_none,
                                         INPAR::FSI::timada_str_expleuler,
                                         INPAR::FSI::timada_str_adamsbashforth2,
-                                        INPAR::FSI::timada_str_zienkiewicz_xie),
+                                        INPAR::FSI::timada_str_zienkiewicz_xie,
+                                        INPAR::FSI::timada_str_limitdisinc),
                                     &fsiadapt);
 
   setStringToIntegralParameter<int>("DIVERCONT", "stop",

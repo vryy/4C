@@ -3,9 +3,10 @@
 \file inpar_fsi.H
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-10362
 </pre>
 */
 
@@ -122,7 +123,8 @@ namespace INPAR
       timada_str_none,            ///< no time adaptivity based on structure field
       timada_str_expleuler,       ///< use explicit Euler as auxiliary time integrator
       timada_str_adamsbashforth2, ///< use Adams-Bashforth-2 as auxiliary time integrator
-      timada_str_zienkiewicz_xie  ///< use Zienkiewicz-Xie error estimator (1991)
+      timada_str_zienkiewicz_xie, ///< use Zienkiewicz-Xie error estimator (1991)
+      timada_str_limitdisinc      ///< limit the displacement step increment (Givoli and Henigsberg, 1993)
     };
 
     /// Handling of non-converged nonlinear solver

@@ -517,12 +517,13 @@ namespace FSI
 
     //@}
 
-    //! /brief Recover Lagrange multiplier \f$\lambda_\Gamma\f$
-    //!
-    //! Recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the
-    //! end of each time step (i.e. condensed forces onto the structure) needed
-    //! for rhs in next time step in order to guarantee temporal consistent
-    //! exchange of coupling traction
+    /*! \brief Recover Lagrange multiplier \f$\lambda_\Gamma\f$
+     *
+     *  Recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the
+     *  end of each time step (i.e. condensed forces onto the structure) needed
+     *  for rhs in next time step in order to guarantee temporal consistent
+     *  exchange of coupling traction
+     */
     virtual void RecoverLagrangeMultiplier(){ return; };
 
     //! @name Time loops
@@ -531,20 +532,23 @@ namespace FSI
     //! FSI time loop with constant time step size
     void TimeloopConstDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
-    //! \brief FSI time loop with adaptive time step size
-    //!
-    //! <h3> Idea </h3>
-    //! FSI time loop where the time step size is adapted in each time step based
-    //! on estimation of the local truncation error in structure and fluid field.
-    //! The norms that are used to measure the error and compute the new time step
-    //! size depend on the choice of master and slave side (\sa SelectTimeStepSize).
-    //! If error tolerances are violated, the time step is repeated.
-    //!
-    //! <h3> References </h3>
-    //! Wilhelm, E. K.: Time Adaptivity in Fluid-Structure Interaction, Bachelor's Thesis, 2013 (supervised by Matthias Mayr)
-    //!
-    //! \author mayr.mt
-    //! \date 08/2013
+    /*! \brief FSI time loop with adaptive time step size
+     *
+     *  <h3> Idea </h3>
+     *  FSI time loop where the time step size is adapted in each time step based
+     *  on estimation of the local truncation error in structure and fluid field.
+     *  The norms that are used to measure the error and compute the new time step
+     *  size depend on the choice of master and slave side.
+     *  If error tolerances are violated, the time step is repeated.
+     *
+     *  \sa SelectTimeStepSize
+     *
+     *  <h3> References </h3>
+     *  Wilhelm, E. K.: Time Adaptivity in Fluid-Structure Interaction, Bachelor's Thesis, 2013 (supervised by Matthias Mayr)
+     *
+     *  \author mayr.mt
+     *  \date 08/2013
+     */
     void TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
     //@}
@@ -575,15 +579,58 @@ namespace FSI
     //! Set time step size in all fields (fsi routine, ale, fluid, structure)
     void SetDt(const double dtnew);
 
-    //! \brief Do an explicit Euler step as auxiliary time integrator
-    //!
-    //! Based on state vector \f$x_n\f$ we calculate \f$x_{n+1}\f$ using an explicit
-    //! Euler step. Can be used for both structure and fluid field.
+    /*! \brief Do an explicit Euler step as auxiliary time integrator
+     *
+     *  Based on state vector \f$x_n\f$ and its time derivative \f$\dot{x}_{n}\f$
+     *  at time \f$t_{n}\f$, we calculate \f$x_{n+1}\f$ using an explicit Euler
+     *  step:
+     *
+     *  \f[
+     *    x_{n+1} = x_{n} + \Delta t_{n} \dot{x}_{n}
+     *  \f]
+     *
+     *  \note Can be used for both structure and fluid field.
+     *
+     *  \author mayr.mt
+     *  \date 10/2013
+     */
     void ExplicitEuler(const Epetra_Vector& xn,     ///< state vector at \f$t_n\f$
                        const Epetra_Vector& xndot,  ///< time derivative of state vector at \f$t_n\f$
-                       const double dt,             ///< current time step size
                        Epetra_Vector& extrapolation ///< extrapolation of state vector to \f$t_{n+1}\f$
-                      ) const;
+                       ) const;
+
+    /*! \brief Do an Adams-Bashforth 2 step as auxiliary time integrator
+     *
+     *  Based on state vector \f$x_n\f$ and its time derivatives \f$\dot{x}_{n}\f$
+     *  and \f$\dot{x}_{n-1}\f$ at time steps \f$t_{n}\f$ and \f$t_{n-1}\f$,
+     *  respectively, we calculate \f$x_{n+1}\f$ using an Adams-Bashforth 2 step
+     *  with varying time step sizes:
+     *
+     *  \f[
+     *    x_{n+1} = x_{n}
+     *            + \frac{2\Delta t_{n} \Delta t_{n-1} + \Delta t_{n}^2}{2\Delta t_{n-1}} \dot{x}_{n}
+     *            - \frac{\Delta t_{n}^2}{2\Delta t_{n-1}} \dot{x}_{n-1}
+     *  \f]
+     *
+     *  \note Can be used for both structure and fluid field.
+     *
+     *  <h3> References: </h3>
+     *
+     *  - Wall, W. A., <em> Fluid-Struktur-Interaktion mit stabilisierten Finiten
+     *  Elementen, PhD Thesis, Universitaet Stuttgart, 1999
+     *
+     *  - Bornemann, B., Time Integration Algorithms for the Steady States of
+     *  Dissipative Non-Linear Dynamic Systems, PhD Thesis, Imperial College
+     *  London, 2003
+     *
+     *  \author mayr.mt
+     *  \date 11/2013
+     */
+    void AdamsBashforth2(const Epetra_Vector& xn,     ///< state vector at \f$t_n\f$
+                         const Epetra_Vector& xndot,  ///< time derivative of state vector at \f$t_n\f$
+                         const Epetra_Vector& xnmdot, ///< time derivative of state vector at \f$t_{n-1}\f$
+                         Epetra_Vector& extrapolation ///< extrapolation of state vector to \f$t_{n+1}\f$
+                         ) const;
 
     /*! \brief Who is responsible for changing the time step size
      *
@@ -661,26 +708,27 @@ namespace FSI
      !*/
     void IndicateLocalErrorNormsFluid();
 
-    //! \brief Calculate new time step size
-    //!
-    //! New time step size is based on L2-norm of local truncation error. This
-    //! is done for several norms. We have to select the time step size afterwards.
-    //!
-    //! Calculation of new time step size:
-    //!
-    //! \f[ \Delta t_{new} = min\left(\Delta t_{max}, max\left(fac\cdot\Delta t_{old}, Delta t_{min}\right)\right) \f]
-    //! with the scalar factor
-    //! /f[ fac = min\left(fac_{max}, max\left(fac_{min},\left(\frac{tol}{error}\right)^{\frac{1}{p+1}}\right)\right) /f]
-    //! with the maximum increase factor \f$fac_{max}\f$, the minimum decrease factor \f$fac_{min}\f$, the user defined
-    //! tolerance \f$tol\f$, the L2-norm of the local truncation error \f$error\f$ and the order \f$p\f$ of the time integration
-    //! scheme
-    //!
-    //! \author mayr.mt
-    //! \date 09/2013
+    /*! \brief Calculate new time step size
+     *
+     *  New time step size is based on L2-norm of local truncation error. This
+     *  is done for several norms. We have to select the time step size afterwards.
+     *
+     *  Calculation of new time step size:
+     *
+     *  \f[ \Delta t_{new} = min\left(\Delta t_{max}, max\left(fac\cdot\Delta t_{old}, Delta t_{min}\right)\right) \f]
+     *  with the scalar factor
+     *  /f[ fac = min\left(fac_{max}, max\left(fac_{min},\left(\frac{tol}{error}\right)^{\frac{1}{p+1}}\right)\right) /f]
+     *  with the maximum increase factor \f$fac_{max}\f$, the minimum decrease factor \f$fac_{min}\f$, the user defined
+     *  tolerance \f$tol\f$, the L2-norm of the local truncation error \f$error\f$ and the order \f$p\f$ of the time integration
+     *  scheme
+     *
+     *  \author mayr.mt
+     *  \date 09/2013
+     */
     double CalculateTimeStepSize(const double errnorm,  ///< L2-norm of local truncation error
                                  const double errtol,   ///< user given error tolerance
                                  const double estorder  ///< order of accuracy of time integration scheme
-                                 ) const;
+                                 );
 
     //@}
 
@@ -788,6 +836,7 @@ namespace FSI
                              const Teuchos::ParameterList& timeparams);
 
     //! @name NOX methods
+    //@{
 
     /// compute FSI block matrix (not for standard FSI)
     bool computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac);
@@ -808,20 +857,23 @@ namespace FSI
     //@}
 
     //! @name Methods for infnorm-scaling of the system
+    //@{
 
-    //! apply infnorm scaling to linear block system
-    //!
-    //! This affects only the main diagonal blocks, not the off-diagonal
-    //! coupling blocks.
+    /*! \brief Apply infnorm scaling to linear block system
+     *
+     *  This affects only the main diagonal blocks, not the off-diagonal
+     *  coupling blocks.
+     */
     virtual void ScaleSystem(Epetra_Vector& b) { ScaleSystem(*SystemMatrix(),b); }
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) { UnscaleSolution(*SystemMatrix(),x,b); }
 
-    /// apply infnorm scaling to linear block system
-    //!
-    //! This affects only the main diagonal blocks, not the off-diagonal
-    //! coupling blocks.
+    /*! \brief Apply infnorm scaling to linear block system
+     *
+     *  This affects only the main diagonal blocks, not the off-diagonal
+     *  coupling blocks.
+     */
     virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
@@ -837,16 +889,17 @@ namespace FSI
 
   protected:
 
-    //! Put three field vectors together to a monolithic vector
-    //!
-    //! Slave vectors are only allowed to contain inner DOFs. Only master vector
-    //! is allowed to contain interface DOFs. All vectors are put together.
-    //! As usual, the ordering is: structure --  fluid -- ALE
-    //!
-    //! \sa FSI::MonolithicFluidSplit::CombineFieldVectors()
-    //! \sa FSI::MonolithicStructureSplit::CombineFieldVectors()
-    //! \sa FSI::MortarMonolithicFluidSplit::CombineFieldVectors()
-    //! \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
+    /*! Put three field vectors together to a monolithic vector
+     *
+     *  Slave vectors are only allowed to contain inner DOFs. Only master vector
+     *  is allowed to contain interface DOFs. All vectors are put together.
+     *  As usual, the ordering is: structure --  fluid -- ALE
+     *
+     *  \sa FSI::MonolithicFluidSplit::CombineFieldVectors()
+     *  \sa FSI::MonolithicStructureSplit::CombineFieldVectors()
+     *  \sa FSI::MortarMonolithicFluidSplit::CombineFieldVectors()
+     *  \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
+     */
     virtual void CombineFieldVectors(
           Epetra_Vector &v,                       ///< composed vector containing all field vectors
           Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
@@ -863,6 +916,9 @@ namespace FSI
 
   private:
 
+    //! @name Setup of RHS vector
+    //@{
+
     /// setup RHS contributions based on single field residuals
     virtual void SetupRHSResidual(Epetra_Vector& f) = 0;
 
@@ -871,6 +927,8 @@ namespace FSI
 
     /// setup RHS contributions based on terms for first nonlinear iteration
     virtual void SetupRHSFirstiter(Epetra_Vector& f) = 0;
+
+    //@}
 
   };
 }

@@ -1650,13 +1650,13 @@ double FSI::MonolithicFluidSplit::SelectTimeStepSize() const
 	double dt = std::min(std::min(strdt, dtstrfsi), dtflinner);
 
 	// Time adaptivity not based on fluid: use structural suggestions only
-	if ( flmethod_ == INPAR::FSI::timada_fld_none ) { dt = std::min(strdt, dtstrfsi); }
+	if (flmethod_ == INPAR::FSI::timada_fld_none) { dt = std::min(strdt, dtstrfsi); }
 
 	// Time adaptivity not based on structure: use fluid suggestions only
-	if ( strmethod_ == INPAR::FSI::timada_str_none ) { dt = dtflinner; }
+	if (strmethod_ == INPAR::FSI::timada_str_none) { dt = dtflinner; }
 
 	// compare to time step size of non-converged nonlinear solver
-  if ( NoxStatus() != NOX::StatusTest::Converged )
+  if (NoxStatus() != NOX::StatusTest::Converged)
     dt = std::min(dt, dtnonlinsolver);
 
   // Time adaptivity based only on non-convergence of nonlinear solver
@@ -1671,19 +1671,19 @@ double FSI::MonolithicFluidSplit::SelectTimeStepSize() const
 bool FSI::MonolithicFluidSplit::SetAccepted() const
 {
   // get error norms
-	const double strnorm = GetAdaStrnorm();         // based on all structure DOFs
-	const double strfsinorm = GetAdaStrFSInorm();   // based on structure FSI DOFs
-	const double flinnernorm = GetAdaFlInnerNorm(); // based on inner fluid DOFs
+  const double strnorm = GetAdaStrnorm(); // based on all structure DOFs
+  const double strfsinorm = GetAdaStrFSInorm(); // based on structure FSI DOFs
+  const double flinnernorm = GetAdaFlInnerNorm(); // based on inner fluid DOFs
 
 	bool accepted = std::max(strnorm,strfsinorm) < errtolstr_ && flinnernorm < errtolfl_;
 
 	// in case error estimation in the fluid field is turned off:
-	if ( flmethod_ == INPAR::FSI::timada_fld_none )
-	  accepted = std::max(strnorm,strfsinorm) < errtolstr_ ;
+  if (flmethod_ == INPAR::FSI::timada_fld_none)
+    accepted = std::max(strnorm, strfsinorm) < errtolstr_;
 
-	// in case error estimation in the structure field is turned off:
-	if ( strmethod_ == INPAR::FSI::timada_str_none )
-	  accepted = flinnernorm < errtolfl_;
+  // in case error estimation in the structure field is turned off:
+  if (strmethod_ == INPAR::FSI::timada_str_none)
+    accepted = flinnernorm < errtolfl_;
 
 	return accepted;
 }
