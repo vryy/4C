@@ -93,103 +93,27 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
   // (currently only necessary for non-AUXPLANE case)
   std::map<int,double> projpar;
 
-  // *******************************************************************
-  // ************ Coupling with or without auxiliary plane *************
-  // *******************************************************************
-  if (CouplingInAuxPlane())
-  {
-    // compute auxiliary plane for 3D coupling
-    AuxiliaryPlane();
+  // compute auxiliary plane for 3D coupling
+  AuxiliaryPlane();
 
-    // rough check of orientation of element centers
-    // if slave and master element center normals form an
-    // angle > 90° the pair will not be considered further
-    bool orient = RoughCheckOrient();
-    if (!orient) return false;
-    
-    // project slave element nodes onto auxiliary plane
-    ProjectSlave();
+  // rough check of orientation of element centers
+  // if slave and master element center normals form an
+  // angle > 90° the pair will not be considered further
+  bool orient = RoughCheckOrient();
+  if (!orient) return false;
 
-    // project master element nodes onto auxiliary plane
-    ProjectMaster();
+  // project slave element nodes onto auxiliary plane
+  ProjectSlave();
 
-    // tolerance for polygon clipping
-    double sminedge = SlaveIntElement().MinEdgeSize();
-    double mminedge = MasterIntElement().MinEdgeSize();
-    tol = MORTARCLIPTOL * std::min(sminedge,mminedge);
-  }
+  // project master element nodes onto auxiliary plane
+  ProjectMaster();
 
-  // *******************************************************************
-  else //(!CouplingInAuxPlane())
-  {
-    // get some data
-    int nsnodes = SlaveIntElement().NumNode();
-    int nmnodes = MasterIntElement().NumNode();
+  // tolerance for polygon clipping
+  double sminedge = SlaveIntElement().MinEdgeSize();
+  double mminedge = MasterIntElement().MinEdgeSize();
+  tol = MORTARCLIPTOL * std::min(sminedge,mminedge);
 
-    // get slave vertices in slave element parameter space (direct)
-    // additionally get slave vertex Ids for later linearization
-    std::vector<std::vector<double> > svertices(nsnodes,std::vector<double>(3));
-    std::vector<int> snodeids(1);
-
-    for (int i=0;i<nsnodes;++i)
-    {
-      double xi[2] = {0.0, 0.0};
-      SlaveIntElement().LocalCoordinatesOfNode(i,xi);
-      svertices[i][0] = xi[0];
-      svertices[i][1] = xi[1];
-      svertices[i][2] = 0.0;
-
-      // relevant ids (here only slave node id itself)
-      snodeids[0] = SlaveIntElement().NodeIds()[i];
-
-      // store into vertex data structure
-      SlaveVertices().push_back(Vertex(svertices[i],Vertex::slave,snodeids,NULL,NULL,false,false,NULL,-1.0));
-    }
-
-    // get master vertices in slave element parameter space (project)
-    // additionally get master vertex Ids for later linearization
-    std::vector<std::vector<double> > mvertices(nmnodes,std::vector<double>(3));
-    std::vector<int> mnodeids(1);
-    for (int i=0;i<nmnodes;++i)
-    {
-      int gid = MasterIntElement().NodeIds()[i];
-      DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      MortarNode* mnode = static_cast<MortarNode*>(node);
-
-      // do the projection
-      // the third component of sxi will be the proj. parameter alpha!
-      double sxi[2] = {0.0, 0.0};
-      double alpha = 0.0;
-      MORTAR::MortarProjector projector(3);
-      //std::cout << "Projecting master node ID: " << mnode->Id() << std::endl;
-      projector.ProjectElementNormal3D(*mnode,SlaveIntElement(),sxi,alpha);
-
-      mvertices[i][0] = sxi[0];
-      mvertices[i][1] = sxi[1];
-      mvertices[i][2] = 0.0;
-
-      // relevant ids (here only master node id itself)
-      mnodeids[0] = gid;
-
-      // store proj. parameter for later linearization
-      projpar[gid] = alpha;
-
-      // store into vertex data structure
-      MasterVertices().push_back(Vertex(mvertices[i],Vertex::projmaster,mnodeids,NULL,NULL,false,false,NULL,-1.0));
-    }
-
-    // normal is (0,0,1) in slave element parameter space
-    Auxn()[0] = 0.0; Auxn()[1] = 0.0; Auxn()[2] = 1.0;
-    Lauxn() = 1.0;
-
-    // tolerance for polygon clipping
-    // minimum edge size in parameter space is 1
-    tol = MORTARCLIPTOL;
-  }
-  // *******************************************************************
-
-  // do polygon clipping (NEW version)
+  // do polygon clipping
   bool clip = PolygonClippingConvexHull(SlaveVertices(),MasterVertices(),Clip(),tol);
   int clipsize = (int)(Clip().size());
   
@@ -2562,27 +2486,7 @@ double MORTAR::Coupling3d::PolygonArea()
 double MORTAR::Coupling3d::SlaveElementArea()
 {
   // initialize
-  double selearea = 0.0;
-
-  // (1) coupling in parameter space
-  // -> thus, give area w.r.t to local basis
-  if (!CouplingInAuxPlane())
-  {
-    selearea = SlaveIntElement().MoData().Area();
-  }
-
-  // (2) coupling in auxiliary plane
-  // -> thus, give area w.r.t to global basis
-  else
-  {
-    DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
-    if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
-      selearea = 4.0;
-    else if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
-      selearea = 0.5;
-    else
-      dserror("ERROR: IntegrateCells: Invalid 3D slave element type");
-  }
+  double selearea = SlaveIntElement().MoData().Area();
 
   return selearea;
 }
@@ -2676,7 +2580,7 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(std::vector<std::vector<std::map<
 
     // create IntCell object and push back
     Cells().push_back(Teuchos::rcp(new IntCell(0,3,coords,Auxn(),DRT::Element::tri3,
-      CouplingInAuxPlane(),linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
+      linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
 
     // get out of here
     return true;
@@ -3103,7 +3007,7 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(std::vector<std::vector<std::map<
 
     // create IntCell object and push back
     Cells().push_back(Teuchos::rcp(new IntCell(t,3,coords,Auxn(),DRT::Element::tri3,
-      CouplingInAuxPlane(),linvertex[idx0],linvertex[idx1],linvertex[idx2],GetDerivAuxn())));
+      linvertex[idx0],linvertex[idx1],linvertex[idx2],GetDerivAuxn())));
   }
 
   // double check number of triangles
@@ -3147,7 +3051,7 @@ bool MORTAR::Coupling3d::CenterTriangulation(std::vector<std::vector<std::map<in
 
     // create IntCell object and push back
     Cells().push_back(Teuchos::rcp(new IntCell(0,3,coords,Auxn(),DRT::Element::tri3,
-      CouplingInAuxPlane(),linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
+      linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
 
     // get out of here
     return true;
@@ -3169,7 +3073,7 @@ bool MORTAR::Coupling3d::CenterTriangulation(std::vector<std::vector<std::map<in
 
     // create 1st IntCell object and push back
     Cells().push_back(Teuchos::rcp(new IntCell(0,3,coords,Auxn(),DRT::Element::tri3,
-      CouplingInAuxPlane(),linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
+      linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
 
     // IntCell vertices = clip polygon vertices 2,3,0
     for (int k=0;k<3;++k)
@@ -3181,7 +3085,7 @@ bool MORTAR::Coupling3d::CenterTriangulation(std::vector<std::vector<std::map<in
 
     // create 2nd IntCell object and push back
     Cells().push_back(Teuchos::rcp(new IntCell(1,3,coords,Auxn(),DRT::Element::tri3,
-      CouplingInAuxPlane(),linvertex[2],linvertex[3],linvertex[0],GetDerivAuxn())));
+      linvertex[2],linvertex[3],linvertex[0],GetDerivAuxn())));
 
     // get out of here
     return true;
@@ -3274,7 +3178,7 @@ bool MORTAR::Coupling3d::CenterTriangulation(std::vector<std::vector<std::map<in
 
     // create IntCell object and push back
     Cells().push_back(Teuchos::rcp(new IntCell(num,3,coords,Auxn(),DRT::Element::tri3,
-      CouplingInAuxPlane(),lincenter,linvertex[num],linvertex[numplus1],GetDerivAuxn())));
+      lincenter,linvertex[num],linvertex[numplus1],GetDerivAuxn())));
   }
 
   // triangulation successful
@@ -3356,11 +3260,8 @@ bool MORTAR::Coupling3d::IntegrateCells()
       if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
         scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
-      // check whether auxiliary plane coupling or not and call integrator
-      if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,scseg);
-      else /*(!CouplingInAuxPlane()*/
-        integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg,scseg);
+      // call integrator
+      integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dseg,mseg,gseg,scseg);
 
       // assembly of intcell contributions to D and M
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
@@ -3386,13 +3287,8 @@ bool MORTAR::Coupling3d::IntegrateCells()
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      // check whether auxiliary plane coupling or not and call integrator
-      if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
-            Cells()[i],Auxn(),dseg,mseg,gseg);
-      else /*(!CouplingInAuxPlane()*/
-        integrator.IntegrateDerivCell3DQuad(SlaveElement(),MasterElement(),sintref,mintref,
-            Cells()[i],dseg,mseg,gseg);
+      // call integrator
+      integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn(),dseg,mseg,gseg);
 
       // assembly of intcell contributions to D and M
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
@@ -3422,13 +3318,8 @@ bool MORTAR::Coupling3d::IntegrateCells()
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      // check whether auxiliary plane coupling or not and call integrator
-      if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
-            Cells()[i],Auxn(),dseg,mseg,gseg);
-      else /*(!CouplingInAuxPlane()*/
-        integrator.IntegrateDerivCell3DQuad(SlaveElement(),MasterElement(),sintref,mintref,
-            Cells()[i],dseg,mseg,gseg);
+      // call integrator
+      integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn(),dseg,mseg,gseg);
 
       // assembly of intcell contributions to D and M
       // (NOTE THAT THESE ARE SPECIAL VERSIONS HERE FOR PIECEWISE LINEAR INTERPOLATION)

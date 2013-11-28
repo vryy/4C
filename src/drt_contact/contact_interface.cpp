@@ -1926,15 +1926,9 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
     sxib[0] =  1.0; sxib[1] =  1.0;
   }
 
-  // check for auxiliary plane 3D version
-  bool auxplane = DRT::INPUT::IntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
-
   // ************************************************** quadratic 3D ***
   if (Dim()==3 && sele.IsQuad())
   {
-    // only for auxiliary plane 3D version
-    if (!auxplane) dserror("ERROR: Quadratic 3D contact only for AuxPlane case!");
-
     // get LM interpolation and testing type
     INPAR::MORTAR::LagMultQuad lmtype =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(),"LAGMULT_QUAD");

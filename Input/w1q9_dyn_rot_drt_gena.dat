@@ -44,8 +44,8 @@ RESULTSEVRY                     1
 RESTARTEVRY                     10
 NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        0.01
-NUMSTEP                         100
-MAXTIME                         1.0
+NUMSTEP                         1000
+MAXTIME                         10.0
 DAMPING                         Yes
 M_DAMP                          0.00001
 K_DAMP                          0.00001
@@ -239,7 +239,7 @@ NODE 9 COORD 0.000000000000000e+00 2.000000000000000e+00 0.000000000000000e+00
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 21000 NUE 0.3 DENS 7.8e-2 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.1
+CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10.0 FACTOR 0.0 1.0
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4

@@ -70,7 +70,6 @@ SEMI_SMOOTH_CT                  10000.0
 SHAPEFCN                        Dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    2.0
-COUPLING_AUXPLANE               Yes
 PARALLEL_REDIST                 Dynamic
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC

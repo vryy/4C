@@ -75,7 +75,6 @@ FRICTION                        None
 SHAPEFCN                        Standard
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
-COUPLING_AUXPLANE               Yes
 REDUNDANT_STORAGE               none
 PARALLEL_STRATEGY               RoundRobinEvaluate
 PARALLEL_REDIST                 dynamic

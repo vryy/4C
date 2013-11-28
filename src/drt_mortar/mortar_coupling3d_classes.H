@@ -180,7 +180,6 @@ public:
   */
   IntCell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
           double* auxn, const DRT::Element::DiscretizationType& shape,
-          bool auxplane,
           std::vector<std::map<int,double> >& linv1,
           std::vector<std::map<int,double> >& linv2,
           std::vector<std::map<int,double> >& linv3,
@@ -229,17 +228,6 @@ public:
 
   */
   virtual DRT::Element::DiscretizationType Shape() const { return shape_;}
-
-  /*!
-  \brief Get 3D coupling strategy (true = auxiliary plane)
-
-  Note that 3D Coupling can EITHER be done in physical space (this is
-  the case when an auxiliary plane is used) or in the slave element
-  parameter space (this is the case when everything is done directly
-  on the slave surface without any auxiliary plane).
-
-  */
-  virtual const bool& CouplingInAuxPlane() {return auxplane_;};
 
   /*!
   \brief Return one of the three 'DerivVertex' maps (vectors) of this node
@@ -299,9 +287,7 @@ public:
   \brief Compute Jacobian determinant derivative
          Note that this is a linearization with respect to the intcell
          vertices, which themselves have to be linearized later, of course!
-         Two versions for (a) slave parameter space (b) AuxPlane case.
   */
-  virtual void DerivJacobian(double* xi, std::vector<double>& derivjac);
   virtual void DerivJacobian(double* xi, std::map<int,double>& derivjac);
 
   //@}

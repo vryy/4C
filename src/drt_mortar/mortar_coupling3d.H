@@ -160,17 +160,6 @@ public:
   virtual MORTAR::MortarElement& MasterIntElement() const{ return mele_; }
 
   /*!
-  \brief Get 3D coupling strategy (true = auxiliary plane)
-
-  Note that 3D Coupling can EITHER be done in physical space (this is
-  the case when an auxiliary plane is used) or in the slave element
-  parameter space (this is the case when everything is done directly
-  on the slave surface without any auxiliary plane).
-
-  */
-  virtual const bool CouplingInAuxPlane() {return (bool)DRT::INPUT::IntegralValue<int>(imortar_,"COUPLING_AUXPLANE");};
-
-  /*!
   \brief Return center of auxiliary plane
 
   */

@@ -604,19 +604,6 @@ public:
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
       MORTAR::MortarElement& mele, double& mxia, double& mxib,
       const Epetra_Comm& comm);
-
-  /*!
-  \brief Build all integrals and linearizations on a 2D slave /
-         master integration cell (i.e. M, g, LinM, Ling and possibly D, LinD)
-
-  */
-  void IntegrateDerivCell3D(
-      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-      Teuchos::RCP<MORTAR::IntCell> cell,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> scseg);
     
   /*!
   \brief Build all integrals and linearizations without segmentation -- 3D

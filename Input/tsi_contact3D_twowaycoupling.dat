@@ -51,7 +51,6 @@ SEMI_SMOOTH_CT                  2000
 -------------------------------------------------------------MORTAR COUPLING
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
-COUPLING_AUXPLANE               Yes
 PARALLEL_REDIST                 No
 -----------------------------------------------------------------TSI CONTACT
 HEATTRANSSLAVE                  1000000

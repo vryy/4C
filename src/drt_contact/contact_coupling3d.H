@@ -154,12 +154,8 @@ public:
   \brief Linearization of clip vertex coordinates (3D)
 
   Sub-method of VertexLinearization for master linearization.
-  Two versions for (a) slave parameter space (b) AuxPlane case.
 
   */
-  virtual bool MasterVertexLinearization(MORTAR::Vertex& currv,
-                                         std::vector<std::map<int,double> >& currlin,
-                                         int mid, double alpha);
   virtual bool MasterVertexLinearization(std::vector<std::map<int,double> >& currlin,
                                          int mid);
 
@@ -167,17 +163,11 @@ public:
   \brief Linearization of clip vertex coordinates (3D)
 
   Sub-method of VertexLinearization for lineclip linearization.
-  Two versions for (a) slave parameter space (b) AuxPlane case.
-  For the AuxPlane case version, we just combine the correct
-  slave and master vertex linearizations here, which were already
-  computed earlier in VertexLinearization3D!
+  Note that we just combine the correct slave and master vertex
+  linearizations here, which were already computed earlier in
+  VertexLinearization3D!
 
   */
-  virtual bool LineclipVertexLinearization(MORTAR::Vertex& currv,
-                                           std::vector<std::map<int,double> >& currlin,
-                                           MORTAR::Vertex* sv1, MORTAR::Vertex* sv2,
-                                           MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
-                                           std::map<int,double>& projpar);
   virtual bool LineclipVertexLinearization(MORTAR::Vertex& currv,
                                            std::vector<std::map<int,double> >& currlin,
                                            MORTAR::Vertex* sv1, MORTAR::Vertex* sv2,

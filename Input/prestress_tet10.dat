@@ -89,7 +89,6 @@ THERM_TEMPGRAD                  None
 WRITE_TO_FILE                   No
 WRITE_TO_SCREEN                 Yes
 -------------------------------------------------------------MORTAR COUPLING
-COUPLING_AUXPLANE               Yes
 CROSSPOINTS                     No
 LAGMULT_QUAD                    undefined
 MAX_BALANCE                     2

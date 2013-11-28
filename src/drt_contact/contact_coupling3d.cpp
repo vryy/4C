@@ -181,33 +181,10 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       // ***********************************************************
       //                   Integrate stuff !!!                    //
       // ***********************************************************
-      if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
-      else /*(!CouplingInAuxPlane()*/
-        integrator.IntegrateDerivCell3D(SlaveElement(),MasterElement(),Cells()[i],dseg,mseg,gseg,scseg);
+      integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
       // ***********************************************************
       //                   END INTEGRATION !!!                    //
       // ***********************************************************
-
-      if(!CouplingInAuxPlane())
-      {
-        //do the assembly into the slave nodes
-        integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-        integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
-        integrator.AssembleG(Comm(),SlaveElement(),*gseg);
-        if (scseg!=Teuchos::null)
-          integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
-      }
-
-      
-      // assemble of mechanical dissipation to slave and master nodes
-      // and matrix A and B
-      if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
-      {  
-        // dserror 
-        if (!CouplingInAuxPlane()) 
-          dserror("Tsi with contact only implemented for CouplingInAuxPlane");        
-      }
     }
     
     // *******************************************************************
@@ -238,12 +215,8 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
       
-      // check whether aux. plane coupling or not
-      if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
-            Cells()[i],Auxn(),dseg,mseg,gseg);
-      else /*(!CouplingInAuxPlane()*/
-        dserror("ERROR: Only aux. plane version implemented for 3D quadratic contact");
+      // call integrator
+      integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn(),dseg,mseg,gseg);
       
       // do the assembly into the slave nodes
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
@@ -274,12 +247,8 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
       
-      // check whether aux. plane coupling or not
-      if (CouplingInAuxPlane())
-        integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,
-            Cells()[i],Auxn(),dseg,mseg,gseg);
-      else /*(!CouplingInAuxPlane()*/
-        dserror("ERROR: Only aux. plane version implemented for 3D quadratic contact");
+      // call integrator
+      integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn(),dseg,mseg,gseg);
       
       // do the assembly into the slave nodes
       // (NOTE THAT THESE ARE SPECIAL VERSIONS HERE FOR PIECEWISE LINEAR INTERPOLATION)
@@ -322,21 +291,18 @@ bool CONTACT::CoCoupling3d::VertexLinearization(std::vector<std::vector<std::map
   std::vector<std::vector<std::map<int,double> > > linsnodes(nsrows,std::vector<std::map<int,double> >(3));
   std::vector<std::vector<std::map<int,double> > > linmnodes(nmrows,std::vector<std::map<int,double> >(3));
 
-  if (CouplingInAuxPlane())
+  // compute slave linearizations (nsrows)
+  for (int i=0;i<nsrows;++i)
   {
-    // compute slave linearizations (nsrows)
-    for (int i=0;i<nsrows;++i)
-    {
-      int sid = SlaveIntElement().NodeIds()[i];
-      SlaveVertexLinearization(linsnodes[i],sid);
-    }
+    int sid = SlaveIntElement().NodeIds()[i];
+    SlaveVertexLinearization(linsnodes[i],sid);
+  }
 
-    // compute master linearizations (nmrows)
-    for (int i=0;i<nmrows;++i)
-    {
-      int mid = MasterIntElement().NodeIds()[i];
-      MasterVertexLinearization(linmnodes[i],mid);
-    }
+  // compute master linearizations (nmrows)
+  for (int i=0;i<nmrows;++i)
+  {
+    int mid = MasterIntElement().NodeIds()[i];
+    MasterVertexLinearization(linmnodes[i],mid);
   }
 
   //**********************************************************************
@@ -352,61 +318,39 @@ bool CONTACT::CoCoupling3d::VertexLinearization(std::vector<std::vector<std::map
     // decision on vertex type (slave, projmaster, linclip)
     if (currv.VType()==MORTAR::Vertex::slave)
     {
-      if (CouplingInAuxPlane())
-      {
-        // get corresponding slave id
-        int sid = currv.Nodeids()[0];
+      // get corresponding slave id
+      int sid = currv.Nodeids()[0];
 
-        // find corresponding slave node linearization
-        int k=0;
-        while (k<nsrows){
-          if (SlaveIntElement().NodeIds()[k]==sid) break;
-          ++k;
-        }
-
-        // dserror if not found
-        if (k==nsrows) dserror("ERROR: Slave Id not found!");
-
-        // get the correct slave node linearization
-        currlin = linsnodes[k];
+      // find corresponding slave node linearization
+      int k=0;
+      while (k<nsrows){
+        if (SlaveIntElement().NodeIds()[k]==sid) break;
+        ++k;
       }
-      else //(!CouplingInAuxPlane())
-      {
-        // Vertex = slave node -> Linearization = 0
-        // this is the easy case with nothing to do
-      }
+
+      // dserror if not found
+      if (k==nsrows) dserror("ERROR: Slave Id not found!");
+
+      // get the correct slave node linearization
+      currlin = linsnodes[k];
     }
     else if (currv.VType()==MORTAR::Vertex::projmaster)
     {
-      if (CouplingInAuxPlane())
-      {
-        // get corresponding master id
-        int mid = currv.Nodeids()[0];
+      // get corresponding master id
+      int mid = currv.Nodeids()[0];
 
-        // find corresponding master node linearization
-        int k=0;
-        while (k<nmrows){
-          if (MasterIntElement().NodeIds()[k]==mid) break;
-          ++k;
-        }
-
-        // dserror if not found
-        if (k==nmrows) dserror("ERROR: Master Id not found!");
-
-        // get the correct master node linearization
-        currlin = linmnodes[k];
+      // find corresponding master node linearization
+      int k=0;
+      while (k<nmrows){
+        if (MasterIntElement().NodeIds()[k]==mid) break;
+        ++k;
       }
-      else //(!CouplingInAuxPlane())
-      {
-        // get corresponding master id and projection alpha
-        int mid = currv.Nodeids()[0];
-        double alpha = projpar[mid];
 
-        //std::cout << "Coords: " << currv.Coord()[0] << " " << currv.Coord()[1] << std::endl;
+      // dserror if not found
+      if (k==nmrows) dserror("ERROR: Master Id not found!");
 
-        // do master vertex linearization
-        MasterVertexLinearization(currv,currlin,mid,alpha);
-      }
+      // get the correct master node linearization
+      currlin = linmnodes[k];
     }
     else if (currv.VType()==MORTAR::Vertex::lineclip)
     {
@@ -443,10 +387,7 @@ bool CONTACT::CoCoupling3d::VertexLinearization(std::vector<std::vector<std::map
       MORTAR::Vertex* mv2 = &MasterVertices()[mindex2];
 
       // do lineclip vertex linearization
-      if (CouplingInAuxPlane())
-        LineclipVertexLinearization(currv,currlin,sv1,sv2,mv1,mv2,linsnodes,linmnodes);
-      else
-        LineclipVertexLinearization(currv,currlin,sv1,sv2,mv1,mv2,projpar);
+      LineclipVertexLinearization(currv,currlin,sv1,sv2,mv1,mv2,linsnodes,linmnodes);
     }
 
     else dserror("ERROR: VertexLinearization: Invalid Vertex Type!");
@@ -694,113 +635,6 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(std::vector<std::map<int,d
 }
 
 /*----------------------------------------------------------------------*
- |  Linearization of projmaster vertex (3D)                   popp 02/09|
- *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling3d::MasterVertexLinearization(MORTAR::Vertex& currv,
-                                                      std::vector<std::map<int,double> >& currlin,
-                                                      int mid, double alpha)
-{
-  // get current vertex coordinates (in slave param. space)
-  double sxi[2] = {0.0, 0.0};
-  sxi[0] = currv.Coord()[0];
-  sxi[1] = currv.Coord()[1];
-  
-  // evlauate shape functions + derivatives at sxi
-  int nrow = SlaveIntElement().NumNode();
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow,2,true);
-  SlaveIntElement().EvaluateShape(sxi,sval,sderiv,nrow);
-  
-  // build 3x3 factor matrix L
-  LINALG::Matrix<3,3> lmatrix(true);
-  
-  for (int z=0;z<nrow;++z)
-  {
-    int gid = SlaveIntElement().NodeIds()[z];
-    DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(node);
-  
-    lmatrix(0,0) += sderiv(z,0) * snode->xspatial()[0];
-    lmatrix(1,0) += sderiv(z,0) * snode->xspatial()[1];
-    lmatrix(2,0) += sderiv(z,0) * snode->xspatial()[2];
-  
-    lmatrix(0,0) += alpha * sderiv(z,0) * snode->MoData().n()[0];
-    lmatrix(1,0) += alpha * sderiv(z,0) * snode->MoData().n()[1];
-    lmatrix(2,0) += alpha * sderiv(z,0) * snode->MoData().n()[2];
-  
-    lmatrix(0,1) += sderiv(z,1) * snode->xspatial()[0];
-    lmatrix(1,1) += sderiv(z,1) * snode->xspatial()[1];
-    lmatrix(2,1) += sderiv(z,1) * snode->xspatial()[2];
-  
-    lmatrix(0,1) += alpha * sderiv(z,1) * snode->MoData().n()[0];
-    lmatrix(1,1) += alpha * sderiv(z,1) * snode->MoData().n()[1];
-    lmatrix(2,1) += alpha * sderiv(z,1) * snode->MoData().n()[2];
-  
-    lmatrix(0,2) += sval[z] * snode->MoData().n()[0];
-    lmatrix(1,2) += sval[z] * snode->MoData().n()[1];
-    lmatrix(2,2) += sval[z] * snode->MoData().n()[2];
-  }
-  
-  // get inverse of the 3x3 matrix L (in place)
-  lmatrix.Invert();
-  
-  // start to fill linearization maps for current vertex
-  typedef std::map<int,double>::const_iterator CI;
-  
-  // (1) master node coordinates part
-  DRT::Node* mnode = Discret().gNode(mid);
-  if (!mnode) dserror("ERROR: Cannot find node with gid %",mid);
-  MORTAR::MortarNode* mrtrmnode = static_cast<MORTAR::MortarNode*>(mnode);
-  
-  currlin[0][mrtrmnode->Dofs()[0]] += lmatrix(0,0);
-  currlin[0][mrtrmnode->Dofs()[1]] += lmatrix(0,1);
-  currlin[0][mrtrmnode->Dofs()[2]] += lmatrix(0,2);
-  currlin[1][mrtrmnode->Dofs()[0]] += lmatrix(1,0);
-  currlin[1][mrtrmnode->Dofs()[1]] += lmatrix(1,1);
-  currlin[1][mrtrmnode->Dofs()[2]] += lmatrix(1,2);
-  
-  // (2) all slave nodes coordinates part
-  for (int z=0;z<nrow;++z)
-  {
-    int gid = SlaveIntElement().NodeIds()[z];
-    DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(node);
-  
-    currlin[0][snode->Dofs()[0]] -= sval[z] * lmatrix(0,0);
-    currlin[0][snode->Dofs()[1]] -= sval[z] * lmatrix(0,1);
-    currlin[0][snode->Dofs()[2]] -= sval[z] * lmatrix(0,2);
-    currlin[1][snode->Dofs()[0]] -= sval[z] * lmatrix(1,0);
-    currlin[1][snode->Dofs()[1]] -= sval[z] * lmatrix(1,1);
-    currlin[1][snode->Dofs()[2]] -= sval[z] * lmatrix(1,2);
-  
-    // (3) all slave nodes normals part
-    // get nodal normal derivative maps (x,y and z components)
-    std::vector<std::map<int,double> >& derivn = static_cast<CONTACT::CoNode*>(snode)->CoData().GetDerivN();
-  
-    for (CI p=derivn[0].begin();p!=derivn[0].end();++p)
-    {
-      currlin[0][p->first] -= alpha * sval[z] * lmatrix(0,0) * (p->second);
-      currlin[1][p->first] -= alpha * sval[z] * lmatrix(1,0) * (p->second);
-    }
-    for (CI p=derivn[1].begin();p!=derivn[1].end();++p)
-    {
-      currlin[0][p->first] -= alpha * sval[z] * lmatrix(0,1) * (p->second);
-      currlin[1][p->first] -= alpha * sval[z] * lmatrix(1,1) * (p->second);
-    }
-    for (CI p=derivn[2].begin();p!=derivn[2].end();++p)
-    {
-      currlin[0][p->first] -= alpha * sval[z] * lmatrix(0,2) * (p->second);
-      currlin[1][p->first] -= alpha * sval[z] * lmatrix(1,2) * (p->second);
-    }
-  }
-  //**********************************************************************
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
  |  Linearization of lineclip vertex (3D) AuxPlane            popp 03/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
@@ -975,120 +809,6 @@ bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
       {
       currlin[dim][p->first] -= sedge[dim] * 1/Nfac * crossdZ3[k] * (p->second);
       currlin[dim][p->first] += sedge[dim] * Zfac/(Nfac*Nfac) * crossdN3[k] * (p->second);
-      }
-    }
-  }
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
- |  Linearization of lineclip vertex (3D)                     popp 02/09|
- *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling3d::LineclipVertexLinearization(MORTAR::Vertex& currv,
-                                           std::vector<std::map<int,double> >& currlin,
-                                           MORTAR::Vertex* sv1, MORTAR::Vertex* sv2,
-                                           MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
-                                           std::map<int,double>& projpar)
-{
-  // compute factor Z
-  double crossZ[3] = {0.0, 0.0, 0.0};
-  crossZ[0] = (sv1->Coord()[1]-mv1->Coord()[1])*(mv2->Coord()[2]-mv1->Coord()[2])
-           - (sv1->Coord()[2]-mv1->Coord()[2])*(mv2->Coord()[1]-mv1->Coord()[1]);
-  crossZ[1] = (sv1->Coord()[2]-mv1->Coord()[2])*(mv2->Coord()[0]-mv1->Coord()[0])
-           - (sv1->Coord()[0]-mv1->Coord()[0])*(mv2->Coord()[2]-mv1->Coord()[2]);
-  crossZ[2] = (sv1->Coord()[0]-mv1->Coord()[0])*(mv2->Coord()[1]-mv1->Coord()[1])
-           - (sv1->Coord()[1]-mv1->Coord()[1])*(mv2->Coord()[0]-mv1->Coord()[0]);
-  double Zfac = crossZ[0]*Auxn()[0]+crossZ[1]*Auxn()[1]+crossZ[2]*Auxn()[2];
-
-  // compute factor N
-  double crossN[3] = {0.0, 0.0, 0.0};
-  crossN[0] = (sv2->Coord()[1]-sv1->Coord()[1])*(mv2->Coord()[2]-mv1->Coord()[2])
-           - (sv2->Coord()[2]-sv1->Coord()[2])*(mv2->Coord()[1]-mv1->Coord()[1]);
-  crossN[1] = (sv2->Coord()[2]-sv1->Coord()[2])*(mv2->Coord()[0]-mv1->Coord()[0])
-           - (sv2->Coord()[0]-sv1->Coord()[0])*(mv2->Coord()[2]-mv1->Coord()[2]);
-  crossN[2] = (sv2->Coord()[0]-sv1->Coord()[0])*(mv2->Coord()[1]-mv1->Coord()[1])
-           - (sv2->Coord()[1]-sv1->Coord()[1])*(mv2->Coord()[0]-mv1->Coord()[0]);
-  double Nfac = crossN[0]*Auxn()[0]+crossN[1]*Auxn()[1]+crossN[2]*Auxn()[2];
-
-  // slave edge vector
-  double sedge[3] = {0.0, 0.0, 0.0};
-  for (int k=0;k<3;++k) sedge[k] = sv1->Coord()[k] - sv2->Coord()[k];
-
-  // prepare linearization derivZ
-  double crossdZ1[3] = {0.0, 0.0, 0.0};
-  double crossdZ2[3] = {0.0, 0.0, 0.0};
-  crossdZ1[0] = Auxn()[1]*(mv2->Coord()[2]-mv1->Coord()[2])-Auxn()[2]*(mv2->Coord()[1]-mv1->Coord()[1]);
-  crossdZ1[1] = Auxn()[2]*(mv2->Coord()[0]-mv1->Coord()[0])-Auxn()[0]*(mv2->Coord()[2]-mv1->Coord()[2]);
-  crossdZ1[2] = Auxn()[0]*(mv2->Coord()[1]-mv1->Coord()[1])-Auxn()[1]*(mv2->Coord()[0]-mv1->Coord()[0]);
-  crossdZ2[0] = Auxn()[1]*(sv1->Coord()[2]-mv1->Coord()[2])-Auxn()[2]*(sv1->Coord()[1]-mv1->Coord()[1]);
-  crossdZ2[1] = Auxn()[2]*(sv1->Coord()[0]-mv1->Coord()[0])-Auxn()[0]*(sv1->Coord()[2]-mv1->Coord()[2]);
-  crossdZ2[2] = Auxn()[0]*(sv1->Coord()[1]-mv1->Coord()[1])-Auxn()[1]*(sv1->Coord()[0]-mv1->Coord()[0]);
-
-  // prepare linearization derivN
-  double crossdN1[3] = {0.0, 0.0, 0.0};
-  crossdN1[0] = Auxn()[1]*(sv2->Coord()[2]-sv1->Coord()[2])-Auxn()[2]*(sv2->Coord()[1]-sv1->Coord()[1]);
-  crossdN1[1] = Auxn()[2]*(sv2->Coord()[0]-sv1->Coord()[0])-Auxn()[0]*(sv2->Coord()[2]-sv1->Coord()[2]);
-  crossdN1[2] = Auxn()[0]*(sv2->Coord()[1]-sv1->Coord()[1])-Auxn()[1]*(sv2->Coord()[0]-sv1->Coord()[0]);
-
-  // master vertex linearization (2x)
-  std::vector<std::vector<std::map<int,double> > > masterlin(2,std::vector<std::map<int,double> >(3));
-
-  int mid1 = currv.Nodeids()[2];
-  double alpha1 = projpar[mid1];
-
-  bool found1 = false;
-  MORTAR::Vertex* masterv1 = &MasterVertices()[0];
-  for (int j=0;j<(int)MasterVertices().size();++j)
-  {
-    if (MasterVertices()[j].Nodeids()[0]==mid1)
-    {
-      found1=true;
-      masterv1 = &MasterVertices()[j];
-      break;
-    }
-  }
-  if (!found1) dserror("ERROR: Lineclip linearization, Master vertex 1 not found!");
-
-  MasterVertexLinearization(*masterv1,masterlin[0],mid1,alpha1);
-
-  int mid2 = currv.Nodeids()[3];
-  double alpha2 = projpar[mid2];
-
-  bool found2 = false;
-  MORTAR::Vertex* masterv2 = &MasterVertices()[0];
-  for (int j=0;j<(int)MasterVertices().size();++j)
-  {
-    if (MasterVertices()[j].Nodeids()[0]==mid2)
-    {
-      found2=true;
-      masterv2 = &MasterVertices()[j];
-      break;
-    }
-  }
-  if (!found2) dserror("ERROR: Lineclip linearization, Master vertex 2 not found!");
-
-  MasterVertexLinearization(*masterv2,masterlin[1],mid2,alpha2);
-
-  // bring everything together -> lineclip vertex linearization
-  typedef std::map<int,double>::const_iterator CI;
-  for (int k=0;k<3;++k)
-  {
-    for (CI p=masterlin[0][k].begin();p!=masterlin[0][k].end();++p)
-    {
-      for (int dim=0;dim<2;++dim)
-      {
-      currlin[dim][p->first] += sedge[dim] * 1/Nfac * crossdZ1[k] * (p->second);
-      currlin[dim][p->first] -= sedge[dim] * 1/Nfac * crossdZ2[k] * (p->second);
-      currlin[dim][p->first] += sedge[dim] * Zfac/(Nfac*Nfac) * crossdN1[k] * (p->second);
-      }
-    }
-    for (CI p=masterlin[1][k].begin();p!=masterlin[1][k].end();++p)
-    {
-      for (int dim=0;dim<2;++dim)
-      {
-      currlin[dim][p->first] += sedge[dim] * 1/Nfac * crossdZ2[k] * (p->second);
-      currlin[dim][p->first] -= sedge[dim] * Zfac/(Nfac*Nfac) * crossdN1[k] * (p->second);
       }
     }
   }
@@ -1299,10 +1019,6 @@ CONTACT::CoCoupling3d(idiscret,dim,quad,params,sele,mele),
 sintele_(sintele),
 mintele_(mintele)
 {
-  // 3D quadratic coupling only for aux. plane case
-  if (!CouplingInAuxPlane())
-    dserror("ERROR: CoCoupling3dQuad only for auxiliary plane case!");
-
   //  3D quadratic coupling only for quadratic ansatz type
   if (!Quad())
     dserror("ERROR: CoCoupling3dQuad called for non-quadratic ansatz!");

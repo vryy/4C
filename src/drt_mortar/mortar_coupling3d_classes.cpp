@@ -464,7 +464,6 @@ bool MORTAR::IntElement::MapToParent(const std::vector<std::map<int,double> >& d
  *----------------------------------------------------------------------*/
 MORTAR::IntCell::IntCell(int id, int nvertices, Epetra_SerialDenseMatrix& coords,
                          double* auxn, const DRT::Element::DiscretizationType& shape,
-                         bool auxplane,
                          std::vector<std::map<int,double> >& linv1,
                          std::vector<std::map<int,double> >& linv2,
                          std::vector<std::map<int,double> >& linv3,
@@ -472,7 +471,6 @@ MORTAR::IntCell::IntCell(int id, int nvertices, Epetra_SerialDenseMatrix& coords
 id_(id),
 nvertices_(nvertices),
 coords_(coords),
-auxplane_(auxplane),
 shape_(shape)
 {
    // check nvertices_ and shape_
@@ -608,103 +606,6 @@ double MORTAR::IntCell::Jacobian(double* xi)
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate directional deriv. of Jacobian det.              popp 12/08|
- *----------------------------------------------------------------------*/
-void MORTAR::IntCell::DerivJacobian(double* xi, std::vector<double>& derivjac)
-{
-  // initialize parameters
-  int nnodes = NumVertices();
-  std::vector<double> gxi(3);
-  std::vector<double> geta(3);
-
-  // evaluate shape functions
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
-  EvaluateShape(xi, val, deriv);
-
-  // metrics routine gives local basis vectors
-  for (int k=0;k<3;++k)
-  {
-    gxi[k]=Coords()(k,1)-Coords()(k,0);
-    geta[k]=Coords()(k,2)-Coords()(k,0);
-  }
-
-  // cross product of gxi and geta
-  double cross[3] = {0.0, 0.0, 0.0};
-  cross[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
-  cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
-  cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
-
-  double jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
-
-  // 2D linear case (2noded line element)
-  if (Shape()==DRT::Element::tri3)
-  {
-    // *********************************************************************
-    // compute Jacobian derivative
-    // *********************************************************************
-    if (CouplingInAuxPlane())
-      dserror("ERROR: DerivJacobian (SlaveParamSpace) called for AuxPlane case!");
-    else //(!CouplingInAuxPlane())
-    {
-      // in this case, intcells live in slave element parameter space
-      // cross[0] and cross[1] are zero!
-      for (int i=0;i<nnodes;++i)
-      {
-        derivjac[2*i]   += 1/jac * cross[2] * geta[1] * deriv(i,0);
-        derivjac[2*i]   -= 1/jac * cross[2] * gxi[1]  * deriv(i,1);
-        derivjac[2*i+1] -= 1/jac * cross[2] * geta[0] * deriv(i,0);
-        derivjac[2*i+1] += 1/jac * cross[2] * gxi[0]  * deriv(i,1);
-      }
-    }
-  }
-
-  // unknown case
-  else dserror("ERROR: DerivJacobian (IntCell) called for unknown ele type!");
-
-  /*
-  // finite difference check
-  typedef std::map<int,double>::const_iterator CI;
-  std::cout << "Analytical IntCell jac derivative:" << std::endl;
-  for (CI p = derivjac.begin(); p != derivjac.end(); ++p)
-  {
-    std::cout << "dof: " << p->first << " " << p->second << std::endl;
-  }
-
-  double delta = 1.0e-8;
-  double jacfd = 0.0;
-  std::cout << "FD IntCell jac derivative:" << std::endl;
-
-  for (int i=0;i<nnodes;++i)
-  {
-    for (int j=0;j<2;++j)
-    {
-      Coords()(j,i) += delta;
-
-      // metrics routine gives local basis vectors
-      for (int k=0;k<3;++k)
-      {
-        gxi[k]=Coords()(k,1)-Coords()(k,0);
-        geta[k]=Coords()(k,2)-Coords()(k,0);
-      }
-
-      // cross product of gxi and geta
-      cross[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
-      cross[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
-      cross[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
-
-      jacfd = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
-      std::cout << "dof: " << 2*i+j << " " << (jacfd-jac)/delta << std::endl;
-      Coords()(j,i) -= delta;
-    }
-  }
-  std::cout << std::endl;
-  */
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det. AuxPlane     popp 03/09|
  *----------------------------------------------------------------------*/
 void MORTAR::IntCell::DerivJacobian(double* xi, std::map<int,double>& derivjac)
@@ -734,67 +635,62 @@ void MORTAR::IntCell::DerivJacobian(double* xi, std::map<int,double>& derivjac)
     // *********************************************************************
     // compute Jacobian derivative
     // *********************************************************************
-    if (CouplingInAuxPlane())
+    // first vertex (Coords(k,0)) is part of gxi and geta
+    for (CI p=GetDerivVertex(0)[0].begin();p!=GetDerivVertex(0)[0].end();++p)
     {
-      // first vertex (Coords(k,0)) is part of gxi and geta
-      for (CI p=GetDerivVertex(0)[0].begin();p!=GetDerivVertex(0)[0].end();++p)
-      {
-        derivjac[p->first] -= 1/jac*cross[1]*gxi[2]*(p->second);
-        derivjac[p->first] += 1/jac*cross[1]*geta[2]*(p->second);
-        derivjac[p->first] += 1/jac*cross[2]*gxi[1]*(p->second);
-        derivjac[p->first] -= 1/jac*cross[2]*geta[1]*(p->second);
-      }
-      for (CI p=GetDerivVertex(0)[1].begin();p!=GetDerivVertex(0)[1].end();++p)
-      {
-        derivjac[p->first] += 1/jac*cross[0]*gxi[2]*(p->second);
-        derivjac[p->first] -= 1/jac*cross[0]*geta[2]*(p->second);
-        derivjac[p->first] -= 1/jac*cross[2]*gxi[0]*(p->second);
-        derivjac[p->first] += 1/jac*cross[2]*geta[0]*(p->second);
-      }
-      for (CI p=GetDerivVertex(0)[2].begin();p!=GetDerivVertex(0)[2].end();++p)
-      {
-        derivjac[p->first] -= 1/jac*cross[0]*gxi[1]*(p->second);
-        derivjac[p->first] += 1/jac*cross[0]*geta[1]*(p->second);
-        derivjac[p->first] += 1/jac*cross[1]*gxi[0]*(p->second);
-        derivjac[p->first] -= 1/jac*cross[1]*geta[0]*(p->second);
-      }
-
-      // second vertex (Coords(k,1)) is part of gxi
-      for (CI p=GetDerivVertex(1)[0].begin();p!=GetDerivVertex(1)[0].end();++p)
-      {
-        derivjac[p->first] -= 1/jac*cross[1]*geta[2]*(p->second);
-        derivjac[p->first] += 1/jac*cross[2]*geta[1]*(p->second);
-      }
-      for (CI p=GetDerivVertex(1)[1].begin();p!=GetDerivVertex(1)[1].end();++p)
-      {
-        derivjac[p->first] += 1/jac*cross[0]*geta[2]*(p->second);
-        derivjac[p->first] -= 1/jac*cross[2]*geta[0]*(p->second);
-      }
-      for (CI p=GetDerivVertex(1)[2].begin();p!=GetDerivVertex(1)[2].end();++p)
-      {
-        derivjac[p->first] -= 1/jac*cross[0]*geta[1]*(p->second);
-        derivjac[p->first] += 1/jac*cross[1]*geta[0]*(p->second);
-      }
-
-      // third vertex (Coords(k,2)) is part of geta
-      for (CI p=GetDerivVertex(2)[0].begin();p!=GetDerivVertex(2)[0].end();++p)
-      {
-        derivjac[p->first] += 1/jac*cross[1]*gxi[2]*(p->second);
-        derivjac[p->first] -= 1/jac*cross[2]*gxi[1]*(p->second);
-      }
-      for (CI p=GetDerivVertex(2)[1].begin();p!=GetDerivVertex(2)[1].end();++p)
-      {
-        derivjac[p->first] -= 1/jac*cross[0]*gxi[2]*(p->second);
-        derivjac[p->first] += 1/jac*cross[2]*gxi[0]*(p->second);
-      }
-      for (CI p=GetDerivVertex(2)[2].begin();p!=GetDerivVertex(2)[2].end();++p)
-      {
-        derivjac[p->first] += 1/jac*cross[0]*gxi[1]*(p->second);
-        derivjac[p->first] -= 1/jac*cross[1]*gxi[0]*(p->second);
-      }
+      derivjac[p->first] -= 1/jac*cross[1]*gxi[2]*(p->second);
+      derivjac[p->first] += 1/jac*cross[1]*geta[2]*(p->second);
+      derivjac[p->first] += 1/jac*cross[2]*gxi[1]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[2]*geta[1]*(p->second);
     }
-    else //(!CouplingInAuxPlane())
-      dserror("ERROR: DerivJacobian (AuxPlane) called for SlaveParamSpace case!");
+    for (CI p=GetDerivVertex(0)[1].begin();p!=GetDerivVertex(0)[1].end();++p)
+    {
+      derivjac[p->first] += 1/jac*cross[0]*gxi[2]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[0]*geta[2]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[2]*gxi[0]*(p->second);
+      derivjac[p->first] += 1/jac*cross[2]*geta[0]*(p->second);
+    }
+    for (CI p=GetDerivVertex(0)[2].begin();p!=GetDerivVertex(0)[2].end();++p)
+    {
+      derivjac[p->first] -= 1/jac*cross[0]*gxi[1]*(p->second);
+      derivjac[p->first] += 1/jac*cross[0]*geta[1]*(p->second);
+      derivjac[p->first] += 1/jac*cross[1]*gxi[0]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[1]*geta[0]*(p->second);
+    }
+
+    // second vertex (Coords(k,1)) is part of gxi
+    for (CI p=GetDerivVertex(1)[0].begin();p!=GetDerivVertex(1)[0].end();++p)
+    {
+      derivjac[p->first] -= 1/jac*cross[1]*geta[2]*(p->second);
+      derivjac[p->first] += 1/jac*cross[2]*geta[1]*(p->second);
+    }
+    for (CI p=GetDerivVertex(1)[1].begin();p!=GetDerivVertex(1)[1].end();++p)
+    {
+      derivjac[p->first] += 1/jac*cross[0]*geta[2]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[2]*geta[0]*(p->second);
+    }
+    for (CI p=GetDerivVertex(1)[2].begin();p!=GetDerivVertex(1)[2].end();++p)
+    {
+      derivjac[p->first] -= 1/jac*cross[0]*geta[1]*(p->second);
+      derivjac[p->first] += 1/jac*cross[1]*geta[0]*(p->second);
+    }
+
+    // third vertex (Coords(k,2)) is part of geta
+    for (CI p=GetDerivVertex(2)[0].begin();p!=GetDerivVertex(2)[0].end();++p)
+    {
+      derivjac[p->first] += 1/jac*cross[1]*gxi[2]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[2]*gxi[1]*(p->second);
+    }
+    for (CI p=GetDerivVertex(2)[1].begin();p!=GetDerivVertex(2)[1].end();++p)
+    {
+      derivjac[p->first] -= 1/jac*cross[0]*gxi[2]*(p->second);
+      derivjac[p->first] += 1/jac*cross[2]*gxi[0]*(p->second);
+    }
+    for (CI p=GetDerivVertex(2)[2].begin();p!=GetDerivVertex(2)[2].end();++p)
+    {
+      derivjac[p->first] += 1/jac*cross[0]*gxi[1]*(p->second);
+      derivjac[p->first] -= 1/jac*cross[1]*gxi[0]*(p->second);
+    }
   }
 
   // unknown case

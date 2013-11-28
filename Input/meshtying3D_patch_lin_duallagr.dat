@@ -75,7 +75,6 @@ INITCONTACTGAPVALUE             1
 SHAPEFCN                        dual
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
-COUPLING_AUXPLANE               Yes
 INTTYPE                         Segments
 LM_DUAL_CONSISTENT              yes
 LM_NODAL_SCALE                  yes

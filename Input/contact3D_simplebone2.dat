@@ -77,7 +77,6 @@ SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.6
 PARALLEL_REDIST                 Static
 MAX_BALANCE                     1.5
-COUPLING_AUXPLANE               Yes
 LM_DUAL_CONSISTENT              Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

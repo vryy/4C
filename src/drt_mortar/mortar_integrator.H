@@ -181,19 +181,6 @@ public:
        double& sxia, double& sxib,
        MORTAR::MortarElement& mele,
        double& mxia, double& mxib);
-
-  /*!
-  \brief Build all integrals and linearizations on a 2D slave /
-         master integration cell (i.e. M, g, LinM, Ling and possibly D, LinD)
-
-  */
-  virtual void IntegrateDerivCell3D(
-      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-      Teuchos::RCP<MORTAR::IntCell> cell,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> scseg);
     
   /*!
   \brief Build all integrals and linearizations without segmentation
@@ -210,8 +197,8 @@ public:
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
-         master integration cell (i.e. M, g, LinM, Ling and possibly D, LinD)
-         for the auxiliary plane coupling case
+         master integration cell (i.e. D, M, g, LinD, LinM, Ling)
+         using a so-called auxiliary plane
 
   */
   virtual void IntegrateDerivCell3DAuxPlane(
@@ -224,22 +211,8 @@ public:
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
-         master integration cell (i.e. M, g, LinM, Ling and possibly D, LinD)
-         with quadratic interpolation
-
-  */
-  virtual void IntegrateDerivCell3DQuad(
-     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-     MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-     Teuchos::RCP<MORTAR::IntCell> cell,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> gseg);
-
-  /*!
-  \brief Build all integrals and linearizations on a 2D slave /
-         master integration cell (i.e. M, g, LinM, Ling) for
-         the auxiliary plane coupling case with quadratic interpolation
+         master integration cell  (i.e. D, M, g, LinD, LinM, Ling)
+         using a so-called auxiliary plane with quadratic interpolation
 
   */
   virtual void IntegrateDerivCell3DAuxPlaneQuad(

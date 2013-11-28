@@ -73,7 +73,6 @@ SEMI_SMOOTH_CT                  1000.0
 SHAPEFCN                        dual
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
-COUPLING_AUXPLANE               Yes
 INTTYPE                         Segments
 LM_DUAL_CONSISTENT              yes
 LM_NODAL_SCALE                  yes

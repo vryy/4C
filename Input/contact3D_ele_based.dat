@@ -75,7 +75,6 @@ FRICTION                        None
 SHAPEFCN                        Standard
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
-COUPLING_AUXPLANE               Yes
 INTTYPE                         elements
 NUMGP_PER_DIM                   2
 ---------------------------------------------------------------FLUID DYNAMIC

@@ -75,7 +75,6 @@ SEMI_SMOOTH_CN                  1.0
 SHAPEFCN                        Dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.3
-COUPLING_AUXPLANE               Yes
 REDUNDANT_STORAGE               none
 PARALLEL_STRATEGY               RoundRobinGhost
 PARALLEL_REDIST                 dynamic
