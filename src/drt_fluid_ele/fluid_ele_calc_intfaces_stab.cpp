@@ -1034,7 +1034,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     if(EOS_div_div_jump)
     {
 
-      if(elemat_blocks.size() < 10) dserror("do not choose diagonal pattern for div_EOS stabilization!");
+      if(elemat_blocks.size() < nsd_*nsd_+1) dserror("do not choose diagonal pattern for div_EOS stabilization!");
 
       if(!ghost_penalty_reconstruct and
          fldpara.EOS_WhichTau() != INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
