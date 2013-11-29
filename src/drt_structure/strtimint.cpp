@@ -125,6 +125,7 @@ STR::TimInt::TimInt
   dampm_(sdynparams.get<double>("M_DAMP")),
   conman_(Teuchos::null),
   consolv_(Teuchos::null),
+  windkman_(Teuchos::null),
   surfstressman_(Teuchos::null),
   potman_(Teuchos::null),
   cmtman_(Teuchos::null),

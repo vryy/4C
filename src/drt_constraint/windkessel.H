@@ -113,7 +113,7 @@ namespace UTILS
     (
       Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
       RCP<LINALG::SparseMatrix> systemmatrix1, ///< Windkessel stiffness matrix
-      RCP<LINALG::SparseOperator> systemmatrix2,
+      RCP<LINALG::SparseOperator> systemmatrix2, ///< Windkessel offdiagonal matrices
       RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by assembly of element contributions
       RCP<Epetra_Vector> systemvector2,
       RCP<Epetra_Vector> systemvector3

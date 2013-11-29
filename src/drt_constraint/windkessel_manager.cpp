@@ -31,6 +31,7 @@ Maintainer: Marc Hirschvogel
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_mapextractor.H"
 
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_str_windkessel_merged.H"
@@ -52,11 +53,26 @@ UTILS::WindkesselManager::WindkesselManager
   LINALG::Solver& solver,
   RCP<LINALG::MapExtractor> dbcmaps):
 actdisc_(discr),
-myrank_(actdisc_->Comm().MyPID())
+myrank_(actdisc_->Comm().MyPID()),
+dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
 {
 
 	//setup solver
 	SolverSetup(discr,solver,dbcmaps,params);
+
+  // a zero vector of full length
+  zeros_ = LINALG::CreateVector(*(actdisc_->DofRowMap()), true);
+
+  // Map containing Dirichlet DOFs
+  {
+    Teuchos::ParameterList p;
+    const double time=0.0;
+    p.set("total time", time);
+    actdisc_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null,
+                                Teuchos::null, dbcmaps_);
+    zeros_->PutScalar(0.0); // just in case of change
+  }
+
   //----------------------------------------------------------------------------
   //---------------------------------------------------------Windkessel Conditions!
 
@@ -179,7 +195,7 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   coupoffdiag_fext_p_->Zero();
 
   // other parameters that might be needed by the elements
-  //p.set("total time",time);
+  p.set("total time",time);
   p.set("OffsetID",offsetID_);
   p.set("NumberofID",numWindkesselID_);
   p.set("old disp",displast);
@@ -363,7 +379,7 @@ void UTILS::WindkesselManager::PrintPresFlux() const
 
 
 /*----------------------------------------------------------------------*
- |  set-up (public)                                             tk 11/07|
+ |  set-up (public)                                            mhv 11/13|
  *----------------------------------------------------------------------*/
 void UTILS::WindkesselManager::SolverSetup
 (
@@ -385,18 +401,27 @@ void UTILS::WindkesselManager::SolverSetup
 void UTILS::WindkesselManager::Solve
 (
   RCP<LINALG::SparseMatrix> stiff,
-  RCP<LINALG::SparseMatrix> coupoffdiag_vol_d,
-  RCP<LINALG::SparseMatrix> coupoffdiag_fext_p,
-  RCP<LINALG::SparseMatrix> windkstiff,
   RCP<Epetra_Vector> dispinc,
-  RCP<Epetra_Vector> presinc,
   const RCP<Epetra_Vector> rhsstand,
   const RCP<Epetra_Vector> rhswindk
 )
 {
 
 
-	/*// get Windkessel matrix with and without Dirichlet zeros
+
+  // create old style dirichtoggle vector (supposed to go away)
+  dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
+  RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
+  temp->PutScalar(1.0);
+  LINALG::Export(*temp,*dirichtoggle_);
+
+
+  // allocate additional vectors and matrices
+  Teuchos::RCP<Epetra_Vector> windkrhs5
+	= Teuchos::rcp(new Epetra_Vector(*(GetWindkesselRHS())));
+  Teuchos::RCP<Epetra_Vector> presincr
+	= Teuchos::rcp(new Epetra_Vector(*(GetWindkesselMap())));
+
 	Teuchos::RCP<LINALG::SparseMatrix> windkstiff =
 		(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetWindkesselStiffness()));
 	Teuchos::RCP<LINALG::SparseMatrix> coupoffdiag_vol_d =
@@ -404,8 +429,12 @@ void UTILS::WindkesselManager::Solve
 	Teuchos::RCP<LINALG::SparseMatrix> coupoffdiag_fext_p =
 		(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetCoupOffdiagFextP()));
 
+	// prepare residual pressure
+	presincr->PutScalar(0.0);
+
+	// apply DBC to additional offdiagonal coupling matrices
 	coupoffdiag_vol_d->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
-	coupoffdiag_fext_p->ApplyDirichlet(*(dbcmaps_->CondMap()),false);*/
+	coupoffdiag_fext_p->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
 
 
   // define maps of standard dofs and additional pressures
@@ -459,8 +488,13 @@ void UTILS::WindkesselManager::Solve
   solver_->ResetTolerance();
   // store results in smaller vectors
   mapext.ExtractCondVector(mergedsol,dispinc);
-  mapext.ExtractOtherVector(mergedsol,presinc);
+  mapext.ExtractOtherVector(mergedsol,presincr);
 
   counter_++;
+
+
+	// update pressure
+	UpdatePres(presincr);
+
   return;
 }

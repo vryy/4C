@@ -275,11 +275,7 @@ namespace UTILS
     void Solve
     (
       RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-      RCP<LINALG::SparseMatrix> coupoffdiag_vol_d,
-      RCP<LINALG::SparseMatrix> coupoffdiag_fext_p,
-      RCP<LINALG::SparseMatrix> windkstiff,
       RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
-      RCP<Epetra_Vector> disppres,     ///< pressure increment to compute
       const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
       const RCP<Epetra_Vector> rhswindk     ///< Windkessel errors
     );
@@ -329,6 +325,7 @@ namespace UTILS
     int counter_;  ///< counts how often #Solve is called
     RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle -- monitor its target change!
     RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
+    Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
 
   }; //class
 }

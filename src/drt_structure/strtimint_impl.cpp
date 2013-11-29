@@ -1679,9 +1679,6 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 	  Teuchos::RCP<Epetra_Vector> windkrhs
 		= Teuchos::rcp(new Epetra_Vector(*(windkman_->GetWindkesselRHS())));
 
-	  Teuchos::RCP<Epetra_Vector> presincr
-		= Teuchos::rcp(new Epetra_Vector(*(windkman_->GetWindkesselMap())));
-
 	  // check whether we have a sanely filled stiffness matrix
 	  if (not stiff_->Filled())
 	  {
@@ -1720,23 +1717,8 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 			//Use STC preconditioning on system matrix
 			STCPreconditioning();
 
-			// prepare residual pressure
-			presincr->PutScalar(0.0);
-			// get Windkessel matrix with and without Dirichlet zeros
-			Teuchos::RCP<LINALG::SparseMatrix> windkstiff =
-				(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(windkman_->GetWindkesselStiffness()));
-			Teuchos::RCP<LINALG::SparseMatrix> coupoffdiag_vol_d =
-				(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(windkman_->GetCoupOffdiagVolD()));
-			Teuchos::RCP<LINALG::SparseMatrix> coupoffdiag_fext_p =
-				(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(windkman_->GetCoupOffdiagFextP()));
-
-			coupoffdiag_vol_d->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
-			coupoffdiag_fext_p->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
-
 			// Call Windkessel solver to solve system
-			windkman_->Solve(SystemMatrix(), coupoffdiag_vol_d, coupoffdiag_fext_p, windkstiff,
-							disi_, presincr,
-							fres_, windkrhs);
+			windkman_->Solve(SystemMatrix(),disi_,fres_,windkrhs);
 
 			// *********** time measurement ***********
 			dtsolve_ = timer_->WallTime() - dtcpu;
@@ -1746,8 +1728,6 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 			if (locsysman_ != Teuchos::null)
 				locsysman_->RotateLocalToGlobal(disi_);
 
-			// update pressure
-			windkman_->UpdatePres(presincr);
 			// update end-point displacements, velocities, accelerations
 			UpdateIter(iter_);
 
