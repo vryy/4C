@@ -1076,15 +1076,46 @@ void FsiFluidMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
 {
   switch (dim)
   {
-  case 2:
-    outfile << "# step   time     d_x      d_y      u_x      u_y      p\n";
-    break;
-  case 3:
-   outfile << "# step   time     d_x      d_y      d_z     u_x      u_y      u_z      p\n";
-   break;
-  default:
-    dserror("Number of dimensions in space differs from 2 and 3!");
-    break;
+    case 2:
+    {
+      outfile << "#"
+      << std::right << std::setw(9) << "step"
+      << std::right << std::setw(16) << "time"
+      << std::right << std::setw(16) << "d_x"
+      << std::right << std::setw(16) << "d_y"
+      << std::right << std::setw(16) << "u_x"
+      << std::right << std::setw(16) << "u_y"
+      << std::right << std::setw(16) << "p"
+      << std::right << std::setw(16) << "lambda_x"
+      << std::right << std::setw(16) << "lambda_y"
+      << std::endl;
+
+      break;
+    }
+    case 3:
+    {
+      outfile << "#"
+      << std::right << std::setw(9) << "step"
+      << std::right << std::setw(16) << "time"
+      << std::right << std::setw(16) << "d_x"
+      << std::right << std::setw(16) << "d_y"
+      << std::right << std::setw(16) << "d_z"
+      << std::right << std::setw(16) << "u_x"
+      << std::right << std::setw(16) << "u_y"
+      << std::right << std::setw(16) << "u_z"
+      << std::right << std::setw(16) << "p"
+      << std::right << std::setw(16) << "lambda_x"
+      << std::right << std::setw(16) << "lambda_y"
+      << std::right << std::setw(16) << "lambda_z"
+      << std::endl;
+
+      break;
+    }
+    default:
+    {
+      dserror("Number of dimensions in space differs from 2 and 3!");
+      break;
+    }
   }
 }
 
@@ -1126,6 +1157,25 @@ void FsiFluidMonWriter::WriteResult(
     const int lid = velmap.LID(gdof[i]+offset2);
     outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
+
+  // check if fsilambda is available
+  MAP* dummydir;
+  if (map_find_map(result.group(), "fsilambda", &dummydir))
+  {
+    // get actual result vector for fsilambda
+    resvec = result.read_result("fsilambda");
+    const Epetra_BlockMap& lambdamap = resvec->Map();
+
+    //compute second part of offset
+    offset2 = lambdamap.MinAllGID();
+
+    for(unsigned i=0; i < gdof.size()-1; ++i)
+    {
+      const int lid = lambdamap.LID(gdof[i]+offset2);
+        outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+    }
+  }
+
   outfile << "\n";
 }
 
@@ -1148,6 +1198,179 @@ void FsiStructMonWriter::WriteHeader(std::ofstream& outfile)
   outfile << "# FSI problem, writing nodal data of structure node ";
 }
 
+/*----------------------------------------------------------------------*/
+void FsiStructMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
+{
+  switch (dim)
+  {
+  case 2:
+    outfile << "#"
+            << std::right << std::setw(9) << "step"
+            << std::right << std::setw(16) << "time"
+            << std::right << std::setw(16) << "d_x"
+            << std::right << std::setw(16) << "d_y"
+            << std::right << std::setw(16) << "v_x"
+            << std::right << std::setw(16) << "v_y"
+            << std::right << std::setw(16) << "a_x"
+            << std::right << std::setw(16) << "a_y"
+            << std::right << std::setw(16) << "lambda_x"
+            << std::right << std::setw(16) << "lambda_y"
+            << std::endl;
+    break;
+  case 3:
+    outfile << "#"
+            << std::right << std::setw(9) << "step"
+            << std::right << std::setw(16) << "time"
+            << std::right << std::setw(16) << "d_x"
+            << std::right << std::setw(16) << "d_y"
+            << std::right << std::setw(16) << "d_z"
+            << std::right << std::setw(16) << "v_x"
+            << std::right << std::setw(16) << "v_y"
+            << std::right << std::setw(16) << "v_z"
+            << std::right << std::setw(16) << "a_x"
+            << std::right << std::setw(16) << "a_y"
+            << std::right << std::setw(16) << "a_z"
+            << std::right << std::setw(16) << "p"
+            << std::right << std::setw(16) << "lambda_x"
+            << std::right << std::setw(16) << "lambda_y"
+            << std::right << std::setw(16) << "lambda_z"
+            << std::endl;
+    break;
+  default:
+    dserror("Number of dimensions in space differs from 2 and 3!");
+    break;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+void FsiStructMonWriter::WriteResult(
+  std::ofstream& outfile,
+  PostResult& result,
+  std::vector<int>& gdof,
+  int dim
+  )
+{
+  // write front
+
+  // do output of general time step data
+  outfile << std::right << std::setw(10) << result.step();
+  outfile << std::right << std::setw(16) << std::scientific << result.time();
+
+  // check dimensions
+  unsigned noddof = 0;
+  if (dim == 2)
+  {
+    noddof = gdof.size();
+  }
+  else if (dim == 3)
+  {
+    if (gdof.size() == (unsigned)dim)  // ordinary case: 3 displ DOFs
+      noddof = (unsigned)dim;
+    else if (gdof.size() == (unsigned)dim+1)  // displacement+pressure: 3+1 DOFs
+      noddof = (unsigned)dim;
+    else  // eg. shell with displacement+rotation: 3+3 DOFs
+      noddof = gdof.size();
+  }
+
+  // displacement
+
+  // get actual result vector displacement
+  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("displacement");
+  const Epetra_BlockMap& dispmap = resvec->Map();
+
+  // compute second part of offset
+  int offset2 = dispmap.MinAllGID();
+
+  // do output of displacement
+  for(unsigned i=0; i < noddof; ++i)
+  {
+    const int lid = dispmap.LID(gdof[i]+offset2);
+    if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+    outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+  }
+
+  // velocity
+
+  // check if velocity is available
+  MAP* dummydir;
+  if (map_find_map(result.group(), "velocity", &dummydir) and result.field()->problem()->struct_vel_acc() == "yes")
+  {
+    // get actual result vector velocity
+    resvec = result.read_result("velocity");
+    const Epetra_BlockMap& velmap = resvec->Map();
+
+    // compute second part of offset
+    offset2 = velmap.MinAllGID();
+
+    // do output of velocity
+    for(unsigned i=0; i <  noddof; ++i)
+    {
+      const int lid = velmap.LID(gdof[i]+offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+      outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+    }
+  }
+
+  // acceleration
+
+  // check if acceleration is available
+  if (map_find_map(result.group(), "acceleration", &dummydir) and result.field()->problem()->struct_vel_acc() == "yes")
+  {
+    // get actual result vector acceleration
+    resvec = result.read_result("acceleration");
+    const Epetra_BlockMap& accmap = resvec->Map();
+
+    //compute second part of offset
+    offset2 = accmap.MinAllGID();
+
+    // do output for acceleration
+    for(unsigned i=0; i <  noddof; ++i)
+    {
+      const int lid = accmap.LID(gdof[i]+offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+      outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+    }
+  }
+
+  // pressure
+  if (gdof.size() == (unsigned)dim+1)
+  {
+    // get actual result vector displacement/pressure
+    resvec = result.read_result("displacement");
+    const Epetra_BlockMap& pressmap = resvec->Map();
+
+    // compute second part of offset
+    offset2 = pressmap.MinAllGID();
+
+    // do output of pressure
+    {
+      const unsigned i = (unsigned)dim;
+      const int lid = pressmap.LID(gdof[i]+offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+      outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+    }
+  }
+
+  // check if fsilambda is available
+  if (map_find_map(result.group(), "fsilambda", &dummydir))
+  {
+    // get actual result vector for fsilambda
+    resvec = result.read_result("fsilambda");
+    const Epetra_BlockMap& lambdamap = resvec->Map();
+
+    //compute second part of offset
+    offset2 = lambdamap.MinAllGID();
+
+    for(unsigned i=0; i < noddof; ++i)
+    {
+      const int lid = lambdamap.LID(gdof[i]+offset2);
+      if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
+        outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+    }
+  }
+
+  outfile << "\n";
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

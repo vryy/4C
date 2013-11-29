@@ -590,6 +590,15 @@ protected:
 
   void WriteHeader(std::ofstream& outfile);
 
+  void WriteTableHead(std::ofstream& outfile, int dim);
+
+  void WriteResult(
+    std::ofstream& outfile,
+    PostResult& result,
+    std::vector<int>& gdof,
+    int dim
+    );
+
 private:
 }; // end of class FsiStructMonWriter
 
