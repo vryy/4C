@@ -60,13 +60,6 @@ STRATEGY Augmented //Penalty
 PENALTYPARAM                    25
 UZAWACONSTRTOL                  0.25
 UZAWAMAXSTEPS                   20
-BEAMS_NEWGAP                    No
-BEAMS_SMOOTHING                 None
-BEAMS_OCTREE                    octree_cylorient
-BEAMS_EXTFAC                    1.05
-BEAMS_RADFAC                    1.05
-BEAMS_TREEDEPTH                 6
-BEAMS_BOXESINOCT                7
 -------------------------------------------------------STATISTICAL MECHANICS
 //====                          GENERAL STATMECH SIMULATION FLAGS ==== 
 THERMALBATH                     uniform
