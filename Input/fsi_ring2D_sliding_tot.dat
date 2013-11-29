@@ -20,28 +20,11 @@ NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
 ALE_TYPE                        classic_lin
-MAXTIME                         4
-NUMSTEP                         41
-RESULTSEVRY                     1
-TIMESTEP                        0.1
-----------------------------------------------------------COMBUSTION CONTROL
------------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
-LAMINAR_FLAMESPEED              1
-MARKSTEIN_LENGTH                0
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
-----------------------------------------------------------------ELCH CONTROL
-ITEMAX                          10
-MAXTIME                         1000
-NUMSTEP                         24
-RESTARTEVRY                     1
-TEMPERATURE                     298
-TIMESTEP                        0.1
-UPRES                           1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
 ADAPTCONV                       yes
@@ -56,19 +39,10 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 ITEMAX                          10
 LIFTDRAG                        No
-MAXTIME                         1000
 NONLINITER                      fixed_point_like
-NUMSTASTEPS                     0
-NUMSTEP                         1
 PREDICTOR                       steady_state
-RESTARTEVRY                     20
-SIMPLER                         no
-STARTFUNCNO                     -1
-START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.01
-UPRES                           1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
@@ -81,15 +55,6 @@ SUPG                            yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
-CANONICAL_FLOW                  no
-CHAN_AMPL_INIT_DIST             0.1
-DUMPING_PERIOD                  1
-HOMDIR                          not_specified
-PHYSICAL_MODEL                  no_model
-SAMPLING_START                  1
-SAMPLING_STOP                   1
-TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
 -----------------------------------------------------------------FSI DYNAMIC
 ADAPTIVEDIST                    0
 BASETOL                         0.001
@@ -97,9 +62,6 @@ CONVTOL                         1e-07
 COUPALGO                        iter_stagg_AITKEN_rel_param
 COUPMETHOD                      mtr
 COUPVARIABLE                    Displacement
-DEBUGOUTPUT                     No
-FLUIDPCITER                     0
-FLUIDPCOMEGA                    1
 INFNORMSCALING                  Yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
@@ -113,12 +75,9 @@ RELAX                           1
 RESTARTEVRY                     1
 SECONDORDER                     No
 SHAPEDERIVATIVES                No
-STRUCTPCITER                    0
-STRUCTPCOMEGA                   1
 TIMESTEP                        2.5
 UPRES                           1
 SLIDEALEPROJ                    Ref
-------------------------------------------------------------INVERSE ANALYSIS
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       Yes
@@ -132,40 +91,23 @@ STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
-----------------------------------------------------------------LOMA CONTROL
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
--------------------------------------------------------STATISTICAL MECHANICS
--------------------------------------------------------------CONTACT DYNAMIC
 -------------------------------------------------------------MORTAR COUPLING
 PARALLEL_REDIST                 No
 SHAPEFCN                        Dual
 REDUNDANT_STORAGE               all
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
 NORM_DISP                       Mix
 NORM_RESF                       Mix
 NORMCOMBI_RESFDISP              And
-DAMPING                         No
 DYNAMICTYP                      GenAlpha
-K_DAMP                          0.5
 MAXITER                         50
-MAXTIME                         500
-M_DAMP                          0.5
 NLNSOL                          fullnewton
-NUMSTEP                         500
 PREDICT                         TangDis
-RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-TIMESTEP                        0.5
 TOLCONSTR                       1e-07
 TOLDISP                         1e-07
 TOLRES                          1e-07
@@ -173,34 +115,12 @@ UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-XI                              0
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
 GENAVG                          TrLike
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5
--------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
-ADAPTSTEPMAX                    0
-KIND                            None
-LOCERRNORM                      Vague
-LOCERRTOL                       0
-OUTENEPERIOD                    0
-OUTRESTPERIOD                   0
-OUTSIZEEVERY                    0
-OUTSTRPERIOD                    0
-OUTSYSPERIOD                    0
-SIZERATIOMAX                    0
-SIZERATIOMIN                    0
-SIZERATIOSCALE                  0.9
-STEPSIZEMAX                     0
-STEPSIZEMIN                     0
-----------------------------------------------------------------XFEM GENERAL
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 AZBDIAG                         0
