@@ -27,7 +27,7 @@ namespace STR
 
   /*====================================================================*/
   /*!
-   * \brief One-step-theta time integration (or Crank-Nicholson scheme or generalised trapezoidal rule)
+   * \brief One-step-theta time integration (or Crank-Nicolson scheme or generalised trapezoidal rule)
    *
    * <h3> Background </h3>
    * One-step theta time integration is a finite difference method for 1st order ordinary differential equations (ODE) of the type
@@ -132,7 +132,7 @@ namespace STR
 
   public:
 
-    //! verify if given coefficients are in admissable range;
+    //! verify if given coefficients are in admissible range;
     //! prints also info to STDOUT
     void VerifyCoeff();
 
@@ -206,13 +206,13 @@ namespace STR
     virtual const double GetNewmarkBeta() const
     { dserror("Cannot return Newmark-beta. This is not a Newmark-type time integrator!"); return -1.0; }
 
-    //! Linear error coefficent if 1st order accurate
+    //! Linear error coefficient if 1st order accurate
     double MethodLinErrCoeff1()
     {
       return 1./2. - theta_;
     }
 
-    //! Linear error coefficent if 2nd order accurate
+    //! Linear error coefficient if 2nd order accurate
     double MethodLinErrCoeff2()
     {
       return 1./6. - theta_/2.;  // this is -1/12
@@ -232,7 +232,7 @@ namespace STR
     //! \author mayr
     void PredictConstAcc();
 
-    //! Create force residual #fres_ and ist stiffness #stiff_
+    //! Create force residual #fres_ and its stiffness #stiff_
     void EvaluateForceStiffResidual(bool predict = false);
 
     //! Evaluate/define the residual force vector #fres_ for
@@ -342,9 +342,9 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> finert_;  //!< inertial force at \f$t_n\f$
-    Teuchos::RCP<Epetra_Vector> finertt_;  //!< inertial mid-force
-    Teuchos::RCP<Epetra_Vector> finertn_;  //!< inertial force at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> finert_;  //!< inertia force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> finertt_;  //!< inertia mid-force
+    Teuchos::RCP<Epetra_Vector> finertn_;  //!< inertia force at \f$t_{n+1}\f$
 
     Teuchos::RCP<Epetra_Vector> fvisct_;  //!< viscous force
 

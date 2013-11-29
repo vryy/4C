@@ -285,14 +285,14 @@ namespace STR
     //! Update configuration after time step
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
-    //! becomes impossible. We are ready and keen awating the next
+    //! becomes impossible. We are ready and keen awaiting the next
     //! time step.
     virtual void UpdateStepState() = 0;
 
     //! Update everything on element level after time step and after output
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
-    //! becomes impossible. We are ready and keen awating the next
+    //! becomes impossible. We are ready and keen awaiting the next
     //! time step.
     virtual void UpdateStepElement() = 0;
 
@@ -467,7 +467,7 @@ namespace STR
       Teuchos::RCP<LINALG::SparseOperator> damp = Teuchos::null  //!< material damping matrix
     );
 
-    //! Evaluate internal and inertial forces and their linearizations
+    //! Evaluate internal and inertia forces and their linearizations
     void ApplyForceStiffInternalAndInertial
     (
       const double time,  //!< evaluation time
@@ -515,11 +515,6 @@ namespace STR
       const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
       Teuchos::RCP<Epetra_Vector> fint  //!< internal force
     );
-
-    //@}
-
-    //! @name porous media specific methods
-    //@{
 
     //@}
 

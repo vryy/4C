@@ -43,12 +43,12 @@ namespace STR
   class TimIntGenAlpha : public TimIntImpl
   {
 
-    //! Zienkiewicz-Xie auxiliar scheme is friend
+    //! Zienkiewicz-Xie auxiliary scheme is friend
     friend class TimAdaZienXie;
 
   public:
 
-    //! verify if given coefficients are in admissable range;
+    //! verify if given coefficients are in admissible range;
     //! prints also info to STDOUT
     void VerifyCoeff();
 
@@ -305,9 +305,9 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> fextm_;  //!< external mid-force
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> finert_;  //!< inertial force at \f$t_n\f$
-    Teuchos::RCP<Epetra_Vector> finertm_;  //!< inertial mid-force
-    Teuchos::RCP<Epetra_Vector> finertn_;  //!< inertial force at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> finert_;  //!< inertia force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> finertm_;  //!< inertia mid-force
+    Teuchos::RCP<Epetra_Vector> finertn_;  //!< inertia force at \f$t_{n+1}\f$
 
     Teuchos::RCP<Epetra_Vector> fviscm_;  //!< viscous force
 

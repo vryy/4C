@@ -2,7 +2,7 @@
 /*!
 \file ad_str_timint_adaptive.H
 
-\brief Structural time integration field adapter
+\brief Structure field adapter for time step size adaptivity
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -53,7 +53,7 @@ namespace ADAPTER {
     /// @name Time step helpers
     //@{
 
-    /// Integrate from t1 to t2
+    /// Integrate from \f$t_1\f$ to \f$t_2\f$
     virtual int Integrate();
 
     /// prepare output (i.e. calculate stresses, strains, energies)

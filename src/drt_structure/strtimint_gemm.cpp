@@ -97,7 +97,7 @@ STR::TimIntGEMM::TimIntGEMM
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
 
-  // inertial mid-point force vector F_inert
+  // inertia mid-point force vector F_inert
   finertm_ = LINALG::CreateVector(*DofRowMapView(), true);
   // viscous mid-point force vector F_visc
   fviscm_ = LINALG::CreateVector(*DofRowMapView(), true);

@@ -74,7 +74,7 @@ namespace STR
     //! Update configuration after time step
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
-    //! becomes impossible. We are ready and keen awating the next time step.
+    //! becomes impossible. We are ready and keen awaiting the next time step.
     void UpdateStepState();
 
     //! Update Element
@@ -106,9 +106,6 @@ namespace STR
     {
       dserror("has not been checked yet!");
       return 1./2.;
-      //const double dt = (*dt_)[0];
-      //const double dto = (*dt_)[-1];
-      //return (2.*dt + 3.*dto)/(12.*dt);
     }
 
     //! Return linear error coefficient of velocities

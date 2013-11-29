@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimada_create.H
-\brief
+\brief Creation of auxiliary time integration scheme for time step size adaptivity
 
 <pre>
 Maintainer: Alexander Popp
@@ -38,7 +38,7 @@ namespace STR
   class TimAda;
 
   /*====================================================================*/
-  //! Create auxiliar time integrator convenience routine
+  //! Create auxiliary time integrator convenience routine
   //!
   //! \author bborn \date 07/08
   Teuchos::RCP<STR::TimAda> TimAdaCreate

@@ -62,6 +62,11 @@ namespace STR
   /*!
    * \brief Front-end for time step size adaptivity in structural dynamics
    *
+   * Time step size adaptivity is based on <e>a posteriori</e> error indicators/
+   * estimators. Therefore, the solution obtained with the marching time integrator
+   * is compared to one obtained with an auxiliary time integrator. Based on this
+   * estimation of the local truncation error, a new time step size is suggested.
+   *
    * \author bborn
    * \date 07/08
    */

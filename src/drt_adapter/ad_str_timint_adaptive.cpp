@@ -2,7 +2,7 @@
 /*!
 \file adapter_structure_timint.cpp
 
-\brief Structure field adapter
+\brief Structure field adapter for time step size adaptivity
 
 <pre>
 Maintainer: Burkhard Bornemann

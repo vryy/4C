@@ -26,7 +26,7 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*/
 void STR::TimIntOneStepTheta::VerifyCoeff()
 {
-  // beta
+  // check value of theta
   if ( (theta_ <= 0.0) or (theta_ > 1.0) )
     dserror("theta out of range (0.0,1.0]");
 

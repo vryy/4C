@@ -35,7 +35,7 @@ namespace STR
   class TimIntAB2 : public TimIntExpl
   {
 
-    //! A fristd::endly relation to adaptive partner
+    //! A friendly relation to adaptive partner
     friend class TimAdaAB2;
 
   public:
@@ -79,7 +79,7 @@ namespace STR
     //! Update configuration after time step
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
-    //! becomes impossible. We are ready and keen awating the next time step.
+    //! becomes impossible. We are ready and keen awaiting the next time step.
     void UpdateStepState();
 
     //! Update Element

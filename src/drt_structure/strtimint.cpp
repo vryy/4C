@@ -541,7 +541,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       }
     }
 
-    // set zero displacment state
+    // set zero displacement state
     cmtman_->GetStrategy().SetState("displacement",zeros_);
 
     // visualization of initial configuration
@@ -566,7 +566,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     // prepare solvers for contact/meshtying problem
     //**********************************************************************
     {
-      // only plausability check, that a contact solver is available
+      // only plausibility check, that a contact solver is available
       if (contactsolver_ == Teuchos::null)
         dserror("no contact solver in STR::TimInt::PrepareContactMeshtying? cannot be");
     }
@@ -2215,7 +2215,7 @@ void STR::TimInt::ApplyForceStiffInternal
 }
 
 /*----------------------------------------------------------------------*/
-/* evaluate inertial force and its linearization */
+/* evaluate inertia force and its linearization */
 void STR::TimInt::ApplyForceStiffInternalAndInertial
 (
   const double time,  //!< evaluation time
@@ -2227,7 +2227,7 @@ void STR::TimInt::ApplyForceStiffInternalAndInertial
   const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
   const Teuchos::RCP<Epetra_Vector> acc,  // acceleration state
   Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-  Teuchos::RCP<Epetra_Vector> finert,  //!< inertial force
+  Teuchos::RCP<Epetra_Vector> finert,  //!< inertia force
   Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
   Teuchos::RCP<LINALG::SparseOperator> mass  //!< mass matrix
 )
@@ -2282,7 +2282,7 @@ bool STR::TimInt::HaveNonlinearMass()
 }
 
 /*----------------------------------------------------------------------*/
-/* check wether the initial conditions are fulfilled */
+/* check whether the initial conditions are fulfilled */
 void STR::TimInt::NonlinearMassSanityCheck( Teuchos::RCP<Epetra_Vector> fext,
                                             Teuchos::RCP<Epetra_Vector> dis,
                                             const Teuchos::RCP<Epetra_Vector> vel,
@@ -2414,7 +2414,7 @@ int STR::TimInt::Integrate()
       // print info about finished time step
       PrintStep();
     }
-    else // something went wrong update errorcode according to chosen divcont action
+    else // something went wrong update error code according to chosen divcont action
     {
       nonlinsoldiv = PerformErrorAction(nonlinsoldiv);
     }
@@ -2464,7 +2464,7 @@ int STR::TimInt::PerformErrorAction(int nonlinsoldiv)
           IO::cout << "Nonlinear solver failed to converge divide timestep in half" << IO::endl;
           // halve the time step size
           (*dt_)[0]=(*dt_)[0]*0.5;
-          // update the number of max timesteps
+          // update the number of max time steps
           stepmax_= stepmax_ + (stepmax_-stepn_)*2+1;
           // reset timen_ because it is set in the constructor
           timen_ = (*time_)[0] + (*dt_)[0];;
@@ -2477,7 +2477,7 @@ int STR::TimInt::PerformErrorAction(int nonlinsoldiv)
            IO::cout << "Nonlinear solver failed to converge and DIVERCONT = repeat_simulation, hence leaving structural time integration " << IO::endl;
          else if (nonlinsoldiv==2)
            IO::cout << "Linear solver failed to converge and DIVERCONT = repeat_simulation, hence leaving structural time integration " << IO::endl;
-         return 1; // so that timeloop will be aborted
+         return 1; // so that time loop will be aborted
        }
        break;
        default:

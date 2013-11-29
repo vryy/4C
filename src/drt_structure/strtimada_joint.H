@@ -108,7 +108,7 @@ namespace STR
       ada_(ada_vague),
       sta_(Teuchos::null)
     {
-      // allocate auxiliar integrator
+      // allocate auxiliary integrator
       sta_ = Teuchos::rcp(new T(ioparams, sdynparams, xparams,
                                 sti->Discretization(),
                                 sti->Solver(),
@@ -237,7 +237,7 @@ namespace STR
     //! type of adaptivity algorithm
     enum AdaEnum ada_;
 
-    //! The auxiliar integrator
+    //! The auxiliary integrator
     Teuchos::RCP<T> sta_;
 
   };

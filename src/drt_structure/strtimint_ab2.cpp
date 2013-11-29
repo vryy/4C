@@ -80,7 +80,7 @@ STR::TimIntAB2::TimIntAB2
 /* Resizing of multi-step quantities */
 void STR::TimIntAB2::ResizeMStep()
 {
-  // resize time and stepsize fields
+  // resize time and step size fields
   time_->Resize(-1, 0, (*time_)[0]);
   dt_->Resize(-1, 0, (*dt_)[0]);
 
@@ -260,7 +260,7 @@ void STR::TimIntAB2::UpdateStepElement()
 /* read restart forces */
 void STR::TimIntAB2::ReadRestartForce()
 {
-  dserror("No restart ability Adams-Bashforth 2nd order time integrator!");
+  dserror("No restart ability for Adams-Bashforth 2nd order time integrator!");
   return;
 }
 

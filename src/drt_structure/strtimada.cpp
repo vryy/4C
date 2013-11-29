@@ -127,7 +127,6 @@ int STR::TimAda::Integrate()
   {
     // time step size adapting loop
     adaptstep_ = 0;
-    //double err = 2.0*errtol_;
     bool accepted = false;
     double stpsiznew;
     while ( (not accepted) and (adaptstep_ < adaptstepmax_) )

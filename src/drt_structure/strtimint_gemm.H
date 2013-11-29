@@ -39,7 +39,7 @@ namespace STR
   class TimIntGEMM : public TimIntImpl
   {
 
-    //! Zienkiewicz-Xie auxiliar scheme is friend
+    //! Zienkiewicz-Xie auxiliary scheme is friend
     friend class TimAdaZienXie;
 
   public:
@@ -294,7 +294,7 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> fextm_;  //!< external mid-force
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> finertm_;  //!< inertial force
+    Teuchos::RCP<Epetra_Vector> finertm_;  //!< inertia force
     Teuchos::RCP<Epetra_Vector> fviscm_;  //!< viscous force
 
     //@}

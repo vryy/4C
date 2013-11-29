@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimada_create.cpp
-\brief Structural time integration
+\brief Creation of auxiliary time integration scheme for time step size adaptivity
 
 <pre>
 Maintainer: Alexander Popp
@@ -30,7 +30,7 @@ Maintainer: Alexander Popp
 
 
 /*======================================================================*/
-/* create auxiliar time integration scheme */
+/* create auxiliary time integration scheme */
 Teuchos::RCP<STR::TimAda> STR::TimAdaCreate
 (
   const Teuchos::ParameterList& ioflags,
@@ -42,7 +42,7 @@ Teuchos::RCP<STR::TimAda> STR::TimAdaCreate
 {
   Teuchos::RCP<STR::TimAda> sta = Teuchos::null;
 
-  // auxiliar time integrator
+  // auxiliary time integrator
   switch (DRT::INPUT::IntegralValue<INPAR::STR::TimAdaKind>(tap,"KIND"))
   {
 
@@ -52,7 +52,7 @@ Teuchos::RCP<STR::TimAda> STR::TimAdaCreate
     break;
 
   case INPAR::STR::timada_kind_zienxie :
-    // Zienkiewivz-Xie error indicator for generalised-alpha
+    // Zienkiewicz-Xie error indicator for generalised-alpha
     sta = Teuchos::rcp(new STR::TimAdaZienXie(sdyn, tap, tis));
     break;
 
@@ -62,12 +62,12 @@ Teuchos::RCP<STR::TimAda> STR::TimAdaCreate
     break;
 
   default :
-    dserror("Auxiliar time integrator is not available.");
+    dserror("Auxiliary time integrator is not available.");
     break;
 
   }
 
-  // return the auxiliar integrator
+  // return the auxiliary integrator
   return sta;
 }
 
