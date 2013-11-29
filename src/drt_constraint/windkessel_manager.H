@@ -276,8 +276,7 @@ namespace UTILS
     (
       RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
       RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
-      const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
-      const RCP<Epetra_Vector> rhswindk     ///< Windkessel errors
+      const RCP<Epetra_Vector> rhsstandard  ///< standard right hand side
     );
 
 

@@ -1675,14 +1675,11 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
   }
   else if (windkman_->HaveWindkessel())
   {
-	  // allocate additional vectors and matrices
-	  Teuchos::RCP<Epetra_Vector> windkrhs
-		= Teuchos::rcp(new Epetra_Vector(*(windkman_->GetWindkesselRHS())));
 
 	  // check whether we have a sanely filled stiffness matrix
 	  if (not stiff_->Filled())
 	  {
-		dserror("Effective stiffness matrix must be filled here");
+	  	dserror("Effective stiffness matrix must be filled here");
 	  }
 
 	  // initialise equilibrium loop
@@ -1718,7 +1715,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 			STCPreconditioning();
 
 			// Call Windkessel solver to solve system
-			windkman_->Solve(SystemMatrix(),disi_,fres_,windkrhs);
+			windkman_->Solve(SystemMatrix(),disi_,fres_);
 
 			// *********** time measurement ***********
 			dtsolve_ = timer_->WallTime() - dtcpu;
@@ -1734,8 +1731,6 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 			// compute residual forces #fres_ and stiffness #stiff_
 			// which contain forces and stiffness of Windkessels
 			EvaluateForceStiffResidual();
-			// compute residual of Windkessel
-			windkrhs = Teuchos::rcp(new Epetra_Vector(*(windkman_->GetWindkesselRHS())));
 
 			// blank residual at (locally oriented) Dirichlet DOFs
 			// rotate to local co-ordinate systems

@@ -402,12 +402,9 @@ void UTILS::WindkesselManager::Solve
 (
   RCP<LINALG::SparseMatrix> stiff,
   RCP<Epetra_Vector> dispinc,
-  const RCP<Epetra_Vector> rhsstand,
-  const RCP<Epetra_Vector> rhswindk
+  const RCP<Epetra_Vector> rhsstand
 )
 {
-
-
 
   // create old style dirichtoggle vector (supposed to go away)
   dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
@@ -415,13 +412,11 @@ void UTILS::WindkesselManager::Solve
   temp->PutScalar(1.0);
   LINALG::Export(*temp,*dirichtoggle_);
 
-
   // allocate additional vectors and matrices
-  Teuchos::RCP<Epetra_Vector> windkrhs5
+  Teuchos::RCP<Epetra_Vector> rhswindk
 	= Teuchos::rcp(new Epetra_Vector(*(GetWindkesselRHS())));
   Teuchos::RCP<Epetra_Vector> presincr
 	= Teuchos::rcp(new Epetra_Vector(*(GetWindkesselMap())));
-
 	Teuchos::RCP<LINALG::SparseMatrix> windkstiff =
 		(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetWindkesselStiffness()));
 	Teuchos::RCP<LINALG::SparseMatrix> coupoffdiag_vol_d =
@@ -432,6 +427,7 @@ void UTILS::WindkesselManager::Solve
 	// prepare residual pressure
 	presincr->PutScalar(0.0);
 
+
 	// apply DBC to additional offdiagonal coupling matrices
 	coupoffdiag_vol_d->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
 	coupoffdiag_fext_p->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
@@ -440,7 +436,6 @@ void UTILS::WindkesselManager::Solve
   // define maps of standard dofs and additional pressures
   RCP<Epetra_Map> standrowmap = Teuchos::rcp(new Epetra_Map(stiff->RowMap()));
   RCP<Epetra_Map> windkrowmap = Teuchos::rcp(new Epetra_Map(windkstiff->RowMap()));
-  //RCP<Epetra_Map> windkrowmap = Teuchos::rcp(new Epetra_Map(coupoffdiag_fext_p->DomainMap()));
 
   // merge maps to one large map
   RCP<Epetra_Map> mergedmap = LINALG::MergeMap(standrowmap,windkrowmap,false);
@@ -462,11 +457,6 @@ void UTILS::WindkesselManager::Solve
   mergedmatrix -> Add(*coupoffdiag_fext_p,false,1.0,1.0);
   mergedmatrix -> Add(*windkstiff,false,1.0,1.0);
   mergedmatrix -> Complete(*mergedmap,*mergedmap);
-
-  //std::cout << "" << *coupoffdiag_vol_d << std::endl;
-  //std::cout << "" << *coupoffdiag_fext_p << std::endl;
-  //std::cout << "" << *windkstiff << std::endl;
-  //std::cout << "" << *rhswindk << std::endl;
 
   // fill merged vectors using Export
   LINALG::Export(*rhswindk,*mergedrhs);
@@ -492,8 +482,7 @@ void UTILS::WindkesselManager::Solve
 
   counter_++;
 
-
-	// update pressure
+	// update Windkessel pressure
 	UpdatePres(presincr);
 
   return;
