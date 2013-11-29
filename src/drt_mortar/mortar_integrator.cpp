@@ -65,31 +65,51 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
 {
   //**********************************************************************
   // Create integration points according to eletype!
-  // Note that our standard Gauss rules are:
-  // 5 points: for integrals on 1D lines            (1,2,3,4,5,6,7,8,9,10)
-  //           -> degree of precision: 9
-  // 7 points: for integrals on 2D triangles        (1,3,6,7,12,37,64)
-  //           -> degree of precision: 5
-  // 9 points: for integrals on 2D quadrilaterals   (1,4,9,16,25,36,49,64)
-  //           -> degree of precision: 5
+  //
+  // For segment-based integration, we have pre-defined default
+  // values for the Gauss rules according to the segment type.
+  //
+  // default for integrals on 1D lines:
+  // --> 5 GP (degree of precision: 9)
+  //
+  // default for integrals on 2D triangles:
+  // --> 7 GP (degree of precision: 5)
+  //
+  // default for integrals on 2D quadrilaterals:
+  // --> 9 GP (degree of precision: 5)
+  //
+  // For element-based integration, we choose the Gauss rules according
+  // to the user's wish (i.e. according to the parameter NUMGP_PER_DIM).
+  //
+  // possibilites for integrals on 1D lines:
+  // --> 1,2,3,4,5,6,7,8,9,10,16,20,32 GPs
+  //
+  // possibilities for integrals on 2D triangles:
+  // --> 1,3,6,7,12,37,64 GPs
+  //
+  // possibilities for integrals on 2D quadrilaterals
+  // --> 1,4,9,16,25,36,49,64,81,100,256,400,1024 GPs
   //**********************************************************************
 
-  // get input
+  // get numgp (for element-based integration)
   int numgp = imortar_.get<int>("NUMGP_PER_DIM");
 
-  INPAR::MORTAR::IntType integrationtype =
-    DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE");
+  // get integration type
+  INPAR::MORTAR::IntType integrationtype = DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE");
 
+  //**********************************************************************
+  // choose Gauss rule according to (a) element type (b) input parameter
+  //**********************************************************************
   switch(eletype)
   {
   case DRT::Element::line2:
   case DRT::Element::line3:
   {
-    // set default value for Gauss rule first
+    // set default value for segment-based version first
     dim_=2;
     DRT::UTILS::GaussRule1D mygaussrule = DRT::UTILS::intrule_line_5point;
 
-    // GP switch if non-zero value provided by user
+    // GP switch if element-based version and non-zero value provided by user
     if(integrationtype==INPAR::MORTAR::inttype_elements ||integrationtype==INPAR::MORTAR::inttype_elements_BS)
     {
       if (numgp>0)
@@ -98,7 +118,7 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
         {
           case 1:
           {
-            mygaussrule = DRT::UTILS::intrule_line_1point;
+            dserror("Our experience says that 1 GP per slave element is not enough.");
             break;
           }
           case 2:
@@ -185,12 +205,12 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
   case DRT::Element::tri3:
   case DRT::Element::tri6:
   {
-    // set default value for Gauss rule first
+    // set default value for segment-based version first
     dim_=3;
     DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_tri_7point;
 
-    // GP switch if non-zero value provided by user
-    if(integrationtype==INPAR::MORTAR::inttype_elements)// ||integrationtype==INPAR::MORTAR::inttype_elements_BS)
+    // GP switch if element-based version and non-zero value provided by user
+    if(integrationtype==INPAR::MORTAR::inttype_elements || integrationtype==INPAR::MORTAR::inttype_elements_BS)
     {
       if (numgp>0)
       {
@@ -198,7 +218,7 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
         {
           case 1:
           {
-            mygaussrule = DRT::UTILS::intrule_tri_1point;
+            dserror("Our experience says that 1 GP per slave element is not enough.");
             break;
           }
           case 2:
@@ -276,17 +296,22 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
   case DRT::Element::quad8:
   case DRT::Element::quad9:
   {
-    // set default value for Gauss rule first
+    // set default value for segment-based version first
     dim_=3;
     DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_quad_9point;
 
-    // GP switch if non-zero value provided by user
+    // GP switch if element-based version and non-zero value provided by user
     if(integrationtype==INPAR::MORTAR::inttype_elements ||integrationtype==INPAR::MORTAR::inttype_elements_BS)
     {
       if (numgp>0)
       {
         switch(numgp)
         {
+          case 1:
+          {
+            dserror("Our experience says that 1 GP per slave element is not enough.");
+            break;
+          }
           case 2:
           {
             mygaussrule = DRT::UTILS::intrule_quad_4point;

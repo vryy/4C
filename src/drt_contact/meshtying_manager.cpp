@@ -399,9 +399,6 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
                                                    mortar.get<int>("MIN_ELEPROC") <  0)
     dserror("Minimum number of elements per processor for parallel redistribution must be >= 0");
 
-  if (mortar.get<int>("NUMGP_PER_DIM") > 0 && mortar.get<int>("NUMGP_PER_DIM")!=3 && DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
-    dserror("ERROR: Change of Gauss point number only allowed for FastIntegration!");
-
   if(DRT::INPUT::IntegralValue<int>(mortar,"LM_DUAL_CONSISTENT")==true &&
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") != INPAR::CONTACT::solution_lagmult&&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") != INPAR::MORTAR::shape_standard)
@@ -456,46 +453,29 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 #endif // #ifndef MORTARTRAFO
 
   // *********************************************************************
+  // element-based vs. segment-based mortar integration
+  // *********************************************************************
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments &&
+                                         mortar.get<int>("NUMGP_PER_DIM") != 0)
+    dserror("It is not possible to choose a Gauss rule with NUMGP_PER_DIM for segment-based integration."
+            "\nSegment-based integration always uses pre-defined default values (5 GP per segment in 2D "
+            "\nand 7 GP per triangular cell in 3D). Ask a 'contact person' if you want to change this.");
+
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_elements &&
+                                         mortar.get<int>("NUMGP_PER_DIM") <= 0)
+    dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
+
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_elements_BS &&
+                                         mortar.get<int>("NUMGP_PER_DIM") <= 0)
+    dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration with boundary segmentation."
+            "\nPlease note that the value you have to provide only applies to the element-based integration"
+            "\ndomain, while pre-defined default values will be used in the segment-based boundary domain.");
+
+  // *********************************************************************
   // warnings
   // *********************************************************************
   if (mortar.get<double>("SEARCH_PARAM") == 0.0 && Comm().MyPID()==0)
     std::cout << ("Warning: Meshtying search called without inflation of bounding volumes\n") << std::endl;
-
-  // *********************************************************************
-  // warnings concerning integration method
-  // *********************************************************************
-  if (dim==2)
-  {
-    if (mortar.get<int>("NUMGP_PER_DIM") <= 0 && Comm().MyPID()==0)
-    {
-      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
-      {
-        std::cout << "\n Warning: No or no valid Gauss point number for 2D segment-based mortar integration provided.\n"
-                  << "         Using default value of 5 Gauss points per integration segment.\n" << std::endl;
-      }
-      else
-      {
-        std::cout << "\n Warning: No or no valid Gauss point number for 2D fast mortar integration provided.\n"
-                  << "         Using default value of 5 Gauss points per slave element.\n" << std::endl;
-      }
-    }
-  }
-  else if (dim==3)
-  {
-    if (mortar.get<int>("NUMGP_PER_DIM") <= 0 && Comm().MyPID()==0)
-    {
-      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
-      {
-        std::cout << "\n Warning: No or no valid Gauss point number for 3D segment-based mortar integration provided.\n"
-                  << "           Using default value of 7 Gauss points per triangular integration cell.\n" << std::endl;
-      }
-      else
-      {
-        std::cout << "\n Warning: No or no valid Gauss point number for 3D fast mortar integration provided.\n"
-                  << "           Using default value of 7/9 Gauss points per triangular/quadrilateral slave element.\n" << std::endl;
-      }
-    }
-  }
   
   // store content of BOTH ParameterLists in local parameter list
   mtparams.setParameters(mortar);
