@@ -638,11 +638,6 @@ WRITE_TO_SCREEN                 Yes
 ----------------------------------------------------------------LOMA CONTROL
 --------------------------------------------------------------------MESHFREE
 -------------------------------------------------------------MORTAR COUPLING
-//
-// If chosen auxiliary planes are used for 3D coupling
-//                              Yes,No,yes,no,YES,NO
-COUPLING_AUXPLANE               Yes
-//
 // If chosen, multipliers are removed from crosspoints / edge nodes
 //                              Yes,No,yes,no,YES,NO
 CROSSPOINTS                     No
