@@ -205,7 +205,7 @@ using all available \baci{} validation and is therefore likely to run.
 Sure, you usually don not have already a proper \head and matching \bc. By
 typing
 \begin{center}
-  \verb|pre_exodus --exo=yourmesh.exo|
+  \verb|./pre_exodus --exo=yourmesh.e|
 \end{center}
 you get two preliminary files
 'default.head' and 'default.bc'. The first contains the currently valid header
@@ -343,7 +343,7 @@ For Dirichlet conditions the first entry specifies the global degree of freedom 
 Safe the file under a different name, e.g. 'dc\_struct.bc'.
 
 \subsection{Creating \baci{} Input File and Running the Simulation}
-Run in a shell \verb|pre_exodus --exo=dc.exo --head=dc_struct.head --bc=dc_struct.bc --dat=dc_struct.dat| where the filenames might have to be replaced accordingly. This will result in the specified dat-file which is already validated to be accepted by \baci{}. However, if the file is meaningful cannot be assured.
+Run in a shell \verb|./pre_exodus --exo=dc.e --head=dc_struct.head --bc=dc_struct.bc --dat=dc_struct.dat| where the filenames might have to be replaced accordingly. This will result in the specified dat-file which is already validated to be accepted by \baci{}. However, if the file is meaningful cannot be assured.
 
 Run the simulation by providing this dat-file and an output file to \baci{} and postprocess the results (refer to \ref{tut_fsi_preexo:baci} and \ref{tut_fsi_preexo:postprocess}).
 
@@ -376,13 +376,13 @@ Find the following sections in 'default.head' and edit as given:
 
   insert \verb|MAT 1 MAT_fluid  DYNVISCOSITY 0.01 DENSITY 1.0|
 
-  \item \verb|CURVE1|
+  \item \verb|CURVE 1|
 
-  insert \verb|CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 5.0| defining time-dependent inflow and lid movement
+  insert \verb|CURVE 1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 5.0| defining time-dependent inflow and lid movement
  
-   \item \verb|FUNCT1|
+   \item \verb|FUNCT 1|
 
-  insert \verb|FUNCT1 EXPR 0 0 0 FUNCTION 10*(y-1)| representing the spatial inflow distribution
+  insert \verb|FUNCT 1 EXPR 0 0 0 FUNCTION 10*(y-1)| representing the spatial inflow distribution
 
 \end{itemize}
 Safe the file under a different name, e.g. 'dc\_fluid.head'.
@@ -553,7 +553,7 @@ Fluid Dirichlet conditions differ from structure Dirichlet conditions only in th
 Safe the file under a different name, e.g. 'dc\_fluid.bc'.
 
 \subsection{Creating \baci{} Input File and Running the Simulation}
-Run in a shell \verb|pre_exodus --exo=dc.exo --head=dc_fluid.head --bc=dc_fluid.bc --dat=dc_fluid.dat| where the filenames might have to be replaced accordingly. This will result in the specified dat-file which is already validated to be accepted by \baci{}. However, if the file is meaningful cannot be assured.
+Run in a shell \verb|./pre_exodus --exo=dc.e --head=dc_fluid.head --bc=dc_fluid.bc --dat=dc_fluid.dat| where the filenames might have to be replaced accordingly. This will result in the specified dat-file which is already validated to be accepted by \baci{}. However, if the file is meaningful cannot be assured.
 
 Run the simulation by providing this dat-file and an output file to \baci{} and postprocess the results (refer to \ref{tut_fsi_preexo:baci} and \ref{tut_fsi_preexo:postprocess}).
 
@@ -596,13 +596,13 @@ Find the following sections in 'default.head' and edit as given:
 
   insert \verb|SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3|
 
-  \item \verb|CURVE1|
+  \item \verb|CURVE 1|
 
-  insert \verb|CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 5.0| defining time-dependent inflow and lid movement
+  insert \verb|CURVE 1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 5.0| defining time-dependent inflow and lid movement
  
-  \item \verb|FUNCT1|
+  \item \verb|FUNCT 1|
 
-  insert \verb|FUNCT1 EXPR 0 0 0 FUNCTION 10*(y-1)| representing the spatial inflow distribution
+  insert \verb|FUNCT 1 EXPR 0 0 0 FUNCTION 10*(y-1)| representing the spatial inflow distribution
 
  \item \verb|SOLVER 1|
  
@@ -790,8 +790,8 @@ As any of these conditions matches an already defined NodeSet it will also match
 Finally save the file under a different name, e.g. 'dc\_fsi.bc'.
 
 \subsection{Creating \baci{} Input File and Running the Simulation}
-Run in a shell \verb|pre_exodus --exo=dc.exo --head=dc_fsi.head --bc=dc_fsi.bc --dat=dc_fsi.dat| where the filenames might have to be replaced accordingly. This will result in the specified dat-file which is already validated to be accepted by \baci{}. However, if the file is meaningful cannot be assured. Hint: When you have an already existing input file, you can always validate it by simply executing
-\verb|pre_exodus --dat=inputfile.dat|, before(!) you start a parallel \baci{} computation on a cluster, for example. \newline 
+Run in a shell \verb|./pre_exodus --exo=dc.e --head=dc_fsi.head --bc=dc_fsi.bc --dat=dc_fsi.dat| where the filenames might have to be replaced accordingly. This will result in the specified dat-file which is already validated to be accepted by \baci{}. However, if the file is meaningful cannot be assured. Hint: When you have an already existing input file, you can always validate it by simply executing
+\verb|./pre_exodus --dat=inputfile.dat|, before(!) you start a parallel \baci{} computation on a cluster, for example. \newline 
 
 Run the simulation by providing the created dat-file and an output file to \baci{} and postprocess the results (refer to \ref{tut_fsi_preexo:baci} and \ref{tut_fsi_preexo:postprocess}).
 
@@ -803,7 +803,7 @@ You can postprocess your results with any vizualization software you like. In th
 Before you can open the results, you have to generate a filter again. Call \emph{make post\_drt\_ensight} in the \baci{}-directory.
 Filter your results in the output directory with the call 
 \begin{center}
-	\verb|post_drt_ensight --file=outputprefix|
+	\verb|./post_drt_ensight --file=[outputdirectory]/outputprefix|
 \end{center}
 After this open \emph{paraview}, go to
 

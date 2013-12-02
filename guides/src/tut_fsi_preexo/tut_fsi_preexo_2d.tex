@@ -69,7 +69,7 @@ using all available \baci{} validation and is therefore likely to run.
 Sure, you usually do not have already a proper \head and matching \bc. By
 typing
 \begin{center}
-  \verb|./pre_exodus --exo=yourmesh.exo|
+  \verb|./pre_exodus --exo=yourmesh.e|
 \end{center}
 you get two preliminary files
 'default.head' and 'default.bc'. The first contains the currently valid header
@@ -106,7 +106,7 @@ Find the following sections in 'default.head' and edit as given:
 
  \verb|CONVTOL              1e-08|
  
- \verb|GRIDVEL              2|
+ \verb|GRIDVEL              BDF2|
  
  \verb|ITEMAX               50|
  
@@ -169,14 +169,14 @@ Find the following sections in 'default.head' and edit as given:
  insert \verb|SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 4| to specify the
  ALE material that is used for the fluid field 
 
- \item \verb|CURVE1|
+ \item \verb|CURVE 1|
 
- insert \verb|CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 200.0| defining
+ insert \verb|CURVE 1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 200.0| defining
 time-dependent inflow and lid movement
  
-  \item \verb|FUNCT1|
+  \item \verb|FUNCT 1|
 
- insert \verb|FUNCT1 EXPR 0 0 0 FUNCTION 10*(y-1)| representing the spatial
+ insert \verb|FUNCT 1 EXPR 0 0 0 FUNCTION 10*(y-1)| representing the spatial
  inflow distribution
 
 \end{itemize}
@@ -320,10 +320,10 @@ the corresponding 'E-id' in the later \baci{} input file.
 Finally save the file under a different name, e.g. 'dc2d\_fsi.bc'.
 
 \subsection{Creating \baci{} Input File and Running the Simulation}
-Run in a shell \begin{verbatim} ./pre_exodus --exo=dc2d.exo --head=dc2d_fsi.head
---bc=dc2d_fsi.bc --dat=dc_fsi.dat\end{verbatim} where the filenames might have
+Run in a shell \begin{verbatim} ./pre_exodus --exo=dc2d.e --head=dc2d_fsi.head
+--bc=dc2d_fsi.bc --dat=dc2d_fsi.dat\end{verbatim} where the filenames might have
 to be replaced accordingly. This will result in the specified dat-file which is already validated to be accepted by \baci{}. However, if the file is meaningful cannot be assured. Hint: When you have an already existing input file, you can
-always validate it by simply executing \verb|pre_exodus --dat=inputfile.dat|,
+always validate it by simply executing \verb|./pre_exodus --dat=inputfile.dat|,
 before(!) you start a parallel \baci{} computation on a cluster, for example. \newline
 
 Run the simulation by providing the created dat-file and an output file to
@@ -337,7 +337,7 @@ You can postprocess your results with any vizualization software you like. In th
 Before you can open the results, you have to generate a filter again. Call \emph{make post\_drt\_ensight} in the \baci{}-directory.
 Filter your results in the output directory with the call 
 \begin{center}
-	\verb|./post_drt_ensight --file=outputprefix|
+	\verb|./post_drt_ensight --file=[outputdirectory]/outputprefix|
 \end{center}
 After this open \emph{paraview}, go to
 
