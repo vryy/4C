@@ -67,8 +67,6 @@ ALPHA_F                         0.4737
 ALPHA_M                         0.4211
 BETA                            0.2770
 GAMMA                           0.5526
--------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
-KIND                            None
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

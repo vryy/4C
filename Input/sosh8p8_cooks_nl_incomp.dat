@@ -69,8 +69,6 @@ NORMCOMBI_RESFINCO              And
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
--------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
-KIND                            None
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

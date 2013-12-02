@@ -25,14 +25,6 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-----------------------------------------------------------STRUCTURAL DYNAMIC
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
--------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
--------------------------------------------------------------CONTACT DYNAMIC
--------------------------------------------------------STATISTICAL MECHANICS
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 PHYSICAL_TYPE                   Loma

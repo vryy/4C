@@ -29,6 +29,7 @@ FILESTEPS                       1000
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
+LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
 STRUCT_DISP                     Yes
@@ -41,11 +42,11 @@ RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
-TOLRES                          1.0E-6
+TOLRES                          1.0E-5
 TOLDISP                         1.0E-6
 NORM_RESF                       Abs
 NORM_DISP                       Abs
-NORMCOMBI_RESFDISP              Or
+NORMCOMBI_RESFDISP              And
 DAMPING                         No
 K_DAMP                          0.5
 M_DAMP                          0.5
@@ -92,12 +93,12 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 4.0E-03 10000000 FACTOR 0 0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 96 QUANTITY dispx VALUE -5.65470409773304525e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 96 QUANTITY dispy VALUE -5.36754920270616914e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 96 QUANTITY dispz VALUE 1.46092254762260204e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 96 QUANTITY velx VALUE 3.93122852804741019e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 96 QUANTITY vely VALUE -8.04855186206322770e+00 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 96 QUANTITY velz VALUE 7.48460475546896564e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 96 QUANTITY dispx VALUE -5.65470248374375511e-02 TOLERANCE 1e-11
+STRUCTURE DIS structure NODE 96 QUANTITY dispy VALUE -5.36754924711021209e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 96 QUANTITY dispz VALUE 1.46092260185290923e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 96 QUANTITY velx VALUE 3.93134631720902461e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 96 QUANTITY vely VALUE -8.04853305579940326e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 96 QUANTITY velz VALUE 7.48464438768948259e+00 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          6

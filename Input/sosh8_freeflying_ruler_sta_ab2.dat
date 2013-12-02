@@ -1,8 +1,8 @@
 //
-// Maintainer: Burkhard Bornemann
-// bornemann@lnm.mw.tum.de
+// Maintainer: Alexander Popp
+// popp@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15237
+// 089 - 289-15238
 //
 // necessary defines: D_SOLID3 BINIO
 //
@@ -10,9 +10,9 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Free flying ruler with sosh8 with rho=0.9 (damping!)
-just 10 time steps, for the full simulation give it 2000
-here with 'new' structural time integration (STI)
+Free flying ruler with sosh8 with rho=0.9 (damping!),
+with time step size adaptivity (Zienkiewicz Xie indicator)
+and 'new' structural time integration (STI)
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        30
 NODES                           96
@@ -29,6 +29,7 @@ FILESTEPS                       1000
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
+LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
 STRUCT_DISP                     Yes
@@ -40,34 +41,44 @@ PROBLEMTYP                      Structure
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-NORM_DISP                       Abs
-NORM_RESF                       Abs
-NORMCOMBI_RESFDISP              Or
-DAMPING                         No
 DYNAMICTYP                      GenAlpha
+TOLRES                          1.0E-5
+TOLDISP                         1.0E-6
+NORM_RESF                       Abs
+NORM_DISP                       Abs
+NORMCOMBI_RESFDISP              And
+DAMPING                         No
 K_DAMP                          0.5
-MAXITER                         50
-MAXTIME                         100E3
 M_DAMP                          0.5
+MAXITER                         50
+MAXTIME                         0.01
 NLNSOL                          fullnewton
-//NUMSTEP                       2000
-NUMSTEP                         10
-PREDICT                         ConstAcc
+NUMSTEP                         200
+PREDICT                         ConstDisVelAcc
 RESULTSEVRY                     1
 RESTARTEVRY                     100
-TIMESTEP                        50E-6
-TOLCONSTR                       1e-6
-TOLDISP                         1e-6
-TOLRES                          1e-6
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
+TIMESTEP                        5e-5                          // starting time step (will be adapted)
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 ALPHA_F                         0.4737
 ALPHA_M                         0.4211
 GAMMA                           0.5526
 BETA                            0.2770
+-------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
+KIND                            AdamsBashforth2
+OUTENEPERIOD                    0.001
+OUTRESTPERIOD                   0.001
+OUTSTRPERIOD                    0.001
+OUTSYSPERIOD                    0.001
+OUTSIZEEVERY                    1
+STEPSIZEMAX                     1e-3
+STEPSIZEMIN                     1e-6
+SIZERATIOMAX                    4
+SIZERATIOMIN                    0.25
+SIZERATIOSCALE                  0.9
+LOCERRNORM                      L2
+LOCERRTOL                       1.0e-3
+ADAPTSTEPMAX                    3
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -82,12 +93,12 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 4.0E-03 10000000 FACTOR 0 0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 96 QUANTITY dispx VALUE 2.713739389995984799e-05 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 96 QUANTITY dispy VALUE -8.094579320657895656e-05 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 96 QUANTITY dispz VALUE 1.754900368430749660e-03 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 96 QUANTITY velx VALUE 5.635155486283095067e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 96 QUANTITY vely VALUE -4.887548400486223521e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 96 QUANTITY velz VALUE 9.317036728395404310e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 96 QUANTITY dispx VALUE -5.56427152821582088e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 96 QUANTITY dispy VALUE -5.56671747749095946e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 96 QUANTITY dispz VALUE 1.44027253588993709e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 96 QUANTITY velx VALUE 4.63366062059825168e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 96 QUANTITY vely VALUE -4.61250244492065598e+00 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 96 QUANTITY velz VALUE 8.63432942349615296e+00 TOLERANCE 1e-9
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          6

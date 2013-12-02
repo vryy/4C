@@ -66,8 +66,6 @@ TOLRES                          1.0e-6
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
--------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
-KIND                            None
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

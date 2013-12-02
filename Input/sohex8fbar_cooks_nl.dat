@@ -58,8 +58,6 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              Or
 MAXITER                         20
--------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
-KIND                            None
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
