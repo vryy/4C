@@ -80,9 +80,6 @@ GALVANOSTATIC                   Yes
 GSTATCONVTOL                    1e-6
 GSTATCURVENO                    4
 GSTATITEMAX                     20
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

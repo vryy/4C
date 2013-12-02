@@ -75,8 +75,6 @@ EOS_CONV_CROSS                  none // none, std_eos, xfem_gp
 EOS_DIV                         div_jump_std_eos // none, vel_jump_std_eos, vel_jump_xfem_gp,
 EOS_DEFINITION_TAU              Burman_Fernandez_Hansbo
 EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf // EOS_he_vol_eq_diameter
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER UMFPACK //Aztec_MSR // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

@@ -76,9 +76,6 @@ WEARCOEFF                       0.0003
 WEAR_COUPALGO                   stagg
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

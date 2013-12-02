@@ -59,8 +59,6 @@ VSTAB                           vstab_usfem
 GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR

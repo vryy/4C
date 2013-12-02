@@ -17,22 +17,11 @@ NODES                           162
 DIM                             3
 MATERIALS                       4
 NUMDF                           6
------------------------------------------------------------------ALE DYNAMIC
-------------------------------------------------------------ARTERIAL DYNAMIC
-----------------------------------------------------------COMBUSTION CONTROL
------------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
-----------------------------------------------------------------ELCH CONTROL
----------------------------------------------------------------FLUID DYNAMIC
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
------------------------------------------------------------------FSI DYNAMIC
-------------------------------------------------------------INVERSE ANALYSIS
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       Yes
@@ -46,27 +35,10 @@ STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
-----------------------------------------------------------------LOMA CONTROL
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
--------------------------------------------------------STATISTICAL MECHANICS
-------------------------------------------------------------------STRUCT NOX
---------------------------------------------------------STRUCT NOX/Direction
--------------------------------------------------STRUCT NOX/Direction/Newton
----------------------------------------STRUCT NOX/Direction/Steepest Descent
-------------------------------------------------------STRUCT NOX/Line Search
---------------------------------------------STRUCT NOX/Line Search/Backtrack
---------------------------------------------STRUCT NOX/Line Search/Full Step
-----------------------------------------STRUCT NOX/Line Search/More'-Thuente
--------------------------------------------STRUCT NOX/Line Search/Polynomial
----------------------------------------------------------STRUCT NOX/Printing
------------------------------------------------------STRUCT NOX/Trust Region
--------------------------------------------------------------CONTACT DYNAMIC
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
@@ -103,11 +75,6 @@ UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
--------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
-----------------------------------------------------------------XFEM GENERAL
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

@@ -70,9 +70,6 @@ VSTAB                           no_vstab                      // no_vstab vstab_
 GRAD_DIV                        yes                           // no yes cstab_td
 CROSS-STRESS                    no_cross                      // no_cross cross_complete cross_rhs
 REYNOLDS-STRESS                 no_reynolds                   // no_reynolds reynolds_rhs
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

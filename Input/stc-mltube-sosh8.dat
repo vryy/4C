@@ -6,23 +6,11 @@ NODES                           312
 DIM                             3
 MATERIALS                       2
 NUMDF                           6
------------------------------------------------------------------ALE DYNAMIC
-------------------------------------------------------------ARTERIAL DYNAMIC
-----------------------------------------------------------COMBUSTION CONTROL
------------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
-----------------------------------------------------------------ELCH CONTROL
----------------------------------------------------------------FLUID DYNAMIC
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
------------------------------------------------------------------FSI DYNAMIC
--------------------------------------------------------INTERACTION POTENTIAL
-------------------------------------------------------------INVERSE ANALYSIS
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       Yes
@@ -37,26 +25,10 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
-----------------------------------------------------------------LOMA CONTROL
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
--------------------------------------------------------STATISTICAL MECHANICS
-------------------------------------------------------------------STRUCT NOX
---------------------------------------------------------STRUCT NOX/Direction
--------------------------------------------------STRUCT NOX/Direction/Newton
----------------------------------------STRUCT NOX/Direction/Steepest Descent
-------------------------------------------------------STRUCT NOX/Line Search
---------------------------------------------STRUCT NOX/Line Search/Backtrack
---------------------------------------------STRUCT NOX/Line Search/Full Step
-----------------------------------------STRUCT NOX/Line Search/More'-Thuente
--------------------------------------------STRUCT NOX/Line Search/Polynomial
----------------------------------------------------------STRUCT NOX/Printing
------------------------------------------------------STRUCT NOX/Trust Region
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       No

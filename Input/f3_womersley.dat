@@ -81,34 +81,6 @@ SIMPLER                         no
 THETA                           0.66                          // Time integration factor
 TIMEINTEGR                      One_Step_Theta                // One_Step_Theta BDF2
 NONLINEARBC                     yes
------------------------------------------------------------------FSI DYNAMIC
-BASETOL                         1.0e-05
-CONVTOL                         1.0e-04
-COUPALGO                        iter_monolithicstructuresplit //iter_monolithicstructuresplit iter_stagg_AITKEN_rel_param 
-SHAPEDERIVATIVES                yes                           // Supported in monolithic FSI for now.
-COUPMETHOD                      conforming                    // MTR,Mtr,mtr,conforming
-COUPVARIABLE                    Displacement                  // Displacement,Force
-LINEARBLOCKSOLVER               FSIAMG                        // FSIAMG PreconditionedKrylov
-FLUIDPCITER                     2 1 1                         // Number of Richardson iterations on fluid block in MFSI block preconditioner
-FLUIDPCOMEGA                    0.79 1.0 1.0                  // Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner
-STRUCTPCITER                    2 1 1                         // Number of Richardson iterations on structural block in MFSI block preconditioner
-STRUCTPCOMEGA                   0.89 1.0 1.0                  // Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner
-ALEPCITER                       2 1 1                         // Number of Richardson iterations on ale block in MFSI block preconditioner
-ALEPCOMEGA                      0.85 1.0 1.0                  // Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner
-PCITER                          1 2 2                         // Number of Richardson iterations on whole MFSI block preconditioner
-PCOMEGA                         0.85 1.0 1.0                  // Relaxation factor for Richardson iteration on whole MFSI block preconditioner
-SYMMETRICPRECOND                no                            // SGS on monlithic
-ITEMAX                          30                            // Maximum number of iterations over fields
-MAXOMEGA                        0.6                           // largest omega allowed for Aitken relaxation (0.0 means no constraint)
-MAXTIME                         0.5                           // 5.25
-TIMESTEP                        0.001
-NUMSTEP                         2000000000
-RESTARTEVRY                     5                             // 1
-UPRES                           5                             // 1
-PRECONDREUSE                    0                             // Number of preconditioner reused in monolithic FSI
-PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
-SECONDORDER                     yes                           // Second order coupling at the interface Yes,No,yes,no,YES,NO
-INFNORMSCALING                  yes
 -----------------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        classic_lin                   // classic_lin,incr_lin,springs
 RESULTSEVRY                     1

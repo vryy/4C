@@ -119,9 +119,6 @@ DUMPING_PERIOD                  0
 ---------------------------------------------FLUID DYNAMIC/SUBGRID VISCOSITY
 C_SMAGORINSKY                   0.17
 CHANNEL_L_TAU                   0.0
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

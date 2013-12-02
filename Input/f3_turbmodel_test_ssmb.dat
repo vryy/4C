@@ -74,8 +74,6 @@ TURBULENCE_APPROACH             CLASSICAL_LES
 -----------------------------------FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES
 C_SCALE_SIMILARITY              0.45
 SCALE_SEPARATION                box_filter
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

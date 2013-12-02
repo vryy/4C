@@ -53,11 +53,6 @@ NORMCOMBI_RESFDISP              Or
 TOLRES                          1.0E-08
 TOLDISP                         1.0E-08
 MAXITER                         50
--------------------------------------------------------------CONTACT DYNAMIC
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym             // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

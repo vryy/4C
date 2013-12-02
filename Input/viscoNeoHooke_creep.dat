@@ -18,16 +18,11 @@ NODES                           125
 DIM                             3
 MATERIALS                       2
 NUMDF                           6
------------------------------------------------------------------ALE DYNAMIC
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
----------------------------------------------------------------FLUID DYNAMIC
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
------------------------------------------------------------------FSI DYNAMIC
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       No
@@ -44,7 +39,6 @@ THERM_TEMPERATURE               No
 PROBLEMTYP                      Structure
 RESTART                         0
 //!RESTART                      60
--------------------------------------------------------------CONTACT DYNAMIC
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha

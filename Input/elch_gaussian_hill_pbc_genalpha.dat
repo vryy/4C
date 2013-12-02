@@ -91,9 +91,6 @@ RESTARTEVRY                     2
 NUMSTEP                         10                              // shorter run for nightly test case! //100
 MAXTIME 1.0 //hill reaches point of departure (x0=2/15) for 100 steps
 TIMESTEP                        0.01                            // Cr = 1.5
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

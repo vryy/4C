@@ -104,9 +104,6 @@ RESTARTEVRY                     1000
 TIMESTEP                        0.1
 UPRES                           1
 TEMPERATURE                     298.15 //11604.506            // abused as a scaling factor in order to have: F/RT = 1.0
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK //Aztec_MSR           // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

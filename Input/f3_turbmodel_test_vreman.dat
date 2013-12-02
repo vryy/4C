@@ -69,8 +69,6 @@ PHYSICAL_MODEL                  Dynamic_Vreman
 TURBULENCE_APPROACH             CLASSICAL_LES
 ----------------------------------------------FLUID DYNAMIC/SUBGRID VISCOSITY
 FILTER_WIDTH                    CubeRootVol
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK //Aztec_MSR           // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

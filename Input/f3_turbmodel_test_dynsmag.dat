@@ -67,8 +67,6 @@ TRANSIENT                       no_transient
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 PHYSICAL_MODEL                  Dynamic_Smagorinsky
 TURBULENCE_APPROACH             CLASSICAL_LES
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK //Aztec_MSR           // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

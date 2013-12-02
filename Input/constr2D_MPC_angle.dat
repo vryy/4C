@@ -14,19 +14,11 @@ NODES                           123
 DIM                             2
 MATERIALS                       1
 NUMDF                           6
------------------------------------------------------------------ALE DYNAMIC
-----------------------------------------------------------COMBUSTION CONTROL
------------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
----------------------------------------------------------------FLUID DYNAMIC
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
------------------------------------------------------------------FSI DYNAMIC
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       No
@@ -42,8 +34,6 @@ THERM_TEMPERATURE               No
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
--------------------------------------------------------STATISTICAL MECHANICS
 --------------------------------------------------------------------SOLVER 1
 AZBDIAG                         0
 AZCONV                          AZ_r0
@@ -78,7 +68,6 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1 1                  
 SOLVER                          UMFPACK
--------------------------------------------------------------CONTACT DYNAMIC
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       No

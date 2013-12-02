@@ -23,17 +23,6 @@ NODES                           16
 DIM                             3
 MATERIALS                       41
 NUMDF                           6
------------------------------------------------------------------ALE DYNAMIC
-----------------------------------------------------------COMBUSTION CONTROL
------------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
---------------------------------------------------------------DISCRETISATION
-----------------------------------------------------------------ELCH CONTROL
----------------------------------------------------------------FLUID DYNAMIC
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
------------------------------------------------------------------FSI DYNAMIC
-------------------------------------------------------------INVERSE ANALYSIS
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       Yes
@@ -47,15 +36,10 @@ STRUCT_STRESS                   yes
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
-----------------------------------------------------------------LOMA CONTROL
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
--------------------------------------------------------STATISTICAL MECHANICS
 ------------------------------------------------------------------STRUCT NOX
 Nonlinear                       Solver = Line Search Based   
 --------------------------------------------------------STRUCT NOX/Direction

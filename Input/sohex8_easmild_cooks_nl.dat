@@ -17,7 +17,6 @@ NODES                           162
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
------------------------------------------------------------------ALE DYNAMIC
 --------------------------------------------------------------DISCRETISATION
 //                                                             // Number of meshes in ale field
 NUMALEDIS                       1
@@ -27,10 +26,6 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 //                                                             // Number of meshes in thermal field
 NUMTHERMDIS                     1
----------------------------------------------------------------FLUID DYNAMIC
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
------------------------------------------------------------------FSI DYNAMIC
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       No

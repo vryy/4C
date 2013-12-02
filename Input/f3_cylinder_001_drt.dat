@@ -51,8 +51,6 @@ STARTFUNCNO                     2
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                1.0
 SIMPLER                         no
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          0

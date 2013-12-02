@@ -71,8 +71,6 @@ VSTAB                           no_vstab
 GRAD_DIV no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------FSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 AZCONV                          AZ_r0

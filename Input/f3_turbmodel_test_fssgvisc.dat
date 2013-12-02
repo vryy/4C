@@ -76,8 +76,6 @@ TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
 ---------------------------------------------FLUID DYNAMIC/SUBGRID VISCOSITY
 C_SMAGORINSKY 0.1 //0.05
 -----------------------------------FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
