@@ -24,10 +24,6 @@ to a volume extension and cooling of the body
 //NODES       175
 DIM           3
 -----------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
@@ -157,105 +153,10 @@ TOLINC                          1e-06
 UPRES                           1
 -----------------------------------------------------------SOLVER 1
 NAME                            STRUCT SOLVER
-AMGBS_BS_DAMPING                1.3 1.3 1.3
-AMGBS_BS_PCCOARSE               Umfpack
-AMGBS_BS_PCDAMPING              1.0 1.0 1.0
-AMGBS_BS_PCFINE                 Umfpack
-AMGBS_BS_PCMEDIUM               Umfpack
-AMGBS_BS_PCSWEEPS               2 2 2
-AMGBS_PSMOOTHER_PRE             PA-AMG
-AMGBS_PSMOOTHER_VEL             PA-AMG
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           50
-AZTOL                           1e-08
-BGS2X2_BLOCK1_DAMPING           1
-BGS2X2_BLOCK2_DAMPING           1
-BGS2X2_FLIPORDER                block0_block1_order
-BGS2X2_GLOBAL_DAMPING           1
-DWINDTAU                        1.5
-IFPACKCOMBINE                   Add
-IFPACKFILL                      1
-IFPACKGFILL                     0
-IFPACKOVERLAP                   0
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
-MueLu_INITSMOOTHER              SGS
-MueLu_INITSMOO_DAMPING          1
-MueLu_INITSMOO_SWEEPS           1
-MueLu_REBALANCE                 No
-MueLu_REBALANCE_MINROWS         1000
-MueLu_REBALANCE_NONZEROIMBALANCE 1.2
-NON_DIAGDOMINANCE_RATIO         1
-PERMUTE_SYSTEM                  none
-SIMPLE_DAMPING                  1
-SOLVER                          UMFPACK //  Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK  //  Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 -----------------------------------------------------------SOLVER 2
 NAME                            THERMAL SOLVER
-AMGBS_BS_DAMPING                1.3 1.3 1.3
-AMGBS_BS_PCCOARSE               Umfpack
-AMGBS_BS_PCDAMPING              1.0 1.0 1.0
-AMGBS_BS_PCFINE                 Umfpack
-AMGBS_BS_PCMEDIUM               Umfpack
-AMGBS_BS_PCSWEEPS               2 2 2
-AMGBS_PSMOOTHER_PRE             PA-AMG
-AMGBS_PSMOOTHER_VEL             PA-AMG
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           50
-AZTOL                           1e-08
-DWINDTAU                        1.5
-IFPACKCOMBINE                   Add
-IFPACKFILL                      1
-IFPACKGFILL                     0
-IFPACKOVERLAP                   0
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
-SOLVER                          UMFPACK
+SOLVER                          UMFPACK  //  Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 -----------------------------------------------------------SOLVER 3
 NAME                            TSI MONOLITHIC SOLVER
 AMGBS_BS_DAMPING                1.3 1.3 1.3
@@ -325,12 +226,8 @@ CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5  t1 0.0 t2 5.0
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 5.0 FACTOR 0 1000
 -------------------------------------------------------------CURVE3
 CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 5.0 FACTOR 0 1.0e8
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
 FUNCT 1 EXPR 0 0 0  FUNCTION 293.0
--------------------------------------------------------------FUNCT2
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  5

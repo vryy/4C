@@ -42,19 +42,13 @@ DIM                             3
 PROBLEMTYP                      Structure
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
-NUMALEDIS                       0
-NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_GID                      Yes
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   Cauchy                        // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_STRAIN                   Yes                           // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
+STRUCT_STRESS                   Cauchy  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_STRAIN                   Yes  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
@@ -63,7 +57,7 @@ RESULTSEVRY                     1
 RESTARTEVRY                     5
 TIMESTEP                        0.02
 NUMSTEP                         40000
-MAXTIME                         1.0                           // 2.0
+MAXTIME                         1.0  // 2.0
 DAMPING                         Yes
 M_DAMP                          0.1
 K_DAMP                          0.1

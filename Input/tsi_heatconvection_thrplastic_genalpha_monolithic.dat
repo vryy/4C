@@ -48,10 +48,6 @@ default parameters for STR Genalpha and 0.5 for all THR Genalpha parameters
 //NODES                         325
 DIM                             3
 --------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO

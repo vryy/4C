@@ -37,10 +37,6 @@ use small strain thermoelastoplastic material with mixed linear hardening
 //NODES                         325
 DIM                             3
 --------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO

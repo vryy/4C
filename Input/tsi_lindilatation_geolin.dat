@@ -19,23 +19,19 @@ DIM                             3
 MATERIALS                       2
 NUMDF                           6
 --------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
-STRUCT_DISP                     Yes                           // Yes,No,yes,no,YES,NO
-STRUCT_STRAIN                   GL                            // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   2PK                           // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          2PK                           // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-THERM_HEATFLUX                  Initial //Current             // None,No,NO,no,Current,Initial
-THERM_TEMPERATURE               Yes                           // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD                  Initial //Current             // None,No,NO,no,Current,Initial
+STRUCT_DISP                     Yes  // Yes,No,yes,no,YES,NO
+STRUCT_STRAIN                   GL  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
+STRUCT_STRESS                   2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_COUPLING_STRESS          2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+THERM_HEATFLUX                  Initial  // None,No,NO,no,Current,Initial
+THERM_TEMPERATURE               Yes  // Yes,No,yes,no,YES,NO
+THERM_TEMPGRAD                  Initial  // None,No,NO,no,Current,Initial
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
@@ -43,19 +39,19 @@ SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-DIVERCONT                       stop                          // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
-DYNAMICTYP                      Statics                       // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
+DIVERCONT                       stop  // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
+DYNAMICTYP                      Statics  // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
 ITERNORM                        L2
 LINEAR_SOLVER                   2
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-NLNSOL                          fullnewton                    // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
+NLNSOL                          fullnewton  // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Abs                           // Abs,Rel,Mix
+NORM_RESF                       Abs  // Abs,Rel,Mix
 NUMSTEP                         200
-PREDICT                         ConstDis                      // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
+PREDICT                         ConstDis  // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
@@ -66,31 +62,31 @@ TOLRES                          1e-08
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      Statics                       // Statics,OneStepTheta
+DYNAMICTYP                      Statics  // Statics,OneStepTheta
 ITERNORM                        L2
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function             // field_by_function,zero_field
+INITIALFIELD                    field_by_function  // field_by_function,zero_field
 LINEAR_SOLVER                   1
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-NLNSOL                          fullnewton                    // vague,fullnewton
+NLNSOL                          fullnewton  // vague,fullnewton
 NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
-PREDICT                         ConstTemp                     // Vague,ConstTemp,ConstTempRate,TangTemp
+PREDICT                         ConstTemp  // Vague,ConstTemp,ConstTempRate,TangTemp
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
-TIMESTEP                        1                             // 0.01
+TIMESTEP                        1  // 0.01
 TOLRES                          1e-08
 TOLTEMP                         1e-10
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
 CONVTOL                         1e-06
-COUPALGO                        tsi_oneway                    // tsi_iterstagg,tsi_sequstagg,tsi_oneway,tsi_monolithic
-COUPVARIABLE                    Temperature                   // Displacement,Temperature
+COUPALGO                        tsi_oneway  // tsi_iterstagg,tsi_sequstagg,tsi_oneway,tsi_monolithic
+COUPVARIABLE                    Temperature  // Displacement,Temperature
 ITEMAX                          1
 MAXTIME                         1
 NUMSTEP                         200
@@ -99,10 +95,10 @@ TIMESTEP                        0.01
 UPRES                           1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
-SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 -------------------------------------------------------------------MATERIALS
 //parameters in [N,m,s,K]
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 10 NUE 0.0 DENS 0 THEXPANS 1.0e-05 CAPA 420 CONDUCT 52 INITTEMP 293
@@ -110,35 +106,13 @@ MAT 2 THERM_FourierIso CAPA 420 CONDUCT 52
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 293.0
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          4
 NDSURF                          2
 NDVOL                           1
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
---------------------------------------DESIGN POINT THERMO NEUMANN CONDITIONS
-DPOINT                          0
----------------------------------------DESIGN LINE THERMO NEUMANN CONDITIONS
-DLINE                           0
----------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
-DSURF                           0
-----------------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
-DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
@@ -160,14 +134,6 @@ DSURF                           2
 E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // right surface fixed in x(x=4)
 E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
----------------------------------------DESIGN POINT THERMO DIRICH CONDITIONS
-DPOINT                          0
-----------------------------------------DESIGN LINE THERMO DIRICH CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN SURF THERMO DIRICH CONDITIONS
-DSURF                           0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            1
 // homogeneous heating of the body (heating of 1K)
@@ -229,4 +195,4 @@ STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 2.0e-05 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE 2.0e-05 TOLERANCE 1e-9
 THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 294 TOLERANCE 1.0e-9
 -------------------------------------------------------------------------END
-//                              END
+// END

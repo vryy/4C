@@ -43,32 +43,23 @@ monolithic                      system.
 //NODES                         936
 DIM                             3
 --------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   1
-NUMALEDIS                       1
-NUMARTNETDIS                    1
-NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
 PREFIX_GROUP_ID                 No
 STDOUTEVRY                      1
 STRUCT_DISP                     Yes
-STRUCT_PLASTIC_STRAIN           No                            // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRAIN                   EA                            // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_STRESS                   Cauchy                        // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_COUPLING_STRESS          Cauchy                        // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  Current                       // None,No,NO,no,Current,Initial
-THERM_TEMPERATURE               Yes                           // Yes,No,yes,no,YES,NO
-THERM_TEMPGRAD                  Current                       // None,No,NO,no,Current,Initial
+STRUCT_PLASTIC_STRAIN           No  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
+STRUCT_STRAIN                   EA  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
+STRUCT_STRESS                   Cauchy  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_COUPLING_STRESS          Cauchy  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+THERM_HEATFLUX                  Current  // None,No,NO,no,Current,Initial
+THERM_TEMPERATURE               Yes  // Yes,No,yes,no,YES,NO
+THERM_TEMPGRAD                  Current  // None,No,NO,no,Current,Initial
 WRITE_TO_SCREEN                 Yes
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Thermo_Structure_Interaction
@@ -77,12 +68,12 @@ SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1                     
+CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta                  // Statics,GenAlpha,OneStepTheta,GEMM,ExplicitEuler,CentrDiff,AdamsBashforth2,EulerMaruyama,EulerImpStoch,StatMech
-ITERNORM                        Rms                           // L2
+DYNAMICTYP                      OneStepTheta  // Statics,GenAlpha,OneStepTheta,GEMM,ExplicitEuler,CentrDiff,AdamsBashforth2,EulerMaruyama,EulerImpStoch,StatMech
+ITERNORM                        Rms  // L2
 K_DAMP                          0.5
 LINEAR_SOLVER                   1
 LOADLIN                         no
@@ -95,9 +86,9 @@ M_DAMP                          0.5
 NLNSOL                          fullnewton
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Abs                           // Abs,Rel,Mix
+NORM_RESF                       Abs  // Abs,Rel,Mix
 NUMSTEP                         200
-PREDICT                         ConstDis                      // Vague,ConstDis,ConstVel,ConstAcc,ConstDisVelAcc,TangDis,ConstDisPres
+PREDICT                         ConstDis  // Vague,ConstDis,ConstVel,ConstAcc,ConstDisVelAcc,TangDis,ConstDisPres
 PTCDT                           0.1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
@@ -124,10 +115,10 @@ THETA                           1.0
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta                  // Statics,OneStepTheta,GEMM,GenAlpha,ExplicitEuler
+DYNAMICTYP                      OneStepTheta  // Statics,OneStepTheta,GEMM,GenAlpha,ExplicitEuler
 INITFUNCNO                      1
-INITIALFIELD                    field_by_function             // zero_field,field_by_condition
-ITERNORM                        Rms                           // L2
+INITIALFIELD                    field_by_function  // zero_field,field_by_condition
+ITERNORM                        Rms  // L2
 LINEAR_SOLVER                   2
 LUMPCAPA                        No
 MAXITER                         50
@@ -138,7 +129,7 @@ NORMCOMBI_RESFTEMP              And
 NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
-PREDICT                         TangTemp                      // Vague,ConstTemp,ConstTempRate,TangTemp
+PREDICT                         TangTemp  // Vague,ConstTemp,ConstTempRate,TangTemp
 RESEVRYERGY                     0
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
@@ -151,178 +142,38 @@ THETA                           1.0
 MERGE_TSI_BLOCK_MATRIX          Yes
 CONVTOL                         1e-06
 TOLINC                          1e-07
-COUPALGO                        tsi_monolithic                // tsi_{oneway,sequstagg,iterstagg{_aitken,_aitkenirons},monolithic}
-COUPVARIABLE                    Temperature                   // Displacement
+COUPALGO                        tsi_monolithic  // tsi_{oneway,sequstagg,iterstagg{_aitken,_aitkenirons},monolithic}
+COUPVARIABLE                    Temperature  // Displacement
 ITEMAX                          20
-ITERNORM                        Rms                           // Rms,L2,Inf,L1_Scaled
+ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled
 ITEMIN                          1
 LINEAR_SOLVER                   3
 MAXTIME                         5000.0
-NORMCOMBI_RESFINC               Coupl_Or_Singl                // Or,Coupl_Or_Singl,Coupl_And_Singl,And_Singl,Or_Singl
-NORM_INC                        Abs                           // Abs,Rel,Mix
-NORM_RESF                       Rel                           // Abs,Rel,Mix
-NUMSTEP                         5                             // 2000
+NORMCOMBI_RESFINC               Coupl_Or_Singl  // Or,Coupl_Or_Singl,Coupl_And_Singl,And_Singl,Or_Singl
+NORM_INC                        Abs  // Abs,Rel,Mix
+NORM_RESF                       Rel  // Abs,Rel,Mix
+NUMSTEP                         5  // 2000
 RESTARTEVRY                     4
 TIMESTEP                        200.0
 UPRES                           1
 --------------------------------------------------------------------SOLVER 1
 NAME                            STRUCTURAL_SOLVER
-AMGBS_BS_DAMPING                1.3 1.3 1.3                  
-AMGBS_BS_PCCOARSE               Umfpack
-AMGBS_BS_PCDAMPING              1.0 1.0 1.0                  
-AMGBS_BS_PCFINE                 Umfpack
-AMGBS_BS_PCMEDIUM               Umfpack
-AMGBS_BS_PCSWEEPS               2 2 2                        
-AMGBS_PSMOOTHER_PRE             PA-AMG
-AMGBS_PSMOOTHER_VEL             PA-AMG
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           50
-AZTOL                           1e-08
-BGS2X2_FLIPORDER                block0_block1_order
-DWINDTAU                        1.5
-IFPACKCOMBINE                   Add
-IFPACKFILL                      1
-IFPACKGFILL                     0
-IFPACKOVERLAP                   0
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1                    
-SIMPLE_DAMPING                  1
-SOLVER                          UMFPACK                       // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
-STRATIMIKOS_XMLFILE             none
-VERBOSITY                       0
+SOLVER                          UMFPACK  // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
 --------------------------------------------------------------------SOLVER 2
 NAME                            THERMAL_SOLVER
-AMGBS_BS_DAMPING                1.3 1.3 1.3                  
-AMGBS_BS_PCCOARSE               Umfpack
-AMGBS_BS_PCDAMPING              1.0 1.0 1.0                  
-AMGBS_BS_PCFINE                 Umfpack
-AMGBS_BS_PCMEDIUM               Umfpack
-AMGBS_BS_PCSWEEPS               2 2 2                        
-AMGBS_PSMOOTHER_PRE             PA-AMG
-AMGBS_PSMOOTHER_VEL             PA-AMG
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           50
-AZTOL                           1e-08
-BGS2X2_FLIPORDER                block0_block1_order
-DWINDTAU                        1.5
-IFPACKCOMBINE                   Add
-IFPACKFILL                      1
-IFPACKGFILL                     0
-IFPACKOVERLAP                   0
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1                    
-SIMPLE_DAMPING                  1
-SOLVER                          UMFPACK                       // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
-STRATIMIKOS_XMLFILE             none
-VERBOSITY                       0
+SOLVER                          UMFPACK  // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI_MONOLITHIC_SOLVER
-AMGBS_BS_DAMPING                1.3 1.3 1.3                  
-AMGBS_BS_PCCOARSE               Umfpack
-AMGBS_BS_PCDAMPING              1.0 1.0 1.0                  
-AMGBS_BS_PCFINE                 Umfpack
-AMGBS_BS_PCMEDIUM               Umfpack
-AMGBS_BS_PCSWEEPS               2 2 2                        
-AMGBS_PSMOOTHER_PRE             PA-AMG
-AMGBS_PSMOOTHER_VEL             PA-AMG
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-AZPOLY                          3
-AZPREC                          BGS2x2                        // ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           50
-AZTOL                           1e-08
-BGS2X2_FLIPORDER                block1_block0_order
-DWINDTAU                        1.5
-IFPACKCOMBINE                   Add
-IFPACKFILL                      1
-IFPACKGFILL                     0
-IFPACKOVERLAP                   0
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1                    
-SIMPLE_DAMPING                  1
-SOLVER                          UMFPACK                       // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
+SOLVER                          UMFPACK  // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
 -------------------------------------------------------------------MATERIALS
-// a b c d e f
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 6 YOUNG 1.30406e+11 -1.09895e+10 3.64935e+08 -5.88115e+06 45945.7 -139.619 NUE 0.35 DENS 1185 THEXPANS 7.0e-05 CAPA 1737210 CONDUCT 0.2 INITTEMP 50.0
 MAT 2 THERM_FourierIso CAPA 1737210 CONDUCT 0.2
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(t*pi/500.0)) t1 0.0 t2 500.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
 FUNCT 1 EXPR 0 0 0 FUNCTION 50.0
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          1
@@ -348,7 +199,6 @@ DSURF                           2
 E 4 - Tempnp coeff -42700.0 surtemp 80.0 surtempcurve none curve none
 //                              outer_surf_temperature
 E 5 - Tempnp coeff -5.0 surtemp 50.0 surtempcurve none curve none
----------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 4 DLINE 1
@@ -3117,4 +2967,4 @@ THERMAL DIS thermo NODE 433 QUANTITY temp VALUE 79.9979468989792224 TOLERANCE 1.
 THERMAL DIS thermo NODE 421 QUANTITY temp VALUE 79.9843533036719521 TOLERANCE 1.0e-9 NAME T(3.5,30,0) //lin: 79.9821761564873412
 THERMAL DIS thermo NODE 141 QUANTITY temp VALUE 72.1374787607902448 TOLERANCE 1.0e-9 NAME T(8.5,35,0) //lin: 72.3629248976951800
 -------------------------------------------------------------------------END
-//                              END
+//  END

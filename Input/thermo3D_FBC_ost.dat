@@ -73,10 +73,6 @@ NDPOINT                         0
 NDLINE                          0
 NDSURF                          2
 NDVOL                           1
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // right surface: heatflux
@@ -85,16 +81,10 @@ E 2 - 1 1 0 0 0 0 0 20.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0 // first 1 is 
 DVOL                            1
 // body temperature
 E 1 - 1 1 0 0 0 0 0 3.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // left surface temperature
 E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 13 DSURFACE 1
 NODE 14 DSURFACE 1
