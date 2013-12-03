@@ -51,22 +51,22 @@ namespace STR
       Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
-    //! Destructor
-    // ....
-
     //! Empty constructor
     TimIntExplEuler() : TimIntExpl() { ; }
 
     //! Copy constructor
     TimIntExplEuler(const TimIntExplEuler& old) : TimIntExpl(old) { ; }
 
-    //! Resize #TimIntMStep<T> multi-step quantities
-    void ResizeMStep();
+    //! Destructor
+    virtual ~TimIntExplEuler() { ; };
 
     //@}
 
     //! @name Actions
     //@{
+
+    //! Resize #TimIntMStep<T> multi-step quantities
+    virtual void ResizeMStep();
 
     //! Do time integration of single step
     virtual int IntegrateStep();

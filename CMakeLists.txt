@@ -569,6 +569,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_timint_adaptive.cpp
   src/drt_adapter/ad_str_wrapper.cpp
   src/drt_adapter/ad_str_fsiwrapper.cpp
+  src/drt_adapter/ad_str_fsi_timint_adaptive.cpp
   src/drt_adapter/ad_str_fsi_crack.cpp
   src/drt_adapter/adapter_thermo.cpp
 )

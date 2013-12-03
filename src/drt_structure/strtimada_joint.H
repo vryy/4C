@@ -149,7 +149,7 @@ namespace STR
     }
 
     //! Destructor
-    ~TimAdaJoint() { ; }
+    virtual ~TimAdaJoint() { ; }
 
     //@}
 

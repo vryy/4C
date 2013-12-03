@@ -53,22 +53,22 @@ namespace STR
       bool initmassdampconsistaccel = true  //!< bool whether DetermineMassDampConsistAccel() is called
     );
 
-    //! Destructor
-    // ....
-
     //! Empty constructor
     TimIntCentrDiff() : TimIntExpl() { ; }
 
     //! Copy constructor
     TimIntCentrDiff(const TimIntCentrDiff& old) : TimIntExpl(old) { ; }
 
-    //! Resize #TimIntMStep<T> multi-step quantities
-    void ResizeMStep();
+    //! Destructor
+    virtual ~TimIntCentrDiff() { ; }
 
     //@}
 
     //! @name Actions
     //@{
+
+    //! Resize #TimIntMStep<T> multi-step quantities
+    virtual void ResizeMStep();
 
     //! Do time integration of single step
     virtual int IntegrateStep();

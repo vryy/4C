@@ -24,9 +24,9 @@ Maintainer: Burkhard Bornemann
 /* constructor */
 ADAPTER::StructureTimIntAda::StructureTimIntAda(
   Teuchos::RCP<STR::TimAda> sta,
-  Teuchos::RCP<STR::TimInt> sti
+  Teuchos::RCP<Structure> sti
 )
-: FSIStructureWrapper(sti),
+: StructureWrapper(sti),
   structure_(sta)
 {
   // make sure

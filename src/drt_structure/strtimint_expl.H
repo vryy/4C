@@ -67,13 +67,16 @@ namespace STR
     //! Copy constructor
     TimIntExpl(const TimIntExpl& old) : TimInt(old) { ; }
 
-    //! Resize #TimIntMStep<T> multi-step quantities
-    virtual void ResizeMStep() = 0;
+    //! Destructor
+    virtual ~TimIntExpl() { ; };
 
     //@}
 
     //! @name Actions
     //@{
+
+    //! Resize #TimIntMStep<T> multi-step quantities
+    virtual void ResizeMStep() = 0;
 
     //! Do time integration of single step
     virtual int IntegrateStep() = 0;

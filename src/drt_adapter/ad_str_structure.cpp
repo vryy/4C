@@ -15,6 +15,7 @@ Maintainer: Georg Hammerl
 
 #include "ad_str_structure.H"
 #include "ad_str_timint_adaptive.H"
+#include "ad_str_fsi_timint_adaptive.H"
 #include "ad_str_constr_merged.H"
 #include "ad_str_windkessel_merged.H"
 #include "ad_str_wrapper.H"
@@ -355,11 +356,25 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
 
   if (sta!=Teuchos::null)
   {
-    if (probtype != prb_structure)
+    switch (probtype)
     {
-      dserror("adaptive time integration for the structure only tested for problem type prb_structure");
+      case prb_structure: // pure structural time adaptivity
+      {
+        structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr));
+        break;
+      }
+      case prb_fsi: // structure based time adaptivity within an FSI simulation
+      {
+        Teuchos::RCP<FSIStructureWrapper> fsiwrapperwithadaptivity = Teuchos::rcp(new StructureFSITimIntAda(sta, tmpstr));
+        structure_ = fsiwrapperwithadaptivity;
+        break;
+      }
+      default:
+      {
+        dserror("Adaptive time integration for the structure not implemented for desired problem type.");
+        break;
+      }
     }
-    structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr));
   }
   else if (tmpstr != Teuchos::null)
   {

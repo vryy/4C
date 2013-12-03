@@ -85,7 +85,7 @@ STR::TimAda::TimAda
   outstrtime_(timeinitial_+outstrperiod_),
   outenetime_(timeinitial_+outeneperiod_),
   outresttime_(timeinitial_+outrestperiod_),
-  outsizefile_(NULL)
+  outsizefile_(Teuchos::null)
 {
   // allocate displacement local error vector
   locerrdisn_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
@@ -425,12 +425,12 @@ void STR::TimAda::OutputStepSize()
        and (timestep_%outsizeevery_ == 0)
        and (myrank_ == 0) )
   {
-    *outsizefile_ << " " << std::setw(12) << timestep_
-                  << std::scientific << std::setprecision(8)
-                  << " " << time_
-                  << " " << stepsize_
-                  << " " << std::setw(2) << adaptstep_
-                  << std::endl;
+    (*outsizefile_) << " " << std::setw(12) << timestep_
+                    << std::scientific << std::setprecision(8)
+                    << " " << time_
+                    << " " << stepsize_
+                    << " " << std::setw(2) << adaptstep_
+                    << std::endl;
   }
 }
 
@@ -493,14 +493,14 @@ void STR::TimAda::Print
 /* Attach file handle for step size file #outsizefile_                  */
 void STR::TimAda::AttachFileStepSize()
 {
-  if (not outsizefile_)
+  if (outsizefile_.is_null())
   {
     std::string filename
       = DRT::Problem::Instance()->OutputControlFile()->FileName()
       + ".stepsize";
-    outsizefile_ = new std::ofstream(filename.c_str());
-    *outsizefile_ << "# timestep time step-size adaptations"
-                  << std::endl;
+    outsizefile_ = Teuchos::rcp(new std::ofstream(filename.c_str()));
+    (*outsizefile_) << "# timestep time step-size adaptations"
+                    << std::endl;
   }
   return;
 }

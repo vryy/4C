@@ -126,10 +126,7 @@ namespace STR
     );
 
     //! Destructor
-    virtual ~TimAda()
-    {
-      DetachFileStepSize();
-    }
+    virtual ~TimAda() { ; }
 
     //! @name Actions
     //@{
@@ -200,18 +197,13 @@ namespace STR
     //! Check whether step size output file is attached
     bool AttachedFileStepSize()
     {
-      if (outsizefile_) return true;
+      if (not outsizefile_.is_null()) return true;
       else return false;
     }
 
     //! Attach file handle for step size file #outsizefile_
     void AttachFileStepSize();
 
-    //! Detach file handle for step size file #outsizefile_
-    void DetachFileStepSize()
-    {
-      if (outsizefile_) delete outsizefile_;
-    }
 
     //! Write step size
     void OutputStepSize();
@@ -340,7 +332,7 @@ namespace STR
     double outstrtime_;  //!< next output time point for stress/strain
     double outenetime_;  //!< next output time point for energy
     double outresttime_;  //!< next output time point for restart
-    std::ofstream* outsizefile_;  //!< outputfile for step sizes
+    Teuchos::RCP<std::ofstream> outsizefile_;  //!< outputfile for step sizes
     //@}
 
   }; // class TimAda

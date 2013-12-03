@@ -19,8 +19,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "ad_str_fsiwrapper.H"
-
+#include "ad_str_wrapper.H"
 
 // forward declarations:
 namespace STR
@@ -28,7 +27,6 @@ namespace STR
   class TimInt;
   class TimAda;
 }
-
 
 /*----------------------------------------------------------------------*/
 /* adapting adapter */
@@ -40,15 +38,18 @@ namespace ADAPTER {
    *
    * \date 08/08
    */
-  class StructureTimIntAda : public FSIStructureWrapper
+  class StructureTimIntAda : public StructureWrapper
   {
   public:
 
     /// Constructor
     StructureTimIntAda(
       Teuchos::RCP<STR::TimAda> sta,
-      Teuchos::RCP<STR::TimInt> sti
+      Teuchos::RCP<Structure> sti
     );
+
+    /// Destructor
+    virtual ~StructureTimIntAda() { ; }
 
     /// @name Time step helpers
     //@{

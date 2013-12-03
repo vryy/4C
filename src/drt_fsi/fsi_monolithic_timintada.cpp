@@ -24,7 +24,7 @@ Maintainer: Matthias Mayr
 
 #include "../drt_ale/ale.H"
 
-#include "../drt_adapter/ad_str_timint_adaptive.H"
+#include "../drt_adapter/ad_str_fsi_timint_adaptive.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"

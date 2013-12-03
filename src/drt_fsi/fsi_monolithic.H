@@ -816,7 +816,7 @@ namespace FSI
     /// output stream for log-file
     Teuchos::RCP<std::ofstream> log_;
 
-    /// output stream for adaptiviy-file
+    /// output stream for adaptivity-file
     Teuchos::RCP<std::ofstream> logada_;
 
     /// @name special debugging output

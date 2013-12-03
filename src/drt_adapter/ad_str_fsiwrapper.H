@@ -38,6 +38,8 @@ namespace ADAPTER
     /// constructor
     explicit FSIStructureWrapper(Teuchos::RCP<Structure> structure);
 
+    /// Destructor
+    virtual ~FSIStructureWrapper() { ; }
 
     /// communication object at the interface
     virtual Teuchos::RCP<const STR::AUX::MapExtractor> Interface() const

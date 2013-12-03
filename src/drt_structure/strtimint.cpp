@@ -119,7 +119,7 @@ STR::TimInt::TimInt
   writeplstrain_(DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_PLASTIC_STRAIN")),
   writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
   writesurfactant_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_SURFACTANT")),
-  energyfile_(NULL),
+  energyfile_(Teuchos::null),
   damping_(DRT::INPUT::IntegralValue<INPAR::STR::DampKind>(sdynparams,"DAMPING")),
   dampk_(sdynparams.get<double>("K_DAMP")),
   dampm_(sdynparams.get<double>("M_DAMP")),
@@ -1758,14 +1758,14 @@ void STR::TimInt::OutputEnergy()
   // the output
   if (myrank_ == 0)
   {
-    *energyfile_ << " " << std::setw(9) << step_
-                 << std::scientific  << std::setprecision(16)
-                 << " " << (*time_)[0]
-                 << " " << totergy
-                 << " " << kinergy_
-                 << " " << intergy_
-                 << " " << extergy_
-                 << std::endl;
+    (*energyfile_) << " " << std::setw(9) << step_
+                   << std::scientific  << std::setprecision(16)
+                   << " " << (*time_)[0]
+                   << " " << totergy
+                   << " " << kinergy_
+                   << " " << intergy_
+                   << " " << extergy_
+                   << std::endl;
   }
 
   // in God we trust
@@ -2595,17 +2595,15 @@ void STR::TimInt::ApplyDisMat(
 /* Attach file handle for energy file #energyfile_                      */
 void STR::TimInt::AttachEnergyFile(std::string name)
 {
-  if (not energyfile_ or name != "")
+  if (energyfile_.is_null() or name != "")
   {
-    // if energy file with new name is attached, delete the old file handle
-    DetachEnergyFile();
     std::string energyname
       = DRT::Problem::Instance()->OutputControlFile()->FileName()
       + name + ".energy";
-    energyfile_ = new std::ofstream(energyname.c_str());
-    *energyfile_ << "# timestep time total_energy"
-                 << " kinetic_energy internal_energy external_energy"
-                 << std::endl;
+    energyfile_ = Teuchos::rcp(new std::ofstream(energyname.c_str()));
+    (*energyfile_) << "# timestep time total_energy"
+                   << " kinetic_energy internal_energy external_energy"
+                   << std::endl;
   }
   return;
 }

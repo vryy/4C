@@ -166,10 +166,7 @@ namespace STR
     );
 
     //! Destructor
-    virtual ~TimInt()
-    {
-      DetachEnergyFile();
-    }
+    virtual ~TimInt() { ; }
 
     //! Empty constructor
     TimInt() { ; }
@@ -194,7 +191,7 @@ namespace STR
     //! RefCount type) and can thus link -- or merge -- the data
     //! of #tis with #this. Practically, this turns up with time
     //! adaptivity in which #tis is the marching integrator
-    //! and #this is the auxiliar method, which shares the marching data.
+    //! and #this is the auxiliary method, which shares the marching data.
     void Merge
     (
       TimInt& tis  //!< existing integrator to merge against
@@ -239,7 +236,7 @@ namespace STR
     //! Do time integration of multiple steps
     int Integrate();
 
-    //! do something in case nonlinear soluttion does not converge for some reason
+    //! do something in case nonlinear solution does not converge for some reason
     int PerformErrorAction(int nonlinsoldiv);
 
     //! Do time integration of single step
@@ -318,7 +315,7 @@ namespace STR
     //! Reset configuration after time step
     //!
     //! Thus the last converged state is copied back on the predictor
-    //! for current time step. This applies only to elemet-wise
+    //! for current time step. This applies only to element-wise
     //! quantities
     void ResetStep();
 
@@ -425,18 +422,12 @@ namespace STR
     //! Check whether energy output file is attached
     bool AttachedEnergyFile()
     {
-      if (energyfile_) return true;
+      if (not energyfile_.is_null()) return true;
       else return false;
     }
 
     //! Attach file handle for energy file #energyfile_
     virtual void AttachEnergyFile(std::string name = "");
-
-    //! Detach file handle for energy file #energyfile_
-    void DetachEnergyFile()
-    {
-      if (energyfile_) delete energyfile_;
-    }
 
     //@}
 
@@ -479,7 +470,7 @@ namespace STR
       const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
       const Teuchos::RCP<Epetra_Vector> acc,  // acceleration state
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-      Teuchos::RCP<Epetra_Vector> finert,  //!< inertial force
+      Teuchos::RCP<Epetra_Vector> finert,  //!< inertia force
       Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
       Teuchos::RCP<LINALG::SparseOperator> mass  //!< mass matrix
     );
@@ -636,7 +627,7 @@ namespace STR
     //! Read and set restart state
     virtual void ReadRestartState();
 
-    //! Sset restart state
+    //! Set restart state
     virtual void SetRestartState
     (
       Teuchos::RCP<Epetra_Vector> disn, //!< restart displacements
@@ -1028,7 +1019,7 @@ namespace STR
     INPAR::STR::StrainType writeplstrain_;  //!< plastic strain output type
     int writeenergyevery_;  //!< write system energy every given step
     bool writesurfactant_;  //!< write surfactant output
-    std::ofstream* energyfile_;  //!< outputfile for energy
+    Teuchos::RCP<std::ofstream> energyfile_;  //!< outputfile for energy
 
     Teuchos::RCP<std::vector<char> > stressdata_; //!< container for element GP stresses
     Teuchos::RCP<std::vector<char> > couplstressdata_; //!< container for element GP coupling stresses
