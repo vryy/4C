@@ -15,18 +15,6 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-OUTPUT_GID                      No
-OUTPUT_BIN                      Yes
-STRUCT_DISP                     No
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
-FILESTEPS                       1000
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
@@ -104,36 +92,12 @@ NDPOINT                         0
 NDLINE                          6
 NDSURF                          1
 NDVOL                           0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT                          0
-------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
 ------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode
 E 1 - pot 0.0 curve 1 numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 //i0 = 0.01
 //                              anode
 E 2 - pot 25.0 curve 1 numscal 2 stoich -1 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0
-------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
-DSURF                           0
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 // left internal boundary

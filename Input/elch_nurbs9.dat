@@ -1,11 +1,9 @@
 -----------------------------------------------------------------------TITLE
 electrochemistry simulation in 2D using NURBS
 ----------------------------------------------------------------PROBLEM SIZE
-ELEMENTS                        100
-NODES                           144
+//ELEMENTS                        100
+//NODES                           144
 DIM                             2
-MATERIALS                       1
-NUMDF                           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
 SHAPEFCT                        Nurbs

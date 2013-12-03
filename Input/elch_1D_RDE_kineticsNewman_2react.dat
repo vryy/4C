@@ -21,8 +21,8 @@ General Data File CCARAT
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
-ELEMENTS                        100
-NODES                           202
+//ELEMENTS                        100
+//NODES                           202
 DIM                             2
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
@@ -34,18 +34,6 @@ NUMARTNETDIS                    0
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-OUTPUT_GID                      No
-OUTPUT_BIN                      Yes
-STRUCT_DISP                     No
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
-FILESTEPS                       1000
 ----------------------------------------------------------------ELCH CONTROL
 CONVTOL                         1e-06
 GALVANOSTATIC                   No
@@ -166,15 +154,11 @@ NDVOL                           0
 DLINE                           1
 //                              right_electrode
 E 2 - NUMDOF 7 ONOFF 1 1 1 1 1 1 1 VAL 0.00995 0.0001 0.005 0.005 1.0 0.985 0.0 CURVE none none none none none none none FUNCT 0 0 0 0 0 0 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           0
 ------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE                           2
 //                              left_electrode
 E 1 - pot -1.0 curve 1 numscal 6 stoich -1 1 0 0 0 0 e- 1 Butler-Volmer-Newman k_a 1.0312e-1 k_c 1.0364e-3 beta 0.5 dl_spec_cap 0.0
 E 1 - pot -1.0 curve 1 numscal 6 stoich 0 0 -1 1 0 0 e- 1 Butler-Volmer-Newman k_a 1.16e-4 k_c 9.32e+2 beta 0.463 dl_spec_cap 0.0
-------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
-DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
