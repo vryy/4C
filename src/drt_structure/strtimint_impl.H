@@ -847,6 +847,8 @@ namespace STR
     double normlagr_;     //!< norm of lagrange multipliers
     double normw_;     //!< norm of wear
     double normwrhs_;
+    double normwm_;     //!< norm of wear master
+    double normwmrhs_;
 
     Teuchos::RCP<Epetra_Vector> disi_;  //!< residual displacements (and pressure)
                                         //!< \f$\Delta{D}^{<k>}_{n+1}\f$

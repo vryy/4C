@@ -127,7 +127,8 @@ isdbc_(false),
 numdof_(numdof),
 dofs_(dofs),
 hasproj_(false),
-hassegment_(false)
+hassegment_(false),
+detected_(false)
 {
   for (int i=0;i<3;++i)
   {
@@ -151,7 +152,8 @@ isdbc_(old.isdbc_),
 numdof_(old.numdof_),
 dofs_(old.dofs_),
 hasproj_(old.hasproj_),
-hassegment_(old.hassegment_)
+hassegment_(old.hassegment_),
+detected_(false)
 {
   for (int i=0;i<3;++i)
   {

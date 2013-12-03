@@ -46,6 +46,7 @@ Maintainer: Philipp Farah
  | header                                                   farah 09/13 |
  *----------------------------------------------------------------------*/
 #include "contact_lagrange_strategy.H"
+#include <Epetra_FEVector.h>
 
 
 
@@ -254,6 +255,9 @@ public:
   */
   std::vector<Teuchos::RCP<CONTACT::WearInterface> > WearInterfaces() { return interface_; }
 
+  const Teuchos::RCP<Epetra_Map> MasterSlipNodes() {return gmslipnodes_;};
+  const Teuchos::RCP<Epetra_Map> MasterActiveNodes() {return gmactivenodes_;};
+
 protected:
   // don't want = operator and cctor
   WearLagrangeStrategy operator = (const WearLagrangeStrategy& old);
@@ -273,9 +277,17 @@ protected:
   Teuchos::RCP<Epetra_Map> gminvolveddofs_;         // global involved master dof row map (of all interfaces)
   Teuchos::RCP<Epetra_Map> gslipn_;                 // global row map of matrix N for slip dofs (of all interfaces)
   Teuchos::RCP<Epetra_Map> gwinact_;                // global row map of matrix N for slip dofs (of all interfaces)
+  Teuchos::RCP<Epetra_Map> gmslipn_;                // global row map of matrix N for slip dofs (of all interfaces)
+  Teuchos::RCP<Epetra_Map> gwminact_;               // global row map of matrix N for slip dofs (of all interfaces)
 
-  Teuchos::RCP<Epetra_Map> gwdofrowmap_;            // global wear dof row map (of all interfaces) -active
-  Teuchos::RCP<Epetra_Map> gsdofnrowmap_;           // global wear dof row map (of all interfaces)
+  Teuchos::RCP<Epetra_Map> gwmdofrowmap_;           // global master wear dof row map (of all interfaces) -active
+  Teuchos::RCP<Epetra_Map> gwdofrowmap_;            // global slave wear dof row map (of all interfaces) -active
+  Teuchos::RCP<Epetra_Map> gsdofnrowmap_;           // global slave wear dof row map (of all interfaces)
+  Teuchos::RCP<Epetra_Map> gmdofnrowmap_;           // global master wear dof row map (of all interfaces)
+  Teuchos::RCP<Epetra_Map> galldofnrowmap_;           // global master wear dof row map (of all interfaces)
+  Teuchos::RCP<Epetra_Map> gwalldofrowmap_;         // all
+  Teuchos::RCP<Epetra_Map> gmslipnodes_;            // global master slip nodes
+  Teuchos::RCP<Epetra_Map> gmactivenodes_;          // global master active nodes
 
   Teuchos::RCP<Epetra_Vector> wearoutput_;          // vector of unweighted wear at t_n+1  -- slave
   Teuchos::RCP<Epetra_Vector> wearoutput2_;         // vector of unweighted wear at t_n+1  -- master
@@ -285,8 +297,9 @@ protected:
 
   bool wearimpl_;                                   // weartype: implicit
   bool weardiscr_;                                  // bool for wear with own discretization
+  bool wearbothdiscr_;                              // bool for both-sided discrete wear
 
-  // discrete wear algorithm
+  // discrete wear algorithm (SLAVE)
   Teuchos::RCP<LINALG::SparseMatrix> twmatrix_;     // global Mortar wear matrix T
   Teuchos::RCP<LINALG::SparseMatrix> ematrix_;      // global Mortar wear matrix E
   Teuchos::RCP<LINALG::SparseMatrix> lintdis_;      // Lin T w.r.t. displ: Lin(T*n*lm)
@@ -295,6 +308,16 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> linslipW_;     // global matrix containing derivatives (LM) of slip condition
   Teuchos::RCP<Epetra_Vector> inactiveWearRhs_;     // inactive wear rhs: -w_i
   Teuchos::RCP<Epetra_Vector> WearCondRhs_;         // rhs wear condition: -E*w_i + k*T*n*lm_i
+
+  // discrete wear algorithm (MASTER)
+  Teuchos::RCP<LINALG::SparseMatrix> twmatrixM_;     // global Mortar wear matrix T
+  Teuchos::RCP<LINALG::SparseMatrix> ematrixM_;      // global Mortar wear matrix E
+  Teuchos::RCP<LINALG::SparseMatrix> lintdisM_;      // Lin T w.r.t. displ: Lin(T*n*lm)
+  Teuchos::RCP<LINALG::SparseMatrix> lintlmM_;       // Lin T w.r.t. lm: (T*n)
+  Teuchos::RCP<LINALG::SparseMatrix> linedisM_;      // Lin E w.r.t. displ: Lin(E*w)
+  Teuchos::RCP<LINALG::SparseMatrix> linslipWM_;     // global matrix containing derivatives (LM) of slip condition
+  Teuchos::RCP<Epetra_FEVector> inactiveWearRhsM_;   // inactive wear rhs: -w_i
+  Teuchos::RCP<Epetra_FEVector> WearCondRhsM_;       // rhs wear condition: -E*w_i + k*T*n*lm_i
 
   // matrix blocks for recovering
   Teuchos::RCP<LINALG::SparseMatrix> dnblock_;

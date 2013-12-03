@@ -237,7 +237,9 @@ public:
   void inline GP_2D_G_Lin(
        int& iter,
        MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
        LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
        LINALG::SerialDenseVector& lmval,
        LINALG::SerialDenseMatrix& sderiv,
        LINALG::SerialDenseMatrix& lmderiv,
@@ -259,7 +261,9 @@ public:
   void inline GP_3D_G_Lin(
        int& iter,
        MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
        LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
        LINALG::SerialDenseVector& lmval,
        LINALG::SerialDenseMatrix& sderiv,
        LINALG::SerialDenseMatrix& lmderiv,
@@ -408,6 +412,19 @@ public:
        double& wgt, double* jumpval);
 
   /*!
+  \brief evaluate  T and E matrix
+
+  */
+  void inline GP_TE_Master(
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseVector& sval,
+       double& jac,
+       double& wgt, double* jumpval,
+       const Epetra_Comm& comm);
+
+  /*!
   \brief evaluate Lin T and E matrix
 
   */
@@ -431,6 +448,30 @@ public:
   \brief evaluate Lin T and E matrix
 
   */
+  void inline GP_2D_TE_Master_Lin(
+       int& iter,                                //like k
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& mderiv,
+       LINALG::SerialDenseMatrix& lmderiv,
+       double& dsxideta, double& dxdsxi,
+       double& dxdsxidsxi,
+       double& wgt, double* jumpval,
+       const std::map<int,double>& dsxigp,
+       const std::map<int,double>& dmxigp,
+       const std::map<int,double>& derivjac,
+       const std::map<int,double>& dsliptmatrixgp,
+       const std::vector<std::map<int,double> >& ximaps,
+       const std::vector<std::vector<std::map<int,double> > >& dualmap,
+       const Epetra_Comm& comm);
+
+  /*!
+  \brief evaluate Lin T and E matrix
+
+  */
   void inline GP_3D_TE_Lin(
        int& iter, bool& duallin,                //like k
        MORTAR::MortarElement& sele,
@@ -445,6 +486,28 @@ public:
        const std::map<int,double>& dsliptmatrixgp,
        const std::vector<std::vector<std::map<int,double> > >& dualmap);
 
+  /*!
+  \brief evaluate Lin T and E matrix (Master)
+
+  */
+  void inline GP_3D_TE_Master_Lin(
+       int& iter, bool& duallin,                //like k
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& mderiv,
+       LINALG::SerialDenseMatrix& lmderiv,
+       double& jac,
+       double& wgt, double* jumpval,
+       const std::vector<std::map<int,double> >& dsxigp,
+       const std::vector<std::map<int,double> >& dmxigp,
+       const std::map<int,double>& jacintcellmap,
+       const std::map<int,double>& dsliptmatrixgp,
+       const std::vector<std::vector<std::map<int,double> > >& dualmap,
+       const Epetra_Comm& comm);
   /*!
   \brief evaluate matrix A for tsi-contact
 

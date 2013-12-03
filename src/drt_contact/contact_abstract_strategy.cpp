@@ -72,7 +72,8 @@ isselfcontact_(false),
 friction_(false),
 dualquadslave3d_(false),
 tsi_(false),
-wear_(false)
+wear_(false),
+wbdiscr_(false)
 {
   // set potential global self contact status
   // (this is TRUE if at least one contact interface is a self contact interface)
@@ -91,6 +92,11 @@ wear_(false)
   INPAR::CONTACT::WearLaw wlaw = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(Params(),"WEARLAW");
   if (wlaw != INPAR::CONTACT::wear_none)
     wear_ = true;
+
+  // discrete both-sided wear for active set output
+  INPAR::CONTACT::WearSide wside = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(Params(),"BOTH_SIDED_WEAR");
+  if (wside == INPAR::CONTACT::wear_both_discr)
+    wbdiscr_ = true;
 
   // set thermo-structure-interaction with contact  
   if (params.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
@@ -605,7 +611,7 @@ void CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
   // mortar initialization and evaluation
   SetState("displacement",dis);
 
-  //----------------------------------------------------------
+  //---------------------------------------------------------------
   // For selfcontact the master/slave sets are updated within the -
   // contact search, see SelfBinaryTree.                          -
   // Therefore, we have to initialize the mortar matrices after   -
@@ -1344,6 +1350,16 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         vectorglobal = WearVar();
         break;
       }
+      case MORTAR::StrategyBase::wmupdate:
+      {
+        vectorglobal = WearVarM();
+        break;
+      }
+      case MORTAR::StrategyBase::wmold:
+      {
+        vectorglobal = WearVarM();
+        break;
+      }
       case MORTAR::StrategyBase::wold:
       {
         vectorglobal = WearVar();
@@ -1387,133 +1403,180 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
       snodemap = interface_[i]->SlaveRowNodes();
     }
 
-    // export global quantity to current interface slave dof map (column or row)
-    Teuchos::RCP<Epetra_Vector> vectorinterface = Teuchos::rcp(new Epetra_Vector(*sdofmap));
-    
-    if (vectorglobal != Teuchos::null) // necessary for case "activeold" and wear
-      LINALG::Export(*vectorglobal, *vectorinterface);
-
-    // loop over all slave nodes (column or row) on the current interface
-    for (int j=0; j<snodemap->NumMyElements(); ++j)
+    Teuchos::RCP<Epetra_Vector> vectorinterface = Teuchos::null;
+    if ((type == MORTAR::StrategyBase::wmupdate) or (type==MORTAR::StrategyBase::wmold))
     {
-      int gid = snodemap->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CoNode* cnode = static_cast<CoNode*>(node);
+      // export global quantity to current interface slave dof map (column or row)
+      const Teuchos::RCP<Epetra_Map> masterdofs = LINALG::AllreduceEMap(*(interface_[i]->MasterRowDofs()));
+      vectorinterface = Teuchos::rcp(new Epetra_Vector(*masterdofs));
 
-      // be aware of problem dimension
-      int dim = Dim();
-      int numdof = cnode->NumDof();
-      if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+      if (vectorglobal != Teuchos::null) // necessary for case "activeold" and wear
+        LINALG::Export(*vectorglobal, *vectorinterface);
+    }
+    else
+    {
+      // export global quantity to current interface slave dof map (column or row)
+      vectorinterface = Teuchos::rcp(new Epetra_Vector(*sdofmap));
 
-      // find indices for DOFs of current node in Epetra_Vector
-      // and extract this node's quantity from vectorinterface
-      std::vector<int> locindex(dim);
+      if (vectorglobal != Teuchos::null) // necessary for case "activeold" and wear
+        LINALG::Export(*vectorglobal, *vectorinterface);
+    }
 
-      for (int dof=0;dof<dim;++dof)
+    // master specific
+    const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(interface_[i]->MasterRowNodes()));
+    if (type == MORTAR::StrategyBase::wmupdate)
+    {
+      for (int j=0; j<masternodes->NumMyElements(); ++j)
       {
-        locindex[dof] = (vectorinterface->Map()).LID(cnode->Dofs()[dof]);
-        if (locindex[dof]<0) dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
+        int gid = masternodes->GID(j);
+        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        FriNode* fnode = static_cast<FriNode*>(node);
 
-        switch(type)
-        {
-        case MORTAR::StrategyBase::lmcurrent:
-        {
-          cnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
-          break;
-        }
-        case MORTAR::StrategyBase::lmold:
-        {
-          cnode->MoData().lmold()[dof] = (*vectorinterface)[locindex[dof]];
-          break;
-        }
-        case MORTAR::StrategyBase::lmuzawa:
-        {
-          cnode->MoData().lmuzawa()[dof] = (*vectorinterface)[locindex[dof]];
-          break;
-        }
-        case MORTAR::StrategyBase::lmupdate:
-        {
-#ifndef CONTACTPSEUDO2D
-          // throw a dserror if node is Active and DBC
-          if (cnode->IsDbc() && cnode->Active())
-            dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
-#endif // #ifndef CONTACTPSEUDO2D
-
-          // explicity set global Lag. Mult. to zero for inactive nodes
-          // (this is what we wanted to enforce anyway before condensation)
-          //if (cnode->Active()==false)
-          //  (*vectorinterface)[locindex[dof]] = 0.0;
-
-          // store updated LM into node
-          cnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
-          break;
-        }
-        case MORTAR::StrategyBase::wupdate:
-        {
-          // throw a dserror if node is Active and DBC
-          if (cnode->IsDbc() && cnode->Active())
-            dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
-          // explicity set global Lag. Mult. to zero for D.B.C nodes
-          if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
-
-          // store updated wcurr into node
-          FriNode* fnode = static_cast<FriNode*>(cnode);
-          fnode->FriDataPlus().wcurr()[(int)(dof/Dim())] = (*vectorinterface)[locindex[(int)(dof/Dim())]];
-          dof=dof+Dim()-1;
-          break;
-        }
-        case MORTAR::StrategyBase::wold:
-        {
-          // throw a dserror if node is Active and DBC
-          if (cnode->IsDbc() && cnode->Active())
-            dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
-          // explicity set global Lag. Mult. to zero for D.B.C nodes
-          if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
-
-          // store updated wcurr into node
-          FriNode* fnode = static_cast<FriNode*>(cnode);
-          fnode->FriDataPlus().wold()[(int)(dof/Dim())] += (*vectorinterface)[locindex[(int)(dof/Dim())]];
-          dof=dof+Dim()-1;
-          break;
-        }
-        case MORTAR::StrategyBase::activeold:
-        {
-          cnode->CoData().ActiveOld() = cnode->Active();
-          break;
-        }
-        case MORTAR::StrategyBase::slipold:
-        {
-          if (!friction_)
-            dserror("Slip just for friction problems!");
-
-          FriNode* fnode = static_cast<FriNode*>(cnode);
-          fnode->FriData().SlipOld() = fnode->FriData().Slip();
-          break;
-        }
-        case MORTAR::StrategyBase::wear:
-        {
-          if(!friction_)
-            dserror("ERROR: This should not be called for contact without friction");
-            // update wear only once
-            if(dof==0)
-            {
-              FriNode* frinode = static_cast<FriNode*>(cnode);
-              double wearcoeff = Params().get<double>("WEARCOEFF", 0.0);
-              
-              if (Params().get<int>("PROBTYPE")!=INPAR::CONTACT::structalewear)
-                frinode->FriDataPlus().Wear() += wearcoeff*frinode->FriDataPlus().DeltaWear(); // amount of wear
-              else
-                frinode->FriDataPlus().Wear() = wearcoeff*frinode->FriDataPlus().DeltaWear(); // wear for each ale step
-            }
-          break;
-        }
-        default:
-          dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
-          break;
-        } // switch
+        // store updated wcurr into node
+        fnode->FriDataPlus().wcurr()[0] = (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
       }
     }
+    else if (type == MORTAR::StrategyBase::wmold)
+    {
+      for (int j=0; j<masternodes->NumMyElements(); ++j)
+      {
+        int gid = masternodes->GID(j);
+        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        FriNode* fnode = static_cast<FriNode*>(node);
+
+        // store updated wcurr into node
+        fnode->FriDataPlus().wold()[0] = (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
+      }
+    }
+    else
+    {
+      // loop over all slave nodes (column or row) on the current interface
+      for (int j=0; j<snodemap->NumMyElements(); ++j)
+      {
+        int gid = snodemap->GID(j);
+        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        CoNode* cnode = static_cast<CoNode*>(node);
+
+        // be aware of problem dimension
+        int dim = Dim();
+        int numdof = cnode->NumDof();
+        if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+
+        // find indices for DOFs of current node in Epetra_Vector
+        // and extract this node's quantity from vectorinterface
+        std::vector<int> locindex(dim);
+
+        for (int dof=0;dof<dim;++dof)
+        {
+          locindex[dof] = (vectorinterface->Map()).LID(cnode->Dofs()[dof]);
+          if (locindex[dof]<0) dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
+
+          switch(type)
+          {
+          case MORTAR::StrategyBase::lmcurrent:
+          {
+            cnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
+            break;
+          }
+          case MORTAR::StrategyBase::lmold:
+          {
+            cnode->MoData().lmold()[dof] = (*vectorinterface)[locindex[dof]];
+            break;
+          }
+          case MORTAR::StrategyBase::lmuzawa:
+          {
+            cnode->MoData().lmuzawa()[dof] = (*vectorinterface)[locindex[dof]];
+            break;
+          }
+          case MORTAR::StrategyBase::lmupdate:
+          {
+  #ifndef CONTACTPSEUDO2D
+            // throw a dserror if node is Active and DBC
+            if (cnode->IsDbc() && cnode->Active())
+              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+  #endif // #ifndef CONTACTPSEUDO2D
+
+            // explicity set global Lag. Mult. to zero for inactive nodes
+            // (this is what we wanted to enforce anyway before condensation)
+            //if (cnode->Active()==false)
+            //  (*vectorinterface)[locindex[dof]] = 0.0;
+
+            // store updated LM into node
+            cnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
+            break;
+          }
+          case MORTAR::StrategyBase::wupdate:
+          {
+            // throw a dserror if node is Active and DBC
+            if (cnode->IsDbc() && cnode->Active())
+              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+            // explicity set global Lag. Mult. to zero for D.B.C nodes
+            if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
+
+            // store updated wcurr into node
+            FriNode* fnode = static_cast<FriNode*>(cnode);
+            fnode->FriDataPlus().wcurr()[(int)(dof/Dim())] = (*vectorinterface)[locindex[(int)(dof/Dim())]];
+            dof=dof+Dim()-1;
+            break;
+          }
+          case MORTAR::StrategyBase::wold:
+          {
+            // throw a dserror if node is Active and DBC
+            if (cnode->IsDbc() && cnode->Active())
+              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+            // explicity set global Lag. Mult. to zero for D.B.C nodes
+            if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
+
+            // store updated wcurr into node
+            FriNode* fnode = static_cast<FriNode*>(cnode);
+            fnode->FriDataPlus().wold()[(int)(dof/Dim())] += (*vectorinterface)[locindex[(int)(dof/Dim())]];
+            dof=dof+Dim()-1;
+            break;
+          }
+          case MORTAR::StrategyBase::activeold:
+          {
+            cnode->CoData().ActiveOld() = cnode->Active();
+            break;
+          }
+          case MORTAR::StrategyBase::slipold:
+          {
+            if (!friction_)
+              dserror("Slip just for friction problems!");
+
+            FriNode* fnode = static_cast<FriNode*>(cnode);
+            fnode->FriData().SlipOld() = fnode->FriData().Slip();
+            break;
+          }
+          case MORTAR::StrategyBase::wear:
+          {
+            if(!friction_)
+              dserror("ERROR: This should not be called for contact without friction");
+              // update wear only once
+              if(dof==0)
+              {
+                FriNode* frinode = static_cast<FriNode*>(cnode);
+                double wearcoeff = Params().get<double>("WEARCOEFF", 0.0);
+
+                if (Params().get<int>("PROBTYPE")!=INPAR::CONTACT::structalewear)
+                  frinode->FriDataPlus().Wear() += wearcoeff*frinode->FriDataPlus().DeltaWear(); // amount of wear
+                else
+                  frinode->FriDataPlus().Wear() = wearcoeff*frinode->FriDataPlus().DeltaWear(); // wear for each ale step
+              }
+            break;
+          }
+          default:
+            dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
+            break;
+          } // switch
+        }
+      } // end slave loop
+
+    }
+
+
   }
 
   return;

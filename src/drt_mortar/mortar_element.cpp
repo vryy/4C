@@ -127,7 +127,8 @@ MORTAR::MortarElement::MortarElement(int id, int owner,
                            const bool isslave) :
 DRT::Element(id,owner),
 shape_(shape),
-isslave_(isslave)
+isslave_(isslave),
+attached_(false)
 {
   SetNodeIds(numnode,nodeids);
   return;

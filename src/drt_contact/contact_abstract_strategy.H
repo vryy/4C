@@ -158,6 +158,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Vector> WearVar() { return w_; }
 
     /*!
+    \brief Return discrete wear vector (t_n+1) Master
+
+    */
+    Teuchos::RCP<Epetra_Vector> WearVarM() { return wm_; }
+
+    /*!
     \brief Return Lagrange multiplier vector (t_n+1)
 
     */
@@ -188,6 +194,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Vector> WearRhs() { return wearrhs_; }
 
     /*!
+    \brief Return wear-master rhs vector (only in saddle-point formulation
+
+    */
+    Teuchos::RCP<Epetra_Vector> WearMRhs() { return wearmrhs_; }
+
+    /*!
     \brief Returns increment of LagrangeMultiplier solution vector in SaddlePointSolve routine
 
     */
@@ -198,6 +210,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     Teuchos::RCP<Epetra_Vector> WSolveIncr() { return wincr_; }
+
+    /*!
+    \brief Returns increment of W-master solution vector in SaddlePointSolve routine
+
+    */
+    Teuchos::RCP<Epetra_Vector> WMSolveIncr() { return wmincr_; }
 
     /*!
     \brief Return mortar matrix D
@@ -274,6 +292,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     bool Friction() { return friction_; }
+
+    /*!
+    \brief Return global both sided wear status
+
+    */
+    bool WearBothDiscrete() { return wbdiscr_; }
 
     /*!
     \brief Return global wear status
@@ -694,6 +718,9 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     virtual Teuchos::RCP<Epetra_Vector> ContactWear2() = 0;
     //virtual std::vector<Teuchos::RCP<CONTACT::WearInterface> > WearInterfaces() = 0;
 
+    virtual const Teuchos::RCP<Epetra_Map> MasterSlipNodes() = 0;
+    virtual const Teuchos::RCP<Epetra_Map> MasterActiveNodes() = 0;
+
     //@}
     
     
@@ -779,9 +806,14 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     
     // contact with wear
     bool wear_;                                           // flag for contact with wear
+    bool wbdiscr_;                                           // flag for both sided wear disrete
     Teuchos::RCP<Epetra_Vector> w_;                       // current vector of discrete wear at t_n+1
     Teuchos::RCP<Epetra_Vector> wincr_;                   // Wear variables vector increment within SaddlePointSolve (this is NOT the increment of w_ between t_{n+1} and t_{n}!)
     Teuchos::RCP<Epetra_Vector> wearrhs_;
+
+    Teuchos::RCP<Epetra_Vector> wm_;                       // current vector of discrete wear at t_n+1
+    Teuchos::RCP<Epetra_Vector> wmincr_;                   // Wear variables vector increment within SaddlePointSolve (this is NOT the increment of w_ between t_{n+1} and t_{n}!)
+    Teuchos::RCP<Epetra_Vector> wearmrhs_;
 
     double inttime_;                                      // integration time
     std::vector<double > ivel_;                           // mean interface velocity

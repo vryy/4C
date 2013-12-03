@@ -61,7 +61,8 @@ namespace INPAR
     enum WearSide
     {
       wear_slave,     ///< wear on slave side
-      wear_both_map  ///< map slave-side wear to master side
+      wear_both_map,  ///< map slave-side wear to master side
+      wear_both_discr
     };
 
     /// Definition of contact wear algorithm

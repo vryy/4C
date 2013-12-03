@@ -96,7 +96,9 @@ class StrategyBase
       pentrac,
       wear,
       wupdate,
-      wold
+      wmupdate,
+      wold,
+      wmold
     };
     //@}
 
@@ -213,8 +215,10 @@ class StrategyBase
     virtual Teuchos::RCP<Epetra_Vector> LagrMultOldRescaled() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ConstrRhs() = 0;
     virtual Teuchos::RCP<Epetra_Vector> WearRhs() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> WearMRhs() = 0;
     virtual Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() = 0;
     virtual Teuchos::RCP<Epetra_Vector> WSolveIncr() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> WMSolveIncr() = 0;
     virtual void MeshInitialization() = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> MMatrix() = 0;
     virtual void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) = 0;
@@ -245,7 +249,9 @@ class StrategyBase
     virtual bool WasInContact() = 0;
     virtual bool WasInContactLastTimeStep() = 0;
     virtual bool Wear() = 0;
- 
+    virtual bool WearBothDiscrete() = 0;
+    virtual const Teuchos::RCP<Epetra_Map> MasterSlipNodes() = 0;
+    virtual const Teuchos::RCP<Epetra_Map> MasterActiveNodes() = 0;
     //@}
 
   protected:

@@ -85,6 +85,10 @@ Maintainer: Alexander Popp
 //#define CONTACTFDE_D              /* flag for FD check of mortar matrix E lin for wear cond */
 //#define CONTACTFDMORTART          /* flag for FD check of mortar matrix T */
 //#define CONTACTFDMORTARE          /* flag for FD check of mortar matrix E */
+//#define CONTACTFDT_D_MASTER       /* flag for FD check of mortar matrix T lin for wear cond (Master side)*/
+//#define CONTACTFDE_D_MASTER       /* flag for FD check of mortar matrix E lin for wear cond (Master side)*/
+//#define CONTACTFDMORTART_MASTER   /* flag for FD check of mortar matrix T (Master side) */
+//#define CONTACTFDMORTARE_MASTER   /* flag for FD check of mortar matrix E (Master side) */
 
 // PRINTING OF SPECIFIC INFORMATION
 //#define MASTERNODESINCONTACT           /* flag for printing master nodes in contact - CONTACTFORCEOUTPUT also has to be switched on*/

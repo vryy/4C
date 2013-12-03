@@ -399,6 +399,11 @@ public:
   virtual bool IsSlave() { return isslave_; }
 
   /*!
+  \brief Return attached status
+
+  */
+  virtual bool IsAttached() { return attached_; }
+  /*!
   \brief Change slave (true) or master status
 
   This changing of contact topology becomes necessary for self contact
@@ -406,6 +411,12 @@ public:
 
   */
   virtual bool& SetSlave() { return isslave_; }
+
+  /*!
+  \brief Return attached status
+
+  */
+  virtual bool& SetAttached() { return attached_; }
 
   /*!
   \brief Return ansatz type (true = quadratic) of element
@@ -712,6 +723,7 @@ protected:
 
   DRT::Element::DiscretizationType              shape_;      // shape of this element
   bool                                          isslave_;    // indicating slave or master side
+  bool                                          attached_;   // bool whether an element contributes to M
 
   Teuchos::RCP<MORTAR::MortarEleDataContainer>  modata_;     // additional information
 

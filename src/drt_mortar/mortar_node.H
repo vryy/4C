@@ -288,6 +288,18 @@ public:
   virtual bool& SetSlave() { return isslave_; }
 
   /*!
+  \brief Return attached status
+
+  */
+  virtual bool IsDetected() { return detected_; }
+
+  /*!
+  \brief Return attached status
+
+  */
+  virtual bool& SetDetected() { return detected_; }
+
+  /*!
   \brief Is slave node tied or untied
   */
   virtual bool IsTiedSlave() const { return istiedslave_;}
@@ -497,6 +509,7 @@ protected:
   double            uold_[3];        // old displacement (last converged state)
   bool              hasproj_;        // true if feasible projection within search set (slave nodes only)
   bool              hassegment_;     // true if some integration segment / cell attached (slave nodes only)
+  bool              detected_;       // true if cnode is detected in active(slip) maps (only for master side)
 
   Teuchos::RCP<MORTAR::MortarNodeDataContainer> modata_;   // additional information of proc's mortar nodes
 

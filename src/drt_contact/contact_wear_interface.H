@@ -43,6 +43,7 @@ Maintainer: Philipp Farah
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_wear.H"
 #include "contact_interface.H"
+#include <Epetra_FEVector.h>
 
 namespace CONTACT
 {
@@ -80,10 +81,23 @@ public:
                           LINALG::SparseMatrix& eglobal);
 
   /*!
+  \brief Assemble Mortar wear matrices T and E (maser side)
+
+  */
+  virtual void AssembleTE_Master(LINALG::SparseMatrix& tglobal,
+                          LINALG::SparseMatrix& eglobal);
+
+  /*!
   \brief Assemble matrices LinT containing linearizations
          w.r.t. displacements
   */
   virtual void AssembleLinT_D(LINALG::SparseMatrix& lintglobal);
+
+  /*!
+  \brief Assemble matrices LinT containing linearizations
+         w.r.t. displacements (for master side)
+  */
+  virtual void AssembleLinT_D_Master(LINALG::SparseMatrix& lintglobal);
 
   /*!
   \brief Assemble matrices LinT containing linearizations
@@ -92,10 +106,22 @@ public:
   virtual void AssembleLinT_LM(LINALG::SparseMatrix& lintglobal);
 
   /*!
+  \brief Assemble matrices LinT containing linearizations
+         w.r.t. LM
+  */
+  virtual void AssembleLinT_LM_Master(LINALG::SparseMatrix& lintglobal);
+
+  /*!
   \brief Assemble matrices LinE containing linearizations
          w.r.t. displacements
   */
   virtual void AssembleLinE_D(LINALG::SparseMatrix& lineglobal);
+
+  /*!
+  \brief Assemble matrices LinE containing linearizations
+         w.r.t. displacements (for master side)
+  */
+  virtual void AssembleLinE_D_Master(LINALG::SparseMatrix& lineglobal);
 
   /*!
   \brief Assemble matrix S containing linearizations
@@ -174,16 +200,34 @@ public:
    virtual bool BuildActiveSet(bool init = false);
 
    /*!
+   \brief Build corresponding active set for master side
+
+   */
+   virtual bool BuildActiveSetMaster();
+
+   /*!
    \brief Check mortar wear T derivatives with finite differences
 
    */
    void FDCheckMortarTDeriv();
 
    /*!
+   \brief Check mortar wear T derivatives with finite differences (Master)
+
+   */
+   void FDCheckMortarT_Master_Deriv();
+
+   /*!
    \brief Check mortar wear E derivatives with finite differences
 
    */
    void FDCheckMortarEDeriv();
+
+   /*!
+   \brief Check mortar wear E derivatives with finite differences (for master)
+
+   */
+   void FDCheckMortarE_Master_Deriv();
 
    /*!
    \brief Check mortar wear T derivatives with finite differences
@@ -193,12 +237,25 @@ public:
    void FDCheckDerivT_D(LINALG::SparseMatrix& lintdis);
 
    /*!
+   \brief Check mortar wear T derivatives with finite differences
+     --> for wear condition (Master)
+
+   */
+   void FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis);
+
+   /*!
    \brief Check mortar wear E derivatives with finite differences
      --> for wear condition
 
    */
    void FDCheckDerivE_D(LINALG::SparseMatrix& linedis);
 
+   /*!
+   \brief Check mortar wear E derivatives with finite differences
+     --> for wear condition (Master)
+
+   */
+   void FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis);
    /*!
    \brief Check weighted gap g derivatives with finite differences
 
@@ -257,9 +314,19 @@ public:
    virtual void AssembleInactiveWearRhs(Epetra_Vector& inactiverhs);
 
    /*!
+   \brief Assemble inactive rhs (incremental delta_w_)
+   */
+   virtual void AssembleInactiveWearRhs_Master(Epetra_FEVector& inactiverhs);
+
+   /*!
    \brief Assemble wear-cond. rhs
    */
    virtual void AssembleWearCondRhs(Epetra_Vector& rhs);
+
+   /*!
+   \brief Assemble wear-cond. rhs
+   */
+   virtual void AssembleWearCondRhs_Master(Epetra_FEVector& rhs);
 
    /*!
    \brief Initialize / reset interface for contact
@@ -291,7 +358,7 @@ public:
 
    */
    void SplitSlaveDofs();
-
+   void SplitMasterDofs();
    /*!
    \brief Set element areas
 
@@ -301,6 +368,19 @@ public:
    void SetElementAreas();
 
    /*!
+   \brief Evaluate nodal normals
+
+   */
+   virtual void EvaluateNodalNormals();
+
+
+   /*!
+   \brief Evaluate nodal normals
+
+   */
+   virtual void ExportNodalNormals();
+
+   /*!
    \brief Update interface Wear variable sets
 
    This update is usually only done ONCE in the initialization phase
@@ -308,15 +388,26 @@ public:
    simulation.
 
    */
-   virtual void UpdateWSets(int offset_if, int maxdofwear);
+   virtual void UpdateWSets(int offset_if, int maxdofwear, bool bothdiscr);
 
    /*!
-   \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
+   \brief Get map of slave wear dofs (Filled()==true is prerequisite)
 
    */
    virtual const Teuchos::RCP<Epetra_Map> WDofs() const
    {
      if (Filled()) return wdofmap_;
+     else dserror("CONTACT::WearInterface::FillComplete was not called");
+     exit(EXIT_FAILURE); // calm down the compiler
+   }
+
+   /*!
+   \brief Get map of master wear dofs (Filled()==true is prerequisite)
+
+   */
+   virtual const Teuchos::RCP<Epetra_Map> WMDofs() const
+   {
+     if (Filled()) return wmdofmap_;
      else dserror("CONTACT::WearInterface::FillComplete was not called");
      exit(EXIT_FAILURE); // calm down the compiler
    }
@@ -333,6 +424,51 @@ public:
    }
 
    /*!
+   \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
+
+   */
+   virtual const Teuchos::RCP<Epetra_Map> MNDofs() const
+   {
+     if (Filled()) return mndofmap_;
+     else dserror("CONTACT::WearInterface::FillComplete was not called");
+     exit(EXIT_FAILURE); // calm down the compiler
+   }
+
+   /*!
+   \brief Get row map of active nodes (Filled()==true is prerequisite)
+
+   */
+   virtual const Teuchos::RCP<Epetra_Map> ActiveMasterNodes() const
+   {
+     if (Filled()) return activmasternodes_;
+     else dserror("CONTACT::Interface::FillComplete was not called");
+     exit(EXIT_FAILURE); // calm down the compiler
+   }
+
+   /*!
+   \brief Get row map of active nodes (Filled()==true is prerequisite)
+
+   */
+   virtual const Teuchos::RCP<Epetra_Map> SlipMasterNodes() const
+   {
+     if (Filled()) return slipmasternodes_;
+     else dserror("CONTACT::Interface::FillComplete was not called");
+     exit(EXIT_FAILURE); // calm down the compiler
+   }
+
+   /*!
+   \brief Get row map of active nodes (Filled()==true is prerequisite)
+
+   */
+   virtual const Teuchos::RCP<Epetra_Map> SlipMasterNDofs() const
+   {
+     if (Filled()) return slipmn_;
+     else dserror("CONTACT::Interface::FillComplete was not called");
+     exit(EXIT_FAILURE); // calm down the compiler
+   }
+
+
+   /*!
    \brief Get type of wear shapefnct
 
    */
@@ -345,11 +481,20 @@ protected:
    Teuchos::RCP<Epetra_Map>      involvednodes_;  // row map of all involved master nodes
    Teuchos::RCP<Epetra_Map>      involveddofs_;   // row map of all involved master dofs
 
-   Teuchos::RCP<Epetra_Map>      wdofmap_;       // row map of all wear dofs
+   Teuchos::RCP<Epetra_Map>      wdofmap_;       // row map of all slave wear dofs
+   Teuchos::RCP<Epetra_Map>      wmdofmap_;      // row map of all master wear dofs
+
    Teuchos::RCP<Epetra_Map>      sndofmap_;      // row map of all slave dofs (first entries)
+   Teuchos::RCP<Epetra_Map>      mndofmap_;      // row map of all master dofs (first entries)
+
+   Teuchos::RCP<Epetra_Map>      activmasternodes_;      // row map of all active master nodes (first entries)
+   Teuchos::RCP<Epetra_Map>      slipmasternodes_;      // row map of all active master nodes (first entries)
+   Teuchos::RCP<Epetra_Map>      slipmn_;      // row map of all active master nodes (first entries)
+
 
    bool wearimpl_;  //bool for implicit wear
    bool weardiscr_;   //bool for wear with own discretization
+   bool wearbothdiscr_;   //bool for wear with own discretization
 
 }; //class
 

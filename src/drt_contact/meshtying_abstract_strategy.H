@@ -424,6 +424,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     bool ActiveSetConverged() {return true;}
     bool ActiveSetSemiSmoothConverged() {return true;}
     bool Friction() {return false;}
+    bool WearBothDiscrete() {return false;}
     bool IsInContact() { return true; }
     bool WasInContact() { return true; }
     bool WasInContactLastTimeStep() { return true; }
@@ -457,7 +458,11 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     const Teuchos::RCP<Epetra_Map> SlipRowNodes() {return Teuchos::null;}
     Teuchos::RCP<Epetra_Vector> WSolveIncr() { return Teuchos::null; }
     Teuchos::RCP<Epetra_Vector> WearRhs() {return Teuchos::null;}
+    Teuchos::RCP<Epetra_Vector> WMSolveIncr() { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> WearMRhs() {return Teuchos::null;}
 
+    virtual const Teuchos::RCP<Epetra_Map> MasterSlipNodes() {return Teuchos::null;};
+    virtual const Teuchos::RCP<Epetra_Map> MasterActiveNodes() {return Teuchos::null;};
     //@}
         
   protected:

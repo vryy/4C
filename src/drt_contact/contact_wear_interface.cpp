@@ -56,6 +56,7 @@ Maintainer: Philipp Farah
 //#include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_mortar.H"
 //#include "../drt_inpar/inpar_wear.H"
+#include <Epetra_FEVector.h>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 09/13|
@@ -68,7 +69,12 @@ CONTACT::WearInterface::WearInterface(const int id, const Epetra_Comm& comm,
 CONTACT::CoInterface(id,comm,dim,icontact,selfcontact,redundant)
 {
   // set wear contact status
-  INPAR::CONTACT::WearType wtype = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(icontact,"WEARTYPE");
+  INPAR::CONTACT::WearType wtype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(icontact,"WEARTYPE");
+
+  INPAR::CONTACT::WearSide wside =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(icontact,"BOTH_SIDED_WEAR");
+
   if (wtype == INPAR::CONTACT::wear_impl)
     wearimpl_ = true;
   else
@@ -80,6 +86,11 @@ CONTACT::CoInterface(id,comm,dim,icontact,selfcontact,redundant)
   else
     weardiscr_=false;
 
+  // set wear contact discretization
+  if (wside == INPAR::CONTACT::wear_both_discr)
+    wearbothdiscr_ = true;
+  else
+    wearbothdiscr_=false;
 
   return;
 }
@@ -185,6 +196,125 @@ void CONTACT::WearInterface::AssembleTE(LINALG::SparseMatrix& tglobal,
         dserror("ERROR: AssembleTE: k = %i but colsize = %i",k,colsize);
     }
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble Mortar wear matrices (for master side)          farah 11/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::WearInterface::AssembleTE_Master(LINALG::SparseMatrix& tglobal,
+                                      LINALG::SparseMatrix& eglobal)
+{
+  /************************************************
+   *  This function is only for discrete Wear !!! *
+   ************************************************/
+
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") !=
+      INPAR::CONTACT::wear_both_discr)
+    dserror("ERROR: AssembleTE_Master only for discr both-sided wear!");
+
+  //*******************************************************
+  // assemble second D matrix for both-sided wear :
+  // Loop over allreduced map, so that any proc join
+  // the loop. Do non-local assembly by FEAssemble to
+  // allow owned and ghosted nodes assembly. In integrator
+  // only the nodes associated to the owned slave element
+  // are filled with entries. Therefore, the integrated
+  // entries are unique on nodes!
+  //*******************************************************
+
+  // nothing to do if no active nodes
+  if (slipmasternodes_==Teuchos::null)
+    return;
+
+  const Teuchos::RCP<Epetra_Map> slmasternodes = LINALG::AllreduceEMap(*(slipmasternodes_));
+
+  // loop over proc's slave nodes of the interface for assembly
+  // use standard row map to assemble each node only once
+  for (int i=0;i<slmasternodes->NumMyElements();++i)
+  {
+    int gid = slmasternodes->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* fnode = static_cast<FriNode*>(node);
+
+    /**************************************************** T-matrix ******/
+    if ((fnode->FriDataPlus().GetT()).size()>0)
+    {
+      std::vector<std::map<int,double> >& tmap = fnode->FriDataPlus().GetT();
+      int colsize = (int)tmap[0].size();
+
+      std::map<int,double>::iterator colcurr;
+
+      int row = fnode->Dofs()[0];
+      int k = 0;
+
+      for (colcurr=tmap[0].begin();colcurr!=tmap[0].end();++colcurr)
+      {
+        int col = colcurr->first;
+        double val = colcurr->second;
+
+        // don't check for diagonality
+        // since for standard shape functions, as in general when using
+        // arbitrary shape function types, this is not the case
+        // create the d matrix, do not assemble zeros
+        if (abs(val)>1.0e-12) tglobal.FEAssemble(val, row, col);
+
+        ++k;
+      }
+
+      if (k!=colsize)
+        dserror("ERROR: AssembleTE: k = %i but colsize = %i",k,colsize);
+
+    }
+
+    /**************************************************** E-matrix ******/
+    if ((fnode->FriDataPlus().GetE()).size()>0)
+    {
+      std::vector<std::map<int,double> >& emap = fnode->FriDataPlus().GetE();
+      int rowsize = 1;//fnode->NumDof();
+      int colsize = (int)emap[0].size();
+
+      for (int j=0;j<rowsize-1;++j)
+        if ((int)emap[j].size() != (int)emap[j+1].size())
+          dserror("ERROR: AssembleTE: Column dim. of nodal E-map is inconsistent!");
+
+      std::map<int,double>::iterator colcurr;
+
+      int row = fnode->Dofs()[0];
+      int k = 0;
+
+      for (colcurr=emap[0].begin();colcurr!=emap[0].end();++colcurr)
+      {
+        int col = colcurr->first;
+        double val = colcurr->second;
+
+        // do not assemble zeros into m matrix
+        if (WearShapeFcn() == INPAR::CONTACT::wear_shape_standard)
+        {
+          if (abs(val)>1.0e-12) eglobal.FEAssemble(val,row,col);
+          ++k;
+        }
+        else if (WearShapeFcn() == INPAR::CONTACT::wear_shape_dual)
+        {
+          if (col==row)
+            if (abs(val)>1.0e-12) eglobal.FEAssemble(val,row,col);
+          ++k;
+        }
+        else
+          dserror("Choosen wear shape function not supported!");
+      }
+
+      if (k!=colsize)
+        dserror("ERROR: AssembleTE: k = %i but colsize = %i",k,colsize);
+    }
+  }
+
 
   return;
 }
@@ -331,6 +461,148 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
 }
 
 /*----------------------------------------------------------------------*
+ |  Assemble matrix LinT containing disp derivatives         farah 11/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::WearInterface::AssembleLinT_D_Master(LINALG::SparseMatrix& lintglobal)
+{
+  /************************************************
+   *  This function is only for discrete Wear !!! *
+   ************************************************/
+
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  // nothing to do if no active nodes
+  if (slipmasternodes_==Teuchos::null)
+    return;
+
+  /**********************************************************************/
+  // we have: T_wj,c with j = Lagrange multiplier slave dof
+  //                 with w = wear slave dof
+  //                 with c = Displacement slave or master dof
+  // we compute (LinT)_kc = T_wj,c * z_j
+  /**********************************************************************/
+  const Teuchos::RCP<Epetra_Map> slmasternodes = LINALG::AllreduceEMap(*(slipmasternodes_));
+
+  for (int j=0;j<slmasternodes->NumMyElements();++j)
+  {
+    int gid = slmasternodes->GID(j);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* fnode = static_cast<FriNode*>(node);
+
+    // Mortar matrix Tw derivatives
+    std::map<int,std::map<int,double> >& tderiv = fnode->FriDataPlus().GetDerivTw();
+
+    // get sizes and iterator start
+    int slavesize = (int)tderiv.size(); // column size
+    std::map<int,std::map<int,double> >::iterator scurr = tderiv.begin();
+
+    /********************************************** LinTMatrix **********/
+    // loop over all DISP slave nodes in the DerivT-map of the current LM slave node
+    for (int k=0;k<slavesize;++k)
+    {
+      int sgid = scurr->first;
+      ++scurr;
+
+      DRT::Node* snode = idiscret_->gNode(sgid);
+      if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
+      FriNode* csnode = static_cast<FriNode*>(snode);
+
+      // current Lagrange multipliers
+      double lmn = 0.0;
+      if (Dim()==2)
+        lmn=(csnode->MoData().lm()[0]) * (csnode->MoData().n()[0]) + (csnode->MoData().lm()[1]) * (csnode->MoData().n()[1]);
+      else if (Dim()==3)
+        lmn=(csnode->MoData().lm()[0]) * (csnode->MoData().n()[0]) + (csnode->MoData().lm()[1]) * (csnode->MoData().n()[1]) + (csnode->MoData().lm()[2]) * (csnode->MoData().n()[2]);
+      else
+        dserror("False Dimension!");
+
+      // Mortar matrix T derivatives
+      std::map<int,double>& thisdderive = fnode->FriDataPlus().GetDerivTw()[sgid];
+      int mapsize = (int)(thisdderive.size());
+
+      // we choose the first node dof as wear dof
+      int row = fnode->Dofs()[0];
+      std::map<int,double>::iterator scolcurr = thisdderive.begin();
+
+      // loop over all directional derivative entries
+      for (int c=0;c<mapsize;++c)
+      {
+        int col = scolcurr->first;
+        double val = lmn * (scolcurr->second);
+        ++scolcurr;
+
+        // owner of LM slave node can do the assembly, although it actually
+        // might not own the corresponding rows in lindglobal (DISP slave node)
+        // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
+        //std::cout << "Assemble LinE: " << row << " " << col << " " << val << std::endl;
+        if (abs(val)>1.0e-12) lintglobal.FEAssemble(val,row,col);
+      }
+
+      // check for completeness of DerivD-Derivatives-iteration
+      if (scolcurr!=thisdderive.end())
+        dserror("ERROR: AssembleLinE_D: Not all derivative entries of DerivE considered!");
+    }
+    // check for completeness of DerivD-Slave-iteration
+    if (scurr!=tderiv.end())
+      dserror("ERROR: AssembleLinE_D: Not all DISP slave entries of DerivE considered!");
+    /******************************** Finished with LinTmatrix for delta T **********/
+  }
+
+  // *******************************************************************************
+  //            Considering linearization of nodal normal vectors                 //
+  // *******************************************************************************
+  // loop over all LM slave nodes (row map)
+  for (int j=0;j<slmasternodes->NumMyElements();++j)
+  {
+    int gid = slmasternodes->GID(j);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* fnode = static_cast<FriNode*>(node);
+
+    if (fnode->FriDataPlus().GetT().size()>0)
+    {
+      // map iterator
+      typedef std::map<int,double>::const_iterator CI;
+      std::map<int,double>& nmap = fnode->FriDataPlus().GetT()[0];
+
+      // loop over col entries
+      for (CI z=nmap.begin();z!=nmap.end();++z)
+      {
+        //std::cout << "t-irst= " << z->first << std::endl;
+        int gid3 = (int)((z->first)/Dim());
+        DRT::Node* snode = idiscret_->gNode(gid3);
+        if (!snode) dserror("ERROR: Cannot find node with gid");
+        FriNode* csnode = static_cast<FriNode*>(snode);
+
+        for (int u=0;u<Dim();++u)
+        {
+          std::map<int,double>& numap = csnode->CoData().GetDerivN()[u];
+          double lmu = csnode->MoData().lm()[u];
+
+          // multiply T-column entry with lin n*lambda
+          for (CI b=numap.begin(); b!=numap.end(); ++b)
+          {
+            int row     =   fnode->Dofs()[0];
+            int col     =   (b->first);
+            double val  =   (z->second) * (b->second) * lmu;
+            // owner of LM slave node can do the assembly, although it actually
+            // might not own the corresponding rows in lindglobal (DISP slave node)
+            // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
+            //std::cout << "Assemble LinT N: " << row << " " << col << " " << val << std::endl;
+            if (abs(val)>1.0e-12) lintglobal.FEAssemble(val,row,col);
+          }
+        }
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Assemble matrix LinE containing disp derivatives         farah 09/13|
  *----------------------------------------------------------------------*/
 void CONTACT::WearInterface::AssembleLinE_D(LINALG::SparseMatrix& lineglobal)
@@ -419,6 +691,99 @@ void CONTACT::WearInterface::AssembleLinE_D(LINALG::SparseMatrix& lineglobal)
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Assemble matrix LinE containing disp derivatives         farah 11/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::WearInterface::AssembleLinE_D_Master(LINALG::SparseMatrix& lineglobal)
+{
+  /************************************************
+   *  This function is only for discrete Wear !!! *
+   ************************************************/
+
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  // nothing to do if no slip nodes
+  if (slipmasternodes_->NumGlobalElements()==0)
+    return;
+
+  /**********************************************************************/
+  // we have: E_wj,c with j = Lagrange multiplier slave dof
+  //                 with w = wear slave dof
+  //                 with c = Displacement slave or master dof
+  // we compute (LinE)_kc = T_wj,c * z_j
+  /**********************************************************************/
+  const Teuchos::RCP<Epetra_Map> slmasternodes = LINALG::AllreduceEMap(*(slipmasternodes_));
+
+  // loop over all LM slave nodes (row map)
+  for (int j=0;j<slmasternodes->NumMyElements();++j)
+  {
+    int gid = slmasternodes->GID(j);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* fnode = static_cast<FriNode*>(node);
+
+    // Mortar matrix Tw derivatives
+    std::map<int,std::map<int,double> >& ederiv = fnode->FriDataPlus().GetDerivE();
+
+    // get sizes and iterator start
+    int slavesize = (int)ederiv.size(); // column size
+    std::map<int,std::map<int,double> >::iterator scurr = ederiv.begin();
+
+    /********************************************** LinTMatrix **********/
+    // loop over all DISP slave nodes in the DerivT-map of the current LM slave node
+    for (int k=0;k<slavesize;++k)
+    {
+      int sgid = scurr->first;
+      ++scurr;
+
+      DRT::Node* snode = idiscret_->gNode(sgid);
+      if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
+      FriNode* csnode = static_cast<FriNode*>(snode);
+
+      // current wear - wear from last converged iteration step (partitioned scheme)
+      double w = 0.0;
+      w=(csnode->FriDataPlus().wcurr()[0] + csnode->FriDataPlus().wold()[0]);
+
+      // Mortar matrix T derivatives
+      std::map<int,double>& thisdderive = fnode->FriDataPlus().GetDerivE()[sgid];
+      int mapsize = (int)(thisdderive.size());
+
+      // we choose the first node dof as wear dof
+      int row = fnode->Dofs()[0];//csnode->Dofs()[0];
+      std::map<int,double>::iterator scolcurr = thisdderive.begin();
+
+      // loop over all directional derivative entries
+      for (int c=0;c<mapsize;++c)
+      {
+        int col = scolcurr->first;
+        double val = w * (scolcurr->second);
+        ++scolcurr;
+
+        // owner of LM slave node can do the assembly, although it actually
+        // might not own the corresponding rows in lindglobal (DISP slave node)
+        // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
+        //std::cout << "Assemble LinE: " << row << " " << col << " " << val << std::endl;
+        if (abs(val)>1.0e-12) lineglobal.FEAssemble(val,row,col);
+      }
+
+      // check for completeness of DerivD-Derivatives-iteration
+      if (scolcurr!=thisdderive.end())
+        dserror("ERROR: AssembleLinE_D: Not all derivative entries of DerivE considered!");
+    }
+    // check for completeness of DerivD-Slave-iteration
+    if (scurr!=ederiv.end())
+      dserror("ERROR: AssembleLinE_D: Not all DISP slave entries of DerivE considered!");
+    /******************************** Finished with LinTmatrix for delta T **********/
+  }
+
+  return;
+}
+
+
+
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinT containing lm derivatives           farah 09/13|
  *----------------------------------------------------------------------*/
@@ -427,7 +792,6 @@ void CONTACT::WearInterface::AssembleLinT_LM(LINALG::SparseMatrix& lintglobal)
   /************************************************
    *  This function is only for discrete Wear !!! *
    ************************************************/
-
 
   // get out of here if not participating in interface
   if (!lComm())
@@ -477,6 +841,517 @@ void CONTACT::WearInterface::AssembleLinT_LM(LINALG::SparseMatrix& lintglobal)
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble matrix LinT containing lm derivatives           farah 11/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::WearInterface::AssembleLinT_LM_Master(LINALG::SparseMatrix& lintglobal)
+{
+  /************************************************
+   *  This function is only for discrete Wear !!! *
+   ************************************************/
+
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  // nothing to do if no active nodes
+  if (slipmasternodes_==Teuchos::null)
+    return;
+
+  const Teuchos::RCP<Epetra_Map> slmasternodes = LINALG::AllreduceEMap(*(slipmasternodes_));
+
+
+  typedef std::map<int,double>::const_iterator CI;
+
+  // loop over all LM slave nodes (row map)
+  for (int j=0;j<slmasternodes->NumMyElements();++j)
+  {
+    int gid = slmasternodes->GID(j);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* fnode = static_cast<FriNode*>(node);
+
+    typedef std::map<int,double>::const_iterator CI;
+
+    if (fnode->FriDataPlus().GetT().size()>0)
+    {
+      // column entries for row f
+      std::map<int,double>& fmap = fnode->FriDataPlus().GetT()[0];
+
+      for (CI p=fmap.begin();p!=fmap.end();++p)
+      {
+        int gid2 = (int)((p->first)/Dim());
+        DRT::Node* node2 = idiscret_->gNode(gid2);
+        if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
+        FriNode* jnode = static_cast<FriNode*>(node2);
+
+        for (int iter=0;iter<Dim();++iter)
+        {
+          double n= 0.0;
+          n=jnode->MoData().n()[iter];
+
+          int row= fnode->Dofs()[0];
+          int col = jnode->Dofs()[iter];
+          double val = n * (p->second);
+          //std::cout << "Assemble LinT: " << row << " " << col << " " << val << std::endl;
+          if (abs(val)>1.0e-12) lintglobal.FEAssemble(val,row,col);
+        }
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate nodal normals (public)                          farah 11/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::WearInterface::EvaluateNodalNormals()
+{
+  // loop over proc's slave nodes of the interface
+  // use row map and export to column map later
+  // (use boundary map to include slave side boundary nodes)
+  for(int i=0; i<snoderowmapbound_->NumMyElements();++i)
+  {
+    int gid = snoderowmapbound_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    MORTAR::MortarNode* mrtrnode = static_cast<MORTAR::MortarNode*>(node);
+
+    // build averaged normal at each slave node
+    mrtrnode->BuildAveragedNormal();
+  }
+
+  // for both-sided discrete wear
+  if(wearbothdiscr_)
+  {
+    for(int i=0; i<mnoderowmap_->NumMyElements();++i)
+    {
+      int gid = mnoderowmap_->GID(i);
+      DRT::Node* node = idiscret_->gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      MORTAR::MortarNode* mrtrnode = static_cast<MORTAR::MortarNode*>(node);
+
+      // build averaged normal at each slave node
+      mrtrnode->BuildAveragedNormal();
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  export nodal normals (public)                            farah 11/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::WearInterface::ExportNodalNormals()
+{
+ // create empty data objects
+ std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > triad;
+
+ std::map<int,std::vector<int> > n_x_key;
+ std::map<int,std::vector<int> > n_y_key;
+ std::map<int,std::vector<int> > n_z_key;
+ std::map<int,std::vector<int> > txi_x_key;
+ std::map<int,std::vector<int> > txi_y_key;
+ std::map<int,std::vector<int> > txi_z_key;
+ std::map<int,std::vector<int> > teta_x_key;
+ std::map<int,std::vector<int> > teta_y_key;
+ std::map<int,std::vector<int> > teta_z_key;
+
+ std::map<int,std::vector<double> > n_x_val;
+ std::map<int,std::vector<double> > n_y_val;
+ std::map<int,std::vector<double> > n_z_val;
+ std::map<int,std::vector<double> > txi_x_val;
+ std::map<int,std::vector<double> > txi_y_val;
+ std::map<int,std::vector<double> > txi_z_val;
+ std::map<int,std::vector<double> > teta_x_val;
+ std::map<int,std::vector<double> > teta_y_val;
+ std::map<int,std::vector<double> > teta_z_val;
+
+ std::map<int,double>::iterator iter;
+
+ // build info on row map
+ for(int i=0; i<snoderowmapbound_->NumMyElements();++i)
+ {
+   int gid = snoderowmapbound_->GID(i);
+   DRT::Node* node = idiscret_->gNode(gid);
+   if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+   CoNode* cnode = static_cast<CoNode*>(node);
+
+   // fill nodal matrix
+   Teuchos::RCP<Epetra_SerialDenseMatrix> loc = Teuchos::rcp(new Epetra_SerialDenseMatrix(3,3));
+   (*loc)(0,0) = cnode->MoData().n()[0];
+   (*loc)(1,0) = cnode->MoData().n()[1];
+   (*loc)(2,0) = cnode->MoData().n()[2];
+   (*loc)(0,1) = cnode->CoData().txi()[0];
+   (*loc)(1,1) = cnode->CoData().txi()[1];
+   (*loc)(2,1) = cnode->CoData().txi()[2];
+   (*loc)(0,2) = cnode->CoData().teta()[0];
+   (*loc)(1,2) = cnode->CoData().teta()[1];
+   (*loc)(2,2) = cnode->CoData().teta()[2];
+
+   triad[gid] = loc;
+
+   // fill nodal derivative vectors
+   std::vector<std::map<int,double> >& derivn    = cnode->CoData().GetDerivN();
+   std::vector<std::map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
+   std::vector<std::map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
+
+   for(iter=derivn[0].begin();iter!=derivn[0].end();++iter)
+   {
+     n_x_key[gid].push_back(iter->first);
+     n_x_val[gid].push_back(iter->second);
+   }
+   for(iter=derivn[1].begin();iter!=derivn[1].end();++iter)
+   {
+     n_y_key[gid].push_back(iter->first);
+     n_y_val[gid].push_back(iter->second);
+   }
+   for(iter=derivn[2].begin();iter!=derivn[2].end();++iter)
+   {
+     n_z_key[gid].push_back(iter->first);
+     n_z_val[gid].push_back(iter->second);
+   }
+
+   for(iter=derivtxi[0].begin();iter!=derivtxi[0].end();++iter)
+   {
+     txi_x_key[gid].push_back(iter->first);
+     txi_x_val[gid].push_back(iter->second);
+   }
+   for(iter=derivtxi[1].begin();iter!=derivtxi[1].end();++iter)
+   {
+     txi_y_key[gid].push_back(iter->first);
+     txi_y_val[gid].push_back(iter->second);
+   }
+   for(iter=derivtxi[2].begin();iter!=derivtxi[2].end();++iter)
+   {
+     txi_z_key[gid].push_back(iter->first);
+     txi_z_val[gid].push_back(iter->second);
+   }
+
+   for(iter=derivteta[0].begin();iter!=derivteta[0].end();++iter)
+   {
+     teta_x_key[gid].push_back(iter->first);
+     teta_x_val[gid].push_back(iter->second);
+   }
+   for(iter=derivteta[1].begin();iter!=derivteta[1].end();++iter)
+   {
+     teta_y_key[gid].push_back(iter->first);
+     teta_y_val[gid].push_back(iter->second);
+   }
+   for(iter=derivteta[2].begin();iter!=derivteta[2].end();++iter)
+   {
+     teta_z_key[gid].push_back(iter->first);
+     teta_z_val[gid].push_back(iter->second);
+   }
+ }
+
+ // communicate from slave node row to column map
+ DRT::Exporter ex(*snoderowmapbound_,*snodecolmapbound_,Comm());
+ ex.Export(triad);
+
+ ex.Export(n_x_key);
+ ex.Export(n_x_val);
+ ex.Export(n_y_key);
+ ex.Export(n_y_val);
+ ex.Export(n_z_key);
+ ex.Export(n_z_val);
+
+ ex.Export(txi_x_key);
+ ex.Export(txi_x_val);
+ ex.Export(txi_y_key);
+ ex.Export(txi_y_val);
+ ex.Export(txi_z_key);
+ ex.Export(txi_z_val);
+
+ ex.Export(teta_x_key);
+ ex.Export(teta_x_val);
+ ex.Export(teta_y_key);
+ ex.Export(teta_y_val);
+ ex.Export(teta_z_key);
+ ex.Export(teta_z_val);
+
+ // extract info on column map
+ for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
+ {
+   // only do something for ghosted nodes
+   int gid = snodecolmapbound_->GID(i);
+   if (snoderowmapbound_->MyGID(gid)) continue;
+
+   DRT::Node* node = idiscret_->gNode(gid);
+   if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+   CoNode* cnode = static_cast<CoNode*>(node);
+
+   // extract info
+   Teuchos::RCP<Epetra_SerialDenseMatrix> loc = triad[gid];
+   cnode->MoData().n()[0]    = (*loc)(0,0);
+   cnode->MoData().n()[1]    = (*loc)(1,0);
+   cnode->MoData().n()[2]    = (*loc)(2,0);
+   cnode->CoData().txi()[0]  = (*loc)(0,1);
+   cnode->CoData().txi()[1]  = (*loc)(1,1);
+   cnode->CoData().txi()[2]  = (*loc)(2,1);
+   cnode->CoData().teta()[0] = (*loc)(0,2);
+   cnode->CoData().teta()[1] = (*loc)(1,2);
+   cnode->CoData().teta()[2] = (*loc)(2,2);
+
+   // extract derivative info
+   std::vector<std::map<int,double> >& derivn    = cnode->CoData().GetDerivN();
+   std::vector<std::map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
+   std::vector<std::map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
+
+   for (int k=0;k<(int)(derivn.size());++k)
+     derivn[k].clear();
+   derivn.resize(3);
+   for (int k=0;k<(int)(derivtxi.size());++k)
+     derivtxi[k].clear();
+   derivtxi.resize(3);
+   for (int k=0;k<(int)(derivteta.size());++k)
+     derivteta[k].clear();
+   derivteta.resize(3);
+
+   for (int k=0;k<(int)(n_x_key[gid].size());++k)
+     (cnode->CoData().GetDerivN()[0])[n_x_key[gid][k]] = n_x_val[gid][k];
+   for (int k=0;k<(int)(n_y_key[gid].size());++k)
+     (cnode->CoData().GetDerivN()[1])[n_y_key[gid][k]] = n_y_val[gid][k];
+   for (int k=0;k<(int)(n_z_key[gid].size());++k)
+     (cnode->CoData().GetDerivN()[2])[n_z_key[gid][k]] = n_z_val[gid][k];
+
+   for (int k=0;k<(int)(txi_x_key[gid].size());++k)
+     (cnode->CoData().GetDerivTxi()[0])[txi_x_key[gid][k]] = txi_x_val[gid][k];
+   for (int k=0;k<(int)(txi_y_key[gid].size());++k)
+     (cnode->CoData().GetDerivTxi()[1])[txi_y_key[gid][k]] = txi_y_val[gid][k];
+   for (int k=0;k<(int)(txi_z_key[gid].size());++k)
+     (cnode->CoData().GetDerivTxi()[2])[txi_z_key[gid][k]] = txi_z_val[gid][k];
+
+   for (int k=0;k<(int)(teta_x_key[gid].size());++k)
+     (cnode->CoData().GetDerivTeta()[0])[teta_x_key[gid][k]] = teta_x_val[gid][k];
+   for (int k=0;k<(int)(teta_y_key[gid].size());++k)
+     (cnode->CoData().GetDerivTeta()[1])[teta_y_key[gid][k]] = teta_y_val[gid][k];
+   for (int k=0;k<(int)(teta_z_key[gid].size());++k)
+     (cnode->CoData().GetDerivTeta()[2])[teta_z_key[gid][k]] = teta_z_val[gid][k];
+ }
+
+ // free memory
+ triad.clear();
+
+ n_x_key.clear();
+ n_y_key.clear();
+ n_z_key.clear();
+ txi_x_key.clear();
+ txi_y_key.clear();
+ txi_z_key.clear();
+ teta_x_key.clear();
+ teta_y_key.clear();
+ teta_z_key.clear();
+
+ n_x_val.clear();
+ n_y_val.clear();
+ n_z_val.clear();
+ txi_x_val.clear();
+ txi_y_val.clear();
+ txi_z_val.clear();
+ teta_x_val.clear();
+ teta_y_val.clear();
+ teta_z_val.clear();
+
+
+
+ // --------------------------------------------------------------------------------------
+ // for both-sided discrete wear we need the same normal information on the master side:
+ // --------------------------------------------------------------------------------------
+ if(wearbothdiscr_)
+ {
+   const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(mnoderowmap_));
+
+   // build info on row map
+    for(int i=0; i<mnoderowmap_->NumMyElements();++i)
+    {
+      int gid = mnoderowmap_->GID(i);
+      DRT::Node* node = idiscret_->gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CoNode* cnode = static_cast<CoNode*>(node);
+
+      // fill nodal matrix
+      Teuchos::RCP<Epetra_SerialDenseMatrix> loc = Teuchos::rcp(new Epetra_SerialDenseMatrix(3,3));
+      (*loc)(0,0) = cnode->MoData().n()[0];
+      (*loc)(1,0) = cnode->MoData().n()[1];
+      (*loc)(2,0) = cnode->MoData().n()[2];
+      (*loc)(0,1) = cnode->CoData().txi()[0];
+      (*loc)(1,1) = cnode->CoData().txi()[1];
+      (*loc)(2,1) = cnode->CoData().txi()[2];
+      (*loc)(0,2) = cnode->CoData().teta()[0];
+      (*loc)(1,2) = cnode->CoData().teta()[1];
+      (*loc)(2,2) = cnode->CoData().teta()[2];
+
+      triad[gid] = loc;
+
+      // fill nodal derivative vectors
+      std::vector<std::map<int,double> >& derivn    = cnode->CoData().GetDerivN();
+      std::vector<std::map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
+      std::vector<std::map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
+
+      for(iter=derivn[0].begin();iter!=derivn[0].end();++iter)
+      {
+        n_x_key[gid].push_back(iter->first);
+        n_x_val[gid].push_back(iter->second);
+      }
+      for(iter=derivn[1].begin();iter!=derivn[1].end();++iter)
+      {
+        n_y_key[gid].push_back(iter->first);
+        n_y_val[gid].push_back(iter->second);
+      }
+      for(iter=derivn[2].begin();iter!=derivn[2].end();++iter)
+      {
+        n_z_key[gid].push_back(iter->first);
+        n_z_val[gid].push_back(iter->second);
+      }
+
+      for(iter=derivtxi[0].begin();iter!=derivtxi[0].end();++iter)
+      {
+        txi_x_key[gid].push_back(iter->first);
+        txi_x_val[gid].push_back(iter->second);
+      }
+      for(iter=derivtxi[1].begin();iter!=derivtxi[1].end();++iter)
+      {
+        txi_y_key[gid].push_back(iter->first);
+        txi_y_val[gid].push_back(iter->second);
+      }
+      for(iter=derivtxi[2].begin();iter!=derivtxi[2].end();++iter)
+      {
+        txi_z_key[gid].push_back(iter->first);
+        txi_z_val[gid].push_back(iter->second);
+      }
+
+      for(iter=derivteta[0].begin();iter!=derivteta[0].end();++iter)
+      {
+        teta_x_key[gid].push_back(iter->first);
+        teta_x_val[gid].push_back(iter->second);
+      }
+      for(iter=derivteta[1].begin();iter!=derivteta[1].end();++iter)
+      {
+        teta_y_key[gid].push_back(iter->first);
+        teta_y_val[gid].push_back(iter->second);
+      }
+      for(iter=derivteta[2].begin();iter!=derivteta[2].end();++iter)
+      {
+        teta_z_key[gid].push_back(iter->first);
+        teta_z_val[gid].push_back(iter->second);
+      }
+    }
+
+    // communicate from master node row to column map
+    DRT::Exporter ex(*mnoderowmap_,*masternodes,Comm());
+    ex.Export(triad);
+
+    ex.Export(n_x_key);
+    ex.Export(n_x_val);
+    ex.Export(n_y_key);
+    ex.Export(n_y_val);
+    ex.Export(n_z_key);
+    ex.Export(n_z_val);
+
+    ex.Export(txi_x_key);
+    ex.Export(txi_x_val);
+    ex.Export(txi_y_key);
+    ex.Export(txi_y_val);
+    ex.Export(txi_z_key);
+    ex.Export(txi_z_val);
+
+    ex.Export(teta_x_key);
+    ex.Export(teta_x_val);
+    ex.Export(teta_y_key);
+    ex.Export(teta_y_val);
+    ex.Export(teta_z_key);
+    ex.Export(teta_z_val);
+
+    // extract info on column map
+    for(int i=0; i<masternodes->NumMyElements();++i)
+    {
+      // only do something for ghosted nodes
+      int gid = masternodes->GID(i);
+      DRT::Node* node = idiscret_->gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CoNode* cnode = static_cast<CoNode*>(node);
+
+      if (cnode->Owner()==Comm().MyPID())
+        continue;
+
+      // extract info
+      Teuchos::RCP<Epetra_SerialDenseMatrix> loc = triad[gid];
+      cnode->MoData().n()[0]    = (*loc)(0,0);
+      cnode->MoData().n()[1]    = (*loc)(1,0);
+      cnode->MoData().n()[2]    = (*loc)(2,0);
+      cnode->CoData().txi()[0]  = (*loc)(0,1);
+      cnode->CoData().txi()[1]  = (*loc)(1,1);
+      cnode->CoData().txi()[2]  = (*loc)(2,1);
+      cnode->CoData().teta()[0] = (*loc)(0,2);
+      cnode->CoData().teta()[1] = (*loc)(1,2);
+      cnode->CoData().teta()[2] = (*loc)(2,2);
+
+      // extract derivative info
+      std::vector<std::map<int,double> >& derivn    = cnode->CoData().GetDerivN();
+      std::vector<std::map<int,double> >& derivtxi  = cnode->CoData().GetDerivTxi();
+      std::vector<std::map<int,double> >& derivteta = cnode->CoData().GetDerivTeta();
+
+      for (int k=0;k<(int)(derivn.size());++k)
+        derivn[k].clear();
+      derivn.resize(3);
+      for (int k=0;k<(int)(derivtxi.size());++k)
+        derivtxi[k].clear();
+      derivtxi.resize(3);
+      for (int k=0;k<(int)(derivteta.size());++k)
+        derivteta[k].clear();
+      derivteta.resize(3);
+
+      for (int k=0;k<(int)(n_x_key[gid].size());++k)
+        (cnode->CoData().GetDerivN()[0])[n_x_key[gid][k]] = n_x_val[gid][k];
+      for (int k=0;k<(int)(n_y_key[gid].size());++k)
+        (cnode->CoData().GetDerivN()[1])[n_y_key[gid][k]] = n_y_val[gid][k];
+      for (int k=0;k<(int)(n_z_key[gid].size());++k)
+        (cnode->CoData().GetDerivN()[2])[n_z_key[gid][k]] = n_z_val[gid][k];
+
+      for (int k=0;k<(int)(txi_x_key[gid].size());++k)
+        (cnode->CoData().GetDerivTxi()[0])[txi_x_key[gid][k]] = txi_x_val[gid][k];
+      for (int k=0;k<(int)(txi_y_key[gid].size());++k)
+        (cnode->CoData().GetDerivTxi()[1])[txi_y_key[gid][k]] = txi_y_val[gid][k];
+      for (int k=0;k<(int)(txi_z_key[gid].size());++k)
+        (cnode->CoData().GetDerivTxi()[2])[txi_z_key[gid][k]] = txi_z_val[gid][k];
+
+      for (int k=0;k<(int)(teta_x_key[gid].size());++k)
+        (cnode->CoData().GetDerivTeta()[0])[teta_x_key[gid][k]] = teta_x_val[gid][k];
+      for (int k=0;k<(int)(teta_y_key[gid].size());++k)
+        (cnode->CoData().GetDerivTeta()[1])[teta_y_key[gid][k]] = teta_y_val[gid][k];
+      for (int k=0;k<(int)(teta_z_key[gid].size());++k)
+        (cnode->CoData().GetDerivTeta()[2])[teta_z_key[gid][k]] = teta_z_val[gid][k];
+    }
+
+    // free memory
+    triad.clear();
+
+    n_x_key.clear();
+    n_y_key.clear();
+    n_z_key.clear();
+    txi_x_key.clear();
+    txi_y_key.clear();
+    txi_z_key.clear();
+    teta_x_key.clear();
+    teta_y_key.clear();
+    teta_z_key.clear();
+
+    n_x_val.clear();
+    n_y_val.clear();
+    n_z_val.clear();
+    txi_x_val.clear();
+    txi_y_val.clear();
+    txi_z_val.clear();
+    teta_x_val.clear();
+    teta_y_val.clear();
+    teta_z_val.clear();
+ }
+
+ return;
 }
 
 /*----------------------------------------------------------------------*
@@ -2520,9 +3395,275 @@ void CONTACT::WearInterface::AssembleD2(LINALG::SparseMatrix& dglobal)
     }
   }
 
-  //std::cout << "dglobal= " << dglobal << std::endl;
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  build active set (nodes / dofs) for Master               farah 11/13|
+ *----------------------------------------------------------------------*/
+bool CONTACT::WearInterface::BuildActiveSetMaster()
+{
+  //****************************************
+  //for both-sided discr wear
+  //****************************************
+
+  // spread active and slip information to all procs
+  std::vector<int> a;
+  std::vector<int> sl;
+  // loop over all slave nodes on the current interface
+  for (int j=0;j<SlaveRowNodes()->NumMyElements();++j)
+  {
+    int gid = SlaveRowNodes()->GID(j);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* frinode = static_cast<FriNode*>(node);
+
+    if (frinode->Active())
+      a.push_back(frinode->Id());
+
+    if (frinode->FriData().Slip())
+      sl.push_back(frinode->Id());
+  }
+  Teuchos::RCP<Epetra_Map> auxa = Teuchos::rcp(new Epetra_Map(-1,(int)a.size(),&a[0],0,Comm()));
+  Teuchos::RCP<Epetra_Map> auxsl = Teuchos::rcp(new Epetra_Map(-1,(int)sl.size(),&sl[0],0,Comm()));
+
+  const Teuchos::RCP<Epetra_Map> ara = LINALG::AllreduceEMap(*(auxa));
+  const Teuchos::RCP<Epetra_Map> arsl = LINALG::AllreduceEMap(*(auxsl));
+
+  for (int j=0;j<SlaveColNodes()->NumMyElements();++j)
+  {
+    int gid = SlaveColNodes()->GID(j);
+
+    if(ara->LID(gid)==-1)
+      continue;
+
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);;
+    FriNode* frinode = static_cast<FriNode*>(node);
+
+    if(frinode->Owner()!=Comm().MyPID())
+    {
+      frinode->Active()=true;
+    }
+  }
+  for (int j=0;j<SlaveColNodes()->NumMyElements();++j)
+  {
+    int gid = SlaveColNodes()->GID(j);
+
+    if(arsl->LID(gid)==-1)
+      continue;
+
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);;
+    FriNode* frinode = static_cast<FriNode*>(node);
+
+    if(frinode->Owner()!=Comm().MyPID())
+      frinode->FriData().Slip()=true;
+  }
+
+  // spread info for attached status...
+  const Teuchos::RCP<Epetra_Map> meleall = LINALG::AllreduceEMap(*(MasterRowElements()));
+  std::vector<int> eleatt;
+
+  for (int j=0;j<meleall->NumMyElements();++j)
+  {
+    int gid = meleall->GID(j);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find node with gid %",gid);
+    MORTAR::MortarElement* moele = static_cast<MORTAR::MortarElement*>(ele);
+
+    if(moele->IsAttached()==true)
+      eleatt.push_back(moele->Id());
+  }
+  Teuchos::RCP<Epetra_Map> auxe = Teuchos::rcp(new Epetra_Map(-1,(int)eleatt.size(),&eleatt[0],0,Comm()));
+  const Teuchos::RCP<Epetra_Map> att = LINALG::AllreduceEMap(*(auxe));
+  for (int j=0;j<att->NumMyElements();++j)
+  {
+    int gid = att->GID(j);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find node with gid %",gid);
+    MORTAR::MortarElement* moele = static_cast<MORTAR::MortarElement*>(ele);
+
+    if(moele->IsAttached()==false)
+      moele->SetAttached()=true;
+  }
+
+
+  //Detect maps
+
+  std::vector<int> wa;
+  std::vector<int> wsl;
+  std::vector<int> wad;
+  std::vector<int> wsln;
+
+  // loop over all slave nodes on the current interface
+  for (int j=0;j<SlaveColNodes()->NumMyElements();++j)
+  {
+    int gid = SlaveColNodes()->GID(j);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* frinode = static_cast<FriNode*>(node);
+
+    // get elements from node (SLAVE)
+    for(int u=0;u<(int)frinode->NumElement();++u)
+    {
+      // all found MASTER elements:
+      for(int k=0;k<(int)static_cast<MORTAR::MortarElement*>(frinode->Elements()[u])->MoData().NumSearchElements();++k)
+      {
+        int gid2 = static_cast<MORTAR::MortarElement*>(frinode->Elements()[u])->MoData().SearchElements()[k];
+        DRT::Element* ele2 = Discret().gElement(gid2);
+        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+        MORTAR::MortarElement* celement = static_cast<MORTAR::MortarElement*>(ele2);
+
+        // nodes cor. to this master element
+        if(celement->IsAttached()==true)
+        {
+          for(int p=0;p<celement->NumNode();++p)
+          {
+            FriNode* mnode = static_cast<FriNode*>(celement->Nodes()[p]);
+
+            if(mnode->IsDetected()==false)
+            {
+              // active master nodes!
+              if(frinode->Active())
+              {
+                wa.push_back(celement->Nodes()[p]->Id());
+                wad.push_back(static_cast<MORTAR::MortarNode*>(celement->Nodes()[p])->Dofs()[0]);
+              }
+
+              //slip master nodes!
+              if(frinode->FriData().Slip())
+              {
+                wsl.push_back(celement->Nodes()[p]->Id());
+                wsln.push_back(static_cast<MORTAR::MortarNode*>(celement->Nodes()[p])->Dofs()[0]);
+              }
+
+              //set detection status
+//              if(frinode->Active() || frinode->FriData().Slip())
+//                mnode->SetDetected()=true;
+            }
+          }
+        }
+      }
+    }
+  }//node loop
+
+  //reset nodes
+  // loop over all master nodes on the current interface
+  const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(mnodecolmap_));
+  const Teuchos::RCP<Epetra_Map> mastereles = LINALG::AllreduceEMap(*(melecolmap_));
+
+  for (int j=0;j<masternodes->NumMyElements();++j)
+  {
+    int gid = masternodes->GID(j);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* mnode = static_cast<FriNode*>(node);
+
+    mnode->SetDetected()=false;
+  }
+  for (int j=0;j<mastereles->NumMyElements();++j)
+  {
+    int gid = mastereles->GID(j);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find element with gid %",gid);
+    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+
+    mele->SetAttached()=false;
+  }
+
+  Teuchos::RCP<Epetra_Map> actmn = Teuchos::rcp(new Epetra_Map(-1,(int)wa.size(),&wa[0],0,Comm()));
+  Teuchos::RCP<Epetra_Map> slimn = Teuchos::rcp(new Epetra_Map(-1,(int)wsl.size(),&wsl[0],0,Comm()));
+  Teuchos::RCP<Epetra_Map> slimd = Teuchos::rcp(new Epetra_Map(-1,(int)wsln.size(),&wsln[0],0,Comm()));
+
+  const Teuchos::RCP<Epetra_Map> ARactmn = LINALG::AllreduceEMap(*(actmn));
+  const Teuchos::RCP<Epetra_Map> ARslimn = LINALG::AllreduceEMap(*(slimn));
+
+  std::vector<int> ga;
+  std::vector<int> gs;
+  std::vector<int> gsd;
+
+  for (int j=0;j<ARactmn->NumMyElements();++j)
+  {
+    int gid = ARactmn->GID(j);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* mnode = static_cast<FriNode*>(node);
+
+    if(mnode->Owner()==Comm().MyPID())
+    {
+      bool isin=false;
+      for (int k=0;k<(int)ga.size();++k)
+      {
+        if(ga[k] == mnode->Id())
+          isin=true;
+      }
+      if(!isin)
+        ga.push_back(mnode->Id());
+    }
+  }
+
+
+  for (int j=0;j<ARslimn->NumMyElements();++j)
+  {
+    int gid = ARslimn->GID(j);
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* mnode = static_cast<FriNode*>(node);
+
+    if(mnode->Owner()==Comm().MyPID())
+    {
+      bool isin=false;
+      for (int k=0;k<(int)gs.size();++k)
+      {
+        if(gs[k] == mnode->Id())
+          isin=true;
+      }
+      if(!isin)
+      {
+        gs.push_back(mnode->Id());
+        gsd.push_back(mnode->Dofs()[0]);
+      }
+    }
+  }
+
+  activmasternodes_ = Teuchos::rcp(new Epetra_Map(-1,(int)ga.size(),&ga[0],0,Comm()));
+  slipmasternodes_  = Teuchos::rcp(new Epetra_Map(-1,(int)gs.size(),&gs[0],0,Comm()));
+  slipmn_           = Teuchos::rcp(new Epetra_Map(-1,(int)gsd.size(),&gsd[0],0,Comm()));
+
+
+  for (int j=0;j<SlaveColNodes()->NumMyElements();++j)
+  {
+    int gid = SlaveColNodes()->GID(j);
+
+    if(ara->LID(gid)==-1)
+      continue;
+
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);;
+    FriNode* frinode = static_cast<FriNode*>(node);
+
+    if(frinode->Owner()!=Comm().MyPID())
+      frinode->Active()=false;
+  }
+  for (int j=0;j<SlaveColNodes()->NumMyElements();++j)
+  {
+    int gid = SlaveColNodes()->GID(j);
+
+    if(arsl->LID(gid)==-1)
+      continue;
+
+    DRT::Node* node = Discret().gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);;
+    FriNode* frinode = static_cast<FriNode*>(node);
+
+    if(frinode->Owner()!=Comm().MyPID())
+      frinode->FriData().Slip()=false;
+  }
+
+
+  return true;
 }
 
 /*----------------------------------------------------------------------*
@@ -2644,7 +3785,8 @@ bool CONTACT::WearInterface::BuildActiveSet(bool init)
 
   // *******************************************************
   // loop over all master nodes - both-sided wear specific
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR")
+      == INPAR::CONTACT::wear_both_map)
   {
     // The node and dof map of involved master nodes for both-sided wear should have an
     // analog distribution as the master node row map. Therefore, we loop over
@@ -2691,7 +3833,8 @@ bool CONTACT::WearInterface::BuildActiveSet(bool init)
   activedofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)mydofgids.size(),&mydofgids[0],0,Comm()));
 
   // create map for all involved master nodes -- both-sided wear specific
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR")
+      == INPAR::CONTACT::wear_both_map)
   {
     involvednodes_ = Teuchos::rcp(new Epetra_Map(-1,(int)mymnodegids.size(),&mymnodegids[0],0,Comm()));
     involveddofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)mymdofgids.size(),&mymdofgids[0],0,Comm()));
@@ -3039,7 +4182,8 @@ void CONTACT::WearInterface::FillComplete(int maxdof)
   // here we need a datacontainer for the masternodes too
   // they have to know their involved nodes/dofs
   //***********************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR")
+      != INPAR::CONTACT::wear_slave)
   {
     const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
 
@@ -3137,11 +4281,79 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
 
       w_owner[0] = cnode->Owner();
       w_i[0]     = - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
-      w_gid[0]   = inactivedofs->GID(3*i);
+      w_gid[0]   = cnode->Dofs()[0];//inactivedofs->GID(3*i);
 
       if (abs(w_i[0])>1e-12) LINALG::Assemble(inactiverhs, w_i, w_gid, w_owner);
     }
   }
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble inactive wear right hand side                   farah 11/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::WearInterface::AssembleInactiveWearRhs_Master(Epetra_FEVector& inactiverhs)
+{
+  /************************************************
+   *  This function is only for discrete Wear !!! *
+   ************************************************/
+
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  Teuchos::RCP<Epetra_Map> inactivenodes  = LINALG::SplitMap(*mnoderowmap_, *slipmasternodes_);
+  Teuchos::RCP<Epetra_Map> inactivedofs  = LINALG::SplitMap(*(MNDofs()), *slipmn_);
+
+
+
+  const Teuchos::RCP<Epetra_Map> allredi = LINALG::AllreduceEMap(*(inactivedofs));
+
+  Teuchos::RCP<Epetra_Vector> rhs= LINALG::CreateVector(*allredi, true);
+
+  for (int i=0;i<inactivenodes->NumMyElements();++i)
+  {
+    int gid = inactivenodes->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* cnode = static_cast<FriNode*>(node);
+
+    if (cnode->Owner() != Comm().MyPID())
+      dserror("ERROR: AssembleInactiverhs: Node ownership inconsistency!");
+
+    if (Dim() == 2)
+    {
+      std::vector<int> w_gid(1);
+      std::vector<int> w_owner(1);
+
+      // calculate the tangential rhs
+      Epetra_SerialDenseVector w_i(1);
+
+      w_owner[0] = Comm().MyPID();//cnode->Owner();
+      w_i[0]     = - cnode->FriDataPlus().wold()[0] - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
+      w_gid[0]   = cnode->Dofs()[0];//inactivedofs->GID(2*i);
+
+      if (abs(w_i[0])>1e-12) LINALG::Assemble(*rhs, w_i, w_gid, w_owner);
+    }
+    else if (Dim() == 3)
+    {
+      std::vector<int> w_gid(1);
+      std::vector<int> w_owner(1);
+
+      // calculate the tangential rhs
+      Epetra_SerialDenseVector w_i(1);
+
+      w_owner[0] = Comm().MyPID();//cnode->Owner();
+      w_i[0]     = - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
+      w_gid[0]   = cnode->Dofs()[0];//inactivedofs->GID(3*i);
+
+      if (abs(w_i[0])>1e-12) LINALG::Assemble(*rhs, w_i, w_gid, w_owner);
+    }
+  }
+
+  RCP<Epetra_Export> exp = Teuchos::rcp(new Epetra_Export(*allredi,*inactivedofs));
+  inactiverhs.Export(*rhs,*exp,Add);
+
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -3232,8 +4444,107 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
       }
     }
   }
+
+  return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Assemble wear-cond. right hand side (discr)              farah 11/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::WearInterface::AssembleWearCondRhs_Master(Epetra_FEVector& RHS)
+{
+  /************************************************
+   *  This function is only for discrete Wear !!! *
+   ************************************************/
+
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  // nothing to do if no active nodes
+  if (slipmasternodes_==Teuchos::null)
+    return;
+
+  INPAR::CONTACT::SystemType systype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(IParams(),"SYSTEM");
+
+  double wcoeff = IParams().get<double>("WEARCOEFF_MASTER");
+
+  typedef std::map<int,double>::const_iterator CI;
+
+  const Teuchos::RCP<Epetra_Map> slmasternodes = LINALG::AllreduceEMap(*(slipmasternodes_));
+  const Teuchos::RCP<Epetra_Map> slmastern = LINALG::AllreduceEMap(*(slipmn_));
+
+  Teuchos::RCP<Epetra_Vector> rhs= LINALG::CreateVector(*slmastern, true);
+
+  for (int i=0;i<slmasternodes->NumMyElements();++i)
+  {
+    int gid = slmasternodes->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    FriNode* fnode = static_cast<FriNode*>(node);
+
+    /**************************************************** E-matrix ******/
+    if ((fnode->FriDataPlus().GetE()).size()>0)
+    {
+      std::map<int,double>  emap = fnode->FriDataPlus().GetE()[0];
+
+      for (CI p=emap.begin();p!=emap.end();++p)
+      {
+        int gid3 = (int)((p->first)/Dim());
+        DRT::Node* snode = idiscret_->gNode(gid3);
+        if (!snode) dserror("ERROR: Cannot find node with gid");
+        FriNode* csnode = static_cast<FriNode*>(snode);
+
+        std::vector<int> w_gid(1);
+        std::vector<int> w_owner(1);
+
+        Epetra_SerialDenseVector w_i(1);
+
+        w_owner[0] = Comm().MyPID();//fnode->Owner();
+        w_i[0]     = (- (csnode->FriDataPlus().wold()[0]) - (csnode->FriDataPlus().wcurr()[0])) * (p->second);
+        w_gid[0]   = fnode->Dofs()[0];
+
+        if (abs(w_i[0])>1e-15) LINALG::Assemble(*rhs, w_i, w_gid, w_owner);
+      }
+    }
+
+    /**************************************************** T-matrix ******/
+    // for condensation of lm and wear we condense the system with absol. lm
+    // --> therefore we do not need the lm^i term...
+    if (((fnode->FriDataPlus().GetT()).size()>0) && systype != INPAR::CONTACT::system_condensed)
+    {
+      std::map<int,double> tmap = fnode->FriDataPlus().GetT()[0];
+
+      for (CI p=tmap.begin();p!=tmap.end();++p)
+      {
+        int gid3 = (int)((p->first)/Dim());
+        DRT::Node* snode = idiscret_->gNode(gid3);
+        if (!snode) dserror("ERROR: Cannot find node with gid");
+        FriNode* csnode = static_cast<FriNode*>(snode);
+
+        double lmn = 0.0;
+        for (int u=0;u<Dim();++u)
+          lmn += (csnode->MoData().n()[u]) * (csnode->MoData().lm()[u]);
+
+        std::vector<int> w_gid(1);
+        std::vector<int> w_owner(1);
+
+        Epetra_SerialDenseVector w_i(1);
+
+        w_owner[0] = Comm().MyPID();//fnode->Owner();
+        w_i[0]     = wcoeff * lmn * (p->second);
+        w_gid[0]   = fnode->Dofs()[0];
+
+        if (abs(w_i[0])>1e-15) LINALG::Assemble(*rhs, w_i, w_gid, w_owner);
+      }
+    }
+  }
+
+  RCP<Epetra_Export> exp = Teuchos::rcp(new Epetra_Export(*slmastern,*slipmn_));
+  RHS.Export(*rhs,*exp,Add);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  initialize / reset interface for wear                    farah 09/13|
@@ -3276,7 +4587,7 @@ void CONTACT::WearInterface::Initialize()
   //**************************************************
   // for both-sided wear
   //**************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") == INPAR::CONTACT::wear_both_map)
   {
     const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
 
@@ -3430,6 +4741,33 @@ void CONTACT::WearInterface::Initialize()
     }
   }
 
+  // for both-sided wear with discrete wear
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") ==
+      INPAR::CONTACT::wear_both_discr)
+  {
+    const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
+
+    for (int i=0;i<masternodes->NumMyElements();++i) //for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
+    {
+      int gid = masternodes->GID(i);
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      FriNode* frinode = static_cast<FriNode*>(node);
+
+      // reset nodal Mortar wear maps
+      for (int j=0;j<(int)((frinode->FriDataPlus().GetT()).size());++j)
+        (frinode->FriDataPlus().GetT())[j].clear();
+      for (int j=0;j<(int)((frinode->FriDataPlus().GetE()).size());++j)
+        (frinode->FriDataPlus().GetE())[j].clear();
+
+      (frinode->FriDataPlus().GetT()).resize(0);
+      (frinode->FriDataPlus().GetE()).resize(0);
+
+      (frinode->FriDataPlus().GetDerivTw()).clear();
+      (frinode->FriDataPlus().GetDerivE()).clear();
+    }
+  }
+
   //**********************************************************************
   // In general, it is sufficient to reset search candidates only for
   // all elements in the standard slave column map. However, self contact
@@ -3537,6 +4875,62 @@ void CONTACT::WearInterface::SplitSlaveDofs()
 }
 
 /*----------------------------------------------------------------------*
+ |  create mnode n_                                          farah 11/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::WearInterface::SplitMasterDofs()
+{
+  // get out of here if active set is empty
+  if (mnoderowmap_==Teuchos::null)
+  {
+    mndofmap_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
+    return;
+  }
+
+  else if (mnoderowmap_->NumGlobalElements()==0)
+  {
+    mndofmap_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
+    return;
+  }
+
+  // define local variables
+  int countN=0;
+  std::vector<int> myNgids(mnoderowmap_->NumMyElements());
+
+  // dimension check
+  double dimcheck =(mdofrowmap_->NumGlobalElements())/(mnoderowmap_->NumGlobalElements());
+  if (dimcheck != Dim()) dserror("ERROR: SplitMasterDofs: Nodes <-> Dofs dimension mismatch!");
+
+  // loop over all slave nodes
+  for (int i=0;i<mnoderowmap_->NumMyElements();++i)
+  {
+    int gid = mnoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = static_cast<CoNode*>(node);
+
+    // add first dof to Nmap
+    myNgids[countN] = cnode->Dofs()[0];
+    ++countN;
+  }
+
+  // resize the temporary vectors
+  myNgids.resize(countN);
+
+  // communicate countN and countT among procs
+  int gcountN;
+  Comm().SumAll(&countN,&gcountN,1);
+
+  // check global dimensions
+  if ((gcountN)!=mnoderowmap_->NumGlobalElements())
+    dserror("ERROR: SplitSlaveDofs: Splitting went wrong!");
+
+  // create Nmap and Tmap objects
+  mndofmap_ = Teuchos::rcp(new Epetra_Map(gcountN,countN,&myNgids[0],0,Comm()));
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  compute element areas (public)                            popp 11/07|
  *----------------------------------------------------------------------*/
 void CONTACT::WearInterface::SetElementAreas()
@@ -3585,7 +4979,7 @@ void CONTACT::WearInterface::SetElementAreas()
 /*----------------------------------------------------------------------*
  |  update wear set (dofs)                                   farah 09/13|
  *----------------------------------------------------------------------*/
-void CONTACT::WearInterface::UpdateWSets(int offset_if, int maxdofwear)
+void CONTACT::WearInterface::UpdateWSets(int offset_if, int maxdofwear, bool bothdiscr)
 {
   //********************************************************************
   // WEAR DOFS --  one per node
@@ -3614,6 +5008,37 @@ void CONTACT::WearInterface::UpdateWSets(int offset_if, int maxdofwear)
   // (if maxdofglobal_ == 0, we do not want / need this)
   if (maxdofwear>0)
     wdofmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)wdof.size(),&wdof[0],0,Comm()));
+
+  //********************************************************************
+  // For discrete both-sided wear
+  //********************************************************************
+  if(bothdiscr)
+  {
+    // temporary vector of W dofs
+    std::vector<int> wmdof;
+
+    maxdofwear+=wdofmap_->NumGlobalElements();
+
+    // gather information over all procs
+    std::vector<int> localnumwdof(Comm().NumProc());
+    std::vector<int> globalnumlmdof(Comm().NumProc());
+    localnumwdof[Comm().MyPID()] = (int)( (mdofrowmap_->NumMyElements())/Dim() );
+    Comm().SumAll(&localnumwdof[0],&globalnumlmdof[0],Comm().NumProc());
+
+    // compute offet for LM dof initialization for all procs
+    int offset = 0;
+    for (int k=0;k<Comm().MyPID();++k)
+      offset += globalnumlmdof[k];
+
+    // loop over all slave dofs and initialize LM dofs
+    for (int i=0; i<(int)( (mdofrowmap_->NumMyElements())/Dim() ); ++i)
+      wmdof.push_back(maxdofwear + 1 + offset_if + offset + i);
+
+    // create interface w map
+    // (if maxdofglobal_ == 0, we do not want / need this)
+    if (maxdofwear>0)
+      wmdofmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)wmdof.size(),&wmdof[0],0,Comm()));
+  }
 
   return;
 }

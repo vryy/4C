@@ -1753,14 +1753,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                 INPAR::CONTACT::wear_shape_standard, INPAR::CONTACT::wear_shape_standard, INPAR::CONTACT::wear_shape_standard),
         &wear);
 
-  DoubleParameter("WEARCOEFF",0.0,"Wear coefficient",&wear);
+  DoubleParameter("WEARCOEFF",0.0,"Wear coefficient for slave surface",&wear);
+  DoubleParameter("WEARCOEFF_MASTER",0.0,"Wear coefficient for master surface",&wear);
 
   setStringToIntegralParameter<int>("BOTH_SIDED_WEAR","No","Definition of wear side",
         tuple<std::string>("No","no", "none" ,
-                           "Mapping","mapping", "map"),
+                           "Mapping","mapping", "map",
+                           "bothdiscr","bd", "sm"),
         tuple<int>(
                 INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave,
-                INPAR::CONTACT::wear_both_map, INPAR::CONTACT::wear_both_map,INPAR::CONTACT::wear_both_map),
+                INPAR::CONTACT::wear_both_map, INPAR::CONTACT::wear_both_map,INPAR::CONTACT::wear_both_map,
+                INPAR::CONTACT::wear_both_discr, INPAR::CONTACT::wear_both_discr,INPAR::CONTACT::wear_both_discr),
         &wear);
 
   setStringToIntegralParameter<int>("WEARTYPE","explicit","Definition of wear algorithm",

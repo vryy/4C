@@ -893,6 +893,21 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   Teuchos::RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
   LINALG::Export(*activeset,*activesetexp);
 
+  if (GetStrategy().WearBothDiscrete())
+  {
+    Teuchos::RCP<Epetra_Vector> mactiveset = Teuchos::rcp(new Epetra_Vector(*GetStrategy().MasterActiveNodes()));
+    mactiveset->PutScalar(1.0);
+    Teuchos::RCP<Epetra_Vector> slipset = Teuchos::rcp(new Epetra_Vector(*GetStrategy().MasterSlipNodes()));
+    slipset->PutScalar(1.0);
+    Teuchos::RCP<Epetra_Vector> slipsetexp = Teuchos::rcp(new Epetra_Vector(*GetStrategy().MasterActiveNodes()));
+    LINALG::Export(*slipset, *slipsetexp);
+    mactiveset->Update(1.0,*slipsetexp,1.0);
+
+    Teuchos::RCP<Epetra_Vector> mactivesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
+    LINALG::Export(*mactiveset,*mactivesetexp);
+    activesetexp->Update(1.0,*mactivesetexp,1.0);
+  }
+
   output.WriteVector("activeset",activesetexp);
 
   // *********************************************************************
@@ -1049,7 +1064,6 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   bool wear = GetStrategy().Wear();
   if (wear)
   {
-
     // ***************************************************************************
     // we do not compute the non-weighted wear here. we just write    farah 06/13
     // the output. the non-weighted wear will be used as dirichlet-b.

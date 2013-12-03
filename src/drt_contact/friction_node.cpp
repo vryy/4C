@@ -565,8 +565,8 @@ void CONTACT::FriNode::AddMechDissValue(double& val)
 void CONTACT::FriNode::AddTValue(int& row, int& col, double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave()==false)
-    dserror("ERROR: AddTValue: function called for master node %i", Id());
+//  if (IsSlave()==false)
+//    dserror("ERROR: AddTValue: function called for master node %i", Id());
 
   // check if this has been called before
   if ((int)FriDataPlus().GetT().size()==0)
@@ -589,8 +589,8 @@ void CONTACT::FriNode::AddTValue(int& row, int& col, double& val)
 void CONTACT::FriNode::AddEValue(int& row, int& col, double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave()==false)
-    dserror("ERROR: AddEValue: function called for master node %i", Id());
+//  if (IsSlave()==false)
+//    dserror("ERROR: AddEValue: function called for master node %i", Id());
 
   // check if this has been called before
   if ((int)FriDataPlus().GetE().size()==0)
