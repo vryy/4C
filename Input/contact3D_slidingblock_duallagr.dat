@@ -32,9 +32,6 @@ OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
@@ -295,10 +292,6 @@ NODE 91 COORD 5.0000000000000000e-01 5.0000000000000000e-01 5.0000000000000000e-
 33 SOLIDH8 HEX8 70 75 76 71 84 87 88 85 MAT 1 KINEM nonlinear EAS none
 34 SOLIDH8 HEX8 72 71 79 80 86 85 89 90 MAT 1 KINEM nonlinear EAS none
 35 SOLIDH8 HEX8 71 76 82 79 85 88 91 89 MAT 1 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 91 QUANTITY dispx VALUE 5.85057324101984966e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 91 QUANTITY dispy VALUE -9.62328809446205084e-04 TOLERANCE 1e-8

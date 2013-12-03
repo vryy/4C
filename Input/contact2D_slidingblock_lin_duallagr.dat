@@ -32,9 +32,6 @@ OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
@@ -247,10 +244,6 @@ NODE 61 COORD 5.0000000000000000e-01 1.5000000000000000e+00 0.0000000000000000e+
 39 WALL QUAD4 52 53 59 58 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 40 WALL QUAD4 53 54 60 59 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 41 WALL QUAD4 54 55 61 60 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 36 QUANTITY dispx VALUE 2.88377113975309574e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 36 QUANTITY dispy VALUE -4.72223215117701864e-02 TOLERANCE 1e-8

@@ -34,15 +34,10 @@ NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
-THERM_HEATFLUX                  No
-THERM_TEMPERATURE               No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
@@ -70,8 +65,6 @@ GAMMA                           0.5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-AZPREC                         ILU
-AZSOLVE                        GMRES
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 0.45 ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0 CPL 175 STAB_S 1.0 
 MAT 2 ELAST_CoupNeoHooke YOUNG 206.9 NUE 0.29
@@ -79,10 +72,6 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 206.9 NUE 0.29
 //MAT 3 MAT_Struct_PlasticSemiSmooth YIELD 0.45 ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0 
 -------------------------------------------------------------CURVE1
 CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 7  FACTOR 0 7
--------------------------------------------------------------CURVE2
-CURVE 2 on Polygonal T 0 BYABSTIME Yes 0 0.6  FACTOR 0 5
-CURVE 2 on Polygonal T 0 BYABSTIME Yes 0.6 1.2  FACTOR 5 0
-CURVE 2 on Polygonal T 0 BYABSTIME Yes 1.2 7.0  FACTOR 0 0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  5
@@ -549,10 +538,6 @@ NODE 171  	COORD	0.0000000000000000e+00	6.4129999999999994e+00	1.333350000000000
    94 SOLIDH8FBARPLAST HEX8  148 149 151 150 166 167 169 168    MAT 1 KINEM nonlinear 
    95 SOLIDH8FBARPLAST HEX8  132 150 152 134 133 168 170 135    MAT 1 KINEM nonlinear 
    96 SOLIDH8FBARPLAST HEX8  150 151 153 152 168 169 171 170    MAT 1 KINEM nonlinear 
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.0 TOLERANCE 1.0e-12 NAME ux_top_in
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-12 NAME uy_top_in

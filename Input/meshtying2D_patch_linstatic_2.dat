@@ -39,9 +39,6 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 STRUCT_STRAIN                   Yes
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Statics
@@ -616,23 +613,11 @@ NODE 102 COORD 9.000000000000000e+00 1.000000000000000e+01 0.000000000000000e+00
 73 WALL QUAD4 65 71 62 54 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 74 WALL QUAD4 71 65 77 88 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 75 WALL QUAD4 77 89 94 88 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.4 DENS 7.8e-6 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 33 QUANTITY dispx VALUE 0.000 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 40 QUANTITY dispx VALUE 0.048 TOLERANCE 1e-8
