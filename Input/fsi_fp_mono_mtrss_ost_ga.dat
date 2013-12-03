@@ -33,23 +33,25 @@ PHYSICAL_TYPE                   Incompressible
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 -----------------------------------------------------------------FSI DYNAMIC
+COUPALGO                        iter_mortar_monolithicstructuresplit
+MAXTIME                         1
+NUMSTEP                         10
+RESTARTEVRY                     2
+SECONDORDER                     no
+SLIDEALEPROJ                    None
+TIMESTEP                        0.1
+UPRES                           1
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-06
-COUPALGO                        iter_mortar_monolithicstructuresplit
 INFNORMSCALING                  Yes
 ITEMAX                          10
 LINEARBLOCKSOLVER               PreconditionedKrylov
-MAXTIME                         1
-NUMSTEP                         10
 PCITER                          1 1 1                        
-PCOMEGA                         1.0 1.0 1.0                  
+PCOMEGA                         1.0 1.0 1.0
 PRECONDREUSE                    10
-RESTARTEVRY                     2
-SECONDORDER                     no
 SHAPEDERIVATIVES                yes
-SLIDEALEPROJ                    None
 SYMMETRICPRECOND                No
-TIMESTEP                        0.1
 TOL_DIS_INC_INF                 1e-08
 TOL_DIS_INC_L2                  1e-10
 TOL_DIS_RES_INF                 1e-08
@@ -66,7 +68,6 @@ TOL_VEL_INC_INF                 1e-08
 TOL_VEL_INC_L2                  1e-10
 TOL_VEL_RES_INF                 1e-08
 TOL_VEL_RES_L2                  1e-10
-UPRES                           1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       Yes

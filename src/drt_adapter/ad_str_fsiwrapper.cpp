@@ -33,7 +33,8 @@ ADAPTER::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
   interface_->Setup(*Discretization(), *Discretization()->DofRowMap());
 
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-  predictor_ = DRT::INPUT::IntegralValue<int>(fsidyn,"PREDICTOR");
+  const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
+  predictor_ = DRT::INPUT::IntegralValue<int>(fsipart,"PREDICTOR");
 
 }
 
@@ -140,7 +141,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
   }
   default:
     dserror("unknown interface displacement predictor '%s'",
-             DRT::Problem::Instance()->FSIDynamicParams().get<std::string>("PREDICTOR").c_str());
+        DRT::Problem::Instance()->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<std::string>("PREDICTOR").c_str());
     break;
   }
 

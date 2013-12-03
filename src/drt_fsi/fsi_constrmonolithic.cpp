@@ -42,14 +42,15 @@ FSI::ConstrMonolithic::ConstrMonolithic(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*/
 void FSI::ConstrMonolithic::GeneralSetup()
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
 
   SetDefaultParameters(fsidyn,NOXParameterList());
 
   // ToDo: Set more detailed convergence tolerances like in standard FSI
   // additionally set tolerance for volume constraint
-  NOXParameterList().set("Norm abs vol constr", fsidyn.get<double>("CONVTOL"));
+  NOXParameterList().set("Norm abs vol constr", fsimono.get<double>("CONVTOL"));
 
   //-----------------------------------------------------------------------------
   // ordinary fsi coupling
@@ -167,8 +168,9 @@ void FSI::ConstrMonolithic::ScaleSystem(LINALG::BlockSparseMatrixBase& mat,
                                       Epetra_Vector& b)
 {
   //should we scale the system?
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -220,8 +222,9 @@ void FSI::ConstrMonolithic::ScaleSystem(LINALG::BlockSparseMatrixBase& mat,
 /*----------------------------------------------------------------------*/
 void FSI::ConstrMonolithic::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {

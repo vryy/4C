@@ -68,16 +68,17 @@ GRAD_DIV                        yes                           // no yes cstab_td
 CROSS-STRESS                    no_cross                      // no_cross cross_complete cross_rhs
 REYNOLDS-STRESS                 no_reynolds                   // no_reynolds reynolds_rhs
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         1000.0
-TIMESTEP                        0.00025
+COUPALGO                        basic_sequ_stagg
+MAXTIME                         0.005
 NUMSTEP                         20
 UPRES                           1
 RESTARTEVRY                     1
-COUPALGO                        basic_sequ_stagg
+TIMESTEP                        0.00025
+----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
+CONVTOL                         1.0E-6
+ITEMAX                          1
 PREDICTOR                       d(n)
 RELAX                           1.0
-ITEMAX                          1
-CONVTOL                         1.0E-6
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
 TIMESTEP                        0.05

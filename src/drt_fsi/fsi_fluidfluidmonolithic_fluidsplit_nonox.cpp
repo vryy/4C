@@ -158,9 +158,10 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystem()
 {
 	//Extract parameter list FSI_DYNAMIC
 	const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+	const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
 	//Extract information about the linear block solver (FSIAMG / PreconditionedKrylov)
-	linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+	linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
 
 	//The field coupling methods from namespace ADAPTER
 	ADAPTER::Coupling& coupsf  = StructureFluidCoupling();

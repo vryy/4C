@@ -708,7 +708,7 @@ void fluid_fluid_fsi_drt()
       Teuchos::RCP<FSI::Partitioned> fsi;
 
       INPAR::FSI::PartitionedCouplingMethod method =
-        DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+        DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn.sublist("PARTITIONED SOLVER"),"PARTITIONED");
 
       if (method==INPAR::FSI::DirichletNeumannSlideale)
           fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(*comm));
@@ -772,7 +772,8 @@ void fluid_freesurf_drt()
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
   }
 
-  const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)
@@ -781,7 +782,8 @@ void fluid_freesurf_drt()
   case fsi_iter_monolithicstructuresplit:
   {
 
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy
+      = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
 
     if (linearsolverstrategy==INPAR::FSI::FSIAMG)
       dserror("No FSIAMG supported in Monolithic Free Surface Algorithm. Use PreconditionedKrylov");
@@ -892,9 +894,13 @@ void fsi_ale_drt()
   case fsi_iter_mortar_monolithicstructuresplit:
   case fsi_iter_mortar_monolithicfluidsplit:
   {
+    // monolithic solver settings
+    const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+
     Teuchos::RCP<FSI::Monolithic> fsi;
 
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy
+      = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
 
     // call constructor to initialize the base class
     if (coupling==fsi_iter_monolithicfluidsplit)
@@ -972,7 +978,7 @@ void fsi_ale_drt()
     Teuchos::RCP<FSI::Partitioned> fsi;
 
     INPAR::FSI::PartitionedCouplingMethod method =
-      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn.sublist("PARTITIONED SOLVER"),"PARTITIONED");
 
     if (method==INPAR::FSI::DirichletNeumannSlideale)
       fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(comm));
@@ -1053,8 +1059,11 @@ void xfsi_drt()
   {
   case fsi_iter_xfem_monolithic:
   {
+    // monolithic solver settings
+    const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy
+      = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
     if (linearsolverstrategy!=INPAR::FSI::PreconditionedKrylov)
       dserror("Only Newton-Krylov scheme with XFEM fluid");
@@ -1100,7 +1109,7 @@ void xfsi_drt()
     Teuchos::RCP<FSI::Partitioned> fsi;
 
     INPAR::FSI::PartitionedCouplingMethod method =
-      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn.sublist("PARTITIONED SOLVER"),"PARTITIONED");
 
     if (method==INPAR::FSI::DirichletNeumann)
     {

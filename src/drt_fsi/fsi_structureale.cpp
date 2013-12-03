@@ -38,12 +38,12 @@ Maintainer: Thomas Kloeppel
 FSI::StructureALE::StructureALE(const Epetra_Comm& comm)
   : Algorithm(comm)
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
   ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
-  if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPMETHOD"))
+  if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD"))
   {
     matchingnodes_ = true;
     const int ndim = DRT::Problem::Instance()->NDim();

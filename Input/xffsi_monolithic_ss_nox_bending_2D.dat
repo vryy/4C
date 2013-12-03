@@ -22,17 +22,13 @@ TIMESTEP                        0.003 //0.00625
 NUMSTEP                         2//400
 RESTARTEVRY                     5
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nox
-RELAX                           1.0
+SECONDORDER                     no
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          40
 CONVTOL                         1.0E-8
 BASETOL                         1.0E-3
-STRUCTPCOMEGA 1.0 1.0
-STRUCTPCITER 1 1
-FLUIDPCOMEGA 1.0 1.0 1.0
-FLUIDPCITER 1 1 1
-SHAPEDERIVATIVES                yes
 PRECONDREUSE                    10000000
-SECONDORDER                     no
+SHAPEDERIVATIVES                yes
 ---------------------------------------------------------------FLUID DYNAMIC
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1

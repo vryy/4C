@@ -54,29 +54,17 @@ VSTAB                           no_vstab
 GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
-TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
-PHYSICAL_MODEL                  no_model
-CANONICAL_FLOW                  no
-CHAN_AMPL_INIT_DIST             0.1
-HOMDIR                          xz
-SAMPLING_START                  0
-SAMPLING_STOP                   0
-DUMPING_PERIOD                  0
----------------------------------------------FLUID DYNAMIC/SUBGRID VISCOSITY
-C_SMAGORINSKY                   0.17
-CHANNEL_L_TAU                   0.0
 -----------------------------------------------------------------FSI DYNAMIC
-BASETOL                         1e-6
-MAXTIME                         0.0002
-TIMESTEP                        0.00001
-NUMSTEP                         20
-UPRES                           1
-RESTARTEVRY                     3
 COUPALGO                        iter_monolithicstructuresplit
-ITEMAX                          100
+MAXTIME                         0.0002
+NUMSTEP                         20
+RESTARTEVRY                     3
+TIMESTEP                        0.00001
+UPRES                           1
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+BASETOL                         1e-6
 CONVTOL                         1.0E-6
-COUPMETHOD                      conforming
+ITEMAX                          100
 SHAPEDERIVATIVES                Yes
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2

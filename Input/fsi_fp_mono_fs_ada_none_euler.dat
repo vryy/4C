@@ -83,24 +83,25 @@ BETA                            0.25
 GAMMA                           0.5
 GENAVG                          TrLike
 --------------------------------------------------------FSI DYNAMIC
+COUPALGO                        iter_monolithicfluidsplit
+MAXTIME                         0.33
+NUMSTEP                         1000
+RESTARTEVRY                     1
+SECONDORDER                     no
+TIMESTEP                        0.0002
+UPRES                           1
+---------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0
 BASETOL                         1e-06
 BLOCKSMOOTHER                   BGS BGS BGS
-COUPALGO                        iter_monolithicfluidsplit
 INFNORMSCALING                  Yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
-MAXTIME                         0.33
-NUMSTEP                         1000
 PCITER                          1 1 1
 PCOMEGA                         1.0 1.0 1.0
 PRECONDREUSE                    10
-RESTARTEVRY                     1
-SCHUROMEGA                      0.001 0.01 0.1
-SECONDORDER                     no
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
-TIMESTEP                        0.0002
 TOL_DIS_INC_INF                 1e-07
 TOL_DIS_INC_L2                  1e-07
 TOL_DIS_RES_INF                 1e-07
@@ -117,7 +118,6 @@ TOL_VEL_INC_INF             		1e-07
 TOL_VEL_INC_L2             			1e-07
 TOL_VEL_RES_INF               	1e-07
 TOL_VEL_RES_L2                  1e-07
-UPRES                           1
 -----------------------------------------FSI DYNAMIC/TIMEADAPTIVITY
 DTINITIAL												0.0002
 DTMAX                           0.2

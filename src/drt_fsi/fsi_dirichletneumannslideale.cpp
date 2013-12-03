@@ -22,9 +22,10 @@
 FSI::DirichletNeumannSlideale::DirichletNeumannSlideale(const Epetra_Comm& comm)
   : DirichletNeumann(comm)
 {
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
+  displacementcoupling_ = fsipart.get<std::string>("COUPVARIABLE") == "Displacement";
 
-  displacementcoupling_ =
-      DRT::Problem::Instance()->FSIDynamicParams().get<std::string>("COUPVARIABLE") == "Displacement";
   INPAR::FSI::SlideALEProj aletype =
       DRT::INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(DRT::Problem::Instance()->FSIDynamicParams(),"SLIDEALEPROJ");
 
@@ -145,10 +146,11 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::InitialGuess()
 	else
 	{
 		const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-		if (DRT::INPUT::IntegralValue<int>(fsidyn,"PREDICTOR")!=1)
+		const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
+		if (DRT::INPUT::IntegralValue<int>(fsipart,"PREDICTOR") !=1 )
 		{
 			dserror("unknown interface force predictor '%s'",
-					fsidyn.get<std::string>("PREDICTOR").c_str());
+					fsipart.get<std::string>("PREDICTOR").c_str());
 		}
 		return InterfaceForce();
 	}

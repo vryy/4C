@@ -95,16 +95,16 @@ MAXTIME                         4.0
 ALE_TYPE                        springs
 RESULTSEVRY                     1
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         1000.0
-TIMESTEP                        0.1
-NUMSTEP                         350
-UPRES                           1
-RESTARTEVRY                     1
-//COUPALGO                      pseudo_structure
 COUPALGO                        iter_stagg_AITKEN_rel_param
-RELAX                           0.825
-ITEMAX                          100
+MAXTIME                         35.0
+NUMSTEP                         350
+RESTARTEVRY                     1
+UPRES                           1
+TIMESTEP                        0.1
+----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-7
+ITEMAX                          100
+RELAX                           0.825
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

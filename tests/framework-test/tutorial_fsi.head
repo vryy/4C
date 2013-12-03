@@ -18,15 +18,6 @@ RESULTSEVRY                     1
 //
 TIMESTEP                        0.1
 //
-------------------------------------------------------------ARTERIAL DYNAMIC
--------------------------------------------------------------BIOFILM CONTROL
-----------------------------------------------------------CAVITATION DYNAMIC
-----------------------------------------------------------COMBUSTION CONTROL
------------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
---------------------------COMBUSTION CONTROL/COMBUSTION PDE REINITIALIZATION
--------------------------------------------------------------CONTACT DYNAMIC
---------------------------------COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC
 ----------------------------------------------------------DESIGN DESCRIPTION
 //
 // number of line clouds
@@ -62,9 +53,6 @@ NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 //
 // control parameters for electrochemistry problems
-----------------------------------------------------------------ELCH CONTROL
--------------------------------------------------------ELCH CONTROL/DIFFCOND
----------------------------------------------------FLUCTUATING HYDRODYNAMICS
 ---------------------------------------------------------------FLUID DYNAMIC
 //
 // Switch on adaptive control of linear solver tolerance for nonlinear solution
@@ -232,8 +220,6 @@ TIMESTEP                        0.01
 // Increment for writing solution
 UPRES                           1
 //
---------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
------------------------------------FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 //
 // Flag to (de)activate cross-stress term -> residual-based VMM.
@@ -329,35 +315,7 @@ TRANSIENT                       no_transient
 //                              no_vstab,vstab_gls,vstab_gls_rhs,vstab_usfem,vstab_usfem_rhs
 VSTAB                           no_vstab
 //
----------------------------------------------FLUID DYNAMIC/SUBGRID VISCOSITY
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
-----------------------------------------------FLUID DYNAMIC/TURBULENT INFLOW
-----------------------------------------------------------------FS3I CONTROL
 -----------------------------------------------------------------FSI DYNAMIC
-//
-// Required distance for adaptive convergence check in Newton-type FSI.
-// This is the improvement we want to achieve in the linear extrapolation of the
-// adaptive convergence check. Set to zero to avoid the adaptive check altogether.
-ADAPTIVEDIST                    0
-//
-// Number of Richardson iterations on ale block in MFSI block preconditioner
-ALEPCITER 1 1 1 1
-//
-// Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner
-ALEPCOMEGA 1.0 1.0 1.0 1.0
-//
-// Basic tolerance for adaptive convergence check in monolithic FSI.
-// This tolerance will be used for the linear solve of the FSI block system.
-// The linear convergence test will always use the relative residual norm (AZ_r0).
-// Not to be confused with the Newton tolerance (CONVTOL) that applies
-// to the nonlinear convergence test using a absolute residual norm.
-BASETOL                         0.001
-//
-// Type of block smoother, can be BGS or Schur
-BLOCKSMOOTHER BGS BGS BGS
-//
-// Tolerance for iteration over fields
-CONVTOL                         1e-6
 //
 // Iteration Scheme over the fields
 //                              basic_sequ_stagg
@@ -382,14 +340,6 @@ CONVTOL                         1e-6
 //                              iter_fluidfluid_monolithicstructuresplit
 COUPALGO                        iter_stagg_AITKEN_rel_param
 //
-// Coupling Method Mortar (mtr) or conforming nodes at interface
-//                              MTR,Mtr,mtr,conforming
-COUPMETHOD                      conforming
-//
-// Coupling variable at the interface for partitioned FSI solvers
-//                              Displacement,Force
-COUPVARIABLE                    Displacement
-//
 // Output of unconverged interface values during FSI iteration.
 // There will be a new control file for each time step.
 // This might be helpful to understand the coupling iteration.
@@ -400,11 +350,60 @@ DEBUGOUTPUT                     No
 //                              Yes,No,yes,no,YES,NO
 DIVPROJECTION                   no
 //
+// Total simulation time
+MAXTIME                         3
+//
+// Total number of Timesteps
+NUMSTEP                         30
+//
+// Increment for writing restart
+RESTARTEVRY                     1
+//
+// Second order coupling at the interface.
+//                              Yes,No,yes,no,YES,NO
+SECONDORDER                     Yes
+//
+// Projection method to use for sliding FSI.
+//                              None,Curr,Ref,RotZ,RotZSphere
+SLIDEALEPROJ                    None
+//
+// Time increment dt
+TIMESTEP                        0.1
+//
+// Increment for writing solution
+UPRES                           1
+//
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+//
+// Required distance for adaptive convergence check in Newton-type FSI.
+// This is the improvement we want to achieve in the linear extrapolation of the
+// adaptive convergence check. Set to zero to avoid the adaptive check altogether.
+ADAPTIVEDIST                    0
+//
+// Number of Richardson iterations on ale block in MFSI block preconditioner
+ALEPCITER                       1 1 1 1
+//
+// Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner
+ALEPCOMEGA                      1.0 1.0 1.0 1.0
+//
+// Basic tolerance for adaptive convergence check in monolithic FSI.
+// This tolerance will be used for the linear solve of the FSI block system.
+// The linear convergence test will always use the relative residual norm (AZ_r0).
+// Not to be confused with the Newton tolerance (CONVTOL) that applies
+// to the nonlinear convergence test using a absolute residual norm.
+BASETOL                         0.001
+//
+// Type of block smoother, can be BGS or Schur
+BLOCKSMOOTHER BGS BGS BGS
+//
+// Tolerance for iteration over fields
+CONVTOL                         1e-6
+//
 // Number of Richardson iterations on fluid block in MFSI block preconditioner
-FLUIDPCITER 1 1 1 1
+FLUIDPCITER                     1 1 1 1
 //
 // Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner
-FLUIDPCOMEGA 1.0 1.0 1.0 1.0
+FLUIDPCOMEGA                    1.0 1.0 1.0 1.0
 //
 // run analysis on fsiamg multigrid scheme
 // Supported in monolithic FSI for now.
@@ -424,12 +423,6 @@ ITEMAX                          100
 //                              PreconditionedKrylov,FSIAMG
 LINEARBLOCKSOLVER               PreconditionedKrylov
 //
-// largest omega allowed for Aitken relaxation (0.0 means no constraint)
-MAXOMEGA                        0
-//
-// Total simulation time
-MAXTIME                         3
-//
 // binary operator to combine primary variables and residual force values
 //                              And
 NORMCOMBI_RESFINC               And
@@ -442,63 +435,32 @@ NORM_INC                        Rel
 //                              Abs,Rel,Mix
 NORM_RESF                       Rel
 //
-// Total number of Timesteps
-NUMSTEP                         30
-//
-// Coupling strategies for partitioned FSI solvers.
-//                              DirichletNeumann,DirichletNeumannSlideALE
-PARTITIONED                     DirichletNeumann
-//
 // Number of Richardson iterations on whole MFSI block preconditioner
-PCITER 1 1 1
+PCITER                          1 1 1
 //
 // Relaxation factor for Richardson iteration on whole MFSI block preconditioner
-PCOMEGA 1.0 1.0 1.0
+PCOMEGA                         1.0 1.0 1.0
 //
 // Number of preconditioner reused in monolithic FSI
 PRECONDREUSE                    0
 //
-// Predictor for interface displacements for partitioned schemes
-//                              d(n)
-//                              d(n)+dt*(1.5*v(n)-0.5*v(n-1))
-//                              d(n)+dt*v(n)
-//                              d(n)+dt*v(n)+0.5*dt^2*a(n)
-PREDICTOR                       d(n)
-//
-// fixed relaxation parameter for partitioned FSI solvers
-RELAX                           1
-//
-// Increment for writing restart
-RESTARTEVRY                     1
-//
 // Damping factor for Schur complement construction
-SCHUROMEGA 0.001 0.01 0.1
-//
-// Second order coupling at the interface.
-//                              Yes,No,yes,no,YES,NO
-SECONDORDER                     Yes
+SCHUROMEGA                      0.001 0.01 0.1
 //
 // Include linearization with respect to mesh movement in Navier Stokes equation.
 // Supported in monolithic FSI for now.
 //                              Yes,No,yes,no,YES,NO
 SHAPEDERIVATIVES                Yes
 //
-// Projection method to use for sliding FSI.
-//                              None,Curr,Ref,RotZ,RotZSphere
-SLIDEALEPROJ                    None
-//
 // Number of Richardson iterations on structural block in MFSI block preconditioner
-STRUCTPCITER 1 1 1 1
+STRUCTPCITER                    1 1 1 1
 //
 // Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner
-STRUCTPCOMEGA 1.0 1.0 1.0 1.0
+STRUCTPCOMEGA                   1.0 1.0 1.0 1.0
 //
 // Symmetric block GS preconditioner in monolithic FSI or ordinary GS
 //                              Yes,No,yes,no,YES,NO
 SYMMETRICPRECOND                No
-//
-// Time increment dt
-TIMESTEP                        0.1
 //
 // Absolute tolerance for structure displacement increment in Inf-norm
 TOL_DIS_INC_INF                 1e-06
@@ -548,12 +510,39 @@ TOL_VEL_RES_INF                 1e-06
 // Absolute tolerance for fluid velocity residual in L2-norm
 TOL_VEL_RES_L2                  1e-06
 //
-// Increment for writing solution
-UPRES                           1
+----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 //
-------------------------------------------------------FSI DYNAMIC/CONSTRAINT
--------------------------------------------------------INTERACTION POTENTIAL
-------------------------------------------------------------INVERSE ANALYSIS
+// Tolerance for iteration over fields
+CONVTOL                         1e-6
+//
+// Coupling Method Mortar (mtr) or conforming nodes at interface
+//                              MTR,Mtr,mtr,conforming
+COUPMETHOD                      conforming
+//
+// Coupling variable at the interface for partitioned FSI solvers
+//                              Displacement,Force
+COUPVARIABLE                    Displacement
+//
+// Maximum number of iterations over fields
+ITEMAX                          100
+//
+// largest omega allowed for Aitken relaxation (0.0 means no constraint)
+MAXOMEGA                        0
+//
+// Coupling strategies for partitioned FSI solvers.
+//                              DirichletNeumann,DirichletNeumannSlideALE
+PARTITIONED                     DirichletNeumann
+//
+// Predictor for interface displacements for partitioned schemes
+//                              d(n)
+//                              d(n)+dt*(1.5*v(n)-0.5*v(n-1))
+//                              d(n)+dt*v(n)
+//                              d(n)+dt*v(n)+0.5*dt^2*a(n)
+PREDICTOR                       d(n)
+//
+// fixed relaxation parameter for partitioned FSI solvers
+RELAX                           1.0
+//
 --------------------------------------------------------------------------IO
 //
 //                              Yes,No,yes,no,YES,NO
@@ -635,8 +624,6 @@ WRITE_TO_FILE                   No
 WRITE_TO_SCREEN                 Yes
 //
 // control parameters for low-Mach-number flow problems
-----------------------------------------------------------------LOMA CONTROL
---------------------------------------------------------------------MESHFREE
 -------------------------------------------------------------MORTAR COUPLING
 // If chosen, multipliers are removed from crosspoints / edge nodes
 //                              Yes,No,yes,no,YES,NO
@@ -694,10 +681,6 @@ SEARCH_PARAM                    0.3
 //                              Dual,dual,Standard,standard,std,PetrovGalerkin,petrovgalerkin,pg
 SHAPEFCN                        Dual
 //
------------------------------------------------------MULTI LEVEL MONTE CARLO
-------------------------------------------------------------PATIENT SPECIFIC
-------------------------------------------------------POROELASTICITY DYNAMIC
-----------------------------------------------------------POROSCATRA CONTROL
 -----------------------------------------------------------------PROBLEM TYP
 //
 //
@@ -745,11 +728,6 @@ RESTART                         0
 //                              Polynomial,Nurbs,Meshfree
 SHAPEFCT                        Polynomial
 //
------------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
------------------------------------------------------------------SEARCH TREE
 --------------------------------------------------------------------SOLVER 1
 //
 // Relaxation factor for Braess-Sarazin smoother within AMGBS method
@@ -1652,20 +1630,6 @@ SUB_SOLVER2                     -1
 // verbosity level (0=no output,... 10=extreme), for Belos only
 VERBOSITY                       0
 //
------------------------------------------------------------------SSI CONTROL
--------------------------------------------------------STAT INVERSE ANALYSIS
--------------------------------------------------------STATISTICAL MECHANICS
-------------------------------------------------------------------STRUCT NOX
---------------------------------------------------------STRUCT NOX/Direction
--------------------------------------------------STRUCT NOX/Direction/Newton
----------------------------------------STRUCT NOX/Direction/Steepest Descent
-------------------------------------------------------STRUCT NOX/Line Search
---------------------------------------------STRUCT NOX/Line Search/Backtrack
---------------------------------------------STRUCT NOX/Line Search/Full Step
-----------------------------------------STRUCT NOX/Line Search/More'-Thuente
--------------------------------------------STRUCT NOX/Line Search/Polynomial
----------------------------------------------------------STRUCT NOX/Printing
------------------------------------------------------STRUCT NOX/Trust Region
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 //
 // Switch on adaptive control of linear solver tolerance for nonlinear solution
@@ -1859,7 +1823,6 @@ UZAWATOL                        1e-08
 //                              Yes,No,yes,no,YES,NO
 YOUNG_IS_TEMP_DEPENDENT         No
 //
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 //
 // Generalised-alpha factor in [0,1)
@@ -1878,20 +1841,6 @@ GAMMA                           0.5
 //                              Vague,ImrLike,TrLike
 GENAVG                          TrLike
 //
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
--------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
--------------------------------------------------------------THERMAL DYNAMIC
-----------------------------------------------------THERMAL DYNAMIC/GENALPHA
-------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL
-------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
-----------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER
------------------------------------------------------------------TSI DYNAMIC
---------------------------------------------------------------UMFPACK SOLVER
-----------------------------------------------------------------XFEM GENERAL
---------------------------------------------------------------XFLUID DYNAMIC
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
-------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 500

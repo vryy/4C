@@ -53,15 +53,16 @@ ALPHA_F                         1.0
 ALPHA_M                         1.0
 GAMMA                           1.0
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         0.0005
-TIMESTEP                        0.0001
-NUMSTEP                         5
-UPRES                           1
-RESTARTEVRY                     1
 COUPALGO                        iter_monolithicfluidsplit
-ITEMAX                          100
+MAXTIME                         0.0005
+NUMSTEP                         5
+RESTARTEVRY                     1
+TIMESTEP                        0.0001
+UPRES                           1
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.001
 BASETOL                         1.0E-5
+ITEMAX                          100
 TOL_DIS_INC_INF                 1e-08
 TOL_DIS_INC_L2                  1e-08
 TOL_DIS_RES_INF                 1e-08

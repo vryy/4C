@@ -86,7 +86,8 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
 {
   GeneralSetup();
 
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   //-----------------------------------------------------------------------------
   // create combined map
@@ -131,32 +132,32 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
     int    word1;
     double word2;
     {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"PCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"PCOMEGA"));
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"PCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"PCOMEGA"));
       while (pciterstream >> word1)
         pciter.push_back(word1);
       while (pcomegastream >> word2)
         pcomega.push_back(word2);
     }
     {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"STRUCTPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"STRUCTPCOMEGA"));
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"STRUCTPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"STRUCTPCOMEGA"));
       while (pciterstream >> word1)
         spciter.push_back(word1);
       while (pcomegastream >> word2)
         spcomega.push_back(word2);
     }
     {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"FLUIDPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"FLUIDPCOMEGA"));
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"FLUIDPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"FLUIDPCOMEGA"));
       while (pciterstream >> word1)
         fpciter.push_back(word1);
       while (pcomegastream >> word2)
         fpcomega.push_back(word2);
     }
     {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"ALEPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"ALEPCOMEGA"));
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"ALEPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"ALEPCOMEGA"));
       while (pciterstream >> word1)
         apciter.push_back(word1);
       while (pcomegastream >> word2)
@@ -176,7 +177,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
                                                                 FluidField(),
                                                                 AleField(),
                                                                 true,
-                                                                DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                                                DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
                                                                 pcomega[0],
                                                                 pciter[0],
                                                                 spcomega[0],

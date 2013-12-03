@@ -81,13 +81,14 @@ NUMSTEP                         20
 UPRES                           1
 RESTARTEVRY                     5
 COUPALGO                        iter_stagg_AITKEN_rel_param
-PREDICTOR                       d(n)
-RELAX                           1.0
-ITEMAX                          100
+SECONDORDER                     No
+--------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-8
 COUPMETHOD                      conforming
-SECONDORDER                     No
-COUPVARIABLE Force //Displacement
+COUPVARIABLE                    Force //Displacement
+ITEMAX                          100
+PREDICTOR                       d(n)
+RELAX                           1.0
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Barrenechea_Franca_Valentin_Wall

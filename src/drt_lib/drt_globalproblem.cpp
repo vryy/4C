@@ -246,6 +246,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC/CONSTRAINT", *list);
+  reader.ReadGidSection("--FSI DYNAMIC/MONOLITHIC SOLVER", *list);
+  reader.ReadGidSection("--FSI DYNAMIC/PARTITIONED SOLVER", *list);
   reader.ReadGidSection("--FSI DYNAMIC/TIMEADAPTIVITY", *list);
   reader.ReadGidSection("--FPSI DYNAMIC", *list);
   reader.ReadGidSection("--ARTERIAL DYNAMIC", *list);

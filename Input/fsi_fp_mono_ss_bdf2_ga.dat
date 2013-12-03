@@ -32,18 +32,20 @@ PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       constant_acceleration
 TIMEINTEGR                      BDF2
 -----------------------------------------------------------------FSI DYNAMIC
-ADAPTIVEDIST                    0.01
-BASETOL                         1e-06
 COUPALGO                        iter_monolithicstructuresplit
-ITEMAX                          10
-LINEARBLOCKSOLVER               PreconditionedKrylov
 MAXTIME                         1.0
 NUMSTEP                         10
 RESTARTEVRY                     2
 SECONDORDER                     yes
+TIMESTEP                        0.1
+UPRES                           1
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+ADAPTIVEDIST                    0.01
+BASETOL                         1e-06
+ITEMAX                          10
+LINEARBLOCKSOLVER               PreconditionedKrylov
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
-TIMESTEP                        0.1
 TOL_DIS_INC_INF                 1e-08
 TOL_DIS_INC_L2                  1e-10
 TOL_DIS_RES_INF                 1e-08
@@ -60,7 +62,6 @@ TOL_VEL_INC_INF                 1e-08
 TOL_VEL_INC_L2                  1e-10
 TOL_VEL_RES_INF                 1e-08
 TOL_VEL_RES_L2                  1e-10
-UPRES                           1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0

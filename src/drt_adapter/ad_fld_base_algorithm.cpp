@@ -460,10 +460,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       dserror("Stationary fluid solver not allowed for FSI.");
 
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
     fluidtimeparams->set<bool>("shape derivatives",
-                               DRT::INPUT::IntegralValue<int>(fsidyn,"SHAPEDERIVATIVES"));
+                               DRT::INPUT::IntegralValue<int>(fsimono,"SHAPEDERIVATIVES"));
 
     const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
 
@@ -490,10 +491,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       dserror("Stationary fluid solver not allowed for free surface problem.");
 
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
     fluidtimeparams->set<bool>("shape derivatives",
-                               DRT::INPUT::IntegralValue<int>(fsidyn,"SHAPEDERIVATIVES"));
+                               DRT::INPUT::IntegralValue<int>(fsimono,"SHAPEDERIVATIVES"));
 
     const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit or

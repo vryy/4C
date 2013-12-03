@@ -78,40 +78,33 @@ ADAPTCONV_BETTER                0.01
 NONLINEARBC                     yes
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-TIMESTEP                        0.1
-NUMSTEP                         41
-MAXTIME                         4.0
 ALE_TYPE                        springs
-RESULTSEVRY                     1
 -----------------------------------------------------------------FSI DYNAMIC
+COUPALGO                        iter_monolithicfluidsplit
 MAXTIME                         9.0
-TIMESTEP                        0.004
 NUMSTEP                         1000
-UPRES                           1
 RESTARTEVRY                     1
-COUPALGO                        iter_monolithicfluidsplit     // iter_monolithicstructuresplit iter_monolithicfluidsplit iter_stagg_AITKEN_rel_param
-LINEARBLOCKSOLVER               FSIAMG                        // FSIAMG PreconditionedKrylov
-FLUIDPCITER                     1 1                           // Number of Richardson iterations on fluid block in MFSI block preconditioner
-FLUIDPCOMEGA                    0.95 1.0                      // Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner
-STRUCTPCITER                    1 1                           // Number of Richardson iterations on structural block in MFSI block preconditioner
-STRUCTPCOMEGA                   0.95 1.0                      // Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner
-ALEPCITER                       1 1                           // Number of Richardson iterations on structural block in MFSI block preconditioner
-ALEPCOMEGA                      1.0 1.0 1.0                   // Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner
-PCITER                          1 2 1                         // Number of Richardson iterations on whole MFSI block preconditioner
-PCOMEGA                         0.85 1.0 1.0                  // Relaxation factor for Richardson iteration on whole MFSI block preconditioner
-SYMMETRICPRECOND                no                            // SGS on monlithic
-PRECONDREUSE                    4                             // Number of preconditioner reused in monolithic FSI
-INFNORMSCALING                  yes
-PREDICTOR                       d(n)
-RELAX                           1.0
-ITEMAX                          100
-COUPMETHOD                      conforming
-COUPVARIABLE                    Displacement
 SECONDORDER                     yes
+TIMESTEP                        0.004
+UPRES                           1
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+ADAPTIVEDIST                    0.001
+ALEPCITER                       1 1                           
+ALEPCOMEGA                      1.0 1.0 1.0 
+BASETOL                         1.0e-5
+CONVTOL                         1.0E-4
+FLUIDPCITER                     1 1                           
+FLUIDPCOMEGA                    0.95 1.0
+INFNORMSCALING                  yes
+ITEMAX                          100
+LINEARBLOCKSOLVER               FSIAMG
+PCITER                          1 2 1                         
+PCOMEGA                         0.85 1.0 1.0
+PRECONDREUSE                    4  
 SHAPEDERIVATIVES                yes
-CONVTOL                         1.0E-4                        // 1.0E-4
-BASETOL                         1.0e-5                        // 5.0e-7
-ADAPTIVEDIST                    0.001                         // 0.0
+STRUCTPCITER                    1 1                           
+STRUCTPCOMEGA                   0.95 1.0
+SYMMETRICPRECOND                no 
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

@@ -127,8 +127,9 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
 
   // right now we use matching meshes at the interface
 
@@ -600,8 +601,9 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::InitialGuess(Teuchos::RCP<Epe
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   //should we scale the system?
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -691,8 +693,9 @@ Teuchos::RCP<Epetra_Map> FSI::FluidFluidMonolithicStructureSplitNoNOX::CombinedD
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {

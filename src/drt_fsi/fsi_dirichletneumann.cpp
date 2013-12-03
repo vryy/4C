@@ -19,7 +19,8 @@ FSI::DirichletNeumann::DirichletNeumann(const Epetra_Comm& comm)
   : Partitioned(comm)
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-  displacementcoupling_ = fsidyn.get<std::string>("COUPVARIABLE") == "Displacement";
+  const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
+  displacementcoupling_ = fsipart.get<std::string>("COUPVARIABLE") == "Displacement";
 }
 
 
@@ -140,10 +141,11 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumann::InitialGuess()
   else
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-    if (DRT::INPUT::IntegralValue<int>(fsidyn,"PREDICTOR")!=1)
+    const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
+    if (DRT::INPUT::IntegralValue<int>(fsipart,"PREDICTOR") != 1)
     {
       dserror("unknown interface force predictor '%s'",
-              fsidyn.get<std::string>("PREDICTOR").c_str());
+              fsipart.get<std::string>("PREDICTOR").c_str());
     }
     return InterfaceForce();
   }

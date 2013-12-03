@@ -97,6 +97,7 @@ NUMSTEP                         2//7
 RESTARTEVRY                     5
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit
 SECONDORDER                     no
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 SHAPEDERIVATIVES                yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver

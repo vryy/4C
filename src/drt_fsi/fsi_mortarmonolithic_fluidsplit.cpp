@@ -155,8 +155,9 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
 {
   if (notsetup_)
   {
-    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-    linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+    linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
 
     aleproj_ = DRT::INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(fsidyn,"SLIDEALEPROJ");
 
@@ -279,32 +280,32 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
       int    word1;
       double word2;
       {
-        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"PCITER"));
-        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"PCOMEGA"));
+        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"PCITER"));
+        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"PCOMEGA"));
         while (pciterstream >> word1)
           pciter.push_back(word1);
         while (pcomegastream >> word2)
           pcomega.push_back(word2);
       }
       {
-        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"STRUCTPCITER"));
-        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"STRUCTPCOMEGA"));
+        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"STRUCTPCITER"));
+        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"STRUCTPCOMEGA"));
         while (pciterstream >> word1)
           spciter.push_back(word1);
         while (pcomegastream >> word2)
           spcomega.push_back(word2);
       }
       {
-        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"FLUIDPCITER"));
-        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"FLUIDPCOMEGA"));
+        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"FLUIDPCITER"));
+        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"FLUIDPCOMEGA"));
         while (pciterstream >> word1)
           fpciter.push_back(word1);
         while (pcomegastream >> word2)
           fpcomega.push_back(word2);
       }
       {
-        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"ALEPCITER"));
-        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"ALEPCOMEGA"));
+        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"ALEPCITER"));
+        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"ALEPCOMEGA"));
         while (pciterstream >> word1)
           apciter.push_back(word1);
         while (pcomegastream >> word2)
@@ -312,12 +313,12 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
       }
       {
         std::string word;
-        std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsidyn,"BLOCKSMOOTHER"));
+        std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsimono,"BLOCKSMOOTHER"));
         while (blocksmootherstream >> word)
           blocksmoother.push_back(word);
       }
       {
-        std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsidyn,"SCHUROMEGA"));
+        std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsimono,"SCHUROMEGA"));
         while (blocksmootherstream >> word2)
           schuromega.push_back(word2);
       }
@@ -340,7 +341,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
                                      FluidField(),
                                      AleField(),
                                      false,
-                                     DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                     DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
                                      blocksmoother,
                                      schuromega,
                                      pcomega,
@@ -351,7 +352,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
                                      fpciter,
                                      apcomega,
                                      apciter,
-                                     DRT::INPUT::IntegralValue<int>(fsidyn,"FSIAMGANALYZE"),
+                                     DRT::INPUT::IntegralValue<int>(fsimono,"FSIAMGANALYZE"),
                                      linearsolverstrategy_,
                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
       break;
@@ -998,7 +999,8 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 void FSI::MortarMonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1053,8 +1055,9 @@ void FSI::MortarMonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixB
                                                       Epetra_Vector& x,
                                                       Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {

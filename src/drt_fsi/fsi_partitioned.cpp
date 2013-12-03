@@ -62,7 +62,7 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
-  if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPMETHOD"))
+  if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD"))
   {
     matchingnodes_ = true;
     const int ndim = DRT::Problem::Instance()->NDim();
@@ -101,13 +101,16 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list)
 {
+  // extract sublist with settings for partitioned solver
+  const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
+
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = list;
 
   nlParams.set("Nonlinear Solver", "Line Search Based");
   nlParams.set("Preconditioner", "None");
-  nlParams.set("Norm abs F", fsidyn.get<double>("CONVTOL"));
-  nlParams.set("Max Iterations", fsidyn.get<int>("ITEMAX"));
+  nlParams.set("Norm abs F", fsipart.get<double>("CONVTOL"));
+  nlParams.set("Max Iterations", fsipart.get<int>("ITEMAX"));
 
   // sublists
 
@@ -137,7 +140,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
       //lsParams.set("Preconditioner","None");
 
       lineSearchParams.set("Method", "Full Step");
-      lineSearchParams.sublist("Full Step").set("Full Step", fsidyn.get<double>("RELAX"));
+      lineSearchParams.sublist("Full Step").set("Full Step", fsipart.get<double>("RELAX"));
       break;
     }
     case fsi_iter_stagg_AITKEN_rel_param:
@@ -157,7 +160,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
       lineSearchParams.set("Method","User Defined");
       lineSearchParams.set("User Defined Line Search Factory", aitkenfactory);
 
-      lineSearchParams.sublist("Aitken").set("max step size", fsidyn.get<double>("MAXOMEGA"));
+      lineSearchParams.sublist("Aitken").set("max step size", fsipart.get<double>("MAXOMEGA"));
       break;
     }
     case fsi_iter_stagg_steep_desc:
@@ -208,7 +211,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
       Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
       Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-      lsParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
+      lsParams.set("Tolerance", fsipart.get<double>("BASETOL"));
 
       break;
     }
@@ -226,7 +229,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
       Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
       Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-      lsParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
+      lsParams.set("Tolerance", fsipart.get<double>("BASETOL"));
 
       break;
     }
@@ -243,8 +246,8 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
       dirParams.set("User Defined Direction Factory",factory);
 
       Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
-      exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
-      exParams.set("omega", fsidyn.get<double>("RELAX"));
+      exParams.set("Tolerance", fsipart.get<double>("BASETOL"));
+      exParams.set("omega", fsipart.get<double>("RELAX"));
       exParams.set("kmax", 25);
       exParams.set("Method", "MPE");
 
@@ -267,8 +270,8 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
       dirParams.set("User Defined Direction Factory",factory);
 
       Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
-      exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
-      exParams.set("omega", fsidyn.get<double>("RELAX"));
+      exParams.set("Tolerance", fsipart.get<double>("BASETOL"));
+      exParams.set("omega", fsipart.get<double>("RELAX"));
       exParams.set("kmax", 25);
       exParams.set("Method", "RRE");
 
@@ -354,7 +357,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
            << "# Jacobian       = " << nlParams.get("Jacobian", "None") << "\n"
            << "# Preconditioner = " << nlParams.get("Preconditioner","None") << "\n"
            << "# Line Search    = " << nlParams.sublist("Line Search").get("Method","Aitken") << "\n"
-           << "# Predictor      = '" << fsidyn.get<std::string>("PREDICTOR") << "'\n"
+           << "# Predictor      = '" << fsidyn.sublist("PARTITIONED SOLVER").get<std::string>("PREDICTOR") << "'\n"
            << "#\n"
            << "# step | time | time/step | #nliter  |R|  #liter  Residual  Jac  Prec  FD_Res  MF_Res  MF_Jac  User\n"
       ;
@@ -453,7 +456,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
     //In case of sliding ALE interfaces, 'remesh' fluid field
     INPAR::FSI::PartitionedCouplingMethod usedmethod =
-      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn.sublist("PARTITIONED SOLVER"),"PARTITIONED");
 
     if (usedmethod == INPAR::FSI::DirichletNeumannSlideale)
     {

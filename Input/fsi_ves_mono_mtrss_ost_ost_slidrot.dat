@@ -55,31 +55,31 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 THETA                           0.66
 -----------------------------------------------------------------FSI DYNAMIC
-FSIAMGANALYZE                   No
-MAXTIME                         1.0
-TIMESTEP                        0.5
-NUMSTEP                         2
-UPRES                           1
-RESTARTEVRY                     10
 COUPALGO                        iter_mortar_monolithicstructuresplit
-LINEARBLOCKSOLVER               FSIAMG
-ALEPCITER                       1 1 1                        
-ALEPCOMEGA                      0.8 0.8 1.0                  
-FLUIDPCITER                     3 3 1                        
-FLUIDPCOMEGA                    0.6 0.6 1.0                  
-STRUCTPCITER                    2 2 1                        
-STRUCTPCOMEGA                   0.7 0.7 1.0                  
-PCITER                          2 1 1                        
-PCOMEGA                         1.0 1.0 1.0                  
-SYMMETRICPRECOND                no
-PRECONDREUSE                    0
-INFNORMSCALING                  yes
-RELAX                           1.0
-ITEMAX                          10
-BASETOL                         1.0E-12
-SHAPEDERIVATIVES                Yes
+MAXTIME                         1.0
+NUMSTEP                         2
+RESTARTEVRY                     10
 SECONDORDER                     Yes
 SLIDEALEPROJ                    RotZSphere
+TIMESTEP                        0.5
+UPRES                           1
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+ALEPCITER                       1 1 1                        
+ALEPCOMEGA                      0.8 0.8 1.0 
+BASETOL                         1.0E-12
+FLUIDPCITER                     3 3 1                        
+FLUIDPCOMEGA                    0.6 0.6 1.0
+FSIAMGANALYZE                   No 
+INFNORMSCALING                  yes
+ITEMAX                          10
+LINEARBLOCKSOLVER               FSIAMG
+PCITER                          2 1 1                        
+PCOMEGA                         1.0 1.0 1.0
+PRECONDREUSE                    0
+SHAPEDERIVATIVES                Yes
+STRUCTPCITER                    2 2 1                        
+STRUCTPCOMEGA                   0.7 0.7 1.0
+SYMMETRICPRECOND                no
 TOL_DIS_INC_INF                 1e-10
 TOL_DIS_INC_L2                  1e-10
 TOL_DIS_RES_INF                 1e-10

@@ -67,11 +67,12 @@ NUMSTEP                         2
 UPRES                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_stagg_steep_desc
+DIVPROJECTION                   yes
+--------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
+CONVTOL                         1.0E-7
+ITEMAX                          100
 PREDICTOR                       d(n)
 RELAX                           0.825
-ITEMAX                          100
-CONVTOL                         1.0E-7
-DIVPROJECTION                   yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          UMFPACK

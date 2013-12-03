@@ -99,16 +99,17 @@ MAXTIME                         4.0
 ALE_TYPE                        springs
 RESULTSEVRY                     1
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         1000.0
-TIMESTEP                        0.1
-NUMSTEP                         2
-UPRES                           1
-RESTARTEVRY                     1
 COUPALGO                        iter_stagg_AITKEN_rel_param
-RELAX                           0.825
-ITEMAX                          100
+MAXTIME                         0.2
+NUMSTEP                         2
+RESTARTEVRY                     1
+TIMESTEP                        0.1
+UPRES                           1
+----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-6
+ITEMAX                          100
 PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
+RELAX                           0.825
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          UMFPACK

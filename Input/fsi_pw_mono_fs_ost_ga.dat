@@ -42,17 +42,18 @@ TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
 THETA                           0.66
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         0.0005
-TIMESTEP                        0.0001
-NUMSTEP                         5
-UPRES                           1
-RESTARTEVRY                     1
 COUPALGO                        iter_monolithicfluidsplit
-PCITER                          1 1 1                        
-PCOMEGA                         1.00 1.00 1.00               
-ITEMAX                          100
+MAXTIME                         0.0005
+NUMSTEP                         5
+RESTARTEVRY                     1
+TIMESTEP                        0.0001
+UPRES                           1
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.001
 BASETOL                         1.0E-6
+ITEMAX                          100
+PCITER                          1 1 1                        
+PCOMEGA                         1.00 1.00 1.00
 SHAPEDERIVATIVES                No
 TOL_DIS_INC_INF                 1e-06
 TOL_DIS_INC_L2                  1e-06

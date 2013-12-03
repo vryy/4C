@@ -137,33 +137,24 @@ ML_DAMPFINE                     0.6                           // damping fine gr
 ML_DAMPMED                      0.6                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -----------------------------------------------------------------FSI DYNAMIC
-BASETOL                         1.0e-06
-CONVTOL                         1.0e-06
-COUPALGO                        iter_monolithicstructuresplit  // iter_monolithicstructuresplit iter_stagg_AITKEN_rel_param
-SHAPEDERIVATIVES                yes                           // Supported in monolithic FSI for now.
-COUPMETHOD                      conforming                    // MTR,Mtr,mtr,conforming
-COUPVARIABLE                    Displacement                  // Displacement,Force
-LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
-FLUIDPCITER                     1 1 1                         // Number of Richardson iterations on fluid block in MFSI block preconditioner
-FLUIDPCOMEGA                    1.0 1.0 1.0// Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner 
-STRUCTPCITER                    1 1 1// Number of Richardson iterations on structural block in MFSI block preconditioner 
-STRUCTPCOMEGA                   1.0 1.0 1.0// Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner 
-ALEPCITER                       1 1 1                         // Number of Richardson iterations on ale block in MFSI block preconditioner
-ALEPCOMEGA                      1.0 1.0 1.0                   // Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner
-PCITER                          1 1 1// Number of Richardson iterations on whole MFSI block preconditioner 
-PCOMEGA                         1.0 1.0 1.0                   // Relaxation factor for Richardson iteration on whole MFSI block preconditioner
-SYMMETRICPRECOND                no                            // SGS on monlithic
-ITEMAX                          100                           // Maximum number of iterations over fields
-MAXOMEGA                        0.6                           // largest omega allowed for Aitken relaxation (0.0 means no constraint)
-MAXTIME                         10000.0                       // 5.25
+COUPALGO                        iter_monolithicstructuresplit
+MAXTIME                         10000.0                       
 TIMESTEP                        25.0
 NUMSTEP                         10
 RESTARTEVRY                     100
+SECONDORDER                     yes         
 UPRES                           1
-PRECONDREUSE                    0                             // Number of preconditioner reused in monolithic FSI
-PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
-SECONDORDER                     yes                           // Second order coupling at the interface Yes,No,yes,no,YES,NO
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+BASETOL                         1.0e-06
+CONVTOL                         1.0e-06
 INFNORMSCALING                  yes
+ITEMAX                          100 
+LINEARBLOCKSOLVER               PreconditionedKrylov
+PCITER                          1 1 1 
+PCOMEGA                         1.0 1.0 1.0       
+PRECONDREUSE                    0
+SHAPEDERIVATIVES                yes  
+SYMMETRICPRECOND                no
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 FLUID_SOL                       Yes

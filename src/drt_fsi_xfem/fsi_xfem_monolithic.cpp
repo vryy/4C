@@ -142,7 +142,8 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
 ////sgipre_ = Teuchos::null;
 ////sggpre_ = Teuchos::null;
 
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // enable debugging
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT")==1)
@@ -154,28 +155,28 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
   s.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
-  itermax_ = fsidyn.get<int>("ITEMAX");
+  itermax_ = fsimono.get<int>("ITEMAX");
   normtypeinc_
-    = DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsidyn,"NORM_INC");
+    = DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsimono,"NORM_INC");
   normtypefres_
-    = DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsidyn,"NORM_RESF");
+    = DRT::INPUT::IntegralValue<INPAR::FSI::ConvNorm>(fsimono,"NORM_RESF");
   combincfres_
-    = DRT::INPUT::IntegralValue<INPAR::FSI::BinaryOp>(fsidyn,"NORMCOMBI_RESFINC");
-  tolinc_ =  fsidyn.get<double>("CONVTOL");
-  tolfres_ = fsidyn.get<double>("CONVTOL");
+    = DRT::INPUT::IntegralValue<INPAR::FSI::BinaryOp>(fsimono,"NORMCOMBI_RESFINC");
+  tolinc_ =  fsimono.get<double>("CONVTOL");
+  tolfres_ = fsimono.get<double>("CONVTOL");
 
-  TOL_DIS_RES_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
-  TOL_DIS_RES_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
-  TOL_DIS_INC_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
-  TOL_DIS_INC_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
-  TOL_PRE_RES_L2_  =  fsidyn.get<double>("TOL_PRE_RES_L2");
-  TOL_PRE_RES_INF_ =  fsidyn.get<double>("TOL_PRE_RES_INF");
-  TOL_PRE_INC_L2_  =  fsidyn.get<double>("TOL_PRE_RES_L2");
-  TOL_PRE_INC_INF_ =  fsidyn.get<double>("TOL_PRE_RES_INF");
-  TOL_VEL_RES_L2_  =  fsidyn.get<double>("TOL_VEL_RES_L2");
-  TOL_VEL_RES_INF_ =  fsidyn.get<double>("TOL_VEL_RES_INF");
-  TOL_VEL_INC_L2_  =  fsidyn.get<double>("TOL_VEL_RES_L2");
-  TOL_VEL_INC_INF_ =  fsidyn.get<double>("TOL_VEL_RES_INF");
+  TOL_DIS_RES_L2_  =  fsimono.get<double>("TOL_DIS_RES_L2");
+  TOL_DIS_RES_INF_ =  fsimono.get<double>("TOL_DIS_RES_INF");
+  TOL_DIS_INC_L2_  =  fsimono.get<double>("TOL_DIS_RES_L2");
+  TOL_DIS_INC_INF_ =  fsimono.get<double>("TOL_DIS_RES_INF");
+  TOL_PRE_RES_L2_  =  fsimono.get<double>("TOL_PRE_RES_L2");
+  TOL_PRE_RES_INF_ =  fsimono.get<double>("TOL_PRE_RES_INF");
+  TOL_PRE_INC_L2_  =  fsimono.get<double>("TOL_PRE_RES_L2");
+  TOL_PRE_INC_INF_ =  fsimono.get<double>("TOL_PRE_RES_INF");
+  TOL_VEL_RES_L2_  =  fsimono.get<double>("TOL_VEL_RES_L2");
+  TOL_VEL_RES_INF_ =  fsimono.get<double>("TOL_VEL_RES_INF");
+  TOL_VEL_INC_L2_  =  fsimono.get<double>("TOL_VEL_RES_L2");
+  TOL_VEL_INC_INF_ =  fsimono.get<double>("TOL_VEL_RES_INF");
   // set tolerances for nonlinear solver
 
 //  //Structural predictor step, initially filled with zeros
@@ -231,9 +232,10 @@ void FSI::MonolithicXFEM::SetupSystem()
 
   //Extract parameter list FSI_DYNAMIC
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   //Extract information about the linear block solver (FSIAMG / PreconditionedKrylov)
-  linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+  linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
 
 //  //Dimensionality of problem
 //  const int ndim = DRT::Problem::Instance()->NDim();
@@ -296,7 +298,7 @@ void FSI::MonolithicXFEM::SetupSystem()
 //                                   FluidField(),
 //                                   AleField(),
 //                                   false,
-//                                   DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+//                                   DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
 //                                   blocksmoother,
 //                                   schuromega,
 //                                   pcomega,
@@ -307,7 +309,7 @@ void FSI::MonolithicXFEM::SetupSystem()
 //                                   fpciter,
 //                                   apcomega,
 //                                   apciter,
-//                                   DRT::INPUT::IntegralValue<int>(fsidyn,"FSIAMGANALYZE"),
+//                                   DRT::INPUT::IntegralValue<int>(fsimono,"FSIAMGANALYZE"),
 //                                   linearsolverstrategy_,
 //                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
 //    break;
@@ -677,8 +679,9 @@ void FSI::MonolithicXFEM::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 void FSI::MonolithicXFEM::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
 //  //should we scale the system?
-//  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-//  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
+//  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+//  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+//  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono,"INFNORMSCALING");
 //
 //  if (scaling_infnorm)
 //  {
@@ -741,7 +744,8 @@ Teuchos::RCP<Epetra_Map> FSI::MonolithicXFEM::CombinedDBCMap()
 void FSI::MonolithicXFEM::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
 //  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-//  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
+//  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+//  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono,"INFNORMSCALING");
 //
 //  if (scaling_infnorm)
 //  {
@@ -1704,7 +1708,7 @@ void FSI::MonolithicXFEM::SetupNewSystem()
 //                                   FluidField(),
 //                                   AleField(),
 //                                   false,
-//                                   DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+//                                   DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
 //                                   blocksmoother,
 //                                   schuromega,
 //                                   pcomega,
@@ -1715,7 +1719,7 @@ void FSI::MonolithicXFEM::SetupNewSystem()
 //                                   fpciter,
 //                                   apcomega,
 //                                   apciter,
-//                                   DRT::INPUT::IntegralValue<int>(fsidyn,"FSIAMGANALYZE"),
+//                                   DRT::INPUT::IntegralValue<int>(fsimono,"FSIAMGANALYZE"),
 //                                   linearsolverstrategy_,
 //                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
 //    break;
@@ -1839,18 +1843,21 @@ void FSI::MonolithicXFEM::Newton()
 //void FSI::MonolithicXFEM::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
 //                                               Teuchos::ParameterList& list)
 //{
+//  // monolithic solver settings
+//  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+//
 //  // Get the top level parameter list
 //  Teuchos::ParameterList& nlParams = list;
 //
 //  nlParams.set<std::string>("Nonlinear Solver", "Line Search Based");
 //  //nlParams.set("Preconditioner", "None");
-//  //nlParams.set("Norm abs F", fsidyn.get<double>("CONVTOL"));
+//  //nlParams.set("Norm abs F", fsimono.get<double>("CONVTOL"));
 //
-//  nlParams.set("Max Iterations", fsidyn.get<int>("ITEMAX"));
+//  nlParams.set("Max Iterations", fsimono.get<int>("ITEMAX"));
 //
-//  nlParams.set("Norm abs pres", fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Norm abs vel",  fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Norm abs disp", fsidyn.get<double>("CONVTOL"));
+//  nlParams.set("Norm abs pres", fsimono.get<double>("CONVTOL"));
+//  nlParams.set("Norm abs vel",  fsimono.get<double>("CONVTOL"));
+//  nlParams.set("Norm abs disp", fsimono.get<double>("CONVTOL"));
 //
 //  // sublists
 //
@@ -1885,8 +1892,8 @@ void FSI::MonolithicXFEM::Newton()
 //  lsParams.set<bool>("Output Solver Details",true);
 //
 //  // adaptive tolerance settings for linear solver
-//  lsParams.set<double>("base tolerance",fsidyn.get<double>("BASETOL")); // relative tolerance
-//  lsParams.set<double>("adaptive distance",fsidyn.get<double>("ADAPTIVEDIST")); // adaptive distance
+//  lsParams.set<double>("base tolerance",fsimono.get<double>("BASETOL")); // relative tolerance
+//  lsParams.set<double>("adaptive distance",fsimono.get<double>("ADAPTIVEDIST")); // adaptive distance
 //}
 
 /*----------------------------------------------------------------------*/

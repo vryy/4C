@@ -70,19 +70,18 @@ SOLVER                          UMFPACK
 NAME                            Fluid_Pressure_Solver
 SOLVER                          UMFPACK
 -----------------------------------------------------------------FSI DYNAMIC
-BASETOL                         1e-8
-CONVTOL                         1e-8
 COUPALGO                        iter_lung_monolithicstructuresplit
-ITEMAX                          100
 MAXTIME                         1000
 NUMSTEP                         10
-PREDICTOR                       d(n)
-RELAX                           1
 RESTARTEVRY                     1
+SECONDORDER                     No
 TIMESTEP                        0.05
 UPRES                           1
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+BASETOL                         1e-8
+CONVTOL                         1e-8
+ITEMAX                          100
 SHAPEDERIVATIVES                Yes
-SECONDORDER                     No
 TOL_DIS_INC_INF                 1e-08
 TOL_DIS_INC_L2                  1e-08
 TOL_DIS_RES_INF                 1e-08

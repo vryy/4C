@@ -42,6 +42,8 @@ NUMSTEP                         3
 UPRES                           1
 RESTARTEVRY                     5
 COUPALGO                        iter_xfem_monolithic
+SECONDORDER                     yes
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          5
 CONVTOL                         1.0E-12
 TOL_DIS_RES_L2                  1.0E-06
@@ -56,8 +58,6 @@ TOL_VEL_RES_L2                  1.0E-06
 TOL_VEL_RES_INF                 1.0E-06
 TOL_VEL_INC_L2                  1.0E-06
 TOL_VEL_INC_INF                 1.0E-06
-COUPMETHOD                      conforming
-SECONDORDER                     yes
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    field_by_function
 STARTFUNCNO                     1

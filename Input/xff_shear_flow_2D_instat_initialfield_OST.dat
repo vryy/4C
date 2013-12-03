@@ -64,15 +64,8 @@ LINEAR_SOLVER                   2
 TIMESTEP                        1.0
 ALE_TYPE                        classic_lin
 -----------------------------------------------------------------FSI DYNAMIC
-CONVTOL                         1e-07
-COUPALGO                        iter_stagg_AITKEN_rel_param
-COUPMETHOD                      conforming
-COUPVARIABLE                    Displacement
-ITEMAX                          8
 MAXTIME                         100000
 NUMSTEP 1 //3 5
-PREDICTOR                       d(n)
-RELAX                           1
 RESTARTEVRY                     20
 SECONDORDER                     Yes
 TIMESTEP                        0.2

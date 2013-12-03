@@ -57,9 +57,10 @@ NUMSTEP                         10
 UPRES                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_mortar_monolithicstructuresplit
-ITEMAX                          100
-BASETOL                         1.0E-5
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.001
+BASETOL                         1.0E-5
+ITEMAX                          100
 TOL_DIS_INC_INF                 1e-11
 TOL_DIS_INC_L2                  1e-11
 TOL_DIS_RES_INF                 1e-11

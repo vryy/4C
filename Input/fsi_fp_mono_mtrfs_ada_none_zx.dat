@@ -36,23 +36,25 @@ PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
 TIMEINTEGR                      Np_Gen_Alpha
 -----------------------------------------------------------------FSI DYNAMIC
+COUPALGO                        iter_mortar_monolithicfluidsplit
+MAXTIME                         0.25
+NUMSTEP                         10000
+RESTARTEVRY                     2
+SECONDORDER                     no
+SLIDEALEPROJ                    None
+TIMESTEP                        0.0002
+UPRES                           1
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-04
-COUPALGO                        iter_mortar_monolithicfluidsplit
 INFNORMSCALING                  Yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
-MAXTIME                         0.25
-NUMSTEP                         10000
 PCITER                          1 1 1                        
 PCOMEGA                         1.0 1.0 1.0                  
 PRECONDREUSE                    2
-RESTARTEVRY                     2
-SECONDORDER                     no
 SHAPEDERIVATIVES                yes
-SLIDEALEPROJ                    None
 SYMMETRICPRECOND                No
-TIMESTEP                        0.0002
 TOL_DIS_INC_INF                 1e-07
 TOL_DIS_INC_L2                  1e-07
 TOL_DIS_RES_INF                 1e-07
@@ -69,8 +71,7 @@ TOL_VEL_INC_INF                 1e-07
 TOL_VEL_INC_L2                  1e-07
 TOL_VEL_RES_INF                 1e-07
 TOL_VEL_RES_L2                  1e-07
-UPRES                           1
------------------------------------------FSI DYNAMIC/TIMEADAPTIVITY
+--------------------------------------------------FSI DYNAMIC/TIMEADAPTIVITY
 DTINITIAL                       0.0002
 DTMAX                           0.2
 DTMIN                           0.0002

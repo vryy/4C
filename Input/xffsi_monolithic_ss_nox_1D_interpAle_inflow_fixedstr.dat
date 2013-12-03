@@ -92,23 +92,19 @@ ALE_TYPE                        incr_lin                      // classic_lin
 TIMESTEP                        1
 LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
-LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
 MAXTIME                         1000.0
 TIMESTEP                        0.1
 NUMSTEP                         6
 RESTARTEVRY                     1
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nox
-RELAX                           1.0
+SECONDORDER                     No
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
 ITEMAX                          7
 CONVTOL                         1.0E-7
 BASETOL                         1.0E-3
-STRUCTPCOMEGA 1.0 1.0
-STRUCTPCITER 1 1
-FLUIDPCOMEGA                    1.0 1.0 1.0                  
-FLUIDPCITER                     1 1 1                        
-SHAPEDERIVATIVES                No
 PRECONDREUSE                    0
-SECONDORDER                     No
+SHAPEDERIVATIVES                No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                  Aztec_MSR//   UMFPACK//

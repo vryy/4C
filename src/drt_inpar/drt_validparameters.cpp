@@ -5432,19 +5432,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     label,
                                     &fsidyn);
 
-  setStringToIntegralParameter<int>(
-                               "PARTITIONED","DirichletNeumann",
-                               "Coupling strategies for partitioned FSI solvers.",
-                               tuple<std::string>(
-                                 "DirichletNeumann",
-                                 "DirichletNeumannSlideALE"
-                                 ),
-                               tuple<int>(
-                                 INPAR::FSI::DirichletNeumann,
-                                 INPAR::FSI::DirichletNeumannSlideale
-                                 ),
-                               &fsidyn);
-
   setStringToIntegralParameter<int>("DEBUGOUTPUT","No",
                                     "Output of unconverged interface values during FSI iteration.\n"
                                     "There will be a new control file for each time step.\n"
@@ -5473,206 +5460,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       ),
                                     &fsidyn);
 
-  setStringToIntegralParameter<int>("PREDICTOR","d(n)",
-                               "Predictor for interface displacements for partitioned schemes",
-                               tuple<std::string>(
-                                 "d(n)",
-                                 "d(n)+dt*(1.5*v(n)-0.5*v(n-1))",
-                                 "d(n)+dt*v(n)",
-                                 "d(n)+dt*v(n)+0.5*dt^2*a(n)"
-                                 ),
-                               tuple<int>(1,2,3,4),
-                               &fsidyn);
-
-  setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
-                               "Coupling variable at the interface for partitioned FSI solvers",
-                               tuple<std::string>("Displacement","Force"),
-                               tuple<int>(0,1),
-                               &fsidyn);
-
-  setStringToIntegralParameter<int>("COUPMETHOD","conforming",
-                               "Coupling Method Mortar (mtr) or conforming nodes at interface in case of partitioned scheme",
-                               tuple<std::string>(
-                                 "MTR",
-                                 "Mtr",
-                                 "mtr",
-                                 "conforming"
-                                 ),
-                               tuple<int>(0,0,0,1),
-                               &fsidyn);
-
   setStringToIntegralParameter<int>("SECONDORDER","No",
                                "Second order displacement-velocity conversion at the interface.",
                                yesnotuple,yesnovalue,&fsidyn);
 
-  setStringToIntegralParameter<int>("SHAPEDERIVATIVES","No",
-                               "Include linearization with respect to mesh movement in Navier Stokes equation.\n"
-                               "Supported in monolithic FSI for now.",
-                               yesnotuple,yesnovalue,&fsidyn);
-
-  IntParameter("PRECONDREUSE",
-               0,
-               "Number of preconditioner reused in monolithic FSI",
-               &fsidyn);
-
-  setStringToIntegralParameter<int>(
-                               "LINEARBLOCKSOLVER","PreconditionedKrylov",
-                               "Linear solver algorithm for monolithic block system in monolithic FSI.\n"
-                               "Most of the time preconditioned Krylov is the right thing to choose. But there are\n"
-                               "block Gauss-Seidel methods as well.",
-                               tuple<std::string>(
-                                 "PreconditionedKrylov",
-                                 "FSIAMG"
-                                 ),
-                               tuple<int>(
-                                 INPAR::FSI::PreconditionedKrylov,
-                                 INPAR::FSI::FSIAMG
-                                 ),
-                               &fsidyn);
-
-  setStringToIntegralParameter<int>("FSIAMGANALYZE","No",
-                               "run analysis on fsiamg multigrid scheme\n"
-                               "Supported in monolithic FSI for now.",
-                               yesnotuple,yesnovalue,&fsidyn);
-
   IntParameter("NUMSTEP",200,"Total number of Timesteps",&fsidyn);
-  IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&fsidyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fsidyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&fsidyn);
 
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&fsidyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fsidyn);
-  DoubleParameter("RELAX",1.0,"fixed relaxation parameter for partitioned FSI solvers",&fsidyn);
-  DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields in case of partitioned scheme",&fsidyn);
-  DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&fsidyn);
-
-  DoubleParameter("BASETOL",1e-3,
-                  "Basic tolerance for adaptive convergence check in monolithic FSI.\n"
-                  "This tolerance will be used for the linear solve of the FSI block system.\n"
-                  "The linear convergence test will always use the relative residual norm (AZ_r0).\n"
-                  "Not to be confused with the Newton tolerance (CONVTOL) that applies\n"
-                  "to the nonlinear convergence test using a absolute residual norm.",
-                  &fsidyn);
-
-  DoubleParameter("ADAPTIVEDIST",0.0,
-                  "Required distance for adaptive convergence check in Newton-type FSI.\n"
-                  "This is the improvement we want to achieve in the linear extrapolation of the\n"
-                  "adaptive convergence check. Set to zero to avoid the adaptive check altogether.",
-                  &fsidyn);
-
-  // Iterationparameters for convergence check of newton loop
-  setStringToIntegralParameter<int>("NORM_INC","Rel","type of norm for primary variables convergence check",
-                               tuple<std::string>(
-                                 "Abs",
-                                 "Rel",
-                                 "Mix"
-                                 ),
-                               tuple<int>(
-                                 INPAR::FSI::convnorm_abs,
-                                 INPAR::FSI::convnorm_rel,
-                                 INPAR::FSI::convnorm_mix
-                                 ),
-                               &fsidyn);
-
-  setStringToIntegralParameter<int>("NORM_RESF","Rel","type of norm for residual convergence check",
-                                 tuple<std::string>(
-                                   "Abs",
-                                   "Rel",
-                                   "Mix"
-                                   ),
-                                 tuple<int>(
-                                   INPAR::FSI::convnorm_abs,
-                                   INPAR::FSI::convnorm_rel,
-                                   INPAR::FSI::convnorm_mix
-                                   ),
-                                 &fsidyn);
-
-  setStringToIntegralParameter<int>("NORMCOMBI_RESFINC","And","binary operator to combine primary variables and residual force values",
-                                 tuple<std::string>(
-                                   "And"),
-                                 tuple<int>(
-                                 INPAR::FSI::bop_and),
-                               &fsidyn);
-
-  // tolerances for convergence check of nonlinear solver in monolithic FSI
-  // structure displacements
-  DoubleParameter("TOL_DIS_RES_L2",1e-6,"Absolute tolerance for structure displacement residual in L2-norm",&fsidyn);
-  DoubleParameter("TOL_DIS_RES_INF",1e-6,"Absolute tolerance for structure displacement residual in Inf-norm",&fsidyn);
-  DoubleParameter("TOL_DIS_INC_L2",1e-6,"Absolute tolerance for structure displacement increment in L2-norm",&fsidyn);
-  DoubleParameter("TOL_DIS_INC_INF",1e-6,"Absolute tolerance for structure displacement increment in Inf-norm",&fsidyn);
-  // interface tolerances
-  DoubleParameter("TOL_FSI_RES_L2",1e-6,"Absolute tolerance for interface residual in L2-norm",&fsidyn);
-  DoubleParameter("TOL_FSI_RES_INF",1e-6,"Absolute tolerance for interface residual in Inf-norm",&fsidyn);
-  DoubleParameter("TOL_FSI_INC_L2",1e-6,"Absolute tolerance for interface increment in L2-norm",&fsidyn);
-  DoubleParameter("TOL_FSI_INC_INF",1e-6,"Absolute tolerance for interface increment in Inf-norm",&fsidyn);
-  // fluid pressure
-  DoubleParameter("TOL_PRE_RES_L2",1e-6,"Absolute tolerance for fluid pressure residual in L2-norm",&fsidyn);
-  DoubleParameter("TOL_PRE_RES_INF",1e-6,"Absolute tolerance for fluid pressure residual in Inf-norm",&fsidyn);
-  DoubleParameter("TOL_PRE_INC_L2",1e-6,"Absolute tolerance for fluid pressure increment in L2-norm",&fsidyn);
-  DoubleParameter("TOL_PRE_INC_INF",1e-6,"Absolute tolerance for fluid pressure increment in Inf-norm",&fsidyn);
-  // fluid velocities
-  DoubleParameter("TOL_VEL_RES_L2",1e-6,"Absolute tolerance for fluid velocity residual in L2-norm",&fsidyn);
-  DoubleParameter("TOL_VEL_RES_INF",1e-6,"Absolute tolerance for fluid velocity residual in Inf-norm",&fsidyn);
-  DoubleParameter("TOL_VEL_INC_L2",1e-6,"Absolute tolerance for fluid velocity increment in L2-norm",&fsidyn);
-  DoubleParameter("TOL_VEL_INC_INF",1e-6,"Absolute tolerance for fluid velocity increment in Inf-norm",&fsidyn);
-
-
-  // monolithic preconditioner parameter
-
-  setNumericStringParameter("STRUCTPCOMEGA","1.0 1.0 1.0 1.0",
-                            "Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner\n"
-                            "FSIAMG: each number belongs to a level\n"
-                            "PreconditiondKrylov: only first number is used for finest level",
-                            &fsidyn);
-  setNumericStringParameter("STRUCTPCITER","1 1 1 1",
-                            "Number of Richardson iterations on structural block in MFSI block preconditioner\n"
-                            "FSIAMG: each number belongs to a level\n"
-                            "PreconditiondKrylov: only first number is used for finest level",
-                            &fsidyn);
-  setNumericStringParameter("FLUIDPCOMEGA","1.0 1.0 1.0 1.0",
-                            "Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner\n"
-                            "FSIAMG: each number belongs to a level\n"
-                            "PreconditiondKrylov: only first number is used for finest level",
-                            &fsidyn);
-  setNumericStringParameter("FLUIDPCITER","1 1 1 1",
-                            "Number of Richardson iterations on fluid block in MFSI block preconditioner\n"
-                            "FSIAMG: each number belongs to a level\n"
-                            "PreconditiondKrylov: only first number is used for finest level",
-                            &fsidyn);
-  setNumericStringParameter("ALEPCOMEGA","1.0 1.0 1.0 1.0",
-                            "Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner\n"
-                            "FSIAMG: each number belongs to a level\n"
-                            "PreconditiondKrylov: only first number is used for finest level",
-                            &fsidyn);
-  setNumericStringParameter("ALEPCITER","1 1 1 1",
-                            "Number of Richardson iterations on ale block in MFSI block preconditioner\n"
-                            "FSIAMG: each number belongs to a level\n"
-                            "PreconditiondKrylov: only first number is used for finest level",
-                            &fsidyn);
-
-  setNumericStringParameter("PCOMEGA","1.0 1.0 1.0",
-                            "Relaxation factor for Richardson iteration on whole MFSI block preconditioner\n"
-                            "FSIAMG: each number belongs to a level\n"
-                            "PreconditiondKrylov: only first number is used for finest level",
-                            &fsidyn);
-  setNumericStringParameter("PCITER","1 1 1",
-                            "Number of Richardson iterations on whole MFSI block preconditioner\n"
-                            "FSIAMG: each number belongs to a level\n"
-                            "PreconditiondKrylov: only first number is used for finest level",
-                            &fsidyn);
-
-  StringParameter("BLOCKSMOOTHER","BGS BGS BGS",
-                  "Type of block smoother, can be BGS or Schur",
-                  &fsidyn);
-
-  setNumericStringParameter("SCHUROMEGA","0.001 0.01 0.1",
-                            "Damping factor for Schur complement construction",
-                            &fsidyn);
-
-  setStringToIntegralParameter<int>("INFNORMSCALING","Yes","Scale Blocks in monolithic FSI with row infnorm?",
-                                    yesnotuple,yesnovalue,&fsidyn);
-  setStringToIntegralParameter<int>("SYMMETRICPRECOND","No","Symmetric block GS preconditioner in monolithic FSI or ordinary GS",
-                                    yesnotuple,yesnovalue,&fsidyn);
 
   setStringToIntegralParameter<int>("SLIDEALEPROJ","None",
                                  "Projection method to use for sliding FSI.",
@@ -5692,6 +5489,227 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int> ("DIVPROJECTION", "no", "Project velocity into divergence-free subspace for partitioned fsi",
                                      yesnotuple,yesnovalue,&fsidyn);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for monolithic FSI solvers */
+  Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER",false,"");
+
+  setStringToIntegralParameter<int>("SHAPEDERIVATIVES","No",
+                               "Include linearization with respect to mesh movement in Navier Stokes equation.",
+                               yesnotuple,yesnovalue,&fsimono);
+
+  IntParameter("ITEMAX",100,"Maximum allowed number of nonlinear iterations",&fsimono);
+
+  setStringToIntegralParameter<int>("INFNORMSCALING","Yes","Scale Blocks with row infnorm?",
+                                    yesnotuple,yesnovalue,&fsimono);
+
+  setStringToIntegralParameter<int>("SYMMETRICPRECOND","No","Symmetric block GS preconditioner or ordinary GS",
+                                    yesnotuple,yesnovalue,&fsimono);
+
+  IntParameter("PRECONDREUSE", 0, "Number of preconditioner reused in monolithic FSI", &fsimono);
+
+  setStringToIntegralParameter<int>(
+                               "LINEARBLOCKSOLVER","PreconditionedKrylov",
+                               "Linear solver algorithm for monolithic block system in monolithic FSI.\n"
+                               "Most of the time preconditioned Krylov is the right thing to choose. But there are\n"
+                               "block Gauss-Seidel methods as well.",
+                               tuple<std::string>(
+                                 "PreconditionedKrylov",
+                                 "FSIAMG"
+                                 ),
+                               tuple<int>(
+                                 INPAR::FSI::PreconditionedKrylov,
+                                 INPAR::FSI::FSIAMG
+                                 ),
+                               &fsimono);
+
+  // monolithic preconditioner parameter
+  setNumericStringParameter("STRUCTPCOMEGA","1.0 1.0 1.0 1.0",
+                            "Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsimono);
+  setNumericStringParameter("STRUCTPCITER","1 1 1 1",
+                            "Number of Richardson iterations on structural block in MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsimono);
+  setNumericStringParameter("FLUIDPCOMEGA","1.0 1.0 1.0 1.0",
+                            "Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsimono);
+  setNumericStringParameter("FLUIDPCITER","1 1 1 1",
+                            "Number of Richardson iterations on fluid block in MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsimono);
+  setNumericStringParameter("ALEPCOMEGA","1.0 1.0 1.0 1.0",
+                            "Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsimono);
+  setNumericStringParameter("ALEPCITER","1 1 1 1",
+                            "Number of Richardson iterations on ale block in MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsimono);
+
+  setNumericStringParameter("PCOMEGA","1.0 1.0 1.0",
+                            "Relaxation factor for Richardson iteration on whole MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsimono);
+  setNumericStringParameter("PCITER","1 1 1",
+                            "Number of Richardson iterations on whole MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
+                            &fsimono);
+
+  StringParameter("BLOCKSMOOTHER","BGS BGS BGS",
+                  "Type of block smoother, can be BGS or Schur",
+                  &fsimono);
+
+  setNumericStringParameter("SCHUROMEGA","0.001 0.01 0.1",
+                            "Damping factor for Schur complement construction",
+                            &fsimono);
+
+  DoubleParameter("ADAPTIVEDIST",0.0,
+                  "Required distance for adaptive convergence check in Newton-type FSI.\n"
+                  "This is the improvement we want to achieve in the linear extrapolation of the\n"
+                  "adaptive convergence check. Set to zero to avoid the adaptive check altogether.",
+                  &fsimono);
+
+  DoubleParameter("BASETOL",1e-3,
+                  "Basic tolerance for adaptive convergence check in monolithic FSI.\n"
+                  "This tolerance will be used for the linear solve of the FSI block system.\n"
+                  "The linear convergence test will always use the relative residual norm (AZ_r0).\n"
+                  "Not to be confused with the Newton tolerance (CONVTOL) that applies\n"
+                  "to the nonlinear convergence test using a absolute residual norm.",
+                  &fsimono);
+
+  DoubleParameter("CONVTOL",1e-6,"Nonlinear tolerance for lung/constraint/fluid-fluid FSI",&fsimono); // ToDo remove
+
+  // Iteration parameters for convergence check of newton loop
+  // for implementations without NOX
+  setStringToIntegralParameter<int>("NORM_INC","Rel","type of norm for primary variables convergence check",
+                               tuple<std::string>(
+                                 "Abs",
+                                 "Rel",
+                                 "Mix"
+                                 ),
+                               tuple<int>(
+                                 INPAR::FSI::convnorm_abs,
+                                 INPAR::FSI::convnorm_rel,
+                                 INPAR::FSI::convnorm_mix
+                                 ),
+                               &fsimono);
+
+  // for implementations without NOX
+  setStringToIntegralParameter<int>("NORM_RESF","Rel","type of norm for residual convergence check",
+                                 tuple<std::string>(
+                                   "Abs",
+                                   "Rel",
+                                   "Mix"
+                                   ),
+                                 tuple<int>(
+                                   INPAR::FSI::convnorm_abs,
+                                   INPAR::FSI::convnorm_rel,
+                                   INPAR::FSI::convnorm_mix
+                                   ),
+                                 &fsimono);
+
+  // for implementations without NOX
+  setStringToIntegralParameter<int>("NORMCOMBI_RESFINC","And","binary operator to combine primary variables and residual force values",
+                                 tuple<std::string>(
+                                   "And"),
+                                 tuple<int>(
+                                 INPAR::FSI::bop_and),
+                               &fsimono);
+
+  // tolerances for convergence check of nonlinear solver in monolithic FSI
+  // structure displacements
+  DoubleParameter("TOL_DIS_RES_L2",1e-6,"Absolute tolerance for structure displacement residual in L2-norm",&fsimono);
+  DoubleParameter("TOL_DIS_RES_INF",1e-6,"Absolute tolerance for structure displacement residual in Inf-norm",&fsimono);
+  DoubleParameter("TOL_DIS_INC_L2",1e-6,"Absolute tolerance for structure displacement increment in L2-norm",&fsimono);
+  DoubleParameter("TOL_DIS_INC_INF",1e-6,"Absolute tolerance for structure displacement increment in Inf-norm",&fsimono);
+  // interface tolerances
+  DoubleParameter("TOL_FSI_RES_L2",1e-6,"Absolute tolerance for interface residual in L2-norm",&fsimono);
+  DoubleParameter("TOL_FSI_RES_INF",1e-6,"Absolute tolerance for interface residual in Inf-norm",&fsimono);
+  DoubleParameter("TOL_FSI_INC_L2",1e-6,"Absolute tolerance for interface increment in L2-norm",&fsimono);
+  DoubleParameter("TOL_FSI_INC_INF",1e-6,"Absolute tolerance for interface increment in Inf-norm",&fsimono);
+  // fluid pressure
+  DoubleParameter("TOL_PRE_RES_L2",1e-6,"Absolute tolerance for fluid pressure residual in L2-norm",&fsimono);
+  DoubleParameter("TOL_PRE_RES_INF",1e-6,"Absolute tolerance for fluid pressure residual in Inf-norm",&fsimono);
+  DoubleParameter("TOL_PRE_INC_L2",1e-6,"Absolute tolerance for fluid pressure increment in L2-norm",&fsimono);
+  DoubleParameter("TOL_PRE_INC_INF",1e-6,"Absolute tolerance for fluid pressure increment in Inf-norm",&fsimono);
+  // fluid velocities
+  DoubleParameter("TOL_VEL_RES_L2",1e-6,"Absolute tolerance for fluid velocity residual in L2-norm",&fsimono);
+  DoubleParameter("TOL_VEL_RES_INF",1e-6,"Absolute tolerance for fluid velocity residual in Inf-norm",&fsimono);
+  DoubleParameter("TOL_VEL_INC_L2",1e-6,"Absolute tolerance for fluid velocity increment in L2-norm",&fsimono);
+  DoubleParameter("TOL_VEL_INC_INF",1e-6,"Absolute tolerance for fluid velocity increment in Inf-norm",&fsimono);
+
+  setStringToIntegralParameter<int>("FSIAMGANALYZE","No",
+                                 "run analysis on fsiamg multigrid scheme",
+                                 yesnotuple,yesnovalue,&fsimono);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for monolithic FSI solvers */
+  Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER",false,"");
+
+  setStringToIntegralParameter<int>(
+                                 "PARTITIONED","DirichletNeumann",
+                                 "Coupling strategies for partitioned FSI solvers.",
+                                 tuple<std::string>(
+                                   "DirichletNeumann",
+                                   "DirichletNeumannSlideALE"
+                                   ),
+                                 tuple<int>(
+                                   INPAR::FSI::DirichletNeumann,
+                                   INPAR::FSI::DirichletNeumannSlideale
+                                   ),
+                                 &fsipart);
+
+  setStringToIntegralParameter<int>("PREDICTOR","d(n)",
+                                 "Predictor for interface displacements",
+                                 tuple<std::string>(
+                                   "d(n)",
+                                   "d(n)+dt*(1.5*v(n)-0.5*v(n-1))",
+                                   "d(n)+dt*v(n)",
+                                   "d(n)+dt*v(n)+0.5*dt^2*a(n)"
+                                   ),
+                                 tuple<int>(1,2,3,4),
+                                 &fsipart);
+
+    setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
+                                 "Coupling variable at the interface",
+                                 tuple<std::string>("Displacement","Force"),
+                                 tuple<int>(0,1),
+                                 &fsipart);
+
+    setStringToIntegralParameter<int>("COUPMETHOD","conforming",
+                                 "Coupling Method Mortar (mtr) or conforming nodes at interface",
+                                 tuple<std::string>(
+                                   "MTR",
+                                   "Mtr",
+                                   "mtr",
+                                   "conforming"
+                                   ),
+                                 tuple<int>(0,0,0,1),
+                                 &fsipart);
+
+    DoubleParameter("BASETOL",1e-3,
+                    "Basic tolerance for adaptive convergence check in monolithic FSI.\n"
+                    "This tolerance will be used for the linear solve of the FSI block system.\n"
+                    "The linear convergence test will always use the relative residual norm (AZ_r0).\n"
+                    "Not to be confused with the Newton tolerance (CONVTOL) that applies\n"
+                    "to the nonlinear convergence test using a absolute residual norm.",
+                    &fsipart);
+
+    DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields in case of partitioned scheme",&fsipart);
+    DoubleParameter("RELAX",1.0,"fixed relaxation parameter for partitioned FSI solvers",&fsipart);
+    DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&fsipart);
+    IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&fsipart);
 
   /*----------------------------------------------------------------------*/
   /* parameters for time step size adaptivity in fsi dynamics */

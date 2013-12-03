@@ -119,42 +119,28 @@ SYSTEM                          Condensed
 FRICTION                        None
 PENALTYPARAM                    0.0
 --------------------------------------------------------FSI DYNAMIC
+COUPALGO                        iter_mortar_monolithicfluidsplit
 MAXTIME                         3.0
 TIMESTEP                        0.02
 NUMSTEP                         2
-COUPALGO                        iter_mortar_monolithicfluidsplit
-COUPMETHOD                      conforming
-COUPVARIABLE                    Displacement
-INFNORMSCALING                  Yes
-LINEARBLOCKSOLVER               PreconditionedKrylov
-ITEMAX                          100
-PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
-PRECONDREUSE                    0
-SYMMETRICPRECOND                No
 RESTARTEVRY                     1
+DEBUGOUTPUT                     No
+SECONDORDER                     Yes
+SLIDEALEPROJ                    None
+UPRES                           1
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    1e-03
-ALEPCITER                       1 1 1 1
-ALEPCOMEGA                      1.0 1.0 1.0 1.0
 BASETOL                         1e-05
 BLOCKSMOOTHER                   BGS BGS BGS
-DEBUGOUTPUT                     No
-FLUIDPCITER                     1 1 1 1
-FLUIDPCOMEGA                    1.0 1.0 1.0 1.0
-FSIAMGANALYZE                   No
-MAXOMEGA                        0
-NORMCOMBI_RESFINC               And
-NORM_INC                        Rel
-NORM_RESF                       Rel
-PARTITIONED                     DirichletNeumann
+INFNORMSCALING                  Yes
+ITEMAX                          100
+LINEARBLOCKSOLVER               PreconditionedKrylov
 PCITER                          1 1 1
 PCOMEGA                         1.0 1.0 1.0
-RELAX                           1
+PRECONDREUSE                    0
 SCHUROMEGA                      0.001 0.01 0.1
-SECONDORDER                     Yes
 SHAPEDERIVATIVES                No
-SLIDEALEPROJ                    None
-STRUCTPCITER                    1 1 1 1
-STRUCTPCOMEGA                   1.0 1.0 1.0 1.0
+SYMMETRICPRECOND                No
 TOL_DIS_INC_INF                 1e-04
 TOL_DIS_INC_L2                  1e-04
 TOL_DIS_RES_INF                 1e-04
@@ -171,7 +157,6 @@ TOL_VEL_INC_INF                 1e-01
 TOL_VEL_INC_L2                  1e-03
 TOL_VEL_RES_INF                 1e-04
 TOL_VEL_RES_L2                  1e-06
-UPRES                           1
 ---------------------------------------------FSI DYNAMIC/CONSTRAINT
 ALPHA                           0.8
 PRECONDITIONER                  Simple

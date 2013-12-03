@@ -97,6 +97,7 @@ NUMSTEP                         7
 RESTARTEVRY                     5
 COUPALGO                        iter_fluidfluid_monolithicfluidsplit
 SECONDORDER                     no
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER Superlu //

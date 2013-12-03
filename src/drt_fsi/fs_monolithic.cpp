@@ -295,17 +295,20 @@ void FSI::MonolithicMainFS::SetDofRowMaps(const std::vector<Teuchos::RCP<const E
 void FSI::MonolithicMainFS::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
                                            Teuchos::ParameterList& list)
 {
+  // monolithic solver settings
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = list;
 
   nlParams.set<std::string>("Nonlinear Solver", "Line Search Based");
   //nlParams.set("Preconditioner", "None");
-  //nlParams.set("Norm abs F", fsidyn.get<double>("CONVTOL"));
-  nlParams.set("Max Iterations", fsidyn.get<int>("ITEMAX"));
+  //nlParams.set("Norm abs F", fsimono.get<double>("CONVTOL"));
+  nlParams.set("Max Iterations", fsimono.get<int>("ITEMAX"));
 
-  nlParams.set("Norm abs pres", fsidyn.get<double>("CONVTOL"));
-  nlParams.set("Norm abs vel",  fsidyn.get<double>("CONVTOL"));
-  nlParams.set("Norm abs disp", fsidyn.get<double>("CONVTOL"));
+  nlParams.set("Norm abs pres", fsimono.get<double>("CONVTOL"));
+  nlParams.set("Norm abs vel",  fsimono.get<double>("CONVTOL"));
+  nlParams.set("Norm abs disp", fsimono.get<double>("CONVTOL"));
 
   // sublists
 
@@ -334,8 +337,8 @@ void FSI::MonolithicMainFS::SetDefaultParameters(const Teuchos::ParameterList& f
   lsParams.set<bool>("Output Solver Details",true);
 
   // adaptive tolerance settings for linear solver
-  lsParams.set<double>("base tolerance",fsidyn.get<double>("BASETOL")); // relative tolerance
-  lsParams.set<double>("adaptive distance",fsidyn.get<double>("ADAPTIVEDIST")); // adaptive distance
+  lsParams.set<double>("base tolerance",fsimono.get<double>("BASETOL")); // relative tolerance
+  lsParams.set<double>("adaptive distance",fsimono.get<double>("ADAPTIVEDIST")); // adaptive distance
 
 }
 
@@ -421,8 +424,9 @@ bool FSI::BlockMonolithicFS::computePreconditioner(const Epetra_Vector &x,
     // the perfect place to initialize the block preconditioners.
     SystemMatrix()->SetupPreconditioner();
 
-    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-    precondreusecount_ = fsidyn.get<int>("PRECONDREUSE");
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+    precondreusecount_ = fsimono.get<int>("PRECONDREUSE");
   }
 
   precondreusecount_ -= 1;
@@ -454,8 +458,9 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
   fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
   fmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
 
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
 
   SetDefaultParameters(fsidyn,NOXParameterList());
 
@@ -511,32 +516,32 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
     int    word1;
     double word2;
     {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"PCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"PCOMEGA"));
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"PCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"PCOMEGA"));
       while (pciterstream >> word1)
         pciter.push_back(word1);
       while (pcomegastream >> word2)
         pcomega.push_back(word2);
     }
     {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"STRUCTPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"STRUCTPCOMEGA"));
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"STRUCTPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"STRUCTPCOMEGA"));
       while (pciterstream >> word1)
         spciter.push_back(word1);
       while (pcomegastream >> word2)
         spcomega.push_back(word2);
     }
     {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"FLUIDPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"FLUIDPCOMEGA"));
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"FLUIDPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"FLUIDPCOMEGA"));
       while (pciterstream >> word1)
         fpciter.push_back(word1);
       while (pcomegastream >> word2)
         fpcomega.push_back(word2);
     }
     {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsidyn,"ALEPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsidyn,"ALEPCOMEGA"));
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"ALEPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"ALEPCOMEGA"));
       while (pciterstream >> word1)
         apciter.push_back(word1);
       while (pcomegastream >> word2)
@@ -555,7 +560,7 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
                                    FluidField(),
                                    AleField(),
                                    true,
-                                   DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                   DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
                                    pcomega[0],
                                    pciter[0],
                                    fpcomega[0],
@@ -743,8 +748,9 @@ void FSI::MonolithicFS::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 void FSI::MonolithicFS::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   //should we scale the system?
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -776,8 +782,9 @@ void FSI::MonolithicFS::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_V
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFS::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {

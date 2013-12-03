@@ -117,23 +117,19 @@ ADAPTCONV_BETTER                0.1
 MAXITER                         100
 LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
-LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
 MAXTIME                         1000.0
 TIMESTEP                        1
 NUMSTEP                         1
 RESTARTEVRY                     1
 COUPALGO                        iter_fluidfluid_monolithicfluidsplit
-RELAX                           1.0
+-----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
 ITEMAX                          10
 CONVTOL                         1.0E-12
 BASETOL                         1.0E-3
-STRUCTPCOMEGA 1.0 1.0
-STRUCTPCITER 1 1
-FLUIDPCOMEGA                    1.0 1.0 1.0                  
-FLUIDPCITER                     1 1 1                        
-SHAPEDERIVATIVES                No
 PRECONDREUSE                    0
 NORMCOMBI_RESFINC               And
+SHAPEDERIVATIVES                No
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                             // output every so often, 0 no output

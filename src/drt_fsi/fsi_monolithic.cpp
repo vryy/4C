@@ -704,41 +704,44 @@ void FSI::Monolithic::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_
 void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
                                            Teuchos::ParameterList& list)
 {
+  // monolithic solver settings
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = list;
 
   nlParams.set<std::string>("Nonlinear Solver", "Line Search Based");
   //nlParams.set("Preconditioner", "None");
-  //nlParams.set("Norm abs F", fsidyn.get<double>("CONVTOL"));
+  //nlParams.set("Norm abs F", fsimono.get<double>("CONVTOL"));
 
-  nlParams.set("Max Iterations", fsidyn.get<int>("ITEMAX"));
+  nlParams.set("Max Iterations", fsimono.get<int>("ITEMAX"));
   //nlParams.set("Max Iterations", 1);
 
   // ToDo: Remove the CONVTOL-tolerances and replace them by the single field
   //       tolerances given just below also for lung- and constraint-FSI
   //
   // Currently, we have to keep the parameter CONVTOL for lung and constraint FSI
-  nlParams.set("Norm abs pres", fsidyn.get<double>("CONVTOL"));
-  nlParams.set("Norm abs vel",  fsidyn.get<double>("CONVTOL"));
-  nlParams.set("Norm abs disp", fsidyn.get<double>("CONVTOL"));
+  nlParams.set("Norm abs pres", fsimono.get<double>("CONVTOL"));
+  nlParams.set("Norm abs vel",  fsimono.get<double>("CONVTOL"));
+  nlParams.set("Norm abs disp", fsimono.get<double>("CONVTOL"));
 
   // set tolerances for nonlinear solver
-  nlParams.set("Tol dis res L2",  fsidyn.get<double>("TOL_DIS_RES_L2"));
-  nlParams.set("Tol dis res Inf", fsidyn.get<double>("TOL_DIS_RES_INF"));
-  nlParams.set("Tol dis inc L2",  fsidyn.get<double>("TOL_DIS_INC_L2"));
-  nlParams.set("Tol dis inc Inf", fsidyn.get<double>("TOL_DIS_INC_INF"));
-  nlParams.set("Tol fsi res L2",  fsidyn.get<double>("TOL_FSI_RES_L2"));
-  nlParams.set("Tol fsi res Inf", fsidyn.get<double>("TOL_FSI_RES_INF"));
-  nlParams.set("Tol fsi inc L2",  fsidyn.get<double>("TOL_FSI_INC_L2"));
-  nlParams.set("Tol fsi inc Inf", fsidyn.get<double>("TOL_FSI_INC_INF"));
-  nlParams.set("Tol pre res L2",  fsidyn.get<double>("TOL_PRE_RES_L2"));
-  nlParams.set("Tol pre res Inf", fsidyn.get<double>("TOL_PRE_RES_INF"));
-  nlParams.set("Tol pre inc L2",  fsidyn.get<double>("TOL_PRE_INC_L2"));
-  nlParams.set("Tol pre inc Inf", fsidyn.get<double>("TOL_PRE_INC_INF"));
-  nlParams.set("Tol vel res L2",  fsidyn.get<double>("TOL_VEL_RES_L2"));
-  nlParams.set("Tol vel res Inf", fsidyn.get<double>("TOL_VEL_RES_INF"));
-  nlParams.set("Tol vel inc L2",  fsidyn.get<double>("TOL_VEL_INC_L2"));
-  nlParams.set("Tol vel inc Inf", fsidyn.get<double>("TOL_VEL_INC_INF"));
+  nlParams.set("Tol dis res L2",  fsimono.get<double>("TOL_DIS_RES_L2"));
+  nlParams.set("Tol dis res Inf", fsimono.get<double>("TOL_DIS_RES_INF"));
+  nlParams.set("Tol dis inc L2",  fsimono.get<double>("TOL_DIS_INC_L2"));
+  nlParams.set("Tol dis inc Inf", fsimono.get<double>("TOL_DIS_INC_INF"));
+  nlParams.set("Tol fsi res L2",  fsimono.get<double>("TOL_FSI_RES_L2"));
+  nlParams.set("Tol fsi res Inf", fsimono.get<double>("TOL_FSI_RES_INF"));
+  nlParams.set("Tol fsi inc L2",  fsimono.get<double>("TOL_FSI_INC_L2"));
+  nlParams.set("Tol fsi inc Inf", fsimono.get<double>("TOL_FSI_INC_INF"));
+  nlParams.set("Tol pre res L2",  fsimono.get<double>("TOL_PRE_RES_L2"));
+  nlParams.set("Tol pre res Inf", fsimono.get<double>("TOL_PRE_RES_INF"));
+  nlParams.set("Tol pre inc L2",  fsimono.get<double>("TOL_PRE_INC_L2"));
+  nlParams.set("Tol pre inc Inf", fsimono.get<double>("TOL_PRE_INC_INF"));
+  nlParams.set("Tol vel res L2",  fsimono.get<double>("TOL_VEL_RES_L2"));
+  nlParams.set("Tol vel res Inf", fsimono.get<double>("TOL_VEL_RES_INF"));
+  nlParams.set("Tol vel inc L2",  fsimono.get<double>("TOL_VEL_INC_L2"));
+  nlParams.set("Tol vel inc Inf", fsimono.get<double>("TOL_VEL_INC_INF"));
 
   // sublists
 
@@ -772,8 +775,8 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   lsParams.set<bool>("Output Solver Details",true);
 
   // adaptive tolerance settings for linear solver
-  lsParams.set<double>("base tolerance",fsidyn.get<double>("BASETOL")); // relative tolerance
-  lsParams.set<double>("adaptive distance",fsidyn.get<double>("ADAPTIVEDIST")); // adaptive distance
+  lsParams.set<double>("base tolerance",fsimono.get<double>("BASETOL")); // relative tolerance
+  lsParams.set<double>("adaptive distance",fsimono.get<double>("ADAPTIVEDIST")); // adaptive distance
 }
 
 /*----------------------------------------------------------------------*/
@@ -915,7 +918,8 @@ bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
     SystemMatrix()->SetupPreconditioner();
 
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-    precondreusecount_ = fsidyn.get<int>("PRECONDREUSE");
+    const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+    precondreusecount_ = fsimono.get<int>("PRECONDREUSE");
   }
 
   precondreusecount_ -= 1;
