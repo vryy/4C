@@ -122,7 +122,7 @@ EVALUATION_MAT                  element_center
 UPRES                           1
 RESTARTEVRY                     1
 NUMSTEP                         10000
-MAXTIME                         1
+MAXTIME                         0.5
 TIMESTEP                        0.1
 COUPALGO                        two_way //   two_way // scatra_to_solid //    scatra_to_solid //  solid_to_scatra // scatra_to_solid one_way two_way
 ITEMAX                          10
@@ -5814,8 +5814,8 @@ NODE 928 COORD -1.7820130483767356e+00 -9.0798099947909394e-01 -3.37433303930192
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 // checking z-displacement of 4 points on top of the cylinder
-STRUCTURE DIS structure NODE 122 QUANTITY dispx VALUE -7.73515185023482526e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 122 QUANTITY dispy VALUE -8.02608071743345954e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 122 QUANTITY dispz VALUE 7.68313618869027048e-02  TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 122 QUANTITY dispx VALUE -2.33352111690253439e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 122 QUANTITY dispy VALUE -2.34257336837834489e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 122 QUANTITY dispz VALUE  1.96766361477676253e-02  TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END
