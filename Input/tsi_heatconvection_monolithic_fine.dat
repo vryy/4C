@@ -147,7 +147,7 @@ AZOUTPUT                        0
 AZPOLY                          3
 AZPREC                          MLFLUID2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
 AZREUSE                         0
-AZSCAL                          none   // none,sym,infnorm
+AZSCAL                          none  // none,sym,infnorm
 AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
 AZSUB                           300
 AZTOL                           1e-08
@@ -233,7 +233,7 @@ AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 AZPOLY                          3
-AZPREC                          BGS2x2                        // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZPREC                          BGS2x2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
