@@ -1,7 +1,7 @@
 //
 // Maintainer: Susanna Tinkl
 // tinkl@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/staff/susanna-tinkl
 // 089 - 289-15265
 //
 // necessary defines: D_SOLID3 BINIO
@@ -81,21 +81,6 @@ UZAWAALGO                       uzawa
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-XI                              0
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-BETA                            0.25
-GAMMA                           0.5
-GENAVG                          TrLike
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5
--------------------------------------------------------------THERMAL DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
-----------------------------------------------------------------XFEM GENERAL
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 AZBDIAG                         0

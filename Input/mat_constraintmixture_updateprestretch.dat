@@ -1,3 +1,11 @@
+//
+// Maintainer: Susanna Tinkl
+// tinkl@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/staff/susanna-tinkl
+// 089-289-15265
+//
+// necessary defines: D_SOLID3 BINIO
+//
 ==================================================================
 General Data File BACI
 ==================================================================
@@ -7,9 +15,6 @@ created by pre_exodus
 //ELEMENTS                      96
 //NODES                         234
 DIM                             3
------------------------------------------------------------------ALE DYNAMIC
-------------------------------------------------------------ARTERIAL DYNAMIC
-----------------------------------------------------------COMBUSTION CONTROL
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   1
 NUMALEDIS                       1
@@ -120,18 +125,6 @@ UZAWAALGO                       uzawa
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
------------------------------------------------------STRUCTURAL DYNAMIC/GEMM
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-XI                              0
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-BETA                            0.25
-GAMMA                           0.5
-GENAVG                          TrLike
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ConstraintMixture DENS 0.00105 MUE 77.7E3 NUE 0.49 PHIE 0.3 PREELA 1.3 K1 917.175E3 K2 10.6 PRECOLL 1.05 DAMAGE 1.5 K1M 0.0 K2M 11.8 PHIM 0.15 PREMUS 1.0 SMAX 0.0 KAPPA 1.0E6 LIFETIME 18.0 GROWTHFAC 0.125 HOMSTR 65.0E3 SHEARGROWTHFAC 0.125 HOMRAD 10.0 STARTTIME 20.0 INTEGRATION Explicit TOL 1.0E-8 GROWTHFORCE All ELASTINDEGRAD None MASSPROD Lin INITSTRETCH UpdatePrestretch CURVE 0 DEGOPTION Cos
 ----------------------------------------------------------------------CURVE1
