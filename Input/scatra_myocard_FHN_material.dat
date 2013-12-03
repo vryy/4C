@@ -2,7 +2,7 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-10 line elements for test of Myocard material
+10 line elements for test of Myocard FHN material
 Maintainter: Cristobal Bertoglio
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        10
@@ -11,23 +11,6 @@ DIM                             2
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Transport
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMALEDIS                       0
-NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-OUTPUT_GID                      No
-OUTPUT_BIN                      Yes
-STRUCT_DISP                     No
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
-FILESTEPS                       1000
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
@@ -52,7 +35,7 @@ ABSTOLRES                       1e-10
 CONVTOL                         1e-05
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Franca_Valentin
-EVALUATION_MAT                  integration_point               // element_center //
+EVALUATION_MAT                  element_center         
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK//Aztec_MSR              // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -71,11 +54,11 @@ NODE    1 DNODE 1
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 1 0 0 FUNCTION 0.0 // -86.2
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 2 QUANTITY phi VALUE  1.61583345749268825e+00  TOLERANCE 1e-4
+SCATRA DIS scatra NODE 2 QUANTITY phi VALUE  1.61685079141518062e+00  TOLERANCE 1e-4
 SCATRA DIS scatra NODE 4 QUANTITY phi VALUE  1.41843977883288774e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 6 QUANTITY phi VALUE  1.30073022449625175e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 8 QUANTITY phi VALUE  1.23290097522970465e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 1.20161773408003625e+00  TOLERANCE 1e-4
+SCATRA DIS scatra NODE 6 QUANTITY phi VALUE  1.30029870220736243e+00  TOLERANCE 1e-4
+SCATRA DIS scatra NODE 8 QUANTITY phi VALUE  1.23237376663240417e+00  TOLERANCE 1e-4
+SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 1.20107658227618463e+00  TOLERANCE 1e-4
 -----------------------------------------------------------------NODE COORDS
 NODE  1 COORD 0.00000000e+00 0.00000000e+00 0.00000000e+00
 NODE  2 COORD 1.00000000e-02 0.00000000e+00 0.00000000e+00

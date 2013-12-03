@@ -11,11 +11,6 @@ DIM                             2
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Transport
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMALEDIS                       0
-NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
@@ -54,10 +49,10 @@ ABSTOLRES                       1e-10
 CONVTOL                         1e-05
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Franca_Valentin
-EVALUATION_MAT                  integration_point               // element_center //
+EVALUATION_MAT                  element_center   
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK//Aztec_MSR              // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK //Aztec_MSR              // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_myocard MAIN_DIFFUSIVITY 0.015 OFF_DIFFUSIVITY 0.015 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
 ----------------------------------------------------------------------CURVE1
@@ -73,11 +68,11 @@ NODE    1 DNODE 1
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 1 0 0 FUNCTION 0.0 // -86.2
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 2 QUANTITY phi VALUE  1.02723507966463523e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 4 QUANTITY phi VALUE  1.08931057259117159e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 6 QUANTITY phi VALUE  1.20164345915015036e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 8 QUANTITY phi VALUE  1.31588563456779184e+00  TOLERANCE 1e-4
-SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 5.09607125188425800e-03  TOLERANCE 1e-4
+SCATRA DIS scatra NODE 2 QUANTITY phi VALUE  1.82061922248878377e-01  TOLERANCE 1e-4
+SCATRA DIS scatra NODE 4 QUANTITY phi VALUE  -7.12416701454731890e-03 TOLERANCE 1e-4
+SCATRA DIS scatra NODE 6 QUANTITY phi VALUE  -1.16741926626579896e-03 TOLERANCE 1e-4
+SCATRA DIS scatra NODE 8 QUANTITY phi VALUE  -5.15203358263243311e-05 TOLERANCE 1e-4
+SCATRA DIS scatra NODE 10 QUANTITY phi VALUE  2.84158536437300482e-06 TOLERANCE 1e-4
 -----------------------------------------------------------------NODE COORDS
 NODE  1 COORD 0.00000000e+00 0.00000000e+00 0.00000000e+00
 NODE  2 COORD 1.00000000e-00 0.00000000e+00 0.00000000e+00
