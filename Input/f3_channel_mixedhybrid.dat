@@ -21,10 +21,6 @@ Comput. Methods Appl. Mech. Engrg. 245-246 (2012) 22-35
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid
-RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
---------------------------------------------------------------------------IO
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 PHYSICAL_TYPE                   Incompressible

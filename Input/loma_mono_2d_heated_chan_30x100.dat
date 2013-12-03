@@ -15,16 +15,8 @@ low-Mach-number 2D heated channel 30x100 elements
 ELEMENTS                        3000
 NODES                           3131
 DIM                             2
-MATERIALS                       1
-NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Low_Mach_Number_Flow
-RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMALEDIS                       0
-NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 PHYSICAL_TYPE                   Loma
