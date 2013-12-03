@@ -172,14 +172,16 @@ int STR::TimAda::Integrate()
     }
 
     // update or break
-    if (accepted and myrank_ == 0)
+    if (accepted)
     {
-      std::cout << "Step size accepted" << std::endl;
+      if (myrank_ == 0)
+        std::cout << "Step size accepted" << std::endl;
     }
-    else if (adaptstep_ >= adaptstepmax_ and myrank_ == 0)
+    else if (adaptstep_ >= adaptstepmax_)
     {
-      std::cout << "Could not find acceptable time step size"
-                << " ... continuing" << std::endl;
+      if (myrank_ == 0)
+        std::cout << "Could not find acceptable time step size"
+                  << " ... continuing" << std::endl;
     }
     else
     {
