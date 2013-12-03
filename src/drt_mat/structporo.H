@@ -331,7 +331,8 @@ namespace MAT
       //@}
 
       /// Return material density (if provided by the specific material)
-      virtual double Density() const {return ( (1.0-params_->initporosity_) * mat_->Density());};
+      virtual double Density() const {if(params_->initporosity_==1.0) return mat_->Density();
+      else return ( (1.0-params_->initporosity_) * mat_->Density());};
 
       //! @name Handling of Gauss point data. Here, the poro material just calls the underlying material
 
@@ -367,7 +368,7 @@ namespace MAT
       protected:
 
       /// compute current porosity and save it
-      void ComputePorosity(  const double& initporosity,    ///< (i) initial/reference porosity at gauss point
+      void ComputePorosity(  const double& refporosity,     ///< (i) initial/reference porosity at gauss point
                              const double& press,           ///< (i) pressure at gauss point
                              const double& J,               ///< (i) determinant of jacobian at gauss point
                              const int& gp,                 ///< (i) number of current gauss point

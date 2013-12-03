@@ -911,9 +911,6 @@ protected:
       Epetra_SerialDenseVector&            elevec1,
       const DRT::UTILS::GaussIntegration & intpoints2);
 
-  ///effective viscosity (zero for Darcy flow )
-  double visceff_;
-
   ///first derivatives of shape functions w.r.t. material coordinates
   LINALG::Matrix<my::nsd_,my::nen_> N_XYZ_;
   /*!

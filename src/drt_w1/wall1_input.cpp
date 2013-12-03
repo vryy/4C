@@ -14,7 +14,6 @@ Maintainer: Markus Gitterle
 #include "wall1.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_mat/elasthyper.H"
-#include "../drt_mat/structporo.H"
 
 
 /*----------------------------------------------------------------------*/

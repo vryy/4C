@@ -173,8 +173,8 @@ CURVE1 on EXPR FUNC -10.0e4*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 4.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS porofluid NODE 124 QUANTITY velx VALUE -1.37729723085117467e-01 TOLERANCE 1e-8
-FLUID DIS porofluid NODE 124 QUANTITY pressure VALUE 8.04825869205467903e+00 TOLERANCE 1e-6
+FLUID DIS porofluid NODE 124 QUANTITY velx VALUE -1.37729986782900882e-01 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 124 QUANTITY pressure VALUE 8.04818737950836649e+00 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 62 QUANTITY dispx VALUE 0 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 71 QUANTITY dispy VALUE 0 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE -2.22867200703874817e-03 TOLERANCE 1e-8

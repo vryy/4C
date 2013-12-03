@@ -76,7 +76,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Done()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
   : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(),
-    visceff_(0.0),
     N_XYZ_(true),
     N_XYZ2_(true),
     N_XYZ2full_(true),
@@ -1496,10 +1495,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
                       \                        /
      */
 
-     if(visceff_)
+     if(my::visceff_)
      {
        LINALG::Matrix<my::nsd_,my::nsd_> viscstress(true);
-       const double visceff_timefacfac = visceff_*timefacfac;
+       const double visceff_timefacfac = my::visceff_*timefacfac;
 
        for (int vi=0; vi<my::nen_; ++vi)
        {
@@ -1531,7 +1530,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
        {
          for (int idim = 0; idim < my::nsd_; ++idim)
          {
-           viscstress(idim,jdim)=visceff_*(my::vderxy_(jdim,idim)+my::vderxy_(idim,jdim));
+           viscstress(idim,jdim)=my::visceff_*(my::vderxy_(jdim,idim)+my::vderxy_(idim,jdim));
          }
        }
 
@@ -2109,7 +2108,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
   } // ui
 
   //viscous terms (brinkman terms)
-  if(visceff_)
+  if(my::visceff_)
   {
     LINALG::Matrix<my::nsd_,my::nsd_> viscstress(true);
 
@@ -2117,7 +2116,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
     {
       for (int idim = 0; idim < my::nsd_; ++idim)
       {
-        viscstress(idim,jdim)=visceff_*(my::vderxy_(jdim,idim)+my::vderxy_(idim,jdim));
+        viscstress(idim,jdim)=my::visceff_*(my::vderxy_(jdim,idim)+my::vderxy_(idim,jdim));
       }
     }
 
@@ -2724,12 +2723,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
 
 #define xjm(i,j) my::xjm_(i,j)
 
-  if(visceff_)
+  if(my::visceff_)
   {
 
     // part 1: derivative of 1/det
 
-    double v = visceff_*timefac*my::fac_ * (1.0 + addstab );
+    double v = my::visceff_*timefac*my::fac_ * (1.0 + addstab );
     for (int ui=0; ui<my::nen_; ++ui)
     {
       double derinvJ0 = -v*(my::deriv_(0,ui)*xji_00 + my::deriv_(1,ui)*xji_01 + my::deriv_(2,ui)*xji_02);
@@ -2817,7 +2816,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
 
     // part 2: derivative of viscosity residual
 
-     v = timefacfac*visceff_/my::det_ * (1.0 + addstab );
+     v = timefacfac*my::visceff_/my::det_ * (1.0 + addstab );
     for (int ui=0; ui<my::nen_; ++ui)
     {
       double v0 = - my::vderiv_(0,0)*(xji_10*derxjm_100(ui) + xji_10*derxjm_100(ui) + xji_20*derxjm_200(ui) + xji_20*derxjm_200(ui))
@@ -3142,7 +3141,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
                                      - v*my::funct_(vi)/porosity_*(refgrad_porosity_(0)*v0 + refgrad_porosity_(1)*v1 + refgrad_porosity_(2)*v2);
       }
     }
-  }//if(visceff_)
+  }//if(my::visceff_)
 
   //*************************** ReacStab**********************************
   if(my::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
@@ -3694,12 +3693,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
 
   // //---------viscous term (brinkman term)
 
-  if(visceff_)
+  if(my::visceff_)
   {
 
     // part 1: derivative of det
 
-    double v = visceff_*timefac*my::fac_ * (1.0 + addstab );
+    double v = my::visceff_*timefac*my::fac_ * (1.0 + addstab );
     for (int ui=0; ui<my::nen_; ++ui)
     {
       double derinvJ0 = -v*(my::deriv_(0,ui)*my::xji_(0,0) + my::deriv_(1,ui)*my::xji_(0,1) );
@@ -3744,7 +3743,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
 
     // part 2: derivative of viscosity residual
 
-     v = timefacfac*visceff_/my::det_ * (1.0 + addstab );
+     v = timefacfac*my::visceff_/my::det_ * (1.0 + addstab );
     for (int ui=0; ui<my::nen_; ++ui)
     {
       double v0 = - my::vderiv_(0,0)*(my::xji_(1,0)*my::deriv_(1,ui) + my::xji_(1,0)*my::deriv_(1,ui) )
@@ -3814,7 +3813,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
       }
 
     }
-  }//if(visceff_)
+  }//if(my::visceff_)
 
   //*************************** ReacStab**********************************
   if(my::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
@@ -4274,7 +4273,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputePorosityGradient(
                         const LINALG::Matrix<my::nsd_,1>&                  gradJ,
                         const LINALG::Matrix<my::nen_,1>*                  eporositynp)
 {
-  //if( (my::fldpara_->PoroContiPartInt() == false) or visceff_)
+  //if( (my::fldpara_->PoroContiPartInt() == false) or my::visceff_)
   {
     //--------------------- current porosity gradient
     for (int idim=0; idim<my::nsd_; ++idim)
@@ -4294,7 +4293,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearization(
                                   const LINALG::Matrix<my::nsd_,1>&                  gradJ,
                                   LINALG::Matrix<my::nsd_,my::nen_>&                 dgradphi_dp)
 {
-  if( (static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false) or visceff_)
+  if( (static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false) or my::visceff_)
   {
     //--linearization of porosity gradient w.r.t. pressure at gausspoint
     //d(grad(phi))/dp = dphi/(dJdp)* dJ/dx + d^2phi/(dp)^2 * dp/dx + dphi/dp* N,x
@@ -4328,7 +4327,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(
   //--------------------- linearization of porosity w.r.t. structure displacements
   dphi_dus.Update( dphi_dJ , dJ_dus );
 
-  if( (static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false) or visceff_)
+  if( (static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false) or my::visceff_)
   {
     //---------------------d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
 
@@ -4581,7 +4580,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetMaterialParamters(Teuchos::RCP
     // calculate reaction coefficient
     my::reacoeff_ = actmat->ComputeReactionCoeff()*porosity_;
 
-    visceff_       = actmat->EffectiveViscosity();
+    my::visceff_       = actmat->EffectiveViscosity();
   }
   else dserror("Fluid material parameters have to be evaluated at gauss point for porous flow!");
   return;
@@ -4635,7 +4634,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSAndSubgridScaleVeloc
     for (int rr=0;rr<my::nsd_;++rr)
     {
       my::momres_old_(rr) = my::densam_*my::accint_(rr)+my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
-                       -2*visceff_*my::visc_old_(rr)+reaconvel_(rr)-my::densaf_*my::bodyforce_(rr);
+                       -2*my::visceff_*my::visc_old_(rr)+reaconvel_(rr)-my::densaf_*my::bodyforce_(rr);
     }
   }
   else
@@ -4654,10 +4653,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSAndSubgridScaleVeloc
       {
         /*my::momres_old_(rr) = my::densaf_*my::velint_(rr)/my::fldparatimint_->Dt()
                            +my::fldparatimint_->Theta()*(my::densaf_*conv_old_(rr)+my::gradp_(rr)
-                           -2*visceff_*visc_old_(rr)+my::reacoeff_*my::velint_(rr))-my::rhsmom_(rr);*/
+                           -2*my::visceff_*visc_old_(rr)+my::reacoeff_*my::velint_(rr))-my::rhsmom_(rr);*/
         my::momres_old_(rr) = ((my::densaf_*my::velint_(rr)/my::fldparatimint_->Dt()
                          +my::fldparatimint_->Theta()*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
-                         -2*visceff_*my::visc_old_(rr)+reaconvel_(rr)))/my::fldparatimint_->Theta())-my::rhsmom_(rr);
+                         -2*my::visceff_*my::visc_old_(rr)+reaconvel_(rr)))/my::fldparatimint_->Theta())-my::rhsmom_(rr);
      }
     }
     else
@@ -4671,7 +4670,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSAndSubgridScaleVeloc
       {
         my::momres_old_(rr) = my::densaf_*my::conv_old_(rr)
                              +my::gradp_(rr)
-                             -2*visceff_*my::visc_old_(rr)
+                             -2*my::visceff_*my::visc_old_(rr)
                              +reaconvel_(rr)-my::rhsmom_(rr)
         ;
       }
@@ -4698,16 +4697,44 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
              my::fldpara_->WhichTau() == INPAR::FLUID::tau_not_defined))
       dserror("incorrect definition of stabilization parameter for porous flow");
 
+    /*
+    This stabilization parameter is only intended to be used for
+    (viscous-)reactive problems such as Darcy(-Stokes/Brinkman) problems.
+
+    literature:
+    1) L.P. Franca, A.L. Madureira, F. Valentin, Towards multiscale
+       functions: enriching finite element spaces with local but not
+       bubble-like functions, Comput. Methods Appl. Mech. Engrg. 194
+       (2005) 3006-3021.
+    2) S. Badia, R. Codina, Stabilized continuous and discontinuous
+       Galerkin techniques for Darcy flow, Comput. Methods Appl.
+       Mech. Engrg. 199 (2010) 1654-1667.
+
+    */
+
+    // get element-type constant for tau
+    const double mk = DRT::ELEMENTS::MK<distype>();
+
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient
     double sigma_tot = my::reacoeff_;
-    if (my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
+
+    if (not my::fldparatimint_->IsStationary())
+    {
       sigma_tot += 1.0/my::fldparatimint_->TimeFac();
+    }
 
     // calculate characteristic element length
     double h_u  = 0.0;
     double h_p     = 0.0;
     my::CalcCharEleLength(vol,0.0,h_u,h_p);
+
+    // various parameter computations for case with dt:
+     // relating viscous to reactive part
+     const double re11 = 2.0 * my::visceff_ / (mk * my::densaf_ * sigma_tot * DSQR(h_p));
+
+     // respective "switching" parameter
+     const double xi11 = std::max(re11,1.0);
 
     // constants c_u and c_p as suggested in Badia and Codina (2010), method A
     const double c_u = 4.0;
@@ -4715,7 +4742,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
 
     // tau_Mu not required for porous flow
     my::tau_(0) = 0.0;
-    my::tau_(1) = 1.0/(c_u*my::densaf_*sigma_tot);
+    my::tau_(1) = DSQR(h_p)/(c_u*DSQR(h_p)*my::densaf_*sigma_tot*xi11+(2.0*my::visceff_/mk));
     my::tau_(2) = c_p*DSQR(h_p)*my::reacoeff_/porosity_;
 
     dtaudphi_(0)= 0.0;

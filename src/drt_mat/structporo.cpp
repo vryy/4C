@@ -195,7 +195,7 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::StructPoro::ComputePorosity( const double& initporosity,
+void MAT::StructPoro::ComputePorosity( const double& refporosity,
                                        const double& press,
                                        const double& J,
                                        const int& gp,
@@ -208,11 +208,24 @@ void MAT::StructPoro::ComputePorosity( const double& initporosity,
                                        double* dphi_dphiref,
                                        bool save)
 {
+  if(refporosity == 1.0)
+  {
+    //this is pure fluid. The porosity does not change
+
+    porosity = 1.0;
+    if(dphi_dp)      *dphi_dp      = 0.0;
+    if(dphi_dJ)      *dphi_dJ      = 0.0;
+    if(dphi_dJdp)    *dphi_dJdp    = 0.0;
+    if(dphi_dJJ)     *dphi_dJJ     = 0.0;
+    if(dphi_dpp)     *dphi_dpp     = 0.0;
+    if(dphi_dphiref) *dphi_dphiref = 0.0;
+    return;
+  }
 
   const double & bulkmodulus  = params_->bulkmodulus_;
   const double & penalty      = params_->penaltyparameter_;
 
-  const double a = (bulkmodulus / (1 - initporosity) + press - penalty / initporosity) * J;
+  const double a = (bulkmodulus / (1 - refporosity) + press - penalty / refporosity) * J;
   const double b = -a + bulkmodulus + penalty;
   const double c = b * b  + 4.0 * penalty * a;
   double d = sqrt(c);
@@ -259,7 +272,7 @@ void MAT::StructPoro::ComputePorosity( const double& initporosity,
 
   if(dphi_dphiref)
   {
-    const double dadphiref = J*(bulkmodulus / ((1 - initporosity)*(1 - initporosity)) + penalty / (initporosity*initporosity));
+    const double dadphiref = J*(bulkmodulus / ((1 - refporosity)*(1 - refporosity)) + penalty / (refporosity*refporosity));
     const double tmp = 2*dadphiref/a * (-b*(a+b)/a - 2*penalty);
     const double dddphiref = sign*(dadphiref * sqrt(c)/a + tmp);
 
@@ -284,7 +297,7 @@ void MAT::StructPoro::ComputePorosity( Teuchos::ParameterList& params,
                                        bool save)
 {
 
-  ComputePorosity( params_->initporosity_,
+  ComputePorosity( params_->initporosity_, //reference porosity equals initial porosity for non reactive material
                    press,
                    J,
                    gp,
@@ -294,7 +307,7 @@ void MAT::StructPoro::ComputePorosity( Teuchos::ParameterList& params,
                    dphi_dJdp,
                    dphi_dJJ,
                    dphi_dpp,
-                   NULL,
+                   NULL, //reference porosity is constant (non reactive) -> derivative not needed
                    save);
 
   return;
