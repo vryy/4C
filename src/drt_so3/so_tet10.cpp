@@ -27,6 +27,8 @@ Maintainer: Jonas Biehler
 // inverse design object
 #include "inversedesign.H"
 #include "prestress.H"
+//remove later
+
 
 DRT::ELEMENTS::So_tet10Type DRT::ELEMENTS::So_tet10Type::instance_;
 
@@ -322,9 +324,16 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol
     // get gaussian points
     const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::intrule_tet_4point);
 
-    // loop over all nodes
-    for (int ip=0; ip<NUMNOD_SOTET10; ++ip)
+    //transformation of nodes of virtual tet4 element defined by GP
+    const double palpha = (5.0 + 3.0*sqrt(5.0))/20.0;
+    const double pbeta  = (5.0 - sqrt(5.0))/20.0;
+    // we need to setup a mapping which allows us to evaluate the position of the nodes
+    // in the parameter space of a fictitious element defined by the GP
+
+    // loop over all GP
+    for (int ip=0; ip<NUMGPT_SOTET10; ++ip)
     {
+
       // gaussian coordinates
       const double e1 = intpoints.qxg[ip][0];
       const double e2 = intpoints.qxg[ip][1];
@@ -335,22 +344,37 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol
       double e2expol;
       double e3expol;
 
-      if (e1!=0) e1expol = 1/e1;
-      else       e1expol = 0;
-      if (e2!=0) e2expol = 1/e2;
-      else       e2expol = 0;
-      if (e3!=0) e3expol = 1/e3;
-      else       e3expol = 0;
+      e1expol = (e1-pbeta*(1+palpha-pbeta))/((palpha-pbeta)*(palpha-pbeta));
+      e2expol = (e2-pbeta*(1+palpha-pbeta))/((palpha-pbeta)*(palpha-pbeta));
+      e3expol = (e3-pbeta*(1+palpha-pbeta))/((palpha-pbeta)*(palpha-pbeta));
 
       // shape functions for the extrapolated coordinates
-      // (yes, we REALLY mean DiscretizationType tet10 here!)
+      // (yes, we REALLY mean DiscretizationType tet4 here, because we are using 4 GP for stiffness matrix integration )
       LINALG::Matrix<NUMNOD_SOTET10,1> funct;
-      DRT::UTILS::shape_function_3D(funct,e1expol,e2expol,e3expol,tet10);
+      DRT::UTILS::shape_function_3D(funct,e1expol,e2expol,e3expol,tet4);
 
       // extrapolation matrix
-      for (int i=0;i<NUMGPT_SOTET10;++i) expol(ip,i) = funct(i);
+      // Evaluate shape functions (of fictious GP element) at the corner nodes of the actual element
+      for (int i=0;i<NUMGPT_SOTET10;++i)
+      {
+        expol(ip,i) = funct(i);
+      }
+
     }
 
+
+    //linear combination
+    // interpolate stresses at edge/element center nodes from linear combination
+    //of corner nodes
+    for (int i=0;i<NUMGPT_SOTET10;++i)
+    {
+      expol(4,i) = (0.5*expol(0,i)+0.5*expol(1,i));
+      expol(5,i) = (0.5*expol(1,i)+0.5*expol(2,i));
+      expol(6,i) = (0.5*expol(0,i)+0.5*expol(2,i));
+      expol(7,i) = (0.5*expol(0,i)+0.5*expol(3,i));
+      expol(8,i) = (0.5*expol(1,i)+0.5*expol(3,i));
+      expol(9,i) = (0.5*expol(2,i)+0.5*expol(3,i));
+    }
     // do extrapolation
     nodalstresses.Multiply(expol, stresses);
 

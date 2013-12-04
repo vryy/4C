@@ -423,7 +423,9 @@ void DRT::ELEMENTS::Wall1::w1_expol
   // tri6
   else if (dt==tri6)
   {
-    // loop over all nodes
+    dserror("ERROR: Nodal stress output is not implemented for TRI6");
+    // the following extrapolation is wrong
+/*    // loop over all nodes
     for (int ip=0; ip<numnode; ++ip)
     {
       // gaussian coordinates
@@ -451,7 +453,7 @@ void DRT::ELEMENTS::Wall1::w1_expol
 
       // extrapolation matrix
       for(int i=0;i<numgp;++i) expol(ip,i) = funct(i);
-    }
+    }*/
   }
 
   // else
