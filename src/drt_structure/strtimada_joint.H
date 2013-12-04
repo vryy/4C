@@ -22,15 +22,6 @@ Maintainer: Alexander Popp
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
-#include <NOX.H>
-#include <NOX_Epetra.H>
-#include "ml_common.h"
-#include "ml_include.h"
-#include "nlnml_preconditioner.H"
-#include "nlnml_linearsystem.H"
-#include "nlnml_finelevelnoxinterface.H"
 
 #include "strtimada.H"
 #include "strtimint.H"
