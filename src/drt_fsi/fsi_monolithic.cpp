@@ -588,7 +588,7 @@ void FSI::Monolithic::NonLinErrorCheck()
         erroraction_ = FSI::Monolithic::erroraction_stop;
 
         // stop the simulation
-        dserror("Nonlinear solver did not converge in %i iterations.", noxiter_);
+        dserror("Nonlinear solver did not converge in %i iterations in time step %i.", noxiter_, Step());
         break;
       }
       case INPAR::FSI::divcont_continue:
@@ -599,7 +599,9 @@ void FSI::Monolithic::NonLinErrorCheck()
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
         if (Comm().MyPID() == 0)
         {
-          IO::cout << "\n*** Nonlinear solver did not converge in " << noxiter_ << " iterations. Continue ...\n";
+          IO::cout << "\n*** Nonlinear solver did not converge in " << noxiter_
+                   << " iterationsin time step " << Step()
+                   << ". Continue ...\n";
         }
         break;
       }
