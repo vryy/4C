@@ -22,15 +22,6 @@ Maintainer: Alexander Popp
 #include "Teuchos_ParameterList.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
-#include <NOX.H>
-#include <NOX_Epetra.H>
-#include "ml_common.h"
-#include "ml_include.h"
-#include "nlnml_preconditioner.H"
-#include "nlnml_linearsystem.H"
-#include "nlnml_finelevelnoxinterface.H"
 
 #include "../drt_inpar/inpar_structure.H"
 
@@ -94,6 +85,7 @@ namespace STR
         return "";
         break;
       }
+      return ""; // make compiler happy
     }
 
     //! List type of local error control
@@ -108,13 +100,13 @@ namespace STR
     enum AdaEnum
     {
       ada_vague,  //!< algorithm is unknown
-      ada_upward,  //!< of upward type, i.e. auxiliar scheme has \b higher order
+      ada_upward,  //!< of upward type, i.e. auxiliary scheme has \b higher order
                    //!< of accuracy than marching scheme
-      ada_downward,  //!< of downward type, i.e. auxiliar scheme has \b lower order
+      ada_downward,  //!< of downward type, i.e. auxiliary scheme has \b lower order
                      //!< of accuracy than marching scheme
-      ada_orderequal,  //!< of equal order type, i.e. auxiliar scheme has the \b some
+      ada_orderequal,  //!< of equal order type, i.e. auxiliary scheme has the \b some
                        //!< order of accuracy like the marching method
-      ada_ident  //!< auxiliar scheme is \b identical to marching scheme
+      ada_ident  //!< auxiliary scheme is \b identical to marching scheme
     };
 
     //! Constructor
@@ -146,7 +138,7 @@ namespace STR
     //! Indicate error and determine new step size
     void Indicate
     (
-      bool& accepted,  //!< true=accpeted, false=not accepted
+      bool& accepted,  //!< true=accepted, false=not accepted
       double& stpsiznew  //!< step size prediction for next or
                          //!< step repetition
     );
@@ -161,7 +153,7 @@ namespace STR
     //! @name Output
     //@{
 
-    //! Print error norm std::string
+    //! Print error norm string
     std::string PrintErrNorm() const;
 
     //! Print time adapting constants

@@ -16,11 +16,7 @@ Maintainer: Alexander Popp
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#ifdef PARALLEL
 #include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif
 #include "Epetra_Time.h"
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"

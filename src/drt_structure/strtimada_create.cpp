@@ -26,8 +26,6 @@ Maintainer: Alexander Popp
 #include "strtimada_zienxie.H"
 #include "strtimada_joint.H"
 #include "strtimint_ab2.H"
-#include "../linalg/linalg_blocksparsematrix.H"
-
 
 /*======================================================================*/
 /* create auxiliary time integration scheme */
