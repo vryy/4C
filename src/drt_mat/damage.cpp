@@ -839,6 +839,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(
     //-------------------------------------------------------------------
     if (damevolution == true)
     {
+#ifdef DEBUGMATERIAL
       // only first plastic call is output at screen for every processor
       // visualisation of whole plastic behaviour via PLASTIC_STRAIN in postprocessing
       if ( (plastic_step_ == false) and (gp == 0) )
@@ -848,7 +849,6 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(
         plastic_step_ = true;
       }
 
-#ifdef DEBUGMATERIAL
         std::cout << "Damage has to be considered for current load step and ele = "
           << eleID << ", and gp = " << gp << " ! Threshold exceeded!" << std::endl;
 #endif  // #ifdef DEBUGMATERIAL
@@ -889,10 +889,11 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(
         if (itnum > itermax)
         {
           dserror(
-            "local Newton iteration did not converge after iteration %3d/%3d with Res=%3d",
+            "local Newton iteration did not converge after iteration %3d/%3d with Res=%3d in ele=%3d",
             itnum,
             itermax,
-            Res
+            Res,
+            eleID
             );
         }
         // else: continue loop m <= m_max
@@ -975,10 +976,11 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(
         strainbar_p = strainbarpllast_->at(gp) + Dgamma/omega;
         if (strainbar_p < 0.0)
         {
-          std::cout << "strainbarpllast_->at(gp) = " << strainbarpllast_->at(gp) << std::endl;
-          std::cout << "omega = " << omega << std::endl;
-          std::cout << "Dgamma = " << Dgamma << std::endl;
-          std::cout << "strainbar_p = " << strainbar_p << std::endl;
+          std::cout << "in element:" << eleID
+            << ": strainbarpllast_->at(gp) = " << strainbarpllast_->at(gp)
+            << ", omega = " << omega
+            << ", Dgamma = " << Dgamma
+            << ", and strainbar_p = " << strainbar_p << std::endl;
           dserror("accumulated plastic strain has to be equal or greater than zero");
         }
 
@@ -1007,7 +1009,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(
       // sanity check: omega < 1.0e-20
       if (omega < 1.0e-20)
         dserror("INadmissible value of integrity: omega = %-14.8E in ele = %4d!"
-          " \n Omega has to be greater than zero!", eleID, omega);
+          " \n Omega has to be greater than zero!", omega, eleID);
 
       // update damage variable damage_{n+1}
       damage = 1.0 - omega;

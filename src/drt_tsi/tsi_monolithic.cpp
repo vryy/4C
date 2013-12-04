@@ -2979,12 +2979,12 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
       {
         for (unsigned j=0; j<sdata.size(); j++)
         {
-          if (sdata.at(j) == StructureField()->Discretization()->Dof(node,2))
+          if (sdata.at(j) == StructureField()->Discretization()->Dof(0,node,2))
             this_is_new_gid = false;
         }
         if (this_is_new_gid)
-          sdata.push_back(StructureField()->Discretization()->Dof(node,2));
-        one_dof_in_dbc.at(0) = StructureField()->Discretization()->Dof(node,2);
+          sdata.push_back(StructureField()->Discretization()->Dof(0,node,2));
+        one_dof_in_dbc.at(0) = StructureField()->Discretization()->Dof(0,node,2);
       }  // top surface
     }  // loop over DBC nodes
   }  // loop over all STRUCTURAL DBC conditions
@@ -3087,7 +3087,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
        )
     {
       // we choose point A (6.413mm / 0mm / -13.3335mm)
-      necking_radius_dof.at(0) = StructureField()->Discretization()->Dof(node,0);
+      necking_radius_dof.at(0) = StructureField()->Discretization()->Dof(0,node,0);
       break;  // we only look for one specific node, if we have found it: stop
       // --> An alternative to the break-statement is, e.g.
       // k = StructureField()->Discretization()->NodeRowMap()->NumMyElements() + 10;
@@ -3133,7 +3133,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
          and (abs(node->X()[2] - necking_z) < 1.e-8)  // z-direction
        )
     {
-      neck_temperature_dof.at(0) = ThermoField()->Discretization()->Dof(node,0);
+      neck_temperature_dof.at(0) = ThermoField()->Discretization()->Dof(0,node,0);
       break;  // we only look for one specific node, if we have found it: stop
       // --> An alternative to the break-statement is, e.g.
       // k = ThermoField()->Discretization()->NodeRowMap()->NumMyElements() + 10;
@@ -3173,7 +3173,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
          and (abs(node->X()[2] - top_z) < 1.e-8)  // z-direction
        )
     {
-      top_temperature_dof.at(0) = ThermoField()->Discretization()->Dof(node,0);
+      top_temperature_dof.at(0) = ThermoField()->Discretization()->Dof(0,node,0);
       break;  // we only look for one specific node, if we have found it: stop
       // --> An alternative to the break-statement is, e.g.
       // k = ThermoField()->Discretization()->NodeRowMap()->NumMyElements() + 10;
