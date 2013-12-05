@@ -126,7 +126,7 @@ namespace WEAR
     virtual void TimeLoop();
 
     // time loop for staggered coupling
-    void TimeLoopStagg();
+    void TimeLoopStagg(bool alestep);
 
     //time loop for iterative stagered coupling
     void TimeLoopIterStagg();

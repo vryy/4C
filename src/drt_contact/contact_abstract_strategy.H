@@ -725,8 +725,8 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     
     
     //empty functions wear
-    virtual void UpdateWearDiscret(bool store) = 0;
-
+    virtual void UpdateWearDiscretIterate(bool store) = 0;
+    virtual void UpdateWearDiscretAccumulation(bool wearaccumulation) = 0;
 
   protected:
 

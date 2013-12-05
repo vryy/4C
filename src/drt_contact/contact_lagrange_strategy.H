@@ -264,7 +264,8 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     const Teuchos::RCP<Epetra_Map> MasterActiveNodes() {return Teuchos::null;};
 
     //wear
-    void UpdateWearDiscret(bool store) {};
+    void UpdateWearDiscretIterate(bool store) {};
+    void UpdateWearDiscretAccumulation(bool wearaccumulation) {};
 
   protected:
 

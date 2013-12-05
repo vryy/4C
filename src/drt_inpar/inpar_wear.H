@@ -90,6 +90,14 @@ namespace INPAR
       wear_iterstagg,
       wear_monolithic
     };
+
+    /// Definition of wear-ALE time scale coupling algorithm
+    /// (this enum represents the input file parameter WEAR_TIMESCALE)
+    enum WearTimeScale
+    {
+      wear_time_equal,
+      wear_time_different
+    };
   }  // namespace CONTACT
 }  // namespace INPAR
 

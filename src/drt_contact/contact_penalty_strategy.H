@@ -236,7 +236,8 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   //@}
   
   //wear
-  void UpdateWearDiscret(bool store){};
+  void UpdateWearDiscretIterate(bool store){};
+  void UpdateWearDiscretAccumulation(bool wearaccumulation){};
 
 protected:
 

@@ -98,7 +98,8 @@ class StrategyBase
       wupdate,
       wmupdate,
       wold,
-      wmold
+      wmold,
+      wupdateT
     };
     //@}
 

@@ -1350,6 +1350,11 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         vectorglobal = WearVar();
         break;
       }
+      case MORTAR::StrategyBase::wupdateT:
+      {
+        vectorglobal = WearVar();
+        break;
+      }
       case MORTAR::StrategyBase::wmupdate:
       {
         vectorglobal = WearVarM();
@@ -1392,7 +1397,8 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
     // rowmap for remaining cases 
     Teuchos::RCP<Epetra_Map> sdofmap, snodemap;
     if (type == MORTAR::StrategyBase::lmupdate or type == MORTAR::StrategyBase::lmcurrent or
-        type == MORTAR::StrategyBase::wupdate)
+        type == MORTAR::StrategyBase::wupdate or type == MORTAR::StrategyBase::wold or
+        type==MORTAR::StrategyBase::wupdateT)
     {  
       sdofmap = interface_[i]->SlaveColDofs();
       snodemap = interface_[i]->SlaveColNodes();
@@ -1447,7 +1453,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         FriNode* fnode = static_cast<FriNode*>(node);
 
         // store updated wcurr into node
-        fnode->FriDataPlus().wold()[0] = (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
+        fnode->FriDataPlus().wold()[0] += (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
       }
     }
     else
@@ -1518,7 +1524,21 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 
             // store updated wcurr into node
             FriNode* fnode = static_cast<FriNode*>(cnode);
-            fnode->FriDataPlus().wcurr()[(int)(dof/Dim())] = (*vectorinterface)[locindex[(int)(dof/Dim())]];
+            fnode->FriDataPlus().wcurr()[0] = (*vectorinterface)[locindex[(int)(dof/Dim())]];
+            dof=dof+Dim()-1;
+            break;
+          }
+          case MORTAR::StrategyBase::wupdateT:
+          {
+            // throw a dserror if node is Active and DBC
+            if (cnode->IsDbc() && cnode->Active())
+              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+            // explicity set global Lag. Mult. to zero for D.B.C nodes
+            if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
+
+            // store updated wcurr into node
+            FriNode* fnode = static_cast<FriNode*>(cnode);
+            fnode->FriDataPlus().waccu()[0] += (*vectorinterface)[locindex[(int)(dof/Dim())]];
             dof=dof+Dim()-1;
             break;
           }
@@ -1532,8 +1552,9 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 
             // store updated wcurr into node
             FriNode* fnode = static_cast<FriNode*>(cnode);
-            fnode->FriDataPlus().wold()[(int)(dof/Dim())] += (*vectorinterface)[locindex[(int)(dof/Dim())]];
+            fnode->FriDataPlus().wold()[0] += (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
             dof=dof+Dim()-1;
+
             break;
           }
           case MORTAR::StrategyBase::activeold:

@@ -82,6 +82,8 @@ CoLagrangeStrategy(probdiscret,params,interfaces,dim,comm,alphaf,maxdof)
       DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(Params(),"WEARTYPE");
   INPAR::CONTACT::WearSide wside =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(Params(),"BOTH_SIDED_WEAR");
+  INPAR::CONTACT::WearTimeScale wtime =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearTimeScale>(Params(),"WEAR_TIMESCALE");
 
   if (wtype == INPAR::CONTACT::wear_impl)
     wearimpl_ = true;
@@ -99,6 +101,12 @@ CoLagrangeStrategy(probdiscret,params,interfaces,dim,comm,alphaf,maxdof)
     wearbothdiscr_=true;
   else
     wearbothdiscr_=false;
+
+  // different wear timescales?
+  if (wtime == INPAR::CONTACT::wear_time_different)
+    weartimescales_=true;
+  else
+    weartimescales_=false;
 
   // max dof number -- disp dofs and lm dofs considered
   maxdofwear_ = maxdof_ + glmdofrowmap_->NumGlobalElements();
@@ -3778,60 +3786,17 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
 {
   if(weardiscr_)
   {
-    // multiply the wear with its normal direction and store in wear_vector
-    // loop over all interfaces
-    for (int i=0; i<(int)interface_.size(); ++i)
+    if(weartimescales_)
     {
-      // FIRST: get the wear values and the normal directions for the interface
-      // loop over all slave row nodes on the current interface
-      for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
-      {
-        int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        FriNode* frinode = static_cast<FriNode*>(node);
-
-        // be aware of problem dimension
-        int dim = Dim();
-        int numdof = frinode->NumDof();
-        if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
-
-        // nodal normal vector and wear
-        double nn[3];
-        double wear = 0.0;
-
-        for (int j=0;j<3;++j)
-          nn[j]=frinode->MoData().n()[j];
-
-        if (abs(frinode->FriDataPlus().wcurr()[0])>1e-12)
-          wear = frinode->FriDataPlus().wcurr()[0];
-        else
-          wear=0.0;
-
-        // find indices for DOFs of current node in Epetra_Vector
-        // and put node values (normal and tangential stress components) at these DOFs
-        std::vector<int> locindex(dim);
-
-        for (int dof=0;dof<dim;++dof)
-        {
-           locindex[dof] = (wearoutput_->Map()).LID(frinode->Dofs()[dof]);
-          (*wearoutput_)[locindex[dof]] = wear * nn[dof];
-        }
-      }
-    }
-
-    // MASTER!!!
-    // multiply the wear with its normal direction and store in wear_vector
-    // loop over all interfaces
-    if(wearbothdiscr_)
-    {
+      // multiply the wear with its normal direction and store in wear_vector
+      // loop over all interfaces
       for (int i=0; i<(int)interface_.size(); ++i)
       {
         // FIRST: get the wear values and the normal directions for the interface
         // loop over all slave row nodes on the current interface
-        for (int j=0; j<interface_[i]->MasterRowNodes()->NumMyElements(); ++j)
+        for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
         {
-          int gid = interface_[i]->MasterRowNodes()->GID(j);
+          int gid = interface_[i]->SlaveRowNodes()->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* frinode = static_cast<FriNode*>(node);
@@ -3848,7 +3813,97 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
           for (int j=0;j<3;++j)
             nn[j]=frinode->MoData().n()[j];
 
-          if (abs(frinode->FriDataPlus().wcurr()[0])>1e-12)
+          if (abs(frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0])>1e-12)
+            wear = frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0];
+          else
+            wear=0.0;
+
+          // find indices for DOFs of current node in Epetra_Vector
+          // and put node values (normal and tangential stress components) at these DOFs
+          std::vector<int> locindex(dim);
+
+          for (int dof=0;dof<dim;++dof)
+          {
+             locindex[dof] = (wearoutput_->Map()).LID(frinode->Dofs()[dof]);
+            (*wearoutput_)[locindex[dof]] = wear * nn[dof];
+          }
+        }
+      }
+
+      // MASTER!!!
+      // multiply the wear with its normal direction and store in wear_vector
+      // loop over all interfaces
+      if(wearbothdiscr_)
+      {
+        for (int i=0; i<(int)interface_.size(); ++i)
+        {
+          // FIRST: get the wear values and the normal directions for the interface
+          // loop over all slave row nodes on the current interface
+          for (int j=0; j<interface_[i]->MasterRowNodes()->NumMyElements(); ++j)
+          {
+            int gid = interface_[i]->MasterRowNodes()->GID(j);
+            DRT::Node* node = interface_[i]->Discret().gNode(gid);
+            if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+            FriNode* frinode = static_cast<FriNode*>(node);
+
+            // be aware of problem dimension
+            int dim = Dim();
+            int numdof = frinode->NumDof();
+            if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+
+            // nodal normal vector and wear
+            double nn[3];
+            double wear = 0.0;
+
+            for (int j=0;j<3;++j)
+              nn[j]=frinode->MoData().n()[j];
+
+            if (abs(frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0])>1e-12)
+              wear = frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0];
+            else
+              wear=0.0;
+
+            // find indices for DOFs of current node in Epetra_Vector
+            // and put node values (normal and tangential stress components) at these DOFs
+            std::vector<int> locindex(dim);
+
+            for (int dof=0;dof<dim;++dof)
+            {
+               locindex[dof] = (wearoutput2_->Map()).LID(frinode->Dofs()[dof]);
+              (*wearoutput2_)[locindex[dof]] = wear * nn[dof];
+            }
+          }
+        }
+      }
+    }
+    else
+    {
+      // multiply the wear with its normal direction and store in wear_vector
+      // loop over all interfaces
+      for (int i=0; i<(int)interface_.size(); ++i)
+      {
+        // FIRST: get the wear values and the normal directions for the interface
+        // loop over all slave row nodes on the current interface
+        for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+        {
+          int gid = interface_[i]->SlaveRowNodes()->GID(j);
+          DRT::Node* node = interface_[i]->Discret().gNode(gid);
+          if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+          FriNode* frinode = static_cast<FriNode*>(node);
+
+          // be aware of problem dimension
+          int dim = Dim();
+          int numdof = frinode->NumDof();
+          if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+
+          // nodal normal vector and wear
+          double nn[3];
+          double wear = 0.0;
+
+          for (int j=0;j<3;++j)
+            nn[j]=frinode->MoData().n()[j];
+
+          if (abs(frinode->FriDataPlus().wcurr()[0])>1e-15)
             wear = frinode->FriDataPlus().wcurr()[0];
           else
             wear=0.0;
@@ -3859,8 +3914,54 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
 
           for (int dof=0;dof<dim;++dof)
           {
-             locindex[dof] = (wearoutput2_->Map()).LID(frinode->Dofs()[dof]);
-            (*wearoutput2_)[locindex[dof]] = wear * nn[dof];
+             locindex[dof] = (wearoutput_->Map()).LID(frinode->Dofs()[dof]);
+            (*wearoutput_)[locindex[dof]] = wear * nn[dof];
+          }
+        }
+      }
+
+      // MASTER!!!
+      // multiply the wear with its normal direction and store in wear_vector
+      // loop over all interfaces
+      if(wearbothdiscr_)
+      {
+        for (int i=0; i<(int)interface_.size(); ++i)
+        {
+          // FIRST: get the wear values and the normal directions for the interface
+          // loop over all slave row nodes on the current interface
+          for (int j=0; j<interface_[i]->MasterRowNodes()->NumMyElements(); ++j)
+          {
+            int gid = interface_[i]->MasterRowNodes()->GID(j);
+            DRT::Node* node = interface_[i]->Discret().gNode(gid);
+            if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+            FriNode* frinode = static_cast<FriNode*>(node);
+
+            // be aware of problem dimension
+            int dim = Dim();
+            int numdof = frinode->NumDof();
+            if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+
+            // nodal normal vector and wear
+            double nn[3];
+            double wear = 0.0;
+
+            for (int j=0;j<3;++j)
+              nn[j]=frinode->MoData().n()[j];
+
+            if (abs(frinode->FriDataPlus().wcurr()[0])>1e-12)
+              wear = frinode->FriDataPlus().wcurr()[0];
+            else
+              wear=0.0;
+
+            // find indices for DOFs of current node in Epetra_Vector
+            // and put node values (normal and tangential stress components) at these DOFs
+            std::vector<int> locindex(dim);
+
+            for (int dof=0;dof<dim;++dof)
+            {
+               locindex[dof] = (wearoutput2_->Map()).LID(frinode->Dofs()[dof]);
+              (*wearoutput2_)[locindex[dof]] = wear * nn[dof];
+            }
           }
         }
       }
@@ -4301,7 +4402,9 @@ void CONTACT::WearLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
   // store updated LM into nodes
   StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
   if (weardiscr_)
-    StoreNodalQuantities(MORTAR::StrategyBase::wupdate);
+  {
+      StoreNodalQuantities(MORTAR::StrategyBase::wupdate);
+  }
   if (wearbothdiscr_)
     StoreNodalQuantities(MORTAR::StrategyBase::wmupdate);
 
@@ -5059,7 +5162,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
 /*----------------------------------------------------------------------*
  |  Update Wear rhs for seq. staggered paritioned sol.       farah 11/13|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::UpdateWearDiscret(bool store)
+void CONTACT::WearLagrangeStrategy::UpdateWearDiscretIterate(bool store)
 {
   if (store)
   {
@@ -5072,15 +5175,16 @@ void CONTACT::WearLagrangeStrategy::UpdateWearDiscret(bool store)
     // loop over all interfaces
     for(int i=0;i<(int)interface_.size();++i)
     {
-      for (int j=0; j<(int)interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+      for (int j=0; j<(int)interface_[i]->SlaveColNodes()->NumMyElements(); ++j)
       {
-        int gid = interface_[i]->SlaveRowNodes()->GID(j);
+        int gid = interface_[i]->SlaveColNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
         FriNode* cnode = static_cast<FriNode*>(node);
 
-        cnode->FriDataPlus().wcurr()[0]=0.0;
-        cnode->FriDataPlus().wold()[0]=0.0;
+        cnode->FriDataPlus().wcurr()[0] = 0.0;
+        cnode->FriDataPlus().wold()[0]  = 0.0;
+        cnode->FriDataPlus().waccu()[0] = 0.0;
       }
       if(wearbothdiscr_)
       {
@@ -5093,13 +5197,27 @@ void CONTACT::WearLagrangeStrategy::UpdateWearDiscret(bool store)
           if (!node) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* cnode = static_cast<FriNode*>(node);
 
-          cnode->FriDataPlus().wcurr()[0]=0.0;
-          cnode->FriDataPlus().wold()[0]=0.0;
+          cnode->FriDataPlus().wcurr()[0] = 0.0;
+          cnode->FriDataPlus().wold()[0]  = 0.0;
+          cnode->FriDataPlus().waccu()[0] = 0.0;
         }
       }
     }
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Update Wear for different time scales                    farah 12/13|
+ *----------------------------------------------------------------------*/
+void CONTACT::WearLagrangeStrategy::UpdateWearDiscretAccumulation(bool wearaccumulation)
+{
+  if(wearaccumulation)
+  {
+    if(weartimescales_)
+      StoreNodalQuantities(MORTAR::StrategyBase::wupdateT);
+  }
 
   return;
 }

@@ -241,7 +241,8 @@ public:
   void UpdateActiveSetSemiSmooth();
 
 
-  void UpdateWearDiscret(bool store);
+  void UpdateWearDiscretIterate(bool store);
+  void UpdateWearDiscretAccumulation(bool wearaccumulation);
   /*!
   \brief Return vector of wear (t_n+1)
 
@@ -298,6 +299,7 @@ protected:
   bool wearimpl_;                                   // weartype: implicit
   bool weardiscr_;                                  // bool for wear with own discretization
   bool wearbothdiscr_;                              // bool for both-sided discrete wear
+  bool weartimescales_;                             // bool for different time scales
 
   // discrete wear algorithm (SLAVE)
   Teuchos::RCP<LINALG::SparseMatrix> twmatrix_;     // global Mortar wear matrix T

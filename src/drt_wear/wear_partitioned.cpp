@@ -104,19 +104,30 @@ void WEAR::Partitioned::TimeLoop()
 {
   // get wear paramter list
   const Teuchos::ParameterList& wearpara = DRT::Problem::Instance()->WearParams();
+  int timeratio = wearpara.get<double>("WEAR_TIMERATIO");
+
+  int counter = -1;
+  bool alestep = false;
 
   // time loop
   while (NotFinished())
   {
+    if ( (int)(Step()/timeratio) >counter )
+    {
+      counter++;
+      alestep=true;
+    }
+
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearCoupAlgo>(wearpara,"WEAR_COUPALGO")
         == INPAR::CONTACT::wear_stagg)
-      TimeLoopStagg();
+      TimeLoopStagg(alestep);
     else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearCoupAlgo>(wearpara,"WEAR_COUPALGO")
         == INPAR::CONTACT::wear_iterstagg)
       TimeLoopIterStagg();
     else
       dserror("WEAR::TimeLoop: Algorithm not provided!");
 
+    alestep=false;
   }  // time loop
 }
 
@@ -140,8 +151,7 @@ void WEAR::Partitioned::TimeLoopIterStagg()
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   CONTACT::WearLagrangeStrategy& cstrategy = static_cast<CONTACT::WearLagrangeStrategy&>(strategy);
 
-  //delete old wear
-  cstrategy.UpdateWearDiscret(false);
+  cstrategy.UpdateWearDiscretIterate(false);
 
   /*************************************************************
    * Nonlinear iterations between Structure and ALE:           *
@@ -184,7 +194,7 @@ void WEAR::Partitioned::TimeLoopIterStagg()
     converged=ConvergenceCheck(iter);
 
     // store old wear
-    cstrategy.UpdateWearDiscret(true);
+    cstrategy.UpdateWearDiscretIterate(true);
 
     ++iter;
   }// end nonlin loop
@@ -202,8 +212,12 @@ void WEAR::Partitioned::TimeLoopIterStagg()
 /*----------------------------------------------------------------------*
  | time loop for oneway coupling                            farah 11/13 |
  *----------------------------------------------------------------------*/
-void WEAR::Partitioned::TimeLoopStagg()
+void WEAR::Partitioned::TimeLoopStagg(bool alestep)
 {
+  // stactic cast of mortar strategy to contact strategy
+  MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
+  CONTACT::WearLagrangeStrategy& cstrategy = static_cast<CONTACT::WearLagrangeStrategy&>(strategy);
+
   // counter and print header
   IncrementTimeAndStep();
   PrintHeader();
@@ -219,41 +233,53 @@ void WEAR::Partitioned::TimeLoopStagg()
   // solution
   StructureField()->Solve();
 
-  /********************************************************************/
-  /* COUPLING                                                         */
-  /* Wear from structure solve as dirichlet for ALE                   */
-  /********************************************************************/
+  if(alestep)
+  {
+    if(Comm().MyPID()==0)
+      std::cout << "========================= ALE STEP =========================" << std::endl;
 
-  // wear as interface displacements in ale dofs
-  Teuchos::RCP<Epetra_Vector> idisale_s, idisale_m, idisale_global;
-  InterfaceDisp(idisale_s, idisale_m);
+    /********************************************************************/
+    /* COUPLING                                                         */
+    /* Wear from structure solve as dirichlet for ALE                   */
+    /********************************************************************/
 
-  // merge the both wear vectors for master and slave side to one global vector
-  MergeWear(idisale_s,idisale_m,idisale_global);
+    // wear as interface displacements in ale dofs
+    Teuchos::RCP<Epetra_Vector> idisale_s, idisale_m, idisale_global;
+    InterfaceDisp(idisale_s, idisale_m);
 
-  // coupling of struct/mortar and ale dofs
-  DispCoupling(idisale_global);
+    // merge the both wear vectors for master and slave side to one global vector
+    MergeWear(idisale_s,idisale_m,idisale_global);
 
-  /********************************************************************/
-  /* EULERIAN STEP                                                    */
-  /* 1. mesh displacements due to wear from ALE system                */
-  /* 2. mapping of results from "old" to "new" mesh                   */
-  /********************************************************************/
+    // coupling of struct/mortar and ale dofs
+    DispCoupling(idisale_global);
 
-  // do all step
-  AleStep(idisale_global);
+    /********************************************************************/
+    /* EULERIAN STEP                                                    */
+    /* 1. mesh displacements due to wear from ALE system                */
+    /* 2. mapping of results from "old" to "new" mesh                   */
+    /********************************************************************/
 
-  // application of mesh displacements to structural field,
-  // update spatial and material displacements
-  ApplyMeshDisplacement();
+    // do all step
+    AleStep(idisale_global);
 
-  /********************************************************************/
-  /* FINISH STEP:                                                     */
-  /* Update and Write Output                                          */
-  /********************************************************************/
+    // application of mesh displacements to structural field,
+    // update spatial and material displacements
+    ApplyMeshDisplacement();
 
-  // update dispnp
-  UpdateDispnp();
+    /********************************************************************/
+    /* FINISH STEP:                                                     */
+    /* Update and Write Output                                          */
+    /********************************************************************/
+
+    // update dispnp
+    UpdateDispnp();
+
+    cstrategy.UpdateWearDiscretIterate(false);
+  }
+  else
+  {
+    cstrategy.UpdateWearDiscretAccumulation(true);
+  }
 
   // update for structure and ale
   Update();

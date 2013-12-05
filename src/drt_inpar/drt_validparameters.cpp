@@ -1755,6 +1755,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("WEARCOEFF",0.0,"Wear coefficient for slave surface",&wear);
   DoubleParameter("WEARCOEFF_MASTER",0.0,"Wear coefficient for master surface",&wear);
+  DoubleParameter("WEAR_TIMERATIO",1.0,"Time step ratio between wear and spatial time scale",&wear);
 
   setStringToIntegralParameter<int>("BOTH_SIDED_WEAR","No","Definition of wear side",
         tuple<std::string>("No","no", "none" ,
@@ -1784,6 +1785,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                 INPAR::CONTACT::wear_stagg, INPAR::CONTACT::wear_stagg,
                 INPAR::CONTACT::wear_iterstagg, INPAR::CONTACT::wear_iterstagg,
                 INPAR::CONTACT::wear_monolithic, INPAR::CONTACT::wear_monolithic),
+        &wear);
+
+  setStringToIntegralParameter<int>("WEAR_TIMESCALE","equal","Definition wear time scale compares to std. time scale",
+        tuple<std::string>("equal","e",
+                           "different","d"),
+        tuple<int>(
+                INPAR::CONTACT::wear_time_equal, INPAR::CONTACT::wear_time_equal,
+                INPAR::CONTACT::wear_time_different, INPAR::CONTACT::wear_time_different),
         &wear);
 
   /*----------------------------------------------------------------------*/

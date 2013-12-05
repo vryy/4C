@@ -675,7 +675,7 @@ void CONTACT::WearInterface::AssembleLinE_D(LINALG::SparseMatrix& lineglobal)
         // might not own the corresponding rows in lindglobal (DISP slave node)
         // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
         //std::cout << "Assemble LinE: " << row << " " << col << " " << val << std::endl;
-        if (abs(val)>1.0e-12) lineglobal.FEAssemble(val,row,col);
+        if (abs(val)>1.0e-15) lineglobal.FEAssemble(val,row,col);
       }
 
       // check for completeness of DerivD-Derivatives-iteration
@@ -4269,7 +4269,7 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
       w_i[0]     = - cnode->FriDataPlus().wold()[0] - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
       w_gid[0]   = cnode->Dofs()[0];//inactivedofs->GID(2*i);
 
-      if (abs(w_i[0])>1e-12) LINALG::Assemble(inactiverhs, w_i, w_gid, w_owner);
+      if (abs(w_i[0])>1e-15) LINALG::Assemble(inactiverhs, w_i, w_gid, w_owner);
     }
     else if (Dim() == 3)
     {
@@ -4280,10 +4280,10 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
       Epetra_SerialDenseVector w_i(1);
 
       w_owner[0] = cnode->Owner();
-      w_i[0]     = - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
+      w_i[0]     = - cnode->FriDataPlus().wold()[0] - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
       w_gid[0]   = cnode->Dofs()[0];//inactivedofs->GID(3*i);
 
-      if (abs(w_i[0])>1e-12) LINALG::Assemble(inactiverhs, w_i, w_gid, w_owner);
+      if (abs(w_i[0])>1e-15) LINALG::Assemble(inactiverhs, w_i, w_gid, w_owner);
     }
   }
 }
@@ -4342,7 +4342,7 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs_Master(Epetra_FEVector& ina
       Epetra_SerialDenseVector w_i(1);
 
       w_owner[0] = Comm().MyPID();//cnode->Owner();
-      w_i[0]     = - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
+      w_i[0]     = - cnode->FriDataPlus().wold()[0] - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
       w_gid[0]   = cnode->Dofs()[0];//inactivedofs->GID(3*i);
 
       if (abs(w_i[0])>1e-12) LINALG::Assemble(*rhs, w_i, w_gid, w_owner);
@@ -4409,7 +4409,7 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
         w_i[0]     = (- (csnode->FriDataPlus().wold()[0]) - (csnode->FriDataPlus().wcurr()[0])) * (p->second);
         w_gid[0]   = fnode->Dofs()[0];
 
-        if (abs(w_i[0])>1e-12) LINALG::Assemble(rhs, w_i, w_gid, w_owner);
+        if (abs(w_i[0])>1e-15) LINALG::Assemble(rhs, w_i, w_gid, w_owner);
       }
     }
 
@@ -4440,7 +4440,7 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
         w_i[0]     =  wcoeff * lmn * (p->second);
         w_gid[0]   = fnode->Dofs()[0];
 
-        if (abs(w_i[0])>1e-12) LINALG::Assemble(rhs, w_i, w_gid, w_owner);
+        if (abs(w_i[0])>1e-15) LINALG::Assemble(rhs, w_i, w_gid, w_owner);
       }
     }
   }

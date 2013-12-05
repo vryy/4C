@@ -4880,9 +4880,10 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
 
     if (WearType() == INPAR::CONTACT::wear_discr)
     {
-      sgpx[0]+=sval[i] * (scoord(0,i)-(mymrtrnode->MoData().n()[0]) * mymrtrnode->FriDataPlus().wcurr()[0]);
-      sgpx[1]+=sval[i] * (scoord(1,i)-(mymrtrnode->MoData().n()[1]) * mymrtrnode->FriDataPlus().wcurr()[0]);
-      sgpx[2]+=sval[i] * (scoord(2,i)-(mymrtrnode->MoData().n()[2]) * mymrtrnode->FriDataPlus().wcurr()[0]);
+      double w = mymrtrnode->FriDataPlus().wcurr()[0] + mymrtrnode->FriDataPlus().waccu()[0];
+      sgpx[0]+=sval[i] * (scoord(0,i)-(mymrtrnode->MoData().n()[0]) * w);
+      sgpx[1]+=sval[i] * (scoord(1,i)-(mymrtrnode->MoData().n()[1]) * w);
+      sgpx[2]+=sval[i] * (scoord(2,i)-(mymrtrnode->MoData().n()[2]) * w);
     }
     else
     {
@@ -4899,9 +4900,10 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
 
     if(WearSide() == INPAR::CONTACT::wear_both_discr)
     {
-      mgpx[0]+=mval[i] * (mcoord(0,i) - (mymrtrnodeM->MoData().n()[0]) * mymrtrnodeM->FriDataPlus().wcurr()[0]);
-      mgpx[1]+=mval[i] * (mcoord(1,i) - (mymrtrnodeM->MoData().n()[1]) * mymrtrnodeM->FriDataPlus().wcurr()[0]);
-      mgpx[2]+=mval[i] * (mcoord(2,i) - (mymrtrnodeM->MoData().n()[2]) * mymrtrnodeM->FriDataPlus().wcurr()[0]);
+      double w = mymrtrnodeM->FriDataPlus().wcurr()[0] + mymrtrnodeM->FriDataPlus().waccu()[0];
+      mgpx[0]+=mval[i] * (mcoord(0,i) - (mymrtrnodeM->MoData().n()[0]) * w);
+      mgpx[1]+=mval[i] * (mcoord(1,i) - (mymrtrnodeM->MoData().n()[1]) * w);
+      mgpx[2]+=mval[i] * (mcoord(2,i) - (mymrtrnodeM->MoData().n()[2]) * w);
     }
     else
     {
@@ -5013,14 +5015,15 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
       for (int k=0;k<2;++k)
       {
         FriNode* frinode = static_cast<FriNode*> (snodes[z]);
+        double w = frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0];
 
         dgapgp[frinode->Dofs()[k]] -= sval[z] * gpn[k];
 
         for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
-          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->FriDataPlus().wcurr()[0])* (p->second);
+          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * w)* (p->second);
 
         for (CI p=frinode->CoData().GetDerivN()[k].begin();p!=frinode->CoData().GetDerivN()[k].end();++p)
-          dgapgp[p->first] += gpn[k] * sval[z] * frinode->FriDataPlus().wcurr()[0] * (p->second);
+          dgapgp[p->first] += gpn[k] * sval[z] * w * (p->second);
       }
     }
   }
@@ -5049,14 +5052,15 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
       for (int k=0;k<2;++k)
       {
         FriNode* frinode = static_cast<FriNode*> (mnodes[z]);
+        double w = frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0];
 
         dgapgp[frinode->Dofs()[k]] += mval[z] * gpn[k];
 
         for (CI p=dmxigp.begin();p!=dmxigp.end();++p)
-          dgapgp[p->first] += gpn[k] * mderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->FriDataPlus().wcurr()[0])* (p->second);
+          dgapgp[p->first] += gpn[k] * mderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * w)* (p->second);
 
         for (CI p=frinode->CoData().GetDerivN()[k].begin();p!=frinode->CoData().GetDerivN()[k].end();++p)
-          dgapgp[p->first] -= gpn[k] * mval[z] * frinode->FriDataPlus().wcurr()[0] * (p->second);
+          dgapgp[p->first] -= gpn[k] * mval[z] * w * (p->second);
       }
     }
   }
