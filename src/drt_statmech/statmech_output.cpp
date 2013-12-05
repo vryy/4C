@@ -38,7 +38,7 @@ Maintainer: Kei Müller
 
 void STATMECH::StatMechManager::BuildStatMechRootPath()
 {
-  // create file name and check existence of the required output folder
+    // create file name and check existence of the required output folder
     outputrootpath_ = DRT::Problem::Instance()->OutputControlFile()->FileName();
     size_t pos = outputrootpath_.rfind('/');
     outputrootpath_ = outputrootpath_.substr(0,pos);
@@ -1825,13 +1825,13 @@ void STATMECH::StatMechManager::GmshKinkedVisual(const LINALG::SerialDenseMatrix
   DRT::Element* element = discret_->gElement(eleid);
 
   // calculate unit tangent
-  LINALG::Matrix<3,1> t;
+  LINALG::Matrix<3,1> t(true);
   for (int j=0; j<coord.M(); j++)
     t(j) = coord(j, coord.N() - 1) - coord(j, 0);
   t.Scale(1.0/t.Norm2());
 
   // calculate normal via cross product: [0 0 1]x[tx ty tz]
-  LINALG::Matrix<3,1> n;
+  LINALG::Matrix<3,1> n(true);
   n(0) = -t(1);
   n(1) = t(0);
   // norm it since the cross product does not keep the length
