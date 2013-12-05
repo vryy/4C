@@ -91,20 +91,20 @@ public:
   //! @name Apply interface displacements
 
   /// displacements at the interface are prescribed
-  void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp);
+  virtual void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp);
 
   /// displacements at the free surface are prescribed
-  void ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp);
+  virtual void ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp);
 
   //@}
 
   //! @name Time step helpers
 
   /// a very simple time loop to be used for standalone ALE problems
-  void Integrate();
+  virtual void Integrate();
 
   /// start a new time step
-  void PrepareTimeStep();
+  virtual void PrepareTimeStep();
 
   /// calculate linear system
   virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp, std::string incrementtype = std::string("step")) = 0;
@@ -125,7 +125,7 @@ public:
   \author mayr.mt
   \date 08/2013
   */
-  void ResetStep();
+  virtual void ResetStep();
 
   /*!
   \brief Reset time and step in case that a time step has to be repeated
@@ -139,13 +139,16 @@ public:
   \author mayr.mt
   \date 08/2013
    */
-  void ResetTime(const double dtold);
+  virtual void ResetTime(const double dtold);
+
+  /// Get the time step size
+  virtual double Dt() { return dt_; }
 
   /// set time step step size
-  void SetDt(const double dtnew);
+  virtual void SetDt(const double dtnew);
 
   /// read restart for given step
-  void ReadRestart(const int step);
+  virtual void ReadRestart(const int step);
 
   //@}
 
