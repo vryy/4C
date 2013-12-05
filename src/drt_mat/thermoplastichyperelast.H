@@ -296,7 +296,7 @@ namespace MAT
       const LINALG::Matrix<3,3>& defgrd,  //!< F_{n+1}
       LINALG::Matrix<3,3> invdefgrdcurr,  //!< inverse of F_{n+1}
       LINALG::Matrix<3,3> n,  //!< spatial flow vector
-      double kappa,  //!< bulk modulus
+      double bulk,  //!< bulk modulus
       int gp  //!< current Gauss-point
       );
 
@@ -313,16 +313,26 @@ namespace MAT
     //  originally method of fourieriso with const!!!
     void Evaluate(
       const LINALG::Matrix<1,1>& Ntemp,  //!< temperature of element
-      LINALG::Matrix<NUM_STRESS_3D,1>& ctemp,  //!< temperature dependent material tangent
-      LINALG::Matrix<NUM_STRESS_3D,1>& stresstemp,  //!< temperature dependent stress term
+      LINALG::Matrix<NUM_STRESS_3D,1>& ctemp,  //!< temperature-dependent material tangent
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat_T,  //!< temperature-dependent mechanical
+                                                            //!< material tangent
+      LINALG::Matrix<NUM_STRESS_3D,1>& stresstemp,  //!< temperature-dependent stress term
       Teuchos::ParameterList& params  //!< parameter list
       );
       
-    //! computes temperature dependent isotropic elasticity tensor in matrix
-    //! notion for 3d
+    //! computes temperature-dependent isotropic thermal elasticity tensor in
+    //! matrix notion for 3d
     void SetupCthermo(
       LINALG::Matrix<NUM_STRESS_3D,1>& ctemp,  //!< temperature dependent material tangent
       Teuchos::ParameterList& params  //!< parameter list
+      );
+
+    //! computes temperature-dependent isotropic mechanical elasticity tensor in
+    //! matrix notion for 3d
+    void SetupCmatThermo(
+      const LINALG::Matrix<1,1>& Ntemp,
+      LINALG::Matrix<6,6>& cmat_T,
+      Teuchos::ParameterList& params
       );
 
     //! calculates stress-temperature modulus

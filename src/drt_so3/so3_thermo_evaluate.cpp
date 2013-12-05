@@ -1112,6 +1112,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
         stiffmatrix_kdT->MultiplyNT(detJ_w, Bcouplstress_T, shapefunct, 1.0);
       }  // (young_temp == true)
 
+      // Be careful: scaling with time factor is done in tsi_monolithic!!
     }  // (stiffmatrix_kdT != NULL)
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
@@ -1515,6 +1516,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
         // k_dT += B_d^T . couplstress_T . N_T
         // (24x8)                          (24x1)        (8x1)
         stiffmatrix_kdT->MultiplyNT(detJ_w, Bcouplstress_T, shapefunct, 1.0);
+
+        // Be careful: scaling with time factor is done in tsi_monolithic!!
       }  // (young_temp == true)
 
     }
@@ -1627,7 +1630,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
       LINALG::Matrix<nsd_,nsd_> invdefgrd(false);
       invdefgrd.Invert(defgrd);
 
-      // Right Cauchy-Green tensor = F^T * F
+      // Right Cauchy-Green tensor = F^T . F
       LINALG::Matrix<nsd_,nsd_> cauchygreen(false);
       cauchygreen.MultiplyTN(defgrd,defgrd);
 
@@ -1678,15 +1681,15 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
       glstrain_bar(4) = cauchygreen_bar(1,2);
       glstrain_bar(5) = cauchygreen_bar(2,0);
 
-      // calculate linear B-operator
+      // calculate linear B-operator (WITHOUT F-bar modification)
       LINALG::Matrix<numstr_,numdofperelement_> boplin(false);
       CalculateBoplin(&boplin,&N_XYZ);
 
-      // calculate nonlinear B-operator
+      // calculate nonlinear B-operator (WITHOUT F-bar modification)
       LINALG::Matrix<numstr_,numdofperelement_> bop(false);
       CalculateBop(&bop,&defgrd,&N_XYZ);
 
-      // temperature
+      // ----------------------------------------- initialise temperature
       // described as a matrix (for stress calculation): Ntemp = N_T . T
       LINALG::Matrix<1,1> NT(false);
       NT.MultiplyTN(shapefunct,etemp);
@@ -1699,9 +1702,9 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
       // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       // calculate the stress part dependent on the temperature in the material
-      LINALG::Matrix<numstr_,1> ctemp(true);
-      LINALG::Matrix<numstr_,1> couplstress_bar(true);
-      LINALG::Matrix<numstr_,numstr_> cmattemp(true);
+      LINALG::Matrix<numstr_,1> ctemp_bar(true);
+      LINALG::Matrix<numstr_,1> couplstress_bar(true);  // S_bar_{vol,T}
+      LINALG::Matrix<numstr_,numstr_> cmat_T_bar(true);  // dC_T_dE
       LINALG::Matrix<numstr_,1> glstrain(true);
       params.set<int>("gp",gp);
       // insert strain increment into parameter list which is only required for robinson
@@ -1716,7 +1719,14 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
       //                             2.) couplstress = C . Delta T
       // do not call the material for Robinson's material
       if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
-        Materialize(&couplstress_bar,&ctemp,&NT,&cmattemp,&glstrain_bar,params);
+        Materialize(
+          &couplstress_bar,
+          &ctemp_bar,  // is not filled! pass an empty matrix
+          &NT,
+          &cmat_T_bar,
+          &glstrain_bar,
+          params
+          );
 
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1773,12 +1783,12 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
         // --------------------------------------------------------------
 
         // keu = keu + (detF_0/detF)^(-1/3) .(B^T . Cmat_T . B) . detJ_bar . w(gp)
-        // Neo-Hookean type: dC_T/dd = m . Delta T . (-1) . ( Cinv boeppel Cinv )_{abcd}
+        // Neo-Hookean type: Cmat_T = m_0 . Delta T . (-1) . ( Cinv boeppel Cinv )_{abcd}
         // St.Venant Kirchhoff: dC_T/dd == 0
-        // with dCinv/dd = ( Cinv boeppel Cinv )_{abcd} = 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
+        // with dCinv/dC = ( Cinv boeppel Cinv )_{abcd} = 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
         LINALG::Matrix<numstr_,numdofperelement_> cb;
-        cb.Multiply(cmattemp,bop);
-        stiffmatrix->MultiplyTN(detJ_w*f_bar_factor,bop,cb,1.0);
+        cb.Multiply(cmat_T_bar,bop);
+        stiffmatrix->MultiplyTN( (detJ_w*f_bar_factor), bop, cb, 1.0);
 
         // --------------------------------------------------------------
         // integrate `geometric' stiffness matrix and add to keu
@@ -1825,6 +1835,21 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
         // ----------------------- linearisation of f_bar_factor w.r.t. d
         // k_dd = -1/3 . (detF_0/detF)^{-1/3} . B^T . sigmaT_bar . H^T
 
+        // integrate additional fbar matrix
+        LINALG::Matrix<numstr_,1> cauchygreenvct;
+        cauchygreenvct(0) = cauchygreen(0,0);
+        cauchygreenvct(1) = cauchygreen(1,1);
+        cauchygreenvct(2) = cauchygreen(2,2);
+        cauchygreenvct(3) = 2 * cauchygreen(0,1);
+        cauchygreenvct(4) = 2 * cauchygreen(1,2);
+        cauchygreenvct(5) = 2 * cauchygreen(2,0);
+
+        LINALG::Matrix<numstr_,1> ccg;
+        ccg.Multiply(cmat_T_bar, cauchygreenvct);  // (6x1) = (6x6)(6x1)
+
+        LINALG::Matrix<numdofperelement_,1> bopccg(false);  // auxiliary integrated stress (24x1)
+        bopccg.MultiplyTN(detJ_w*f_bar_factor/3.0, bop, ccg);  // (24x1) = (24x6)(6x1)
+
         // calculate the auxiliary tensor H (24x1)
         // with H_i = tr(F_0^{-1} . dF_0/dd_i) - tr (F^{-1} . dF/dd_i)
         double htensor[numdofperelement_];
@@ -1843,130 +1868,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
         {
           for (int j=0;j<numdofperelement_;j++)
           {
-            // (24x24)             (24x1)       (1x24)
-            (*stiffmatrix)(i,j) += bops(i,0) * htensor[j];
+            // (24x24)             (1x24)                (24x1)
+            (*stiffmatrix)(i,j) += htensor[j] * ( bops(i,0) + bopccg(i,0) ) ;
           }
         }  // end of integrate additional `fbar' stiffness
 
-        // --------------------------------------------------------------------
-        // because thermal stresses depend on the deformation, add the
-        // linearisation terms to stiffmatrix
-        // k_dd += (detF_0/detF)^{-1/3} . B^T . sigmaT_bar,d
-        // with sigmaT_bar,d = (Cmat_vol,dT),d = C_T,d
-        // --------------------------------------------------------------------
-        if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
-        {
-          // sigmaT_bar = (T - T_0) . m_0 . (J_bar + 1/J_bar) . C_bar^{-1}
-          //
-          // derivatives of modified thermal stress w.r.t. deformation
-          // keu += sigmaT_bar,d
-          //      = (N_T . T - T_0) . m_0 . [ (J_bar + 1/J_bar),d . C_bar^{-1}
-          //        + (J_bar + 1/J_bar) . C_bar^{-1},d ]
-
-          // ------------------------------ structural values required for K_dd
-
-          // calculate Jacobi determinant of F_bar
-          double J_bar = defgrd_bar.Determinant();
-
-          // calculate nonlinear B-operator as vector (1x24)
-          LINALG::Matrix<1,numdofperelement_> bopvec(false);
-          CalculateBopVec(bopvec,defgrd_bar,N_XYZ);
-
-          // calculate linearisation of C^{-1}
-          // calculate linearisation of C^{-1} according to so3_poro_evaluate
-          // C^{-1}_lin = dCinv_dd = - F^{-1} . ( B_L . F^{-1} + F^{-T} . B_L^T ) . F^{-T}
-          //                       = - F^{-1} . ( B_L . F^{-1} + (B_L . F^{-1})^T ) . F^{-T}
-          LINALG::Matrix<numstr_,numdofperelement_> dCinv_dd (true);  // (6x24)
-          for (int n=0; n<nen_; ++n)
-          {
-            for (int k=0; k<nsd_; ++k)
-            {
-              const int gid = n*nsd_+k;
-              for (int i=0; i<nsd_; ++i)
-              {
-                dCinv_dd(0,gid) += -2*invC(0,i)*N_XYZ(i,n)*invdefgrd(0,k);
-                dCinv_dd(1,gid) += -2*invC(1,i)*N_XYZ(i,n)*invdefgrd(1,k);
-                dCinv_dd(2,gid) += -2*invC(2,i)*N_XYZ(i,n)*invdefgrd(2,k);
-                /* ~~~ */
-                dCinv_dd(3,gid) += -invC(0,i)*N_XYZ(i,n)*invdefgrd(1,k)
-                                   -invdefgrd(0,k)*N_XYZ(i,n)*invC(1,i);
-                dCinv_dd(4,gid) += -invC(1,i)*N_XYZ(i,n)*invdefgrd(2,k)
-                                   -invdefgrd(1,k)*N_XYZ(i,n)*invC(2,i);
-                dCinv_dd(5,gid) += -invC(2,i)*N_XYZ(i,n)*invdefgrd(0,k)
-                                   -invdefgrd(2,k)*N_XYZ(i,n)*invC(0,i);
-              }
-            }
-          }  // end dC^{-1}_dd
-
-          // -------------------------- material values required for K_dd
-
-          // call the material and get some specific values
-          Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplastichyperelast
-            = Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(),true);
-          double m_0 = thrplastichyperelast->STModulus();
-          double DeltaT = scalartemp - thrplastichyperelast->InitTemp();
-
-          // ------------------------------------ calculate (J_bar + 1/J_bar),d
-          // dJ_bar/dd = dJ_bar/dF_bar . dF_bar/dd
-          //           = J_bar . F_bar^{-T} . (detF_0/detF)^{1/3} . [1/3 . H . F + B_L]
-          //
-          // dJ/dd = dJ/dF : dF/dd = J . F^{-T} . N,X = J . F^{-T} . B_L
-          // dF_bar/dd = d[(detF_0/detF)^{1/3} . F]/dd
-          //           = d[(detF_0/detF)^{1/3}]/dd . F + (detF_0/detF)^{1/3} . dF/dd
-
-          // prefactor
-          // fac_1 = m_0 . (J_bar - 1/J_bar) . (N_T . T_{n+1} -T)
-          double fac_1 = m_0 * (J_bar - 1/J_bar) * DeltaT;
-
-          // keu += B^T . m_0 . (J_bar - 1/J_bar) . (N_T . T_{n+1} -T) . 1/3 .
-          //        . (detF_0/detF)^{-1/3} . Cinv_bar . H
-          LINALG::Matrix<numdofperelement_,1> bopCinv_barvct(false);
-          double fac_11 = detJ_w * fac_1 * 1/3.0 / f_bar_factor;
-          bopCinv_barvct.MultiplyTN(fac_11, bop, Cinv_barvct);
-          for(int i=0; i<numdofperelement_; i++)
-          {
-            for (int j=0; j<numdofperelement_; j++)
-            {
-              // (24x24)             (24x1)       (1x24)
-              (*stiffmatrix)(i,j) += bopCinv_barvct(i,0) * htensor[j];
-            }
-          } // end of integrate additional `fbar' stiffness
-
-          //  keu += B^T . m_0 . (J_bar - 1/J_bar) . (N_T . T_{n+1} -T) . B_L . Cinv_bar
-          //        (24X6)                                              (6X24)  (6X1)
-          // (B^T . Cinv_bar^T . B_L), with B^T in vector notation (1x24)
-          // (24x1)  (1X6)      (6x24)
-          LINALG::Matrix<numdofperelement_,numstr_> bopvCinv_barv(false);
-          bopvCinv_barv.MultiplyTT(bopvec, Cinv_barvct);
-          stiffmatrix->Multiply( (detJ_w * fac_1), bopvCinv_barv, boplin, 1.0);
-
-          // ------------------------------------------- calculate C_bar^{-1},d
-
-          // dC_bar^{-1} / dd = d[ (detF_0/detF)^{-2/3} Cinv] / dd
-          //   = d[ (detF_0/detF)^{-2/3} ] / dd . Cinv
-          //     + (detF_0/detF)^{-2/3} dCinv / dd
-          //   = -2/3 . H . Cinv_bar - (detF_0/detF)^{-2/3} dCinv/dd
-
-          // keu += (-2/3) . (detF_0/detF)^{-1/3} . B^T . couplstress_bar . H
-          double fac_2 = detJ_w * (-2/3.0) / f_bar_factor;
-          LINALG::Matrix<numdofperelement_,1> bopcouplS(false); // auxiliary integrated stress
-          bopcouplS.MultiplyTN(fac_2, bop, couplstress_bar);
-          for(int i=0; i<numdofperelement_; i++)
-          {
-            for (int j=0; j<numdofperelement_; j++)
-            {
-              // (24x24)             (24x1)       (1x24)
-              (*stiffmatrix)(i,j) += bopcouplS(i,0) * htensor[j];
-            }
-          }
-
-          // keu += - B^T . m_0 . (J_bar + 1/J_bar) . (N_T . T_{n+1} -T) .
-          //        . (detF_0/detF)^{-1} . dCinv_dd
-          //      = - B^T . m_0 . (J_bar + 1/J_bar) . (N_T . T_{n+1} -T) .
-          //        . (detF/detF_0) . dCinv_dd
-          double fac_3 = detJ_w * (-1) * m_0 * (J_bar + 1/J_bar) * DeltaT * detF/detF_0;
-          stiffmatrix->MultiplyTN(fac_3, bop, dCinv_dd, 1.0);
-        }  //  m_thermoplhyperelast: additional linearisations due to dC_T/dd
       }  // if (stiffmatrix != NULL), fill k_dd
 
      /* =====================================================================*/
@@ -2132,7 +2038,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi_fbar(
         LINALG::Matrix<numstr_,nen_> cn(true);
         cn.MultiplyNT(ctemp,shapefunct);  // (6x8)=(6x1)(1x8)
         // integrate stiffness term
-        // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . C_temp . N_temp) . detJ . w(gp)
+        // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . C_T . N_T) . detJ . w(gp)
         stiffmatrix_kdT->MultiplyTN(detJ_w/f_bar_factor, bop, cn, 1.0);
 
         if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
@@ -2143,6 +2049,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi_fbar(
           LINALG::Matrix<numstr_,nen_> cmatn(true);
           cmatn.MultiplyNT(Cmat_kdT,shapefunct); // (6x8)=(6x1)(1x8)
           stiffmatrix_kdT->MultiplyTN( (detJ_w / (f_bar_factor*stepsize) ), bop, cmatn, 1.0);
+
+          // Be careful: scaling with time factor is done in tsi_monolithic!!
         }
       }  // (stiffmatrix_kdT != NULL)
 
@@ -2211,7 +2119,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
   {
     Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplastichyperelast
       = Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(),true);
-    thrplastichyperelast->Evaluate(*Ntemp,*ctemp,*couplstress,params);
+    thrplastichyperelast->Evaluate(*Ntemp,*ctemp,*cmat,*couplstress,params);
     return;
     break;
   }

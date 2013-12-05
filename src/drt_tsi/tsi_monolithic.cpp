@@ -1546,8 +1546,8 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
   StructureField()->Discretization()->Evaluate(sparams,structuralstrategy);
   StructureField()->Discretization()->ClearState();
 
-  // TODO 2013-11-11 move scalling to the so3_thermo element --> consistent with
-  // thermo element and clearer
+  // TODO 2013-11-11 move scaling to the so3_thermo element
+  // --> consistent with thermo element and clearer, more consistent
 
   // for consistent linearisation scale k_st with time factor
   // major switch to different time integrators
