@@ -29,6 +29,8 @@
 // dependent on distype
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
+#define AS_CONVERGENCE_TOL 1.e-12
+
 /*----------------------------------------------------------------------*
  |                                                          seitz 07/13 |
  *----------------------------------------------------------------------*/

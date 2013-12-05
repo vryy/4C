@@ -942,13 +942,17 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     if (Ypl<absetatrial)
     {
       if (activity_state_->at(gp)==false) // gp switches state
-        converged_active_set = false;
+        if (abs(Ypl-absetatrial)>AS_CONVERGENCE_TOL*inityield
+            || DalphaK_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+          converged_active_set = false;
       activity_state_->at(gp) = true;
     }
     // active
     else
     {
       if (activity_state_->at(gp)==true) // gp switches state
+        if (abs(Ypl-absetatrial)>AS_CONVERGENCE_TOL*inityield
+            || DalphaK_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
         converged_active_set = false;
       activity_state_->at(gp) = false;
     }
@@ -1016,11 +1020,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
 
     // plastic modifications
-    if (stiffmatrix!=NULL || force!=NULL)
+    if (
+        (stiffmatrix!=NULL || force!=NULL)
+        &&
+        (activity_state_->at(gp)==true || DalphaK_last_iter_->at(gp).NormInf()!=0.)
+       )
     {
-      // Due to stabilization, we have to treat inactive nodes as well
-      if (activity_state_->at(gp)==true || Dissipation>0. )
-      {
       // variables needed for condensation and calculated seperately for active and inactive Gauss points
       LINALG::Matrix<5,numdofperelement_> kbetad(true);
       LINALG::Matrix<5,5> kbetabeta(true);
@@ -1074,6 +1079,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
         // end of stiffness matrix [k^e_{d beta}]_ij (i=1..numdof; j=1..5)
         // **************************************************************
 
+        if (activity_state_->at(gp)==true || Dissipation>0. )
+        {
         // derivative of Mandel stress w.r.t. beta
         //                      d bar Sigma_ab
         // dSigmaDbeta_abj = --------------------
@@ -1262,14 +1269,28 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
         // plFint = [K_db.K_bb^-1].f_b
         if (force!=NULL) force->Multiply(-1.,KdbKbb,fbeta_->at(gp),1.);
       }
-      else
-      {
-        Kbd_->at(gp).Clear();
-        KbbInv_->at(gp).Clear();
-        fbeta_->at(gp).Clear();
-        DalphaK_last_iter_->at(gp).Clear();
-      }
+        else if (activity_state_->at(gp)==false && Dissipation<0.)
+        {
+          // C^{pl} = cpl*DeltaAlphaK
+          // independent of displacements
+          Kbd_->at(gp).Clear();
+          // We can state the inverse right away
+          KbbInv_->at(gp).Update(id5);
+          // right hand side
+          fbeta_->at(gp).Update(DalphaK_last_iter_->at(gp));
+
+          // condensation to internal force vector
+          if (force!=NULL)
+            force->Multiply(-1.,kdbeta,fbeta_->at(gp),1.);
+        }
     } // modification for plastic Gauss points
+    // reset for elastic GP with no plastic flow increment in this time step
+    else
+    {
+      Kbd_->at(gp).Clear();
+      fbeta_->at(gp).Clear();
+      KbbInv_->at(gp).Clear();
+    }
   } // gp loop
 
   // communicate unconverged active set to time integration
@@ -1619,14 +1640,18 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
       if (Ypl<AnormEtatrial)
       {
         if (activity_state_->at(gp)==false) // gp switches state
-          converged_active_set = false;
+          if (abs(Ypl-AnormEtatrial)>AS_CONVERGENCE_TOL*inityield
+              || mDLp_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+            converged_active_set = false;
         activity_state_->at(gp) = true;
       }
       // active
       else
       {
         if (activity_state_->at(gp)==true) // gp switches state
-          converged_active_set = false;
+          if (abs(Ypl-AnormEtatrial)>AS_CONVERGENCE_TOL*inityield
+              || mDLp_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+            converged_active_set = false;
         activity_state_->at(gp) = false;
       }
 
@@ -1695,11 +1720,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
 
 
       // plastic modifications
-      if (stiffmatrix!=NULL || force!=NULL)
+      if (
+          (stiffmatrix!=NULL || force!=NULL)
+          &&
+          (activity_state_->at(gp)==true || mDLp_last_iter_->at(gp).NormInf()!=0.)
+         )
       {
-        // symmetric NCP stuff
-        if (activity_state_->at(gp)==true || DpAe<0. )
-        {
           // variables needed for condensation and calculated seperately for active and inactive Gauss points
           LINALG::Matrix<8,numdofperelement_> kbetad(true);
           LINALG::Matrix<8,8> kbetabeta(true);
@@ -1765,6 +1791,9 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
           // end of stiffness matrix [k^e_{d beta}]_ij (i=1..numdof; j=1..5)
           // **************************************************************
 
+          // symmetric NCP stuff
+          if (activity_state_->at(gp)==true || DpAe<0. )
+          {
           // derivative of Mandel stress w.r.t. beta
           //                      d bar Sigma_ab
           // dSigmaDbeta_abj = --------------------
@@ -1928,7 +1957,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
             DcplSymDd.MultiplyNT(stab_s*apl/AnormEtatrial,eta_vec,dAnormEtatrialDd,1.);
             DcplSymDd.MultiplyNT(1./AnormEtatrial,eta_trial_vec,dYpl_dd,1.);
 
-          } // acrtive Gauss points
+          } // active Gauss points
 
           else // inactive Gauss points
           {
@@ -2416,15 +2445,24 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
         LINALG::Matrix<numdofperelement_,numdofperelement_> stiff_update;
         stiff_update.Multiply(-1.,KdbKbb,kbetad,0.);
         }
-        else
+        else if (mDLp_last_iter_->at(gp).NormInf()!=0.)
         {
-          // simple matrices for inactive nodes
-          mDLp_last_iter_->at(gp).Clear();
           KbbInvHill_->at(gp).Clear();
+          for (int i=0; i<8; i++) KbbInvHill_->at(gp)(i,i)=1.;
           KbdHill_->at(gp).Clear();
-          fbetaHill_->at(gp).Clear();
+          fbetaHill_->at(gp).Update(mDLp_last_iter_->at(gp));
+
+          // condensation to internal force vector
+          if (force!=NULL)
+            force->Multiply(-1.,kdbeta,fbetaHill_->at(gp),1.);
         }
       } // modification for plastic Gauss points
+      else
+      {
+        KbbInvHill_->at(gp).Clear();
+        fbetaHill_ ->at(gp).Clear();
+        KbdHill_   ->at(gp).Clear();
+      }
   } // gp loop
 
   // communicate unconverged active set to time integration
@@ -2776,14 +2814,22 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
     if (Ypl<absetatrial_bar)
     {
       if (activity_state_->at(gp)==false) // gp switches state
-        converged_active_set = false;
+      {
+        if (abs(Ypl-absetatrial_bar)>AS_CONVERGENCE_TOL*inityield
+            || DalphaK_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+          converged_active_set = false;
+      }
       activity_state_->at(gp) = true;
     }
     // active
     else
     {
       if (activity_state_->at(gp)==true) // gp switches state
-        converged_active_set = false;
+      {
+        if (abs(Ypl-absetatrial_bar)>AS_CONVERGENCE_TOL*inityield
+            || DalphaK_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+          converged_active_set = false;
+      }
       activity_state_->at(gp) = false;
     }
 
@@ -2871,11 +2917,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
     } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
 
     // plastic modifications
-    if (stiffmatrix!=NULL || force!=NULL)
+    if (
+        (stiffmatrix!=NULL || force!=NULL)
+        &&
+        (activity_state_->at(gp)==true || DalphaK_last_iter_->at(gp).NormInf()!=0.)
+       )
     {
-      // Due to stabilization, we have to treat inactive nodes as well
-      if (activity_state_->at(gp)==true || Dissipation>0.)
-      {
       // variables needed for condensation and calculated seperately for active and inactive Gauss points
       LINALG::Matrix<numdofperelement_,5> kdbeta;
 
@@ -2924,6 +2971,9 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
         // **************************************************************
         // end of stiffness matrix [k^e_{d beta}]_ij (i=1..numdof; j=1..5)
         // **************************************************************
+
+        if (activity_state_->at(gp)==true || Dissipation>0.)
+        {
 
         // derivative of Mandel stress w.r.t. beta
         //                      d bar Sigma_ab
@@ -3127,14 +3177,28 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
         // plFint = [K_db.K_bb^-1].f_b
         if (force!=NULL) force->Multiply(-1.,KdbKbb,fbeta_->at(gp),1.);
       }
-      else
+      else if (activity_state_->at(gp)==false && Dissipation<0.)
       {
+        // C^{pl} = cpl*DeltaAlphaK
+        // independent of displacements
         Kbd_->at(gp).Clear();
-        KbbInv_->at(gp).Clear();
-        fbeta_->at(gp).Clear();
-        DalphaK_last_iter_->at(gp).Clear();
+        // We can state the inverse right away
+        KbbInv_->at(gp).Update(id5);
+        // right hand side
+        fbeta_->at(gp).Update(DalphaK_last_iter_->at(gp));
+
+        // condensation to internal force vector
+        if (force!=NULL)
+          force->Multiply(-1.,kdbeta,fbeta_->at(gp),1.);
       }
     } // modification for plastic Gauss points
+    // reset for elastic GP with no plastic flow increment in this time step
+    else
+    {
+      Kbd_->at(gp).Clear();
+      fbeta_->at(gp).Clear();
+      KbbInv_->at(gp).Clear();
+    }
   } // gp loop
 
   // communicate unconverged active set to time integration
@@ -3524,14 +3588,18 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
      if (Ypl<AnormEtatrial)
      {
        if (activity_state_->at(gp)==false) // gp switches state
-         converged_active_set = false;
+         if (abs(Ypl-AnormEtatrial)>AS_CONVERGENCE_TOL*inityield
+             || mDLp_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+           converged_active_set = false;
        activity_state_->at(gp) = true;
      }
      // active
      else
      {
        if (activity_state_->at(gp)==true) // gp switches state
-         converged_active_set = false;
+         if (abs(Ypl-AnormEtatrial)>AS_CONVERGENCE_TOL*inityield
+             || mDLp_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+           converged_active_set = false;
        activity_state_->at(gp) = false;
      }
 
@@ -3618,11 +3686,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
       } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
 
       // plastic modifications
-      if (stiffmatrix!=NULL || force!=NULL)
+      if (
+          (stiffmatrix!=NULL || force!=NULL)
+          &&
+          (activity_state_->at(gp)==true || mDLp_last_iter_->at(gp).NormInf()!=0.)
+         )
       {
-        // Due to stabilization, we have to treat inactive nodes as well
-        if (activity_state_->at(gp)==true || DpAe>0.)
-        {
         // variables needed for condensation and calculated seperately for active and inactive Gauss points
         LINALG::Matrix<8,numdofperelement_> kbetad(true);
         LINALG::Matrix<8,8> kbetabeta(true);
@@ -3689,6 +3758,9 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
           // end of stiffness matrix [k^e_{d beta}]_ij (i=1..numdof; j=1..5)
           // **************************************************************
 
+          // Due to stabilization, we have to treat inactive nodes as well
+          if (activity_state_->at(gp)==true || DpAe>0.)
+          {
           // calculate derivative detadd
            //             d eta_ab
            // detadd = --------------
@@ -4208,15 +4280,24 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
           // plFint = [K_db.K_bb^-1].f_b
           if (force!=NULL) force->Multiply(-1.,KdbKbb,force_beta,1.);
           }
-          else
+          else if (mDLp_last_iter_->at(gp).NormInf()!=0.)
           {
-            // simple matrices for inactive nodes
-            mDLp_last_iter_->at(gp).Clear();
             KbbInvHill_->at(gp).Clear();
+            for (int i=0; i<8; i++) KbbInvHill_->at(gp)(i,i)=1.;
             KbdHill_->at(gp).Clear();
-            fbetaHill_->at(gp).Clear();
+            fbetaHill_->at(gp).Update(mDLp_last_iter_->at(gp));
+
+            // condensation to internal force vector
+            if (force!=NULL)
+              force->Multiply(-1.,kdbeta,fbetaHill_->at(gp),1.);
           }
         } // modification for plastic Gauss points
+      else
+      {
+        KbbInvHill_->at(gp).Clear();
+        fbetaHill_ ->at(gp).Clear();
+        KbdHill_   ->at(gp).Clear();
+      }
     } // gp loop
 
     // communicate unconverged active set to time integration
