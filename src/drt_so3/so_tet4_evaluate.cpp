@@ -100,8 +100,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="calc_struct_errornorms")           act = So_tet4::calc_struct_errornorms;
   else if (action=="calc_struct_prestress_update")     act = So_tet4::prestress_update;
   else if (action=="calc_global_gpstresses_map")       act = So_tet4::calc_global_gpstresses_map;
-  else if (action=="calc_struct_energy")	       act = So_tet4::calc_struct_energy;
-  else if (action=="calc_struct_output_E")	       act = So_tet4::calc_struct_output_E;
+  else if (action=="calc_struct_energy")	             act = So_tet4::calc_struct_energy;
+  else if (action=="calc_struct_output_E")	           act = So_tet4::calc_struct_output_E;
   else if (action=="calc_struct_inversedesign_update") act = So_tet4::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch") act = So_tet4::inversedesign_switch;
   else if (action=="multi_calc_dens")                  act = So_tet4::multi_calc_dens;
@@ -324,14 +324,150 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
     // this is a dummy output for strain energy
     case calc_struct_energy:
     {
-    // check length of elevec1
-    if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
-    RCP<MAT::Material> mat = Material();
-    if (mat->MaterialType() == INPAR::MAT::m_stvenant)
-    {
-    	double intenergy = -1.0;
-        elevec1_epetra(0) = intenergy;
-    }  else dserror("No dummy strain energy for material other than INPAR::MAT::m_stvenant");
+      // check length of elevec1
+      if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+
+      // initialization of internal energy
+      double intenergy = 0.0;
+
+      const static std::vector<LINALG::Matrix<NUMNOD_SOTET4,1> > shapefcts = so_tet4_1gp_shapefcts();
+      const static std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = so_tet4_1gp_derivs();
+      const static std::vector<double> gpweights = so_tet4_1gp_weights();
+
+      // get displacements of this processor
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null) dserror("Cannot get state displacement vector");
+
+      // get displacements of this element
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+   /* ============================================================================*/
+     // element geometry
+     /* structure of xrefe:
+       **             [  X_1   Y_1   Z_1  ]
+       **     xrefe = [  X_2   Y_2   Z_2  ]
+       **             [   |     |     |   ]
+       **             [  X_4   Y_4   Z_4  ]
+       */
+     /* structure of xcurr:
+       **             [  x_1   y_1   z_1  ]
+       **     xcurr = [  x_2   y_2   z_2  ]
+       **             [   |     |     |   ]
+       **             [  x_4   y_4   z_4  ]
+       */
+     // current  displacements of element
+     LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xrefe;
+     LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xdisp;
+     DRT::Node** nodes = Nodes();
+     for (int i=0; i<NUMNOD_SOTET4; ++i)
+     {
+       const double* x = nodes[i]->X();
+       xrefe(i,0) = x[0];
+       xrefe(i,1) = x[1];
+       xrefe(i,2) = x[2];
+
+       xdisp(i,0) = mydisp[i*NODDOF_SOTET4+0];
+       xdisp(i,1) = mydisp[i*NODDOF_SOTET4+1];
+       xdisp(i,2) = mydisp[i*NODDOF_SOTET4+2];
+     }
+
+
+     //volume of a tetrahedra
+     double detJ = V_;
+
+     /* =========================================================================*/
+     /* ============================================== Loop over Gauss Points ===*/
+     /* =========================================================================*/
+     for (int gp=0; gp<NUMGPT_SOTET4; gp++)
+     {
+       LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> nxyz(nxyz_); // copy!
+
+       //                                      d xcurr
+       // (material) deformation gradient F = --------- = xcurr^T * nxyz^T
+       //                                      d xrefe
+
+       /*structure of F
+       **             [    dx       dy       dz    ]
+       **             [  ------   ------   ------  ]
+       **             [    dX       dX       dX    ]
+       **             [                            ]
+       **      F   =  [    dx       dy       dz    ]
+       **             [  ------   ------   ------  ]
+       **             [    dY       dY       dY    ]
+       **             [                            ]
+       **             [    dx       dy       dz    ]
+       **             [  ------   ------   ------  ]
+       **             [    dZ       dZ       dZ    ]
+       */
+
+       // size is 3x3
+       LINALG::Matrix<3,3> defgrd(false);
+       // Gauss weights and Jacobian determinant
+         double fac = detJ * gpweights[gp];
+
+       if (pstype_==INPAR::STR::prestress_mulf)
+       {
+         // get derivatives wrt to last spatial configuration
+         LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> N_xyz;
+         prestress_->StoragetoMatrix(gp,N_xyz,prestress_->JHistory());
+
+         // build multiplicative incremental defgrd
+         //defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
+         defgrd.MultiplyTN(xdisp,N_xyz);
+         defgrd(0,0) += 1.0;
+         defgrd(1,1) += 1.0;
+         defgrd(2,2) += 1.0;
+
+         // get stored old incremental F
+         LINALG::Matrix<3,3> Fhist;
+         prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+
+         // build total defgrd = delta F * F_old
+         LINALG::Matrix<3,3> Fnew;
+         Fnew.Multiply(defgrd,Fhist);
+         defgrd = Fnew;
+       }
+       else
+       {
+         defgrd.MultiplyTN(xdisp,nxyz);
+         defgrd(0,0)+=1;
+         defgrd(1,1)+=1;
+         defgrd(2,2)+=1;
+       }
+
+       if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
+       {
+         dserror("Calc Energy not implemented for prestress id");
+       }
+
+       // Right Cauchy-Green tensor = F^T * F
+       // size is 3x3
+       LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchygreen;
+       cauchygreen.MultiplyTN(defgrd,defgrd);
+
+       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+       // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+       LINALG::Matrix<6,1> glstrain(false);
+       glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+       glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+       glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+       glstrain(3) = cauchygreen(0,1);
+       glstrain(4) = cauchygreen(1,2);
+       glstrain(5) = cauchygreen(2,0);
+
+      // call material for evaluation of strain energy function
+       double psi = 0.0;
+       Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+       so3mat->StrainEnergy(glstrain,psi);
+
+       // sum up GP contribution to internal energy
+       intenergy += fac*psi;
+
+     }
+
+    // return result
+    elevec1_epetra(0) = intenergy;
     }
     break;
     // this is needed by bone topology optimization

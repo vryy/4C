@@ -361,6 +361,7 @@ protected:
     calc_struct_reset_all,  //!< reset elementwise internal variables
                             //!< to state in the beginning of the computation
     postprocess_stress,
+    calc_struct_energy,
     prestress_update,
     inversedesign_update,
     inversedesign_switch,

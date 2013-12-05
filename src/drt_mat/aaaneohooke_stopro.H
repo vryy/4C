@@ -174,6 +174,10 @@ namespace MAT
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
+    /// evaluate strain energy function
+    virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+                              double& psi);
+
     /// Return names of visualization data
     virtual void VisNames(std::map<std::string,int>& names);
 

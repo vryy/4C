@@ -353,7 +353,106 @@ void MAT::AAAneohooke_stopro::Evaluate(
 
   return;
 }
+/*----------------------------------------------------------------------*
+ |  Calculate strain energy                                biehler 12/13|
+ *----------------------------------------------------------------------*/
+void MAT::AAAneohooke_stopro::StrainEnergy(const LINALG::Matrix<6,1>& glstrain, double& psi)
+{
+  /*
+  plain strain energy function
 
+  W    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)²
+
+  Ic   .. first invariant of right Cauchy-Green tensor C
+  IIIc .. third invariant of right Cauchy-Green tensor C
+
+  The volumetric part is done by a volumetric strain energy function taken from
+  Holzapfel
+
+  W_vol = K beta2^(-2) ( beta2 ln (J) + J^(-beta2) -1 )
+
+  where
+  K    .. bulk modulus
+  beta2 =  -2.0 a parameter according to Doll and Schweizerhof; 9.0 according to Holzapfel, alternatively;
+  numerical stability parameter
+  J    .. det(F) determinante of the Jacobian matrix
+
+
+  Note: Young's modulus is in the input just for convenience. Actually we need the
+        parameter alpha (see W above) which is related to E by
+
+      E = 6.0 * alpha.
+
+      Correspondingly the bulk modulus is given by
+      K = E / (3-6*nu) = 2*alpha / (1-2*nu)
+
+      with nu = 0.495 we have K = 200 alpha
+      with nu = 0.45  we have K =  20 alpha
+
+  */
+  // get mat params
+  double beta = params_->beta_mean_;
+  double youngs = params_->youngs_mean_;
+
+  // init check
+  if (isinit_beta_ && !isinit_youngs_)
+  {
+    beta   = beta_;
+  }
+  else if (!isinit_beta_ && isinit_youngs_)
+  {
+    youngs = youngs_;
+  }
+  else if(isinit_beta_ && isinit_youngs_)
+  {
+    beta   = beta_;
+    youngs = youngs_;
+  }
+  else
+    dserror("Stochastic Parameters of AAAneohooke_stopro have not been initialized! \n AAAneohooke_stopro for use with MLMC ONLY!!!");
+
+  const double nue   = params_->nue_;       // Poisson's ratio
+  const double alpha = youngs*0.1666666666666666667;       // E = alpha * 6
+
+  // material parameters for volumetric part
+  const double beta2 = -2.0;                                            // parameter from Holzapfel
+  double komp  = (nue!=0.5) ? 2.0*alpha / (1.0-2.0*nue) : 0.0;    // bulk modulus
+
+  // compute  invariants
+  // build identity tensor I
+   LINALG::Matrix<6,1> identity(true);
+   for (int i = 0; i < 3; i++)
+     identity(i) = 1.0;
+
+   // right Cauchy-Green Tensor  C = 2 * E + I
+   LINALG::Matrix<6,1> rcg(glstrain);
+   rcg.Scale(2.0);
+   rcg += identity;
+
+   // invariants
+   double inv = rcg(0) + rcg(1) + rcg(2);  // 1st invariant, trace
+   double iiinv = rcg(0)*rcg(1)*rcg(2)
+         + 0.25 * rcg(3)*rcg(4)*rcg(5)
+         - 0.25 * rcg(1)*rcg(5)*rcg(5)
+         - 0.25 * rcg(2)*rcg(3)*rcg(3)
+         - 0.25 * rcg(0)*rcg(4)*rcg(4);    // 3rd invariant, determinante
+
+   double detf = 0.0;
+   if (iiinv < 0.0)
+     dserror("fatal failure in aneurysmatic artery wall material");
+   else
+     detf = sqrt(iiinv);              // determinate of deformation gradient
+   //--- prepare some constants -----------------------------------------------------------
+   const double third = 1.0/3.0;
+   // now compute
+   // ISOCHORIC PART plain strain energy function
+   //PSI_iso    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)²
+   psi = alpha*(inv*pow(iiinv,-third)-3) + beta*(inv*pow(iiinv,-third)-3)*(inv*pow(iiinv,-third)-3);
+   // add volumetric part
+   //W_vol = K beta2^(-2) ( beta2 ln (J) + J^(-beta2) -1 )
+   psi=psi+ komp*pow(beta2,-2.0)*(beta2*log(detf)+pow(detf,-beta2)-1);
+  return;
+}
 
 void MAT::AAAneohooke_stopro::VisNames(std::map<std::string,int>& names)
 {
