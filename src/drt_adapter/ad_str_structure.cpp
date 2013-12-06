@@ -365,7 +365,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       }
       case prb_fsi: // structure based time adaptivity within an FSI simulation
       {
-        Teuchos::RCP<FSIStructureWrapper> fsiwrapperwithadaptivity = Teuchos::rcp(new StructureFSITimIntAda(sta, tmpstr));
+        if ((actdis->Comm()).MyPID()==0) IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
+
+        Teuchos::RCP<FSIStructureWrapper> fsiwrapperwithadaptivity =
+            Teuchos::rcp(new StructureFSITimIntAda(sta, Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
         structure_ = fsiwrapperwithadaptivity;
         break;
       }
