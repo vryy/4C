@@ -85,14 +85,13 @@ namespace STR
         return "";
         break;
       }
-      return ""; // make compiler happy
     }
 
     //! List type of local error control
     enum CtrlEnum
     {
-      ctrl_dis,  //!< check only displacements
-      ctrl_vel,  //!< check only velocities
+      ctrl_dis,         //!< check only displacements
+      ctrl_vel,         //!< check only velocities
       ctrl_dis_and_vel  //!< check displacements and velocities
     };
 
@@ -123,29 +122,35 @@ namespace STR
     //! @name Actions
     //@{
 
-    //! Integrate in time
-    //! This is the key method here, i.e. the time integration
-    //!  algorithm.
+    /*! \brief Integrate in time
+     * This is the key method here, i.e. the time integration algorithm.
+     */
     int Integrate();
 
-    //! Make one step with auxiliar scheme
-    //!
-    //! Afterwards, we are going to hold
-    //! \f$D_{n+1}^{AUX}\f$ on #locdiserrn_
-    //! and \f$V_{n+1}^{AUX}\f$ on #locvelerrn_
+    /*! \brief Make one step with auxiliary scheme
+     *
+     *  Afterwards, the auxiliary solutions are stored in the local error
+     *  vectors, ie:
+     *  - \f$D_{n+1}^{AUX}\f$ in #locdiserrn_
+     *  - \f$V_{n+1}^{AUX}\f$ in #locvelerrn_
+     */
     virtual void IntegrateStepAuxiliar() = 0;
 
     //! Indicate error and determine new step size
     void Indicate
     (
-      bool& accepted,  //!< true=accepted, false=not accepted
-      double& stpsiznew  //!< step size prediction for next or
-                         //!< step repetition
+      bool& accepted,   //!< true=accepted, false=not accepted
+      double& stpsiznew //!< step size prediction for next step or step repetition
     );
 
-    //! Provide local discretisation error vector
-    //! of displacements/velocities specific to
-    //! marching/auxiliar time integrator pair
+    /*! \brief Compute local discretisation error
+     *
+     *  Compute the local discretisation error vector of displacements/velocities
+     *  specific to marching/auxiliary time integrator pair.
+     *
+     *  \note Solution of auxiliary step is already stored in ##locdiserrn_/#locvelerrn_,
+     *  so we just need to subtract the solution of the marching TIS.
+     */
     void EvaluateLocalErrorDis();
 
     //@}

@@ -135,7 +135,6 @@ namespace STR
       // resize multi-step quantities
       sta_->ResizeMStep();
 
-      // I am lost
       return;
     }
 
@@ -147,30 +146,25 @@ namespace STR
     //! @name Actions
     //@{
 
-    //! Provide local discretisation error
+    /*! \brief Make one step with auxiliary scheme
+     *
+     *  Afterwards, the auxiliary solutions are stored in the local error
+     *  vectors, ie:
+     *  - \f$D_{n+1}^{AUX}\f$ in #locdiserrn_
+     *  - \f$V_{n+1}^{AUX}\f$ in #locvelerrn_
+     */
     void IntegrateStepAuxiliar()
     {
-
-      // get state vectors of marching integrator
-      //const Teuchos::RCP<Epetra_Vector> dis = sti_->Dis();  // D_{n}^{A2}
-      const Teuchos::RCP<Epetra_Vector> disn = sti_->DisNew();  // D_{n+1}^{A2}
-      //const Teuchos::RCP<Epetra_Vector> vel = sti_->Vel();  // V_{n}^{A2}
-      //const Teuchos::RCP<Epetra_Vector> acc = sti_->Acc();  // A_{n}^{A2}
-      //const Teuchos::RCP<Epetra_Vector> accn = sti_->AccNew();  // A_{n+1}^{A2}
-
-      // integrate
+      // integrate the auxiliary time integrator one step in time
       sta_->IntegrateStep();
+
       // copy onto target
       locerrdisn_->Update(1.0, *(sta_->disn_), 0.0);
+
       // reset
       // remember: sta_ and sti_ are merged and work on the same vectors
       sta_->ResetStep();
 
-      // provide local discretisation error vector
-      // l_{n+1}^{A2} = D_{n+1}^{Joint} - D_{n+1}^{A1}
-      //locerrdisn_->Update(-1.0, *disn, 1.0);
-
-      // see you
       return;
     }
 

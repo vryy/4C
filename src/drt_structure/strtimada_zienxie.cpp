@@ -19,12 +19,11 @@ Maintainer: Alexander Popp
 /* headers */
 #include <iostream>
 
+#include "Teuchos_RCP.hpp"
+#include "Teuchos_ParameterList.hpp"
+
 #include "strtimada_zienxie.H"
 #include "strtimint.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
@@ -34,14 +33,9 @@ STR::TimAdaZienXie::TimAdaZienXie
   const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
   Teuchos::RCP<TimInt> tis  //!< marching time integrator
 )
-: TimAda
-  (
-    sdynparams,
-    adaparams,
-    tis
-  )
+: TimAda(sdynparams, adaparams, tis)
 {
-  // check if scheme is .NE. second order accurate
+  // check if marching TIS is second order accurate
   if (sti_->MethodOrderOfAccuracyDis() != 2)
   {
     dserror("%s can only work with 2nd order accurate marching scheme,"
@@ -51,7 +45,6 @@ STR::TimAdaZienXie::TimAdaZienXie
             sti_->MethodOrderOfAccuracyDis());
   }
 
-  // hail Mary
   return;
 }
 
@@ -61,7 +54,6 @@ void STR::TimAdaZienXie::IntegrateStepAuxiliar()
 {
   // get state vectors of marching integrator
   const Teuchos::RCP<Epetra_Vector> dis = sti_->Dis();  // D_{n}^{A2}
-  //const Teuchos::RCP<Epetra_Vector> disn = sti_->DisNew();  // D_{n+1}^{A2}
   const Teuchos::RCP<Epetra_Vector> vel = sti_->Vel();  // V_{n}^{A2}
   const Teuchos::RCP<Epetra_Vector> acc = sti_->Acc();  // A_{n}^{A2}
   const Teuchos::RCP<Epetra_Vector> accn = sti_->AccNew();  // A_{n+1}^{A2}
@@ -75,11 +67,6 @@ void STR::TimAdaZienXie::IntegrateStepAuxiliar()
                       stepsize_*stepsize_/6.0, *accn,
                       1.0);
 
-  // provide local discretisation error vector
-  // l_{n+1}^{A2} = D_{n+1}^{ZX} - D_{n+1}^{A2}
-  //lostd::cerrdisn_->Update(-1.0, *disn, 1.0);
-
-  // see you
   return;
 }
 

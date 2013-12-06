@@ -38,8 +38,8 @@ Maintainer: Alexander Popp
 STR::TimAda::TimAda
 (
   const Teuchos::ParameterList& sdyn, //!< TIS input parameters
-  const Teuchos::ParameterList& tap,  //!< adaptive input flags
-  Teuchos::RCP<TimInt> tis  					//!< marching time integrator
+  const Teuchos::ParameterList& tap, //!< adaptive input flags
+  Teuchos::RCP<TimInt> tis //!< marching time integrator
 )
 : sti_(tis),
   discret_(tis->Discretization()),
@@ -67,7 +67,7 @@ STR::TimAda::TimAda
   //
   time_(timeinitial_),
   timestep_(0),
-  stepsizepre_(0),
+  stepsizepre_(0.0),
   stepsize_(sdyn.get<double>("TIMESTEP")),
   locerrdisn_(Teuchos::null),
   adaptstep_(0),
@@ -91,20 +91,19 @@ STR::TimAda::TimAda
   locerrdisn_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
   // check whether energyout_ file handle was attached
-  if ( (not sti_->AttachedEnergyFile())
-       and (outeneperiod_ != 0.0)
-       and (myrank_ == 0) )
+  if ((not sti_->AttachedEnergyFile())
+      and (outeneperiod_ != 0.0)
+      and (myrank_ == 0))
   {
     sti_->AttachEnergyFile();
   }
 
   // check if step size file is wanted and attach
-  if ( (outsizeevery_ != 0) and (myrank_ == 0) )
+  if ((outsizeevery_ != 0) and (myrank_ == 0))
   {
     AttachFileStepSize();
   }
 
-  // hallelujah
   return;
 }
 
@@ -123,24 +122,22 @@ int STR::TimAda::Integrate()
   stepsizepre_ = stepsize_;
 
   // time loop
-  while ( (time_ < timefinal_) and (timestep_ < timestepfinal_) )
+  while ((time_ < timefinal_) and (timestep_ < timestepfinal_))
   {
     // time step size adapting loop
     adaptstep_ = 0;
     bool accepted = false;
     double stpsiznew;
-    while ( (not accepted) and (adaptstep_ < adaptstepmax_) )
+    while ((not accepted) and (adaptstep_ < adaptstepmax_))
     {
-
       // modify step-size #stepsize_ according to output period
       // and store output type on #outstep_
       SizeForOutput();
 
-      // set current stepsize
+      // set current step size
       sti_->dt_->SetStep(0, stepsize_);
-      //*(sti_->dt_(0)) = stepsize_;
 
-      // integrate system with auxiliar TIS
+      // integrate system with auxiliary TIS
       // we hold \f$D_{n+1}^{AUX}\f$ on #locdiserrn_
       // and \f$V_{n+1}^{AUX}\f$ on #locvelerrn_
       IntegrateStepAuxiliar();
@@ -188,10 +185,9 @@ int STR::TimAda::Integrate()
       dserror("Do not know what to do");
     }
 
-    // sti_->time_ = time_ + stepsize_;
+    // increment time and step in the marching time integrator
     sti_->time_->UpdateSteps(time_ + stepsize_);
     sti_->step_ = timestep_ + 1;
-    // sti_->dt_ = stepsize_;
     sti_->dt_->UpdateSteps(stepsize_);
 
     // printing and output
@@ -207,7 +203,7 @@ int STR::TimAda::Integrate()
     sti_->timen_ = time_ += stepsize_;
     stepsizepre_ = stepsize_;
     stepsize_ = stpsiznew;
-    //
+
     UpdatePeriod();
     outrest_ = outsys_ = outstr_ = outene_ = false;
 
@@ -221,8 +217,7 @@ int STR::TimAda::Integrate()
     }
   }
 
-  // leave for good
-  return 0;
+  return 0; // ToDo Provide meaningful error code here
 }
 
 /*----------------------------------------------------------------------*/
@@ -234,7 +229,7 @@ void STR::TimAda::EvaluateLocalErrorDis()
     const double coeffmarch = sti_->MethodLinErrCoeffDis();
     const double coeffaux = MethodLinErrCoeffDis();
     locerrdisn_->Update(-1.0, *(sti_->disn_), 1.0);
-    locerrdisn_->Scale(coeffmarch/(coeffaux-coeffmarch));
+    locerrdisn_->Scale(coeffmarch / (coeffaux - coeffmarch));
   }
   else
   {
@@ -309,7 +304,6 @@ void STR::TimAda::Indicate
     stpsiznew = stepsizemin_;
   }
 
-  // get away from here
   return;
 }
 
@@ -356,7 +350,6 @@ void STR::TimAda::SizeForOutput()
     if (fabs(outenetime_) < fabs(outstrtime_)) outstr_ = false;
   }
 
-  // give a lift
   return;
 }
 
@@ -401,7 +394,6 @@ void STR::TimAda::OutputPeriod()
     sti_->OutputEnergy();
   }
 
-  // flag down the cab
   return;
 }
 
@@ -413,7 +405,7 @@ void STR::TimAda::UpdatePeriod()
   if (outsys_) outsystime_ += outsysperiod_;
   if (outstr_) outstrtime_ += outstrperiod_;
   if (outene_) outenetime_ += outeneperiod_;
-  // freedom
+
   return;
 }
 
@@ -485,7 +477,7 @@ void STR::TimAda::Print
   str << "TimAda" << std::endl;
   PrintConstants(str);
   PrintVariables(str);
-  // step aside
+
   return;
 }
 
@@ -502,6 +494,7 @@ void STR::TimAda::AttachFileStepSize()
     (*outsizefile_) << "# timestep time step-size adaptations"
                     << std::endl;
   }
+
   return;
 }
 
@@ -514,6 +507,7 @@ std::ostream& operator<<
 )
 {
   ta.Print(str);
+
   return str;
 }
 
