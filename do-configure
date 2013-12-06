@@ -70,9 +70,11 @@ fi
 # check for out-of-source build
 
 BUILD_FOLDER=`pwd -P`
+BUILD_FOLDER_SAFE=$BUILD_FOLDER  
 BACI_HOME=`cd $BACI_HOME; pwd -P`
 
 if [[ $USE_FORCEBUILD == 0 ]]; then
+	# check whether BUILD_FOLDER is "out-of-source"
 	while true; do
 		if [[ "x$BUILD_FOLDER" == "x$BACI_HOME" ]]; then
 		    
@@ -101,6 +103,8 @@ if [[ $USE_FORCEBUILD == 0 ]]; then
 	done
 fi
 
+# set valid folder for baci build
+BUILD_FOLDER=$BUILD_FOLDER_SAFE
 
 
 ##############################################################
