@@ -98,14 +98,35 @@ void MAT::ELASTIC::IsoVolAAAGasser::SetupAAA(Teuchos::ParameterList& params)
     dserror("Unable to calculate valid stiffness parameter in material AAAGasser");
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(
+  double& psi,
+  const LINALG::Matrix<3,1>& prinv,
+  const LINALG::Matrix<3,1>& modinv)
+{
+  // An Ogden type material is chosen for the isochoric part
+  // \f$\Psi=c\underset{i=1}{\overset{3}{\sum}}(\lambda_{i}^{4}-1)\f$
+  // which is
+  //Psi = c*(I_1^2*I_3^{-2/3} -2* I_2*I_3^{-2/3}-3)
+  psi+=cele_*(pow(modinv(0),2.0)-2.0*modinv(1)-3.0 );
+  // volumetric part
+  // contribution is modeled by an Ogden-Simo_Miehe type SEF:
+  // \f$\Psi=\frac {\kappa}{\beta^2}(\beta lnJ + J^{-\beta}-1)\f$
+  // with kappa= 8*c/(1-2nu)
+  // as Gasser paper states that referential stiffness E=24c and
+  // K=24c/(3(1-2nu))
 
+  double detF=sqrt(prinv(2));
+  psi+= (8*cele_)/(1.0-2.0*params_->nue_)*1.0/(pow(params_->beta_,2.0))*(params_->beta_*log(detF)+pow(detF,-params_->beta_)-1.0);
+
+}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolAAAGasser::AddCoefficientsPrincipal(
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<8,1>& delta,
-  const LINALG::Matrix<3,1>& prinv
-  )
+  const LINALG::Matrix<3,1>& prinv)
 {
   // principal coefficients
   gamma(0) += 0.;
