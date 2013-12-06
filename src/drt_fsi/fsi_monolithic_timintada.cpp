@@ -305,7 +305,18 @@ void FSI::Monolithic::WriteAdaFileHeader() const
                << " - Error tolerance in structure field: " << errtolstr_  << "\n"
                << " - Minimum allowed time step size DTMIN = " << dtmin_ << "\n"
                << " - Maximum allowed time step size DTMAX = " << dtmax_ << "\n \n"
-               << "  step | time | \t dt  | \t #adaptiter |  dt of field  |  err str field  |  err str inner |  err str fsi | err fl field  |  err fl inner |  err fl fsi \n\n"
+               << std::right << std::setw(9) << "step"
+               << std::right << std::setw(16) << "time"
+               << std::right << std::setw(16) << "dt"
+               << std::right << std::setw(16) << "#adaptiter"
+               << std::right << std::setw(16) << "dt of field"
+               << std::right << std::setw(16) << "err str field"
+               << std::right << std::setw(16) << "err str inner"
+               << std::right << std::setw(16) << "err str fsi"
+               << std::right << std::setw(16) << "err fl field"
+               << std::right << std::setw(16) << "err fl inner"
+               << std::right << std::setw(16) << "err fl fsi"
+               << "\n\n"
       ;
   }
 }
@@ -319,21 +330,21 @@ void FSI::Monolithic::WriteAdaFile() const
 
   if (Comm().MyPID() == 0)
   {
-    (*logada_)  << Step()
-                << "\t" << Time()
-                << "\t\t" << dtold_
-                << "\t" << adaptstep_ ;
+    (*logada_)  << std::right << std::setw(9) << Step()
+                << std::right << std::setw(16) << Time()
+                << std::right << std::setw(16) << dtold_
+                << std::right << std::setw(16) << adaptstep_ ;
 
     // Who is responsible for the new time step size?
-    (*logada_)  << "\t"<< adareason_;
+    (*logada_)  << std::right << std::setw(16) << adareason_;
 
     // print norms of the truncation error indications
-    (*logada_)  << "\t "<< strnorm_
-                << "\t" << strinnernorm_
-                << "\t" << strfsinorm_
-                << "\t" << flnorm_
-                << "\t" << flinnernorm_
-                << "\t" << flfsinorm_
+    (*logada_)  << std::right << std::setw(16) << strnorm_
+                << std::right << std::setw(16) << strinnernorm_
+                << std::right << std::setw(16) << strfsinorm_
+                << std::right << std::setw(16) << flnorm_
+                << std::right << std::setw(16) << flinnernorm_
+                << std::right << std::setw(16) << flfsinorm_
                 << std::endl;
   }
 }

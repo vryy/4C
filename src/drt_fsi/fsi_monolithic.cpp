@@ -440,8 +440,14 @@ void FSI::Monolithic::PrepareTimeloop()
   {
     (*log_) << "# num procs      = " << Comm().NumProc() << "\n"
             << "# Method         = " << nlParams.sublist("Direction").get<std::string>("Method") << "\n"
-            << "# step | time | time/step  |  #nliter  | res-norm |   #liter  |   dt  | ";
-
+            << std::right << std::setw(9) << "# step"
+            << std::right << std::setw(16) << "time"
+            << std::right << std::setw(16) << "time/step"
+            << std::right << std::setw(16) << "#nliter"
+            << std::right << std::setw(16) << "res-norm"
+            << std::right << std::setw(16) << "#liter"
+            << std::right << std::setw(16) << "dt"
+      ;
     (*log_) << "#\n\n";
   }
 
@@ -540,13 +546,13 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 
   if (Comm().MyPID()==0)
   {
-    (*log_) << Step()
-            << "\t" << Time()
-            << "\t" << timer.totalElapsedTime()
-            << "\t" << nlParams.sublist("Output").get<int>("Nonlinear Iterations")
-            << "\t" << nlParams.sublist("Output").get<double>("2-Norm of Residual")
-            << "\t" << lsParams.sublist("Output").get<int>("Total Number of Linear Iterations")
-            << "\t" << Dt();
+    (*log_) << std::right << std::setw(9) << Step()
+            << std::right << std::setw(16) << Time()
+            << std::right << std::setw(16) << timer.totalElapsedTime()
+            << std::right << std::setw(16) << nlParams.sublist("Output").get<int>("Nonlinear Iterations")
+            << std::right << std::setw(16) << nlParams.sublist("Output").get<double>("2-Norm of Residual")
+            << std::right << std::setw(16) << lsParams.sublist("Output").get<int>("Total Number of Linear Iterations")
+            << std::right << std::setw(16) << Dt();
   }
   (*log_) << std::endl;
   lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
