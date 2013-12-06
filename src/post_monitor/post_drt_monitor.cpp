@@ -1175,6 +1175,13 @@ void FsiFluidMonWriter::WriteResult(
         outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
+  else
+  {
+    for(unsigned i=0; i < gdof.size()-1; ++i)
+    {
+      outfile << std::right << std::setw(16) << "not avail.";
+    }
+  }
 
   outfile << "\n";
 }
@@ -1310,6 +1317,13 @@ void FsiStructMonWriter::WriteResult(
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
+  else
+  {
+    for(unsigned i=0; i < noddof; ++i)
+    {
+      outfile << std::right << std::setw(16) << "not avail.";
+    }
+  }
 
   // acceleration
 
@@ -1331,6 +1345,13 @@ void FsiStructMonWriter::WriteResult(
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
+  else
+  {
+    for(unsigned i=0; i < noddof; ++i)
+    {
+      outfile << std::right << std::setw(16) << "not avail.";
+    }
+  }
 
   // pressure
   if (gdof.size() == (unsigned)dim+1)
@@ -1350,6 +1371,10 @@ void FsiStructMonWriter::WriteResult(
       outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
     }
   }
+  else
+  {
+    outfile << std::right << std::setw(16) << "not avail.";
+  }
 
   // check if fsilambda is available
   if (map_find_map(result.group(), "fsilambda", &dummydir))
@@ -1366,6 +1391,13 @@ void FsiStructMonWriter::WriteResult(
       const int lid = lambdamap.LID(gdof[i]+offset2);
       if (lid == -1) dserror("illegal gid %d at %d!",gdof[i],i);
         outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
+    }
+  }
+  else
+  {
+    for(unsigned i=0; i < noddof; ++i)
+    {
+      outfile << std::right << std::setw(16) << "not avail.";
     }
   }
 
