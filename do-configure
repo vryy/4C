@@ -9,6 +9,7 @@ EXTRA_ARGS=$@
 BUILD_TYPE="RELEASE"
 TRILINOS_BUILD_TYPE="release"
 USE_ACML=0
+USE_FORCEBUILD=0
 TRILINOS_EXPERIMENTAL=0  # use experimental Trilinos version
 ADDITIONAL_TESTS_PATH=""
 
@@ -16,7 +17,7 @@ ADDITIONAL_TESTS_PATH=""
 # activate debug version: ./do-configure --debug 
 # or choose do-configure-debug which does the same
 
-OPTIONS=`getopt -o hc:dae -l help,config:,additionaltests:,debug,trilinos-debug,useACML,experimental -- "$@"`
+OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,trilinos-debug,useACML,experimental,forceBuild -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
@@ -48,6 +49,9 @@ while true; do
     -a|--useACML)
       USE_ACML=1
       ;;
+    -f|--forceBuild)
+      USE_FORCEBUILD=1
+      ;;
     --) shift ;
       break
       ;;
@@ -61,6 +65,43 @@ if [ $# -ne 0 ]; then
   echo "usage: do-configure [--debug] [--experimental] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
   exit 1
 fi
+
+##############################################################
+# check for out-of-source build
+
+BUILD_FOLDER=`pwd -P`
+BACI_HOME=`cd $BACI_HOME; pwd -P`
+
+if [[ $USE_FORCEBUILD == 0 ]]; then
+	while true; do
+		if [[ "x$BUILD_FOLDER" == "x$BACI_HOME" ]]; then
+		    
+		    PROPOSED_BUILDDIR="`dirname $(echo $BACI_HOME | sed -e 's/\/$//')`/build-${BUILD_TYPE,,}"
+		    
+		    echo "********************************************************************************************"
+			echo "No in-source build of BACI allowed..."
+			echo "Please choose a path for building BACI outside of $BACI_HOME"
+			echo "For example: $PROPOSED_BUILDDIR"
+			echo ""
+			echo "HOWTO:"
+			echo "  mkdir -p \"$PROPOSED_BUILDDIR\""
+			echo "  cd \"$PROPOSED_BUILDDIR\""
+			echo "  $BACI_HOME/do-configure [--debug] [--experimental] [--useACML] [...]"
+			echo "  make -j 6 baci"
+		    echo "********************************************************************************************"
+		    			
+	    	exit 2
+	    fi
+	    
+	    BUILD_FOLDER="`dirname $(echo $BUILD_FOLDER | sed -e 's/\/$//')`"
+	    
+	    if [[ "x$BUILD_FOLDER" == "x/" ]]; then
+	    	break;   # no in-source build -> all is fine
+	    fi
+	done
+fi
+
+
 
 ##############################################################
 # detect operating system
@@ -176,7 +217,7 @@ $CMAKE_COMMAND \
     $EXTRA_ARGS \
     ${BACI_HOME}
 
-BUILD_FOLDER=`pwd`
-cd $BACI_HOME
+
+cd "$BACI_HOME"
 
 if [ -f .cproject ]; then ./adapt_cproject.py `basename $0` $BUILD_FOLDER $BUILD_TYPE; fi
