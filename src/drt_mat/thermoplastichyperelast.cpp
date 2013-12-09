@@ -505,7 +505,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
     // TSI, i.e. temperature is available --> use this temperature
     scalartemp = params.get<double>("scalartemp",-1.0);
     if (scalartemp < 0.0) 
-      dserror("INadmissible value for the temperature: T<0!");
+      dserror("INadmissible value for the temperature: T=%3d",scalartemp);
   }
   // in case of purely structural analysis, i.e. isothermal: T = T_0, DeltaT = 0
   else
@@ -681,14 +681,12 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
     // update elastic LCG
     // bbar_{n+1}^e = bbar_{n+1}^{e,trial} - 2/3 . Dgamma . tr(bbar_{n+1}^{e,trial}) . n
     // see e.g. Simo, Comp.Inelaticity (9.3.7)
-    bebarcurr_->at(gp) = (bebar_trial);
-    bebarcurr_->at(gp).Update((-2.0/3.0 * Dgamma * tracebebar), n, 1.0);
-
-//TODO 2013-09-25 new update according to Simo et. Miehe, but has to be equal to
-//    // update of isothermal one
-//    // update isochoric part of elastic LCG
-//    // bbar_{n+1}^e = s_{n+1} / mu + 1/3 . Ibar^e . id2
-//    CalculateCurrentBebar(devtau, G, id2, gp);
+//    bebarcurr_->at(gp) = (bebar_trial);
+//    bebarcurr_->at(gp).Update((-2.0/3.0 * Dgamma * tracebebar), n, 1.0);
+    // update of isothermal one
+    // update isochoric part of elastic LCG
+    // bbar_{n+1}^e = s_{n+1} / mu + 1/3 . Ibar^e . id2
+    CalculateCurrentBebar(devtau, G, id2, gp);
 
     // plastic step update
     if (Dgamma != 0.0)
@@ -899,21 +897,20 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
     }  // (Dgamma != 0.0)
 
 #ifdef DEBUGMATERIAL
-      // TODO 2013-12-03
-      std::cout << "Dgamma = " << Dgamma << std::endl;
+
       std::cout << "dsigma_y0_temp_dT = " << dsigma_y0_temp_dT << std::endl;
       std::cout << "dkappaT_dT = " << dkappaT_dT << std::endl;
       std::cout << "beta0 = " << beta0 << std::endl;
       std::cout << "- 2 * mubar * dDgamma_d = " << - 2 * mubar * dDgamma_dT  << std::endl;
       std::cout << "Cmat_kdT_vct = " << Cmat_kdT_vct << std::endl;
 
-    std::cout << "mubar = " << mubar << std::endl;
-    std::cout << "dDgamma_dT = " << dDgamma_dT << std::endl;
-    std::cout << "N = " << N << std::endl;
-    std::cout << "mechdiss_kTT_ = " << mechdiss_kTT_->at(gp) << std::endl;
-    std::cout << "mechdiss_ = " << mechdiss_->at(gp) << std::endl;
-    std::cout << "mechdiss_kTd_->at(gp) = " << mechdiss_kTd_->at(gp) << std::endl;
-    std::cout << "Cmat_kdT_vct = " << *Cmat_kdT_vct << std::endl;
+      std::cout << "mubar = " << mubar << std::endl;
+      std::cout << "dDgamma_dT = " << dDgamma_dT << std::endl;
+      std::cout << "N = " << N << std::endl;
+      std::cout << "mechdiss_kTT_ = " << mechdiss_kTT_->at(gp) << std::endl;
+      std::cout << "mechdiss_ = " << mechdiss_->at(gp) << std::endl;
+      std::cout << "mechdiss_kTd_->at(gp) = " << mechdiss_kTd_->at(gp) << std::endl;
+      std::cout << "Cmat_kdT_vct = " << *Cmat_kdT_vct << std::endl;
 #endif  // DEBUGMATERIAL
 
   }  // end plastic step
@@ -959,7 +956,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
     bulk,  // isotropic thermodynamic force
     gp  // current Gauss point
     );
-  
+
   return;
 
 }  // Evaluate()
@@ -1043,8 +1040,8 @@ void MAT::ThermoPlasticHyperElast::SetupCmatElastoPlastic(
   // ------------------------------------------------ volumetric part C_e
   // spatial c_e = (J . U')' . J . I \otimes I - 2 J U' I4
   // with U'(J^e) = bulk ( (J^e)^2 -1 ) / J^e
-  // C_e = 2 bulk (J^e)^2 [C^{-1} \otimes C^{-1}] - 2 bulk ( (J^e)^2 -1 ) [C^{-1} \otimes C^{-1}]
-  // with - 2 bulk ( (J^e)^2 -1 ) [C^{-1} \otimes C^{-1}] = - 2 bulk ( (J^e)^2 -1 ) [C^{-1} boeppel C^{-1}]
+  // C_e = 2 bulk J^2 [C^{-1} \otimes C^{-1}] - 2 bulk ( J^2 -1 ) [C^{-1} \otimes C^{-1}]
+  // with - 2 bulk ( J^2 -1 ) [C^{-1} \otimes C^{-1}] = - 2 bulk ( J^2 -1 ) [C^{-1} boeppel C^{-1}]
   ElastSymTensorMultiply(Cmat, 2 * bulk * J * J, invRCG, invRCG, 1.0);
   ElastSymTensor_o_Multiply(Cmat, -2.0 * bulk * (J * J - 1.0), invRCG, invRCG, 1.0);
   Cmat.Update(1.0, Cbar_trialMaterial, 1.0);
@@ -1179,6 +1176,14 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   // --> PK2 = ctemp . Delta T = m_0 . (J + 1/J). Cinv . Delta T
   stresstemp.MultiplyNN(ctemp, deltaT);
 
+#ifdef TSIASOUTPUT
+  std::cout << "Evaluate Material: Ntemp = " << Ntemp << std::endl;
+  std::cout << "Evaluate Material: deltaT = " << deltaT << std::endl;
+  std::cout << "Evaluate Material: ctemp\n" << ctemp << std::endl;
+  std::cout << "Evaluate Material: cmat_T\n" << cmat_T << std::endl;
+  std::cout << "Evaluate Material: thermal stress stresstemp\n" << stresstemp << std::endl;
+#endif  // TSIASOUTPUT
+
 }  // THREvaluate()
 
 /*----------------------------------------------------------------------*
@@ -1201,6 +1206,8 @@ void MAT::ThermoPlasticHyperElast::SetupCmatThermo(
   const double inittemp = -1.0 * (params_->inittemp_);
   // Delta T = T - T_0
   const double deltaT = Ntemp(0,0) - inittemp;
+  if (deltaT < 10e-14)
+    std::cout << "no temperature change" << std::endl;
 
   // extract F and Cinv from params
   LINALG::Matrix<3,3> defgrd

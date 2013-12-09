@@ -2094,7 +2094,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
 
     else if (structmat->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
     {
-      Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplhyperelast
+      Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast
         = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticHyperElast>(structmat,true);
 
       // insert matrices into parameter list which are only required for thrplasthyperelast
@@ -2106,12 +2106,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
 
       // --------------------(non-dissipative) thermoelastic heating term
       // H_e := N_T^T . N_T . T . (-C_T) : 1/2 C'
-      thrplhyperelast->SetupCthermo(ctemp,params);
+      thermoplhyperelast->SetupCthermo(ctemp,params);
 
       // --------------------(non-dissipative) thermoplastic heating term
       // H_p := - N^T_T . N_T . T . dkappa/dT . sqrt(2/3) . Dgamma/Dt
       // H_p := - N^T_T . N_T . T . thrplheat . 1/Dt
-      double thrplheat = thrplhyperelast->ThermoPlastHeating(iquad);
+      double thrplheat = thermoplhyperelast->ThermoPlastHeating(iquad);
 
       if (efint != NULL)
       {
@@ -2124,7 +2124,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
         // k_TT += - N^T_T . thrplheat . 1/Dt . N_T . detJ . w(gp)
         econd->MultiplyNT( (- thrplheat / stepsize * fac_), funct_, funct_, 1.0);
         // k_TT += - N^T_T . N_T . T . 1/Dt . dH_p/dT . N_T . detJ . w(gp)
-        double thrplheat_kTT = thrplhyperelast->ThermoPlastHeating_kTT(iquad);
+        double thrplheat_kTT = thermoplhyperelast->ThermoPlastHeating_kTT(iquad);
         econd->MultiplyNT( (- NT(0,0) * thrplheat_kTT / stepsize * fac_), funct_, funct_, 1.0);
       }
     }  // m_thermoplhyperelast
@@ -2478,7 +2478,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
     {
       // C_T = m_0 . (J + 1/J) . C^{-1}
       // thermoelastic heating term
-      Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplhyperelast
+      Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast
         = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticHyperElast>(structmat,true);
 
       // insert matrices into parameter list which are only required for thrplasthyperelast
@@ -2488,7 +2488,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
       J = defgrd.Determinant();
 
       // H_e := - N_T^T . N_T . T . C_T : 1/2 C'
-      thrplhyperelast->SetupCthermo(ctemp,params);
+      thermoplhyperelast->SetupCthermo(ctemp,params);
     }
     // N_T^T . N_T . T . ctemp
     LINALG::Matrix<nen_,6> NNTC(false);  // (8x1)(1x6)
@@ -2536,11 +2536,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
       //         - timefac . N^T_T . N_T . T . 1/Dt . thrplheat_kTd . dE/dd ]
 
       // get material
-      Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplhyperelast
+      Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast
         = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticHyperElast>(structmat,true);
 
       // dJ/dd (1x24)
-      LINALG::Matrix<1,nsd_*nen_*numdofpernode_> dJ_dd(false);
+      LINALG::Matrix<1,nsd_*nen_*numdofpernode_> dJ_dd(true);
       CalculateLinearisationOfJacobian(dJ_dd, J, derxy_, invdefgrd);
 
       // --------------------------------- thermoelastic heating term H_e
@@ -2551,15 +2551,15 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
 
       // m_0 . (1 - 1/J^2) . C^{-1} . dJ/dd + m_0 . (J + 1/J) . dC^{-1}/dd
       //                     (6x1)    (1x24)                     (6x24)
-      LINALG::Matrix<6,nsd_*nen_*numdofpernode_> dC_T_dd(false);  // (6x24)
-      const double m_0 = thrplhyperelast->STModulus();
+      LINALG::Matrix<6,nsd_*nen_*numdofpernode_> dC_T_dd(true);  // (6x24)
+      const double m_0 = thermoplhyperelast->STModulus();
       double fac_He_dJ = m_0 * (1 - 1/(J * J) );
       dC_T_dd.Multiply(fac_He_dJ, Cinvvct, dJ_dd);
       double fac_He_dCinv = m_0 * (J + 1/J);
       dC_T_dd.Update(fac_He_dCinv, dCinv_dd, 1.0);
       // dC_T_dd : 1/2 C'
-      LINALG::Matrix<1,nsd_*nen_*numdofpernode_> dC_T_ddCdot(false);  // (1x24)
-      dC_T_ddCdot.MultiplyTN(0.5, Cratevct, dC_T_dd, 0.0);
+      LINALG::Matrix<1,nsd_*nen_*numdofpernode_> dC_T_ddCdot(true);  // (1x24)
+      dC_T_ddCdot.MultiplyTN(0.5, Cratevct, dC_T_dd);
 
       // dC_T/dd
       // k_Td += - timefac . N^T_T . N_T . T . [ m_0 . (1 - 1/J^2) . dJ/dd . C^{-1}
@@ -2572,9 +2572,36 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
 
       // dH_p/dE = 1/Dt . [ ddkappa/dTdastrain . 2/3 . Dgamma + dkappa/dT . sqrt(2/3) ] . dDgamma/dE
       LINALG::Matrix<1,nsd_*nen_*numdofpernode_> dHp_dd(false);
-      dHp_dd.MultiplyTN(thrplhyperelast->ThermoPlastHeating_kTd(iquad), bop);
+      dHp_dd.MultiplyTN(thermoplhyperelast->ThermoPlastHeating_kTd(iquad), bop);
       // k_Td += - timefac . N_T . T . 1/Dt . N_T^T . dH_p/dd . detJ . w(gp)
       etangcoupl->Multiply( (-fac_ * NT(0.0) / stepsize), funct_, dHp_dd, 1.0);
+
+#ifdef DEBUG
+      // insert matrices into parameter list which are only required for thrplasthyperelast
+      params.set<LINALG::Matrix<nsd_,nsd_> >("defgrd", defgrd);
+      params.set<LINALG::Matrix<6,1> >("Cinv_vct", Cinvvct);
+      LINALG::Matrix<6,6> cmat_T(true);
+      const LINALG::Matrix<1,1> Ntemp(NT);
+      thermoplhyperelast->SetupCmatThermo(NT,cmat_T,params);
+      const double T_0 = thermoplhyperelast->InitTemp();
+      const double deltaT= NT(0,0) - T_0;
+
+      std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: cmat_T vorm Skalieren"<< cmat_T << std::endl;
+      std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: deltaT"<< deltaT << std::endl;
+
+      cmat_T.Scale(1/deltaT);
+      LINALG::Matrix<6,nen_*nsd_*numdofpernode_> cb;  // cb(6x24) // cmattemp (6x6)
+      cb.Multiply(cmat_T,bop);
+      LINALG::Matrix<1,nsd_*nen_*numdofpernode_> cbCdot(true);
+      cbCdot.MultiplyTN(0.5, Cratevct, cb);
+
+      std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: dC_T_ddCdot"<< dC_T_ddCdot << std::endl;
+      std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: cb"<< cb << std::endl;
+      std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: cmat_T"<< cmat_T << std::endl;
+      std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: cbCdot = "<< cbCdot << std::endl;
+      std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: dHp_dd"<< dHp_dd << std::endl;
+      std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: dC_T_ddCdot"<< dC_T_ddCdot << std::endl;
+#endif  // DEBUG
 
     }  // m_thermoplhyperelast
 
@@ -2898,7 +2925,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipation(
   {
     dserror("So far dissipation only for ThermoPlasticHyperElast material!");
   }
-  Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplhyperelast
+  Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast
     = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticHyperElast>(structmat,true);
   // true: error if cast fails
 
@@ -2930,7 +2957,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipation(
     // Dmech := sqrt(2/3) . sigma_y(T_{n+1}) . Dgamma/Dt
     // with MechDiss := sqrt(2/3) . sigma_y(T_{n+1}) . Dgamma
     double Dmech = 0.0;
-    Dmech = thrplhyperelast->MechDiss(iquad) / stepsize;
+    Dmech = thermoplhyperelast->MechDiss(iquad) / stepsize;
 
     // update/integrate internal force vector (coupling fraction towards displacements)
     if (efint != NULL)
@@ -2944,7 +2971,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipation(
     {
       // Contribution of dissipation to cond matirx
       // econd += - N_T^T . dDmech_dT/Dt . N_T
-      econd->MultiplyNT((-fac_ * thrplhyperelast->MechDiss_kTT(iquad) / stepsize), funct_, funct_, 1.0);
+      econd->MultiplyNT((-fac_ * thermoplhyperelast->MechDiss_kTT(iquad) / stepsize), funct_, funct_, 1.0);
     }
 
 #ifdef TSIMONOLITHASOUTPUT
@@ -3028,7 +3055,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipationCond(
 
   // ------------------------------------------------ structural material
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
-  Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplhyperelast
+  Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast
     = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticHyperElast>(structmat,true);
   // true: error if cast fails
 
@@ -3096,7 +3123,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipationCond(
     // ----------------------------------------------- linearisation of Dmech_d
     // k_Td += - timefac . N_T^T . 1/Dt . mechdiss_kTd . dE/dd
     LINALG::Matrix<6,1> dDmech_dE(false);
-    dDmech_dE.Update(1.0, thrplhyperelast->MechDiss_kTd(iquad), 0.0);
+    dDmech_dE.Update(1.0, thermoplhyperelast->MechDiss_kTd(iquad), 0.0);
     LINALG::Matrix<1,nsd_*nen_*numdofpernode_> dDmech_dd(true);
     dDmech_dd.MultiplyTN(dDmech_dE,bop);
 

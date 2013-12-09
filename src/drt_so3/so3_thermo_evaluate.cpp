@@ -640,9 +640,14 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
               NULL,  // element internal force vector
               &couplstress,  // stresses at GP
               params,  // algorithmic parameters e.g. time
-              INPAR::STR::stress_none  // stress output option
+              iocouplstress  // stress output option
               );
           }  // Hex8Fbar
+
+#ifdef TSIASOUTPUT
+        std::cout << "thermal stress" << couplstress << std::endl;
+#endif
+
         }  // (kintype_ == geo_nonlinear)
 
         // geometric linear
@@ -667,22 +672,22 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
 #ifdef TSIASOUTPUT
         std::cout << "thermal stress" << couplstress << std::endl;
 #endif
-
-        // total stress is the sum of the mechanical stress and the thermal stress
-        // stress = stress_d + stress_T
-        //        stress.Update(1.0,couplstress,1.0);
-        // --> so far the addition of s_d and s_T was realised here
-        // ==> from now on: we fill 2 different vectors (stressdata,couplstressdata)
-        //     which are used in the post processing.
-        //     --> advantage: different numbers of Gauss points for the stress
-        //         and couplstress are possible
-        //         --> important e.g. in case of Tet4 (s_d: 1GP, s_T: 5GP)
-        //             --> for s_T we use the library intrepid
-        //     --> in ParaView you can visualise the mechanical and the thermal
-        //         stresses separately
-        //     --> to get the total stress you have to calculate both vectors
-        //         within ParaView using programmable filters
       }
+
+      // total stress is the sum of the mechanical stress and the thermal stress
+      // stress = stress_d + stress_T
+      //        stress.Update(1.0,couplstress,1.0);
+      // --> so far the addition of s_d and s_T was realised here
+      // ==> from now on: we fill 2 different vectors (stressdata,couplstressdata)
+      //     which are used in the post processing.
+      //     --> advantage: different numbers of Gauss points for the stress
+      //         and couplstress are possible
+      //         --> important e.g. in case of Tet4 (s_d: 1GP, s_T: 5GP)
+      //             --> for s_T we use the library intrepid
+      //     --> in ParaView you can visualise the mechanical and the thermal
+      //         stresses separately
+      //     --> to get the total stress you have to calculate both vectors
+      //         within ParaView using programmable filters
 
       // pack the data for postprocessing
       {
@@ -1199,9 +1204,20 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
     // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     defgrd.MultiplyTT(xcurr,N_XYZ);
 
-    // Right Cauchy-Green tensor = F^T * F
+    // right Cauchy-Green tensor = F^T . F
     LINALG::Matrix<nsd_,nsd_> cauchygreen(false);
     cauchygreen.MultiplyTN(defgrd,defgrd);
+
+    // inverse of right Cauchy-Green tensor = F^{-1} . F^{-T}
+    LINALG::Matrix<nsd_,nsd_> Cinv(false);
+    Cinv.Invert(cauchygreen);
+    LINALG::Matrix<numstr_,1> Cinv_vct(false);
+    Cinv_vct(0) = Cinv(0,0);
+    Cinv_vct(1) = Cinv(1,1);
+    Cinv_vct(2) = Cinv(2,2);
+    Cinv_vct(3) = Cinv(0,1);
+    Cinv_vct(4) = Cinv(1,2);
+    Cinv_vct(5) = Cinv(2,0);
 
     // calculate linear B-operator
     LINALG::Matrix<numstr_,numdofperelement_> boplin(false);
@@ -1226,21 +1242,23 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
     // calculate the stress part dependent on the temperature in the material
     LINALG::Matrix<numstr_,1> ctemp(true);
     LINALG::Matrix<numstr_,1> couplstress(true);
-    LINALG::Matrix<numstr_,numstr_> cmattemp(true);
+    LINALG::Matrix<numstr_,numstr_> cmat_T(true);
     LINALG::Matrix<numstr_,1> glstrain(true);
     params.set<int>("gp",gp);
     // insert strain increment into parameter list
     // calculate iterative strains
     LINALG::Matrix<numstr_,1> straininc(true);
     params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("straininc", straininc);
+    // insert matrices into parameter list which are only required for thrplasthyperelast
+    params.set<LINALG::Matrix<nsd_,nsd_> >("defgrd", defgrd);
+    params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("Cinv_vct", Cinv_vct);
+
     // take care: current temperature ( N . T ) is passed to the element
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
     if (Material()->MaterialType() != INPAR::MAT::m_vp_robinson)
-      Materialize(&couplstress,&ctemp,&NT,&cmattemp,&glstrain,params);
-    if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
-      dserror("use F-bar with thermo-elasto-plastic material!");
+      Materialize(&couplstress,&ctemp,&NT,&cmat_T,&glstrain,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1298,7 +1316,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
       // St.Venant Kirchhoff: dC_T/dd == 0
       // with ( Cinv boeppel Cinv )_{abcd} = 1/2 . ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
       LINALG::Matrix<numstr_,numdofperelement_> cb;  // cb(6x24) // cmattemp (6x6)
-      cb.Multiply(cmattemp,bop);
+      cb.Multiply(cmat_T,bop);
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
@@ -1377,12 +1395,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
     xcurr(i,1) = xrefe(i,1) + disp[i*numdofpernode_+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
   }
-  
-  LINALG::Matrix<numdofperelement_,1> edisp(false);  // hex8: (24x1)
-  for (int i=0; i<numdofperelement_; ++i)
-  {
-    edisp(i,0) = disp[i+0];
-  }
 
   // ------------------------------------------------ initialise material
   // get the thermal material tangent
@@ -1435,6 +1447,12 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
     // F = d xcurr / d xrefe = xcurr^T . N_XYZ^T
     defgrd.MultiplyTT(xcurr,N_XYZ);
 
+    // right Cauchy-Green tensor = F^T . F
+    LINALG::Matrix<3,3> cauchygreen;
+    cauchygreen.MultiplyTN(defgrd,defgrd);
+    // initialise inverse of right Cauchy-Green tensor = F^{-1} . F^{-T}
+    LINALG::Matrix<numstr_,1> Cinv_vct(true);
+
     // calculate nonlinear B-operator
     LINALG::Matrix<numstr_,numdofperelement_> bop(false);
     CalculateBop(&bop,&defgrd,&N_XYZ);
@@ -1457,9 +1475,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
       // insert T_{n+1} into parameter list
       params.set<double>("scalartemp",scalartemp);
 
-      // Right Cauchy-Green tensor = F^T . F
-      LINALG::Matrix<3,3> cauchygreen;
-      cauchygreen.MultiplyTN(defgrd,defgrd);
       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
       // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
       Epetra_SerialDenseVector glstrain_epetra(numstr_);
@@ -1467,7 +1482,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
       glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
       glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
       glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-      glstrain(3) = cauchygreen(0,1);
+      glstrain(3) = cauchygreen(0,1);  // Voigt notation
       glstrain(4) = cauchygreen(1,2);
       glstrain(5) = cauchygreen(2,0);
 
@@ -1488,7 +1503,28 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
       thrstvk->SetupCthermo(ctemp,params);
       Bcouplstress_T.MultiplyTN(bop,couplstress_T);  // (24x6)(6x1)
     }  // m_thermostvenant  &&  (young_temp == true)
-    
+
+    else if (Material()->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
+    {
+      // inverse of Right Cauchy-Green tensor = F^{-1} . F^{-T}
+      LINALG::Matrix<nsd_,nsd_> Cinv(false);
+      Cinv.Invert(cauchygreen);
+      Cinv_vct(0) = Cinv(0,0);
+      Cinv_vct(1) = Cinv(1,1);
+      Cinv_vct(2) = Cinv(2,2);
+      Cinv_vct(3) = Cinv(0,1);
+      Cinv_vct(4) = Cinv(1,2);
+      Cinv_vct(5) = Cinv(2,0);
+
+      params.set<LINALG::Matrix<nsd_,nsd_> > ("defgrd",defgrd);
+      params.set<LINALG::Matrix<numstr_,1> > ("Cinv_vct",Cinv_vct);
+
+      Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast
+        = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticHyperElast>(Material(),true);
+      // get thermal material tangent
+      thermoplhyperelast->SetupCthermo(ctemp,params);
+    }  // m_thermoplhyperelast
+
     // get thermal material tangent
     else
       Ctemp(&ctemp,params);
@@ -1786,7 +1822,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
         // Neo-Hookean type: Cmat_T = m_0 . Delta T . (-1) . ( Cinv boeppel Cinv )_{abcd}
         // St.Venant Kirchhoff: dC_T/dd == 0
         // with dCinv/dC = ( Cinv boeppel Cinv )_{abcd} = 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
-        LINALG::Matrix<numstr_,numdofperelement_> cb;
+        LINALG::Matrix<numstr_,numdofperelement_> cb(true);
         cb.Multiply(cmat_T_bar,bop);
         stiffmatrix->MultiplyTN( (detJ_w*f_bar_factor), bop, cb, 1.0);
 
@@ -1847,7 +1883,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
         LINALG::Matrix<numstr_,1> ccg;
         ccg.Multiply(cmat_T_bar, cauchygreenvct);  // (6x1) = (6x6)(6x1)
 
-        LINALG::Matrix<numdofperelement_,1> bopccg(false);  // auxiliary integrated stress (24x1)
+        LINALG::Matrix<numdofperelement_,1> bopccg(true);  // auxiliary integrated stress (24x1)
         bopccg.MultiplyTN(detJ_w*f_bar_factor/3.0, bop, ccg);  // (24x1) = (24x6)(6x1)
 
         // calculate the auxiliary tensor H (24x1)
@@ -2015,13 +2051,13 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi_fbar(
         params.set<LINALG::Matrix<nsd_,nsd_> > ("defgrd",defgrd_bar);
         params.set<LINALG::Matrix<numstr_,1> > ("Cinv_vct",Cinv_barvct);
 
-        Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplastichyperelast
+        Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast
           = Teuchos::rcp_dynamic_cast <MAT::ThermoPlasticHyperElast>(Material(),true);
         // dCmat_dT = F^{-1} . 1/Dt . ds_{n+1}/dT_{n+1} . F^{-T}
         //          = - 2 . mubar . 1/Dt . dDgamma/dT . N_bar
         // with dDgamma/dT= - sqrt(2/3) . dsigma_y(astrain_p^{n+1},T_{n+1})/dT
         //                  . 1/(2 . mubar . beta0)
-        Cmat_kdT.Update(1.0,thrplastichyperelast->CMat_kdT(gp),0.0);
+        Cmat_kdT.Update(1.0,thermoplhyperelast->CMat_kdT(gp),0.0);
       }
 
       // get temperature-dependent material tangent
@@ -2117,9 +2153,9 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
   // thermo-hyperelasto-plastic material
   case INPAR::MAT::m_thermoplhyperelast:
   {
-    Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplastichyperelast
+    Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast
       = Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(),true);
-    thrplastichyperelast->Evaluate(*Ntemp,*ctemp,*cmat,*couplstress,params);
+    thermoplhyperelast->Evaluate(*Ntemp,*ctemp,*cmat,*couplstress,params);
     return;
     break;
   }
@@ -2171,9 +2207,9 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
   // thermo-hyperelasto-plastic material
   case INPAR::MAT::m_thermoplhyperelast:
   {
-    Teuchos::RCP<MAT::ThermoPlasticHyperElast> thrplastichyperelast
+    Teuchos::RCP<MAT::ThermoPlasticHyperElast> thermoplhyperelast
       = Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(Material(),true);
-    thrplastichyperelast->SetupCthermo(*ctemp,params);
+    thermoplhyperelast->SetupCthermo(*ctemp,params);
     return;
     break;
   }
