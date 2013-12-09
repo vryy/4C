@@ -390,7 +390,7 @@ void THR::TimInt::OutputStep(bool forced_writerestart)
     if(writerestartevery_ and (step_%writerestartevery_ == 0))
       return;
     // if state already exists, add restart information
-    if(writeglob_ and (step_%writeglob_ == 0) and step_!=DRT::Problem::Instance()->Restart())
+    if(writeglobevery_ and (step_%writeglobevery_ == 0) and step_!=DRT::Problem::Instance()->Restart())
     {
       AddRestartToOutputState();
       return;
