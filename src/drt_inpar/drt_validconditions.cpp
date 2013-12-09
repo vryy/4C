@@ -3157,6 +3157,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkesselcondition,"resistance");
   AddNamedReal(windkesselcondition,"compliance");
   AddNamedReal(windkesselcondition,"resistance2");
+  AddNamedReal(windkesselcondition,"p_init");
 
   condlist.push_back(windkesselcondition);
 

@@ -4,15 +4,16 @@
 \brief Class controlling Windkessel boundary conditions and containing the necessary data
 
 **************************************************************************************************************************
-Monolithic coupling of a two-element Windkessel governed by
+Monolithic coupling of a three-element Windkessel governed by
 
-c dp/dt + p/r + Q(d) = 0 (c: compliance, r: resistance, Q = dV/dt: flux, p: pressure variable)
+c dp/dt - c r_2 dq/dt + p/r_1 - (1 + r_2/r_1) q(d) = 0
+(c: compliance, r_1: first resistance, r2: second resistance, q = -dV/dt: flux, p: pressure variable)
 
-is coupled with the standard structure
+and the standard structural dynamics governing equation
 
 M a + C v + f_int(d) - f_ext(d,p) = 0,
 
-with Q being a function of the displacement vector d and f_ext additionally being a function of the Windkessel pressure p.
+with q being a function of the displacement vector d and f_ext additionally being a function of the Windkessel pressure p.
 **************************************************************************************************************************
 
 <pre>
@@ -171,8 +172,10 @@ dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
     actdisc_->SetState("displacement",disp);
 
     RCP<Epetra_Vector> volredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-    rc_->Initialize(p,volredundant);
+    RCP<Epetra_Vector> presredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+    rc_->Initialize(p,volredundant,presredundant);
     vol_->Export(*volredundant,*windkimpo_,Add);
+    pres_->Export(*presredundant,*windkimpo_,Insert);
 
   }
 

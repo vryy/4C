@@ -105,7 +105,8 @@ namespace UTILS
     void Initialize
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      RCP<Epetra_Vector>    systemvector  ///< distributed vector that may be filled by assembly of element contributions
+      RCP<Epetra_Vector>    systemvector1,  ///< distributed vector that may be filled by assembly of element contributions
+      RCP<Epetra_Vector>    systemvector2  ///< distributed vector that may be filled by assembly of element contributions
     );
 
     //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateWindkessel routine is called
@@ -170,7 +171,8 @@ namespace UTILS
     void InitializeWindkessel
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      RCP<Epetra_Vector>    systemvector ///< distributed vector that may be filled by aasembly of element contributions
+      RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by assembly of element contributions
+      RCP<Epetra_Vector>    systemvector2 ///< distributed vector that may be filled by assembly of element contributions
     );
   }; //class
 } //namespace

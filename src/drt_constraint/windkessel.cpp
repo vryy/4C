@@ -143,13 +143,14 @@ UTILS::Windkessel::WindkesselType UTILS::Windkessel::GetWindkesselType(const std
 *------------------------------------------------------------------------*/
 void UTILS::Windkessel::Initialize(
     Teuchos::ParameterList&        params,
-    RCP<Epetra_Vector>    systemvector3)
+    RCP<Epetra_Vector>    systemvector1,
+    RCP<Epetra_Vector>    systemvector2)
 {
 
   params.set("action","calc_struct_constrvol");
 
   // start computing
-  InitializeWindkessel(params,systemvector3);
+  InitializeWindkessel(params,systemvector1,systemvector2);
   return;
 }
 
@@ -376,12 +377,15 @@ void UTILS::Windkessel::EvaluateWindkessel(
  *-----------------------------------------------------------------------*/
 void UTILS::Windkessel::InitializeWindkessel(
     Teuchos::ParameterList&        params,
-    RCP<Epetra_Vector>    systemvector)
+    RCP<Epetra_Vector>    systemvector1,
+    RCP<Epetra_Vector>    systemvector2)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
   // get the current time
   //const double time = params.get("total time",-1.0);
+
+  std::vector<double> p_init;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -391,9 +395,19 @@ void UTILS::Windkessel::InitializeWindkessel(
     DRT::Condition& cond = *(windkesselcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-
     int condID=cond.GetInt("id");
     params.set("id",condID);
+
+    // global and local ID of this bc in the redundant vectors
+    const int offsetID = params.get<int>("OffsetID");
+    int gindex = condID-offsetID;
+
+    p_init.push_back(windkesselcond_[i]->GetDouble("p_init"));
+
+		std::vector<int> colvec(1);
+		colvec[0]=gindex;
+		int err1 = systemvector2->SumIntoGlobalValues(1,&p_init[i],&colvec[0]);
+		if (err1) dserror("SumIntoGlobalValues failed!");
 
 		params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
@@ -433,7 +447,7 @@ void UTILS::Windkessel::InitializeWindkessel(
 			int offsetID = params.get<int> ("OffsetID");
 			windkessellm.push_back(condID-offsetID);
 			windkesselowner.push_back(curr->second->Owner());
-			LINALG::Assemble(*systemvector,elevector3,windkessellm,windkesselowner);
+			LINALG::Assemble(*systemvector1,elevector3,windkessellm,windkesselowner);
 		}
 		// remember next time, that this condition is already initialized, i.e. active
 		activecons_.find(condID)->second=true;
