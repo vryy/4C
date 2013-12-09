@@ -681,12 +681,15 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
     // update elastic LCG
     // bbar_{n+1}^e = bbar_{n+1}^{e,trial} - 2/3 . Dgamma . tr(bbar_{n+1}^{e,trial}) . n
     // see e.g. Simo, Comp.Inelaticity (9.3.7)
-//    bebarcurr_->at(gp) = (bebar_trial);
-//    bebarcurr_->at(gp).Update((-2.0/3.0 * Dgamma * tracebebar), n, 1.0);
-    // update of isothermal one
+    // for nightly test case use present update procedure
+    bebarcurr_->at(gp) = (bebar_trial);
+    bebarcurr_->at(gp).Update((-2.0/3.0 * Dgamma * tracebebar), n, 1.0);
+//TODO 2013-09-25 
+    // new update according to Simo et. Miehe, but has to be equal to update of
+    // isothermal one
     // update isochoric part of elastic LCG
     // bbar_{n+1}^e = s_{n+1} / mu + 1/3 . Ibar^e . id2
-    CalculateCurrentBebar(devtau, G, id2, gp);
+//    CalculateCurrentBebar(devtau, G, id2, gp);
 
     // plastic step update
     if (Dgamma != 0.0)
