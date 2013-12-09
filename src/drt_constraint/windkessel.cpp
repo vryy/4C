@@ -133,7 +133,7 @@ actdisc_(discr)
 UTILS::Windkessel::WindkesselType UTILS::Windkessel::GetWindkesselType(const std::string& name)
 {
   if (name=="WindkesselStructureCond")
-    return rc;
+    return rcr;
   return none;
 }
 
@@ -162,14 +162,17 @@ void UTILS::Windkessel::Evaluate(
     Teuchos::ParameterList&        params,
     RCP<LINALG::SparseMatrix> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
+    RCP<LINALG::SparseOperator> systemmatrix3,
     RCP<Epetra_Vector>    systemvector1,
     RCP<Epetra_Vector>    systemvector2,
-    RCP<Epetra_Vector>    systemvector3)
+    RCP<Epetra_Vector>    systemvector3,
+    RCP<Epetra_Vector>    systemvector4,
+    RCP<Epetra_Vector>    systemvector5)
 {
 
   params.set("action","calc_struct_volconstrstiff");
 
-  EvaluateWindkessel(params,systemmatrix1,systemmatrix2,systemvector1,systemvector2,systemvector3);
+  EvaluateWindkessel(params,systemmatrix1,systemmatrix2,systemmatrix3,systemvector1,systemvector2,systemvector3,systemvector4,systemvector5);
   return;
 }
 
@@ -182,9 +185,12 @@ void UTILS::Windkessel::EvaluateWindkessel(
     Teuchos::ParameterList&        params,
     RCP<LINALG::SparseMatrix> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
+    RCP<LINALG::SparseOperator> systemmatrix3,
     RCP<Epetra_Vector>    systemvector1,
 		RCP<Epetra_Vector>    systemvector2,
-		RCP<Epetra_Vector>    systemvector3)
+		RCP<Epetra_Vector>    systemvector3,
+		RCP<Epetra_Vector>    systemvector4,
+		RCP<Epetra_Vector>    systemvector5)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -192,19 +198,26 @@ void UTILS::Windkessel::EvaluateWindkessel(
   // get time-integrator dependent values
   double sc_timint = params.get("scale_timint",1.0);
   double gamma = params.get("scale_gamma",1.0);
+  double beta = params.get("scale_beta",1.0);
   double ts_size = params.get("time_step_size",1.0);
 
-	std::vector<double> resistance;
-	std::vector<double> invresist;
-	std::vector<double> compliance;
+	std::vector<double> res;
+	std::vector<double> res2;
+	std::vector<double> factor_p;
+	std::vector<double> factor_dpdt;
+	std::vector<double> factor_q;
+	std::vector<double> factor_dqdt;
 	std::vector<double> wkstiff;
 	std::vector<bool> havegid;
 
   const bool assemblemat1 = systemmatrix1!=Teuchos::null;
   const bool assemblemat2 = systemmatrix2!=Teuchos::null;
+  const bool assemblemat3 = systemmatrix3!=Teuchos::null;
   const bool assemblevec1 = systemvector1!=Teuchos::null;
   const bool assemblevec2 = systemvector2!=Teuchos::null;
   const bool assemblevec3 = systemvector3!=Teuchos::null;
+  const bool assemblevec4 = systemvector4!=Teuchos::null;
+  const bool assemblevec5 = systemvector5!=Teuchos::null;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -218,12 +231,15 @@ void UTILS::Windkessel::EvaluateWindkessel(
     //std::cout << "" << condition << std::endl;
     params.set("id",condID);
 
-    if (assemblemat1 or assemblevec1 or assemblevec2)
-    {
-			resistance.push_back(windkesselcond_[i]->GetDouble("resistance"));
-			compliance.push_back(windkesselcond_[i]->GetDouble("compliance"));
-			invresist.push_back(1./resistance[i]);
-    }
+		if (assemblevec1 or assemblevec2 or assemblevec3 or assemblevec4 or assemblevec5)
+		{
+			res.push_back(windkesselcond_[i]->GetDouble("resistance"));
+			factor_dpdt.push_back(windkesselcond_[i]->GetDouble("compliance"));
+			res2.push_back(windkesselcond_[i]->GetDouble("resistance2"));
+			factor_p.push_back(1./res[i]);
+			factor_q.push_back(1.+res2[i]/res[i]);
+			factor_dqdt.push_back(res2[i]*factor_dpdt[i]);
+		}
 
 		// is condition already labeled as active?
 		if(activecons_.find(condID)->second==false)
@@ -250,26 +266,42 @@ void UTILS::Windkessel::EvaluateWindkessel(
 			std::vector<int> colvec(1);
 			colvec[0]=gindex;
 			systemmatrix1->UnComplete();
-			wkstiff.push_back(sc_timint*(compliance[i]/(gamma*ts_size)+(1./resistance[i])));
+			wkstiff.push_back(sc_timint*(factor_dpdt[i]/(gamma*ts_size)+factor_p[i]));
 
 			havegid.push_back(systemmatrix1->RowMap().MyGID(gindex));
 			if(havegid[i]) systemmatrix1->Assemble(wkstiff[i],colvec[0],colvec[0]);
-
 		}
-		// assemble the constant parts of the Windkessel rhs vector
+		// rhs part associated with p
 		if (assemblevec1)
 		{
 			std::vector<int> colvec(1);
 			colvec[0]=gindex;
-			int err2 = systemvector1->SumIntoGlobalValues(1,&invresist[i],&colvec[0]);
-			if (err2) dserror("SumIntoGlobalValues failed!");
+			int err1 = systemvector1->SumIntoGlobalValues(1,&factor_p[i],&colvec[0]);
+			if (err1) dserror("SumIntoGlobalValues failed!");
 		}
+		// rhs part associated with dp/dt
 		if (assemblevec2)
 		{
 			std::vector<int> colvec(1);
 			colvec[0]=gindex;
-			int err3 = systemvector2->SumIntoGlobalValues(1,&compliance[i],&colvec[0]);
+			int err2 = systemvector2->SumIntoGlobalValues(1,&factor_dpdt[i],&colvec[0]);
+			if (err2) dserror("SumIntoGlobalValues failed!");
+		}
+		// rhs part associated with q
+		if (assemblevec3)
+		{
+			std::vector<int> colvec(1);
+			colvec[0]=gindex;
+			int err3 = systemvector3->SumIntoGlobalValues(1,&factor_q[i],&colvec[0]);
 			if (err3) dserror("SumIntoGlobalValues failed!");
+		}
+		// rhs part associated with dq/dt
+		if (assemblevec4)
+		{
+			std::vector<int> colvec(1);
+			colvec[0]=gindex;
+			int err4 = systemvector4->SumIntoGlobalValues(1,&factor_dqdt[i],&colvec[0]);
+			if (err4) dserror("SumIntoGlobalValues failed!");
 		}
 
 		// define element matrices and vectors
@@ -314,15 +346,24 @@ void UTILS::Windkessel::EvaluateWindkessel(
 				// assemble to rectangular matrix. The col corresponds to the Windkessel ID.
 				std::vector<int> colvec(1);
 				colvec[0]=gindex;
+				elevector2.Scale(-sc_timint*(factor_dpdt[i]*res2[i]/(beta*ts_size*ts_size)+factor_q[i]*(gamma/(beta*ts_size))));
 				systemmatrix2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
 			}
-			if (assemblevec3)
+			if (assemblemat3)
+			{
+				// assemble to rectangular matrix. The col corresponds to the Windkessel ID.
+				std::vector<int> colvec(1);
+				colvec[0]=gindex;
+				elevector2.Scale(sc_timint);
+				systemmatrix3->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
+			}
+			if (assemblevec5)
 			{
 				std::vector<int> windkessellm;
 				std::vector<int> windkesselowner;
 				windkessellm.push_back(gindex);
 				windkesselowner.push_back(curr->second->Owner());
-				LINALG::Assemble(*systemvector3,elevector3,windkessellm,windkesselowner);
+				LINALG::Assemble(*systemvector5,elevector3,windkessellm,windkesselowner);
 			}
 
     }

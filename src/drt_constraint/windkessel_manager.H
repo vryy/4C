@@ -302,12 +302,17 @@ namespace UTILS
     RCP<Epetra_Vector> flux_; ///< flux vector at t_{n}
     RCP<Epetra_Vector> fluxn_; ///< flux vector at t_{n+1}
     RCP<Epetra_Vector> fluxm_; ///< flux vector at mid-point
+    RCP<Epetra_Vector> fluxrate_; ///< flux vector at t_{n}
+    RCP<Epetra_Vector> fluxraten_; ///< flux vector at t_{n+1}
+    RCP<Epetra_Vector> fluxratem_; ///< flux vector at mid-point
     RCP<Epetra_Vector> vol_; ///< flux vector at t_{n}
     RCP<Epetra_Vector> voln_; ///< flux vector at t_{n+1}
     RCP<Epetra_Vector> volm_; ///< flux vector at mid-point
     RCP<Epetra_Vector> windkesselrhsm_; ///< Windkessel rhs vector at mid-point
-    RCP<Epetra_Vector> windk_resi_rhs_; ///< Windkessel rhs contribution from resistance
-    RCP<Epetra_Vector> windk_comp_rhs_; ///< Windkessel rhs contribution from compliance
+    RCP<Epetra_Vector> windk_rhs_p_; ///< Windkessel rhs associated with p
+    RCP<Epetra_Vector> windk_rhs_dpdt_; ///< Windkessel rhs associated with dp/dt
+    RCP<Epetra_Vector> windk_rhs_q_; ///< Windkessel rhs associated with q
+    RCP<Epetra_Vector> windk_rhs_dqdt_; ///< Windkessel rhs associated with dq/dt
     RCP<Epetra_Vector> presnprint_;
     RCP<Epetra_Vector> fluxnprint_;
     int WindkesselID_;  ///< smallest Windkessel bc id

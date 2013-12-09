@@ -49,7 +49,7 @@ namespace UTILS
     enum WindkesselType
     {
       none,
-      rc,
+      rcr,
     };
 
     /*!
@@ -113,10 +113,13 @@ namespace UTILS
     (
       Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
       RCP<LINALG::SparseMatrix> systemmatrix1, ///< Windkessel stiffness matrix
-      RCP<LINALG::SparseOperator> systemmatrix2, ///< Windkessel offdiagonal matrices
+      RCP<LINALG::SparseOperator> systemmatrix2, ///< Windkessel offdiagonal matrix dV/dd
+      RCP<LINALG::SparseOperator> systemmatrix3, ///< Windkessel offdiagonal matrix dfext/dp
       RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by assembly of element contributions
       RCP<Epetra_Vector> systemvector2,
-      RCP<Epetra_Vector> systemvector3
+      RCP<Epetra_Vector> systemvector3,
+      RCP<Epetra_Vector> systemvector4,
+      RCP<Epetra_Vector> systemvector5
     );
 
     ///Return type of Windkessel function
@@ -154,10 +157,13 @@ namespace UTILS
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       RCP<LINALG::SparseMatrix> systemmatrix1, ///< Windkessel stiffness matrix
-      RCP<LINALG::SparseOperator> systemmatrix2,
+      RCP<LINALG::SparseOperator> systemmatrix2, ///< Windkessel offdiagonal matrix dV/dd
+      RCP<LINALG::SparseOperator> systemmatrix3, ///< Windkessel offdiagonal matrix dfext/dp
       RCP<Epetra_Vector>    systemvector1,  ///< distributed vector that may be filled by aasembly of element contributions
       RCP<Epetra_Vector>    systemvector2,
-      RCP<Epetra_Vector>    systemvector3
+      RCP<Epetra_Vector>    systemvector3,
+      RCP<Epetra_Vector>    systemvector4,
+      RCP<Epetra_Vector>    systemvector5
       );
 
     //! Compute and assemble initial Windkessel values (depending on user specific activation times)

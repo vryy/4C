@@ -254,6 +254,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
   ParameterList pwindk;
   pwindk.set("scale_timint", theta_);
   pwindk.set("scale_gamma", theta_);
+  pwindk.set("scale_beta", theta_*theta_);
   pwindk.set("time_step_size", (*dt_)[0]);
   ApplyForceStiffWindkessel(timen_, (*dis_)(0), disn_, pwindk);
 

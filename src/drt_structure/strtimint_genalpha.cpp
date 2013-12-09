@@ -274,6 +274,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
   ParameterList pwindk;
   pwindk.set("scale_timint", (1.0-alphaf_));
   pwindk.set("scale_gamma", gamma_);
+  pwindk.set("scale_beta", beta_);
   pwindk.set("time_step_size", (*dt_)[0]);
   ApplyForceStiffWindkessel(timen_, (*dis_)(0), disn_, pwindk);
 
