@@ -1159,12 +1159,12 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   )
 {
   // calculate the temperature difference
-  LINALG::Matrix<1,1> init(true);
-  const double inittemp = -1.0 * (params_->inittemp_);
-  init(0,0) = inittemp;
+  LINALG::Matrix<1,1> minit(true);
+  const double inittemp = (params_->inittemp_);
+  minit(0,0) = - inittemp;
   // Delta T = T - T_0
   LINALG::Matrix<1,1> deltaT(true);
-  deltaT.Update(Ntemp, init);
+  deltaT.Update(Ntemp, minit);
 
   // get the temperature-dependent material tangent
   SetupCthermo(ctemp, params);
@@ -1179,13 +1179,24 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   // --> PK2 = ctemp . Delta T = m_0 . (J + 1/J). Cinv . Delta T
   stresstemp.MultiplyNN(ctemp, deltaT);
 
-#ifdef TSIASOUTPUT
+#ifdef DEBUGMATERIAL
+  // ------------- FDcheck of temperature-dependent mechanical material tangent
+
+  // in case we want to test the material tangent without Delta T in the FD Check
+  //  stresstemp.Update(ctemp);
+
+  // build the elasto-plastic tangent modulus
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmat_TFD(true);
+  FDCheck(stresstemp,cmat_T,cmat_TFD,Ntemp,params);
+  std::cout << "cmat_T " << cmat_T << std::endl;
+  std::cout << "cmat_TFD " << cmat_TFD << std::endl;
+
   std::cout << "Evaluate Material: Ntemp = " << Ntemp << std::endl;
   std::cout << "Evaluate Material: deltaT = " << deltaT << std::endl;
   std::cout << "Evaluate Material: ctemp\n" << ctemp << std::endl;
   std::cout << "Evaluate Material: cmat_T\n" << cmat_T << std::endl;
   std::cout << "Evaluate Material: thermal stress stresstemp\n" << stresstemp << std::endl;
-#endif  // TSIASOUTPUT
+#endif  // DEBUGMATERIAL
 
 }  // THREvaluate()
 
@@ -1206,11 +1217,9 @@ void MAT::ThermoPlasticHyperElast::SetupCmatThermo(
 
   // calculate the temperature difference
   LINALG::Matrix<1,1> init(true);
-  const double inittemp = -1.0 * (params_->inittemp_);
+  const double inittemp = (params_->inittemp_);
   // Delta T = T - T_0
   const double deltaT = Ntemp(0,0) - inittemp;
-  if (deltaT < 10e-14)
-    std::cout << "no temperature change" << std::endl;
 
   // extract F and Cinv from params
   LINALG::Matrix<3,3> defgrd
@@ -1229,10 +1238,19 @@ void MAT::ThermoPlasticHyperElast::SetupCmatThermo(
   // clear the material tangent
   cmat_T.Clear();
 
-  // cmat_T = (T - T_0) . m_0 . (J - 1/J) (C^{-1} \otimes C^{-1})
+  // cmat_T = 2 . dS_vol,dT/dd
+  //        = (T - T_0) . m_0 . (J - 1/J) (C^{-1} \otimes C^{-1})
   //          - 2 . (T - T_0) . m_0 . (J + 1/J) ( Cinv boeppel Cinv )
   ElastSymTensorMultiply(cmat_T, (deltaT * m_0 * (J - 1/J)) , invRCG, invRCG, 1.0);
   ElastSymTensor_o_Multiply(cmat_T, -2.0 * (deltaT * m_0 * (J + 1/J)), invRCG, invRCG, 1.0);
+
+#ifdef DEBUGMATERIAL
+  std::cout << "SetupCmatThermo(): Jacobi determinant J = " << J << std::endl;
+  std::cout << "SetupCmatThermo(): 1.0 * (deltaT * m_0 * (J + 1/J)) = " << 1.0 * (deltaT * m_0 * (J + 1/J)) << std::endl;
+  std::cout << "SetupCmatThermo(): deltaT = " << deltaT << std::endl;
+  std::cout << "SetupCmatThermo(): Ntemp = " << Ntemp << std::endl;
+  std::cout << "SetupCmatThermo(): inittemp = " << inittemp  << std::endl;
+#endif  // DEBUGMATERIAL
 
 }  // SetupCmatThermo()
 
@@ -1349,6 +1367,134 @@ bool MAT::ThermoPlasticHyperElast::VisData(
 
   return true;
 }  // VisData()
+
+
+/*---------------------------------------------------------------------*
+ | finite difference check for the material tangent.        dano 12/13 |
+ | Meant for debugging only! (public)                                  |
+ *---------------------------------------------------------------------*/
+void MAT::ThermoPlasticHyperElast::FDCheck(
+  LINALG::Matrix<NUM_STRESS_3D,1>& stress,  // updated stress sigma_n+1
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat, // material tangent calculated with FD of stresses
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmatFD, // material tangent calculated with FD of stresses
+  const LINALG::Matrix<1,1>& Ntemp,
+  Teuchos::ParameterList& params
+  )
+{
+  // teste 2dS/dC see linearisation according to Holzapfel
+  // extract F and Cinv from params
+  LINALG::Matrix<3,3> defgrd
+    = params.get<LINALG::Matrix<3,3> >("defgrd");
+  LINALG::Matrix<6,1> Cinv_vct
+    = params.get<LINALG::Matrix<6,1> >("Cinv_vct");
+
+  // calculate the right Cauchy Green (RCG) deformation tensor and its inverse
+  LINALG::Matrix<3,3> RCG_disturb(false);
+  RCG_disturb.MultiplyTN(defgrd,defgrd);
+
+  // value of disturbance
+  const double delta = 1.0e-8;
+  // disturb the respective strain quantities
+  for (int i=0; i<3; ++i)
+  {
+    for (int k=0; k<3; ++k)
+    {
+
+      printf("-------------------------------------\n");
+      printf("-------------------------------------\n");
+      printf("STRAIN term %d\n",k);
+
+      RCG_disturb(i,k) += delta/2.0;
+      RCG_disturb(k,i) += delta/2.0;
+
+      // calculate Jacobi-determinant of disturbed RCG
+      double detRCG_disturb = RCG_disturb.Determinant();
+      double J_disturb = sqrt(detRCG_disturb);
+      LINALG::Matrix<3,3> invRCG_disturb;
+      invRCG_disturb.Invert(RCG_disturb);
+      // use vector-notation
+      LINALG::Matrix<6,1> disturb_Cinv_vct(false);
+      disturb_Cinv_vct(0) = invRCG_disturb(0,0);
+      disturb_Cinv_vct(1) = invRCG_disturb(1,1);
+      disturb_Cinv_vct(2) = invRCG_disturb(2,2);
+      disturb_Cinv_vct(3) = invRCG_disturb(0,1);
+      disturb_Cinv_vct(4) = invRCG_disturb(1,2);
+      disturb_Cinv_vct(5) = invRCG_disturb(2,0);
+
+      // calculate the temperature difference
+      LINALG::Matrix<1,1> init(true);
+      const double inittemp = -1.0 * (params_->inittemp_);
+      init(0,0) = inittemp;
+      // Delta T = T - T_0
+      LINALG::Matrix<1,1> deltaT(true);
+      deltaT.Update(Ntemp, init);
+
+      // temperature-dependent stress temperature modulus
+      // m = m(J) = m_0 .(J+1)/J = m_0 . (J + 1/J)
+      double m_0 = STModulus();
+      double m = m_0 * (J_disturb + 1.0 / J_disturb);
+      // in case of testing only the dJ/dd, use undisturbed m, but disturb_Cinv_vct
+      //double J = defgrd.Determinant();
+      //double m = m_0 * (J + 1.0 / J);
+      // clear the material tangent
+      LINALG::Matrix<NUM_STRESS_3D,1> disturb_ctemp(true);
+      disturb_ctemp.Clear();
+      // C_T = m_0 . (J + 1/J) . Cinv
+      disturb_ctemp.Update(m, disturb_Cinv_vct, 0.0);
+      // in case of testing only factor, use undisturbed Cinv_vct
+      // disturb_ctemp.Update(m, Cinv_vct, 0.0);
+
+      // calculate thermal stresses
+      // tau = ctemp_AK . Delta T = m_0 . (J + 1/J) . I . Delta T
+      // pull-back of Kirchhoff-stresses to PK2-stresses
+      // PK2 = F^{-1} . tau . F^{-T}
+      // --> PK2 = ctemp . Delta T = m_0 . (J + 1/J). Cinv . Delta T
+      // initialise disturbed total stresses
+      LINALG::Matrix<NUM_STRESS_3D,1> disturb_stresstemp(true);
+      disturb_stresstemp.MultiplyNN(disturb_ctemp, deltaT);
+      // in case of testing only disturb_ctemp, ignore deltaT
+      // disturb_stresstemp.Update(disturb_ctemp);
+
+#ifdef DEBUGMATERIAL
+      std::cout << std::scientific;
+      std::cout << "Cinv_vct\n " << Cinv_vct << std::endl;
+      std::cout << "disturb_Cinv_vct\n " << disturb_Cinv_vct << std::endl;
+      std::cout << "Jacobi determinant disturb = " << J_disturb << std::endl;
+      std::cout << "Jacobi determinant = " << J << std::endl;
+      std::cout << "deltaT = " << deltaT << std::endl;
+      std::cout << "Ntemp = " << Ntemp << std::endl;
+      std::cout << "inittemp = " << inittemp << std::endl;
+      std::cout << "m DT = " << m*deltaT(0,0) << std::endl;
+      std::cout << "disturb_ctemp\n " << disturb_ctemp << std::endl;
+      std::cout << "stress\n " << stress << std::endl;
+      std::cout << "disturb_stresstemp\n " << disturb_stresstemp << std::endl;
+#endif  // DEBUGMATERIAL
+
+      // be careful we save the disturbed RCG in tensor notation, i.e. (3x3)
+      // to insert the corresponding terms in cmat (6x6) copy the terms to
+      // their correct position using array VOIGT3X3SYM_ as is done, e.g. in
+      // neohooke or so3_plast
+      double array[3][3] = {{0,3,5},{3,1,4},{5,4,2}};
+
+      for (int stress_comp=0; stress_comp<6; stress_comp++)
+      {
+        // build the finite difference tangent
+        cmatFD(stress_comp,array[i][k]) = 0.0;
+        // scale with factor 2 due to comparison with cmat_T and cmat_T = 2 dSvol/dC
+        cmatFD(stress_comp,array[i][k]) += 2 * ( (disturb_stresstemp(stress_comp)/(delta) - stress(stress_comp)/(delta)) );
+
+        std::cout <<  i << k << stress_comp << "fd: "
+          << 2*((disturb_stresstemp(stress_comp)/(delta) - stress(stress_comp)/(delta)))
+          << "ref: " << cmat(stress_comp,array[i][k]) << std::endl;
+      }
+      // undisturb the respective strain quantities (disturbstrain=strain)
+      RCG_disturb(i,k) -= delta/2.0;
+      RCG_disturb(k,i) -= delta/2.0;
+    }  // loop stresses
+
+  }  // loop strains
+
+}  // FDCheck()
 
 
 /*----------------------------------------------------------------------*/

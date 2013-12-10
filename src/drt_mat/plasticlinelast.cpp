@@ -978,7 +978,7 @@ void MAT::PlasticLinElast::SetupCmatElastoPlastic(
 
 
 /*---------------------------------------------------------------------*
- | finite difference check for the material tangent.             05/11 |
+ | finite difference check for the material tangent.        dano 05/11 |
  | Meant for debugging only! (public)                                  |
  *---------------------------------------------------------------------*/
 void MAT::PlasticLinElast::FDCheck(

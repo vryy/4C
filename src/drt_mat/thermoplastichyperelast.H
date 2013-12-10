@@ -338,6 +338,15 @@ namespace MAT
     //! calculates stress-temperature modulus
     double STModulus();
 
+    //! finite difference check of material tangent
+    void FDCheck(
+      LINALG::Matrix<NUM_STRESS_3D,1>& stress,  // updated stress sigma_n+1
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat, // material tangent calculated with FD of stresses
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmatFD, // material tangent calculated with FD of stresses
+      const LINALG::Matrix<1,1>& Ntemp,  // scalar-valued current temperature
+      Teuchos::ParameterList& params  // parameter list including F,C^{-1},...
+      );
+
     //@}
 
   private:

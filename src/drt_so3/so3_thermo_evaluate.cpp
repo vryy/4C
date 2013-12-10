@@ -1539,12 +1539,12 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
       LINALG::Matrix<numstr_,nen_> cn(true);
       cn.MultiplyNT(ctemp,shapefunct); // (6x8)=(6x1)(1x8)
       // integrate stiffness term
-      // k_dT = k_dT + (B^T . C_temp . N_temp) . detJ . w(gp)
+      // k_dT = k_dT + (B^T . C_T . N_temp) . detJ . w(gp)
       stiffmatrix_kdT->MultiplyTN(detJ_w,bop,cn,1.0);
 
       // in case of temperature-dependent Young's modulus, additional term for
       // coupling stiffness matrix k_dT
-      if (young_temp == true)
+      if ( (Material()->MaterialType() == INPAR::MAT::m_thermostvenant) && (young_temp == true) )
       {
         // k_dT += B_d^T . stress_T . N_T
         stiffmatrix_kdT->MultiplyNT(detJ_w, Bstress_T, shapefunct, 1.0);
@@ -1554,7 +1554,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
         stiffmatrix_kdT->MultiplyNT(detJ_w, Bcouplstress_T, shapefunct, 1.0);
 
         // Be careful: scaling with time factor is done in tsi_monolithic!!
-      }  // (young_temp == true)
+      }  // m_thermostvenant && (young_temp == true)
 
     }
    /* =========================================================================*/
@@ -1713,7 +1713,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
       glstrain_bar(0) = 0.5 * (cauchygreen_bar(0,0) - 1.0);
       glstrain_bar(1) = 0.5 * (cauchygreen_bar(1,1) - 1.0);
       glstrain_bar(2) = 0.5 * (cauchygreen_bar(2,2) - 1.0);
-      glstrain_bar(3) = cauchygreen_bar(0,1);
+      glstrain_bar(3) = cauchygreen_bar(0,1);  // Voigt notation: 2*C_12
       glstrain_bar(4) = cauchygreen_bar(1,2);
       glstrain_bar(5) = cauchygreen_bar(2,0);
 
@@ -1871,7 +1871,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
         // ----------------------- linearisation of f_bar_factor w.r.t. d
         // k_dd = -1/3 . (detF_0/detF)^{-1/3} . B^T . sigmaT_bar . H^T
 
-        // integrate additional fbar matrix
+        // integrate additional fbar matrix including Voigt-notation!
         LINALG::Matrix<numstr_,1> cauchygreenvct;
         cauchygreenvct(0) = cauchygreen(0,0);
         cauchygreenvct(1) = cauchygreen(1,1);

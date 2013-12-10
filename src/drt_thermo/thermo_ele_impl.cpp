@@ -2409,7 +2409,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
     // Cinvvct: C^{-1} in Voight-/vector notation
     // C^{-1} = { C11^{-1}, C22^{-1}, C33^{-1}, C12^{-1}, C23^{-1}, C31^{-1} }
     LINALG::Matrix<6,1> Cinvvct(false);
-    // calculation is done in CalculateCauchyGreens, return C', C^{-1}
+    // calculation is done in CalculateCauchyGreens, return C', C^{-1} in vector
+    // notation, NO Voigt-notation
     CalculateCauchyGreens(
       Cratevct,
       Cinvvct,
@@ -2576,7 +2577,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
       // k_Td += - timefac . N_T . T . 1/Dt . N_T^T . dH_p/dd . detJ . w(gp)
       etangcoupl->Multiply( (-fac_ * NT(0.0) / stepsize), funct_, dHp_dd, 1.0);
 
-#ifdef DEBUG
+#ifdef THRASOUTPUT
       // insert matrices into parameter list which are only required for thrplasthyperelast
       params.set<LINALG::Matrix<nsd_,nsd_> >("defgrd", defgrd);
       params.set<LINALG::Matrix<6,1> >("Cinv_vct", Cinvvct);
@@ -2601,7 +2602,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
       std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: cbCdot = "<< cbCdot << std::endl;
       std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: dHp_dd"<< dHp_dd << std::endl;
       std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: dC_T_ddCdot"<< dC_T_ddCdot << std::endl;
-#endif  // DEBUG
+#endif  // THRASOUTPUT
 
     }  // m_thermoplhyperelast
 
@@ -3652,10 +3653,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCauchyGreens(
   // calculate the rate of the right Cauchy-Green deformation gradient C'
   // rate of right Cauchy-Green tensor C' = F^T . F' + (F')^T . F
   // C'= F^T . F' + (F')^T . F
-  // OR: C' = F^T . F' when applied to symmetric tensor
   LINALG::Matrix<nsd_,nsd_> Crate(false);
   Crate.MultiplyTN((*defgrd), (*defgrdrate));
   Crate.MultiplyTN(1.0, (*defgrdrate), (*defgrd), 1.0);
+  // Or alternative use: C' = 2 . (F^T . F') when applied to symmetric tensor
 
   // copy to matrix notation
   // rate vector Crate C'

@@ -2915,6 +2915,8 @@ void TSI::Monolithic::SetDefaultParameters()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::CalculateNeckingTSIResults()
 {
+  // be aware, parallel bug arises using baci-debug
+
   // --------------------------------------------- initialise/ define constants
 
   // initialise initial temperature required to calculate temperature increase
