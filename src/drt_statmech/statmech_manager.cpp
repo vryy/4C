@@ -3339,7 +3339,7 @@ void STATMECH::StatMechManager::ElementToCrosslinkMapping(Teuchos::RCP<Epetra_Ve
 
     for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
     {
-      if((*element2crosslink)[i]>-0.9) // there exists a linker element
+      if((*crosslink2element_)[i]>-0.9) // there exists a linker element
       {
         // reverse mapping
         int elelid = discret_->ElementColMap()->LID((int)(*crosslink2element_)[i]);
