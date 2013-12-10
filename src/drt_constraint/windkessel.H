@@ -109,6 +109,12 @@ namespace UTILS
       RCP<Epetra_Vector>    systemvector2  ///< distributed vector that may be filled by assembly of element contributions
     );
 
+    /// initialization routine called at restart to activate the right conditions
+    void Initialize
+    (
+      const double& time  ///< current time
+    );
+
     //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateWindkessel routine is called
     void Evaluate
     (

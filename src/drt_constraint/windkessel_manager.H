@@ -240,6 +240,13 @@ namespace UTILS
         return (*voln_)[i];
     };
 
+    /// Reset reference base values for restart computations
+    void SetRefBaseValues
+    (
+      RCP<Epetra_Vector> newrefvals,  ///< new reference base values
+      const double& time   ///< current time
+    );
+
     /// Reset pressures
     void SetPresVector
     (

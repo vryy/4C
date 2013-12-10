@@ -343,6 +343,18 @@ void UTILS::WindkesselManager::UpdatePres(RCP<Epetra_Vector> presincrement)
   return;
 }
 
+/*----------------------------------------------------------------------*
+|(public)                                                      mhv 12/13|
+|Reset reference base values for restart                                |
+*-----------------------------------------------------------------------*/
+void UTILS::WindkesselManager::SetRefBaseValues(RCP<Epetra_Vector> newrefval,const double& time)
+{
+  rc_->Initialize(time);
+
+  vol_->Update(1.0, *newrefval,0.0);
+  return;
+}
+
 /*----------------------------------------------------------------------*/
 void UTILS::WindkesselManager::EvaluateNeumannWindkesselCoupling(RCP<Epetra_Vector> actpres)
 {

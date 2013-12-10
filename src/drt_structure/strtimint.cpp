@@ -267,12 +267,14 @@ STR::TimInt::TimInt
                                                   (*dis_)(0),
                                                   sdynparams));
 
-  // initialize Windkessel manager
-  windkman_ = Teuchos::rcp(new UTILS::WindkesselManager(discret_,
-                                                  (*dis_)(0),
-                                                  sdynparams,
-                                                  *solver_,
-                                                  dbcmaps_));
+
+	// initialize Windkessel manager
+	windkman_ = Teuchos::rcp(new UTILS::WindkesselManager(discret_,
+																							(*dis_)(0),
+																							sdynparams,
+																							*solver_,
+																							dbcmaps_));
+
 
   // initialize constraint solver if constraints are defined
   if (conman_->HaveConstraint())
@@ -1027,6 +1029,7 @@ void STR::TimInt::ReadRestart
 
   ReadRestartState();
   ReadRestartConstraint();
+  ReadRestartWindkessel();
   ReadRestartContactMeshtying();
   ReadRestartStatMech();
   ReadRestartSurfstress();
@@ -1063,6 +1066,9 @@ void STR::TimInt::SetRestart
 
   // constraints
   if (conman_->HaveConstraint()) dserror("Set restart not implemented for constraints");
+
+  // Windkessel
+  if (windkman_->HaveWindkessel()) dserror("Set restart not implemented for Windkessel");
 
   // contact / meshtying
   if (HaveContactMeshtying()) dserror("Set restart not implemented for contact / meshtying");
@@ -1138,6 +1144,23 @@ void STR::TimInt::ReadRestartConstraint()
     conman_->SetLagrMultVector(tempvec);
     reader.ReadVector(tempvec, "refconval");
     conman_->SetRefBaseValues(tempvec, (*time_)[0]);
+
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/* Read and set restart values for constraints */
+void STR::TimInt::ReadRestartWindkessel()
+{
+  if (windkman_->HaveWindkessel())
+  {
+    IO::DiscretizationReader reader(discret_, step_);
+    Teuchos::RCP<Epetra_Map> windkmap=windkman_->GetWindkesselMap();
+    Teuchos::RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*windkmap, true);
+    reader.ReadVector(tempvec, "pressuredof");
+    windkman_->SetPresVector(tempvec);
+    reader.ReadVector(tempvec, "refwindkval");
+    windkman_->SetRefBaseValues(tempvec, (*time_)[0]);
 
   }
 }
@@ -1388,6 +1411,15 @@ void STR::TimInt::OutputRestart
                           conman_->GetRefBaseValues());
   }
 
+  // Windkessel
+  if (windkman_->HaveWindkessel())
+  {
+    output_->WriteVector("pressuredof",
+                          windkman_->GetPresVector());
+    output_->WriteVector("refwindkval",
+                          windkman_->GetRefVolValue());
+  }
+
   // contact / meshtying
   if (HaveContactMeshtying())
   {
@@ -1498,6 +1530,15 @@ void STR::TimInt::AddRestartToOutputState()
                           conman_->GetLagrMultVector());
     output_->WriteVector("refconval",
                           conman_->GetRefBaseValues());
+  }
+
+  // Windkessel
+  if (windkman_->HaveWindkessel())
+  {
+    output_->WriteVector("pressuredof",
+                          windkman_->GetPresVector());
+    output_->WriteVector("refwindkval",
+                          windkman_->GetRefVolValue());
   }
 
   // contact/meshtying information

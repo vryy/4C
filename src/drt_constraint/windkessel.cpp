@@ -154,6 +154,33 @@ void UTILS::Windkessel::Initialize(
   return;
 }
 
+/*------------------------------------------------------------------------*
+|(public)                                                      mhv 12/13  |
+|Initialization routine activates conditions (restart)                    |
+*------------------------------------------------------------------------*/
+void UTILS::Windkessel::Initialize
+(
+  const double& time
+)
+{
+  for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
+  {
+    DRT::Condition& cond = *(windkesselcond_[i]);
+
+    // Get ConditionID of current condition if defined and write value in parameterlist
+    int condID=cond.GetInt("id");
+
+    // if current time (at) is larger than activation time of the condition, activate it
+    if((inittimes_.find(condID)->second<=time) && (activecons_.find(condID)->second==false))
+    {
+      activecons_.find(condID)->second=true;
+      if (actdisc_->Comm().MyPID()==0)
+      {
+        std::cout << "Encountered another active condition (Id = " << condID << ")  for restart time t = "<< time << std::endl;
+      }
+    }
+  }
+}
 
 /*-----------------------------------------------------------------------*
 |(public)                                                       mhv 10/13|

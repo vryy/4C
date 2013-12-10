@@ -642,6 +642,9 @@ namespace STR
     //! Read and set restart values for constraints
     void ReadRestartConstraint();
 
+    //! Read and set restart values for Windkessel
+    void ReadRestartWindkessel();
+
     //! Read and set restart values for contact / meshtying
     void ReadRestartContactMeshtying();
 
