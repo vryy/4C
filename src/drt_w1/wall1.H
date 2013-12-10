@@ -286,19 +286,6 @@ public:
       Epetra_SerialDenseMatrix& stresses, ///< gp stresses
       Epetra_MultiVector&       expolstress ///< expol stresses
   );
-  
-  /// Evaluates Material coordinates from spatial coordinates
-  /// \author mgit \date 04/07
-  void AdvectionMapElement(double* XMat1,
-                           double* XMat2,
-                           double* XMesh1,
-                           double* XMesh2,
-                           Teuchos::RCP<const Epetra_Vector> disp,
-                           Teuchos::RCP<const Epetra_Vector> dispmat,
-                           LocationArray& la,
-                           bool& found,
-                           double e1,
-                           double e2);
 
   //@}
 

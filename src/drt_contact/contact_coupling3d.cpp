@@ -163,28 +163,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // *******************************************************************
     if (!Quad())
     {
-      // prepare integration and linearization of M, g (and possibly D) on intcells
-      // prepare integration of mechanical dissipation in the case of tsi with contact
-      // prepare integration of wear 
-      int nrow = SlaveElement().NumNode();
-      int ncol = MasterElement().NumNode();
-      int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
-      if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg      = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg      = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg      = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-      Teuchos::RCP<Epetra_SerialDenseVector> scseg     = Teuchos::null;
-
-      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
-        scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-
-      // ***********************************************************
-      //                   Integrate stuff !!!                    //
-      // ***********************************************************
       integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
-      // ***********************************************************
-      //                   END INTEGRATION !!!                    //
-      // ***********************************************************
     }
     
     // *******************************************************************
@@ -201,27 +180,13 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       if (ShapeFcn() == INPAR::MORTAR::shape_standard && lmtype==INPAR::MORTAR::lagmult_quad_quad
           && (SlaveElement().Shape()==DRT::Element::quad8 || SlaveElement().Shape()==DRT::Element::tri6))
         dserror("ERROR: Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for quad9");
-
-      // prepare integration and linearization of M, g (and possibly D) on intcells
-      int nrow = SlaveElement().NumNode();
-      int ncol = MasterElement().NumNode();
-      int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
-      if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
       
       // static_cast to make sure to pass in IntElement&
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
       
       // call integrator
-      integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn(),dseg,mseg,gseg);
-      
-      // do the assembly into the slave nodes
-      integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-      integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
-      integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+      integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
     }
     
     // *******************************************************************
@@ -232,29 +197,13 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       // check for dual shape functions
       if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
         dserror("ERROR: Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic contact");
-
-      // prepare integration and linearization of M, g (and possibly D) on intcells
-      int nrow = SlaveElement().NumNode();
-      int ncol = MasterElement().NumNode();
-      int nintrow = SlaveIntElement().NumNode();
-      int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
-      if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),nrow*Dim()));
-      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),ncol*Dim()));
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nintrow));
       
       // static_cast to make sure to pass in IntElement&
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
       
       // call integrator
-      integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn(),dseg,mseg,gseg);
-      
-      // do the assembly into the slave nodes
-      // (NOTE THAT THESE ARE SPECIAL VERSIONS HERE FOR PIECEWISE LINEAR INTERPOLATION)
-      integrator.AssembleD(Comm(),SlaveElement(),sintref,*dseg);
-      integrator.AssembleM(Comm(),sintref,MasterElement(),*mseg);
-      integrator.AssembleG(Comm(),sintref,*gseg);
+      integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
     }
     
     // *******************************************************************

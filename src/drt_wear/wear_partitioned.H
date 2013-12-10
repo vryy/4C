@@ -32,7 +32,6 @@ Maintainer: Philipp Farah
 
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
-//#include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_ale/ale.H"
 
@@ -46,6 +45,10 @@ namespace MORTAR
 namespace ADAPTER
 {
   class Coupling;
+}
+namespace DRT
+{
+  class LocationArray;
 }
 /*----------------------------------------------------------------------*
  |                                                          farah 11/13 |
@@ -153,6 +156,7 @@ namespace WEAR
 
     Teuchos::ParameterList                           alepara_;
  };  // Algorithm
+
 }  // namespace WEAR
 
 /*----------------------------------------------------------------------*/

@@ -187,21 +187,6 @@ public:
   */
   virtual void Unpack(const std::vector<char>& data);
 
-  /// Evaluates Material coordinates from spatial coordinates
-  void AdvectionMapElement(double* XMat1,
-                           double* XMat2,
-                           double* XMat3,
-                           double* XMesh1,
-                           double* XMesh2,
-                           double* XMesh3,
-                           Teuchos::RCP<const Epetra_Vector> disp,
-                           Teuchos::RCP<const Epetra_Vector> dispmat,
-                           LocationArray& la,
-                           bool& found,
-                           double e1,
-                           double e2,
-                           double e3);
-
   /*!
   \brief Destructor
 

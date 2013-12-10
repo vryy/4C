@@ -44,6 +44,12 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 
 
+// forward declarations
+namespace LINALG
+{
+class SerialDenseVector;
+}
+
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms
 
@@ -161,11 +167,7 @@ public:
   */
   virtual void IntegrateDerivSegment2D(
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
-      MORTAR::MortarElement& mele, double& mxia, double& mxib,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> scseg);
+      MORTAR::MortarElement& mele, double& mxia, double& mxib);
 
   /*!
   \brief Integrate modification Mmod on a 1D slave / master overlap
@@ -203,11 +205,7 @@ public:
   */
   virtual void IntegrateDerivCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> gseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> scseg);
+     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -218,11 +216,57 @@ public:
   virtual void IntegrateDerivCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> gseg);
+     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn);
   
+
+  /*!
+  \brief evaluate D/M-matrix entries at GP
+
+  */
+  void inline GP_DM(
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
+       double& jac,
+       double& wgt, int& nrow, int& ncol,
+       int& ndof, bool& bound);
+
+  /*!
+  \brief evaluate D/M-matrix entries at GP (3D and quadratic)
+
+  */
+  void inline GP_3D_DM_Quad(
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       MORTAR::IntElement& sintele,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseVector& lmintval,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
+       double& jac,
+       double& wgt, int& nrow,int& nintrow, int& ncol,
+       int& ndof, bool& bound);
+
+  /*!
+  \brief evaluate scaling at GP
+
+  */
+  void GP_2D_Scaling(
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       double& dsxideta, double& wgt);
+
+  /*!
+  \brief evaluate scaling at GP
+
+  */
+  void GP_3D_Scaling(
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       double& jac, double& wgt,
+       double* sxi);
   //@}
   
   //! @name 2D and 3D assembly methods
@@ -299,7 +343,7 @@ protected:
     MortarIntegrator operator = (const MortarIntegrator& old);
     MortarIntegrator(const MortarIntegrator& old);
 
-    Teuchos::ParameterList&       imortar_;    // containing contact input parameters
+    Teuchos::ParameterList&       imortar_;     // containing contact input parameters
     int                           dim_;         // dimension of problem (2D or 3D)
     int                           ngp_;         // number of Gauss points
     Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates

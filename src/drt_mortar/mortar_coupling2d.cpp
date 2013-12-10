@@ -585,28 +585,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
       (Quad() && lmtype==INPAR::MORTAR::lagmult_lin_lin))
   {
     // do the overlap integration (integrate and linearize both M and gap)
-    int nrow = SlaveElement().NumNode();
-    int ncol = MasterElement().NumNode();
-    int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
-
-    // mortar matrix dimensions depend on the actual number of slave / master DOFs
-    // per node, which is NOT always identical to the problem dimension
-    // (e.g. fluid meshtying -> 4 DOFs per node in a 3D problem)
-    // -> thus the following check has been commented out (popp 04/2011)
-    // if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
-
-    Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
-    Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
-    Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-    Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
-    if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
-      scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,dseg,mseg,gseg,scseg);
-
-    // do the two assemblies into the slave nodes
-    integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-    integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
-    if (scseg!=Teuchos::null) integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
+    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib);
   }
 
   // *******************************************************************

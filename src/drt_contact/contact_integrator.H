@@ -125,6 +125,22 @@ public:
        int& ndof, bool& bound);
 
   /*!
+  \brief evaluate D/M-matrix entries at GP (3D quadratic)
+
+  */
+  void inline GP_3D_DM_Quad(
+       MORTAR::MortarElement& sele,
+       MORTAR::MortarElement& mele,
+       MORTAR::IntElement& sintele,
+       LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseVector& lmintval,
+       LINALG::SerialDenseVector& sval,
+       LINALG::SerialDenseVector& mval,
+       double& jac,
+       double& wgt, int& nrow, int& nintrow, int& ncol,
+       int& ndof, bool& bound);
+
+  /*!
   \brief lin D/M-matrix entries at GP for bound case
 
   */
@@ -188,6 +204,45 @@ public:
        const std::vector<std::vector<std::map<int,double> > >& dualmap);
 
   /*!
+  \brief lin D/M-matrix entries at GP for bound case (3D quad)
+
+  */
+  void inline GP_3D_DM_Quad_Lin(
+      int& iter,bool& duallin,
+      MORTAR::MortarElement& sele,
+      MORTAR::MortarElement& mele,
+      LINALG::SerialDenseVector& sval,
+      LINALG::SerialDenseVector& svalmod,
+      LINALG::SerialDenseVector& mval,
+      LINALG::SerialDenseVector& lmval,
+      LINALG::SerialDenseMatrix& sderiv,
+      LINALG::SerialDenseMatrix& mderiv,
+      LINALG::SerialDenseMatrix& lmderiv,
+      double& wgt, double& jac,
+      const std::vector<std::map<int,double> >& dpsxigp,
+      const std::vector<std::map<int,double> >& dpmxigp,
+      const std::map<int,double>& jacintcellmap,
+      const std::vector<std::vector<std::map<int,double> > >& dualmap,
+      bool dualquad3d);
+
+  void inline GP_3D_DM_Quad_pwlin_Lin(
+      int& iter,
+      MORTAR::MortarElement& sele,
+      MORTAR::MortarElement& sintele,
+      MORTAR::MortarElement& mele,
+      LINALG::SerialDenseVector& sval,
+      LINALG::SerialDenseVector& mval,
+      LINALG::SerialDenseVector& lmintval,
+      LINALG::SerialDenseMatrix& sderiv,
+      LINALG::SerialDenseMatrix& mderiv,
+      LINALG::SerialDenseMatrix& lmintderiv,
+      double& wgt, double& jac,
+      const std::vector<std::map<int,double> >& dsxigp,
+      const std::vector<std::map<int,double> >& dpsxigp,
+      const std::vector<std::map<int,double> >& dpmxigp,
+      const std::map<int,double>& jacintcellmap);
+
+  /*!
   \brief evaluate weighted Gap entries at GP
 
   */
@@ -229,7 +284,32 @@ public:
        const std::vector<std::map<int,double> >& dsxigp,
        const std::vector<std::map<int,double> >& dmxigp,
        std::map<int,double> & dgapgp,
-       std::vector<std::map<int,double> >& dnmap_unit);
+       std::vector<std::map<int,double> >& dnmap_unit,
+       bool quadratic, int nintrow = 0);
+
+  /*!
+  \brief evaluate weighted Gap entries at GP (quad-pwlin)
+
+  */
+  void inline GP_3D_G_Quad_pwlin(
+      MORTAR::MortarElement& sele,
+      MORTAR::IntElement& sintele,
+      MORTAR::MortarElement& mele,
+      LINALG::SerialDenseVector& sval,
+      LINALG::SerialDenseVector& mval,
+      LINALG::SerialDenseVector& lmintval,
+      LINALG::SerialDenseMatrix& scoord,
+      LINALG::SerialDenseMatrix& mcoord,
+      LINALG::SerialDenseMatrix& sderiv,
+      LINALG::SerialDenseMatrix& mderiv,
+      double* gap, double* gpn, double* lengthn,
+      double& jac,
+      double& wgt,
+      const std::vector<std::map<int,double> >& dsxigp,
+      const std::vector<std::map<int,double> >& dmxigp,
+      std::map<int,double> & dgapgp,
+      std::vector<std::map<int,double> >& dnmap_unit);
+
   /*!
   \brief evaluate weighted Gap entries at GP
 
@@ -276,24 +356,42 @@ public:
        const std::vector<std::vector<std::map<int,double> > >& dualmap);
 
   /*!
-  \brief evaluate scaling at GP
+  \brief evaluate weighted Gap entries at GP (quad)
 
   */
-  void inline GP_2D_Scaling(
-       MORTAR::MortarElement& sele,
-       LINALG::SerialDenseVector& sval,
-       double& dsxideta, double& wgt);
+  void inline GP_3D_G_Quad_Lin(
+      int& iter,
+      MORTAR::MortarElement& sele,
+      MORTAR::MortarElement& mele,
+      LINALG::SerialDenseVector& sval,
+      LINALG::SerialDenseVector& svalmod,
+      LINALG::SerialDenseVector& lmval,
+      LINALG::SerialDenseMatrix& sderiv,
+      LINALG::SerialDenseMatrix& lmderiv,
+      double& gap, double *gpn,double& jac,
+      double& wgt, bool& duallin,
+      const std::map<int,double>& dgapgp,
+      const std::map<int,double>& jacintcellmap,
+      const std::vector<std::map<int,double> >& dpsxigp,
+      const std::vector<std::vector<std::map<int,double> > >& dualmap,
+      bool dualquad3d);
 
   /*!
-  \brief evaluate scaling at GP
+  \brief evaluate weighted Gap entries at GP (quad)
 
   */
-  void inline GP_3D_Scaling(
-       MORTAR::MortarElement& sele,
+  void inline GP_3D_G_Quad_pwlin_Lin(
+       int& iter,
+       MORTAR::IntElement& sintele,
        LINALG::SerialDenseVector& sval,
-       double& jac, double& wgt,
-       double* sxi);
-
+       LINALG::SerialDenseVector& lmintval,
+       LINALG::SerialDenseMatrix& sderiv,
+       LINALG::SerialDenseMatrix& lmintderiv,
+       double& gap, double *gpn,double& jac,
+       double& wgt,
+       const std::map<int,double>& dgapgp,
+       const std::map<int,double>& jacintcellmap,
+       const std::vector<std::map<int,double> >& dsxigp);
   /*!
   \brief evaluate and lin scaling at GP
 
@@ -703,10 +801,7 @@ public:
   void IntegrateDerivCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> gseg);
+     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn);
   
   /*!
   \brief Compute penalty scaling factor kappa on slave element

@@ -16,6 +16,7 @@ Maintainer: Philipp Farah
  | headers                                                  farah 11/13 |
  *----------------------------------------------------------------------*/
 #include "wear_partitioned.H"
+#include "wear_utils.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -28,6 +29,10 @@ Maintainer: Philipp Farah
 
 #include "../drt_w1/wall1.H"
 #include "../drt_so3/so_hex8.H"
+#include "../drt_so3/so_hex20.H"
+#include "../drt_so3/so_hex27.H"
+#include "../drt_so3/so_tet4.H"
+#include "../drt_so3/so_tet10.H"
 
 #include "../drt_contact/contact_manager.H"
 #include "../drt_contact/contact_abstract_strategy.H"
@@ -685,16 +690,32 @@ void WEAR::Partitioned::AdvectionMap(double* XMat1,
 
     if (ndim == 2)
     {
-      // structure with ale only for wall element so far
-      if (actele->ElementType() != DRT::ELEMENTS::Wall1Type::Instance())
-        dserror ("Construction of advection map for 2D problems only for wall element so far.");
-
-      // cast element to wall element
-      DRT::ELEMENTS::Wall1* w1ele = static_cast<DRT::ELEMENTS::Wall1*>(actele);
+      if (actele->Shape() == DRT::Element::quad4)
+      {
+        WEAR::UTILS::av<DRT::Element::quad4>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+      }
+      else if (actele->Shape() == DRT::Element::quad8)
+      {
+        WEAR::UTILS::av<DRT::Element::quad8>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+      }
+      else if (actele->Shape() == DRT::Element::quad9)
+      {
+        WEAR::UTILS::av<DRT::Element::quad8>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+      }
+      else if (actele->Shape() == DRT::Element::tri3)
+      {
+        WEAR::UTILS::av<DRT::Element::tri3>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+      }
+      else if (actele->Shape() == DRT::Element::tri6)
+      {
+        WEAR::UTILS::av<DRT::Element::tri6>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+      }
+      else
+        dserror("shape function not supported!");
 
       // checks if the spatial coordinate lies within this element
       // if yes, returns the material displacements
-      w1ele->AdvectionMapElement(XMat1,XMat2,XMesh1,XMesh2,disp,dispmat, la,found,e1,e2);
+//      w1ele->AdvectionMapElement(XMat1,XMat2,XMesh1,XMesh2,disp,dispmat, la,found,e1,e2);
 
       if (found==false)
       {
@@ -712,16 +733,38 @@ void WEAR::Partitioned::AdvectionMap(double* XMat1,
     }
     else
     {
-      // structure with ale only for wall element so far
-      if (actele->ElementType() != DRT::ELEMENTS::So_hex8Type::Instance())
-        dserror ("Construction of advection map for 3D problems only for solid hex8 element so far.");
-
-      // cast element to solid hex8 element
-      DRT::ELEMENTS::So_hex8* ele = static_cast<DRT::ELEMENTS::So_hex8*>(actele);
-
-      // checks if the spatial coordinate lies within this element
-      // if yes, returns the material displacements
-      ele->AdvectionMapElement(XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la,found,e1,e2,e3);
+      if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance())
+      {
+        // cast element to solid hex8 element
+        DRT::ELEMENTS::So_hex8* ele = static_cast<DRT::ELEMENTS::So_hex8*>(actele);
+        WEAR::UTILS::av<DRT::Element::hex8>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+      }
+      else if (actele->ElementType() == DRT::ELEMENTS::So_hex20Type::Instance())
+      {
+        // cast element to solid hex20 element
+        DRT::ELEMENTS::So_hex20* ele = static_cast<DRT::ELEMENTS::So_hex20*>(actele);
+        WEAR::UTILS::av<DRT::Element::hex20>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+      }
+      else if (actele->ElementType() == DRT::ELEMENTS::So_hex27Type::Instance())
+      {
+        // cast element to solid hex27 element
+        DRT::ELEMENTS::So_hex27* ele = static_cast<DRT::ELEMENTS::So_hex27*>(actele);
+        WEAR::UTILS::av<DRT::Element::hex27>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+      }
+      else if (actele->ElementType() == DRT::ELEMENTS::So_tet4Type::Instance())
+      {
+        // cast element to solid tet4 element
+        DRT::ELEMENTS::So_tet4* ele = static_cast<DRT::ELEMENTS::So_tet4*>(actele);
+        WEAR::UTILS::av<DRT::Element::tet4>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+      }
+      else if (actele->ElementType() == DRT::ELEMENTS::So_tet10Type::Instance())
+      {
+        // cast element to solid tet10 element
+        DRT::ELEMENTS::So_tet10* ele = static_cast<DRT::ELEMENTS::So_tet10*>(actele);
+        WEAR::UTILS::av<DRT::Element::tet10>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+      }
+      else
+        dserror("elementtype not supported!");
 
       if (found==false)
       {
@@ -765,29 +808,63 @@ void WEAR::Partitioned::AdvectionMap(double* XMat1,
 
   if (ndim == 2)
   {
-    // structure with ale only for wall element so far
-    if (actele->ElementType() != DRT::ELEMENTS::Wall1Type::Instance())
-      dserror ("Construction of advection map for 2D problems only for wall element so far.");
-
-    // cast element to wall element
-    DRT::ELEMENTS::Wall1* w1ele = static_cast<DRT::ELEMENTS::Wall1*>(actele);
-
-    // checks if the spatial coordinate lies within this element
-    // if yes, returns the material displacements
-    w1ele->AdvectionMapElement(XMat1,XMat2,XMesh1,XMesh2,disp,dispmat, la,found,e1,e2);
+    if (actele->Shape() == DRT::Element::quad4)
+    {
+      WEAR::UTILS::av<DRT::Element::quad4>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+    }
+    else if (actele->Shape() == DRT::Element::quad8)
+    {
+      WEAR::UTILS::av<DRT::Element::quad8>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+    }
+    else if (actele->Shape() == DRT::Element::quad9)
+    {
+      WEAR::UTILS::av<DRT::Element::quad8>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+    }
+    else if (actele->Shape() == DRT::Element::tri3)
+    {
+      WEAR::UTILS::av<DRT::Element::tri3>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+    }
+    else if (actele->Shape() == DRT::Element::tri6)
+    {
+      WEAR::UTILS::av<DRT::Element::tri6>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+    }
+    else
+      dserror("shape function not supported!");
   }
   else
   {
-    // structure with ale only for wall element so far
-    if (actele->ElementType() != DRT::ELEMENTS::So_hex8Type::Instance())
-      dserror ("Construction of advection map for 3D problems only for solid hex8 element so far.");
-
-    // cast element to solid hex8 element
-    DRT::ELEMENTS::So_hex8* ele = static_cast<DRT::ELEMENTS::So_hex8*>(actele);
-
-    // checks if the spatial coordinate lies within this element
-    // if yes, returns the material displacements
-    ele->AdvectionMapElement(XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la,found,e1,e2,e3);
+    if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance())
+    {
+      // cast element to solid hex8 element
+      DRT::ELEMENTS::So_hex8* ele = static_cast<DRT::ELEMENTS::So_hex8*>(actele);
+      WEAR::UTILS::av<DRT::Element::hex8>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+    }
+    else if (actele->ElementType() == DRT::ELEMENTS::So_hex20Type::Instance())
+    {
+      // cast element to solid hex20 element
+      DRT::ELEMENTS::So_hex20* ele = static_cast<DRT::ELEMENTS::So_hex20*>(actele);
+      WEAR::UTILS::av<DRT::Element::hex20>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+    }
+    else if (actele->ElementType() == DRT::ELEMENTS::So_hex27Type::Instance())
+    {
+      // cast element to solid hex27 element
+      DRT::ELEMENTS::So_hex27* ele = static_cast<DRT::ELEMENTS::So_hex27*>(actele);
+      WEAR::UTILS::av<DRT::Element::hex27>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+    }
+    else if (actele->ElementType() == DRT::ELEMENTS::So_tet4Type::Instance())
+    {
+      // cast element to solid tet4 element
+      DRT::ELEMENTS::So_tet4* ele = static_cast<DRT::ELEMENTS::So_tet4*>(actele);
+      WEAR::UTILS::av<DRT::Element::tet4>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+    }
+    else if (actele->ElementType() == DRT::ELEMENTS::So_tet10Type::Instance())
+    {
+      // cast element to solid tet10 element
+      DRT::ELEMENTS::So_tet10* ele = static_cast<DRT::ELEMENTS::So_tet10*>(actele);
+      WEAR::UTILS::av<DRT::Element::tet10>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
+    }
+    else
+      dserror("elementtype not supported!");
   }
 
   // bye
