@@ -346,6 +346,9 @@ namespace STR
     //! \author popp (originally) \date 03/10
     void CmtLinearSolve();
 
+    int CmtWindkConstrNonlinearSolve();
+    void CmtWindkConstrLinearSolve();
+
     //! Do nonlinear iteration for beam contact
     //!
     //! \author popp (originally) \date 11/11

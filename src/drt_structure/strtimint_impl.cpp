@@ -1096,8 +1096,9 @@ int STR::TimIntImpl::Solve()
   // special nonlinear iterations for contact / meshtying
   if (HaveContactMeshtying())
   {
-    // choose solution technique in accordance with user's will
-    nonlin_error = CmtNonlinearSolve();
+  	// check additionally if we have contact AND a Windkessel or constraint bc
+  	if (HaveWindkessel()) nonlin_error = CmtWindkConstrNonlinearSolve();
+  	else nonlin_error = CmtNonlinearSolve();
   }
 
   // special nonlinear iterations for beam contact
@@ -1738,8 +1739,18 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 			//Use STC preconditioning on system matrix
 			STCPreconditioning();
 
-			// Call Windkessel solver to solve system
-			windkman_->Solve(SystemMatrix(),disi_,fres_);
+	    // linear solver call (contact / meshtying case or default)
+	    if (HaveContactMeshtying())
+	      CmtWindkConstrLinearSolve();
+	    else
+	    {
+				// Call Windkessel solver to solve system
+	    	windkman_->Solve(SystemMatrix(),disi_,fres_);
+	    }
+
+	    // recover contact / meshtying Lagrange multipliers
+	    if (HaveContactMeshtying())
+	      cmtman_->GetStrategy().Recover(disi_);
 
 			// *********** time measurement ***********
 			dtsolve_ = timer_->WallTime() - dtcpu;
@@ -3268,6 +3279,254 @@ void STR::TimIntImpl::RecoverSTCSolution()
 
     stcmat_->Multiply(false,*disi_,*disisdc);
     disi_->Update(1.0,*disisdc,0.0);
+  }
+
+  return;
+}
+
+
+
+
+/*----------------------------------------------------------------------*/
+/* solution with nonlinear iteration for contact / meshtying AND Windkessel bcs*/
+int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
+{
+  //********************************************************************
+  // get some parameters
+  //********************************************************************
+  // application type
+  INPAR::CONTACT::ApplicationType apptype =
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(cmtman_->GetStrategy().Params(),"APPLICATION");
+
+  // strategy type
+  INPAR::CONTACT::SolvingStrategy soltype =
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+
+  // semi-smooth Newton type
+  bool semismooth = DRT::INPUT::IntegralValue<int>(cmtman_->GetStrategy().Params(),"SEMI_SMOOTH_NEWTON");
+
+  // iteration type
+  if (itertype_ != INPAR::STR::soltech_newtonuzawalin)
+    dserror("Unknown type of equilibrium iteration! Choose newtonlinuzawa instead of fullnewton!");
+
+  //********************************************************************
+  // Solving Strategy using Lagrangian Multipliers
+  //********************************************************************
+  if (soltype == INPAR::CONTACT::solution_lagmult)
+  {
+    //********************************************************************
+    // 1) SEMI-SMOOTH NEWTON FOR CONTACT
+    // The search for the correct active set (=contact nonlinearity) and
+    // the large deformation linearization (=geometrical nonlinearity) are
+    // merged into one semi-smooth Newton method and solved within ONE
+    // iteration loop (which is then basically a standard Newton).
+    //********************************************************************
+    if (apptype == INPAR::CONTACT::app_mortarcontact && semismooth)
+    {
+      // nonlinear iteration
+     int error = UzawaLinearNewtonFull();
+     if(error) return error;
+    }
+
+    //********************************************************************
+    // 2) FIXED-POINT APPROACH FOR CONTACT
+    // The search for the correct active set (=contact nonlinearity) is
+    // represented by a fixed-point approach, whereas the large deformation
+    // linearization (=geometrical nonlinearity) is treated by a standard
+    // Newton scheme. This yields TWO nested iteration loops
+    //********************************************************************
+    else if (apptype == INPAR::CONTACT::app_mortarcontact && !semismooth)
+    {
+      // active set strategy
+      int activeiter = 0;
+      while (cmtman_->GetStrategy().ActiveSetConverged()==false)
+      {
+        // increase active set iteration index
+        ++activeiter;
+
+        // predictor step (except for first active set step)
+        if (activeiter > 1) Predict();
+
+        // nonlinear iteration
+        int error = UzawaLinearNewtonFull();
+        if(error) return error;
+
+        // update of active set (fixed-point)
+        cmtman_->GetStrategy().UpdateActiveSet();
+      }
+    }
+
+    //********************************************************************
+    // 3) STANDARD NEWTON APPROACH FOR MESHTYING
+    // No search for the correct active set has to be resolved for mortar
+    // meshtying and mortar coupling is linear in this case. Thus, only
+    // the large deformation FE problem remains to be solved as nonlinearity
+    // Here, a standard Newton scheme is applied and we have ONLY ONE loop.
+    //********************************************************************
+    else
+    {
+      // nonlinear iteration
+      int error = UzawaLinearNewtonFull();
+      if(error) return error;
+    }
+  }
+
+  //********************************************************************
+  // Solving Strategy using Regularization Techniques (Penalty Method)
+  //********************************************************************
+  else if (soltype == INPAR::CONTACT::solution_penalty)
+  {
+    // nonlinear iteration
+    int error = UzawaLinearNewtonFull();
+    if(error) return error;
+
+    // update constraint norm
+    cmtman_->GetStrategy().UpdateConstraintNorm();
+  }
+
+  //********************************************************************
+  // Solving Strategy using Augmented Lagrange Techniques (with Uzawa)
+  //********************************************************************
+  else if (soltype == INPAR::CONTACT::solution_auglag)
+  {
+    // get tolerance and maximum Uzawa steps
+    double eps = cmtman_->GetStrategy().Params().get<double>("UZAWACONSTRTOL");
+    int maxuzawaiter = cmtman_->GetStrategy().Params().get<int>("UZAWAMAXSTEPS");
+
+    // Augmented Lagrangian loop (Uzawa)
+    int uzawaiter=0;
+    do
+    {
+      // increase iteration index
+      ++uzawaiter;
+      if (uzawaiter > maxuzawaiter) dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
+      if (!myrank_) std::cout << "Starting Uzawa step No. " << uzawaiter << std::endl;
+
+      // for second, third,... Uzawa step: out-of-balance force
+      if (uzawaiter>1)
+      {
+        fres_->Scale(-1.0);
+        cmtman_->GetStrategy().InitializeUzawa(stiff_,fres_);
+        fres_->Scale(-1.0);
+      }
+
+      // nonlinear iteration
+      int error = UzawaLinearNewtonFull();
+      if(error) return error;
+
+      // update constraint norm and penalty parameter
+      cmtman_->GetStrategy().UpdateConstraintNorm(uzawaiter);
+
+      // store Lagrange multipliers for next Uzawa step
+      cmtman_->GetStrategy().UpdateAugmentedLagrange();
+      cmtman_->GetStrategy().StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+
+    } while (cmtman_->GetStrategy().ConstraintNorm() >= eps);
+
+    // reset penalty parameter
+    cmtman_->GetStrategy().ResetPenalty();
+  }
+
+  return 0;
+}
+
+
+
+/*----------------------------------------------------------------------*/
+/* linear solver call for contact / meshtying AND Windkessel bcs*/
+void STR::TimIntImpl::CmtWindkConstrLinearSolve()
+{
+
+  // strategy and system setup types
+  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+  INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
+
+  // update information about active slave dofs
+  //**********************************************************************
+  // feed solver/preconditioner with additional information about the contact/meshtying problem
+  //**********************************************************************
+  {
+    // feed Aztec based solvers with contact information
+    if (contactsolver_->Params().isSublist("Aztec Parameters"))
+    {
+      Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Aztec Parameters");
+      RCP<Epetra_Map> masterDofMap;
+      RCP<Epetra_Map> slaveDofMap;
+      RCP<Epetra_Map> innerDofMap;
+      RCP<Epetra_Map> activeDofMap;
+      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
+      strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
+      Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact masterDofMap",masterDofMap);
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact slaveDofMap",slaveDofMap);
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact innerDofMap",innerDofMap);
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact activeDofMap",activeDofMap);
+      Teuchos::RCP<CONTACT::CoAbstractStrategy> costrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
+      if (costrat != Teuchos::null) linSystemProps.set<std::string>("ProblemType", "contact");
+      else                          linSystemProps.set<std::string>("ProblemType", "meshtying");
+      linSystemProps.set<int>("time step",step_);
+      linSystemProps.set<int>("iter",iter_);
+    }
+    // feed Belos based solvers with contact information
+    if (contactsolver_->Params().isSublist("Belos Parameters"))
+    {
+      Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Belos Parameters");
+      RCP<Epetra_Map> masterDofMap;
+      RCP<Epetra_Map> slaveDofMap;
+      RCP<Epetra_Map> innerDofMap;
+      RCP<Epetra_Map> activeDofMap;
+      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
+      strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
+      Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact masterDofMap",masterDofMap);
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact slaveDofMap",slaveDofMap);
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact innerDofMap",innerDofMap);
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact activeDofMap",activeDofMap);
+      Teuchos::RCP<CONTACT::CoAbstractStrategy> costrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
+      if (costrat != Teuchos::null) linSystemProps.set<std::string>("ProblemType", "contact");
+      else                          linSystemProps.set<std::string>("ProblemType", "meshtying");
+      linSystemProps.set<int>("time step",step_);
+      linSystemProps.set<int>("iter",iter_);
+    }
+
+  } // end: feed solver with contact/meshtying information
+
+  // analysis of eigenvalues and condition number
+#ifdef CONTACTEIG
+    // global counter
+    static int globindex = 0;
+    ++globindex;
+
+    // print to file in matlab format
+    std::ostringstream filename;
+    const std::string filebase = "sparsematrix";
+    filename << "o/matlab_output/" << filebase << "_" << globindex << ".mtl";
+    LINALG::PrintMatrixInMatlabFormat(filename.str().c_str(),*(SystemMatrix()->EpetraMatrix()));
+
+    // print sparsity pattern to file
+    LINALG::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
+#endif // #ifdef CONTACTEIG
+
+  //**********************************************************************
+  // Solving a saddle point system
+  // -> does not work together with constraints / Windkessel bcs
+  // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
+  // (2) Standard / Dual Lagrange multipliers -> SaddlePointSimpler
+  //**********************************************************************
+  if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
+  {
+    dserror("Constraints / Windkessel bcs together with saddle point contact system does not work (yet)!");
+  }
+
+  //**********************************************************************
+  // Solving a purely displacement based system
+  // (1) Dual (not Standard) Lagrange multipliers -> Condensed
+  // (2) Penalty and Augmented Lagrange strategies
+  //**********************************************************************
+  else
+  {
+    // solve with Windkessel solver
+    windkman_->Solve(SystemMatrix(),disi_,fres_);
   }
 
   return;
