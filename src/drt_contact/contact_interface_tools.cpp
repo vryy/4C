@@ -66,7 +66,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
   // construct unique filename for gmsh output
   // first index = time step index
   std::ostringstream filename;
-  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
   filename << "o/gmsh_output/" << filebase << "_";
   if (step<10)
     filename << 0 << 0 << 0 << 0;
@@ -508,115 +508,115 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
           }
         }
 
-        // plot element number in element center
-        double elec[3];
-        element->LocalToGlobal(xi,elec,0);
-        
-        if (element->IsSlave())
-        {
-          gmshfilecontent << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
-          gmshfilecontent << "{" << "S" << element->Id() << "};" << std::endl;
-          gmshfilecontentslave << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
-          gmshfilecontentslave << "{" << "S" << element->Id() << "};" << std::endl;
-        }
-        else
-        {
-          gmshfilecontent << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
-          gmshfilecontent << "{" << "M" << element->Id() << "};" << std::endl;
-          gmshfilecontentmaster << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
-          gmshfilecontentmaster << "{" << "M" << element->Id() << "};" << std::endl;
-        }
-
-        // plot node numbers at the nodes
-        for (int j=0;j<nnodes;++j)
-        {
-          if (element->IsSlave())
-          {
-            gmshfilecontent << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
-            gmshfilecontent << "{" << "SN" << element->NodeIds()[j] << "};" << std::endl;
-            gmshfilecontentslave << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
-            gmshfilecontentslave << "{" << "SN" << element->NodeIds()[j] << "};" << std::endl;
-          }
-          else
-          {
-            gmshfilecontent << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
-            gmshfilecontent << "{" << "MN" << element->NodeIds()[j] << "};" << std::endl;
-            gmshfilecontentmaster << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
-            gmshfilecontentmaster << "{" << "MN" << element->NodeIds()[j] << "};" << std::endl;
-          }
-        }
+//        // plot element number in element center
+//        double elec[3];
+//        element->LocalToGlobal(xi,elec,0);
+//
+//        if (element->IsSlave())
+//        {
+//          gmshfilecontent << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
+//          gmshfilecontent << "{" << "S" << element->Id() << "};" << std::endl;
+//          gmshfilecontentslave << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
+//          gmshfilecontentslave << "{" << "S" << element->Id() << "};" << std::endl;
+//        }
+//        else
+//        {
+//          gmshfilecontent << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
+//          gmshfilecontent << "{" << "M" << element->Id() << "};" << std::endl;
+//          gmshfilecontentmaster << "T3(" << std::scientific << elec[0] << "," << elec[1] << "," << elec[2] << "," << 17 << ")";
+//          gmshfilecontentmaster << "{" << "M" << element->Id() << "};" << std::endl;
+//        }
+//
+//        // plot node numbers at the nodes
+//        for (int j=0;j<nnodes;++j)
+//        {
+//          if (element->IsSlave())
+//          {
+//            gmshfilecontent << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
+//            gmshfilecontent << "{" << "SN" << element->NodeIds()[j] << "};" << std::endl;
+//            gmshfilecontentslave << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
+//            gmshfilecontentslave << "{" << "SN" << element->NodeIds()[j] << "};" << std::endl;
+//          }
+//          else
+//          {
+//            gmshfilecontent << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
+//            gmshfilecontent << "{" << "MN" << element->NodeIds()[j] << "};" << std::endl;
+//            gmshfilecontentmaster << "T3(" << std::scientific << coord(0,j) << "," << coord(1,j) << "," << coord(2,j) << "," << 17 << ")";
+//            gmshfilecontentmaster << "{" << "MN" << element->NodeIds()[j] << "};" << std::endl;
+//          }
+//        }
       }
 
-      //******************************************************************
-      // plot normal vector, tangent vectors and contact status
-      //******************************************************************
-      for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
-      {
-        int gid = snoderowmap_->GID(i);
-        DRT::Node* node = idiscret_->gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        CoNode* cnode = static_cast<CoNode*>(node);
-        if (!cnode) dserror("ERROR: Static Cast to CoNode* failed");
-
-        double nc[3];
-        double nn[3];
-        double nt1[3];
-        double nt2[3];
-
-        for (int j=0;j<3;++j)
-        {
-          nc[j]=cnode->xspatial()[j];
-          nn[j]=cnode->MoData().n()[j];
-          nt1[j]=cnode->CoData().txi()[j];
-          nt2[j]=cnode->CoData().teta()[j];
-        }
-
-        //******************************************************************
-        // plot normal and tangent vectors
-        //******************************************************************
-        gmshfilecontentslave << "VP(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-        gmshfilecontentslave << "{" << std::scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << std::endl;
-
-        if (friction_)
-        {
-          gmshfilecontentslave << "VP(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-          gmshfilecontentslave << "{" << std::scientific << nt1[0] << "," << nt1[1] << "," << nt1[2] << "};" << std::endl;
-          gmshfilecontentslave << "VP(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-          gmshfilecontentslave << "{" << std::scientific << nt2[0] << "," << nt2[1] << "," << nt2[2] << "};" << std::endl;
-          
-        }
-
-        //******************************************************************
-        // plot contact status of slave nodes (inactive, active, stick, slip)
-        //******************************************************************
-        // frictionless contact, active node = {A}
-        if (!friction_ && cnode->Active())
-        {
-          gmshfilecontentslave << "T3(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
-          gmshfilecontentslave << "{" << "A" << "};" << std::endl;
-        }
-
-        // frictionless contact, inactive node = { }
-        else if (!friction_ && !cnode->Active())
-        {
-          //do nothing
-        }
-
-        // frictional contact, slip node = {G}
-        else if (friction_ && cnode->Active())
-        {
-          if (static_cast<FriNode*>(cnode)->FriData().Slip())
-          {  
-            gmshfilecontentslave << "T3(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
-            gmshfilecontentslave << "{" << "G" << "};" << std::endl;
-          }
-          else 
-          {
-            gmshfilecontentslave << "T3(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
-            gmshfilecontentslave << "{" << "H" << "};" << std::endl;
-          }
-        }
-      }
+//      //******************************************************************
+//      // plot normal vector, tangent vectors and contact status
+//      //******************************************************************
+//      for (int i=0; i<snoderowmap_->NumMyElements(); ++i)
+//      {
+//        int gid = snoderowmap_->GID(i);
+//        DRT::Node* node = idiscret_->gNode(gid);
+//        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+//        CoNode* cnode = static_cast<CoNode*>(node);
+//        if (!cnode) dserror("ERROR: Static Cast to CoNode* failed");
+//
+//        double nc[3];
+//        double nn[3];
+//        double nt1[3];
+//        double nt2[3];
+//
+//        for (int j=0;j<3;++j)
+//        {
+//          nc[j]=cnode->xspatial()[j];
+//          nn[j]=cnode->MoData().n()[j];
+//          nt1[j]=cnode->CoData().txi()[j];
+//          nt2[j]=cnode->CoData().teta()[j];
+//        }
+//
+//        //******************************************************************
+//        // plot normal and tangent vectors
+//        //******************************************************************
+//        gmshfilecontentslave << "VP(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+//        gmshfilecontentslave << "{" << std::scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << std::endl;
+//
+//        if (friction_)
+//        {
+//          gmshfilecontentslave << "VP(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+//          gmshfilecontentslave << "{" << std::scientific << nt1[0] << "," << nt1[1] << "," << nt1[2] << "};" << std::endl;
+//          gmshfilecontentslave << "VP(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
+//          gmshfilecontentslave << "{" << std::scientific << nt2[0] << "," << nt2[1] << "," << nt2[2] << "};" << std::endl;
+//
+//        }
+//
+//        //******************************************************************
+//        // plot contact status of slave nodes (inactive, active, stick, slip)
+//        //******************************************************************
+//        // frictionless contact, active node = {A}
+//        if (!friction_ && cnode->Active())
+//        {
+//          gmshfilecontentslave << "T3(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
+//          gmshfilecontentslave << "{" << "A" << "};" << std::endl;
+//        }
+//
+//        // frictionless contact, inactive node = { }
+//        else if (!friction_ && !cnode->Active())
+//        {
+//          //do nothing
+//        }
+//
+//        // frictional contact, slip node = {G}
+//        else if (friction_ && cnode->Active())
+//        {
+//          if (static_cast<FriNode*>(cnode)->FriData().Slip())
+//          {
+//            gmshfilecontentslave << "T3(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
+//            gmshfilecontentslave << "{" << "G" << "};" << std::endl;
+//          }
+//          else
+//          {
+//            gmshfilecontentslave << "T3(" << std::scientific << nc[0] << "," << nc[1] << "," << nc[2] << "," << 17 << ")";
+//            gmshfilecontentslave << "{" << "H" << "};" << std::endl;
+//          }
+//        }
+//      }
 
       // end GMSH output section in all files
       if (proc==lComm()->NumProc()-1)
@@ -651,7 +651,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
 
   // create files for visualization of slave dops for every layer
   std::ostringstream filenametn;
-  const std::string filebasetn = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebasetn = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
   filenametn << "o/gmsh_output/" << filebasetn << "_";
 
   if (step<10)
@@ -826,7 +826,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
   //**********************************************************************
 #ifdef MORTARGMSHCTN
   std::ostringstream filenamectn;
-  const std::string filebasectn = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebasectn = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
   filenamectn << "o/gmsh_output/" << filebasectn << "_";
   if (step<10)
     filenamectn << 0 << 0 << 0 << 0;

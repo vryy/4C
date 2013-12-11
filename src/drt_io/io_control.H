@@ -62,6 +62,7 @@ namespace IO
       \note might contain path
      */
     std::string FileName() const { return filename_; }
+    std::string FileNameOnlyPrefix();
 
     /// original prefix as given
     /*!

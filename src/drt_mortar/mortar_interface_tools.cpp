@@ -62,7 +62,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
   // construct unique filename for gmsh output
   // first index = time step index
   std::ostringstream filename;
-  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
   filename << "o/gmsh_output/" << filebase << "_";
   if (step<10)
     filename << 0 << 0 << 0 << 0;
@@ -600,7 +600,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
 
   // create files for visualization of slave dops for every layer
   std::ostringstream filenametn;
-  const std::string filebasetn = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebasetn = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
   filenametn << "o/gmsh_output/" << filebasetn << "_";
 
   if (step<10)
@@ -775,7 +775,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
   //**********************************************************************
 #ifdef MORTARGMSHCTN
   std::ostringstream filenamectn;
-  const std::string filebasectn = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  const std::string filebasectn = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
   filenamectn << "o/gmsh_output/" << filebasectn << "_";
   if (step<10)
     filenamectn << 0 << 0 << 0 << 0;

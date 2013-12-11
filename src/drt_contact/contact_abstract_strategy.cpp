@@ -2317,7 +2317,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
     {
       FILE* MyFile = NULL;
       std::ostringstream filename;
-      const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
       filename << filebase << ".interface";
       MyFile = fopen(filename.str().c_str(), "at+");
       
@@ -2708,7 +2708,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
 
       FILE* MyFile = NULL;
       std::ostringstream filename;
-      const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
       filename << filebase << ".jump";
       MyFile = fopen(filename.str().c_str(), "at+");
       if (MyFile)

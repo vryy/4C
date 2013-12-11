@@ -385,6 +385,22 @@ void IO::OutputControl::NewResultFile(std::string name_appendix, int numb_run)
 
   controlfile_ << std::flush;
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::string IO::OutputControl::FileNameOnlyPrefix()
+{
+  std::string filenameonlyprefix = filename_;
+
+  size_t pos = filename_.rfind('/');
+  if (pos!=std::string::npos)
+  {
+    filenameonlyprefix = filename_.substr(pos+1);
+  }
+
+  return filenameonlyprefix;
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::InputControl::InputControl(std::string filename, const bool serial)

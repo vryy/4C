@@ -1040,7 +1040,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
 
     FILE* MyFile = NULL;
     std::ostringstream filename;
-    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
     filename << filebase << ".force";
     MyFile = fopen(filename.str().c_str(), "at+");
     if (MyFile)
