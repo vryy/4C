@@ -4,7 +4,7 @@
 
 \brief Fluid field adapter for fsi
 
-Can only be used in conjunction with fluidimplicittimeint!
+Can only be used in conjunction with #FluidImplicitTimeInt
 
 <pre>
 Maintainer: Matthias Mayr
@@ -51,6 +51,11 @@ namespace FLD
 
 namespace ADAPTER {
 
+  /*! \brief Fluid field adapter for fsi
+   *
+   *
+   *  Can only be used in conjunction with #FLD::FluidImplicitTimeInt
+   */
   class FluidFSI : public FluidWrapper
   {
   public:

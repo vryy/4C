@@ -172,6 +172,9 @@ namespace ADAPTER
     virtual double Dt() const
     { return fluid_->Dt(); }
 
+    //! @name Time step size adaptivity in monolithic FSI
+    //@{
+
     //! Set fluid time step size that was computed outside
     virtual void SetDt(const double dtnew)
     {fluid_->SetDt(dtnew);}
@@ -184,6 +187,8 @@ namespace ADAPTER
 
     //! Set time and step
     virtual void SetTimeStep(const double time, const int step){fluid_->SetTimeStep(time, step);}
+
+    //@}
 
     virtual void LiftDrag() const
     { return fluid_->LiftDrag(); }

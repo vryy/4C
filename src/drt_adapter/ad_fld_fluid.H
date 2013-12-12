@@ -345,13 +345,18 @@ namespace ADAPTER {
     /// time step size
     virtual double Dt() const = 0;
 
+    //! @name Time step size adaptivity in monolithic FSI
+    //@{
+
     /// set time step size
     virtual void SetDt(const double dtold) = 0;
 
     /// set time and step
     virtual void SetTimeStep(const double time, ///< time to set
                              const int step     ///< time step number to set
-                            )=0;
+                            ) = 0;
+
+    //@}
 
     /*!
     \brief Reset time step
