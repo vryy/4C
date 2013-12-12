@@ -234,6 +234,9 @@ public:
   /// Implement ADAPTER::Fluid
   void Update() { TimeUpdate(); }
 
+  //! @name Time step size adaptivity in monolithic FSI
+  //@{
+
   //! set time step size
   virtual void SetDt (const double dtnew);
 
@@ -277,6 +280,8 @@ public:
   /*!
   \brief lift'n'drag forces, statistics time sample and
          output of solution and statistics
+
+  //@}
 
   */
   void StatisticsAndOutput();
@@ -811,7 +816,7 @@ protected:
   //@}
 
   //! @name time step sizes
-  double dtp_;
+  double dtp_; ///< time step size of previous time step
   //@}
 
   //! @name time-integration-scheme factors
