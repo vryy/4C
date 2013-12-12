@@ -2683,6 +2683,13 @@ void STR::TimIntImpl::PrintNewtonIterHeader
     }
   }
 
+  if (HaveSemiSmoothPlasticity())
+  {
+    oss <<std::setw(20)<< "abs-plconstr-norm";
+    oss <<std::setw(20)<< "abs-dLPincr-norm";
+
+  }
+
   // add constraint norm
   if (conman_->HaveConstraintLagr())
   {
@@ -2840,6 +2847,12 @@ void STR::TimIntImpl::PrintNewtonIterText
         }
       }
     }
+  }
+
+  if (HaveSemiSmoothPlasticity())
+  {
+    oss << std::setw(20) << std::setprecision(5) << std::scientific << plastman_->DeltaLp_residual_norm();
+    oss << std::setw(20) << std::setprecision(5) << std::scientific << plastman_->DeltaLp_increment_norm();
   }
 
   // add constraint norm

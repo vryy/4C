@@ -806,13 +806,19 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     // first part
     LINALG::Matrix<5,1> tmp51;
     tmp51.Multiply(KbbInv_->at(gp),fbeta_->at(gp));
-    DalphaK_last_iter_->at(gp).Update(-1.,tmp51,1.);
 
     // second part
     LINALG::Matrix<5,numdofperelement_> tmp524;
     tmp524.Multiply(KbbInv_->at(gp),Kbd_->at(gp));
-    tmp51.Multiply(tmp524,res_d);
+    tmp51.Multiply(1.,tmp524,res_d,1.);
     DalphaK_last_iter_->at(gp).Update(-1.,tmp51,1.);
+    double inrement_norm_sqare=tmp51(0)*tmp51(0)
+                              +tmp51(1)*tmp51(1)
+                              +(-tmp51(0)-tmp51(1))*(-tmp51(0)-tmp51(1))
+                              +tmp51(2)*tmp51(2)*2.
+                              +tmp51(3)*tmp51(3)*2.
+                              +tmp51(4)*tmp51(4)*2.;
+    params.get<double>("Lp_increment_square")+=inrement_norm_sqare;
     // end of recover *********************************************
 
     // inverse plastic deformation gradient
@@ -1291,6 +1297,16 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
       fbeta_->at(gp).Clear();
       KbbInv_->at(gp).Clear();
     }
+
+    // square of the residual L2 norm
+    double residual_norm_sqare=fbeta_->at(gp)(0)*fbeta_->at(gp)(0)
+                              +fbeta_->at(gp)(1)*fbeta_->at(gp)(1)
+                              +(-fbeta_->at(gp)(0)-fbeta_->at(gp)(1))*(-fbeta_->at(gp)(0)-fbeta_->at(gp)(1))
+                              +fbeta_->at(gp)(2)*fbeta_->at(gp)(2)*2.
+                              +fbeta_->at(gp)(3)*fbeta_->at(gp)(3)*2.
+                              +fbeta_->at(gp)(4)*fbeta_->at(gp)(4)*2.;
+        params.get<double>("Lp_residual_square")+=residual_norm_sqare;
+
   } // gp loop
 
   // communicate unconverged active set to time integration
@@ -1470,13 +1486,17 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
     // first part
     LINALG::Matrix<8,1> tmp81;
     tmp81.Multiply(KbbInvHill_->at(gp),fbetaHill_->at(gp));
-    mDLp_last_iter_->at(gp).Update(-1.,tmp81,1.);
 
     // second part
     LINALG::Matrix<8,numdofperelement_> tmp824;
     tmp824.Multiply(KbbInvHill_->at(gp),KbdHill_->at(gp));
-    tmp81.Multiply(tmp824,res_d);
+    tmp81.Multiply(1.,tmp824,res_d,1.);
     mDLp_last_iter_->at(gp).Update(-1.,tmp81,1.);
+    double increment_norm_sqare=tmp81(0)*tmp81(0)
+                              +tmp81(1)*tmp81(1)
+                              +(-tmp81(0)-tmp81(1))*(-tmp81(0)-tmp81(1));
+    for (int i=2; i<8; i++) increment_norm_sqare+=tmp81(i)*tmp81(i)*2.;
+    params.get<double>("Lp_increment_square")+=increment_norm_sqare;
     // end of recover *********************************************
 
     // inverse plastic deformation gradient
@@ -2463,6 +2483,14 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
         fbetaHill_ ->at(gp).Clear();
         KbdHill_   ->at(gp).Clear();
       }
+
+      // square of the residual L2 norm
+      double residual_norm_sqare=fbetaHill_->at(gp)(0)*fbetaHill_->at(gp)(0)
+                                +fbetaHill_->at(gp)(1)*fbetaHill_->at(gp)(1)
+                                +(-fbetaHill_->at(gp)(0)-fbetaHill_->at(gp)(1))*(-fbetaHill_->at(gp)(0)-fbetaHill_->at(gp)(1));
+      for (int i=2; i<8; i++) residual_norm_sqare+=fbetaHill_->at(gp)(i)*fbetaHill_->at(gp)(i)*2.;
+      params.get<double>("Lp_residual_square")+=residual_norm_sqare;
+
   } // gp loop
 
   // communicate unconverged active set to time integration
@@ -2679,13 +2707,19 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
     // first part
     LINALG::Matrix<5,1> tmp51;
     tmp51.Multiply(KbbInv_->at(gp),fbeta_->at(gp));
-    DalphaK_last_iter_->at(gp).Update(-1.,tmp51,1.);
 
     // second part
     LINALG::Matrix<5,numdofperelement_> tmp524;
     tmp524.Multiply(KbbInv_->at(gp),Kbd_->at(gp));
-    tmp51.Multiply(tmp524,res_d);
+    tmp51.Multiply(1.,tmp524,res_d,1.);
     DalphaK_last_iter_->at(gp).Update(-1.,tmp51,1.);
+    double increment_norm_sqare=tmp51(0)*tmp51(0)
+                              +tmp51(1)*tmp51(1)
+                              +(-tmp51(0)-tmp51(1))*(-tmp51(0)-tmp51(1))
+                              +tmp51(2)*tmp51(2)*2.
+                              +tmp51(3)*tmp51(3)*2.
+                              +tmp51(4)*tmp51(4)*2.;
+    params.get<double>("Lp_increment_square")+=increment_norm_sqare;
     // end of recover **********************************************
 
     // current plastic flow increment
@@ -3183,13 +3217,13 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
         // independent of displacements
         Kbd_->at(gp).Clear();
         // We can state the inverse right away
-        KbbInv_->at(gp).Update(id5);
+        KbbInv_->at(gp).Update(1./cpl,id5);
         // right hand side
-        fbeta_->at(gp).Update(DalphaK_last_iter_->at(gp));
+        fbeta_->at(gp).Update(cpl,DalphaK_last_iter_->at(gp));
 
         // condensation to internal force vector
         if (force!=NULL)
-          force->Multiply(-1.,kdbeta,fbeta_->at(gp),1.);
+          force->Multiply(-1./cpl,kdbeta,fbeta_->at(gp),1.);
       }
     } // modification for plastic Gauss points
     // reset for elastic GP with no plastic flow increment in this time step
@@ -3199,6 +3233,16 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
       fbeta_->at(gp).Clear();
       KbbInv_->at(gp).Clear();
     }
+
+    // square of the residual L2 norm
+    double residual_norm_sqare=fbeta_->at(gp)(0)*fbeta_->at(gp)(0)
+                              +fbeta_->at(gp)(1)*fbeta_->at(gp)(1)
+                              +(-fbeta_->at(gp)(0)-fbeta_->at(gp)(1))*(-fbeta_->at(gp)(0)-fbeta_->at(gp)(1))
+                              +fbeta_->at(gp)(2)*fbeta_->at(gp)(2)*2.
+                              +fbeta_->at(gp)(3)*fbeta_->at(gp)(3)*2.
+                              +fbeta_->at(gp)(4)*fbeta_->at(gp)(4)*2.;
+        params.get<double>("Lp_residual_square")+=residual_norm_sqare;
+
   } // gp loop
 
   // communicate unconverged active set to time integration
@@ -3419,13 +3463,17 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
     // first part
     LINALG::Matrix<8,1> tmp81;
     tmp81.Multiply(KbbInvHill_->at(gp),fbetaHill_->at(gp));
-    mDLp_last_iter_->at(gp).Update(-1.,tmp81,1.);
 
     // second part
     LINALG::Matrix<8,numdofperelement_> tmp824;
     tmp824.Multiply(KbbInvHill_->at(gp),KbdHill_->at(gp));
-    tmp81.Multiply(tmp824,res_d);
+    tmp81.Multiply(1.,tmp824,res_d,1.);
     mDLp_last_iter_->at(gp).Update(-1.,tmp81,1.);
+    double increment_norm_sqare=tmp81(0)*tmp81(0)
+                              +tmp81(1)*tmp81(1)
+                              +(-tmp81(0)-tmp81(1))*(-tmp81(0)-tmp81(1));
+    for (int i=2; i<8; i++) increment_norm_sqare+=tmp81(i)*tmp81(i)*2.;
+    params.get<double>("Lp_increment_square")+=increment_norm_sqare;
     // end of recover *********************************************
 
      // current plastic flow increment =-Delta Lp
@@ -3522,6 +3570,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
        break;
      }
      }
+
      // equivalent stress eta
      LINALG::Matrix<nsd_,nsd_> eta(mandelstress);
      for (int i=0; i<nsd_; i++)
@@ -4163,7 +4212,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
 //              for (int j=0; j<3; j++)
 //                DpAeta_new += DeltaAlphaK_new(ii,j)*tmp1(ii,j);
 //            double deltaAlphaI_new=0.;
-//            if (DpAeta<0.)
+//            if (DpAe<0.)
 //              deltaAlphaI_new=-sqrt(2./3.)*AnormEta_new*DpAeta_new/EucNormAeta_new/EucNormAeta_new;
 //
 //
@@ -4173,7 +4222,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
 //
 //
 //            double Ypl_new=0.;
-//            if (Dissipation>0.)
+//            if (DpAe<0.)
 //              Ypl_new = sqrt(2./3.) * ((infyield - inityield)*(1.-exp(-expisohard*(last_alpha_isotropic_->at(gp)(0,0)+ deltaAlphaI_new)))
 //                  + isohard*(last_alpha_isotropic_->at(gp)(0,0)+ deltaAlphaI_new) +inityield);
 //            else
@@ -4212,22 +4261,21 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
 //                    -DeltaAlphaK_vec_new(3)*eta_vec_new(2)
 //                    +DeltaAlphaK_vec_new(1)*eta_vec_new(4) );
 //
-//
 //            std::cout << std::scientific;
 //            std::cout.precision(8);
-////            for (int a=0; a<5; a++)
-////              for (int A=0; A<3; A++)
+//            for (int a=0; a<3; a++)
+//              for (int A=0; A<3; A++)
 //              {
-//                double ref=dYpl_dbeta(i);
-//                double FD=(Ypl_new-Ypl)/epsilon;
-//                double relE=abs((FD-ref)/ref);
-//                std::cout << "ai:"<<i<< "\tFD: " << FD << "\tref: " << ref
+//                double ref=DFpiDbeta(VOIGT3X3NONSYM_[A][a],i);
+//                double FD=(InvPlasticDefgrd_new(A,a)-InvPlasticDefgrd(A,a))/epsilon;
+//                double relE=0.; if (ref!=0.) relE=abs((FD-ref)/ref);
+//                std::cout << "aAi:"<<a<<A<<i<< "\tFD: " << FD << "\tref: " << ref
 //                    << "\trelE: " << relE << std::endl;
 //              }
 //              mDLp_last_iter_->at(gp)(i) -= epsilon;
 //          }
-////          std::cout << std::endl;
-//          //dserror("stop");
+//          std::cout << std::endl;
+////          dserror("stop");
 
           // build matrices kbb and kbd
           for (int i=0; i<5; i++)
@@ -4298,6 +4346,14 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
         fbetaHill_ ->at(gp).Clear();
         KbdHill_   ->at(gp).Clear();
       }
+
+      // square of the residual L2 norm
+      double residual_norm_sqare=fbetaHill_->at(gp)(0)*fbetaHill_->at(gp)(0)
+                                +fbetaHill_->at(gp)(1)*fbetaHill_->at(gp)(1)
+                                +(-fbetaHill_->at(gp)(0)-fbetaHill_->at(gp)(1))*(-fbetaHill_->at(gp)(0)-fbetaHill_->at(gp)(1));
+      for (int i=2; i<8; i++) residual_norm_sqare+=fbetaHill_->at(gp)(i)*fbetaHill_->at(gp)(i)*2.;
+      params.get<double>("Lp_residual_square")+=residual_norm_sqare;
+
     } // gp loop
 
     // communicate unconverged active set to time integration
@@ -5065,7 +5121,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x
     return;
   }
 
-  if(Norm<1.)
+  if(Norm<0.) // fixme
   {
     // see Souza-Neto: Computational Methods for plasticity, Box B.2.
     int nmax=0;

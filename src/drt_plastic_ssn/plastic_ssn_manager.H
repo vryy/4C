@@ -44,14 +44,18 @@ public:
   void SetPlasticParams(Teuchos::ParameterList& params);
   void GetPlasticParams(Teuchos::ParameterList& params);
   bool Converged();
-  int NumActivePlasticGP();
+  int NumActivePlasticGP(){return numactive_global_;};
+  double DeltaLp_increment_norm() {return lp_increment_norm_global_;};
+  double DeltaLp_residual_norm() {return lp_residual_norm_global_;};
 
 private:
 
   Teuchos::RCP<DRT::Discretization> discret_; // current discretization
-  int numactive_local_; // number of active plastic Gauss points on this proc
   int numactive_global_;// number of active plastic Gauss points on all procs
   bool unconvergedactiveset_; // true, if the active set has not changed in the last step
+
+  double lp_increment_norm_global_; // L2-norm of global vector of plastic flow
+  double lp_residual_norm_global_; // L2-norm of global vector of plastic constraint residuals
 };// class SsnPlastManager
 }//namespace UTILS
 

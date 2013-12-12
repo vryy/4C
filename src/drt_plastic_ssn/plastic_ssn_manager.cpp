@@ -19,9 +19,10 @@ Maintainer: Alexander Seitz
  *-------------------------------------------------------------------*/
 UTILS::PlastSsnManager::PlastSsnManager(Teuchos::RCP<DRT::Discretization> discret):
 discret_(discret),
-numactive_local_(0),
 numactive_global_(0),
-unconvergedactiveset_(false){}
+unconvergedactiveset_(false),
+lp_increment_norm_global_(0.),
+lp_residual_norm_global_(0.){}
 
 /*-------------------------------------------------------------------*
  |  set plastic parameters in parameter list (public)     seitz 07/13|
@@ -30,6 +31,8 @@ void UTILS::PlastSsnManager::SetPlasticParams(Teuchos::ParameterList& params)
 {
   params.set<bool>("unconverged_active_set",false);
   params.set<int>("number_active_plastic_gp",0);
+  params.set<double>("Lp_increment_square",0.);
+  params.set<double>("Lp_residual_square",0.);
 }
 
 /*-------------------------------------------------------------------*
@@ -38,9 +41,19 @@ void UTILS::PlastSsnManager::SetPlasticParams(Teuchos::ParameterList& params)
 void UTILS::PlastSsnManager::GetPlasticParams(Teuchos::ParameterList& params)
 {
   unconvergedactiveset_=params.get<bool>("unconverged_active_set");
-  numactive_local_=params.get<int>("number_active_plastic_gp");
+  int numactive_local=params.get<int>("number_active_plastic_gp");
 
-  discret_->Comm().SumAll(&numactive_local_,&numactive_global_,1);
+  discret_->Comm().SumAll(&numactive_local,&numactive_global_,1);
+
+  double Lp_increment_norm_local=params.get<double>("Lp_increment_square");
+  discret_->Comm().SumAll(&Lp_increment_norm_local,&lp_increment_norm_global_,1.);
+  lp_increment_norm_global_=sqrt(lp_increment_norm_global_);
+
+  double Lp_residual_norm_local=params.get<double>("Lp_residual_square");
+  discret_->Comm().SumAll(&Lp_residual_norm_local,&lp_residual_norm_global_,1.);
+  lp_residual_norm_global_=sqrt(lp_residual_norm_global_);
+
+
 }
 
 /*-------------------------------------------------------------------*
@@ -56,12 +69,4 @@ bool UTILS::PlastSsnManager::Converged()
     return true;
   else
     return false;
-}
-
-/*-------------------------------------------------------------------*
- |  check convergence of active set (public)              seitz 08/13|
- *-------------------------------------------------------------------*/
-int UTILS::PlastSsnManager::NumActivePlasticGP()
-{
-  return numactive_global_;
 }
