@@ -51,6 +51,9 @@ Maintainer: Alexander Popp
 /* Mortar algorithm parameters                                          */
 /************************************************************************/
 
+// MORTAR INTEGRATION
+#define MORTARINTTOL 0.0       /* tolerance for assembling gp-values*/
+
 // MORTAR PROJECTION (2D/3D)
 #define MORTARMAXITER 10       /* max. no. iterations for local Newton */
 #define MORTARCONVTOL 1.0e-12  /* convergence tolerance for local Newton */

@@ -908,7 +908,7 @@ void inline MORTAR::MortarIntegrator::GP_DM(
             // dof to dof
             if (jdof==kdof)
             {
-              if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
             }
           }
         }
@@ -931,11 +931,11 @@ void inline MORTAR::MortarIntegrator::GP_DM(
               if (snode->IsOnBound())
               {
                 double minusval = -prod;
-                if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,minusval);
+                if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
               }
               else
               {
-                if(abs(prod)>1e-12) cnode->AddDValue(jdof,col,prod);
+                if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
               }
             }
           }
@@ -968,12 +968,12 @@ void inline MORTAR::MortarIntegrator::GP_DM(
             // dof to dof
             if (jdof==kdof)
             {
-              if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,prod);
-              if (!bound and abs(prod)>1e-12)
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
+              if (!bound and abs(prod)>MORTARINTTOL)
               {
                 int newcol = cnode->Dofs()[jdof];
 
-                if(abs(prod)>1e-12) cnode->AddDValue(jdof,newcol,prod);
+                if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,newcol,prod);
               }
             }
           }
@@ -1006,11 +1006,11 @@ void inline MORTAR::MortarIntegrator::GP_DM(
                 if (mnode->IsOnBound())
                 {
                   double minusval = -prod;
-                  if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,minusval);
+                  if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
                 }
                 else
                 {
-                  if(abs(prod)>1e-12) cnode->AddDValue(jdof,col,prod);
+                  if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
                 }
               }
             }
@@ -1074,7 +1074,7 @@ void inline MORTAR::MortarIntegrator::GP_3D_DM_Quad(
             // dof to dof
             if (jdof==kdof)
             {
-              if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
             }
           }
         }
@@ -1097,11 +1097,11 @@ void inline MORTAR::MortarIntegrator::GP_3D_DM_Quad(
               if (snode->IsOnBound())
               {
                 double minusval = -prod;
-                if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,minusval);
+                if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
               }
               else
               {
-                if(abs(prod)>1e-12) cnode->AddDValue(jdof,col,prod);
+                if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
               }
             }
           }
@@ -1138,7 +1138,7 @@ void inline MORTAR::MortarIntegrator::GP_3D_DM_Quad(
             // dof to dof
             if (jdof==kdof)
             {
-              if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
             }
           }
         }
@@ -1161,11 +1161,11 @@ void inline MORTAR::MortarIntegrator::GP_3D_DM_Quad(
               if (snode->IsOnBound())
               {
                 double minusval = -prod;
-                if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,minusval);
+                if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
               }
               else
               {
-                if(abs(prod)>1e-12) cnode->AddDValue(jdof,col,prod);
+                if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
               }
             }
           }
@@ -1204,8 +1204,8 @@ void inline MORTAR::MortarIntegrator::GP_3D_DM_Quad(
             // dof to dof
             if (jdof==kdof)
             {
-              if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,prod);
-              if(abs(prod)>1e-12) cnode->AddDValue(jdof,dcol,prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,dcol,prod);
             }
           }
         }
@@ -1242,7 +1242,7 @@ void inline MORTAR::MortarIntegrator::GP_3D_DM_Quad(
             // dof to dof
             if (jdof==kdof)
             {
-              if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
             }
           }
         }
@@ -1265,11 +1265,11 @@ void inline MORTAR::MortarIntegrator::GP_3D_DM_Quad(
               if (snode->IsOnBound())
               {
                 double minusval = -prod;
-                if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,minusval);
+                if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
               }
               else
               {
-                if(abs(prod)>1e-12) cnode->AddDValue(jdof,col,prod);
+                if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
               }
             }
           }

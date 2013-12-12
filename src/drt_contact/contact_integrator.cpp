@@ -3928,8 +3928,8 @@ void inline CONTACT::CoIntegrator::GP_DM(
             // dof to dof
             if (jdof==kdof)
             {
-              if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,prod);
-              if(abs(prod)>1e-12) cnode->AddMNode(mnode->Id());  // only for friction!
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());  // only for friction!
             }
           }
         }
@@ -3952,13 +3952,13 @@ void inline CONTACT::CoIntegrator::GP_DM(
               if (snode->IsOnBound())
               {
                 double minusval = -prod;
-                if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,minusval);
-                if(abs(prod)>1e-12) cnode->AddMNode(snode->Id()); // only for friction!
+                if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
+                if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id()); // only for friction!
               }
               else
               {
-                if(abs(prod)>1e-12) cnode->AddDValue(jdof,col,prod);
-                if(abs(prod)>1e-12) cnode->AddSNode(snode->Id()); // only for friction!
+                if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
+                if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id()); // only for friction!
               }
             }
           }
@@ -3991,14 +3991,14 @@ void inline CONTACT::CoIntegrator::GP_DM(
             // dof to dof
             if (jdof==kdof)
             {
-              if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,prod);
-              if(abs(prod)>1e-12) cnode->AddMNode(mnode->Id());  // only for friction!
-              if (!bound and abs(prod)>1e-12)
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());  // only for friction!
+              if (!bound and abs(prod)>MORTARINTTOL)
               {
                 int newcol = cnode->Dofs()[jdof];
 
-                if(abs(prod)>1e-12) cnode->AddDValue(jdof,newcol,prod);
-                if(abs(prod)>1e-12) cnode->AddSNode(cnode->Id()); // only for friction!
+                if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,newcol,prod);
+                if(abs(prod)>MORTARINTTOL) cnode->AddSNode(cnode->Id()); // only for friction!
               }
             }
           }
@@ -4031,13 +4031,13 @@ void inline CONTACT::CoIntegrator::GP_DM(
                 if (mnode->IsOnBound())
                 {
                   double minusval = -prod;
-                  if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,minusval);
-                  if(abs(prod)>1e-12) cnode->AddMNode(mnode->Id()); // only for friction!
+                  if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
+                  if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id()); // only for friction!
                 }
                 else
                 {
-                  if(abs(prod)>1e-12) cnode->AddDValue(jdof,col,prod);
-                  if(abs(prod)>1e-12) cnode->AddSNode(mnode->Id()); // only for friction!
+                  if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
+                  if(abs(prod)>MORTARINTTOL) cnode->AddSNode(mnode->Id()); // only for friction!
                 }
               }
             }
@@ -4101,8 +4101,8 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
             // dof to dof
             if (jdof==kdof)
             {
-              if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,prod);
-              if(abs(prod)>1e-12) cnode->AddMNode(mnode->Id());
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());
             }
           }
         }
@@ -4125,13 +4125,13 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
               if (snode->IsOnBound())
               {
                 double minusval = -prod;
-                if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,minusval);
-                if(abs(prod)>1e-12) cnode->AddMNode(snode->Id());
+                if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
+                if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id());
               }
               else
               {
-                if(abs(prod)>1e-12) cnode->AddDValue(jdof,col,prod);
-                if(abs(prod)>1e-12) cnode->AddSNode(snode->Id());
+                if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
+                if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id());
               }
             }
           }
@@ -4168,8 +4168,8 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
             // dof to dof
             if (jdof==kdof)
             {
-              if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,prod);
-              if(abs(prod)>1e-12) cnode->AddMNode(mnode->Id());
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());
             }
           }
         }
@@ -4192,13 +4192,13 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
               if (snode->IsOnBound())
               {
                 double minusval = -prod;
-                if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,minusval);
-                if(abs(prod)>1e-12) cnode->AddMNode(snode->Id());
+                if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
+                if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id());
               }
               else
               {
-                if(abs(prod)>1e-12) cnode->AddDValue(jdof,col,prod);
-                if(abs(prod)>1e-12) cnode->AddSNode(snode->Id());
+                if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
+                if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id());
               }
             }
           }
@@ -4237,10 +4237,10 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
             // dof to dof
             if (jdof==kdof)
             {
-              if(abs(prod)>1e-12) cnode->AddMValue(jdof,col,prod);
-              if(abs(prod)>1e-12) cnode->AddMNode(mnode->Id());
-              if(abs(prod)>1e-12) cnode->AddDValue(jdof,dcol,prod);
-              if(abs(prod)>1e-12) cnode->AddSNode(cnode->Id());
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());
+              if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,dcol,prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddSNode(cnode->Id());
             }
           }
         }
@@ -6780,8 +6780,8 @@ void inline CONTACT::CoIntegrator::GP_D2(
 
               if ((jdof==kdof) and (j==k))
               {
-                if(abs(prod)>1e-12) cnode->InvolvedM()=true;
-                if(abs(prod)>1e-12) cnode->AddD2Value(jdof,col,prod);
+                if(abs(prod)>MORTARINTTOL) cnode->InvolvedM()=true;
+                if(abs(prod)>MORTARINTTOL) cnode->AddD2Value(jdof,col,prod);
               }
             }
           }
@@ -7755,8 +7755,8 @@ void inline CONTACT::CoIntegrator::GP_TSI_A(
           // dof to dof
           if (jdof==kdof)
           {
-            if(abs(prod)>1e-12) fnode->AddAValue(jdof,col,prod);
-            if(abs(prod)>1e-12) fnode->AddANode(mnode->Id());
+            if(abs(prod)>MORTARINTTOL) fnode->AddAValue(jdof,col,prod);
+            if(abs(prod)>MORTARINTTOL) fnode->AddANode(mnode->Id());
           }
         }
       }
@@ -7806,8 +7806,8 @@ void inline CONTACT::CoIntegrator::GP_TSI_B(
           // dof to dof
           if (jdof==kdof)
           {
-            if(abs(prod)>1e-12) fnode->AddBValue(jdof,col,prod);
-            if(abs(prod)>1e-12) fnode->AddBNode(mnode->Id());
+            if(abs(prod)>MORTARINTTOL) fnode->AddBValue(jdof,col,prod);
+            if(abs(prod)>MORTARINTTOL) fnode->AddBNode(mnode->Id());
           }
         }
       }
@@ -7848,7 +7848,7 @@ void inline CONTACT::CoIntegrator::GP_TSI_MechDiss(
     if(thermolagmult==true) prod = lmval[j]*mechdiss*jac*wgt;
     else                    prod =  sval[j]*mechdiss*jac*wgt;
 
-    if(abs(prod)>1e-12) fnode->AddMechDissValue(prod);
+    if(abs(prod)>MORTARINTTOL) fnode->AddMechDissValue(prod);
   }
 
   // compute cell mechanical dissipation / master *********************
@@ -7859,7 +7859,7 @@ void inline CONTACT::CoIntegrator::GP_TSI_MechDiss(
 
     double prod = mval[j]*mechdiss*jac*wgt;
 
-    if(abs(prod)>1e-12) fnode->AddMechDissValue(prod);
+    if(abs(prod)>MORTARINTTOL) fnode->AddMechDissValue(prod);
   }
 
   return;
@@ -7898,8 +7898,8 @@ void inline CONTACT::CoIntegrator::GP_TE(
         int col = snode->Dofs()[0];
         int row = 0;
 
-        if(abs(prod1)>1e-12) cnode->AddTValue(row,col,prod1);
-        if(abs(prod2)>1e-12) cnode->AddEValue(row,col,prod2);
+        if(abs(prod1)>MORTARINTTOL) cnode->AddTValue(row,col,prod1);
+        if(abs(prod2)>MORTARINTTOL) cnode->AddEValue(row,col,prod2);
       }
     }
   }
@@ -7920,11 +7920,11 @@ void inline CONTACT::CoIntegrator::GP_TE(
         int col = snode->Dofs()[0];
         int row = 0;
 
-        if(abs(prod1)>1e-12) cnode->AddTValue(row,col,prod1);
+        if(abs(prod1)>MORTARINTTOL) cnode->AddTValue(row,col,prod1);
 
         //diagonal E matrix
         if (j==k)
-          if(abs(prod2)>1e-12) cnode->AddEValue(row,col,prod2);
+          if(abs(prod2)>MORTARINTTOL) cnode->AddEValue(row,col,prod2);
       }
     }
   }
@@ -7979,7 +7979,7 @@ void inline CONTACT::CoIntegrator::GP_TE_Master(
         double prod2 = mval[k]*mval[j]*jac*wgt;
 
         int col = snode->Dofs()[0];
-        if(abs(prod2)>1e-12) cnode->AddEValue(row,col,prod2);
+        if(abs(prod2)>MORTARINTTOL) cnode->AddEValue(row,col,prod2);
       }
       for (int j=0; j<ncol; ++j)
       {
@@ -7989,7 +7989,7 @@ void inline CONTACT::CoIntegrator::GP_TE_Master(
         double prod1 = mval[k]*lmval[j]*abs(*jumpval)*jac*wgt;
 
         int col = snode->Dofs()[0];
-        if(abs(prod1)>1e-12) cnode->AddTValue(row,col,prod1);
+        if(abs(prod1)>MORTARINTTOL) cnode->AddTValue(row,col,prod1);
       }
     }
   }
