@@ -4675,12 +4675,21 @@ void STATMECH::StatMechManager::CrosslinkerDiffusion(const Epetra_MultiVector& b
     {
       // bonding case 1:  no bonds, diffusion
       case 0:
-        for (int j=0; j<crosslinkerpositionstrans->NumVectors(); j++)
+        if(DRT::INPUT::IntegralValue<int>(statmechparams_, "PLANELINKERMOTION"))
         {
-          (*crosslinkerpositionstrans)[j][i] += standarddev*(*normalgen_)() + mean;
+          for (int j=0; j<crosslinkerpositionstrans->NumVectors()-1; j++)
+            (*crosslinkerpositionstrans)[j][i] += standarddev*(*normalgen_)() + mean;
+          (*crosslinkerpositionstrans)[2][i] += 0.0;
+        }
+        else
+        {
+          for (int j=0; j<crosslinkerpositionstrans->NumVectors(); j++)
+          {
+            (*crosslinkerpositionstrans)[j][i] += standarddev*(*normalgen_)() + mean;
 #ifdef DEBUGCOUT
-          (*crosslinkerdeltatrans)[j][i] = standarddev*(*normalgen_)() + mean;
+            (*crosslinkerdeltatrans)[j][i] = standarddev*(*normalgen_)() + mean;
 #endif
+          }
         }
       break;
       // bonding case 2: crosslink molecule attached to one filament
@@ -5333,9 +5342,22 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
   crosslinkerpositions_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_, 3, true));
 
   Teuchos::RCP<Epetra_MultiVector> crosslinkerpositionstrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_,3,true));
-  for (int i=0; i<crosslinkerpositionstrans->MyLength(); i++)
-    for (int j=0; j<crosslinkerpositionstrans->NumVectors(); j++)
-      (*crosslinkerpositionstrans)[j][i] = upperbound.at(j) * (*uniformgen_)();
+
+  if(DRT::INPUT::IntegralValue<int>(statmechparams_, "PLANELINKERMOTION"))
+  {
+    for (int i=0; i<crosslinkerpositionstrans->MyLength(); i++)
+    {
+      for (int j=0; j<crosslinkerpositionstrans->NumVectors()-1; j++)
+        (*crosslinkerpositionstrans)[j][i] = upperbound.at(j) * (*uniformgen_)();
+      (*crosslinkerpositionstrans)[2][i] = upperbound.at(2)/2.0;
+    }
+  }
+  else
+  {
+    for (int i=0; i<crosslinkerpositionstrans->MyLength(); i++)
+      for (int j=0; j<crosslinkerpositionstrans->NumVectors(); j++)
+        (*crosslinkerpositionstrans)[j][i] = upperbound.at(j) * (*uniformgen_)();
+  }
   CommunicateMultiVector(crosslinkerpositionstrans, crosslinkerpositions_,false,true);
 
   // initial bonding status is set (no bonds)

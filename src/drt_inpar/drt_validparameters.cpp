@@ -2018,6 +2018,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::linkermodel_active,
                                             INPAR::STATMECH::linkermodel_activeintpol),
                                             &statmech);
+  setStringToIntegralParameter<int>("PLANELINKERMOTION","No",
+                                 "Plane Brownian Motion of linkers",
+                                 yesnotuple,yesnovalue,&statmech);
   //Reading which kind of filament model should be applied
   setStringToIntegralParameter<int>("FILAMENTMODEL","std","Filament model applied in Statmech simulations",
                                  //listing possible std::strings in input file in category FILAMENTMODEL
@@ -2038,6 +2041,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::bsstype_binning,
                                             INPAR::STATMECH::bsstype_octree),
                                             &statmech);
+
   //time after which writing of statistical output is started
   DoubleParameter("STARTTIMEOUT",0.0,"Time after which writing of statistical output is started",&statmech);
   // Time values at which certain actions are carried out

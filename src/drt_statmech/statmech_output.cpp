@@ -1671,9 +1671,9 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
         {
 //          double beadcolor = 5*color;
 //          //writing element by nodal coordinates as a sphere
-//          gmshfilebonds << "SP(" << scientific;
+//          gmshfilebonds << "SP(" << std::scientific;
 //          gmshfilebonds<< (*visualizepositions_)[0][i]<< "," << (*visualizepositions_)[1][i] << "," << (*visualizepositions_)[2][i];
-//          gmshfilebonds << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << std::endl;
+//          gmshfilebonds << ")" << "{" << std::scientific << beadcolor << "," << beadcolor << "};" << std::endl;
         }
         break;
         // crosslink molecule with one bond
