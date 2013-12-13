@@ -25,7 +25,8 @@
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <Xpetra_MapExtractorFactory.hpp>
 #include <Xpetra_BlockedCrsMatrix.hpp>
-#include <Xpetra_StridedEpetraMap.hpp>
+//#include <Xpetra_StridedEpetraMap.hpp>
+#include <Xpetra_StridedMap.hpp>
 #include <Xpetra_CrsMatrix.hpp> // for merging blocked operator
 
 // MueLu
@@ -220,11 +221,16 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
 
     // define strided maps
     std::vector<size_t> stridingInfo1;
-    stridingInfo1.push_back(numdf);
-    Teuchos::RCP<Xpetra::StridedEpetraMap> strMap1 = Teuchos::rcp(new Xpetra::StridedEpetraMap(Teuchos::rcpFromRef(A->Matrix(0,0).EpetraMatrix()->RowMap()), stridingInfo1, -1 /* stridedBlock */, 0 /*globalOffset*/));
     std::vector<size_t> stridingInfo2;
+    stridingInfo1.push_back(numdf);
     stridingInfo2.push_back(numdf); // we have numdf Lagrange multipliers per node at the contact interface!
+#ifdef HAVE_Trilinos_Q1_2014
+    Teuchos::RCP<StridedMap> strMap1 = Teuchos::rcp(new StridedMap(xA11->getRowMap(), stridingInfo1, -1 /* stridedBlock */, 0 /*globalOffset*/));
+    Teuchos::RCP<StridedMap> strMap2 = Teuchos::rcp(new StridedMap(xA22->getRowMap(), stridingInfo2, -1 /* stridedBlock */, 0 /*0*/ /*globalOffset*/));
+#else
+    Teuchos::RCP<Xpetra::StridedEpetraMap> strMap1 = Teuchos::rcp(new Xpetra::StridedEpetraMap(Teuchos::rcpFromRef(A->Matrix(0,0).EpetraMatrix()->RowMap()), stridingInfo1, -1 /* stridedBlock */, 0 /*globalOffset*/));
     Teuchos::RCP<Xpetra::StridedEpetraMap> strMap2 = Teuchos::rcp(new Xpetra::StridedEpetraMap(Teuchos::rcpFromRef(A->Matrix(1,1).EpetraMatrix()->RowMap()), stridingInfo2, -1 /* stridedBlock */, 0 /*0*/ /*globalOffset*/));
+#endif
 
     // build map extractor
     std::vector<Teuchos::RCP<const Map> > xmaps;

@@ -153,11 +153,16 @@ void MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, L
   }
 
   // store (un)amalgamation information on current level
+#ifdef HAVE_Trilinos_Q1_2014
+  RCP<AmalgamationInfo> amalgamationData = rcp(new AmalgamationInfo(nodegid2dofgids_,gNodeIds));
+  Set(currentLevel, "UnAmalgamationInfo", amalgamationData);
+#else
   RCP<AmalgamationInfo> amalgamationData = rcp(new AmalgamationInfo());
   amalgamationData->SetAmalgamationParams(nodegid2dofgids_);
   amalgamationData->SetNodeGIDVector(gNodeIds);
   amalgamationData->SetNumberOfNodes(cnt_amalRows);
   Set(currentLevel, "UnAmalgamationInfo", amalgamationData);
+#endif
 
   //currentLevel.Set("Aggregates", aggregates, this);
 }
