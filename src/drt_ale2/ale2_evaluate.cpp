@@ -575,115 +575,118 @@ void DRT::ELEMENTS::Ale2::static_ke(
   // integration loops
   for (int iquad=0;iquad<intpoints.nquad;iquad++)
   {
-      const double e1 = intpoints.qxg[iquad][0];
-      const double e2 = intpoints.qxg[iquad][1];
+    const double e1 = intpoints.qxg[iquad][0];
+    const double e2 = intpoints.qxg[iquad][1];
 
-      // get values of shape functions and derivatives in the gausspoint
-      if(distype != DRT::Element::nurbs4
-	 &&
-	 distype != DRT::Element::nurbs9)
+    // get values of shape functions and derivatives in the gausspoint
+    if(distype != DRT::Element::nurbs4
+       &&
+       distype != DRT::Element::nurbs9)
+    {
+      // shape functions and their derivatives for polynomials
+      DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+    }
+    else
+    {
+      // nurbs version
+      Epetra_SerialDenseVector gp(2);
+      gp(0)=e1;
+      gp(1)=e2;
+
+      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+        (funct  ,
+         deriv  ,
+         gp     ,
+         myknots,
+         weights,
+         distype);
+    }
+
+    // compute jacobian matrix
+
+    // determine jacobian at point r,s,t
+    for (int i=0; i<2; i++)
+    {
+      for (int j=0; j<2; j++)
       {
-	// shape functions and their derivatives for polynomials
-	DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
-	DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
-      }
-      else
-      {
-	// nurbs version
-	Epetra_SerialDenseVector gp(2);
-	gp(0)=e1;
-	gp(1)=e2;
-
-	DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
-	  (funct  ,
-	   deriv  ,
-	   gp     ,
-	   myknots,
-	   weights,
-	   distype);
-      }
-
-      // compute jacobian matrix
-
-      // determine jacobian at point r,s,t
-      for (int i=0; i<2; i++)
-      {
-        for (int j=0; j<2; j++)
+        double dum=0.;
+        for (int l=0; l<iel; l++)
         {
-          double dum=0.;
-          for (int l=0; l<iel; l++)
-          {
-            dum += deriv(i,l)*xyze(j,l);
-          }
-          xjm(i,j)=dum;
+          dum += deriv(i,l)*xyze(j,l);
+        }
+        xjm(i,j)=dum;
+      }
+    }
+
+    // determinant of jacobian
+    const double det = xjm(0,0)*xjm(1,1) - xjm(0,1)*xjm(1,0);
+    if(abs(det)<1.0e-6)
+    {
+      dserror("det %12.5e in ale element %d\n",det,Id());
+    }
+    const double fac = intpoints.qwgt[iquad]*det;
+
+    // calculate operator B
+
+    // inverse of jacobian
+    const double dum=1.0/det;
+    xji(0,0) = xjm(1,1)* dum;
+    xji(0,1) =-xjm(0,1)* dum;
+    xji(1,0) =-xjm(1,0)* dum;
+    xji(1,1) = xjm(0,0)* dum;
+
+    // get operator b of global derivatives
+    for (int i=0; i<iel; i++)
+    {
+      const int node_start = i*2;
+
+      const double hr   = deriv(0,i);
+      const double hs   = deriv(1,i);
+
+      const double h1 = xji(0,0)*hr + xji(0,1)*hs;
+      const double h2 = xji(1,0)*hr + xji(1,1)*hs;
+/*
+           | Nk,x    0   |
+           |   0    Nk,y |, k=0...iel-1
+           | Nk,y   Nk,x |
+*/
+
+      bop(0,node_start+0) = h1 ;
+      bop(0,node_start+1) = 0.0;
+      bop(1,node_start+0) = 0.0;
+      bop(1,node_start+1) = h2 ;
+      bop(2,node_start+0) = h2;
+      bop(2,node_start+1) = h1;
+    }
+
+    if (this->Id() == 35)
+      d.Scale(5.0);
+
+    // call material law
+    actmat->SetupCmat2d(&d);
+
+    for (int j=0; j<nd; j++)
+    {
+      double db[3];
+      for (int k=0; k<3; k++)
+      {
+        db[k] = 0.0;
+        for (int l=0; l<3; l++)
+        {
+          db[k] += d(k,l)*bop(l,j)*fac ;
         }
       }
-
-      // determinant of jacobian
-      const double det = xjm(0,0)*xjm(1,1) - xjm(0,1)*xjm(1,0);
-      if(abs(det)<1.0e-6)
+      for (int i=0; i<nd; i++)
       {
-	dserror("det %12.5e in ale element %d\n",det,Id());
-      }
-      const double fac = intpoints.qwgt[iquad]*det;
-
-      // calculate operator B
-
-      // inverse of jacobian
-      const double dum=1.0/det;
-      xji(0,0) = xjm(1,1)* dum;
-      xji(0,1) =-xjm(0,1)* dum;
-      xji(1,0) =-xjm(1,0)* dum;
-      xji(1,1) = xjm(0,0)* dum;
-
-      // get operator b of global derivatives
-      for (int i=0; i<iel; i++)
-      {
-        const int node_start = i*2;
-
-        const double hr   = deriv(0,i);
-        const double hs   = deriv(1,i);
-
-        const double h1 = xji(0,0)*hr + xji(0,1)*hs;
-        const double h2 = xji(1,0)*hr + xji(1,1)*hs;
-	/*
-             | Nk,x    0   |
-             |   0    Nk,y |, k=0...iel-1
-             | Nk,y   Nk,x |
-	*/
-
-        bop(0,node_start+0) = h1 ;
-        bop(0,node_start+1) = 0.0;
-        bop(1,node_start+0) = 0.0;
-        bop(1,node_start+1) = h2 ;
-        bop(2,node_start+0) = h2;
-        bop(2,node_start+1) = h1;
-      }
-
-      // call material law
-      actmat->SetupCmat2d(&d);
-
-      for (int j=0; j<nd; j++)
-      {
-        double db[3];
-        for (int k=0; k<3; k++)
+        double dum = 0.0;
+        for (int m=0; m<3; m++)
         {
-          db[k] = 0.0;
-          for (int l=0; l<3; l++)
-          {
-            db[k] += d(k,l)*bop(l,j)*fac ;
-          }
+          dum = dum + bop(m,i)*db[m] ;
         }
-        for (int i=0; i<nd; i++)
-        {
-          double dum = 0.0;
-          for (int m=0; m<3; m++)
-          {
-            dum = dum + bop(m,i)*db[m] ;
-          }
-          (*sys_mat)(i,j) += dum ;
-        }
+        (*sys_mat)(i,j) += dum ;
       }
+    }
   }
 }
 
@@ -693,13 +696,13 @@ void DRT::ELEMENTS::Ale2::static_ke(
 
 static void ale2_min_jaco(DRT::Element::DiscretizationType distyp, Epetra_SerialDenseMatrix xyz, double *min_detF)
 {
-double  detF[4];          /* Jacobian determinant at nodes */
+  double  detF[4];          /* Jacobian determinant at nodes */
 
-switch (distyp)
-{
-   case DRT::Element::quad4:
-   case DRT::Element::quad8:
-   case DRT::Element::quad9:
+  switch (distyp)
+  {
+    case DRT::Element::quad4:
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
       /*--------------------- evaluate Jacobian determinant at nodes ---*/
       detF[0] = 0.25 * ( (xyz[0][0]-xyz[0][1]) * (xyz[1][0]-xyz[1][3])
                        - (xyz[1][0]-xyz[1][1]) * (xyz[0][0]-xyz[0][3]) );
@@ -721,16 +724,16 @@ switch (distyp)
       *min_detF = (*min_detF < detF[3]) ? *min_detF : detF[3];
       /*----------------------------------------------------------------*/
       break;
-   case DRT::Element::tri3:
+    case DRT::Element::tri3:
       *min_detF = (-xyz[0][0]+xyz[0][1]) * (-xyz[1][0]+xyz[1][2])
                 - (-xyz[0][0]+xyz[0][2]) * (-xyz[1][0]+xyz[1][1]);
       if (*min_detF <= 0.0) dserror("Negative JACOBIAN ");
       break;
-   default:
+    default:
       dserror("minimal Jacobian determinant for this distyp not implemented");
       break;
-}
-return;
+  }
+  return;
 }
 
 
@@ -772,16 +775,14 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
      distype==DRT::Element::nurbs9)
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis
-      =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+      = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
 
     (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
 
     for (int inode=0; inode<iel; ++inode)
     {
       DRT::NURBS::ControlPoint* cp
-        =
-        dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+        = dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
 
       weights(inode) = cp->W();
     }
@@ -805,82 +806,80 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
   // integration loops
   for (int iquad=0;iquad<intpoints.nquad;iquad++)
   {
-      const double e1 = intpoints.qxg[iquad][0];
-      const double e2 = intpoints.qxg[iquad][1];
+    const double e1 = intpoints.qxg[iquad][0];
+    const double e2 = intpoints.qxg[iquad][1];
 
-      // get values of shape functions and derivatives in the gausspoint
-      if(distype != DRT::Element::nurbs4
-	 &&
-	 distype != DRT::Element::nurbs9)
+    // get values of shape functions and derivatives in the gausspoint
+    if(distype != DRT::Element::nurbs4
+       &&
+       distype != DRT::Element::nurbs9)
+    {
+      // shape functions and their derivatives for polynomials
+      DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+    }
+    else
+    {
+      // nurbs version
+      Epetra_SerialDenseVector gp(2);
+      gp(0)=e1;
+      gp(1)=e2;
+
+      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+        (funct  ,
+         deriv  ,
+         gp     ,
+         myknots,
+         weights,
+         distype);
+    }
+
+    // compute jacobian matrix
+
+    // determine jacobian at point r,s,t
+    for (int i=0; i<2; i++)
+    {
+      for (int j=0; j<2; j++)
       {
-	// shape functions and their derivatives for polynomials
-	DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
-	DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
-      }
-      else
-      {
-	// nurbs version
-	Epetra_SerialDenseVector gp(2);
-	gp(0)=e1;
-	gp(1)=e2;
-
-	DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
-	  (funct  ,
-	   deriv  ,
-	   gp     ,
-	   myknots,
-	   weights,
-	   distype);
-      }
-
-      // compute jacobian matrix
-
-      // determine jacobian at point r,s,t
-      for (int i=0; i<2; i++)
-      {
-        for (int j=0; j<2; j++)
+        double dum=0.;
+        for (int l=0; l<iel; l++)
         {
-          double dum=0.;
-          for (int l=0; l<iel; l++)
-          {
-            dum += deriv(i,l)*xyze(j,l);
-          }
-          xjm(i,j)=dum;
+          dum += deriv(i,l)*xyze(j,l);
         }
+        xjm(i,j)=dum;
       }
+    }
 
-      // determinant of jacobian
-      const double det = xjm(0,0)*xjm(1,1) - xjm(0,1)*xjm(1,0);
-      const double fac = intpoints.qwgt[iquad]*det;
+    // determinant of jacobian
+    const double det = xjm(0,0)*xjm(1,1) - xjm(0,1)*xjm(1,0);
+    const double fac = intpoints.qwgt[iquad]*det;
 
-      // calculate operator B
+    // calculate operator B
 
-      // inverse of jacobian
-      const double dum=1.0/det;
-      xji(0,0) = xjm(1,1)* dum;
-      xji(0,1) =-xjm(0,1)* dum;
-      xji(1,0) =-xjm(1,0)* dum;
-      xji(1,1) = xjm(0,0)* dum;
+    // inverse of jacobian
+    const double dum=1.0/det;
+    xji(0,0) = xjm(1,1)* dum;
+    xji(0,1) =-xjm(0,1)* dum;
+    xji(1,0) =-xjm(1,0)* dum;
+    xji(1,1) = xjm(0,0)* dum;
 
-      for (int isd=0; isd<2; isd++)
-        for (int jsd=0; jsd<2; jsd++)
-          for (int inode=0; inode<iel; inode++)
-            deriv_xy(isd,inode) = xji(isd,jsd) * deriv(jsd,inode);
-      /*------------------------- diffusivity depends on displacement ---*/
-      const double k_diff = 1.0/min_detF/min_detF;
-      /*------------------------------- sort it into stiffness matrix ---*/
-      for (int i=0; i<iel; i++)
-      {
-         for (int j=0; j<iel; j++)
-         {
-           (*sys_mat)(i*2,j*2)     += ( deriv_xy(0,i) * deriv_xy(0,j)
-                                      + deriv_xy(1,i) * deriv_xy(1,j) )*fac*k_diff;
-           (*sys_mat)(i*2+1,j*2+1) += ( deriv_xy(0,i) * deriv_xy(0,j)
-                                      + deriv_xy(1,i) * deriv_xy(1,j) )*fac*k_diff;
-         }
-      }
-
-
+    for (int isd=0; isd<2; isd++)
+      for (int jsd=0; jsd<2; jsd++)
+        for (int inode=0; inode<iel; inode++)
+          deriv_xy(isd,inode) = xji(isd,jsd) * deriv(jsd,inode);
+    /*------------------------- diffusivity depends on displacement ---*/
+    const double k_diff = 1.0/min_detF/min_detF;
+    /*------------------------------- sort it into stiffness matrix ---*/
+    for (int i=0; i<iel; i++)
+    {
+       for (int j=0; j<iel; j++)
+       {
+         (*sys_mat)(i*2,j*2)     += ( deriv_xy(0,i) * deriv_xy(0,j)
+                                    + deriv_xy(1,i) * deriv_xy(1,j) )*fac*k_diff;
+         (*sys_mat)(i*2+1,j*2+1) += ( deriv_xy(0,i) * deriv_xy(0,j)
+                                    + deriv_xy(1,i) * deriv_xy(1,j) )*fac*k_diff;
+       }
+    }
   }
 }
 
