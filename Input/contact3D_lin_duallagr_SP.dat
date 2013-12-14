@@ -130,9 +130,9 @@ ML_MAXLEVEL                     3
 ML_PRINT                        10
 ML_PROLONG_SMO                  0.0
 ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               SIMPLEC
-ML_SMOOTHERFINE                 SIMPLEC
-ML_SMOOTHERMED                  SIMPLEC
+ML_SMOOTHERCOARSE               SIMPLE
+ML_SMOOTHERFINE                 SIMPLE
+ML_SMOOTHERMED                  SIMPLE
 ML_SMOTIMES                     3 3 3 3 3 3
 MueLu_REUSE                     nothing
 SUB_SOLVER1                     3

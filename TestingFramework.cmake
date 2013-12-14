@@ -1432,12 +1432,13 @@ baci_test(meshtying3D_contactsp_duallagr_braesssarazin 2 "")
 
 baci_test(f2_drivencavity20x20_muelu_xml_PGAMG 1 "")
 baci_test(f2_drivencavity20x20_muelu_xml_PGAMG 2 "")
+
+# 2 block contact (saddlepoint formulation)
+baci_test(contact3D_lin_duallagr_SP 2 "")
+
 endif (HAVE_Trilinos_Q3_2013)
 
 if (HAVE_Trilinos_Q1_2014)
-# two block contact example in saddlepoint formulation
-# only works with Q1/2014 or newer
-baci_test(contact3D_lin_duallagr_SP 2 "")
 endif (HAVE_Trilinos_Q1_2014)
 
 endif (HAVE_MueLu)
