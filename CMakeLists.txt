@@ -14,7 +14,7 @@ set (baci_VERSION_MAJOR 1)
 set (baci_VERSION_MINOR 0)
 
 # configure a header file to pass some of the CMake settings
-# to the source code
+# # to the source code
 configure_file (
   "${PROJECT_SOURCE_DIR}/src/headers/compile_settings.h.in"
   "${PROJECT_BINARY_DIR}/src/headers/compile_settings.h"
@@ -552,6 +552,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_fld_moving_boundary.cpp
   src/drt_adapter/ad_fld_poro.cpp
   src/drt_adapter/ad_fld_fluid_fsi.cpp
+    src/drt_adapter/ad_fld_fluid_fpsi.cpp
   src/drt_adapter/ad_fld_fluid_fluid_fsi.cpp
   src/drt_adapter/ad_fld_fluid_xfem.cpp
   src/drt_adapter/ad_fld_xfluid_fsi.cpp

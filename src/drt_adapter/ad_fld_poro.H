@@ -18,7 +18,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "ad_fld_fluid_fsi.H"
+#include "ad_fld_fluid_fpsi.H"
 #include "../linalg/linalg_mapextractor.H"
 
 #include "../drt_poroelast/poroelast_utils.H"
@@ -30,7 +30,7 @@ namespace DRT
 
 namespace ADAPTER {
 
-  class FluidPoro : public FluidFSI
+  class FluidPoro : public FluidFPSI
   {
   public:
 

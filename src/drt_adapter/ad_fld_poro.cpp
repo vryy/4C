@@ -34,7 +34,7 @@ ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid,
     Teuchos::RCP<IO::DiscretizationWriter> output,
     bool isale,
     bool dirichletcond)
-: FluidFSI(fluid,dis,solver,params,output,isale,dirichletcond)
+: ADAPTER::FluidFPSI::FluidFPSI(fluid,dis,solver,params,output,isale,dirichletcond)
 {
   // make sure
 

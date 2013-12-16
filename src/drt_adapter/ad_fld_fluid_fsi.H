@@ -87,8 +87,11 @@ namespace ADAPTER {
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
 
-    /// communication object at the interface without pressure dofs for FPSI problems
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const { return fpsiinterface_; }
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const
+    { dserror("Not implemented in FluidFSI. Make sure to build FluidFPSI object.");
+      static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
+      return ret;
+    }
 
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap();
 
@@ -177,9 +180,6 @@ namespace ADAPTER {
     //!
     //! Note: full map contains velocity AND pressure DOFs
     Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
-
-    /// the interface map setup for fpsi interface, free surface, interior translation
-    Teuchos::RCP<FLD::UTILS::MapExtractor> fpsiinterface_;
 
     /// interface force at old time level t_n
     Teuchos::RCP<Epetra_Vector>            interfaceforcen_;

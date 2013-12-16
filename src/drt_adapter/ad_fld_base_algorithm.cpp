@@ -39,6 +39,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_Time.hpp>
 
 #include "ad_fld_fluid_fluid_fsi.H"
+#include "ad_fld_fluid_fpsi.H"
 #include "ad_fld_fluid_fsi.H"
 #include "ad_fld_lung.H"
 #include "ad_fld_poro.H"
@@ -703,7 +704,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       {
         fluidtimeparams->set<int>("Physical Type",INPAR::FLUID::incompressible);
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis,solver,fluidtimeparams,output,isale));
-        fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
+        fluid_ = Teuchos::rcp(new FluidFPSI(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
 
       }
     }
