@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_fsi.H
+\file ad_fld_fluid_fpsi.H
 
 \brief Fluid field adapter for fpsi
 

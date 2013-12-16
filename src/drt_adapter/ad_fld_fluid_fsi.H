@@ -87,12 +87,6 @@ namespace ADAPTER {
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
 
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const
-    { dserror("Not implemented in FluidFSI. Make sure to build FluidFPSI object.");
-      static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
-      return ret;
-    }
-
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap();
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
