@@ -833,8 +833,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       // etang = alpham/(gamma . Dt) . ecapa + alphaf . econd
       // fac_capa = alpham/(gamma . Dt)
       // fac_cond = alphaf
-      double fac_capa = alpham/(gamma * stepsize);
-      etang.Update(fac_capa,ecapa_,alphaf);
+      double fac_capa = alpham / (gamma * stepsize);
+      etang.Update(fac_capa, ecapa_, alphaf);
 
       // ---------------------------------------------------------- efcap
       // efcap = ecapa . R_{n+alpham}
@@ -877,8 +877,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     Teuchos::RCP<std::vector<char> > tempgraddata
       = params.get<Teuchos::RCP<std::vector<char> > >("tempgrad");
     // working arrays
-    LINALG::Matrix<nquad_,nsd_> eheatflux;
-    LINALG::Matrix<nquad_,nsd_> etempgrad;
+    LINALG::Matrix<nquad_,nsd_> eheatflux(false);
+    LINALG::Matrix<nquad_,nsd_> etempgrad(false);
 
     // thermal problem or geometrically linear TSI problem
     if (kintype == 0)
@@ -1096,8 +1096,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       // call material law => cmat_,heatflux_
       Materialize(ele);
 
-      LINALG::Matrix<1,1> temp;
-      temp.MultiplyTN(1.0,funct_,etemp_,0.0);
+      LINALG::Matrix<1,1> temp(false);
+      temp.MultiplyTN(funct_, etemp_);
 
       // internal energy
       intenergy += kappa * fac_ * temp(0,0);
@@ -1313,19 +1313,19 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
     // get radiation in gausspoint
     if (efext != NULL)
     {
-      // fext = fext + N . r. detJ * w(gp)
-      // with funct_: shape functions, fac_:detJ * w(gp)
-      efext->MultiplyNN(fac_,funct_,radiation_,1.0);
+      // fext = fext + N . r. detJ . w(gp)
+      // with funct_: shape functions, fac_:detJ . w(gp)
+      efext->MultiplyNN(fac_, funct_, radiation_, 1.0);
     }
 
     // gradient of current temperature value
     // grad T = d T_j / d x_i = L . N . T = B_ij T_j
-    gradtemp_.MultiplyNN(derxy_,etemp_);
+    gradtemp_.MultiplyNN(derxy_, etemp_);
 
     // store the temperature gradient for postprocessing
     if (etempgrad != NULL)
       for (int idim=0; idim<nsd_; ++idim)
-        // (8x3)                = (3x1)
+        // (8x3)                    (3x1)
         (*etempgrad)(iquad,idim) = gradtemp_(idim);
 
     // call material law => cmat_,heatflux_
@@ -1347,8 +1347,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
     // internal force vector
     if (efint != NULL)
     {
-      // fint = fint + B^T . q . detJ * w(gp)
-      efint->MultiplyTN(fac_,derxy_,heatflux_,1.0);
+      // fint = fint + B^T . q . detJ . w(gp)
+      efint->MultiplyTN(fac_, derxy_, heatflux_, 1.0);
     }
 
     // conductivity matrix
@@ -1357,8 +1357,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
       // ke = ke + ( B^T . C_mat . B ) * detJ * w(gp)  with C_mat = k * I
       LINALG::Matrix<nsd_,nen_> aop(false); // (3x8)
       // -q = C * B
-      aop.MultiplyNN(cmat_,derxy_); //(nsd_xnsd_)(nsd_xnen_)
-      econd->MultiplyTN(fac_,derxy_,aop,1.0); //(nen_xnen_)=(nen_xnsd_)(nsd_xnen_)
+      aop.MultiplyNN(cmat_, derxy_); //(nsd_xnsd_)(nsd_xnen_)
+      econd->MultiplyTN(fac_, derxy_, aop, 1.0); //(nen_xnen_)=(nen_xnsd_)(nsd_xnen_)
     }
 
     // capacity matrix (equates the mass matrix in the structural field)
@@ -1368,10 +1368,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
       // (8x8)      (8x1)               (1x8)
       // caution: funct_ implemented as (8,1)--> use transposed in code for
       // theoretic part
-      ecapa->MultiplyNT((fac_*capacoeff_),funct_,funct_,1.0);
+      ecapa->MultiplyNT((fac_*capacoeff_), funct_, funct_, 1.0);
     }
 
-   }  // --------------------------------- end loop over Gauss Points
+  }  // --------------------------------- end loop over Gauss Points
 
 #ifdef THRASOUTPUT
   if (efint != NULL) std::cout << "element No. = "<< ele->Id() << " efint f_Td CalculateFintCondCapa"<< *efint << std::endl;
@@ -1477,12 +1477,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
     CalculateBoplin(&boplin,&derxy_);
 
     // now build the strain rates / velocities
-    LINALG::Matrix<6,1> strainvel(true);
+    LINALG::Matrix<6,1> strainvel(false);
     // e' = B . d' = B . v = 0.5 * (Grad u' + Grad^T u')
     strainvel.Multiply(boplin,evel);  // (6x24)(24x1)=(6x1)
 
     // calculate scalar-valued temperature
-    NT.MultiplyTN(funct_,etemp_);
+    NT.MultiplyTN(funct_, etemp_);
 #ifdef COUPLEINITTEMPERATURE
     // for TSI validation with Tanaka: use T_0 here instead of current temperature!
     NT(0,0) = thrstvk->InitTemp;
@@ -1494,13 +1494,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
 
       // scalar-valued current element temperature T_{n+1}
       // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
-      double scalartemp = NT(0,0);
       // insert T_{n+1} into parameter list
-      params.set<double>("scalartemp",scalartemp);
+      params.set<double>("scalartemp", NT(0,0));
 
       // get the temperature-dependent material tangent
       thrstvk->SetupCthermo(ctemp,params);
-      
+
       // if young's modulus is temperature-dependent, E(T), additional terms arise
       // for the stiffness matrix k_TT
       if (young_temp == true)
@@ -1511,10 +1510,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
         // k_TT += - N_T^T . dC_T/dT : B_d . d' . N_T . T . N_T
         LINALG::Matrix<6,1> dctemp_dT(false);
         thrstvk->GetCthermoAtTempnp_T(dctemp_dT,params);
+
         LINALG::Matrix<nen_,6> Ndctemp_dT(false);  // (8x1)(1x6)
         Ndctemp_dT.MultiplyNT(funct_,dctemp_dT);
+
         LINALG::Matrix<nen_,1> Ndctemp_dTBv(false);
         Ndctemp_dTBv.Multiply(Ndctemp_dT,strainvel);
+
         Ndctemp_dTBvNT.Multiply(Ndctemp_dTBv,NT);
       }  // (young_temp == true)
       
@@ -1539,12 +1541,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
       // extract elastic part of the total strain
       thrpllinelast->StrainRateSplit(iquad,stepsize,strainvel);
       // overwrite strainvel, strainvel has to include only elastic strain rates
-      strainvel.Update(1.0,thrpllinelast->ElasticStrainRate(iquad),0.0);
+      strainvel.Update(thrpllinelast->ElasticStrainRate(iquad));
 
     }  // m_thermopllinelast
-
-    // insert the negative value of the coupling term (c.f. energy balance)
-    ctemp.Scale(-1.0);
 
 #ifdef CALCSTABILOFREACTTERM
     // scalar product ctemp : (B . (d^e)')
@@ -1574,16 +1573,16 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
 #endif  // CALCSTABILOFREACTTERM
 
     // N_T^T . (- ctemp) : ( B_L .  (d^e)' )
-    LINALG::Matrix<nen_,6> Nctemp(true); // (8x1)(1x6)
-    Nctemp.MultiplyNT(funct_,ctemp);
-    LINALG::Matrix<nen_,1> ncBv;
-    ncBv.Multiply(Nctemp,strainvel);
+    LINALG::Matrix<nen_,6> Nctemp(false); // (8x1)(1x6)
+    Nctemp.MultiplyNT(funct_, ctemp);
+    LINALG::Matrix<nen_,1> ncBv(false);
+    ncBv.Multiply(Nctemp, strainvel);
 
     // integrate internal force vector (coupling fraction towards displacements)
     if (efint != NULL)
     {
       // fintdisp += - N_T^T . ctemp : (B_L .  (d^e)') . N_T . T
-      efint->Multiply(fac_,ncBv,NT,1.0);
+      efint->Multiply( (-fac_), ncBv,NT, 1.0);
 
 #ifdef TSIMONOLITHASOUTPUT
       if (ele->Id()==0)
@@ -1604,7 +1603,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCond(
     {
       // k^e += - ( N_T^T . (-m . I) . (B_L . (d^e)') . N_T ) . detJ . w(gp)
       // --> negative term enters the tangent (cf. L923) ctemp.Scale(-1.0);
-      econd->MultiplyNT(fac_, ncBv, funct_, 1.0);
+      econd->MultiplyNT( (-fac_), ncBv, funct_, 1.0);
 
       // in case of temperature-dependent Young's modulus, additional term for
       // conductivity matrix
@@ -1685,7 +1684,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
     timefac = 1.0;
     // timefac_d' = Lin (v_n+1) . \Delta d_n+1 = 1/dt
     // cf. Diss N. Karajan (2009) for quasistatic approach
-    timefac_d = 1/stepsize;
+    timefac_d = 1.0/stepsize;
     break;
   }
   case INPAR::THR::dyna_onesteptheta :
@@ -1695,7 +1694,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
     // timefac_d' = Lin (v_n+1) . \Delta d_n+1 = 1/(theta . dt)
     // initialise timefac_d of velocity discretisation w.r.t. displacements
     double str_theta = params.get<double>("str_theta");
-    timefac_d = 1/(str_theta * stepsize);
+    timefac_d = 1.0/(str_theta * stepsize);
     break;
   }
   case INPAR::THR::dyna_genalpha :
@@ -1732,12 +1731,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
     // GEOMETRIC LINEAR problem the deformation gradient is equal to identity
 
     // calculate the linear B-operator
-    LINALG::Matrix<6,nsd_*nen_*numdofpernode_> boplin;
-    CalculateBoplin(&boplin,&derxy_);
+    LINALG::Matrix<6,nsd_*nen_*numdofpernode_> boplin(false);
+    CalculateBoplin(&boplin, &derxy_);
 
     // non-symmetric stiffness matrix
     // current element temperatures
-    NT.MultiplyTN(funct_,etemp_);  // (1x8)(8x1)= (1x1)
+    NT.MultiplyTN(funct_, etemp_);  // (1x8)(8x1)= (1x1)
 
     if (structmat->MaterialType() == INPAR::MAT::m_thermostvenant)
     {
@@ -1746,9 +1745,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
 
       // scalar-valued current element temperature T_{n+1}
       // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
-      double scalartemp = NT(0,0);
       // insert T_{n+1} into parameter list
-      params.set<double>("scalartemp",scalartemp);
+      params.set<double>("scalartemp", NT(0,0));
 
       // get the temperature-dependent material tangent
       thrstvk->SetupCthermo(ctemp,params);
@@ -1769,16 +1767,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
       thrpllinelast->SetupCthermo(ctemp);
     }  // m_thermopllinelast
 
-    // insert the negative value of the coupling term (c.f. energy balance)
-    ctemp.Scale(-1.0);
-
     // N_temp^T . N_temp . temp
     LINALG::Matrix<nen_,1> NNT(false);
-    NNT.Multiply(funct_,NT); // (8x1)(1x1) = (8x1)
+    NNT.Multiply(funct_, NT); // (8x1)(1x1) = (8x1)
 
     // N_T^T . N_T . T . ctemp
     LINALG::Matrix<nen_,6> NNTC(false); // (8x1)(1x6)
-    NNTC.MultiplyNT(NNT,ctemp);  // (8x6)
+    NNTC.MultiplyNT(NNT, ctemp);  // (8x6)
 
 #ifdef TSIMONOLITHASOUTPUT
     if (ele->Id()==0)
@@ -1795,11 +1790,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
     // coupling stiffness matrix
     if (etangcoupl != NULL)
     {
-      // k_Td^e = k_Td^e + timefac . ( N_T^T . N_T . T . (-C_T)/str_timefac . B_L )
+      // k_Td^e = k_Td^e - timefac . ( N_T^T . N_T . T . C_T/str_timefac . B_L )
       //                   . detJ . w(gp)
       // with C_T = m . I
       // (8x24) = (8x6) . (6x24)
-      etangcoupl->MultiplyNN((timefac*fac_*timefac_d), NNTC, boplin, 1.0);
+      etangcoupl->MultiplyNN( (-timefac*fac_*timefac_d), NNTC, boplin, 1.0);
     }  // (etangcoupl != NULL)
 
    }  //-------------------------------------- end loop over Gauss Points
@@ -1901,35 +1896,35 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
     
     // scalar-valued current element temperature T_{n+1} = N . T
-    NT.MultiplyTN(funct_,etemp_);
+    NT.MultiplyTN(funct_, etemp_);
     
     // ------------------------------------------------- thermal gradient
     // gradient of current temperature value
     // Grad T = d T_j / d x_i = L . N . T = B_ij T_j
-    gradtemp_.MultiplyNN(derxy_,etemp_);
+    gradtemp_.MultiplyNN(derxy_, etemp_);
 
     // ---------------------------------------- call thermal material law
     // call material law => cmat_,heatflux_
     // negative q is used for balance equation:
-    // heatflux_ = k_0 * Grad T
+    // heatflux_ = k_0 . Grad T
     Materialize(ele);
-    // heatflux_ := qintermediate = k_0 * Grad T
+    // heatflux_ := qintermediate = k_0 . Grad T
 
     // -------------------------------------------- coupling to mechanics
     // (material) deformation gradient F
     // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    defgrd.MultiplyTT(xcurr,derxy_);
+    defgrd.MultiplyTT(xcurr, derxy_);
     // rate of (material) deformation gradient F'
     // F' = d xcurr' / d xrefe = (xcurr')^T * N_XYZ^T
-    defgrdrate.MultiplyTT(xcurrrate,derxy_);
+    defgrdrate.MultiplyTT(xcurrrate, derxy_);
     // inverse of deformation gradient
     invdefgrd.Invert(defgrd);
     // build the linear B-operator
-    LINALG::Matrix<6,nen_*nsd_*numdofpernode_> boplin;
-    CalculateBoplin(&boplin,&derxy_);
+    LINALG::Matrix<6,nen_*nsd_*numdofpernode_> boplin(false);
+    CalculateBoplin(&boplin, &derxy_);
     // build the nonlinear B-operator
-    LINALG::Matrix<6,nen_*nsd_*numdofpernode_> bop;
-    CalculateBop(&bop,&defgrd,&derxy_);
+    LINALG::Matrix<6,nen_*nsd_*numdofpernode_> bop(false);
+    CalculateBop(&bop, &defgrd, &derxy_);
 
     // ----------- derivatives of right Cauchy-Green deformation tensor C
     // build the rate of C: C'= F^T . F' + (F')^T . F
@@ -1942,16 +1937,23 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
     // Cinvvct: C^{-1} in Voight-/vector notation
     // C^{-1} = { C11^{-1}, C22^{-1}, C33^{-1}, C12^{-1}, C23^{-1}, C31^{-1} }
     LINALG::Matrix<6,1> Cinvvct(false);
-    CalculateCauchyGreens(Cratevct,Cinvvct,Cinv,&defgrd,&defgrdrate,&invdefgrd);
+    CalculateCauchyGreens(
+      Cratevct,
+      Cinvvct,
+      Cinv,
+      &defgrd,
+      &defgrdrate,
+      &invdefgrd
+      );
 
     // initial heatflux Q = C^{-1} . qintermediate = k_0 . C^{-1} . B_T . T
     // the current heatflux q = detF . F^{-1} . q
     // store heatflux
     // (3x1)  (3x3) . (3x1)
-    LINALG::Matrix<nsd_,1> initialheatflux(true);
+    LINALG::Matrix<nsd_,1> initialheatflux(false);
     initialheatflux.Multiply(Cinv, heatflux_);
     // put the initial, material heatflux onto heatflux_
-    heatflux_.Update(1.0, initialheatflux, 0.0);
+    heatflux_.Update(initialheatflux);
     // from here on heatflux_ == -Q
 
 #ifdef THRASOUTPUT
@@ -2046,13 +2048,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
     {
       // scalar-valued current element temperature T_{n+1}
       // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
-      double scalartemp = NT(0,0);
       // insert T_{n+1} into parameter list
-      params.set<double>("scalartemp",scalartemp);
+      params.set<double>("scalartemp", NT(0,0));
 
       Teuchos::RCP<MAT::ThermoStVenantKirchhoff> thrstvk
         = Teuchos::rcp_dynamic_cast <MAT::ThermoStVenantKirchhoff>(structmat,true);
-      thrstvk->SetupCthermo(ctemp,params);
+      thrstvk->SetupCthermo(ctemp, params);
 
       if (young_temp == true)
       {
@@ -2073,9 +2074,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
         double dctemp_dTCdot = 0.0;
         for (int i=0; i<6; ++i)
           dctemp_dTCdot += dctemp_dT(i,0) * (1/2.0) * Cratevct(i,0);  // (6x1)(6x1)
+
         LINALG::Matrix<nen_,1> Ndctemp_dTCratevct(false);
-        Ndctemp_dTCratevct.Update(dctemp_dTCdot,funct_,0.0);
-        Ndctemp_dTCrateNT.Multiply(Ndctemp_dTCratevct,NT);  // (8x1)(1x1)
+        Ndctemp_dTCratevct.Update(dctemp_dTCdot, funct_);
+        Ndctemp_dTCrateNT.Multiply(Ndctemp_dTCratevct, NT);  // (8x1)(1x1)
 
         // ------------------------------------ special terms due to material law
         // if young's modulus is temperature-dependent, E(T), additional terms arise
@@ -2089,7 +2091,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
           econd->MultiplyNT(-fac_, Ndctemp_dTCrateNT, funct_, 1.0);
         }  // (econd != NULL)
 
-      }  // m_thermostvenant && (young_temp == true)
+      }  // m_thermostvenant and (young_temp == true)
     }  // m_thermostvenant
 
     else if (structmat->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
@@ -2130,7 +2132,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
     }  // m_thermoplhyperelast
 
     // --------------------------------------------- terms for r_T / k_TT
-    // scalar product: ctempcdot = -C_T : 1/2 C'
+    // scalar product: ctempcdot = C_T : 1/2 C'
     double ctempCdot = 0.0;
     for (int i=0; i<6; ++i)
       ctempCdot += ctemp(i,0) * (1/2.0) * Cratevct(i,0);
@@ -2151,7 +2153,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
       // fint = fint + fint_{Td}
       // with fint_{Td} += - N^T . ctemp : (1/2 . C') . N . T +
       //                   + B^T . k_0 . F^{-1} . F^{-T} . B . T
-      efint->Multiply((-fac_*ctempCdot), funct_, NT, 1.0);
+      efint->Multiply( (-fac_*ctempCdot), funct_, NT, 1.0);
 
       // efint += H_p term is added to fint within material call
 
@@ -2164,13 +2166,14 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
       // k^e_TT += ( B_T^T . C_mat . C^{-1} . B_T ) . detJ . w(gp)
       // 3D:      (8x8)      (8x3)   (3x3)   (3x3)   (3x8)
       // with C_mat = k_0 . I
-      LINALG::Matrix<nsd_,nen_> aop(false);  // (3x8)
       // -q = C_mat . C^{-1} . B
-      aop.MultiplyNN(Cinv,derxy_);  // (nsd_xnsd_)(nsd_xnen_)
+      LINALG::Matrix<nsd_,nen_> aop(false);  // (3x8)
+      aop.MultiplyNN(Cinv, derxy_);  // (nsd_xnsd_)(nsd_xnen_)
       LINALG::Matrix<nsd_,nen_> aop1(false);  // (3x8)
-      aop1.MultiplyNN(cmat_,aop);  // (nsd_xnsd_)(nsd_xnen_)
-      econd->MultiplyTN(fac_,derxy_,aop1,1.0);  //(8x8)=(8x3)(3x8)
+      aop1.MultiplyNN(cmat_, aop);  // (nsd_xnsd_)(nsd_xnen_)
 
+      // k^e_TT += ( B_T^T . C_mat . C^{-1} . B_T ) . detJ . w(gp)
+      econd->MultiplyTN(fac_, derxy_, aop1, 1.0);  //(8x8)=(8x3)(3x8)
       // k^e_TT += - ( N^T . C_T : 1/2  C' . N ) . detJ . w(gp)
       econd->MultiplyNT( (-fac_*ctempCdot), funct_, funct_, 1.0);
 
@@ -2186,7 +2189,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnFintCondCapa(
       //           (8x8)     (8x1)                 (1x8)
       // caution: funct_ implemented as (8,1)--> use transposed in code for
       // theoretic part
-      ecapa->MultiplyNT((fac_*capacoeff_), funct_, funct_, 1.0);
+      ecapa->MultiplyNT( (fac_*capacoeff_), funct_, funct_, 1.0);
     }  // (ecapa != NULL)
 
 #ifdef TSIMONOLITHASOUTPUT
@@ -2227,9 +2230,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // update element geometry
-  LINALG::Matrix<nen_,nsd_> xrefe;  // material coord. of element
-  LINALG::Matrix<nen_,nsd_> xcurr;  // current  coord. of element
-  LINALG::Matrix<nen_,nsd_> xcurrrate;  // current  velocity of element
+  LINALG::Matrix<nen_,nsd_> xrefe(false);  // material coord. of element
+  LINALG::Matrix<nen_,nsd_> xcurr(false);  // current  coord. of element
+  LINALG::Matrix<nen_,nsd_> xcurrrate(false);  // current  velocity of element
 
   // now get current element displacements and velocities
   DRT::Node** nodes = ele->Nodes();
@@ -2286,7 +2289,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
 
     // initialise time_fac of velocity discretisation w.r.t. displacements
     const double str_theta = params.get<double>("str_theta");
-    timefac_d = 1.0 /(stepsize*str_theta);
+    timefac_d = 1.0 / (stepsize * str_theta);
     break;
   }
   case INPAR::THR::dyna_genalpha :
@@ -2325,7 +2328,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
   LINALG::Matrix<nsd_,nsd_> defgrdrate(false);
   // inverse of deformation gradient
   LINALG::Matrix<nsd_,nsd_> invdefgrd(true);
-  // calculate Jacobi-determinant
+  // initialise Jacobi-determinant
   double J = 0.0;
 
   // ------------------------------- integration loop for one element
@@ -2392,10 +2395,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
     // inverse of deformation gradient
     invdefgrd.Invert(defgrd);
     // build the linear B-operator
-    LINALG::Matrix<6,nsd_*nen_*numdofpernode_> boplin;
+    LINALG::Matrix<6,nsd_*nen_*numdofpernode_> boplin(false);
     CalculateBoplin(&boplin,&derxy_);
     // build the nonlinear B-operator
-    LINALG::Matrix<6,nen_*nsd_*numdofpernode_> bop;
+    LINALG::Matrix<6,nen_*nsd_*numdofpernode_> bop(false);
     CalculateBop(&bop,&defgrd,&derxy_);
 
     // ------- derivatives of right Cauchy-Green deformation tensor C
@@ -2429,8 +2432,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
     // --> use only the symmetric part of dC'/dd
 
     // with B' = (F')^T . B_L: calculate rate of B
-    LINALG::Matrix<6,nen_*nsd_> boprate;  // (6x24)
-    CalculateBop(&boprate,&defgrdrate,&derxy_);
+    LINALG::Matrix<6,nen_*nsd_> boprate(false);  // (6x24)
+    CalculateBop(&boprate, &defgrdrate, &derxy_);
 
     // -------------------------------- calculate linearisation of C^{-1}
 
@@ -2552,14 +2555,15 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
 
       // m_0 . (1 - 1/J^2) . C^{-1} . dJ/dd + m_0 . (J + 1/J) . dC^{-1}/dd
       //                     (6x1)    (1x24)                     (6x24)
-      LINALG::Matrix<6,nsd_*nen_*numdofpernode_> dC_T_dd(true);  // (6x24)
       const double m_0 = thermoplhyperelast->STModulus();
-      double fac_He_dJ = m_0 * (1 - 1/(J * J) );
+      double fac_He_dJ = m_0 * (1.0 - 1.0/(J * J) );
+      double fac_He_dCinv = m_0 * (J + 1.0/J);
+
+      LINALG::Matrix<6,nsd_*nen_*numdofpernode_> dC_T_dd(false);  // (6x24)
       dC_T_dd.Multiply(fac_He_dJ, Cinvvct, dJ_dd);
-      double fac_He_dCinv = m_0 * (J + 1/J);
       dC_T_dd.Update(fac_He_dCinv, dCinv_dd, 1.0);
       // dC_T_dd : 1/2 C'
-      LINALG::Matrix<1,nsd_*nen_*numdofpernode_> dC_T_ddCdot(true);  // (1x24)
+      LINALG::Matrix<1,nsd_*nen_*numdofpernode_> dC_T_ddCdot(false);  // (1x24)
       dC_T_ddCdot.MultiplyTN(0.5, Cratevct, dC_T_dd);
 
       // dC_T/dd
@@ -2578,24 +2582,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
       etangcoupl->Multiply( (-fac_ * NT(0.0) / stepsize), funct_, dHp_dd, 1.0);
 
 #ifdef THRASOUTPUT
-      // insert matrices into parameter list which are only required for thrplasthyperelast
-      params.set<LINALG::Matrix<nsd_,nsd_> >("defgrd", defgrd);
-      params.set<LINALG::Matrix<6,1> >("Cinv_vct", Cinvvct);
-      LINALG::Matrix<6,6> cmat_T(true);
-      const LINALG::Matrix<1,1> Ntemp(NT);
-      thermoplhyperelast->SetupCmatThermo(NT,cmat_T,params);
-      const double T_0 = thermoplhyperelast->InitTemp();
-      const double deltaT= NT(0,0) - T_0;
-
       std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: cmat_T vorm Skalieren"<< cmat_T << std::endl;
       std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: deltaT"<< deltaT << std::endl;
-
-      cmat_T.Scale(1/deltaT);
-      LINALG::Matrix<6,nen_*nsd_*numdofpernode_> cb;  // cb(6x24) // cmattemp (6x6)
-      cb.Multiply(cmat_T,bop);
-      LINALG::Matrix<1,nsd_*nen_*numdofpernode_> cbCdot(true);
-      cbCdot.MultiplyTN(0.5, Cratevct, cb);
-
       std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: dC_T_ddCdot"<< dC_T_ddCdot << std::endl;
       std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: cb"<< cb << std::endl;
       std::cout << "element No. = " << ele->Id() << " CalculateCouplNlnCond: cmat_T"<< cmat_T << std::endl;
@@ -2667,8 +2655,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplDissipation(
     // GEOMETRIC LINEAR problem the deformation gradient is equal to identity
 
     // build the linear B-operator
-    LINALG::Matrix<6,nsd_*nen_*numdofpernode_> boplin;
-    CalculateBoplin(&boplin,&derxy_);
+    LINALG::Matrix<6,nsd_*nen_*numdofpernode_> boplin(false);
+    CalculateBoplin(&boplin, &derxy_);
 
     // ------------------------------------------------------------ dissipation
   
@@ -2806,8 +2794,8 @@ std::cout << "edisp\n" << edisp << std::endl;
     // GEOMETRIC LINEAR problem the deformation gradient is equal to identity
 
     // calculate the linear B-operator
-    LINALG::Matrix<6,nsd_*nen_*numdofpernode_> boplin;
-    CalculateBoplin(&boplin,&derxy_);
+    LINALG::Matrix<6,nsd_*nen_*numdofpernode_> boplin(false);
+    CalculateBoplin(&boplin, &derxy_);
 
     // --------------------------- calculate linearisation of dissipation
 
@@ -2857,9 +2845,9 @@ std::cout << "edisp\n" << edisp << std::endl;
     // ----------------------------------------linearisation of Dmech_iso
     // (dD_mech/dstrain) += N_T^T . Hiso . (d [ strainbar^p . strainbar^p' ]/ dstrain)
     LINALG::Matrix<6,1> Dmech_d(false);
-    Dmech_d.Update(1.0,thrpllinelast->DissipationLinearisedForCouplCond(iquad),0.0);
-    LINALG::Matrix<1,nsd_*nen_*numdofpernode_> DBop(true);
-    DBop.MultiplyTN(Dmech_d,boplin);
+    Dmech_d.Update(thrpllinelast->DissipationLinearisedForCouplCond(iquad));
+    LINALG::Matrix<1,nsd_*nen_*numdofpernode_> DBop(false);
+    DBop.MultiplyTN(Dmech_d, boplin);
 
     // coupling stiffness matrix
     if (etangcoupl != NULL)
@@ -2867,7 +2855,7 @@ std::cout << "edisp\n" << edisp << std::endl;
       // k_Td^e += timefac . N_T^T . 1/Dt . Dmech_d . B_L . detJ . w(gp)
       // with C_T = m . I
       // (8x24) = (8x1) . (1x24)
-      etangcoupl->MultiplyNN(fac_*timefac/stepsize, funct_, DBop, 1.0);
+      etangcoupl->MultiplyNN( (fac_*timefac/stepsize), funct_, DBop, 1.0);
     }  // (etangcoupl != NULL)
 
   }  //---------------------------------- end loop over Gauss Points
@@ -2985,7 +2973,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipation(
 
     // output of mechanical dissipation to fint
     LINALG::Matrix<nen_,1> fint_Dmech(false);
-    fint_Dmech.Update((-fac_ * Dmech), funct_, 0.0);
+    fint_Dmech.Update((-fac_ * Dmech), funct_);
     std::cout << "CalculateCouplNlnDissipation: element No. = " << ele->Id() << " f_Td_Dmech "<< fint_Dmech << std::endl;
 #endif  // TSIMONOLITHASOUTPUT
 
@@ -3115,18 +3103,18 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipationCond(
 
     // (material) deformation gradient F
     // F = d xcurr / d xrefe = xcurr^T . N_XYZ^T
-    defgrd.MultiplyTT(xcurr,derxy_);
+    defgrd.MultiplyTT(xcurr, derxy_);
 
     // calculate the nonlinear B-operator
-    LINALG::Matrix<6,nsd_*nen_*numdofpernode_> bop;
-    CalculateBop(&bop,&defgrd,&derxy_);
+    LINALG::Matrix<6,nsd_*nen_*numdofpernode_> bop(false);
+    CalculateBop(&bop, &defgrd, &derxy_);
 
     // ----------------------------------------------- linearisation of Dmech_d
     // k_Td += - timefac . N_T^T . 1/Dt . mechdiss_kTd . dE/dd
     LINALG::Matrix<6,1> dDmech_dE(false);
-    dDmech_dE.Update(1.0, thermoplhyperelast->MechDiss_kTd(iquad), 0.0);
-    LINALG::Matrix<1,nsd_*nen_*numdofpernode_> dDmech_dd(true);
-    dDmech_dd.MultiplyTN(dDmech_dE,bop);
+    dDmech_dE.Update(thermoplhyperelast->MechDiss_kTd(iquad));
+    LINALG::Matrix<1,nsd_*nen_*numdofpernode_> dDmech_dd(false);
+    dDmech_dd.MultiplyTN(dDmech_dE, bop);
 
     // coupling stiffness matrix
     if (etangcoupl != NULL)
@@ -3139,7 +3127,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnDissipationCond(
   }  //--------------------------------------------- end loop over Gauss Points
 
 #ifdef THRASOUTPUT
-  if (etangcoupl != NULL && ele->Id()==0)
+  if ( (etangcoupl != NULL) and (ele->Id()==0) )
     std::cout << "element No. = " << ele->Id() << " etangcoupl nach CalculateCouplDissi"<< *etangcoupl << std::endl;
 #endif  // THRASOUTPUT
 
@@ -3469,7 +3457,7 @@ double DRT::ELEMENTS::TemperImpl<distype>::CalculateCharEleLength()
   // get characteristic element length as cubic root of element volume
   // (2D: square root of element area, 1D: element length)
   // h = vol^(1/dim)
-  double h = std::pow(vol,(1.0/dim));
+  double h = std::pow(vol, (1.0/dim));
 
   return h;
 
@@ -3601,7 +3589,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLinearisationOfJacobian(
   // ----------------------------------------- build F^{-1} as vector 9x1
   // F != F^T, i.e. Voigt notation (6x1) NOT admissible
   // F (3x3) --> (9x1)
-  LINALG::Matrix<nsd_*nsd_,1> defgrd_inv_vec;
+  LINALG::Matrix<nsd_*nsd_,1> defgrd_inv_vec(false);
   defgrd_inv_vec(0) = defgrd_inv(0,0);
   defgrd_inv_vec(1) = defgrd_inv(0,1);
   defgrd_inv_vec(2) = defgrd_inv(0,2);

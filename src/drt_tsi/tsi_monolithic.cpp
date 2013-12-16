@@ -178,7 +178,7 @@ TSI::Monolithic::Monolithic(
 
 #ifndef TFSI
   if ( (DRT::INPUT::IntegralValue<bool>(tsidyn_,"CALC_NECKING_TSI_VALUES") == true)
-    and (Comm().MyPID() == 0) )
+       and (Comm().MyPID() == 0) )
     std::cout
     << "CAUTION: calculation ONLY valid for necking of a cylindrical body!"
     << "\n Due to symmetry only 1/8 of the cylinder is simulated, i.e r/l = 6.413mm/53.334mm."
@@ -485,6 +485,15 @@ void TSI::Monolithic::NewtonFull()
       norminciter0_ = norminc_;
       normdisiiter0_ = normdisi_;
       normtempiiter0_ = normtempi_;
+
+      // we set the minimum of iter0_ and tolrhs_, because
+      // we want to prevent the case of a zero characteristic initial norm
+      if (normrhsiter0_ == 0.0) normrhsiter0_ = tolrhs_;
+      if (normstrrhsiter0_ == 0.0) normstrrhsiter0_ = tolstrrhs_;
+      if (normthrrhsiter0_ == 0.0) normthrrhsiter0_ = tolthrrhs_;
+      if (norminciter0_ == 0.0) norminciter0_ = tolinc_;
+      if (normdisiiter0_ == 0.0) normdisiiter0_ = toldisi_;
+      if (normtempiiter0_ == 0.0) normtempiiter0_ = toltempi_;
     }
 
     // print stuff
@@ -972,10 +981,10 @@ void TSI::Monolithic::LinearSolve()
   {
 #ifdef TSI_DEBUG
   #ifndef TFSI
-  if (Comm().MyPID() == 0)
-  {
-    std::cout << " DBC applied to TSI system on proc" << Comm().MyPID() <<  std::endl;
-  }
+    if (Comm().MyPID() == 0)
+    {
+      std::cout << " DBC applied to TSI system on proc" << Comm().MyPID() <<  std::endl;
+    }
   #endif  // TFSI
 #endif  // TSI_DEBUG
   // Infnormscaling: scale system before solving
@@ -991,7 +1000,7 @@ void TSI::Monolithic::LinearSolve()
              );
 
   // Infnormscaling: unscale system after solving
-  UnscaleSolution(*systemmatrix_,*iterinc_,*rhs_);
+  UnscaleSolution(*systemmatrix_, *iterinc_, *rhs_);
   }  // use block matrix
 
   else // (merge_tsi_blockmatrix_ == true)
@@ -1077,10 +1086,10 @@ bool TSI::Monolithic::Converged()
     convrhs = normrhs_ < tolrhs_;
     break;
   case INPAR::TSI::convnorm_rel :
-    convrhs = normrhs_ < std::max(tolrhs_*normrhsiter0_, 1e-15);
+    convrhs = normrhs_ < std::max(tolrhs_*normrhsiter0_, 1.0e-15);
     break;
   case INPAR::TSI::convnorm_mix :
-    convrhs = ( (normrhs_ < tolrhs_) and (normrhs_ < std::max(normrhsiter0_*tolrhs_, 1e-15)) );
+    convrhs = ( (normrhs_ < tolrhs_) and (normrhs_ < std::max(normrhsiter0_*tolrhs_, 1.0e-15)) );
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
@@ -3067,10 +3076,10 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
   double top_disp_global = 0.0;
   // sum all nodal displacements (top_disp_local) in one global vector (top_disp_global)
   StructureField()->Discretization()->Comm().SumAll(
-    &top_disp_local.at(0),
-    &top_disp_global,
-    StructureField()->Discretization()->Comm().NumProc()
-    );
+   &top_disp_local.at(0),
+   &top_disp_global,
+   StructureField()->Discretization()->Comm().NumProc()
+   );
 
   // ------------------------------------------------ necking radius at point A
   // necking, i.e. radial displacements in centre plane (here: xy-plane)

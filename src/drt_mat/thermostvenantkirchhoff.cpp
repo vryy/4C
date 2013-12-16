@@ -294,7 +294,7 @@ double MAT::ThermoStVenantKirchhoff::STModulus(
 
   // stress-temperature modulus
   // \f m\, = \, -(2\,\cdot \mu \, +\, 3\cdot\lambda)\cdot\varalpha_T \f
-  const double stmodulus = (-1) * (2 * mu + 3 * lambda) * thermexpans;
+  const double stmodulus = (-1.0) * (2.0 * mu + 3.0 * lambda) * thermexpans;
 
   return stmodulus;
 
@@ -330,6 +330,7 @@ void MAT::ThermoStVenantKirchhoff::SetupCthermo(
   // loop over the element nodes, non-zero entries only in main directions
   for (int i=0; i<3; ++i)
     ctemp(i,0) = m;
+  // else zeros
 
 }  // SetupCthermo()
 
@@ -344,19 +345,18 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(
   Teuchos::ParameterList& params
   )
 {
-  LINALG::Matrix<1,1> init(true);
-  const double inittemp = -1.0 * (params_->thetainit_);
-  // loop over the element nodes
-  init(0,0) = inittemp;
+  // calculate the temperature difference
+  LINALG::Matrix<1,1> init(false);
+  init(0,0) = (params_->thetainit_);
   // Delta T = T - T_0
-  LINALG::Matrix<1,1> deltaT(true);
-  deltaT.Update(Ntemp,init);
+  LINALG::Matrix<1,1> deltaT(false);
+  deltaT.Update(1.0, Ntemp, (-1.0), init);
 
   SetupCthermo(ctemp,params);
 
   // temperature dependent stress
   // sigma = C_T . Delta T = m . I . Delta T
-  stresstemp.MultiplyNN(ctemp,deltaT);
+  stresstemp.MultiplyNN(ctemp, deltaT);
 
 } // THR_Evaluate()
 
@@ -460,9 +460,9 @@ double MAT::ThermoStVenantKirchhoff::GetSTModulus_T(
 
     // plane strain, rotational symmetry
     // E / (1+nu)
-    const double c1 = Ederiv/(1.0+pv);
+    const double c1 = Ederiv/(1.0 + pv);
     // (E . nu) / ((1+nu)(1-2nu))
-    const double b1 = c1*pv/(1.0-2.0*pv);
+    const double b1 = c1 * pv / (1.0 - 2.0 * pv);
 
     // build the lame constants
     //         E
@@ -476,7 +476,7 @@ double MAT::ThermoStVenantKirchhoff::GetSTModulus_T(
 
     // build the derivative of the stress-temperature modulus w.r.t. T_{n+1}
     // m = -(2 . mu + 3 . lambda) . varalpha_T
-    stmodulus_T = (-1) * (2 * mu + 3 * lambda) * thermexpans;
+    stmodulus_T = (-1.0) * (2.0 * mu + 3.0 * lambda) * thermexpans;
   }
   // else (young_temp == false)
   // constant young's modulus, i.e. independent of T, no linearisation, return 0;
@@ -516,21 +516,20 @@ void MAT::ThermoStVenantKirchhoff::GetThermalStress_T(
   LINALG::Matrix<6,1>* stresstemp_T
   )
 {
-  LINALG::Matrix<1,1> init(true);
-  const double inittemp = -1.0 * (params_->thetainit_);
-  // loop over the element nodes
-  init(0,0) = inittemp;
+  // calculate the temperature difference
+  LINALG::Matrix<1,1> init(false);
+  init(0,0) = (params_->thetainit_);
   // Delta T = T - T_0
-  LINALG::Matrix<1,1> deltaT(true);
-  deltaT.Update(*Ntemp,init);
+  LINALG::Matrix<1,1> deltaT(false);
+  deltaT.Update(1.0, *Ntemp, (-1.0), init);
 
   // calculate derivative of ctemp w.r.t. T_{n+1}
   LINALG::Matrix<6,1> ctemp_T(false);
-  GetCthermoAtTempnp_T(ctemp_T,params);
+  GetCthermoAtTempnp_T(ctemp_T, params);
 
   // temperature dependent stress
   // sigma = C_T . Delta T = m . I . Delta T
-  stresstemp_T->MultiplyNN(ctemp_T,deltaT);
+  stresstemp_T->MultiplyNN(ctemp_T, deltaT);
 
 }  // GetThermalStress_T
 
@@ -648,6 +647,7 @@ void MAT::ThermoStVenantKirchhoff::GetCthermoAtTempnp_T(
   // loop over the element nodes, non-zero entries only on main directions
   for (int i=0; i<3; ++i)
     derivctemp(i,0) = m_T;
+  // else zeros
 
 }  // GetCthermoAtTempnp_T()
 

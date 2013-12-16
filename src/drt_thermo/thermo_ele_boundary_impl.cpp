@@ -729,7 +729,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
     // theoretic part
     // funct_ describes a 2D area, for hex8: 4 nodes
     // (1x1)= (1x4)(4x1) = (nen_*numdofpernode_ x 1)^T(nen_*numdofpernode_ x 1)
-    LINALG::Matrix<1,1> Ntemp(true);
+    LINALG::Matrix<1,1> Ntemp(false);
     Ntemp.MultiplyTN(funct_,etemp_);
 
     // substract the surface temperature: Ntemp -=  T_surf
@@ -843,7 +843,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
     // the total surface corresponds to the sum over all GPs.
     // fext and k_ii is calculated by assembling over all nodes
     // --> multiply the corresponding sub-area to the terms
-    A = detA*intpoints.IP().qwgt[iquad];  // here is the current area included
+    A = detA * intpoints.IP().qwgt[iquad];  // here is the current area included
 
     // initialise the matrices
     LINALG::Matrix<(nsd_+1),(nsd_+1)*nen_> ddet(true);  // (3x12)
@@ -855,7 +855,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
     // compute global derivatives
     // (nsd_x(nsd_+1)) = (nsdxnen_) . (nen_x(nsd_+1))
     // (2x3) = (2x4) . (4x3)
-    LINALG::Matrix<nsd_,(nsd_+1)> dxyzdrs;  // (2x3)
+    LINALG::Matrix<nsd_,(nsd_+1)> dxyzdrs(false);  // (2x3)
     dxyzdrs.Multiply(deriv_,xcurr);
 
     // derivation of minor determiants of the Jacobian with respect to the
@@ -904,7 +904,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
     // do not map the term to RK--> coordinate space,
     // BUT: directly form AK --> coordinate space
 
-    // multiply fac_ * coeff
+    // multiply fac_ . coeff
     // --> must be insert in balance equation as positive term,
     // but fext is included as negative --> scale with (-1)
     // compared to linear case here we use the mapping from coordinate space to AK
@@ -918,20 +918,17 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
     // theoretic part
     // funct_ describes a 2D area, for hex8: 4 nodes
     // (1x1)= (1x4)(4x1) = (nen_*numdofpernode_ x 1)^T(nen_*numdofpernode_ x 1)
-    LINALG::Matrix<1,1> Ntemp(true);
+    LINALG::Matrix<1,1> Ntemp(false);
     Ntemp.MultiplyTN(funct_,etemp_);
 
-    // - T_surf * I
-    LINALG::Matrix<1,1> Tsurf(true);
-    for (int i=0; i<1; ++i)
-    {
-      Tsurf(i) = (surtemp);
-    }
+    // T - T_surf
+    LINALG::Matrix<1,1> Tsurf(false);
+    Tsurf(0,0) = (surtemp);
 
     // Ntemp -= T_surf
     // in the following Ntemp describes the temperature difference and not only
     // the scalar-valued temperature
-    Ntemp.Update(-1.0,Tsurf,1.0);
+    Ntemp.Update(-1.0, Tsurf, 1.0);
 
     // ---------------------------------------------- right-hand-side
     if (efext != NULL)
@@ -954,7 +951,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
       // ---------------------matrix
       if (econd != NULL)
       {
-        // ke = ke + (N^T . coeff . N) * detJ * w(gp)
+        // ke = ke + (N^T . coeff . N) . detJ . w(gp)
         // (nsd_xnsd_) = (4x4)
         econd->MultiplyNT((-1.0)*coeffA,funct_,funct_,1.0);
       }  // etang != NULL
@@ -1133,8 +1130,8 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
   )
 {
   // determine normal to this element
-  LINALG::Matrix<nsd_,(nsd_+1)> dxyzdrs(true);
-  dxyzdrs.MultiplyNN(1.0,deriv_,xcurr,0.0);
+  LINALG::Matrix<nsd_,(nsd_+1)> dxyzdrs(false);
+  dxyzdrs.MultiplyNN(deriv_,xcurr);
 
   /* compute covariant metric tensor G for surface element
   **                        | g11   g12 |
@@ -1147,8 +1144,8 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
   **        dr     dr            dr     ds            ds     ds
   */
 
-  LINALG::Matrix<(nsd_+1),nen_> xcurr_T;
-  xcurr_T.UpdateT(1.0,xcurr,0.0);
+  LINALG::Matrix<(nsd_+1),nen_> xcurr_T(false);
+  xcurr_T.UpdateT(xcurr);
 
   // the metric tensor and the area of an infinitesimal surface/line element
   // compute dXYZ / drs is included in ComputeMetricTensorForBoundaryEle

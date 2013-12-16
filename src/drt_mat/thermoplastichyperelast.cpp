@@ -670,7 +670,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
 
     // update deviatoric Kirchhoff stress
     // s_{n+1} = s_{n+1}^{trial} - 2 . mubar . Delta gamma . n
-    devtau.Update(1.0, devtau_trial, 0.0);
+    devtau.Update(devtau_trial);
     devtau.Update(-2.0 * mubar * Dgamma, n, 1.0);
 
     // --------------------------------------------------------- update history
@@ -707,7 +707,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
 
       // pull-back of the deviatoric part of n^2 to dev[N^2]
       // dev (n^2)
-      LINALG::Matrix<3,3> devnsquare(true);
+      LINALG::Matrix<3,3> devnsquare(false);
       devnsquare.Multiply(n,n);
       double tracensquare= (devnsquare(0,0) + devnsquare(1,1) + devnsquare(2,2));
       for (int i=0; i<3; i++)
@@ -723,7 +723,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
       double dsigma_y0_temp_dT = sigma_y0 * (-omega_0);
 
       // dkappa_temp/dT_{n+1} = [- omega_h . Hiso . astrain^p +
-      //                          + (- omega_h . sigma_y0infty + omega_0 . sigma_y0)
+      //                         + (- omega_h . sigma_y0infty + omega_0 . sigma_y0)
       //                            . (1 - exp(-delta . astrain^p)) ]  . N_T
       double dkappaT_dT = - omega_h * Hiso * alpha + ( sigma_y0infty * (-omega_h)
                          - sigma_y0 * (-omega_0) ) * (1.0 - exp(-hardexpo *  alpha) );
@@ -734,14 +734,14 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
                                      * ( -exp(-hardexpo * alpha) ) * (-hardexpo);
 
       // beta_0 = 1 + 1/(3 mubar) . dkappa/dastrain^p
-      double beta0 = 1 + 1/(3 * mubar) * dkappa_dastrain;
+      double beta0 = 1.0 + 1.0/(3.0 * mubar) * dkappa_dastrain;
 
       // dDgamma/dT_{n+1} = -sqrt(2/3) . dsigma_y/dT / [ 2 . mubar . beta0 ]
-      double dDgamma_dT = -sqrt(2/3.0) * (dsigma_y0_temp_dT + dkappaT_dT) / (2 * mubar * beta0);
+      double dDgamma_dT = -sqrt(2.0/3.0) * (dsigma_y0_temp_dT + dkappaT_dT) / (2.0 * mubar * beta0);
 
       // dkappa/dT = dkappa(T)/dT + dkappa(astrain)/dT . dastrain/dDgamma . dDgamma/dT
       //           = dkappaT_dT + dkappa_dastrain . \sqrt{2/3} . dDgamma_dT
-      double dkappa_dT = dkappaT_dT + dkappa_dastrain * sqrt(2/3) * dDgamma_dT;
+      double dkappa_dT = dkappaT_dT + dkappa_dastrain * sqrt(2.0/3.0) * dDgamma_dT;
 
       // -------------------------------- calculate second derivatives of kappa
       // 2nd derivatives is required for K_TT/K_Td
@@ -757,23 +757,16 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
       // = dT_dkappa_dastrain . sqrt(2/3) * dDgamma_dT + dkappa_dastrain . dastrain/dDgamma . dT_dDgamma/dT
 
       // d/dT(dkappa/dT) = 2 . ddkappa_dastraindT . dastrain/dDgamma . dDgamma/dT
-      double ddkappa_dTT = Hiso * (- omega_h)
+      double ddkappa_dTT = sqrt(2.0/3.0) * dDgamma_dT * 2.0 * ( Hiso * (- omega_h)
                            + ( sigma_y0infty * (-omega_h) + sigma_y0 * omega_0 )
-                 * (- exp(-hardexpo *  alpha) ) * (-hardexpo) * sqrt(2/3.0) * 2;
+                 * (- exp(-hardexpo *  alpha) ) * (-hardexpo) );
       // TODO in case of bad convergence: add dkappa_dastrain . dastrain/dDgamma . dT_dDgamma/dT
 
       double dkappa_dTdastrain = Hiso * (- omega_h)
                              + ( sigma_y0infty * (-omega_h) + sigma_y0 * omega_0 )
                    * (- exp(-hardexpo *  alpha) ) * (-hardexpo)
-                   + sqrt(2/3.0) * dDgamma_dT * (sigma_y0infty_temp - sigma_y0_temp)
+                   + sqrt(2.0/3.0) * dDgamma_dT * (sigma_y0infty_temp - sigma_y0_temp)
                      * (- exp(-hardexpo * alpha) ) * hardexpo * hardexpo;
-
-//      // TODO 2013-12-03
-//      std::cout << "dsigma_y0_temp_dT = " << dsigma_y0_temp_dT << std::endl;
-//      std::cout << "dDgamma_dT = " << dDgamma_dT << std::endl;
-//      std::cout << "dkappaT_dT = " << dkappaT_dT << std::endl;
-//      std::cout << "dkappa_dT = " << dkappa_dT << std::endl;
-// hat große Werte ~4       std::cout << "dkappa_dastrain = " << dkappa_dastrain << std::endl;
 
       // ------------------------------ calculate derivative of Dgamma w.r.t. E
 
@@ -785,9 +778,9 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
       //            = 1/beta0 . [ (1 - 2/3 . || s || . Dgamma / mubar ) . N
       //                          + || s || / mubar . dev[N^2] ]
       LINALG::Matrix<3,3> dDgamma_dg(false);
-      dDgamma_dg.Update( (1 - 2/3 * q_trial * Dgamma / mubar), N, 0.0);
+      dDgamma_dg.Update( (1.0 - 2.0/3.0 * q_trial * Dgamma / mubar), N);
       dDgamma_dg.Update( (q_trial/mubar), devNsquare, 1.0);
-      dDgamma_dg.Scale(1/beta0);
+      dDgamma_dg.Scale(1.0/beta0);
 
       // -------------------------------------- internal/mechanical dissipation
 
@@ -814,17 +807,16 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
       // k_Td += dD_mech/dd_{n+1}
       //      += 1/Dt . sqrt(2/3) . [ sigma_y0_temp . dDgamma/dE ]
       LINALG::Matrix<3,3> mechdiss_kTd_matrix(false);
-      mechdiss_kTd_matrix.Update( (sqrt(2/3) * sigma_y0_temp), dDgamma_dg, 0.0);
+      mechdiss_kTd_matrix.Update( (sqrt(2.0/3.0) * sigma_y0_temp), dDgamma_dg);
       // Voigt notation
-      LINALG::Matrix<6,1> mechdiss_kTd_vct(true);
+      LINALG::Matrix<6,1> mechdiss_kTd_vct(false);
       mechdiss_kTd_vct(0) = mechdiss_kTd_matrix(0,0);
       mechdiss_kTd_vct(1) = mechdiss_kTd_matrix(1,1);
       mechdiss_kTd_vct(2) = mechdiss_kTd_matrix(2,2);
       mechdiss_kTd_vct(3) = 0.5 * (mechdiss_kTd_matrix(0,1) + mechdiss_kTd_matrix(1,0));
       mechdiss_kTd_vct(4) = 0.5 * (mechdiss_kTd_matrix(1,2) + mechdiss_kTd_matrix(2,1));
       mechdiss_kTd_vct(5) = 0.5 * (mechdiss_kTd_matrix(0,2) + mechdiss_kTd_matrix(2,0));
-
-      mechdiss_kTd_->at(gp).Update(1.0, mechdiss_kTd_vct, 0.0);
+      mechdiss_kTd_->at(gp).Update(mechdiss_kTd_vct);
 
       // ------------------------------------------- thermoplastic heating term
 
@@ -833,7 +825,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
       // H_p = T . dkappa/dT . astrain'
       // with astrain' = sqrt(2/3) . Dgamma/Dt
       // thrplheat_ = dkappa/dT . sqrt(2/3) . Dgamma
-      thrplheat_->at(gp) = dkappa_dT * sqrt(2/3) * Dgamma;
+      thrplheat_->at(gp) = dkappa_dT * sqrt(2.0/3.0) * Dgamma;
       // H_p = T . thrplheat_ . 1/Dt
       // be aware: multiplication with 1/Dt and (T = N_T . T) is done in thermo
       //           element
@@ -847,8 +839,8 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
       //
       //       = [ thrplheat_ . 1/Dt + T . thrplheat_kTT_ . 1/Dt ] . N_T
       // be aware: multiplication with 1/Dt and T is done in thermo element
-      thrplheat_kTT_->at(gp) = ddkappa_dTT * sqrt(2/3) * Dgamma
-                                + dkappa_dT * sqrt(2/3) * dDgamma_dT;
+      thrplheat_kTT_->at(gp) = ddkappa_dTT * sqrt(2.0/3.0) * Dgamma
+                               + dkappa_dT * sqrt(2.0/3.0) * dDgamma_dT;
 
       // ----------------------------------------------- dH_p/dd for k_Td
       // k_Td += ... dH_p/dE . dE/dd ...
@@ -862,20 +854,19 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
       // dH_p/dE = [ dkappa_dTdastrain . (2/3) . dDgamma + dkappa/dT. sqrt{2/3} ]
       //           . 1/Dt . dDgamma/dE
       // be aware: multiplication with 1/Dt and dE/dd is done in thermo element
-      double fac_thrpl_kTd = dkappa_dTdastrain * (2/3.0) * Dgamma
-                             + dkappa_dT * sqrt(2/3.0);
+      double fac_thrpl_kTd = dkappa_dTdastrain * (2.0/3.0) * Dgamma
+                             + dkappa_dT * sqrt(2.0/3.0);
       LINALG::Matrix<3,3> thrplheat_kTd_matrix(false);
-      thrplheat_kTd_matrix.Update(fac_thrpl_kTd, dDgamma_dg, 0.0);
+      thrplheat_kTd_matrix.Update(fac_thrpl_kTd, dDgamma_dg);
       // Voigt notation
-      LINALG::Matrix<6,1> thrplheat_kTd_vct(true);
+      LINALG::Matrix<6,1> thrplheat_kTd_vct(false);
       thrplheat_kTd_vct(0) = thrplheat_kTd_matrix(0,0);
       thrplheat_kTd_vct(1) = thrplheat_kTd_matrix(1,1);
       thrplheat_kTd_vct(2) = thrplheat_kTd_matrix(2,2);
       thrplheat_kTd_vct(3) = 0.5 * (thrplheat_kTd_matrix(0,1) + thrplheat_kTd_matrix(1,0));
       thrplheat_kTd_vct(4) = 0.5 * (thrplheat_kTd_matrix(1,2) + thrplheat_kTd_matrix(2,1));
       thrplheat_kTd_vct(5) = 0.5 * (thrplheat_kTd_matrix(0,2) + thrplheat_kTd_matrix(2,0));
-
-      thrplheat_kTd_->at(gp).Update(1.0, thrplheat_kTd_vct, 0.0);
+      thrplheat_kTd_->at(gp).Update(thrplheat_kTd_vct);
 
       //------ linearisation of mechanical material tangent w.r.t. temperatures
 
@@ -885,7 +876,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
       // with ds_{n+1}/dT_{n+1} = - 2 . mubar . dDgamma/dT . n
       //                        = +sqrt(2/3) . dsigma_y_dT . 1/beta0 . N := beta5 . N
       LINALG::Matrix<3,3> Cmat_kdT_matrix(false);
-      Cmat_kdT_matrix.Update( (- 2 * mubar * dDgamma_dT), N, 0.0);
+      Cmat_kdT_matrix.Update( (- 2.0 * mubar * dDgamma_dT), N);
       // Voigt notation
       LINALG::Matrix<6,1> Cmat_kdT_vct(false);
       Cmat_kdT_vct(0) = Cmat_kdT_matrix(0,0);
@@ -894,19 +885,16 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
       Cmat_kdT_vct(3) = 0.5 * (Cmat_kdT_matrix(0,1) + Cmat_kdT_matrix(1,0));
       Cmat_kdT_vct(4) = 0.5 * (Cmat_kdT_matrix(1,2) + Cmat_kdT_matrix(2,1));
       Cmat_kdT_vct(5) = 0.5 * (Cmat_kdT_matrix(0,2) + Cmat_kdT_matrix(2,0));
-
-      Cmat_kdT_->at(gp).Update(1.0, Cmat_kdT_vct, 0.0);
+      Cmat_kdT_->at(gp).Update(Cmat_kdT_vct);
 
     }  // (Dgamma != 0.0)
 
 #ifdef DEBUGMATERIAL
-
       std::cout << "dsigma_y0_temp_dT = " << dsigma_y0_temp_dT << std::endl;
       std::cout << "dkappaT_dT = " << dkappaT_dT << std::endl;
       std::cout << "beta0 = " << beta0 << std::endl;
-      std::cout << "- 2 * mubar * dDgamma_d = " << - 2 * mubar * dDgamma_dT  << std::endl;
+      std::cout << "- 2 * mubar * dDgamma_d = " << - 2.0 * mubar * dDgamma_dT  << std::endl;
       std::cout << "Cmat_kdT_vct = " << Cmat_kdT_vct << std::endl;
-
       std::cout << "mubar = " << mubar << std::endl;
       std::cout << "dDgamma_dT = " << dDgamma_dT << std::endl;
       std::cout << "N = " << N << std::endl;
@@ -1016,7 +1004,7 @@ void MAT::ThermoPlasticHyperElast::SetupCmatElastoPlastic(
   N.MultiplyNT(tmp, invdefgrdcurr);
 
   // dev (n^2)
-  LINALG::Matrix<3,3> devnsquare(true);
+  LINALG::Matrix<3,3> devnsquare(false);
   devnsquare.Multiply(n,n);
   double tracensquare= (devnsquare(0,0) + devnsquare(1,1) + devnsquare(2,2));
   for (int i=0; i<3; i++)
@@ -1045,7 +1033,7 @@ void MAT::ThermoPlasticHyperElast::SetupCmatElastoPlastic(
   // with U'(J^e) = bulk ( (J^e)^2 -1 ) / J^e
   // C_e = 2 bulk J^2 [C^{-1} \otimes C^{-1}] - 2 bulk ( J^2 -1 ) [C^{-1} \otimes C^{-1}]
   // with - 2 bulk ( J^2 -1 ) [C^{-1} \otimes C^{-1}] = - 2 bulk ( J^2 -1 ) [C^{-1} boeppel C^{-1}]
-  ElastSymTensorMultiply(Cmat, 2 * bulk * J * J, invRCG, invRCG, 1.0);
+  ElastSymTensorMultiply(Cmat, 2.0 * bulk * J * J, invRCG, invRCG, 1.0);
   ElastSymTensor_o_Multiply(Cmat, -2.0 * bulk * (J * J - 1.0), invRCG, invRCG, 1.0);
   Cmat.Update(1.0, Cbar_trialMaterial, 1.0);
 
@@ -1058,9 +1046,9 @@ void MAT::ThermoPlasticHyperElast::SetupCmatElastoPlastic(
     // with dkappa_{n+1}/dastrain_{n+1} = Hiso_temp + (sigma_y0infty_temp - sigma_y0_temp)
     //                                    . [-exp(-delta . astrain)] . (-delta)
     double beta0 = 0.0;
-    beta0 = 1 + ( Hiso_temp + (sigma_y0infty_temp - sigma_y0_temp)
+    beta0 = 1.0 + ( Hiso_temp + (sigma_y0infty_temp - sigma_y0_temp)
                     * exp(-hardexpo * accplstraincurr_->at(gp)) * hardexpo )
-                / (3.0 * mubar);
+                  / (3.0 * mubar);
 
     // beta_1 = 2 . mubar . Dgamma / || s_{n+1}^{trial} ||
     double beta1 = 0.0;
@@ -1068,7 +1056,7 @@ void MAT::ThermoPlasticHyperElast::SetupCmatElastoPlastic(
 
     // beta_2 = (1 - 1/beta_0) . 2/3 . Dgamma / mubar . || s_{n+1}^{trial} ||
     double beta2 = 0.0;
-    beta2 = (1.0 - 1.0 / beta0) * 2.0 / 3.0 * Dgamma / mubar * q_trial;
+    beta2 = (1.0 - 1.0 / beta0) * 2.0/3.0 * Dgamma / mubar * q_trial;
 
     // beta_3 = 1/beta_0 - beta_1 + beta_2
     double beta3 = 0.0;
@@ -1129,14 +1117,14 @@ void MAT::ThermoPlasticHyperElast::CalculateCurrentBebar(
   // coefficient d
   // d = - J2_bar^3 / 27 + q^2
   double d_coeff = 0.0;
-  d_coeff = - pow(J2_bar, 3.0) / 27.0 + pow(q_coeff, 2.0);
+  d_coeff = - std::pow(J2_bar, 3.0) / 27.0 + std::pow(q_coeff, 2.0);
 
   // -------------------------------------------------- calculate updated bebar
 
   // calculate scaling factor for updated bebar
   // 1/3 tr(bebar) = 1/3 . Ibar_1
-  double const third_Ibar_1 = pow( (q_coeff + sqrt(d_coeff) ), 1.0/3.0)
-                              + pow( (q_coeff - sqrt(d_coeff) ), 1.0/3.0);
+  double const third_Ibar_1 = std::pow( (q_coeff + sqrt(d_coeff) ), 1.0/3.0)
+                              + std::pow( (q_coeff - sqrt(d_coeff) ), 1.0/3.0);
 
   // bebar_{n+1} = s_{n+1}/mu + 1/3 Ibar_1 . id2
   bebarcurr_->at(gp) = (devtau);
@@ -1159,12 +1147,11 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   )
 {
   // calculate the temperature difference
-  LINALG::Matrix<1,1> minit(true);
-  const double inittemp = (params_->inittemp_);
-  minit(0,0) = - inittemp;
+  LINALG::Matrix<1,1> init(false);
+  init(0,0) = params_->inittemp_;
   // Delta T = T - T_0
-  LINALG::Matrix<1,1> deltaT(true);
-  deltaT.Update(Ntemp, minit);
+  LINALG::Matrix<1,1> deltaT(false);
+  deltaT.Update(1.0, Ntemp, (-1.0), init);
 
   // get the temperature-dependent material tangent
   SetupCthermo(ctemp, params);
@@ -1216,10 +1203,8 @@ void MAT::ThermoPlasticHyperElast::SetupCmatThermo(
   //          - 2 . (T - T_0) . m_0 . (J + 1/J) ( Cinv boeppel Cinv )
 
   // calculate the temperature difference
-  LINALG::Matrix<1,1> init(true);
-  const double inittemp = (params_->inittemp_);
   // Delta T = T - T_0
-  const double deltaT = Ntemp(0,0) - inittemp;
+  const double deltaT = Ntemp(0,0) - (params_->inittemp_);
 
   // extract F and Cinv from params
   LINALG::Matrix<3,3> defgrd
@@ -1275,15 +1260,15 @@ void MAT::ThermoPlasticHyperElast::SetupCthermo(
 
   // temperature-dependent stress temperature modulus
   // m = m(J) = m_0 .(J+1)/J = m_0 . (J + 1/J)
-  double m_0 = STModulus();
-  double J = defgrd.Determinant();
-  double m = m_0 * (J + 1.0 / J);
+  const double m_0 = STModulus();
+  const double J = defgrd.Determinant();
+  const double m = m_0 * (J + 1.0 / J);
 
   // clear the material tangent
   ctemp.Clear();
 
   // C_T = m_0 . (J + 1/J) . Cinv
-  ctemp.Update(m, Cinv, 0.0);
+  ctemp.Update(m, Cinv);
 
 }  // SetupCthermo()
 
@@ -1302,7 +1287,7 @@ double MAT::ThermoPlasticHyperElast::STModulus()
   const double cte = params_->cte_;
 
   // stress-temperature modulus
-  const double stmodulus = (-1) * 3.0 * bulk * cte;
+  const double stmodulus = (-1.0) * 3.0 * bulk * cte;
 
   return stmodulus;
 
@@ -1422,12 +1407,11 @@ void MAT::ThermoPlasticHyperElast::FDCheck(
       disturb_Cinv_vct(5) = invRCG_disturb(2,0);
 
       // calculate the temperature difference
-      LINALG::Matrix<1,1> init(true);
-      const double inittemp = -1.0 * (params_->inittemp_);
-      init(0,0) = inittemp;
+      LINALG::Matrix<1,1> init(false);
+      init(0,0) = params_->inittemp_;
       // Delta T = T - T_0
-      LINALG::Matrix<1,1> deltaT(true);
-      deltaT.Update(Ntemp, init);
+      LINALG::Matrix<1,1> deltaT(false);
+      deltaT.Update(1.0, Ntemp, (-1.0), init);
 
       // temperature-dependent stress temperature modulus
       // m = m(J) = m_0 .(J+1)/J = m_0 . (J + 1/J)
@@ -1440,7 +1424,7 @@ void MAT::ThermoPlasticHyperElast::FDCheck(
       LINALG::Matrix<NUM_STRESS_3D,1> disturb_ctemp(true);
       disturb_ctemp.Clear();
       // C_T = m_0 . (J + 1/J) . Cinv
-      disturb_ctemp.Update(m, disturb_Cinv_vct, 0.0);
+      disturb_ctemp.Update(m, disturb_Cinv_vct);
       // in case of testing only factor, use undisturbed Cinv_vct
       // disturb_ctemp.Update(m, Cinv_vct, 0.0);
 
@@ -1481,10 +1465,10 @@ void MAT::ThermoPlasticHyperElast::FDCheck(
         // build the finite difference tangent
         cmatFD(stress_comp,array[i][k]) = 0.0;
         // scale with factor 2 due to comparison with cmat_T and cmat_T = 2 dSvol/dC
-        cmatFD(stress_comp,array[i][k]) += 2 * ( (disturb_stresstemp(stress_comp)/(delta) - stress(stress_comp)/(delta)) );
+        cmatFD(stress_comp,array[i][k]) += 2.0 * ( (disturb_stresstemp(stress_comp)/(delta) - stress(stress_comp)/(delta)) );
 
         std::cout <<  i << k << stress_comp << "fd: "
-          << 2*((disturb_stresstemp(stress_comp)/(delta) - stress(stress_comp)/(delta)))
+          << 2.0*((disturb_stresstemp(stress_comp)/(delta) - stress(stress_comp)/(delta)))
           << "ref: " << cmat(stress_comp,array[i][k]) << std::endl;
       }
       // undisturb the respective strain quantities (disturbstrain=strain)
