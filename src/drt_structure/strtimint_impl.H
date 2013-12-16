@@ -819,6 +819,8 @@ namespace STR
     enum INPAR::STR::BinaryOp combdisifres_; //!< binary operator to combine displacement and forces
     enum INPAR::STR::BinaryOp combfrescontconstr_; //!< binary operator to combine field norms (forces and contact constraints, contact/meshtying in saddlepoint formulation only)
     enum INPAR::STR::BinaryOp combdisilagr_; //!< binary operator to combine field norms (displacement increments and LM increments, contact/meshtying in saddlepoint formulation only)
+    enum INPAR::STR::BinaryOp combfresplconstr_; //!< binary operator to combine field norms (forces and plastic constraints, semi-smooth plasticity only)
+    enum INPAR::STR::BinaryOp combdisiLp_; //!< binary operator to combine field norms (displacement increments and Lp increments, semi-smooth plasticity only)
 
     enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to check with
     int itermax_;  //!< maximally permitted iterations

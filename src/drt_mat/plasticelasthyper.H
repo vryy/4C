@@ -85,10 +85,6 @@ namespace MAT
       const double infyield_;
       // linear kinematic hardening parameter
       const double kinhard_;
-      // complementarity parameter
-      const double cpl_;
-      // stabilization parameter "s"
-      const double stab_s_;
       // parameters F,G,H,L,M,N of Hill yield criterion
       const double rY_11_;
       const double rY_22_;
@@ -204,12 +200,6 @@ private:
 
     /// linear kinematic hardening modulus
     virtual double Kinhard() const { return params_->kinhard_;}
-
-    /// complementarity parameter
-    virtual double Complparam() const { return params_->cpl_;}
-
-    /// active set stabilization parameter "s"
-    virtual double Stabs() const { return params_->stab_s_;}
 
     /// a shear modulus equivalent
     virtual double ShearMod() const;

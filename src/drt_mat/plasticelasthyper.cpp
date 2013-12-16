@@ -44,8 +44,6 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(
   expisohard_(matdata->GetDouble("EXPISOHARD")),
   infyield_(matdata->GetDouble("INFYIELD")),
   kinhard_(matdata->GetDouble("KINHARD")),
-  cpl_(matdata->GetDouble("CPL")),
-  stab_s_(matdata->GetDouble("STAB_S")),
   rY_11_(matdata->GetDouble("rY_11")),
   rY_22_(matdata->GetDouble("rY_22")),
   rY_33_(matdata->GetDouble("rY_33")),
@@ -65,10 +63,6 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(
     dserror("saturation yield stress must not be less than initial yield stress");
   if (expisohard_<0.)
     dserror("Nonlinear hardening exponent must be non-negative");
-  if (cpl_<=0.)
-    dserror("Complementarity parameter must be positive (approx 2 times shear modulus)");
-  if (stab_s_<0.)
-    dserror("stabilization parameter must be non-negative (approx 0-2)");
 
   if (rY_11_!=0. || rY_22_!=0. || rY_33_!=0. || rY_12_!=0. || rY_23_!=0. || rY_13_!=0.)
     if (rY_11_<=0. || rY_22_<=0. || rY_33_<=0. || rY_12_<=0. || rY_23_<=0. || rY_13_<=0.)

@@ -62,11 +62,18 @@ ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
+------------------------------------------------------SEMI-SMOOTH PLASTICITY
+SEMI_SMOOTH_CPL                 175
+STABILIZATION_S                 1.0
+NORMCOMBI_RESFPLASTCONSTR       And
+NORMCOMBI_DISPPLASTINCR         And
+TOLPLASTCONSTR                  1.e-8
+TOLDELTALP                      1.e-8
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 0.45 ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0 CPL 175 STAB_S 1.0 
+MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 0.45 ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0 
 MAT 2 ELAST_CoupNeoHooke YOUNG 206.9 NUE 0.29
 //MAT 2 ELAST_CoupBlatzKo MUE 80.1938 NUE 0.29 F 0.25
 //MAT 3 MAT_Struct_PlasticSemiSmooth YIELD 0.45 ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0 

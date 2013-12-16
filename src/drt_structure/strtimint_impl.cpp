@@ -168,6 +168,16 @@ STR::TimIntImpl::TimIntImpl
     combdisilagr_       = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(cmtman_->GetStrategy().Params(),"NORMCOMBI_DISPLAGR");
   }
 
+  // setup binary operators for convergence check of semi-smooth plasticity problems
+  combfresplconstr_ = INPAR::STR::bop_and;
+  combdisiLp_       = INPAR::STR::bop_and;
+  if (HaveSemiSmoothPlasticity())
+  {
+    combfresplconstr_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(*(plastman_->Params()),"NORMCOMBI_RESFPLASTCONSTR");
+    combdisiLp_       = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(*(plastman_->Params()),"NORMCOMBI_DISPPLASTINCR");
+  }
+
+
 
   // -------------------------------------------------------------------
   // setup Krylov projection if necessary
@@ -1017,14 +1027,28 @@ bool STR::TimIntImpl::Converged()
 
   }  // end HaveMeshtyingContact()
 
-  // check convergence of plastic active set
+  // check convergence of plasticity
   bool cplast=true;
   if (HaveSemiSmoothPlasticity())
   {
-    cplast=plastman_->Converged();
-    if (!cplast)
-      if (discret_->Comm().MyPID()==0)
-        std::cout << "Active plastic set has changed"<< std::endl;
+    // check convergence of plastic active set
+    cplast = cplast and plastman_->ActiveSetConverged();
+
+    // convergence of residual
+    if (combfresplconstr_==INPAR::STR::bop_and)
+      convfres = convfres and plastman_->ConstraintConverged();
+    else if (combfresplconstr_==INPAR::STR::bop_or)
+      convfres = convfres or plastman_->ConstraintConverged();
+    else
+      dserror("Something went terribly wrong with binary operator!");
+
+    // convergence of increments
+    if (combdisiLp_==INPAR::STR::bop_and)
+      convdis = convdis and plastman_->IncrementConverged();
+    else if (combdisiLp_==INPAR::STR::bop_or)
+      convdis = convdis or plastman_->IncrementConverged();
+    else
+      dserror("Something went terribly wrong with binary operator!");
   }
 
 

@@ -270,6 +270,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--COHESIVE CRACK", *list);
   reader.ReadGidSection("--WEAR", *list);
   reader.ReadGidSection("--BEAM CONTACT", *list);
+  reader.ReadGidSection("--SEMI-SMOOTH PLASTICITY", *list);
 
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);

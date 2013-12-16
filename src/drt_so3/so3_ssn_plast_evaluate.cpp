@@ -708,8 +708,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
   double expisohard=plmat->Expisohard();
   double infyield=plmat->Infyield();
   double inityield=plmat->Inityield();
-  double cpl=plmat->Complparam();
-  double stab_s=plmat->Stabs();
+  double cpl=plparams_->get<double>("SEMI_SMOOTH_CPL");
+  double stab_s=plparams_->get<double>("STABILIZATION_S");
 
   // converged active set
   bool converged_active_set=true;
@@ -1385,8 +1385,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
   double expisohard=plmat->Expisohard();
   double infyield=plmat->Infyield();
   double inityield=plmat->Inityield();
-  double cpl=plmat->Complparam();
-  double stab_s=plmat->Stabs();
+  double cpl=plparams_->get<double>("SEMI_SMOOTH_CPL");
+  double stab_s=plparams_->get<double>("STABILIZATION_S");
   LINALG::Matrix<5,5> PlAniso(plmat->PlAniso());
   LINALG::Matrix<5,5> InvPlAniso(plmat->InvPlAniso());
   double PlSpinEta=-plmat->PlSpinEta();
@@ -2596,8 +2596,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
   double expisohard=plmat->Expisohard();
   double infyield=plmat->Infyield();
   double inityield=plmat->Inityield();
-  double cpl=plmat->Complparam();
-  double stab_s=plmat->Stabs();
+  double cpl=plparams_->get<double>("SEMI_SMOOTH_CPL");
+  double stab_s=plparams_->get<double>("STABILIZATION_S");
 
   // converged active set
   bool converged_active_set=true;
@@ -3348,8 +3348,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
   double expisohard=plmat->Expisohard();
   double infyield=plmat->Infyield();
   double inityield=plmat->Inityield();
-  double cpl=plmat->Complparam();
-  double stab_s=plmat->Stabs();
+  double cpl=plparams_->get<double>("SEMI_SMOOTH_CPL");
+  double stab_s=plparams_->get<double>("STABILIZATION_S");
   LINALG::Matrix<5,5> PlAniso(plmat->PlAniso());
   LINALG::Matrix<5,5> InvPlAniso(plmat->InvPlAniso());
   double PlSpinEta=-plmat->PlSpinEta();

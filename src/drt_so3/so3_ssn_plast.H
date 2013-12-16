@@ -236,6 +236,9 @@ namespace ELEMENTS
     //! configuration
     virtual void InitJacobianMapping();
 
+    // get parameter list from ssn_plast_manager
+    void SetParameterList(Teuchos::RCP<Teuchos::ParameterList> plparams) {plparams_ = plparams; return;};
+
     //@}
 
   protected:
@@ -419,6 +422,9 @@ namespace ELEMENTS
     Teuchos::RCP<MAT::Material> Material() const;
 
     int Id() const;
+
+    // parameter list containing algorithmic parameters
+    Teuchos::RCP<Teuchos::ParameterList> plparams_;
 
     static const int VOIGT3X3SYM_[3][3];
     static const int VOIGT3X3NONSYM_[3][3];

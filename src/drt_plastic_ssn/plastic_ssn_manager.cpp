@@ -13,16 +13,61 @@ Maintainer: Alexander Seitz
 #include "plastic_ssn_manager.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_so3/so3_ssn_plast.H"
+#include "../drt_lib/drt_globalproblem.H" // to get parameter list
 
 /*-------------------------------------------------------------------*
  |  ctor (public)                                         seitz 07/13|
  *-------------------------------------------------------------------*/
 UTILS::PlastSsnManager::PlastSsnManager(Teuchos::RCP<DRT::Discretization> discret):
 discret_(discret),
+plparams_(Teuchos::null),
 numactive_global_(0),
 unconvergedactiveset_(false),
 lp_increment_norm_global_(0.),
-lp_residual_norm_global_(0.){}
+lp_residual_norm_global_(0.)
+{
+  if(discret->Comm().MyPID()==0)
+  {
+    std::cout << "Checking plastic input parameters...........";
+    fflush(stdout);
+  }
+  ReadAndCheckInput();
+  if(discret->Comm().MyPID()==0) std::cout << "done!" << std::endl;
+
+}
+
+/*----------------------------------------------------------------------*
+ |  read and check input parameters (public)                 seitz 12/13|
+ *----------------------------------------------------------------------*/
+void UTILS::PlastSsnManager::ReadAndCheckInput()
+{
+  // read parameter lists from DRT::Problem
+  plparams_ = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->SemiSmoothPlastParams()));
+
+  if (plparams_->get<double>("SEMI_SMOOTH_CPL")<=0.)
+    dserror("Parameter cpl must be greater than 0 (approx. 2 times shear modulus) for semi-smooth plasticity");
+
+  if (plparams_->get<double>("STABILIZATION_S")<0.)
+    dserror("Parameter s must be greater than 0 (approx 0-2)");
+
+  // todo send parameter list to all elements that might need it
+  for (int i=0; i<discret_->NumMyColElements(); i++)
+  {
+    DRT::Element* actele = discret_->lColElement(i);
+    if (  actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance() )
+      static_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(actele)->SetParameterList(plparams_);
+    if ( actele->ElementType() == DRT::ELEMENTS::So_tet4PlastType::Instance() )
+      static_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(actele)->SetParameterList(plparams_);
+    if ( actele->ElementType() == DRT::ELEMENTS::So_hex8fbarPlastType::Instance() )
+      static_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(actele)->SetParameterList(plparams_);
+    if ( actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance() )
+      static_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>*>(actele)->SetParameterList(plparams_);
+
+  }
+
+
+}
 
 /*-------------------------------------------------------------------*
  |  set plastic parameters in parameter list (public)     seitz 07/13|
@@ -59,7 +104,7 @@ void UTILS::PlastSsnManager::GetPlasticParams(Teuchos::ParameterList& params)
 /*-------------------------------------------------------------------*
  |  check convergence of active set (public)              seitz 08/13|
  *-------------------------------------------------------------------*/
-bool UTILS::PlastSsnManager::Converged()
+bool UTILS::PlastSsnManager::ActiveSetConverged()
 {
   int unconverged_local = (int)unconvergedactiveset_;
   int unconverged_global =0;
@@ -68,5 +113,32 @@ bool UTILS::PlastSsnManager::Converged()
   if (unconverged_global==0)
     return true;
   else
+  {
+    if (discret_->Comm().MyPID()==0)
+      std::cout << "ACTIVE PLASTIC SET HAS CHANGED" << std::endl;
     return false;
+  }
+}
+
+/*-------------------------------------------------------------------*
+ |  check convergence of constraint norm (public)         seitz 08/13|
+ *-------------------------------------------------------------------*/
+bool UTILS::PlastSsnManager::ConstraintConverged()
+{
+  if (lp_residual_norm_global_>plparams_->get<double>("TOLPLASTCONSTR"))
+    return false;
+  else
+    return true;
+}
+
+/*-------------------------------------------------------------------*
+ |  check convergence of plastic flow (Delta Lp) increment (public)  |
+ |                                                        seitz 08/13|
+ *-------------------------------------------------------------------*/
+bool UTILS::PlastSsnManager::IncrementConverged()
+{
+  if (lp_increment_norm_global_>plparams_->get<double>("TOLDELTALP"))
+    return false;
+  else
+    return true;
 }

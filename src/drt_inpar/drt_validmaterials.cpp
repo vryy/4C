@@ -845,8 +845,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"EXPISOHARD","nonlinear isotropic hardening exponent");
     AddNamedReal(m,"INFYIELD","saturation yield stress for nonlinear isotropic hardening");
     AddNamedReal(m,"KINHARD","linear kinematic hardening modulus");
-    AddNamedReal(m,"CPL","plastic complementarity parameter");
-    AddNamedReal(m,"STAB_S","active set stabilization parameter 's'");
 
     // optional Hill yield parameters
     AddNamedReal(m,"rY_11","relative yield stress in fiber1-direction (Y_11/Y_0)",true);
