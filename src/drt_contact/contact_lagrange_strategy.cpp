@@ -3140,7 +3140,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
 
   // output of active set status to screen
   if (Comm().MyPID()==0 && activesetconv_==false)
-    std::cout << "ACTIVE SET HAS CHANGED... CHANGE No. " << ActiveSetSteps()-1 << std::endl;
+    std::cout << "ACTIVE CONTACT SET HAS CHANGED... CHANGE No. " << ActiveSetSteps()-1 << std::endl;
 
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())

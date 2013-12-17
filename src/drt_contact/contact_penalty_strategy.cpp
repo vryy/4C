@@ -208,7 +208,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
     isincontact_=false;
 
   if( (Comm().MyPID()==0) && (globalchange>=1) )
-    std::cout << "ACTIVE SET HAS CHANGED..." << std::endl;
+    std::cout << "ACTIVE CONTACT SET HAS CHANGED..." << std::endl;
 
   // (re)setup active global Epetra_Maps
   // the map of global active nodes is needed for the penalty case, too.
