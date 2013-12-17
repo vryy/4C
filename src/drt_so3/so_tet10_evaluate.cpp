@@ -284,6 +284,13 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
       // push-forward invJ for every gaussian point
       UpdateJacobianMapping(mydisp,*prestress_);
+
+      // Update constraintmixture material
+      if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+        so3mat->Update();
+      }
     }
     break;
 

@@ -232,7 +232,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
           AddtoPack(data, strain);
           std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
         }
-        
+
         {
           DRT::PackBuffer data;
           AddtoPack(data, plstrain);
@@ -270,6 +270,13 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
 
       // push-forward invJ for every gaussian point
       UpdateJacobianMapping(mydisp,*prestress_);
+
+      // Update constraintmixture material
+      if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+        so3mat->Update();
+      }
     }
     break;
 
