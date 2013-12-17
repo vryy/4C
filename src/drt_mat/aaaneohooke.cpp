@@ -59,7 +59,7 @@ double MAT::PAR::AAAneohooke::GetBeta(int EleId)
   double beta=0.0;
   //check if we have an element based value
 
-  std::map<string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
+  std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
   myit=elementwisematparams_.find("beta");
   if(EleId<0.0 && myit!=elementwisematparams_.end())
   {
@@ -80,7 +80,7 @@ double MAT::PAR::AAAneohooke::GetYoungs(int EleId)
   double youngs=0.0;
   //check if we have an element based value
 
-  std::map<string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
+  std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
   myit=elementwisematparams_.find("youngs");
   // check whether someone tries to get a global value by using eleid =-1
   if(EleId<0.0 && myit!=elementwisematparams_.end())
@@ -100,7 +100,7 @@ double MAT::PAR::AAAneohooke::GetYoungs(int EleId)
 void MAT::PAR::AAAneohooke::SetYoungs(double new_youngs)
 {
   // check whether we have a spatially varing youngs modulus
-  std::map<string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
+  std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
   myit=elementwisematparams_.find("youngs");
   if(myit!=elementwisematparams_.end())
     // set new global value for parameter youngs
@@ -117,7 +117,7 @@ void MAT::PAR::AAAneohooke::SetYoungs(Teuchos::RCP<Epetra_Vector> new_distribute
 void MAT::PAR::AAAneohooke::SetBeta(double new_beta)
 {
   // check whether we have a spatially varing youngs modulus
-  std::map<string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
+  std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
   myit=elementwisematparams_.find("beta");
   if(myit!=elementwisematparams_.end())
     // set new global value for parameter beta
