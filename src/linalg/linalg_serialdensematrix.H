@@ -30,10 +30,10 @@ http://www.lnm.mw.tum.de
 -------------------------------------------------------------------------
 </pre>
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -85,6 +85,14 @@ public:
   \brief Standard Constructor wrapping
          Epetra_SerialDenseMatrix(Epetra_DataAccess CV, double* A, int LDA, int NumRows, int NumCols,
                                   bool set_object_label=true);
+
+  \param CV               (in): specifies whether a view to the data in A is created or it is copied
+  \param A                (in): pointer to data array, organized by columns
+  \param LDA              (in): leading dimension of A, i.e., the distance between columns in the data array.
+                                The first column starts at A, the second at A+LDA, the third at A+2*LDA, etc.
+  \param NumRows          (in): no. of rows the matrix is supposed to have, must be smaller or equal LDA
+  \param NumCols          (in): no. of cols the matrix is supposed to have
+  \param set_object_label (in): set an epetra object label for print out (defaults to true!)
 
   */
   SerialDenseMatrix(Epetra_DataAccess CV, double* A, int LDA, int NumRows, int NumCols,

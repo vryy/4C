@@ -33,10 +33,10 @@ http://www.lnm.mw.tum.de
 -------------------------------------------------------------------------
 </pre>
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15235
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -3069,7 +3069,8 @@ namespace LINALG
 /*!
   A serial dense matrix with templated dimensions that is supposed to
   be fast and lightweight.
-  The value_type-array is allocated on the heap and stored in
+  The value_type-array is allocated on the stack (small sizes, up to 512
+  bytes or on the heap (larger sizes) and stored in
   column-major order, just like in Epetra_SerialDenseMatrix.
 
   The interface is based on that of Epetra_SerialDenseMatrix and
@@ -3087,8 +3088,17 @@ template <class value_type, unsigned int rows, unsigned int cols /* =1  ?*/ >
 class TMatrix
 {
 private:
+  /// threshold for when to allocate the memory instead of placing the matrix on the stack.
+  /// set to 512 bytes (or 64 entries for double matrices).
+  static const bool allocatesmemory_ = rows*cols*sizeof(value_type) > 512;
+
   /// the pointer holding the data
   value_type* data_;
+
+  /// for small sizes of the matrix, avoid expensive memory allocation by storing
+  /// the matrix on the stack
+  value_type datafieldsmall_[allocatesmemory_ ? 1 : rows * cols];
+
   /// whether we are a view to some other matrix
   bool isview_;
 
@@ -3970,7 +3980,10 @@ template<class value_type, unsigned int rows, unsigned int cols>
 TMatrix<value_type,rows,cols>::TMatrix(bool setzero) : data_(0), isview_(false)
 {
   DENSEERROR::Checker<(rows != 0) and (cols != 0)>::Matrix_dimensions_cannot_be_zero();
-  data_ = new value_type[rows*cols];
+  if (allocatesmemory_)
+    data_ = new value_type[rows*cols];
+  else
+    data_ = &datafieldsmall_[0];
   if (setzero)
     DENSEFUNCTIONS::clearMatrix<value_type,rows,cols>(data_);
 }
@@ -3984,8 +3997,10 @@ TMatrix<value_type,rows,cols>::TMatrix(value_type* d, bool view) :
     data_ = d;
   }
   else {
-    data_ = new value_type[rows*cols];
-    //std::memcpy(data_, d, rows*cols*sizeof(value_type));
+    if (allocatesmemory_)
+      data_ = new value_type[rows*cols];
+    else
+      data_ = &datafieldsmall_[0];
     std::copy(d,d+rows*cols,data_);
   }
 }
@@ -4000,8 +4015,10 @@ TMatrix<value_type,rows,cols>::TMatrix(const value_type* d, bool view) :
     //data_ = d;
   }
   else {
-    data_ = new value_type[rows*cols];
-    //std::memcpy(data_, d, rows*cols*sizeof(value_type));
+    if (allocatesmemory_)
+      data_ = new value_type[rows*cols];
+    else
+      data_ = &datafieldsmall_[0];
     std::copy(d,d+rows*cols,data_);
   }
 }
@@ -4019,8 +4036,10 @@ TMatrix<value_type,rows,cols>::TMatrix(Epetra_SerialDenseMatrix& d, bool view) :
     data_ = d.A();
   }
   else {
-    data_ = new value_type[rows*cols];
-    //std::memcpy(data_, d.A(), rows*cols*sizeof(value_type));
+    if (allocatesmemory_)
+      data_ = new value_type[rows*cols];
+    else
+      data_ = &datafieldsmall_[0];
     std::copy(d.A(),d.A()+rows*cols,data_);
   }
 }
@@ -4034,8 +4053,10 @@ TMatrix<value_type,rows,cols>::TMatrix(TMatrix<value_type,rows,cols>& source, bo
     data_ = source.data_;
   }
   else {
-    data_ = new value_type[rows*cols];
-    //std::memcpy(data_, source.data_, rows*cols*sizeof(value_type));
+    if (allocatesmemory_)
+      data_ = new value_type[rows*cols];
+    else
+      data_ = &datafieldsmall_[0];
     std::copy(source.data_,source.data_+rows*cols,data_);
   }
 }
@@ -4045,8 +4066,10 @@ TMatrix<value_type,rows,cols>::TMatrix(const TMatrix<value_type,rows,cols>& sour
   data_(0), isview_(false)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
-  data_ = new value_type[rows*cols];
-  //std::memcpy(data_, source.data_, rows*cols*sizeof(value_type));
+  if (allocatesmemory_)
+    data_ = new value_type[rows*cols];
+  else
+    data_ = &datafieldsmall_[0];
   std::copy(source.data_,source.data_+rows*cols,data_);
 }
 
@@ -4054,7 +4077,7 @@ TMatrix<value_type,rows,cols>::TMatrix(const TMatrix<value_type,rows,cols>& sour
 template<class value_type, unsigned int rows, unsigned int cols>
 TMatrix<value_type,rows,cols>::~TMatrix()
 {
-  if (not isview_)
+  if (allocatesmemory_ && not isview_)
     delete[] data_;
 }
 
@@ -4062,7 +4085,8 @@ template<class value_type, unsigned int rows, unsigned int cols>
 void TMatrix<value_type,rows,cols>::SetView(value_type* data)
 {
   if (not isview_) {
-    delete[] data_;
+    if (allocatesmemory_)
+      delete[] data_;
     isview_ = true;
   }
   data_ = data;
@@ -4072,7 +4096,8 @@ template<class value_type, unsigned int rows, unsigned int cols>
 void TMatrix<value_type,rows,cols>::SetView(TMatrix<value_type,rows,cols>& source)
 {
   if (not isview_) {
-    delete[] data_;
+    if (allocatesmemory_)
+      delete[] data_;
     isview_ = true;
   }
   data_ = source.data_;
@@ -4082,10 +4107,12 @@ template<class value_type, unsigned int rows, unsigned int cols>
 void TMatrix<value_type,rows,cols>::SetCopy(value_type* data)
 {
   if (isview_) {
-    data_ = new value_type[rows*cols];
+    if (allocatesmemory_)
+      data_ = new value_type[rows*cols];
+    else
+      data_ = &datafieldsmall_[0];
     isview_ = false;
   }
-  //std::memcpy(data_, data, rows*cols*sizeof(value_type));
   std::copy(data,data+rows*cols,data_);
 }
 
@@ -4093,10 +4120,12 @@ template<class value_type, unsigned int rows, unsigned int cols>
 void TMatrix<value_type,rows,cols>::SetCopy(TMatrix<value_type,rows,cols>& source)
 {
   if (isview_) {
-    data_ = new value_type[rows*cols];
+    if (allocatesmemory_)
+      data_ = new value_type[rows*cols];
+    else
+      data_ = &datafieldsmall_[0];
     isview_ = false;
   }
-  //std::memcpy(data_, source.data_, rows*cols*sizeof(value_type));
   std::copy(source.data_,source.data_+rows*cols,data_);
 }
 
