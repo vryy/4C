@@ -186,7 +186,7 @@ $CMAKE_COMMAND \
     -D CMAKE_Fortran_FLAGS:STRING="-Wall" \
     -D CMAKE_Fortran_FLAGS_RELEASE:STRING="-O5 -funroll-all-loops -malign-double" \
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
-    -D HAVENOT_SUPERLU:BOOL=ON \
+    -D HAVENOT_SUPERLU:BOOL=OFF \
     -D HAVE_TEKO:BOOL=$BUILD_Teko \
     -D HAVE_MueLu:BOOL=$BUILD_MueLu \
     -D HAVE_Trilinos_Q1_2013:BOOL=$BUILD_HAVE_Trilinos_Q1_2013 \
