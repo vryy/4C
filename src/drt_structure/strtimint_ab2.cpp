@@ -72,7 +72,6 @@ STR::TimIntAB2::TimIntAB2
   fcmtn_  = LINALG::CreateVector(*DofRowMapView(), true);
   frimpn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
-  // let it rain
   return;
 }
 
@@ -89,6 +88,8 @@ void STR::TimIntAB2::ResizeMStep()
   dis_->Resize(-1, 0, DofRowMapView(), true);
   vel_->Resize(-1, 0, DofRowMapView(), true);
   acc_->Resize(-1, 0, DofRowMapView(), true);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -214,7 +215,6 @@ int STR::TimIntAB2::IntegrateStep()
   // apply Dirichlet BCs on accelerations
   ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_, false);
 
-  // wassup?
   return 0;
 }
 
@@ -235,7 +235,6 @@ void STR::TimIntAB2::UpdateStepState()
   // update contact and meshtying
   UpdateStepContactMeshtying();
 
-  // bye
   return;
 }
 
@@ -254,6 +253,8 @@ void STR::TimIntAB2::UpdateStepElement()
   // go to elements
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
