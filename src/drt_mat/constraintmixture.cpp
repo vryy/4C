@@ -2750,7 +2750,7 @@ void MAT::ConstraintMixture::VisNames(std::map<std::string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data                     (public)         03/13|
  *----------------------------------------------------------------------*/
-bool MAT::ConstraintMixture::VisData(const std::string& name, std::vector<double>& data, int numgp)
+bool MAT::ConstraintMixture::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "MassStress")
   {

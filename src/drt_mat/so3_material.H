@@ -86,8 +86,12 @@ namespace MAT
     virtual void VisNames(std::map<std::string,int>& names)
     { /* do nothing for simple material models */ };
 
-    /// Return visualization data
+    // Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp)
+    { /* do nothing for simple material models */ return false; };
+
+    /// Return visualization data
+    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleId)
     { /* do nothing for simple material models */ return false; };
 
     //@}

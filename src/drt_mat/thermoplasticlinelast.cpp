@@ -1405,7 +1405,7 @@ void MAT::ThermoPlasticLinElast::VisNames(std::map<std::string,int>& names)
 /*---------------------------------------------------------------------*
  | return visualization data (public)                       dano 03/13 |
  *---------------------------------------------------------------------*/
-bool MAT::ThermoPlasticLinElast::VisData(const std::string& name, std::vector<double>& data, int numgp)
+bool MAT::ThermoPlasticLinElast::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "accumulatedstrain")
   {

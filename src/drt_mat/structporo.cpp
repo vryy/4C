@@ -540,7 +540,7 @@ void MAT::StructPoro::VisNames(std::map<std::string,int>& names)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool MAT::StructPoro::VisData(const std::string& name, std::vector<double>& data, int numgp)
+bool MAT::StructPoro::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (mat_->VisData(name,data,numgp))
     return true;

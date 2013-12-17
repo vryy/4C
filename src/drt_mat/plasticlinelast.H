@@ -259,7 +259,8 @@ private:
     virtual bool VisData(
       const std::string& name,
       std::vector<double>& data,
-      int numgp
+      int numgp,
+      int eleID
       );
 
     //! finite difference check for debugging purposes

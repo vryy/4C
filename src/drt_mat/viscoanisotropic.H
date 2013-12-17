@@ -192,7 +192,7 @@ private:
     virtual void VisNames(std::map<std::string,int>& names);
 
     /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp);
+    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
   private:
 

@@ -537,7 +537,7 @@ void MAT::Growth::VisNames(std::map<std::string,int>& names)
 /*----------------------------------------------------------------------*
  |  gp data to be visualized                      (public)         03/13|
  *----------------------------------------------------------------------*/
-bool MAT::Growth::VisData(const std::string& name, std::vector<double>& data, int numgp)
+bool MAT::Growth::VisData(const std::string& name, std::vector<double>& data, int numgp , int eleID)
 {
   if (name == "Theta")
   {
@@ -559,7 +559,7 @@ bool MAT::Growth::VisData(const std::string& name, std::vector<double>& data, in
   }
   else
   {
-    return matelastic_->VisData(name, data, numgp);
+    return matelastic_->VisData(name, data, numgp, eleID);
   }
   return true;
 }

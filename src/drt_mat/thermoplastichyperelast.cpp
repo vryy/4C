@@ -1316,7 +1316,8 @@ void MAT::ThermoPlasticHyperElast::VisNames(std::map<std::string, int>& names)
 bool MAT::ThermoPlasticHyperElast::VisData(
   const std::string& name,
   std::vector<double>& data,
-  int numgp
+  int numgp,
+  int eleID
   )
 {
   // accumulated strain

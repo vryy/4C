@@ -514,7 +514,7 @@ bool DRT::ELEMENTS::So_tet10::VisData(const std::string& name, std::vector<doubl
     return true;
 
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  return so3mat->VisData(name, data, NUMGPT_SOTET10);
+  return so3mat->VisData(name, data, NUMGPT_SOTET10,this->Id());
 }
 
 

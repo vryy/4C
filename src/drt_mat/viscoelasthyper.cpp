@@ -1311,7 +1311,7 @@ void MAT::ViscoElastHyper::VisNames(std::map<std::string,int>& names)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool MAT::ViscoElastHyper::VisData(const std::string& name, std::vector<double>& data, int numgp)
+bool MAT::ViscoElastHyper::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (AnisotropicPrincipal() or AnisotropicModified())
   {

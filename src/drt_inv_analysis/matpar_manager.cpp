@@ -263,15 +263,20 @@ void STR::INVANA::MatParManager::SetParams()
 {
   for (int i=0; i< discret_->NumMyColElements(); i++)
   {
+    // get material of current colelement
     Teuchos::RCP<MAT::Material> actmat = discret_->lColElement(i)->Material();
+    // get material ID as defined in input file
     int actmatid = actmat->Parameter()->Id();
+    // do we have this material in our list of to be optimized materials
     if ( paramap_.find( actmatid ) != paramap_.end() )
     {
+      // get string of parameter names to be optimized
       std::vector<std::string> actparams = paramap_.at( actmatid );
       std::vector<std::string>::const_iterator it;
+      // loop over all these parameters
       for ( it=actparams.begin(); it!=actparams.end(); it++)
       {
-        double val = (*(*params_)( parapos_.at(actmatid).at(it-actparams.begin()) ))[discret_->lColElement(i)->LID()];
+        double val = (*( *params_)( parapos_.at(actmatid).at(it-actparams.begin()) ))[discret_->lColElement(i)->LID()];
         if (metaparams_)
           actmat->Init(0.5*val*val+0.1,*it);
         else

@@ -539,7 +539,8 @@ void MAT::PlasticNlnLogNeoHooke::VisNames(std::map<std::string,int>& names)
 bool MAT::PlasticNlnLogNeoHooke::VisData(
   const std::string& name,
   std::vector<double>& data,
-  int numgp
+  int numgp,
+  int eleID
   )
 {
   if (name == "accumulatedstrain")

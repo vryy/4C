@@ -285,7 +285,7 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::v
     return true;
 
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  return so3mat->VisData(name, data, numgpt_);
+  return so3mat->VisData(name, data, numgpt_,this->Id());
 }
 
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>;

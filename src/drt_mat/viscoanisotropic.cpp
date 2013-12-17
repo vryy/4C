@@ -705,7 +705,7 @@ void MAT::ViscoAnisotropic::VisNames(std::map<std::string,int>& names)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool MAT::ViscoAnisotropic::VisData(const std::string& name, std::vector<double>& data, int numgp)
+bool MAT::ViscoAnisotropic::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   std::vector<double> a1 = Geta1()->at(0);  // get a1 of first gp
   std::vector<double> a2 = Geta2()->at(0);  // get a2 of first gp

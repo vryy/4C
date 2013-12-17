@@ -3080,7 +3080,8 @@ void MAT::Damage::VisNames(std::map<std::string,int>& names)
 bool MAT::Damage::VisData(
   const std::string& name,
   std::vector<double>& data,
-  int numgp
+  int numgp,
+  int eleID
   )
 {
   if (name == "accumulatedstrain")

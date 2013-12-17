@@ -10,10 +10,9 @@ the input line should read
   MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044E7 BETA 188.1E5 DENS 1.0
 
 <pre>
-Maintainer: Christiane Förster
-            foerster@lnm.mw.tum.de
+Maintainer: Jonas Biehler
+            biehler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15262
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -47,22 +46,49 @@ namespace MAT
       /// destructor
       virtual ~AAAneohooke() { ; }
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      void OptParams(std::vector<std::string>* pnames);
+
+      // functions to return mat params
+
+      //! brief get youngs modulus fo specific element
+      // or try to get global youngs if eleID=-1
+      double GetYoungs(int EleID);
+
+      double GetNue() {return nue_; } ;
+
+      double GetBeta(int EleID);
+
+      double GetDensity() {return density_;};
+
+      void SetYoungs(double new_youngs);
+
+      void SetYoungs(Teuchos::RCP<Epetra_Vector> new_distributed_youngs);
+
+      void SetBeta(double new_beta);
+
+      void SetBeta(Teuchos::RCP<Epetra_Vector> new_distributed_beta);
+
+
+    private:
+
       /// @name material parameters
       //@{
 
       /// Young's modulus
-      const double youngs_;
+      double youngs_;
       /// Possion's ratio
-      const double nue_;
+      double nue_;
       /// 2nd parameter
-      const double beta_;
-      /// mass density
-      const double density_;
+      double beta_;
+      // mass density
+      double density_;
 
       //@}
 
-      /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      std::map<std::string,Teuchos::RCP<Epetra_Vector> > elementwisematparams_;
 
     };  // class AAAneohooke
 
@@ -135,21 +161,16 @@ private:
     //@}
 
     /// material mass density
-    virtual double Density() const { return params_->density_; }
+    virtual double Density() const { return params_->GetDensity(); }
 
     /// shear modulus
-    double ShearMod() const { return 0.5*params_->youngs_/(1.0+params_->nue_); }
+    double ShearMod() const { return 0.5*params_->GetYoungs(-1)/(1.0+params_->GetNue()); }
 
     // material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaaneohooke; }
 
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AAAneohooke( *this ) ); }
-
-    // THE material routine
-    void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-		  Epetra_SerialDenseMatrix* cmat_e,
-		  Epetra_SerialDenseVector* stress_e);
 
     // THE material routine
     virtual void Evaluate(
@@ -161,6 +182,12 @@ private:
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+
+    /// Return names of visualization data
+    virtual void VisNames(std::map<std::string,int>& names);
+
+    /// Return visualization data
+    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp , int eleID);
 
   private:
 
