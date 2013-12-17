@@ -411,17 +411,18 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
       dserror("no gp stress/strain map available for postprocessing");
     std::string stresstype = params.get<std::string>("stresstype","ndxyz");
     int gid = Id();
-    LINALG::Matrix<numgpt_post,nsd_> gpstress(((*gpstressmap)[gid])->A(),true);
+    LINALG::Matrix<numgpt_post,numstr_> gpstress(((*gpstressmap)[gid])->A(),true);
 
     Teuchos::RCP<Epetra_MultiVector> poststress=params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
     if (poststress==Teuchos::null)
       dserror("No element stress/strain vector available");
 
-    if (stresstype=="ndxyz")
+   if (stresstype=="ndxyz")
     {
-      dserror("only element centered stress for so3_plast");
-//      // extrapolate stresses/strains at Gauss points to nodes
-//      soh8_expol(gpstress, *poststress);
+      if (distype==DRT::Element::hex8)
+        soh8_expol(gpstress, *poststress);
+      else
+        dserror("only element centered stress for so3_plast");
     }
     else if (stresstype=="cxyz")
     {

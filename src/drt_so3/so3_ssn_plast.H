@@ -411,6 +411,14 @@ namespace ELEMENTS
 
     bool HaveHillPlasticity() ;
 
+    /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
+    /// todo: Unfortunately, there is no universal extrapolation function in all base elements,
+    /// i.e. the hex8 elements would call soh8_expol, hex27 would call soh27_expol...
+    /// For now, we copy the extrapolation function here and allow the use only for hex8 elements
+    void soh8_expol(
+        LINALG::Matrix<numgpt_post,numstr_>& stresses,  ///< gp stresses
+        Epetra_MultiVector& expolstresses);  ///< nodal stresses
+
 
     //! @name plasticity related stuff
 

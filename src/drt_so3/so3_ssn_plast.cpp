@@ -523,6 +523,90 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::HaveHillPlasticity()
 }
 
 
+/*----------------------------------------------------------------------*
+ | extrapolate stresses for hex8 elements (public)           seitz 12/13 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::soh8_expol(
+    LINALG::Matrix<numgpt_post,numstr_>& stresses,
+    Epetra_MultiVector& expolstresses
+    )
+{
+  if (distype!=DRT::Element::hex8)
+    dserror("soh8_expol called from non-hex8 element");
+
+  // static variables, that are the same for every element
+  static LINALG::Matrix<nen_,numgpt_post> expol;
+  static bool isfilled;
+
+  if (isfilled==false)
+  {
+    double sq3=sqrt(3.0);
+    expol(0,0)=1.25+0.75*sq3;
+    expol(0,1)=-0.25-0.25*sq3;
+    expol(0,2)=-0.25+0.25*sq3;
+    expol(0,3)=-0.25-0.25*sq3;
+    expol(0,4)=-0.25-0.25*sq3;
+    expol(0,5)=-0.25+0.25*sq3;
+    expol(0,6)=1.25-0.75*sq3;
+    expol(0,7)=-0.25+0.25*sq3;
+    expol(1,1)=1.25+0.75*sq3;
+    expol(1,2)=-0.25-0.25*sq3;
+    expol(1,3)=-0.25+0.25*sq3;
+    expol(1,4)=-0.25+0.25*sq3;
+    expol(1,5)=-0.25-0.25*sq3;
+    expol(1,6)=-0.25+0.25*sq3;
+    expol(1,7)=1.25-0.75*sq3;
+    expol(2,2)=1.25+0.75*sq3;
+    expol(2,3)=-0.25-0.25*sq3;
+    expol(2,4)=1.25-0.75*sq3;
+    expol(2,5)=-0.25+0.25*sq3;
+    expol(2,6)=-0.25-0.25*sq3;
+    expol(2,7)=-0.25+0.25*sq3;
+    expol(3,3)=1.25+0.75*sq3;
+    expol(3,4)=-0.25+0.25*sq3;
+    expol(3,5)=1.25-0.75*sq3;
+    expol(3,6)=-0.25+0.25*sq3;
+    expol(3,7)=-0.25-0.25*sq3;
+    expol(4,4)=1.25+0.75*sq3;
+    expol(4,5)=-0.25-0.25*sq3;
+    expol(4,6)=-0.25+0.25*sq3;
+    expol(4,7)=-0.25-0.25*sq3;
+    expol(5,5)=1.25+0.75*sq3;
+    expol(5,6)=-0.25-0.25*sq3;
+    expol(5,7)=-0.25+0.25*sq3;
+    expol(6,6)=1.25+0.75*sq3;
+    expol(6,7)=-0.25-0.25*sq3;
+    expol(7,7)=1.25+0.75*sq3;
+
+    for (int i=0;i<NUMNOD_SOH8;++i)
+    {
+      for (int j=0;j<i;++j)
+      {
+        expol(i,j)=expol(j,i);
+      }
+    }
+    isfilled = true;
+  }
+
+  LINALG::Matrix<nen_,numstr_> nodalstresses;
+  nodalstresses.Multiply(expol, stresses);
+
+  // "assembly" of extrapolated nodal stresses
+  for (int i=0;i<nen_;++i)
+  {
+    int gid = so3_ele::NodeIds()[i];
+    if (expolstresses.Map().MyGID(so3_ele::NodeIds()[i])) // rownode
+    {
+      int lid = expolstresses.Map().LID(gid);
+      int myadjele = Nodes()[i]->NumElement();
+      for (int j=0;j<6;j++)
+        (*(expolstresses(j)))[lid] += nodalstresses(i,j)/myadjele;
+    }
+  }
+}
+
+
 /*----------------------------------------------------------------------*/
 // include the file at the end of so3_ssn_plast.cpp
 #include "so3_ssn_plast_fwd.hpp"
