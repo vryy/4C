@@ -535,6 +535,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       // update element geometry
       LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
       LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
+      LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;
 
       DRT::Node** nodes = Nodes();
       for (int i=0; i<NUMNOD_SOH8; ++i)
@@ -546,7 +547,15 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         xcurr(i,0) = xrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
         xcurr(i,1) = xrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
         xcurr(i,2) = xrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
+
+        if (pstype_==INPAR::STR::prestress_mulf)
+        {
+          xdisp(i,0) = mydisp[i*NODDOF_SOH8+0];
+          xdisp(i,1) = mydisp[i*NODDOF_SOH8+1];
+          xdisp(i,2) = mydisp[i*NODDOF_SOH8+2];
+        }
       }
+
 
       // loop over all Gauss points
       for (int gp=0; gp<NUMGPT_SOH8; gp++)
@@ -566,7 +575,39 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
 
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
         LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
-        defgrd.MultiplyTT(xcurr,N_XYZ);
+
+        if (pstype_==INPAR::STR::prestress_mulf)
+            {
+              // get Jacobian mapping wrt to the stored configuration
+              LINALG::Matrix<3,3> invJdef;
+              prestress_->StoragetoMatrix(gp,invJdef,prestress_->JHistory());
+              // get derivatives wrt to last spatial configuration
+              LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_xyz;
+              N_xyz.Multiply(invJdef,derivs[gp]);
+
+              // build multiplicative incremental defgrd
+              defgrd.MultiplyTT(xdisp,N_xyz);
+              defgrd(0,0) += 1.0;
+              defgrd(1,1) += 1.0;
+              defgrd(2,2) += 1.0;
+
+              // get stored old incremental F
+              LINALG::Matrix<3,3> Fhist;
+              prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+
+              // build total defgrd = delta F * F_old
+              LINALG::Matrix<3,3> Fnew;
+              Fnew.Multiply(defgrd,Fhist);
+              defgrd = Fnew;
+            }
+        else
+          // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+          defgrd.MultiplyTT(xcurr,N_XYZ);
+
+        if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
+        {
+          dserror("Calc Energy not implemented for prestress id");
+        }
 
         // right Cauchy-Green tensor = F^T * F
         LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
