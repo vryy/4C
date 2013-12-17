@@ -114,12 +114,19 @@ STR::TimIntImpl::TimIntImpl
 
   // verify: if system has constraints implemented with Lagrange multipliers,
   // then Uzawa-type solver is used
-  if ( conman_->HaveConstraintLagr() or windkman_->HaveWindkessel())
+  if (conman_->HaveConstraintLagr())
   {
     if ( (itertype_ != INPAR::STR::soltech_newtonuzawalin)
          and (itertype_ != INPAR::STR::soltech_newtonuzawanonlin) )
-      dserror("Chosen solution technique %s does not work constrained or with Windkessel bc.",
+      dserror("Chosen solution technique %s does not work constrained.",
               INPAR::STR::NonlinSolTechString(itertype_).c_str());
+  }
+  else if (windkman_->HaveWindkessel())
+  {
+    if (itertype_ != INPAR::STR::soltech_newtonuzawalin)
+    	if (myrank_ == 0)
+    		printf("\n\n**** WARNING **** Chosen solution technique %s does not work with Windkessel bc !!!\n\n",
+              	INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
   else if ( (itertype_ == INPAR::STR::soltech_newtonuzawalin)
             or (itertype_ == INPAR::STR::soltech_newtonuzawanonlin) )
