@@ -1,7 +1,16 @@
 /*!---------------------------------------------------------------------------
-\file meshfree_scatra_cell.H
 
-\brief scatra cell for meshfree discretisations
+\file meshfree_fluid_cell.H
+
+\brief A C++ wrapper for the fluid element
+
+This file contains the cell-specific service routines such as
+Pack, Unpack, NumDofPerNode etc.
+
+In addition to that, it contains the interface between element call
+and Gauss point loop (depending on the fluid implementation)
+as well as some additional service routines (for the evaluation
+of errors, turbulence statistics etc.).
 
 <pre>
 Maintainer: Keijo Nissen
@@ -9,11 +18,10 @@ Maintainer: Keijo Nissen
             http://www.lnm.mw.tum.de
             089 - 289-15253
 </pre>
-
 *---------------------------------------------------------------------------*/
 
-#ifndef MESHFREE_SCATRA_CELL_H
-#define MESHFREE_SCATRA_CELL_H
+#ifndef MESHFREE_FLUID_CELL_H
+#define MESHFREE_FLUID_CELL_H
 
 #include "drt_meshfree_cell.H"
 #include "../drt_lib/drt_elementtype.H"
@@ -21,74 +29,92 @@ Maintainer: Keijo Nissen
 namespace DRT
 {
 
+class Discretization;
+
 namespace ELEMENTS
 {
 
 /*==========================================================================*/
 // forward declarations
 /*==========================================================================*/
-// none
+class FluidEleParameter;
+class FluidEleParameterStd;
+class FluidEleParameterTimInt;
 
 /*--------------------------------------------------------------------------*/
 /*!
- * \brief The element type class of meshfree transport cells, creating the
- *        same
+ * \brief The element type class of meshfree fluid cells, creating the same
  *
  * \author Keijo Nissen (nissen@lnm.mw.tum.de)
  *
- * \date March, 2012
+ * \date Januar, 2013
  */
 /*--------------------------------------------------------------------------*/
-class MeshfreeTransportType : public DRT::ElementType
+class MeshfreeFluidType : public DRT::ElementType
 {
 public:
 
   //!< name of specific element type
-  std::string Name() const { return "MeshfreeTransportType"; }
+  std::string Name() const
+  {
+    return "MeshfreeFluidType";
+  }
 
   //!< returning instance of specific element type
-  static MeshfreeTransportType & Instance() { return instance_; };
+  static MeshfreeFluidType & Instance()
+  {
+    return instance_;
+  }
 
   //!< create parallel object of this element type
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   //!< create element of this element type
-  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-                                             const std::string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
                                              const int id,
                                              const int owner );
 
   //!< create element of this element type
-  virtual Teuchos::RCP<DRT::Element> Create( const int id,
-                                             const int owner);
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
-  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+  virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np );
 
   virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
 
   virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
+  /// pre-evaluation ???
+  virtual void PreEvaluate(DRT::Discretization&                dis,
+                          Teuchos::ParameterList&              p,
+                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                          Teuchos::RCP<Epetra_Vector>          systemvector1,
+                          Teuchos::RCP<Epetra_Vector>          systemvector2,
+                          Teuchos::RCP<Epetra_Vector>          systemvector3);
+
 private:
 
   //!< static instance of this element type (for self-instantiation)
-  static MeshfreeTransportType instance_;
+  static MeshfreeFluidType instance_;
 };
 
 /*--------------------------------------------------------------------------*/
 /*!
- * \brief A C++ wrapper for the MeshfreeTransport cell
+ * \brief A C++ wrapper for the MeshfreeFluid cell
  *
  * \author Keijo Nissen (nissen@lnm.mw.tum.de)
  *
- * \date February, 2012
+ * \date January, 2013
  */
 /*--------------------------------------------------------------------------*/
-class MeshfreeTransport : public DRT::MESHFREE::Cell
+class MeshfreeFluid : public DRT::MESHFREE::Cell
 {
 public:
 
-  //! @name Friends
-  friend class MeshfreeTransportBoundary;
+  //! @name friends
+  friend class MeshfreeFluidBoundary;
+//  friend class FluidSystemEvaluator; // ???
 
   /*========================================================================*/
   //! @name Constructors and destructors and related methods
@@ -97,40 +123,40 @@ public:
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Standard Constructor
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  MeshfreeTransport(
+  MeshfreeFluid(
     int id,    //!< A unique global id
     int owner  //!< processor id who owns a certain instance of this class
-  );
+    );
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Copy Constructor
    *
    * Makes a deep copy of a DRT::Element
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  MeshfreeTransport(const MeshfreeTransport& old);
+  MeshfreeFluid(const MeshfreeFluid& old);
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Deep copy this instance of MeshfreeTransport and return pointer to
+   * \brief Deep copy this instance of FluidTransport and return pointer to
    *        the copy
    *
    *   The Clone() method is used from the virtual base class Element in cases
    *   where the type of the derived class is unknown and a copy-ctor is
    *   needed
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   DRT::Element* Clone() const;
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Destructor
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  virtual ~MeshfreeTransport();
+  virtual ~MeshfreeFluid();
 
   /*========================================================================*/
   //! @name access methods
@@ -138,81 +164,71 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Set cell material
-   *
-   *   Material numbers are read from the input file. The element stores a
-   *   corresponding material object. These material objects can be anything
-   *   from very simple (just a little calculation) to highly sophisticated
-   *   with history data. The material is packed and unpacked along with its
-   *   element.
-   *
-   *  \note reimplementation of this method, due to initialising
-   *        numdofpernode_, since the material is known now.
-   *///                                                   (public) nis Feb12
-  /*------------------------------------------------------------------------*/
-  virtual void SetMaterial(int matnum //!< material number from input file
-    );
-
-  /*------------------------------------------------------------------------*/
-  /*!
    * \brief Get shape type of cell
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual DiscretizationType Shape() const;
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief set discretization type of cell
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  virtual void SetDisType(DiscretizationType shape //!< shape determining distype
-    )
+  virtual void SetDisType(DRT::Element::DiscretizationType shape)
   {
     distype_ = shape;
+
+    if (distype_ == DRT::Element::tet10)
+    {
+      cout << endl;
+      cout << "Warning:The integration rule of a tet10 element was changed from tet-5-point to tet-11-point integration rule, "
+      " since the deg. of precision 3 is to small as a standard"<< endl << endl;
+    }
     return;
   };
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Return number of lines of this cell
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual int NumLine() const;
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Return number of surfaces of this cell
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual int NumSurface() const;
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Return number of volumes of this cell
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual int NumVolume() const;
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Get vector of RCPs to the lines of this cell
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Get vector of RCPs to the surfaces of this cell
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Get vector of RCPs to the volume of this cell
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
+
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -220,11 +236,11 @@ public:
    *
    * Every class implementing ParObject needs a unique id defined at the top
    * of this file.
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual int UniqueParObjectId() const
   {
-    return MeshfreeTransportType::Instance().UniqueParObjectId();
+    return MeshfreeFluidType::Instance().UniqueParObjectId();
   }
 
   /*------------------------------------------------------------------------*/
@@ -232,7 +248,7 @@ public:
    * \brief Pack this class so it can be communicated
    *
    * \ref Pack and \ref Unpack are used to communicate this cell
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual void Pack(DRT::PackBuffer& data) const;
 
@@ -241,7 +257,7 @@ public:
    * \brief Unpack data from a char vector into this class
    *
    * \ref Pack and \ref Unpack are used to communicate this cell
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual void Unpack(const std::vector<char>& data);
 
@@ -254,13 +270,9 @@ public:
    * this may vary along a simulation, the element can redecide the number of
    * degrees of freedom per node along the way for each of it's nodes
    * separately.
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  virtual int NumDofPerNode(const DRT::Node& node) const
-  {
-    dsassert(numdofpernode_!=-1,"NumDofPerNode is -1");
-    return numdofpernode_;
-  }
+  virtual int NumDofPerNode(const DRT::Node& node) const;
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -275,31 +287,11 @@ public:
    *
    * This is the version for a coupling to fluid flow with a second dof set.
    *
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
-  {
-    // number of dofs for fluid (based on similar discretization)
-    if (nds==1)
-    {
-    switch(distype_)
-    {
-    case DRT::Element::hex8:
-    case DRT::Element::tet4:
-      return 4;
-      break;
-    case DRT::Element::quad4:
-    case DRT::Element::tri3:
-      return 3;
-      break;
-    case DRT::Element::line2:
-      dserror("1D Fluid elements are not supported");
-    default:
-      dserror("meshfree discretization type %s not yet implemented", (DRT::DistypeToString(distype_)).c_str());
-    }
-    }
-    return NumDofPerNode(node);
-  }
+  virtual int NumDofPerNode(const unsigned nds,
+                            const DRT::Node& node
+    ) const;
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -313,7 +305,7 @@ public:
    * at the level of the total system of equations. Purely internal element
    * dofs that are condensed internally should NOT be considered.
    *
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual int NumDofPerElement() const
   {
@@ -323,71 +315,19 @@ public:
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Print this element
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  void Print(std::ostream& os) const;
+  void Print(ostream& os) const;
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief TODO
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual DRT::ElementType & ElementType() const
   {
-    return MeshfreeTransportType::Instance();
+    return MeshfreeFluidType::Instance();
   }
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Query names of element data to be visualized using BINIO
-   *
-   * The element fills the provided map with key names of visualization data
-   * the element wants to visualize AT THE CENTER of the element geometry. The
-   * values is supposed to be dimension of the data to be visualized. It can
-   * either be 1 (scalar), 3 (vector), 6 (sym. tensor) or 9 (nonsym. tensor)
-   *
-   * Example:
-   * \code
-   *   // Name of data is 'Owner', dimension is 1 (scalar value)
-   *   names.insert(std::pair<std::string,int>("Owner",1));
-   *   // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-   *   names.insert(std::pair<std::string,int>("StressesXYZ",6));
-   * \endcode
-   *
-   * \param names (out): On return, the derived class has filled names with
-   *                     key names of data it wants to visualize and with int
-   *                     dimensions of that data.
-   *///                                                   (public) nis Feb12
-  /*------------------------------------------------------------------------*/
-  virtual void VisNames(std::map<std::string,int>& names);
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Query data to be visualized using BINIO of a given name
-   *
-   * The method is supposed to call this base method to visualize the owner of
-   * the element.
-   * If the derived method recognizes a supported data name, it shall fill it
-   * with corresponding data.
-   * If it does NOT recognizes the name, it shall do nothing.
-   *
-   * \warning The method must not change size of data
-   *
-   * \param name (in):   Name of data that is currently processed for visualization
-   * \param data (out):  data to be filled by element if element recognizes the name
-   *///                                                   (public) nis Feb12
-  /*------------------------------------------------------------------------*/
-  virtual bool VisData(const std::string& name, std::vector<double>& data);
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Add values to the data_ container
-   *///                                                   (public) nis Feb12
-  /*------------------------------------------------------------------------*/
-  virtual void AddToData(const std::string& name, std::vector<double> data)
-  {
-    data_.Add(name,data);
-  };
 
   /*========================================================================*/
   //! @name Input and Creation
@@ -396,10 +336,10 @@ public:
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Read input for this element
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  bool ReadElement(const std::string& eletype,
-                   const std::string& distype,
+  bool ReadElement(const std::string&          eletype,
+                   const std::string&          distype,
                    DRT::INPUT::LineDefinition* linedef);
 
   /*========================================================================*/
@@ -440,7 +380,7 @@ public:
    *                             input, the controling method does not epxect
    *                             the element to fill this vector.
    * \return 0 if successful, negative otherwise
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   int Evaluate(Teuchos::ParameterList&   params,
                DRT::Discretization&      discretization,
@@ -466,7 +406,7 @@ public:
    * \param elevec1 (out)      : vector to be filled by element. If NULL on input,
    *
    * \return 0 if successful, negative otherwise
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                               DRT::Discretization&      discretization,
@@ -475,22 +415,43 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
+  //! @name Other
+
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Return flag for ALE form of equations
+   *///                                                   (public) nis Jan13
+  /*------------------------------------------------------------------------*/
+  bool IsAle() const
+  {
+    return is_ale_;
+  }
+
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Set flag for ALE form of equations
+   *///                                                   (public) nis Jan13
+  /*------------------------------------------------------------------------*/
+  virtual void SetIsAle(bool is_ale)
+  {
+    is_ale_ = is_ale;
+
+    return;
+  };
+
 
 private:
 
   //! don't want = operator
-  MeshfreeTransport& operator = (const MeshfreeTransport& old);
+  MeshfreeFluid& operator = (const MeshfreeFluid& old);
 
-  //! container containing all kind of element thisandthat
-  DRT::Container data_;
-
-  //! (storage neccessary because we dont know the material in the post filters anymore)
-  int numdofpernode_;
-
-  //! the element discretization type
+  //! discretization type
   DRT::Element::DiscretizationType distype_;
 
-}; // class MeshfreeTransport
+  //! flag for euler/ale net algorithm
+  bool is_ale_;
+
+}; // class MeshfreeFluid
 
 
 /*--------------------------------------------------------------------------*/
@@ -502,18 +463,18 @@ private:
  *
  * \author Keijo Nissen (nissen@lnm.mw.tum.de)
  *
- * \date March, 2012
+ * \date January, 2013
  */
 /*--------------------------------------------------------------------------*/
-class MeshfreeTransportBoundaryType : public DRT::ElementType
+class MeshfreeFluidBoundaryType : public DRT::ElementType
 {
 public:
 
   //!< name of specific parallel object type
-  std::string Name() const { return "MeshfreeTransportBoundaryType"; }
+  std::string Name() const { return "MeshfreeFluidBoundaryType"; }
 
   //!< returning instance of specific parallel object type
-  static MeshfreeTransportBoundaryType & Instance() { return instance_; };
+  static MeshfreeFluidBoundaryType & Instance() { return instance_; };
 
   //!< create parallel object of this parallel object type
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
@@ -525,7 +486,7 @@ public:
 private:
 
   //!< static instance of this parallel object type (for self-instantiation)
-  static MeshfreeTransportBoundaryType instance_;
+  static MeshfreeFluidBoundaryType instance_;
 };
 
 
@@ -533,16 +494,17 @@ private:
 /*!
  * \brief An element representing a boundary cell of a MeshfreeTransport cell
  *
- * \note This is a pure boundary condition cell. It's only purpose is to
- *       evaluate certain boundary conditions that might be adjacent to a
- *       parent MeshfreeTransport cell.
+ * \note This is a pure Neumann boundary condition element. It's only
+ *       purpose is to evaluate surface Neumann boundary conditions that might be
+ *       adjacent to a parent meshfree fluid element. It therefore does not implement
+ *       the DRT::Element::Evaluate method and does not have its own ElementRegister class.
  *
  * \author Keijo Nissen (nissen@lnm.mw.tum.de)
  *
- * \date February, 2012
+ * \date January, 2013
  */
 /*--------------------------------------------------------------------------*/
-class MeshfreeTransportBoundary : public DRT::MESHFREE::Cell
+class MeshfreeFluidBoundary : public DRT::MESHFREE::Cell
 {
 public:
 
@@ -553,16 +515,16 @@ public:
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Standard Constructor
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  MeshfreeTransportBoundary(
+  MeshfreeFluidBoundary(
     int id,                              //!< A unique global id
     int owner,                           //!< Processor owning this surface
     int nknot,                           //!< Number of nodes attached to this element
     const int* knotids,                  //!< global ids of nodes attached to this element
     DRT::MESHFREE::MeshfreeNode** knots, //!< the discretizations map of knots to build ptrs to knots
-    MeshfreeTransport* parent,           //!< The parent fluid element of this surface
-    const int lbeleid                    //!< the local boundary element number of this surface w.r.t. the parent element
+    MeshfreeFluid* parent,               //!< The parent fluid element of this surface
+    const int lsurface                   //!< the local surface number of this surface w.r.t. the parent element
   );
 
   /*------------------------------------------------------------------------*/
@@ -570,9 +532,9 @@ public:
    * \brief Copy Constructor
    *
    * Makes a deep copy of a MeshfreeTransportBoundary
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  MeshfreeTransportBoundary(const MeshfreeTransportBoundary& old);
+  MeshfreeFluidBoundary(const MeshfreeFluidBoundary& old);
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -582,16 +544,16 @@ public:
    * DRT::Element. It allows to copy construct the derived class without
    * knowing what it actually is using the base class DRT::Element.
    *
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   DRT::Element* Clone() const;
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Destructor
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  virtual ~MeshfreeTransportBoundary();
+  virtual ~MeshfreeFluidBoundary();
 
   /*========================================================================*/
   //! @name Query methods
@@ -600,21 +562,21 @@ public:
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Get shape type of element
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual DiscretizationType Shape() const;
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Return number of lines of boundary cell
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual int NumLine() const;
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Return number of surfaces of boundary cell
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual int NumSurface() const;
 
@@ -622,7 +584,7 @@ public:
   /*!
    * \brief Get vector of RCPs to the lines of this cell
    *        Dummy - not provided.
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
@@ -630,58 +592,83 @@ public:
   /*!
    * \brief Get vector of RCPs to the surfaces of this cell
    *        Dummy - not provided.
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Pack dummy class - not supported
-   *///                                                   (public) nis Feb12
+   * \brief Pack dummy class for - not supported
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual void Pack(DRT::PackBuffer& data) const;
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Unpack dummy class - not supported
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual void Unpack(const std::vector<char>& data);
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get number of degrees of freedom of a certain node
+   * \brief Get number of degrees of freedom of a certain node in case of
+   *        multiple dofsets, i.e. monolithic solution approaches!e
    *        (implements pure virtual DRT::Element)
    *
-   * The element decides how many degrees of freedom its nodes must have.
-   * As this may vary along a simulation, the element can redecide the
-   * number of degrees of freedom per node along the way for each of it's nodes
+   * The element decides how many degrees of freedom its nodes must have. As
+   * this may vary along a simulation, the element can redecide the number of
+   * degrees of freedom per node along the way for each of it's nodes
    * separately.
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
     return parent_->NumDofPerNode(node);
   }
 
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  {
+    return parent_->NumDofPerNode(nds,node);
+  }
+
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Return a pointer to the parent cell of this boundary cell
-   *///                                                   (public) nis Feb12
+   * \brief Get number of degrees of freedom per element
+   *        (implements pure virtual DRT::Element)
+   *
+   * The element decides how many element degrees of freedom it has. It can
+   * redecide along the way of a simulation.
+   *
+   * \note Element degrees of freedom mentioned here are dofs that are visible
+   * at the level of the total system of equations. Purely internal element
+   * dofs that are condensed internally should NOT be considered.
+   *
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  virtual DRT::ELEMENTS::MeshfreeTransport* ParentElement()
+  virtual int NumDofPerElement() const
+  {
+    return 0;
+  }
+
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Return pointer to the parent element
+   *///                                                   (public) nis Jan13
+  /*------------------------------------------------------------------------*/
+  virtual DRT::ELEMENTS::MeshfreeFluid* ParentElement()
   {
     return parent_;
   }
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Return a boundary element id of this boundary cell
-   *///                                                   (public) nis Feb12
+   * \brief return local surface number w.r.t the parent_ element
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  virtual int BeleNumber()
+  virtual int SurfaceNumber()
   {
-    return lbeleid_;
+    return lsurface_;
   }
 
   /*------------------------------------------------------------------------*/
@@ -690,25 +677,28 @@ public:
    *
    * every class implementing ParObject needs a unique id defined at the
    * top of the drt_parobject.H file.
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  virtual int UniqueParObjectId() const;
+  virtual int UniqueParObjectId() const
+  {
+    return MeshfreeFluidBoundaryType::Instance().UniqueParObjectId();
+  }
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Print this cell
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  void Print(std::ostream& os) const;
+  void Print(ostream& os) const;
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief TODO
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual DRT::ElementType & ElementType() const
   {
-    return MeshfreeTransportBoundaryType::Instance();
+    return MeshfreeFluidBoundaryType::Instance();
   }
 
   /*========================================================================*/
@@ -719,18 +709,18 @@ public:
   /*!
    * \brief Evaluate an element
    *
-   * Evaluate MeshfreeTransport element stiffness, mass, internal forces etc
+   * Evaluate MeshfreeFluid element stiffness, mass, internal forces etc
    *
-   * \param params (in/out): ParameterList for communication between control routine
-   *                         and elements
+   * \param params (in/out): ParameterList for communication between control
+   *                         routine and elements
    * \param discretization (in): A reference to the underlying discretization
-   * \param lm (in):         location vector of this element
+   * \param lm (in)        : location vector of this element
    * \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-   *                         the controling method does not epxect the element to fill
-   *                         this matrix.
+   *                         the controling method does not epxect the element
+   *                         to fill this matrix.
    * \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-   *                         the controling method does not epxect the element to fill
-   *                         this matrix.
+   *                         the controling method does not epxect the element
+   *                         to fill this matrix.
    * \param elevec1 (out)  : vector to be filled by element. If NULL on input,
    *                         the controlling method does not epxect the element
    *                         to fill this vector
@@ -741,7 +731,7 @@ public:
    *                         the controlling method does not epxect the element
    *                         to fill this vector
    * \return 0 if successful, negative otherwise
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   int Evaluate(Teuchos::ParameterList&   params,
                DRT::Discretization&      discretization,
@@ -756,7 +746,7 @@ public:
   /*!
    * \brief Evaluate a Neumann boundary condition
    *
-   * this method evaluates a surface Neumann condition on the MeshfreeTransport element
+   * this method evaluates a surface Neumann condition on the MeshfreeFluid cell
    *
    * \param params (in/out)    : ParameterList for communication between control routine
    *                             and elements
@@ -766,39 +756,30 @@ public:
    * \param elevec1 (out)      : vector to be filled by element. If NULL on input,
    *
    * \return 0 if successful, negative otherwise
-   *///                                                   (public) nis Feb12
+   *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-  /*------------------------------------------------------------------------*/
-
 private:
 
-  /*------------------------------------------------------------------------*/
+
   // don't want = operator
-  /*------------------------------------------------------------------------*/
-  MeshfreeTransportBoundary& operator = (const MeshfreeTransportBoundary& old);
+  MeshfreeFluidBoundary& operator = (const MeshfreeFluidBoundary& old);
 
-  /*------------------------------------------------------------------------*/
-  //! The parent element of this boundary element
-  /*------------------------------------------------------------------------*/
-  MeshfreeTransport* parent_;
+  //! The parent element of this surface
+  DRT::ELEMENTS::MeshfreeFluid* parent_;
 
-  /*------------------------------------------------------------------------*/
-  //! The local boundary element number of this surface w.r.t. the parent_ element
-  /*------------------------------------------------------------------------*/
-  int lbeleid_;
+  //! The local surface number of this surface w.r.t. the parent_ element
+  int lsurface_;
 
-}; // class MeshfreeTransportBoundary
+}; // class MeshfreeFluidBoundary
 
 } // namespace ELEMENTS
 } // namespace DRT
 
-
-#endif // end MESHFREE_SCATRA_CELL_H
-
+#endif  // #ifndef MESHFREE_FLUID_CELL_H

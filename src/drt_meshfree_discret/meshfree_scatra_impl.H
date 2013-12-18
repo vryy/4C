@@ -16,6 +16,7 @@
 #define MESHFREE_SCATRA_IMPL_H
 
 #include <vector>
+#include "drt_meshfree_cell_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"  // class variables
 #include "../linalg/linalg_serialdensevector.H"  // class variables
 
@@ -43,6 +44,7 @@ namespace DRT
 namespace MESHFREE
 {
   class MeshfreeDiscretization;
+  class Cell;
 }
 
 namespace ELEMENTS
@@ -226,7 +228,7 @@ private:
    *///                                                  (private) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual void Sysmat(
-    DRT::Element*                         ele,       //!< the element to which sysmat belongs
+    const DRT::MESHFREE::Cell*                  ele,       //!< the element to which sysmat belongs
     Epetra_SerialDenseMatrix&             sys_mat,   //!< element matrix to calculate
     Epetra_SerialDenseVector&             residual,  //!< element rhs to calculate
     const double &                        time,      //!< current simulation time
@@ -242,7 +244,7 @@ private:
    *///                                                  (private) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual void BodyForce(
-    DRT::Element const * const &  ele, //!< the element we are dealing with
+    const DRT::MESHFREE::Cell*   ele, //!< the element we are dealing with
     const double&                 time //!< current simulation time
     );
 
@@ -252,7 +254,7 @@ private:
    *///                                                  (private) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual void GetMaterialParams(
-    const DRT::Element*                   ele,       //!< the element we are dealing with
+    const DRT::MESHFREE::Cell*            ele,       //!< the element we are dealing with
     const enum INPAR::SCATRA::ScaTraType& scatratype //!< type of scalar transport problem
     );
 
@@ -279,7 +281,7 @@ private:
    *///                                                  (private) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual void InitialTimeDerivative(
-    DRT::Element*                         ele,       //!< the element
+    const DRT::MESHFREE::Cell*            ele,       //!< the element
     Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
     Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
     const enum INPAR::SCATRA::ScaTraType& scatratype //!< type of scalar transport problem
@@ -292,7 +294,7 @@ private:
    *///                                                  (private) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual void TimeDerivativeReinit(
-      DRT::Element*                         ele,       //!< the element
+      const DRT::MESHFREE::Cell*            ele,       //!< the element
       Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
       Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
       const double&                         dt,        //!< current time-step length
@@ -307,7 +309,7 @@ private:
   /*------------------------------------------------------------------------*/
   virtual void CalculateFlux(
       LINALG::SerialDenseMatrix&      flux,
-      const DRT::Element*             ele,
+      const DRT::MESHFREE::Cell*      ele,
       const INPAR::SCATRA::FluxType&  fluxtype,
       const int&                      dofindex,
       const enum INPAR::SCATRA::ScaTraType& scatratype //!< type of scalar transport problem
@@ -319,10 +321,10 @@ private:
    *///                                                  (private) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual void CalculateScalars(
-    const DRT::Element*       ele,      //!< pointer to the element
+    const DRT::MESHFREE::Cell* ele,      //!< pointer to the element
     const std::vector<double>& ephinp,   //!< current scalar field
-    Epetra_SerialDenseVector& scalars,  //!< vector for computed integrals
-    const bool                inverting //!< flag for invertuing
+    Epetra_SerialDenseVector&  scalars,  //!< vector for computed integrals
+    const bool                 inverting //!< flag for invertuing
   );
 
   /*------------------------------------------------------------------------*/
@@ -332,7 +334,7 @@ private:
   /*------------------------------------------------------------------------*/
   virtual void CalculateDomainAndBodyforce(
     Epetra_SerialDenseVector&  scalars, //!< vector for the computed integrals
-    const DRT::Element*        ele,     //!< pointer to the element
+    const DRT::MESHFREE::Cell* ele,     //!< pointer to the element
     const double&              time     //!< current simulation time
   );
 
@@ -342,7 +344,7 @@ private:
    *///                                                  (private) nis Mar12
   /*------------------------------------------------------------------------*/
   void IntegrateShapeFunctions(
-    const DRT::Element*                ele,    //!< the current element
+    const DRT::MESHFREE::Cell*         ele,    //!< the current element
     Epetra_SerialDenseVector&          elevec1,//!< result vector (to be assembled)
     const Epetra_IntSerialDenseVector& dofids  //!< for which dof we need to integrate?
   );
@@ -411,7 +413,7 @@ private:
    *///                                                  (private) nis Mar12
   /*------------------------------------------------------------------------*/
   void FDcheck(
-    DRT::Element*                         ele,       //!< the element those matrix is calculated
+    const DRT::MESHFREE::Cell*            ele,       //!< the element those matrix is calculated
     Epetra_SerialDenseMatrix&             sys_mat,   //!< element matrix to calculate
     Epetra_SerialDenseVector&             residual,  //!< element rhs to calculate
     const double&                         time,      //!< current simulation time
@@ -429,6 +431,8 @@ private:
   static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
   //! number of element knots (geometric description of integration cell)
   static const int nek_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  //! number of Gauss points
+  static const int ngp_ = DRT::MESHFREE::DisTypeToNumGaussPoints<distype>::ngp;
 
   /*========================================================================*/
   //! @name Dofs and nodes
@@ -442,6 +446,12 @@ private:
   int nen_;
   //! reference to discretisation
   DRT::MESHFREE::MeshfreeDiscretization* discret_;
+  //! knot coordinates for boundary cell
+  LINALG::SerialDenseMatrix kxyz_;
+  //! Gauss point coordinates for boundary cell
+  LINALG::SerialDenseMatrix gxyz_;
+  //! Gauss point weights for boundary cell
+  LINALG::SerialDenseVector gw_;
 
   /*========================================================================*/
   //! @name Scalar degrees of freedom and related

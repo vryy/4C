@@ -521,7 +521,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
     os << "--------------------------------------------------\n";
     os << "Discretization: " << Name() << std::endl;
     os << "--------------------------------------------------\n";
-    os << numglobalelements << " Elements " << numglobalnodes << " Nodes (global)" << numglobalknots << " Knots (global)\n";
+    os << numglobalelements << " Elements " << numglobalnodes << " Nodes (global) " << numglobalknots << " Knots (global)\n";
     os << "--------------------------------------------------\n";
     if (Filled())
     os << "Filled() = true\n";

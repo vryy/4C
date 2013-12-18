@@ -16,13 +16,15 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #ifndef FLUID_ELE_FACTORY_H
 #define FLUID_ELE_FACTORY_H
 
-#include "fluid_ele_interface.H"
+#include "../drt_lib/drt_element.H"
 
 namespace DRT
 {
 
 namespace ELEMENTS
 {
+  class FluidEleInterface;
+  class MeshfreeFluidCellInterface;
 
 /*--------------------------------------------------------------------------*/
 /*!
@@ -49,7 +51,7 @@ public:
   static FluidEleInterface* ProvideImplXFEM(DRT::Element::DiscretizationType distype, std::string problem);
 
   //! special ProvideImpl for meshfree problems to reduce created template combinations
-  static FluidEleInterface* ProvideImplMeshfree(DRT::Element::DiscretizationType distype, std::string problem);
+  static MeshfreeFluidCellInterface* ProvideImplMeshfree(DRT::Element::DiscretizationType distype, std::string problem);
 
 private:
   //! define FluidEle instances dependent on problem
@@ -62,7 +64,7 @@ private:
 
   //! special DefineProblemTypeMeshfree for Meshfree problems
   template<DRT::Element::DiscretizationType distype>
-  static FluidEleInterface* DefineProblemTypeMeshfree(std::string problem);
+  static MeshfreeFluidCellInterface* DefineProblemTypeMeshfree(std::string problem);
 
 }; // end class FluidFactory
 

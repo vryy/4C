@@ -1093,7 +1093,6 @@ set(OBJS_DRT_MESHFREE_DISCRET_LIB
   src/drt_meshfree_discret/drt_meshfree_cell.cpp
   src/drt_meshfree_discret/drt_meshfree_cell_utils.cpp
   src/drt_meshfree_discret/drt_meshfree_discret.cpp
-  src/drt_meshfree_discret/drt_meshfree_discret_evaluate.cpp
   src/drt_meshfree_discret/drt_meshfree_discret_fillcomplete.cpp
 )
 set(OBJS_DRT_TOPOPT
@@ -1374,9 +1373,6 @@ set(OBJS_DRT_NURBS_DISCRET
   src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.cpp
   src/drt_nurbs_discret/drt_nurbs_utils.cpp
 )
-#set(OBJS_DRT_MESHFREE_DISCRET
-#  src/drt_meshfree_discret/drt_meshfree_utils.cpp
-#)
 set(OBJS_DRT_B3_LIB
   src/drt_beam3/beam3.cpp
   src/drt_beam3/beam3_evaluate.cpp
@@ -1422,6 +1418,17 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_opti/topopt_fluidAdjoint3_boundary.cpp
   src/drt_opti/topopt_fluidAdjoint3_impl.cpp
   src/drt_opti/topopt_fluidAdjoint3_impl_parameter.cpp
+)
+set(OBJS_DRT_MESHFREE_FLUID_CELL_LIB
+  src/drt_meshfree_discret/meshfree_fluid_cell.cpp
+  src/drt_meshfree_discret/meshfree_fluid_cell_evaluate.cpp
+  src/drt_meshfree_discret/meshfree_fluid_cell_calc.cpp
+  src/drt_meshfree_discret/meshfree_fluid_cell_calc_general_service.cpp
+  src/drt_meshfree_discret/meshfree_fluid_cell_calc_std.cpp
+  src/drt_meshfree_discret/meshfree_fluid_cell_boundary.cpp 
+  src/drt_meshfree_discret/meshfree_fluid_cell_boundary_evaluate.cpp 
+  src/drt_meshfree_discret/meshfree_fluid_cell_boundary_calc.cpp
+  src/drt_meshfree_discret/meshfree_fluid_cell_boundary_calc_std.cpp
 )
 set(OBJS_DRT_T3_LIB
   src/drt_truss3/truss3.cpp
@@ -1683,6 +1690,7 @@ endif (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 
 # Compile element libraries first. There are files that take time to compile.
 add_library(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
+add_library(ele_meshfree_fluid ${OBJS_DRT_MESHFREE_FLUID_CELL_LIB})
 add_library(ele_ale ${OBJS_DRT_ALE_LIB})
 add_library(ele_b2 ${OBJS_DRT_B2_LIB})
 add_library(ele_b2r ${OBJS_DRT_B2R_LIB})
@@ -1720,6 +1728,7 @@ set(ELEMENT_LIBRARIES
   ele_bele3
   ele_combust3
   ele_fluid
+  ele_meshfree_fluid
   ele_opti
   ele_s8
   ele_scatra
@@ -1810,7 +1819,6 @@ set(SINGLEFIELD_LIBRARIES
 
 # general framework
 add_library(drt_nurbs ${OBJS_DRT_NURBS_DISCRET})
-#add_library(drt_meshfree ${OBJS_DRT_MESHFREE_DISCRET})
 add_library(drt_constraint ${OBJS_DRT_CONSTRAINT})
 #add_library(drt_mortar SHARED ${OBJS_DRT_MORTAR})
 add_library(drt_mortar ${OBJS_DRT_MORTAR})
@@ -1966,7 +1974,3 @@ endif(NOT TRILINOS_DEV)
 #target_link_libraries(graph_test ${Boost_LIBRARIES})
 
 include (TestingFramework.cmake)
-
-
-
-

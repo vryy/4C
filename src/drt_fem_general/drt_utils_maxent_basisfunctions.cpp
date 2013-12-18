@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------
+/*!---------------------------------------------------------------------------
 \file drt_utils_maxent_basisfunctions..cpp
 
 <pre>
@@ -8,16 +8,16 @@ Maintainer: Keijo Nissen
             089 - 289-15253
 </pre>
 
-*----------------------------------------------------------------------*/
+*---------------------------------------------------------------------------*/
 
 #include <iomanip>
 #include "drt_utils_maxent_basisfunctions.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 
-/*============================================================================*\
- * Maximum-Entropy problem class                                              *
-\*============================================================================*/
+/*==========================================================================*\
+ * Maximum-Entropy problem class                                            *
+\*==========================================================================*/
 
 /*--------------------------------------------------------------------------*
  | ctor MaxentProblem                                             nis Mar12 |
@@ -39,8 +39,9 @@ DRT::MESHFREE::MaxEntProblem::MaxEntProblem(Teuchos::ParameterList const & param
   // maximum number of Newton steps
   NewtonMax_ = params.get<double>("NEWTON_MAX");
 
-  // Tolerance at which prior considered numerically zero - not "const" for non-convex domains
-  double rangeTol = params.get<double>("T_RANGE_TOL");
+  // Tolerance at which prior considered numerically zero - not "const" for
+  // non-convex domains
+  double rangeTol = params.get<double>("T_RANGE_TOL"); //
   SetRange(rangeTol);
 
   // determine type of compliance condition
@@ -88,16 +89,18 @@ void DRT::MESHFREE::MaxEntProblem::SetRange(double rangeTol)
   return;
 }
 
-/*============================================================================*\
- * Dual problem member class                                                  *
-\*============================================================================*/
+/*==========================================================================*\
+ * Dual problem member class                                                *
+\*==========================================================================*/
 
 /*--------------------------------------------------------------------------*
  | ctor DualProblem                                               nis Mar12 |
  *--------------------------------------------------------------------------*/
 template<int dim>
 DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::DualProblem(
-  bool const & pu, double const & neg, MaxEntProblem* that
+  bool const     pu,
+  double const   neg,
+  MaxEntProblem* that
 )
 {
   // determine type of gap function/projection if necessary
@@ -133,7 +136,7 @@ template<int dim>
 int DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::maxent_basisfunction(
   LINALG::SerialDenseVector &           funct , // basis functions values
   LINALG::SerialDenseMatrix &           deriv , // spatial derivatives of basis functions
-  LINALG::SerialDenseMatrix const &     diffx    // distance vector between node and integration point
+  LINALG::SerialDenseMatrix const &     diffx   // distance vector between node and integration point
   )
 {
   // get number of nodes
@@ -165,11 +168,13 @@ int DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::maxent_basisfunction(
   LINALG::Matrix<dim,1>   lam(true);   // initialisation needed
   LINALG::Matrix<dim,1>   r(false);    // no initialisation needed
   LINALG::Matrix<dim,dim> Jinv(false); // no initialisation needed
+
   for(int i=0;i<this_->NewtonMax_;i++) {
     // get parameters of dual problem
     dualprob_->UpdateParams(funct,r,Jinv,na,q,c,lam);
     // perform Newton step
     lam.MultiplyNN(1.0,Jinv,r,1.0);
+
     // check if converged
     if (r.Norm2()<this_->NewtonTol_) {
       break;
@@ -195,7 +200,7 @@ int DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::maxent_basisfunction(
     dualprob_->GetDerivs(funct,deriv,lam,Jinv,q,dxq,c,dxc);
   }
 
-  // return error flag for Newton-Raphson optimisation
+  // return error flag for Newton-Raphson optimisation - bit useless though...
   return err;
 }
 
@@ -204,8 +209,8 @@ int DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::maxent_basisfunction(
  *--------------------------------------------------------------------------*/
 template<int dim>
 void DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::SetPriorFunctDeriv(
-  LINALG::SerialDenseVector & q    ,
-  LINALG::SerialDenseMatrix & dxq  , // scaled by 1/q
+  LINALG::SerialDenseVector       & q    ,
+  LINALG::SerialDenseMatrix       & dxq  , // scaled by 1/q
   LINALG::SerialDenseMatrix const & diffx
   ) const
 {
@@ -277,21 +282,29 @@ void DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::SetComplCondFunctDeriv(
 template<int dim>
 void DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::DualStandard::UpdateParams(
   LINALG::SerialDenseVector       & funct,
-  LINALG::Matrix<dim,1>           & r     ,
-  LINALG::Matrix<dim,dim>         & J     ,
-  const int                       & na    , // number of nodes
-  const LINALG::SerialDenseVector & q     ,
-  LINALG::SerialDenseMatrix & c     , // THIS SHOULD BE CONST!!! (Impossible
-                                      // because of LINALG::Matrix-view on its
-                                      // columns for ca)
-  const LINALG::Matrix<dim,1>     & lam     // unknown Lagrange multiplier
+  LINALG::Matrix<dim,1>           & r    ,
+  LINALG::Matrix<dim,dim>         & J    ,
+  const int                         na   , // number of nodes
+  const LINALG::SerialDenseVector & q    ,
+  LINALG::SerialDenseMatrix       & c    , // THIS SHOULD BE CONST!!! (Impossible
+                                           // because of LINALG::Matrix-view on its
+                                           // columns for ca)
+  const LINALG::Matrix<dim,1>     & lam    // unknown Lagrange multiplier
   )
 {
+  /*------------------------------------------------------------------------*
+   * initialization
+   *------------------------------------------------------------------------*/
+
   // temporary double for sum of basis functions.
   double fsum=0;
   // initialization of r and J
   r.Clear(); // since value is used in sum
   J.Clear(); // since value is used in sum/multiplication
+
+  /*------------------------------------------------------------------------*
+   * for-loop over all nodes
+   *------------------------------------------------------------------------*/
   for (int i=0; i<na; i++) {
     // temporary vector for compliance of node a
     const LINALG::Matrix<dim,1> ca(c[i],true);
@@ -300,13 +313,18 @@ void DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::DualStandard::UpdateParams(
     // r_i  = funct_j c_ij
     r.Update(funct[i], ca, 1.);
     // J_ij = funct_k c_ik c_jk [- r_i r_j]
-    J.MultiplyNT(funct[i],ca,ca,1);
+    J.MultiplyNT(funct[i],ca,ca,1.);
     // fsum = q_k exp(-lam_l c_lk)
     fsum += funct[i];
   }
-  funct.Scale(1/fsum);         // ["/ (q_k exp(-lam_l c_lk))"]
-  r.Scale(1/fsum);             // ["/ (q_k exp(-lam_l c_lk))"]
+
+  /*------------------------------------------------------------------------*
+   * final scaling
+   *------------------------------------------------------------------------*/
+  funct.Scale(1/fsum);           // ["/ (q_k exp(-lam_l c_lk))"]
+  r.Scale(1/fsum);               // ["/ (q_k exp(-lam_l c_lk))"]
   J.MultiplyNT(-1.0,r,r,1/fsum); // ["/ (q_k exp(-lam_l c_lk)) - r_i r_j"]
+
   J.Invert();
 };
 
@@ -373,8 +391,8 @@ void DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::DualStandard::GetDerivs(
 
   temp.Multiply('N','N',1.0,f_ai,funct,0.0);         // temp = Ia_i = f_{a,i} * b_a
 
-  for(size_t i=0; i<dim; i++) {
-    for(size_t j=0; j<na; j++) {
+  for(size_t j=0; j<na; j++) {
+    for(size_t i=0; i<dim; i++) {
       temp_IIa(i,j) *= funct[j];                    // temp_IIa   = b_a*c_a^k
       deriv(i,j) = funct[j]*(f_ai(i,j)-temp[i]);    // deriv = I = (f_ai - Ia) [ + ... still missing]
     }

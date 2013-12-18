@@ -2762,7 +2762,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Poro",
                                  "Poro_P1",
                                  "Poro_P2",
-                                 "Topology_optimization"
+                                 "Topology_optimization",
+                                 "Stokes"
                                  ),
                                tuple<int>(
                                      INPAR::FLUID::incompressible,
@@ -2773,7 +2774,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::FLUID::poro,
                                      INPAR::FLUID::poro_p1,
                                      INPAR::FLUID::poro_p2,
-                                     INPAR::FLUID::topopt),
+                                     INPAR::FLUID::topopt,
+                                     INPAR::FLUID::stokes),
                                &fdyn);
 
   // number of linear solver used for fluid problem
@@ -3027,15 +3029,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "no_stabilization",
                                  "residual_based",
-                                 "edge_based"),
+                                 "edge_based",
+                                 "pressure_projection"),
                                tuple<std::string>(
                                  "Do not use any stabilization -> inf-sup stable elements required!",
                                  "Use a residual-based stabilization or, more generally, a stabilization \nbased on the concept of the residual-based variational multiscale method...\nExpecting additional input",
-                                 "Use an edge-based stabilization, especially for XFEM")  ,
+                                 "Use an edge-based stabilization, especially for XFEM",
+                                 "Element/cell based polynomial pressure projection, see Dohrmann/Bochev 2004, IJNMF")  ,
                                tuple<int>(
                                    INPAR::FLUID::stabtype_nostab,
                                    INPAR::FLUID::stabtype_residualbased,
-                                   INPAR::FLUID::stabtype_edgebased),
+                                   INPAR::FLUID::stabtype_edgebased,
+                                   INPAR::FLUID::stabtype_pressureprojection),
                                &fdyn_stab);
 
   BoolParameter("INCONSISTENT","No","residual based without second derivatives (i.e. only consistent for tau->0, but faster)",&fdyn_stab);
@@ -3184,7 +3189,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Codina",
                                  "Codina_wo_dt",
                                  "Franca_Madureira_Valentin_Badia_Codina",
-                                 "Franca_Madureira_Valentin_Badia_Codina_wo_dt"),
+                                 "Franca_Madureira_Valentin_Badia_Codina_wo_dt",
+                                 "Hughes_Franca_Balestra_wo_dt"),
                                tuple<int>(
                                    INPAR::FLUID::tau_taylor_hughes_zarins,
                                    INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt,
@@ -3199,7 +3205,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::tau_codina,
                                    INPAR::FLUID::tau_codina_wo_dt,
                                    INPAR::FLUID::tau_franca_madureira_valentin_badia_codina,
-                                   INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt),
+                                   INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt,
+                                   INPAR::FLUID::tau_hughes_franca_balestra_wo_dt),
                                &fdyn_stab);
 
   // this parameter selects the characteristic element length for tau_Mu for all

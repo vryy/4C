@@ -19,8 +19,7 @@ Maintainer: Keijo Nissen
 #include "../linalg/linalg_serialdensematrix.H" // for member in class GetCellShapeFunktionsDerivsWeightsAtGaussPointXi
 #include "../linalg/linalg_serialdensevector.H" // for member in class GetCellShapeFunktionsDerivsWeightsAtGaussPointXi
 #include "../drt_fem_general/drt_utils_integration.H" // for Gauss rules
-
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H" // definition of GetGaussPointsAtX()
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H" // DRT::UTILS::DisTypeToDim
 
 namespace DRT
 {
@@ -46,7 +45,6 @@ template<> struct DisTypeToOptGaussRule<DRT::Element::tet4 > {static const DRT::
 template<> struct DisTypeToOptGaussRule<DRT::Element::quad4> {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_16point;};
 template<> struct DisTypeToOptGaussRule<DRT::Element::tri3 > {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_tri_7point;  };
 template<> struct DisTypeToOptGaussRule<DRT::Element::line2> {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_4point; };
-
 
 /*--------------------------------------------------------------------------*/
 /*!
@@ -86,13 +84,13 @@ public:
   static CellGaussPointInterface* Impl(DRT::Element::DiscretizationType distype);
 
   /*------------------------------------------------------------------------*/
-  /*! \brief map local Gauss point to global real space - to be implemented in
-   *         derived class
+  /*! \brief map local Gauss point to global real space - dummy
    *///                                                   (public) nis Mar12
   /*------------------------------------------------------------------------*/
-  virtual int GetCellGaussPointsAtX(MeshfreeNode const * const * knots, //!< (in)  pointer to vector of pointers to knots
-                                    LINALG::SerialDenseMatrix &  X,     //!< (out) xyz-values of Gauss points
-                                    LINALG::SerialDenseVector &  w      //!< (out) weights of Gauss points in xyz-system
+  virtual int GetCellGaussPointsAtX(
+    LINALG::SerialDenseMatrix &  Xa_sdm, //!< (in)  position of knots
+    LINALG::SerialDenseMatrix &  X_sdm,  //!< (out) xyz-values of Gauss points
+    LINALG::SerialDenseVector &  w_sdm   //!< (out) weights of Gauss points in xyz-system
     ) const = 0;
 };
 
@@ -125,10 +123,11 @@ public:
   /*! \brief map local Gauss point to global real space
    *///                                                   (public) nis Mar12
   /*------------------------------------------------------------------------*/
-  int GetCellGaussPointsAtX(MeshfreeNode const * const * knots, //!< (in)  pointer to vector of pointers to knots
-                            LINALG::SerialDenseMatrix &  X,     //!< (out) xyz-values of Gauss points
-                            LINALG::SerialDenseVector &  w      //!< (out) weights of Gauss points in xyz-system
-  ) const;
+  virtual int GetCellGaussPointsAtX(
+    LINALG::SerialDenseMatrix &  Xa_sdm, //!< (in)  position of knots
+    LINALG::SerialDenseMatrix &  X_sdm,  //!< (out) xyz-values of Gauss points
+    LINALG::SerialDenseVector &  w_sdm   //!< (out) weights of Gauss points in xyz-system
+    ) const;
 
 private:
   /*------------------------------------------------------------------------*/

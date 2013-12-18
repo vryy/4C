@@ -14,7 +14,8 @@
 /*----------------------------------------------------------------------*/
 
 #include "meshfree_scatra_impl.H"           // class declarations
-#include "drt_meshfree_discret.H"              // for cast to get knots
+#include "drt_meshfree_discret.H"           // for cast to get knots
+#include "drt_meshfree_node.H"              // for cast to get knots
 #include "drt_meshfree_cell.H"              // for cast to get knots
 #include "drt_meshfree_cell_utils.H"        // to get Gauss points in real space
 #include "../drt_scatra/scatra_ele_action.H"// for enum of scatra actions
@@ -70,6 +71,9 @@ DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::MeshfreeScaTraImpl(const int numdofp
 : numdofpernode_(numdofpernode),
   numscal_(numscal),
   nen_(),
+  kxyz_(nsd_,nek_),
+  gxyz_(nsd_,ngp_),
+  gw_(ngp_),
   phi_(),
   hist_(numdofpernode_),
   gradphi_(nsd_),
@@ -172,11 +176,27 @@ int DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Evaluate(
 {
   // --------mandatory are performed here at first ------------
 
-  // get number of nodes
-  nen_ = ele->NumNode();
-
-  // get discretization
+  // cast to meshfree  discretization
   discret_ = dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization*>(&(discretization));
+  if (discret_==NULL)
+    dserror("dynamic_cast of discretization to meshfree discretization failed!");
+
+  // cast element pointer to cell pointer to get access to knot information
+  DRT::MESHFREE::Cell const * cell = dynamic_cast<DRT::MESHFREE::Cell const *>(ele);
+  if (cell==NULL)
+    dserror("dynamic_cast of element to meshfree cell failed!");
+
+  // get number of nodes
+  nen_ = cell->NumNode();
+
+  // get global knot coordinates
+  double const * ckxyz;
+  for (int j=0; j<nek_; j++){
+    ckxyz =  cell->Knots()[j]->X();
+    for (int k=0; k<nsd_; k++){
+      kxyz_(k,j) = ckxyz[k];
+    }
+  }
 
   // set size of all vectors of SerialDense element arrays
   funct_.LightSize(nen_);
@@ -248,9 +268,9 @@ int DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Evaluate(
 
     // get velocity at nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
+    DRT::UTILS::ExtractMyNodeBasedValues(cell,evelnp_,velocity,nsd_);
     const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
+    DRT::UTILS::ExtractMyNodeBasedValues(cell,econvelnp_,convelocity,nsd_);
 
     // extract local values from the global vectors
     RCP<const Epetra_Vector> hist = discretization.GetState("hist");
@@ -301,7 +321,7 @@ int DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Evaluate(
 
     // calculate element coefficient matrix and rhs
     Sysmat(
-      ele,
+      cell,
       elemat1_epetra,
       elevec1_epetra,
       time,
@@ -311,10 +331,10 @@ int DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Evaluate(
       scatratype);
 #if 0
     // for debugging of matrix entries
-    if(ele->Id()==2) // and (time < 3 or time > 99.0))
+    if(cell->Id()==2) // and (time < 3 or time > 99.0))
     {
       FDcheck(
-        ele,
+        cell,
         elemat1_epetra,
         elevec1_epetra,
         elevec2_epetra,
@@ -331,12 +351,12 @@ int DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Evaluate(
   {
     // NOTE: add integral values only for elements which are NOT ghosted!
 
-    if (ele->Owner() == discretization.Comm().MyPID())
+    if (cell->Owner() == discretization.Comm().MyPID())
     {
       const double time = params.get<double>("total time");
 
       // calculate domain and bodyforce integral
-      CalculateDomainAndBodyforce(elevec1_epetra,ele,time);
+      CalculateDomainAndBodyforce(elevec1_epetra,cell,time);
     }
 
     break;
@@ -345,14 +365,14 @@ int DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Evaluate(
   {
     // calculate integral of shape functions
     const Epetra_IntSerialDenseVector dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
-    IntegrateShapeFunctions(ele,elevec1_epetra,dofids);
+    IntegrateShapeFunctions(cell,elevec1_epetra,dofids);
 
     break;
   }
   case SCATRA::get_material_parameters:
   {
     // get the material
-    RCP<MAT::Material> material = ele->Material();
+    RCP<MAT::Material> material = cell->Material();
     params.set("thermodynamic pressure",0.0);
 
     break;
@@ -371,7 +391,7 @@ int DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Evaluate(
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Sysmat(
-  DRT::Element*                         ele,
+  const DRT::MESHFREE::Cell*                  cell,
   Epetra_SerialDenseMatrix&             sys_mat,
   Epetra_SerialDenseVector&             residual,
   const double &                        time,
@@ -381,18 +401,11 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Sysmat(
   const enum INPAR::SCATRA::ScaTraType& scatratype
   )
 {
-  //----------------------------------------------------------------------
-  // cast element pointer to cell pointer to get access to knot information
-  //----------------------------------------------------------------------
-  DRT::MESHFREE::Cell const * cell = dynamic_cast<DRT::MESHFREE::Cell const *>(ele);
-  if (cell==NULL)
-    dserror("dynamic_cast of element to meshfree cell failed!");
-
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
   // ---------------------------------------------------------------------
-  BodyForce(ele,time);
+  BodyForce(cell,time);
 
   //----------------------------------------------------------------------
   // get material parameters (evaluation at element center)
@@ -402,9 +415,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Sysmat(
   //----------------------------------------------------------------------
   // get integrations points and weights in xyz-system
   //----------------------------------------------------------------------
-  LINALG::SerialDenseMatrix gxyz; // read: Gauss xyz-coordinate
-  LINALG::SerialDenseVector gw;   // read: Gauss xyz-coordinate
-  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(cell->Knots(), gxyz, gw);
+  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(kxyz_, gxyz_, gw_);
 
   LINALG::SerialDenseMatrix distng(nsd_,nen_); // matrix for distance between node and Gauss point
   DRT::Node const * const * const nodes = cell->Nodes(); // node pointer
@@ -418,8 +429,8 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Sysmat(
   for (int iquad=0; iquad<ngp; ++iquad)
   {
     // get xyz-coordinates and weight of current Gauss point
-    cgxyz = gxyz[iquad]; // read: current gauss xyz-coordinate
-    fac = gw[iquad];     // read: current gauss weight
+    cgxyz = gxyz_[iquad]; // read: current gauss xyz-coordinate
+    fac = gw_[iquad];     // read: current gauss weight
 
     // coordinates of the current integration point
     for (int i=0; i<nen_; ++i){
@@ -434,20 +445,6 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Sysmat(
     // calculate basis functions and derivatives via max-ent optimization
     int error = discret_->solutionfunct_->GetMeshfreeBasisFunction(funct_,deriv_,distng,nsd_);
     if (error) dserror("Something went wrong when calculating the meshfree basis functions.");
-
-    // DEBUG
-//    std::cout << "funct_ = ";
-//    for (int i=0; i<nen_; i++)
-//      std::cout << funct_(i) << " ";
-//    std::cout << std::endl;
-//
-//    std::cout << "deriv_ = ";
-//    for (int i=0; i<nsd_; i++){
-//      for (int j=0; j<nen_; j++)
-//        std::cout << deriv_(i,j) << " ";
-//      std::cout << std::endl;
-//    }
-    // END DEBUG
 
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
@@ -502,7 +499,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Sysmat(
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::BodyForce(
-  DRT::Element const * const & ele,
+  DRT::MESHFREE::Cell const *  ele,
   const double&                time
   )
 {
@@ -570,7 +567,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::BodyForce(
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::GetMaterialParams(
-  const DRT::Element*  ele,
+  const DRT::MESHFREE::Cell*  ele,
   const enum INPAR::SCATRA::ScaTraType& scatratype
   )
 {
@@ -929,7 +926,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::CalMatAndRHS(
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::InitialTimeDerivative(
-  DRT::Element*                         ele,
+  const DRT::MESHFREE::Cell*            ele,
   Epetra_SerialDenseMatrix&             emat,
   Epetra_SerialDenseVector&             erhs,
   const enum INPAR::SCATRA::ScaTraType& scatratype
@@ -959,7 +956,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::InitialTimeDerivative(
   //----------------------------------------------------------------------
   LINALG::SerialDenseMatrix gxyz; // read: Gauss xyz-coordinate
   LINALG::SerialDenseVector gw;   // read: Gauss xyz-coordinate
-  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(cell->Knots(), gxyz, gw);
+  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(kxyz_, gxyz_, gw_);
   LINALG::SerialDenseMatrix distng(nsd_,nen_); // matrix for distance between node and Gauss point
   DRT::Node const * const * const nodes = cell->Nodes(); // node pointer
   double const * cgxyz; // read: current Gauss xyz-coordinate
@@ -1107,7 +1104,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::InitialTimeDerivative(
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::TimeDerivativeReinit(
-  DRT::Element*                         ele,
+  const DRT::MESHFREE::Cell*                  ele,
   Epetra_SerialDenseMatrix&             emat,
   Epetra_SerialDenseVector&             erhs,
   const double&                         dt,
@@ -1130,7 +1127,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::TimeDerivativeReinit(
   //----------------------------------------------------------------------
   LINALG::SerialDenseMatrix gxyz; // read: Gauss xyz-coordinate
   LINALG::SerialDenseVector gw;   // read: Gauss xyz-coordinate
-  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(cell->Knots(), gxyz, gw);
+  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(kxyz_, gxyz_, gw_);
   LINALG::SerialDenseMatrix distng(nsd_,nen_); // matrix for distance between node and Gauss point
   DRT::Node const * const * const nodes = cell->Nodes(); // node pointer
   double const * cgxyz; // read: current Gauss xyz-coordinate
@@ -1278,7 +1275,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::TimeDerivativeReinit(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::CalculateFlux(
   LINALG::SerialDenseMatrix &     flux,
-  const DRT::Element*             ele,
+  const DRT::MESHFREE::Cell*      ele,
   const INPAR::SCATRA::FluxType&  fluxtype,
   const int&                      dofindex,
   const enum INPAR::SCATRA::ScaTraType& scatratype
@@ -1311,7 +1308,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::CalculateFlux(
   //----------------------------------------------------------------------
   LINALG::SerialDenseMatrix gxyz; // read: Gauss xyz-coordinate
   LINALG::SerialDenseVector gw;   // read: Gauss xyz-coordinate
-  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(cell->Knots(), gxyz, gw);
+  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(kxyz_, gxyz_, gw_);
   LINALG::SerialDenseMatrix distng(nsd_,nen_); // matrix for distance between node and Gauss point
   DRT::Node const * const * const nodes = cell->Nodes(); // node pointer
   double const * cgxyz; // read: current Gauss xyz-coordinate
@@ -1405,8 +1402,8 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::CalculateFlux(
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::CalculateScalars(
-  const DRT::Element*             ele,
-  const std::vector<double>&       ephinp,
+  const DRT::MESHFREE::Cell*      ele,
+  const std::vector<double>&      ephinp,
   Epetra_SerialDenseVector&       scalars,
   const bool                      inverting
   )
@@ -1421,7 +1418,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::CalculateScalars(
   //----------------------------------------------------------------------
   LINALG::SerialDenseMatrix gxyz; // read: Gauss xyz-coordinate
   LINALG::SerialDenseVector gw;   // read: Gauss xyz-coordinate
-  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(cell->Knots(), gxyz, gw);
+  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(kxyz_, gxyz_, gw_);
   LINALG::SerialDenseMatrix distng(nsd_,nen_); // matrix for distance between node and Gauss point
   DRT::Node const * const * const nodes = cell->Nodes(); // node pointer
   double const * cgxyz; // read: current Gauss xyz-coordinate
@@ -1488,7 +1485,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::CalculateScalars(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::CalculateDomainAndBodyforce(
   Epetra_SerialDenseVector&  scalars,
-  const DRT::Element*        ele,
+  const DRT::MESHFREE::Cell* ele,
   const double&              time
   )
 {
@@ -1509,7 +1506,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::CalculateDomainAndBodyforce(
   //----------------------------------------------------------------------
   LINALG::SerialDenseMatrix gxyz; // read: Gauss xyz-coordinate
   LINALG::SerialDenseVector gw;   // read: Gauss xyz-coordinate
-  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(cell->Knots(), gxyz, gw);
+  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(kxyz_, gxyz_, gw_);
   LINALG::SerialDenseMatrix distng(nsd_,nen_); // matrix for distance between node and Gauss point
   DRT::Node const * const * const nodes = cell->Nodes(); // node pointer
   double const * cgxyz; // read: current Gauss xyz-coordinate
@@ -1560,7 +1557,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::CalculateDomainAndBodyforce(
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::IntegrateShapeFunctions(
-  DRT::Element const *               ele,
+  DRT::MESHFREE::Cell const *               ele,
   Epetra_SerialDenseVector&          elevec1,
   const Epetra_IntSerialDenseVector& dofids
   )
@@ -1579,7 +1576,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::IntegrateShapeFunctions(
   //----------------------------------------------------------------------
   LINALG::SerialDenseMatrix gxyz; // read: Gauss xyz-coordinate
   LINALG::SerialDenseVector gw;   // read: Gauss xyz-coordinate
-  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(cell->Knots(), gxyz, gw);
+  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(kxyz_, gxyz_, gw_);
   LINALG::SerialDenseMatrix distng(nsd_,nen_); // matrix for distance between node and Gauss point
   DRT::Node const * const * const nodes = cell->Nodes(); // node pointer
   double const * cgxyz; // read: current Gauss xyz-coordinate
@@ -1633,7 +1630,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::IntegrateShapeFunctions(
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::FDcheck(
-  DRT::Element*                         ele,
+  const DRT::MESHFREE::Cell*                  ele,
   Epetra_SerialDenseMatrix&             sys_mat,
   Epetra_SerialDenseVector&             residual,
   const double&                         time,
