@@ -102,7 +102,7 @@ void MAT::PAR::AAAneohooke::SetYoungs(double new_youngs)
   // check whether we have a spatially varing youngs modulus
   std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
   myit=elementwisematparams_.find("youngs");
-  if(myit!=elementwisematparams_.end())
+  if(myit==elementwisematparams_.end())
     // set new global value for parameter youngs
     youngs_=new_youngs;
   else
@@ -119,7 +119,7 @@ void MAT::PAR::AAAneohooke::SetBeta(double new_beta)
   // check whether we have a spatially varing youngs modulus
   std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
   myit=elementwisematparams_.find("beta");
-  if(myit!=elementwisematparams_.end())
+  if(myit==elementwisematparams_.end())
     // set new global value for parameter beta
     beta_=new_beta;
   else
