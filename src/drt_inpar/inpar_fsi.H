@@ -117,16 +117,6 @@ namespace INPAR
       timada_fld_adamsbashforth2  ///< use Adams-Bashforth-2 as auxiliary time integrator
     };
 
-    /// type of structure field auxiliary time integrator for time adaptivity
-    enum StructureMethod
-    {
-      timada_str_none,            ///< no time adaptivity based on structure field
-      timada_str_expleuler,       ///< use explicit Euler as auxiliary time integrator
-      timada_str_adamsbashforth2, ///< use Adams-Bashforth-2 as auxiliary time integrator
-      timada_str_zienkiewicz_xie, ///< use Zienkiewicz-Xie error estimator (1991)
-      timada_str_limitdisinc      ///< limit the displacement step increment (Givoli and Henigsberg, 1993)
-    };
-
     /// Handling of non-converged nonlinear solver
     enum DivContAct
     {

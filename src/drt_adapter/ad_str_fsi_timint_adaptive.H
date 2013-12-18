@@ -61,7 +61,7 @@ namespace ADAPTER {
   public:
 
     //! Constructor
-    StructureFSITimIntAda(
+    explicit StructureFSITimIntAda(
       Teuchos::RCP<STR::TimAda> sta,
       Teuchos::RCP<Structure> sti
     );
@@ -69,7 +69,41 @@ namespace ADAPTER {
     //! Destructor
     virtual ~StructureFSITimIntAda() { ; }
 
-  };  // class StructureTimIntAda
+    //! Do one time step with auxiliary time integration scheme
+    virtual void TimeStepAuxiliar();
+
+    //! Indicate norms of local discretization error
+    virtual void IndicateErrorNorms(double& err,       ///< norm of local discretization error based on all DOFs
+                                    double& errcond,   ///< norm of local discretization error based on interface DOFs
+                                    double& errother   ///< norm of local discretization error based on interior DOFs
+                                    );
+
+    //! Calculate time step size suggestion
+    virtual const double CalculateDt(const double norm);
+
+    //! Get time step size of adaptive structural time integrator
+    virtual const double Dt();
+
+    //! Set new time step size
+    virtual void SetDt(const double dtnew);
+
+    //! Update step size
+    virtual void UpdateStepSize(const double dtnew);
+
+    //! Reset certain quantities to prepare repetition of current time step
+    virtual void ResetStep();
+
+  private:
+
+    //! Indicate local discretization error
+    void IndicateErrors(double& err,       ///< local discretization error based on all DOFs
+                        double& errcond,   ///< local discretization error based on interface DOFs
+                        double& errother   ///< local discretization error based on interior DOFs
+                        );
+
+    enum INPAR::STR::VectorNorm errnorm_;  //!< norm for local error vector
+
+  };  // class StructureFSITimIntAda
 
 }  // namespace ADAPTER
 

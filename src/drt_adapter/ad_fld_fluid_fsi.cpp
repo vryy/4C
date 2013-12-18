@@ -24,6 +24,8 @@ Maintainer: Matthias Mayr
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 
+#include "../drt_inpar/inpar_fsi.H"
+
 #include "../drt_io/io_control.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -47,7 +49,10 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   params_(params),
   output_(output),
   interface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
-  meshmap_(Teuchos::rcp(new LINALG::MapExtractor()))
+  meshmap_(Teuchos::rcp(new LINALG::MapExtractor())),
+  locerrvelnp_(Teuchos::null),
+  auxintegrator_(INPAR::FSI::timada_fld_none),
+  numfsidbcdofs_(0)
 {
   // make sure
   if (fluid_ == Teuchos::null)
@@ -79,6 +84,27 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   }
 
   interfaceforcen_ = Teuchos::rcp(new Epetra_Vector(*(interface_->FSICondMap())));
+
+  // time step size adaptivity in monolithic FSI
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const bool timeadapton = DRT::INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
+  if (timeadapton)
+  {
+    auxintegrator_ = DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"),"AUXINTEGRATORFLUID");
+
+    //----------------------------------------------------------------------------
+    // Handling of Dirichlet BCs in error estimation
+    //----------------------------------------------------------------------------
+    // Create intersection of fluid DOFs that hold a Dirichlet boundary condition
+    // and are located at the FSI interface.
+    std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmapsfluid;
+    intersectionmapsfluid.push_back(fluidimpl_->GetDBCMapExtractor()->CondMap());
+    intersectionmapsfluid.push_back(Interface()->FSICondMap());
+    Teuchos::RCP<Epetra_Map> intersectionmapfluid = LINALG::MultiMapExtractor::IntersectMaps(intersectionmapsfluid);
+
+    // store number of interface DOFs subject to Dirichlet BCs on structure and fluid side of the interface
+    numfsidbcdofs_ = intersectionmapfluid->NumGlobalElements();
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -463,3 +489,140 @@ void ADAPTER::FluidFSI::CalculateError()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::TimeStepAuxiliar()
+{
+  // current state
+  Teuchos::RCP<const Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(*fluidimpl_->Veln()));
+  Teuchos::RCP<const Epetra_Vector> accn = Teuchos::rcp(new Epetra_Vector(*fluidimpl_->Accn()));
+
+  // prepare vector for solution of auxiliary time step
+  locerrvelnp_ = Teuchos::rcp(new Epetra_Vector(*fluidimpl_->DofRowMap(),true));
+
+  // ---------------------------------------------------------------------------
+
+  // calculate time step with auxiliary time integrator, i.e. the extrapolated solution
+  switch (auxintegrator_)
+  {
+    case INPAR::FSI::timada_fld_none:
+    {
+      break;
+    }
+    case INPAR::FSI::timada_fld_expleuler:
+    {
+      ExplicitEuler(*veln, *accn, *locerrvelnp_);
+
+      break;
+    }
+    case INPAR::FSI::timada_fld_adamsbashforth2:
+    {
+      if (Step() >= 1) // AdamsBashforth2 only if at least second time step
+      {
+        // Acceleration from previous time step
+        Teuchos::RCP<Epetra_Vector> accnm = Teuchos::rcp(new Epetra_Vector(*fluidimpl_->ExtractVelocityPart(fluidimpl_->Accnm())));
+
+        AdamsBashforth2(*veln, *accn, *accnm, *locerrvelnp_);
+      }
+      else // ExplicitEuler as starting algorithm
+      {
+        ExplicitEuler(*veln, *accn, *locerrvelnp_);
+      }
+
+      break;
+    }
+    default:
+    {
+      dserror("Unknown auxiliary time integration scheme for fluid field.");
+      break;
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::ExplicitEuler(const Epetra_Vector& veln,
+                                      const Epetra_Vector& accn,
+                                      Epetra_Vector& velnp
+                                      ) const
+{
+  // Do a single explicit Euler step
+  velnp.Update(1.0, veln, Dt(), accn, 0.0);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::AdamsBashforth2(const Epetra_Vector& veln,
+                                        const Epetra_Vector& accn,
+                                        const Epetra_Vector& accnm,
+                                        Epetra_Vector& velnp
+                                        ) const
+{
+  // time step sizes of current and previous time step
+  const double dt = Dt();
+  const double dto = fluidimpl_->DtPrevious();
+
+  // Do a single Adams-Bashforth 2 step
+  velnp.Update(1.0, veln, 0.0);
+  velnp.Update((2.0*dt*dto+dt*dt) / (2*dto), accn, -dt*dt / (2.0*dto), accnm, 1.0);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::IndicateErrorNorms(double& err,
+                                           double& errcond,
+                                           double& errother
+                                           )
+{
+  // compute estimation of local discretization error
+  locerrvelnp_->Update(-1.0, *fluidimpl_->Velnp(), 1.0);
+
+  // set '0' on all pressure DOFs
+  Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(locerrvelnp_->Map(), true));
+  LINALG::ApplyDirichlettoSystem(locerrvelnp_, zeros, *(fluidimpl_->PressureRowMap()));
+  // TODO: Do not misuse ApplyDirichlettoSystem()...works for this purpose here: writes zeros into all pressure DoFs
+
+  // set '0' on Dirichlet DOFs
+  zeros = Teuchos::rcp(new Epetra_Vector(locerrvelnp_->Map(), true));
+  LINALG::ApplyDirichlettoSystem(locerrvelnp_, zeros, *(fluidimpl_->GetDBCMapExtractor()->CondMap()));
+
+  // extract the condition part of the full error vector (i.e. only interface velocity DOFs)
+  Teuchos::RCP<Epetra_Vector> errorcond
+    = Teuchos::rcp(new Epetra_Vector(*interface_->ExtractFSICondVector(locerrvelnp_)));
+
+  // in case of structure split: extract the other part of the full error vector (i.e. interior velocity and all pressure DOFs)
+  Teuchos::RCP<Epetra_Vector> errorother
+    = Teuchos::rcp(new Epetra_Vector(*interface_->ExtractOtherVector(locerrvelnp_)));
+
+  // calculate norms of different subsets of local discretization error vector
+  // (neglect Dirichlet and pressure DOFs for length scaling)
+  err = CalculateErrorNorm(*locerrvelnp_, fluidimpl_->GetDBCMapExtractor()->CondMap()->NumGlobalElements() + fluidimpl_->PressureRowMap()->NumGlobalElements());
+  errcond = CalculateErrorNorm(*errorcond, numfsidbcdofs_);
+  errother = CalculateErrorNorm(*errorother, fluidimpl_->PressureRowMap()->NumGlobalElements() + (fluidimpl_->GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numfsidbcdofs_));
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double ADAPTER::FluidFSI::CalculateErrorNorm(const Epetra_Vector& vec,
+                                             const int numneglect
+                                             ) const
+{
+  double norm = 1.0e+12;
+
+  vec.Norm2(&norm);
+
+  if (vec.GlobalLength() - numneglect > 0.0)
+    norm /= sqrt(vec.GlobalLength() - numneglect);
+  else
+    norm = 0.0;
+
+  return norm;
+}

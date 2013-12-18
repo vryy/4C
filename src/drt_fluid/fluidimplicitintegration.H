@@ -237,6 +237,9 @@ public:
   //! @name Time step size adaptivity in monolithic FSI
   //@{
 
+  //! access to time step size of previous time step
+  virtual const double DtPrevious() const { return dtp_; }
+
   //! set time step size
   virtual void SetDt (const double dtnew);
 

@@ -158,21 +158,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   const Teuchos::ParameterList& ivap = problem->StatInverseAnalysisParams();
   xparams->set<int>("MSTEPEVRY",Teuchos::getIntegralValue<int>(ivap,"MSTEPS"));
 
-  // handle time adaptivity in FSI in a brute force way. Works only for FSI
-  // ToDO: Make this nicer and more general, but how?
-  if (probtype != prb_fsi)
-  {
-    sdyn.set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
-  }
-  else // FSI
-  {
-    const bool adapton = DRT::INPUT::IntegralValue<int>(prbdyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
-
-    if (!adapton)
-      sdyn.set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
-    else
-      sdyn.set<double>("TIMESTEP", prbdyn.sublist("TIMEADAPTIVITY").get<double>("DTINITIAL"));
-  }
+  sdyn.set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
 
   // overrule certain parameters
   sdyn.set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
@@ -351,7 +337,65 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   // create marching time integrator
   Teuchos::RCP<STR::TimInt> tmpstr = STR::TimIntCreate(*ioflags, sdyn, *xparams, actdis, solver, contactsolver, output);
 
-  // create auxiliar time integrator, can be seen as a wrapper for tmpstr
+  // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  /* Overwrite certain parameters in STRUCTURAL DYNAMIC/TIMADAPTIVITY by those from
+   * FSI DYNAMIC/TIMEADAPTIVITY
+   *
+   * In case, that the structure field is part of an FSI simulation with time step
+   * size adaptivity based on structure field error estimation, we have to provide
+   * the following algorithmic control parameters:
+   *
+   * - ADAPTSTEPMAX
+   * - STEPSIZEMAX
+   * - STEPSIZEMIN
+   * - SIZERATIOMAX
+   * - SIZERATIOMIN
+   * - SIZERATIOSCALE
+   *
+   * They are specified by the FSI algorithm since they have to be the same for
+   * the structure and fluid field. Hence, we overwrite the corresponding
+   * parameters in the structural parameter list in order to avoid redundant
+   * parameter specification in the input file.
+   *
+   * Note: This is really ugly, but currently the only way to avoid that the user
+   * has to specify these parameters twice in the input file.
+   *
+   * ToDO: Find something nicer here!
+   *
+   * \author mayr.mt \date 12/2013
+   */
+  // ---------------------------------------------------------------------------
+  if (probtype == prb_fsi)
+  {
+    const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+    const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
+    if (DRT::INPUT::IntegralValue<bool>(fsiada,"TIMEADAPTON"))
+    {
+      // overrule time step size adaptivity control parameters
+      if (tap->get<std::string>("KIND") != "NONE")
+      {
+        tap->set<int>("ADAPTSTEPMAX", fsiada.get<int>("ADAPTSTEPMAX"));
+        tap->set<double>("STEPSIZEMAX", fsiada.get<double>("DTMAX"));
+        tap->set<double>("STEPSIZEMIN", fsiada.get<double>("DTMIN"));
+        tap->set<double>("SIZERATIOMAX", fsiada.get<double>("SIZERATIOMAX"));
+        tap->set<double>("SIZERATIOMIN", fsiada.get<double>("SIZERATIOMIN"));
+        tap->set<double>("SIZERATIOSCALE", fsiada.get<double>("SAFETYFACTOR"));
+
+        if (actdis->Comm().MyPID() == 0)
+        {
+          IO::cout << "*** Due to FSI time step size adaptivity with structure based error estimation,\n"
+                      "algorithmic control parameters in STRUCTURAL DYNAMIC/TIMEADAPTIVITY have been\n"
+                      "overwritten by those from FSI DYNAMIC/TIMEADAPTIVITY."
+                   << IO::endl << IO::endl;
+        }
+      }
+    }
+  }
+  // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+
+  // create auxiliary time integrator, can be seen as a wrapper for tmpstr
   Teuchos::RCP<STR::TimAda> sta = STR::TimAdaCreate(*ioflags, sdyn, *xparams, *tap, tmpstr);
 
   if (sta!=Teuchos::null)

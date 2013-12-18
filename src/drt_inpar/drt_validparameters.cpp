@@ -5768,17 +5768,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /* parameters for time step size adaptivity in fsi dynamics */
   Teuchos::ParameterList& fsiadapt = fsidyn.sublist("TIMEADAPTIVITY",false,"");
 
-  DoubleParameter("DTINITIAL", 1.0e-4, "Initial Time Step Size",&fsiadapt);
   DoubleParameter("DTMAX", 0.1, "Limit maximally permitted time step size (>0)",&fsiadapt);
   DoubleParameter("DTMIN", 1.0e-4, "Limit minimally allowed time step size (>0)",&fsiadapt);
 
   DoubleParameter("LOCERRTOLFLUID", 1.0e-3, "Tolerance for the norm of local velocity error",&fsiadapt);
-  DoubleParameter("LOCERRTOLSTRUCTURE", 1.0e-3, "Tolerance for the norm of local displacement error",&fsiadapt);
 
   IntParameter("ADAPTSTEPMAX", 5, "Maximum number of repetitions of one time step for adapting/reducing the time step size (>0)",&fsiadapt);
   DoubleParameter("SIZERATIOMAX", 2.0, "Limit maximally permitted change of time step size compared to previous size (>0). ",&fsiadapt);
   DoubleParameter("SIZERATIOMIN", 0.5, "Limit minimally permitted change of time step size compared to previous size (>0). ",&fsiadapt);
-  DoubleParameter("SAFETYFACTOR", 0.99, "This is a safety factor to scale theoretical optimal step size, should be lower than 1 and must be larger than 0", &fsiadapt);
+  DoubleParameter("SAFETYFACTOR", 0.9, "This is a safety factor to scale theoretical optimal step size, should be lower than 1 and must be larger than 0", &fsiadapt);
 
 
 
@@ -5796,22 +5794,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                         INPAR::FSI::timada_fld_none,
                                         INPAR::FSI::timada_fld_expleuler,
                                         INPAR::FSI::timada_fld_adamsbashforth2),
-                                    &fsiadapt);
-
-  setStringToIntegralParameter<int>("AUXINTEGRATORSTRUCTURE","ExplicitEuler",
-                                    "Method for error estimation in the structure field",
-                                    tuple<std::string>(
-                                        "None",
-                                        "ExplicitEuler",
-                                        "AB2",
-                                        "ZienkiewiczXie",
-                                        "LimitDisInc"),
-                                    tuple<int>(
-                                        INPAR::FSI::timada_str_none,
-                                        INPAR::FSI::timada_str_expleuler,
-                                        INPAR::FSI::timada_str_adamsbashforth2,
-                                        INPAR::FSI::timada_str_zienkiewicz_xie,
-                                        INPAR::FSI::timada_str_limitdisinc),
                                     &fsiadapt);
 
   setStringToIntegralParameter<int>("DIVERCONT", "stop",

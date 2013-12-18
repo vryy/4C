@@ -21,7 +21,6 @@ Maintainer: Alexander Popp
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_Vector.h"
 
 #include "../drt_inpar/inpar_structure.H"
 
@@ -30,6 +29,8 @@ namespace DRT
 {
   class Discretization;
 }
+
+class Epetra_Vector;
 
 namespace LINALG
 {
@@ -85,6 +86,7 @@ namespace STR
         return "";
         break;
       }
+      return ""; // make compiler happy
     }
 
     //! List type of local error control
@@ -153,6 +155,55 @@ namespace STR
      */
     void EvaluateLocalErrorDis();
 
+    /*! \brief Calculate time step size
+     *
+     *  Using the ratio of the desired tolerance \f$tol\f$ (#errtol_) to the
+     *  estimated local discretization error, an optimal scaling
+     *  factor \f$\kappa_{opt}\f$ is computed, such that the user given error
+     *  tolerance is met 'exactly'.
+     *  \f[
+     *    \kappa_{opt} = \left(\frac{tol}{\vert error\vert}\right)^\frac{1}{p+1}
+     *  \f]
+     *  To reduce the number of time step repetitions, the scaling factor is
+     *  reduced by a safety factor \f$\kappa_{safe} \in [0, 1]\f$ (#sizeratioscale_)
+     *  to hopefully keep the achieved local discretization error a little bit
+     *  below the tolerance.
+     *
+     *  Starting with the current time step size \f$\Delta t_{curr}\f$ (#stepsize_),
+     *  the new time step size is computed as
+     *  \f[
+     *    \Delta t_{new} = \kappa_{opt} \cdot \kappa_{safe} \cdot \Delta t_{curr}
+     *  \f]
+     *
+     *  Now, we update the actual scaling factor
+     *  \f$\kappa_{eff} = \Delta t_{new} / \Delta t^{n-1}\f$,
+     *  limit it by upper and lower bounds (#sizeratiomax_ and #sizeratiomin_)
+     *  and recompute the new time step size, if necessary. Finally, we make sure
+     *  that the new time step size also satisfies upper and lower bounds (#stepsizemax_
+     *  and #stepsizemin_).
+     *
+     *  \author mayr.mt \date 12/2013
+     */
+    virtual double CalculateDt(const double norm ///< current norm of local discretization error
+                               );
+
+    /*! \brief Prepare repetition of current time step
+     *
+     *  Print to screen and reset certain quantities in case that the current time
+     *  step has to be repeated.
+     *
+     *  \author mayr.mt \date 12/2013
+     */
+    virtual void ResetStep();
+
+    //@}
+
+    //! @name Access routines
+    //@{
+
+    //! get the vector of the local discretization error
+    Teuchos::RCP<Epetra_Vector>& LocErrDis() { return locerrdisn_; }
+
     //@}
 
     //! @name Output
@@ -190,6 +241,18 @@ namespace STR
 
     //!  Update output periods
     void UpdatePeriod();
+
+    //! Set new step size
+    virtual void SetDt(const double dtnew);
+
+    //! Update step size
+    virtual void UpdateStepSize();
+
+    //! Update step size
+    virtual void UpdateStepSize(const double stpsiznew);
+
+    //! Access to current time step size
+    virtual const double Dt() const { return stepsize_; }
 
     //! Check whether step size output file is attached
     bool AttachedFileStepSize()
@@ -263,8 +326,6 @@ namespace STR
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
     //@}
-
-
 
     //! @name Plain time integration constants
     //@{

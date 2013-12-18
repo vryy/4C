@@ -65,6 +65,14 @@ namespace ADAPTER {
 
     //@}
 
+  protected:
+
+    //! Access routines
+    //{@
+
+    const Teuchos::RCP<STR::TimAda>& StrAda() { return structure_; }
+
+    //@}
 
   private:
 

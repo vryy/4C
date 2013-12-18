@@ -19,6 +19,8 @@ Maintainer: Alexander Popp
 /* headers */
 #include <iostream>
 
+#include "Epetra_Vector.h"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
@@ -67,7 +69,7 @@ STR::TimAda::TimAda
   //
   time_(timeinitial_),
   timestep_(0),
-  stepsizepre_(0.0),
+  stepsizepre_(stepsizeinitial_),
   stepsize_(sdyn.get<double>("TIMESTEP")),
   locerrdisn_(Teuchos::null),
   adaptstep_(0),
@@ -119,7 +121,7 @@ int STR::TimAda::Integrate()
   time_ = timeinitial_;
   timestep_ = timestepinitial_;
   stepsize_ = stepsizeinitial_;
-  stepsizepre_ = stepsize_;
+  UpdateStepSize();
 
   // time loop
   while ((time_ < timefinal_) and (timestep_ < timestepfinal_))
@@ -151,17 +153,18 @@ int STR::TimAda::Integrate()
       // check whether step passes
       Indicate(accepted, stpsiznew);
 
-      // adjust step-size
+      // adjust step-size and prepare repetition of current step
       if (not accepted)
       {
         IO::cout << "Repeating step with stepsize = " << stpsiznew
-               << IO::endl;
+                 << IO::endl;
         IO::cout << "- - - - - - - - - - - - - - - - - - - - - - - - -"
-               << " - - - - - - - - - - - - - - -"
-               << IO::endl;
+                 << " - - - - - - - - - - - - - - -"
+                 << IO::endl;
+
         stepsize_ = stpsiznew;
-        outrest_ = outsys_ = outstr_ = outene_ = false;
-        sti_->ResetStep();
+
+        ResetStep();
       }
 
       // increment number of adapted step sizes in a row
@@ -199,10 +202,10 @@ int STR::TimAda::Integrate()
     sti_->PrintStep();
 
     // update
+//    Update();
     sti_->stepn_ = timestep_ += 1;
     sti_->timen_ = time_ += stepsize_;
-    stepsizepre_ = stepsize_;
-    stepsize_ = stpsiznew;
+    UpdateStepSize(stpsiznew);
 
     UpdatePeriod();
     outrest_ = outsys_ = outstr_ = outene_ = false;
@@ -261,6 +264,15 @@ void STR::TimAda::Indicate
               << std::endl;
   }
 
+  stpsiznew = CalculateDt(norm);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Indicate error and determine new step size */
+double STR::TimAda::CalculateDt(const double norm)
+{
   // get error order
   if (MethodAdaptDis() == ada_upward)
     errorder_ = sti_->MethodOrderOfAccuracyDis();
@@ -268,7 +280,11 @@ void STR::TimAda::Indicate
     errorder_ = MethodOrderOfAccuracyDis();
 
   // optimal size ration with respect to given tolerance
-  double sizrat = std::pow(errtol_/norm, 1.0/(errorder_+1.0));
+  double sizrat = 1.0;
+  if (not (norm == 0.0)) // do not divide by zero
+    sizrat = std::pow(errtol_/norm, 1.0/(errorder_+1.0));
+  else // max increase if error norm == 0
+    sizrat = sizeratiomax_ / sizeratioscale_;
 
   // debug
   if (myrank_ == 0)
@@ -279,8 +295,10 @@ void STR::TimAda::Indicate
 
   // scaled by safety parameter
   sizrat *= sizeratioscale_;
+
   // optimal new step size
-  stpsiznew = sizrat * stepsize_;
+  double stpsiznew = sizrat * stepsize_;
+
   // redefine sizrat to be dt*_{n}/dt_{n-1}, ie true optimal ratio
   sizrat = stpsiznew/stepsizepre_;
 
@@ -303,6 +321,16 @@ void STR::TimAda::Indicate
   {
     stpsiznew = stepsizemin_;
   }
+
+  return stpsiznew;
+}
+
+/*----------------------------------------------------------------------*/
+/* Prepare repetition of current time step */
+void STR::TimAda::ResetStep()
+{
+  outrest_ = outsys_ = outstr_ = outene_ = false;
+  sti_->ResetStep();
 
   return;
 }
@@ -496,6 +524,33 @@ void STR::TimAda::AttachFileStepSize()
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Update step size and set new time step size                          */
+void STR::TimAda::UpdateStepSize(const double dtnew)
+{
+  UpdateStepSize();
+  stepsize_ = dtnew;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Update step size                                                     */
+void STR::TimAda::UpdateStepSize()
+{
+  stepsizepre_ = stepsize_;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Set new time step size                                               */
+void STR::TimAda::SetDt(const double dtnew)
+{
+  stepsize_ = dtnew;  // in the adaptive time integrator
+  sti_->SetDt(dtnew); // in the marching time integrator
 }
 
 /*======================================================================*/

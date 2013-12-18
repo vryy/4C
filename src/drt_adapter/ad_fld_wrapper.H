@@ -175,6 +175,25 @@ namespace ADAPTER
     //! @name Time step size adaptivity in monolithic FSI
     //@{
 
+    /*! Do one step with auxiliary time integration scheme
+     *
+     *  Do a single time step with the user given auxiliary time integration
+     *  scheme. Result is stored in #locerrvelnp_ and is used later to estimate
+     *  the local discretization error of the marching time integration scheme.
+     *
+     *  \author mayr.mt \date 12/2013
+     */
+    virtual void TimeStepAuxiliar(){};
+
+    /*! Indicate norms of local discretization error
+     *
+     *  \author mayr.mt \date 12/2013
+     */
+    virtual void IndicateErrorNorms(double& err,       ///< norm of local discretization error based on all DOFs
+                                    double& errcond,   ///< norm of local discretization error based on interface DOFs
+                                    double& errother   ///< norm of local discretization error based on interior DOFs
+                                    ) {};
+
     //! Set fluid time step size that was computed outside
     virtual void SetDt(const double dtnew)
     {fluid_->SetDt(dtnew);}

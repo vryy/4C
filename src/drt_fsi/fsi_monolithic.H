@@ -19,7 +19,6 @@ Maintainer: Matthias Mayr
 
 #include <NOX.H>
 #include <NOX_Epetra.H>
-#include <NOX_Epetra_Interface_Jacobian.H>
 
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
@@ -32,6 +31,7 @@ namespace ADAPTER
 {
   class Coupling;
   class FSIStructureWrapper;
+  class StructureFSITimIntAda;
 }
 
 namespace ALE
@@ -118,7 +118,7 @@ namespace FSI
     virtual void Output();
 
     /// access to structural field
-    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
+    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField() { return structure_; }
 
     /// access to fluid field
     ::ADAPTER::Fluid& FluidField(){return *fluid_;}
@@ -137,13 +137,13 @@ namespace FSI
   protected:
 
     /// underlying structure of the FSI problem
-    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    structure_;
+    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> structure_;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP< ::ADAPTER::Fluid>                  fluid_;
+    Teuchos::RCP< ::ADAPTER::Fluid> fluid_;
 
     /// underlying ale of the FSI problem
-    Teuchos::RCP<ALE::Ale>                           ale_;
+    Teuchos::RCP<ALE::Ale> ale_;
 
     //! @name Transfer helpers
 
@@ -184,7 +184,23 @@ namespace FSI
 
     //@}
 
+    //! @name Time step size adaptivity
+    //@{
+
+    bool IsAdaStructure() const { return isadastructure_; }  ///< Time step size adaptivity based on structure?
+    bool IsAdaFluid() const { return isadafluid_; }          ///< Time step size adaptivity based on fluid?
+    bool IsAdaSolver() const { return isadasolver_; }        ///< Time step size adaptivity based on solver convergence?
+
+    bool isadastructure_; ///< Time step size adaptivity based on structure?
+    bool isadafluid_;     ///< Time step size adaptivity based on fluid?
+    bool isadasolver_;    ///< Time step size adaptivity based on solver convergence?
+
+    //@}
+
   private:
+
+    //! @name Interface coupling transfer objects
+    //@{
 
     /// coupling of structure and fluid at the interface
     Teuchos::RCP<ADAPTER::Coupling>               coupsf_;
@@ -197,6 +213,9 @@ namespace FSI
 
     /// coupling of fluid and ale at the interface
     Teuchos::RCP<ADAPTER::Coupling>               icoupfa_;
+
+    //@}
+
   };
 
 
@@ -306,6 +325,9 @@ namespace FSI
 
     //! Get time step size
     double GetDt() const { return Dt(); };
+
+    //! Get time step size
+    double GetTime() const { return Time(); };
 
     //! Get number of time step repetitions in case of time step adaptivity
     int GetNumAdaptSteps() const { return adaptstep_; }
@@ -473,7 +495,11 @@ namespace FSI
     //! Whether the new time step size is accepted also depends on the chosen method!
     virtual bool SetAccepted() const = 0;
 
+    //! return the error action that should be performed
     virtual const int GetErrorAction() const { return erroraction_; }
+
+    //! Check whether time step sizes are the same among all fields
+    virtual bool CheckIfDtsSame();
 
     //@}
 
@@ -491,7 +517,6 @@ namespace FSI
     double errtolfl_;   ///< tolerance for norm of local truncation error in fluid field
     double errtolstr_;  ///< tolerance for norm of local truncation error in structure field
 
-    int strmethod_;   ///< auxiliary time integrator in structure field
     int flmethod_;    ///< auxiliary time integrator in fluid field
 
     //@}
@@ -556,6 +581,9 @@ namespace FSI
     //! @name Functionality for FSI time adaptivity
     //@{
 
+    //! do the auxiliary step needed for error estimation
+    virtual void TimeStepAuxiliar();
+
     //! method to adapt time step size
     void AdaptTimeStepSize();
 
@@ -578,59 +606,6 @@ namespace FSI
 
     //! Set time step size in all fields (fsi routine, ale, fluid, structure)
     void SetDt(const double dtnew);
-
-    /*! \brief Do an explicit Euler step as auxiliary time integrator
-     *
-     *  Based on state vector \f$x_n\f$ and its time derivative \f$\dot{x}_{n}\f$
-     *  at time \f$t_{n}\f$, we calculate \f$x_{n+1}\f$ using an explicit Euler
-     *  step:
-     *
-     *  \f[
-     *    x_{n+1} = x_{n} + \Delta t_{n} \dot{x}_{n}
-     *  \f]
-     *
-     *  \note Can be used for both structure and fluid field.
-     *
-     *  \author mayr.mt
-     *  \date 10/2013
-     */
-    void ExplicitEuler(const Epetra_Vector& xn,     ///< state vector at \f$t_n\f$
-                       const Epetra_Vector& xndot,  ///< time derivative of state vector at \f$t_n\f$
-                       Epetra_Vector& extrapolation ///< extrapolation of state vector to \f$t_{n+1}\f$
-                       ) const;
-
-    /*! \brief Do an Adams-Bashforth 2 step as auxiliary time integrator
-     *
-     *  Based on state vector \f$x_n\f$ and its time derivatives \f$\dot{x}_{n}\f$
-     *  and \f$\dot{x}_{n-1}\f$ at time steps \f$t_{n}\f$ and \f$t_{n-1}\f$,
-     *  respectively, we calculate \f$x_{n+1}\f$ using an Adams-Bashforth 2 step
-     *  with varying time step sizes:
-     *
-     *  \f[
-     *    x_{n+1} = x_{n}
-     *            + \frac{2\Delta t_{n} \Delta t_{n-1} + \Delta t_{n}^2}{2\Delta t_{n-1}} \dot{x}_{n}
-     *            - \frac{\Delta t_{n}^2}{2\Delta t_{n-1}} \dot{x}_{n-1}
-     *  \f]
-     *
-     *  \note Can be used for both structure and fluid field.
-     *
-     *  <h3> References: </h3>
-     *
-     *  - Wall, W. A., <em> Fluid-Struktur-Interaktion mit stabilisierten Finiten
-     *  Elementen, PhD Thesis, Universitaet Stuttgart, 1999
-     *
-     *  - Bornemann, B., Time Integration Algorithms for the Steady States of
-     *  Dissipative Non-Linear Dynamic Systems, PhD Thesis, Imperial College
-     *  London, 2003
-     *
-     *  \author mayr.mt
-     *  \date 11/2013
-     */
-    void AdamsBashforth2(const Epetra_Vector& xn,     ///< state vector at \f$t_n\f$
-                         const Epetra_Vector& xndot,  ///< time derivative of state vector at \f$t_n\f$
-                         const Epetra_Vector& xnmdot, ///< time derivative of state vector at \f$t_{n-1}\f$
-                         Epetra_Vector& extrapolation ///< extrapolation of state vector to \f$t_{n+1}\f$
-                         ) const;
 
     /*! \brief Who is responsible for changing the time step size
      *
@@ -664,71 +639,38 @@ namespace FSI
     //! Write to adaptivity file
     void WriteAdaFileHeader() const;
 
-    /*! \brief Indicate local truncation error in structure field
+    /*! \brief Calculate time step size
      *
-     * This is based on the comparison of a marching and an auxiliary time
-     * integrator. Several norms (entire subdomain, interface only, interior
-     * only) are computed.
+     *  Using the ratio of the desired tolerance \f$tol\f$ to the
+     *  estimated local discretization error, an optimal scaling
+     *  factor \f$\kappa_{opt}\f$ is computed, such that the user given error
+     *  tolerance is met 'exactly'.
+     *  \f[
+     *    \kappa_{opt} = \left(\frac{tol}{\vert error\vert}\right)^\frac{1}{p+1}
+     *  \f]
+     *  To reduce the number of time step repetitions, the scaling factor is
+     *  reduced by a safety factor \f$\kappa_{safe} \in [0, 1]\f$ (#sizeratioscale_)
+     *  to hopefully keep the achieved local discretization error a little bit
+     *  below the tolerance.
      *
-     * The structure  field knows three DOF maps:
-     *    - full map: all displacement DOFs (interior and interface)
-     *    - fsi condition map: only the interface displacement DOFs
-     *    - fsi other map: only interior displacement DOFs
+     *  Starting with the current time step size \f$\Delta t_{curr}\f$,
+     *  the new time step size is computed as
+     *  \f[
+     *    \Delta t_{new} = \kappa_{opt} \cdot \kappa_{safe} \cdot \Delta t_{curr}
+     *  \f]
      *
-     *  For error indication, we do the auxiliary time integration step based with
-     *  full map vectors. Pressure DOFs are blanked after extrapolation. Note
-     *  that Dirichlet DOFs carry the exact values and, thus, have to be excluded
-     *  from error indication, too. In the end, we extract certain portions only
-     *  to use some of them for time step size calculation.
+     *  Now, we update the actual scaling factor
+     *  \f$\kappa_{eff} = \Delta t_{new} / \Delta t^{n-1}\f$,
+     *  limit it by upper and lower bounds
+     *  and recompute the new time step size, if necessary. Finally, we make sure
+     *  that the new time step size also satisfies upper and lower bounds.
      *
-     * \author mayr.mt
-     * \date 09/2013
-     !*/
-    void IndicateLocalErrorNormsStructure();
-
-    /*! \brief Indicate local truncation error in fluid field
-     *
-     * This is based on the comparison of a marching and an auxiliary time
-     * integrator. Several norms (entire subdomain, interface only, interior
-     * only) are computed.
-     *
-     * The fluid field knows three DOF maps:
-     *    - full map: all velocity and pressure DOFs (interior and interface)
-     *    - fsi condition map: only the interface velocity DOFs
-     *    - fsi other map: all interior DOFs (velocity and pressure) and the interface pressure DOFs
-     *
-     *  For error indication, we do the auxiliary time integration step based with
-     *  full map vectors. Pressure DOFs are blanked after extrapolation. Note
-     *  that Dirichlet DOFs carry the exact values and, thus, have to be excluded
-     *  from error indication, too. In the end, we extract certain portions only
-     *  to use some of them for time step size calculation.
-     *
-     * \author mayr.mt
-     * \date 09/2013
-     !*/
-    void IndicateLocalErrorNormsFluid();
-
-    /*! \brief Calculate new time step size
-     *
-     *  New time step size is based on L2-norm of local truncation error. This
-     *  is done for several norms. We have to select the time step size afterwards.
-     *
-     *  Calculation of new time step size:
-     *
-     *  \f[ \Delta t_{new} = min\left(\Delta t_{max}, max\left(fac\cdot\Delta t_{old}, Delta t_{min}\right)\right) \f]
-     *  with the scalar factor
-     *  /f[ fac = min\left(fac_{max}, max\left(fac_{min},\left(\frac{tol}{error}\right)^{\frac{1}{p+1}}\right)\right) /f]
-     *  with the maximum increase factor \f$fac_{max}\f$, the minimum decrease factor \f$fac_{min}\f$, the user defined
-     *  tolerance \f$tol\f$, the L2-norm of the local truncation error \f$error\f$ and the order \f$p\f$ of the time integration
-     *  scheme
-     *
-     *  \author mayr.mt
-     *  \date 09/2013
+     *  \author mayr.mt \date 12/2013
      */
-    double CalculateTimeStepSize(const double errnorm,  ///< L2-norm of local truncation error
+    double CalculateTimeStepSize(const double errnorm,  ///< length-scaled L2-norm of local discretization error
                                  const double errtol,   ///< user given error tolerance
                                  const double estorder  ///< order of accuracy of time integration scheme
-                                 );
+                                 ) const;
 
     //@}
 
@@ -756,7 +698,6 @@ namespace FSI
     //! reason/field that is responsible for the new time step size
     std::string adareason_;
 
-    int numstrfsidbcdofs_;  ///< Number of structural interface DOFs with Dirichlet BC
     int numflfsidbcdofs_;   ///< Number of fluid interface DOFs with Dirichlet BC
 
     //! variables to store the norms of the local error vectors of displacement (in the structure field) and velocity (in the fluid field)

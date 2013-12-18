@@ -160,6 +160,30 @@ namespace ADAPTER {
     /// calculate error in comparison to analytical solution
     virtual void CalculateError();
 
+    //! @name Time step size adaptivity in monolithic FSI
+    //@{
+
+    /*! Do one step with auxiliary time integration scheme
+     *
+     *  Do a single time step with the user given auxiliary time integration
+     *  scheme. Result is stored in #locerrvelnp_ and is used later to estimate
+     *  the local discretization error of the marching time integration scheme.
+     *
+     *  \author mayr.mt \date 12/2013
+     */
+    virtual void TimeStepAuxiliar();
+
+    /*! Indicate norms of local discretization error
+     *
+     *  \author mayr.mt \date 12/2013
+     */
+    virtual void IndicateErrorNorms(double& err,       ///< norm of local discretization error based on all DOFs
+                                    double& errcond,   ///< norm of local discretization error based on interface DOFs
+                                    double& errother   ///< norm of local discretization error based on interior DOFs
+                                    );
+
+    //@}
+
   protected:
     /// A casted pointer to the fluid itself
     Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpl_;
@@ -183,6 +207,73 @@ namespace ADAPTER {
 
     /// all velocity dofs not at the interface
     Teuchos::RCP<Epetra_Map>               innervelmap_;
+
+  private:
+
+    //! Time step size adaptivity in monolithic FSI
+    //@{
+
+    /*! \brief Do an explicit Euler step as auxiliary time integrator
+     *
+     *  Based on state vector \f$x_n\f$ and its time derivative \f$\dot{x}_{n}\f$
+     *  at time \f$t_{n}\f$, we calculate \f$x_{n+1}\f$ using an explicit Euler
+     *  step:
+     *
+     *  \f[
+     *    x_{n+1} = x_{n} + \Delta t_{n} \dot{x}_{n}
+     *  \f]
+     *
+     *  \author mayr.mt
+     *  \date 10/2013
+     */
+    void ExplicitEuler(const Epetra_Vector& veln, ///< velocity at \f$t_n\f$
+                       const Epetra_Vector& accn, ///< acceleration at \f$t_n\f$
+                       Epetra_Vector& velnp       ///< velocity at \f$t_{n+1}\f$
+                       ) const;
+
+    /*! \brief Do an Adams-Bashforth 2 step as auxiliary time integrator
+     *
+     *  Based on state vector \f$x_n\f$ and its time derivatives \f$\dot{x}_{n}\f$
+     *  and \f$\dot{x}_{n-1}\f$ at time steps \f$t_{n}\f$ and \f$t_{n-1}\f$,
+     *  respectively, we calculate \f$x_{n+1}\f$ using an Adams-Bashforth 2 step
+     *  with varying time step sizes:
+     *
+     *  \f[
+     *    x_{n+1} = x_{n}
+     *            + \frac{2\Delta t_{n} \Delta t_{n-1} + \Delta t_{n}^2}{2\Delta t_{n-1}} \dot{x}_{n}
+     *            - \frac{\Delta t_{n}^2}{2\Delta t_{n-1}} \dot{x}_{n-1}
+     *  \f]
+     *
+     *  <h3> References: </h3>
+     *
+     *  - Wall, W. A., <em> Fluid-Struktur-Interaktion mit stabilisierten Finiten
+     *  Elementen, PhD Thesis, Universitaet Stuttgart, 1999
+     *
+     *  - Bornemann, B., Time Integration Algorithms for the Steady States of
+     *  Dissipative Non-Linear Dynamic Systems, PhD Thesis, Imperial College
+     *  London, 2003
+     *
+     *  \author mayr.mt
+     *  \date 11/2013
+     */
+    void AdamsBashforth2(const Epetra_Vector& veln,   ///< velocity at \f$t_n\f$
+                         const Epetra_Vector& accn,   ///< acceleration at \f$t_n\f$
+                         const Epetra_Vector& accnm,  ///< acceleration at \f$t_{n-1}\f$
+                         Epetra_Vector& velnp         ///< velocity at \f$t_{n+1}\f$
+                         ) const;
+
+    //! Compute length-scaled L2-norm of a vector
+    virtual double CalculateErrorNorm(const Epetra_Vector& vec, ///< vector to compute norm of
+                                      const int numneglect = 0  ///< number of DOFs that have to be neglected for length scaling
+                                       ) const;
+
+    Teuchos::RCP<Epetra_Vector> locerrvelnp_; ///< vector of temporal local discretization error
+
+    int auxintegrator_; ///< auxiliary time integrator in fluid field
+
+    int numfsidbcdofs_; ///< number of fluid interface DOFs with Dirichlet boundary condition
+
+    //@}
 
   };
 }

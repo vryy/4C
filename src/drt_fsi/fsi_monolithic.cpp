@@ -36,6 +36,7 @@ Maintainer: Matthias Mayr
 
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_str_fsi_timint_adaptive.H"
 
 #include "../drt_constraint/constraint_manager.H"
 
@@ -56,7 +57,10 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------*/
 FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
                                     const Teuchos::ParameterList& timeparams)
-  : AlgorithmBase(comm,timeparams)
+  : AlgorithmBase(comm,timeparams),
+    isadastructure_(false),
+    isadafluid_(false),
+    isadasolver_(false)
 {
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
@@ -126,7 +130,12 @@ void FSI::MonolithicBase::Update()
   if (not timeadapton)
     StructureField()->Update(); // constant dt
   else
+  {
     StructureField()->Update(Time()); // variable/adaptive dt
+
+    if (IsAdaStructure())
+      Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)->UpdateStepSize(Dt());
+  }
 
   FluidField().Update();
   AleField().Update();
@@ -473,6 +482,8 @@ void FSI::Monolithic::PrepareTimeloop()
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::TimeStep");
+
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = NOXParameterList();
 
@@ -651,6 +662,11 @@ void FSI::Monolithic::NonLinErrorCheck()
 void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
+
+#ifdef DEBUG
+  // check whether all fields have the same time step size
+  CheckIfDtsSame();
+#endif
 
   Teuchos::RCP<const Epetra_Vector> sx;
   Teuchos::RCP<const Epetra_Vector> fx;

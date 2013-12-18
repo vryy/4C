@@ -1789,24 +1789,31 @@ double FSI::MortarMonolithicStructureSplit::SelectTimeStepSize() const
   const double dtstrinner = GetAdaStrInnerDt(); // based on inner structural DOFs
   const double dtnonlinsolver = GetAdaNonLinSolverDt(); // based on non-convergence of nonlinear solver
 
-	// determine minimum
-	double dt = std::min(std::min(dtfl, dtflfsi), dtstrinner);
+  double dt = Dt();
 
-	// Time adaptivity not based on fluid: use structural suggestions only
-	if (flmethod_ == INPAR::FSI::timada_fld_none) { dt = dtstrinner; }
+  // select time step size based on error estimation
+  if (IsAdaStructure() and IsAdaFluid())
+    dt = std::min(std::min(dtfl, dtflfsi), dtstrinner);
+  else if (IsAdaStructure() and (not IsAdaFluid()))
+    dt = dtstrinner;
+  else if((not IsAdaStructure()) and IsAdaFluid())
+    dt = std::min(dtfl, dtflfsi);
+  else
+  {
+    // no change in time step size based on structure or fluid field error estimation
+  }
 
-	// Time adaptivity not based on structure: use fluid suggestions only
-	if (strmethod_ == INPAR::FSI::timada_str_none) { dt = std::min(dtfl, dtflfsi); }
-
-	// compare to time step size of non-converged nonlinear solver
-  if (NoxStatus() != NOX::StatusTest::Converged)
+  // select time step size based on convergence of nonlinear solver
+  if (IsAdaSolver() and GetErrorAction() == FSI::Monolithic::erroraction_halve_step)
     dt = std::min(dt, dtnonlinsolver);
-
-  // Time adaptivity based only on non-convergence of nonlinear solver
-  if (flmethod_ == INPAR::FSI::timada_fld_none && strmethod_ == INPAR::FSI::timada_str_none)
+  else if (IsAdaSolver() and (not (IsAdaStructure() and IsAdaFluid())))
     dt = dtnonlinsolver;
+  else
+  {
+    // no change in time step size based on convergence of nonlinear solver
+  }
 
-	return dt;
+  return dt;
 }
 
 bool FSI::MortarMonolithicStructureSplit::SetAccepted() const
@@ -1819,12 +1826,16 @@ bool FSI::MortarMonolithicStructureSplit::SetAccepted() const
 	bool accepted = std::max(flnorm,flfsinorm) < errtolfl_ && strinnernorm < errtolstr_ ;
 
 	// in case error estimation in the fluid field is turned off:
-	if (flmethod_ == INPAR::FSI::timada_fld_none)
-	  accepted = std::max(flnorm,flfsinorm) < errtolfl_ ;
+	if (not IsAdaFluid())
+	  accepted = strinnernorm < errtolstr_;
 
 	// in case error estimation in the structure field is turned off:
-	if (strmethod_ == INPAR::FSI::timada_str_none)
-	  accepted = strinnernorm < errtolstr_;
+	if (not IsAdaStructure())
+	  accepted = std::max(flnorm,flfsinorm) < errtolfl_ ;
+
+	// no error based time adaptivity
+	if ((not IsAdaStructure()) and (not IsAdaFluid()))
+    accepted = true;
 
 	return accepted;
 }
