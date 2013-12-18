@@ -3194,15 +3194,15 @@ public:
   /// Return the value_type* holding the data.
   inline value_type* A() { return data_; }
   /// Return the number of rows
-  inline unsigned int Rows() const { return rows; }
+  static inline unsigned int Rows() { return rows; }
   /// Return the number of columns
-  inline unsigned int Columns() const { return cols; }
+  static inline unsigned int Columns() { return cols; }
   /// Return the number of columns
-  inline unsigned int Cols() const { return cols; }
+  static inline unsigned int Cols() { return cols; }
   /// Return the number of rows
-  inline unsigned int M() const { return rows; }
+  static inline unsigned int M() { return rows; }
   /// Return the number of columns
-  inline unsigned int N() const { return cols; }
+  static inline unsigned int N() { return cols; }
   /// Check whether the matrix is initialized
   /*!
     You cannot test whether the matrix is empty using M() and N(),
