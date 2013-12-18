@@ -268,6 +268,13 @@ void FSI::FSIResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr,
     result = fsi_->GetNumAdaptSteps();
   }
 
+  // test for simulation time in case of time step size adaptivity
+  if ( quantity == "time" )
+  {
+    unknownquantity = false;
+    result = fsi_->GetTime();
+  }
+
   // catch quantity strings, which are not handled by fsi result test
   if ( unknownquantity )
     dserror("Quantity '%s' not supported in fsi testing", quantity.c_str());
