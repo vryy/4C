@@ -463,7 +463,7 @@ void MAT::AAAneohooke_stopro::VisNames(std::map<std::string,int>& names)
 }
 
 
-bool MAT::AAAneohooke_stopro::VisData(const std::string& name, std::vector<double>& data, int numgp)
+bool MAT::AAAneohooke_stopro::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name=="beta")
   {

@@ -136,14 +136,12 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 
   reduced_output_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"REDUCED_OUTPUT");
 
-  //! \brief vector to store RF values in case of cos series computation
- // rf_values_ = Teuchos::rcp( new std::vector<double> );
-  // store rf at all element centers
-   rf_values_ = Teuchos::rcp(new std::vector<double>(discret_->NumMyColElements(),0.0));
-  //      Teuchos::RCP<Teuchos::Array <double> > average_psd=
-   //          Teuchos::rcp( new Teuchos::Array<double>(size*size,0.0));
 
-  // meshfiel name to be written to controlfile in prolongated results
+  // store rf at all element centers
+  rf_values_ = Teuchos::rcp(new std::vector<double>(discret_->NumMyColElements(),0.0));
+
+
+  // meshfile name to be written to controlfile in prolongated results
   std::stringstream meshfilename_helper1;
   std::string meshfilename_helper2;
   meshfilename_helper1 << filename_ << "_prolongated_run_" << start_run_ ;
@@ -502,7 +500,7 @@ void STR::MLMC::IntegrateNoReset()
         {
 
           // for first run do normal integration
-          SetupStochMatDet(1.5);
+          SetupStochMatDet(3.8);
           structadaptor.Integrate();
           // get all information
           structadaptor.GetRestartData(cont_step_,cont_time_,cont_disn_init_,cont_veln_,cont_accn_,cont_elementdata_init_);
@@ -1947,14 +1945,7 @@ void STR::MLMC::SetupEvalDisAtEleCenters(std::vector <int> AllOutputEleIds)
 
   IO::cout << "Proc "<< actdis_coarse_->Comm().MyPID() << " NumOutputele " << my_output_elements_.size() << IO::endl;
 
-  // move from vector to array
-  int mysize = AllOutputEleIds.size();
-  int ArrayAllOutputEleIds[mysize];
-  for (int i=0; i< mysize; i++)
-  {
-    ArrayAllOutputEleIds[i]=AllOutputEleIds[i];
-  }
-  OutputMap_ = Teuchos::rcp(new Epetra_Map (NumGlobalMapElements,NumMyElements,&(ArrayAllOutputEleIds[0]),0,actdis_coarse_->Comm()));
+  OutputMap_ = Teuchos::rcp(new Epetra_Map (NumGlobalMapElements,NumMyElements,&(AllOutputEleIds[0]),0,actdis_coarse_->Comm()));
 }
 
 void STR::MLMC::SetupEvalPeakWallStress()
