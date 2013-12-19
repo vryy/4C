@@ -596,6 +596,14 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
     {
       dserror("Up to now, only Smagorinsky, Scale Similarity and Multifractal Subgrid Scales are available");
     }
+
+    if (turb_mod_action_ == INPAR::FLUID::smagorinsky or turb_mod_action_ == INPAR::FLUID::smagorinsky_with_van_Driest_damping or
+        turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky or turb_mod_action_ == INPAR::FLUID::dynamic_vreman)
+    {
+      if (mat_gp_ != tau_gp_)
+        dserror("For subgrid-viscosity models mat and tau have to be evaluated at the same location!");
+    }
+
   } // end if(Classical LES)
 }
 

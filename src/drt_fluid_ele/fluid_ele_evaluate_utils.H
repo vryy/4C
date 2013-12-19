@@ -3232,15 +3232,15 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
       //           -3/16
       //  *(1 - (Re)   )
       //
-      Csgs *= (1-pow(Re_ele_str,-3.0/16.0));
+      Csgs *= (1.0-pow(Re_ele_str,-3.0/16.0));
 
       // store Cai for application to scalar field
-      Cai_phi = (1-pow(Re_ele_str,-3.0/16.0));
+      Cai_phi = (1.0-pow(Re_ele_str,-3.0/16.0));
     }
 
     for (int dim=0; dim<NSD; dim++)
     {
-      B(dim,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*Nvel[0]/3.0) * sqrt((pow(2.0,4.0*Nvel[0]/3.0)-1));
+      B(dim,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*Nvel[0]/3.0) * sqrt((pow(2.0,4.0*Nvel[0]/3.0)-1.0));
     }
 
 #ifdef CONST_B
@@ -3349,7 +3349,7 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
     //                                        |                   |
     //
     if (not two_ranges) // usual case
-      D = Csgs_phi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
+      D = Csgs_phi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1.0));
     else
     {
       double gamma1 = 4.0/3.0;

@@ -734,22 +734,29 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       }
       case INPAR::FLUID::gradient_based:
       {
-        LINALG::Matrix<3,1> normed_velgrad;
+        if (nsd_ != 3) dserror("Turbulence is 3d!");
+        LINALG::Matrix<nsd_,1> normed_velgrad;
 
-        for (int rr=0;rr<3;++rr)
+        for (int rr=0;rr<nsd_;++rr)
         {
-          normed_velgrad(rr)=sqrt(vderxy_(0,rr)*vderxy_(0,rr)
-                                +
-                                vderxy_(1,rr)*vderxy_(1,rr)
-                                +
-                                vderxy_(2,rr)*vderxy_(2,rr));
+          double val = 0.0;
+          for (int idim = 0; idim < nsd_; idim ++)
+            val += vderxy_(idim,rr)*vderxy_(idim,rr);
+
+          normed_velgrad(rr) = std::sqrt(val);
+
+          //normed_velgrad(rr)=sqrt(vderxy_(0,rr)*vderxy_(0,rr)
+          //                      +
+          //                      vderxy_(1,rr)*vderxy_(1,rr)
+          //                      +
+          //                      vderxy_(2,rr)*vderxy_(2,rr));
         }
         double norm=normed_velgrad.Norm2();
 
         // normed gradient
         if (norm>1e-6)
         {
-          for (int rr=0;rr<3;++rr)
+          for (int rr=0;rr<nsd_;++rr)
           {
             normed_velgrad(rr)/=norm;
           }
@@ -757,7 +764,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
         else
         {
           normed_velgrad(0) = 1.;
-          for (int rr=1;rr<3;++rr)
+          for (int rr=1;rr<nsd_;++rr)
           {
             normed_velgrad(rr)=0.0;
           }
@@ -767,9 +774,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
         double val = 0.0;
         for (int rr=0;rr<nen_;++rr) /* loop element nodes */
         {
-          val += abs( normed_velgrad(0)*derxy_(0,rr)
-                      +normed_velgrad(1)*derxy_(1,rr)
-                      +normed_velgrad(2)*derxy_(2,rr));
+          double loc = 0.0;
+          for (int idim = 0; idim < nsd_; idim ++)
+            loc += normed_velgrad(idim)*derxy_(idim,rr);
+
+          val += std::abs(loc);
+
+          //val += abs( normed_velgrad(0)*derxy_(0,rr)
+          //            +normed_velgrad(1)*derxy_(1,rr)
+          //            +normed_velgrad(2)*derxy_(2,rr));
         } /* end of loop over element nodes */
 
         hk = 2.0/val;
@@ -965,10 +978,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       //           -3/16
       //  *(1 - (Re)   )
       //
-      Csgs *= (1-pow(Re_ele_str,-3.0/16.0));
+      Csgs *= (1.0-pow(Re_ele_str,-3.0/16.0));
 
       // store Cai for application to scalar field
-      Cai_phi = (1-pow(Re_ele_str,-3.0/16.0));
+      Cai_phi = (1.0-pow(Re_ele_str,-3.0/16.0));
     }
 
     // call function to compute coefficient B
@@ -1064,7 +1077,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcMultiFracSubgridVelCoef(
   //
   for (int dim=0; dim<nsd_; dim++)
   {
-    B_mfs(dim,0) = Csgs *sqrt(kappa) * pow(2.0,-2.0*Nvel[dim]/3.0) * sqrt((pow(2.0,4.0*Nvel[dim]/3.0)-1));
+    B_mfs(dim,0) = Csgs *sqrt(kappa) * pow(2.0,-2.0*Nvel[dim]/3.0) * sqrt((pow(2.0,4.0*Nvel[dim]/3.0)-1.0));
   }
 
 #ifdef CONST_B // overwrite all, just for testing
@@ -1151,7 +1164,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcMultiFracSubgridScaCoef(
   //                                        |                   |
   //
   if (not two_ranges) // usual case
-    D_mfs = Csgs *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
+    D_mfs = Csgs *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1.0));
   else
   {
     dserror("Special option for passive scalars only!");
