@@ -91,9 +91,10 @@ BETA                            0.0
 CSGS_PHI                        0.15
 C_DIFF                          0.1
 SET_FINE_SCALE_VEL              yes
+ADAPT_CSGS_PHI                  yes
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SCATRATYPE                      TurbulentPassiveScalar
+SCATRATYPE                      ConvectionDiffusion
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      -1

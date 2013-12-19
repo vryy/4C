@@ -88,7 +88,7 @@ C_DIFF                          0.1
 ML_SOLVER                       3
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SCATRATYPE                      TurbulentPassiveScalar
+SCATRATYPE                      ConvectionDiffusion
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      -1

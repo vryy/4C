@@ -65,10 +65,11 @@ PHYSICAL_MODEL                  Dynamic_Smagorinsky
 CANONICAL_FLOW                  scatra_channel_flow_of_height_2
 CHAN_AMPL_INIT_DIST             0.3
 HOMDIR                          xz
-SAMPLING_START                  5001
+SAMPLING_START                  1
 SAMPLING_STOP                   10000
-DUMPING_PERIOD                  500
+DUMPING_PERIOD                  1
 FSSUGRVISC                      No
+SUBGRID_DISSIPATION             Yes
 ---------------------------------------------FLUID DYNAMIC/SUBGRID VISCOSITY
 C_SMAGORINSKY                   0.0555555555555556
 C_TURBPRANDTL                   0.9
@@ -88,7 +89,7 @@ CSGS_PHI                        0.15
 C_DIFF                          0.1
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SCATRATYPE                      TurbulentPassiveScalar
+SCATRATYPE                      ConvectionDiffusion
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      -1
