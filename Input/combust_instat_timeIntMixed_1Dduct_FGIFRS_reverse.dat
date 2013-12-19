@@ -60,11 +60,6 @@ XFEMINTEGRATION                 Cut
 XFEMTIMEINT                     MixedSemiLagrangeExtrapolation  // SemiLagrange // DoNothing //
 XFEMTIMEINT_ENR                 Projection                      // QuasiStatic // DoNothing //
 INITSTATSOL                     Yes                             // No //
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
-REFINEMENT                      No
-REINITFUNCNO                    2
-REINITIALIZATION                None                            // Signed_Distance_Function // Function //
-REINITINTERVAL                  10
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field                      // field_by_function

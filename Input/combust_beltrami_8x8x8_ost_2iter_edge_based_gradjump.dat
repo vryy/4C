@@ -54,11 +54,6 @@ XFEMTIMEINT_ENR                 DoNothing
 INITIALFIELD                    beltrami_flow                   // INITIALFIELD field_by_function with INITFUNCNO 1 would do the same
 INITFUNCNO                      -1                              // 1 // Beltrami function
 INITSTATSOL                     No
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
-REFINEMENT                      No
-REINITFUNCNO                    2
-REINITIALIZATION                None
-REINITINTERVAL                  -1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 ADAPTCONV                       yes

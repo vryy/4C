@@ -59,11 +59,6 @@ SMOOTHED_BOUNDARY_INTEGRATION   Yes
 XFEMTIMEINT                     SemiLagrange
 XFEMTIMEINT_ENR                 Projection
 INITSTATSOL                     No
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
-REFINEMENT                      No
-REINITFUNCNO                    2
-REINITIALIZATION                None                            // Signed_Distance_Function
-REINITINTERVAL                  -1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field                      // field_by_function

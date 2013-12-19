@@ -70,12 +70,6 @@ SMOOTHGRADPHI                   smooth_grad_phi_leastsquares_3D
 //                              grad_phi_leastsquares_2Dx
 //                              grad_phi_leastsquares_2Dy
 //                              grad_phi_leastsquares_2Dz
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
-REFINEMENT                      No
-REFINEMENTLEVEL                 1
-REINITFUNCNO                    -1
-REINITIALIZATION                None
-REINITINTERVAL                  100
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field

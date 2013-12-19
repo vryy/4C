@@ -49,12 +49,10 @@ SMOOTHED_BOUNDARY_INTEGRATION   No
 SMOOTHGRADPHI                   smooth_grad_phi_none
 XFEMTIMEINT                     DoNothing
 XFEMTIMEINT_ENR                 QuasiStatic
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
-REFINEMENT                      no
-REFINEMENTLEVEL                 -1
-REINITFUNCNO                    -1
+-----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
 REINITIALIZATION                Signed_Distance_Function
 REINITINTERVAL                  10
+REINIT_INITIAL                  yes
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field

@@ -70,29 +70,11 @@ namespace COMBUST
 
   protected:
 
-    /// reinitialize G-function
-    void ReinitializeGfunc();
-
-    /// call reinitialization
-    void DoReinitialization();
-
-    /// call reinitialization (old signed distance method)
-    void ReinitializeGfuncSignedDistance();
-
-    /// overwrite Navier-Stokes velocity field (used for test cases)
-    const Teuchos::RCP<Epetra_Vector> OverwriteFluidVel();
-
     /// compute flame velocity
     const Teuchos::RCP<Epetra_Vector> ComputeFlameVel(const Teuchos::RCP<const Epetra_Vector>& velnp,
                                                       const Teuchos::RCP<const DRT::DofSet>& dofset
                                                       //const Teuchos::RCP<const Epetra_Map >& dbcmap
     );
-
-    /// compute reinit velocity for advective scheme
-    const Teuchos::RCP<Epetra_Vector> ComputeReinitVel(/*const Teuchos::RCP<Epetra_Vector>& velnp,*/
-                                                      const Teuchos::RCP<const DRT::DofSet>& dofset
-    );
-
 
     /// tests if the FGI iteration has converged
     bool NotConvergedFGI();
@@ -118,19 +100,6 @@ namespace COMBUST
     /// write output
     void Output();
 
-    /// compute volume on all processors
-    double ComputeVolume();
-
-    /// print mass conservation check on screen
-    void printMassConservationCheck(const double volume_start, const double volume_end);
-
-    /// manipulate the fluid field passed to the scatra
-    const Teuchos::RCP<const Epetra_Vector> ManipulateFluidFieldForGfunc(const Teuchos::RCP<const Epetra_Vector>& convel,
-                                                                         const Teuchos::RCP<const DRT::DofSet>& dofset);
-
-    /// correct the volume of the minus(-) domain after reinitialization
-    void CorrectVolume(const double targetvol, const double currentvol);
-
     /// Redistribute the scatra and fluid discretizations
     void Redistribute();
 
@@ -144,14 +113,6 @@ namespace COMBUST
     //
     double convtol_;
 
-    // boolean indicating time step before reinitialization
-    bool stepbeforereinit_;
-    // boolean indicating time step of reinitialization
-    bool stepreinit_;
-
-    double volume_start_;
-
-
     // velocity vector of last FG iteration step
     Teuchos::RCP<Epetra_Vector> velnpi_;
     // g-function vector of last FG iteration step
@@ -160,29 +121,9 @@ namespace COMBUST
 
     /// switch for type of combustion problem
     INPAR::COMBUST::CombustionType combusttype_;
-    /// options for reinitialization of G-function;
-    INPAR::COMBUST::ReInitialActionGfunc reinitaction_;
-    /// initial reinitialization step
-    bool reinitinitial_;
-    /// interval for reinitialization (every 'reinitinterval_' time steps)
-    int reinitinterval_;
-    /// switch for reinitialization only within a band around the interface
-    const bool reinitband_;
-    /// band width for reinitialization (maximum G-function value)
-    const double reinitbandwidth_;
-    // boolian for reinitialization output
-    const bool reinit_output_;
-    /// reinitialization acception status
-    bool reinitialization_accepted_;
-    /// volume correction after reinitialization
-    bool volcorrection_;
+
     /// the evaluation time ratio that triggers a redistribution
     double evaltimeratio_;
-
-    /// switch for replacing the velocity of nodes at a certain distance of the interface by an approximate interface velocity
-    const bool extract_interface_vel_;
-    /// number of layers around the interface with unmodified velocity
-    const int convel_layers_;
 
     /// boolean turning output to Gmsh on/off
     const bool gmshoutput_;
@@ -193,15 +134,6 @@ namespace COMBUST
 
     /// pointer to flame front holding information about interface (2D surface)
     Teuchos::RCP<COMBUST::FlameFront> flamefront_;
-
-    /// pointer to PDE based reinitializer object
-    Teuchos::RCP<COMBUST::ReinitializationPDE> reinit_pde_;
-
-    /// type how the interface is transported
-    INPAR::COMBUST::TransportVel transport_vel_;
-
-    /// func no for interface transport
-    int transport_vel_no_;
 
     /// indicate restarted problem
     bool restart_;

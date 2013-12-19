@@ -57,9 +57,6 @@ INITFUNCNO                      -1                              // 1 // Beltrami
 INITSTATSOL                     No
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      No
-REINITFUNCNO                    2
-REINITIALIZATION                None
-REINITINTERVAL                  -1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 ADAPTCONV                       yes

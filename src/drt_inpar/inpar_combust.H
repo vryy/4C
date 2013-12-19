@@ -164,13 +164,6 @@ namespace INPAR
       nitsche_error_beltrami
     };
 
-    enum TransportVel
-    {
-      transport_vel_flamevel,
-      transport_vel_convvel,
-      transport_vel_byfunct
-    };
-
   }  // namespace COMBUST
 
 }  // namespace INPAR

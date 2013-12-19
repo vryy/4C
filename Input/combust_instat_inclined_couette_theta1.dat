@@ -54,11 +54,6 @@ SMOOTHED_BOUNDARY_INTEGRATION   yes
 SMOOTHGRADPHI                   smooth_grad_phi_meanvalue
 VELOCITY_JUMP_TYPE              vel_jump_premixed_combustion
 FLUX_JUMP_TYPE                  flux_jump_premixed_combustion
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
-REFINEMENT                      No
-REINITFUNCNO                    2
-REINITIALIZATION                None
-REINITINTERVAL                  10
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field

@@ -43,21 +43,10 @@ XFEMINTEGRATION                 Cut
 XFEMTIMEINT                     SemiLagrange//DoNothing
 XFEMTIMEINT_ENR                 Projection//QuasiStatic
 XFEMTIMEINT_ENR_COMP            Standard
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
-EXTRACT_INTERFACE_VEL           No
-NUM_CONVEL_LAYERS               0
-REFINEMENT                      No
-REFINEMENTLEVEL                 -1
-REINITBAND                      No
-REINITBANDWIDTH                 1
-REINITFUNCNO                    -1
+-----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
 REINITIALIZATION                Signed_Distance_Function
 REINITINTERVAL                  5
-REINITVOLCORRECTION             No
 REINIT_INITIAL                  Yes
-REINIT_OUTPUT                   No
-TRANSPORT_VEL                   Compute_flame_vel
-TRANSPORT_VEL_FUNC              -1
 ---------------------------------------------------------------FLUID DYNAMIC
 CONVCHECK                       L_2_norm
 CONVFORM                        convective

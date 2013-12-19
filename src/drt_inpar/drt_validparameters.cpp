@@ -50,6 +50,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_ssi.H"
 #include "../drt_inpar/inpar_cavitation.H"
 #include "../drt_inpar/inpar_crack.H"
+#include "../drt_inpar/inpar_levelset.H"
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_inpar/inpar_beamcontact.H"
 
@@ -4350,23 +4351,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Stationary",
                                  "One_Step_Theta",
                                  "BDF2",
-                                 "Gen_Alpha",
-                                 "Taylor_Galerkin_2",
-                                 "Taylor_Galerkin_2_LW",
-                                 "Taylor_Galerkin_3",
-                                 "Taylor_Galerkin_4_Leapfrog",
-                                 "Taylor_Galerkin_4_onestep"
+                                 "Gen_Alpha"
                                  ),
                                tuple<int>(
                                    INPAR::SCATRA::timeint_stationary,
                                    INPAR::SCATRA::timeint_one_step_theta,
                                    INPAR::SCATRA::timeint_bdf2,
-                                   INPAR::SCATRA::timeint_gen_alpha,
-                                   INPAR::SCATRA::timeint_tg2,
-                                   INPAR::SCATRA::timeint_tg2_LW,
-                                   INPAR::SCATRA::timeint_tg3,                     //schott 05/11
-                                   INPAR::SCATRA::timeint_tg4_leapfrog,
-                                   INPAR::SCATRA::timeint_tg4_onestep
+                                   INPAR::SCATRA::timeint_gen_alpha
                                  ),
                                &scatradyn);
 
@@ -4539,7 +4530,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Elch_Laplace",
                                  "Elch_Diffcond",
                                  "LevelSet",
-                                 "TurbulentPassiveScalar",
                                  "Poroscatra",
                                  "Cardio_Monodomain"),
                                tuple<int>(
@@ -4553,7 +4543,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::SCATRA::scatratype_elch_laplace,
                                  INPAR::SCATRA::scatratype_elch_diffcond,
                                  INPAR::SCATRA::scatratype_levelset,
-                                 INPAR::SCATRA::scatratype_turbpassivesca,
                                  INPAR::SCATRA::scatratype_poro,
                                  INPAR::SCATRA::scatratype_cardio_monodomain),
                                  &scatradyn);
@@ -4891,6 +4880,209 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::ELCH::equpot_enc,
                                      INPAR::ELCH::equpot_divi),
                                     &elchdiffcondcontrol);
+
+    /*----------------------------------------------------------------------*/
+    Teuchos::ParameterList& levelsetcontrol = list->sublist(
+        "LEVEL-SET CONTROL",
+        false,
+        "control parameters for level-set problems\n");
+
+    // TODO: kann ich die nicht aus SCATRA DYN nehmen
+    IntParameter("NUMSTEP",24,"Total number of time steps",&levelsetcontrol);
+    DoubleParameter("TIMESTEP",0.1,"Time increment dt",&levelsetcontrol);
+    DoubleParameter("MAXTIME",1000.0,"Total simulation time",&levelsetcontrol);
+    IntParameter("UPRES",1,"Increment for writing solution",&levelsetcontrol);
+    IntParameter("RESTARTEVRY",1,"Increment for writing restart",&levelsetcontrol);
+
+    BoolParameter("EXTRACT_INTERFACE_VEL","No","replace computed velocity at nodes of given distance of interface by approximated interface velocity",&levelsetcontrol);
+    IntParameter("NUM_CONVEL_LAYERS",-1,"number of layers around the interface which keep their computed convective velocity",&levelsetcontrol);
+
+
+    /*----------------------------------------------------------------------*/
+    Teuchos::ParameterList& ls_reinit = levelsetcontrol.sublist("REINITIALIZATION",false,"");
+
+    setStringToIntegralParameter<int>("REINITIALIZATION","None",
+                                 "Type of reinitialization strategy for level set function",
+                                 tuple<std::string>(
+                                   "None",
+                                   "Signed_Distance_Function",
+                                   "Sussman"),
+                                 tuple<int>(
+                                   INPAR::SCATRA::reinitaction_none,
+                                   INPAR::SCATRA::reinitaction_signeddistancefunction,
+                                   INPAR::SCATRA::reinitaction_sussman),
+                                 &ls_reinit);
+
+    BoolParameter("REINIT_INITIAL","No","Has level set field to be reinitialized before first time step?",&ls_reinit);
+    IntParameter("REINITINTERVAL",1,"reinitialization interval",&ls_reinit);
+
+    // parameters for signed distance reinitialization
+    BoolParameter("REINITBAND","No","reinitialization only within a band around the interface, or entire domain?",&ls_reinit);
+    DoubleParameter("REINITBANDWIDTH",1.0,"level-set value defining band width for reinitialization",&ls_reinit);
+
+    // parameters for reinitialization equation
+    IntParameter("NUMSTEPSREINIT",1,"(maximal) number of pseudo-time steps",&ls_reinit);
+    // this parameter selects the tau definition applied
+    setStringToIntegralParameter<int>("LINEARIZATIONREINIT",
+                                 "fixed_point",
+                                 "linearization of reinitialization equation",
+                                 tuple<std::string>(
+                                   "newton",
+                                   "fixed_point"),
+                                  tuple<int>(
+                                      INPAR::SCATRA::newton,
+                                      INPAR::SCATRA::fixed_point),
+                                 &ls_reinit);
+    DoubleParameter("TIMESTEPREINIT",1.0,"pseudo-time step length (usually a * characteristic element length of discretization with a>0)",&ls_reinit);
+    DoubleParameter("THETAREINIT",1.0,"theta for time discretization of reinitialization equation",&ls_reinit);
+    setStringToIntegralParameter<int>("STABTYPEREINIT",
+                                      "SUPG",
+                                      "type of stabilization (if any)",
+                                 tuple<std::string>(
+                                   "no_stabilization",
+                                   "SUPG",
+                                   "GLS",
+                                   "USFEM"),
+                                 tuple<std::string>(
+                                   "Do not use any stabilization -> only reasonable for low-Peclet-number flows",
+                                   "Use SUPG",
+                                   "Use GLS",
+                                   "Use USFEM")  ,
+                                 tuple<int>(
+                                     INPAR::SCATRA::stabtype_no_stabilization,
+                                     INPAR::SCATRA::stabtype_SUPG,
+                                     INPAR::SCATRA::stabtype_GLS,
+                                     INPAR::SCATRA::stabtype_USFEM),
+                                 &ls_reinit);
+    // this parameter selects the tau definition applied
+    setStringToIntegralParameter<int>("DEFINITION_TAU_REINIT",
+                                 "Taylor_Hughes_Zarins",
+                                 "Definition of tau",
+                                 tuple<std::string>(
+                                   "Taylor_Hughes_Zarins",
+                                   "Taylor_Hughes_Zarins_wo_dt",
+                                   "Franca_Valentin",
+                                   "Franca_Valentin_wo_dt",
+                                   "Shakib_Hughes_Codina",
+                                   "Shakib_Hughes_Codina_wo_dt",
+                                   "Codina",
+                                   "Codina_wo_dt",
+                                   "Exact_1D",
+                                   "Zero"),
+                                  tuple<int>(
+                                      INPAR::SCATRA::tau_taylor_hughes_zarins,
+                                      INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt,
+                                      INPAR::SCATRA::tau_franca_valentin,
+                                      INPAR::SCATRA::tau_franca_valentin_wo_dt,
+                                      INPAR::SCATRA::tau_shakib_hughes_codina,
+                                      INPAR::SCATRA::tau_shakib_hughes_codina_wo_dt,
+                                      INPAR::SCATRA::tau_codina,
+                                      INPAR::SCATRA::tau_codina_wo_dt,
+                                      INPAR::SCATRA::tau_exact_1d,
+                                      INPAR::SCATRA::tau_zero),
+                                 &ls_reinit);
+    // this parameter governs whether all-scale subgrid diffusivity is included
+    setStringToIntegralParameter<int>("ARTDIFFREINIT",
+                                 "no",
+                                 "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) term",
+                                 tuple<std::string>(
+                                   "no",
+                                   "isotropic",
+                                   "crosswind"),
+                                 tuple<std::string>(
+                                   "no artificial diffusion",
+                                   "homogeneous artificial diffusion",
+                                   "artificial diffusion in crosswind directions only")  ,
+                                  tuple<int>(
+                                      INPAR::SCATRA::artdiff_none,
+                                      INPAR::SCATRA::artdiff_isotropic,
+                                      INPAR::SCATRA::artdiff_crosswind),
+                                 &ls_reinit);
+    // this parameter selects the all-scale subgrid-diffusivity definition applied
+    setStringToIntegralParameter<int>("DEFINITION_ARTDIFFREINIT",
+                                 "artificial_linear",
+                                 "Definition of (all-scale) subgrid diffusivity",
+                                 tuple<std::string>(
+                                   "artificial_linear",
+                                   "Hughes_etal_86_nonlinear",
+                                   "Tezduyar_Park_86_nonlinear",
+                                   "Tezduyar_Park_86_nonlinear_wo_phizero",
+                                   "doCarmo_Galeao_91_nonlinear",
+                                   "Almeida_Silva_97_nonlinear",
+                                   "YZbeta_nonlinear",
+                                   "Codina_nonlinear"),
+                                 tuple<std::string>(
+                                   "simple linear artificial diffusion const*h",
+                                   "nonlinear isotropic according to Hughes et al. (1986)",
+                                   "nonlinear isotropic according to Tezduyar and Park (1986)",
+                                   "nonlinear isotropic according to Tezduyar and Park (1986) without user parameter phi_zero",
+                                   "nonlinear isotropic according to doCarmo and Galeao (1991)",
+                                   "nonlinear isotropic according to Almeida and Silva (1997)",
+                                   "nonlinear YZ beta model",
+                                   "nonlinear isotropic according to Codina")  ,
+                                  tuple<int>(
+                                      INPAR::SCATRA::assgd_lin_reinit,
+                                      INPAR::SCATRA::assgd_hughes,
+                                      INPAR::SCATRA::assgd_tezduyar,
+                                      INPAR::SCATRA::assgd_tezduyar_wo_phizero,
+                                      INPAR::SCATRA::assgd_docarmo,
+                                      INPAR::SCATRA::assgd_almeida,
+                                      INPAR::SCATRA::assgd_yzbeta,
+                                      INPAR::SCATRA::assgd_codina),
+                                 &ls_reinit);
+    setStringToIntegralParameter<int>("SMOOTHED_SIGN_TYPE",
+                                      "SussmanSmerekaOsher1994",
+                                      "sign function for reinitialization equation",
+                                      tuple<std::string>(
+                                      "NonSmoothed",
+                                      "SussmanFatemi1999", // smeared-out Heaviside function
+                                      "SussmanSmerekaOsher1994",
+                                      "PengEtAl1999"),
+                                      tuple<int>(
+                                      INPAR::SCATRA::signtype_nonsmoothed,
+                                      INPAR::SCATRA::signtype_SussmanFatemi1999,
+                                      INPAR::SCATRA::signtype_SussmanSmerekaOsher1994,
+                                      INPAR::SCATRA::signtype_PengEtAl1999),
+                                      &ls_reinit);
+    setStringToIntegralParameter<int>("CHARELELENGTHREINIT",
+                                          "root_of_volume",
+                                          "characteristic element length for sign function",
+                                          tuple<std::string>(
+                                          "root_of_volume",
+                                          "streamlength"),
+                                          tuple<int>(
+                                          INPAR::SCATRA::root_of_volume_reinit,
+                                          INPAR::SCATRA::streamlength_reinit),
+                                          &ls_reinit);
+    DoubleParameter("INTERFACE_THICKNESS", 1.0, "factor for interface thickness (multiplied by element length)", &ls_reinit);
+    setStringToIntegralParameter<int>("VELREINIT",
+                                          "integration_point_based",
+                                          "evaluate velocity at integration point or compute node-based velocity",
+                                          tuple<std::string>(
+                                          "integration_point_based",
+                                          "node_based"),
+                                          tuple<int>(
+                                          INPAR::SCATRA::vel_reinit_integration_point_based,
+                                          INPAR::SCATRA::vel_reinit_node_based),
+                                          &ls_reinit);
+    setStringToIntegralParameter<int>("LINEARIZATIONREINIT",
+                                              "newton",
+                                              "linearization scheme for nonlinear convective term of reinitalization equation",
+                                              tuple<std::string>(
+                                              "newton",
+                                              "fixed_point"),
+                                              tuple<int>(
+                                              INPAR::SCATRA::newton,
+                                              INPAR::SCATRA::fixed_point),
+                                              &ls_reinit);
+    BoolParameter("CORRECTOR_STEP", "yes", "correction of interface position via volume constraint according to Sussman & Fatemi", &ls_reinit);
+
+    BoolParameter("REINITVOLCORRECTION","No","volume correction after reinitialization",&ls_reinit);
+
+    /*----------------------------------------------------------------------*/
+    Teuchos::ParameterList& ls_particle = levelsetcontrol.sublist("PARTICLE",false,"");
+
+    BoolParameter("INCLUDE_PARTICLE","No","Activate a hybrid particle-level-set method",&ls_particle);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& biofilmcontrol = list->sublist(
@@ -5328,75 +5520,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,
       "control parameters for the G-function (level set) field of a combustion problem");
 
-  setStringToIntegralParameter<int>("REINITIALIZATION","Signed_Distance_Function",
-                               "Type of reinitialization strategy for level set function",
-                               tuple<std::string>(
-                                 "None",
-                                 "Function",
-                                 "Signed_Distance_Function",
-                                 "Fast_Signed_Distance_Function",
-                                 "Sussman"),
-                               tuple<int>(
-                                 INPAR::COMBUST::reinitaction_none,
-                                 INPAR::COMBUST::reinitaction_byfunction,
-                                 INPAR::COMBUST::reinitaction_signeddistancefunction,
-                                 INPAR::COMBUST::reinitaction_fastsigneddistancefunction,
-                                 INPAR::COMBUST::reinitaction_sussman),
-                               &combustcontrolgfunc);
-
-  BoolParameter("REINIT_INITIAL","Yes","Has to level set field to be reinitialized before first time step?",&combustcontrolgfunc);
-
-  BoolParameter("REINIT_OUTPUT","No","gmsh output for reinitialized pseudo timesteps?",&combustcontrolgfunc);
-  IntParameter("REINITFUNCNO",-1,"function number for reinitialization of level set (G-function) field",&combustcontrolgfunc);
-  IntParameter("REINITINTERVAL",1,"reinitialization interval",&combustcontrolgfunc);
-  BoolParameter("REINITBAND","No","reinitialization only within a band around the interface, or entire domain?",&combustcontrolgfunc);
-  DoubleParameter("REINITBANDWIDTH",1.0,"G-function value defining band width for reinitialization",&combustcontrolgfunc);
-  BoolParameter("REINITVOLCORRECTION","No","volume correction after reinitialization",&combustcontrolgfunc);
-
-  setStringToIntegralParameter<int>("TRANSPORT_VEL","Compute_flame_vel",
-                               "Type of reinitialization strategy for level set function",
-                               tuple<std::string>(
-                                 "Compute_flame_vel",
-                                 "Convective_vel",
-                                 "Vel_by_funct"),
-                               tuple<int>(
-                                 INPAR::COMBUST::transport_vel_flamevel,
-                                 INPAR::COMBUST::transport_vel_convvel,
-                                 INPAR::COMBUST::transport_vel_byfunct),
-                               &combustcontrolgfunc);
-
-  IntParameter("TRANSPORT_VEL_FUNC",-1,"number of function to overwrite the transport velocity",&combustcontrolgfunc);
-
   setStringToIntegralParameter<int>("REFINEMENT","No","Turn refinement strategy for level set function on/off",
                                      yesnotuple,yesnovalue,&combustcontrolgfunc);
   IntParameter("REFINEMENTLEVEL",-1,"number of refinement level for refinement strategy",&combustcontrolgfunc);
 
-  BoolParameter("EXTRACT_INTERFACE_VEL","No","replace computed velocity at nodes of given distance of interface by approximated interface velocity",&combustcontrolgfunc);
-  IntParameter("NUM_CONVEL_LAYERS",0,"number of layers around the interface which keep their computed convective velocity",&combustcontrolgfunc);
-
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolpdereinit = combustcontrol.sublist("COMBUSTION PDE REINITIALIZATION",false,"");
 
-  setStringToIntegralParameter<int>("REINIT_METHOD", "PDE_Based_Characteristic_Galerkin",
-                                 "Type of reinitialization method",
-                                 tuple<std::string>(
-                                  "PDE_Based_Characteristic_Galerkin",
-                                  "PDE_Based_Linear_Convection",
-                                  "None"),
-                                tuple<int>(
-                                  INPAR::SCATRA::reinitstrategy_pdebased_characteristic_galerkin,
-                                  INPAR::SCATRA::reinitstrategy_pdebased_linear_convection,
-                                  INPAR::SCATRA::reinitstrategy_none),
-                                  &combustcontrolpdereinit);
-
-  setStringToIntegralParameter<int>("REINIT_TIMEINTEGR","Taylor_Galerkin_2",
+  setStringToIntegralParameter<int>("REINIT_TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme for PDE-based reinitialization",
                                tuple<std::string>(
-                                 "Taylor_Galerkin_2",
                                  "One_Step_Theta"
                                  ),
                                tuple<int>(
-                                   INPAR::SCATRA::timeint_tg2,
                                    INPAR::SCATRA::timeint_one_step_theta
                                  ),
                                &combustcontrolpdereinit);
@@ -5409,20 +5545,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 tuple<int>(
                                   INPAR::SCATRA::reinit_stationarycheck_L1normintegrated,
                                   INPAR::SCATRA::reinit_stationarycheck_numsteps),
-                                  &combustcontrolpdereinit);
-
-  setStringToIntegralParameter<int>("SMOOTHED_SIGN_TYPE", "LinEtAl2005",
-                                 "Type of check for stationary solution",
-                                 tuple<std::string>(
-                                  "NonSmoothed",
-                                  "Nagrath2005",
-                                  "LinEtAl2005",
-                                  "LinEtAl_Normalized"),
-                                tuple<int>(
-                                  INPAR::SCATRA::signtype_nonsmoothed,
-                                  INPAR::SCATRA::signtype_Nagrath2005,
-                                  INPAR::SCATRA::signtype_LinEtAl2005,
-                                  INPAR::SCATRA::signtype_LinEtAl_normalized),
                                   &combustcontrolpdereinit);
 
   setStringToIntegralParameter<int>("PENALTY_METHOD", "None",

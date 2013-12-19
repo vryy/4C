@@ -76,25 +76,6 @@ SMOOTHGRADPHI                   smooth_grad_phi_l2_projection
 L2_PROJECTION_SECOND_DERIVATIVES yes //no
 NODAL_CURVATURE                  l2_projected //averaged //l2_projected
 SMOOTHING_PARAMETER              0.0 //0.0001
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
-REFINEMENT                      no
-REFINEMENTLEVEL                 -1
-REINITFUNCNO                    -1
-REINITIALIZATION                None //Sussman//Fast_Signed_Distance_Function //None
-REINITINTERVAL                  100
-REINIT_INITIAL                  yes
---------------------------COMBUSTION CONTROL/COMBUSTION PDE REINITIALIZATION
-REINIT_METHOD                   PDE_Based_Characteristic_Galerkin//None/
-REINIT_TIMEINTEGR               Taylor_Galerkin_2 //One_Step_Theta //Taylor_Galerkin_2
-STATIONARY_CHECK                Num_Steps//Integrated_L1_Norm// Num_Steps//Integrated_L1_Norm//Num_Steps //Integrated_L1_Norm// Num_Steps
-NUMPSEUDOSTEPS                  5 ////10
-PSEUDOTIMESTEP_FACTOR           0.3 // bis 0.9
-PENALTY_METHOD                  Akkerman//Akkerman//Insection_Points // Akkerman // None
-PENALTY_INTERFACE               100//1000//20//20
-SHOCK_CAPTURING                 No//Yes                         // No
-SHOCK_CAPTURING_DIFFUSIVITY     1e-001//1e-003
-EPSILON_BANDWIDTH               1.0
-SMOOTHED_SIGN_TYPE              Nagrath2005 //LinEtAl_Normalized //LinEtAl2005// LinEtAl_Normalized //Nagrath2005 //NonSmoothed //
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field

@@ -1,0 +1,818 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file levelset_algorithm_utils.cpp
+
+\brief base level-set algorithm: collection of useful helper functions
+
+    detailed description in header file levelset_algorithm.H
+
+<pre>
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+ *------------------------------------------------------------------------------------------------*/
+
+
+#include "levelset_algorithm.H"
+#include "levelset_intersection_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
+#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_xfem/xfem_utils.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
+
+
+/*----------------------------------------------------------------------*
+ | set convective velocity field (+ pressure and acceleration field as  |
+ | well as fine-scale velocity field, if required)      rasthofer 11/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::SetVelocityField(
+  Teuchos::RCP<const Epetra_Vector> convvel,
+  Teuchos::RCP<const Epetra_Vector> acc,
+  Teuchos::RCP<const Epetra_Vector> vel,
+  Teuchos::RCP<const Epetra_Vector> fsvel,
+  Teuchos::RCP<const DRT::DofSet>   dofset,
+  Teuchos::RCP<DRT::Discretization> dis)
+{
+  // call routine of base class
+  ScaTraTimIntImpl::SetVelocityField(convvel, acc, vel, fsvel, dofset, dis);
+
+  // manipulate velocity field away from the interface
+  if (convel_layers_ > 0)
+    ManipulateFluidFieldForGfunc();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | add problem depended params for AssembleMatAndRHS    rasthofer 09/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params)
+{
+  // set only special parameters of the solution of the reinitialization equation
+  // otherwise we take the standard parameters only
+  if (switchreinit_)
+  {
+    // action for elements
+    params.set<bool>("solve reinit eq",true);
+
+    // set initial phi, i.e., solution of level-set equation
+    discret_->SetState("phizero", initialphireinit_);
+    // TODO: RM if not needed
+    discret_->SetState("phin", phin_);
+    
+#ifndef USE_PHIN_FOR_VEL
+  if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
+    CalcNodeBasedReinitVel();
+#endif
+
+    // add nodal velocity field, if required
+    if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
+      AddMultiVectorToParameterList(params,"reinitialization velocity field",reinitvel_);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | add problem depended params for CalcInitalPhiDt      rasthofer 09/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectorsForCalcInitialPhiDt(Teuchos::ParameterList& params)
+{
+    AddProblemSpecificParametersAndVectors(params);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | capture interface                                    rasthofer 09/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::CaptureInterface(
+  std::map<int,GEO::BoundaryIntCells >& interface,
+  const bool writetofile)
+{
+  double volminus = 0.0;
+  double volplus = 0.0;
+  double surf = 0.0;
+  // reconstruct interface and calculate volumes, etc ...
+  SCATRA::CaptureZeroLevelSet(phinp_,discret_,volminus,volplus,surf,interface);
+
+  // do mass conservation check
+  MassConservationCheck(volminus,writetofile);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | mass conservation check                              rasthofer 09/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::MassConservationCheck(
+  const double actvolminus,
+  const bool writetofile)
+{
+  if (myrank_ == 0)
+  {
+    // compute mass loss
+    if (initvolminus_ != 0.0)
+    {
+
+      double massloss = -(initvolminus_ - actvolminus) / initvolminus_ *100.0;
+      // 'isnan' seems to work not reliably; error occurs in line above
+      if (std::isnan(massloss))
+        dserror("NaN detected in mass conservation check");
+
+      IO::cout << "---------------------------------------" << IO::endl;
+      IO::cout << "           mass conservation"            << IO::endl;
+      IO::cout << " initial mass: " << initvolminus_ << IO::endl;
+      IO::cout << " final mass:   " << actvolminus   << IO::endl;
+      IO::cout << " mass loss:    " << massloss << "%" << IO::endl;
+      IO::cout << "---------------------------------------" << IO::endl;
+
+      if (writetofile)
+      {
+        std::ostringstream temp;
+        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string fname = simulation+"_massconservation.relerror";
+
+        if (step_==0)
+        {
+          std::ofstream f;
+          f.open(fname.c_str());
+          f << "#| Step | Time | mass loss w.r.t. minus domain |\n";
+          f << "  "<< std::setw(2) << std::setprecision(10) << step_ << "    " << std::setw(3)<< std::setprecision(5)
+            << time_ << std::setw(8) << std::setprecision(10) << "    "
+            << massloss << " "<<"\n";
+
+          f.flush();
+          f.close();
+        }
+        else
+        {
+          std::ofstream f;
+          f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+          f << "  "<< std::setw(2) << std::setprecision(10) << step_ << "    " << std::setw(3)<< std::setprecision(5)
+          << time_ << std::setw(8) << std::setprecision(10) << "    "
+          << massloss << " "<<"\n";
+
+          f.flush();
+          f.close();
+        }
+      }
+    }
+    else
+    {
+      if (step_>0)
+        IO::cout << " there is no 'minus domain'! -> division by zero checking mass conservation" << IO::endl;
+    }
+  }
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | manipulate velocity field away from the interface                              rasthofer 08/11 |
+ |                                                                                    DA wichmann |
+ *------------------------------------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
+{
+  // idea: Velocity field at no-slip walls is zero fixing the level-set contours here.
+  //       This may result in strong deformations of the level-set field, which may then
+  //       convect into the domain crashing the level-set algorithm.
+  //       There for the convective velocity field around the interface is extended to the wall.
+  if (myrank_ == 0)
+    IO::cout << "--- extension of flow field in interface region to entire domain" << IO::endl;
+
+  // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
+  // remark: operations must not be performed on 'convel', because the vector is accessed by both
+  //         master and slave nodes, if periodic bounday conditions are present
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  Teuchos::RCP<Epetra_MultiVector> conveltmp = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+
+  const int numproc  = discret_->Comm().NumProc();
+  int allproc[numproc];
+  for (int i = 0; i < numproc; ++i)
+    allproc[i] = i;
+
+  //--------------------------------------------------------------------------------------------------
+  // due to the PBCs we need to get some info here in order to properly handle it later
+  //--------------------------------------------------------------------------------------------------
+
+  // get the following information about the pbc
+  // - planenormaldirection e.g. (1,0,0)
+  // - minimum in planenormaldirection
+  // - maximum in planenormaldirection
+  std::vector<DRT::Condition*>* surfacepbcs = pbc_->ReturnSurfacePBCs();
+  std::vector<int>    planenormal(0);
+  std::vector<double> globalmins (0);
+  std::vector<double> globalmaxs (0);
+  for (size_t i = 0; i < surfacepbcs->size(); ++i)
+  {
+    const std::string* ismaster = (*surfacepbcs)[i]->Get<std::string>("Is slave periodic boundary condition");
+    if (*ismaster == "Master")
+    {
+      const int masterid = (*surfacepbcs)[i]->GetInt("Id of periodic boundary condition");
+      std::vector<int> nodeids(*((*surfacepbcs)[i]->Nodes()));
+      for (size_t j = 0; j < surfacepbcs->size(); ++j)
+      {
+        const int slaveid = (*surfacepbcs)[j]->GetInt("Id of periodic boundary condition");
+        if (masterid == slaveid)
+        {
+          const std::string* isslave = (*surfacepbcs)[j]->Get<std::string>("Is slave periodic boundary condition");
+          if (*isslave == "Slave")
+          {
+            const std::vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
+            // append slave node Ids to node Ids for the complete condition
+            for (size_t k = 0; k < slavenodeids->size(); ++k)
+             nodeids.push_back(slavenodeids->at(k));
+          }
+        }
+      }
+
+      // Get normal direction of pbc plane
+      const std::string* pbcplane = (*surfacepbcs)[i]->Get<std::string>("degrees of freedom for the pbc plane");
+      if (*pbcplane == "yz")
+        planenormal.push_back(0);
+      else if (*pbcplane == "xz")
+        planenormal.push_back(1);
+      else if (*pbcplane == "xy")
+        planenormal.push_back(2);
+      else
+        dserror("A PBC condition could not provide a plane normal.");
+
+      double min = +10e19;
+      double max = -10e19;
+      for (size_t j = 0; j < nodeids.size(); ++j)
+      {
+
+        const int gid = nodeids[j];
+        const int lid = discret_->NodeRowMap()->LID(gid);
+        if (lid < 0)
+          continue;
+        const DRT::Node* lnode = discret_->lRowNode(lid);
+        const double* coord = lnode->X();
+        if (coord[planenormal.back()] < min)
+          min = coord[planenormal.back()];
+        if (coord[planenormal.back()] > max)
+         max = coord[planenormal.back()];
+      }
+      globalmins.resize(planenormal.size());
+      globalmaxs.resize(planenormal.size());
+      discret_->Comm().MinAll(&min, &(globalmins.back()), 1);
+      discret_->Comm().MaxAll(&max, &(globalmaxs.back()), 1);
+    }
+  }//end loop over all surfacepbcs
+
+
+  // these sets contain the element/node GIDs that have been collected
+  Teuchos::RCP<std::set<int> > allcollectednodes    = Teuchos::rcp(new std::set<int>);
+  Teuchos::RCP<std::set<int> > allcollectedelements = Teuchos::rcp(new std::set<int>);
+
+  // export phinp to column map
+  const Teuchos::RCP<Epetra_Vector> phinpcol = Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap()));
+  LINALG::Export(*phinp_,*phinpcol);
+
+  // this loop determines how many layers around the cut elements will be collected
+  for (int loopcounter = 0; loopcounter < convel_layers_; ++loopcounter)
+  {
+    if (loopcounter == 0)
+    {
+      //-------------------------------------------------------------------------------------------------
+      // loop over row elements an check whether it has positive and negative phi-values. If it does
+      // add the element to the allcollectedelements set.
+      //-------------------------------------------------------------------------------------------------
+        for(int lroweleid=0; lroweleid < discret_->NumMyRowElements(); lroweleid++)
+         {
+           DRT::Element* ele = discret_->lRowElement(lroweleid);
+           const int* nodeids = ele->NodeIds();
+           bool gotpositivephi = false;
+           bool gotnegativephi = false;
+
+           for(int inode = 0; inode < ele->NumNode(); ++inode)
+           {
+             const int nodegid = nodeids[inode];
+             const int nodelid = phinpcol->Map().LID(nodegid);
+             if (nodelid < 0)
+               dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",myrank_,nodegid);
+
+             if (XFEM::plusDomain((*phinpcol)[nodelid]) == false)
+               gotnegativephi = true;
+             else
+               gotpositivephi = true;
+           }
+
+           if (gotpositivephi and gotnegativephi)
+             allcollectedelements->insert(ele->Id());
+         }
+    }
+    else
+    {
+      //------------------------------------------------------------------------------------------
+      // now, that we have collected all row nodes for this proc. Its time to get the adjacent elements
+      //------------------------------------------------------------------------------------------
+      std::set<int>::const_iterator nodeit;
+      for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
+      {
+        const int nodelid       = discret_->NodeRowMap()->LID(*nodeit);
+        DRT::Node* node         = discret_->lRowNode(nodelid);
+        DRT::Element** elements = node->Elements();
+        for (int iele = 0; iele < node->NumElement(); ++iele)
+        {
+          DRT::Element* ele     = elements[iele];
+          allcollectedelements->insert(ele->Id());
+        }
+      } // loop over elements
+    }
+
+    //------------------------------------------------------------------------------------------------
+    // now that we have collected all elements on this proc, its time to get the adjacent nodes.
+    // Afterwards the nodes are communicated in order to obtain the collected row nodes on every proc.
+    //------------------------------------------------------------------------------------------------
+    std::set<int>::const_iterator eleit;
+    for (eleit = allcollectedelements->begin(); eleit != allcollectedelements->end(); ++eleit)
+    {
+      const int elelid  = discret_->ElementColMap()->LID(*eleit);
+      DRT::Element* ele = discret_->lColElement(elelid);
+      DRT::Node** nodes = ele->Nodes();
+      for (int inode = 0; inode < ele->NumNode(); ++inode)
+      {
+        DRT::Node* node = nodes[inode];
+
+        // now check whether we have a pbc condition on this node
+        std::vector<DRT::Condition*> mypbc;
+        node->GetCondition("SurfacePeriodic",mypbc);
+
+        if (mypbc.size() == 0)
+        {
+          allcollectednodes->insert(node->Id());
+        }
+        else
+        {
+          // obtain a vector of master and slaves
+          const int nodeid = node->Id();
+          std::vector<int> pbcnodes;
+          for (size_t numcond=0; numcond<mypbc.size(); ++numcond)
+          {
+            std::map<int,std::vector<int> >::iterator mapit;
+            for (mapit = pbcmapmastertoslave_->begin(); mapit != pbcmapmastertoslave_->end(); ++mapit)
+            {
+              if (mapit->first == nodeid)
+              {
+                pbcnodes.push_back(mapit->first);
+                for (size_t i = 0; i < mapit->second.size(); ++i)
+                  pbcnodes.push_back(mapit->second[i]);
+                break;
+              }
+              for (size_t isec = 0; isec < mapit->second.size(); ++isec)
+              {
+                if (mapit->second[isec] == nodeid)
+                {
+                  pbcnodes.push_back(mapit->first);
+                  for (size_t i = 0; i < mapit->second.size(); ++i)
+                    pbcnodes.push_back(mapit->second[i]);
+                  break;
+                }
+              }
+            }
+          }
+
+          for (size_t i = 0; i < pbcnodes.size(); ++i)
+            allcollectednodes->insert(pbcnodes[i]);
+        }
+      } // loop over elements' nodes
+    } // loop over elements
+
+    // with all nodes collected it is time to communicate them to all other procs
+    // which then eliminate all but their row nodes
+    {
+      Teuchos::RCP<std::set<int> > globalcollectednodes = Teuchos::rcp(new std::set<int>);
+      LINALG::Gather<int>(*allcollectednodes,*globalcollectednodes,numproc,allproc,discret_->Comm());
+
+      allcollectednodes->clear();
+      std::set<int>::const_iterator gnodesit;
+      for (gnodesit = globalcollectednodes->begin(); gnodesit != globalcollectednodes->end(); ++gnodesit)
+      {
+        const int nodegid = (*gnodesit);
+        const int nodelid = discret_->NodeRowMap()->LID(nodegid);
+        if (nodelid >= 0)
+          allcollectednodes->insert(nodegid);
+      }
+    }
+  } // loop over layers of elements
+
+  //-----------------------------------------------------------------------------------------------
+  // If a node does not have 8 elements in the allcollected elements it must be a the surface
+  // and therefore gets added to the surfacenodes set. This set is redundantly available and
+  // mereley knows a node's position and velocities
+  //-----------------------------------------------------------------------------------------------
+  Teuchos::RCP<std::vector<LINALG::Matrix<3,2> > > surfacenodes = Teuchos::rcp(new std::vector<LINALG::Matrix<3,2> >);
+
+  std::set<int>::const_iterator nodeit;
+  for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
+  {
+    const int nodelid   = discret_->NodeRowMap()->LID(*nodeit);
+    DRT::Node* node     = discret_->lRowNode(nodelid);
+    DRT::Element** eles = node->Elements();
+    int elementcount    = 0;
+    for (int iele = 0; iele < node->NumElement(); ++iele)
+    {
+      DRT::Element* ele = eles[iele];
+      std::set<int>::const_iterator foundit = allcollectedelements->find(ele->Id());
+      if (foundit != allcollectedelements->end())
+        elementcount++;
+    }
+
+    if (elementcount < 8)
+    {
+      LINALG::Matrix<3,2> coordandvel;
+      const double* coord = node->X();
+      for (int i = 0; i < 3; ++i)
+      {
+        coordandvel(i,0) = coord[i];
+        coordandvel(i,1) = (*((*convel_)(i)))[nodelid];
+      }
+      surfacenodes->push_back(coordandvel);
+    }
+  }
+
+  // Now the surfacenodes must be gathered to all procs
+  {
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,2> > > mysurfacenodes = surfacenodes;
+    surfacenodes = Teuchos::rcp(new std::vector<LINALG::Matrix<3,2> >);
+
+    LINALG::Gather<LINALG::Matrix<3,2> >(*mysurfacenodes,*surfacenodes,numproc,allproc,discret_->Comm());
+  }
+
+  //----------------------------------------------------------------------------------------------
+  // Here we manipulate the velocity vector. If a node is not in allnodes we find the nearest node
+  // in surface nodes and use its velocity instead.
+  //----------------------------------------------------------------------------------------------
+  for(int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
+  {
+    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+    LINALG::Matrix<3,1> fluidvel(true);
+
+    // extract velocity values (no pressure!) from global velocity vector
+    for (int i = 0; i < 3; ++i)
+    {
+      fluidvel(i) = (*((*convel_)(i)))[lnodeid];
+    }
+
+    std::set<int>::const_iterator foundit = allcollectednodes->find(lnode->Id());
+    if (foundit == allcollectednodes->end())
+    {
+      // find closest node in surfacenodes
+      LINALG::Matrix<3,2> closestnodedata(true);
+      {
+        LINALG::Matrix<3,1> nodecoord;
+        const double* coord = lnode->X();
+        for (int i = 0; i < 3; ++i)
+          nodecoord(i) = coord[i];
+        double mindist = 1.0e19;
+
+        //--------------------------------
+        // due to the PBCs the node might actually be closer to the
+        // surfacenodes then would be calculated if one only considered
+        // the actual position of the node. In order to find the
+        // smallest distance the node is copied along all PBC directions
+        //
+        //   +------------------+ - - - - - - - - - -+
+        //   +             II   +
+        //   +   x        I  I  +    y               +
+        //   +             II   +
+        //   +------------------+ - - - - - - - - - -+
+        //         original           copy
+        //
+        //   x: current node
+        //   y: copy of current node
+        //   I: interface
+        //   +: pbc
+
+        if (planenormal.size() > 3)
+          dserror("Sorry, but currently a maximum of three periodic boundary conditions are supported by the combustion reinitializer.");
+
+        // since there is no stl pow(INT, INT) function, we calculate it manually
+        size_t looplimit = 1;
+        for (size_t i = 0; i < planenormal.size(); ++i)
+          looplimit *= 2;
+
+        for (size_t ipbc = 0; ipbc < looplimit; ++ipbc)
+        {
+          LINALG::Matrix<3,1> tmpcoord(nodecoord);
+
+          // determine which pbcs have to be applied
+          //
+          // loopcounter | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+          // ------------+---+---+---+---+---+---+---+---+
+          //  first PBC  |     x       x       x       x
+          // second PBC  |         x   x           x   x
+          //  third PBC  |                 x   x   x   x
+          //
+          // this is equivalent to the binary representation
+          // of the size_t
+          if (ipbc & 0x01)
+          {
+            const double pbclength = globalmaxs[0] - globalmins[0];
+            if (nodecoord(planenormal[0]) > globalmins[0] + pbclength/2.0)
+              tmpcoord(planenormal[0]) = nodecoord(planenormal[0]) - pbclength;
+            else
+              tmpcoord(planenormal[0]) = nodecoord(planenormal[0]) + pbclength;
+          }
+          if (ipbc & 0x02)
+          {
+            const double pbclength = globalmaxs[1] - globalmins[1];
+            if (nodecoord(planenormal[1]) > globalmins[1] + pbclength/2.0)
+              tmpcoord(planenormal[1]) = nodecoord(planenormal[1]) - pbclength;
+            else
+              tmpcoord(planenormal[1]) = nodecoord(planenormal[1]) + pbclength;
+          }
+          if (ipbc & 0x04)
+          {
+            const double pbclength = globalmaxs[2] - globalmins[2];
+            if (nodecoord(planenormal[2]) > globalmins[2] + pbclength/2.0)
+              tmpcoord(planenormal[2]) = nodecoord(planenormal[2]) - pbclength;
+            else
+              tmpcoord(planenormal[2]) = nodecoord(planenormal[2]) + pbclength;
+          }
+
+          for (size_t i = 0; i < surfacenodes->size(); ++i)
+          {
+            const double dist = sqrt((tmpcoord(0)-(*surfacenodes)[i](0,0))*(tmpcoord(0)-(*surfacenodes)[i](0,0)) + (tmpcoord(1)-(*surfacenodes)[i](1,0))*(tmpcoord(1)-(*surfacenodes)[i](1,0)) + (tmpcoord(2)-(*surfacenodes)[i](2,0))*(tmpcoord(2)-(*surfacenodes)[i](2,0)));
+            if (dist < mindist)
+            {
+              mindist = dist;
+              closestnodedata = (*surfacenodes)[i];
+            }
+          }
+        }
+      }
+
+      // write new velocities to the current node's dofs
+      for (int icomp=0; icomp<3; ++icomp)
+      {
+        const int err = conveltmp->ReplaceMyValue (lnodeid, icomp, closestnodedata(icomp,1));
+        if (err)
+          dserror("could not replace values for convective velocity");
+      }
+    }
+    else
+    {
+      for (int icomp=0; icomp<3; ++icomp)
+      {
+        const int err = conveltmp->ReplaceMyValue (lnodeid, icomp, fluidvel(icomp));
+        if (err)
+          dserror("could not replace values for convective velocity");
+      }
+    }
+  }
+
+  // update velocity vector
+  convel_->Update(1.0,*conveltmp,0.0);
+  vel_->Update(1.0,*conveltmp,0.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------------*
+ | Redistribute the scatra discretization and vectors         rasthofer 07/11 |
+ | according to nodegraph according to nodegraph              DA wichmann     |
+ *----------------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
+{
+  //TODO: works if and only if discretization has already been redistributed
+  //      change this and use unused nodegraph
+  //TODO: does not work for gen-alpha, since time-integration dependent vectors have
+  //      to be redistributed, too
+#if 0
+    /*--------------------------------------------------------------------------------------------*
+     | Redistribute the scatra discretization and vectors according to nodegraph   wichmann 02/12 |
+     *--------------------------------------------------------------------------------------------*/
+    void SCATRA::TimIntGenAlpha::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
+    {
+      // let the base class do the basic redistribution and transfer of the base class members
+      ScaTraTimIntImpl::Redistribute(nodegraph);
+
+      // now do all the ost specfic steps
+      const Epetra_Map* newdofrowmap = discret_->DofRowMap();
+      Teuchos::RCP<Epetra_Vector> old;
+
+      if (phiaf_ != Teuchos::null)
+      {
+        old = phiaf_;
+        phiaf_ = LINALG::CreateVector(*newdofrowmap,true);
+        LINALG::Export(*old, *phiaf_);
+      }
+
+      if (phiam_ != Teuchos::null)
+      {
+        old = phiam_;
+        phiam_ = LINALG::CreateVector(*newdofrowmap,true);
+        LINALG::Export(*old, *phiam_);
+      }
+
+      if (phidtam_ != Teuchos::null)
+      {
+        old = phidtam_;
+        phidtam_ = LINALG::CreateVector(*newdofrowmap,true);
+        LINALG::Export(*old, *phidtam_);
+      }
+
+      if (fsphiaf_ != Teuchos::null)
+      {
+        old = fsphiaf_;
+        fsphiaf_ = LINALG::CreateVector(*newdofrowmap,true);
+        LINALG::Export(*old, *fsphiaf_);
+      }
+
+      return;
+    }
+#endif
+  dserror("Fix Redistribution!");
+  //--------------------------------------------------------------------
+  // Now update all Epetra_Vectors and Epetra_Matrix to the new dofmap
+  //--------------------------------------------------------------------
+
+  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
+
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices: local <-> global dof numbering
+  // -------------------------------------------------------------------
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+
+  // initialize standard (stabilized) system matrix (and save its graph!)
+  // in standard case, but do not save the graph if fine-scale subgrid
+  // diffusivity is used in non-incremental case
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and not incremental_)
+       //sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+       // cf constructor
+       sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
+  else sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
+
+  // -------------------------------------------------------------------
+  // create vectors containing problem variables
+  // -------------------------------------------------------------------
+
+  // solutions at time n+1 and n
+  Teuchos::RCP<Epetra_Vector> old;
+  Teuchos::RCP<Epetra_MultiVector> oldMulti;
+
+  if (phinp_ != Teuchos::null)
+  {
+    old = phinp_;
+    phinp_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *phinp_);
+  }
+
+  if (phin_ != Teuchos::null)
+  {
+    old = phin_;
+    phin_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *phin_);
+  }
+
+  // temporal solution derivative at time n+1
+  if (phidtnp_ != Teuchos::null)
+  {
+    old = phidtnp_;
+    phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *phidtnp_);
+  }
+
+  // temporal solution derivative at time n
+  if (phidtn_ != Teuchos::null)
+  {
+    old = phidtn_;
+    phidtn_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *phidtn_);
+  }
+
+  // history vector (a linear combination of phinm, phin (BDF)
+  // or phin, phidtn (One-Step-Theta, Generalized-alpha))
+  if (hist_ != Teuchos::null)
+  {
+    old = hist_;
+    hist_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *hist_);
+  }
+
+  // velocities (always three velocity components per node)
+  // (get noderowmap of discretization for creating this multivector)
+  if (convel_ != Teuchos::null)
+  {
+    oldMulti = convel_;
+    convel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    LINALG::Export(*oldMulti, *convel_);
+  }
+  if (vel_ != Teuchos::null)
+  {
+    oldMulti = vel_;
+    vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    LINALG::Export(*oldMulti, *vel_);
+  }
+  if (fsvel_ != Teuchos::null)
+  {
+    oldMulti = fsvel_;
+    fsvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    LINALG::Export(*oldMulti, *fsvel_);
+  }
+
+  // acceleration and pressure required for computation of subgrid-scale
+  // velocity (always four components per node)
+  if (accpre_ != Teuchos::null)
+  {
+    oldMulti = accpre_;
+    accpre_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,4,true));
+    LINALG::Export(*oldMulti, *accpre_);
+  }
+
+  if (dispnp_ != Teuchos::null)
+  {
+    oldMulti = dispnp_;
+    dispnp_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    LINALG::Export(*oldMulti, *dispnp_);
+  }
+
+  // -------------------------------------------------------------------
+  // create vectors associated to boundary conditions
+  // -------------------------------------------------------------------
+  // a vector of zeros to be used to enforce zero dirichlet boundary conditions
+  if (zeros_ != Teuchos::null)
+  {
+    old = zeros_;
+    zeros_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *zeros_);
+  }
+
+  // -------------------------------------------------------------------
+  // create vectors associated to solution process
+  // -------------------------------------------------------------------
+  // the vector containing body and surface forces
+  if (neumann_loads_ != Teuchos::null)
+  {
+    old = neumann_loads_;
+    neumann_loads_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *neumann_loads_);
+  }
+
+  // the residual vector --- more or less the rhs
+  if (residual_ != Teuchos::null)
+  {
+    old = residual_;
+    residual_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *residual_);
+  }
+
+  // residual vector containing the normal boundary fluxes
+  if (trueresidual_ != Teuchos::null)
+  {
+    old = trueresidual_;
+    trueresidual_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *trueresidual_);
+  }
+
+  // incremental solution vector
+  if (increment_ != Teuchos::null)
+  {
+    old = increment_;
+    increment_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *increment_);
+  }
+
+  // subgrid-diffusivity(-scaling) vector
+  // (used either for AVM3 approach or temperature equation
+  //  with all-scale subgrid-diffusivity model)
+  if (subgrdiff_ != Teuchos::null)
+  {
+    old = subgrdiff_;
+    subgrdiff_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *subgrdiff_);
+  }
+
+  if (initialphireinit_ != Teuchos::null)
+  {
+    old = initialphireinit_;
+    initialphireinit_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *initialphireinit_);
+  }
+
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+  {
+    dserror("No redistribution for AVM3 subgrid stuff.");
+  }
+
+  if(discret_->Comm().MyPID()==0)
+    std::cout << "done" << std::endl;
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::Redistribute

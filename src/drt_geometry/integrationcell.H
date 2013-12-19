@@ -4,10 +4,10 @@
 \brief integration cell classes for domain and boundary integration
 
 <pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15236
 </pre>
 *----------------------------------------------------------------------*/
 

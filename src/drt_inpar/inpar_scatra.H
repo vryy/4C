@@ -29,12 +29,7 @@ namespace INPAR
       timeint_stationary,
       timeint_one_step_theta,
       timeint_bdf2,
-      timeint_gen_alpha,
-      timeint_tg2,                    //schott 05/11
-      timeint_tg2_LW,                 //schott 05/11
-      timeint_tg3,                    //schott 05/11
-      timeint_tg4_leapfrog,           //schott 05/11
-      timeint_tg4_onestep             //schott 05/11
+      timeint_gen_alpha
     };
 
     /// type of solution procedures for scalar transport problems
@@ -129,7 +124,10 @@ namespace INPAR
       assgd_tezduyar,
       assgd_tezduyar_wo_phizero,
       assgd_docarmo,
-      assgd_almeida
+      assgd_almeida,
+      assgd_lin_reinit,
+      assgd_yzbeta,
+      assgd_codina,
     };
 
     /// possible options for fine-scale subgrid diffusivity
@@ -166,12 +164,14 @@ namespace INPAR
       evalmat_integration_point
     };
 
+    //TODO: SCATRA_ELE_CLEANING: delete types
     /// type of scalar transport problem
     enum ScaTraType
     {
       scatratype_undefined,
       scatratype_condif,
       scatratype_loma,
+      scatratype_elch,
       scatratype_elch_enc,
       scatratype_elch_enc_pde,
       scatratype_elch_enc_pde_elim,
@@ -179,60 +179,8 @@ namespace INPAR
       scatratype_elch_laplace,
       scatratype_elch_diffcond,
       scatratype_levelset,
-      scatratype_turbpassivesca,
       scatratype_poro,
       scatratype_cardio_monodomain
-    };
-
-    /// type of reinitialization strategy for level set function
-    enum ReinitializationAction
-    {
-      reinitaction_none,
-      reinitaction_directdistance,
-      reinitaction_sussman,
-      reinitaction_interfaceprojection,
-      reinitaction_function,
-      reinitaction_signeddistancefunction
-    };
-
-    /// type of reinitialization strategy for level set function
-    enum ReinitializationStrategy
-    {
-      reinitstrategy_pdebased_characteristic_galerkin,
-      reinitstrategy_pdebased_linear_convection,
-      reinitstrategy_none,
-    };
-
-    /// type of signum function for reinitialization based on solving Sussman's equation
-    enum SmoothedSignType
-    {
-      signtype_nonsmoothed,
-      signtype_Nagrath2005,
-      signtype_LinEtAl2005,
-      signtype_LinEtAl_normalized
-    };
-
-    /// type of signum function for reinitialization based on solving Sussman's equation
-    enum PenaltyMethod
-    {
-      penalty_method_none,
-      penalty_method_intersection_points,
-      penalty_method_akkerman
-    };
-
-    /// type of reinitialization convergence check
-    enum ReInitialStationaryCheck
-    {
-      reinit_stationarycheck_L1normintegrated,
-      reinit_stationarycheck_numsteps
-    };                                                 // schott
-
-    /// type of mass calculation strategy for level set function
-    enum MassCalculation
-    {
-      masscalc_none,
-      masscalc_squares,
-      masscalc_interpolated
     };
 
     /// type of method for improving consistency of stabilized methods

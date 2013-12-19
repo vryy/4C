@@ -114,9 +114,6 @@ XFEMTIMEINT_ENR                 QuasiStatic
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      yes
 REFINEMENTLEVEL                 1
-REINITFUNCNO                    -1
-REINITIALIZATION                None
-REINITINTERVAL                  15
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  yes
 --------------------------------------------------------------------SOLVER 1

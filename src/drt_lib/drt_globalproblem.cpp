@@ -268,6 +268,9 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--CAVITATION DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
   reader.ReadGidSection("--COHESIVE CRACK", *list);
+  reader.ReadGidSection("--LEVEL-SET CONTROL", *list);
+  reader.ReadGidSection("--LEVEL-SET CONTROL/PARTICLE", *list);
+  reader.ReadGidSection("--LEVEL-SET CONTROL/REINITIALIZATION", *list);
   reader.ReadGidSection("--WEAR", *list);
   reader.ReadGidSection("--BEAM CONTACT", *list);
   reader.ReadGidSection("--SEMI-SMOOTH PLASTICITY", *list);
@@ -1341,6 +1344,18 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
+  case prb_level_set:
+  {
+    scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
+    AddDis("scatra", scatradis);
+
+    particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
+    AddDis("particle", particledis);
+
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ParticleReader(particledis, reader)));
+    break;
+  }
   case prb_np_support:
   {
     // no discretizations and nodes needed for supporting procs
@@ -1370,9 +1385,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_fsi_lung:
   case prb_fluid_ale:
   case prb_fluid:
-//  case prb_scatra:
-//  case prb_loma:
-//  case prb_elch:
   {
     if(distype == "Polynomial")
     {

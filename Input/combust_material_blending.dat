@@ -74,9 +74,6 @@ SMOOTHGRADPHI                   smooth_grad_phi_none
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      no
 REFINEMENTLEVEL                 -1
-REINITFUNCNO                    -1
-REINITIALIZATION                None
-REINITINTERVAL                  100
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field

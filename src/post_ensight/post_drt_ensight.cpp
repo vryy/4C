@@ -197,6 +197,25 @@ int main(
       particlewriter.WriteFiles();
       break;
     }
+    case prb_level_set:
+    {
+      std::string basename = problem.outname();
+
+      PostField* scatrafield = problem.get_discretization(0);
+      ScaTraEnsightWriter scatrawriter(scatrafield, basename);
+      scatrawriter.WriteFiles();
+
+      // check if we have a particle field
+      int numfield = problem.num_discr();
+      if(numfield==2)
+      {
+        PostField* particlefield = problem.get_discretization(1);
+        ParticleEnsightWriter  particlewriter(particlefield, basename);
+        particlewriter.WriteFiles();
+      }
+
+      break;
+    }
     case prb_redairways_tissue:
     {
         PostField* structfield = problem.get_discretization(0);

@@ -55,6 +55,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["RedAirways_Tissue"] =                         prb_redairways_tissue;
     string2prbtype["Particle"] =                                  prb_particle;
     string2prbtype["Cavitation"] =                                prb_cavitation;
+    string2prbtype["Level_Set"] =                                 prb_level_set;
     string2prbtype["Fluid_Structure_Crack_Interaction"] =         prb_fsi_crack;
   }
 

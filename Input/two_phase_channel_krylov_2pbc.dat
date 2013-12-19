@@ -1,3 +1,9 @@
+//
+// Maintainer: Ursula Rasthofer
+// rasthofer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15262
+//
 ==================================================================
 General Data File BACI
 ==================================================================
@@ -51,15 +57,6 @@ VELOCITY_JUMP_TYPE              vel_jump_none
 XFEMINTEGRATION                 Cut
 XFEMTIMEINT_ENR                 QuasiStatic
 XFEMTIMEINT                     DoNothing
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
-REFINEMENT                      No
-REINITFUNCNO                    -1
-REINITIALIZATION                None
-REINITINTERVAL                  100000
-REINITBAND                      No
-REINITBANDWIDTH                 1.2
-EXTRACT_INTERFACE_VEL           No
-REINITVOLCORRECTION             No
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   9
 ALPHA_F                         0.5

@@ -19,14 +19,12 @@ Maintainer: Ursula Rasthofer
 
 
 #include <vector>
+#include "../drt_geometry/integrationcell.H"
 
 
 //forward declarations
 namespace GEO
 {
-  class BoundaryIntCell;
-  class DomainIntCell;
-
   //! shortcut for a vector of BoundaryIntCells
   typedef std::vector<GEO::BoundaryIntCell > BoundaryIntCells;
 

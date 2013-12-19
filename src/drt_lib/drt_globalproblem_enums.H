@@ -57,7 +57,8 @@ typedef enum _PROBLEM_TYP
      prb_redairways_tissue, // coupling of reduced-dimensional airways with 3D tissue model
      prb_particle,       // particle simulation
      prb_cavitation,     // cavitation problem
-     prb_fpsi,		 // fluid porous structure interaction problem
+     prb_level_set,      // level-set problem
+     prb_fpsi,            // fluid porous structure interaction problem
      prb_fsi_crack       // FSI with XFEM in presence of cracking structures
 } PROBLEM_TYP;
 

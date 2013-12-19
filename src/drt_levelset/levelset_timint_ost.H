@@ -1,0 +1,73 @@
+/*!----------------------------------------------------------------------
+\file levelset_timint_ost.H
+\brief
+
+<pre>
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
+
+#ifndef LEVELSET_TIMINT_OST_H
+#define LEVELSET_TIMINT_OST_H
+
+#include "../drt_scatra/scatra_timint_ost.H"
+#include "levelset_algorithm.H"
+
+
+namespace SCATRA
+{
+
+class LevelSetTimIntOneStepTheta : public LevelSetAlgorithm, public TimIntOneStepTheta
+{
+
+public:
+
+  /// Standard Constructor
+  LevelSetTimIntOneStepTheta(Teuchos::RCP<DRT::Discretization>       dis,
+      Teuchos::RCP<LINALG::Solver>            solver,
+      Teuchos::RCP<Teuchos::ParameterList>    params,
+      Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
+      Teuchos::RCP<Teuchos::ParameterList>    extraparams,
+      Teuchos::RCP<IO::DiscretizationWriter>  output);
+
+  /// Destructor
+  virtual ~LevelSetTimIntOneStepTheta();
+
+  /// initialize time-integration scheme
+  virtual void Init();
+
+  /// redistribute the scatra discretization and vectors according to nodegraph
+  void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
+
+protected:
+
+  /// Print information about current time step to screen (reimplementation for OST)
+  void PrintTimeStepInfo();
+
+  /// Initialization procedure before the first time step
+  void PrepareFirstTimeStep();
+
+  /// additional predictor not intended for level-set methods
+  void ExplicitPredictor(){return;};
+  
+  /// Set the part of the righthandside belonging to the last timestep.
+  void SetOldPartOfRighthandside();
+
+  /// update the solution after Solve()
+  /// current solution becomes old solution of next time step
+  void Update(const int num=0);
+
+  /// update phi within the reinitialization loop
+  void UpdateReinit();
+
+private:
+
+}; // class LevelSetTimIntOneStepTheta
+
+} // namespace SCATRA
+
+#endif  // #ifndef LEVELSET_TIMINT_OST_H

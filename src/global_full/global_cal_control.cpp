@@ -19,6 +19,7 @@ Maintainer: Michael Gee
 #include "../drt_ale/ale_dyn.H"
 #include "../drt_fsi/fsi_dyn.H"
 #include "../drt_fs3i/fs3i_dyn.H"
+#include "../drt_levelset/levelset_dyn.H"
 #include "../drt_loma/loma_dyn.H"
 #include "../drt_elch/elch_dyn.H"
 #include "../drt_combust/combust_dyn.H"
@@ -147,6 +148,10 @@ void ntacal()
     case prb_particle:
     case prb_cavitation:
       particle_drt();
+      break;
+
+    case prb_level_set:
+      levelset_dyn(restart);
       break;
 
     case prb_np_support:

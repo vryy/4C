@@ -40,22 +40,11 @@ XFEMTIMEINT_ENR                 QuasiStatic
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      no
 REFINEMENTLEVEL                 -1
-REINITFUNCNO                    -1
-REINITIALIZATION                Fast_Signed_Distance_Function
+-----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
+REINITIALIZATION                Signed_Distance_Function
+REINIT_INITIAL                  yes
 REINITINTERVAL                  10
---------------------------COMBUSTION CONTROL/COMBUSTION PDE REINITIALIZATION
-EPSILON_BANDWIDTH               2
-NUMPSEUDOSTEPS                  5
-PENALTY_INTERFACE               100
-PENALTY_METHOD                  None
-PSEUDOTIMESTEP_FACTOR           0.1
-REINIT_METHOD                   PDE_Based_Characteristic_Galerkin
-REINIT_TIMEINTEGR               Taylor_Galerkin_2
-SHOCK_CAPTURING                 no
-SHOCK_CAPTURING_DIFFUSIVITY     0.001
-SMOOTHED_SIGN_TYPE              LinEtAl2005
-STATIONARY_CHECK                Integrated_L1_Norm
----------------------------------------------------------------FLUID DYNAMIC
+--------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
 STARTFUNCNO                     -1
 TIMEINTEGR                      Stationary

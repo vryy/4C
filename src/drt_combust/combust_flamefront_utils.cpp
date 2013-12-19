@@ -774,6 +774,7 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
       // get element location vector, dirichlet flags and ownerships
       lm.clear();
       lmowner.clear();
+      lmstride.clear();
       actele->LocationVector(*gfuncdis_,lm,lmowner,lmstride);
 
       // get shape
@@ -1081,6 +1082,7 @@ void COMBUST::FlameFront::ComputeL2ProjectedGradPhi(const double eta_smooth,
         // get element location vector, dirichlet flags and ownerships
         lm.clear();
         lmowner.clear();
+        lmstride.clear();
         actele->LocationVector(*gfuncdis_,lm,lmowner,lmstride);
 
         // get shape
@@ -1330,6 +1332,7 @@ void COMBUST::FlameFront::ComputeL2ProjectedGrad2Phi(const double eta_smooth)
         // get element location vector, dirichlet flags and ownerships
         lm.clear();
         lmowner.clear();
+        lmstride.clear();
         actele->LocationVector(*gfuncdis_,lm,lmowner,lmstride);
 
         // get shape
@@ -1589,6 +1592,7 @@ const Teuchos::RCP<Epetra_Vector>  COMBUST::FlameFront::ComputeL2ProjectedPhi(co
       // get element location vector, dirichlet flags and ownerships
       lm.clear();
       lmowner.clear();
+      lmstride.clear();
       actele->LocationVector(*gfuncdis_,lm,lmowner,lmstride);
 
       // get shape

@@ -51,11 +51,6 @@ XFEMTIMEINT_ENR                 DoNothing
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 INITSTATSOL                     No
--------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
-REFINEMENT                      No
-REINITFUNCNO                    2
-REINITIALIZATION                None
-REINITINTERVAL                  -1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 INITIALFIELD                    field_by_function
