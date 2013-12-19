@@ -11,7 +11,7 @@ Maintainer: Andreas Ehrl
 */
 /*----------------------------------------------------------------------*/
 
-#include "scatra_element.H"
+#include "scatra_ele.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"

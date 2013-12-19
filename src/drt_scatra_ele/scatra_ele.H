@@ -1,5 +1,5 @@
 /*!
-\file scatra_element.H
+\file scatra_ele.H
 
 \brief The scalar transport element
 
@@ -30,6 +30,10 @@ class Discretization;
 namespace ELEMENTS
 {
 // forward declarations
+class ScaTraEleParameter;
+class ScaTraEleParameterStd;
+class ScaTraEleParameterTimInt;
+template<DRT::Element::DiscretizationType distype> class ScaTraEleCalc;
 class TransportBoundary;
 
 
@@ -55,6 +59,15 @@ public:
   virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
 
   virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+  /// pre-evaluation
+  virtual void PreEvaluate(DRT::Discretization&                dis,
+                          Teuchos::ParameterList&              p,
+                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                          Teuchos::RCP<Epetra_Vector>          systemvector1,
+                          Teuchos::RCP<Epetra_Vector>          systemvector2,
+                          Teuchos::RCP<Epetra_Vector>          systemvector3);
 
 private:
 

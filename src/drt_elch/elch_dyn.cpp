@@ -88,7 +88,7 @@ void elch_dyn(int restart)
       dserror("no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
     // create instance of scalar transport basis algorithm (empty fluid discretization)
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(elchcontrol,false,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber),false));
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(elchcontrol,false,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
     // read the restart information, set vectors and variables
     if (restart) scatraonly->ScaTraField().ReadRestart(restart);

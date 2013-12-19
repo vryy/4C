@@ -13,7 +13,7 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_implicit.H"
-#include "scatra_ele_action.H"
+#include "../drt_scatra_ele/scatra_ele_action.H"
 #include "scatra_utils.H"
 #include "../linalg/linalg_krylov_projector.H"
 #include "../linalg/linalg_solver.H"
@@ -120,7 +120,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
       dofids(rr) = -1; // do not integrate shape functions for these dofs
     }
     eleparams.set("dofids",dofids);
-    eleparams.set("isale",isale_);
+
     if (isale_)
       AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
     // evaluate fluxes in the whole computational domain
@@ -132,9 +132,11 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   Teuchos::ParameterList params;
   params.set<int>("action",SCATRA::calc_flux_domain);
   params.set<int>("scatratype",scatratype_);
-  params.set("frt",frt_);
+  //TODO: SCATRA_ELE_CLEANING: ELCH
+  //params.set("frt",frt_);
   params.set<int>("fluxtype",fluxtype);
-  params.set<double>("time-step length",dta_);
+  //TODO: SCATRA_ELE_CLEANING: ELCH
+  //params.set<double>("time-step length",dta_);
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
@@ -146,9 +148,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   params.set("isale",isale_);
   if (isale_)
     AddMultiVectorToParameterList(params,"dispnp",dispnp_);
-
-  // parameters for stabilization
-  params.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -178,6 +177,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
 
   return flux;
 } // SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
+
 
 /*----------------------------------------------------------------------*
  |  calculate mass / heat normal flux at specified boundaries  gjb 06/09|
@@ -238,24 +238,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       Teuchos::ParameterList eleparams;
       // action for elements
       eleparams.set<int>("action",SCATRA::calc_mat_and_rhs);
+      eleparams.set<int>("scatratype",scatratype_);
 
       // other parameters that might be needed by the elements
-      eleparams.set("time-step length",dta_);
-      eleparams.set<int>("scatratype",scatratype_);
-      eleparams.set("incremental solver",true); // say yes and you get the residual!!
-      eleparams.set<int>("form of convective term",convform_);
-      eleparams.set<int>("fs subgrid diffusivity",fssgd_);
-      //eleparams.set("turbulence model",turbmodel_);
-      // set general parameters for turbulent flow
-      eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
-      // set model-dependent parameters
-      eleparams.sublist("SUBGRID VISCOSITY") = extraparams_->sublist("SUBGRID VISCOSITY");
-      // and set parameters for multifractal subgrid-scale modeling
-      if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
-        eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
-      eleparams.set("frt",frt_);
-      if (scatratype_ == INPAR::SCATRA::scatratype_loma)
-        eleparams.set<bool>("update material",(&(extraparams_->sublist("LOMA")))->get<bool>("update material",false));
+      SetElementTimeParameterForForcedIncrementalSolve();
 
       // provide velocity field and potentially acceleration/pressure field
       // (export to column map necessary for parallel evaluation)
@@ -267,12 +253,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);
 
       //provide displacement field in case of ALE
-      eleparams.set("isale",isale_);
       if (isale_)
         AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-      // parameters for stabilization
-      eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
       // clear state
       discret_->ClearState();
@@ -282,13 +264,16 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
           (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales))
        AVM3Separation();
 
+      //TODO: BACI_CLEANING: do want to have this dirty action?
       // we have to perform some dirty action here...
       bool incremental_old = incremental_;
       incremental_ = true;
       // add element parameters according to time-integration scheme
-      AddSpecificTimeIntegrationParameters(eleparams);
+      AddTimeIntegrationSpecificVectors();
       // undo
       incremental_ = incremental_old;
+      // add element parameters according to specific problem
+      AddProblemSpecificParametersAndVectors(eleparams);
 
       {
         // call standard loop over elements
@@ -298,6 +283,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
       // scaling to get true residual vector for all time integration schemes
       trueresidual_->Update(ResidualScaling(),*residual_,0.0);
+
+      // undo potential changes
+      SetElementTimeParameter();
 
     } // if ((solvtype_!=INPAR::SCATRA::solvertype_nonlinear) && (lastfluxoutputstep_ != step_))
   } // if (writeflux_==INPAR::SCATRA::flux_convective_boundary)
@@ -325,7 +313,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       params.set<int>("scatratype",scatratype_);
 
       // add element parameters according to time-integration scheme
-      AddSpecificTimeIntegrationParameters(params);
+      AddTimeIntegrationSpecificVectors();
 
       // provide velocity field
       // (export to column map necessary for parallel evaluation)
@@ -825,30 +813,16 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
 
     // action for elements
     eleparams.set<int>("action",SCATRA::calc_initial_time_deriv);
-
-    // set flag whether to consider stabilization terms or not
-    // for backward compatibility we do it like this:
-    if (Step() == 0)
-      eleparams.set<bool>("onlySGFEM",true); // initial calculation for step 0
-    else
-      eleparams.set<bool>("onlySGFEM",false);// for reinitialization of level-set fields
-
-    // set type of scalar transport problem
+    // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
     eleparams.set<int>("scatratype",scatratype_);
 
     // add additional parameters
-    AddSpecificTimeIntegrationParameters(eleparams);
+    AddTimeIntegrationSpecificVectors();
 
     // other parameters that are needed by the elements
-    eleparams.set("incremental solver",true); // we need an incremental formulation for this
-    eleparams.set<int>("form of convective term",convform_);
-    if (IsElch(scatratype_))
-      eleparams.set("frt",frt_); // factor F/RT
-    else if (scatratype_==INPAR::SCATRA::scatratype_loma)
-    {
-      eleparams.set("thermodynamic pressure",thermpressn_);
-      eleparams.set("time derivative of thermodynamic pressure",thermpressdtn_);
-    }
+//TODO: SCATRA_ELE_CLEANING: ELCH
+//    if (IsElch(scatratype_))
+//      eleparams.set("frt",frt_); // factor F/RT
 
     // provide velocity field and potentially acceleration/pressure field
     // (export to column map necessary for parallel evaluation)
@@ -856,40 +830,12 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
     AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
 
-    // set time step length
-    eleparams.set("time-step length",dta_);
-    // give correct time (override things set by AddSpecificTimeIntegrationParameters)
-    eleparams.set("total time",initialtime);
-
-    // ensure backward compatability (override genalpha settings):
-    eleparams.set("using generalized-alpha time integration",false);
-    // genalpha should only be supported for alpha_F = alpha_M = 1
-    // otherwise it is a two-step scheme that needs a start-up algorithm !!
-
-    // other parameters that might be needed by the elements
-    eleparams.set<int>("fs subgrid diffusivity",INPAR::SCATRA::fssugrdiff_no); // no fssgd for this Evaluate() call!!!!
-    // set general parameters for turbulent flow
-    eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
-    // set model-dependent parameters
-    eleparams.sublist("SUBGRID VISCOSITY") = extraparams_->sublist("SUBGRID VISCOSITY");
-    // and set parameters for multifractal subgrid-scale modeling
-    eleparams.set("turbulent inflow",turbinflow_);
-
-    if (scatratype_ == INPAR::SCATRA::scatratype_loma)
-      eleparams.set<bool>("update material",(&(extraparams_->sublist("LOMA")))->get<bool>("update material",false));
-
-    // set switch for reinitialization
-    eleparams.set("reinitswitch",reinitswitch_);
-
-    // parameters for stabilization (here required for material evaluation location)
-    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
+    //TODO: SCATRA_ELE_CLEANING: ELCH
     // parameters for Elch/DiffCond formulation
-    if(IsElch(scatratype_))
-      eleparams.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
+//    if(IsElch(scatratype_))
+//      eleparams.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
 
     //provide displacement field in case of ALE
-    eleparams.set("isale",isale_);
     if (isale_)
       AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
@@ -904,6 +850,9 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
       eleparams.set("forcing",true);
       discret_->SetState("forcing",forcing_);
     }
+
+    // add problem specific time-integration parameters
+    AddProblemSpecificParametersAndVectorsForCalcInitialPhiDt(eleparams);
 
     // call loop over elements
     discret_->Evaluate(eleparams,sysmat_,residual_);
@@ -993,7 +942,6 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
     eleparams.set<int>("scatratype",scatratype_);
 
     //provide displacement field in case of ALE
-    eleparams.set("isale",isale_);
     if (isale_)
       AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
@@ -1260,7 +1208,7 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntImpl::OutputSingleElectr
 
   // Since we just want to have the status ouput for t_{n+1},
   // we have to take care for Gen.Alpha!
-  // AddSpecificTimeIntegrationParameters cannot be used since we do not want
+  // AddTimeIntegrationSpecificVectors cannot be used since we do not want
   // an evaluation for t_{n+\alpha_f} !!!
 
   // TODO
@@ -1274,7 +1222,7 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntImpl::OutputSingleElectr
   // Think about: double layer effects for genalpha time-integratio scheme
 
   // add element parameters according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(eleparams);
+  AddTimeIntegrationSpecificVectors();
 
   // values to be computed
   eleparams.set("currentintegral",0.0);
@@ -1482,292 +1430,7 @@ void SCATRA::ScaTraTimIntImpl::ValidParameterDiffCond()
 }
 
 
-/*==========================================================================*/
-// low-Mach-number flow
-/*==========================================================================*/
-
-/*----------------------------------------------------------------------*
- | set initial thermodynamic pressure                          vg 07/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
-{
-  // get thermodynamic pressure and gas constant from material parameters
-  // (if no temperature equation, zero values are returned)
-  Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",SCATRA::get_material_parameters);
-  eleparams.set<int>("scatratype",scatratype_);
-  eleparams.set("isale",isale_);
-  // provide displacement field in case of ALE
-  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  thermpressn_ = eleparams.get("thermodynamic pressure", 98100.0);
-
-  // initialize also value at n+1
-  // (computed if not constant, otherwise prescribed value remaining)
-  thermpressnp_ = thermpressn_;
-
-  // initialize time derivative of thermodynamic pressure at n+1 and n
-  // (computed if not constant, otherwise remaining zero)
-  thermpressdtnp_ = 0.0;
-  thermpressdtn_  = 0.0;
-
-  // compute values at intermediate time steps
-  // (only for generalized-alpha time-integration scheme)
-  // -> For constant thermodynamic pressure, this is done here once and
-  // for all simulation time.
-  ComputeThermPressureIntermediateValues();
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::SetInitialThermPressure
-
-/*----------------------------------------------------------------------*
- | compute initial time derivative of thermodynamic pressure   vg 07/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
-{
-  // define element parameter list
-  Teuchos::ParameterList eleparams;
-
-  // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
-  // compute flux approximation and add it to the parameter list
-  AddFluxApproxToParameterList(eleparams,INPAR::SCATRA::flux_diffusive_domain);
-
-  // set scalar vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phin_);
-
-  // provide velocity field and potentially acceleration/pressure field
-  // (export to column map necessary for parallel evaluation)
-  AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-  AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-  AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
-
-  // provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
-  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // set parameters for element evaluation
-  eleparams.set<int>("action",SCATRA::calc_domain_and_bodyforce);
-  eleparams.set<int>("scatratype",scatratype_);
-  eleparams.set("total time",0.0);
-
-  // variables for integrals of domain and bodyforce
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(2));
-
-  // evaluate domain and bodyforce integral
-  discret_->EvaluateScalars(eleparams, scalars);
-
-  // get global integral values
-  double pardomint  = (*scalars)[0];
-  double parbofint  = (*scalars)[1];
-
-  // set action for elements
-  eleparams.set<int>("action",SCATRA::bd_calc_loma_therm_press);
-
-  // variables for integrals of normal velocity and diffusive flux
-  double normvelint      = 0.0;
-  double normdifffluxint = 0.0;
-  eleparams.set("normal velocity integral",normvelint);
-  eleparams.set("normal diffusive flux integral",normdifffluxint);
-
-  // evaluate velocity-divergence and diffusive (minus sign!) flux on boundaries
-  // We may use the flux-calculation condition for calculation of fluxes for
-  // thermodynamic pressure, since it is usually at the same boundary.
-  std::vector<std::string> condnames;
-  condnames.push_back("ScaTraFluxCalc");
-  for (unsigned int i=0; i < condnames.size(); i++)
-  {
-    discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condnames[i]);
-  }
-
-  // get integral values on this proc
-  normvelint      = eleparams.get<double>("normal velocity integral");
-  normdifffluxint = eleparams.get<double>("normal diffusive flux integral");
-
-  // get integral values in parallel case
-  double parnormvelint      = 0.0;
-  double parnormdifffluxint = 0.0;
-  discret_->Comm().SumAll(&normvelint,&parnormvelint,1);
-  discret_->Comm().SumAll(&normdifffluxint,&parnormdifffluxint,1);
-
-  // clean up
-  discret_->ClearState();
-
-  // compute initial time derivative of thermodynamic pressure
-  // (with specific heat ratio fixed to be 1.4)
-  const double shr = 1.4;
-  thermpressdtn_ = (-shr*thermpressn_*parnormvelint
-                    + (shr-1.0)*(-parnormdifffluxint+parbofint))/pardomint;
-
-  // set time derivative of thermodynamic pressure at n+1 equal to the one at n
-  // for following evaluation of intermediate values
-  thermpressdtnp_ = thermpressdtn_;
-
-  // compute values at intermediate time steps
-  // (only for generalized-alpha time-integration scheme)
-  ComputeThermPressureIntermediateValues();
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv
-
-/*----------------------------------------------------------------------*
- | compute initial total mass in domain                        vg 01/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeInitialMass()
-{
-  // set scalar values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phin_);
-  // set action for elements
-  Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",SCATRA::calc_mean_scalars);
-  eleparams.set<int>("scatratype",scatratype_);
-  // inverted scalar values are required here
-  eleparams.set("inverting",true);
-
-  //provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
-  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // evaluate integral of inverse temperature
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
-  discret_->EvaluateScalars(eleparams, scalars);
-  discret_->ClearState();   // clean up
-
-  // compute initial mass times gas constant: R*M_0 = int(1/T_0)*tp
-  initialmass_ = (*scalars)[0]*thermpressn_;
-
-  // print out initial total mass
-  if (myrank_ == 0)
-  {
-    std::cout << std::endl;
-    std::cout << "+--------------------------------------------------------------------------------------------+" << std::endl;
-    std::cout << "Initial total mass in domain (times gas constant): " << initialmass_ << std::endl;
-    std::cout << "+--------------------------------------------------------------------------------------------+" << std::endl;
-  }
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::ComputeInitialMass
-
-/*----------------------------------------------------------------------*
- | compute thermodynamic pressure from mass conservation       vg 01/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons()
-{
-  // set scalar values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
-  // set action for elements
-  Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",SCATRA::calc_mean_scalars);
-  eleparams.set<int>("scatratype",scatratype_);
-  // inverted scalar values are required here
-  eleparams.set("inverting",true);
-
-  //provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
-  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // evaluate integral of inverse temperature
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
-  discret_->EvaluateScalars(eleparams, scalars);
-  discret_->ClearState();   // clean up
-
-  // compute thermodynamic pressure: tp = R*M_0/int(1/T)
-  thermpressnp_ = initialmass_/(*scalars)[0];
-
-  // print out thermodynamic pressure
-  if (myrank_ == 0)
-  {
-    std::cout << std::endl;
-    std::cout << "+--------------------------------------------------------------------------------------------+" << std::endl;
-    std::cout << "Thermodynamic pressure from mass conservation: " << thermpressnp_ << std::endl;
-    std::cout << "+--------------------------------------------------------------------------------------------+" << std::endl;
-  }
-
-  // compute time derivative of thermodynamic pressure at time step n+1
-  ComputeThermPressureTimeDerivative();
-
-  // compute values at intermediate time steps
-  // (only for generalized-alpha time-integration scheme)
-  ComputeThermPressureIntermediateValues();
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons
-
-/*----------------------------------------------------------------------*
- | convergence check (only for low-Mach-number flow)           vg 09/11 |
- *----------------------------------------------------------------------*/
-bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int          itnum,
-                                                int          itmax,
-                                                const double ittol)
-{
-  bool stopnonliniter = false;
-
-  // define L2-norm of residual, incremental scalar and scalar
-  double resnorm_L2(0.0);
-  double phiincnorm_L2(0.0);
-  double phinorm_L2(0.0);
-
-  // for the time being, only one scalar considered for low-Mach-number flow
-  /*if (numscal_>1)
-  {
-    Teuchos::RCP<Epetra_Vector> onlyphi = splitter_->ExtractCondVector(increment_);
-    onlyphi->Norm2(&phiincnorm_L2);
-
-    splitter_->ExtractCondVector(phinp_,onlyphi);
-    onlyphi->Norm2(&phinorm_L2);
-  }
-  else*/
-  residual_ ->Norm2(&resnorm_L2);
-  increment_->Norm2(&phiincnorm_L2);
-  phinp_    ->Norm2(&phinorm_L2);
-
-  // check for any INF's and NaN's
-  if (std::isnan(resnorm_L2) or
-      std::isnan(phiincnorm_L2) or
-      std::isnan(phinorm_L2))
-    dserror("At least one of the calculated vector norms is NaN.");
-
-  if (abs(std::isinf(resnorm_L2)) or
-      abs(std::isinf(phiincnorm_L2)) or
-      abs(std::isinf(phinorm_L2)))
-    dserror("At least one of the calculated vector norms is INF.");
-
-  // for scalar norm being (close to) zero, set to one
-  if (phinorm_L2 < 1e-5) phinorm_L2 = 1.0;
-
-  if (myrank_==0)
-  {
-    printf("+------------+-------------------+--------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|- residual   -|- scalar-inc -|\n");
-    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
-         itnum,itmax,ittol,resnorm_L2,phiincnorm_L2/phinorm_L2);
-    printf("\n");
-    printf("+------------+-------------------+--------------+--------------+\n");
-  }
-
-  if ((resnorm_L2 <= ittol) and
-      (phiincnorm_L2/phinorm_L2 <= ittol)) stopnonliniter=true;
-
-  // warn if itemax is reached without convergence, but proceed to next timestep
-  if ((itnum == itmax) and
-      ((resnorm_L2 > ittol) or (phiincnorm_L2/phinorm_L2 > ittol)))
-  {
-    stopnonliniter=true;
-    if (myrank_==0)
-    {
-      printf("|            >>>>>> not converged in itemax steps!             |\n");
-      printf("+--------------------------------------------------------------+\n");
-    }
-  }
-
-  return stopnonliniter;
-} // SCATRA::ScaTraTimIntImpl::ConvergenceCheck
-
+// TODO: SCATRA_ELE_CLEANING. WHO IS RESPONSIBLE FOR THIS FUNCTION?
 /*----------------------------------------------------------------------*
  | Evaluate surface/interface permeability                              |
  *----------------------------------------------------------------------*/
@@ -1784,6 +1447,7 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_surface_permeability);
   condparams.set<int>("scatratype",scatratype_);
+  // TODO: SCATRA_ELE_CLEANING
   condparams.set("incremental solver",incremental_);
 
   // provide displacement field in case of ALE
@@ -1794,7 +1458,7 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   discret_->ClearState();
 
   // add element parameters according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(condparams);
+  AddTimeIntegrationSpecificVectors();
 
   std::string condstring("ScaTraCoupling");
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
@@ -1929,6 +1593,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_Neumann_inflow);
   condparams.set<int>("scatratype",scatratype_);
+  // TODO: SCATRA_ELE_CLEANING
   condparams.set("incremental solver",incremental_);
   condparams.set("isale",isale_);
 
@@ -1944,7 +1609,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   discret_->ClearState();
 
   // add element parameters and vectors according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(condparams);
+  AddTimeIntegrationSpecificVectors();
 
   std::string condstring("TransportNeumannInflow");
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
@@ -1969,6 +1634,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_convective_heat_transfer);
   condparams.set<int>("scatratype",scatratype_);
+  // TODO: SCATRA_ELE_CLEANING
   condparams.set("incremental solver",incremental_);
   condparams.set("isale",isale_);
 
@@ -1976,7 +1642,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
   discret_->ClearState();
 
   // add element parameters and vectors according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(condparams);
+  AddTimeIntegrationSpecificVectors();
 
   std::string condstring("ThermoConvections");
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
@@ -2105,6 +1771,8 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
   return;
 } // ScaTraTimIntImpl::OutputFlux
 
+
+//TODO: SCATRA_ELE_CLEANING: Mirella
 /*----------------------------------------------------------------------*
  |  output of integral reaction                               mc   03/13|
  *----------------------------------------------------------------------*/
@@ -2122,7 +1790,8 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::calc_integr_reaction);
     eleparams.set<int>("scatratype",scatratype_);
-    eleparams.set("time-step length",dta_);
+    //TODO: SCATRA_ELE_CLEANING
+    //eleparams.set("time-step length",dta_);
     Teuchos::RCP<std::vector<double> > myreacnp = Teuchos::rcp(new std::vector<double>(numscal_,0.0));
     eleparams.set<Teuchos::RCP<std::vector<double> > >("local reaction integral",myreacnp);
 
@@ -2217,7 +1886,6 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
       eleparams.set("inverting",false);
 
       //provide displacement field in case of ALE
-      eleparams.set("isale",isale_);
       if (isale_)
         AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
@@ -2768,7 +2436,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
     AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
   // add element parameters and set state vectors according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(condparams);
+  AddTimeIntegrationSpecificVectors();
 
   std::string condstring("ElectrodeKinetics");
   // evaluate ElectrodeKinetics conditions at time t_{n+1} or t_{n+alpha_F}
@@ -2854,7 +2522,7 @@ void SCATRA::ScaTraTimIntImpl::LinearizationNernstCondition()
   // create an parameter list
   Teuchos::ParameterList condparams;
   //update total time for time curve actions
-  AddSpecificTimeIntegrationParameters(condparams);
+  AddTimeIntegrationSpecificVectors();
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_elch_linearize_nernst);
   condparams.set<int>("scatratype",scatratype_);
@@ -2990,7 +2658,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
     AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // add element parameters according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(eleparams);
+  AddTimeIntegrationSpecificVectors();
 
   // call loop over elements
   discret_->Evaluate(eleparams,sysmat_sd_,residual_);
@@ -3230,7 +2898,9 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
     // parameters for stabilization (required for evaluation of material)
     myparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
     // add element parameters according to time-integration scheme
-    AddSpecificTimeIntegrationParameters(myparams);
+    AddTimeIntegrationSpecificVectors();
+    // set thermodynamic pressure in case of loma
+    AddProblemSpecificParametersAndVectors(myparams);
 
     // loop all elements on this proc (excluding ghosted ones)
     for (int nele=0;nele<discret_->NumMyRowElements();++nele)
@@ -3273,7 +2943,12 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
       std::cout << "+--------------------------------------------------------------------------------------------+\n" << std::endl;
     }
 
-    extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES").set<double>("meanCai",meanCai);
+    // set meanCai via pre-evaluate call
+    myparams.set<int>("action",SCATRA::set_mean_Cai);
+    myparams.set<int>("INPAR::SCATRA::ScaTraType",scatratype_);
+    myparams.set<double>("meanCai",meanCai);
+    // call standard loop over elements
+    discret_->Evaluate(myparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   }
 
   return;

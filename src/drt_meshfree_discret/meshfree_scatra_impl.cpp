@@ -17,7 +17,7 @@
 #include "drt_meshfree_discret.H"              // for cast to get knots
 #include "drt_meshfree_cell.H"              // for cast to get knots
 #include "drt_meshfree_cell_utils.H"        // to get Gauss points in real space
-#include "../drt_scatra/scatra_ele_action.H"// for enum of scatra actions
+#include "../drt_scatra_ele/scatra_ele_action.H"// for enum of scatra actions
 #include "../drt_fem_general/drt_utils_maxent_basisfunctions.H" // basis function evaluation
 #include "../drt_mat/scatra_mat.H"          // in GetMaterialParams(): type ScatraMat
 #include "../drt_lib/drt_globalproblem.H"   // in BodyForce(): DRT::Problem::Instance()

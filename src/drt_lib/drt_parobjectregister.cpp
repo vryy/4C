@@ -20,7 +20,7 @@
 #include "../drt_torsion3/torsion3.H"
 #include "../drt_torsion2/torsion2.H"
 #include "../drt_s8/shell8.H"
-#include "../drt_scatra/scatra_element.H"
+#include "../drt_scatra_ele/scatra_ele.H"
 #include "../drt_meshfree_discret/meshfree_scatra_cell.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 #include "../drt_particle/particle_node.H"

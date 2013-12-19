@@ -27,7 +27,7 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_implicit.H"
-#include "scatra_ele_action.H"
+#include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_krylov_projector.H"
@@ -99,7 +99,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   fssgd_    (DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
   // turbmodel_, // not initialized
   writeflux_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params,"WRITEFLUX")),
-  // writefluxids_, // not initialized
+  writefluxids_(0), // not initialized
   outmean_  (DRT::INPUT::IntegralValue<int>(*params,"OUTMEAN")),
   outputgmsh_(DRT::INPUT::IntegralValue<int>(*params,"OUTPUT_GMSH")),
   time_   (0.0),
@@ -126,18 +126,12 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   frt_      (0.0),
   dlcapexists_(false),
   ektoggle_(Teuchos::null),
-  initialmass_(0.0),
-  thermpressn_(0.0),
-  thermpressnp_(0.0),
-  thermpressdtn_(0.0),
-  thermpressdtnp_(0.0),
-  numinflowsteps_(extraparams->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
   DynSmag_(Teuchos::null),
   Vrem_(Teuchos::null),
   turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
+  numinflowsteps_(extraparams->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
   forcing_(Teuchos::null),
   homisoturb_forcing_(Teuchos::null),
-  reinitswitch_(extraparams->get<bool>("REINITSWITCH",false)),
   updateprojection_(false),
   upres_    (params->get<int>("UPRES")),
   uprestart_(params->get<int>("RESTARTEVRY")),
@@ -148,6 +142,15 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   scstrgrdisp_(Teuchos::null),
   outintegrreac_(DRT::INPUT::IntegralValue<int>(*params,"OUTINTEGRREAC"))
 {
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  inialize time integration                           rasthofer 09/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::Init()
+{
   // what kind of equations do we actually want to solve?
   // (For the moment, we directly conclude from the problem type, Only ELCH applications
   //  allow the usage of a given user input)
@@ -156,10 +159,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   PROBLEM_TYP prbtype = DRT::Problem::Instance()->ProblemType();
 
   if ((scatratype_ == INPAR::SCATRA::scatratype_undefined) or
-     ((prbtype != prb_elch) and (scatratype_ != INPAR::SCATRA::scatratype_turbpassivesca)))
+     (prbtype != prb_elch))
   {
     if (prbtype == prb_elch)              scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
     else if (prbtype == prb_combust)      scatratype_ = INPAR::SCATRA::scatratype_levelset;
+    else if (prbtype == prb_level_set)    scatratype_ = INPAR::SCATRA::scatratype_levelset;
     else if (prbtype == prb_loma)         scatratype_ = INPAR::SCATRA::scatratype_loma;
     else if (prbtype == prb_scatra)
     {
@@ -209,15 +213,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
-  // do not apply periodic boundary conditions for the second scatra reinit object
-  // then again a new redistribution of the redistributed scatra discretization would be performed
-  if(reinitswitch_ == false)
-  {
-    pbc_ = Teuchos::rcp(new PeriodicBoundaryConditions (discret_, false));
-    pbc_->UpdateDofsForPeriodicBoundaryConditions();
-    pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
-  }
-
+  pbc_ = Teuchos::rcp(new PeriodicBoundaryConditions (discret_, false));
+  pbc_->UpdateDofsForPeriodicBoundaryConditions();
+  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
 
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
@@ -267,26 +265,20 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
     FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
   }
-  else if (scatratype_ == INPAR::SCATRA::scatratype_loma and numscal_ > 1)
-  {
-    // set up a species-temperature splitter (if more than one scalar)
-    splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
-    FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,*splitter_);
-  }
   else if (scatratype_ == INPAR::SCATRA::scatratype_cardio_monodomain)
   {
     // Activation time at time n+1
     activation_time_np_ = LINALG::CreateVector(*dofrowmap,true);
-    activation_threshold_ = params->get<double>("ACTTHRES");
+    activation_threshold_ = params_->get<double>("ACTTHRES");
     // Assumes that maximum nb_max_mat_int_state_vars_ internal state variables will be written
-    nb_max_mat_int_state_vars_=params->get<int>("WRITEMAXINTSTATE"); // number of maximal internal state variables to be postprocessed
+    nb_max_mat_int_state_vars_=params_->get<int>("WRITEMAXINTSTATE"); // number of maximal internal state variables to be postprocessed
     if(nb_max_mat_int_state_vars_)
     {
       material_internal_state_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_int_state_vars_,true));
       material_internal_state_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
     }
     // Assumes that maximum nb_max_mat_ionic_currents_ ionic_currents variables will be written
-    nb_max_mat_ionic_currents_=params->get<int>("WRITEMAXIONICCURRENTS"); // number of maximal internal state variables to be postprocessed
+    nb_max_mat_ionic_currents_=params_->get<int>("WRITEMAXIONICCURRENTS"); // number of maximal internal state variables to be postprocessed
     if(nb_max_mat_ionic_currents_)
     {
       material_ionic_currents_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_ionic_currents_,true));
@@ -294,9 +286,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     }
 
   }
-
-  if (scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca and numscal_ > 1)
-   dserror("Turbulent passive scalar transport not supported for more than one scalar!");
 
   if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND")
       and msht_ == INPAR::FLUID::no_meshtying)
@@ -378,12 +367,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   phinp_ = LINALG::CreateVector(*dofrowmap,true);
   phin_  = LINALG::CreateVector(*dofrowmap,true);
 
-
-  if(reinitswitch_)
-  {
-    phistart_  = LINALG::CreateVector(*dofrowmap,true);
-  }
-
   // temporal solution derivative at time n+1
   phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
 
@@ -459,14 +442,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // set parameters associated to potential statistical flux evaluations
   // -------------------------------------------------------------------
-  // get fluid turbulence sublist
-  Teuchos::ParameterList * turbparams =&(extraparams_->sublist("TURBULENCE MODEL"));
-
-  // parameters for statistical evaluation of normal fluxes
-  samstart_  = turbparams->get<int>("SAMPLING_START");
-  samstop_   = turbparams->get<int>("SAMPLING_STOP" );
-  dumperiod_ = turbparams->get<int>("DUMPING_PERIOD");
-  if (dumperiod_ < 0) dserror("dumperiod_ is negative!");
 
   // initialize vector for statistics (assume a maximum of 10 conditions)
   sumnormfluxintegral_ = Teuchos::rcp(new Epetra_SerialDenseVector(10));
@@ -499,6 +474,20 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     }
   }
 
+
+  // -------------------------------------------------------------------
+  // preparations for turbulence models
+  // -------------------------------------------------------------------
+
+  // get fluid turbulence sublist
+  Teuchos::ParameterList * turbparams =&(extraparams_->sublist("TURBULENCE MODEL"));
+
+  // parameters for statistical evaluation of normal fluxes
+  samstart_  = turbparams->get<int>("SAMPLING_START");
+  samstop_   = turbparams->get<int>("SAMPLING_STOP" );
+  dumperiod_ = turbparams->get<int>("DUMPING_PERIOD");
+  if (dumperiod_ < 0) dserror("dumperiod_ is negative!");
+
   // -------------------------------------------------------------------
   // necessary only for AVM3 approach:
   // initialize subgrid-diffusivity matrix + respective output
@@ -523,9 +512,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       std::cout << &std::endl << &std::endl;
     }
 
-    if ((scatratype_ == INPAR::SCATRA::scatratype_loma or
-         scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca) and
-         turbparams->get<std::string>("PHYSICAL_MODEL") != "Multifractal_Subgrid_Scales")
+    if (turbparams->get<std::string>("PHYSICAL_MODEL") != "Multifractal_Subgrid_Scales")
     {
       if (fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small
           and turbparams->get<std::string>("FSSUGRVISC") != "Smagorinsky_small")
@@ -540,8 +527,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // get turbulence model and parameters for low-Mach-number case
   // -------------------------------------------------------------------
   turbmodel_ = INPAR::FLUID::no_model;
-  if (scatratype_ == INPAR::SCATRA::scatratype_loma or
-      scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca)
   {
     // set turbulence model
     if (turbparams->get<std::string>("PHYSICAL_MODEL") == "Smagorinsky")
@@ -607,21 +592,20 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       dserror("No combination of classical turbulence model and fine-scale subgrid-diffusivity approach currently possible!");
   }
 
+  if (turbmodel_ != INPAR::FLUID::no_model and numscal_ > 1)
+   dserror("Turbulent passive scalar transport not supported for more than one scalar!");
+
   // -------------------------------------------------------------------
   // initialize forcing for homogeneous isotropic turbulence
   // -------------------------------------------------------------------
   // flag for special flow
   special_flow_ = extraparams_->sublist("TURBULENCE MODEL").get<std::string>("CANONICAL_FLOW","no");
-  if (scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca)
+  if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence")
   {
-    if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence")
+    if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING")=="isotropic")
     {
-      if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING")=="isotropic")
-      {
-        forcing_ = LINALG::CreateVector(*dofrowmap,true);
-        forcing_->PutScalar(0.0);
-        homisoturb_forcing_ = Teuchos::rcp(new SCATRA::HomIsoTurbScalarForcing(this));
-      }
+      forcing_ = LINALG::CreateVector(*dofrowmap,true);
+      forcing_->PutScalar(0.0);
     }
   }
 
@@ -683,10 +667,16 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     }
   }
 
-  // -------------------------------------------------------------------
-  // create vectors for Krylov projection if necessary
-  // -------------------------------------------------------------------
+  return;
 
+} // ScaTraTimIntImpl::ScaTraTimIntImpl
+
+
+/*----------------------------------------------------------------------*
+ | create vectors for Krylov projection if necessary         ehrl 12/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::PrepareKrylovProjection()
+{
   // sysmat might be singular (some modes are defined only up to a constant)
   // in this case, we need basis vectors for the nullspace/kernel
 
@@ -722,10 +712,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   else
     dserror("Received more than one KrylovSpaceCondition for scatra field");
 
-
   return;
+}
 
-} // ScaTraTimIntImpl::ScaTraTimIntImpl
+
 
 /*----------------------------------------------------------------------*
  | Destructor dtor                                   (public) gjb 04/08 |
@@ -734,6 +724,65 @@ SCATRA::ScaTraTimIntImpl::~ScaTraTimIntImpl()
 {
   return;
 }
+
+
+/*========================================================================*/
+//! set element parameters
+/*========================================================================*/
+
+/*----------------------------------------------------------------------*
+ | set all general parameters for element                    ehrl 11/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetElementGeneralScaTraParameter()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",SCATRA::set_general_scatra_parameter);
+
+  // set type of scalar transport problem
+  eleparams.set<int>("scatratype",scatratype_);
+
+  eleparams.set<int>("form of convective term",convform_);
+  eleparams.set("isale",isale_);
+
+  // parameters for stabilization
+  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | set turbulence parameters for element                rasthofer 11/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetElementTurbulenceParameter()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",SCATRA::set_turbulence_scatra_parameter);
+
+  // set type of scalar transport problem
+  eleparams.set<int>("scatratype",scatratype_);
+
+  eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
+  // set model-dependent parameters
+  eleparams.sublist("SUBGRID VISCOSITY") = extraparams_->sublist("SUBGRID VISCOSITY");
+  // and set parameters for multifractal subgrid-scale modeling
+  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
+
+  eleparams.set<bool>("turbulent inflow",turbinflow_);
+
+  eleparams.set<int>("fs subgrid diffusivity",fssgd_);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
 
 /*==========================================================================*/
 // general framework
@@ -764,7 +813,6 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
     if(not skipinitder_)
     {
       if (initialvelset_) PrepareFirstTimeStep();
-      else if (reinitswitch_){}
       else dserror("Initial velocity field has not been set");
     }
 
@@ -775,12 +823,14 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
+  // note the order of the following three functions is important
   IncrementTimeAndStep();
 
   // -------------------------------------------------------------------
   // set part of the rhs vector belonging to the old timestep
   // -------------------------------------------------------------------
   SetOldPartOfRighthandside();
+  SetElementTimeParameter();
 
   // -------------------------------------------------------------------
   //         evaluate Dirichlet and Neumann boundary conditions
@@ -1086,295 +1136,6 @@ Teuchos::RCP<DRT::Discretization> dis)
 
 } // ScaTraTimIntImpl::SetVelocityField
 
-/*----------------------------------------------------------------------------*
- | Redistribute the scatra discretization and vectors         rasthofer 07/11 |
- | according to nodegraph according to nodegraph              DA wichmann     |
- *----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
-{
-  if (reinitswitch_ == false)
-  {
-    const Epetra_BlockMap oldphinpmap = phinp_->Map();
-
-    // the rowmap will become the new distribution of nodes
-    const Epetra_BlockMap rntmp = nodegraph->RowMap();
-    Epetra_Map newnoderowmap(-1,rntmp.NumMyElements(),rntmp.MyGlobalElements(),0,discret_->Comm());
-
-    // the column map will become the new ghosted distribution of nodes
-    const Epetra_BlockMap Mcntmp = nodegraph->ColMap();
-    Epetra_Map newnodecolmap(-1,Mcntmp.NumMyElements(),Mcntmp.MyGlobalElements(),0,discret_->Comm());
-
-    // do the redistribution
-    discret_->Redistribute(newnoderowmap,newnodecolmap, false, false, false);
-
-    // update the PBCs and PBCDofSet
-    pbc_->PutAllSlavesToMastersProc();
-    pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
-
-    // ensure that degrees of freedom in the discretization have been set
-    if ((not discret_->Filled()) or (not discret_->HaveDofs()))
-      discret_->FillComplete();
-  }
-
-  //--------------------------------------------------------------------
-  // Now update all Epetra_Vectors and Epetra_Matrix to the new dofmap
-  //--------------------------------------------------------------------
-
-  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
-
-  // -------------------------------------------------------------------
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices: local <-> global dof numbering
-  // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
-
-  // -------------------------------------------------------------------
-  // create empty system matrix (27 adjacent nodes as 'good' guess)
-  // -------------------------------------------------------------------
-  if (IsElch(scatratype_))
-  {
-    // set up the concentration-el.potential splitter
-    splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
-    FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
-  }
-  else if (scatratype_ == INPAR::SCATRA::scatratype_loma and numscal_ > 1)
-  {
-    // set up a species-temperature splitter (if more than one scalar)
-    splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
-    FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,*splitter_);
-  }
-
-  if (scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca and numscal_ > 1)
-   dserror("Turbulent passive scalar transport not supported for more than one scalar!");
-
-  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND")
-      and msht_ == INPAR::FLUID::no_meshtying)
-  {
-    // we need a block sparse matrix here
-    if (not IsElch(scatratype_))
-      dserror("Block-Preconditioning is only for ELCH problems");
-    // initial guess for non-zeros per row: 27 neighboring nodes for hex8
-    // this is enough! A higher guess would require too much memory!
-    // A more precise guess for every submatrix would read:
-    // A_00: 27*1,  A_01: 27*1,  A_10: 27*numscal_ due to electroneutrality, A_11: empty matrix
-    // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
-    Teuchos::RCP<LINALG::BlockSparseMatrix<SCATRA::SplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(*splitter_,*splitter_,27,false,true));
-    blocksysmat->SetNumScal(numscal_);
-
-    sysmat_ = blocksysmat;
-  }
-  else if(msht_!= INPAR::FLUID::no_meshtying)
-    dserror("So far a redistribution is not supported in meshtying allgorithm!!");
-  else
-  {
-    // initialize standard (stabilized) system matrix (and save its graph!)
-    // in standard case, but do not save the graph if fine-scale subgrid
-    // diffusivity is used in non-incremental case
-    if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and not incremental_)
-         //sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
-         // cf constructor
-         sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
-    else sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
-  }
-
-  // -------------------------------------------------------------------
-  // create vectors containing problem variables
-  // -------------------------------------------------------------------
-
-  // solutions at time n+1 and n
-  Teuchos::RCP<Epetra_Vector> old;
-  Teuchos::RCP<Epetra_MultiVector> oldMulti;
-
-  if (activation_time_np_ != Teuchos::null)
-  {
-    old = activation_time_np_;
-    activation_time_np_ = LINALG::CreateVector(*dofrowmap,true);
-    LINALG::Export(*old, *activation_time_np_);
-  }
-
-  if (material_internal_state_np_ != Teuchos::null and  nb_max_mat_int_state_vars_)
-  {
-    oldMulti = material_internal_state_np_;
-    material_internal_state_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_int_state_vars_,true));
-    LINALG::Export(*oldMulti, *material_internal_state_np_);
-  }
-
-  if (material_internal_state_np_component_ != Teuchos::null and nb_max_mat_int_state_vars_)
-    {
-      old = material_internal_state_np_component_;
-      material_internal_state_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
-      LINALG::Export(*old, *material_internal_state_np_component_);
-    }
-
-  if (material_ionic_currents_np_ != Teuchos::null and  nb_max_mat_ionic_currents_)
-  {
-    oldMulti = material_ionic_currents_np_;
-    material_ionic_currents_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_ionic_currents_,true));
-    LINALG::Export(*oldMulti, *material_ionic_currents_np_);
-  }
-
-  if (material_ionic_currents_np_component_ != Teuchos::null and nb_max_mat_ionic_currents_)
-    {
-      old = material_ionic_currents_np_component_;
-      material_ionic_currents_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
-      LINALG::Export(*old, *material_ionic_currents_np_component_);
-    }
-
-  if (phinp_ != Teuchos::null)
-  {
-    old = phinp_;
-    phinp_ = LINALG::CreateVector(*dofrowmap,true);
-    LINALG::Export(*old, *phinp_);
-  }
-
-  if (phin_ != Teuchos::null)
-  {
-    old = phin_;
-    phin_ = LINALG::CreateVector(*dofrowmap,true);
-    LINALG::Export(*old, *phin_);
-  }
-
-  // phi at time 0 as reference for reinitialization procedure
-  if (phistart_ != Teuchos::null)
-  {
-    old = phistart_;
-    phistart_ = LINALG::CreateVector(*dofrowmap,true);
-    LINALG::Export(*old, *phistart_);
-  }
-
-  // temporal solution derivative at time n+1
-  if (phidtnp_ != Teuchos::null)
-  {
-    old = phidtnp_;
-    phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
-    LINALG::Export(*old, *phidtnp_);
-  }
-
-  // temporal solution derivative at time n
-  if (phidtn_ != Teuchos::null)
-  {
-    old = phidtn_;
-    phidtn_ = LINALG::CreateVector(*dofrowmap,true);
-    LINALG::Export(*old, *phidtn_);
-  }
-
-  // history vector (a linear combination of phinm, phin (BDF)
-  // or phin, phidtn (One-Step-Theta, Generalized-alpha))
-  if (hist_ != Teuchos::null)
-  {
-    old = hist_;
-    hist_ = LINALG::CreateVector(*dofrowmap,true);
-    LINALG::Export(*old, *hist_);
-  }
-
-  // velocities (always three velocity components per node)
-  // (get noderowmap of discretization for creating this multivector)
-  if (convel_ != Teuchos::null)
-  {
-    oldMulti = convel_;
-    convel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-    LINALG::Export(*oldMulti, *convel_);
-  }
-  if (vel_ != Teuchos::null)
-  {
-    oldMulti = vel_;
-    vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-    LINALG::Export(*oldMulti, *vel_);
-  }
-  if (fsvel_ != Teuchos::null)
-  {
-    oldMulti = fsvel_;
-    fsvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-    LINALG::Export(*oldMulti, *fsvel_);
-  }
-
-  // acceleration and pressure required for computation of subgrid-scale
-  // velocity (always four components per node)
-  if (accpre_ != Teuchos::null)
-  {
-    oldMulti = accpre_;
-    accpre_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,4,true));
-    LINALG::Export(*oldMulti, *accpre_);
-  }
-
-  if (dispnp_ != Teuchos::null)
-  {
-    oldMulti = dispnp_;
-    dispnp_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-    LINALG::Export(*oldMulti, *dispnp_);
-  }
-
-  // -------------------------------------------------------------------
-  // create vectors associated to boundary conditions
-  // -------------------------------------------------------------------
-  // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  if (zeros_ != Teuchos::null)
-  {
-    old = zeros_;
-    zeros_ = LINALG::CreateVector(*dofrowmap,true);
-    LINALG::Export(*old, *zeros_);
-  }
-
-  // -------------------------------------------------------------------
-  // create vectors associated to solution process
-  // -------------------------------------------------------------------
-  // the vector containing body and surface forces
-  if (neumann_loads_ != Teuchos::null)
-  {
-    old = neumann_loads_;
-    neumann_loads_ = LINALG::CreateVector(*dofrowmap,true);
-    LINALG::Export(*old, *neumann_loads_);
-  }
-
-  // the residual vector --- more or less the rhs
-  if (residual_ != Teuchos::null)
-  {
-    old = residual_;
-    residual_ = LINALG::CreateVector(*dofrowmap,true);
-    LINALG::Export(*old, *residual_);
-  }
-
-  // residual vector containing the normal boundary fluxes
-  if (trueresidual_ != Teuchos::null)
-  {
-    old = trueresidual_;
-    trueresidual_ = LINALG::CreateVector(*dofrowmap,true);
-    LINALG::Export(*old, *trueresidual_);
-  }
-
-  // incremental solution vector
-  if (increment_ != Teuchos::null)
-  {
-    old = increment_;
-    increment_ = LINALG::CreateVector(*dofrowmap,true);
-    LINALG::Export(*old, *increment_);
-  }
-
-  // subgrid-diffusivity(-scaling) vector
-  // (used either for AVM3 approach or temperature equation
-  //  with all-scale subgrid-diffusivity model)
-  if (subgrdiff_ != Teuchos::null)
-  {
-    old = subgrdiff_;
-    subgrdiff_ = LINALG::CreateVector(*dofrowmap,true);
-    LINALG::Export(*old, *subgrdiff_);
-  }
-
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
-  {
-    dserror("No redistribution for AVM3 subgrid stuff.");
-  }
-
-  if (IsElch(scatratype_))
-    dserror("No redistribution for the elch.");
-
-  if(discret_->Comm().MyPID()==0)
-    std::cout << "done" << std::endl;
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::Redistribute
 
 /*----------------------------------------------------------------------*
  | contains the time loop                                       vg 05/07|
@@ -1604,10 +1365,10 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     if (writeflux_!=INPAR::SCATRA::flux_no)
     {
       // for flux output of initial field (before first solve) do:
-      if (step_==0){
+      if (step_==0)
         flux_= CalcFlux(true, num);
-        OutputFlux(flux_);
-      }
+
+      OutputFlux(flux_);
     }
 
     // write mean values of scalar(s)
@@ -2107,10 +1868,6 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     // calculate initial field
     HitInitialScalarField->CalculateInitialField();
 
-    // initialize forcing algorithm
-    if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING")=="isotropic")
-      homisoturb_forcing_->SetInitialSpectrum(init);
-
     break;
   }
   default:
@@ -2239,8 +1996,9 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
 
     // set parameters for elements that do not change over mode
     mode_params.set<int>("action",SCATRA::integrate_shape_functions);
-    mode_params.set<int>("scatratype",scatratype_);
-    mode_params.set("isale",isale_);
+    // TODO: SCATRA_ELEL_CLEANING
+//    mode_params.set<int>("scatratype",scatratype_);
+//    mode_params.set("isale",isale_);
     if (isale_)
       AddMultiVectorToParameterList(mode_params,"dispnp",dispnp_);
 
@@ -2511,21 +2269,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  if (reinitswitch_ == true)
-  {
-    eleparams.set<int>("action",SCATRA::reinitialize_levelset);
-  }
-  else if(timealgo_ == INPAR::SCATRA::timeint_tg2
-       or timealgo_ == INPAR::SCATRA::timeint_tg3)
-  {
-    // taylor galerkin transport of levelset
-    eleparams.set<int>("action",SCATRA::calc_TG_mat_and_rhs);
-  }
-  else
-  {
-    // standard case
-    eleparams.set<int>("action",SCATRA::calc_mat_and_rhs);
-  }
+  eleparams.set<int>("action",SCATRA::calc_mat_and_rhs);
 
   // DO THIS AT VERY FIRST!!!
   // compute reconstructed diffusive fluxes for better consistency
@@ -2540,30 +2284,17 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // set type of scalar transport problem
   eleparams.set<int>("scatratype",scatratype_);
 
-  // other parameters that might be needed by the elements
-  eleparams.set("time-step length",dta_);
-  eleparams.set("incremental solver",incremental_);
-  eleparams.set<int>("form of convective term",convform_);
-  eleparams.set<int>("fs subgrid diffusivity",fssgd_);
-  // set general parameters for turbulent flow
   // prepare dynamic Smagorinsky model if required,
   // i.e. calculate turbulent Prandtl number
-  if ((timealgo_ == INPAR::SCATRA::timeint_gen_alpha or timealgo_ == INPAR::SCATRA::timeint_one_step_theta
-      or timealgo_ == INPAR::SCATRA::timeint_bdf2) and reinitswitch_ == false)
+  if (timealgo_ != INPAR::SCATRA::timeint_stationary)
+  {
     DynamicComputationOfCs();
-  if ((timealgo_ == INPAR::SCATRA::timeint_gen_alpha or timealgo_ == INPAR::SCATRA::timeint_one_step_theta
-      or timealgo_ == INPAR::SCATRA::timeint_bdf2) and reinitswitch_ == false)
     DynamicComputationOfCv();
+  }
+  // this is parameterlist is required here to get the element-based filtered constants
   eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
-  // set model-dependent parameters
-  eleparams.sublist("SUBGRID VISCOSITY") = extraparams_->sublist("SUBGRID VISCOSITY");
-  // and set parameters for multifractal subgrid-scale modeling
-  if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
-    eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
-  eleparams.set("turbulent inflow",turbinflow_);
+
   eleparams.set("frt",frt_);// ELCH specific factor F/RT
-  if (scatratype_ == INPAR::SCATRA::scatratype_loma)
-    eleparams.set<bool>("update material",(&(extraparams_->sublist("LOMA")))->get<bool>("update material",false));
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
@@ -2579,12 +2310,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   eleparams.set("isale",isale_);
   if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
-  // set switch for reinitialization
-  eleparams.set("reinitswitch",reinitswitch_);
-
-  // parameters for stabilization
-  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
   // parameters for Elch/DiffCond formulation
   if(IsElch(scatratype_))
     eleparams.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
@@ -2597,8 +2322,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
       (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales))
    AVM3Separation();
 
-  // add element parameters according to time-integration scheme
-  AddSpecificTimeIntegrationParameters(eleparams);
+  // add state vectors according to time-integration scheme
+  AddTimeIntegrationSpecificVectors();
 
   // set external volume force (required, e.g., for forced homogeneous isotropic turbulence)
   if (homisoturb_forcing_ != Teuchos::null)
@@ -2607,8 +2332,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   if (forcing_!=Teuchos::null)
     discret_->SetState("forcing",forcing_);
 
-  // add reinitialization specific time-integration parameters
-  if (reinitswitch_) AddReinitializationParameters(eleparams);
+  // add problem specific time-integration parameters
+  AddProblemSpecificParametersAndVectors(eleparams);
 
   // call loop over elements (with or without subgrid-diffusivity(-scaling) vector)
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
@@ -2628,6 +2353,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
     // set action for elements
     mhdbcparams.set<int>("action",SCATRA::bd_calc_weak_Dirichlet);
+    //TODO: SCATRA_ELE_CALC
     mhdbcparams.set("incremental solver",incremental_);
     mhdbcparams.set("isale",isale_);
 
@@ -2635,7 +2361,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
     AddMultiVectorToParameterList(mhdbcparams,"convective velocity field",convel_);
     AddMultiVectorToParameterList(mhdbcparams,"velocity field",vel_);
-    AddSpecificTimeIntegrationParameters(mhdbcparams);
+    AddTimeIntegrationSpecificVectors();
 
     // evaluate all mixed hybrid Dirichlet boundary conditions
     discret_->EvaluateCondition
@@ -2659,9 +2385,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     // clear state
     discret_->ClearState();
   }
-
-  AssembleMatAndRHS_Boundary();
-
 
   // AVM3 scaling for non-incremental solver: scaling of normalized AVM3-based
   // fine-scale subgrid-diffusivity matrix by subgrid diffusivity
@@ -2779,10 +2502,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   while (!stopgalvanostat) // galvanostatic control (ELCH)
   {
   // out to screen
-  if(reinitswitch_==false)
-    PrintTimeStepInfo();
-  else
-    PrintPseudoTimeStepInfoReinit();
+  PrintTimeStepInfo();
 
   // special preparations for multifractal subgrid-scale model
   if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
@@ -2831,14 +2551,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
   while (stopnonliniter==false)
   {
-
-#ifdef VISUALIZE_ELEDATA_GMSH
-    const bool screen_out = false;
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("SubgridVelocityScatra", 0, 5, screen_out, 0);
-    std::ofstream gmshfilecontent(filename.c_str());//, ios_base::out | ios_base::app);
-    gmshfilecontent << "View \" " << "SubgridVelocityScatra" << " \" {\n";
-    gmshfilecontent.close();
-#endif
 
     itnum++;
 
@@ -2958,14 +2670,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
   stopgalvanostat = ApplyGalvanostaticControl();
   } // galvanostatic control
-
-#ifdef VISUALIZE_ELEDATA_GMSH
-  const bool screen_out = false;
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("SubgridVelocityScatra", 0, 5, screen_out, 0);
-  std::ofstream gmshfilecontent(filename.c_str(), ios_base::out | ios_base::app);
-  gmshfilecontent << "};\n";
-  gmshfilecontent.close();
-#endif
 
   return;
 } // ScaTraTimIntImpl::NonlinearSolve
@@ -3184,12 +2888,6 @@ std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
   case INPAR::SCATRA::timeint_gen_alpha :
     return "  Gen. Alpha  ";
     break;
-  case INPAR::SCATRA::timeint_tg2 :
-    return "  Taylor Galerkin 2rd order  ";
-    break;
-  case INPAR::SCATRA::timeint_tg3 :
-    return "  Taylor Galerkin 3rd order  ";
-    break;
   default :
     dserror("Cannot cope with name enum %d", term);
     return "";
@@ -3260,8 +2958,8 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
 
 
   // convective velocity (not written in case of coupled simulations)
-//  if (cdvel_ != INPAR::SCATRA::velocity_Navier_Stokes)
-//    output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
+  if (cdvel_ != INPAR::SCATRA::velocity_Navier_Stokes)
+    output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
 
   // displacement field
   if (isale_) output_->WriteVector("dispnp", dispnp_);
@@ -3290,6 +2988,8 @@ inline void SCATRA::ScaTraTimIntImpl::IncrementTimeAndStep()
   time_ += dta_;
 }
 
+
+//TODO: SCATRA_ELE_CLEANING: CARDIO (Cristobal, Andi N., Lasse)
 /*----------------------------------------------------------------------*
  | time update of time-dependent materials                    gjb 07/12 |
  *----------------------------------------------------------------------*/
@@ -3301,7 +3001,8 @@ void SCATRA::ScaTraTimIntImpl::ElementMaterialTimeUpdate()
   p.set<int>("action", SCATRA::time_update_material);
   // further required parameters
   p.set<int>("scatratype",scatratype_);
-  p.set("time-step length",dta_);
+  //TODO: SCATRA_ELE_CLEANING
+  //p.set("time-step length",dta_);
 
   // set vector values needed by elements
   discret_->ClearState();

@@ -25,6 +25,8 @@ Maintainer: Volker Gravemeier
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_scatra/scatra_timint_loma.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 LOMA::Algorithm::Algorithm(
@@ -57,7 +59,7 @@ LOMA::Algorithm::Algorithm(
   samstart_     = fluiddyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START");
 
   // check scatra solver type, which should be incremental, for the time being
-  if (ScaTraField().IsIncremental() == false)
+  if (ScaTraFieldrcp()->IsIncremental() == false)
     dserror("Incremental ScaTra formulation required for low-Mach-number flow");
 
   // flag for turbulent inflow
@@ -101,12 +103,12 @@ LOMA::Algorithm::Algorithm(
     // generate proxy of fluid dof set to be used by scatra field
     Teuchos::RCP<DRT::DofSet> fluiddofset = FluidField().Discretization()->GetDofSetProxy();
     // generate proxy of scatra dof set to be used by fluid field
-    Teuchos::RCP<DRT::DofSet> scatradofset = ScaTraField().Discretization()->GetDofSetProxy();
+    Teuchos::RCP<DRT::DofSet> scatradofset = ScaTraFieldrcp()->Discretization()->GetDofSetProxy();
 
     // check number of dof sets in respective fields
     if (FluidField().Discretization()->AddDofSet(scatradofset)!=1)
       dserror("Incorrect number of dof sets in fluid field!");
-    if (ScaTraField().Discretization()->AddDofSet(fluiddofset)!=1)
+    if (ScaTraFieldrcp()->Discretization()->AddDofSet(fluiddofset)!=1)
       dserror("Incorrect number of dof sets in scatra field!");
 
     // create combined map for loma problem
@@ -115,7 +117,7 @@ LOMA::Algorithm::Algorithm(
     // insert actual (zeroth) map of the discretization: first fluid, then scatra
     {
       dofrowmaps.push_back(FluidField().DofRowMap(0));
-      const Epetra_Map* dofrowmapscatra = (ScaTraField().Discretization())->DofRowMap(0);
+      const Epetra_Map* dofrowmapscatra = (ScaTraFieldrcp()->Discretization())->DofRowMap(0);
       dofrowmaps.push_back(Teuchos::rcp(dofrowmapscatra, false));
     }
 
@@ -165,7 +167,7 @@ LOMA::Algorithm::Algorithm(
     lomasolver_->PutSolverParamsToSubParams("Inverse2",DRT::Problem::Instance()->SolverParams(scalartransportsolvernumber));
 
     FluidField().Discretization()->ComputeNullSpaceIfNecessary(lomasolver_->Params().sublist("Inverse1"));
-    ScaTraField().Discretization()->ComputeNullSpaceIfNecessary(lomasolver_->Params().sublist("Inverse2"));
+    ScaTraFieldrcp()->Discretization()->ComputeNullSpaceIfNecessary(lomasolver_->Params().sublist("Inverse2"));
 
     // create loma block matrix
     lomasystemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(lomablockdofrowmap_,lomablockdofrowmap_,135,false,true));
@@ -181,7 +183,7 @@ LOMA::Algorithm::Algorithm(
 
     // create combined Dirichlet boundary condition map
     const Teuchos::RCP<const Epetra_Map > fdbcmap = FluidField().GetDBCMapExtractor()->CondMap();
-    const Teuchos::RCP<const Epetra_Map > sdbcmap = ScaTraField().DirichMaps()->CondMap();
+    const Teuchos::RCP<const Epetra_Map > sdbcmap = ScaTraFieldrcp()->DirichMaps()->CondMap();
     lomadbcmap_ = LINALG::MergeMap(fdbcmap,sdbcmap,false);
   }
 
@@ -209,10 +211,10 @@ void LOMA::Algorithm::TimeLoop()
   else
   // set scalar field and thermodynamic pressure for evaluation of
   // Neumann boundary conditions in FLUID at beginning of first time step
-  FluidField().SetTimeLomaFields(ScaTraField().Phinp(),
-                                 ScaTraField().ThermPressNp(),
+  FluidField().SetTimeLomaFields(ScaTraFieldrcp()->Phinp(),
+                                 Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressNp(),
                                  Teuchos::null,
-                                 ScaTraField().Discretization());
+                                 ScaTraFieldrcp()->Discretization());
 
   // time loop
   while (NotFinished())
@@ -244,7 +246,7 @@ void LOMA::Algorithm::InitialCalculations()
 {
   // set initial velocity field for evaluation of initial scalar time
   // derivative in SCATRA
-  ScaTraField().SetVelocityField(FluidField().Velnp(),
+  ScaTraFieldrcp()->SetVelocityField(FluidField().Velnp(),
                                  Teuchos::null,
                                  Teuchos::null,
                                  FluidField().FsVel(),
@@ -252,21 +254,21 @@ void LOMA::Algorithm::InitialCalculations()
                                  FluidField().Discretization());
 
   // set initial value of thermodynamic pressure in SCATRA
-  ScaTraField().SetInitialThermPressure();
+  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->SetInitialThermPressure();
 
   // energy conservation: compute initial time derivative of therm. pressure
   // mass conservation: compute initial mass (initial time deriv. assumed zero)
   if (consthermpress_=="No_energy")
-    ScaTraField().ComputeInitialThermPressureDeriv();
+    Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ComputeInitialThermPressureDeriv();
   else if (consthermpress_=="No_mass")
-    ScaTraField().ComputeInitialMass();
+    Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ComputeInitialMass();
 
   // set initial scalar field and thermodynamic pressure for evaluation of
   // Neumann boundary conditions in FLUID at beginning of first time step
-  FluidField().SetTimeLomaFields(ScaTraField().Phinp(),
-                                 ScaTraField().ThermPressNp(),
+  FluidField().SetTimeLomaFields(ScaTraFieldrcp()->Phinp(),
+                                 Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressNp(),
                                  Teuchos::null,
-                                 ScaTraField().Discretization());
+                                 ScaTraFieldrcp()->Discretization());
 
   // write initial fields
   //Output();
@@ -281,11 +283,11 @@ void LOMA::Algorithm::PrepareTimeStep()
 {
   // prepare scalar transport time step
   // (+ computation of initial scalar time derivative in first time step)
-  ScaTraField().PrepareTimeStep();
+  ScaTraFieldrcp()->PrepareTimeStep();
 
   // predict thermodynamic pressure and time derivative
   // (if not constant or based on mass conservation)
-  if (consthermpress_=="No_energy") ScaTraField().PredictThermPressure();
+  if (consthermpress_=="No_energy") Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->PredictThermPressure();
 
   // prepare fluid time step, among other things, predict velocity field
   FluidField().PrepareTimeStep();
@@ -306,7 +308,7 @@ void LOMA::Algorithm::OuterLoop()
     std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
 
     printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d\n",
-           Time(),maxtime_,dt_,ScaTraField().MethodTitle().c_str(),Step(),stepmax_);
+           Time(),maxtime_,dt_,ScaTraFieldrcp()->MethodTitle().c_str(),Step(),stepmax_);
   }
 
 //  // maximum number of iterations tolerance for outer iteration
@@ -347,7 +349,7 @@ void LOMA::Algorithm::OuterLoop()
   // initially solve scalar transport equation
   // (values for intermediate time steps were calculated at the end of PerpareTimeStep)
   if (Comm().MyPID()==0) std::cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
-  ScaTraField().Solve();
+  ScaTraFieldrcp()->Solve();
 
   while (stopnonliniter==false)
   {
@@ -356,9 +358,9 @@ void LOMA::Algorithm::OuterLoop()
     // in case of non-constant thermodynamic pressure: compute
     // (either based on energy conservation or based on mass conservation)
     if (consthermpress_=="No_energy")
-      ScaTraField().ComputeThermPressure();
+      Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ComputeThermPressure();
     else if (consthermpress_=="No_mass")
-      ScaTraField().ComputeThermPressureFromMassCons();
+      Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ComputeThermPressureFromMassCons();
 
     // set scatra values required in fluid
     SetScaTraValuesInFluid();
@@ -372,7 +374,7 @@ void LOMA::Algorithm::OuterLoop()
 
     // solve scalar transport equation
     if (Comm().MyPID()==0) std::cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
-    ScaTraField().Solve();
+    ScaTraFieldrcp()->Solve();
 
     // check convergence and stop iteration loop if convergence is achieved
     stopnonliniter = ConvergenceCheck(itnum);
@@ -394,7 +396,7 @@ void LOMA::Algorithm::MonoLoop()
     std::cout<<"\n****************************************\n       MONOLITHIC ITERATION LOOP\n****************************************\n";
 
     printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d\n",
-           Time(),maxtime_,dt_,ScaTraField().MethodTitle().c_str(),Step(),stepmax_);
+           Time(),maxtime_,dt_,ScaTraFieldrcp()->MethodTitle().c_str(),Step(),stepmax_);
   }
 
   // maximum number of iterations tolerance for monolithic iteration
@@ -416,15 +418,15 @@ void LOMA::Algorithm::MonoLoop()
     // in case of non-constant thermodynamic pressure: compute
     // (either based on energy conservation or based on mass conservation)
     if (consthermpress_=="No_energy")
-      ScaTraField().ComputeThermPressure();
+      Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ComputeThermPressure();
     else if (consthermpress_=="No_mass")
-      ScaTraField().ComputeThermPressureFromMassCons();
+      Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ComputeThermPressureFromMassCons();
 
     // set scatra values required in fluid
     SetScaTraValuesInFluid();
 
     // preparatives for scalar transport and fluid solver
-    ScaTraField().PrepareLinearSolve();
+    ScaTraFieldrcp()->PrepareLinearSolve();
     FluidField().PrepareSolve();
 
     // set up matrix and right-hand-side for monolithic low-Mach-number system
@@ -455,7 +457,7 @@ void LOMA::Algorithm::SetFluidValuesInScaTra()
   {
   case INPAR::FLUID::timeint_afgenalpha:
   {
-    ScaTraField().SetVelocityField(FluidField().Velaf(),
+    ScaTraFieldrcp()->SetVelocityField(FluidField().Velaf(),
                                    FluidField().Accam(),
                                    Teuchos::null,
                                    FluidField().FsVel(),
@@ -466,7 +468,7 @@ void LOMA::Algorithm::SetFluidValuesInScaTra()
   case INPAR::FLUID::timeint_one_step_theta:
   case INPAR::FLUID::timeint_bdf2:
   {
-    ScaTraField().SetVelocityField(FluidField().Velnp(),
+    ScaTraFieldrcp()->SetVelocityField(FluidField().Velnp(),
                                    FluidField().Hist(),
                                    Teuchos::null,
                                    FluidField().FsVel(),
@@ -492,28 +494,28 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
   {
   case INPAR::FLUID::timeint_afgenalpha:
   {
-    FluidField().SetIterLomaFields(ScaTraField().Phiaf(),
-                                   ScaTraField().Phiam(),
-                                   ScaTraField().Phidtam(),
-                                   ScaTraField().FsPhi(),
-                                   ScaTraField().ThermPressAf(),
-                                   ScaTraField().ThermPressAm(),
-                                   ScaTraField().ThermPressDtAf(),
-                                   ScaTraField().ThermPressDtAm(),
-                                   ScaTraField().Discretization());
+    FluidField().SetIterLomaFields(ScaTraFieldrcp()->Phiaf(),
+                                   ScaTraFieldrcp()->Phiam(),
+                                   ScaTraFieldrcp()->Phidtam(),
+                                   ScaTraFieldrcp()->FsPhi(),
+                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressAf(),
+                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressAm(),
+                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressDtAf(),
+                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressDtAm(),
+                                   ScaTraFieldrcp()->Discretization());
   }
   break;
   case INPAR::FLUID::timeint_one_step_theta:
   {
-    FluidField().SetIterLomaFields(ScaTraField().Phinp(),
-                                   ScaTraField().Phin(),
-                                   ScaTraField().Phidtnp(),
-                                   ScaTraField().FsPhi(),
-                                   ScaTraField().ThermPressNp(),
-                                   ScaTraField().ThermPressN(),
-                                   ScaTraField().ThermPressDtNp(),
-                                   ScaTraField().ThermPressDtNp(),
-                                   ScaTraField().Discretization());
+    FluidField().SetIterLomaFields(ScaTraFieldrcp()->Phinp(),
+                                   ScaTraFieldrcp()->Phin(),
+                                   ScaTraFieldrcp()->Phidtnp(),
+                                   ScaTraFieldrcp()->FsPhi(),
+                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressNp(),
+                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressN(),
+                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressDtNp(),
+                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressDtNp(),
+                                   ScaTraFieldrcp()->Discretization());
   }
   break;
   default:
@@ -547,7 +549,7 @@ void LOMA::Algorithm::SetupMonoLomaMatrix()
   // 2nd diagonal block (lower right): scatra weighting - scatra solution
   //----------------------------------------------------------------------
   // get matrix block
-  Teuchos::RCP<LINALG::SparseMatrix> mat_ss = ScaTraField().SystemMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> mat_ss = ScaTraFieldrcp()->SystemMatrix();
 
   // uncomplete matrix block (appears to be required in certain cases)
   mat_ss->UnComplete();
@@ -579,7 +581,7 @@ void LOMA::Algorithm::SetupMonoLomaMatrix()
   //----------------------------------------------------------------------
   // create matrix block
   Teuchos::RCP<LINALG::SparseMatrix> mat_sf = Teuchos::null;
-  mat_sf = Teuchos::rcp(new LINALG::SparseMatrix(*(ScaTraField().Discretization()->DofRowMap(0)),108,true,true));
+  mat_sf = Teuchos::rcp(new LINALG::SparseMatrix(*(ScaTraFieldrcp()->Discretization()->DofRowMap(0)),108,true,true));
 
   // evaluate loma off-diagonal matrix block in scatra
   // (for present fixed-point-like iteration: no entries)
@@ -619,10 +621,10 @@ void LOMA::Algorithm::EvaluateLomaODBlockMatFluid(
   if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
   {
     // set thermodynamic pressures
-    fparams.set("thermpress at n+alpha_F/n+1",ScaTraField().ThermPressAf());
-    fparams.set("thermpress at n+alpha_M/n",ScaTraField().ThermPressAm());
-    fparams.set("thermpressderiv at n+alpha_F/n+1",ScaTraField().ThermPressDtAf());
-    fparams.set("thermpressderiv at n+alpha_M/n+1",ScaTraField().ThermPressDtAm());
+    fparams.set("thermpress at n+alpha_F/n+1",Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressAf());
+    fparams.set("thermpress at n+alpha_M/n",Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressAm());
+    fparams.set("thermpressderiv at n+alpha_F/n+1",Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressDtAf());
+    fparams.set("thermpressderiv at n+alpha_M/n+1",Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressDtAm());
 
     // set velocity vector
     FluidField().Discretization()->SetState(0,"velaf",FluidField().Velaf());
@@ -630,10 +632,10 @@ void LOMA::Algorithm::EvaluateLomaODBlockMatFluid(
   else if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_one_step_theta)
   {
     // set thermodynamic pressures
-    fparams.set("thermpress at n+alpha_F/n+1",ScaTraField().ThermPressNp());
-    fparams.set("thermpress at n+alpha_M/n",ScaTraField().ThermPressN());
-    fparams.set("thermpressderiv at n+alpha_F/n+1",ScaTraField().ThermPressDtNp());
-    fparams.set("thermpressderiv at n+alpha_M/n+1",ScaTraField().ThermPressDtNp());
+    fparams.set("thermpress at n+alpha_F/n+1",Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressNp());
+    fparams.set("thermpress at n+alpha_M/n",Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressN());
+    fparams.set("thermpressderiv at n+alpha_F/n+1",Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressDtNp());
+    fparams.set("thermpressderiv at n+alpha_M/n+1",Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressDtNp());
 
     // set velocity vector
     FluidField().Discretization()->SetState(0,"velaf",FluidField().Velnp());
@@ -666,7 +668,7 @@ void LOMA::Algorithm::SetupMonoLomaRHS()
 {
   // define fluid and scatra residual vectors
   Teuchos::RCP<const Epetra_Vector> fluidres  = FluidField().RHS();
-  Teuchos::RCP<const Epetra_Vector> scatrares = ScaTraField().Residual();
+  Teuchos::RCP<const Epetra_Vector> scatrares = ScaTraFieldrcp()->Residual();
 
   // insert fluid and scatra residual vectors into loma residual vector
   lomablockdofrowmap_.InsertVector(*fluidres, 0,*lomarhs_);
@@ -706,7 +708,7 @@ void LOMA::Algorithm::IterUpdate()
   // add incremental fluid and scatra solution vectors to
   // respective solution vectors from last iteration step
   FluidField().IterUpdate(incfluid);
-  ScaTraField().UpdateIter(incscatra);
+  ScaTraFieldrcp()->UpdateIter(incscatra);
 }
 
 
@@ -728,7 +730,7 @@ bool LOMA::Algorithm::ConvergenceCheck(int itnum)
 
   // scatra convergence check
   if (Comm().MyPID()==0) std::cout<<"\n****************************************\n         SCALAR TRANSPORT CHECK\n****************************************\n";
-  scatrastopnonliniter = ScaTraField().ConvergenceCheck(itnum,itmax_,ittol_);
+  scatrastopnonliniter = Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ConvergenceCheck(itnum,itmax_,ittol_);
 
   if (fluidstopnonliniter == true and scatrastopnonliniter == true) return true;
   else                                                              return false;
@@ -740,11 +742,11 @@ bool LOMA::Algorithm::ConvergenceCheck(int itnum)
 void LOMA::Algorithm::TimeUpdate()
 {
   // update scalar
-  ScaTraField().Update();
+  ScaTraFieldrcp()->Update();
 
   // in case of non-constant thermodynamic pressure: update
   if (consthermpress_=="No_energy" or consthermpress_=="No_mass")
-    ScaTraField().UpdateThermPressure();
+    Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->UpdateThermPressure();
 
   // update fluid
   FluidField().Update();
@@ -760,10 +762,10 @@ void LOMA::Algorithm::Output()
   // set scalar and thermodynamic pressure at n+1 and SCATRA trueresidual
   // for statistical evaluation and evaluation of Neumann boundary
   // conditions at the beginning of the subsequent time step
-  FluidField().SetTimeLomaFields(ScaTraField().Phinp(),
-                                 ScaTraField().ThermPressNp(),
-                                 ScaTraField().TrueResidual(),
-                                 ScaTraField().Discretization());
+  FluidField().SetTimeLomaFields(ScaTraFieldrcp()->Phinp(),
+                                 Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraFieldrcp())->ThermPressNp(),
+                                 ScaTraFieldrcp()->TrueResidual(),
+                                 ScaTraFieldrcp()->Discretization());
 
   // Note: The order is important here! Herein, control file entries are
   // written, defining the order in which the filters handle the
@@ -771,7 +773,7 @@ void LOMA::Algorithm::Output()
   // discretizations.
   FluidField().StatisticsAndOutput();
 
-  ScaTraField().Output();
+  ScaTraFieldrcp()->Output();
 
   return;
 }
@@ -788,15 +790,15 @@ void LOMA::Algorithm::ReadInflowRestart(int restart)
   //          to obtain non-zero values which otherwise cause troubles when dividing by them
   //          we have to set the temperature field here
   // set initial scalar field
-  FluidField().SetTimeLomaFields(ScaTraField().Phinp(),
+  FluidField().SetTimeLomaFields(ScaTraFieldrcp()->Phinp(),
                                  0.0,
                                  Teuchos::null,
-                                 ScaTraField().Discretization());
+                                 ScaTraFieldrcp()->Discretization());
   FluidField().ReadRestart(restart);
   // as ReadRestart is only called for the FluidField
   // time and step have not been set in the superior class and the ScaTraField
   SetTimeStep(FluidField().Time(),FluidField().Step());
-  ScaTraField().SetTimeStep(FluidField().Time(),FluidField().Step());
+  ScaTraFieldrcp()->SetTimeStep(FluidField().Time(),FluidField().Step());
   return;
 }
 

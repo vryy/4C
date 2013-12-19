@@ -23,6 +23,18 @@ namespace INPAR
   namespace ELCH
   {
 
+  /// type of elch problem
+  enum ElchType
+  {
+    elchtype_undefined,
+    elchtype_enc,
+    elchtype_enc_pde,
+    elchtype_enc_pde_elim,
+    elchtype_poisson,
+    elchtype_laplace,
+    elchtype_diffcond
+  };
+
   /// possible types of moving boundary simulation
   enum ElchMovingBoundary
   {

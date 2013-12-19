@@ -22,7 +22,7 @@ Maintainer: Andreas Ehrl
 namespace SCATRA
 {
 
-class TimIntStationary : public ScaTraTimIntImpl
+class TimIntStationary : public virtual ScaTraTimIntImpl
 {
 
 public:
@@ -37,17 +37,11 @@ public:
   /// Destructor
   virtual ~TimIntStationary();
 
-  /// predict thermodynamic pressure and time derivative for low-Mach-number flow
-  void PredictThermPressure(){return;};
+  /// initialize time integration scheme
+  virtual void Init();
 
   /// compute values at intermediate time steps (required for generalized-alpha)
   void ComputeIntermediateValues(){return;};
-
-  /// compute values of thermodynamic pressure at intermediate time steps (required for generalized-alpha)
-  void ComputeThermPressureIntermediateValues(){return;};
-
-  /// compute thermodynamic pressure and time derivative for low-Mach-number flow
-  void ComputeThermPressure(){return;};
 
   ///  compute scalar time derivative
   void ComputeTimeDerivative(){return;};
@@ -55,21 +49,12 @@ public:
   ///  compute scalar time derivate parameters of the input voltage
   void ComputeTimeDerivPot0(const bool init);
 
-  ///  compute time derivative of thermodynamic pressure
-  void ComputeThermPressureTimeDerivative(){return;};
-
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
   void Update(const int num=0);
 
-  /// update thermodynamic pressure and time derivative for low-Mach-number flow
-  void UpdateThermPressure(){return;};
-
   /// update density field for ELCH natural convection
   void UpdateDensityElch(){return;};
-
-  /// update solution after reinitialization for OST scheme
-  void UpdateReinit() { dserror("only implemented for OST"); return; };
 
   /// read restart data
   void ReadRestart(int step);
@@ -92,18 +77,6 @@ public:
     Sep_->Multiply(false,*phinp_,*fsphinp_);
     return fsphinp_; };
 
-  /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
-  double ThermPressAf(){return 1.0;}
-
-  /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
-  double ThermPressAm(){return 1.0;}
-
-  /// routine to return time derivative of thermo. press. at time step n+alpha_F for low-Mach-number flow
-  double ThermPressDtAf(){return 0.0;}
-
-  /// routine to return time derivative of thermo. press. at time step n+alpha_M for low-Mach-number flow
-  double ThermPressDtAm(){return 0.0;}
-
   /// routine to return time integration specific parameters
   Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList()
   {dserror("Not yet implemented!"); return Teuchos::null;}
@@ -116,6 +89,15 @@ protected:
 
   /// copy constructor
   TimIntStationary (const TimIntStationary& old);
+
+  /// set time parameter for element evaluation
+  virtual void SetElementTimeParameter();
+
+  /// set time parameter for element evaluation for forced incremental solve
+  virtual void SetElementTimeParameterForForcedIncrementalSolve();
+
+  /// set time parameter for element evaluation at initial time = 0.0
+  virtual void SetElementTimeParameterInitial();
 
   /// Initialization procedure before the first time step is done
   void PrepareFirstTimeStep(){
@@ -140,7 +122,7 @@ protected:
   void AVM3Separation();
 
   /// add parameters specific for time-integration scheme
-  void AddSpecificTimeIntegrationParameters(Teuchos::ParameterList& params);
+  void AddTimeIntegrationSpecificVectors();
 
   /// dynamic Smagorinsky model
   void DynamicComputationOfCs() {dserror("no turbulence in stationary flows!"); return;};

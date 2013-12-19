@@ -22,7 +22,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_boundary_impl.H"
 #include "scatra_ele_impl_utils.H"
 #include "scatra_ele_action.H"
-#include "scatra_element.H"
+#include "scatra_ele.H"
 
 #include "../drt_lib/drt_globalproblem.H" // for curves and functions
 #include "../drt_lib/standardtypes_cpp.H" // for EPS12 and so on
@@ -4076,6 +4076,7 @@ template <DRT::Element::DiscretizationType bdistype,
 }
 
 
+// TODO: SCATRA_ELE_CLEANING: Ursula delete
 /*----------------------------------------------------------------------*
  | calculate boundary conditions for expl TaylorGalerkin3 and           |
  | implicit Characteristic Galerkin time integration                    |
@@ -4093,6 +4094,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
     Epetra_SerialDenseVector&          elevec_epetra         //!< ele rhs
  )
 {
+    dserror("You sholud not use this function. It is out of date!");
+#if 0
   INPAR::SCATRA::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::SCATRA::TimeIntegrationScheme>(params,"timealgo");
 
 
@@ -4498,6 +4501,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
     else dserror("no valid timealgo for TaylorGalerkinBoundaryOutflow call");
 
   } // loop over integration points
+#endif
 
   return;
 }

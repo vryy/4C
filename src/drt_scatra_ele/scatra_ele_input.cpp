@@ -12,7 +12,7 @@ Maintainer: Andreas Ehrl
 */
 /*----------------------------------------------------------------------*/
 
-#include "scatra_element.H"
+#include "scatra_ele.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_mat/myocard.H"
 

@@ -657,8 +657,6 @@ set(OBJS_DRT_COMBUST
   src/drt_combust/combust_dyn.cpp
   src/drt_combust/combust_fluidimplicitintegration.cpp
   src/drt_combust/combust_fluidresulttest.cpp
-  src/drt_combust/combust_reinitializer.cpp
-  src/drt_combust/combust_reinitialization_pde.cpp
 )
 set(OBJS_FILTER_COMMON
   src/filter_common/filter_evaluation.cpp
@@ -835,6 +833,10 @@ set(OBJS_DRT_UTILS
 set(OBJS_DRT_SCATRA
   src/drt_scatra/passive_scatra_algorithm.cpp
   src/drt_scatra/scatra_dyn.cpp
+  src/drt_levelset/levelset_algorithm.cpp
+  src/drt_levelset/levelset_algorithm_utils.cpp
+  src/drt_levelset/levelset_algorithm_reinit.cpp
+  src/drt_levelset/levelset_dyn.cpp
   src/drt_scatra/scatra_resulttest.cpp
   src/drt_scatra/scatra_timint_bdf2.cpp
   src/drt_scatra/scatra_timint_genalpha.cpp
@@ -842,13 +844,17 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_timint_implicit_service.cpp
   src/drt_scatra/scatra_timint_ost.cpp
   src/drt_scatra/scatra_timint_stat.cpp
+  src/drt_scatra/scatra_timint_loma.cpp
+  src/drt_scatra/scatra_timint_loma_genalpha.cpp
+  src/drt_scatra/scatra_timint_loma_ost.cpp
+  #src/drt_scatra/scatra_timint_loma_bdf2.cpp
   src/drt_scatra/scatra_utils.cpp
   src/drt_scatra/scatra_utils_clonestrategy.cpp
-  src/drt_scatra/scatra_timint_tg.cpp
-  src/drt_scatra/scatra_timint_reinitialization.cpp
   src/drt_scatra/turbulence_hit_initial_scalar_field.cpp
   src/drt_scatra/turbulence_hit_scalar_forcing.cpp
-  src/drt_levelset/levelset_algorithm.cpp
+  src/drt_levelset/levelset_intersection_utils.cpp
+  src/drt_levelset/levelset_timint_ost.cpp
+  src/drt_levelset/levelset_timint_stat.cpp
 )
 set(OBJS_DRT_TSI
   src/drt_tsi/tsi_algorithm.cpp
@@ -953,16 +959,29 @@ set(OBJS_DRT_REGISTER
   src/drt_lib/drt_parobjectregister.cpp
 )
 set(OBJS_DRT_SCATRA_LIB
-  src/drt_scatra/scatra_ele_boundary_impl.cpp
-  src/drt_scatra/scatra_ele_impl.cpp
-  src/drt_scatra/scatra_ele_impl_reinit.cpp
-  src/drt_scatra/scatra_ele_impl_turbulence_service.cpp
-  src/drt_scatra/scatra_ele_impl_diffcond_service.cpp
-  src/drt_scatra/scatra_ele_impl_utils.cpp
-  src/drt_scatra/scatra_element.cpp
-  src/drt_scatra/scatra_element_boundary_evaluate.cpp
-  src/drt_scatra/scatra_element_evaluate.cpp
-  src/drt_scatra/scatra_element_input.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_impl.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_evaluate.cpp
+  src/drt_scatra_ele/scatra_ele_factory.cpp
+  #src/drt_scatra_ele/scatra_ele_impl.cpp
+  #src/drt_scatra_ele/scatra_ele_impl_diffcond_service.cpp
+  src/drt_scatra_ele/scatra_ele_impl_utils.cpp
+  src/drt_scatra_ele/scatra_ele.cpp
+  src/drt_scatra_ele/scatra_ele_evaluate.cpp
+  src/drt_scatra_ele/scatra_ele_input.cpp
+  src/drt_scatra_ele/scatra_ele_calc.cpp
+  src/drt_scatra_ele/scatra_ele_calc_std.cpp
+  src/drt_scatra_ele/scatra_ele_calc_elch.cpp
+  src/drt_scatra_ele/scatra_ele_calc_loma.cpp
+  src/drt_scatra_ele/scatra_ele_calc_lsreinit.cpp
+  src/drt_scatra_ele/scatra_ele_parameter.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_std.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_lsreinit.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_timint.cpp
+  src/drt_scatra_ele/scatra_ele_calc_service_general.cpp
+  src/drt_scatra_ele/scatra_ele_calc_service_stabilization.cpp
+  src/drt_scatra_ele/scatra_ele_calc_service_turbulence.cpp
+  src/drt_scatra_ele/scatra_ele_calc_service_lsreinit.cpp
+  src/drt_scatra_ele/scatra_ele_calc_service_loma.cpp
 )
 set(OBJS_DRT_MESHFREE_SCATRA_LIB
   src/drt_meshfree_discret/meshfree_scatra_cell.cpp

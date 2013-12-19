@@ -22,7 +22,7 @@ Maintainer: Volker Gravemeier
 namespace SCATRA
 {
 
-class TimIntGenAlpha : public ScaTraTimIntImpl
+class TimIntGenAlpha : public virtual ScaTraTimIntImpl
 {
 
 public:
@@ -37,6 +37,9 @@ public:
   /// Destructor
   virtual ~TimIntGenAlpha();
 
+  /// initialize time integration scheme
+  virtual void Init();
+
   /// Print information about current time step to screen (reimplementation for Gen. Alpha)
   virtual void PrintTimeStepInfo()
   {
@@ -46,17 +49,8 @@ public:
     return;
   }
 
-  /// predict thermodynamic pressure and time derivative for low-Mach-number flow
-  void PredictThermPressure();
-
   /// compute values at intermediate time steps
   void ComputeIntermediateValues();
-
-  /// compute values of thermodynamic pressure at intermediate time steps
-  void ComputeThermPressureIntermediateValues();
-
-  /// compute thermodynamic pressure and time derivative for low-Mach-number flow
-  void ComputeThermPressure();
 
   ///  compute scalar time derivative
   void ComputeTimeDerivative();
@@ -64,21 +58,12 @@ public:
   ///  compute scalar time derivate parameters of the input voltage
   void ComputeTimeDerivPot0(const bool init);
 
-  ///  compute time derivative of thermodynamic pressure
-  void ComputeThermPressureTimeDerivative();
-
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
   void Update(const int num=0);
 
-  /// update thermodynamic pressure and time derivative for low-Mach-number flow
-  void UpdateThermPressure();
-
   /// update density field for ELCH natural convection
   void UpdateDensityElch(){dserror("not implemented"); return;};
-
-  /// update solution after reinitialization for OST scheme
-  void UpdateReinit();
 
   /// read restart data
   void ReadRestart(int step);
@@ -101,21 +86,6 @@ public:
     Sep_->Multiply(false,*phiaf_,*fsphiaf_);
     return fsphiaf_; };
 
-  /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
-  double ThermPressAf() { return thermpressaf_; }
-
-  /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
-  double ThermPressAm() { return thermpressam_; }
-
-  /// routine to return time derivative of thermo. press. at time step n+alpha_F for low-Mach-number flow
-  double ThermPressDtAf() { return thermpressdtaf_; }
-
-  /// routine to return time derivative of thermo. press. at time step n+alpha_M for low-Mach-number flow
-  double ThermPressDtAm() { return thermpressdtam_; }
-
-  /// redistribute the scatra discretization and vectors according to nodegraph
-  void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
-
   /// routine to return time integration specific parameters
   Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList()
   {
@@ -137,6 +107,15 @@ protected:
 
   /// copy constructor
   TimIntGenAlpha (const TimIntGenAlpha& old);
+
+  /// set time parameter for element evaluation
+  virtual void SetElementTimeParameter();
+
+  /// set time parameter for element evaluation for forced incremental solve
+  virtual void SetElementTimeParameterForForcedIncrementalSolve();
+
+  /// set time parameter for element evaluation at initial time = 0.0
+  virtual void SetElementTimeParameterInitial();
 
   /// Initialization procedure before the first time step is done
   void PrepareFirstTimeStep();
@@ -163,7 +142,7 @@ protected:
   void DynamicComputationOfCv();
 
   /// add parameters specific for time-integration scheme
-  void AddSpecificTimeIntegrationParameters(Teuchos::ParameterList& params);
+  void AddTimeIntegrationSpecificVectors();
 
   /// write additional data required for restart
   void OutputRestart();
@@ -173,8 +152,6 @@ protected:
 
   /// update time-dependent electrode state variables at the end of an time step
   void ElectrodeKineticsTimeUpdate();
-
-private:
 
   /// scalar at time n+alpha_F and n+alpha_M
   Teuchos::RCP<Epetra_Vector>  phiaf_;
@@ -191,13 +168,6 @@ private:
   double alphaF_;
   double gamma_;
   double genalphafac_;
-
-  /// LOMA-specific parameter: thermodynamic pressure at n+alpha_F and n+alpha_M
-  /// and its time derivative at n+alpha_F and n+alpha_M
-  double thermpressaf_;
-  double thermpressam_;
-  double thermpressdtaf_;
-  double thermpressdtam_;
 
 }; // class TimIntGenAlpha
 

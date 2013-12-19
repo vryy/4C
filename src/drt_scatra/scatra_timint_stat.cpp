@@ -14,6 +14,7 @@ Maintainer: Andreas Ehrl
 
 #include "scatra_timint_stat.H"
 #include "scatra_utils.H"
+#include "../drt_scatra_ele/scatra_ele_action.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_io/io.H"
@@ -30,6 +31,18 @@ SCATRA::TimIntStationary::TimIntStationary(
   Teuchos::RCP<IO::DiscretizationWriter> output)
 : ScaTraTimIntImpl(actdis,solver,params,extraparams,output)
 {
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  initialize time integration                         rasthofer 09/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntStationary::Init()
+{
+  // initialize base class
+  ScaTraTimIntImpl::Init();
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -43,6 +56,16 @@ SCATRA::TimIntStationary::TimIntStationary(
   if (turbmodel_ != INPAR::FLUID::no_model)
     dserror("Turbulence is not stationary problem!");
 
+  // -------------------------------------------------------------------
+  // set element parameters
+  // -------------------------------------------------------------------
+  // note: - this has to be done before element routines are called
+  //       - order is important here: for savety checks in SetElementGeneralScaTraParameter(),
+  //         we have to konw the time-integration parameters
+  SetElementTimeParameter();
+  SetElementGeneralScaTraParameter();
+  SetElementTurbulenceParameter();
+
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)
   if (IsElch(scatratype_))
     ComputeTimeDerivPot0(true);
@@ -51,6 +74,9 @@ SCATRA::TimIntStationary::TimIntStationary(
   // It is necessary to do this BEFORE ReadRestart() is called!
   // Output to screen and file is suppressed
   OutputElectrodeInfo(false,false);
+
+  // setup krylov
+  PrepareKrylovProjection();
 
   return;
 }
@@ -61,6 +87,88 @@ SCATRA::TimIntStationary::TimIntStationary(
 *----------------------------------------------------------------------*/
 SCATRA::TimIntStationary::~TimIntStationary()
 {
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | set time parameter for element evaluation (usual call)    ehrl 11/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntStationary::SetElementTimeParameter()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",SCATRA::set_time_parameter);
+  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
+  eleparams.set<int>("scatratype",scatratype_);
+
+  eleparams.set<bool>("using generalized-alpha time integration",false);
+  eleparams.set<bool>("using stationary formulation",true);
+  eleparams.set<bool>("incremental solver",incremental_);
+
+  eleparams.set<double>("time-step length",dta_);
+  eleparams.set<double>("total time",time_);
+  eleparams.set<double>("time factor",1.0);
+  eleparams.set<double>("alpha_F",1.0);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  set time parameter for element evaluation                ehrl 11/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntStationary::SetElementTimeParameterForForcedIncrementalSolve()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",SCATRA::set_time_parameter);
+  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
+  eleparams.set<int>("scatratype",scatratype_);
+
+  eleparams.set<bool>("using generalized-alpha time integration",false);
+  eleparams.set<bool>("using stationary formulation",true);
+  // this is important to have here and the only difference compared to SetElementTimeParameter()
+  eleparams.set<bool>("incremental solver",true);
+
+  eleparams.set<double>("time-step length",dta_);
+  eleparams.set<double>("total time",time_);
+  eleparams.set<double>("time factor",1.0);
+  eleparams.set<double>("alpha_F",1.0);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | set time parameter for element evaluation                 ehrl 11/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntStationary::SetElementTimeParameterInitial()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",SCATRA::set_time_parameter);
+  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
+  eleparams.set<int>("scatratype",scatratype_);
+
+  eleparams.set<bool>("using generalized-alpha time integration",false);
+  eleparams.set<bool>("using stationary formulation",true);
+  eleparams.set<bool>("incremental solver",incremental_);
+
+  eleparams.set<double>("time-step length",dta_);
+  eleparams.set<double>("total time",0.0); // only different
+  eleparams.set<double>("time factor",1.0);
+  eleparams.set<double>("alpha_F",1.0);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
   return;
 }
 
@@ -147,13 +255,9 @@ void SCATRA::TimIntStationary::AVM3Separation()
 /*----------------------------------------------------------------------*
  | add parameters specific for time-integration scheme         vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::AddSpecificTimeIntegrationParameters(
-  Teuchos::ParameterList& params)
+void SCATRA::TimIntStationary::AddTimeIntegrationSpecificVectors()
 {
-  params.set("using stationary formulation",true);
-  params.set("using generalized-alpha time integration",false);
-  params.set("total time",time_);
-  params.set("delta t",dta_);
+  //SetElementTimeParameter();
 
   discret_->SetState("hist",hist_);
   discret_->SetState("phinp",phinp_);

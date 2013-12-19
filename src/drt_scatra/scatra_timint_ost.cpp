@@ -13,7 +13,7 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_ost.H"
-#include "scatra_ele_action.H"
+#include "../drt_scatra_ele/scatra_ele_action.H"
 #include "scatra_utils.H"
 #include "turbulence_hit_scalar_forcing.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -23,8 +23,9 @@ Maintainer: Andreas Ehrl
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/drt_validparameters.H"
 
 
 /*----------------------------------------------------------------------*
@@ -39,6 +40,18 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
 : ScaTraTimIntImpl(actdis,solver,params,extraparams,output),
   theta_(params_->get<double>("THETA"))
 {
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  initialize time integration                         rasthofer 09/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::Init()
+{
+  // initialize base class
+  ScaTraTimIntImpl::Init();
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -64,6 +77,17 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // -------------------------------------------------------------------
+  // set element parameters
+  // -------------------------------------------------------------------
+  // note: - this has to be done before element routines are called
+  //       - order is important here: for savety checks in SetElementGeneralScaTraParameter(),
+  //         we have to konw the time-integration parameters
+  SetElementTimeParameter();
+  SetElementGeneralScaTraParameter();
+  SetElementTurbulenceParameter();
+
+
   // initialize time-dependent electrode kinetics variables (galvanostatic mode or double layer contribution)
   if (IsElch(scatratype_))
     ComputeTimeDerivPot0(true);
@@ -72,6 +96,24 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   // It is necessary to do this BEFORE ReadRestart() is called!
   // Output to screen and file is suppressed
   OutputElectrodeInfo(false,false);
+
+  // setup krylov
+  PrepareKrylovProjection();
+
+  // -------------------------------------------------------------------
+  // initialize forcing for homogeneous isotropic turbulence
+  // -------------------------------------------------------------------
+  // note: this constructor has to be called after the forcing_ vector has
+  //       been initialized; this is done in ScaTraTimIntImpl::Init() called before
+  if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence")
+  {
+    if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING")=="isotropic")
+    {
+      homisoturb_forcing_ = Teuchos::rcp(new SCATRA::HomIsoTurbScalarForcing(this));
+      // initialize forcing algorithm
+      homisoturb_forcing_->SetInitialSpectrum(DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_,"INITIALFIELD"));
+    }
+  }
 
   return;
 }
@@ -82,6 +124,88 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
 *-----------------------------------------------------------------------*/
 SCATRA::TimIntOneStepTheta::~TimIntOneStepTheta()
 {
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::SetElementTimeParameter()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",SCATRA::set_time_parameter);
+  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
+  eleparams.set<int>("scatratype",scatratype_);
+
+  eleparams.set<bool>("using generalized-alpha time integration",false);
+  eleparams.set<bool>("using stationary formulation",false);
+  eleparams.set<bool>("incremental solver",incremental_);
+
+  eleparams.set<double>("time-step length",dta_);
+  eleparams.set<double>("total time",time_);
+  eleparams.set<double>("time factor",theta_*dta_);
+  eleparams.set<double>("alpha_F",1.0);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  set time parameter for element evaluation                ehrl 11/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::SetElementTimeParameterForForcedIncrementalSolve()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",SCATRA::set_time_parameter);
+  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
+  eleparams.set<int>("scatratype",scatratype_);
+
+  eleparams.set<bool>("using generalized-alpha time integration",false);
+  eleparams.set<bool>("using stationary formulation",false);
+  // this is important to have here and the only difference compared to SetElementTimeParameter()
+  eleparams.set<bool>("incremental solver",true);
+
+  eleparams.set<double>("time-step length",dta_);
+  eleparams.set<double>("total time",time_);
+  eleparams.set<double>("time factor",theta_*dta_);
+  eleparams.set<double>("alpha_F",1.0);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  set time parameter for element evaluation                ehrl 11/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::SetElementTimeParameterInitial()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",SCATRA::set_time_parameter);
+  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
+  eleparams.set<int>("scatratype",scatratype_);
+
+  eleparams.set<bool>("using generalized-alpha time integration",false);
+  eleparams.set<bool>("using stationary formulation",false);
+  eleparams.set<bool>("incremental solver",incremental_);
+
+  eleparams.set<double>("time-step length",dta_);
+  eleparams.set<double>("total time",0.0); // only different!
+  eleparams.set<double>("time factor",theta_*dta_);
+  eleparams.set<double>("alpha_F",1.0);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
   return;
 }
 
@@ -101,17 +225,6 @@ void SCATRA::TimIntOneStepTheta::PrintTimeStepInfo()
              << std::setw(3)  << std::setprecision(2) << theta_ << ") STEP = "
              << std::setw(4) << step_ << "/" << std::setw(4) << stepmax_ << IO::endl;
   }
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
-| verify if given coefficients are in admissable range        gjb 04/10 |
-*-----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::VerifyCoeff()
-{
-  if ( (theta_ <= 0.0) or (theta_ > 1.0) )
-    dserror("theta out of range (0.0,1.0]");
   return;
 }
 
@@ -142,22 +255,6 @@ void SCATRA::TimIntOneStepTheta::ExplicitPredictor()
   // for the electric potential we just use the 'old' value of last time step
   Teuchos::RCP<Epetra_Vector> onlypot = splitter_->ExtractCondVector(phin_);
   splitter_->InsertCondVector(onlypot, phinp_);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | predict thermodynamic pressure and time derivative          vg 12/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::PredictThermPressure()
-{
-  // same-thermodynamic-pressure predictor (not required to be performed,
-  // since we just updated the thermodynamic pressure, and thus,
-  // thermpressnp_ = thermpressn_)
-
-  // same-thermodynamic-pressure-derivative predictor (currently not used)
-  //thermpressnp_ += dta_*thermpressdtn_;
 
   return;
 }
@@ -213,11 +310,12 @@ void SCATRA::TimIntOneStepTheta::DynamicComputationOfCs()
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    DynSmag_->ApplyFilterForDynamicComputationOfPrt(convel_,phinp_,thermpressnp_,dirichtoggle,*extraparams_);
+    DynSmag_->ApplyFilterForDynamicComputationOfPrt(convel_,phinp_,0.0,dirichtoggle,*extraparams_);
   }
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  | dynamic Smagorinsky model                           krank  09/13     |
@@ -227,135 +325,20 @@ void SCATRA::TimIntOneStepTheta::DynamicComputationOfCv()
   if (turbmodel_==INPAR::FLUID::dynamic_vreman)
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    Vrem_->ApplyFilterForDynamicComputationOfDt(convel_,phinp_,thermpressnp_,dirichtoggle,*extraparams_);
+    Vrem_->ApplyFilterForDynamicComputationOfDt(convel_,phinp_,0.0,dirichtoggle,*extraparams_);
   }
 
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  | add parameters specific for time-integration scheme         vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::AddSpecificTimeIntegrationParameters(
-  Teuchos::ParameterList& params)
+void SCATRA::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors()
 {
-  params.set("using stationary formulation",false);
-  params.set("using generalized-alpha time integration",false);
-  params.set("total time",time_);
-  params.set("time factor",theta_*dta_);
-  params.set("alpha_F",1.0);
-
-  if (scatratype_==INPAR::SCATRA::scatratype_loma)
-  {
-    params.set("thermodynamic pressure",thermpressnp_);
-    params.set("time derivative of thermodynamic pressure",thermpressdtnp_);
-  }
-
   discret_->SetState("hist",hist_);
   discret_->SetState("phinp",phinp_);
-  if (scatratype_==INPAR::SCATRA::scatratype_levelset)
-  {
-//    discret_->SetState("phin",phin_);
-  }
-
-  if(reinitswitch_) params.set("theta_reinit", theta_);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | compute thermodynamic pressure for low-Mach-number flow     vg 12/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::ComputeThermPressure()
-{
-  // compute "history" part
-  const double hist = thermpressn_ + (1.0-theta_)*dta_*thermpressdtn_;
-
-  // define element parameter list
-  Teuchos::ParameterList eleparams;
-
-  // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
-  // compute flux approximation and add it to the parameter list
-  AddFluxApproxToParameterList(eleparams,INPAR::SCATRA::flux_diffusive_domain);
-
-  // set scalar and density vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
-
-  // provide velocity field (export to column map necessary for parallel evaluation)
-  AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-  AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-
-  // provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
-  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // set action for elements
-  eleparams.set<int>("action",SCATRA::calc_domain_and_bodyforce);
-  eleparams.set("total time",time_);
-  eleparams.set<int>("scatratype",scatratype_);
-
-  // variables for integrals of domain and bodyforce
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(2));
-
-  // evaluate domain and bodyforce integral
-  discret_->EvaluateScalars(eleparams, scalars);
-
-  // get global integral values
-  double pardomint  = (*scalars)[0];
-  double parbofint  = (*scalars)[1];
-
-  // set action for elements
-  eleparams.set<int>("action",SCATRA::bd_calc_loma_therm_press);
-
-  // variables for integrals of normal velocity and diffusive flux
-  double normvelint      = 0.0;
-  double normdifffluxint = 0.0;
-  eleparams.set("normal velocity integral",normvelint);
-  eleparams.set("normal diffusive flux integral",normdifffluxint);
-
-  // evaluate velocity-divergence and diffusive (minus sign!) flux on boundaries
-  // We may use the flux-calculation condition for calculation of fluxes for
-  // thermodynamic pressure, since it is usually at the same boundary.
-  std::vector<std::string> condnames;
-  condnames.push_back("ScaTraFluxCalc");
-  for (unsigned int i=0; i < condnames.size(); i++)
-  {
-    discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condnames[i]);
-  }
-
-  // get integral values on this proc
-  normvelint      = eleparams.get<double>("normal velocity integral");
-  normdifffluxint = eleparams.get<double>("normal diffusive flux integral");
-
-  // get integral values in parallel case
-  double parnormvelint      = 0.0;
-  double parnormdifffluxint = 0.0;
-  discret_->Comm().SumAll(&normvelint,&parnormvelint,1);
-  discret_->Comm().SumAll(&normdifffluxint,&parnormdifffluxint,1);
-
-  // clean up
-  discret_->ClearState();
-
-  // compute thermodynamic pressure (with specific heat ratio fixed to be 1.4)
-  const double shr = 1.4;
-  const double lhs = theta_*dta_*shr*parnormvelint/pardomint;
-  const double rhs = theta_*dta_*(shr-1.0)*(-parnormdifffluxint+parbofint)/pardomint;
-  thermpressnp_ = (rhs + hist)/(1.0 + lhs);
-
-  // print out thermodynamic pressure
-  if (myrank_ == 0)
-  {
-    std::cout << std::endl;
-    std::cout << "+--------------------------------------------------------------------------------------------+" << std::endl;
-    std::cout << "Data output for instationary thermodynamic pressure:" << std::endl;
-    std::cout << "Velocity in-/outflow at indicated boundary: " << parnormvelint << std::endl;
-    std::cout << "Diffusive flux at indicated boundary: "       << parnormdifffluxint << std::endl;
-    std::cout << "Thermodynamic pressure: "                     << thermpressnp_ << std::endl;
-    std::cout << "+--------------------------------------------------------------------------------------------+" << std::endl;
-  }
 
   return;
 }
@@ -432,20 +415,6 @@ void SCATRA::TimIntOneStepTheta::ComputeTimeDerivPot0(const bool init)
   return;
 }
 
-/*----------------------------------------------------------------------*
- | compute time derivative of thermodynamic pressure           vg 09/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::ComputeThermPressureTimeDerivative()
-{
-  // time derivative of thermodynamic pressure:
-  // tpdt(n+1) = (tp(n+1)-tp(n))/(theta*dt)+((theta-1)/theta)*tpdt(n)
-  double fact1 = 1.0/(theta_*dta_);
-  double fact2 = (theta_-1.0)/theta_;
-  thermpressdtnp_ = fact1*(thermpressnp_-thermpressn_) + fact2*thermpressdtn_;
-
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
@@ -481,31 +450,9 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
   // perform update of time-dependent electrode variables
   ElectrodeKineticsTimeUpdate();
 
+  // TODO: SCATRA_ELE_CLEANING
   // potential time update of time-dependent materials
-  ElementMaterialTimeUpdate();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | update level set after reinitialization              rasthofer 02/10 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::UpdateReinit()
-{
-  // solution of this step becomes most recent solution of the last step
-  phin_ ->Update(1.0,*phinp_,0.0);
-
-  // compute time derivative at time n (and n+1)
-  CalcInitialPhidt();
-}
-
-/*----------------------------------------------------------------------*
- | update thermodynamic pressure at n for low-Mach-number flow vg 12/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::UpdateThermPressure()
-{
-  thermpressn_   = thermpressnp_;
-  thermpressdtn_ = thermpressdtnp_;
+//  ElementMaterialTimeUpdate();
 
   return;
 }
@@ -579,27 +526,10 @@ void SCATRA::TimIntOneStepTheta::OutputRestart()
     }
   }
 
-  // write additional restart data for loma
-  // required for restart of closed systems
-  if (scatratype_ == INPAR::SCATRA::scatratype_loma)
-  {
-    // thermodynamic pressure at time n+1
-    output_->WriteDouble("thermpressnp",thermpressnp_);
-    // thermodynamic pressure at time n
-    output_->WriteDouble("thermpressn",thermpressn_);
-    // time derivative of thermodynamic pressure at time n+1
-    output_->WriteDouble("thermpressdtnp",thermpressdtnp_);
-    // time derivative of thermodynamic pressure at time n
-    output_->WriteDouble("thermpressdtn",thermpressdtn_);
-    // as well as initial mass
-    output_->WriteDouble("initialmass",initialmass_);
-  }
-
   if (scatratype_ == INPAR::SCATRA::scatratype_cardio_monodomain)
   {
    output_->WriteMesh(step_,time_); // add info to control file for reading all variables in restart
   }
-
 
   return;
 }
@@ -673,22 +603,6 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
     }
   }
 
-  // restart data of loma problems
-  // required for restart of closed systems
-  if (scatratype_ == INPAR::SCATRA::scatratype_loma)
-  {
-    // thermodynamic pressure at time n+1
-    thermpressnp_ = reader.ReadDouble("thermpressnp");
-    // thermodynamic pressure at time n
-    thermpressn_ = reader.ReadDouble("thermpressn");
-    // time derivative of thermodynamic pressure at time n+1
-    thermpressdtnp_ = reader.ReadDouble("thermpressdtnp");
-    // time derivative of thermodynamic pressure at time n
-    thermpressdtn_ = reader.ReadDouble("thermpressdtn");
-    // as well as initial mass
-    initialmass_ = reader.ReadDouble("initialmass");
-  }
-
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     AVM3Preparation();
@@ -703,29 +617,6 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
 }
 
 
-/*--------------------------------------------------------------------------------------------*
- | Redistribute the scatra discretization and vectors according to nodegraph  rasthofer 07/11 |
- |                                                                            DA wichmann     |
- *--------------------------------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
-{
-  // let the base class do the basic redistribution and transfer of the base class members
-  ScaTraTimIntImpl::Redistribute(nodegraph);
-
-  // now do all the ost specfic steps
-  const Epetra_Map* newdofrowmap = discret_->DofRowMap();
-  Teuchos::RCP<Epetra_Vector> old;
-
-  if (fsphinp_ != Teuchos::null)
-  {
-    old = fsphinp_;
-    fsphinp_ = LINALG::CreateVector(*newdofrowmap,true);
-    LINALG::Export(*old, *fsphinp_);
-  }
-
-  return;
-}
-
 /*----------------------------------------------------------------------*
  | Initialization procedure before the first time step        gjb 08/08 |
  -----------------------------------------------------------------------*/
@@ -739,8 +630,76 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
   // compute initial field for electric potential (ELCH)
   CalcInitialPotentialField();
 
+  // for calculation of initial time derivative, we have to switch off all stabilization and
+  // turbulence modeling terms
+  // therefore, we have another PerEvaluate call here
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",SCATRA::set_general_scatra_parameter);
+
+  // set type of scalar transport problem
+  eleparams.set<int>("scatratype",scatratype_);
+
+  eleparams.set<int>("form of convective term",convform_);
+  eleparams.set("isale",isale_);
+
+  // parameters for stabilization
+  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+  Teuchos::setStringToIntegralParameter<int>("STABTYPE",
+      "no_stabilization",
+      "type of stabilization (if any)",
+      Teuchos::tuple<std::string>("no_stabilization"),
+      Teuchos::tuple<std::string>("Do not use any stabilization"),
+      Teuchos::tuple<int>(
+          INPAR::SCATRA::stabtype_no_stabilization),
+          &eleparams.sublist("STABILIZATION"));
+  DRT::INPUT::BoolParameter("SUGRVEL","no","potential incorporation of subgrid-scale velocity",&eleparams.sublist("STABILIZATION"));
+  DRT::INPUT::BoolParameter("ASSUGRDIFF","no",
+        "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) term",&eleparams.sublist("STABILIZATION"));
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  // we also have to modify the time-parameter list
+  SetElementTimeParameterForForcedIncrementalSolve();
+
+  // add turbulence list here and set model to no model
+  Teuchos::ParameterList eleturbparams;
+
+  eleturbparams.set<int>("action",SCATRA::set_turbulence_scatra_parameter);
+
+  // set type of scalar transport problem
+  eleturbparams.set<int>("scatratype",scatratype_);
+
+  eleturbparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
+  Teuchos::setStringToIntegralParameter<int>(
+      "PHYSICAL_MODEL",
+      "no_model",
+      "Classical LES approaches require an additional model for\nthe turbulent viscosity.",
+      Teuchos::tuple<std::string>("no_model"),
+      Teuchos::tuple<std::string>("If classical LES is our turbulence approach, this is a contradiction and should cause a dserror."),
+      Teuchos::tuple<int>(0),
+      &eleturbparams.sublist("TURBULENCE MODEL"));
+
+  // set model-dependent parameters
+  eleturbparams.sublist("SUBGRID VISCOSITY") = extraparams_->sublist("SUBGRID VISCOSITY");
+  // and set parameters for multifractal subgrid-scale modeling
+  eleturbparams.sublist("MULTIFRACTAL SUBGRID SCALES") = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
+
+  eleturbparams.set<bool>("turbulent inflow",turbinflow_);
+
+  eleturbparams.set<int>("fs subgrid diffusivity",INPAR::SCATRA::fssugrdiff_no);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleturbparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
   // compute time derivative of phi at time t=0
   CalcInitialPhidt();
+
+  // and finally undo our temporary settings
+  SetElementGeneralScaTraParameter();
+  SetElementTimeParameter();
+  SetElementTurbulenceParameter();
 
   return;
 }

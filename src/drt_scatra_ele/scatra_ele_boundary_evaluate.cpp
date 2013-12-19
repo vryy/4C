@@ -12,7 +12,7 @@ Maintainer: Andreas Ehrl
 </pre>
  *----------------------------------------------------------------------*/
 
-#include "scatra_element.H"
+#include "scatra_ele.H"
 #include "scatra_ele_boundary_impl.H"
 
 #include "scatra_ele_action.H"

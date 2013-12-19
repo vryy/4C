@@ -19,7 +19,7 @@ Maintainer: Benjamin Krank
 #include "dyn_vreman.H"
 #include "boxfilter.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
-#include "../drt_scatra/scatra_ele_action.H"
+#include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
 #include "../drt_mat/matpar_bundle.H"

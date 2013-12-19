@@ -31,8 +31,6 @@ namespace DRT
 namespace ELEMENTS
 {
 
-  class FluidEleParameter;
-
 //! Internal Scalar transport element implementation
 /*!
   This internal class keeps all the working arrays needed to
@@ -207,48 +205,11 @@ private:
     const int                                    eleid      //!< the element id
   );
 
-  //! calculate the Laplacian for all shape functions(strong form)
-  void GetLaplacianStrongForm(
-    LINALG::Matrix<nen_,1>&                diff,  //!< ?
-    const LINALG::Matrix<numderiv2_,nen_>& deriv2 //!< ?
-  );
 
-  //! calculate the Laplacian (weak form)
-  void GetLaplacianWeakForm(
-    double&                          val,   //!< ?
-    const LINALG::Matrix<nsd_,nen_>& derxy, //!< ?
-    const LINALG::Matrix<nsd_,nsd_>& diffus3, //!< ?
-    const int                        vi,    //!< ?
-    const int                        ui     //!< ?
-  )
-  {
-    val = 0.0;
-    for (int j = 0; j<nsd_; j++)
-    {
-    for (int i = 0; i<nsd_; i++)
-        {
-        val += derxy(j, vi)*diffus3(j,i)*derxy(i, ui);
-        }
-    }
-    return;
-  };
 
-  //! calculate the Laplacian (weak form)
-  // TODO (ehrl): inline removed due to implementation in scatra_ele_impl_diffcond_service.cpp
-  void GetLaplacianWeakForm(
-    double&                          val,   //!< ?
-    const LINALG::Matrix<nsd_,nen_>& derxy, //!< ?
-    const int                        vi,    //!< ?
-    const int                        ui     //!< ?
-  )
-  {
-    val = 0.0;
-    for (int j = 0; j<nsd_; j++)
-    {
-      val += derxy(j, vi)*derxy(j, ui);
-    }
-    return;
-  };
+
+
+
 
   //! calculate the Laplacian (weak form)
   void GetLaplacianWeakFormRHS(
@@ -266,23 +227,8 @@ private:
     return;
   };
 
-  //! calculate divergence of vector field (e.g., velocity)
-  void GetDivergence(
-    double&                          vdiv,
-    const LINALG::Matrix<nsd_,nen_>& evel,
-    const LINALG::Matrix<nsd_,nen_>& derxy
-  );
 
-  //! calculate mass matrix and rhs for determining initial time derivative
-  virtual void CalcInitialTimeDerivative(
-    DRT::Element*                         ele,       //!< the element we are dealing with
-    Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
-    const enum INPAR::SCATRA::ScaTraType  scatratype, //!< type of scalar transport problem
-    Teuchos::ParameterList&               params,         //!< the parameter list
-    DRT::Discretization&                  discretization, //!< the discretization the element is part of
-    std::vector<int>&                     lm              //!< location matrix
-  );
+
 
   //! calculate error compared to analytical solutions
   virtual void CalErrorComparedToAnalytSolution(
@@ -344,12 +290,6 @@ private:
   //! @name stabilization
   /*========================================================================*/
 
-  //! calculate normalized subgrid-diffusivity matrix
-  virtual void CalcSubgrDiffMatrix(
-    const DRT::Element*        ele,    //!< the element we are dealing with
-    Epetra_SerialDenseMatrix&  emat,   //!< element matrix to calculate
-    const double               timefac //!< time discretization factor
-  );
 
   //! update material parameters based on inclusion of subgrid-scale part of
   //! scalar (only for special materials)
@@ -359,23 +299,7 @@ private:
     const int            k      //!< index of current scalar
   );
 
-  //! calculate stabilization parameter
-  virtual void CalTau(
-    DRT::Element*  ele,           //!< the element we are dealing with
-    double         diffus,        //!< ?
-    const double   dt,            //!< current time-step length
-    const double   timefac,       //!< time discretization factor
-    const double   vol,           //!< element volume
-    const int      k,             //!< index of current scalar
-    const double   frt,           //!< factor F/RT needed for ELCH calculations
-    const bool     migrationintau //!< ?
-  );
 
-  //! calculate characteristic element length
-  virtual double CalcCharEleLength(
-    const double  vol,     //!< element volume
-    const double  vel_norm //!?
-  );
 
   //! calculate subgrid-scale velocity
   virtual void CalcSubgrVelocity(
@@ -395,57 +319,7 @@ private:
     const int     k         //!< index of current scalar
   );
 
-  //! calculate rate of strain of (fine-scale) velocity
-  inline double GetStrainRate(
-    const LINALG::Matrix<nsd_,nen_>& evel
-  )
-  {
-    // evel is tranferred here since the evaluation of the strain rate can be performed
-    // for various velocities such as velint_, fsvel_, ...
 
-    double rateofstrain=0;
-
-    // get velocity derivatives at integration point
-    //
-    //              +-----  dN (x)
-    //   dvel (x)    \        k
-    //   -------- =   +     ------ * vel
-    //      dx       /        dx        k
-    //        j     +-----      j
-    //              node k
-    //
-    // j : direction of derivative x/y/z
-    //
-    LINALG::Matrix<nsd_,nsd_> velderxy;
-    velderxy.MultiplyNT(evel,derxy_);
-
-    // compute (resolved) rate of strain
-    //
-    //          +-                                 -+ 1
-    //          |          /   \           /   \    | -
-    //          | 2 * eps | vel |   * eps | vel |   | 2
-    //          |          \   / ij        \   / ij |
-    //          +-                                 -+
-    //
-    LINALG::Matrix<nsd_,nsd_> two_epsilon;
-    for(int rr=0;rr<nsd_;++rr)
-    {
-      for(int mm=0;mm<nsd_;++mm)
-      {
-        two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
-      }
-    }
-
-    for(int rr=0;rr<nsd_;rr++)
-    {
-      for(int mm=0;mm<nsd_;mm++)
-      {
-        rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
-      }
-    }
-
-    return(sqrt(rateofstrain/2.0));
-  };
 
 
   /*========================================================================*/
@@ -536,22 +410,7 @@ private:
     double&                    volume,
     const DRT::Element*        ele);
 
-  //! calculate turbulent Prandtl number for dynamic Smagorinsky model
-  void scatra_calc_smag_const_LkMk_and_MkMk(
-      Teuchos::RCP<Epetra_MultiVector>&  col_filtered_vel,
-      Teuchos::RCP<Epetra_MultiVector>&  col_filtered_dens_vel,
-      Teuchos::RCP<Epetra_MultiVector>&  col_filtered_dens_vel_temp,
-      Teuchos::RCP<Epetra_MultiVector>&  col_filtered_dens_rateofstrain_temp,
-      Teuchos::RCP<Epetra_Vector>&       col_filtered_temp,
-      Teuchos::RCP<Epetra_Vector>&       col_filtered_dens,
-      Teuchos::RCP<Epetra_Vector>&       col_filtered_dens_temp,
-          double&                   LkMk,
-          double&                   MkMk,
-          double&                   xcenter,
-          double&                   ycenter,
-          double&                   zcenter,
-          const DRT::Element*       ele
-  );
+
 
   void scatra_calc_vreman_dt(
       Teuchos::RCP<Epetra_MultiVector>& col_filtered_phi,
@@ -625,14 +484,7 @@ private:
     );
 
 
-  //! calculate dissipation introduced by stabilization and turbulence models
-  virtual void CalcDissipation(
-    Teuchos::ParameterList&               params,          //!< parameter list
-    DRT::Element*                         ele,             //!< pointer to element
-    const enum INPAR::SCATRA::ScaTraType  scatratype,      //!< scatra type
-    DRT::Discretization&                  discretization,  //!< scatra discretization
-    std::vector<int>&                     lm               //!< location matrix
-    );
+
 
   /*========================================================================*/
   //! @name DiffCond -> implemented in scatra_ele_imlp_diffcond_service.cpp

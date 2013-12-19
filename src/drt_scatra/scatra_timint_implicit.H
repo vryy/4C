@@ -119,6 +119,9 @@ public:
   //! Destructor
   virtual ~ScaTraTimIntImpl();
 
+  //! initialize time integration
+  virtual void Init();
+
   /*========================================================================*/
   //! @name general framework
   /*========================================================================*/
@@ -126,14 +129,13 @@ public:
   /*--- set, prepare, and predict ------------------------------------------*/
 
   //! setup the variables to do a new time step
-  void PrepareTimeStep();
+  virtual void PrepareTimeStep();
 
-  // TODO: Ursula: after reorganization of level-set handling, move to protected again
   //! initialization procedure before the first time step is done
   virtual void PrepareFirstTimeStep() = 0;
 
   //! preparations for solve
-  void PrepareLinearSolve();
+  virtual void PrepareLinearSolve();
 
   //! set time and step value
   void SetTimeStep(
@@ -153,7 +155,7 @@ public:
 
   //! set convective velocity field (+ pressure and acceleration field as
   //! well as fine-scale velocity field, if required)
-  void SetVelocityField(
+  virtual void SetVelocityField(
     Teuchos::RCP<const Epetra_Vector> convvel, //!< convective velocity/press. vector
     Teuchos::RCP<const Epetra_Vector> acc,     //!< acceleration vector
     Teuchos::RCP<const Epetra_Vector> vel,     //!< velocity vector
@@ -161,21 +163,16 @@ public:
     Teuchos::RCP<const DRT::DofSet>   dofset,  //!< dofset pointer
     Teuchos::RCP<DRT::Discretization> dis);    //!< fluid/structure discretization
 
-  //! redistribute the scatra discretization and vectors according to nodegraph
-  virtual void Redistribute(
-    const Teuchos::RCP<Epetra_CrsGraph> nodegraph //!< new nodal distribution over procs
-  );
-
   //! read restart data
   virtual void ReadRestart(int step) = 0;
 
   /*--- calculate and update -----------------------------------------------*/
 
   //! do time integration (time loop)
-  void TimeLoop();
+  virtual void TimeLoop();
 
   //! general solver call for coupled algorithms (decides if linear/nonlinear internally)
-  void Solve();
+  virtual void Solve();
 
   //! update the solution after convergence of the nonlinear iteration.
   virtual void Update(
@@ -275,7 +272,7 @@ public:
   Teuchos::RCP<LINALG::MapExtractor> Splitter() { return splitter_; }
 
   //! output solution and restart data to file
-  void Output(const int num =0);
+  virtual void Output(const int num =0);
 
   /*========================================================================*/
   //! @name Time, time-step and related methods
@@ -417,82 +414,6 @@ public:
   );
 
   /*========================================================================*/
-  //! @name low-Mach-number flow
-  /*========================================================================*/
-
-  /*--- set, prepare, and predict ------------------------------------------*/
-
-  //! set initial thermodynamic pressure for low-Mach-number flow
-  void SetInitialThermPressure();
-
-  //! predict thermodynamic pressure and time derivative for low-Mach-number flow
-  virtual void PredictThermPressure() = 0;
-
-  /*--- calculate and update -----------------------------------------------*/
-
-  //! compute initial thermodyn. pressure time derivative for low-Mach-number flow
-  void ComputeInitialThermPressureDeriv();
-
-  //! compute initial total mass in domain for low-Mach-number flow
-  void ComputeInitialMass();
-
-  //! compute thermodynamic pressure and time derivative for low-Mach-number flow
-  virtual void ComputeThermPressure() = 0;
-
-  //! compute thermodyn. press. from mass cons. in domain for low-Mach-number flow
-  void ComputeThermPressureFromMassCons();
-
-  //! compute values of thermodynamic pressure at intermediate time steps
-  //! (required for generalized-alpha)
-  virtual void ComputeThermPressureIntermediateValues() = 0;
-
-  //!  compute time derivative of thermodynamic pressure after solution
-  virtual void ComputeThermPressureTimeDerivative() = 0;
-
-  //! update thermodynamic pressure and time derivative for low-Mach-number flow
-  virtual void UpdateThermPressure() = 0;
-
-  //! check convergence (only for low-Mach-number flow, for the time being)
-  bool ConvergenceCheck(
-    int          itnum,   //!< ?
-    int          itmax,   //!< ?
-    const double ittol    //!< ?
-  );
-
-  /*--- query and output ---------------------------------------------------*/
-
-  //! return thermo. press. at time step n for low-Mach-number flow
-  double ThermPressN() const { return thermpressn_; }
-
-  //! return thermo. press. at time step n+1 for low-Mach-number flow
-  double ThermPressNp() const { return thermpressnp_; }
-
-  //! return thermo. press. at time step n+alpha_F for low-Mach-number flow
-  virtual double ThermPressAf() = 0;
-
-  //! return thermo. press. at time step n+alpha_M for low-Mach-number flow
-  virtual double ThermPressAm() = 0;
-
-  //! return time der. of thermo. press. at time step n+1 for low-Mach-number flow
-  double ThermPressDtNp() const { return thermpressdtnp_; }
-
-  //! return time derivative of thermo. press. at time step n+alpha_F for low-Mach-number flow
-  virtual double ThermPressDtAf() = 0;
-
-  //! return time derivative of thermo. press. at time step n+alpha_M for low-Mach-number flow
-  virtual double ThermPressDtAm() = 0;
-
-  /*========================================================================*/
-  //! @name functions used for reinitialization of level sets
-  /*========================================================================*/
-
-  //! update the solution after reinitialization
-  virtual void UpdateReinit() = 0;
-
-  /// routine to return scalar field phi at time step n
-  Teuchos::RCP<Epetra_Vector> PhiReinitStart() { return phistart_; }
-
-  /*========================================================================*/
   //! @name turbulence and related
   /*========================================================================*/
 
@@ -550,6 +471,23 @@ protected:
   //! don't want copy constructor
   ScaTraTimIntImpl (const ScaTraTimIntImpl& old);
 
+  //! create vectors for Krylov projection if necessary
+  void PrepareKrylovProjection();
+
+  /*========================================================================*/
+  //! @name set element parameters
+  /*========================================================================*/
+
+  virtual void SetElementTimeParameter()=0;
+
+  virtual void SetElementTimeParameterForForcedIncrementalSolve()=0;
+
+  virtual void SetElementTimeParameterInitial()=0;
+
+  virtual void SetElementGeneralScaTraParameter();
+
+  void SetElementTurbulenceParameter();
+
   /*========================================================================*/
   //! @name general framework
   /*========================================================================*/
@@ -581,7 +519,7 @@ protected:
   );
 
   //! add parameters specific for time-integration scheme
-  virtual void AddSpecificTimeIntegrationParameters(Teuchos::ParameterList& params) = 0;
+  virtual void AddTimeIntegrationSpecificVectors() = 0;
 
   /*--- calculate and update -----------------------------------------------*/
 
@@ -627,6 +565,17 @@ protected:
 
   //! call elements to calculate system matrix and rhs and assemble
   void AssembleMatAndRHS();
+
+  //! add parameters depending on the problem, i.e., loma, level-set, ...
+  virtual void AddProblemSpecificParametersAndVectors(
+    Teuchos::ParameterList& params //!< parameter list
+  ){return;};
+
+  //! add parameters depending on the problem, i.e., loma, level-set, ... with special modifications for
+  //! calculation fo initial phidt
+  virtual void AddProblemSpecificParametersAndVectorsForCalcInitialPhiDt(
+    Teuchos::ParameterList& params //!< parameter list
+  ){return;};
 
   //! return the right time-scaling-factor for the true residual
   virtual double ResidualScaling() const = 0;
@@ -807,29 +756,6 @@ protected:
   void ValidParameterDiffCond();
 
   /*========================================================================*/
-  //! @name functions used for reinitialization of level sets
-  /*========================================================================*/
-
-
-  /*--- calculate and update -----------------------------------------------*/
-
-  //! add reinitialization specific parameters
-  void AddReinitializationParameters(
-    Teuchos::ParameterList& params //!< parameter list
-  );
-
-  //! call elements to calculate system matrix and rhs at boundaries for Taylor-Galerkin methods
-  void AssembleMatAndRHS_Boundary();
-
-  //! print information about current pseudo time step to screen
-  virtual void PrintPseudoTimeStepInfoReinit()
-  {
-    if (myrank_==0)
-      printf("TIMESTEPFACTOR: %11.4E      %s          PSEUDOSTEP = %4d/%4d \n",
-          dta_,MethodTitle().c_str(),step_,stepmax_);
-  }
-
-  /*========================================================================*/
   //! @name  not classified method - to be kept clean!!!
   /*========================================================================*/
 
@@ -959,10 +885,6 @@ protected:
 
   //! initial concentrations of the electrolyte solution (ELCH)
   std::vector<double> c0_;
-
-  //! phi at time 0 as reference for reinitialization procedure
-  Teuchos::RCP<Epetra_Vector> phistart_;
-
 
   /*========================================================================*/
   //! @name electrophysiology
@@ -1130,26 +1052,6 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> Mnsv_;
 
   /*========================================================================*/
-  //! @name low-Mach-number flow variables
-  /*========================================================================*/
-
-  //! LOMA-specific parameter: initial mass in domain
-  double initialmass_;
-
-  //! LOMA-specific parameter: thermodynamic pressure at n
-  double thermpressn_;
-  //! LOMA-specific parameter: thermodynamic pressure at n+1
-  double thermpressnp_;
-
-  //! LOMA-specific parameter: time deriv. of thermodynamic pressure at n
-  double thermpressdtn_;
-  //! LOMA-specific parameter: time deriv. of thermodynamic pressure at n+1
-  double thermpressdtnp_;
-
-  //! number of inflow generation time steps (turbulent loma specific)
-  int numinflowsteps_;
-
-  /*========================================================================*/
   //! @name turbulent flow variables
   /*========================================================================*/
 
@@ -1165,6 +1067,9 @@ protected:
   //! flag for turbulent inflow (turbulent loma specific)
   bool turbinflow_;
 
+  //! number of inflow generation time steps
+  int numinflowsteps_;
+
   /// flag for special turbulent flow
   std::string special_flow_;
 
@@ -1174,13 +1079,6 @@ protected:
 
   //! forcing for homogeneous isotropic turbulence
   Teuchos::RCP<SCATRA::HomIsoTurbScalarForcing> homisoturb_forcing_;
-
-  /*========================================================================*/
-  //! @name variables for reinitialization of level sets
-  /*========================================================================*/
-
-  //! boolian if scatra object is used for level set reinitialization
-  bool reinitswitch_;
 
   /*========================================================================*/
   //! @name variables for orthogonal space projection aka Krylov projection
@@ -1198,10 +1096,6 @@ protected:
 
   //! write restart data every uprestart_ steps ? writesolutioneveryrestart_
   int uprestart_;
-
-  /*========================================================================*/
-  //! @name obsolete or unused variables - to be deleted soon (at noon)!!!
-  /*========================================================================*/
 
   //! flag for potential Neumann inflow boundary condition
   bool neumanninflow_;
