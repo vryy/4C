@@ -228,9 +228,9 @@ void SCATRA::LevelSetTimIntOneStepTheta::Update(const int num)
     SetElementTimeParameter();
   }
 
-  // update also particle field
-  if (particle_ != Teuchos::null)
-    particle_->TransferAndUpdate();
+//  // update also particle field
+//  if (particle_ != Teuchos::null)
+//    particle_->TransferAndUpdate();
 
   return;
 }

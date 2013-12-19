@@ -67,12 +67,12 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(
   //               set-up of particle algorithm
   // -------------------------------------------------------------------
 
-  // check whether hybrid method including particles is selected
-  if (DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("PARTICLE"),"INCLUDE_PARTICLE"))
-  {
-    // get particle object
-    particle_ = Teuchos::rcp(new PARTICLE::ScatraParticleCoupling(Teuchos::rcp(this,false),*levelsetparams_));
-  }
+//  // check whether hybrid method including particles is selected
+//  if (DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("PARTICLE"),"INCLUDE_PARTICLE"))
+//  {
+//    // get particle object
+//    particle_ = Teuchos::rcp(new PARTICLE::ScatraParticleCoupling(Teuchos::rcp(this,false),*levelsetparams_));
+//  }
 
   return;
 }
@@ -188,8 +188,8 @@ void SCATRA::LevelSetAlgorithm::Init()
   //               initial seeding of particles
   // -------------------------------------------------------------------
   // initialize particle field with particles
-  if (particle_ != Teuchos::null)
-    particle_->InitialSeeding();
+//  if (particle_ != Teuchos::null)
+//    particle_->InitialSeeding();
 
   return;
 }
@@ -253,8 +253,8 @@ void SCATRA::LevelSetAlgorithm::PrepareTimeStep()
   ScaTraTimIntImpl::PrepareTimeStep();
 
   // prepare particle field if available
-  if (particle_ != Teuchos::null)
-    particle_->PrepareTimeStep();
+//  if (particle_ != Teuchos::null)
+//    particle_->PrepareTimeStep();
 
   return;
 }
@@ -389,8 +389,8 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
   //      standard paraview output for particle field
   // -----------------------------------------------------------------
 
-  if (particle_ != Teuchos::null)
-    particle_->Output();
+//  if (particle_ != Teuchos::null)
+//    particle_->Output();
 
   // -----------------------------------------------------------------
   //             further level-set specific values
