@@ -42,7 +42,23 @@ ADAPTER::StructureFSITimIntAda::StructureFSITimIntAda(
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& sada = sdyn.sublist("TIMEADAPTIVITY");
 
+  // type of error norm
   errnorm_ = DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sada,"LOCERRNORM");
+
+  //----------------------------------------------------------------------------
+  // Handling of Dirichlet BCs in error estimation
+  //----------------------------------------------------------------------------
+  // Create intersection of fluid DOFs that hold a Dirichlet boundary condition
+  // and are located at the FSI interface.
+  std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmaps;
+  intersectionmaps.push_back(sti->GetDBCMapExtractor()->CondMap());
+  intersectionmaps.push_back(Interface()->FSICondMap());
+  Teuchos::RCP<Epetra_Map> intersectionmap = LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+
+  numdbcdofs_ = sti->GetDBCMapExtractor()->CondMap()->NumGlobalElements();
+  numdbcfsidofs_ = intersectionmap->NumGlobalElements();
+  numdbcinnerdofs_ = numdbcdofs_ - numdbcfsidofs_;
+
 }
 
 /*----------------------------------------------------------------------------*/
@@ -69,18 +85,20 @@ void ADAPTER::StructureFSITimIntAda::IndicateErrors(double& err,
   // vector with local discretization error for each DOF
   Teuchos::RCP<Epetra_Vector> error = StrAda()->LocErrDis();
 
-  // extract the condition part of the full error vector (i.e. only interface displacement DOFs)
+  // extract the condition part of the full error vector
+  // (i.e. only interface displacement DOFs)
   Teuchos::RCP<Epetra_Vector> errorcond
     = Teuchos::rcp(new Epetra_Vector(*interface_->ExtractFSICondVector(error)));
 
-  // in case of structure split: extract the other part of the full error vector (i.e. only interior displacement DOFs)
+  // in case of structure split: extract the other part of the full error vector
+  // (i.e. only interior displacement DOFs)
   Teuchos::RCP<Epetra_Vector> errorother
     = Teuchos::rcp(new Epetra_Vector(*interface_->ExtractFSICondVector(error)));
 
   // calculate norms of different subsets of local discretization error vector
-  err = STR::AUX::CalculateVectorNorm(errnorm_, error);
-  errcond = STR::AUX::CalculateVectorNorm(errnorm_, errorcond);
-  errother = STR::AUX::CalculateVectorNorm(errnorm_, errorother);
+  err = STR::AUX::CalculateVectorNorm(errnorm_, error, numdbcdofs_);
+  errcond = STR::AUX::CalculateVectorNorm(errnorm_, errorcond, numdbcfsidofs_);
+  errother = STR::AUX::CalculateVectorNorm(errnorm_, errorother, numdbcinnerdofs_);
 
   return;
 }

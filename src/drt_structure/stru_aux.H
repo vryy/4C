@@ -34,23 +34,23 @@ namespace AUX
   /// Determine norm of force residual
   double CalculateVectorNorm
   (
-    const enum INPAR::STR::VectorNorm norm,  ///< norm to use
-    const Teuchos::RCP<Epetra_Vector> vect  ///< the vector of interest
+    const enum INPAR::STR::VectorNorm norm,  ///< type of norm to use
+    const Teuchos::RCP<Epetra_Vector> vect,  ///< the vector of interest
+    const int numneglect = 0                 ///< number of DOFs that have to be neglected for possible length scaling
   );
 
-  /// specific MultiMapExtractor to handle the fluid field
+  /// specific MultiMapExtractor to handle the structure field
   class MapExtractor : public LINALG::MultiMapExtractor
   {
   public:
 
-    enum {
+    enum
+    {
       cond_other     = 0,
       cond_fsi       = 1,
       cond_lung_asi  = 2,
       cond_bio_gr    = 3,
       cond_ale_wear  = 4
-
-
     };
 
     /// setup the whole thing
@@ -64,7 +64,6 @@ namespace AUX
     MAP_EXTRACTOR_VECTOR_METHODS(LungASICond,cond_lung_asi)
     MAP_EXTRACTOR_VECTOR_METHODS(BioGrCond,cond_bio_gr)
     MAP_EXTRACTOR_VECTOR_METHODS(AleWearCond,cond_ale_wear)
-
 
   };
 }

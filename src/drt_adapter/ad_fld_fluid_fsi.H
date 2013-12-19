@@ -271,7 +271,7 @@ namespace ADAPTER {
 
     int auxintegrator_; ///< auxiliary time integrator in fluid field
 
-    int numfsidbcdofs_; ///< number of fluid interface DOFs with Dirichlet boundary condition
+    int numfsidbcdofs_; ///< number of interface DOFs with Dirichlet boundary condition
 
     //@}
 

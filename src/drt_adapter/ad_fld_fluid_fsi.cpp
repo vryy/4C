@@ -97,13 +97,13 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
     //----------------------------------------------------------------------------
     // Create intersection of fluid DOFs that hold a Dirichlet boundary condition
     // and are located at the FSI interface.
-    std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmapsfluid;
-    intersectionmapsfluid.push_back(fluidimpl_->GetDBCMapExtractor()->CondMap());
-    intersectionmapsfluid.push_back(Interface()->FSICondMap());
-    Teuchos::RCP<Epetra_Map> intersectionmapfluid = LINALG::MultiMapExtractor::IntersectMaps(intersectionmapsfluid);
+    std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmaps;
+    intersectionmaps.push_back(fluidimpl_->GetDBCMapExtractor()->CondMap());
+    intersectionmaps.push_back(Interface()->FSICondMap());
+    Teuchos::RCP<Epetra_Map> intersectionmap = LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
 
     // store number of interface DOFs subject to Dirichlet BCs on structure and fluid side of the interface
-    numfsidbcdofs_ = intersectionmapfluid->NumGlobalElements();
+    numfsidbcdofs_ = intersectionmap->NumGlobalElements();
   }
 }
 
@@ -620,7 +620,7 @@ double ADAPTER::FluidFSI::CalculateErrorNorm(const Epetra_Vector& vec,
   vec.Norm2(&norm);
 
   if (vec.GlobalLength() - numneglect > 0.0)
-    norm /= sqrt(vec.GlobalLength() - numneglect);
+    norm /= sqrt((double) (vec.GlobalLength() - numneglect));
   else
     norm = 0.0;
 

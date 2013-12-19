@@ -239,6 +239,10 @@ void STR::TimAda::EvaluateLocalErrorDis()
     // schemes do not have the same order of accuracy
     locerrdisn_->Update(-1.0, *(sti_->disn_), 1.0);
   }
+
+  // blank Dirichlet DOFs since we they always carry the exact solution
+  Teuchos:RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(locerrdisn_->Map(), true));
+  LINALG::ApplyDirichlettoSystem(locerrdisn_, zeros, *(sti_->GetDBCMapExtractor()->CondMap()));
 }
 
 /*----------------------------------------------------------------------*/
@@ -250,7 +254,8 @@ void STR::TimAda::Indicate
 )
 {
   // norm of local discretisation error vector
-  double norm = STR::AUX::CalculateVectorNorm(errnorm_, locerrdisn_);
+  const int numneglect = sti_->GetDBCMapExtractor()->CondMap()->NumGlobalElements();
+  const double norm = STR::AUX::CalculateVectorNorm(errnorm_, locerrdisn_, numneglect);
 
   // check if acceptable
   accepted = (norm < errtol_);

@@ -103,6 +103,10 @@ namespace ADAPTER {
 
     enum INPAR::STR::VectorNorm errnorm_;  //!< norm for local error vector
 
+    int numdbcdofs_;      ///< number of DOFs with Dirichlet boundary condition
+    int numdbcfsidofs_;   ///< number of interface DOFs with Dirichlet boundary condition
+    int numdbcinnerdofs_; ///< number of inner DOFs with Dirichlet boundary condition
+
   };  // class StructureFSITimIntAda
 
 }  // namespace ADAPTER

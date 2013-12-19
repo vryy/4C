@@ -28,7 +28,8 @@ Maintainer: Alexander Popp
 double STR::AUX::CalculateVectorNorm
 (
   const enum INPAR::STR::VectorNorm norm,
-  const Teuchos::RCP<Epetra_Vector> vect
+  const Teuchos::RCP<Epetra_Vector> vect,
+  const int numneglect
 )
 {
   // L1 norm
@@ -50,7 +51,7 @@ double STR::AUX::CalculateVectorNorm
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
-    return vectnorm/sqrt((double) vect->GlobalLength());
+    return vectnorm / sqrt((double) (vect->GlobalLength() - numneglect));
   }
   // infinity/maximum norm
   else if (norm == INPAR::STR::norm_inf)
