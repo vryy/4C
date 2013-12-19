@@ -299,8 +299,10 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   UCAggFact->SetParameter("MaxNeighAlreadySelected",Teuchos::ParameterEntry(maxNbrAlreadySelected));
   UCAggFact->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(minPerAgg));
   UCAggFact->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
+  UCAggFact->SetParameter("UseOnePtAggregationAlgorithm",Teuchos::ParameterEntry(true));
+  UCAggFact->SetParameter("OnePt aggregate map name", Teuchos::ParameterEntry(std::string("SlaveDofMap")));
+  UCAggFact->SetFactory("OnePt aggregate map factory", MueLu::NoFactory::getRCP());
 
-  UCAggFact->SetOnePtMapName("SlaveDofMap", MueLu::NoFactory::getRCP());
   //UCAggFact->SetSmallAggMapName("SlaveDofMap", MueLu::NoFactory::getRCP());
 
   Teuchos::RCP<PFactory> PFact;
