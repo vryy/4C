@@ -44,7 +44,7 @@ ITEMAX                          100
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
 DEFINITION_TAU                  Franca_Valentin
-EVALUATION_MAT                  element_center
+EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ASSUGRDIFF                      yes
 DEFINITION_ASSGD Tezduyar_Park_86_nonlinear_wo_phizero //Almeida_Silva_97_nonlinear //doCarmo_Galeao_91_nonlinear //Tezduyar_Park_86_nonlinear //Hughes_etal_86_nonlinear //artificial_linear
@@ -63,9 +63,9 @@ FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.5
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -0.866025403
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 146 QUANTITY phi VALUE 9.98791695426846093e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 252 QUANTITY phi VALUE 9.99999016878894920e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 394 QUANTITY phi VALUE 9.99999996584823858e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 146 QUANTITY phi VALUE 1.00000645133444088e+00 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 252 QUANTITY phi VALUE 9.99999889123651453e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 394 QUANTITY phi VALUE 9.99999997125063045e-01 TOLERANCE 1e-10
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          1

@@ -39,7 +39,7 @@ CONVTOL                         1.0E-4
 UPRES                           1
 RESTARTEVRY                     10                              // 2000
 CONSTHERMPRESS                  Yes
-SGS_MATERIAL_UPDATE             Yes
+SGS_MATERIAL_UPDATE             No //Yes
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 PHYSICAL_TYPE                   Loma
@@ -49,7 +49,7 @@ TIMEINTEGR                      Af_Gen_Alpha
 NONLINITER                      fixed_point_like
 ITEMAX                          1
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-5
+CONVTOL                         1.0E-10
 UPRES                           1
 RESTARTEVRY                     2000
 NUMSTEP                         20
@@ -149,7 +149,7 @@ AZREUSE                         5                               // how often to 
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      1.0                             // fill-in for ILUT
 IFPACKGFILL                     0                               // graph fill for ILU
-AZTOL                           1.0E-4                          // tolerance in unscaled residual
+AZTOL                           1.0E-15                          // tolerance in unscaled residual
 AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                            // max iterations
 AZSUB                           40                              // size of krylov space for gmres
@@ -182,7 +182,7 @@ AZREUSE                         5                               // how often to 
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      1.0                             // fill-in for ILUT
 IFPACKGFILL                     0                               // graph fill for ILU
-AZTOL                           1.0E-4                          // tolerance in unscaled residual
+AZTOL                           1.0E-15                          // tolerance in unscaled residual
 AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                            // max iterations
 AZSUB                           40                              // size of krylov space for gmres
@@ -9809,9 +9809,9 @@ NODE 3131 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+0
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 3026 QUANTITY velx VALUE 1.690086115e-01 TOLERANCE 1e-4
-FLUID DIS fluid NODE 3026 QUANTITY vely VALUE -1.264750238e-01 TOLERANCE 1e-4
-FLUID DIS fluid NODE 3026 QUANTITY pressure VALUE 7.642850284e+00 TOLERANCE 1e-4
-SCATRA DIS scatra NODE 3026 QUANTITY phi VALUE 2.934406677e+02 TOLERANCE 1e-3
+FLUID DIS fluid NODE 3026 QUANTITY velx VALUE 1.69014221105888290e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 3026 QUANTITY vely VALUE -1.26614363514832629e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 3026 QUANTITY pressure VALUE 7.64274662296764173e+00 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 3026 QUANTITY phi VALUE 2.93441794225866317e+02 TOLERANCE 1e-7
 -------------------------------------------------------------------------END
 //                              END
