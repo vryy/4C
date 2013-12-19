@@ -70,8 +70,8 @@ public:
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   //!< create element of this element type
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -180,9 +180,9 @@ public:
 
     if (distype_ == DRT::Element::tet10)
     {
-      cout << endl;
-      cout << "Warning:The integration rule of a tet10 element was changed from tet-5-point to tet-11-point integration rule, "
-      " since the deg. of precision 3 is to small as a standard"<< endl << endl;
+      std::cout << std::endl;
+      std::cout << "Warning:The integration rule of a tet10 element was changed from tet-5-point to tet-11-point integration rule, "
+        " since the deg. of precision 3 is to small as a standard"<< std::endl << std::endl;
     }
     return;
   };
@@ -317,7 +317,7 @@ public:
    * \brief Print this element
    *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -689,7 +689,7 @@ public:
    * \brief Print this cell
    *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  void Print(ostream& os) const;
+  void Print(std::ostream& os) const;
 
   /*------------------------------------------------------------------------*/
   /*!

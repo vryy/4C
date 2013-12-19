@@ -125,7 +125,7 @@ int DRT::ELEMENTS::MeshfreeFluid::Evaluate(Teuchos::ParameterList&            pa
       break;
     default:
     {
-      std::cout << "action type: " << act << endl;
+      std::cout << "action type: " << act << std::endl;
       dserror("Unknown type of action for MeshfreeFluid");
       break;
     }

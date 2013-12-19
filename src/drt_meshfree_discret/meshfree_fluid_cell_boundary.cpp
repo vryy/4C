@@ -173,7 +173,7 @@ void DRT::ELEMENTS::MeshfreeFluidBoundary::Unpack(const std::vector<char>& data)
 /*--------------------------------------------------------------------------*
  |  Print this cell                                      (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
-void DRT::ELEMENTS::MeshfreeFluidBoundary::Print(ostream& os) const
+void DRT::ELEMENTS::MeshfreeFluidBoundary::Print(std::ostream& os) const
 {
   os << "MeshfreeFluidBoundary ";
   Element::Print(os);

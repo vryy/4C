@@ -47,8 +47,8 @@ DRT::ParObject* DRT::ELEMENTS::MeshfreeFluidType::Create( const std::vector<char
  |  create object of MeshfreeFluid type                  (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeFluidType::Create(
-  const string  eletype,
-  const string  eledistype,
+  const std::string  eletype,
+  const std::string  eledistype,
   const int     id,
   const int     owner)
 {
@@ -407,11 +407,11 @@ int DRT::ELEMENTS::MeshfreeFluid::NumDofPerNode(const unsigned nds, const DRT::N
 /*--------------------------------------------------------------------------*
  |  Print this cell                                      (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
-void DRT::ELEMENTS::MeshfreeFluid::Print(ostream& os) const
+void DRT::ELEMENTS::MeshfreeFluid::Print(std::ostream& os) const
 {
   os << "MeshfreeFluid ";
   DRT::Element::Print(os);
-  //cout << endl;
+  //std::cout << std::endl;
   return;
 }
 
