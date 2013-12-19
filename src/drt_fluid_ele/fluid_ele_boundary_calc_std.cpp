@@ -11,12 +11,12 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 </pre>
 *----------------------------------------------------------------------*/
 
-#include "fluid_ele_boundary_calc_std.H"
-//#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_elementtype.H"
-//#include "fluid_ele.H"
-//#include "fluid_ele_action.H"
+#include "fluid_ele.H"
+#include "fluid_ele_action.H"
 #include "fluid_ele_parameter_std.H"
+#include "fluid_ele_boundary_calc_std.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

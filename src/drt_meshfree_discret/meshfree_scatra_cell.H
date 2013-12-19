@@ -555,14 +555,13 @@ public:
    * \brief Standard Constructor
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  MeshfreeTransportBoundary(
-    int id,                              //!< A unique global id
-    int owner,                           //!< Processor owning this surface
-    int nknot,                           //!< Number of nodes attached to this element
-    const int* knotids,                  //!< global ids of nodes attached to this element
-    DRT::MESHFREE::MeshfreeNode** knots, //!< the discretizations map of knots to build ptrs to knots
-    MeshfreeTransport* parent,           //!< The parent fluid element of this surface
-    const int lbeleid                    //!< the local boundary element number of this surface w.r.t. the parent element
+  MeshfreeTransportBoundary(int id,             //!< A unique global id
+                            int owner,          //!< Processor owning this surface
+                            int nnode,          //!< Number of nodes attached to this element
+                            const int* nodeids, //!< global ids of nodes attached to this element
+                            DRT::Node** nodes,  //!< the discretizations map of nodes to build ptrs to nodes from
+                            MeshfreeTransport* parent, //!< The parent fluid element of this surface
+                            const int lsurface  //!< the local surface number of this surface w.r.t. the parent element
   );
 
   /*------------------------------------------------------------------------*/

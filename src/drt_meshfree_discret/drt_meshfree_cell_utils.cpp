@@ -12,6 +12,7 @@ Maintainer: Keijo Nissen
 
 *---------------------------------------------------------------------------*/
 #include "drt_meshfree_cell_utils.H"
+#include "drt_meshfree_node.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 /*==========================================================================*
@@ -45,9 +46,7 @@ DRT::MESHFREE::CellGaussPoints<distype> * DRT::MESHFREE::CellGaussPoints<distype
   if ( create )
   {
     if ( instance==NULL )
-    {
       instance = new CellGaussPoints<distype>();
-    }
   }
   else // delete
   {
@@ -70,6 +69,74 @@ void DRT::MESHFREE::CellGaussPoints<distype>::Done()
 }
 
 /*--------------------------------------------------------------------------*
+ | template GetGaussPointsAtX<DRT::Element::distype>             nis Feb12 |
+ *--------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::MESHFREE::CellGaussPoints<distype>::GetCellGaussPointsAtX(MeshfreeNode const * const * knots,
+                                                                   LINALG::SerialDenseMatrix &  X,
+                                                                   LINALG::SerialDenseVector &  w) const
+{
+  // set size of matrix of global x-coordinates of Gauss points and initialize to zero
+  X.Shape(nsd_,ngp_);
+  // integration weights initialized to weights of Gauss point later including determinant of Jacobian
+  w = w_;
+
+  // transpose of Jacobian, not initialized to zero
+  LINALG::SerialDenseMatrix J_sdm(nsd_,nsd_);
+  // LINALG::Matrix-view on J_sdm
+  LINALG::Matrix<nsd_,nsd_> J_fsm(J_sdm,true);
+  // coordinate-pointer: pointer to xyz-coordinate of current knot
+  double const * xa;
+  // matrix of locations of cell knots
+  LINALG::SerialDenseMatrix Xa(nsd_,nek_);
+
+  // assemble matrix of element-specific x-coordinates of cell knots
+  for (int j=0; j<nek_; j++){
+    xa =  knots[j]->X();
+    for (int k=0; k<nsd_; k++){
+      Xa(k,j) = xa[k];
+    }
+  }
+
+  // calculation of element-specific x-coordinates of Gauss points
+  X.Multiply('N','T',1.0,Xa,N_,0.0);
+
+  switch ((int)dN_.size())
+  {
+  // generally non-constant Jacobian - evaluation at Gauss points
+  case ngp_:
+  {
+    for (int i=0; i<ngp_; i++){
+      J_sdm.Multiply('N','T',1.0,dN_[i],Xa,0.0);
+      w(i) *= J_fsm.Determinant();
+    }
+    break;
+  }
+  // guaranteed constant Jacobian - single evaluation
+  case 1:
+  {
+    J_sdm.Multiply('N','T',1.0,dN_[0],Xa,0.0);
+    w.Scale(J_fsm.Determinant());
+    break;
+  }
+  default:
+    dserror("Length of vector of Jacobian must either equal number of Gauss points or one (latter for constant Jacobians).");
+  }; // end switch ((int)dN_.size())
+
+  // DEBUG
+//  std::cout << "Xa = ";
+//  for (int i=0; i<nsd_; i++){
+//    for (int j=0; j<nek_; j++)
+//      std::cout << Xa(i,j) << " ";
+//    std::cout << std::endl;
+//  }
+//  std::cout << std::endl;
+  // END DEBUG
+
+  return ngp_;
+};
+
+/*--------------------------------------------------------------------------*
  | ctor to called by Instance() only and only once      (private) nis Feb12 |
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
@@ -82,12 +149,10 @@ DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
     // if not already instantiated
     if (!is_instantiated_)
     {
-      is_instantiated_ = true;
-
       // get integration point information
       DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_(DisTypeToOptGaussRule<distype>::rule);
 
-      // resize vector for cell shape function derivative - not constant
+      // initialization for SerialDenseObjects
       dN_.resize(ngp_);
       for (int i=0; i<ngp_; i++)
         dN_[i].LightShape(nsd_,nek_);
@@ -136,12 +201,10 @@ DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
     // if not already instantiated
     if (!is_instantiated_)
     {
-      is_instantiated_ = true;
-
       // get integration point information
       DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_(DisTypeToOptGaussRule<distype>::rule);
 
-      // resize vector for cell shape function derivative - constant
+      // initialization for SerialDenseObjects
       dN_.resize(1);
       dN_[0].LightShape(nsd_,nek_);
 
@@ -173,12 +236,10 @@ DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
     // if not already instantiated
     if (!is_instantiated_)
     {
-      is_instantiated_ = true;
-
       // get integration point information
       DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_(DisTypeToOptGaussRule<distype>::rule);
 
-      // resize vector for cell shape function derivative - not constant
+      // initialization for SerialDenseObjects
       dN_.resize(ngp_);
       for (int i=0; i<ngp_; i++)
         dN_[i].LightShape(nsd_,nek_);
@@ -207,12 +268,10 @@ DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
     // if not already instantiated
     if (!is_instantiated_)
     {
-      is_instantiated_ = true;
-
       // get integration point information
       DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_(DisTypeToOptGaussRule<distype>::rule);
 
-      // resize vector for cell shape function derivative - constant
+      // initialization for SerialDenseObjects
       dN_.resize(1);
       dN_[0].LightShape(nsd_,nek_);
 
@@ -237,25 +296,22 @@ DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
     // if not already instantiated
     if (!is_instantiated_)
     {
-//      is_instantiated_ = true;
-
       // get integration point information
       DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_(DisTypeToOptGaussRule<distype>::rule);
 
-      // resize vector for cell shape function derivative - constant
-      dN_.resize(1);
+      // initialization for SerialDenseObjects
+      dN_.resize(ngp_);
       dN_[0].LightShape(nsd_,nek_);
 
       // assign shape function values in loop over Gauss points
       for (int i=0; i<ngp_; i++){
         w_(i) = intpoints_.IP().qwgt[i];
-        N_(i,0) = (1-intpoints_.IP().qxg[i][0])/2;
-        N_(i,1) = (1+intpoints_.IP().qxg[i][0])/2;
+        N_(i,1) = (1-intpoints_.IP().qxg[i][0])/2;
+        N_(i,2) = (1+intpoints_.IP().qxg[i][0])/2;
       }
-      dN_[0](0,0) = -0.5;
-      dN_[0](0,1) =  0.5;
+      dN_[0](0,1) = -0.5;
+      dN_[0](0,2) =  0.5;
     } // ifis_instantiated_
-
     return;
   } // case DRT::Element::line2
   default:
@@ -264,65 +320,6 @@ DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
     return;
   } // default
   } // switch (distype)
-};
-
-/*--------------------------------------------------------------------------*
- | template GetGaussPointsAtX<DRT::Element::distype>             nis Feb12 |
- *--------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-int DRT::MESHFREE::CellGaussPoints<distype>::GetCellGaussPointsAtX(
-  LINALG::SerialDenseMatrix &  Xa_sdm,
-  LINALG::SerialDenseMatrix &  X_sdm,
-  LINALG::SerialDenseVector &  w) const
-{
-  //------------------------------------------------------------------------
-  // create LINALG::Matrix-views on in
-  //------------------------------------------------------------------------
-  LINALG::Matrix<nsd_,nek_> Xa(Xa_sdm,true);
-  LINALG::Matrix<nsd_,ngp_> X(X_sdm,true);
-  LINALG::Matrix<ngp_,nek_> N_fsm(N_,true);
-
-  //------------------------------------------------------------------------
-  // compute global position of Gauss points
-  //------------------------------------------------------------------------
-
-  X.MultiplyNT(Xa,N_fsm);
-
-  //------------------------------------------------------------------------
-  // compute weights of Gauss points
-  //------------------------------------------------------------------------
-
-  // integration weights initialized to weights of Gauss point
-  w = w_;
-
-  // transpose of Jacobian, not initialized to zero
-  LINALG::Matrix<nsd_,nsd_> J(false);
-
-  switch ((int)dN_.size())
-  {
-  // generally non-constant Jacobian - evaluation at Gauss points
-  case ngp_:
-  {
-    for (int i=0; i<ngp_; i++){
-      LINALG::Matrix<nsd_,nek_> dN_fsm(dN_[i],true);
-      J.MultiplyNT(dN_fsm,Xa);
-      w(i) *= J.Determinant();
-    }
-    break;
-  }
-  // guaranteed constant Jacobian - single evaluation
-  case 1:
-  {
-    LINALG::Matrix<nsd_,nek_> dN_fsm(dN_[0],true);
-    J.MultiplyNT(dN_fsm,Xa);
-    w.Scale(J.Determinant());
-    break;
-  }
-  default:
-    dserror("Length of vector of Jacobian must either equal number of Gauss points or one (latter for constant Jacobians).");
-  }; // end switch ((int)dN_.size())
-
-  return ngp_;
 };
 
 /*--------------------------------------------------------------------------*

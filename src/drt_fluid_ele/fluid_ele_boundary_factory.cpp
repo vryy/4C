@@ -12,19 +12,17 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 *----------------------------------------------------------------------*/
 
 #include "fluid_ele_boundary_factory.H"
-#include "fluid_ele_boundary_interface.H"
 #include "fluid_ele_boundary_calc_std.H"
 #include "fluid_ele_boundary_calc_poro.H"
 #include "fluid_ele_calc.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../drt_meshfree_discret/meshfree_fluid_cell_boundary_calc_std.H"
 
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(DRT::Element::DiscretizationType distype, std::string problem)
+DRT::ELEMENTS::FluidBoundaryImplInterface* DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(DRT::Element::DiscretizationType distype, std::string problem)
 {
   switch(distype)
   {
@@ -78,12 +76,11 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Prov
     }
   return NULL;
 }
-
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::DefineProblemType(std::string problem)
+DRT::ELEMENTS::FluidBoundaryImplInterface* DRT::ELEMENTS::FluidBoundaryFactory::DefineProblemType(std::string problem)
 {
   if (problem == "std")
     return DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance();
@@ -91,46 +88,6 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Defi
     return DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance();
   else
     dserror("Defined problem type does not exist!!");
-
-  return NULL;
-}
-
-/*--------------------------------------------------------------------------*
- |                                                       (public) nis Nov13 |
- *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::MeshfreeFluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::ProvideImplMeshfree(DRT::Element::DiscretizationType distype, std::string problem)
-{
-  switch(distype)
-  {
-    case DRT::Element::quad4:
-    {
-      return DefineProblemTypeMeshfree<DRT::Element::quad4>(problem);
-    }
-    case DRT::Element::tri3:
-    {
-      return DefineProblemTypeMeshfree<DRT::Element::tri3>(problem);
-    }
-    case DRT::Element::line2:
-    {
-      return DefineProblemTypeMeshfree<DRT::Element::line2>(problem);
-    }
-    default:
-      dserror("Element shape %s not activated for meshfree problems.",DRT::DistypeToString(distype).c_str());
-      break;
-    }
-  return NULL;
-}
-
-/*--------------------------------------------------------------------------*
- |                                                       (public) nis Nov13 |
- *--------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::MeshfreeFluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::DefineProblemTypeMeshfree(std::string problem)
-{
-  if (problem == "std_meshfree")
-    return DRT::ELEMENTS::MeshfreeFluidBoundaryCalcStd<distype>::Instance();
-  else
-    dserror("Defined problem type does not exist for meshfree problems!!");
 
   return NULL;
 }

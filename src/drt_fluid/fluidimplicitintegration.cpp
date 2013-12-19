@@ -2432,7 +2432,7 @@ void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
   // artificial compressibility or
   // extract and update only velocity degrees of freedom, since in
   // low-Mach-number flow, 'pressure' components are used to store
-  // temporal derivatives of scalar/temperature values
+  // temporal derivatives of scalar/temperature values 
   if (physicaltype_ == INPAR::FLUID::artcomp)
   {
     accnp_->Update(fact2,*accn_,0.0);
@@ -2472,7 +2472,7 @@ void FLD::FluidImplicitTimeInt::GenAlphaIntermediateValues()
   // artificial compressibility or
   // extract and update only velocity degrees of freedom, since in
   // low-Mach-number flow, 'pressure' components are used to store
-  // temporal derivatives of scalar/temperature values
+  // temporal derivatives of scalar/temperature values 
   if (physicaltype_ == INPAR::FLUID::artcomp)
   {
     accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
@@ -6218,6 +6218,30 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcSFS(
 }
 
 // -------------------------------------------------------------------
+// set general fluid parameter (AE 01/2011)
+// -------------------------------------------------------------------
+void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",FLD::set_general_fluid_parameter);
+
+  // set general element parameters
+  eleparams.set("form of convective term",convform_);
+  eleparams.set<int>("Linearisation",newton_);
+  eleparams.set<int>("Physical Type", physicaltype_);
+
+  // parameter for stabilization
+  eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
+  eleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  return;
+}
+
+
+// -------------------------------------------------------------------
 // set general time parameter (AE 01/2011)
 // -------------------------------------------------------------------
 
@@ -6261,30 +6285,6 @@ void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
   {
     eleparams.set("total time",time_);
   }
-
-  // call standard loop over elements
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  return;
-}
-
-
-// -------------------------------------------------------------------
-// set general fluid parameter (AE 01/2011)
-// -------------------------------------------------------------------
-void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
-{
-  Teuchos::ParameterList eleparams;
-
-  eleparams.set<int>("action",FLD::set_general_fluid_parameter);
-
-  // set general element parameters
-  eleparams.set("form of convective term",convform_);
-  eleparams.set<int>("Linearisation",newton_);
-  eleparams.set<int>("Physical Type", physicaltype_);
-
-  // parameter for stabilization
-  eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
-  eleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);

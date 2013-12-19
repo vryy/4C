@@ -16,7 +16,6 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #ifndef FLUID_ELE_BOUNDARY_CALC_H
 #define FLUID_ELE_BOUNDARY_CALC_H
 
-#include "fluid_ele_boundary_interface.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -32,6 +31,48 @@ namespace ELEMENTS
   class FluidBoundary;
   class FluidEleParameter;
   class FluidEleParameterTimInt;
+
+/// Interface base class for FluidBoundaryImpl
+/*!
+  This class exists to provide a common interface for all template
+  versions of FluidBoundaryImpl. The only function
+  this class actually defines is Impl, which returns a pointer to
+  the appropriate version of FluidBoundaryImpl.
+ */
+class FluidBoundaryImplInterface : DRT::SingletonDestruction
+{
+
+public:
+
+  /// Empty constructor
+  FluidBoundaryImplInterface() {};
+
+  /// Empty destructor
+  virtual ~FluidBoundaryImplInterface() {};
+
+    /// Internal implementation class for FluidBoundary elements
+  static FluidBoundaryImplInterface* Impl(DRT::ELEMENTS::FluidBoundary* ele);
+
+  virtual void EvaluateAction(DRT::ELEMENTS::FluidBoundary*  ele1,
+                      Teuchos::ParameterList&         params,
+                      DRT::Discretization&            discretization,
+                      std::vector<int>&               lm,
+                      Epetra_SerialDenseMatrix&       elemat1,
+                      Epetra_SerialDenseMatrix&       elemat2,
+                      Epetra_SerialDenseVector&       elevec1,
+                      Epetra_SerialDenseVector&       elevec2,
+                      Epetra_SerialDenseVector&       elevec3) = 0;
+
+  virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary*      ele,
+      Teuchos::ParameterList&    params,
+      DRT::Discretization&       discretization,
+      DRT::Condition&            condition,
+      std::vector<int>&          lm,
+      Epetra_SerialDenseVector&  elevec1_epetra,
+      Epetra_SerialDenseMatrix*  elemat1
+  ) = 0;
+
+};
 
   /// Internal FluidBoundary element implementation
   /*!
@@ -70,7 +111,7 @@ namespace ELEMENTS
     \date 03/10
   */
 template<DRT::Element::DiscretizationType distype>
-class FluidBoundaryImpl: public FluidBoundaryInterface
+class FluidBoundaryImpl: public FluidBoundaryImplInterface
 {
   friend class FluidEleParameter;
 
@@ -375,7 +416,7 @@ protected:
 
   //! get density
   void GetDensity(Teuchos::RCP<const MAT::Material> material,      ///< reference pointer to material
-                  const LINALG::Matrix<bdrynen_,1>& escaaf,        ///< scalar at time n+alpha_f / n+1
+                  const LINALG::Matrix<bdrynen_,1>& escaaf,        ///< scalar at time n+alpha_f / n+1  
                   const double                      thermpressaf); ///< thermodynamic pressure at time n+alpha_f / n+1
 
 

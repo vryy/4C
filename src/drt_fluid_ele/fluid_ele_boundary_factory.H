@@ -22,8 +22,7 @@ namespace DRT
 
 namespace ELEMENTS
 {
-  class FluidBoundaryInterface;
-  class MeshfreeFluidBoundaryInterface;
+  class FluidBoundaryImplInterface;
 
 class FluidBoundaryFactory
 {
@@ -35,19 +34,12 @@ public:
   virtual ~FluidBoundaryFactory(){ return; };
 
   //! ProvideImpl
-  static FluidBoundaryInterface* ProvideImpl(DRT::Element::DiscretizationType distype, std::string problem);
-
-  //! ProvideImplMeshfree
-  static MeshfreeFluidBoundaryInterface* ProvideImplMeshfree(DRT::Element::DiscretizationType distype, std::string problem);
+  static FluidBoundaryImplInterface* ProvideImpl(DRT::Element::DiscretizationType distype, std::string problem);
 
 private:
   //! define FluidEleBoundaryCalc instances dependent on problemtype
   template<DRT::Element::DiscretizationType distype>
-  static FluidBoundaryInterface* DefineProblemType(std::string problem);
-
-  //! define FluidEleBoundaryCalc instances dependent on problemtype
-  template<DRT::Element::DiscretizationType distype>
-  static MeshfreeFluidBoundaryInterface* DefineProblemTypeMeshfree(std::string problem);
+  static FluidBoundaryImplInterface* DefineProblemType(std::string problem);
 
 
 };

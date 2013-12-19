@@ -181,7 +181,7 @@ public:
 
   */
   void Solve();
-
+  
     /*!
   \brief solve linearised fluid
 
@@ -548,7 +548,7 @@ public:
   {
 	  step_ += 1;
 	  time_ += dta_;
-
+	  
 	  return;
   }
 
@@ -984,7 +984,7 @@ protected:
 
   /// grid velocity at time step n (set from the adapter!)
   Teuchos::RCP<Epetra_Vector>    gridvn_;
-
+  
     /// initial porosity (poroelasticity)
   Teuchos::RCP<Epetra_Vector>    initporosityfield_;
 

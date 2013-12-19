@@ -631,18 +631,6 @@ namespace ELEMENTS
         const double &                     rhsfac        ///< right-hand-side factor
         );
 
-  //! Compute element matrix entries: pressure projection terms
-  void PressureProjection(
-    LINALG::Matrix<nen_, nen_> & ppmat
-    );
-
-  //! Finalize pressure projection terms
-  void PressureProjectionFinalize(
-    LINALG::Matrix<nen_, nen_> & ppmat,
-    LINALG::Matrix<nen_, 1   > & preforce,
-    const LINALG::Matrix<nen_, 1   > & eprenp
-    );
-
     //! Compute element matrix entries: body force terms on rhs
     void BodyForceRhsTerm(
         LINALG::Matrix<nsd_,nen_> &  velforce,     ///< rhs forces velocity
@@ -1206,10 +1194,6 @@ namespace ELEMENTS
     double vel_normnp_;
     //! time-dependent subgrid-scales (pointer to element-specific data)
     Teuchos::RCP<FLD::TDSEleData> tds_;
-
-    // polynomial pressure projection matrices
-    double D_;
-    LINALG::Matrix<nen_,1> E_;
 
   //protected:
     //static std::map<int,std::map<int,DRT::ELEMENTS::FluidEleCalc<distype>* >* > instances_;

@@ -17,7 +17,6 @@ Maintainer: Ursula Rasthofer
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_utils.H"
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
 #include "../drt_geometry/position_array.H"

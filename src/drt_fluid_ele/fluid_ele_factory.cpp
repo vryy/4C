@@ -14,7 +14,6 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 /*--------------------------------------------------------------------------*/
 
 #include "fluid_ele_factory.H"
-#include "fluid_ele_interface.H"
 
 #include "fluid_ele_calc_std.H"
 #include "fluid_ele_calc_loma.H"
@@ -23,9 +22,6 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_calc_poro_p2.H"
 #include "fluid_ele_calc_xfem.H"
 
-#include "../drt_meshfree_discret/meshfree_fluid_cell_interface.H"
-
-#include "../drt_meshfree_discret/meshfree_fluid_cell_calc_std.H"
 
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer Jan13 |
@@ -190,27 +186,29 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
 
 /*--------------------------------------------------------------------------*
  |  special implementation of ProvideImpl for meshfree problems             |
- |  to reduce created template combination               (public) nis Nov13 |
+ |  to reduce created template combination         (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::MeshfreeFluidCellInterface* DRT::ELEMENTS::FluidFactory::ProvideImplMeshfree(DRT::Element::DiscretizationType distype, std::string problem)
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplMeshfree(DRT::Element::DiscretizationType distype, std::string problem)
 {
+  if(problem != "std_meshfree") dserror("Call ProvideImplMeshfree just for meshfree problems!");
+
   switch(distype)
   {
     case DRT::Element::hex8:
     {
-      return DefineProblemTypeMeshfree<DRT::Element::hex8>(problem);
+      return DefineProblemType<DRT::Element::hex8>(problem);
     }
     case DRT::Element::tet4:
     {
-      return DefineProblemTypeMeshfree<DRT::Element::tet4>(problem);
+      return DefineProblemType<DRT::Element::tet4>(problem);
     }
     case DRT::Element::quad4:
     {
-      return DefineProblemTypeMeshfree<DRT::Element::quad4>(problem);
+      return DefineProblemType<DRT::Element::quad4>(problem);
     }
     case DRT::Element::tri3:
     {
-      return DefineProblemTypeMeshfree<DRT::Element::tri3>(problem);
+      return DefineProblemType<DRT::Element::tri3>(problem);
     }
     default:
       dserror("Element shape %s not activated for meshfree problems. ",DRT::DistypeToString(distype).c_str());
@@ -220,15 +218,15 @@ DRT::ELEMENTS::MeshfreeFluidCellInterface* DRT::ELEMENTS::FluidFactory::ProvideI
 }
 
 /*--------------------------------------------------------------------------*
- |                                                       (public) nis Nov13 |
+ |                                                 (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::MeshfreeFluidCellInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeMeshfree(std::string problem)
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeMeshfree(std::string problem)
 {
   if (problem == "std_meshfree")
-    return DRT::ELEMENTS::MeshfreeFluidCellCalcStd<distype>::Instance();
+    return NULL;//DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance();
   else
-    dserror("Defined problem type does not exist for meshfree problems!!");
+    dserror("Defined problem type does not exist!!");
 
   return NULL;
 }

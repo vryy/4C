@@ -50,7 +50,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
-  : //DRT::ELEMENTS::FluidBoundaryInterface(),
+  : DRT::ELEMENTS::FluidBoundaryImplInterface(),
     xyze_(true),
     funct_(true),
     deriv_(true),
@@ -480,6 +480,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
           else functfac = 1.0;
         }
         const double valfac = (*val)[idim]*fac_curve_time_dens*functfac;
+
         for(int inode=0; inode < bdrynen_; ++inode )
         {
           elevec1_epetra[inode*numdofpernode_+idim] += funct_(inode)*valfac;

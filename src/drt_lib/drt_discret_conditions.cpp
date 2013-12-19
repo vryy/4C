@@ -472,7 +472,7 @@ void DRT::Discretization::BuildLinesinCondition( const std::string name,
         DRT::Node** nodesperline = actline->Nodes();
         if( !nodesperline ) dserror("Line returned no nodes");
         for( int k = 0; k < nnodeperline; ++k )
-          if( nodesperline[k]->Id() == actnode->Id())
+          if( nodesperline[k] == actnode )
           {
             // line is attached to actnode
             // see whether all nodes on the line are in our nodal cloud
@@ -513,7 +513,6 @@ void DRT::Discretization::BuildLinesinCondition( const std::string name,
   std::map< int, RCP<DRT::Element> > finallines;
 
   AssignGlobalIDs( Comm(), linemap, finallines );
-
   cond->AddGeometry( finallines );
 } // DRT::Discretization::BuildLinesinCondition
 
@@ -599,7 +598,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
         if (!nodespersurf) dserror("Surface returned no nodes");
         for (int k=0; k<nnodepersurf; ++k)
         {
-          if (nodespersurf[k]->Id()==actnode->Id())
+          if (nodespersurf[k]==actnode)
           {
             // surface is attached to actnode
             // see whether all  nodes on the surface are in our cloud

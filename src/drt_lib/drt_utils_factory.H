@@ -43,7 +43,7 @@ Maintainer: Michael Gee
 
 #include "drt_discret.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_meshfree_discret/drt_meshfree_node.H"
+
 
 namespace DRT
 {
@@ -173,80 +173,6 @@ namespace UTILS
     }
 
     return boundaryeles;
-  }
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * This function is doing the same  for meshfree cells as
-   * "ElementBoundaryFactory()" does for standard elements. Necessary, since
-   * nodes do not carry any topological information about cell. This job is
-   * done by knots (MeshfreeNodes).
-   *
-   * \author nis
-   * \date Dec13
-   */
-  /*------------------------------------------------------------------------*/
-  template <class BoundaryCell, class ParentCell>
-  std::vector<Teuchos::RCP<DRT::Element> > CellBoundaryFactory(
-      const BoundaryBuildType  buildtype,  ///< flag, whether volumes, surfaces or lines have to be created
-      ParentCell*              cell        ///< pointer on the parent cell
-      )
-  {
-    // do we have to build volume, surface or line elements?
-    // get node connectivity for specific distype of parent element
-    unsigned int ncell=0;
-    const DRT::Element::DiscretizationType distype = cell->Shape();
-    std::vector< std::vector<int> > connectivity;
-    switch (buildtype)
-    {
-      case buildSurfaces:
-      {
-        ncell = cell->NumSurface();
-        connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
-        break;
-      }
-      case buildLines:
-      {
-        ncell = cell->NumLine();
-        connectivity = DRT::UTILS::getEleNodeNumberingLines(distype);
-        break;
-      }
-      default: dserror("buildNothing case not handled in ElementBoundaryFactory");
-    }
-
-    // create vectors that will contain the volume, surface or line cells
-    std::vector<Teuchos::RCP<DRT::Element> > boundarycells(ncell);
-
-    // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
-    if (ncell != connectivity.size()) dserror("number of surfaces or lines does not match!");
-
-    // now, build the new surface/line elements
-    for (unsigned int icell = 0; icell < ncell; icell++)
-    {
-      // allocate node vectors
-      unsigned int nknot= connectivity[icell].size(); // this number changes for pyramids or wedges
-      std::vector<int> knotids(nknot);
-      std::vector<DRT::MESHFREE::MeshfreeNode*> knots(nknot);
-
-      // get connectivity infos
-      for (unsigned int iknot=0;iknot<nknot;iknot++)
-      {
-        knotids[iknot] = cell->KnotIds()[connectivity[icell][iknot]];
-        knots  [iknot] = cell->Knots  ()[connectivity[icell][iknot]];
-      }
-
-      // allocate a new boundary element
-      boundarycells[icell] = Teuchos::rcp(new BoundaryCell(icell         ,
-                                                         cell->Owner() ,
-                                                         knotids.size(),
-                                                         &knotids[0]   ,
-                                                         &knots[0]     ,
-                                                         cell          ,
-                                                         icell         ));
-
-    }
-
-    return boundarycells;
   }
 
   /*!

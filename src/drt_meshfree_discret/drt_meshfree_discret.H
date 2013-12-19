@@ -306,15 +306,21 @@ public:
    * in parallel, or adding/deleting boundary conditions, this method has to
    * be called to (re)construct pointer topologies.<br>
    * It builds in this order:<br>
-   * - calls base class FillCompete(false,false,false)
    * - row map of knots
    * - column map of knots
    * - pointers from elements to knots
    * - pointers from knots to elements
-   * - assigns nodes to knots and cells
-   * - calls AssignDegreesOfFreedom() if desired
-   * - calls InitializeElements() if desired
-   * - calls BoundaryConditionsGeometry() if desried
+   * - if callbaseclassfillcomplete=true:
+   *   - row map of nodes
+   *   - column map of nodes
+   *   - row map of elements
+   *   - column map of elements
+   *   - pointers from elements to nodes
+   *   - pointers from nodes to elements
+   *   - assigns degrees of freedoms
+   *   - map of element register classes
+   *   - calls all element register initialize methods
+   *   - build geometries of all Dirichlet and Neumann boundary conditions
    *
    * \param assigndegreesoffreedom (in) : if true, resets existing dofsets and
    *                                      performs assigning of degrees of
@@ -332,6 +338,7 @@ public:
    *       meshfree discretization, were it is known that this method will be
    *       called more than once.
    *
+   * \note Sets Filled()=true
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
   virtual int FillComplete(bool assigndegreesoffreedom=true,
@@ -342,6 +349,64 @@ public:
     \brief Get flag indicating whether discretization has been filled and assigned
   */
   virtual inline bool Filled() const {return (assigned_ and filled_);}
+
+  /*!
+  \brief Call elements to evaluate
+
+  Call element routines to perform integration and return element contributions to
+  system vectors and matrices. Type of action taken by the elements is
+  controlled by the params parameter.<br>
+  Parameters that control element behavior are:<br>
+  \code
+  params.set("action","<element_action>"); // <element_action> somthing that elements understand
+  \endcode
+  Other parameters eventually recognized by the elements:<br>
+  \code
+  params.set("total time",1.23);    // current total time of simulation
+  params.set("delta time",0.01);     // time increment
+  \endcode
+
+
+  \param params (in): Parameter list past to the elements containing
+                      commands and parameters for the elements and
+                      containing assembly intructions
+  \param systemmatrix1 (out)   : Sparse matrix that may be filled by
+                                 assembly of element contributions.
+                                 May be Teuchos::null on entry.
+                                 Matrix must be systemmatrix1->Filled()==false on input.
+  \param systemmatrix2 (out):    Sparse matrix that may be filled by
+                                 assembly of element contributions.
+                                 May be Teuchos::null on entry.
+                                 Matrix must be systemmatrix2->Filled()==false on input.
+  \param systemvector1 (out):    Distributed vector that may be filled by
+                                 aasembly of element contributions.
+                                 May be Teuchos::null on entry.
+                                 Vector will NOT be initialized to zero by
+                                 the underlying assembly methods that add element
+                                 contributions.
+  \param systemvector2 (out):    Distributed vector that may be filled by
+                                 aasembly of element contributions.
+                                 May be Teuchos::null on entry.
+                                 Vector will NOT be initialized to zero by
+                                 the underlying assembly methods that add element
+                                 contributions.
+  \param systemvector3 (out):    Distributed vector that may be filled by
+                                 aasembly of element contributions.
+                                 May be Teuchos::null on entry.
+                                 Vector will NOT be initialized to zero by
+                                 the underlying assembly methods that add element
+                                 contributions.
+  */
+  virtual void Evaluate(Teuchos::ParameterList&        params,
+                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                        Teuchos::RCP<Epetra_Vector>    systemvector1,
+                        Teuchos::RCP<Epetra_Vector>    systemvector2,
+                        Teuchos::RCP<Epetra_Vector>    systemvector3);
+
+  virtual void Evaluate(Teuchos::ParameterList& params)
+  {dserror("The hair-raising hack to call 'discret->Evaluate(params)' is not provided for meshfree discretizations.");}
+
 
   /*------------------------------------------------------------------------*/
   /*!

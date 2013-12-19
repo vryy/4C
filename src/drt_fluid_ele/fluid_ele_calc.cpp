@@ -375,7 +375,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
 
   // set element id
   eid_ = ele->Id();
-
   // call inner evaluate (does not know about DRT element or discretization object)
   int result = Evaluate(
     params,
@@ -616,13 +615,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
   // definition of velocity-based momentum residual vectors
   LINALG::Matrix<nsd_*nsd_,nen_>  lin_resM_Du(true);
   LINALG::Matrix<nsd_,1>          resM_Du(true);
-
-  // if polynomial pressure projection: reset variables
-  if (fldpara_->PPP())
-  {
-    D_ = 0;
-    E_.Clear();
-  }
 
   // add displacement when fluid nodes move in the ALE case
   if (isale) xyze_ += edispnp;
@@ -902,7 +894,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
         CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol);
     }
-
+    
     // get reaction coefficient due to porosity for topology optimization
     // !do this only at gauss point since this is nonlinear!
     if (fldpara_->ReactionTopopt())
@@ -980,7 +972,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     // compute convective term from previous iteration and convective operator
     // (both zero for reactive problems, for the time being)
     // winklmaier: zero only for previous reactive (= darcy???) problems
-    if (fldpara_->Darcy() or (fldpara_->PhysicalType() == INPAR::FLUID::stokes))
+    if (fldpara_->Darcy())
     {
       conv_old_.Clear();
       conv_c_.Clear();
@@ -1127,7 +1119,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     //     excluding viscous part for low-Mach-number flow)
     LINALG::Matrix<nsd_,nsd_> viscstress(true);
     ViscousGalPart(estif_u,
-                   velforce,
+                  velforce,
                    viscstress,
                    timefacfac,
                    rhsfac);
@@ -1201,7 +1193,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     // 10) PSPG term
     if (fldpara_->PSPG())
-    {
+      {
       PSPG(estif_q_u,
            ppmat,
            preforce,
@@ -1340,13 +1332,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
                         rhsfac);
     }
 
-    // 19) polynomial pressure projection term (Dohrmann, Bochev IJNME 2004)
-    //     (parameter-free inf-sub-stabilization, e.g. used instead of PSPG)
-    if (fldpara_->PPP())
-    {
-      PressureProjection(ppmat);
-    }
-
     // linearization wrt mesh motion
     if (emesh.IsInitialized())
     {
@@ -1365,20 +1350,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       else
         dserror("Linearization of the mesh motion is not available in 1D");
     }
-
   }
   //------------------------------------------------------------------------
   //  end loop over integration points
   //------------------------------------------------------------------------
-
-  // if polynomial pressure projection: finalize matrices and rhs
-  if (fldpara_->PPP())
-  {
-    if (fldparatimint_->IsGenalphaNP())
-      PressureProjectionFinalize(ppmat,preforce,eprenp);
-    else
-      PressureProjectionFinalize(ppmat,preforce,epreaf);
-  }
 
   //------------------------------------------------------------------------
   //  add contributions to element matrix and right-hand-side vector
@@ -1540,11 +1515,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
         if (functnum>0)
         {
           // evaluate function at the position of the current node
-          // ------------------------------------------------------
-          // comment: this introduces an additional error compared to an
-          // evaluation at the integration point. However, we need a node
-          // based element bodyforce vector for prescribed pressure gradients
-          // in some fancy turbulance stuff.
           functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
                                                                              (ele->Nodes()[jnode])->X(),
                                                                              fldparatimint_->Time(),
@@ -2727,35 +2697,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
   }
   break;
 
-  case INPAR::FLUID::tau_hughes_franca_balestra_wo_dt:
-  {
-    /*----------------------------------------------------------------------*/
-    /*
-     *  This stabilization parameter is only intended to be used for
-     *  stationary Stokes problems.
-     *
-     *  literature:
-     *  1) T.J.R. Hughes, L.P. Franca, and M. Balestra, A new finite element
-     *     formulation for computational fluid dynamics: V. circumventing the
-     *     Babuska-Brezzi condition: a stable Petrov-Galerkin formulation of
-     *     the Stokes problem accomodating equal-order interpolations,
-     *     Comput. Methods Appl. Mech. Engrg. 59 (1986) 85-99.
-     *
-     *  2) J. Donea and A. Huerta, Finite element methods for flow problems.
-     *     (for alpha_0 = 1/3)
-     */
-    /*----------------------------------------------------------------------*/
-
-    // calculate characteristic element length
-    CalcCharEleLength(vol,0.0,h_u,h_p);
-
-    // compute stabilization parameter tau_Mp (tau_Mu not required)
-    tau_(0) = 0.0;
-    tau_(1) = (1.0/3.0) * std::pow(h_p,2.0) / (4.0 * visceff_);
-
-  }
-  break;
-
   default:
   {
     if (not (fldpara_->StabType() == INPAR::FLUID::stabtype_edgebased and
@@ -2942,31 +2883,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     const double c_p = 4.0;
 
     tau_(2) = c_p*DSQR(h_p)*reacoeff_;
-  }
-  break;
-
-  case INPAR::FLUID::tau_hughes_franca_balestra_wo_dt:
-  {
-    /*----------------------------------------------------------------------*/
-    /*
-     *  This stabilization parameter is only intended to be used for
-     *  stationary Stokes problems.
-     *
-     *  literature:
-     *  1) T.J.R. Hughes, L.P. Franca, and M. Balestra, A new finite element
-     *     formulation for computational fluid dynamics: V. circumventing the
-     *     Babuska-Brezzi condition: a stable Petrov-Galerkin formulation of
-     *     the Stokes problem accomodating equal-order interpolations,
-     *     Comput. Methods Appl. Mech. Engrg. 59 (1986) 85-99.
-     *
-     *  2) J. Donea and A. Huerta, Finite element methods for flow problems.
-     *     (for alpha_0 = 1/3)
-     */
-    /*----------------------------------------------------------------------*/
-
-    // tau_C not required)
-    tau_(2) = 0.0;
-
   }
   break;
 
@@ -3737,19 +3653,17 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU(
 
   const double timefacfac_densaf=timefacfac*densaf_;
 
-  // convection, reactive
-  for (int ui=0; ui<nen_; ++ui)
-  {
-  const double v=timefacfac_densaf*conv_c_(ui);
-
-    for (int idim = 0; idim <nsd_; ++idim)
+    for (int ui=0; ui<nen_; ++ui)
     {
-      lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
-    }
-  }
+    const double v=timefacfac_densaf*conv_c_(ui);
 
-  // convection, convective (only for Newton)
-  if(fldpara_->IsNewton() and (fldpara_->PhysicalType()!=INPAR::FLUID::stokes))
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
+      }
+    }
+
+  if(fldpara_->IsNewton())
   {
     for (int ui=0; ui<nen_; ++ui)
     {
@@ -4017,8 +3931,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::InertiaConvectionReactionGalPart(
            |                  |
             \                /
   */
-  if ((fldpara_->IsNewton() or
-       (is_higher_order_ele_ and fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent)))
+  if (fldpara_->IsNewton() ||
+      (is_higher_order_ele_ && fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent))
   {
     for (int ui=0; ui<nen_; ++ui)
     {
@@ -4063,12 +3977,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::InertiaConvectionReactionGalPart(
         else
           resM_Du(idim)+=rhsfac*densam_*accint_(idim);
       }
-      else
-        resM_Du(idim)+=fac_*densaf_*velint_(idim);
+      else                            resM_Du(idim)+=fac_*densaf_*velint_(idim);
     }
   }  // end if (not stationary)
 
-  // convective terms of rhs
   for (int idim = 0; idim <nsd_; ++idim)
   {
     if(fldpara_->Tds()      ==INPAR::FLUID::subscales_time_dependent &&
@@ -4077,9 +3989,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::InertiaConvectionReactionGalPart(
       ;// do nothing here! Whole term already set in LinGalMomResU_subscales()
     }
     else
-      resM_Du(idim)+=rhsfac*densaf_*conv_old_(idim);
+    resM_Du(idim)+=rhsfac*densaf_*conv_old_(idim);
   }  // end for(idim)
-
 
   if (fldpara_->Reaction())
   {
@@ -4278,8 +4189,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PressureGalPart(
     }
   }
 
-  // pressure term on right-hand side
-  velforce.Update(press*rhsfac,derxy_,1.0);
+  const double pressfac = press*rhsfac;
+
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    /* pressure term on right-hand side */
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      velforce(idim,vi)+= pressfac*derxy_(idim, vi) ;
+    }
+  }  //end for(idim)
 
   return;
 }
@@ -4317,62 +4236,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ContinuityGalPart(
     }
   }  // end for(idim)
 
-  // continuity term on right-hand side
-  preforce.Update(-rhsfac * vdiv_,funct_,1.0);
+  const double rhsfac_vdiv = -rhsfac * vdiv_;
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    // continuity term on right-hand side
+    preforce(vi) += rhsfac_vdiv*funct_(vi);
+  }
 
   return;
 }
 
-
-/*----------------------------------------------------------------------------*
- |  add integration point contribution to pressure matrices         nis Jan13 |
- *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::PressureProjection(
-  LINALG::Matrix<nen_, nen_> &  ppmat
-  )
-{
-  // mass matrix of pressure basis functions - used as temp
-  ppmat.MultiplyNT(fac_, funct_, funct_, 1.0);
-
-  // "mass matrix" of projection modes - here element volume_equivalent_diameter_pc
-  D_ += fac_;
-
-  // prolongator(?) of projection
-  E_.Update(fac_, funct_, 1.0);
-}
-
-/*----------------------------------------------------------------------------*
- |  finalize pressure projection and compute rhs-contribution       nis Jan13 |
- *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::PressureProjectionFinalize(
-  LINALG::Matrix<nen_, nen_> & ppmat,
-  LINALG::Matrix<nen_, 1   > & preforce,
-  const LINALG::Matrix<nen_, 1   > & epre
-  )
-{
-  // check whether we deal with linear elements
-  if (not (distype==DRT::Element::hex8 or
-           distype==DRT::Element::tet4 or
-           distype==DRT::Element::quad4 or
-           distype==DRT::Element::tri3))
-  {
-    dserror("Polynomial pressure projection only implemented for linear elements so far.");
-  }
-
-  // compute difference of consistent and projection pressure mass matrices
-  ppmat.MultiplyNT(-1.0/D_,E_,E_,1.0);
-  ppmat.Scale(1.0/visc_);
-
-  // compute rhs-contribution
-  LINALG::Matrix<nen_,1> temp(false);
-  temp.Multiply(ppmat,epre);
-  preforce.Update(-fldparatimint_->TimeFacRhs(),temp,1.0);
-
-  // scale pressure-pressure matrix with pressure time factor
-  ppmat.Scale(fldparatimint_->TimeFacPre());
-}
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForceRhsTerm(
