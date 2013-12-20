@@ -1046,7 +1046,7 @@ void FLD::FluidImplicitTimeInt::PrepareSolve()
 
 /*----------------------------------------------------------------------*
  | call elements to calculate system matrix/rhs and assemble   vg 02/09 |
- | overloaded in TimIntRedAirways                               bk 12/13|
+ | overloaded in TimIntRedModels                               bk 12/13|
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 {
@@ -1657,7 +1657,7 @@ void FLD::FluidImplicitTimeInt::FreeSurfaceFlowSurfaceTensionUpdate()
 
 /*----------------------------------------------------------------------*
  | application of Dirichlet boundary conditions to system      vg 09/11 |
- | overloaded in TimIntRedAirways                              bk 12/13 |
+ | overloaded in TimIntRedModels                              bk 12/13 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::ApplyDirichletToSystem()
 {
@@ -2323,7 +2323,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
  |  accn_  = (velnp_-veln_) / (dt)                                      |
  |                                                                      |
  |                                                           gammi 04/07|
- |  overloaded in TimIntRedAirways                              bk 12/13|
+ |  overloaded in TimIntRedModels                              bk 12/13|
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
@@ -2647,7 +2647,7 @@ void FLD::FluidImplicitTimeInt::StatisticsOutput()
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                        gammi 04/07|
  | overloaded in TimIntPoro                                             |
- | overloaded in TimIntRedAirways                               bk 12/13|
+ | overloaded in TimIntRedModels                               bk 12/13|
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::Output()
 {
@@ -3159,7 +3159,7 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
 
 /*----------------------------------------------------------------------*
  | prepare AVM3-based scale separation                         vg 10/08 |
- | overloaded in TimIntRedAirways and TimIntLoma               bk 12/13 |
+ | overloaded in TimIntRedModels and TimIntLoma               bk 12/13 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::AVM3Preparation()
 {
@@ -4732,7 +4732,7 @@ Teuchos::RCP<FLD::Vreman> FLD::FluidImplicitTimeInt::Vreman() {return Vrem_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-//Overloaded in TimIntPoro and TimIntRedAirways bk 12/13
+//Overloaded in TimIntPoro and TimIntRedModels bk 12/13
 void FLD::FluidImplicitTimeInt::UpdateIterIncrementally(
   Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
   )
@@ -5207,7 +5207,7 @@ void FLD::FluidImplicitTimeInt::SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_g
   fldgrdisp_= fluid_growth_disp;  return;
 }
 
-//overloaded in TimIntRedAirways bk 12/13
+//overloaded in TimIntRedModels bk 12/13
 void FLD::FluidImplicitTimeInt::SetupMeshtying()
 {
   msht_ = params_->get<int>("MESHTYING");

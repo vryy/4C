@@ -26,7 +26,7 @@ typedef enum _PROBLEM_TYP
      prb_fsi,           // fluid structure interaction problem
      prb_fsi_xfem,      // fluid structure interaction problem including XFEM interfaces
      prb_fsi_lung,      // airway fsi problem with attached parenchyma balloon
-     prb_fsi_redairways,// fluid structure interaction problem
+     prb_fsi_redmodels,// fluid structure interaction problem
      prb_gas_fsi,       // fsi with gas transport
      prb_biofilm_fsi,   // biofilm growth problem
      prb_thermo_fsi,    // thermo-fluid-structure-interaction problem
@@ -39,7 +39,7 @@ typedef enum _PROBLEM_TYP
      prb_fluid_fluid,   // fluid_fluid problem
      prb_fluid_fluid_fsi,//fluid_fluid fsi problem
      prb_fluid_ale,     // fluid on an ale mesh (no structure)
-     prb_fluid_redairways,// fluid_redairways problem
+     prb_fluid_redmodels,// fluid_redairways problem
      prb_freesurf,      // free surface fluid
      prb_opt,           // structural optimization  problem
      prb_ale,           // pure ale problem

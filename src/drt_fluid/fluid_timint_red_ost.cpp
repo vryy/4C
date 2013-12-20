@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file fluid_timint_red_ost.cpp
-\brief TimIntRedAirwaysOst
+\brief TimIntRedModelsOst
 
 <pre>
 Maintainers: Ursula Rasthofer & Martin Kronbichler
@@ -19,7 +19,7 @@ Maintainers: Ursula Rasthofer & Martin Kronbichler
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntRedAirwaysOst::TimIntRedAirwaysOst(
+FLD::TimIntRedModelsOst::TimIntRedModelsOst(
         const Teuchos::RCP<DRT::Discretization>&      actdis,
         const Teuchos::RCP<LINALG::Solver>&           solver,
         const Teuchos::RCP<Teuchos::ParameterList>&   params,
@@ -27,7 +27,7 @@ FLD::TimIntRedAirwaysOst::TimIntRedAirwaysOst(
         bool                                          alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
       TimIntOneStepTheta(actdis,solver,params,output,alefluid),
-      TimIntRedAirways(actdis,solver,params,output,alefluid)
+      TimIntRedModels(actdis,solver,params,output,alefluid)
 {
 
   return;
@@ -37,7 +37,7 @@ FLD::TimIntRedAirwaysOst::TimIntRedAirwaysOst(
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
-FLD::TimIntRedAirwaysOst::~TimIntRedAirwaysOst()
+FLD::TimIntRedModelsOst::~TimIntRedModelsOst()
 {
   return;
 }

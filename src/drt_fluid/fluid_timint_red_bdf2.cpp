@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file fluid_timint_red_bdf2.cpp
-\brief TimIntRedAirwaysBDF2
+\brief TimIntRedModelsBDF2
 
 <pre>
 Maintainers: Ursula Rasthofer & Martin Kronbichler
@@ -19,7 +19,7 @@ Maintainers: Ursula Rasthofer & Martin Kronbichler
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntRedAirwaysBDF2::TimIntRedAirwaysBDF2(
+FLD::TimIntRedModelsBDF2::TimIntRedModelsBDF2(
         const Teuchos::RCP<DRT::Discretization>&      actdis,
         const Teuchos::RCP<LINALG::Solver>&           solver,
         const Teuchos::RCP<Teuchos::ParameterList>&   params,
@@ -27,7 +27,7 @@ FLD::TimIntRedAirwaysBDF2::TimIntRedAirwaysBDF2(
         bool                                          alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
       TimIntBDF2(actdis,solver,params,output,alefluid),
-      TimIntRedAirways(actdis,solver,params,output,alefluid)
+      TimIntRedModels(actdis,solver,params,output,alefluid)
 {
 
   return;
@@ -37,7 +37,7 @@ FLD::TimIntRedAirwaysBDF2::TimIntRedAirwaysBDF2(
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
-FLD::TimIntRedAirwaysBDF2::~TimIntRedAirwaysBDF2()
+FLD::TimIntRedModelsBDF2::~TimIntRedModelsBDF2()
 {
   return;
 }

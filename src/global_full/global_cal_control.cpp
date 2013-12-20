@@ -50,7 +50,7 @@ void ntacal()
       caldyn_drt();
       break;
     case prb_fluid:
-    case prb_fluid_redairways:
+    case prb_fluid_redmodels:
       dyn_fluid_drt(restart);
       break;
     case prb_scatra:
@@ -76,7 +76,7 @@ void ntacal()
       break;
 
     case prb_fsi:
-    case prb_fsi_redairways:
+    case prb_fsi_redmodels:
     case prb_fsi_lung:
       fsi_ale_drt();
       break;

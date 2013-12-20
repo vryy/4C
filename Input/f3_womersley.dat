@@ -10,7 +10,7 @@ DIM                             3
 MATERIALS                       4
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_RedAirways                         // Fluid_Structure_Interaction
+PROBLEMTYP                      Fluid_RedModels                         // Fluid_Structure_Interaction
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

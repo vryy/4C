@@ -53,7 +53,7 @@ int main(
     switch (problem.Problemtype())
     {
     case prb_fsi:
-    case prb_fsi_redairways:
+    case prb_fsi_redmodels:
     case prb_fsi_lung:
     {
         std::string basename = problem.outname();
@@ -153,7 +153,7 @@ int main(
       }
       // don't add break here !!!!
     }
-    case prb_fluid_redairways:
+    case prb_fluid_redmodels:
     {
       if (problem.num_discr()== 2)
       {

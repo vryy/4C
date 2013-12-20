@@ -76,19 +76,19 @@ public:
   void PrintTurbulenceModel();
 
   /*!
-  \brief Set custom parameters in the respective time integration class (Loma, RedAirways...)
+  \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
   */
   void SetCustomEleParamsApplyNonlinearBoundaryConditions(Teuchos::ParameterList& eleparams);
 
   /*!
-  \brief Set custom parameters in the respective time integration class (Loma, RedAirways...)
+  \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
   */
   void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
 
   /*!
-  \brief Set custom parameters in the respective time integration class (Loma, RedAirways...)
+  \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
   */
   void SetCustomEleParamsLinearRelaxationSolve(Teuchos::ParameterList& eleparams);

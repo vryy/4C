@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file fluid_timint_red.cpp
-\brief TimIntRedAirways
+\brief TimIntRedModels
 
 <pre>
 Maintainer: Mahmoud Ismail
@@ -25,7 +25,7 @@ Maintainer: Mahmoud Ismail
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntRedAirways::TimIntRedAirways(
+FLD::TimIntRedModels::TimIntRedModels(
         const Teuchos::RCP<DRT::Discretization>&      actdis,
         const Teuchos::RCP<LINALG::Solver>&           solver,
         const Teuchos::RCP<Teuchos::ParameterList>&   params,
@@ -143,7 +143,7 @@ FLD::TimIntRedAirways::TimIntRedAirways(
   // ------------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null) {
 
-    // Airways
+    // Models
     if ((ART_exp_timeInt_ != Teuchos::null) or (airway_imp_timeInt_ != Teuchos::null)) {
       dserror("No problem types involving airways are supported for use with locsys conditions!");
     }
@@ -156,7 +156,7 @@ FLD::TimIntRedAirways::TimIntRedAirways(
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
-FLD::TimIntRedAirways::~TimIntRedAirways()
+FLD::TimIntRedModels::~TimIntRedModels()
 {
   return;
 }
@@ -164,7 +164,7 @@ FLD::TimIntRedAirways::~TimIntRedAirways()
 /*----------------------------------------------------------------------*
  |  Update3DToReduced                                          bk 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::Update3DToReducedDirichlet()
+void FLD::TimIntRedModels::Update3DToReducedDirichlet()
 {
 
 #ifdef D_ALE_BFLOW
@@ -195,7 +195,7 @@ void FLD::TimIntRedAirways::Update3DToReducedDirichlet()
 /*----------------------------------------------------------------------*
 | Update3DToReduced in AssembleMatAndRHS                       bk 11/13 |
 *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::Update3DToReducedMatAndRHS()
+void FLD::TimIntRedModels::Update3DToReducedMatAndRHS()
 {
 
   // update impedance boundary condition
@@ -249,10 +249,10 @@ void FLD::TimIntRedAirways::Update3DToReducedMatAndRHS()
 /*----------------------------------------------------------------------*
 | call Update3DToReducedMatAndRHS                              bk 11/13 |
 *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams)
+void FLD::TimIntRedModels::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams)
 {
   //these are the only routines that have to be called in AssembleMatAndRHS
-  //before Evaluate in the RedAirways case
+  //before Evaluate in the RedModels case
   Update3DToReducedMatAndRHS();
 
   return;
@@ -261,7 +261,7 @@ void FLD::TimIntRedAirways::SetCustomEleParamsAssembleMatAndRHS(Teuchos::Paramet
 /*----------------------------------------------------------------------*
  | output of solution vector of ReducedD problem to binio   ismail 01/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::OutputReducedD()
+void FLD::TimIntRedModels::OutputReducedD()
 {
   // output of solution
   if (step_%upres_ == 0)
@@ -296,12 +296,12 @@ void FLD::TimIntRedAirways::OutputReducedD()
     }
   }
   return;
-}//FLD::TimIntRedAirways::OutputReducedD
+}//FLD::TimIntRedModels::OutputReducedD
 
 /*----------------------------------------------------------------------*
  | read some additional data in restart                         bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::ReadRestart(int step)
+void FLD::TimIntRedModels::ReadRestart(int step)
 {
   FluidImplicitTimeInt::ReadRestart(step);
 
@@ -335,7 +335,7 @@ void FLD::TimIntRedAirways::ReadRestart(int step)
 /*----------------------------------------------------------------------*
  |                                                          ismail 01/13|
  -----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::ReadRestartReducedD(int step)
+void FLD::TimIntRedModels::ReadRestartReducedD(int step)
 {
   // Check if one-dimensional artery network problem exist
   if (ART_exp_timeInt_ != Teuchos::null)
@@ -348,12 +348,12 @@ void FLD::TimIntRedAirways::ReadRestartReducedD(int step)
   {
     airway_imp_timeInt_->ReadRestart(step,true);
   }
-}//FLD::TimIntRedAirways::ReadRestartReadRestart(int step)
+}//FLD::TimIntRedModels::ReadRestartReadRestart(int step)
 
 /*----------------------------------------------------------------------*
  | do some additional steps in TimeUpdate                       bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::TimeUpdate()
+void FLD::TimIntRedModels::TimeUpdate()
 {
   FluidImplicitTimeInt::TimeUpdate();
 
@@ -438,7 +438,7 @@ void FLD::TimIntRedAirways::TimeUpdate()
 /*----------------------------------------------------------------------*
  | do some additional steps in SetupMeshtying                   bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::SetupMeshtying()
+void FLD::TimIntRedModels::SetupMeshtying()
 {
 
   FluidImplicitTimeInt::SetupMeshtying();
@@ -465,7 +465,7 @@ void FLD::TimIntRedAirways::SetupMeshtying()
 /*----------------------------------------------------------------------*
  | do some additional steps in UpdateIterIncrementally          bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::UpdateIterIncrementally(
+void FLD::TimIntRedModels::UpdateIterIncrementally(
   Teuchos::RCP<const Epetra_Vector> vel)  //!< input residual velocities
 
 {
@@ -493,7 +493,7 @@ void FLD::TimIntRedAirways::UpdateIterIncrementally(
  | output of solution vector to binio                        gammi 04/07|
  | overloading function                                         bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::Output()
+void FLD::TimIntRedModels::Output()
 {
   FluidImplicitTimeInt::Output();
   // output of solution
@@ -546,12 +546,12 @@ void FLD::TimIntRedAirways::Output()
   OutputReducedD();
 
   return;
-} // TimIntRedAirways::Output
+} // TimIntRedModels::Output
 
 /*----------------------------------------------------------------------*
  | read some additional data in restart                         bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::InsertVolumetricSurfaceFlowCondVector(Teuchos::RCP<Epetra_Vector> vel ,Teuchos::RCP<Epetra_Vector> res)
+void FLD::TimIntRedModels::InsertVolumetricSurfaceFlowCondVector(Teuchos::RCP<Epetra_Vector> vel ,Teuchos::RCP<Epetra_Vector> res)
 {
 
   // -------------------------------------------------------------------
@@ -568,9 +568,9 @@ void FLD::TimIntRedAirways::InsertVolumetricSurfaceFlowCondVector(Teuchos::RCP<E
 
 /*----------------------------------------------------------------------*
  | prepare AVM3-based scale separation                         vg 10/08 |
- | overloaded in TimIntRedAirwaysAirways and TimIntLoma        bk 12/13 |
+ | overloaded in TimIntRedModelsModels and TimIntLoma        bk 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::AVM3Preparation()
+void FLD::TimIntRedModels::AVM3Preparation()
 {
 
   // time measurement: avm3
@@ -595,12 +595,12 @@ void FLD::TimIntRedAirways::AVM3Preparation()
   AVM3GetScaleSeparationMatrix();
 
   return;
-}// TimIntRedAirways::AVM3Preparation
+}// TimIntRedModels::AVM3Preparation
 
 /*----------------------------------------------------------------------*
- | RedAirways - specific BC in LinearRelaxationSolve            bk 12/13|
+ | RedModels - specific BC in LinearRelaxationSolve            bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::RedALinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
+void FLD::TimIntRedModels::RedALinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
 {
   // apply Womersley as a Dirichlet BC
   LINALG::ApplyDirichlettoSystem(incvel_,residual_,relax,*(vol_surf_flow_bcmaps_));
@@ -614,7 +614,7 @@ void FLD::TimIntRedAirways::RedALinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
 /*----------------------------------------------------------------------*
  | Apply Womersley bc to shapederivatives                       bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::AssembleMatAndRHS()
+void FLD::TimIntRedModels::AssembleMatAndRHS()
 {
   FluidImplicitTimeInt::AssembleMatAndRHS();
 
@@ -630,7 +630,7 @@ void FLD::TimIntRedAirways::AssembleMatAndRHS()
 /*----------------------------------------------------------------------*
  | Apply Womersley bc to system                                 bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::ApplyDirichletToSystem()
+void FLD::TimIntRedModels::ApplyDirichletToSystem()
 {
 
   FluidImplicitTimeInt::ApplyDirichletToSystem();
@@ -653,7 +653,7 @@ void FLD::TimIntRedAirways::ApplyDirichletToSystem()
 /*----------------------------------------------------------------------*
  | Evaluate Womersley Vel for TimIntStationary                  bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedAirways::EvaluateWomersleyVel()
+void FLD::TimIntRedModels::EvaluateWomersleyVel()
 {
   vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
   return;

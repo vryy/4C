@@ -229,7 +229,7 @@ void FLD::TimIntLoma::CallStatisticsManager()
 
 /*----------------------------------------------------------------------*
  | prepare AVM3-based scale separation                         vg 10/08 |
- | overloaded in TimIntRedAirways and TimIntLoma               bk 12/13 |
+ | overloaded in TimIntRedModels and TimIntLoma               bk 12/13 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntLoma::AVM3Preparation()
 {

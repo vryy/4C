@@ -249,19 +249,19 @@ public:
   void AVM3GetScaleSeparationMatrix();
 
   /*!
-  \brief Set custom parameters in the respective time integration class (Loma, RedAirways...)
+  \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
   */
   virtual void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams){return;}
 
   /*!
-  \brief Set custom parameters in the respective time integration class (Loma, RedAirways...)
+  \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
   */
   virtual void SetCustomEleParamsApplyNonlinearBoundaryConditions(Teuchos::ParameterList& eleparams) {return;}
 
   /*!
-  \brief Set custom parameters in the respective time integration class (Loma, RedAirways...)
+  \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
   */
   virtual void SetCustomEleParamsLinearRelaxationSolve(Teuchos::ParameterList& eleparams) {return;}
@@ -273,7 +273,7 @@ public:
   virtual void TimIntCalculateAcceleration();
 
   /*!
-  \brief Additional function for RedAirways in LinearRelaxationSolve
+  \brief Additional function for RedModels in LinearRelaxationSolve
 
   */
   virtual void RedALinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax){return;}

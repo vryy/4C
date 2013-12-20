@@ -43,18 +43,18 @@ namespace UTILS
   class Fluid_couplingWrapper;
 }
 
-class TimIntRedAirways : public virtual FluidImplicitTimeInt
+class TimIntRedModels : public virtual FluidImplicitTimeInt
 {
 public:
   /// Standard Constructor
-  TimIntRedAirways(const Teuchos::RCP<DRT::Discretization>&      actdis,
+  TimIntRedModels(const Teuchos::RCP<DRT::Discretization>&      actdis,
       const Teuchos::RCP<LINALG::Solver>&           solver,
       const Teuchos::RCP<Teuchos::ParameterList>&   params,
       const Teuchos::RCP<IO::DiscretizationWriter>& output,
       bool                                          alefluid = false);
 
   /// Destructor
-  virtual ~TimIntRedAirways();
+  virtual ~TimIntRedModels();
 
   /*!
   \brief update the 3D-to-reduced_D coupling data for dirichlet bc
@@ -74,7 +74,7 @@ public:
   void ReadRestart(int step);
 
   /*!
-  \brief read restart (some more RedAirways-specific data)
+  \brief read restart (some more RedModels-specific data)
 
   */
   void ReadRestartReducedD(int step);
@@ -124,13 +124,13 @@ public:
   void AVM3Preparation();
 
   /*!
-  \brief Additional function for RedAirways in LinearRelaxationSolve
+  \brief Additional function for RedModels in LinearRelaxationSolve
 
   */
   void RedALinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
   /*!
-  \brief Set custom parameters in the respective time integration class (Loma, RedAirways...)
+  \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
   */
   void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
@@ -191,7 +191,7 @@ protected:
 private:
 
 
-}; // class TimIntRedAirways
+}; // class TimIntRedModels
 
 } // namespace FLD
 

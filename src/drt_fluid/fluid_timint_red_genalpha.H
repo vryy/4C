@@ -24,18 +24,18 @@ Maintainers: Ursula Rasthofer & Martin Kronbichler
 namespace FLD
 {
 
-class TimIntRedAirwaysGenAlpha : public TimIntGenAlpha ,public TimIntRedAirways
+class TimIntRedModelsGenAlpha : public TimIntGenAlpha ,public TimIntRedModels
 {
 public:
   /// Standard Constructor
-  TimIntRedAirwaysGenAlpha(const Teuchos::RCP<DRT::Discretization>&      actdis,
+  TimIntRedModelsGenAlpha(const Teuchos::RCP<DRT::Discretization>&      actdis,
       const Teuchos::RCP<LINALG::Solver>&           solver,
       const Teuchos::RCP<Teuchos::ParameterList>&   params,
       const Teuchos::RCP<IO::DiscretizationWriter>& output,
       bool                                          alefluid = false);
 
   /// Destructor
-  virtual ~TimIntRedAirwaysGenAlpha();
+  virtual ~TimIntRedModelsGenAlpha();
 
 
 
@@ -45,7 +45,7 @@ protected:
 private:
 
 
-}; // class TimIntRedAirwaysGenAlpha
+}; // class TimIntRedModelsGenAlpha
 
 } // namespace FLD
 
