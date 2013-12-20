@@ -430,6 +430,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
   // what's the current problem type?
   PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
   if (probtype == prb_fsi or
+      probtype == prb_fsi_redairways or
       probtype == prb_fsi_lung or
       probtype == prb_gas_fsi or
       probtype == prb_thermo_fsi or

@@ -1327,7 +1327,6 @@ void FSI::MonolithicStructureSplit::Output()
   }
 
   FluidField().    Output();
-  FluidField().    OutputReducedD();
   AleField().      Output();
   FluidField().LiftDrag();
 
@@ -1353,7 +1352,6 @@ void FSI::MonolithicStructureSplit::ReadRestart(int step)
 
   StructureField()->ReadRestart(step);
   FluidField().ReadRestart(step);
-  FluidField().ReadRestartReducedD(step);
   AleField().ReadRestart(step);
 
   SetTimeStep(FluidField().Time(),FluidField().Step());

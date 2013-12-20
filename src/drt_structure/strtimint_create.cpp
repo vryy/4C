@@ -166,6 +166,7 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
   PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
 
   if (probtype == prb_fsi or
+      probtype == prb_fsi_redairways or
       probtype == prb_fsi_lung or
       probtype == prb_gas_fsi or
       probtype == prb_biofilm_fsi or

@@ -28,6 +28,7 @@ Maintainer: Ursula Rasthofer
 #include "turbulence_hit_forcing.H"
 
 #include "../drt_fluid/fluidimplicitintegration.H"
+#include "../drt_fluid/fluid_timint_genalpha.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -50,12 +51,18 @@ HomIsoTurbForcing::HomIsoTurbForcing(
         velnp_(timeint.velnp_),
         velaf_(timeint.velaf_),
         threshold_wavenumber_(timeint.params_->sublist("TURBULENCE MODEL").get<double>("THRESHOLD_WAVENUMBER",0)),
-        is_genalpha_(timeint.is_genalpha_),
+        is_genalpha_(false),
         num_force_steps_(timeint.params_->sublist("TURBULENCE MODEL").get<int>("FORCING_TIME_STEPS",0)),
         dt_(timeint.dta_),
         Pin_(timeint.params_->sublist("TURBULENCE MODEL").get<double>("POWER_INPUT",0)),
         E_kf_(0.0)
 {
+  // set gen-alpha
+  TimIntGenAlpha* timeint_genalpha = dynamic_cast<TimIntGenAlpha*> (&timeint);
+
+  if (timeint_genalpha != NULL)
+    is_genalpha_ = true;
+
   if (timeint.special_flow_ == "forced_homogeneous_isotropic_turbulence"
       or timeint.special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence")
     flow_type_ = forced_homogeneous_isotropic_turbulence;

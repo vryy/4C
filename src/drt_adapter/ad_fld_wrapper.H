@@ -149,15 +149,11 @@ namespace ADAPTER
     { return fluid_->StatisticsAndOutput(); }
     virtual void Output()
     { return fluid_->Output(); }
-    virtual void OutputReducedD()
-    { return fluid_->OutputReducedD(); }
     virtual void StatisticsOutput() { dserror("not implemented!"); return; }
     virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter()
     { return fluid_->DiscWriter();}
     virtual void ReadRestart(int step)
     { return fluid_->ReadRestart(step); }
-    virtual void ReadRestartReducedD(int step)
-    { return fluid_->ReadRestartReducedD(step); }
     virtual void SetRestart(const int step,
                     const double time,
                     Teuchos::RCP<const Epetra_Vector> readvelnp,
@@ -216,8 +212,6 @@ namespace ADAPTER
     virtual void TransferVectorsToNewDistribution(Teuchos::RCP<COMBUST::FlameFront> flamefront) { dserror("not implemented!"); return; }
     virtual void Solve()
     { return fluid_->Solve(); }
-    virtual void Predictor()
-    { return fluid_->Predictor(); }
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
     { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver()

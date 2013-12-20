@@ -29,9 +29,11 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Fluid_Fluid"] =                               prb_fluid_fluid;
     string2prbtype["Fluid_Fluid_FSI"] =                           prb_fluid_fluid_fsi;
     string2prbtype["Fluid_Ale"] =                                 prb_fluid_ale;
+    string2prbtype["Fluid_RedAirways"] =                          prb_fluid_redairways;
     string2prbtype["Fluid_Freesurface"] =                         prb_freesurf;
     string2prbtype["Scalar_Transport"] =                          prb_scatra;
     string2prbtype["Fluid_Structure_Interaction"] =               prb_fsi;
+    string2prbtype["Fluid_Structure_Interaction_RedAirways"] =    prb_fsi_redairways;
     string2prbtype["Fluid_Structure_Interaction_XFEM"] =          prb_fsi_xfem;
     string2prbtype["Ale"] =                                       prb_ale;
     string2prbtype["Thermo_Structure_Interaction"] =              prb_tsi;

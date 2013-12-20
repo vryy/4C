@@ -1517,7 +1517,6 @@ void FSI::FluidFluidMonolithicStructureSplit::Output()
   }
 
   FluidField().    Output();
-  //FluidField().    OutputReducedD();
   AleField().      Output();
   FluidField().LiftDrag();
 

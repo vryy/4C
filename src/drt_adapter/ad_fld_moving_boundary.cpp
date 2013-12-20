@@ -39,6 +39,7 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     case prb_fluid_fluid_fsi:
     case prb_fluid_ale:
     case prb_freesurf:
+    case prb_fsi_redairways:
     {
       //std::cout << "using FluidAle as FluidMovingBoundary" << endl;
       fluid_ = Teuchos::rcp(new FluidAle(prbdyn,condname));

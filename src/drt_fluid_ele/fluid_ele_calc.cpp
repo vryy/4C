@@ -476,10 +476,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
 
   // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
   // its time derivative at n+alpha_M/n+1
-  const double thermpressaf   = params.get<double>("thermpress at n+alpha_F/n+1");
-  const double thermpressam   = params.get<double>("thermpress at n+alpha_M/n");
-  const double thermpressdtaf = params.get<double>("thermpressderiv at n+alpha_F/n+1");
-  const double thermpressdtam = params.get<double>("thermpressderiv at n+alpha_M/n+1");
+  const double thermpressaf   = params.get<double>("thermpress at n+alpha_F/n+1",1.0);
+  const double thermpressam   = params.get<double>("thermpress at n+alpha_M/n",1.0);
+  const double thermpressdtaf = params.get<double>("thermpressderiv at n+alpha_F/n+1",0.0);
+  const double thermpressdtam = params.get<double>("thermpressderiv at n+alpha_M/n+1",0.0);
 
 
   // ---------------------------------------------------------------------

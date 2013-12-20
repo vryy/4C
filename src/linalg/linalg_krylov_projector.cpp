@@ -95,6 +95,26 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::KrylovProjector::GetNonConstWeights()
   return w_;
 }
 
+void LINALG::KrylovProjector::SetCW(Teuchos::RCP<Epetra_MultiVector> c0, Teuchos::RCP<Epetra_MultiVector> w0, const Epetra_BlockMap* newmap)
+{
+
+  c_=Teuchos::null;
+  w_=Teuchos::null;
+
+  c_ = Teuchos::rcp(new Epetra_MultiVector(*newmap,nsdim_,false));
+  w_ = Teuchos::rcp(new Epetra_MultiVector(*newmap,nsdim_,false));
+  *c_=*c0;
+  *w_=*w0;
+  return;
+}
+
+void LINALG::KrylovProjector::SetCW(Teuchos::RCP<Epetra_MultiVector> c0, Teuchos::RCP<Epetra_MultiVector> w0)
+{
+  *c_=*c0;
+  *w_=*w0;
+  return;
+}
+
 /* --------------------------------------------------------------------
             Compute (w_^T c_)^(-1) and set complete flag
    -------------------------------------------------------------------- */
@@ -280,6 +300,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::KrylovProjector::Project(
     dserror("Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
 
   // auxiliary preliminary products
+
   Teuchos::RCP<Epetra_MultiVector> w_invwTc
     = MultiplyMultiVecterDenseMatrix(w_,invwTc_);
 
@@ -293,7 +314,10 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::KrylovProjector::Project(
   for (int i=0; i<nsdim_; ++i)
     for (int j=0; j<nsdim_; ++j)
       (*c_)(i)->Dot(*((*matvec)(j)),&((*cTAc)(i,j)));
+//std::cout << *matvec << std::endl;
+//std::cout << A << std::endl;
 
+//std::cout << *w_invwTc << std::endl;
   // compute and add matrices
   Teuchos::RCP<LINALG::SparseMatrix> mat1 = MultiplyMultiVecterMultiVector(matvec,w_invwTc,1,false);
   {

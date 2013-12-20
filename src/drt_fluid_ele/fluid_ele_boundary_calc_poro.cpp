@@ -1758,11 +1758,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   }
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+  //renamed to "velaf" to be consistent in fluidimplicitintegration.cpp (krank 12/13)
+  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velaf");
   Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
 
   if (velnp==Teuchos::null)
-    dserror("Cannot get state vector 'velnp'");
+    dserror("Cannot get state vector 'velaf'");
   if (gridvel==Teuchos::null)
     dserror("Cannot get state vector 'gridv'");
 

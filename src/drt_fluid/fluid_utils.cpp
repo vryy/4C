@@ -587,7 +587,8 @@ std::map<int,double> FLD::UTILS::ComputeFlowRates(
 
     // call loop over elements
     dis.ClearState();
-    dis.SetState("velnp",velnp);
+
+    dis.SetState("velaf",velnp);
     if(dispnp != Teuchos::null)
       dis.SetState("dispnp",dispnp);
     if(gridv != Teuchos::null)

@@ -1846,6 +1846,7 @@ int main(int argc, char** argv)
   switch (problem.Problemtype())
   {
     case prb_fsi:
+    case prb_fsi_redairways:
     case prb_fsi_lung:
     {
       if(infieldtype == "fluid")
@@ -1880,6 +1881,7 @@ int main(int argc, char** argv)
     }
     case prb_loma:
     case prb_fluid:
+    case prb_fluid_redairways:
     {
       if(infieldtype == "scatra")
       {

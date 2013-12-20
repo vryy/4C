@@ -383,7 +383,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
   }
 
   // get thermodynamic pressure at n+1/n+alpha_F
-  const double thermpressaf = params.get<double>("thermodynamic pressure",0.0);
+  const double thermpressaf = params.get<double>("thermpress at n+alpha_F/n+1",0.0);
 
   // add potential ALE displacements
   if (ele->ParentElement()->IsAle())
@@ -818,7 +818,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(
   }
 
   // get thermodynamic pressure at n+1/n+alpha_F
-  const double thermpressaf = params.get<double>("thermpress at n+alpha_F/n+1");
+  const double thermpressaf = params.get<double>("thermpress at n+alpha_F/n+1",1.0);
 
   // --------------------------------------------------
   // nurbs-specific stuff
@@ -1498,8 +1498,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
   std::vector<int>&                lm)
 {
   // extract pressure values from global velocity/pressure vector
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velnp'");
+  //renamed to "velaf" to be consistent in fluidimplicitintegration.cpp (krank 12/13)
+  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velaf");
+  if (velnp == Teuchos::null) dserror("Cannot get state vector 'velaf'");
 
   std::vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
@@ -1677,10 +1678,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+  //renamed to "velaf" to be consistent in fluidimplicitintegration.cpp (krank 12/13)
+  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velaf");
 
   if (velnp==Teuchos::null)
-    dserror("Cannot get state vector 'velnp'");
+    dserror("Cannot get state vector 'velaf'");
 
   std::vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
@@ -2314,6 +2316,7 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
 
   // compute density at n+alpha_F or n+1 based on temperature
   // and thermodynamic pressure
+
   densaf_ = actmat->ComputeDensity(tempaf,thermpressaf);
 
   // set density factor for Neumann boundary conditions to density for present material
@@ -2378,10 +2381,10 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
 {
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velaf");
 
   if (velnp==Teuchos::null)
-    dserror("Cannot get state vector 'velnp'");
+    dserror("Cannot get state vector 'velaf'");
 
   std::vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);

@@ -72,21 +72,9 @@ namespace LINALG
   class SparseOperator;
 }
 
-namespace TOPOPT
-{
-  class Optimizer;
-}
 namespace ADAPTER
 {
   class CouplingMortar;
-}
-namespace ART
-{
-  class ArtNetExplicitTimeInt;
-}
-namespace AIRWAY
-{
-  class RedAirwayImplicitTimeInt;
 }
 
 /// fluid algorithms
@@ -105,15 +93,7 @@ class TransferTurbulentInflowCondition;
 class FluidMHDEvaluate;
 namespace UTILS
 {
-  class MapExtractor;
-  class FluidImpedanceWrapper;
-  class FluidWkOptimizationWrapper;
-  class FluidVolumetricSurfaceFlowWrapper;
-  class TotalTractionCorrector;
   class FluidInfNormScaling;
-  class Fluid_couplingWrapperBase;
-  template <class red_D_time_int>
-  class Fluid_couplingWrapper;
 }
 
 /*!
@@ -159,28 +139,215 @@ public:
   \brief Do time integration (time loop)
 
   */
-  void TimeLoop();
+  virtual void TimeLoop();
 
   /*!
-  \brief Solve stationary problem
+  \brief Print information about current time step to screen
 
   */
-  void SolveStationaryProblem();
+  virtual void PrintTimeStepInfo() {dserror("you are in the base class");return;}
+
+  /*!
+  \brief Set theta_ to its value, dependent on integration method for GenAlpha and BDF2
+
+  */
+  virtual void SetTheta() {return;}
+
+  /*!
+  \brief Set the part of the righthandside belonging to the last
+         timestep for incompressible or low-Mach-number flow
+
+     for low-Mach-number flow: distinguish momentum and continuity part
+     (continuity part only meaningful for low-Mach-number flow)
+
+     Stationary/af-generalized-alpha:
+
+                   mom: hist_ = 0.0
+                  (con: hist_ = 0.0)
+
+     One-step-Theta:
+
+                   mom: hist_ = veln_  + dt*(1-Theta)*accn_
+                  (con: hist_ = densn_ + dt*(1-Theta)*densdtn_)
+
+     BDF2: for constant time step:
+
+                   mom: hist_ = 4/3 veln_  - 1/3 velnm_
+                  (con: hist_ = 4/3 densn_ - 1/3 densnm_)
+
+
+  */
+  virtual void SetOldPartOfRighthandside() {dserror("you are in the base class");return;}
+
+  /*!
+  \brief Do some poro-specific stuff in AssembleMatAndRHS
+
+  */
+  virtual void PoroIntUpdate(){dserror("not implemented in the base class");return;}
+
+  /*!
+  \brief Set gamma to a value
+
+  */
+  virtual void SetGamma(Teuchos::ParameterList& eleparams){dserror("you are in the base class");return;}
+
+  /*!
+  \brief Initialize function which is called after that the constructor of the time integrator has been called
+
+  */
+  void Initialize();
+
+  /*!
+  \brief Set states in the time integration schemes: differs between GenAlpha and the others
+
+  */
+  virtual void   SetStateTimInt() {dserror("you are in the base class"); return;}
+
+  /*!
+  \brief Set time factor in GenAlpha
+
+  */
+  virtual double SetTimeFac() {return 1.0;}
+
+  /*!
+  \brief Scale separation
+
+  */
+  virtual void Sep_Multiply() {dserror("you are in the base class");return;}
+
+  /*!
+  \brief Update velaf_ for GenAlpha
+
+  */
+  virtual void UpdateVelafGenAlpha() {return;}
+
+  /*!
+  \brief Insert Womersley condition
+
+  */
+  virtual void InsertVolumetricSurfaceFlowCondVector(
+      Teuchos::RCP<Epetra_Vector> vel ,
+      Teuchos::RCP<Epetra_Vector> res)
+  {return;}
+
+  /*!
+  \brief treat turbulence models in AssembleMatAndRHS
+
+  */
+  void TreatTurbulenceModels(Teuchos::ParameterList& eleparams);
+
+  /*!
+  \brief Evaluate for AVM3 Separation
+
+  */
+  void AVM3Evaluate(Teuchos::ParameterList& eleparams);
+
+  /*!
+  \brief Get scale separation matrix
+
+  */
+  void AVM3GetScaleSeparationMatrix();
+
+  /*!
+  \brief Set custom parameters in the respective time integration class (Loma, RedAirways...)
+
+  */
+  virtual void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams){return;}
+
+  /*!
+  \brief Set custom parameters in the respective time integration class (Loma, RedAirways...)
+
+  */
+  virtual void SetCustomEleParamsApplyNonlinearBoundaryConditions(Teuchos::ParameterList& eleparams) {return;}
+
+  /*!
+  \brief Set custom parameters in the respective time integration class (Loma, RedAirways...)
+
+  */
+  virtual void SetCustomEleParamsLinearRelaxationSolve(Teuchos::ParameterList& eleparams) {return;}
+
+  /*!
+  \brief Prepare calculation of acceleration
+
+  */
+  virtual void TimIntCalculateAcceleration();
+
+  /*!
+  \brief Additional function for RedAirways in LinearRelaxationSolve
+
+  */
+  virtual void RedALinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax){return;}
+
+  /*!
+  \brief Call statistics manager (special case in TimIntLoma)
+
+  */
+  void CallStatisticsManager();
+
+  /*!
+  \brief return thermpressaf_ in TimIntLoma
+
+  */
+  virtual double ReturnThermpressaf(){return 0.0;}
+
+  /*!
+  \brief Evaluate vel for Womersley conditions
+
+  */
+  virtual void EvaluateWomersleyVel(){return;}
+
+  /*!
+  \brief Calculate time derivatives for
+         stationary/one-step-theta/BDF2/af-generalized-alpha time integration
+         for incompressible and low-Mach-number flow
+  */
+  virtual void CalculateAcceleration(
+      const Teuchos::RCP<const Epetra_Vector>    velnp,    ///< velocity at     n+1
+      const Teuchos::RCP<const Epetra_Vector>    veln,     ///< velocity at     n
+      const Teuchos::RCP<const Epetra_Vector>    velnm,    ///< velocity at     n-1
+      const Teuchos::RCP<const Epetra_Vector>    accn ,    ///< acceleration at n-1
+      const Teuchos::RCP<Epetra_Vector>          accnp     ///< acceleration at n+1
+  ) {dserror("you are in the base class"); return;}
+
+  //! @name Set general parameter in class f3Parameter
+  /*!
+
+  \brief parameter (fix over all time step) are set in this method.
+         Therefore, these parameter are accessible in the fluid element
+         and in the fluid boundary element
+
+  */
+  virtual void SetElementGeneralFluidParameter();
+
+  //! @name Set general parameter in class f3Parameter
+  /*!
+
+  \brief parameter (fix over all time step) are set in this method.
+         Therefore, these parameter are accessible in the fluid element
+         and in the fluid boundary element
+
+  */
+  virtual void SetElementTurbulenceParameter();
+
+  /*!
+  \brief do explicit predictor step to start nonlinear iteration from
+         a better initial value
+                        +-                                      -+
+                        | /     dta \          dta  veln_-velnm_ |
+   velnp_ = veln_ + dta | | 1 + --- | accn_ - ----- ------------ |
+                        | \     dtp /          dtp     dtp       |
+                        +-                                      -+
+  */
+  void ExplicitPredictor();
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();
 
   /*!
-  \brief predictor
-
-  */
-  void Predictor();
-
-  /*!
   \brief (multiple) corrector
 
   */
-  void Solve();
+  virtual void Solve();
   
     /*!
   \brief solve linearised fluid
@@ -198,6 +365,7 @@ public:
   \brief preparations for Krylov space projection
 
   */
+  void InitKrylovSpaceProjection();
   void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
   void UpdateKrylovSpaceProjection();
   void CheckMatrixNullspace();
@@ -229,7 +397,7 @@ public:
          iteration. Current solution becomes old solution of next
          timestep.
   */
-  void TimeUpdate();
+  virtual void TimeUpdate();
 
   /// Implement ADAPTER::Fluid
   void Update() { TimeUpdate(); }
@@ -300,13 +468,7 @@ public:
   \brief update configuration and output to file/screen
 
   */
-  void Output();
-
-    /*!
-  \brief update configuration and output to file/screen
-
-  */
-  void OutputReducedD();
+  virtual void Output();
 
   void OutputToGmsh(
       const int step,
@@ -328,15 +490,6 @@ public:
 
   /// Implement ADAPTER::Fluid
   Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(Teuchos::RCP<const Epetra_Vector> velpres);
-
-  /*!
-  \brief reset density in topology optimization problems
-
-  */
-  void SetTopOptData(
-      Teuchos::RCP<Epetra_Vector> density,
-      Teuchos::RCP<TOPOPT::Optimizer>& optimizer
-  );
 
   /// Reset state vectors
   void Reset(
@@ -381,13 +534,8 @@ public:
   \brief read restart data
 
   */
-  void ReadRestart(int step);
+  virtual void ReadRestart(int step);
 
-  /*!
-  \brief read restart data
-
-  */
-  void ReadRestartReducedD(int step);
   /*!
   \brief get restart data in case of turbulent inflow computation
 
@@ -432,10 +580,7 @@ public:
     // get fine-scale part of velocity at time n+alpha_F or n+1
     if (Sep_ != Teuchos::null)
     {
-      if (is_genalpha_)
-        Sep_->Multiply(false,*velaf_,*fsvelaf_);
-      else
-        Sep_->Multiply(false,*velnp_,*fsvelaf_);
+      Sep_Multiply();
     }
 
     // set fine-scale velocity for parallel nigthly tests
@@ -523,18 +668,16 @@ public:
    *  \sa trueresidual_
    *  \sa TrueResidual()
    */
-  double ResidualScaling() const
-  {
-    if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
-      return 1.0;
-    else if (is_genalpha_)
-      return alphaM_/(gamma_*dta_);
-    else
-      return 1.0/(theta_*dta_);
+  virtual double ResidualScaling() const
+  {dserror("not implemented in base class");
+  return 0.0;
   }
 
-  /// return time integration factor
-  const double TimIntParam() const;
+  /*!
+  \brief return scheme-specific time integration parameter
+
+  */
+  virtual const double TimIntParam() const {dserror("not implemented in base class"); return 0.0;}
 
   /// update velocity increment after Newton step
   virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel);
@@ -553,16 +696,10 @@ public:
   }
 
   /*!
-  \brief return type of time integration scheme
-
-  */
-//  const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
-
-  /*!
   \brief set fields for low-Mach-number flow within outer iteration loop
 
   */
-  void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+  virtual void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
                          Teuchos::RCP<const Epetra_Vector> scalaram,
                          Teuchos::RCP<const Epetra_Vector> scalardtam,
                          Teuchos::RCP<const Epetra_Vector> fsscalaraf,
@@ -606,7 +743,7 @@ public:
   void UpdateGridv();
 
   /// prepare AVM3-based scale separation
-  void AVM3Preparation();
+  virtual void AVM3Preparation();
 
   /// AVM3-based scale separation
   void AVM3Separation();
@@ -639,28 +776,29 @@ public:
 
   //! @name methods for turbulence models
 
-  void ApplyScaleSeparationForLES();
+  virtual void ApplyScaleSeparationForLES() {dserror("you are in the base class");return;}
 
-  void OutputofFilteredVel(Teuchos::RCP<Epetra_Vector> outvec,
-                           Teuchos::RCP<Epetra_Vector> fsoutvec);
+  virtual void OutputofFilteredVel(Teuchos::RCP<Epetra_Vector> outvec,
+                           Teuchos::RCP<Epetra_Vector> fsoutvec)
+  {dserror("not implemented in base class");}
 
-  void PrintTurbulenceModel();
+  virtual void PrintTurbulenceModel();
   //@}
 
   /// set the initial porosity field
-  void SetInitialPorosityField(
+  virtual void SetInitialPorosityField(
     const INPAR::POROELAST::InitialField,   ///< type of initial field
 	//const int,                                ///< type of initial field
     const int startfuncno                   ///< number of spatial function
-    );
+    ) {dserror("not implemented in base class");}
 
-  void UpdateIterIncrementally(
+  virtual void UpdateIterIncrementally(
     Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
     );
 
   //! @name methods for fsi
   /// Extrapolation of vectors from mid-point to end-point t_{n+1}
-  Teuchos::RCP<Epetra_Vector> ExtrapolateEndPoint(
+  virtual Teuchos::RCP<Epetra_Vector> ExtrapolateEndPoint(
       Teuchos::RCP<Epetra_Vector> vecn, ///< vector at time level t_n
       Teuchos::RCP<Epetra_Vector> vecm  ///< vector at time level of equilibrium
       );
@@ -692,8 +830,16 @@ public:
   //@{
   /// void volume in fluid is set from outside
   void SetVoidVolume(Teuchos::RCP<Epetra_MultiVector> voidvolume);
+
+  /// Output of density_scaling_ is written
+  void WriteOutputCavitationVoidFraction();
   //@}
 
+  /*!
+  \brief update the 3D-to-reduced_D coupling data in TimIntRed
+
+  */
+  virtual void Update3DToReducedDirichlet() {return;}
 protected:
 
   // don't want = operator and cctor
@@ -714,7 +860,7 @@ protected:
   \brief call elements to calculate system matrix/rhs and assemble
 
   */
-  void AssembleMatAndRHS();
+  virtual void AssembleMatAndRHS();
 
   /*!
   \brief calculate intermediate soution
@@ -726,7 +872,7 @@ protected:
   \brief apply Dirichlet boundary conditions to system of equations
 
   */
-  void ApplyDirichletToSystem();
+  virtual void ApplyDirichletToSystem();
 
   /*!
   \brief apply weak or mixed hybrid Dirichlet boundary conditions to system of equations
@@ -738,13 +884,13 @@ protected:
   \brief update acceleration for generalized-alpha time integration
 
   */
-  void GenAlphaUpdateAcceleration();
+  virtual void GenAlphaUpdateAcceleration() {return ;}
 
   /*!
   \brief compute values at intermediate time steps for gen.-alpha
 
   */
-  void GenAlphaIntermediateValues();
+  virtual void GenAlphaIntermediateValues() {return ;}
 
   //! Predict velocities which satisfy exactly the Dirichlet BCs
   //! and the linearised system at the previously converged state.
@@ -774,7 +920,7 @@ protected:
   \brief Setup meshtying
 
   */
-  void SetupMeshtying();
+  virtual void SetupMeshtying();
 
 
   //! @name general algorithm parameters
@@ -791,18 +937,8 @@ protected:
 
   //! @name time stepping variables
   int     numstasteps_; ///< number of steps for starting algorithm
-  bool    startalgo_;   ///< flag for starting algorithm
   //@}
 
-  // genalpha integration scheme (afgenalpha or npgenalpha)
-  bool is_genalpha_;
-
-  /// for low-Mach-number flow solver: thermodynamic pressure at n+alpha_F/n+1
-  /// and at n+alpha_M/n as well as its time derivative at n+alpha_F/n+1 and n+alpha_M/n
-  double thermpressaf_;
-  double thermpressam_;
-  double thermpressdtaf_;
-  double thermpressdtam_;
 
   /// gas constant (only for low-Mach-number flow)
   double gasconstant_;
@@ -823,10 +959,9 @@ protected:
   //@}
 
   //! @name time-integration-scheme factors
+  ///declaration required here in base class
   double theta_;
-  double alphaM_;
-  double alphaF_;
-  double gamma_;
+
   //@}
 
   //! @name parameters for sampling/dumping period
@@ -853,9 +988,6 @@ protected:
   /// flag for potential nonlinear boundary conditions
   bool nonlinearbc_;
 
-  /// flag for potential 3D Reduced_D coupling
-  bool strong_redD_3d_coupling_;
-
   /// form of convective term
   std::string convform_;
 
@@ -876,9 +1008,6 @@ protected:
   /// maps for extracting Dirichlet and free DOF sets
   Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
-  /// maps for extracting Dirichlet and free DOF sets
-  Teuchos::RCP<FLD::UTILS::MapExtractor> vol_flow_rates_bc_extractor_;
-
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
   Teuchos::RCP<Epetra_Vector>    zeros_;
 
@@ -896,10 +1025,6 @@ protected:
 
   /// (standard) residual vector (rhs for the incremental form),
   Teuchos::RCP<Epetra_Vector>    residual_;
-  Teuchos::RCP<Epetra_Vector>    trac_residual_;
-
-  /// rhs: right hand side vector for linearised flow solution
-//  Teuchos::RCP<Epetra_Vector>    rhs_;
 
   /// robinrhs_: additional rhs when using robin-BC
   Teuchos::RCP<Epetra_Vector>    robinrhs_;
@@ -950,12 +1075,9 @@ protected:
   LINALG::Matrix<4,1> flowvolumenm_;
 
   //! @name optimization data and cavitation
-
   /// density in topology optimization and void fraction in cavitation
   Teuchos::RCP<Epetra_Vector>    density_scaling_;
 
-  /// optimizer for topology optimization
-  Teuchos::RCP<TOPOPT::Optimizer> optimizer_;
   //@}
 
   /// only necessary for AVM3: scale-separation matrix
@@ -984,9 +1106,6 @@ protected:
 
   /// grid velocity at time step n (set from the adapter!)
   Teuchos::RCP<Epetra_Vector>    gridvn_;
-  
-    /// initial porosity (poroelasticity)
-  Teuchos::RCP<Epetra_Vector>    initporosityfield_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)
@@ -1040,30 +1159,6 @@ protected:
   /// turbulent inflow profiles from a separate (periodic) domain
   Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
 
-  /// bio related special (outflow) boundaries
-  Teuchos::RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
-
-  /// bio related special (outflow) optimization of boundaries
-  Teuchos::RCP<UTILS::FluidWkOptimizationWrapper> Wk_optimization_;
-
-  /// bio related special (in/outflow) boundaries
-  Teuchos::RCP<UTILS::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;
-
-  /// bio related special (in/outflow) traction velocity component adder
-  Teuchos::RCP<UTILS::TotalTractionCorrector> traction_vel_comp_adder_bc_;
-
-  /// bio related, 3D to reduced-D coupling
-  Teuchos::RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_art_;
-
-  /// 1D arterial network time integration
-  Teuchos::RCP<ART::ArtNetExplicitTimeInt>   ART_exp_timeInt_;
-
-  /// bio related, 3D to reduced-D coupling
-  Teuchos::RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_airways_;
-
-  /// 1D arterial network time integration
-  Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>   airway_imp_timeInt_;
-
   /// @name special relaxation state
 
   bool inrelaxation_;
@@ -1071,9 +1166,6 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> dirichletlines_;
 
   Teuchos::RCP<LINALG::SparseMatrix> meshmatrix_;
-
-  /// maps for womersley flow profile which is applied as a Dirichlet condition
-  Teuchos::RCP<Epetra_Map>                    vol_surf_flow_bcmaps_;
 
   /// coupling of fluid-fluid at an internal interface
   Teuchos::RCP<FLD::Meshtying>   meshtying_;
@@ -1097,22 +1189,6 @@ protected:
   //! Dirichlet BCs with local co-ordinate system
   Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
 
-private:
-
-  void SplitMatrixAndVector(Teuchos::RCP<Epetra_Vector>    incvel_);
-
-  //@}
-
-  //! @name Set general parameter in class f3Parameter
-  /*!
-
-  \brief parameter (fix over all time step) are set in this method.
-         Therefore, these parameter are accessible in the fluid element
-         and in the fluid boundary element
-
-  */
-  void SetElementGeneralFluidParameter();
-
   //! @name Set general parameter in class f3Parameter
   /*!
 
@@ -1121,47 +1197,14 @@ private:
          and in the fluid boundary element
 
   */
-  void SetElementTimeParameter();
+  virtual void SetElementTimeParameter()
+  {dserror("not implemented in base class");}
 
-  //! @name Set general parameter in class f3Parameter
-  /*!
+private:
 
-  \brief parameter (fix over all time step) are set in this method.
-         Therefore, these parameter are accessible in the fluid element
-         and in the fluid boundary element
+  void SplitMatrixAndVector(Teuchos::RCP<Epetra_Vector>    incvel_);
 
-  */
-  void SetElementTurbulenceParameter();
-
-  //! @name Set general parameter in class f3Parameter
-  /*!
-
-  \brief parameter (fix over all time step) are set in this method.
-         Therefore, these parameter are accessible in the fluid element
-         and in the fluid boundary element
-
-  */
-  void SetElementLomaParameter();
-
-  //! @name Set general parameter in class f3Parameter for porous media problems
-  /*!
-
-  \brief parameter (fix over all time step) are set in this method.
-         Therefore, these parameter are accessible in the fluid element
-         and in the fluid boundary element
-
-  */
-  void SetElementPoroParameter();
-
-  //! @name Set general parameter in class f3Parameter for topology optimization problems
-  /*!
-
-  \brief parameter (fix over all time step) are set in this method.
-         Therefore, these parameter are accessible in the fluid element
-         and in the fluid boundary element
-
-  */
-  void SetElementTopoptParameter();
+  //@}
 
   //! @name Special method for turbulent variable-density flow at low Mach number with multifractal subgrid-scale modeling
   /*!
@@ -1172,6 +1215,7 @@ private:
 
   */
   void RecomputeMeanCsgsB();
+
 
 }; // class FluidImplicitTimeInt
 

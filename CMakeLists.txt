@@ -657,6 +657,7 @@ set(OBJS_DRT_COMBUST
   src/drt_combust/combust_dyn.cpp
   src/drt_combust/combust_fluidimplicitintegration.cpp
   src/drt_combust/combust_fluidresulttest.cpp
+  src/drt_combust/combust_utils_time_integration.cpp
 )
 set(OBJS_FILTER_COMMON
   src/filter_common/filter_evaluation.cpp
@@ -1034,9 +1035,29 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_utils.cpp
   src/drt_fluid/fluid_utils_infnormscaling.cpp
   src/drt_fluid/fluid_utils_mapextractor.cpp
-  src/drt_fluid/fluid_utils_time_integration.cpp
   src/drt_fluid/fluid_MHD_evaluate.cpp
   src/drt_fluid/fluid_windkessel_optimization.cpp
+  src/drt_fluid/fluid_timint_bdf2.cpp
+  src/drt_fluid/fluid_timint_genalpha.cpp
+  src/drt_fluid/fluid_timint_loma_genalpha.cpp
+  src/drt_fluid/fluid_timint_loma_ost.cpp
+  src/drt_fluid/fluid_timint_loma_bdf2.cpp
+  src/drt_fluid/fluid_timint_loma.cpp
+  src/drt_fluid/fluid_timint_ost.cpp
+  src/drt_fluid/fluid_timint_poro_ost.cpp
+  src/drt_fluid/fluid_timint_poro_stat.cpp
+  src/drt_fluid/fluid_timint_poro.cpp
+  src/drt_fluid/fluid_timint_red_ost.cpp
+  src/drt_fluid/fluid_timint_red_bdf2.cpp
+  src/drt_fluid/fluid_timint_red_genalpha.cpp
+  src/drt_fluid/fluid_timint_red_stat.cpp
+  src/drt_fluid/fluid_timint_red.cpp
+  src/drt_fluid/fluid_timint_stat.cpp
+  src/drt_fluid/fluid_timint_topopt_bdf2.cpp
+  src/drt_fluid/fluid_timint_topopt_genalpha.cpp
+  src/drt_fluid/fluid_timint_topopt_ost.cpp
+  src/drt_fluid/fluid_timint_topopt_stat.cpp
+  src/drt_fluid/fluid_timint_topopt.cpp
   src/drt_fluid/fluidimpedancecondition.cpp
   src/drt_fluid/fluid_volumetric_surfaceFlow_condition.cpp
   src/drt_fluid/fluidimplicitintegration.cpp

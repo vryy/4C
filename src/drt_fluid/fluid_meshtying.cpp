@@ -26,6 +26,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_fluid_ele/fluid_ele_parameter.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_krylov_projector.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -69,7 +70,8 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coupleddof)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  1)   Setup Meshtying");
-
+  if(coupleddof[nsd_]==0)
+    pcoupled_=false;
   // Setup of meshtying adapter
  adaptermeshtying_->Setup(discret_,
                           discret_,
@@ -268,6 +270,13 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coupleddof)
   return Teuchos::null;
 }
 
+const Epetra_Map* FLD::Meshtying::GetMergedMap()
+{
+
+  const Epetra_Map& newmap = *(mergedmap_);
+
+  return &newmap;
+}
 
 /*-----------------------------------------------------*/
 /*  Check if there are overlapping BCs    ehrl (08/13) */
@@ -447,33 +456,67 @@ void FLD::Meshtying::PrepareMeshtyingSystem(
   return;
 }
 
-/*-------------------------------------------------------*/
-/*  Krylov projection                      ehrl (04/11)  */
-/*-------------------------------------------------------*/
-void FLD::Meshtying::AdaptKrylovProjector(Teuchos::RCP<Epetra_Vector> vec)
+void FLD::Meshtying::ApplyPTToResidual(
+       Teuchos::RCP<LINALG::SparseOperator>     sysmat,
+       Teuchos::RCP<Epetra_Vector>              residual,
+       Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
-  // Remove slave nodes from vec
-  Teuchos::RCP<Epetra_Vector> fm_slave = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
-  // add fm subvector to feffnew
-  LINALG::Export(*fm_slave,*vec);
+  Teuchos::RCP<Epetra_Vector> res=Teuchos::null;
 
-  switch(msht_)
+  switch (msht_)
   {
   case INPAR::FLUID::condensed_bmat:
   case INPAR::FLUID::condensed_bmat_merged:
-  {
-    Teuchos::RCP<Epetra_Vector> vec_mesht  = LINALG::CreateVector(*mergedmap_,true);
-    SplitVectorBasedOn3x3(vec, vec_mesht);
-  }
-  break;
+     res      = LINALG::CreateVector(*mergedmap_,true);
+    CondensationBlockMatrix(sysmat, residual);
+    SplitVectorBasedOn3x3(residual, res);
+    if(projector!=Teuchos::null)
+      projector->ApplyPT(*res);
+    LINALG::Export(*res,*residual);
+    break;
   case INPAR::FLUID::condensed_smat:
+    CondensationSparseMatrix(sysmat, residual);
     break;
   default:
-    dserror("Krylov projection not supported for this meshtying option.");
+    dserror("");
     break;
   }
 
   return;
+}
+
+
+/*-------------------------------------------------------*/
+/*  Krylov projection                      ehrl (04/11)  */
+/*-------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FLD::Meshtying::AdaptKrylovProjector(Teuchos::RCP<Epetra_Vector> vec)
+{
+  if(pcoupled_)
+  {
+    // Remove slave nodes from vec
+    Teuchos::RCP<Epetra_Vector> fm_slave = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
+    // add fm subvector to feffnew
+    LINALG::Export(*fm_slave,*vec);
+
+    switch(msht_)
+    {
+    case INPAR::FLUID::condensed_bmat:
+    case INPAR::FLUID::condensed_bmat_merged:
+    {
+      Teuchos::RCP<Epetra_Vector> vec_mesht  = LINALG::CreateVector(*mergedmap_,true);
+      SplitVectorBasedOn3x3(vec, vec_mesht);
+      vec=vec_mesht;
+
+    }
+    break;
+    case INPAR::FLUID::condensed_smat:
+      break;
+    default:
+      dserror("Krylov projection not supported for this meshtying option.");
+      break;
+    }
+  }
+  return vec;
 }
 
 /*-------------------------------------------------------*/
@@ -522,6 +565,7 @@ void FLD::Meshtying::SolveMeshtying(
 
       // Export the computed increment to the global increment
       LINALG::Export(*inc,*incvel);
+      LINALG::Export(*res,*residual);
 
       // compute and update slave dof's
       UpdateSlaveDOF(incvel);
@@ -545,8 +589,8 @@ void FLD::Meshtying::SolveMeshtying(
 
       {
         TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.1)   - Preparation");
-
         SplitVectorBasedOn3x3(residual, res);
+
 
         // assign blocks to the solution matrix
         sysmatsolve->Assign(0,0, View, sysmatnew->Matrix(0,0));
@@ -556,17 +600,20 @@ void FLD::Meshtying::SolveMeshtying(
         sysmatsolve->Complete();
 
         mergedmatrix = sysmatsolve->Merge();
+
     }
 
     {
       TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
 
+
       solver_.Solve(mergedmatrix->EpetraOperator(),inc,res,true,itnum==1, projector);
 
       LINALG::Export(*inc,*incvel);
-
+      LINALG::Export(*res,*residual);
       // compute and update slave dof's
       UpdateSlaveDOF(incvel);
+
     }
   }
   break;
@@ -754,8 +801,8 @@ void FLD::Meshtying::SplitVectorBasedOn3x3(Teuchos::RCP<Epetra_Vector>   orgvect
 {
   // container for split residual vector
   std::vector<Teuchos::RCP<Epetra_Vector> > splitvector(3);
-  SplitVector(orgvector, splitvector);
 
+  SplitVector(orgvector, splitvector);
   // build up the reduced residual
   LINALG::Export(*(splitvector[0]),*vectorbasedon2x2);
   LINALG::Export(*(splitvector[1]),*vectorbasedon2x2);

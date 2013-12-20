@@ -814,6 +814,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   switch (ProblemType())
   {
   case prb_fsi:
+  case prb_fsi_redairways:
   case prb_fsi_lung:
   {
     if(distype == "Nurbs")
@@ -1012,6 +1013,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
   case prb_fluid:
+  case prb_fluid_redairways:
   {
     if(distype == "Meshfree")
     {
@@ -1381,10 +1383,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   // add artery or airways discretizations only for the following problem types
   switch (ProblemType())
   {
-  case prb_fsi:
+  case prb_fsi_redairways:
   case prb_fsi_lung:
   case prb_fluid_ale:
-  case prb_fluid:
+  case prb_fluid_redairways:
   {
     if(distype == "Polynomial")
     {
@@ -1415,6 +1417,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     switch (ProblemType())
     {
     case prb_fsi:
+    case prb_fsi_redairways:
     case prb_fsi_lung:
     {
       // read microscale fields from second, third, ... inputfile if necessary

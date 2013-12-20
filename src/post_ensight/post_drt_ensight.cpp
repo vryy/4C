@@ -53,6 +53,7 @@ int main(
     switch (problem.Problemtype())
     {
     case prb_fsi:
+    case prb_fsi_redairways:
     case prb_fsi_lung:
     {
         std::string basename = problem.outname();
@@ -139,6 +140,20 @@ int main(
         break;
     }
     case prb_fluid:
+    {
+      if (problem.num_discr()== 2)
+      {
+        if (problem.get_discretization(1)->name()=="xfluid")
+        {
+          std::string basename = problem.outname();
+          PostField* fluidfield = problem.get_discretization(1);
+          XFluidEnsightWriter xfluidwriter(fluidfield, basename);
+          xfluidwriter.WriteFiles();
+        }
+      }
+      // don't add break here !!!!
+    }
+    case prb_fluid_redairways:
     {
       if (problem.num_discr()== 2)
       {

@@ -9,7 +9,7 @@ DIM                             3
 MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+PROBLEMTYP                      Fluid_RedAirways
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

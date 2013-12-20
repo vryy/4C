@@ -306,10 +306,8 @@ void fluid_fluid_drt(const int restart)
 
   // read the restart information, set vectors and variables
   if (restart)
-  {
     fluidalgo->FluidField().ReadRestart(restart);
-    fluidalgo->FluidField().ReadRestartReducedD(restart);
-  }
+
 
   // run the simulation
 //  fluidalgo->FluidField().TimeLoop();

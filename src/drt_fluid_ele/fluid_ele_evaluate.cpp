@@ -725,7 +725,8 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         else dserror("not supported");
 
         // velocity values
-        RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
+        //renamed to "velaf" to be consistent i fluidimplicitintegration.cpp (krank 12/13)
+        RCP<const Epetra_Vector> vel = discretization.GetState("velaf");
         // scalar values
         RCP<const Epetra_Vector> sca = discretization.GetState("scalar");
         if (vel==Teuchos::null or sca==Teuchos::null)
@@ -741,7 +742,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         for (int i=0;i<nen;i++)
            mysca[i] = tmp_sca[nsd+(i*(nsd+1))];
         // get thermodynamic pressure
-        double thermpress = params.get<double>("thermpress");
+        double thermpress = params.get<double>("thermpress at n+alpha_F/n+1",0.0);
 
         // pointer to class FluidEleParameter
         DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();

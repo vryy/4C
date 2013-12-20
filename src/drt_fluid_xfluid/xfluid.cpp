@@ -71,7 +71,7 @@ Maintainer:  Benedikt Schott
 #include "../drt_inpar/inpar_fsi.H"
 
 
-#include "../drt_fluid/fluid_utils_time_integration.H"
+#include "../drt_combust/combust_utils_time_integration.H"
 
 #include "xfluid_defines.H"
 
@@ -3360,7 +3360,7 @@ void FLD::XFluid::PrepareNonlinearSolve()
   //
   // -------------------------------------------------------------------
 
-  UTILS::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
+  COMBUST::UTILS::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
                                                 timealgo_, dta_, theta_, state_->hist_);
 
   // -------------------------------------------------------------------
@@ -4116,7 +4116,7 @@ void FLD::XFluid::TimeUpdate()
     Teuchos::RCP<Epetra_Vector> onlyveln  = state_->velpressplitter_->ExtractOtherVector(state_->veln_ );
     Teuchos::RCP<Epetra_Vector> onlyvelnp = state_->velpressplitter_->ExtractOtherVector(state_->velnp_);
 
-    UTILS::CalculateAcceleration(onlyvelnp,
+    COMBUST::UTILS::CalculateAcceleration(onlyvelnp,
                                               onlyveln ,
                                               onlyvelnm,
                                               onlyaccn ,

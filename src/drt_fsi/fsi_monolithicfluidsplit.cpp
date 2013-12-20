@@ -1418,7 +1418,6 @@ void FSI::MonolithicFluidSplit::Output()
     if ((uprestart != 0 && FluidField().Step() % uprestart == 0) || FluidField().Step() % upres == 0)
       FluidField().DiscWriter()->WriteVector("fsilambda", lambdafull);
   }
-  FluidField().    OutputReducedD();
   AleField().      Output();
   FluidField().LiftDrag();
 
@@ -1444,7 +1443,6 @@ void FSI::MonolithicFluidSplit::ReadRestart(int step)
     reader.ReadVector(lambdafull, "fsilambda");
     lambda_ = FluidField().Interface()->ExtractFSICondVector(lambdafull);
   }
-  FluidField().    ReadRestartReducedD(step);
   AleField().ReadRestart(step);
 
   SetTimeStep(FluidField().Time(),FluidField().Step());

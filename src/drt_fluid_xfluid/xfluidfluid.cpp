@@ -63,7 +63,7 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_xfem/xfem_fluidwizard.H"
 #include "../drt_xfem/xfluidfluid_timeInt.H"
 
-#include "../drt_fluid/fluid_utils_time_integration.H"
+#include "../drt_combust/combust_utils_time_integration.H"
 #include "xfluidfluidresulttest.H"
 
 #include "../drt_fluid/fluid_utils.H"
@@ -3716,7 +3716,7 @@ void FLD::XFluidFluid::TimeUpdate()
     Teuchos::RCP<Epetra_Vector> onlyveln  = state_->velpressplitter_.ExtractOtherVector(state_->veln_ );
     Teuchos::RCP<Epetra_Vector> onlyvelnp = state_->velpressplitter_.ExtractOtherVector(state_->velnp_);
 
-    UTILS::CalculateAcceleration(onlyvelnp,
+    COMBUST::UTILS::CalculateAcceleration(onlyvelnp,
                                               onlyveln ,
                                               onlyvelnm,
                                               onlyaccn ,
@@ -3736,7 +3736,7 @@ void FLD::XFluidFluid::TimeUpdate()
     Teuchos::RCP<Epetra_Vector> aleonlyveln  = alevelpressplitter_.ExtractOtherVector(aleveln_ );
     Teuchos::RCP<Epetra_Vector> aleonlyvelnp = alevelpressplitter_.ExtractOtherVector(alevelnp_);
 
-    UTILS::CalculateAcceleration(aleonlyvelnp,
+    COMBUST::UTILS::CalculateAcceleration(aleonlyvelnp,
                                               aleonlyveln ,
                                               aleonlyvelnm,
                                               aleonlyaccn ,
@@ -4014,9 +4014,9 @@ void FLD::XFluidFluid::SetHistoryValues()
   //
   //
   // ------------------------------------------------------------------
-  UTILS::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
+  COMBUST::UTILS::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
                                                 timealgo_, dta_, theta_, state_->hist_);
-  UTILS::SetOldPartOfRighthandside(aleveln_,alevelnm_, aleaccn_,
+  COMBUST::UTILS::SetOldPartOfRighthandside(aleveln_,alevelnm_, aleaccn_,
                                                 timealgo_, dta_, theta_, alehist_);
 
 }//FLD::XFluidFluid::SetHistoryValues()

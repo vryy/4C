@@ -83,7 +83,7 @@ class Meshtying
               int                           nsd,                      ///> number space dimensions
               const UTILS::MapExtractor*    surfacesplitter = NULL);  ///> surface splitter
 
-
+    const Epetra_Map* GetMergedMap();
     virtual ~Meshtying(){return;};
 
     //! Set up mesh-tying framework
@@ -117,6 +117,11 @@ class Meshtying
     void PrepareMeshtyingSystem(Teuchos::RCP<LINALG::SparseOperator>&  sysmat,     ///> sysmat established by the element routine
                       Teuchos::RCP<Epetra_Vector>&                     residual);  ///> residual established by the element routine
 
+    //! The residual has another length in case of bmat_merged --> residual has to be calculated in split form
+    void ApplyPTToResidual(
+        Teuchos::RCP<LINALG::SparseOperator>  sysmat,
+        Teuchos::RCP<Epetra_Vector>           residual,
+        Teuchos::RCP<LINALG::KrylovProjector> projector);
     //! Solve mesh-tying problem
     void SolveMeshtying(
       LINALG::Solver&                       solver,
@@ -128,7 +133,7 @@ class Meshtying
       );
 
     //! Adjust null-space for Krylov projector (slave node are in-active)
-    void AdaptKrylovProjector(Teuchos::RCP<Epetra_Vector> vec);
+    Teuchos::RCP<Epetra_Vector> AdaptKrylovProjector(Teuchos::RCP<Epetra_Vector> vec);
 
     //! Output: maps & projection matrix
     void OutputSetUp();
@@ -151,6 +156,9 @@ class Meshtying
     /// Replace computed identity matrix by a real identity matrix
     void ReplaceMatrixEntries(
         Teuchos::RCP<LINALG::SparseMatrix>        sparsematrix); ///> sparse matrix to analyze
+
+    //! Compute and update the increments of the slave node (Condensation)
+    void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>&   inc);
 
   private:
 
@@ -192,9 +200,6 @@ class Meshtying
         Teuchos::RCP<LINALG::SparseOperator>&              sysmat,         ///> sysmat established by the element routine
         Teuchos::RCP<Epetra_Vector>&                       residual,       ///> residual established by the element routine
         std::vector<Teuchos::RCP<Epetra_Vector> >&         splitvector);   ///> container with split original residual
-
-    //! Compute and update the increments of the slave node (Condensation)
-    void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>&   inc);
 
   private:
 
@@ -250,7 +255,7 @@ class Meshtying
 
     //! 2x2 (3x3) block matrix for solving condensed system (3x3 block matrix)
     Teuchos::RCP<LINALG::SparseOperator> sysmatsolve_;
-
+    Teuchos::RCP<Epetra_Vector> residual_;
     //! flag defining pressure coupling
     bool pcoupled_;
 

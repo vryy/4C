@@ -366,7 +366,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
    * \author mayr.mt \date 12/2013
    */
   // ---------------------------------------------------------------------------
-  if (probtype == prb_fsi)
+  if (probtype == prb_fsi or probtype == prb_fsi_redairways)
   {
     const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
     const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
@@ -408,6 +408,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
         break;
       }
       case prb_fsi: // structure based time adaptivity within an FSI simulation
+      case prb_fsi_redairways:
       {
         if ((actdis->Comm()).MyPID()==0) IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
 
@@ -428,6 +429,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     switch(probtype)
     {
     case prb_fsi:
+    case prb_fsi_redairways:
     case prb_fsi_lung:
     case prb_gas_fsi:
     case prb_biofilm_fsi:

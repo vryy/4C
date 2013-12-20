@@ -30,7 +30,7 @@ Maintainer: Ursula Rasthofer
 #include "combust_fluidresulttest.H"
 #include "two_phase_defines.H"
 
-#include "../drt_fluid/fluid_utils_time_integration.H"
+#include "../drt_combust/combust_utils_time_integration.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid_turbulence/drt_transfer_turb_inflow.H"
@@ -1385,7 +1385,7 @@ Teuchos::RCP<const Epetra_Vector> FLD::CombustFluidImplicitTimeInt::Hist()
   //stationary case (timealgo_== INPAR::FLUID::timeint_stationary))
   if ( (timealgo_==INPAR::FLUID::timeint_one_step_theta) or
        (timealgo_==INPAR::FLUID::timeint_afgenalpha) )
-    FLD::UTILS::SetOldPartOfRighthandside(veln,Teuchos::null, accn,timealgo_, dta_, theta_, hist);
+    COMBUST::UTILS::SetOldPartOfRighthandside(veln,Teuchos::null, accn,timealgo_, dta_, theta_, hist);
   else
     dserror("time integration scheme not supported");
 
@@ -2354,7 +2354,7 @@ void FLD::CombustFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector
 void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
 {
   // compute acceleration
-  UTILS::CalculateAcceleration(
+  COMBUST::UTILS::CalculateAcceleration(
       state_.velnp_, state_.veln_, state_.velnm_, state_.accn_,
           timealgo_, step_, theta_, dta_, dtp_,
           state_.accnp_);

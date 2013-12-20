@@ -178,7 +178,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateVelocities(RCP<Epetr
 
     mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateVelocities(flowrate,"VolumetricSurfaceFlowCond",time);
 
-    discret_->SetState("velnp",velocities);
+    discret_->SetState("velaf",velocities);
     mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate("VolumetricSurfaceFlowCond",FLD::calc_flowrate,time);
 
     mapiter->second->FluidVolumetricSurfaceFlowBc::SetVelocities(velocities);
@@ -1160,7 +1160,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateTractionVelocityComp(
   eleparams.set("condition velocities",cond_velocities_);
   eleparams.set("condition dofrowmap",cond_dofrowmap_);
 
-  discret_->SetState("velnp",cond_velocities_);
+  discret_->SetState("velaf",cond_velocities_);
 
   eleparams.set("flowrate",flowrate);
   eleparams.set("area",area_);
@@ -1451,7 +1451,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
   // -------------------------------------------------------------------
   // calculate flow rate
   // -------------------------------------------------------------------
-  discret_->SetState("velnp",cond_velocities_);
+  discret_->SetState("velaf",cond_velocities_);
 
   double actflowrate = this->FlowRateCalculation(time,ds_condname,action,condid_);
 
@@ -1516,7 +1516,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
 
 
 
-  discret_->SetState("velnp",correction_velnp);
+  discret_->SetState("velaf",correction_velnp);
   double corrective_flowrate = this->FlowRateCalculation(time,ds_condname,action,condid_);
   //  discret_->ClearState();
 
@@ -2191,20 +2191,20 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(RCP<Epetra_Vector> v
     }
     else
     {
-      discret_->SetState("velnp",velocities);
+      discret_->SetState("velaf",velocities);
       flowrate =    mapiter->second->FluidVolumetricSurfaceFlowBc::FlowRateCalculation(time,"TotalTractionCorrectionCond",FLD::calc_flowrate,mapiter->first);
     }
 
     mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateVelocities(flowrate,"TotalTractionCorrectionCond",time);
 
-    discret_->SetState("velnp",velocities);
+    discret_->SetState("velaf",velocities);
 
     //    mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate("TotalTractionCorrectionCond","calculate Uv integral component",time,true);
     mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate("TotalTractionCorrectionCond",FLD::calc_flowrate,time,true);
 
     mapiter->second->FluidVolumetricSurfaceFlowBc::ResetTractionVelocityComp();
 
-    discret_->SetState("velnp",velocities);
+    discret_->SetState("velaf",velocities);
     mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateTractionVelocityComp("TotalTractionCorrectionCond",flowrate,mapiter->first,time,theta,dta);
   }
 
