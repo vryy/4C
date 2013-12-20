@@ -22,7 +22,9 @@ Maintainer: Ursula Rasthofer
 #include <complex>
 #include <math.h>
 
+#ifdef HAVE_FFTW
 #include"fftw3.h"
+#endif
 
 #include "turbulence_hit_initial_scalar_field.H"
 
@@ -202,6 +204,7 @@ HomIsoTurbInitialScalarField::HomIsoTurbInitialScalarField(
  *--------------------------------------------------------------*/
 void HomIsoTurbInitialScalarField::CalculateInitialField()
 {
+#ifdef HAVE_FFTW
   // set and initialize working arrays
   Teuchos::RCP<Teuchos::Array <std::complex<double> > > phi_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
 
@@ -458,6 +461,9 @@ void HomIsoTurbInitialScalarField::CalculateInitialField()
   phin_->Update(1.0,*phinp_ ,0.0);
 
   return;
+#else
+  dserror("FFTW required");
+#endif
 }
 
 

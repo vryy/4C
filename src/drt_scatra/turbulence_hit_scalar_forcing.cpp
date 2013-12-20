@@ -21,7 +21,9 @@ Maintainer: Ursula Rasthofer
 
 #include <complex>
 
+#ifdef HAVE_FFTW
 #include"fftw3.h"
+#endif
 
 #include "turbulence_hit_scalar_forcing.H"
 
@@ -285,6 +287,7 @@ void HomIsoTurbScalarForcing::ActivateForcing(const bool activate)
  *--------------------------------------------------------------*/
 void HomIsoTurbScalarForcing::CalculateForcing(const int step)
 {
+#ifdef HAVE_FFTW
   //-------------------------------------------------------------------------------
   // calculate Fourier transformation of velocity
   //-------------------------------------------------------------------------------
@@ -618,6 +621,9 @@ void HomIsoTurbScalarForcing::CalculateForcing(const int step)
   }
 
   return;
+#else
+  dserror("FFTW required");
+#endif
 }
 
 
@@ -626,6 +632,7 @@ void HomIsoTurbScalarForcing::CalculateForcing(const int step)
  *--------------------------------------------------------------*/
 void HomIsoTurbScalarForcing::UpdateForcing(const int step)
 {
+#ifdef HAVE_FFTW
   // check if forcing is selected
   if (activate_)
   {
@@ -817,6 +824,9 @@ void HomIsoTurbScalarForcing::UpdateForcing(const int step)
    forcing_->PutScalar(0.0);
 
   return;
+#else
+  dserror("FFTW required");
+#endif
 }
 
 

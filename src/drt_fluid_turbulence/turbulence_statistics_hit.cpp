@@ -18,7 +18,9 @@ Maintainer: Ursula Rasthofer
 
 #include <complex>
 
-#include"fftw3.h"
+#ifdef HAVE_FFTW
+#include "fftw3.h"
+#endif
 
 #include "turbulence_statistics_hit.H"
 
@@ -376,6 +378,7 @@ TurbulenceStatisticsHit::~TurbulenceStatisticsHit()
 void TurbulenceStatisticsHit::DoTimeSample(
   Teuchos::RCP<Epetra_Vector> velnp)
 {
+#if HAVE_FFTW
   //-------------------------------------------------------------------------------------------------
   // calculate energy spectrum via Fourier transformation
   //-------------------------------------------------------------------------------------------------
@@ -723,6 +726,9 @@ void TurbulenceStatisticsHit::DoTimeSample(
     numsamp_++;
 
   return;
+#else
+  dserror("FFTW required");
+#endif
 }
 
 
@@ -733,6 +739,7 @@ void TurbulenceStatisticsHit::DoScatraTimeSample(
   Teuchos::RCP<Epetra_Vector> velnp,
   Teuchos::RCP<Epetra_Vector> phinp)
 {
+#if HAVE_FFTW
   //-------------------------------------------------------------------------------------------------
   // calculate energy spectrum via Fourier transformation
   //-------------------------------------------------------------------------------------------------
@@ -1147,6 +1154,9 @@ void TurbulenceStatisticsHit::DoScatraTimeSample(
     numsamp_++;
 
   return;
+#else
+  dserror("FFTW required");
+#endif
 }
 
 

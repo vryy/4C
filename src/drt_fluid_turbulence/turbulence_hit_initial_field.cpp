@@ -22,7 +22,9 @@ Maintainer: Ursula Rasthofer
 #include <complex>
 #include <math.h>
 
+#ifdef HAVE_FFTW
 #include"fftw3.h"
+#endif
 
 #include "turbulence_hit_initial_field.H"
 
@@ -273,6 +275,8 @@ void HomIsoTurbInitialField::CalculateInitialField()
  *--------------------------------------------------------------*/
 void HomIsoTurbInitialField::CalculateInitialField()
 {
+#if HAVE_FFTW
+
   // set and initialize working arrays
   Teuchos::RCP<Teuchos::Array <std::complex<double> > > u1_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
   Teuchos::RCP<Teuchos::Array <std::complex<double> > > u2_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
@@ -598,6 +602,9 @@ void HomIsoTurbInitialField::CalculateInitialField()
   veln_->Update(1.0,*velnp_ ,0.0);
 
   return;
+#else
+  dserror("FFTW required");
+#endif
 }
 #endif
 

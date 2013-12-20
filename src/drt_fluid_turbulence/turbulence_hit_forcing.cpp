@@ -21,7 +21,9 @@ Maintainer: Ursula Rasthofer
 
 #include <complex>
 
-#include"fftw3.h"
+#ifdef HAVE_FFTW
+#include "fftw3.h"
+#endif
 
 #include "turbulence_hit_forcing.H"
 
@@ -408,6 +410,7 @@ void HomIsoTurbForcing::ActivateForcing(const bool activate)
  *--------------------------------------------------------------*/
 void HomIsoTurbForcing::CalculateForcing(const int step)
 {
+#if HAVE_FFTW
   // check if forcing is selected
   if (flow_type_ == forced_homogeneous_isotropic_turbulence
       or (flow_type_ == decaying_homogeneous_isotropic_turbulence and step <= num_force_steps_))
@@ -940,6 +943,9 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
   }
 
   return;
+#else
+  dserror("FFTW required");
+#endif
 }
 
 
@@ -948,6 +954,7 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
  *--------------------------------------------------------------*/
 void HomIsoTurbForcing::UpdateForcing(const int step)
 {
+#if HAVE_FFTW
   // check if forcing is selected
   if (activate_ and (flow_type_ == forced_homogeneous_isotropic_turbulence
       or (flow_type_ == decaying_homogeneous_isotropic_turbulence and step <= num_force_steps_)))
@@ -1210,6 +1217,9 @@ void HomIsoTurbForcing::UpdateForcing(const int step)
    forcing_->PutScalar(0.0);
 
   return;
+#else
+  dserror("FFTW required");
+#endif
 }
 
 
