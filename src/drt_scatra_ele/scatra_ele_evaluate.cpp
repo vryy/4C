@@ -52,7 +52,7 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
     DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
     scatrapara->SetElementGeneralScaTraParameter(p,dis.Comm().MyPID());
   }
-  if (action == SCATRA::set_turbulence_scatra_parameter)
+  else if (action == SCATRA::set_turbulence_scatra_parameter)
   {
     DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
     scatrapara->SetElementTurbulenceParameter(p);
