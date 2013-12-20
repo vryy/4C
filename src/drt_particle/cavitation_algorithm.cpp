@@ -131,7 +131,7 @@ void CAVITATION::Algorithm::InitCavitation()
 
   // gather all fluid coleles in each bin for proper extended ghosting
   std::map<int, std::set<int> > fluideles;
-  Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcs(fluideles);
+  Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcsBasedOnUnderlyingDiscret(fluiddis_, fluideles);
 
   // read out bubble inflow condition and set bubble inflows in corresponding bins
   // assumption: only row bins are available up to here
@@ -705,122 +705,6 @@ void CAVITATION::Algorithm::ReadRestart(int restart)
   PARTICLE::Algorithm::ReadRestart(restart);
   fluid_->ReadRestart(restart);
   return;
-}
-
-
-/*----------------------------------------------------------------------*
-| bins are distributed to the processors                    ghamm 11/12 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs(std::map<int, std::set<int> >& fluideles)
-{
-  //--------------------------------------------------------------------
-  // 1st step: exploiting bounding box idea for fluid elements and bins
-  //--------------------------------------------------------------------
-  {
-    TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::DistributeBinsToProcs_step1");
-    // loop over row fluid elements is enough, extended ghosting always includes standard ghosting
-    for (int lid = 0; lid < fluiddis_->NumMyRowElements(); ++lid)
-    {
-      DRT::Element* fluidele = fluiddis_->lRowElement(lid);
-      DRT::Node** fluidnodes = fluidele->Nodes();
-      const int numnode = fluidele->NumNode();
-
-      // initialize ijk_range with ijk of first node of fluid element
-      int ijk[3];
-      {
-        const DRT::Node* node = fluidnodes[0];
-        const double* coords = node->X();
-        ConvertPosToijk(coords, ijk);
-      }
-
-      // ijk_range contains: i_min i_max j_min j_max k_min k_max
-      int ijk_range[] = {ijk[0], ijk[0], ijk[1], ijk[1], ijk[2], ijk[2]};
-
-      // fill in remaining nodes
-      for (int j=1; j<numnode; ++j)
-      {
-        const DRT::Node* node = fluidnodes[j];
-        const double* coords = node->X();
-        int ijk[3];
-        ConvertPosToijk(coords, ijk);
-
-        for(int dim=0; dim<3; ++dim)
-        {
-          if(ijk[dim]<ijk_range[dim*2])
-            ijk_range[dim*2]=ijk[dim];
-          if(ijk[dim]>ijk_range[dim*2+1])
-            ijk_range[dim*2+1]=ijk[dim];
-        }
-      }
-
-      // get corresponding bin ids in ijk range
-      std::set<int> binIds;
-      GidsInijkRange(&ijk_range[0], binIds, false);
-
-      // assign fluid element to bins
-      for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
-        fluideles[*biniter].insert(fluidele->Id());
-    }
-  }
-
-
-  //--------------------------------------------------------------------
-  // 2nd step: decide which proc will be owner of each bin
-  //--------------------------------------------------------------------
-
-  std::vector<int> rowbins;
-  {
-    TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::DistributeBinsToProcs_step2");
-    // NOTE: This part of the setup can be the bottleneck because vectors of all bins
-    // are needed on each proc (memory issue!!); std::map could perhaps help when gathering
-    // num fluid nodes in each bin, then block wise communication after copying data to vector
-
-    int numbins = bin_per_dir_[0]*bin_per_dir_[1]*bin_per_dir_[2];
-    std::vector<int> mynumeles_per_bin(numbins,0);
-
-    std::map<int, std::set<int> >::const_iterator iter;
-    for(iter=fluideles.begin(); iter!=fluideles.end(); ++ iter)
-    {
-      mynumeles_per_bin[iter->first] = iter->second.size();
-    }
-
-    // find maximum number of eles in each bin over all procs (init with -1)
-    std::vector<int> maxnumeles_per_bin(numbins,-1);
-    fluiddis_->Comm().MaxAll(&mynumeles_per_bin[0], &maxnumeles_per_bin[0], numbins);
-
-    // it is possible that several procs have the same number of eles in a bin
-    // only proc which has maximum number of eles in a bin writes its rank
-    std::vector<int> myrank_per_bin(numbins,-1);
-    for(int i=0; i<numbins; ++i)
-    {
-      if(mynumeles_per_bin[i] == maxnumeles_per_bin[i])
-        myrank_per_bin[i] = myrank_;
-    }
-
-    mynumeles_per_bin.clear();
-    maxnumeles_per_bin.clear();
-
-    // find maximum myrank for each bin over all procs (init with -1)
-    std::vector<int> maxmyrank_per_bin(numbins,-1);
-    fluiddis_->Comm().MaxAll(&myrank_per_bin[0], &maxmyrank_per_bin[0], numbins);
-
-    // distribute bins to proc with highest rank
-    for(int gid=0; gid<numbins; ++gid)
-    {
-      if(myrank_ == maxmyrank_per_bin[gid])
-      {
-        Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEMULTIBIN","dummy", gid, myrank_);
-        particledis_->AddElement(bin);
-        rowbins.push_back(gid);
-      }
-    }
-
-    myrank_per_bin.clear();
-    maxmyrank_per_bin.clear();
-  }
-
-  // return binrowmap (without having called FillComplete on particledis_ so far)
-  return Teuchos::rcp(new Epetra_Map(-1,(int)rowbins.size(),&rowbins[0],0,Comm()));
 }
 
 

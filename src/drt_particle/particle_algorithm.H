@@ -94,7 +94,7 @@ namespace PARTICLE
     /// get wall discretization 
     Teuchos::RCP<DRT::Discretization> WallDiscret() { return particlewalldis_; }
 
-		/// get underlyling structural problem
+    /// get underlyling structural problem
     Teuchos::RCP<ADAPTER::Structure> Structure() { return structure_; }
 
     /// convert i,j,k into bin id
@@ -140,7 +140,9 @@ namespace PARTICLE
     virtual void Output();
 
     /// find XAABB and divide into bins using the cutoff radius
-    virtual void CreateBins(Teuchos::RCP<DRT::Discretization> dis);
+    virtual void CreateBins(
+      Teuchos::RCP<DRT::Discretization> dis   ///< based on this discretization the bins are created
+      );
 
     /// bins are distributed to the processors
     virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs();
@@ -180,6 +182,12 @@ namespace PARTICLE
     /// build connectivity from particle wall elements to bins
     virtual void BuildElementToBinPointers(
       bool wallpointer   ///< bool whether wall element pointer need rebuild
+      );
+
+    /// bins are distributed to the processors
+    virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcsBasedOnUnderlyingDiscret(
+      Teuchos::RCP<DRT::Discretization> underlyingdis,  ///< underlying discretization on which distribution depends on
+      std::map<int, std::set<int> >& fluideles  ///< map from bin id to fluid elements in this bin
       );
 
     /// convert position into bin id

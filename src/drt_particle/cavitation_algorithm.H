@@ -101,11 +101,6 @@ namespace CAVITATION
     /// output particle time step
     virtual void Output();
 
-    /// bins are distributed to the processors
-    virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs(
-      std::map<int, std::set<int> >& fluideles  ///< map from bin id to fluid elements in this bin
-      );
-
     /// setup of bubble sources in each bin
     virtual void BuildBubbleInflowCondition();
 
