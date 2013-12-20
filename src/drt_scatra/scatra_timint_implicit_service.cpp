@@ -2892,11 +2892,7 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
     myparams.set<int>("scatratype",scatratype_);
     // add convective velocity
     AddMultiVectorToParameterList(myparams,"convective velocity field",convel_);
-    // add turbulence and mutifracatl subgrid-scales parameters
-    myparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
-    myparams.sublist("MULTIFRACTAL SUBGRID SCALES") = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
-    // parameters for stabilization (required for evaluation of material)
-    myparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
     // add element parameters according to time-integration scheme
     AddTimeIntegrationSpecificVectors();
     // set thermodynamic pressure in case of loma
