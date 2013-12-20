@@ -37,6 +37,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     tds_(INPAR::FLUID::subscales_quasistatic),
     transient_(INPAR::FLUID::inertia_stab_drop),
     pspg_(true),
+    ppp_(false),
     supg_(true),
     vstab_(INPAR::FLUID::viscous_stab_none),
     graddiv_(true),
@@ -97,7 +98,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
 void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
   Teuchos::ParameterList& params,
   int myrank )
-{
+ {
   if(set_general_fluid_parameter_ == false)
     set_general_fluid_parameter_ = true;
   // For turbulent inflow generation,
@@ -113,12 +114,15 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
       << std::endl << std::endl;
   }
 
+  // disable polynomial pressure projection in general
+  ppp_ = false;
+
   // set flag for type of linearization (fixed-point-like or Newton)
   //std::string newtonstr   = params.get<std::string>("Linearisation");
   if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params, "Linearisation")==INPAR::FLUID::Newton)
     is_newton_       = true;
 
-  // set flags for formuation of the convective velocity term (conservative or convective)
+  // set flags for formulation of the convective velocity term (conservative or convective)
   std::string convformstr = params.get<std::string>("form of convective term");
   if (convformstr =="conservative")
   {
@@ -173,6 +177,9 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
     reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
 
+    if (supg_ and (physicaltype_ == INPAR::FLUID::stokes))
+      dserror("Having SUPG-stabilization switched on (by default?) for Stokes problems, does not make sense! Please turn on brain before using BACI!");
+
     // overrule higher_order_ele if input-parameter is set
     // this might be interesting for fast (but slightly
     // less accurate) computations
@@ -196,7 +203,8 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
                          INPAR::FLUID::tau_codina or
                          INPAR::FLUID::tau_codina_wo_dt or
                          INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-                         INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+                         INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt or
+                         INPAR::FLUID::tau_hughes_franca_balestra_wo_dt))
          dserror("Definition of Tau cannot be handled by the element");
 
     // set correct stationary definition of stabilization parameter automatically
@@ -217,6 +225,10 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
       else if (whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
         whichtau_ = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
     }
+
+    // tau_donea_huerta_wo_dt should only be used for stokes problems and vice versa
+    if ((physicaltype_==INPAR::FLUID::stokes)!=(whichtau_==INPAR::FLUID::tau_hughes_franca_balestra_wo_dt))
+      dserror("Tau from Hughes, Franca & Balestra should only be used for Stokes problems and vice versa!");
 
     // get and check characteristic element length for stabilization parameter tau_Mu
     charelelengthu_ = DRT::INPUT::IntegralValue<INPAR::FLUID::CharEleLengthU>(stablist,"CHARELELENGTH_U");
@@ -308,6 +320,39 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
 
     EOS_element_lenght_ = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(stablist_edgebased, "EOS_H_DEFINITION");
     EOS_whichtau_       = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(stablist_edgebased, "EOS_DEFINITION_TAU");
+  }
+  else if (stabtype_ == INPAR::FLUID::stabtype_pressureprojection)
+  {
+    if ( not (fldparatimint_->IsStationary() and (physicaltype_ == INPAR::FLUID::stokes)))
+      dserror("Polynomial pressure projection has only been tested for stationary Stokes problems. \n"
+              "But it should work for other problems as well but only to circumvent inf-sup-instabilities! \n"
+              "Convection instabilities have to be accounted for. \n"
+              "Note that for now all residual-based stabilizations are switched off. \n"
+              "Remove this dserror at own risk and have fun!");
+
+    if (myrank==0)
+    {
+      IO::cout << "+----------------------------------------------------------------------------------+\n";
+      IO::cout << " Polynomial pressure projection: no residual-based, in particular no convective stabilization! \n";
+      IO::cout << "+----------------------------------------------------------------------------------+\n" << IO::endl;
+    }
+    //---------------------------------
+    // if polynomial pressure projection stabilization is selected, all
+    // residual-based stabilization terms are switched off
+    pspg_ = false;
+    supg_ = false;
+    vstab_ = INPAR::FLUID::viscous_stab_none;
+    rstab_ = INPAR::FLUID::reactive_stab_none;
+    graddiv_ = false;
+    cross_ = INPAR::FLUID::cross_stress_stab_none;
+    reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
+    tds_ = INPAR::FLUID::subscales_quasistatic;
+    transient_ = INPAR::FLUID::inertia_stab_drop;
+    is_inconsistent_ = false;
+
+    //---------------------------------
+    // polynomial pressure projection is switched on
+    ppp_ = true;
 
   }
   else if (stabtype_ == INPAR::FLUID::stabtype_nostab)
@@ -332,8 +377,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     is_inconsistent_ = false;
   }
   else
-   dserror("Unknown stabilization type");
-
+    dserror("Unknown stabilization type");
 
   //---------------------------------
   // safety checks for time-dependent subgrid scales
@@ -596,14 +640,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
     {
       dserror("Up to now, only Smagorinsky, Scale Similarity and Multifractal Subgrid Scales are available");
     }
-
-    if (turb_mod_action_ == INPAR::FLUID::smagorinsky or turb_mod_action_ == INPAR::FLUID::smagorinsky_with_van_Driest_damping or
-        turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky or turb_mod_action_ == INPAR::FLUID::dynamic_vreman)
-    {
-      if (mat_gp_ != tau_gp_)
-        dserror("For subgrid-viscosity models mat and tau have to be evaluated at the same location!");
-    }
-
   } // end if(Classical LES)
 }
 

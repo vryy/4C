@@ -51,10 +51,10 @@ public:
   virtual double GetRange(){return range_;};
 
   virtual int GetMeshfreeBasisFunction(
-    LINALG::SerialDenseVector       & funct , //!< (o) basis functions values
-    LINALG::SerialDenseMatrix       & deriv , //!< (o) spatial derivatives of basis functions
-    const LINALG::SerialDenseMatrix & diffx  ,  //!< (i) distance vector between node and integration point
-    const int                       & dimension      //!< (i) dimension
+    LINALG::SerialDenseVector       & funct    , //!< (o) basis functions values
+    LINALG::SerialDenseMatrix       & deriv    , //!< (o) spatial derivatives of basis functions
+    const LINALG::SerialDenseMatrix & diffx    , //!< (i) distance vector between node and integration point
+    const int                         dimension  //!< (i) dimension
   ) const = 0;
 
 protected:
@@ -88,8 +88,8 @@ public:
   int GetMeshfreeBasisFunction(
     LINALG::SerialDenseVector       & funct , //!< (o) basis functions values
     LINALG::SerialDenseMatrix       & deriv , //!< (o) spatial derivatives of basis functions
-    const LINALG::SerialDenseMatrix & diffx  , //!< (i) distance vector between node and integration point
-    const int                       & dim      //!< (i) dimension
+    const LINALG::SerialDenseMatrix & diffx , //!< (i) distance vector between node and integration point
+    const int                         dim     //!< (i) dimension
   ) const
   {
     switch (dim)
@@ -134,8 +134,8 @@ private:
   public:
     //! ctor
     DualProblem(
-      bool const & pu,
-      double const & neg,
+      bool const     pu,
+      double const   neg,
       MaxEntProblem* that
     );
 
@@ -191,7 +191,7 @@ private:
         LINALG::SerialDenseVector       & ,
         LINALG::Matrix<dim,1>           & ,
         LINALG::Matrix<dim,dim>         & ,
-        int                       const & ,
+        int                       const   ,
         LINALG::SerialDenseVector const & ,
         LINALG::SerialDenseMatrix       & ,
         LINALG::Matrix<dim,1>     const &
@@ -231,7 +231,7 @@ private:
         LINALG::SerialDenseVector       & funct, //!< (o) basis functions values
         LINALG::Matrix<dim,1>           & r    , //!< (o) derivative of dual function
         LINALG::Matrix<dim,dim>         & J    , //!< (o) inverted Hessian of dual function
-        int                       const & na   , //!< (i) number of nodes
+        int                       const   na   , //!< (i) number of nodes
         LINALG::SerialDenseVector const & q    , //!< (i) prior functions
         LINALG::SerialDenseMatrix       & c    , //!< (i) constraints (should be const
                                                  //! but not possible due to LINALG::Matrix-view

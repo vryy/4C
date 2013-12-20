@@ -34,7 +34,8 @@ namespace INPAR
       poro,
       poro_p1,
       poro_p2,
-      topopt
+      topopt,
+      stokes
     };
 
     //! flag to switch the stabilization type
@@ -42,7 +43,8 @@ namespace INPAR
     {
       stabtype_nostab,
       stabtype_residualbased,
-      stabtype_edgebased
+      stabtype_edgebased,
+      stabtype_pressureprojection
     };
 
     //! flag to select the type of viscosity stabilization
@@ -110,6 +112,7 @@ namespace INPAR
       tau_codina_wo_dt,
       tau_franca_madureira_valentin_badia_codina,
       tau_franca_madureira_valentin_badia_codina_wo_dt,
+      tau_hughes_franca_balestra_wo_dt,
       tau_not_defined
     };
 

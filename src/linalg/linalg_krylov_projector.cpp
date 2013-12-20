@@ -548,11 +548,15 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::KrylovProjector::MultiplyMultiVecterM
   const int nummyrows = mv2->MyLength();
   const int numvals = mv2->GlobalLength();
 
-  // this is brutal, yet we need an Epetra_Map and not an Epetra_BlockMap
-  // and we (hopefully) never ever ever use Epetra_BlockMap in BACI
-  const Epetra_Map& mv2map = static_cast<const Epetra_Map&>(mv2->Map() );
+  // do stupid conversion into Epetra map
+  Teuchos::RCP<Epetra_Map> mv2map = Teuchos::rcp(new Epetra_Map(mv2->Map().NumGlobalElements(),
+                                                                mv2->Map().NumMyElements(),
+                                                                mv2->Map().MyGlobalElements(),
+                                                                0,
+                                                                mv2->Map().Comm()));
+
   // fully redundant/overlapping map
-  Teuchos::RCP<Epetra_Map> redundant_map =  LINALG::AllreduceEMap(mv2map);
+  Teuchos::RCP<Epetra_Map> redundant_map =  LINALG::AllreduceEMap(*mv2map);
   // initialize global mv2 without setting to 0
   Epetra_MultiVector mv2glob(*redundant_map,nsdim_);
   // create importer with redundant target map and distributed source map
@@ -591,7 +595,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::KrylovProjector::MultiplyMultiVecterM
       if (sum != 0)
       {
         rowvals.push_back(sum);
-        indices.push_back(mv2map.GID(mm));
+        indices.push_back(mv2map->GID(mm));
       }
     }
 

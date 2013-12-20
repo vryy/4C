@@ -348,7 +348,7 @@ public:
 
   */
   virtual void Solve();
-  
+
     /*!
   \brief solve linearised fluid
 
@@ -691,7 +691,7 @@ public:
   {
 	  step_ += 1;
 	  time_ += dta_;
-	  
+
 	  return;
   }
 

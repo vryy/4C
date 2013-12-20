@@ -1035,6 +1035,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("FLUID");
     fluidelementtypes.insert("FLUID2");
     fluidelementtypes.insert("FLUID3");
+    fluidelementtypes.insert("MEFLUID");
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
 

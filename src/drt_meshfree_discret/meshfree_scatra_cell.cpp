@@ -25,8 +25,14 @@ Maintainer: Keijo Nissen
  *                                                                          *
 \*==========================================================================*/
 
+/*--------------------------------------------------------------------------*
+ |  create instance of MeshfreeTransportType             (public) nis Dec13 |
+ *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeTransportType DRT::ELEMENTS::MeshfreeTransportType::instance_;
 
+/*--------------------------------------------------------------------------*
+ |  create parallel object of MeshfreeTransport cell     (public) nis Dec13 |
+ *--------------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::MeshfreeTransportType::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::MeshfreeTransport* object =
@@ -35,11 +41,14 @@ DRT::ParObject* DRT::ELEMENTS::MeshfreeTransportType::Create( const std::vector<
   return object;
 }
 
-
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportType::Create( const std::string eletype,
-                                                                         const std::string eledistype,
-                                                                         const int id,
-                                                                         const int owner )
+/*--------------------------------------------------------------------------*
+ |  create object of MeshfreeTransport type              (public) nis Decn13 |
+ *--------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportType::Create(
+  const std::string eletype,
+  const std::string eledistype,
+  const int id,
+  const int owner )
 {
   if (eletype=="METRANSP")
   {
@@ -50,6 +59,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportType::Create( const s
 }
 
 
+/*--------------------------------------------------------------------------*
+ |  create object of MeshfreeTransport type              (public) nis Dec13 |
+ *--------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportType::Create( const int id, const int owner )
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::MeshfreeTransport(id,owner));
@@ -57,7 +69,15 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportType::Create( const i
 }
 
 
-void DRT::ELEMENTS::MeshfreeTransportType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+/*--------------------------------------------------------------------------*
+ |                                                       (public) nis Dec13 |
+ *--------------------------------------------------------------------------*/
+void DRT::ELEMENTS::MeshfreeTransportType::NodalBlockInformation(
+  DRT::Element * dwele,
+  int & numdf,
+  int & dimns,
+  int & nv,
+  int & np )
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
@@ -73,12 +93,25 @@ void DRT::ELEMENTS::MeshfreeTransportType::NodalBlockInformation( DRT::Element *
   }
 }
 
-void DRT::ELEMENTS::MeshfreeTransportType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+/*--------------------------------------------------------------------------*
+ |                                                       (public) nis Dec13 |
+ *--------------------------------------------------------------------------*/
+void DRT::ELEMENTS::MeshfreeTransportType::ComputeNullSpace(
+  DRT::Discretization & dis,
+  std::vector<double> & ns,
+  const double * x0,
+  int numdf, int
+  dimns )
 {
   DRT::UTILS::ComputeFluidDNullSpace( dis, ns, x0, numdf, dimns );
 }
 
-void DRT::ELEMENTS::MeshfreeTransportType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+/*--------------------------------------------------------------------------*
+ |                                                       (public) nis Dec13 |
+ *--------------------------------------------------------------------------*/
+void DRT::ELEMENTS::MeshfreeTransportType::SetupElementDefinition(
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions
+  )
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["METRANSP"];
 
@@ -111,36 +144,6 @@ void DRT::ELEMENTS::MeshfreeTransportType::SetupElementDefinition( std::map<std:
     .AddIntVector("POINT1",1)
     .AddNamedInt("MAT")
     ;
-
-//  defs["VOROH8"]
-//    .AddIntVector("VOROH8",8)
-//    .AddNamedInt("MAT")
-//    ;
-//
-//  defs["VOROT4"]
-//    .AddIntVector("VOROT4",4)
-//    .AddNamedInt("MAT")
-//    ;
-//
-//  defs["VOROQ4"]
-//    .AddIntVector("VOROQ4",4)
-//    .AddNamedInt("MAT")
-//    ;
-//
-//  defs["VOROT3"]
-//    .AddIntVector("VOROT3",3)
-//    .AddNamedInt("MAT")
-//    ;
-//
-//  defs["VOROL2"]
-//    .AddIntVector("VOROL2",2)
-//    .AddNamedInt("MAT")
-//    ;
-//
-//  defs["VOROP1"]
-//    .AddIntVector("VOROP1",1)
-//    .AddNamedInt("MAT")
-//    ;
 }
 
 /*==========================================================================*\
@@ -297,7 +300,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Lines
 
   // so we have to allocate new line elements:
   if (NumLine() > 1) // 3D and 2D
-    return DRT::UTILS::ElementBoundaryFactory<MeshfreeTransportBoundary,MeshfreeTransport>(DRT::UTILS::buildLines,this);
+    return DRT::UTILS::CellBoundaryFactory<MeshfreeTransportBoundary,MeshfreeTransport>(DRT::UTILS::buildLines,this);
   else
   {
     // 1D (we return the element itself)
@@ -322,7 +325,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Surfa
 
   // so we have to allocate new surface elements:
   if (NumSurface() > 1) // 3D
-    return DRT::UTILS::ElementBoundaryFactory<MeshfreeTransportBoundary,MeshfreeTransport>(DRT::UTILS::buildSurfaces,this);
+    return DRT::UTILS::CellBoundaryFactory<MeshfreeTransportBoundary,MeshfreeTransport>(DRT::UTILS::buildSurfaces,this);
   else if (NumSurface() == 1)
   {
     // 2D (we return the element itself)
@@ -502,12 +505,12 @@ bool DRT::ELEMENTS::MeshfreeTransport::ReadElement(
 \*==========================================================================*/
 
 /*--------------------------------------------------------------------------*
- | self-instantiation as parallel object type (?TODO: understand) nis Mar12 |
+ | self-instantiation as parallel object type                     nis Mar12 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeTransportBoundaryType DRT::ELEMENTS::MeshfreeTransportBoundaryType::instance_;
 
 /*--------------------------------------------------------------------------*
- | creates meshfree node (?not really TODO: understand)  (public) nis Mar12 |
+ | creates meshfree node                                 (public) nis Mar12 |
  *--------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportBoundaryType::Create( const int id, const int owner )
 {
@@ -523,17 +526,20 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportBoundaryType::Create(
 /*---------------------------------------------------------------------------*
  |  ctor                                                  (public) nis Jan12 |
  *---------------------------------------------------------------------------*/
-DRT::ELEMENTS::MeshfreeTransportBoundary::MeshfreeTransportBoundary(int id, int owner,
-                              int nnode, const int* nodeids,
-                              DRT::Node** nodes,
-                              DRT::ELEMENTS::MeshfreeTransport* parent,
-                              const int lbeleid) :
-DRT::MESHFREE::Cell(id,owner),
-parent_(parent),
-lbeleid_(lbeleid)
+DRT::ELEMENTS::MeshfreeTransportBoundary::MeshfreeTransportBoundary(
+                                    int id,
+                                    int owner,
+                                    int nknot,
+                                    int const * knotids,
+                                    DRT::MESHFREE::MeshfreeNode** knots,
+                                    DRT::ELEMENTS::MeshfreeTransport* parent,
+                                    const int lbeleid) :
+  DRT::MESHFREE::Cell(id,owner),
+  parent_(parent),
+  lbeleid_(lbeleid)
 {
-  SetNodeIds(nnode,nodeids);
-  BuildNodalPointers(nodes);
+  SetKnotIds(nknot,knotids);
+  BuildKnotPointers(knots);
   return;
 }
 
@@ -594,14 +600,10 @@ inline int DRT::ELEMENTS::MeshfreeTransportBoundary::NumSurface() const
  *---------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
+  // surfaces, lines, and points have to be created by parent element
   dserror("Lines of MeshfreeTransportBoundary not implemented");
+
+  // this is done to prevent compiler from moaning
   std::vector<Teuchos::RCP<DRT::Element> > lines(0);
   return lines;
 }
@@ -611,14 +613,10 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundar
  *---------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Surfaces()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new surface elements:
+  // surfaces, lines, and points have to be created by parent element
   dserror("Surfaces of MeshfreeTransportBoundary not implemented");
+
+  // this is done to prevent compiler from moaning
   std::vector<Teuchos::RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }
