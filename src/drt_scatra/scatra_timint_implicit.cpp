@@ -11,10 +11,6 @@
 
      o generalized-alpha time-integration scheme
 
-     o implicit characteristic Galerkin (ICG) time-integration scheme (only for level-set transport)
-
-     o explicit taylor galerkin (TG) time-integration schemes (only for level-set transport)
-
      and stationary solver.
 
 <pre>
