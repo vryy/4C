@@ -631,7 +631,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatYoghurt(
 
     // compute rate of strain
     double rateofstrain = -1.0e30;
-    rateofstrain = GetStrainRate(my::evelnp_);
+    rateofstrain = this->GetStrainRate(my::evelnp_);
 
     // compute viscosity for Yoghurt-like flows according to Afonso et al. (2003)
     visc = actmat->ComputeViscosity(rateofstrain,tempnp);

@@ -1040,7 +1040,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcRHSDiff(
 
     double laplawf(0.0);
 
-    GetLaplacianWeakFormRHS(laplawf,gradphirhs,vi);
+    this->GetLaplacianWeakFormRHS(laplawf,gradphirhs,vi);
 
     erhs[fvi] -= vrhs*laplawf;
   }
