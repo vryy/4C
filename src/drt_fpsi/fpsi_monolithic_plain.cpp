@@ -122,7 +122,7 @@ void FPSI::Monolithic_Plain::SetupSystem()
   AleField()->BuildSystemMatrix(false);
 
   // initialize FPSI-systemmatrix_
-  systemmatrix_ = rcp(new LINALG::BlockSparseMatrix<
+  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<
       LINALG::DefaultBlockMatrixStrategy>(Extractor(), Extractor(), 81, false,
       true));
 
@@ -153,7 +153,7 @@ void FPSI::Monolithic_Plain::SetupSystem()
 
   // create matrices needed for ale condensation
 
-  k_pa_ = rcp(new LINALG::BlockSparseMatrix<
+  k_pa_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<
               LINALG::DefaultBlockMatrixStrategy>(*AleField()->Interface(),*FluidField()->FPSIInterface(), 81, false, true));
 
   k_ap_ = Teuchos::rcp(new LINALG::SparseMatrix(

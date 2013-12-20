@@ -17,7 +17,7 @@ Maintainer: Thomas Kloeppel
 
 #include "constraint.H"
 
-using namespace Teuchos;
+
 
 
 namespace UTILS
@@ -37,7 +37,7 @@ namespace UTILS
     */
     MPConstraint
     (
-      RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
+      Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
       const std::string& CondName, ///< Name of condition to create constraint from
       int& minID,  ///< minimum constraint or monitor ID so far
       int& maxID  ///< maximum constraint or monitor ID so far
@@ -48,7 +48,7 @@ namespace UTILS
     */
     MPConstraint
     (
-      RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
+      Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
       const std::string& CondName ///< Name of condition to create constraint from
     );
 
@@ -64,14 +64,14 @@ namespace UTILS
     void SetConstrState
     (
       const std::string& state,  ///< name of state to set
-      RCP<Epetra_Vector> V  ///< values to set
+      Teuchos::RCP<Epetra_Vector> V  ///< values to set
     );
 
     /// initialization routine called by the manager ctor to get correct reference base values and activating the right conditions at the beginning
     virtual void Initialize
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      RCP<Epetra_Vector>    systemvector3  ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    systemvector3  ///< distributed vector that may be filled by assembly of element contributions
     )=0;
 
     /// initialization routine called at restart to activate the right conditions
@@ -104,12 +104,12 @@ namespace UTILS
 
 
     //! additional discretization consisting of constraint elements
-    map<int,RCP<DRT::Discretization> > constraintdis_;
+    std::map<int,Teuchos::RCP<DRT::Discretization> > constraintdis_;
 
    //! Evaluate constraint discretization and assemble the results
     virtual void EvaluateConstraint
     (
-        RCP<DRT::Discretization> disc,  ///< discretization to evaluate
+        Teuchos::RCP<DRT::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
@@ -119,9 +119,9 @@ namespace UTILS
     )=0;
 
     //! creating a new discretization based on conditions containing constraint elements
-    virtual map<int,RCP<DRT::Discretization> > CreateDiscretizationFromCondition
+    virtual std::map<int,Teuchos::RCP<DRT::Discretization> > CreateDiscretizationFromCondition
     (
-      RCP<DRT::Discretization>       actdisc,
+      Teuchos::RCP<DRT::Discretization>       actdisc,
       std::vector< DRT::Condition* > constrcond, ///< conditions as discretization basis
       const std::string&             discret_name, ///< name of new discretization
       const std::string&             element_name, ///< name of element type to create
@@ -130,9 +130,9 @@ namespace UTILS
 
 
 //    /// find col node map so that we can evaluate the constraint elements
-//    RCP<Epetra_Map> ComputeNodeColMap(
-//             const RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
-//             const RCP<DRT::Discretization> constraintdis ///< constraint discretization prescribing ghosting
+//    Teuchos::RCP<Epetra_Map> ComputeNodeColMap(
+//             const Teuchos::RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
+//             const Teuchos::RCP<DRT::Discretization> constraintdis ///< constraint discretization prescribing ghosting
 //             ) const;
 
   }; //class

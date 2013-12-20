@@ -37,7 +37,7 @@ class Beam3ContactOctTree;
 namespace CONTACT
 {
 
-using namespace Teuchos;
+
 
 /*!
  \brief contact manager for contact in a beam3 discretization
@@ -332,7 +332,7 @@ private:
 
   //! 2D-map with pointers on the contact pairs_. This map is necessary, to call a contact pair directly by the two element-iD's of the pair.
   // It is not needed at the moment due to the direct neigbour determination in the constructor but may be useful for future operations
-  std::map<std::pair<int,int>, RCP<Beam3contact> > contactpairmap_;
+  std::map<std::pair<int,int>, Teuchos::RCP<Beam3contact> > contactpairmap_;
   //std::map<int, RCP<Beam3contact> > contactpairmap_;
 
   //! parameter list for beam contact options
@@ -345,13 +345,13 @@ private:
   double searchradius_;
 
   //! contact forces of current time step
-  RCP<Epetra_Vector> fc_;
+  Teuchos::RCP<Epetra_Vector> fc_;
 
   //! contact forces of previous time step (for generalized alpha)
-  RCP<Epetra_Vector> fcold_;
+  Teuchos::RCP<Epetra_Vector> fcold_;
 
   //! contact stiffness matrix of current time step
-  RCP<LINALG::SparseMatrix> stiffc_;
+  Teuchos::RCP<LINALG::SparseMatrix> stiffc_;
 
   //! time integration parameter (0.0 for statics)
   double alphaf_;
@@ -377,7 +377,7 @@ private:
   i.e. share one node, will be rejected.
 
   */
-  void SearchPossibleContactPairs(map<int,LINALG::Matrix<3,1> >& currentpositions);
+  void SearchPossibleContactPairs(std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
   /*!
   \brief Compute the search radius

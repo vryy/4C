@@ -1035,7 +1035,7 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& m
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>
-FSI::MonolithicFluidSplit::CreateLinearSystem(ParameterList& nlParams,
+FSI::MonolithicFluidSplit::CreateLinearSystem(Teuchos::ParameterList& nlParams,
                                            NOX::Epetra::Vector& noxSoln,
                                            Teuchos::RCP<NOX::Utils> utils)
 {

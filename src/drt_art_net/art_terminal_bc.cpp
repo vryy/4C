@@ -37,7 +37,7 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
                                            const DRT::Condition *condition,
-                                           ParameterList & params)
+                                           Teuchos::ParameterList & params)
 {
 
   // define BC name std::string (e.g: BC   = "flow")
@@ -52,7 +52,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
   // -------------------------------------------------------------------
   // Read in the 3D parameters exported to the reduced D problem
   // -------------------------------------------------------------------
-  RCP<Teuchos::ParameterList> CoupledTo3DParams;
+  Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams;
 
   // -------------------------------------------------------------------
   // Read in global time
@@ -131,7 +131,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     // Read in the 3D parameters exported to the reduced D problem
     // -------------------------------------------------------------------
     CoupledTo3DParams =
-      params.get<RCP<ParameterList > >("coupling with 3D fluid params");
+      params.get<Teuchos::RCP<Teuchos::ParameterList > >("coupling with 3D fluid params");
 
     // -----------------------------------------------------------------
     // If the parameter list is empty, then something is wrong!
@@ -168,7 +168,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     // -----------------------------------------------------------------
 
     int ID = condition->GetInt("ConditionID");
-    RCP<std::map<std::string,double> > map3D;
+    Teuchos::RCP<std::map<std::string,double> > map3D;
     map3D   = CoupledTo3DParams->get<RCP<std::map<std::string,double > > >("3D map of values");
 
     // find the applied boundary variable
@@ -468,7 +468,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     // -----------------------------------------------------------------
 
     int ID = condition->GetInt("ConditionID");
-    RCP<std::map<std::string,double> >  map1D;
+    Teuchos::RCP<std::map<std::string,double> >  map1D;
     map1D   = CoupledTo3DParams->get<RCP<std::map<std::string,double> > >("reducedD map of values");
 
     std::string returnedBC = *(condition->Get<std::string>("ReturnedVariable"));
@@ -539,7 +539,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::UTILS::SolveReflectiveTerminal(RCP<DRT::Discretization> actdis,
                                          const DRT::Condition *condition,
-                                         ParameterList & params)
+                                         Teuchos::ParameterList & params)
 {
 
   // Define the reflection cooficient
@@ -616,7 +616,7 @@ void ART::UTILS::SolveReflectiveTerminal(RCP<DRT::Discretization> actdis,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::UTILS::SolveExplWindkesselBC(RCP<DRT::Discretization> actdis,
                                        const DRT::Condition *condition,
-                                       ParameterList & params)
+                                       Teuchos::ParameterList & params)
 {
 
   // define BC windkessel inigration type std::string (e.g: BC   = "flow")

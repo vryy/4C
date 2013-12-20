@@ -38,7 +38,7 @@ Maintainer: Ursula Mayer
 
 
 
-using namespace Teuchos;
+
 
 
 namespace POTENTIAL

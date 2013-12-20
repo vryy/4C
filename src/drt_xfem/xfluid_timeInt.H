@@ -235,7 +235,7 @@ public:
 
   std::map<INPAR::XFEM::XFluidTimeInt,int> reconstr_counts_; /// counts the number of dofsets that have to be reconstructed using each method
 
-  std::map<int, std::map<int,int> > dofset_marker_export_; /// map<nid, map<dofset_number,method> > that contains marker for reconstruction method of single nodal dofsets used for export in parallel
+  std::map<int, std::map<int,int> > dofset_marker_export_; /// std::map<nid, std::map<dofset_number,method> > that contains marker for reconstruction method of single nodal dofsets used for export in parallel
 
   // global timestep
   int step_;

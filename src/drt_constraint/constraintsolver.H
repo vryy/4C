@@ -23,7 +23,7 @@ Maintainer: Thomas Kloeppel
 
 #include "../drt_inpar/inpar_structure.H"
 
-using namespace Teuchos;
+
 
 //forward declarations
 namespace DRT
@@ -54,10 +54,10 @@ namespace UTILS
     */
     ConstraintSolver
     (
-      RCP<DRT::Discretization> discr,     ///< Discretization
+      Teuchos::RCP<DRT::Discretization> discr,     ///< Discretization
       LINALG::Solver& solver,             ///< Solver to solve linear subproblem in iteration
-      RCP<LINALG::MapExtractor> dbcmaps,  ///< Map extractor for Dirichlet DOFs
-      ParameterList param                 ///< parameterlist containing solver parameters
+      Teuchos::RCP<LINALG::MapExtractor> dbcmaps,  ///< Map extractor for Dirichlet DOFs
+      Teuchos::ParameterList param                 ///< parameterlist containing solver parameters
     );
 
     /*!
@@ -73,10 +73,10 @@ namespace UTILS
      */
     void Setup
     (
-      RCP<DRT::Discretization> discr,
+      Teuchos::RCP<DRT::Discretization> discr,
       LINALG::Solver& solver,
-      RCP<LINALG::MapExtractor> dbcmaps,
-      ParameterList params
+      Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
+      Teuchos::ParameterList params
     );
 
     /*!
@@ -84,13 +84,13 @@ namespace UTILS
     */
     void Solve
     (
-      RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-      RCP<LINALG::SparseMatrix> constr, ///< constraint matrix with Dirichlet zeros
-      RCP<LINALG::SparseMatrix> constrT, ///< transpose of constraint matrix without Dirichlet zeros
-      RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
-      RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
-      const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
-      const RCP<Epetra_Vector> rhsconstr     ///< constraint errors
+      Teuchos::RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+      Teuchos::RCP<LINALG::SparseMatrix> constr, ///< constraint matrix with Dirichlet zeros
+      Teuchos::RCP<LINALG::SparseMatrix> constrT, ///< transpose of constraint matrix without Dirichlet zeros
+      Teuchos::RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
+      Teuchos::RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
+      const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
+      const Teuchos::RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
 
     /*!
@@ -117,7 +117,7 @@ namespace UTILS
     void SetSTCProp
     (
       INPAR::STR::STC_Scale stcalgo,
-      RCP<LINALG::SparseMatrix> stcmat
+      Teuchos::RCP<LINALG::SparseMatrix> stcmat
     )
     {
       stcalgo_=stcalgo;
@@ -135,13 +135,13 @@ private:
     */
     void SolveUzawa
     (
-      RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-      RCP<LINALG::SparseMatrix> constr, ///< constraint matrix with Dirichlet zeros
-      RCP<LINALG::SparseMatrix> constrT, ///< transpose of constraint matrix without Dirichlet zeros
-      RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
-      RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
-      const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
-      const RCP<Epetra_Vector> rhsconstr     ///< constraint errors
+      Teuchos::RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+      Teuchos::RCP<LINALG::SparseMatrix> constr, ///< constraint matrix with Dirichlet zeros
+      Teuchos::RCP<LINALG::SparseMatrix> constrT, ///< transpose of constraint matrix without Dirichlet zeros
+      Teuchos::RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
+      Teuchos::RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
+      const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
+      const Teuchos::RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
     
     /*!
@@ -149,13 +149,13 @@ private:
     */
     void SolveSimple
     (
-      RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-      RCP<LINALG::SparseMatrix> constr, ///< constraint matrix with Dirichlet zeros
-      RCP<LINALG::SparseMatrix> constrT, ///< transpose of constraint matrix without Dirichlet zeros
-      RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
-      RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
-      const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
-      const RCP<Epetra_Vector> rhsconstr     ///< constraint errors
+      Teuchos::RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+      Teuchos::RCP<LINALG::SparseMatrix> constr, ///< constraint matrix with Dirichlet zeros
+      Teuchos::RCP<LINALG::SparseMatrix> constrT, ///< transpose of constraint matrix without Dirichlet zeros
+      Teuchos::RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
+      Teuchos::RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
+      const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
+      const Teuchos::RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
     
     /*!
@@ -163,33 +163,33 @@ private:
     */
     void SolveDirect
     (
-      RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-      RCP<LINALG::SparseMatrix> constr, ///< constraint matrix with Dirichlet zeros
-      RCP<LINALG::SparseMatrix> constrT, ///< transpose of constraint matrix without Dirichlet zeros
-      RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
-      RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
-      const RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
-      const RCP<Epetra_Vector> rhsconstr     ///< constraint errors
+      Teuchos::RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+      Teuchos::RCP<LINALG::SparseMatrix> constr, ///< constraint matrix with Dirichlet zeros
+      Teuchos::RCP<LINALG::SparseMatrix> constrT, ///< transpose of constraint matrix without Dirichlet zeros
+      Teuchos::RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
+      Teuchos::RCP<Epetra_Vector> displagr,     ///< lagrange multiplier increment to compute
+      const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
+      const Teuchos::RCP<Epetra_Vector> rhsconstr     ///< constraint errors
     );
 
-    RCP<DRT::Discretization> actdisc_; ///<standard discretization
+    Teuchos::RCP<DRT::Discretization> actdisc_; ///<standard discretization
     int maxIter_;  ///< number of maximal iterations
     double iterationparam_; ///< parameter for Uzawa algorithm
     double minparam_; ///< minimal possible parameter for Uzawa algorithm
     double iterationtol_;  ///< tolerance
     double tolres_;  ///< tolerance for residual
     double tolconstr_;  ///< tolerance for constraint
-    RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle -- monitor its target change!
-    RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
-    RCP<Epetra_Vector>    firstdispinc_; ///< history variable holding displacement increment for first NRI
-    RCP<Epetra_Vector>    firstlagrinc_; ///< history variable holding multiplier increment for first NRI
+    Teuchos::RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle -- monitor its target change!
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
+    Teuchos::RCP<Epetra_Vector>    firstdispinc_; ///< history variable holding displacement increment for first NRI
+    Teuchos::RCP<Epetra_Vector>    firstlagrinc_; ///< history variable holding multiplier increment for first NRI
     bool isadapttol_;  ///< adaptive tolerance for solver?
     bool adaptolbetter_ ; ///< adaptive tolerance for solver useful?
-    RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
+    Teuchos::RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counts how often #Solve is called
     INPAR::STR::ConSolveAlgo algochoice_;
     INPAR::STR::STC_Scale stcalgo_;
-    RCP<LINALG::SparseMatrix> stcmat_;
+    Teuchos::RCP<LINALG::SparseMatrix> stcmat_;
 
   }; //class
 }

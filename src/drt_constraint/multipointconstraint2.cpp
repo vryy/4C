@@ -44,9 +44,9 @@ UTILS::MPConstraint2::MPConstraint2(RCP<DRT::Discretization> discr,
     int dummy=0;
     //create constraint discretization and store it with label 0, within the map
     constraintdis_=CreateDiscretizationFromCondition(actdisc_,constrcond_,"ConstrDisc","CONSTRELE2", dummy);
-    RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
+    Teuchos::RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
     actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
-    RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentDofSet(actdisc_));
+    Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentDofSet(actdisc_));
     (constraintdis_.find(0)->second)->ReplaceDofSet(newdofset);
     newdofset = Teuchos::null;
     (constraintdis_.find(0)->second)->FillComplete();
@@ -89,7 +89,7 @@ void UTILS::MPConstraint2::Initialize
 *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint2::Initialize(
     Teuchos::ParameterList&        params,
-    RCP<Epetra_Vector>    systemvector)
+    Teuchos::RCP<Epetra_Vector>    systemvector)
 {
   const double time = params.get("total time",-1.0);
   // in case init is set to true we want to set systemvector1 to the amplitudes defined
@@ -134,11 +134,11 @@ void UTILS::MPConstraint2::Initialize(
 *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint2::Evaluate(
     Teuchos::ParameterList&        params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
-    RCP<Epetra_Vector>    systemvector1,
-    RCP<Epetra_Vector>    systemvector2,
-    RCP<Epetra_Vector>    systemvector3)
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector>    systemvector1,
+    Teuchos::RCP<Epetra_Vector>    systemvector2,
+    Teuchos::RCP<Epetra_Vector>    systemvector3)
 {
 
   switch (Type())
@@ -160,18 +160,18 @@ void UTILS::MPConstraint2::Evaluate(
  |(private)                                                   tk 04/08    |
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
-map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFromCondition
+std::map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFromCondition
 (
-  RCP<DRT::Discretization> actdisc,
+  Teuchos::RCP<DRT::Discretization> actdisc,
   std::vector< DRT::Condition* >      constrcondvec,
   const std::string&             discret_name,
   const std::string&             element_name,
   int& startID
 )
 {
-  RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
 
-  RCP<DRT::Discretization> newdis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
+  Teuchos::RCP<DRT::Discretization> newdis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
 
   if (!actdisc->Filled())
   {
@@ -215,7 +215,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
 
     if (myrank == 0)
     {
-      RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name,"Polynomial", j, myrank);
+      Teuchos::RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name,"Polynomial", j, myrank);
       // set the same global node ids to the ale element
       constraintele->SetNodeIds(ngid.size(), &(ngid[0]));
 
@@ -230,7 +230,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
   //build unique node row map
   std::vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
-  RCP<Epetra_Map> constraintnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
+  Teuchos::RCP<Epetra_Map> constraintnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
                                                              boundarynoderowvec.size(),
                                                              &boundarynoderowvec[0],
                                                              0,
@@ -240,7 +240,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
   //build overlapping node column map
   std::vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  RCP<Epetra_Map> constraintnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
+  Teuchos::RCP<Epetra_Map> constraintnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
                                                              constraintnodecolvec.size(),
                                                              &constraintnodecolvec[0],
                                                              0,
@@ -287,11 +287,11 @@ void UTILS::MPConstraint2::ReorderConstraintNodes
  *----------------------------------------------------------------------*/
 void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
     Teuchos::ParameterList&        params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
-    RCP<Epetra_Vector>    systemvector1,
-    RCP<Epetra_Vector>    systemvector2,
-    RCP<Epetra_Vector>    systemvector3)
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector>    systemvector1,
+    Teuchos::RCP<Epetra_Vector>    systemvector2,
+    Teuchos::RCP<Epetra_Vector>    systemvector3)
 {
 
   if (!(disc->Filled())) dserror("FillComplete() was not called");
@@ -343,7 +343,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       const int lindex = (systemvector3->Map()).LID(gindex);
 
       // Get the current lagrange multiplier value for this condition
-      const RCP<Epetra_Vector> lagramul = params.get<RCP<Epetra_Vector> >("LagrMultVector");
+      const Teuchos::RCP<Epetra_Vector> lagramul = params.get<RCP<Epetra_Vector> >("LagrMultVector");
       const double lagraval = (*lagramul)[lindex];
 
       // get element location vector, dirichlet flags and ownerships
@@ -406,7 +406,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       if (time<0.0) usetime = false;
       if (curvenum>=0 && usetime)
         curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-      RCP<Epetra_Vector> timefact = params.get<RCP<Epetra_Vector> >("vector curve factors");
+      Teuchos::RCP<Epetra_Vector> timefact = params.get<RCP<Epetra_Vector> >("vector curve factors");
       timefact->ReplaceGlobalValues(1,&curvefac,&gindex);
     }
   }

@@ -49,7 +49,7 @@ namespace ART
       /*!
       \brief Standard Constructor
       */
-      ArtWriteGnuplotWrapper( RCP<DRT::Discretization>  actdis,
+      ArtWriteGnuplotWrapper( Teuchos::RCP<DRT::Discretization>  actdis,
           Teuchos::ParameterList & params);
 
       /*!
@@ -67,12 +67,12 @@ namespace ART
       /*!
       \brief all single artery write conditions
      */
-      std::map<const int, RCP<class ArtWriteGnuplot> >  agmap_;
+      std::map<const int, Teuchos::RCP<class ArtWriteGnuplot> >  agmap_;
       std::map<const int, const std::vector<int> *  >        agnode_map_;
 
 
       //! 1d artery discretization
-      RCP<DRT::Discretization>      discret_;
+      Teuchos::RCP<DRT::Discretization>      discret_;
 
     }; // class ArtWriteGnuplotWrapper
 
@@ -122,7 +122,7 @@ namespace ART
     private:
 
       //! An epetra wrapper for Dense matrix solver
-      RCP<std::ofstream> fout_;
+      Teuchos::RCP<std::ofstream> fout_;
 
       //! the Artery number
       int ArteryNum_;

@@ -21,7 +21,7 @@ Maintainer: Thomas Kloeppel
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 
-using namespace Teuchos;
+
 
 namespace DRT
 {
@@ -60,9 +60,9 @@ namespace UTILS
     */
     ConstrManager
     (
-      RCP<DRT::Discretization> disc,  ///< standard discretization
-      RCP<Epetra_Vector> disp,  ///< current displacement
-      ParameterList param  ///<  parameterlist from time integration algorithm
+      Teuchos::RCP<DRT::Discretization> disc,  ///< standard discretization
+      Teuchos::RCP<Epetra_Vector> disp,  ///< current displacement
+      Teuchos::ParameterList param  ///<  parameterlist from time integration algorithm
     );
     /*!
         \brief Destructor
@@ -81,11 +81,11 @@ namespace UTILS
     void StiffnessAndInternalForces
     (
       const double time,  ///< time at end of time step
-      RCP<Epetra_Vector> displast,  ///< displacement at beginning of time step
-      RCP<Epetra_Vector> disp,  ///< displacement at end of time step
-      RCP<Epetra_Vector> fint,  ///< vector of internal forces
-      RCP<LINALG::SparseOperator> stiff,  ///< stiffness matrix
-      ParameterList scalelist
+      Teuchos::RCP<Epetra_Vector> displast,  ///< displacement at beginning of time step
+      Teuchos::RCP<Epetra_Vector> disp,  ///< displacement at end of time step
+      Teuchos::RCP<Epetra_Vector> fint,  ///< vector of internal forces
+      Teuchos::RCP<LINALG::SparseOperator> stiff,  ///< stiffness matrix
+      Teuchos::ParameterList scalelist
     );
 
     /*!
@@ -134,13 +134,13 @@ namespace UTILS
     /// Add a vector as residual increment to the vector of Lagrange multipliers
     void UpdateLagrMult
     (
-      RCP<Epetra_Vector> vect  ///< vector to add
+      Teuchos::RCP<Epetra_Vector> vect  ///< vector to add
     );
 
     /// Add a vector as total increment to the vector of Lagrange multipliers
     void UpdateTotLagrMult
     (
-      RCP<Epetra_Vector> vect  ///< vector to add
+      Teuchos::RCP<Epetra_Vector> vect  ///< vector to add
     );
     
     /*!
@@ -149,7 +149,7 @@ namespace UTILS
     void ComputeError
     (
       double time,   ///< time, at which the error is to compute at
-      RCP<Epetra_Vector> disp  ///< displacement vector at the given time
+      Teuchos::RCP<Epetra_Vector> disp  ///< displacement vector at the given time
     );
 
     /*!
@@ -164,7 +164,7 @@ namespace UTILS
     }
 
     /// return vector of differences between prescribed and actual values
-    RCP<Epetra_Vector> GetError() const
+    Teuchos::RCP<Epetra_Vector> GetError() const
     {
       return constrainterr_;
     }
@@ -173,13 +173,13 @@ namespace UTILS
      \brief Return EpetraMap that determined distribution of constraints and lagrange
      multiplier over processors
     */
-    RCP<Epetra_Map> GetConstraintMap() const
+    Teuchos::RCP<Epetra_Map> GetConstraintMap() const
     {
       return constrmap_;
     };
 
     //! Return the additional rectangular matrix, constructed for lagrange multiplier evaluation
-    RCP<LINALG::SparseOperator> GetConstrMatrix() //const
+    Teuchos::RCP<LINALG::SparseOperator> GetConstrMatrix() //const
     {
       return constrMatrix_;
     };
@@ -198,7 +198,7 @@ namespace UTILS
     /*!
       \brief Return lagrange multiplier vector
     */
-    RCP<Epetra_Vector> GetLagrMultVector() const
+    Teuchos::RCP<Epetra_Vector> GetLagrMultVector() const
     {
       return lagrMultVec_;
     };
@@ -206,7 +206,7 @@ namespace UTILS
     /*!
       \brief Return lagrange multiplier of last converged step
     */
-    RCP<Epetra_Vector> GetLagrMultVectorOld() const
+    Teuchos::RCP<Epetra_Vector> GetLagrMultVectorOld() const
     {
       return lagrMultVecOld_;
     };
@@ -264,7 +264,7 @@ namespace UTILS
     */
     void ComputeMonitorValues
     (
-      RCP<Epetra_Vector> disp ///< current displacement
+      Teuchos::RCP<Epetra_Vector> disp ///< current displacement
     );
     
     /*!
@@ -272,20 +272,20 @@ namespace UTILS
     */
     void ComputeMonitorValues
     (
-      RCP<const Epetra_Vector> disp ///< current displacement
+      Teuchos::RCP<const Epetra_Vector> disp ///< current displacement
     );
 
     /// Reset reference base values for restart computations
     void SetRefBaseValues
     (
-      RCP<Epetra_Vector> newrefvals,  ///< new reference base values
+      Teuchos::RCP<Epetra_Vector> newrefvals,  ///< new reference base values
       const double& time   ///< current time
     );
 
     /// Reset lagrange multipliers
     void SetLagrMultVector
     (
-      RCP<Epetra_Vector> newlagrmult  ///< new lagrange multipliers
+      Teuchos::RCP<Epetra_Vector> newlagrmult  ///< new lagrange multipliers
     )
     {
       lagrMultVec_->Update(1.0,*newlagrmult,0.0);
@@ -294,7 +294,7 @@ namespace UTILS
     }
 
     /// Return Reference base values to write restart
-    RCP<Epetra_Vector> GetRefBaseValues() const
+    Teuchos::RCP<Epetra_Vector> GetRefBaseValues() const
     {
       return refbasevalues_;
     }
@@ -313,49 +313,49 @@ namespace UTILS
     ///Build Monitor type Vector
     void BuildMoniType();
 
-    RCP<DRT::Discretization> actdisc_; ///< discretization, elements to constraint live in
-    RCP<ConstraintDofSet> constrdofset_; ///< degrees of freedom of lagrange multipliers
-    RCP<Epetra_Map> constrmap_;  ///< unique map of constraint values
-    RCP<Epetra_Map> redconstrmap_;   ///< fully redundant map of constraint values
-    RCP<Epetra_Export> conimpo_;  ///< importer for fully redundant constraint vector into distributed one
-    RCP<Epetra_Map> monitormap_;  ///< unique map of monitor values
-    RCP<Epetra_Map> redmonmap_;  ///< fully redundant map of monitor values
-    RCP<Epetra_Export> monimpo_;  ///< importer for fully redundant monitor vector into distributed one
-    RCP<Epetra_Vector> referencevalues_;  ///< reference at current time step to constrain values to
-    RCP<Epetra_Vector> refbasevalues_;   ///< reference base values at activation time of constrained structures
-    RCP<Epetra_Vector> actvalues_;   ///< current values of constrained structures
-    RCP<Epetra_Vector> constrainterr_;   ///< vector with deflection between reference and current values
-    RCP<Epetra_Vector> monitorvalues_;  ///< current values of monitored structures
-    RCP<Epetra_Vector> initialmonvalues_;   ///< initial values of monitored structures
-    RCP<Epetra_Vector> monitortypes_;  ///< vector containing type of monitors
+    Teuchos::RCP<DRT::Discretization> actdisc_; ///< discretization, elements to constraint live in
+    Teuchos::RCP<ConstraintDofSet> constrdofset_; ///< degrees of freedom of lagrange multipliers
+    Teuchos::RCP<Epetra_Map> constrmap_;  ///< unique map of constraint values
+    Teuchos::RCP<Epetra_Map> redconstrmap_;   ///< fully redundant map of constraint values
+    Teuchos::RCP<Epetra_Export> conimpo_;  ///< importer for fully redundant constraint vector into distributed one
+    Teuchos::RCP<Epetra_Map> monitormap_;  ///< unique map of monitor values
+    Teuchos::RCP<Epetra_Map> redmonmap_;  ///< fully redundant map of monitor values
+    Teuchos::RCP<Epetra_Export> monimpo_;  ///< importer for fully redundant monitor vector into distributed one
+    Teuchos::RCP<Epetra_Vector> referencevalues_;  ///< reference at current time step to constrain values to
+    Teuchos::RCP<Epetra_Vector> refbasevalues_;   ///< reference base values at activation time of constrained structures
+    Teuchos::RCP<Epetra_Vector> actvalues_;   ///< current values of constrained structures
+    Teuchos::RCP<Epetra_Vector> constrainterr_;   ///< vector with deflection between reference and current values
+    Teuchos::RCP<Epetra_Vector> monitorvalues_;  ///< current values of monitored structures
+    Teuchos::RCP<Epetra_Vector> initialmonvalues_;   ///< initial values of monitored structures
+    Teuchos::RCP<Epetra_Vector> monitortypes_;  ///< vector containing type of monitors
     int offsetID_;  ///< smallest constraint boundary condition ID
     int numConstrID_;  ///< number of constraint boundary conditions
     int numMonitorID_;  ///< smallest monitor boundary condition ID
     int minMonitorID_;  ///< number monitor boundary condition ID
-    RCP<Epetra_Vector> fact_;  ///< vector with current time curve values
-    RCP<Epetra_Vector> lagrMultVec_;  ///< lagrange multipliers
-    RCP<Epetra_Vector> lagrMultVecOld_;  ///< lagrange multipliers
-    RCP<LINALG::SparseOperator> constrMatrix_;  ///< additional rectangular matrix
+    Teuchos::RCP<Epetra_Vector> fact_;  ///< vector with current time curve values
+    Teuchos::RCP<Epetra_Vector> lagrMultVec_;  ///< lagrange multipliers
+    Teuchos::RCP<Epetra_Vector> lagrMultVecOld_;  ///< lagrange multipliers
+    Teuchos::RCP<LINALG::SparseOperator> constrMatrix_;  ///< additional rectangular matrix
     bool haveconstraint_;  ///< are there constraints at all?
     bool havelagrconstr_;  ///< are there constraints controlled by Lagrange multiplier?
     bool havepenaconstr_;  ///< are there constraints controlled by Penalty approach?
     bool havemonitor_;  ///< are there monitor conditions?
     double uzawaparam_;  ///< parameter of Uzawa algorithm (only for the case the linear uzawa is not used)
 
-    RCP<Constraint> volconstr3d_;  ///< 3d volume constraints defined on surfaces
-    RCP<Constraint> areaconstr3d_;  ///< 3d area constraints defined on surfaces
-    RCP<Constraint> areaconstr2d_;  ///< 2d area constraints defined on lines
-    RCP<ConstraintPenalty> volconstr3dpen_;
-    RCP<ConstraintPenalty> areaconstr3dpen_;
-    RCP<MPConstraint3> mpconplane3d_;  ///< 3d multipoint constraint prescribing the motion of a node relatively to a plane
-    RCP<MPConstraint3> mpcnormcomp3d_;  ///< 3d multipoint constraint prescribing the motion of a node to a plane masternode
-    RCP<MPConstraint2> mpconline2d_; ///< 2d multipoint constraint prescribing the motion of a node relatively to a straight line
-    RCP<MPConstraint3Penalty> mpcnormcomp3dpen_;
+    Teuchos::RCP<Constraint> volconstr3d_;  ///< 3d volume constraints defined on surfaces
+    Teuchos::RCP<Constraint> areaconstr3d_;  ///< 3d area constraints defined on surfaces
+    Teuchos::RCP<Constraint> areaconstr2d_;  ///< 2d area constraints defined on lines
+    Teuchos::RCP<ConstraintPenalty> volconstr3dpen_;
+    Teuchos::RCP<ConstraintPenalty> areaconstr3dpen_;
+    Teuchos::RCP<MPConstraint3> mpconplane3d_;  ///< 3d multipoint constraint prescribing the motion of a node relatively to a plane
+    Teuchos::RCP<MPConstraint3> mpcnormcomp3d_;  ///< 3d multipoint constraint prescribing the motion of a node to a plane masternode
+    Teuchos::RCP<MPConstraint2> mpconline2d_; ///< 2d multipoint constraint prescribing the motion of a node relatively to a straight line
+    Teuchos::RCP<MPConstraint3Penalty> mpcnormcomp3dpen_;
     
 
-    RCP<Monitor> volmonitor3d_; ///< 3d volume monitors defined on surfaces
-    RCP<Monitor> areamonitor3d_;  ///< 3d area monitors defined on surfaces
-    RCP<Monitor> areamonitor2d_;  ///< 2d area monitors defined on lines
+    Teuchos::RCP<Monitor> volmonitor3d_; ///< 3d volume monitors defined on surfaces
+    Teuchos::RCP<Monitor> areamonitor3d_;  ///< 3d area monitors defined on surfaces
+    Teuchos::RCP<Monitor> areamonitor2d_;  ///< 2d area monitors defined on lines
 
   }; //class
 }

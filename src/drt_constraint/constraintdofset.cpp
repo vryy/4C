@@ -79,7 +79,7 @@ void UTILS::ConstraintDofSet::Reset()
  *----------------------------------------------------------------------*/
 int UTILS::ConstraintDofSet::AssignDegreesOfFreedom
 (
-    const RCP<DRT::Discretization> dis,
+    const Teuchos::RCP<DRT::Discretization> dis,
     const int ndofs,
     const int start
 )

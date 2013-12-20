@@ -1413,7 +1413,7 @@ public:
   /*!
     Abbreviated Evaluate() call that always assembles one matrix and
     one vector. No need to set assemble instructions to the
-    ParameterList.
+    Teuchos::ParameterList.
 
     \param params (in): Parameter list past to the elements containing
                         commands and parameters for the elements and

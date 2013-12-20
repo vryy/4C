@@ -271,7 +271,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
   // add forces and stiffness due to Windkessel bcs
   // necessarily has to be done BEFORE fextm_ is built, since the Windkessel manager calls EvaluateNeumann and thus
   // the correct application and linearization of the follower load is needed !!! (mhv 11/2013)
-  ParameterList pwindk;
+  Teuchos::ParameterList pwindk;
   pwindk.set("scale_timint", (1.0-alphaf_));
   pwindk.set("scale_gamma", gamma_);
   pwindk.set("scale_beta", beta_);
@@ -325,7 +325,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
 
   // add forces and stiffness due to constraints
   // (for TR scale constraint matrix with the same value fintn_ is scaled with)
-  ParameterList pcon;
+  Teuchos::ParameterList pcon;
   pcon.set("scaleConstrMat", (1.0-alphaf_));
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
 
@@ -613,7 +613,7 @@ void STR::TimIntGenAlpha::UpdateStepState()
 void STR::TimIntGenAlpha::UpdateStepElement()
 {
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   // other parameters that might be needed by the elements
   p.set("total time", timen_);
   p.set("delta time", (*dt_)[0]);

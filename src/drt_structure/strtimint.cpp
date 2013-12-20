@@ -780,7 +780,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     PATSPEC::ComputeEleInnerRadius(discret_);
 
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     // action for elements
     if(lumpmass_ == false)
       p.set("action", "calc_struct_nlnstiffmass");
@@ -894,7 +894,7 @@ void STR::TimInt::ApplyDirichletBC
   // Apply DBCs
   // --------------------------------------------------------------------------------
   // needed parameters
-  ParameterList p;
+  Teuchos::ParameterList p;
   p.set("total time", time);  // target time
 
   // predicted Dirichlet values
@@ -999,7 +999,7 @@ void STR::TimInt::ResetStep()
   // reset anything that needs to be reset at the element level
   {
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     p.set("action", "calc_struct_reset_istep");
     // go to elements
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
@@ -1218,7 +1218,7 @@ void STR::TimInt::ReadRestartMultiScale()
     if (mat->Type() == INPAR::MAT::m_struct_multiscale)
     {
       // create the parameters for the discretization
-      ParameterList p;
+      Teuchos::ParameterList p;
       // action for elements
       p.set("action", "multi_readrestart");
       discret_->Evaluate(p, Teuchos::null, Teuchos::null,
@@ -1583,7 +1583,7 @@ void STR::TimInt::DetermineStressStrain()
   {
     //-------------------------------
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     // action for elements
     p.set("action", "calc_struct_stress");
     // other parameters that might be needed by the elements
@@ -1643,7 +1643,7 @@ void STR::TimInt::DetermineEnergy()
     // internal/strain energy
     intergy_ = 0.0;  // total internal energy
     {
-      ParameterList p;
+      Teuchos::ParameterList p;
       // other parameters needed by the elements
       p.set("action", "calc_struct_energy");
 
@@ -1902,7 +1902,7 @@ void STR::TimInt::OutputContact()
     // or meshtying simulations with(!) material history, we should
     // move the following block before the first UpdateStep() method.
     double inten = 0.0;
-    ParameterList p;
+    Teuchos::ParameterList p;
     p.set("action", "calc_struct_energy");
     discret_->ClearState();
     discret_->SetState("displacement", (*dis_)(0));
@@ -2008,7 +2008,7 @@ void STR::TimInt::OutputErrorNorms()
   norms->Scale(0.0);
 
   // call discretization to evaluate error norms
-  ParameterList p;
+  Teuchos::ParameterList p;
   p.set("action", "calc_struct_errornorms");
   discret_->ClearState();
   discret_->SetState("displacement",(*dis_)(0));
@@ -2158,7 +2158,7 @@ void STR::TimInt::ApplyForceExternal
   Teuchos::RCP<LINALG::SparseOperator>& fextlin //!<linearization of external force
 )
 {
-  ParameterList p;
+  Teuchos::ParameterList p;
   // other parameters needed by the elements
   p.set("total time", time);
 
@@ -2363,7 +2363,7 @@ void STR::TimInt::ApplyForceInternal
 )
 {
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   // action for elements
   std::string action = "calc_struct_internalforce";
 

@@ -48,11 +48,11 @@ Maintainer: Marc Hirschvogel
  *----------------------------------------------------------------------*/
 UTILS::WindkesselManager::WindkesselManager
 (
-  RCP<DRT::Discretization> discr,
-  RCP<Epetra_Vector> disp,
-  ParameterList params,
+  Teuchos::RCP<DRT::Discretization> discr,
+  Teuchos::RCP<Epetra_Vector> disp,
+  Teuchos::ParameterList params,
   LINALG::Solver& solver,
-  RCP<LINALG::MapExtractor> dbcmaps):
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps):
 actdisc_(discr),
 myrank_(actdisc_->Comm().MyPID()),
 dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
@@ -94,7 +94,7 @@ dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
     windkesseldofset_ = Teuchos::rcp(new WindkesselDofSet());
     windkesseldofset_ ->AssignDegreesOfFreedom(actdisc_,numWindkesselID_,0);
     offsetID_ -= windkesseldofset_->FirstGID();
-    ParameterList p;
+    Teuchos::ParameterList p;
     //double time = params.get<double>("total time",0.0);
     double sc_timint = params.get("scale_timint",1.0);
     double gamma = params.get("scale_gamma",1.0);
@@ -171,8 +171,8 @@ dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
     p.set("time_step_size",ts_size);
     actdisc_->SetState("displacement",disp);
 
-    RCP<Epetra_Vector> volredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-    RCP<Epetra_Vector> presredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+    Teuchos::RCP<Epetra_Vector> volredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+    Teuchos::RCP<Epetra_Vector> presredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
     rc_->Initialize(p,volredundant,presredundant);
     vol_->Export(*volredundant,*windkimpo_,Add);
     pres_->Export(*presredundant,*windkimpo_,Insert);
@@ -189,9 +189,9 @@ dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
 *-----------------------------------------------------------------------*/
 void UTILS::WindkesselManager::StiffnessAndInternalForces(
         const double time,
-        RCP<Epetra_Vector> displast,
-        RCP<Epetra_Vector> disp,
-        ParameterList scalelist)
+        Teuchos::RCP<Epetra_Vector> displast,
+        Teuchos::RCP<Epetra_Vector> disp,
+        Teuchos::ParameterList scalelist)
 {
 
   double sc_timint = scalelist.get("scale_timint",1.0);
@@ -200,7 +200,7 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   double ts_size = scalelist.get("time_step_size",1.0);
 
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   std::vector<DRT::Condition*> windkesselcond(0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
 
@@ -219,14 +219,14 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   p.set("scale_beta",beta);
   p.set("time_step_size",ts_size);
 
-  RCP<Epetra_Vector> voldummy = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  RCP<Epetra_Vector> volnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  RCP<Epetra_Vector> presnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  RCP<Epetra_Vector> fluxnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  RCP<Epetra_Vector> windk_rhs_p_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  RCP<Epetra_Vector> windk_rhs_dpdt_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  RCP<Epetra_Vector> windk_rhs_q_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  RCP<Epetra_Vector> windk_rhs_dqdt_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> voldummy = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> volnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> presnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> fluxnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> windk_rhs_p_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> windk_rhs_dpdt_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> windk_rhs_q_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> windk_rhs_dqdt_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
 
   actdisc_->ClearState();
   actdisc_->SetState("displacement",disp);
@@ -399,8 +399,8 @@ void UTILS::WindkesselManager::EvaluateNeumannWindkesselCoupling(RCP<Epetra_Vect
 void UTILS::WindkesselManager::PrintPresFlux() const
 {
   // prepare stuff for printing to screen
-  RCP<Epetra_Vector> presnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  RCP<Epetra_Vector> fluxnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> presnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> fluxnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
 	LINALG::Export(*presn_,*presnredundant);
 	LINALG::Export(*fluxn_,*fluxnredundant);
 
@@ -425,10 +425,10 @@ void UTILS::WindkesselManager::PrintPresFlux() const
  *----------------------------------------------------------------------*/
 void UTILS::WindkesselManager::SolverSetup
 (
-  RCP<DRT::Discretization> discr,
+  Teuchos::RCP<DRT::Discretization> discr,
   LINALG::Solver& solver,
-  RCP<LINALG::MapExtractor> dbcmaps,
-  ParameterList params
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
+  Teuchos::ParameterList params
 )
 {
 
@@ -442,15 +442,15 @@ void UTILS::WindkesselManager::SolverSetup
 
 void UTILS::WindkesselManager::Solve
 (
-  RCP<LINALG::SparseMatrix> stiff,
-  RCP<Epetra_Vector> dispinc,
-  const RCP<Epetra_Vector> rhsstand
+  Teuchos::RCP<LINALG::SparseMatrix> stiff,
+  Teuchos::RCP<Epetra_Vector> dispinc,
+  const Teuchos::RCP<Epetra_Vector> rhsstand
 )
 {
 
   // create old style dirichtoggle vector (supposed to go away)
   dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
-  RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
+  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
   temp->PutScalar(1.0);
   LINALG::Export(*temp,*dirichtoggle_);
 
@@ -476,18 +476,18 @@ void UTILS::WindkesselManager::Solve
 
 
   // define maps of standard dofs and additional pressures
-  RCP<Epetra_Map> standrowmap = Teuchos::rcp(new Epetra_Map(stiff->RowMap()));
-  RCP<Epetra_Map> windkrowmap = Teuchos::rcp(new Epetra_Map(windkstiff->RowMap()));
+  Teuchos::RCP<Epetra_Map> standrowmap = Teuchos::rcp(new Epetra_Map(stiff->RowMap()));
+  Teuchos::RCP<Epetra_Map> windkrowmap = Teuchos::rcp(new Epetra_Map(windkstiff->RowMap()));
 
   // merge maps to one large map
-  RCP<Epetra_Map> mergedmap = LINALG::MergeMap(standrowmap,windkrowmap,false);
+  Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(standrowmap,windkrowmap,false);
   // define MapExtractor
   LINALG::MapExtractor mapext(*mergedmap,standrowmap,windkrowmap);
 
   // initialize large SparseMatrix and Epetra_Vectors
-  RCP<LINALG::SparseMatrix> mergedmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap,81));
-  RCP<Epetra_Vector> mergedrhs = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-  RCP<Epetra_Vector> mergedsol = Teuchos::rcp(new Epetra_Vector(*mergedmap));
+  Teuchos::RCP<LINALG::SparseMatrix> mergedmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap,81));
+  Teuchos::RCP<Epetra_Vector> mergedrhs = Teuchos::rcp(new Epetra_Vector(*mergedmap));
+  Teuchos::RCP<Epetra_Vector> mergedsol = Teuchos::rcp(new Epetra_Vector(*mergedmap));
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)

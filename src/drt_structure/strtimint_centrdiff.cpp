@@ -238,7 +238,7 @@ void STR::TimIntCentrDiff::UpdateStepState()
 void STR::TimIntCentrDiff::UpdateStepElement()
 {
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   // other parameters that might be needed by the elements
   p.set("total time", timen_);
   p.set("delta time", (*dt_)[0]);

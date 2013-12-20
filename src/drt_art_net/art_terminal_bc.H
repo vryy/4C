@@ -27,7 +27,7 @@ Maintainer: Mahmoud Ismail
 #include "../drt_io/io.H"
 #include <Epetra_SerialDenseSolver.h>
 
-using namespace Teuchos;
+
 
 namespace ART
 {
@@ -49,21 +49,21 @@ namespace ART
     */
     void SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
                                    const DRT::Condition *   condition,
-                                   ParameterList &          params);
+                                   Teuchos::ParameterList &          params);
 
     /*
     \brief Standard solver for 1d artery reflective outlet
     */
     void SolveReflectiveTerminal(RCP<DRT::Discretization> actdis,
                                  const DRT::Condition *           condition,
-                                 ParameterList &                  params);
+                                 Teuchos::ParameterList &                  params);
 
     /*
     \brief Standard solver for 1d artery explicit windkessel BC outlet
     */
     void SolveExplWindkesselBC(RCP<DRT::Discretization> actdis,
                                const DRT::Condition *           condition,
-                               ParameterList &                  params);
+                               Teuchos::ParameterList &                  params);
 
   } // namespace UTILS
 } // namespace ART

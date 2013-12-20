@@ -1080,7 +1080,7 @@ void FSI::MortarMonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMat
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>
-FSI::MortarMonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
+FSI::MortarMonolithicStructureSplit::CreateLinearSystem(Teuchos::ParameterList& nlParams,
                                                   NOX::Epetra::Vector& noxSoln,
                                                   Teuchos::RCP<NOX::Utils> utils)
 {

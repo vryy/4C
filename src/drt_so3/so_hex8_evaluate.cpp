@@ -265,7 +265,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       RCP<const Epetra_Vector> dispo = discretization.GetState("old displacement");
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (dispo == null || disp==Teuchos::null || res==Teuchos::null)
+      if (dispo == Teuchos::null || disp==Teuchos::null || res==Teuchos::null)
         dserror("Cannot get state vectors '(old) displacement' and/or residual");
       std::vector<double> mydispo(lm.size());
       DRT::UTILS::ExtractMyValues(*dispo,mydispo,lm);

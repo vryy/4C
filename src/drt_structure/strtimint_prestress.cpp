@@ -50,7 +50,7 @@ STR::TimIntPrestress::TimIntPrestress
 void STR::TimIntPrestress::UpdateStepElement()
 {
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   
   // which prestress type?
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();

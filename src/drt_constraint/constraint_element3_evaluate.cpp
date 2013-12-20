@@ -58,7 +58,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
     break;
     case calc_MPC_state:
     {
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -81,7 +81,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       }
       else if (numnod == 2)
       {
-        RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
+        Teuchos::RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
         const std::vector<double>*  direct = condition->Get<std::vector<double> > ("direction");
         const std::string* value = condition-> Get<std::string>("value");
         if (*value == "disp")
@@ -99,7 +99,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
     break;
     case calc_MPC_stiff:
     {
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -130,7 +130,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       }
       else if (numnod == 2)
       {
-        RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
+        Teuchos::RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
         const std::vector<double>*  direct = condition->Get<std::vector<double> > ("direction");
 
         //Compute weighted difference between masternode and other node and it's derivative

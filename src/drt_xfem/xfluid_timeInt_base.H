@@ -723,9 +723,9 @@ protected:
       LINALG::Matrix<3,1>&                          newNodeCoords,        ///< node coordinates of point that has to be projected
       double &                                      min_dist,             ///< minimal distance, potentially updated
       LINALG::Matrix<3,1>&                          proj_x_np,            ///< projection of point on this side
-      std::map<std::vector<int>, std::vector<double> >&  proj_xi_line,         ///< map<sorted nids, local line coordinates of projection of point w.r.t sides >
-      std::map<std::vector<int>, std::vector<int> >&          proj_lineid,          ///< map<sorted nids, local line id w.r.t sides>
-      std::map<std::vector<int>, std::vector<int> >&          proj_nid_line,        ///< map<sorted nids, side Ids>
+      std::map<std::vector<int>, std::vector<double> >&  proj_xi_line,         ///< std::map<sorted nids, local line coordinates of projection of point w.r.t sides >
+      std::map<std::vector<int>, std::vector<int> >&          proj_lineid,          ///< std::map<sorted nids, local line id w.r.t sides>
+      std::map<std::vector<int>, std::vector<int> >&          proj_nid_line,        ///< std::map<sorted nids, side Ids>
       int &                                         proj_sid,             ///< id of side that contains the projected point
       TimeIntData::projection&                      proj                  ///< projection type
       );
@@ -739,9 +739,9 @@ protected:
       int &                                       proj_nid_np,          ///< nid id of projected point on surface
       LINALG::Matrix<3,1>&                        proj_x_np,            ///< projection of point on this side
       int &                                       proj_sid,             ///< id of side that contains the projected point
-      std::map<std::vector<int>, std::vector<double> > proj_xi_line,         ///< map<side ID, local coordinates of projection of point w.r.t to this line>
-      std::map<std::vector<int>, std::vector<int> >    proj_lineid,          ///< map<side ID, local line id>
-      std::map<std::vector<int>, std::vector<int> >    proj_nid_line,        ///< map<side ID, vec<line Ids>>
+      std::map<std::vector<int>, std::vector<double> > proj_xi_line,         ///< std::map<side ID, local coordinates of projection of point w.r.t to this line>
+      std::map<std::vector<int>, std::vector<int> >    proj_lineid,          ///< std::map<side ID, local line id>
+      std::map<std::vector<int>, std::vector<int> >    proj_nid_line,        ///< std::map<side ID, vec<line Ids>>
       TimeIntData::projection&                    proj                  ///< projection type
       );
 

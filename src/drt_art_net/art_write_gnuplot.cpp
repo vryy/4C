@@ -148,7 +148,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( Teuchos::RCP<DRT::Di
       // ---------------------------------------------------------------
       // Allocate the gnuplot export condition
       // ---------------------------------------------------------------
-      RCP<ArtWriteGnuplot> artgnu_c = Teuchos::rcp(new ArtWriteGnuplot(Artery_Number));
+      Teuchos::RCP<ArtWriteGnuplot> artgnu_c = Teuchos::rcp(new ArtWriteGnuplot(Artery_Number));
 
 
       // ---------------------------------------------------------------
@@ -197,7 +197,7 @@ void ART::UTILS::ArtWriteGnuplotWrapper::Write(Teuchos::ParameterList & params)
     // -------------------------------------------------------------------
     // loop over all conditions and export the arteries values
     // -------------------------------------------------------------------
-    std::map<const int, RCP<class ArtWriteGnuplot> >::iterator mapiter;
+    std::map<const int, Teuchos::RCP<class ArtWriteGnuplot> >::iterator mapiter;
 
     // defining a constant that will have the artery number
     int art_num;
@@ -296,7 +296,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
     std::vector<int> lmstride;
-    RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
+    Teuchos::RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
     const int* ele_nodes = ele[0][0].NodeIds();
 
     if(ele_nodes[0] == (*nodes)[i])
@@ -322,7 +322,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
               + pow(xyze(2,0) - xyze(2,1),2));
 
     // get the degrees of freedom
-    RCP<const Epetra_Vector> qanp  = discret->GetState("qanp");
+    Teuchos::RCP<const Epetra_Vector> qanp  = discret->GetState("qanp");
     std::vector<double> myqanp(lm.size());
     DRT::UTILS::ExtractMyValues(*qanp,myqanp,lm);
 

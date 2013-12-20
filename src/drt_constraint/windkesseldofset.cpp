@@ -79,7 +79,7 @@ void UTILS::WindkesselDofSet::Reset()
  *----------------------------------------------------------------------*/
 int UTILS::WindkesselDofSet::AssignDegreesOfFreedom
 (
-    const RCP<DRT::Discretization> dis,
+    const Teuchos::RCP<DRT::Discretization> dis,
     const int ndofs,
     const int start
 )

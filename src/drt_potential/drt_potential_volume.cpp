@@ -62,10 +62,10 @@ POTENTIAL::VolumePotential::VolumePotential(
 | Call discretization to evaluate additional contributions due to    |
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
-void POTENTIAL::VolumePotential::EvaluatePotential( ParameterList& 						p,
-                                                    RCP<Epetra_Vector> 			disp,
-                                                    RCP<Epetra_Vector> 			fint,
-                                                    RCP<LINALG::SparseMatrix> 	stiff)
+void POTENTIAL::VolumePotential::EvaluatePotential( Teuchos::ParameterList& p,
+                                                    Teuchos::RCP<Epetra_Vector> disp,
+                                                    Teuchos::RCP<Epetra_Vector> fint,
+                                                    Teuchos::RCP<LINALG::SparseMatrix> stiff)
 {
   // action for elements
   p.set("action","calc_potential_stiff");
@@ -89,13 +89,13 @@ void POTENTIAL::VolumePotential::EvaluatePotential( ParameterList& 						p,
 | evaluate potential conditions based on a Epetra_FecrsMatrix        |
 *--------------------------------------------------------------------*/
 void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
-    Teuchos::ParameterList&                          params,
-    RCP<LINALG::SparseMatrix>       systemmatrix1,
-    RCP<LINALG::SparseMatrix>       systemmatrix2,
-    RCP<Epetra_Vector>              systemvector1,
+    Teuchos::ParameterList&                 params,
+    Teuchos::RCP<LINALG::SparseMatrix>      systemmatrix1,
+    Teuchos::RCP<LINALG::SparseMatrix>      systemmatrix2,
+    Teuchos::RCP<Epetra_Vector>             systemvector1,
     Teuchos::RCP<Epetra_Vector>             systemvector2,
     Teuchos::RCP<Epetra_Vector>             systemvector3,
-    const std::string&                           condstring)
+    const std::string&                      condstring)
 {
   if (!discret_.Filled()) dserror("FillComplete() was not called");
   if (!discret_.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");

@@ -251,7 +251,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
   // add forces and stiffness due to Windkessel bcs
   // necessarily has to be done BEFORE fextm_ is built, since the Windkessel manager calls EvaluateNeumann and thus
   // the correct application and linearization of the follower load is needed !!! (mhv 11/2013)
-  ParameterList pwindk;
+  Teuchos::ParameterList pwindk;
   pwindk.set("scale_timint", theta_);
   pwindk.set("scale_gamma", theta_);
   pwindk.set("scale_beta", theta_*theta_);
@@ -303,7 +303,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
   }
 
   // apply forces and stiffness due to constraints
-  ParameterList pcon;
+  Teuchos::ParameterList pcon;
   //constraint matrix has to be scaled with the same value fintn_ is scaled with
   pcon.set("scaleConstrMat",theta_);
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
@@ -575,7 +575,7 @@ void STR::TimIntOneStepTheta::UpdateStepState()
 void STR::TimIntOneStepTheta::UpdateStepElement()
 {
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   // other parameters that might be needed by the elements
   p.set("total time", timen_);
   p.set("delta time", (*dt_)[0]);

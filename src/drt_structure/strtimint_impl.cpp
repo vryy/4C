@@ -567,7 +567,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   // reset anything that needs to be reset at the element level
   {
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     p.set("action", "calc_struct_reset_istep");
     // go to elements
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
@@ -682,7 +682,7 @@ void STR::TimIntImpl::ApplyForceStiffSurfstress
   if (surfstressman_->HaveSurfStress())
   {
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     p.set("surfstr_man", surfstressman_);
     p.set("total time", time);
     p.set("delta time", dt);
@@ -707,7 +707,7 @@ void STR::TimIntImpl::ApplyForceStiffPotential
   if (potman_ != Teuchos::null)
   {
     Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff);
-    ParameterList p; // create the parameters for manager
+    Teuchos::ParameterList p; // create the parameters for manager
     p.set("pot_man", potman_);
     p.set("total time", time);
     potman_->EvaluatePotential(p, dis, fint, mat);
@@ -734,7 +734,7 @@ void STR::TimIntImpl::TestForceStiffPotential
   {
     if(potman_->ComputeAnalyticalSolution())
     {
-      ParameterList p; // create the parameters for manager
+      Teuchos::ParameterList p; // create the parameters for manager
       p.set("pot_man", potman_);
       p.set("total time", time);
 
@@ -3153,7 +3153,7 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtracto
 
   {
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     // action for elements
     p.set("action", "calc_struct_nlnstiffmass");
     // other parameters that might be needed by the elements

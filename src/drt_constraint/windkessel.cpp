@@ -143,8 +143,8 @@ UTILS::Windkessel::WindkesselType UTILS::Windkessel::GetWindkesselType(const std
 *------------------------------------------------------------------------*/
 void UTILS::Windkessel::Initialize(
     Teuchos::ParameterList&        params,
-    RCP<Epetra_Vector>    systemvector1,
-    RCP<Epetra_Vector>    systemvector2)
+    Teuchos::RCP<Epetra_Vector>    systemvector1,
+    Teuchos::RCP<Epetra_Vector>    systemvector2)
 {
 
   params.set("action","calc_struct_constrvol");
@@ -188,14 +188,14 @@ void UTILS::Windkessel::Initialize
 *-----------------------------------------------------------------------*/
 void UTILS::Windkessel::Evaluate(
     Teuchos::ParameterList&        params,
-    RCP<LINALG::SparseMatrix> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
-    RCP<LINALG::SparseOperator> systemmatrix3,
-    RCP<Epetra_Vector>    systemvector1,
-    RCP<Epetra_Vector>    systemvector2,
-    RCP<Epetra_Vector>    systemvector3,
-    RCP<Epetra_Vector>    systemvector4,
-    RCP<Epetra_Vector>    systemvector5)
+    Teuchos::RCP<LINALG::SparseMatrix> systemmatrix1,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix3,
+    Teuchos::RCP<Epetra_Vector>    systemvector1,
+    Teuchos::RCP<Epetra_Vector>    systemvector2,
+    Teuchos::RCP<Epetra_Vector>    systemvector3,
+    Teuchos::RCP<Epetra_Vector>    systemvector4,
+    Teuchos::RCP<Epetra_Vector>    systemvector5)
 {
 
   params.set("action","calc_struct_volconstrstiff");
@@ -211,10 +211,10 @@ void UTILS::Windkessel::Evaluate(
  *----------------------------------------------------------------------*/
 void UTILS::Windkessel::EvaluateWindkessel(
     Teuchos::ParameterList&        params,
-    RCP<LINALG::SparseMatrix> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
-    RCP<LINALG::SparseOperator> systemmatrix3,
-    RCP<Epetra_Vector>    systemvector1,
+    Teuchos::RCP<LINALG::SparseMatrix> systemmatrix1,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix3,
+    Teuchos::RCP<Epetra_Vector>    systemvector1,
 		RCP<Epetra_Vector>    systemvector2,
 		RCP<Epetra_Vector>    systemvector3,
 		RCP<Epetra_Vector>    systemvector4,
@@ -404,8 +404,8 @@ void UTILS::Windkessel::EvaluateWindkessel(
  *-----------------------------------------------------------------------*/
 void UTILS::Windkessel::InitializeWindkessel(
     Teuchos::ParameterList&        params,
-    RCP<Epetra_Vector>    systemvector1,
-    RCP<Epetra_Vector>    systemvector2)
+    Teuchos::RCP<Epetra_Vector>    systemvector1,
+    Teuchos::RCP<Epetra_Vector>    systemvector2)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -508,7 +508,7 @@ std::vector<int> UTILS::Windkessel::GetActiveCondID()
 void UTILS::Windkessel::SetState
 (
   const std::string& state,  ///< name of state to set
-  RCP<Epetra_Vector> V  ///< values to set
+  Teuchos::RCP<Epetra_Vector> V  ///< values to set
 )
 {
   actdisc_->SetState(state,V);

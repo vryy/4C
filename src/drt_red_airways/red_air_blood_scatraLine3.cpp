@@ -29,8 +29,8 @@ DRT::ParObject* DRT::ELEMENTS::RedAirBloodScatraLine3Type::Create( const std::ve
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirBloodScatraLine3Type::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirBloodScatraLine3Type::Create( const std::string eletype,
+                                                                              const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {
@@ -129,7 +129,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3::Pack(DRT::PackBuffer& data) const
   Element::Pack(data);
 
 
-  map<std::string,double>::const_iterator it;
+  std::map<std::string,double>::const_iterator it;
 
   AddtoPack(data,(int)(elemParams_.size()));
   for (it = elemParams_.begin(); it!= elemParams_.end(); it++)
@@ -159,7 +159,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3::Unpack(const std::vector<char>& data
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
-  map<std::string,double> it;
+  std::map<std::string,double> it;
   int n = 0;
 
   ExtractfromPack(position,data,n);
@@ -204,7 +204,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  Return names of visualization data                     ismail 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirBloodScatraLine3::VisNames(std::map<string,int>& names)
+void DRT::ELEMENTS::RedAirBloodScatraLine3::VisNames(std::map<std::string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
@@ -229,7 +229,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3::VisNames(std::map<string,int>& names
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::RedAirBloodScatraLine3::VisData(const string& name, std::vector<double>& data)
+bool DRT::ELEMENTS::RedAirBloodScatraLine3::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))
@@ -246,7 +246,7 @@ bool DRT::ELEMENTS::RedAirBloodScatraLine3::VisData(const string& name, std::vec
 void DRT::ELEMENTS::RedAirBloodScatraLine3::getParams(std::string name, double & var)
 {
 
-  map<std::string,double>::iterator it;
+  std::map<std::string,double>::iterator it;
   it = elemParams_.find(name);
   if (it == elemParams_.end())
   {

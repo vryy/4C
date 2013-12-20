@@ -22,7 +22,7 @@ Maintainer: Ursula Mayer
 #include "../drt_geometry/intersection_service_templates.H"
 
 
-using namespace Teuchos;
+
 
 
 namespace POTENTIAL

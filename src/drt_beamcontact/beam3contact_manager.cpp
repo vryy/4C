@@ -694,7 +694,7 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(std::map<int,LINALG::Mat
          
           //***************************************************************
           // create a new contact pair object
-          pairs_.push_back(rcp (new CONTACT::Beam3contact(ProblemDiscret(),
+          pairs_.push_back(Teuchos::rcp (new CONTACT::Beam3contact(ProblemDiscret(),
           ContactDiscret(),DofOffset(),ele1,ele2,ele1pos,ele2pos)));
 
          // In the following line the new pair is saved in the container contactpairmap_ which allows for addressing

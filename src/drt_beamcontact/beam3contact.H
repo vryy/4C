@@ -24,7 +24,7 @@ Maintainer: Christoph Meier
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
 
-using namespace Teuchos;
+
 
 namespace CONTACT
 {
@@ -188,7 +188,7 @@ public:
   */
   bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
                 Epetra_Vector& fint, double& pp, bool ngf,
-                std::map<std::pair<int,int>, RCP<Beam3contact> >& contactpairmap,
+                std::map<std::pair<int,int>, Teuchos::RCP<Beam3contact> >& contactpairmap,
                 int beams_smoothing);
   
   /*!
@@ -318,11 +318,11 @@ private:
 
   //! neighbor elements of element 1
 
-  RCP<B3CNeighbor> neighbor1_;
+  Teuchos::RCP<B3CNeighbor> neighbor1_;
 
   //! neighbor elements of element 2
 
-  RCP<B3CNeighbor> neighbor2_;
+  Teuchos::RCP<B3CNeighbor> neighbor2_;
 
   //! normal vector of current time step
   Epetra_SerialDenseVector normal_;

@@ -52,7 +52,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RCP<MAT::Material> mat) = 0;
+                         Teuchos::RCP<MAT::Material> mat) = 0;
 
     virtual void Initial(RedInterAcinarDep*                       ele,
                          Teuchos::ParameterList&                           params,
@@ -65,7 +65,7 @@ namespace ELEMENTS
                                     DRT::Discretization&          discretization,
                                     std::vector<int>&             lm,
                                     Epetra_SerialDenseVector& elevec1_epetra,
-                                    RCP<MAT::Material>    mat) = 0;
+                                    Teuchos::RCP<MAT::Material>    mat) = 0;
 
     virtual void CalcFlowRates(RedInterAcinarDep*            ele,
                                Teuchos::ParameterList&       params,
@@ -73,13 +73,13 @@ namespace ELEMENTS
                                Epetra_SerialDenseVector&     a_volumen,
                                Epetra_SerialDenseVector&     a_volumenp,
                                std::vector<int>&             lm,
-                               RCP<MAT::Material>    mat) = 0;
+                               Teuchos::RCP<MAT::Material>    mat) = 0;
 
     virtual void GetCoupledValues(RedInterAcinarDep*           ele,
                                   Teuchos::ParameterList&      params,
                                   DRT::Discretization&         discretization,
                                   std::vector<int>&            lm,
-                                  RCP<MAT::Material>   material) = 0;
+                                  Teuchos::RCP<MAT::Material>   material) = 0;
 
     /// Internal implementation class for acinus element
     static RedInterAcinarDepImplInterface* Impl(DRT::ELEMENTS::RedInterAcinarDep* acinus);
@@ -123,7 +123,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RCP<MAT::Material> mat);
+                         Teuchos::RCP<MAT::Material> mat);
 
     /*!
       \brief calculate element matrix and rhs
@@ -146,7 +146,7 @@ namespace ELEMENTS
                 Epetra_SerialDenseMatrix&                estif,
                 Epetra_SerialDenseVector&                eforce,
                 Teuchos::RCP<const MAT::Material>        material,
-                ParameterList &                          params,
+                Teuchos::ParameterList &                          params,
                 double                                   time,
                 double                                   dt);
 
@@ -156,7 +156,7 @@ namespace ELEMENTS
                                     DRT::Discretization&         disctretization,
                                     std::vector<int>&            lm,
                                     Epetra_SerialDenseVector&    elevec1_epetra,
-                                    RCP<MAT::Material>   mat);
+                                    Teuchos::RCP<MAT::Material>   mat);
 
     /*!
       \brief get the initial values of the degrees of freedome at the node
@@ -187,7 +187,7 @@ namespace ELEMENTS
                                Epetra_SerialDenseVector&     a_volumen_strain_np,
                                Epetra_SerialDenseVector&     a_volumenp,
                                std::vector<int>&             lm,
-                               RCP<MAT::Material>    mat);
+                               Teuchos::RCP<MAT::Material>    mat);
 
     /*!
      \Essential functions to evaluate the coupled results
@@ -196,7 +196,7 @@ namespace ELEMENTS
                                   Teuchos::ParameterList&      params,
                                   DRT::Discretization&         discretization,
                                   std::vector<int>&            lm,
-                                  RCP<MAT::Material>   material);
+                                  Teuchos::RCP<MAT::Material>   material);
 
   private:
   };

@@ -27,7 +27,7 @@ Maintainer: Mahmoud Ismail
 #include "../drt_io/io.H"
 #include <Epetra_SerialDenseSolver.h>
 
-using namespace Teuchos;
+
 
 namespace ART
 {
@@ -72,9 +72,9 @@ namespace ART
       /*!
       \brief Standard Constructor
       */
-      ArtJunctionWrapper( RCP<DRT::Discretization>  actdis,
+      ArtJunctionWrapper( Teuchos::RCP<DRT::Discretization>  actdis,
                           IO::DiscretizationWriter& output,
-                          ParameterList & params,
+                          Teuchos::ParameterList & params,
                           double dta);
 
       /*!
@@ -91,12 +91,12 @@ namespace ART
       /*!
       \brief Standard solver
       */
-      int Solve(ParameterList & params);
+      int Solve(Teuchos::ParameterList & params);
 
       /*!
       \brief Standard solver
       */
-      void ApplyBC(ParameterList & params);
+      void ApplyBC(Teuchos::ParameterList & params);
 
 
 
@@ -104,16 +104,16 @@ namespace ART
       /*!
       \brief all single junction conditions
      */
-      map<const int, RCP<class ArtJunctionBc> > ajunmap_;
+      std::map<const int, Teuchos::RCP<class ArtJunctionBc> > ajunmap_;
 
       /*!
       \brief all parameters connected to junctions
       */
-      //      RCP<map<const int, RCP<JunctionNodeParams> > >  nodalParams_;
-      //map<const int, RCP<Teuchos::ParameterList> >  nodalParams_;
+      //      Teuchos::RCP<map<const int, Teuchos::RCP<JunctionNodeParams> > >  nodalParams_;
+      //map<const int, Teuchos::RCP<Teuchos::ParameterList> >  nodalParams_;
 
       //! 1d artery discretization
-      RCP<DRT::Discretization>      discret_;
+      Teuchos::RCP<DRT::Discretization>      discret_;
 
       //! the output writer
       IO::DiscretizationWriter&     output_;
@@ -140,7 +140,7 @@ namespace ART
       /*!
       \brief Standard Constructor
      */
-      ArtJunctionBc( RCP<DRT::Discretization>  actdis,
+      ArtJunctionBc( Teuchos::RCP<DRT::Discretization>  actdis,
                      IO::DiscretizationWriter& output,
                      std::vector<DRT::Condition*> conds,
                      std::vector<int> IOart_flag,
@@ -170,7 +170,7 @@ namespace ART
       /*!
       \Solve the boundary condition to the elements
       */
-      int Solve(ParameterList & params);
+      int Solve(Teuchos::ParameterList & params);
 
 
       /*!
@@ -222,12 +222,12 @@ namespace ART
       /*!
       \Update the Residual
       */
-      void UpdateResidual( RCP<Epetra_Vector> residual );
+      void UpdateResidual( Teuchos::RCP<Epetra_Vector> residual );
 
 
     protected:
 
-      RCP<Epetra_Vector>            junctionbc_;
+      Teuchos::RCP<Epetra_Vector>            junctionbc_;
 
     private:
 
@@ -244,7 +244,7 @@ namespace ART
       int                           myrank_;
 
       //! fluid discretization
-      RCP<DRT::Discretization>      discret_;
+      Teuchos::RCP<DRT::Discretization>      discret_;
 
       //! the output writer
       IO::DiscretizationWriter&     output_;

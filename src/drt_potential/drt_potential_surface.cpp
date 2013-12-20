@@ -2218,7 +2218,7 @@ std::map<int, std::set<int> > POTENTIAL::SurfacePotential::computeEleByLabelVol(
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
 /*
-void POTENTIAL::SurfacePotential::TestEvaluatePotential(ParameterList& p,
+void POTENTIAL::SurfacePotential::TestEvaluatePotential(Teuchos::ParameterList& p,
                                                       RCP<Epetra_Vector> disp,
                                                       RCP<Epetra_Vector> fint,
                                                       RCP<LINALG::SparseMatrix> stiff,
@@ -2394,7 +2394,7 @@ void STR::TimIntImpl::TestForceStiffPotential
   // potential force loads (but on internal force vector side)
   if (potman_ != Teuchos::null)
   {
-    ParameterList p; // create the parameters for manager
+    Teuchos::ParameterList p; // create the parameters for manager
     p.set("pot_man", potman_);
     p.set("total time", time);
 

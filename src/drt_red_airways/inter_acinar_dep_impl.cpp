@@ -78,7 +78,7 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec1_epetra,
   Epetra_SerialDenseVector&  elevec2_epetra,
   Epetra_SerialDenseVector&  elevec3_epetra,
-  RCP<MAT::Material> mat)
+  Teuchos::RCP<MAT::Material> mat)
 {
   double N0 = double(ele->Nodes()[0]->NumElement());
   double N1 = double(ele->Nodes()[1]->NumElement());
@@ -104,7 +104,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(
   Teuchos::RCP<const MAT::Material>      material)
 {
 
-  RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
+  Teuchos::RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
 
   //--------------------------------------------------------------------
   // get the generation numbers
@@ -131,7 +131,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(
   Epetra_SerialDenseMatrix&                sysmat,
   Epetra_SerialDenseVector&                rhs,
   Teuchos::RCP<const MAT::Material>        material,
-  ParameterList &                          params,
+  Teuchos::ParameterList &                          params,
   double                                   time,
   double                                   dt)
 {
@@ -148,7 +148,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
   Epetra_SerialDenseVector&    rhs,
-  RCP<MAT::Material>   material)
+  Teuchos::RCP<MAT::Material>   material)
 {
   const int   myrank  = discretization.Comm().MyPID();
 
@@ -162,7 +162,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
   const int numnode = lm.size();
   std::vector<int>::iterator it_vcr;
 
-  RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  Teuchos::RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
   if (pnp==Teuchos::null)
     dserror("Cannot get state vectors 'pnp'");
@@ -250,10 +250,10 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
 
         if (Bc == "pressure" || Bc == "ExponentialPleuralPressure")
         {
-          RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-          RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+          Teuchos::RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+          Teuchos::RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
 
-          if (bcval==null||dbctog==Teuchos::null)
+          if (bcval==Teuchos::null||dbctog==Teuchos::null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
@@ -316,10 +316,10 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
             exit(1);
           }
 
-          RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-          RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+          Teuchos::RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+          Teuchos::RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
 
-          if (bcval==null||dbctog==Teuchos::null)
+          if (bcval==Teuchos::null||dbctog==Teuchos::null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
@@ -356,7 +356,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::CalcFlowRates(
   Epetra_SerialDenseVector&    elevec1, //a_volumenp,
   Epetra_SerialDenseVector&    elevec2, //a_volume_strain_np,
   std::vector<int>&            lm,
-  RCP<MAT::Material>   material)
+  Teuchos::RCP<MAT::Material>   material)
 
 {
 
@@ -372,7 +372,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::GetCoupledValues(
   Teuchos::ParameterList& params,
   DRT::Discretization&    discretization,
   std::vector<int>&       lm,
-  RCP<MAT::Material>      material)
+  Teuchos::RCP<MAT::Material>      material)
 {
 
 }

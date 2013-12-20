@@ -936,7 +936,7 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBas
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>
-FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
+FSI::MonolithicStructureSplit::CreateLinearSystem(Teuchos::ParameterList& nlParams,
                                                   NOX::Epetra::Vector& noxSoln,
                                                   Teuchos::RCP<NOX::Utils> utils)
 {

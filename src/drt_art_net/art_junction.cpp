@@ -77,7 +77,7 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actdis,
                                                    IO::DiscretizationWriter& output,
-                                                   ParameterList & params,
+                                                   Teuchos::ParameterList & params,
                                                    double dta):
   discret_(actdis),
   output_ (output)
@@ -187,8 +187,8 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
       // (4) Create junction boundary conditions
       // ---------------------------------------------------------------------
       int condid;
-      RCP<std::map<const int, RCP<JunctionNodeParams> > >  nodalParams;
-      nodalParams = params.get<RCP<std::map<const int, RCP<JunctionNodeParams> > > >("Junctions Parameters");
+      Teuchos::RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams> > >  nodalParams;
+      nodalParams = params.get<RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams> > > >("Junctions Parameters");
 
       for(unsigned int i=0; i<SortedConds.size(); i++)
       {
@@ -200,7 +200,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
         // -------------------------------------------------------------------
         // sort junction BCs in map 
         // -------------------------------------------------------------------
-        RCP<ArtJunctionBc> junbc = Teuchos::rcp(new ArtJunctionBc(discret_, output_, SortedConds[i], SortedIOarts[i],dta, condid, i) );    
+        Teuchos::RCP<ArtJunctionBc> junbc = Teuchos::rcp(new ArtJunctionBc(discret_, output_, SortedConds[i], SortedIOarts[i],dta, condid, i) );    
         ajunmap_.insert( std::make_pair( condid, junbc ) );
 
         // -------------------------------------------------------------------
@@ -211,12 +211,12 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
         // -------------------------------------------------------------------
         bool inserted;
         // create an empty map associated to the RCP nodalParams_
-        //      nodalParams = Teuchos::rcp(new std::map<const int, RCP<JunctionNodeParams> >());
+        //      nodalParams = Teuchos::rcp(new std::map<const int, Teuchos::RCP<JunctionNodeParams> >());
         
         for (unsigned int j=0 ; j< SortedConds[i].size(); j++)
         {
           const std::vector<int> * nodes = SortedConds[i][j]->Nodes();
-          RCP<JunctionNodeParams> nodeparams = Teuchos::rcp(new JunctionNodeParams);
+          Teuchos::RCP<JunctionNodeParams> nodeparams = Teuchos::rcp(new JunctionNodeParams);
 
           int local_id =  discret_->NodeRowMap()->LID((*nodes)[0]);
           inserted = nodalParams->insert( std::make_pair( local_id, nodeparams) ).second;
@@ -256,7 +256,7 @@ ART::UTILS::ArtJunctionWrapper::~ArtJunctionWrapper()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-int ART::UTILS::ArtJunctionWrapper::Solve(ParameterList & params)
+int ART::UTILS::ArtJunctionWrapper::Solve(Teuchos::ParameterList & params)
 {
   //----------------------------------------------------------------------
   // Exit if the function accessed by a non-master processor
@@ -265,7 +265,7 @@ int ART::UTILS::ArtJunctionWrapper::Solve(ParameterList & params)
   if (discret_->Comm().MyPID()!=0)
     return 0;
 
-  std::map<const int, RCP<class ArtJunctionBc> >::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class ArtJunctionBc> >::iterator mapiter;
 
   for (mapiter = ajunmap_.begin(); mapiter != ajunmap_.end(); mapiter++ )
   {
@@ -283,7 +283,7 @@ int ART::UTILS::ArtJunctionWrapper::Solve(ParameterList & params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-ART::UTILS::ArtJunctionBc::ArtJunctionBc( RCP<DRT::Discretization>  actdis,
+ART::UTILS::ArtJunctionBc::ArtJunctionBc( Teuchos::RCP<DRT::Discretization>  actdis,
                                           IO::DiscretizationWriter& output,
                                           std::vector<DRT::Condition*> conds,
                                           std::vector<int> IOart_flag,
@@ -430,7 +430,7 @@ ART::UTILS::ArtJunctionBc::ArtJunctionBc( RCP<DRT::Discretization>  actdis,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-int ART::UTILS::ArtJunctionBc::Solve(ParameterList & params)
+int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList & params)
 {
 
   //----------------------------------------------------------------------
@@ -454,7 +454,7 @@ int ART::UTILS::ArtJunctionBc::Solve(ParameterList & params)
   std::vector<double> Pext(ProbSize_/2,0.0);
 
   // get the map having the junction nodal information from the elements  
-  RCP<std::map<const int, RCP<JunctionNodeParams> > > nodalMap =  params.get< RCP<std::map<const int, RCP<JunctionNodeParams> > > >("Junctions Parameters");
+  Teuchos::RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams> > > nodalMap =  params.get< Teuchos::RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams> > > >("Junctions Parameters");
 
   // loop over all the nodes and read in the required parameters
   for(unsigned int i = 0; i< nodes_.size(); i++)

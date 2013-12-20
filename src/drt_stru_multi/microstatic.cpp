@@ -189,7 +189,7 @@ V0_(V0)
   // -------------------------------------------------------------------
   {
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
     // other parameters that might be needed by the elements
@@ -223,7 +223,7 @@ V0_(V0)
   else
   {
     // -------------------------- Calculate initial volume of microstructure
-    ParameterList p;
+    Teuchos::ParameterList p;
     // action for elements
     p.set("action","calc_init_vol");
     p.set("V0", 0.0);
@@ -242,7 +242,7 @@ V0_(V0)
   // microstructural reference volume
 
   // create the parameters for the discretization
-  ParameterList par;
+  Teuchos::ParameterList par;
   // action for elements
   par.set("action","multi_calc_dens");
   // set density to zero
@@ -303,7 +303,7 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
     // zero out stiffness
     stiff_->Zero();
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
     // other parameters that might be needed by the elements
@@ -390,7 +390,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
     // zero out stiffness
     stiff_->Zero();
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
     // other parameters that might be needed by the elements
@@ -466,7 +466,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
   // changed when speed should be optimized later on.
   {
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     p.set("action", "calc_struct_reset_istep");
     // go to elements
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
@@ -479,7 +479,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
     // zero out stiffness
     stiff_->Zero();
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
     // other parameters that might be needed by the elements
@@ -571,7 +571,7 @@ void STRUMULTI::MicroStatic::FullNewton()
       // zero out stiffness
       stiff_->Zero();
       // create the parameters for the discretization
-      ParameterList p;
+      Teuchos::ParameterList p;
       // action for elements
       p.set("action","calc_struct_nlnstiff");
       // other parameters that might be needed by the elements
@@ -641,7 +641,7 @@ void STRUMULTI::MicroStatic::PrepareOutput()
   if (resevrystrs_ and !(stepn_%resevrystrs_) and iostress_!=INPAR::STR::stress_none)
   {
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     // action for elements
     p.set("action","calc_struct_stress");
     // other parameters that might be needed by the elements
@@ -934,7 +934,7 @@ void STRUMULTI::MicroStatic::SetEASData()
         actele->ElementType()==DRT::ELEMENTS::So_shw6Type::Instance())
     {
       // create the parameters for the discretization
-      ParameterList p;
+      Teuchos::ParameterList p;
       // action for elements
       p.set("action","multi_eas_set");
 

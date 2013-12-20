@@ -50,7 +50,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RCP<MAT::Material> mat) = 0;
+                         Teuchos::RCP<MAT::Material> mat) = 0;
 
     virtual void Initial(RedAirway*                               ele,
                          Teuchos::ParameterList&                  params,
@@ -65,19 +65,19 @@ namespace ELEMENTS
                                     DRT::Discretization&          discretization,
                                     std::vector<int>&             lm,
                                     Epetra_SerialDenseVector&     elevec1_epetra,
-                                    RCP<MAT::Material>            mat) = 0;
+                                    Teuchos::RCP<MAT::Material>            mat) = 0;
 
     virtual void CalcFlowRates(RedAirway*                    ele,
                                Teuchos::ParameterList&       params,
                                DRT::Discretization&          discretization,
                                std::vector<int>&             lm,
-                               RCP<MAT::Material>            mat) = 0;
+                               Teuchos::RCP<MAT::Material>            mat) = 0;
 
     virtual void CalcElemVolume(RedAirway*                    ele,
                                 Teuchos::ParameterList&       params,
                                 DRT::Discretization&          discretization,
                                 std::vector<int>&             lm,
-                                RCP<MAT::Material>            mat)=0;
+                                Teuchos::RCP<MAT::Material>            mat)=0;
 
     virtual bool GetCurveValAtCond(double&                       bcVal,
                                    DRT::Node*                    node,
@@ -90,14 +90,14 @@ namespace ELEMENTS
                                   Teuchos::ParameterList&      params,
                                   DRT::Discretization&         discretization,
                                   std::vector<int>&            lm,
-                                  RCP<MAT::Material>            material) = 0;
+                                  Teuchos::RCP<MAT::Material>            material) = 0;
 
     virtual void GetJunctionVolumeMix(RedAirway*                   ele,
                                       Teuchos::ParameterList&      params,
                                       DRT::Discretization&         discretization,
                                       Epetra_SerialDenseVector&    volumeMix_np,
                                       std::vector<int>&            lm,
-                                      RCP<MAT::Material>           material) = 0;
+                                      Teuchos::RCP<MAT::Material>           material) = 0;
 
     virtual void SolveScatra(RedAirway*                   ele,
                              Teuchos::ParameterList&      params,
@@ -105,7 +105,7 @@ namespace ELEMENTS
                              Epetra_SerialDenseVector&    scatra_np,
                              Epetra_SerialDenseVector&    volumeMix_np,
                              std::vector<int>&            lm,
-                             RCP<MAT::Material>           material) = 0;
+                             Teuchos::RCP<MAT::Material>           material) = 0;
 
 
     virtual void SolveScatraBifurcations(RedAirway*                   ele,
@@ -114,31 +114,31 @@ namespace ELEMENTS
                                          Epetra_SerialDenseVector&    scatra_np,
                                          Epetra_SerialDenseVector&    volumeMix_np,
                                          std::vector<int>&            lm,
-                                         RCP<MAT::Material>           material) = 0;
+                                         Teuchos::RCP<MAT::Material>           material) = 0;
 
     virtual void CalcCFL(RedAirway*                   ele,
                          Teuchos::ParameterList&      params,
                          DRT::Discretization&         discretization,
                          std::vector<int>&            lm,
-                         RCP<MAT::Material>           material) = 0;
+                         Teuchos::RCP<MAT::Material>           material) = 0;
 
     virtual void UpdateScatra(RedAirway*                   ele,
                               Teuchos::ParameterList&      params,
                               DRT::Discretization&         discretization,
                               std::vector<int>&            lm,
-                              RCP<MAT::Material>           material) = 0;
+                              Teuchos::RCP<MAT::Material>           material) = 0;
 
     virtual void UpdateElem12Scatra(RedAirway*                   ele,
                               Teuchos::ParameterList&      params,
                               DRT::Discretization&         discretization,
                               std::vector<int>&            lm,
-                              RCP<MAT::Material>           material) = 0;
+                              Teuchos::RCP<MAT::Material>           material) = 0;
 
     virtual void EvalPO2FromScatra(RedAirway*              ele,
                                    Teuchos::ParameterList&      params,
                                    DRT::Discretization&         discretization,
                                    std::vector<int>&            lm,
-                                   RCP<MAT::Material>           material) = 0;
+                                   Teuchos::RCP<MAT::Material>           material) = 0;
 
     virtual void EvalNodalEssentialValues(RedAirway*                   ele,
                                           Teuchos::ParameterList&      params,
@@ -147,7 +147,7 @@ namespace ELEMENTS
                                           Epetra_SerialDenseVector&    nodal_volume,
                                           Epetra_SerialDenseVector&    nodal_flow,
                                           std::vector<int>&            lm,
-                                          RCP<MAT::Material>           material) = 0;
+                                          Teuchos::RCP<MAT::Material>           material) = 0;
 
     virtual double GetElementLength(RedAirway*                   ele) = 0;
 
@@ -194,7 +194,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RCP<MAT::Material> mat);
+                         Teuchos::RCP<MAT::Material> mat);
 
     /*!
       \brief calculate element matrix and rhs
@@ -217,7 +217,7 @@ namespace ELEMENTS
                 Epetra_SerialDenseMatrix&                estif,
                 Epetra_SerialDenseVector&                eforce,
                 Teuchos::RCP<const MAT::Material>        material,
-                ParameterList &                          params,
+                Teuchos::ParameterList &                          params,
                 double                                   time,
                 double                                   dt);
 
@@ -227,7 +227,7 @@ namespace ELEMENTS
                                     DRT::Discretization&         disctretization,
                                     std::vector<int>&            lm,
                                     Epetra_SerialDenseVector&    elevec1_epetra,
-                                    RCP<MAT::Material>   mat);
+                                    Teuchos::RCP<MAT::Material>   mat);
 
     /*!
       \brief get the initial values of the degrees of freedome at the node
@@ -258,7 +258,7 @@ namespace ELEMENTS
                                Teuchos::ParameterList&       params,
                                DRT::Discretization&          discretization,
                                std::vector<int>&             lm,
-                               RCP<MAT::Material>    mat);
+                               Teuchos::RCP<MAT::Material>    mat);
 
     /*!
      \Essential functions to compute the volume of elements
@@ -267,7 +267,7 @@ namespace ELEMENTS
                                 Teuchos::ParameterList&       params,
                                 DRT::Discretization&          discretization,
                                 std::vector<int>&             lm,
-                                RCP<MAT::Material>            mat);
+                                Teuchos::RCP<MAT::Material>            mat);
 
     /*!
      \Essential functions to compute curve value at a Nodal Prescribed condition
@@ -287,7 +287,7 @@ namespace ELEMENTS
                                       DRT::Discretization&         discretization,
                                       Epetra_SerialDenseVector&    junctionVolumeMix_np,
                                       std::vector<int>&            lm,
-                                      RCP<MAT::Material>           material);
+                                      Teuchos::RCP<MAT::Material>           material);
 
     /*!
      \Essential functions to compute the volume mixing and  flowing into a junction
@@ -298,7 +298,7 @@ namespace ELEMENTS
                              Epetra_SerialDenseVector&    scatra_np,
                              Epetra_SerialDenseVector&    volumeMix_np,
                              std::vector<int>&            lm,
-                             RCP<MAT::Material>           material);
+                             Teuchos::RCP<MAT::Material>           material);
 
     /*!
      \Essential functions to compute the volume mixing and  flowing into a junction
@@ -309,7 +309,7 @@ namespace ELEMENTS
                                          Epetra_SerialDenseVector&    scatra_np,
                                          Epetra_SerialDenseVector&    volumeMix_np,
                                          std::vector<int>&            lm,
-                                         RCP<MAT::Material>           material);
+                                         Teuchos::RCP<MAT::Material>           material);
     /*!
      \Essential functions to evaluate the coupled results
     */
@@ -317,31 +317,31 @@ namespace ELEMENTS
                                   Teuchos::ParameterList&      params,
                                   DRT::Discretization&         discretization,
                                   std::vector<int>&            lm,
-                                  RCP<MAT::Material>   material);
+                                  Teuchos::RCP<MAT::Material>   material);
 
     virtual void CalcCFL(RedAirway*                   ele,
                          Teuchos::ParameterList&      params,
                          DRT::Discretization&         discretization,
                          std::vector<int>&            lm,
-                         RCP<MAT::Material>           material);
+                         Teuchos::RCP<MAT::Material>           material);
 
     virtual void UpdateScatra(RedAirway*                   ele,
                               Teuchos::ParameterList&      params,
                               DRT::Discretization&         discretization,
                               std::vector<int>&            lm,
-                              RCP<MAT::Material>           material);
+                              Teuchos::RCP<MAT::Material>           material);
 
     virtual void UpdateElem12Scatra(RedAirway*             ele,
                               Teuchos::ParameterList&      params,
                               DRT::Discretization&         discretization,
                               std::vector<int>&            lm,
-                              RCP<MAT::Material>           material);
+                              Teuchos::RCP<MAT::Material>           material);
 
     virtual void EvalPO2FromScatra(RedAirway*              ele,
                                    Teuchos::ParameterList&      params,
                                    DRT::Discretization&         discretization,
                                    std::vector<int>&            lm,
-                                   RCP<MAT::Material>           material);
+                                   Teuchos::RCP<MAT::Material>           material);
 
     virtual void EvalNodalEssentialValues(RedAirway*                   ele,
                                           Teuchos::ParameterList&      params,
@@ -350,7 +350,7 @@ namespace ELEMENTS
                                           Epetra_SerialDenseVector&    nodal_volume,
                                           Epetra_SerialDenseVector&    nodal_flow,
                                           std::vector<int>&            lm,
-                                          RCP<MAT::Material>           material);
+                                          Teuchos::RCP<MAT::Material>           material);
 
     virtual double GetElementLength(RedAirway*                   ele);
 

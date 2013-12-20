@@ -148,7 +148,7 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
 
     string                                              label_;      ///< name of this operator
 
-    ParameterList                                       params_;    ///< parameter list for SaddlePoint Preconditioner
+    Teuchos::ParameterList                                       params_;    ///< parameter list for SaddlePoint Preconditioner
     FILE*                                               outfile_;   ///< error file to write output to or NULL
 
     int                                                 nmaxlevels_;  // /<number of maximal allowed multigrid levels

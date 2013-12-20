@@ -57,7 +57,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
   actdis = DRT::Problem::Instance()->GetDis("red_airway");
 
   // -------------------------------------------------------------------
@@ -79,7 +79,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter>  output = Teuchos::rcp( new IO::DiscretizationWriter(actdis),false);
+  Teuchos::RCP<IO::DiscretizationWriter>  output = Teuchos::rcp( new IO::DiscretizationWriter(actdis),false);
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
@@ -100,7 +100,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // check if the present solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror("no linear solver defined. Please set LINEAR_SOLVER in REDUCED DIMENSIONAL AIRWAYS DYNAMIC to a valid number!");
-  RCP<LINALG::Solver> solver = Teuchos::rcp( new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp( new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                                    actdis->Comm(),
                                                    DRT::Problem::Instance()->ErrorFile()->Handle()),
                                     false);
@@ -109,7 +109,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
-  ParameterList airwaystimeparams;
+  Teuchos::ParameterList airwaystimeparams;
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
@@ -170,7 +170,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   if (!CoupledTo3D)
   {
     // call time-integration (or stationary) scheme
-    RCP<Teuchos::ParameterList> param_temp;
+    Teuchos::RCP<Teuchos::ParameterList> param_temp;
     airwayimplicit->Integrate();
 
     Teuchos::RCP<DRT::ResultTest> resulttest
@@ -199,7 +199,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
 void redairway_tissue_dyn()
 {
   const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->RedAirwayTissueDynamicParams();
-  RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
   Teuchos::RCP<AIRWAY::RedAirwayTissue> redairway_tissue = Teuchos::rcp(new AIRWAY::RedAirwayTissue(actdis->Comm(),rawdyn));
 
   //Read the restart information, set vectors and variables

@@ -1718,7 +1718,7 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
 
   const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
   const int ngp = intpoints.nquad;
-  Teuchos::RCP<Epetra_SerialDenseVector> poro = rcp(new Epetra_SerialDenseVector(ngp));
+  Teuchos::RCP<Epetra_SerialDenseVector> poro = Teuchos::rcp(new Epetra_SerialDenseVector(ngp));
   const int numdim = 3;
   const int numnode = NumNode();
   const int noddof = NumDofPerNode(*(Nodes()[0]));

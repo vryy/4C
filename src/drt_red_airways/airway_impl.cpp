@@ -80,7 +80,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec1_epetra,
   Epetra_SerialDenseVector&  elevec2_epetra,
   Epetra_SerialDenseVector&  elevec3_epetra,
-  RCP<MAT::Material> mat)
+  Teuchos::RCP<MAT::Material> mat)
 {
   //  const int   myrank  = discretization.Comm().MyPID();
 
@@ -115,31 +115,31 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
 
-  RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
-  RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
-  RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
+  Teuchos::RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  Teuchos::RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
+  Teuchos::RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
 
-  // REMOVED_FOR_UPGRADE  RCP<const Epetra_Vector> acinar_vnp  = discretization.GetState("acinar_vnp");
-  // REMOVED_FOR_UPGRADE  RCP<const Epetra_Vector> acinar_vn   = discretization.GetState("acinar_vn");
+  // REMOVED_FOR_UPGRADE  Teuchos::RCP<const Epetra_Vector> acinar_vnp  = discretization.GetState("acinar_vnp");
+  // REMOVED_FOR_UPGRADE  Teuchos::RCP<const Epetra_Vector> acinar_vn   = discretization.GetState("acinar_vn");
 
-  //  RCP<const Epetra_Vector> acinar_e_vnp  = discretization.GetState("acinar_vnp");
-  //  RCP<const Epetra_Vector> acinar_e_vn   = discretization.GetState("acinar_vn");
+  //  Teuchos::RCP<const Epetra_Vector> acinar_e_vnp  = discretization.GetState("acinar_vnp");
+  //  Teuchos::RCP<const Epetra_Vector> acinar_e_vn   = discretization.GetState("acinar_vn");
 
-  RCP<Epetra_Vector> acinar_e_vnp  = params.get<RCP<Epetra_Vector> >("acinar_vnp");
-  RCP<Epetra_Vector> acinar_e_vn   = params.get<RCP<Epetra_Vector> >("acinar_vn");
+  Teuchos::RCP<Epetra_Vector> acinar_e_vnp  = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+  Teuchos::RCP<Epetra_Vector> acinar_e_vn   = params.get<RCP<Epetra_Vector> >("acinar_vn");
 
-  RCP<Epetra_Vector> qin_nm  = params.get<RCP<Epetra_Vector> >("qin_nm");
-  RCP<Epetra_Vector> qin_n   = params.get<RCP<Epetra_Vector> >("qin_n");
-  RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> qin_nm  = params.get<RCP<Epetra_Vector> >("qin_nm");
+  Teuchos::RCP<Epetra_Vector> qin_n   = params.get<RCP<Epetra_Vector> >("qin_n");
+  Teuchos::RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
 
-  RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
-  RCP<Epetra_Vector> qout_n  = params.get<RCP<Epetra_Vector> >("qout_n");
-  RCP<Epetra_Vector> qout_nm = params.get<RCP<Epetra_Vector> >("qout_nm");
+  Teuchos::RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
+  Teuchos::RCP<Epetra_Vector> qout_n  = params.get<RCP<Epetra_Vector> >("qout_n");
+  Teuchos::RCP<Epetra_Vector> qout_nm = params.get<RCP<Epetra_Vector> >("qout_nm");
 
-  RCP<Epetra_Vector> volm_n  = params.get<RCP<Epetra_Vector> >("elemVolumen");
-  RCP<Epetra_Vector> volm_np = params.get<RCP<Epetra_Vector> >("elemVolumenp");
+  Teuchos::RCP<Epetra_Vector> volm_n  = params.get<RCP<Epetra_Vector> >("elemVolumen");
+  Teuchos::RCP<Epetra_Vector> volm_np = params.get<RCP<Epetra_Vector> >("elemVolumenp");
 
- if (pnp==Teuchos::null || pn==Teuchos::null || pnm==null )
+  if (pnp==Teuchos::null || pn==Teuchos::null || pnm==Teuchos::null )
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // extract local values from the global vectors
@@ -177,7 +177,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   }
 
   // get the volumetric flow rate from the previous time step
-  ParameterList elem_params;
+  Teuchos::ParameterList elem_params;
   elem_params.set<double>("qout_np",(*qout_np)[ele->LID()]);
   elem_params.set<double>("qout_n" ,(*qout_n )[ele->LID()]);
   elem_params.set<double>("qout_nm",(*qout_nm)[ele->LID()]);
@@ -231,23 +231,23 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
 {
   const int   myrank  = discretization.Comm().MyPID();
 
-  RCP<Epetra_Vector> p0np    = params.get<RCP<Epetra_Vector> >("p0np");
-  RCP<Epetra_Vector> p0n     = params.get<RCP<Epetra_Vector> >("p0n");
-  RCP<Epetra_Vector> p0nm    = params.get<RCP<Epetra_Vector> >("p0nm");
+  Teuchos::RCP<Epetra_Vector> p0np    = params.get<RCP<Epetra_Vector> >("p0np");
+  Teuchos::RCP<Epetra_Vector> p0n     = params.get<RCP<Epetra_Vector> >("p0n");
+  Teuchos::RCP<Epetra_Vector> p0nm    = params.get<RCP<Epetra_Vector> >("p0nm");
 
-  RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
-  RCP<Epetra_Vector> a_bc          = params.get<RCP<Epetra_Vector> >("acini_bc");
+  Teuchos::RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
+  Teuchos::RCP<Epetra_Vector> a_bc          = params.get<RCP<Epetra_Vector> >("acini_bc");
 
-  // REMOVED_FOR_UPGRADE  RCP<Epetra_Vector> a_volume      = params.get<RCP<Epetra_Vector> >("acini_volume");
-  RCP<Epetra_Vector> a_e_volume    = params.get<RCP<Epetra_Vector> >("acini_e_volume");
-  RCP<Epetra_Vector> elemVolume    = params.get<RCP<Epetra_Vector> >("elemVolume");
+  // REMOVED_FOR_UPGRADE  Teuchos::RCP<Epetra_Vector> a_volume      = params.get<RCP<Epetra_Vector> >("acini_volume");
+  Teuchos::RCP<Epetra_Vector> a_e_volume    = params.get<RCP<Epetra_Vector> >("acini_e_volume");
+  Teuchos::RCP<Epetra_Vector> elemVolume    = params.get<RCP<Epetra_Vector> >("elemVolume");
 
   bool solveScatra = params.get<bool>("solveScatra");
 
-  RCP<Epetra_Vector>  junVolMix_Corrector;
-  RCP<Epetra_Vector>  scatranp;
-  RCP<Epetra_Vector>  e1scatranp;
-  RCP<Epetra_Vector>  e2scatranp;
+  Teuchos::RCP<Epetra_Vector>  junVolMix_Corrector;
+  Teuchos::RCP<Epetra_Vector>  scatranp;
+  Teuchos::RCP<Epetra_Vector>  e1scatranp;
+  Teuchos::RCP<Epetra_Vector>  e2scatranp;
   if (solveScatra)
   {
     junVolMix_Corrector  = params.get<RCP<Epetra_Vector> >("junVolMix_Corrector");
@@ -258,7 +258,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
 
   //vector<int> lmowner;
   std::vector<int> lmstride;
-  RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
+  Teuchos::RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
   ele->LocationVector(discretization,lm,*lmowner,lmstride);
 
   // Calculate the length of airway element
@@ -446,7 +446,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   Epetra_SerialDenseMatrix&                sysmat,
   Epetra_SerialDenseVector&                rhs,
   Teuchos::RCP<const MAT::Material>        material,
-  ParameterList &                          params,
+  Teuchos::ParameterList &                          params,
   double                                   time,
   double                                   dt)
 {
@@ -915,7 +915,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
   Epetra_SerialDenseVector&    rhs,
-  RCP<MAT::Material>   material)
+  Teuchos::RCP<MAT::Material>   material)
 {
   const int   myrank  = discretization.Comm().MyPID();
 
@@ -929,9 +929,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
   const int numnode = lm.size();
   std::vector<int>::iterator it_vcr;
 
-  RCP<const Epetra_Vector> pn  = discretization.GetState("pn");
-  RCP<Epetra_Vector> qin_n   = params.get<RCP<Epetra_Vector> >("qin_n");
-  RCP<Epetra_Vector> qout_n   = params.get<RCP<Epetra_Vector> >("qout_n");
+  Teuchos::RCP<const Epetra_Vector> pn  = discretization.GetState("pn");
+  Teuchos::RCP<Epetra_Vector> qin_n   = params.get<RCP<Epetra_Vector> >("qin_n");
+  Teuchos::RCP<Epetra_Vector> qout_n   = params.get<RCP<Epetra_Vector> >("qout_n");
 
   if (pn==Teuchos::null)
     dserror("Cannot get state vectors 'pn'");
@@ -1025,8 +1025,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
         {
           const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
 
-          RCP<Teuchos::ParameterList> CoupledTo3DParams  =
-            params.get<RCP<ParameterList > >("coupling with 3D fluid params");
+          Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams  =
+            params.get<Teuchos::RCP<Teuchos::ParameterList > >("coupling with 3D fluid params");
           // -----------------------------------------------------------------
           // If the parameter list is empty, then something is wrong!
           // -----------------------------------------------------------------
@@ -1061,7 +1061,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           // -----------------------------------------------------------------
 
           int ID = condition->GetInt("ConditionID");
-          RCP<std::map<std::string,double> > map3D;
+          Teuchos::RCP<std::map<std::string,double> > map3D;
           map3D   = CoupledTo3DParams->get<RCP<std::map<std::string,double > > >("3D map of values");
 
           // find the applied boundary variable
@@ -1088,8 +1088,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           Bc  = *(condition->Get<std::string>("phase1"));
 
           // get the smoothness flag of the two different phases
-          std::string phase1Smooth= *(condition->Get<string>("Phase1Smoothness"));
-          std::string phase2Smooth= *(condition->Get<string>("Phase2Smoothness"));
+          std::string phase1Smooth= *(condition->Get<std::string>("Phase1Smoothness"));
+          std::string phase2Smooth= *(condition->Get<std::string>("Phase2Smoothness"));
 
           double period  = condition->GetDouble("period");
           double period1 = condition->GetDouble("phase1_period");
@@ -1181,10 +1181,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
 
         if (Bc == "pressure")
         {
-          RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-          RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+          Teuchos::RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+          Teuchos::RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
 
-          if (bcval==null||dbctog==Teuchos::null)
+          if (bcval==Teuchos::null||dbctog==Teuchos::null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
@@ -1243,10 +1243,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
             exit(1);
           }
 
-          RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-          RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+          Teuchos::RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+          Teuchos::RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
 
-          if (bcval==null||dbctog==Teuchos::null)
+          if (bcval==Teuchos::null||dbctog==Teuchos::null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
@@ -1284,7 +1284,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>   material)
+  Teuchos::RCP<MAT::Material>   material)
 {
   //  const int numnode = iel;
   const int elemVecdim = lm.size() ;
@@ -1303,27 +1303,27 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
 
-  RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
-  RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
-  RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
+  Teuchos::RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  Teuchos::RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
+  Teuchos::RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
 
-  RCP<Epetra_Vector> qin_nm  = params.get<RCP<Epetra_Vector> >("qin_nm");
-  RCP<Epetra_Vector> qin_n   = params.get<RCP<Epetra_Vector> >("qin_n");
-  RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> qin_nm  = params.get<RCP<Epetra_Vector> >("qin_nm");
+  Teuchos::RCP<Epetra_Vector> qin_n   = params.get<RCP<Epetra_Vector> >("qin_n");
+  Teuchos::RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
 
-  RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
-  RCP<Epetra_Vector> qout_n  = params.get<RCP<Epetra_Vector> >("qout_n");
-  RCP<Epetra_Vector> qout_nm = params.get<RCP<Epetra_Vector> >("qout_nm");
+  Teuchos::RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
+  Teuchos::RCP<Epetra_Vector> qout_n  = params.get<RCP<Epetra_Vector> >("qout_n");
+  Teuchos::RCP<Epetra_Vector> qout_nm = params.get<RCP<Epetra_Vector> >("qout_nm");
 
-  RCP<Epetra_Vector> volm_np = params.get<RCP<Epetra_Vector> >("elemVolumenp");
-  RCP<Epetra_Vector> volm_n  = params.get<RCP<Epetra_Vector> >("elemVolumenp");
+  Teuchos::RCP<Epetra_Vector> volm_np = params.get<RCP<Epetra_Vector> >("elemVolumenp");
+  Teuchos::RCP<Epetra_Vector> volm_n  = params.get<RCP<Epetra_Vector> >("elemVolumenp");
 
-  RCP<Epetra_Vector> acinar_vn          = params.get<RCP<Epetra_Vector> >("acinar_vn");
-  RCP<Epetra_Vector> acinar_vnp         = params.get<RCP<Epetra_Vector> >("acinar_vnp");
-  RCP<Epetra_Vector> a_volume_strain_np = params.get<RCP<Epetra_Vector> >("acinar_vnp_strain");
+  Teuchos::RCP<Epetra_Vector> acinar_vn          = params.get<RCP<Epetra_Vector> >("acinar_vn");
+  Teuchos::RCP<Epetra_Vector> acinar_vnp         = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+  Teuchos::RCP<Epetra_Vector> a_volume_strain_np = params.get<RCP<Epetra_Vector> >("acinar_vnp_strain");
 
 
- if (pnp==Teuchos::null || pn==Teuchos::null || pnm==null )
+  if (pnp==Teuchos::null || pn==Teuchos::null || pnm==Teuchos::null )
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // extract local values from the global vectors
@@ -1362,7 +1362,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 
 
   // get the volumetric flow rate from the previous time step
-  ParameterList elem_params;
+  Teuchos::ParameterList elem_params;
   elem_params.set<double>("qout_np",(*qout_np)[ele->LID()]);
   elem_params.set<double>("qout_n" ,(*qout_n )[ele->LID()]);
   elem_params.set<double>("qout_nm",(*qout_nm)[ele->LID()]);
@@ -1423,13 +1423,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcElemVolume(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>           material)
+  Teuchos::RCP<MAT::Material>           material)
 {
   // get all essential vector variables
-  RCP<Epetra_Vector> qin_np      = params.get<RCP<Epetra_Vector> >("qin_np");
-  RCP<Epetra_Vector> qout_np     = params.get<RCP<Epetra_Vector> >("qout_np");
-  RCP<Epetra_Vector> elemVolumen = params.get<RCP<Epetra_Vector> >("elemVolumen");
-  RCP<Epetra_Vector> elemVolumenp= params.get<RCP<Epetra_Vector> >("elemVolumenp");
+  Teuchos::RCP<Epetra_Vector> qin_np      = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> qout_np     = params.get<RCP<Epetra_Vector> >("qout_np");
+  Teuchos::RCP<Epetra_Vector> elemVolumen = params.get<RCP<Epetra_Vector> >("elemVolumen");
+  Teuchos::RCP<Epetra_Vector> elemVolumenp= params.get<RCP<Epetra_Vector> >("elemVolumenp");
 
   // extract all essential element variables from their corresponding variables
   double qinnp       = (*qin_np )[ele->LID()];
@@ -1486,7 +1486,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>   material)
+  Teuchos::RCP<MAT::Material>   material)
 {
   const int   myrank  = discretization.Comm().MyPID();
 
@@ -1500,7 +1500,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
   const int numnode = lm.size();
   std::vector<int>::iterator it_vcr;
 
-  RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  Teuchos::RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
   if (pnp==Teuchos::null)
     dserror("Cannot get state vectors 'pnp'");
@@ -1533,8 +1533,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
       {
 
           const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
-          RCP<Teuchos::ParameterList> CoupledTo3DParams  =
-            params.get<RCP<ParameterList > >("coupling with 3D fluid params");
+          Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams  =
+            params.get<Teuchos::RCP<Teuchos::ParameterList > >("coupling with 3D fluid params");
           // -----------------------------------------------------------------
           // If the parameter list is empty, then something is wrong!
           // -----------------------------------------------------------------
@@ -1567,7 +1567,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
         // -----------------------------------------------------------------
 
         int ID = condition->GetInt("ConditionID");
-        RCP<std::map<std::string,double> >  map1D;
+        Teuchos::RCP<std::map<std::string,double> >  map1D;
         map1D   = CoupledTo3DParams->get<RCP<std::map<std::string,double> > >("reducedD map of values");
 
         std::string returnedBC = *(condition->Get<std::string>("ReturnedVariable"));
@@ -1622,17 +1622,17 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetJunctionVolumeMix(RedAirway*        
                                                               DRT::Discretization&         discretization,
                                                               Epetra_SerialDenseVector&    volumeMix_np,
                                                               std::vector<int>&            lm,
-                                                              RCP<MAT::Material>           material)
+                                                              Teuchos::RCP<MAT::Material>           material)
 {
 // Get flow rate in
-  RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
 
 // Get flow rate out
-  RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
+  Teuchos::RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
 
   // elemVolume
-  RCP<Epetra_Vector> elemVolumenp  = params.get<RCP<Epetra_Vector> >("elemVolumenp");
-//  RCP<const Epetra_Vector> elemVolumenp   = discretization.GetState("elemVolumenp");
+  Teuchos::RCP<Epetra_Vector> elemVolumenp  = params.get<RCP<Epetra_Vector> >("elemVolumenp");
+//  Teuchos::RCP<const Epetra_Vector> elemVolumenp   = discretization.GetState("elemVolumenp");
 
   // get the elements Qin and Qout
   double qoutnp = (*qout_np)[ele->LID()];
@@ -1689,19 +1689,19 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway*                 
                                                      Epetra_SerialDenseVector&    scatranp,
                                                      Epetra_SerialDenseVector&    volumeMix_np,
                                                      std::vector<int>&            lm,
-                                                     RCP<MAT::Material>           material)
+                                                     Teuchos::RCP<MAT::Material>           material)
 {
-  RCP<Epetra_Vector> qin_np   = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> qin_np   = params.get<RCP<Epetra_Vector> >("qin_np");
 
-  RCP<Epetra_Vector> qout_np  = params.get<RCP<Epetra_Vector> >("qout_np");
+  Teuchos::RCP<Epetra_Vector> qout_np  = params.get<RCP<Epetra_Vector> >("qout_np");
 
-  RCP<Epetra_Vector> e1scatran = params.get<RCP<Epetra_Vector> >("e1scatran");
-  RCP<Epetra_Vector> e2scatran = params.get<RCP<Epetra_Vector> >("e2scatran");
+  Teuchos::RCP<Epetra_Vector> e1scatran = params.get<RCP<Epetra_Vector> >("e1scatran");
+  Teuchos::RCP<Epetra_Vector> e2scatran = params.get<RCP<Epetra_Vector> >("e2scatran");
 
-  RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
-  RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
+  Teuchos::RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
+  Teuchos::RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
 
-  RCP<Epetra_Vector> volm_np = params.get<RCP<Epetra_Vector> >("elemVolumenp");
+  Teuchos::RCP<Epetra_Vector> volm_np = params.get<RCP<Epetra_Vector> >("elemVolumenp");
 
   // get the elements Qin and Qout
   double q_out = (*qout_np)[ele->LID()];
@@ -1961,7 +1961,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatraBifurcations(
   Epetra_SerialDenseVector&    scatranp,
   Epetra_SerialDenseVector&    volumeMix_np,
   std::vector<int>&            lm,
-  RCP<MAT::Material>           material)
+  Teuchos::RCP<MAT::Material>           material)
 {
   const int   myrank  = discretization.Comm().MyPID();
 //  if(myrank != ele->Owner())
@@ -1969,16 +1969,16 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatraBifurcations(
 //    return;
 //  }
 
-  RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
 
-  RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
+  Teuchos::RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
 
-  RCP<const Epetra_Vector> scatran  = discretization.GetState("scatranp");
+  Teuchos::RCP<const Epetra_Vector> scatran  = discretization.GetState("scatranp");
 //RCP<Epetra_Vector> scatran = params.get<RCP<Epetra_Vector> >("scatran");
 
-  RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
-  RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
-  RCP<Epetra_Vector> elemVolumenp= params.get<RCP<Epetra_Vector> >("elemVolumenp");
+  Teuchos::RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
+  Teuchos::RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
+  Teuchos::RCP<Epetra_Vector> elemVolumenp= params.get<RCP<Epetra_Vector> >("elemVolumenp");
 
   // get the elements Qin and Qout
   double q_out = (*qout_np)[ele->LID()];
@@ -2048,13 +2048,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>:: CalcCFL(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>           material)
+  Teuchos::RCP<MAT::Material>           material)
 {
-  RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
-  RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
-  RCP<Epetra_Vector> elemVolumenp = params.get<RCP<Epetra_Vector> >("elemVolumenp");
+  Teuchos::RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
+  Teuchos::RCP<Epetra_Vector> elemVolumenp = params.get<RCP<Epetra_Vector> >("elemVolumenp");
 
-  RCP<Epetra_Vector> cfl     = params.get<RCP<Epetra_Vector> >("cfl");
+  Teuchos::RCP<Epetra_Vector> cfl     = params.get<RCP<Epetra_Vector> >("cfl");
 
   // get the elements Qin and Qout
   double q_outnp= (*qout_np)[ele->LID()];
@@ -2105,7 +2105,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateScatra(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>           material)
+  Teuchos::RCP<MAT::Material>           material)
 {
   const int   myrank  = discretization.Comm().MyPID();
 
@@ -2119,13 +2119,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateScatra(
   }
   else
   {
-    RCP<const Epetra_Vector> scatranp    = discretization.GetState("scatranp");
-    RCP<const Epetra_Vector> avgscatranp = discretization.GetState("avg_scatranp");
-    RCP<const Epetra_Vector> dscatranp   = discretization.GetState("dscatranp");
-    RCP<Epetra_Vector> dscatranp_m = params.get<RCP<Epetra_Vector> >("dscatranp");
-    RCP<Epetra_Vector> qin_np      = params.get<RCP<Epetra_Vector> >("qin_np");
-    RCP<Epetra_Vector> e1scatranp  = params.get<RCP<Epetra_Vector> >("e1scatranp");
-    RCP<Epetra_Vector> e2scatranp  = params.get<RCP<Epetra_Vector> >("e2scatranp");
+    Teuchos::RCP<const Epetra_Vector> scatranp    = discretization.GetState("scatranp");
+    Teuchos::RCP<const Epetra_Vector> avgscatranp = discretization.GetState("avg_scatranp");
+    Teuchos::RCP<const Epetra_Vector> dscatranp   = discretization.GetState("dscatranp");
+    Teuchos::RCP<Epetra_Vector> dscatranp_m = params.get<RCP<Epetra_Vector> >("dscatranp");
+    Teuchos::RCP<Epetra_Vector> qin_np      = params.get<RCP<Epetra_Vector> >("qin_np");
+    Teuchos::RCP<Epetra_Vector> e1scatranp  = params.get<RCP<Epetra_Vector> >("e1scatranp");
+    Teuchos::RCP<Epetra_Vector> e2scatranp  = params.get<RCP<Epetra_Vector> >("e2scatranp");
 
     // extract local values from the global vectors
     std::vector<double> mydscatranp(lm.size());
@@ -2177,7 +2177,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateElem12Scatra(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>           material)
+  Teuchos::RCP<MAT::Material>           material)
 {
   // ---------------------------------------------------------------------
   // perform this step only for capillaries
@@ -2189,12 +2189,12 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateElem12Scatra(
   }
 
 
-  RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
-  RCP<const Epetra_Vector> scatranp  = discretization.GetState("scatranp");
-  RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
-  RCP<Epetra_Vector> qin_np     = params.get<RCP<Epetra_Vector> >("qin_np");
-  RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
-  RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
+  Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
+  Teuchos::RCP<const Epetra_Vector> scatranp  = discretization.GetState("scatranp");
+  Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
+  Teuchos::RCP<Epetra_Vector> qin_np     = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
+  Teuchos::RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
 
   // extract local values from the global vectors
   std::vector<double> mydscatranp(lm.size());
@@ -2230,15 +2230,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>           material)
+  Teuchos::RCP<MAT::Material>           material)
 {
   const int   myrank  = discretization.Comm().MyPID();
 
   // get Po2 vector
-  RCP<Epetra_Vector> po2     = params.get<RCP<Epetra_Vector> >("PO2");
-  RCP<Epetra_Vector> elemVolumenp= params.get<RCP<Epetra_Vector> >("elemVolumenp");
+  Teuchos::RCP<Epetra_Vector> po2     = params.get<RCP<Epetra_Vector> >("PO2");
+  Teuchos::RCP<Epetra_Vector> elemVolumenp= params.get<RCP<Epetra_Vector> >("elemVolumenp");
   // get Po2 vector
-  RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
+  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
 
   // -------------------------------------------------------------------
   // extract scatra values
@@ -2403,7 +2403,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalNodalEssentialValues(
   Epetra_SerialDenseVector&    nodal_volume,
   Epetra_SerialDenseVector&    nodal_avg_scatra,
   std::vector<int>&            lm,
-  RCP<MAT::Material>           material)
+  Teuchos::RCP<MAT::Material>           material)
 {
   // ---------------------------------------------------------------------
   // perform this step only for capillaries
@@ -2417,13 +2417,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalNodalEssentialValues(
   // get time-step size
   const double dt = params.get<double>("time step size");
 
-  RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qnp");
-  RCP<Epetra_Vector> elemVolumenp  = params.get<RCP<Epetra_Vector> >("elemVolumenp");
+  Teuchos::RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qnp");
+  Teuchos::RCP<Epetra_Vector> elemVolumenp  = params.get<RCP<Epetra_Vector> >("elemVolumenp");
 
   // ---------------------------------------------------------------------
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
-  RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
+  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
 
   // ---------------------------------------------------------------------
   // extract scatra values
@@ -2496,7 +2496,7 @@ bool DRT::ELEMENTS::AirwayImpl<distype>::GetCurveValAtCond(
   {
     DRT::Condition * condition = node->GetCondition(condName);
     // Get the type of prescribed bc
-    std::string Bc = *(condition->Get<string>(optionName));
+    std::string Bc = *(condition->Get<std::string>(optionName));
     if (Bc == condType)
     {
 

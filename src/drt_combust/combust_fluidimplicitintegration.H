@@ -425,7 +425,7 @@ public:
 
   create
 
-  map< label, std::set<DRT::Node*> >
+  std::map< label, std::set<DRT::Node*> >
 
   which is a set of nodes to each L&D Id
   nodal forces of all the nodes within one set are added to one L&D force

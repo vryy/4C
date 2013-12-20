@@ -63,7 +63,7 @@ Maintainer: Mahmoud Ismail
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
 
-using namespace Teuchos;
+
 using namespace MLAPI;
 
 // forward declarations
@@ -115,19 +115,19 @@ public:
   \brief start time loop for startingalgo, normal problems and restarts
 
   */
-  void Integrate(bool CoupledTo3D, RCP<Teuchos::ParameterList> CouplingParams);
+  void Integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
 
   /*!
   \brief Do time integration (time loop)
 
   */
-  void TimeLoop(bool CoupledTo3D, RCP<Teuchos::ParameterList> CouplingParams);
+  void TimeLoop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
 
   /*!
   \brief Do one step time integration (time loop)
 
   */
-  void OneStepTimeLoop(bool CoupledTo3D = false, RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
+  void OneStepTimeLoop(bool CoupledTo3D = false, Teuchos::RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
 
 
   /*!
@@ -180,7 +180,7 @@ public:
 
   */
   void Output  (bool               CoupledTo3D = false,
-                RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
+                Teuchos::RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
 
   /*!
   \brief Assembling of the RHS Vector and the LHS Matrix
@@ -270,9 +270,9 @@ protected:
 
   //! @name general algorithm parameters
   //! reduced dimensional airway network discretization
-  RCP<DRT::Discretization>      discret_;
+  Teuchos::RCP<DRT::Discretization>      discret_;
   LINALG::Solver&               solver_;
-  ParameterList                 params_;
+  Teuchos::ParameterList                 params_;
   IO::DiscretizationWriter&     output_;
   //! the processor ID from the communicator
   int                           myrank_;
@@ -308,113 +308,113 @@ protected:
   double  dtsolve_;
 
   /// (standard) mass matrix
-  RCP<LINALG::SparseOperator> massmat_;
+  Teuchos::RCP<LINALG::SparseOperator> massmat_;
 
   /// (standard) system matrix
-  RCP<LINALG::SparseOperator> sysmat_;
+  Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
   /// maps for extracting Dirichlet and free DOF sets
-  RCP<LINALG::MapExtractor>   dbcmaps_;
+  Teuchos::RCP<LINALG::MapExtractor>   dbcmaps_;
 
   /// rhs: right hand side vector
-  RCP<Epetra_Vector>  rhs_;
+  Teuchos::RCP<Epetra_Vector>  rhs_;
 
 
   //! @name pressures at time n+1, n and n-1
-  RCP<Epetra_Vector>          pnp_;
-  RCP<Epetra_Vector>          pn_;
-  RCP<Epetra_Vector>          pnm_;
-  RCP<Epetra_Vector>          p_nonlin_;
+  Teuchos::RCP<Epetra_Vector>          pnp_;
+  Teuchos::RCP<Epetra_Vector>          pn_;
+  Teuchos::RCP<Epetra_Vector>          pnm_;
+  Teuchos::RCP<Epetra_Vector>          p_nonlin_;
 
-  RCP<Epetra_Vector>          sysmat_iad_;
+  Teuchos::RCP<Epetra_Vector>          sysmat_iad_;
   //@}
 
   //! @name inlet volumetric flow rates at time n+1, n and n-1
-  RCP<Epetra_Vector>          qin_np_;
-  RCP<Epetra_Vector>          qin_n_;
-  RCP<Epetra_Vector>          qin_nm_;
+  Teuchos::RCP<Epetra_Vector>          qin_np_;
+  Teuchos::RCP<Epetra_Vector>          qin_n_;
+  Teuchos::RCP<Epetra_Vector>          qin_nm_;
 
-  RCP<Epetra_Vector>          qi_nl_np_;
+  Teuchos::RCP<Epetra_Vector>          qi_nl_np_;
   //@}
 
   //! @name outlet volumetric flow rates at time n+1, n and n-1
-  RCP<Epetra_Vector>          qout_np_;
-  RCP<Epetra_Vector>          qout_n_;
-  RCP<Epetra_Vector>          qout_nm_;
+  Teuchos::RCP<Epetra_Vector>          qout_np_;
+  Teuchos::RCP<Epetra_Vector>          qout_n_;
+  Teuchos::RCP<Epetra_Vector>          qout_nm_;
 
-  RCP<Epetra_Vector>          qo_nl_np_;
+  Teuchos::RCP<Epetra_Vector>          qo_nl_np_;
 
-  RCP<Epetra_Vector>          qexp_;
-  RCP<Epetra_Vector>          pexp_;
+  Teuchos::RCP<Epetra_Vector>          qexp_;
+  Teuchos::RCP<Epetra_Vector>          pexp_;
   //@}
 
   //! @name element volume at time n+1, n and n-1
-  RCP<Epetra_Vector>          elemVolumenp_;
-  RCP<Epetra_Vector>          elemVolumen_;
-  RCP<Epetra_Vector>          elemVolumenm_;
-  RCP<Epetra_Vector>          elemVolume0_;
+  Teuchos::RCP<Epetra_Vector>          elemVolumenp_;
+  Teuchos::RCP<Epetra_Vector>          elemVolumen_;
+  Teuchos::RCP<Epetra_Vector>          elemVolumenm_;
+  Teuchos::RCP<Epetra_Vector>          elemVolume0_;
 
   //@}
   //! @name node Id vector
-  RCP<Epetra_Vector>          nodeIds_;
+  Teuchos::RCP<Epetra_Vector>          nodeIds_;
   //@}
 
   //! @name radii vector
-  RCP<Epetra_Vector>          radii_;
+  Teuchos::RCP<Epetra_Vector>          radii_;
   //@}
 
   //! @name generations vector
-  RCP<Epetra_Vector>          generations_;
+  Teuchos::RCP<Epetra_Vector>          generations_;
   //@}
 
   //! @name Dirichlet boundary condition vectors
-  RCP<Epetra_Vector>          bcval_;
-  RCP<Epetra_Vector>          dbctog_;
-  RCP<Epetra_Vector>          acini_bc_;
+  Teuchos::RCP<Epetra_Vector>          bcval_;
+  Teuchos::RCP<Epetra_Vector>          dbctog_;
+  Teuchos::RCP<Epetra_Vector>          acini_bc_;
 
   //! @name acinar elementel values
-  RCP<Epetra_Vector>          acini_e_volume0_;
-  RCP<Epetra_Vector>          acini_e_volumenm_;
-  RCP<Epetra_Vector>          acini_e_volumen_;
-  RCP<Epetra_Vector>          acini_e_volumenp_;
-  RCP<Epetra_Vector>          acini_e_volume_strain_;
+  Teuchos::RCP<Epetra_Vector>          acini_e_volume0_;
+  Teuchos::RCP<Epetra_Vector>          acini_e_volumenm_;
+  Teuchos::RCP<Epetra_Vector>          acini_e_volumen_;
+  Teuchos::RCP<Epetra_Vector>          acini_e_volumenp_;
+  Teuchos::RCP<Epetra_Vector>          acini_e_volume_strain_;
 
   //@}
 
   //! @name sclar transport variables inside airways
-  RCP<Epetra_Vector>          scatraO2nm_;
-  RCP<Epetra_Vector>          e1scatraO2nm_;
-  RCP<Epetra_Vector>          e2scatraO2nm_;
-  RCP<Epetra_Vector>          scatraO2n_;
-  RCP<Epetra_Vector>          e1scatraO2n_;
-  RCP<Epetra_Vector>          e2scatraO2n_;
-  RCP<Epetra_Vector>          scatraO2np_;
-  RCP<Epetra_Vector>          e1scatraO2np_;
-  RCP<Epetra_Vector>          e2scatraO2np_;
-  RCP<Epetra_Vector>          dscatraO2_;
-  RCP<Epetra_Vector>          dVolumeO2_;
-  RCP<Epetra_Vector>          acinarDO2_;
+  Teuchos::RCP<Epetra_Vector>          scatraO2nm_;
+  Teuchos::RCP<Epetra_Vector>          e1scatraO2nm_;
+  Teuchos::RCP<Epetra_Vector>          e2scatraO2nm_;
+  Teuchos::RCP<Epetra_Vector>          scatraO2n_;
+  Teuchos::RCP<Epetra_Vector>          e1scatraO2n_;
+  Teuchos::RCP<Epetra_Vector>          e2scatraO2n_;
+  Teuchos::RCP<Epetra_Vector>          scatraO2np_;
+  Teuchos::RCP<Epetra_Vector>          e1scatraO2np_;
+  Teuchos::RCP<Epetra_Vector>          e2scatraO2np_;
+  Teuchos::RCP<Epetra_Vector>          dscatraO2_;
+  Teuchos::RCP<Epetra_Vector>          dVolumeO2_;
+  Teuchos::RCP<Epetra_Vector>          acinarDO2_;
 
-  RCP<Epetra_Vector>          scatraCO2nm_;
-  RCP<Epetra_Vector>          scatraCO2n_;
-  RCP<Epetra_Vector>          scatraCO2np_;
+  Teuchos::RCP<Epetra_Vector>          scatraCO2nm_;
+  Teuchos::RCP<Epetra_Vector>          scatraCO2n_;
+  Teuchos::RCP<Epetra_Vector>          scatraCO2np_;
 
-  RCP<Epetra_Vector>          junctionVolumeInMix_;
-  RCP<Epetra_Vector>          jVDofRowMix_;
-  RCP<Epetra_Vector>          junVolMix_Corrector_;
-  RCP<Epetra_Vector>          diffusionArea_;
-  RCP<Epetra_Vector>          cfls_;
+  Teuchos::RCP<Epetra_Vector>          junctionVolumeInMix_;
+  Teuchos::RCP<Epetra_Vector>          jVDofRowMix_;
+  Teuchos::RCP<Epetra_Vector>          junVolMix_Corrector_;
+  Teuchos::RCP<Epetra_Vector>          diffusionArea_;
+  Teuchos::RCP<Epetra_Vector>          cfls_;
 
   bool                        solveScatra_;
   //@}
 
   //! Error vector that shows the convergenece of the nonlinear problem
-  RCP<Epetra_Vector>          residual_;
-  RCP<Epetra_Vector>          bc_residual_;
+  Teuchos::RCP<Epetra_Vector>          residual_;
+  Teuchos::RCP<Epetra_Vector>          bc_residual_;
   //@}
 
   //! connection between master and slave nodes on this proc
-  RCP<map<int,std::vector<int> > >     pbcmapmastertoslave_;
+  Teuchos::RCP<map<int,std::vector<int> > >     pbcmapmastertoslave_;
   //@}
 
   //!

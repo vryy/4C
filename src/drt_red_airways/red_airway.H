@@ -14,7 +14,7 @@ Maintainer: Mahmoud Ismail
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
-using namespace Teuchos;
+
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_parobjectfactory.H"
@@ -428,7 +428,7 @@ private:
 
 
   // data
-  map<std::string, double>                        elemParams_;
+  std::map<std::string, double>                   elemParams_;
 
 
   // element tree generation
@@ -824,7 +824,7 @@ private:
 
 
   // data
-  map<std::string, double>                        elemParams_;
+  std::map<std::string, double>                   elemParams_;
 
 
   // element tree generation
@@ -1208,7 +1208,7 @@ private:
   DRT::Container                                  data_;
 
   // data
-  map<std::string, double>                        elemParams_;
+  std::map<std::string, double>                        elemParams_;
 
   // element tree generation
   int                                             generation_;
@@ -1249,8 +1249,8 @@ public:
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -1427,7 +1427,7 @@ public:
                       key names of data it wants to visualize and with int dimensions
                       of that data.
   */
-  virtual void VisNames(std::map<string,int>& names);
+  virtual void VisNames(std::map<std::string,int>& names);
 
   /*!
   \brief Query data to be visualized using BINIO of a given name
@@ -1443,7 +1443,7 @@ public:
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if element recognizes the name
   */
-  virtual bool VisData(const string& name, std::vector<double>& data);
+  virtual bool VisData(const std::string& name, std::vector<double>& data);
 
 
   //! @name Input and Creation
@@ -1587,7 +1587,7 @@ private:
   DRT::Container                                  data_;
 
   // data
-  map<std::string, double>                        elemParams_;
+  std::map<std::string, double>                        elemParams_;
 
   // element tree generation
   int                                             generation_;
@@ -1627,8 +1627,8 @@ public:
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -1815,7 +1815,7 @@ public:
                       key names of data it wants to visualize and with int dimensions
                       of that data.
   */
-  virtual void VisNames(std::map<string,int>& names);
+  virtual void VisNames(std::map<std::string,int>& names);
 
   /*!
   \brief Query data to be visualized using BINIO of a given name
@@ -1831,7 +1831,7 @@ public:
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if element recognizes the name
   */
-  virtual bool VisData(const string& name, std::vector<double>& data);
+  virtual bool VisData(const std::string& name, std::vector<double>& data);
 
 
   //! @name Input and Creation
@@ -1975,7 +1975,7 @@ private:
   DRT::Container                                  data_;
 
   // data
-  map<std::string, double>                        elemParams_;
+  std::map<std::string, double>                        elemParams_;
 
   // element tree generation
   int                                             generation_;

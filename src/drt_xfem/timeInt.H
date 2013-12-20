@@ -896,7 +896,7 @@ protected:
     LINALG::Matrix<2*nsd,2*numnode> dummy2(true); // just needed for function call so just one for vel and pres
 
     // create an element dof manager
-    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty; // ansatz map needed for eledofman
+    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty; // ansatz map needed for eledofman
     Teuchos::RCP<XFEM::ElementDofManager> eleDofManager = Teuchos::rcp(new XFEM::ElementDofManager(*element,element_ansatz_empty,*dofman));
 
     // the enrichment functions may depend on the point

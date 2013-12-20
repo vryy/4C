@@ -352,7 +352,7 @@ void STR::GenInvAnalysis::Integrate()
         for (int j=0; j<nmp_;j++)
           cmatrix(j,i) = cvector[j];
 
-      ParameterList p;
+      Teuchos::ParameterList p;
       p.set("action","calc_struct_reset_all");
       discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
     }
@@ -516,7 +516,7 @@ void STR::GenInvAnalysis::NPIntegrate()
       }
 
       // reset discretization to blank
-      ParameterList p;
+      Teuchos::ParameterList p;
       p.set("action","calc_struct_reset_all");
       discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
     } //--------------------------------------------------------------------------------

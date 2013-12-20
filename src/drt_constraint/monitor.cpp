@@ -73,7 +73,7 @@ UTILS::Monitor::MoniType UTILS::Monitor::GetMoniType(const std::string& name)
 *-----------------------------------------------------------------------*/
 void UTILS::Monitor::Evaluate(
     Teuchos::ParameterList&        params,
-    RCP<Epetra_Vector>    systemvector)
+    Teuchos::RCP<Epetra_Vector>    systemvector)
 {
   switch (montype_)
   {
@@ -104,7 +104,7 @@ void UTILS::Monitor::Evaluate(
 void UTILS::Monitor::EvaluateMonitor
 (
   Teuchos::ParameterList&        params,
-  RCP<Epetra_Vector>    systemvector
+  Teuchos::RCP<Epetra_Vector>    systemvector
 )
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
@@ -168,7 +168,7 @@ void UTILS::Monitor::EvaluateMonitor
 void UTILS::Monitor::SetState
 (
   const std::string& state,  ///< name of state to set
-  RCP<Epetra_Vector> V  ///< values to set
+  Teuchos::RCP<Epetra_Vector> V  ///< values to set
 )
 {
   actdisc_->SetState(state,V);

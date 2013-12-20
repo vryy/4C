@@ -218,7 +218,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   // Initialize all the arteries' cross-sectional areas to the initial crossectional area Ao
   // and the volumetric flow rate to 0
   // ---------------------------------------------------------------------------------------
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // loop all elements and initialize all of the values
 
@@ -291,7 +291,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
     std::vector<int> lm;
     std::vector<int> lmstride;
     //vector<int> lmowner;
-    RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
+    Teuchos::RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
     ele->LocationVector(*discret_,lm,*lmowner,lmstride);
 
     // loop all nodes of this element, add values to the global vectors
@@ -327,7 +327,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::Integrate()
 {
-  RCP<Teuchos::ParameterList> param;
+  Teuchos::RCP<Teuchos::ParameterList> param;
   Integrate(false, param);
 } //RedAirwayImplicitTimeInt::Integrate()
 
@@ -343,7 +343,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::Integrate(bool CoupledTo3D,
-                                                 RCP<Teuchos::ParameterList> CouplingParams)
+                                                 Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   coupledTo3D_ = CoupledTo3D;
   if (CoupledTo3D && CouplingParams.get() == NULL)
@@ -356,7 +356,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate(bool CoupledTo3D,
   // print the results of time measurements
   if (!coupledTo3D_)
   {
-    TimeMonitor::summarize();
+    Teuchos::TimeMonitor::summarize();
   }
 
   return;
@@ -374,7 +374,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate(bool CoupledTo3D,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
-                                                RCP<Teuchos::ParameterList> CouplingTo3DParams)
+                                                Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
   // time measurement: time loop
@@ -409,7 +409,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
-                                                RCP<Teuchos::ParameterList> CouplingTo3DParams)
+                                                Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
 
@@ -698,7 +698,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
 
 
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","calc_sys_matrix_rhs");
@@ -771,7 +771,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
 
     {
       std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
-      RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+      Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
       if (A_debug != Teuchos::null)
       {
         // print to screen
@@ -784,7 +784,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
   }
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","calc_sys_matrix_rhs_iad");
@@ -803,7 +803,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
 
     {
       std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
-      RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+      Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
       if (A_debug != Teuchos::null)
       {
         // print to screen
@@ -825,7 +825,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
   // Solve terminal BCs
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","set_bc");
@@ -897,7 +897,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
 
     {
       std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
-      RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+      Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
       if (A_debug != Teuchos::null)
       {
         // print to screen
@@ -922,7 +922,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
 
 #if 0 // Exporting some values for debugging purposes
 
-    RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+    Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
     if (A_debug != Teuchos::null)
     {
       // print to screen
@@ -951,7 +951,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
   // find the flow rates
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","calc_flow_rates");
@@ -993,7 +993,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
   // find the element volume
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","calc_elem_volumes");
@@ -1020,7 +1020,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
   if(coupledTo3D_)
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","get_coupled_values");
@@ -1073,7 +1073,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
   double cflmax = 0.0;
   {
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   // action for elements
   eleparams.set("action","calc_cfl");
   eleparams.set("time step size",dta_);
@@ -1103,7 +1103,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
   //---------------------------------------------------------------------
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     // action for elements
     eleparams.set("action","get_junction_volume_mix");
     eleparams.set("time step size",dta_);
@@ -1134,7 +1134,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
     e1scatraO2np_->PutScalar(0.0);
     e2scatraO2np_->PutScalar(0.0);
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
   // action for elements
     eleparams.set("action","solve_scatra");
     eleparams.set("time step size",dta_);
@@ -1190,7 +1190,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
   //---------------------------------------------------------------------
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
   // action for elements
     eleparams.set("action","solve_junction_scatra");
     eleparams.set("time step size",dta_);
@@ -1229,7 +1229,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
 
   {
     // get the diffusion surfaces at the acini
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     eleparams.set("action","eval_nodal_essential_values");
 
     // set vector values of flow rates
@@ -1247,7 +1247,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
   // evaluate the transport of O2 between air and blood
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     // action for elements
     eleparams.set("action","solve_blood_air_transport");
     eleparams.set("time step size",dta_);
@@ -1271,7 +1271,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
   //---------------------------------------------------------------------
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     // action for elements
     eleparams.set("action","update_scatra");
 
@@ -1294,7 +1294,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
   //---------------------------------------------------------------------
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     // action for elements
     eleparams.set("action","update_elem12_scatra");
 
@@ -1415,7 +1415,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
-                                              RCP<Teuchos::ParameterList> CouplingParams)
+                                              Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   int step      = 0;
   int upres     = 0;
@@ -1451,7 +1451,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
       {
         // Export PO2
         // create the parameters for the discretization
-        ParameterList eleparams;
+        Teuchos::ParameterList eleparams;
         // action for elements
         eleparams.set("elemVolumenp",elemVolumenp_);
         eleparams.set("action","eval_PO2_from_concentration");
@@ -1470,7 +1470,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
       // Export acinar PO2
       {
         // create the parameters for the discretization
-        ParameterList eleparams;
+        Teuchos::ParameterList eleparams;
         // action for elements
         eleparams.set("elemVolumenp",elemVolumenp_);
         eleparams.set("action","eval_PO2_from_concentration");
@@ -1846,7 +1846,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
     rhs_->PutScalar(0.0);
 
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","calc_sys_matrix_rhs");
@@ -1913,7 +1913,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
   }
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","calc_sys_matrix_rhs_iad");
@@ -1932,7 +1932,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
 
     {
       std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
-      RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+      Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
       if (A_debug != Teuchos::null)
       {
         // print to screen
@@ -1952,7 +1952,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
   // Solve terminal BCs
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","set_bc");

@@ -85,7 +85,7 @@ void STR::TimIntExpl::ApplyForceExternal
   Teuchos::RCP<Epetra_Vector>& fext  //!< external force
 )
 {
-  ParameterList p;
+  Teuchos::ParameterList p;
   // other parameters needed by the elements
   p.set("total time", time);
 

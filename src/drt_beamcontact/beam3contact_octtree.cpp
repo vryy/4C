@@ -41,7 +41,7 @@ Maintainer: Kei Müller
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/11|
  *----------------------------------------------------------------------*/
-Beam3ContactOctTree::Beam3ContactOctTree(ParameterList& params, DRT::Discretization& discret,DRT::Discretization& searchdis, const int& dofoffset):
+Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params, DRT::Discretization& discret,DRT::Discretization& searchdis, const int& dofoffset):
 discret_(discret),
 searchdis_(searchdis),
 basisnodes_(discret.NumGlobalNodes()),
@@ -1673,7 +1673,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
     }
 
     // add to pair vector
-    contactpairs->push_back(rcp (new Beam3contact(discret_,searchdis_,dofoffset_,tempele1,tempele2,ele1pos,ele2pos)));
+    contactpairs->push_back(Teuchos::rcp (new Beam3contact(discret_,searchdis_,dofoffset_,tempele1,tempele2,ele1pos,ele2pos)));
   }
   //if(!discret_.Comm().MyPID())
     //std::cout<<"number of boxes: "<<counter<<std::endl;

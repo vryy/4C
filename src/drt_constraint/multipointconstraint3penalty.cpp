@@ -29,7 +29,7 @@
  *----------------------------------------------------------------------*/
 UTILS::MPConstraint3Penalty::MPConstraint3Penalty
 (
-    RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
+    Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
     const std::string& CondName ///< Name of condition to create constraint from
 ):
 MPConstraint
@@ -61,14 +61,14 @@ MPConstraint
     constraintdis_=CreateDiscretizationFromCondition
         (actdisc_,constrcond_,"ConstrDisc","CONSTRELE3",startID);
 
-    std::map<int, RCP<DRT::Discretization> > ::iterator discriter;
+    std::map<int, Teuchos::RCP<DRT::Discretization> > ::iterator discriter;
     for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
     {
-      RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(actdisc_, discriter->second);
+      Teuchos::RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(actdisc_, discriter->second);
       actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
-      RCP<DRT::DofSet> newdofset=Teuchos::rcp(new DRT::TransparentDofSet(actdisc_));
+      Teuchos::RCP<DRT::DofSet> newdofset=Teuchos::rcp(new DRT::TransparentDofSet(actdisc_));
       (discriter->second)->ReplaceDofSet(newdofset);
-      newdofset=null;
+      newdofset=Teuchos::null;
       (discriter->second)->FillComplete();
     }
     
@@ -119,7 +119,7 @@ void UTILS::MPConstraint3Penalty::Initialize(const double& time)
 void UTILS::MPConstraint3Penalty::Initialize
 (
   Teuchos::ParameterList& params,
-  RCP<Epetra_Vector> systemvector
+  Teuchos::RCP<Epetra_Vector> systemvector
 )
 {
   dserror("method not used for penalty formulation!");
@@ -170,11 +170,11 @@ void UTILS::MPConstraint3Penalty::Initialize
 void UTILS::MPConstraint3Penalty::Evaluate
 ( 
     Teuchos::ParameterList& params, 
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
-    RCP<Epetra_Vector> systemvector1, 
-    RCP<Epetra_Vector> systemvector2, 
-    RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, 
+    Teuchos::RCP<Epetra_Vector> systemvector2, 
+    Teuchos::RCP<Epetra_Vector> systemvector3)
 {
 
   switch (Type())
@@ -190,7 +190,7 @@ void UTILS::MPConstraint3Penalty::Evaluate
   }
   
   acterror_->Scale(0.0);
-  std::map<int, RCP<DRT::Discretization> > ::iterator discriter;
+  std::map<int, Teuchos::RCP<DRT::Discretization> > ::iterator discriter;
   for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
     
     EvaluateError(discriter->second, params, acterror_);
@@ -216,9 +216,9 @@ void UTILS::MPConstraint3Penalty::Evaluate
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretizationFromCondition
+std::map<int, Teuchos::RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretizationFromCondition
 (
-    RCP<DRT::Discretization> actdisc, 
+    Teuchos::RCP<DRT::Discretization> actdisc, 
     std::vector<DRT::Condition*> constrcondvec,
     const std::string& discret_name, 
     const std::string& element_name,
@@ -226,7 +226,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
 )
 {
   // start with empty map
-  std::map<int, RCP<DRT::Discretization> > newdiscmap;
+  std::map<int, Teuchos::RCP<DRT::Discretization> > newdiscmap;
 
   if (!actdisc->Filled())
   {
@@ -243,8 +243,8 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
     for (conditer=constrcondvec.begin();conditer!=constrcondvec.end();conditer++)
     {
       // initialize a new discretization
-      RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
-      RCP<DRT::Discretization> newdis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
+      Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
+      Teuchos::RCP<DRT::Discretization> newdis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
       const int myrank = newdis->Comm().MyPID();
       std::set<int> rownodeset;
       std::set<int> colnodeset;
@@ -311,7 +311,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
 
         if (myrank == 0)
         {
-          RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name,"Polynomial", nodeiter+startID, myrank);
+          Teuchos::RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name,"Polynomial", nodeiter+startID, myrank);
           // set the same global node ids to the ale element
           constraintele->SetNodeIds(ngid_ele.size(), &(ngid_ele[0]));
           // add constraint element
@@ -331,7 +331,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
       //build unique node row map
       std::vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
       rownodeset.clear();
-      RCP<Epetra_Map> constraintnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
+      Teuchos::RCP<Epetra_Map> constraintnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
               boundarynoderowvec.size(),
               &boundarynoderowvec[0],
               0,
@@ -341,7 +341,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
       //build overlapping node column map
       std::vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
       colnodeset.clear();
-      RCP<Epetra_Map> constraintnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
+      Teuchos::RCP<Epetra_Map> constraintnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
               constraintnodecolvec.size(),
               &constraintnodecolvec[0],
               0,
@@ -363,13 +363,13 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
  *----------------------------------------------------------------------*/
 void UTILS::MPConstraint3Penalty::EvaluateConstraint
 (
-    RCP<DRT::Discretization> disc,
+    Teuchos::RCP<DRT::Discretization> disc,
     Teuchos::ParameterList& params, 
-    RCP<LINALG::SparseOperator> systemmatrix1, 
-    RCP<LINALG::SparseOperator> systemmatrix2,
-    RCP<Epetra_Vector> systemvector1, 
-    RCP<Epetra_Vector> systemvector2, 
-    RCP<Epetra_Vector> systemvector3
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, 
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, 
+    Teuchos::RCP<Epetra_Vector> systemvector2, 
+    Teuchos::RCP<Epetra_Vector> systemvector3
 )
 {
 
@@ -398,7 +398,7 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
       int eid=actele->Id();
       int condID = eletocondID_.find(eid)->second;
       DRT::Condition* cond=constrcond_[eletocondvecindex_.find(eid)->second];
-      params.set< RCP<DRT::Condition> >("condition", Teuchos::rcp(cond,false));
+      params.set< Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(cond,false));
 
       // computation only if time is larger or equal than initialization time for constraint
       if(inittimes_.find(condID)->second<=time)
@@ -407,11 +407,11 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
         if(activecons_.find(condID)->second==false)
         {
           const std::string action = params.get<std::string>("action");
-          RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
+          Teuchos::RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
           SetConstrState("displacement",displast);
           // last converged step is used reference
           Initialize(params);
-          RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
+          Teuchos::RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
           SetConstrState("displacement",disp);
           params.set("action",action);
         }
@@ -464,9 +464,9 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
  *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint3Penalty::EvaluateError
 (
-    RCP<DRT::Discretization> disc,
+    Teuchos::RCP<DRT::Discretization> disc,
     Teuchos::ParameterList& params, 
-    RCP<Epetra_Vector> systemvector,
+    Teuchos::RCP<Epetra_Vector> systemvector,
     bool init
 )
 {
@@ -491,7 +491,7 @@ void UTILS::MPConstraint3Penalty::EvaluateError
       int eid=actele->Id();
       int condID = eletocondID_.find(eid)->second;
       DRT::Condition* cond=constrcond_[eletocondvecindex_.find(eid)->second];
-      params.set< RCP<DRT::Condition> >("condition", Teuchos::rcp(cond,false));
+      params.set< Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(cond,false));
 
       // get element location vector, dirichlet flags and ownerships
       std::vector<int> lm;
@@ -528,7 +528,7 @@ void UTILS::MPConstraint3Penalty::EvaluateError
       }
     }
     
-    RCP<Epetra_Vector> acterrdist = Teuchos::rcp(new Epetra_Vector(*errormap_));
+    Teuchos::RCP<Epetra_Vector> acterrdist = Teuchos::rcp(new Epetra_Vector(*errormap_));
     acterrdist->Export(*systemvector,*errorexport_,Add);
     systemvector->Import(*acterrdist,*errorimport_,Insert);
     return;

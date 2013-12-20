@@ -82,7 +82,7 @@ public:
   //friend void StatMechManager::AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret, bool addinitlinks);
   //friend void StatMechTime::Integrate();
   //friend void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element);
-  //friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
+  //friend StatMechTime::StatMechTime(Teuchos::ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
 
 
   //! @name Constructors and destructors and related methods

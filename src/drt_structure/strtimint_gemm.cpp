@@ -474,7 +474,7 @@ void STR::TimIntGEMM::UpdateStepState()
 void STR::TimIntGEMM::UpdateStepElement()
 {
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   // other parameters that might be needed by the elements
   p.set("total time", timen_);
   //p.set("delta time", (*dt_)[0]);
@@ -505,7 +505,7 @@ void STR::TimIntGEMM::ApplyForceStiffInternalMid
   // *********** time measurement ***********
 
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   // action for elements
   const std::string action = "calc_struct_nlnstiff_gemm";
   p.set("action", action);

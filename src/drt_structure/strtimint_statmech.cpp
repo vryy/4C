@@ -483,7 +483,7 @@ void STR::TimIntStatMech::ApplyDirichletBC(const double                time,
                                            Teuchos::RCP<Epetra_Vector> vel)
 {
   // needed parameters
-  ParameterList p;
+  Teuchos::ParameterList p;
   p.set("total time", time);  // target time (i.e. timen_)
   p.set("delta time", (*dt_)[0]);
 
@@ -598,7 +598,7 @@ void STR::TimIntStatMech::ApplyForceExternal(const double                       
                                              Teuchos::RCP<Epetra_Vector>&          fext,
                                              Teuchos::RCP<LINALG::SparseOperator>& fextlin)
 {
-  ParameterList p;
+  Teuchos::ParameterList p;
   // other parameters needed by the elements
   p.set("total time", time);
 
@@ -853,7 +853,7 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
     // time 1-alphaf in a TR fashion
 //    if (loadlin)
 //    {
-//      ParameterList p;
+//      Teuchos::ParameterList p;
 //      // action for elements
 //      p.set("action","calc_struct_eleload");
 //      // other parameters needed by the elements
@@ -881,7 +881,7 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
       // zero out stiffness
       stiff_->Zero();
       // create the parameters for the discretization
-      ParameterList p;
+      Teuchos::ParameterList p;
       // action for elements
       p.set("action","calc_struct_nlnstiff");
       // other parameters that might be needed by the elements
@@ -1082,7 +1082,7 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
 //  if (updevrystress and !(istep%updevrystress) and iostress!=INPAR::STR::stress_none)
 //  {
 //    // create the parameters for the discretization
-//    ParameterList p;
+//    Teuchos::ParameterList p;
 //    // action for elements
 //    p.set("action","calc_struct_stress");
 //    // other parameters that might be needed by the elements
@@ -1312,7 +1312,7 @@ void STR::TimIntStatMech::PTCBrownianForcesAndDamping(double& dt, double& crotpt
 {
   const double t_ptc = Teuchos::Time::wallTime();
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
 
   p.set("action","calc_struct_ptcstiff");
   p.set("delta time",dt);
@@ -1760,7 +1760,7 @@ void STR::TimIntStatMech::StatMechRestoreConvState()
   {
     if(!isconverged_)
     {
-      ParameterList p;
+      Teuchos::ParameterList p;
       p.set("action","calc_struct_reset_istep");
       discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
       statmechman_->RestoreConv(stiff_, beamcman_);

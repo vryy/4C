@@ -1169,7 +1169,7 @@ void FSI::MortarMonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixB
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>
-FSI::MortarMonolithicFluidSplit::CreateLinearSystem(ParameterList& nlParams,
+FSI::MortarMonolithicFluidSplit::CreateLinearSystem(Teuchos::ParameterList& nlParams,
                                            NOX::Epetra::Vector& noxSoln,
                                            Teuchos::RCP<NOX::Utils> utils)
 {

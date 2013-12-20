@@ -72,7 +72,7 @@ public:
 
   //! @name Friends
   friend class Beam2Type;
-  //friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
+  //friend StatMechTime::StatMechTime(Teuchos::ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
 
 
   //! @name Constructors and destructors and related methods

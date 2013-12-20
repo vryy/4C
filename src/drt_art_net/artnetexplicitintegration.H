@@ -72,8 +72,6 @@ Maintainer: Mahmoud Ismail
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
 
-using namespace Teuchos;
-using namespace MLAPI;
 
 /// artery algorithms
 namespace ART
@@ -117,13 +115,13 @@ public:
   \brief start time loop for startingalgo, normal problems and restarts
 
   */
-  void Integrate(bool CoupledTo3D, RCP<Teuchos::ParameterList> CouplingParams);
+  void Integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
 
   /*!
   \brief Do time integration (time loop)
 
   */
-  void TimeLoop(bool CoupledTo3D, RCP<Teuchos::ParameterList> CouplingParams);
+  void TimeLoop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
 
 
 
@@ -160,7 +158,7 @@ public:
 
   */
   void Output(bool               CoupledTo3D,
-              RCP<Teuchos::ParameterList> CouplingParams);
+              Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
 
   /*!
   \brief Assembling of the RHS Vector and the LHS Matrix
@@ -181,8 +179,8 @@ public:
   void CalcPostprocessingValues();
 
 
-  void CalcScatraFromScatraFW(    RCP<Epetra_Vector>   scatra,
-                                  RCP<Epetra_Vector>   scatran_fb);
+  void CalcScatraFromScatraFW(    Teuchos::RCP<Epetra_Vector>   scatra,
+                                  Teuchos::RCP<Epetra_Vector>   scatran_fb);
 
   /*!
   \brief read restart data
@@ -238,7 +236,7 @@ protected:
 
   //! @name general algorithm parameters
   //! arterial network discretization
-  RCP<DRT::Discretization>      discret_;
+  Teuchos::RCP<DRT::Discretization>      discret_;
   LINALG::Solver&               solver_;
   Teuchos::ParameterList&                params_;
   IO::DiscretizationWriter&     output_;
@@ -276,116 +274,116 @@ protected:
   double  dtsolve_;
 
   /// (standard) mass matrix
-  RCP<LINALG::SparseOperator> massmat_;
+  Teuchos::RCP<LINALG::SparseOperator> massmat_;
 
   /// (standard) system matrix
-  RCP<LINALG::SparseOperator> sysmat_;
+  Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
   /// maps for extracting Dirichlet and free DOF sets
-  RCP<LINALG::MapExtractor> dbcmaps_;
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
   /// rhs: right hand side vector
-  RCP<Epetra_Vector>    rhs_;
+  Teuchos::RCP<Epetra_Vector>    rhs_;
 
   /// (scatra) system matrix
-  RCP<LINALG::SparseOperator> scatra_sysmat_;
+  Teuchos::RCP<LINALG::SparseOperator> scatra_sysmat_;
 
   /// maps for scatra Dirichlet and free DOF sets
-  RCP<Epetra_Vector>    nodeIds_;
-  RCP<Epetra_Vector>    scatra_bcval_;
-  RCP<Epetra_Vector>    scatra_dbctog_;
+  Teuchos::RCP<Epetra_Vector>    nodeIds_;
+  Teuchos::RCP<Epetra_Vector>    scatra_bcval_;
+  Teuchos::RCP<Epetra_Vector>    scatra_dbctog_;
 
   /// rhs: right hand side vector of scatra
-  RCP<Epetra_Vector>    scatra_rhs_;
+  Teuchos::RCP<Epetra_Vector>    scatra_rhs_;
 
   //! @name Volumetric Flow rate and Cross-Sectional area at time n+1, n and n-1
-  RCP<Epetra_Vector>    qanp_;
-  RCP<Epetra_Vector>    qan_;
-  RCP<Epetra_Vector>    qanm_;
+  Teuchos::RCP<Epetra_Vector>    qanp_;
+  Teuchos::RCP<Epetra_Vector>    qan_;
+  Teuchos::RCP<Epetra_Vector>    qanm_;
   //@}
 
   //! @name Volumetric Flow rate and Cross-Sectional area at time n before solving Fluid 3D
-  RCP<Epetra_Vector>    qan_3D_;
+  Teuchos::RCP<Epetra_Vector>    qan_3D_;
   //@}
 
   //! @name Volumetric Flow rate at time n+1, n and n-1
-  RCP<Epetra_Vector>    qnp_;
-  RCP<Epetra_Vector>    qn_;
-  RCP<Epetra_Vector>    qnm_;
+  Teuchos::RCP<Epetra_Vector>    qnp_;
+  Teuchos::RCP<Epetra_Vector>    qn_;
+  Teuchos::RCP<Epetra_Vector>    qnm_;
   //@}
 
   //! @name Pressure at time n
-  RCP<Epetra_Vector>    pn_;
+  Teuchos::RCP<Epetra_Vector>    pn_;
   //@}
 
   //! @name Area at time n
-  RCP<Epetra_Vector>    an_;
+  Teuchos::RCP<Epetra_Vector>    an_;
   //@}
 
   //! @name Forward and backwar characteristic wave speeds at time n+1, n and n-1
-  RCP<Epetra_Vector>    Wfo_;
-  RCP<Epetra_Vector>    Wbo_;
-  RCP<Epetra_Vector>    Wfnp_;
-  RCP<Epetra_Vector>    Wfn_;
-  RCP<Epetra_Vector>    Wfnm_;
-  RCP<Epetra_Vector>    Wbnp_;
-  RCP<Epetra_Vector>    Wbn_;
-  RCP<Epetra_Vector>    Wbnm_;
+  Teuchos::RCP<Epetra_Vector>    Wfo_;
+  Teuchos::RCP<Epetra_Vector>    Wbo_;
+  Teuchos::RCP<Epetra_Vector>    Wfnp_;
+  Teuchos::RCP<Epetra_Vector>    Wfn_;
+  Teuchos::RCP<Epetra_Vector>    Wfnm_;
+  Teuchos::RCP<Epetra_Vector>    Wbnp_;
+  Teuchos::RCP<Epetra_Vector>    Wbn_;
+  Teuchos::RCP<Epetra_Vector>    Wbnm_;
   //@}
 
   //! @name scalar transport vectors at time n+1, n and n-1
-  RCP<Epetra_Vector>    scatraO2n_;
-  RCP<Epetra_Vector>    scatraO2np_;
-  RCP<Epetra_Vector>    scatraO2wfn_;
-  RCP<Epetra_Vector>    scatraO2wfnp_;
-  RCP<Epetra_Vector>    scatraO2wbn_;
-  RCP<Epetra_Vector>    scatraO2wbnp_;
+  Teuchos::RCP<Epetra_Vector>    scatraO2n_;
+  Teuchos::RCP<Epetra_Vector>    scatraO2np_;
+  Teuchos::RCP<Epetra_Vector>    scatraO2wfn_;
+  Teuchos::RCP<Epetra_Vector>    scatraO2wfnp_;
+  Teuchos::RCP<Epetra_Vector>    scatraO2wbn_;
+  Teuchos::RCP<Epetra_Vector>    scatraO2wbnp_;
 
-  RCP<Epetra_Vector>    scatraCO2n_;
-  RCP<Epetra_Vector>    scatraCO2np_;
-  RCP<Epetra_Vector>    scatraCO2wfn_;
-  RCP<Epetra_Vector>    scatraCO2wfnp_;
-  RCP<Epetra_Vector>    scatraCO2wbn_;
-  RCP<Epetra_Vector>    scatraCO2wbnp_;
+  Teuchos::RCP<Epetra_Vector>    scatraCO2n_;
+  Teuchos::RCP<Epetra_Vector>    scatraCO2np_;
+  Teuchos::RCP<Epetra_Vector>    scatraCO2wfn_;
+  Teuchos::RCP<Epetra_Vector>    scatraCO2wfnp_;
+  Teuchos::RCP<Epetra_Vector>    scatraCO2wbn_;
+  Teuchos::RCP<Epetra_Vector>    scatraCO2wbnp_;
 
-  RCP<Epetra_Vector>    export_scatra_;
+  Teuchos::RCP<Epetra_Vector>    export_scatra_;
   bool solvescatra_;
   //@}
 
 
   //! @name cross-sectional area at time n+1, n and n-1
-  RCP<Epetra_Vector>    arean_;
-  RCP<Epetra_Vector>    areanp_;
-  RCP<Epetra_Vector>    areanm_;
+  Teuchos::RCP<Epetra_Vector>    arean_;
+  Teuchos::RCP<Epetra_Vector>    areanp_;
+  Teuchos::RCP<Epetra_Vector>    areanm_;
   //@}
 
   //! @name Dirichlet boundary condition vectors
-  RCP<Epetra_Vector>    bcval_;
-  RCP<Epetra_Vector>    dbctog_;
+  Teuchos::RCP<Epetra_Vector>    bcval_;
+  Teuchos::RCP<Epetra_Vector>    dbctog_;
   //@}
 
   //! @name Junction boundary condition
-  RCP<UTILS::ArtJunctionWrapper> artjun_;
+  Teuchos::RCP<UTILS::ArtJunctionWrapper> artjun_;
   //@}
 
   //! @name 1D artery values at the junctions
-  RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals_;
+  Teuchos::RCP<map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals_;
   //@}
 
   //! @name A condition to export 1D arteries as a gnuplot format
-  RCP<UTILS::ArtWriteGnuplotWrapper> artgnu_;
+  Teuchos::RCP<UTILS::ArtWriteGnuplotWrapper> artgnu_;
   //@}
 
 
   /// connection between master and slave nodes on this proc
-  RCP<map<int,std::vector<int> > >     pbcmapmastertoslave_;
+  Teuchos::RCP<map<int,std::vector<int> > >     pbcmapmastertoslave_;
 
   //!
   bool coupledTo3D_;
   //@}
 
   /// bio related special (outflow) boudaries
-  //  RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
+  //  Teuchos::RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
 
   //@}
 

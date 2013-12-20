@@ -77,7 +77,7 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec1_epetra,
   Epetra_SerialDenseVector&  elevec2_epetra,
   Epetra_SerialDenseVector&  elevec3_epetra,
-  RCP<MAT::Material> mat)
+  Teuchos::RCP<MAT::Material> mat)
 {
 
   return 0;
@@ -96,7 +96,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(
   Teuchos::RCP<const MAT::Material>      material)
 {
 
-  RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
+  Teuchos::RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
 
   //--------------------------------------------------------------------
   // get the generation numbers
@@ -123,7 +123,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Sysmat(
   Epetra_SerialDenseMatrix&                sysmat,
   Epetra_SerialDenseVector&                rhs,
   Teuchos::RCP<const MAT::Material>        material,
-  ParameterList &                          params,
+  Teuchos::ParameterList &                          params,
   double                                   time,
   double                                   dt)
 {
@@ -140,7 +140,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::EvaluateTerminalBC(
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
   Epetra_SerialDenseVector&    rhs,
-  RCP<MAT::Material>   material)
+  Teuchos::RCP<MAT::Material>   material)
 {
 
 }
@@ -158,7 +158,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::CalcFlowRates(
   Epetra_SerialDenseVector&    elevec1, //a_volumenp,
   Epetra_SerialDenseVector&    elevec2, //a_volume_strain_np,
   std::vector<int>&            lm,
-  RCP<MAT::Material>   material)
+  Teuchos::RCP<MAT::Material>   material)
 
 {
 
@@ -174,7 +174,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::GetCoupledValues(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>   material)
+  Teuchos::RCP<MAT::Material>   material)
 {
 
 }
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::SolveBloodAirTransport(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>           material)
+  Teuchos::RCP<MAT::Material>           material)
 {
 }
 #if 0
@@ -242,9 +242,9 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::SolveBloodAirTransport(
   // get time-step size
   const double dt = params.get<double>("time step size");
 
-  RCP<Epetra_Vector> volnp    = params.get<RCP<Epetra_Vector> >("volumenp");
-  RCP<Epetra_Vector> areanp   = params.get<RCP<Epetra_Vector> >("areanp");
-  RCP<Epetra_Vector> scatranp = params.get<RCP<Epetra_Vector> >("scatranp");
+  Teuchos::RCP<Epetra_Vector> volnp    = params.get<RCP<Epetra_Vector> >("volumenp");
+  Teuchos::RCP<Epetra_Vector> areanp   = params.get<RCP<Epetra_Vector> >("areanp");
+  Teuchos::RCP<Epetra_Vector> scatranp = params.get<RCP<Epetra_Vector> >("scatranp");
 
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
@@ -508,9 +508,9 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::SolveBloodAirTransport(
   // get time-step size
   const double dt = params.get<double>("time step size");
 
-  RCP<Epetra_Vector> volnp    = params.get<RCP<Epetra_Vector> >("volumenp");
-  RCP<Epetra_Vector> areanp   = params.get<RCP<Epetra_Vector> >("areanp");
-  RCP<Epetra_Vector> scatranp = params.get<RCP<Epetra_Vector> >("scatranp");
+  Teuchos::RCP<Epetra_Vector> volnp    = params.get<RCP<Epetra_Vector> >("volumenp");
+  Teuchos::RCP<Epetra_Vector> areanp   = params.get<RCP<Epetra_Vector> >("areanp");
+  Teuchos::RCP<Epetra_Vector> scatranp = params.get<RCP<Epetra_Vector> >("scatranp");
 
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());

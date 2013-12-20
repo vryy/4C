@@ -55,7 +55,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   };
 
   LoadType ltype = neum_none;
-  const string* type = condition.Get<string>("type");
+  const std::string* type = condition.Get<std::string>("type");
   if      (*type == "neum_live")                 ltype = neum_live;
   else if (*type == "neum_pseudo_orthopressure") ltype = neum_pseudo_orthopressure;
   else if (*type == "neum_orthopressure")        ltype = neum_orthopressure;
@@ -608,7 +608,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     const DRT::UTILS::IntPointsAndWeights<1> intpoints(gaussrule);
 
     const int ngp = intpoints.IP().nquad;
-    Teuchos::RCP<Epetra_SerialDenseVector> poro = rcp(new Epetra_SerialDenseVector(ngp));
+    Teuchos::RCP<Epetra_SerialDenseVector> poro = Teuchos::rcp(new Epetra_SerialDenseVector(ngp));
     const int numdim = 2;
     const int numnode = NumNode();
     const int noddof = NumDofPerNode(*(Nodes()[0]));

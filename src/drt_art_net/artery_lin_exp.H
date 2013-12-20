@@ -53,7 +53,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RCP<MAT::Material> mat) = 0;
+                         Teuchos::RCP<MAT::Material> mat) = 0;
 
     virtual int ScatraEvaluate(Artery*                   ele,
                          Teuchos::ParameterList&   params,
@@ -64,7 +64,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RCP<MAT::Material> mat) = 0;
+                         Teuchos::RCP<MAT::Material> mat) = 0;
 
     virtual void Initial(Artery*                                  ele,
                          Teuchos::ParameterList&                           params,
@@ -76,25 +76,25 @@ namespace ELEMENTS
                                     Teuchos::ParameterList&       params,
                                     DRT::Discretization&          discretization,
                                     std::vector<int>&             lm,
-                                    RCP<MAT::Material>    mat) = 0;
+                                    Teuchos::RCP<MAT::Material>    mat) = 0;
 
     virtual void EvaluateScatraBC(Artery*                       ele,
                                     Teuchos::ParameterList&       params,
                                     DRT::Discretization&          discretization,
                                     std::vector<int>&             lm,
-                                    RCP<MAT::Material>    mat) = 0;
+                                    Teuchos::RCP<MAT::Material>    mat) = 0;
     
     virtual void CalcPostprocessingValues(Artery*                       ele,
                                           Teuchos::ParameterList&       params,
                                           DRT::Discretization&          discretization,
                                           std::vector<int>&             lm,
-                                          RCP<MAT::Material>    mat) = 0;
+                                          Teuchos::RCP<MAT::Material>    mat) = 0;
 
     virtual void CalcScatraFromScatraFW(  Artery*                      ele,
                                           Teuchos::ParameterList&      params,
                                           DRT::Discretization&         discretization,
                                           std::vector<int>&            lm,
-                                          RCP<MAT::Material>   material) =0;
+                                          Teuchos::RCP<MAT::Material>   material) =0;
 
     virtual bool SolveRiemann(Artery*                             ele,
                               Teuchos::ParameterList&             params,
@@ -106,13 +106,13 @@ namespace ELEMENTS
                                           Teuchos::ParameterList&      params,
                                           DRT::Discretization&         discretization,
                                           std::vector<int>&            lm,
-                                          RCP<MAT::Material>   material) =0;
+                                          Teuchos::RCP<MAT::Material>   material) =0;
 
     virtual void SolveScatraAnalytically(  Artery*                      ele,
                                           Teuchos::ParameterList&      params,
                                           DRT::Discretization&         discretization,
                                           std::vector<int>&            lm,
-                                          RCP<MAT::Material>   material) =0;
+                                          Teuchos::RCP<MAT::Material>   material) =0;
     
     /// Internal implementation class for artery element
     static ArteryExpInterface* Expl(DRT::ELEMENTS::Artery* art);
@@ -155,7 +155,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RCP<MAT::Material> mat);
+                         Teuchos::RCP<MAT::Material> mat);
 
     virtual int ScatraEvaluate(Artery*                   ele,
                          Teuchos::ParameterList&   params,
@@ -166,7 +166,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec1_epetra,
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
-                         RCP<MAT::Material> mat);
+                         Teuchos::RCP<MAT::Material> mat);
 
     /*!
       \brief calculate element matrix and rhs
@@ -211,37 +211,37 @@ namespace ELEMENTS
                                     Teuchos::ParameterList&      params,
                                     DRT::Discretization&         disctretization,
                                     std::vector<int>&            lm,
-                                    RCP<MAT::Material>   mat);
+                                    Teuchos::RCP<MAT::Material>   mat);
 
     virtual void EvaluateScatraBC(Artery*                      ele,
                                     Teuchos::ParameterList&      params,
                                     DRT::Discretization&         disctretization,
                                     std::vector<int>&            lm,
-                                    RCP<MAT::Material>   mat);
+                                    Teuchos::RCP<MAT::Material>   mat);
 
     virtual void CalcPostprocessingValues(Artery*                       ele,
                                           Teuchos::ParameterList&       params,
                                           DRT::Discretization&          discretization,
                                           std::vector<int>&             lm,
-                                          RCP<MAT::Material>    mat);
+                                          Teuchos::RCP<MAT::Material>    mat);
 
     virtual void CalcScatraFromScatraFW(  Artery*                      ele,
                                           Teuchos::ParameterList&      params,
                                           DRT::Discretization&         discretization,
                                           std::vector<int>&            lm,
-                                          RCP<MAT::Material>   material) ;
+                                          Teuchos::RCP<MAT::Material>   material) ;
 
     virtual void EvaluateWfAndWb(  Artery*                      ele,
                                           Teuchos::ParameterList&      params,
                                           DRT::Discretization&         discretization,
                                           std::vector<int>&            lm,
-                                          RCP<MAT::Material>   material) ;
+                                          Teuchos::RCP<MAT::Material>   material) ;
     
     virtual void SolveScatraAnalytically(  Artery*                      ele,
                                           Teuchos::ParameterList&      params,
                                           DRT::Discretization&         discretization,
                                           std::vector<int>&            lm,
-                                          RCP<MAT::Material>   material) ;
+                                          Teuchos::RCP<MAT::Material>   material) ;
 
     /*!
       \brief get the initial values of the degrees of freedome at the node

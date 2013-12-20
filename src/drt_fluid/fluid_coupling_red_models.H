@@ -118,7 +118,7 @@ private:
   /*!
   \brief all single coupling conditions
   */
-  map<const int, RCP<Fluid_couplingBc> > coup_map3D_;
+  std::map<const int, RCP<Fluid_couplingBc> > coup_map3D_;
 
   //! map of coupling variables returned by the reduced-D model at time step n+1
   RCP<map<std::string, double > >                   mapRed_Dnp_;

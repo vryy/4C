@@ -46,7 +46,7 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3::Evaluate(Teuchos::ParameterList& para
   DRT::ELEMENTS::RedAirBloodScatraLine3::ActionType act = RedAirBloodScatraLine3::none;
 
   // get the action required
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action == "calc_sys_matrix_rhs")
     act = RedAirBloodScatraLine3::calc_sys_matrix_rhs;
@@ -92,7 +92,7 @@ int DRT::ELEMENTS::RedAirBloodScatraLine3::Evaluate(Teuchos::ParameterList& para
 /*
 Here must add the steps for evaluating an element
 */
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   switch(act)
   {

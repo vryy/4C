@@ -125,7 +125,7 @@ UTILS::Constraint::ConstrType UTILS::Constraint::GetConstrType(const std::string
 *------------------------------------------------------------------------*/
 void UTILS::Constraint::Initialize(
     Teuchos::ParameterList&        params,
-    RCP<Epetra_Vector>    systemvector3)
+    Teuchos::RCP<Epetra_Vector>    systemvector3)
 {
   // choose action
   switch (constrtype_)
@@ -183,11 +183,11 @@ void UTILS::Constraint::Initialize
 *-----------------------------------------------------------------------*/
 void UTILS::Constraint::Evaluate(
     Teuchos::ParameterList&        params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
-    RCP<Epetra_Vector>    systemvector1,
-    RCP<Epetra_Vector>    systemvector2,
-    RCP<Epetra_Vector>    systemvector3)
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector>    systemvector1,
+    Teuchos::RCP<Epetra_Vector>    systemvector2,
+    Teuchos::RCP<Epetra_Vector>    systemvector3)
 {
   switch (constrtype_)
   {
@@ -216,11 +216,11 @@ void UTILS::Constraint::Evaluate(
  *----------------------------------------------------------------------*/
 void UTILS::Constraint::EvaluateConstraint(
     Teuchos::ParameterList&        params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
-    RCP<Epetra_Vector>    systemvector1,
-    RCP<Epetra_Vector>    systemvector2,
-    RCP<Epetra_Vector>    systemvector3)
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector>    systemvector1,
+    Teuchos::RCP<Epetra_Vector>    systemvector2,
+    Teuchos::RCP<Epetra_Vector>    systemvector3)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -255,10 +255,10 @@ void UTILS::Constraint::EvaluateConstraint(
       if(activecons_.find(condID)->second==false)
       {
         const std::string action = params.get<std::string>("action");
-        RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
+        Teuchos::RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
         actdisc_->SetState("displacement",displast);
         Initialize(params,systemvector2);
-        RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
+        Teuchos::RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
         actdisc_->SetState("displacement",disp);
         params.set("action",action);
       }
@@ -277,11 +277,11 @@ void UTILS::Constraint::EvaluateConstraint(
       const int lindex = (systemvector3->Map()).LID(gindex);
 
       // store loadcurve values
-      RCP<Epetra_Vector> timefact = params.get<RCP<Epetra_Vector> >("vector curve factors");
+      Teuchos::RCP<Epetra_Vector> timefact = params.get<RCP<Epetra_Vector> >("vector curve factors");
       timefact->ReplaceGlobalValues(1,&curvefac,&gindex);
 
       // Get the current lagrange multiplier value for this condition
-      const RCP<Epetra_Vector> lagramul = params.get<RCP<Epetra_Vector> >("LagrMultVector");
+      const Teuchos::RCP<Epetra_Vector> lagramul = params.get<RCP<Epetra_Vector> >("LagrMultVector");
       const double lagraval = (*lagramul)[lindex];
 
       // elements might need condition
@@ -362,7 +362,7 @@ void UTILS::Constraint::EvaluateConstraint(
  *-----------------------------------------------------------------------*/
 void UTILS::Constraint::InitializeConstraint(
     Teuchos::ParameterList&        params,
-    RCP<Epetra_Vector>    systemvector)
+    Teuchos::RCP<Epetra_Vector>    systemvector)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -456,7 +456,7 @@ std::vector<int> UTILS::Constraint::GetActiveCondID()
 void UTILS::Constraint::SetState
 (
   const std::string& state,  ///< name of state to set
-  RCP<Epetra_Vector> V  ///< values to set
+  Teuchos::RCP<Epetra_Vector> V  ///< values to set
 )
 {
   actdisc_->SetState(state,V);

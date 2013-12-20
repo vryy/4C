@@ -81,7 +81,7 @@ int DRT::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
 /*
 Here must add the steps for evaluating an element
 */
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   switch(act)
   {

@@ -322,7 +322,7 @@ void FSI::ConstrMonolithic::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>
-FSI::ConstrMonolithic::CreateLinearSystem(ParameterList& nlParams,
+FSI::ConstrMonolithic::CreateLinearSystem(Teuchos::ParameterList& nlParams,
                                         NOX::Epetra::Vector& noxSoln,
                                         Teuchos::RCP<NOX::Utils> utils)
 {

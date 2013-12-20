@@ -116,7 +116,7 @@ public:
   //! @name Construction
 
   /// Assign dof numbers using all elements and nodes of the discretization.
-  virtual int AssignDegreesOfFreedom(const RCP<DRT::Discretization> dis, const int numdofs, const int start);
+  virtual int AssignDegreesOfFreedom(const Teuchos::RCP<DRT::Discretization> dis, const int numdofs, const int start);
 
   /// reset all internal variables
   virtual void Reset();

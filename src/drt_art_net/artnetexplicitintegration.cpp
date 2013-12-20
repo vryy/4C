@@ -166,11 +166,11 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
   // right hand side vector and right hand side corrector
   rhs_     = LINALG::CreateVector(*dofrowmap,true);
   // create the junction boundary conditions
-  ParameterList junparams;
+  Teuchos::ParameterList junparams;
 
-  junc_nodal_vals_=Teuchos::rcp(new std::map<const int, RCP<ART::UTILS::JunctionNodeParams> >);
+  junc_nodal_vals_=Teuchos::rcp(new std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> >);
 
-  junparams.set<RCP<std::map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
+  junparams.set<RCP<std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
 
   artjun_ = Teuchos::rcp(new UTILS::ArtJunctionWrapper(discret_, output_, junparams, dta_) );
 
@@ -181,7 +181,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
   // Initialize all the arteries' cross-sectional areas to the initial crossectional area Ao
   // and the volumetric flow rate to 0
   // ---------------------------------------------------------------------------------------
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   discret_->ClearState();
   discret_->SetState("qanp",qanp_);
 
@@ -196,7 +196,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
     //    std::vector<int> lm;
     //    std::vector<int> lmstride;
     //    std::vector<int> lmowner;
-    //        RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
+    //        Teuchos::RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
     //    ele->LocationVector(*discret_,lm,*lmowner,lmstride);
 
     // loop all nodes of this element, add values to the global vectors
@@ -220,7 +220,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
     std::vector<int> lm;
     std::vector<int> lmstride;
     //vector<int> lmowner;
-    RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
+    Teuchos::RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
     ele->LocationVector(*discret_,lm,*lmowner,lmstride);
 
     // loop all nodes of this element, add values to the global vectors
@@ -296,7 +296,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::Integrate()
 {
-  RCP<Teuchos::ParameterList> param;
+  Teuchos::RCP<Teuchos::ParameterList> param;
   Integrate(false, param);
 } // ArtNetExplicitTimeInt::Integrate
 
@@ -312,7 +312,7 @@ void ART::ArtNetExplicitTimeInt::Integrate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::Integrate(bool CoupledTo3D,
-                                           RCP<Teuchos::ParameterList> CouplingParams)
+                                           Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   coupledTo3D_ = CoupledTo3D;
   if (CoupledTo3D && CouplingParams.get() == NULL)
@@ -325,7 +325,7 @@ void ART::ArtNetExplicitTimeInt::Integrate(bool CoupledTo3D,
   // print the results of time measurements
   if (!coupledTo3D_)
   {
-    TimeMonitor::summarize();
+    Teuchos::TimeMonitor::summarize();
   }
 
   return;
@@ -343,7 +343,7 @@ void ART::ArtNetExplicitTimeInt::Integrate(bool CoupledTo3D,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::TimeLoop(bool CoupledTo3D,
-                                          RCP<Teuchos::ParameterList> CouplingTo3DParams)
+                                          Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
   // time measurement: time loop
@@ -475,7 +475,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
 
 
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","calc_sys_matrix_rhs");
@@ -503,7 +503,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
   // -------------------------------------------------------------------
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","solve_riemann_problem");
@@ -517,7 +517,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     eleparams.set("Wbnp",Wbnp_);
 
     eleparams.set("total time",time_);
-    eleparams.set<RCP<std::map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
+    eleparams.set<RCP<std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
@@ -532,7 +532,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
 
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","set_term_bc");
@@ -547,7 +547,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     eleparams.set("dbctog",dbctog_);
     eleparams.set("Wfnp",Wfnp_);
     eleparams.set("Wbnp",Wbnp_);
-    eleparams.set<RCP<std::map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
+    eleparams.set<RCP<std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
 
     // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
     eleparams.set("coupling with 3D fluid params",CouplingTo3DParams);
@@ -591,7 +591,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
 #if 0  // Exporting some values for debugging purposes
 
 
-    RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+    Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
     if (A_debug != Teuchos::null)
     {
       // print to screen
@@ -614,7 +614,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
   // Update Wf and Wb
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","evaluate_wf_wb");
@@ -643,7 +643,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     scatra_rhs_->PutScalar(0.0);
 
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","calc_scatra_sys_matrix_rhs");
@@ -664,7 +664,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     // call standard loop over all elements
 #if 0 // Exporting some values for debugging purposes
     {
-      RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(scatra_sysmat_);
+      Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(scatra_sysmat_);
       if (A_debug != Teuchos::null)
       {
         // print to screen
@@ -678,7 +678,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
 
 #if 0  // Exporting some values for debugging purposes
     {
-      RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(scatra_sysmat_);
+      Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(scatra_sysmat_);
       if (A_debug != Teuchos::null)
       {
         // print to screen
@@ -697,7 +697,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     scatra_bcval_->PutScalar(0.0);
     scatra_dbctog_->PutScalar(0.0);
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","set_scatra_term_bc");
@@ -722,7 +722,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
   {
     scatraO2np_->PutScalar(0.0);
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","evaluate_scatra_analytically");
@@ -746,7 +746,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     scatra_bcval_->PutScalar(0.0);
     scatra_dbctog_->PutScalar(0.0);
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set("action","set_scatra_term_bc");
@@ -856,7 +856,7 @@ void ART::ArtNetExplicitTimeInt::TimeUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
-                                        RCP<Teuchos::ParameterList> CouplingParams)
+                                        Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   int step      = 0;
   int upres     = 0;
@@ -904,7 +904,7 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     // Export gnuplot format arteries
     // ------------------------------------------------------------------
 
-    ParameterList params;
+    Teuchos::ParameterList params;
     // other parameters that might be needed by the elements
     params.set("total time",time_);
 
@@ -974,7 +974,7 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     // Export gnuplot format arteries
     // ------------------------------------------------------------------
     //#endif
-    ParameterList params;
+    Teuchos::ParameterList params;
     // other parameters that might be needed by the elements
     params.set("total time",time_);
 
@@ -1062,7 +1062,7 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
   //  std::cout<<"On proc("<<myrank_<<"): "<<"postpro values being calculated"<<std::endl;
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // action for elements
   eleparams.set("action","calc_postprocessing_values");
@@ -1091,7 +1091,7 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
   std::cout<<"On proc("<<myrank_<<"): "<<"postpro values being calculated"<<std::endl;
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // action for elements
   eleparams.set("action","calc_postprocessing_values");
@@ -1118,14 +1118,14 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
 
 
 void ART::ArtNetExplicitTimeInt::CalcScatraFromScatraFW(
-  RCP<Epetra_Vector>   scatra,
-  RCP<Epetra_Vector>   scatra_fb
+  Teuchos::RCP<Epetra_Vector>   scatra,
+  Teuchos::RCP<Epetra_Vector>   scatra_fb
   )
 {
   scatra->PutScalar(0.0);
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // action for elements
   eleparams.set("action","calc_scatra_from_scatra_fb");

@@ -244,7 +244,7 @@ void STR::TimIntAB2::UpdateStepState()
 void STR::TimIntAB2::UpdateStepElement()
 {
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   // other parameters that might be needed by the elements
   p.set("total time", timen_);
   p.set("delta time", (*dt_)[0]);

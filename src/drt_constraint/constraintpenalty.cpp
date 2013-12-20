@@ -66,7 +66,7 @@ Constraint(discr,conditionname)
 
 void UTILS::ConstraintPenalty::Initialize(
     Teuchos::ParameterList&        params,
-    RCP<Epetra_Vector>    systemvector3)
+    Teuchos::RCP<Epetra_Vector>    systemvector3)
 {
   dserror("method not used for penalty formulation!");
 }
@@ -128,11 +128,11 @@ void UTILS::ConstraintPenalty::Initialize
 *-----------------------------------------------------------------------*/
 void UTILS::ConstraintPenalty::Evaluate(
     Teuchos::ParameterList&        params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
-    RCP<Epetra_Vector>    systemvector1,
-    RCP<Epetra_Vector>    systemvector2,
-    RCP<Epetra_Vector>    systemvector3)
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector>    systemvector1,
+    Teuchos::RCP<Epetra_Vector>    systemvector2,
+    Teuchos::RCP<Epetra_Vector>    systemvector3)
 {
   // choose action
   switch (constrtype_)
@@ -179,11 +179,11 @@ void UTILS::ConstraintPenalty::Evaluate(
  *----------------------------------------------------------------------*/
 void UTILS::ConstraintPenalty::EvaluateConstraint(
     Teuchos::ParameterList&        params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
-    RCP<Epetra_Vector>    systemvector1,
-    RCP<Epetra_Vector>    systemvector2,
-    RCP<Epetra_Vector>    systemvector3)
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector>    systemvector1,
+    Teuchos::RCP<Epetra_Vector>    systemvector2,
+    Teuchos::RCP<Epetra_Vector>    systemvector3)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -296,7 +296,7 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
  *-----------------------------------------------------------------------*/
 void UTILS::ConstraintPenalty::EvaluateError(
     Teuchos::ParameterList&        params,
-    RCP<Epetra_Vector>    systemvector)
+    Teuchos::RCP<Epetra_Vector>    systemvector)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -368,7 +368,7 @@ void UTILS::ConstraintPenalty::EvaluateError(
     }
 
   }
-  RCP<Epetra_Vector> acterrdist = Teuchos::rcp(new Epetra_Vector(*errormap_));
+  Teuchos::RCP<Epetra_Vector> acterrdist = Teuchos::rcp(new Epetra_Vector(*errormap_));
   acterrdist->Export(*systemvector,*errorexport_,Add);
   systemvector->Import(*acterrdist,*errorimport_,Insert);
   return;

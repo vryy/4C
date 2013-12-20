@@ -81,7 +81,7 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec1_epetra,
   Epetra_SerialDenseVector&  elevec2_epetra,
   Epetra_SerialDenseVector&  elevec3_epetra,
-  RCP<MAT::Material> mat)
+  Teuchos::RCP<MAT::Material> mat)
 {
   //  const int   myrank  = discretization.Comm().MyPID();
 
@@ -116,25 +116,25 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
 
-  RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
-  RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
-  RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
+  Teuchos::RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  Teuchos::RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
+  Teuchos::RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
 
-  RCP<Epetra_Vector> acinar_vnp  = params.get<RCP<Epetra_Vector> >("acinar_vnp");
-  RCP<Epetra_Vector> acinar_vn   = params.get<RCP<Epetra_Vector> >("acinar_vn");
+  Teuchos::RCP<Epetra_Vector> acinar_vnp  = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+  Teuchos::RCP<Epetra_Vector> acinar_vn   = params.get<RCP<Epetra_Vector> >("acinar_vn");
 
 
-  RCP<Epetra_Vector> qin_nm  = params.get<RCP<Epetra_Vector> >("qin_nm");
-  RCP<Epetra_Vector> qin_n   = params.get<RCP<Epetra_Vector> >("qin_n");
-  RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> qin_nm  = params.get<RCP<Epetra_Vector> >("qin_nm");
+  Teuchos::RCP<Epetra_Vector> qin_n   = params.get<RCP<Epetra_Vector> >("qin_n");
+  Teuchos::RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
 
-  RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
-  RCP<Epetra_Vector> qout_n  = params.get<RCP<Epetra_Vector> >("qout_n");
-  RCP<Epetra_Vector> qout_nm = params.get<RCP<Epetra_Vector> >("qout_nm");
+  Teuchos::RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
+  Teuchos::RCP<Epetra_Vector> qout_n  = params.get<RCP<Epetra_Vector> >("qout_n");
+  Teuchos::RCP<Epetra_Vector> qout_nm = params.get<RCP<Epetra_Vector> >("qout_nm");
 
-  RCP<Epetra_Vector> sysmat_iad = params.get<RCP<Epetra_Vector> >("sysmat_iad");
+  Teuchos::RCP<Epetra_Vector> sysmat_iad = params.get<RCP<Epetra_Vector> >("sysmat_iad");
 
- if (pnp==Teuchos::null || pn==Teuchos::null || pnm==null )
+  if (pnp==Teuchos::null || pn==Teuchos::null || pnm==Teuchos::null )
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // extract local values from the global vectors
@@ -172,7 +172,7 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   }
 
   // get the volumetric flow rate from the previous time step
-  ParameterList elem_params;
+  Teuchos::ParameterList elem_params;
   elem_params.set<double>("qout_np",(*qout_np)[ele->LID()]);
   elem_params.set<double>("qout_n" ,(*qout_n )[ele->LID()]);
   elem_params.set<double>("qout_nm",(*qout_nm)[ele->LID()]);
@@ -229,21 +229,21 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
 
   const int   myrank  = discretization.Comm().MyPID();
 
-  RCP<Epetra_Vector> p0np    = params.get<RCP<Epetra_Vector> >("p0np");
-  RCP<Epetra_Vector> p0n     = params.get<RCP<Epetra_Vector> >("p0n");
-  RCP<Epetra_Vector> p0nm    = params.get<RCP<Epetra_Vector> >("p0nm");
+  Teuchos::RCP<Epetra_Vector> p0np    = params.get<RCP<Epetra_Vector> >("p0np");
+  Teuchos::RCP<Epetra_Vector> p0n     = params.get<RCP<Epetra_Vector> >("p0n");
+  Teuchos::RCP<Epetra_Vector> p0nm    = params.get<RCP<Epetra_Vector> >("p0nm");
 
-  RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
-  RCP<Epetra_Vector> a_bc          = params.get<RCP<Epetra_Vector> >("acini_bc");
+  Teuchos::RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
+  Teuchos::RCP<Epetra_Vector> a_bc          = params.get<RCP<Epetra_Vector> >("acini_bc");
 
-  //  RCP<Epetra_Vector> a_volume      = params.get<RCP<Epetra_Vector> >("acini_volume");
-  RCP<Epetra_Vector> a_e_volume    = params.get<RCP<Epetra_Vector> >("acini_e_volume");
+  //  Teuchos::RCP<Epetra_Vector> a_volume      = params.get<RCP<Epetra_Vector> >("acini_volume");
+  Teuchos::RCP<Epetra_Vector> a_e_volume    = params.get<RCP<Epetra_Vector> >("acini_e_volume");
 
   //  std::vector<int>::iterator it = lm.begin();
 
   //std::vector<int> lmowner;
   std::vector<int> lmstride;
-  RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
+  Teuchos::RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
   ele->LocationVector(discretization,lm,*lmowner,lmstride);
 
   //--------------------------------------------------------------------
@@ -289,10 +289,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
   }
 
   bool solveScatra = params.get<bool>("solveScatra");
-  RCP<Epetra_Vector>  junVolMix_Corrector;
-  RCP<Epetra_Vector>  scatranp;
-  RCP<Epetra_Vector>  e1scatranp;
-  RCP<Epetra_Vector>  e2scatranp;
+  Teuchos::RCP<Epetra_Vector>  junVolMix_Corrector;
+  Teuchos::RCP<Epetra_Vector>  scatranp;
+  Teuchos::RCP<Epetra_Vector>  e1scatranp;
+  Teuchos::RCP<Epetra_Vector>  e2scatranp;
 
   if (solveScatra)
   {
@@ -370,7 +370,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
   Epetra_SerialDenseMatrix&                sysmat,
   Epetra_SerialDenseVector&                rhs,
   Teuchos::RCP<const MAT::Material>        material,
-  ParameterList &                          params,
+  Teuchos::ParameterList &                          params,
   double                                   time,
   double                                   dt)
 {
@@ -669,7 +669,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
   Epetra_SerialDenseVector&    rhs,
-  RCP<MAT::Material>   material)
+  Teuchos::RCP<MAT::Material>   material)
 {
   const int   myrank  = discretization.Comm().MyPID();
 
@@ -683,7 +683,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
   const int numnode = lm.size();
   std::vector<int>::iterator it_vcr;
 
-  RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  Teuchos::RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
   if (pnp==Teuchos::null)
     dserror("Cannot get state vectors 'pnp'");
@@ -775,8 +775,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
         {
           const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
 
-          RCP<Teuchos::ParameterList> CoupledTo3DParams  =
-            params.get<RCP<ParameterList > >("coupling with 3D fluid params");
+          Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams  =
+            params.get<RCP<Teuchos::ParameterList > >("coupling with 3D fluid params");
           // -----------------------------------------------------------------
           // If the parameter list is empty, then something is wrong!
           // -----------------------------------------------------------------
@@ -795,7 +795,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           //
           //     In this case a map called map3D has the following form:
           //     +-----------------------------------------------------------+
-          //     |           map< string               ,  double        >    |
+          //     |           std::map< string               ,  double        >    |
           //     |     +------------------------------------------------+    |
           //     |     |  ID  | coupling variable name | variable value |    |
           //     |     +------------------------------------------------+    |
@@ -811,7 +811,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           // -----------------------------------------------------------------
 
           int ID = condition->GetInt("ConditionID");
-          RCP<std::map<std::string,double> > map3D;
+          Teuchos::RCP<std::map<std::string,double> > map3D;
           map3D   = CoupledTo3DParams->get<RCP<std::map<std::string,double > > >("3D map of values");
 
           // find the applied boundary variable
@@ -883,10 +883,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
 
         if (Bc == "pressure" || Bc == "ExponentialPleuralPressure")
         {
-          RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-          RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+          Teuchos::RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+          Teuchos::RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
 
-          if (bcval==null||dbctog==Teuchos::null)
+          if (bcval==Teuchos::null||dbctog==Teuchos::null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
@@ -936,7 +936,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           BCin /= double(numOfElems);
 
           // get rhs
-          //          RCP<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
+          //          Teuchos::RCP<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
           //          if (rhs==Teuchos::null)
           //          {
           //            dserror("Cannot get state vector 'rhs'");
@@ -979,10 +979,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
             exit(1);
           }
 
-          RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-          RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+          Teuchos::RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
+          Teuchos::RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
 
-          if (bcval==null||dbctog==Teuchos::null)
+          if (bcval==Teuchos::null||dbctog==Teuchos::null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
@@ -1021,7 +1021,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>   material)
+  Teuchos::RCP<MAT::Material>   material)
 
 {
 
@@ -1051,24 +1051,24 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
 
-  RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
-  RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
-  RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
+  Teuchos::RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  Teuchos::RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
+  Teuchos::RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
 
-  RCP<Epetra_Vector> qin_nm  = params.get<RCP<Epetra_Vector> >("qin_nm");
-  RCP<Epetra_Vector> qin_n   = params.get<RCP<Epetra_Vector> >("qin_n");
-  RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> qin_nm  = params.get<RCP<Epetra_Vector> >("qin_nm");
+  Teuchos::RCP<Epetra_Vector> qin_n   = params.get<RCP<Epetra_Vector> >("qin_n");
+  Teuchos::RCP<Epetra_Vector> qin_np  = params.get<RCP<Epetra_Vector> >("qin_np");
 
-  RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
-  RCP<Epetra_Vector> qout_n  = params.get<RCP<Epetra_Vector> >("qout_n");
-  RCP<Epetra_Vector> qout_nm = params.get<RCP<Epetra_Vector> >("qout_nm");
+  Teuchos::RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
+  Teuchos::RCP<Epetra_Vector> qout_n  = params.get<RCP<Epetra_Vector> >("qout_n");
+  Teuchos::RCP<Epetra_Vector> qout_nm = params.get<RCP<Epetra_Vector> >("qout_nm");
 
-  RCP<Epetra_Vector> acinar_vn          = params.get<RCP<Epetra_Vector> >("acinar_vn");
-  RCP<Epetra_Vector> acinar_vnp         = params.get<RCP<Epetra_Vector> >("acinar_vnp");
-  RCP<Epetra_Vector> a_volume_strain_np = params.get<RCP<Epetra_Vector> >("acinar_vnp_strain");
+  Teuchos::RCP<Epetra_Vector> acinar_vn          = params.get<RCP<Epetra_Vector> >("acinar_vn");
+  Teuchos::RCP<Epetra_Vector> acinar_vnp         = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+  Teuchos::RCP<Epetra_Vector> a_volume_strain_np = params.get<RCP<Epetra_Vector> >("acinar_vnp_strain");
 
 
- if (pnp==Teuchos::null || pn==Teuchos::null || pnm==null )
+  if (pnp==Teuchos::null || pn==Teuchos::null || pnm==Teuchos::null )
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // extract local values from the global vectors
@@ -1107,7 +1107,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
 
 
   // get the volumetric flow rate from the previous time step
-  ParameterList elem_params;
+  Teuchos::ParameterList elem_params;
   elem_params.set<double>("qout_np",(*qout_np)[ele->LID()]);
   elem_params.set<double>("qout_n" ,(*qout_n )[ele->LID()]);
   elem_params.set<double>("qout_nm",(*qout_nm)[ele->LID()]);
@@ -1172,12 +1172,12 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>   material)
+  Teuchos::RCP<MAT::Material>   material)
 
 {
   // get all essential vector variables
-  RCP<Epetra_Vector> acinar_vnp   = params.get<RCP<Epetra_Vector> >("acinar_vnp");
-  RCP<Epetra_Vector> elemVolumenp = params.get<RCP<Epetra_Vector> >("elemVolumenp");
+  Teuchos::RCP<Epetra_Vector> acinar_vnp   = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+  Teuchos::RCP<Epetra_Vector> elemVolumenp = params.get<RCP<Epetra_Vector> >("elemVolumenp");
 
   // get acinus size
   double evolnp = (*elemVolumenp)[ele->LID()];
@@ -1200,7 +1200,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>   material)
+  Teuchos::RCP<MAT::Material>   material)
 {
   const int   myrank  = discretization.Comm().MyPID();
 
@@ -1214,7 +1214,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
   const int numnode = lm.size();
   std::vector<int>::iterator it_vcr;
 
-  RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
+  Teuchos::RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
   if (pnp==Teuchos::null)
     dserror("Cannot get state vectors 'pnp'");
@@ -1247,8 +1247,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
       {
 
           const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
-          RCP<Teuchos::ParameterList> CoupledTo3DParams  =
-            params.get<RCP<ParameterList > >("coupling with 3D fluid params");
+          Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams  =
+            params.get<Teuchos::RCP<Teuchos::ParameterList > >("coupling with 3D fluid params");
           // -----------------------------------------------------------------
           // If the parameter list is empty, then something is wrong!
           // -----------------------------------------------------------------
@@ -1281,7 +1281,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
         // -----------------------------------------------------------------
 
         int ID = condition->GetInt("ConditionID");
-        RCP<std::map<std::string,double> >  map1D;
+        Teuchos::RCP<std::map<std::string,double> >  map1D;
         map1D   = CoupledTo3DParams->get<RCP<std::map<std::string,double> > >("reducedD map of values");
 
         std::string returnedBC = *(condition->Get<std::string>("ReturnedVariable"));
@@ -1339,12 +1339,12 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetJunctionVolumeMix(RedAcinus*        
                                                               DRT::Discretization&         discretization,
                                                               Epetra_SerialDenseVector&    volumeMix_np,
                                                               std::vector<int>&            lm,
-                                                              RCP<MAT::Material>           material)
+                                                              Teuchos::RCP<MAT::Material>           material)
 {
   // get flow rate out at time step n+1
-  RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
+  Teuchos::RCP<Epetra_Vector> qout_np = params.get<RCP<Epetra_Vector> >("qout_np");
   // get acinar volumes at time step n+1
-  RCP<Epetra_Vector> acinar_vnp         = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+  Teuchos::RCP<Epetra_Vector> acinar_vnp         = params.get<RCP<Epetra_Vector> >("acinar_vnp");
 
   // get the element qout
   double q_out = (*qout_np)[ele->LID()];
@@ -1381,23 +1381,23 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus*                 
                                                      Epetra_SerialDenseVector&    scatranp,
                                                      Epetra_SerialDenseVector&    volumeMix_np,
                                                      std::vector<int>&            lm,
-                                                     RCP<MAT::Material>           material)
+                                                     Teuchos::RCP<MAT::Material>           material)
 {
   const int   myrank  = discretization.Comm().MyPID();
-  RCP<Epetra_Vector> qin_np   = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> qin_np   = params.get<RCP<Epetra_Vector> >("qin_np");
 
-  RCP<Epetra_Vector> qout_np  = params.get<RCP<Epetra_Vector> >("qout_np");
+  Teuchos::RCP<Epetra_Vector> qout_np  = params.get<RCP<Epetra_Vector> >("qout_np");
 
-  RCP<Epetra_Vector> e1scatran = params.get<RCP<Epetra_Vector> >("e1scatran");
-  RCP<Epetra_Vector> e2scatran = params.get<RCP<Epetra_Vector> >("e2scatran");
+  Teuchos::RCP<Epetra_Vector> e1scatran = params.get<RCP<Epetra_Vector> >("e1scatran");
+  Teuchos::RCP<Epetra_Vector> e2scatran = params.get<RCP<Epetra_Vector> >("e2scatran");
 
-  RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
-  RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
+  Teuchos::RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
+  Teuchos::RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
 
-  RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
+  Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
 
-  RCP<Epetra_Vector> acinar_vn          = params.get<RCP<Epetra_Vector> >("acinar_vn");
-  RCP<Epetra_Vector> acinar_vnp         = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+  Teuchos::RCP<Epetra_Vector> acinar_vn          = params.get<RCP<Epetra_Vector> >("acinar_vn");
+  Teuchos::RCP<Epetra_Vector> acinar_vnp         = params.get<RCP<Epetra_Vector> >("acinar_vnp");
 
   double volumenp = (*acinar_vnp)[ele->LID()];
   double volumen = (*acinar_vn )[ele->LID()];
@@ -1571,21 +1571,21 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(
   Epetra_SerialDenseVector&    scatranp,
   Epetra_SerialDenseVector&    volumeMix_np,
   std::vector<int>&            lm,
-  RCP<MAT::Material>           material)
+  Teuchos::RCP<MAT::Material>           material)
 {
 //  const int   myrank  = discretization.Comm().MyPID();
 
-  RCP<Epetra_Vector> qin_np   = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> qin_np   = params.get<RCP<Epetra_Vector> >("qin_np");
 
-  RCP<Epetra_Vector> qout_np  = params.get<RCP<Epetra_Vector> >("qout_np");
+  Teuchos::RCP<Epetra_Vector> qout_np  = params.get<RCP<Epetra_Vector> >("qout_np");
 
-  //  RCP<Epetra_Vector> scatran = params.get<RCP<Epetra_Vector> >("scatran");
-  RCP<const Epetra_Vector> scatran  = discretization.GetState("scatranp");
+  //  Teuchos::RCP<Epetra_Vector> scatran = params.get<RCP<Epetra_Vector> >("scatran");
+  Teuchos::RCP<const Epetra_Vector> scatran  = discretization.GetState("scatranp");
 
-  RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
-  RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
+  Teuchos::RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
+  Teuchos::RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
 
-  RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
+  Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
 
   // extract local values from the global vectors
   std::vector<double> myvolmix(lm.size());
@@ -1644,14 +1644,14 @@ void DRT::ELEMENTS::AcinusImpl<distype>::UpdateScatra(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>           material)
+  Teuchos::RCP<MAT::Material>           material)
 {
 
   const int   myrank  = discretization.Comm().MyPID();
 
-  RCP<const Epetra_Vector> dscatranp  = discretization.GetState("dscatranp");
-  RCP<Epetra_Vector> dscatranp_m = params.get<RCP<Epetra_Vector> >("dscatranp");
-  RCP<Epetra_Vector> qin_np     = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<const Epetra_Vector> dscatranp  = discretization.GetState("dscatranp");
+  Teuchos::RCP<Epetra_Vector> dscatranp_m = params.get<RCP<Epetra_Vector> >("dscatranp");
+  Teuchos::RCP<Epetra_Vector> qin_np     = params.get<RCP<Epetra_Vector> >("qin_np");
 
   // get flowrate
   double qin = (*qin_np)[ele->LID()];
@@ -1684,15 +1684,15 @@ void DRT::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>           material)
+  Teuchos::RCP<MAT::Material>           material)
 {
-  RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
-  RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
-  RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
+  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
+  Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
+  Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
 
-  RCP<Epetra_Vector> qin_np     = params.get<RCP<Epetra_Vector> >("qin_np");
-  RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
-  RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
+  Teuchos::RCP<Epetra_Vector> qin_np     = params.get<RCP<Epetra_Vector> >("qin_np");
+  Teuchos::RCP<Epetra_Vector> e1scatranp = params.get<RCP<Epetra_Vector> >("e1scatranp");
+  Teuchos::RCP<Epetra_Vector> e2scatranp = params.get<RCP<Epetra_Vector> >("e2scatranp");
 
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
@@ -1736,16 +1736,16 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(
   Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   std::vector<int>&            lm,
-  RCP<MAT::Material>           material)
+  Teuchos::RCP<MAT::Material>           material)
 {
   const int   myrank  = discretization.Comm().MyPID();
 
   // get Po2 vector
-  RCP<Epetra_Vector> po2        = params.get<RCP<Epetra_Vector> >("PO2");
+  Teuchos::RCP<Epetra_Vector> po2        = params.get<RCP<Epetra_Vector> >("PO2");
   // get Po2 vector
-  RCP<const Epetra_Vector> scatran = discretization.GetState("scatranp");
+  Teuchos::RCP<const Epetra_Vector> scatran = discretization.GetState("scatranp");
   // get acinar volume
-  RCP<Epetra_Vector> acinar_vnp = params.get<RCP<Epetra_Vector> >("acinar_vnp");
+  Teuchos::RCP<Epetra_Vector> acinar_vnp = params.get<RCP<Epetra_Vector> >("acinar_vnp");
   // -------------------------------------------------------------------
   // extract scatra values
   // -------------------------------------------------------------------
@@ -1838,13 +1838,13 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalNodalEssentialValues(
   Epetra_SerialDenseVector&    nodal_volume,
   Epetra_SerialDenseVector&    nodal_avg_scatra,
   std::vector<int>&            lm,
-  RCP<MAT::Material>           material)
+  Teuchos::RCP<MAT::Material>           material)
 {
   // ---------------------------------------------------------------------
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
-  RCP<Epetra_Vector> acinar_e_v  = params.get<RCP<Epetra_Vector> >("acinar_v");
-  RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
+  Teuchos::RCP<Epetra_Vector> acinar_e_v  = params.get<RCP<Epetra_Vector> >("acinar_v");
+  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
 
   // -------------------------------------------------------------------
   // extract scatra values

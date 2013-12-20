@@ -24,7 +24,7 @@ Maintainer: Mahmoud Ismail
 #include "../drt_io/io.H"
 #include "airwayimplicitintegration.H"
 
-using namespace Teuchos;
+
 
 void dyn_red_airways_drt();
 void redairway_tissue_dyn();

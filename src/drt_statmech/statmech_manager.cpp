@@ -4092,7 +4092,7 @@ void STATMECH::StatMechManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWrit
  | (public) write restart information for fully redundant   Epetra_Multivector|
  | with name "name"                                                cyron 11/10|
  *----------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::WriteRestartRedundantMultivector(Teuchos::RCP<IO::DiscretizationWriter> output, const std::string name, RCP<Epetra_MultiVector> multivector)
+void STATMECH::StatMechManager::WriteRestartRedundantMultivector(Teuchos::RCP<IO::DiscretizationWriter> output, const std::string name, Teuchos::RCP<Epetra_MultiVector> multivector)
 {
   //create stl vector to store information in multivector
   Teuchos::RCP<std::vector<double> > stlvector = Teuchos::rcp(new std::vector<double>);
@@ -4520,7 +4520,7 @@ void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_
                                                       bool                              fillzeros,
                                                       bool                              writefile)
 {
-  ParameterList p;
+  Teuchos::ParameterList p;
   p.set("action", "calc_struct_energy");
 
   //add statistical vector to parameter list for statistical forces and damping matrix computation
@@ -4972,10 +4972,10 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       // initialize class vectors
       bspotstatus_ = Teuchos::rcp(new Epetra_Vector(*bspotcolmap_));
       bspotstatus_->PutScalar(-1.0);
-      bspotorientations_ = rcp(new Epetra_Vector(*bspotcolmap_,true));
-      bspotxi_ = rcp(new Epetra_Vector(*bspotcolmap_,true));
-      bspot2element_ = rcp(new Epetra_Vector(*bspotrowmap_, true));
-      bspot2nodes_=rcp(new Epetra_MultiVector(*bspotcolmap_,2,true));
+      bspotorientations_ = Teuchos::rcp(new Epetra_Vector(*bspotcolmap_,true));
+      bspotxi_ = Teuchos::rcp(new Epetra_Vector(*bspotcolmap_,true));
+      bspot2element_ = Teuchos::rcp(new Epetra_Vector(*bspotrowmap_, true));
+      bspot2nodes_= Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,2,true));
 
       Epetra_Vector bspotorientationsrow(*bspotrowmap_);
       Epetra_Vector bspotxirow(*bspotrowmap_);
@@ -5192,22 +5192,22 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       }
       // maps
       // create redundant binding spot column map based upon the bspotids
-      bspotcolmap_ = rcp(new Epetra_Map(-1, (int)bspotgids.size(), &bspotgids[0], 0, discret_->Comm()));
+      bspotcolmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)bspotgids.size(), &bspotgids[0], 0, discret_->Comm()));
       // create processor-specific row maps
       std::vector<int> bspotrowgids;
       for(int i=0; i<(int)bspotonproc.size(); i++)
         if(bspotonproc[i]==1)
           bspotrowgids.push_back(i);  // note: since column map is fully overlapping: i=col. LID = GID
 
-      bspotrowmap_ = rcp(new Epetra_Map((int)bspotgids.size(), (int)bspotrowgids.size(), &bspotrowgids[0], 0, discret_->Comm()));
+      bspotrowmap_ = Teuchos::rcp(new Epetra_Map((int)bspotgids.size(), (int)bspotrowgids.size(), &bspotrowgids[0], 0, discret_->Comm()));
 
       // vectors
       // initialize class vectors
-      bspotstatus_ = rcp(new Epetra_Vector(*bspotcolmap_, true));
+      bspotstatus_ = Teuchos::rcp(new Epetra_Vector(*bspotcolmap_, true));
       bspotstatus_->PutScalar(-1.0);
-      bspotxi_ = rcp(new Epetra_Vector(*bspotcolmap_,true));
-      bspot2element_ = rcp(new Epetra_Vector(*bspotrowmap_, true));
-      bspot2nodes_=rcp(new Epetra_MultiVector(*bspotcolmap_,2,true));
+      bspotxi_ = Teuchos::rcp(new Epetra_Vector(*bspotcolmap_,true));
+      bspot2element_ = Teuchos::rcp(new Epetra_Vector(*bspotrowmap_, true));
+      bspot2nodes_= Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,2,true));
 
       Epetra_Vector bspotxirow(*bspotrowmap_);
       Epetra_MultiVector bspot2nodesrow(*bspotrowmap_,2);
@@ -5444,8 +5444,8 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
     // TODO
 //==NEW
     // new node positions and rotations
-    Teuchos::RCP<Epetra_MultiVector> bspotpositions = rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
-    Teuchos::RCP<Epetra_MultiVector> bspotrotations = rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
+    Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
+    Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
     Epetra_Vector disrow(*discret_->DofRowMap(), true);
     Epetra_Vector discol(*discret_->DofColMap(), true);
     GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
@@ -5584,7 +5584,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
 
     // 3. create double bonds
     // a vector indicating the crosslink molecule which is going to constitute a crosslinker element
-    RCP<Epetra_Vector> addcrosselement = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
+    Teuchos::RCP<Epetra_Vector> addcrosselement = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
     int numsetelements = 0;
 
     if(discret_->Comm().MyPID()==0 && networktype_ != statmech_network_motassay)
@@ -5697,7 +5697,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
     }
 
     // Communication, second stage
-    RCP<Epetra_Vector> addcrosselementtrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));
+    Teuchos::RCP<Epetra_Vector> addcrosselementtrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));
     bspotstatusrow->PutScalar(0.0);
     crosslinkerpositionstrans->PutScalar(0.0);
     visualizepositionstrans->PutScalar(0.0);

@@ -883,7 +883,7 @@ double FLD::UTILS::Fluid_couplingBc::Area( double& density, double& viscosity, i
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",FLD::calc_area);
   eleparams.set<double>("area",0.0);
   eleparams.set<double>("viscosity",0.0);
@@ -958,7 +958,7 @@ double FLD::UTILS::Fluid_couplingBc::FlowRateCalculation(double time, double dta
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",FLD::calc_flowrate);
   eleparams.set("total time",time);
 
@@ -1012,7 +1012,7 @@ double FLD::UTILS::Fluid_couplingBc::PressureCalculation(double time, double dta
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",FLD::calc_pressure_bou_int);
   eleparams.set<double>("pressure boundary integral", 0.0);
   eleparams.set("total time",time);
@@ -1065,7 +1065,7 @@ void FLD::UTILS::Fluid_couplingBc::OutflowBoundary(double pressure, double time,
 {
 
   // call the element to apply the pressure
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   // action for elements
   // the reason we have Outlet impedance as action is because we don't
   // want to rewrite the implimented code
@@ -1108,7 +1108,7 @@ void FLD::UTILS::Fluid_couplingBc::InflowBoundary(double flowrate, double time, 
 #if 1
 
   // call the element to apply the pressure
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   // action for elements
   // the reason we have Outlet impedance as action is because we don't
   // want to rewrite the implimented code

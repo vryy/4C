@@ -39,7 +39,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_MPC_stiff")
   {
 
-    RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
+    Teuchos::RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
     const std::string* type = condition->Get<std::string>("control value");
 
     if (*type == "dist") act = calc_MPC_dist_stiff;
@@ -59,7 +59,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
     break;
     case calc_MPC_dist_stiff:
     {
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -79,7 +79,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
     break;
     case calc_MPC_angle_stiff:
     {
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
