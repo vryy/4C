@@ -241,7 +241,7 @@ void STR::TimAda::EvaluateLocalErrorDis()
   }
 
   // blank Dirichlet DOFs since we they always carry the exact solution
-  Teuchos:RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(locerrdisn_->Map(), true));
+  Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(locerrdisn_->Map(), true));
   LINALG::ApplyDirichlettoSystem(locerrdisn_, zeros, *(sti_->GetDBCMapExtractor()->CondMap()));
 }
 
