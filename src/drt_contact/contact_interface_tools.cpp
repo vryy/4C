@@ -158,7 +158,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         double color = (double)element->Owner();
 
         //local center
-        double xi[2] = {0.0, 0.0};
+//        double xi[2] = {0.0, 0.0};
 
         // 2D linear case (2noded line elements)
         if (element->Shape()==DRT::Element::line2)
@@ -248,7 +248,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
                                 << coord(2,2) << ")";
             gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << "};" << std::endl;
           }
-          xi[0] = 1.0/3; xi[1] = 1.0/3;
+//          xi[0] = 1.0/3; xi[1] = 1.0/3;
         }
 
         // 3D bilinear case (4noded quadrilateral elements)
@@ -331,7 +331,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
             gmshfilecontentmaster << "{" << std::scientific << color << "," << color << "," << color << ","
                             << color << "," << color << "," << color <<"};" << std::endl;
           }
-          xi[0] = 1.0/3; xi[1] = 1.0/3;
+//          xi[0] = 1.0/3; xi[1] = 1.0/3;
         }
 
         // 3D serendipity case (8noded quadrilateral elements)
