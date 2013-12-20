@@ -527,6 +527,7 @@ void ADAPTER::CouplingMortar::MeshInit(
   gold->Update(-1.0,*Mxm,1.0);
   double gnorm = 0.0;
   gold->Norm2(&gnorm);
+  gnorm /= sqrt((double) gold->GlobalLength()); // scale with length of vector
 
   const double tol = 1.0e-12;
   // no need to do mesh initialization if g already very small
