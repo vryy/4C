@@ -3924,15 +3924,15 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       dserror("zero force during computation of wall shear stress\n");
     }
 
-    ltau = visc_/sqrt(sumforceu_/dens_/area);
+    ltau = visc_/std::sqrt(sumforceu_/dens_/area);
   }
   else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
   {
-    ltau = visc_/sqrt(sumforcev_/dens_/area);
+    ltau = visc_/std::sqrt(sumforcev_/dens_/area);
   }
   else if (sumforcew_>sumforceu_ && sumforcew_>sumforcev_)
   {
-    ltau = visc_/sqrt(sumforcew_/dens_/area);
+    ltau = visc_/std::sqrt(sumforcew_/dens_/area);
   }
   else
   {
@@ -4336,15 +4336,15 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
   double ltau = 0;
   if      (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
   {
-    ltau = visc_/sqrt(sumforceu_/dens_/(area*numsamp_));
+    ltau = visc_/std::sqrt(sumforceu_/dens_/(area*numsamp_));
   }
   else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
   {
-    ltau = visc_/sqrt(sumforcev_/dens_/(area*numsamp_));
+    ltau = visc_/std::sqrt(sumforcev_/dens_/(area*numsamp_));
   }
   else if (sumforcew_>sumforceu_ && sumforcew_>sumforcev_)
   {
-    ltau = visc_/sqrt(sumforcew_/dens_/(area*numsamp_));
+    ltau = visc_/std::sqrt(sumforcew_/dens_/(area*numsamp_));
   }
   else
   {
@@ -4667,8 +4667,8 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
   const double qwt = sumqwt_*shc_/areanumsamp;
 
   // u_tau and l_tau at bottom and top wall as well as mean values
-  const double utaub = sqrt(tauwb/rhowb);
-  const double utaut = sqrt(tauwt/rhowt);
+  const double utaub = std::sqrt(tauwb/rhowb);
+  const double utaut = std::sqrt(tauwt/rhowt);
   double Ttaub = 0.0;
   if (rhowb*utaub < -2e-9 or rhowb*utaub > 2e-9) Ttaub = qwb/(rhowb*shc_*utaub);
   double Ttaut = 0.0;
@@ -5070,8 +5070,8 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
   const double qwt = sumqwt_/areanumsamp;
 
   // u_tau and l_tau at bottom and top wall as well as mean values
-  const double utaub = sqrt(tauwb/dens_);
-  const double utaut = sqrt(tauwt/dens_);
+  const double utaub = std::sqrt(tauwb/dens_);
+  const double utaut = std::sqrt(tauwt/dens_);
   double Ttaub = 0.0;
   if (utaub < -2e-9 or utaub > 2e-9) Ttaub = qwb/utaub;
   double Ttaut = 0.0;
@@ -5476,49 +5476,49 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
   numsamp_ =0;
 
   // reset forces (mean values and values at bottom and top wall)
-  sumforceu_=0;
-  sumforcev_=0;
-  sumforcew_=0;
-  sumforcebu_=0;
-  sumforcebv_=0;
-  sumforcebw_=0;
-  sumforcetu_=0;
-  sumforcetv_=0;
-  sumforcetw_=0;
+  sumforceu_=0.0;
+  sumforcev_=0.0;
+  sumforcew_=0.0;
+  sumforcebu_=0.0;
+  sumforcebv_=0.0;
+  sumforcebw_=0.0;
+  sumforcetu_=0.0;
+  sumforcetv_=0.0;
+  sumforcetw_=0.0;
 
   // reset integral and pointwise averages
   for(unsigned i=0; i<planecoordinates_->size(); ++i)
   {
-    (*sumu_)[i]  =0;
-    (*sumv_)[i]  =0;
-    (*sumw_)[i]  =0;
-    (*sump_)[i]  =0;
-    (*sumrho_)[i]  =0;
-    (*sumT_)[i]  =0;
+    (*sumu_)[i]  =0.0;
+    (*sumv_)[i]  =0.0;
+    (*sumw_)[i]  =0.0;
+    (*sump_)[i]  =0.0;
+    (*sumrho_)[i]  =0.0;
+    (*sumT_)[i]  =0.0;
 
-    (*sumsqu_)[i]=0;
-    (*sumsqv_)[i]=0;
-    (*sumsqw_)[i]=0;
-    (*sumsqp_)[i]=0;
-    (*sumsqrho_)[i]=0;
-    (*sumsqT_)[i]=0;
+    (*sumsqu_)[i]=0.0;
+    (*sumsqv_)[i]=0.0;
+    (*sumsqw_)[i]=0.0;
+    (*sumsqp_)[i]=0.0;
+    (*sumsqrho_)[i]=0.0;
+    (*sumsqT_)[i]=0.0;
 
-    (*sumuv_ )[i]=0;
-    (*sumuw_ )[i]=0;
-    (*sumvw_ )[i]=0;
-    (*sumuT_ )[i]=0;
-    (*sumvT_ )[i]=0;
-    (*sumwT_ )[i]=0;
+    (*sumuv_ )[i]=0.0;
+    (*sumuw_ )[i]=0.0;
+    (*sumvw_ )[i]=0.0;
+    (*sumuT_ )[i]=0.0;
+    (*sumvT_ )[i]=0.0;
+    (*sumwT_ )[i]=0.0;
 
-    (*pointsumu_)[i]  =0;
-    (*pointsumv_)[i]  =0;
-    (*pointsumw_)[i]  =0;
-    (*pointsump_)[i]  =0;
+    (*pointsumu_)[i]  =0.0;
+    (*pointsumv_)[i]  =0.0;
+    (*pointsumw_)[i]  =0.0;
+    (*pointsump_)[i]  =0.0;
 
-    (*pointsumsqu_)[i]=0;
-    (*pointsumsqv_)[i]=0;
-    (*pointsumsqw_)[i]=0;
-    (*pointsumsqp_)[i]=0;
+    (*pointsumsqu_)[i]=0.0;
+    (*pointsumsqv_)[i]=0.0;
+    (*pointsumsqw_)[i]=0.0;
+    (*pointsumsqp_)[i]=0.0;
   }
 
   meanvelnp_->PutScalar(0.0);

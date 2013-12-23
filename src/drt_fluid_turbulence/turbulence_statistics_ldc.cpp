@@ -1234,10 +1234,19 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       double x1w    = (*x1sumw_)[i]/numsamp_;
       double x1p    = (*x1sump_)[i]/numsamp_;
 
-      double x1urms = sqrt((*x1sumsqu_)[i]/numsamp_-x1u*x1u);
-      double x1vrms = sqrt((*x1sumsqv_)[i]/numsamp_-x1v*x1v);
-      double x1wrms = sqrt((*x1sumsqw_)[i]/numsamp_-x1w*x1w);
-      double x1prms = sqrt((*x1sumsqp_)[i]/numsamp_-x1p*x1p);
+      double x1urms = 0.0;
+      double x1vrms = 0.0;
+      double x1wrms = 0.0;
+      double x1prms = 0.0;
+
+      if (((*x1sumsqu_)[i]/numsamp_-x1u*x1u) > 0.0)
+        x1urms = std::sqrt((*x1sumsqu_)[i]/numsamp_-x1u*x1u);
+      if (((*x1sumsqv_)[i]/numsamp_-x1v*x1v) > 0.0)
+        x1vrms = std::sqrt((*x1sumsqv_)[i]/numsamp_-x1v*x1v);
+      if (((*x1sumsqw_)[i]/numsamp_-x1w*x1w) > 0.0)
+        x1wrms = std::sqrt((*x1sumsqw_)[i]/numsamp_-x1w*x1w);
+      if (((*x1sumsqp_)[i]/numsamp_-x1p*x1p) > 0.0)
+        x1prms = std::sqrt((*x1sumsqp_)[i]/numsamp_-x1p*x1p);
 
       double x1uv   = (*x1sumuv_)[i]/numsamp_-x1u*x1v;
       double x1uw   = (*x1sumuw_)[i]/numsamp_-x1u*x1w;
@@ -1272,10 +1281,19 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       double x2w    = (*x2sumw_)[i]/numsamp_;
       double x2p    = (*x2sump_)[i]/numsamp_;
 
-      double x2urms = sqrt((*x2sumsqu_)[i]/numsamp_-x2u*x2u);
-      double x2vrms = sqrt((*x2sumsqv_)[i]/numsamp_-x2v*x2v);
-      double x2wrms = sqrt((*x2sumsqw_)[i]/numsamp_-x2w*x2w);
-      double x2prms = sqrt((*x2sumsqp_)[i]/numsamp_-x2p*x2p);
+      double x2urms = 0.0;
+      double x2vrms = 0.0;
+      double x2wrms = 0.0;
+      double x2prms = 0.0;
+
+      if (((*x2sumsqu_)[i]/numsamp_-x2u*x2u) > 0.0)
+        x2urms = std::sqrt((*x2sumsqu_)[i]/numsamp_-x2u*x2u);
+      if (((*x2sumsqv_)[i]/numsamp_-x2v*x2v) > 0.0)
+        x2vrms = std::sqrt((*x2sumsqv_)[i]/numsamp_-x2v*x2v);
+      if (((*x2sumsqw_)[i]/numsamp_-x2w*x2w) > 0.0)
+        x2wrms = std::sqrt((*x2sumsqw_)[i]/numsamp_-x2w*x2w);
+      if (((*x2sumsqp_)[i]/numsamp_-x2p*x2p) > 0.0)
+        x2prms = std::sqrt((*x2sumsqp_)[i]/numsamp_-x2p*x2p);
 
       double x2uv   = (*x2sumuv_)[i]/numsamp_-x2u*x2v;
       double x2uw   = (*x2sumuw_)[i]/numsamp_-x2u*x2w;
@@ -1310,10 +1328,19 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
       double x3w    = (*x3sumw_)[i]/numsamp_;
       double x3p    = (*x3sump_)[i]/numsamp_;
 
-      double x3urms = sqrt((*x3sumsqu_)[i]/numsamp_-x3u*x3u);
-      double x3vrms = sqrt((*x3sumsqv_)[i]/numsamp_-x3v*x3v);
-      double x3wrms = sqrt((*x3sumsqw_)[i]/numsamp_-x3w*x3w);
-      double x3prms = sqrt((*x3sumsqp_)[i]/numsamp_-x3p*x3p);
+      double x3urms = 0.0;
+      double x3vrms = 0.0;
+      double x3wrms = 0.0;
+      double x3prms = 0.0;
+
+      if (((*x3sumsqu_)[i]/numsamp_-x3u*x3u) > 0.0)
+        x3urms = std::sqrt((*x3sumsqu_)[i]/numsamp_-x3u*x3u);
+      if (((*x3sumsqv_)[i]/numsamp_-x3v*x3v) > 0.0)
+        x3vrms = std::sqrt((*x3sumsqv_)[i]/numsamp_-x3v*x3v);
+      if (((*x3sumsqw_)[i]/numsamp_-x3w*x3w) > 0.0)
+        x3wrms = std::sqrt((*x3sumsqw_)[i]/numsamp_-x3w*x3w);
+      if (((*x3sumsqp_)[i]/numsamp_-x3p*x3p) > 0.0)
+        x3prms = std::sqrt((*x3sumsqp_)[i]/numsamp_-x3p*x3p);
 
       double x3uv   = (*x3sumuv_)[i]/numsamp_-x3u*x3v;
       double x3uw   = (*x3sumuw_)[i]/numsamp_-x3u*x3w;
@@ -1375,12 +1402,25 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x1rho  = (*x1sumrho_)[i]/numsamp_;
       double x1T    = (*x1sumT_)[i]/numsamp_;
 
-      double x1urms   = sqrt((*x1sumsqu_)[i]/numsamp_-x1u*x1u);
-      double x1vrms   = sqrt((*x1sumsqv_)[i]/numsamp_-x1v*x1v);
-      double x1wrms   = sqrt((*x1sumsqw_)[i]/numsamp_-x1w*x1w);
-      double x1prms   = sqrt((*x1sumsqp_)[i]/numsamp_-x1p*x1p);
-      double x1rhorms = sqrt((*x1sumsqrho_)[i]/numsamp_-x1rho*x1rho);
-      double x1Trms   = sqrt((*x1sumsqT_)[i]/numsamp_-x1T*x1T);
+      double x1urms   = 0.0;
+      double x1vrms   = 0.0;
+      double x1wrms   = 0.0;
+      double x1prms   = 0.0;
+      double x1rhorms = 0.0;
+      double x1Trms   = 0.0;
+
+      if (((*x1sumsqu_)[i]/numsamp_-x1u*x1u) > 0.0)
+        x1urms   = std::sqrt((*x1sumsqu_)[i]/numsamp_-x1u*x1u);
+      if (((*x1sumsqv_)[i]/numsamp_-x1v*x1v) > 0.0)
+        x1vrms   = std::sqrt((*x1sumsqv_)[i]/numsamp_-x1v*x1v);
+      if (((*x1sumsqw_)[i]/numsamp_-x1w*x1w) > 0.0)
+        x1wrms   = std::sqrt((*x1sumsqw_)[i]/numsamp_-x1w*x1w);
+      if (((*x1sumsqp_)[i]/numsamp_-x1p*x1p) > 0.0)
+        x1prms   = std::sqrt((*x1sumsqp_)[i]/numsamp_-x1p*x1p);
+      if (((*x1sumsqrho_)[i]/numsamp_-x1rho*x1rho) > 0.0)
+        x1rhorms = std::sqrt((*x1sumsqrho_)[i]/numsamp_-x1rho*x1rho);
+      if (((*x1sumsqT_)[i]/numsamp_-x1T*x1T) > 0.0)
+        x1Trms   = std::sqrt((*x1sumsqT_)[i]/numsamp_-x1T*x1T);
 
       double x1uv   = (*x1sumuv_)[i]/numsamp_-x1u*x1v;
       double x1uw   = (*x1sumuw_)[i]/numsamp_-x1u*x1w;
@@ -1426,12 +1466,25 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x2rho  = (*x2sumrho_)[i]/numsamp_;
       double x2T    = (*x2sumT_)[i]/numsamp_;
 
-      double x2urms   = sqrt((*x2sumsqu_)[i]/numsamp_-x2u*x2u);
-      double x2vrms   = sqrt((*x2sumsqv_)[i]/numsamp_-x2v*x2v);
-      double x2wrms   = sqrt((*x2sumsqw_)[i]/numsamp_-x2w*x2w);
-      double x2prms   = sqrt((*x2sumsqp_)[i]/numsamp_-x2p*x2p);
-      double x2rhorms = sqrt((*x2sumsqrho_)[i]/numsamp_-x2rho*x2rho);
-      double x2Trms   = sqrt((*x2sumsqT_)[i]/numsamp_-x2T*x2T);
+      double x2urms   = 0.0;
+      double x2vrms   = 0.0;
+      double x2wrms   = 0.0;
+      double x2prms   = 0.0;
+      double x2rhorms = 0.0;
+      double x2Trms   = 0.0;
+
+      if (((*x2sumsqu_)[i]/numsamp_-x2u*x2u) > 0.0)
+        x2urms   = std::sqrt((*x2sumsqu_)[i]/numsamp_-x2u*x2u);
+      if (((*x2sumsqv_)[i]/numsamp_-x2v*x2v) > 0.0)
+        x2vrms   = std::sqrt((*x2sumsqv_)[i]/numsamp_-x2v*x2v);
+      if (((*x2sumsqw_)[i]/numsamp_-x2w*x2w) > 0.0)
+        x2wrms   = std::sqrt((*x2sumsqw_)[i]/numsamp_-x2w*x2w);
+      if (((*x2sumsqp_)[i]/numsamp_-x2p*x2p) > 0.0)
+        x2prms   = std::sqrt((*x2sumsqp_)[i]/numsamp_-x2p*x2p);
+      if (((*x2sumsqrho_)[i]/numsamp_-x2rho*x2rho) > 0.0)
+        x2rhorms = std::sqrt((*x2sumsqrho_)[i]/numsamp_-x2rho*x2rho);
+      if (((*x2sumsqT_)[i]/numsamp_-x2T*x2T) > 0.0)
+        x2Trms   = std::sqrt((*x2sumsqT_)[i]/numsamp_-x2T*x2T);
 
       double x2uv   = (*x2sumuv_)[i]/numsamp_-x2u*x2v;
       double x2uw   = (*x2sumuw_)[i]/numsamp_-x2u*x2w;
@@ -1477,12 +1530,25 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
       double x3rho  = (*x3sumrho_)[i]/numsamp_;
       double x3T    = (*x3sumT_)[i]/numsamp_;
 
-      double x3urms   = sqrt((*x3sumsqu_)[i]/numsamp_-x3u*x3u);
-      double x3vrms   = sqrt((*x3sumsqv_)[i]/numsamp_-x3v*x3v);
-      double x3wrms   = sqrt((*x3sumsqw_)[i]/numsamp_-x3w*x3w);
-      double x3prms   = sqrt((*x3sumsqp_)[i]/numsamp_-x3p*x3p);
-      double x3rhorms = sqrt((*x3sumsqrho_)[i]/numsamp_-x3rho*x3rho);
-      double x3Trms   = sqrt((*x3sumsqT_)[i]/numsamp_-x3T*x3T);
+      double x3urms   = 0.0;
+      double x3vrms   = 0.0;
+      double x3wrms   = 0.0;
+      double x3prms   = 0.0;
+      double x3rhorms = 0.0;
+      double x3Trms   = 0.0;
+
+      if (((*x3sumsqu_)[i]/numsamp_-x3u*x3u) > 0.0)
+        x3urms   = std::sqrt((*x3sumsqu_)[i]/numsamp_-x3u*x3u);
+      if (((*x3sumsqv_)[i]/numsamp_-x3v*x3v) > 0.0)
+        x3vrms   = std::sqrt((*x3sumsqv_)[i]/numsamp_-x3v*x3v);
+      if (((*x3sumsqw_)[i]/numsamp_-x3w*x3w) > 0.0)
+        x3wrms   = std::sqrt((*x3sumsqw_)[i]/numsamp_-x3w*x3w);
+      if (((*x3sumsqp_)[i]/numsamp_-x3p*x3p) > 0.0)
+        x3prms   = std::sqrt((*x3sumsqp_)[i]/numsamp_-x3p*x3p);
+      if (((*x3sumsqrho_)[i]/numsamp_-x3rho*x3rho) > 0.0)
+        x3rhorms = std::sqrt((*x3sumsqrho_)[i]/numsamp_-x3rho*x3rho);
+      if (((*x3sumsqT_)[i]/numsamp_-x3T*x3T) > 0.0)
+        x3Trms   = std::sqrt((*x3sumsqT_)[i]/numsamp_-x3T*x3T);
 
       double x3uv   = (*x3sumuv_)[i]/numsamp_-x3u*x3v;
       double x3uw   = (*x3sumuw_)[i]/numsamp_-x3u*x3w;
@@ -1529,74 +1595,74 @@ void FLD::TurbulenceStatisticsLdc::ClearStatistics()
 
   for(unsigned i=0; i<x1coordinates_->size(); ++i)
   {
-    (*x1sumu_)[i]=0;
-    (*x1sumv_)[i]=0;
-    (*x1sumw_)[i]=0;
-    (*x1sump_)[i]=0;
-    (*x1sumrho_)[i]=0;
-    (*x1sumT_)[i]=0;
+    (*x1sumu_)[i]=0.0;
+    (*x1sumv_)[i]=0.0;
+    (*x1sumw_)[i]=0.0;
+    (*x1sump_)[i]=0.0;
+    (*x1sumrho_)[i]=0.0;
+    (*x1sumT_)[i]=0.0;
 
-    (*x1sumsqu_)[i]=0;
-    (*x1sumsqv_)[i]=0;
-    (*x1sumsqw_)[i]=0;
-    (*x1sumsqp_)[i]=0;
-    (*x1sumsqrho_)[i]=0;
-    (*x1sumsqT_)[i]=0;
+    (*x1sumsqu_)[i]=0.0;
+    (*x1sumsqv_)[i]=0.0;
+    (*x1sumsqw_)[i]=0.0;
+    (*x1sumsqp_)[i]=0.0;
+    (*x1sumsqrho_)[i]=0.0;
+    (*x1sumsqT_)[i]=0.0;
 
-    (*x1sumuv_)[i] =0;
-    (*x1sumuw_)[i] =0;
-    (*x1sumvw_)[i] =0;
-    (*x1sumuT_)[i] =0;
-    (*x1sumvT_)[i] =0;
-    (*x1sumwT_)[i] =0;
+    (*x1sumuv_)[i] =0.0;
+    (*x1sumuw_)[i] =0.0;
+    (*x1sumvw_)[i] =0.0;
+    (*x1sumuT_)[i] =0.0;
+    (*x1sumvT_)[i] =0.0;
+    (*x1sumwT_)[i] =0.0;
   }
 
   for(unsigned i=0; i<x2coordinates_->size(); ++i)
   {
-    (*x2sumu_)[i]=0;
-    (*x2sumv_)[i]=0;
-    (*x2sumw_)[i]=0;
-    (*x2sump_)[i]=0;
-    (*x2sumrho_)[i]=0;
-    (*x2sumT_)[i]=0;
+    (*x2sumu_)[i]=0.0;
+    (*x2sumv_)[i]=0.0;
+    (*x2sumw_)[i]=0.0;
+    (*x2sump_)[i]=0.0;
+    (*x2sumrho_)[i]=0.0;
+    (*x2sumT_)[i]=0.0;
 
-    (*x2sumsqu_)[i]=0;
-    (*x2sumsqv_)[i]=0;
-    (*x2sumsqw_)[i]=0;
-    (*x2sumsqp_)[i]=0;
-    (*x2sumsqrho_)[i]=0;
-    (*x2sumsqT_)[i]=0;
+    (*x2sumsqu_)[i]=0.0;
+    (*x2sumsqv_)[i]=0.0;
+    (*x2sumsqw_)[i]=0.0;
+    (*x2sumsqp_)[i]=0.0;
+    (*x2sumsqrho_)[i]=0.0;
+    (*x2sumsqT_)[i]=0.0;
 
-    (*x2sumuv_)[i] =0;
-    (*x2sumuw_)[i] =0;
-    (*x2sumvw_)[i] =0;
-    (*x2sumuT_)[i] =0;
-    (*x2sumvT_)[i] =0;
-    (*x2sumwT_)[i] =0;
+    (*x2sumuv_)[i] =0.0;
+    (*x2sumuw_)[i] =0.0;
+    (*x2sumvw_)[i] =0.0;
+    (*x2sumuT_)[i] =0.0;
+    (*x2sumvT_)[i] =0.0;
+    (*x2sumwT_)[i] =0.0;
   }
 
   for(unsigned i=0; i<x3coordinates_->size(); ++i)
   {
-    (*x3sumu_)[i]=0;
-    (*x3sumv_)[i]=0;
-    (*x3sumw_)[i]=0;
-    (*x3sump_)[i]=0;
-    (*x3sumrho_)[i]=0;
-    (*x3sumT_)[i]=0;
+    (*x3sumu_)[i]=0.0;
+    (*x3sumv_)[i]=0.0;
+    (*x3sumw_)[i]=0.0;
+    (*x3sump_)[i]=0.0;
+    (*x3sumrho_)[i]=0.0;
+    (*x3sumT_)[i]=0.0;
 
-    (*x3sumsqu_)[i]=0;
-    (*x3sumsqv_)[i]=0;
-    (*x3sumsqw_)[i]=0;
-    (*x3sumsqp_)[i]=0;
-    (*x3sumsqrho_)[i]=0;
-    (*x3sumsqT_)[i]=0;
+    (*x3sumsqu_)[i]=0.0;
+    (*x3sumsqv_)[i]=0.0;
+    (*x3sumsqw_)[i]=0.0;
+    (*x3sumsqp_)[i]=0.0;
+    (*x3sumsqrho_)[i]=0.0;
+    (*x3sumsqT_)[i]=0.0;
 
-    (*x3sumuv_)[i] =0;
-    (*x3sumuw_)[i] =0;
-    (*x3sumvw_)[i] =0;
-    (*x3sumuT_)[i] =0;
-    (*x3sumvT_)[i] =0;
-    (*x3sumwT_)[i] =0;
+    (*x3sumuv_)[i] =0.0;
+    (*x3sumuw_)[i] =0.0;
+    (*x3sumvw_)[i] =0.0;
+    (*x3sumuT_)[i] =0.0;
+    (*x3sumvT_)[i] =0.0;
+    (*x3sumwT_)[i] =0.0;
   }
 
   return;

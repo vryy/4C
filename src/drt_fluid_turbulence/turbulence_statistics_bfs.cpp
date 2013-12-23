@@ -1497,10 +1497,19 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
         double x2w  = (*x2sumw_)(i,j)/numsamp_;
         double x2p  = (*x2sump_)(i,j)/numsamp_;
 
-        double x2urms  = std::sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
-        double x2vrms  = std::sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
-        double x2wrms  = std::sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
-        double x2prms  = std::sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
+        double x2urms  = 0.0;
+        double x2vrms  = 0.0;
+        double x2wrms  = 0.0;
+        double x2prms  = 0.0;
+
+        if (((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u) > 0.0)
+          x2urms  = std::sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
+        if (((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v) > 0.0)
+          x2vrms  = std::sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
+        if (((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w) > 0.0)
+          x2wrms  = std::sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
+        if (((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p) > 0.0)
+          x2prms  = std::sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
 
         double x2uv   = (*x2sumuv_)(i,j)/numsamp_-x2u*x2v;
         double x2uw   = (*x2sumuw_)(i,j)/numsamp_-x2u*x2w;
@@ -1650,10 +1659,19 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
         double x2rho   = (*x2sumrho_)(i,j)/numsamp_;
         double x2T     = (*x2sumT_)(i,j)/numsamp_;
 
-        double x2urms  = std::sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
-        double x2vrms  = std::sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
-        double x2wrms  = std::sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
-        double x2prms  = std::sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
+        double x2urms  = 0.0;
+        double x2vrms  = 0.0;
+        double x2wrms  = 0.0;
+        double x2prms  = 0.0;
+
+        if (((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u) > 0.0)
+          x2urms  = std::sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
+        if (((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v) > 0.0)
+          x2vrms  = std::sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
+        if (((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w) > 0.0)
+          x2wrms  = std::sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
+        if (((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p) > 0.0)
+          x2prms  = std::sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
 
 #ifdef COMBINE_SAMPLES
         double x2usq  = (*x2sumsqu_)(i,j)/numsamp_;
@@ -1845,10 +1863,19 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int          step)
 
         double x2T  = (*x2sumT_)(i,j)/numsamp_;
 
-        double x2urms  = std::sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
-        double x2vrms  = std::sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
-        double x2wrms  = std::sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
-        double x2prms  = std::sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
+        double x2urms  = 0.0;
+        double x2vrms  = 0.0;
+        double x2wrms  = 0.0;
+        double x2prms  = 0.0;
+
+        if (((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u) > 0.0)
+          x2urms  = std::sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
+        if (((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v) > 0.0)
+          x2vrms  = std::sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
+        if (((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w) > 0.0)
+          x2wrms  = std::sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
+        if (((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p) > 0.0)
+          x2prms  = std::sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
 
         // as T is constant in the inflow section
         // <T^2>-<T>*<T> should be zero
