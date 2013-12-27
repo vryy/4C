@@ -8,7 +8,7 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-small particle problem under gravity load with walls (e=0.8)
+small particle problem under gravity load with walls (e=0.8) using DEM
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        8
 NODES                           27
@@ -18,7 +18,7 @@ NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Particle
 RESTART                         0
-//RESTART                       6
+//RESTART                       2500
 SHAPEFCT                        Meshfree
 --------------------------------------------------------------------------IO
 OUTPUT_GID                      No
@@ -34,7 +34,7 @@ LIMIT_OUTP_TO_PROC              -1
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 CUTOFF_RADIUS                   0.025
-BOUNDINGBOX -0.100001 -0.100001 -0.100001 0.100001 0.100001 0.100001
+BOUNDINGBOX                     -0.100001 -0.100001 -0.100001 0.100001 0.100001 0.100001
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     10
@@ -52,9 +52,14 @@ TOLDISP                         1.0E-08
 TOLRES                          1.0E-08
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
-DYNAMICTYP                      ParticleCentrDiff
+DYNAMICTYP                      CentrDiff
+RESULTSEVRY                     10  
+RESTARTEVRY                     500 
+TIMESTEP                        1.0E-4
+NUMSTEP                         3000
+MAXTIME                         3.0 
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
-CONTACT_STRATEGY                NormalContact
+CONTACT_STRATEGY                NormalContact_DEM
 NORMAL_CONTACT_LAW              LinearSpring
 MIN_RADIUS                      0.01
 MAX_RADIUS                      0.01
@@ -84,11 +89,8 @@ NDVOL                           0
 NDPARTICLE                      0
 -------------------------------------------DESIGN PARTICLE DIRICH CONDITIONS
 DPARTICLE                       0
-//E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
 DPARTICLE                       0
-//E 1 - Velocity 1
-//E 2 - Velocity 2
 ------------------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF                           1
 //                              walls
@@ -164,11 +166,11 @@ FUNCT2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
 // initial velocity (z component)
 FUNCT2 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS particle NODE 1 QUANTITY velx VALUE 1.25114548763988198e+00 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 1 QUANTITY vely VALUE 6.16287729147628194e-01 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 1 QUANTITY velz VALUE -4.43076670308644838e-01 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 1 QUANTITY dispx VALUE -3.22857184719612875e-03 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 1 QUANTITY dispy VALUE -2.31705216942171555e-02 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 1 QUANTITY dispz VALUE -7.00739704742720099e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY velx VALUE 1.25114548763988198e+00 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY vely VALUE 6.16287729147628194e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY velz VALUE -4.43076670308644838e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -3.22857184719612875e-03 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE -2.31705216942171555e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE -7.00739704742720099e-02 TOLERANCE 1.0e-12
 -------------------------------------------------------------------------END
 //                              END

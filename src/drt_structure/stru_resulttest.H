@@ -41,6 +41,11 @@ namespace STR
   class TimInt;
 }
 
+namespace PARTICLE
+{
+  class TimInt;
+}
+
 /*!
   \brief Structure specific result test class
 */
@@ -50,6 +55,9 @@ public:
   //! Constructor for time integrators of general kind
   //! \author bborn \date 06/08
   StruResultTest(STR::TimInt& tintegrator);
+
+  //! Constructor for particle time integrators of general kind
+  StruResultTest(PARTICLE::TimInt& tintegrator);
 
   //! \brief structure version of nodal value tests
   //!
@@ -64,13 +72,13 @@ private:
   Teuchos::RCP<DRT::Discretization> strudisc_;
   // our solution
   //! global displacement DOFs
-  Teuchos::RCP<Epetra_Vector> dis_;
+  Teuchos::RCP<const Epetra_Vector> dis_;
   //! global material displacement DOFs
-  Teuchos::RCP<Epetra_Vector> dism_;
+  Teuchos::RCP<const Epetra_Vector> dism_;
   //! global velocity DOFs
-  Teuchos::RCP<Epetra_Vector> vel_;
+  Teuchos::RCP<const Epetra_Vector> vel_;
   //! global acceleration DOFs
-  Teuchos::RCP<Epetra_Vector> acc_;
+  Teuchos::RCP<const Epetra_Vector> acc_;
   /* NOTE: these have to be present explicitly
    * as they are not part of the problem instance like in fluid3
    */

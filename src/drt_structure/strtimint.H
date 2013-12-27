@@ -427,7 +427,7 @@ namespace STR
     }
 
     //! Attach file handle for energy file #energyfile_
-    virtual void AttachEnergyFile(std::string name = "");
+    virtual void AttachEnergyFile();
 
     //@}
 

@@ -1,0 +1,411 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file particle_timint.H
+\brief Time integration for structural dynamics
+
+<pre>
+Maintainer: Georg Hammerl
+            hammerl@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15237
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
+/* definitions */
+#ifndef PARTICLE_TIMINT_H
+#define PARTICLE_TIMINT_H
+
+/*----------------------------------------------------------------------*/
+/* headers */
+#include "../drt_adapter/adapter_particle.H"
+#include "../drt_structure/strtimint_mstep.H"
+#include "../drt_inpar/inpar_cavitation.H"
+
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_Time.h>
+
+#include <string>
+#include <iostream>
+#include <fstream>
+
+
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace LINALG
+{
+  class MapExtractor;
+}
+
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
+namespace PARTICLE
+{
+  class Algorithm;
+  class ParticleCollisionHandlerBase;
+}
+
+
+/*----------------------------------------------------------------------*/
+//! Particle Dynamics
+namespace PARTICLE
+{
+
+   /// Front-end for particle dynamics for integrating in time.
+  class TimInt : public ADAPTER::Particle
+  {
+
+  public:
+
+    //! @name Life
+    //@{
+
+    //! Print logo
+    void Logo();
+
+    //! Constructor
+    TimInt
+    (
+      const Teuchos::ParameterList& ioparams,  //!< ioflags
+      const Teuchos::ParameterList& particledynparams,  //!< input parameters
+      const Teuchos::ParameterList& xparams,  //!< extra flags
+      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
+      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    );
+
+    //! Destructor
+    virtual ~TimInt() { ; }
+
+    //@}
+
+    //! @name Actions
+    //@{
+
+    //! Equilibrate the initial state by identifying the consistent
+    //! initial accelerations
+    virtual void DetermineMassDampConsistAccel();
+
+    //! Apply Dirichlet boundary conditions on provided state vectors
+    virtual void ApplyDirichletBC
+    (
+      const double time,  //!< at time
+      Teuchos::RCP<Epetra_Vector> dis,  //!< displacements
+                                        //!< (may be Teuchos::null)
+      Teuchos::RCP<Epetra_Vector> vel,  //!< velocities
+                                        //!< (may be Teuchos::null)
+      Teuchos::RCP<Epetra_Vector> acc,  //!< accelerations
+                                       //!< (may be Teuchos::null)
+      bool recreatemap  //!< recreate mapextractor/toggle-vector
+                        //!< which stores the DOF IDs subjected
+                        //!< to Dirichlet BCs
+                        //!< This needs to be true if the bounded DOFs
+                        //!< have been changed.
+    );
+
+    //! acceleration is applied from given forces
+    virtual void ComputeAcc(
+      Teuchos::RCP<Epetra_Vector> f_contact,
+      Teuchos::RCP<Epetra_Vector> m_contact,
+      Teuchos::RCP<Epetra_Vector> acc,
+      Teuchos::RCP<Epetra_Vector> ang_acc
+      );
+
+    //! Do time integration of single step
+    virtual int IntegrateStep() = 0;
+
+    /// initialize particle problem
+    virtual void Init() = 0;
+
+    /// update at time step end
+    virtual void Update() = 0;
+
+    //! Update configuration after time step
+    //!
+    //! Thus the 'last' converged is lost and a reset of the time step
+    //! becomes impossible.
+    virtual void UpdateStepState() = 0;
+
+    //! Update time and step counter
+    virtual void UpdateStepTime();
+
+    //! State vectors are updated according to the new distribution of particles
+    virtual void UpdateStatesAfterParticleTransfer();
+
+    //! Set initial fields in structure (e.g. initial velocities)
+    virtual void SetInitialFields();
+
+    //! particle algorithm is set from outside
+    virtual void SetParticleAlgorithm(Teuchos::RCP<PARTICLE::Algorithm> algorithm) { particle_algorithm_ = algorithm; }
+
+    //! Calculate all output quantities depending on the constitutive model
+    //  (and, hence, on a potential material history)
+    virtual void PrepareOutput();
+
+    //! Calculate kinetic, internal and external energy
+    virtual void DetermineEnergy();
+
+    /// create result test for encapsulated structure algorithm
+    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
+    //@}
+
+
+    //! @name Output
+    //@{
+
+    //! Output to file
+    //! This routine always prints the last converged state, i.e.
+    //! \f$D_{n}, V_{n}, A_{n}\f$. So, #UpdateIncrement should be called
+    //! upon object prior to writing stuff here.
+    //! \author mwgee (originally) \date 03/07
+    virtual void OutputStep(bool forced_writerestart = false);
+
+    //! Write restart
+    virtual void OutputRestart
+    (
+      bool& datawritten  //!< (in/out) read and append if
+                         //!< it was written at this time step
+    );
+    //! Output displacements, velocities and accelerations
+    //! and more system vectors
+    virtual void OutputState
+    (
+      bool& datawritten  //!< (in/out) read and append if
+                         //!< it was written at this time step
+    );
+
+    //! Add restart information to OutputState
+    virtual void AddRestartToOutputState();
+
+    //! Energy output
+    virtual void OutputEnergy();
+
+    //! Check whether energy output file is attached
+    bool AttachedEnergyFile()
+    {
+      if (not energyfile_.is_null()) return true;
+      else return false;
+    }
+
+    //! Attach file handle for energy file #energyfile_
+    virtual void AttachEnergyFile();
+
+    //@}
+
+    //! @name Access methods
+    //@{
+
+    //! Access dicretisation
+    virtual Teuchos::RCP<DRT::Discretization> Discretization()
+    {
+      return discret_;
+    }
+
+    //! Access to rcp pointer to dofrowmap of discretization
+    virtual const Epetra_Map* DofRowMapView();
+
+    //! dof map of vector of unknowns
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap();
+
+    //! Access output object
+    virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
+    {
+      return output_;
+    }
+
+    //! Return MapExtractor for Dirichlet boundary conditions
+    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    {
+      return dbcmaps_;
+    }
+
+    //! Read restart values
+    virtual void ReadRestart
+    (
+      const int step //!< restart step
+    );
+
+    //! Read and set restart state
+    virtual void ReadRestartState();
+
+    //! known displacements at \f$t_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn(){ return (*dis_)(0); }
+
+    //! unknown displacements at \f$t_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp(){ return disn_; }
+
+    //! unknown velocities \f$V_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Veln() { return (*vel_)(0); }
+
+    //! unknown accelerations \f$A_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Accn() { return (*acc_)(0); }
+
+    //! Return velocities \f$V_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp() { return veln_; }
+
+    //! Return radii of particles
+    virtual Teuchos::RCP<const Epetra_Vector> Radius() { return radius_; }
+
+    //! Return mass of particles
+    virtual Teuchos::RCP<const Epetra_Vector> Mass() { return mass_; }
+
+    //! Return density
+    virtual const double ParticleDensity() { return density_; }
+
+    //@}
+
+    //! @name Extract methods
+    //@{
+
+    /// extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp(){ return disn_; }
+
+    //! extract displacements
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn(){ return (*dis_)(0); }
+
+    //! extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVeln(){ return (*vel_)(0); }
+
+    //! extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp(){ return veln_; }
+
+    //! Return radii of particles
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius() { return radius_; }
+
+    //! extract mass vector
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessMass() { return mass_; }
+
+    //@}
+
+    //! Set forces due to interface loads, the force is expected external-force-like
+    virtual void SetForceInterface
+    (
+      Teuchos::RCP<Epetra_MultiVector> iforce  ///< the force on interface
+    );
+
+    //! @name Time step helpers
+    //@{
+
+    //! Return current step number map
+    double GetTime() const { return (*time_)[0]; }
+
+    //! Get time step size \f$\Delta t_n\f$
+    double GetTimeStepSize() const { return (*dt_)[0]; }
+
+    //! Set time step size \f$\Delta t_n\f$
+    void SetDt(const double dtnew) { (*dt_)[0] = dtnew; }
+
+    //! Return current step number map
+    int GetStep() const { return step_; }
+
+    //@}
+
+  protected:
+
+    //! @name General purpose algorithm members
+    //@{
+    Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
+    int myrank_;  //!< ID of actual processor in parallel
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  //!< map extractor object
+                                                  //!< containing non-overlapping
+                                                  //!< map of global DOFs on Dirichlet
+                                                  //!< boundary conditions
+    //@}
+
+    //! @name Printing and output
+    //@{
+    Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
+    bool printlogo_;  //!< true: enjoy your cuppa
+    int printscreen_;  //!< print infos to standard out every n steps
+    FILE* errfile_;  //!< error file handle
+    bool printerrfile_;  //!< print infos to error file #errfile_
+    int writerestartevery_;  //!< write restart every given step;
+                             //!< if 0, restart is not written
+    bool writestate_;  //!< write state on/off
+    bool writevelacc_;  //!< write velocity and acceleration on/off
+    int writeresultsevery_;  //!< write state/stress/strain every given step
+    int writeenergyevery_;  //!< write system energy every given step
+    Teuchos::RCP<std::ofstream> energyfile_;  //!< outputfile for energy
+    bool writeorientation_;  //!< write orientation of particle on/off
+
+    double kinergy_; //!< kinetic energy
+    double intergy_; //!< internal energy
+    double extergy_; //!< external energy
+    //@}
+
+    //! @name General control parameters
+    //@{
+    Teuchos::RCP<STR::TimIntMStep<double> > time_;  //!< time \f$t_{n}\f$ of last converged step
+    double timen_;  //!< target time \f$t_{n+1}\f$
+    Teuchos::RCP<STR::TimIntMStep<double> > dt_;  //!< time step size \f$\Delta t\f$
+    double timemax_;  //!< final time \f$t_\text{fin}\f$
+    int stepmax_;  //!< final step \f$N\f$
+    int step_;  //!< time step index \f$n\f$
+    int stepn_;  //!< time step index \f$n+1\f$
+    //@}
+
+    //! @name Global state vectors
+    //@{
+
+    //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
+    Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > dis_;
+    //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
+    Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > vel_;
+    //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
+    Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > acc_;
+    //! global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> disn_;
+    //! global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> veln_;
+    //! global accelerations \f${A}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> accn_;
+    //! radius of each particle at \f$t_{n}\f$
+    Teuchos::RCP<Epetra_Vector> radius_;
+    //! mass of each particle at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> mass_;
+    //! moment of inertia of each particle at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> inertia_;
+    //! global angular-velocities \f${V}_{n}, V_{n-1}, ...\f$
+    Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > ang_vel_;
+    //! global angular-accelerations \f${A}_{n}, A_{n-1}, ...\f$
+    Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > ang_acc_;
+    //! global angular-velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> ang_veln_;
+    //! global angular-acceleration \f${A}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> ang_accn_;
+    //! global vector for visualization of particle orientation
+    Teuchos::RCP<Epetra_Vector> orient_;
+    //! density of each particle at \f$t_{n+1}\f$
+    double density_;
+    //! additional external forces
+    Teuchos::RCP<Epetra_Vector> fifc_;
+
+    //@}
+
+    //! @name helper classes
+    //@{
+
+    //! particle algorithm that is connected to the time integration
+    Teuchos::RCP<PARTICLE::Algorithm> particle_algorithm_;
+
+    //! collision handler for particles
+    Teuchos::RCP<PARTICLE::ParticleCollisionHandlerBase> collhandler_;
+
+    //@}
+
+  };
+
+}  // namespace STR
+
+/*----------------------------------------------------------------------*/
+#endif  // #ifndef STRTIMINT_H

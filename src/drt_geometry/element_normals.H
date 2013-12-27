@@ -139,10 +139,10 @@ inline void computeNormalAndTangentToSurfaceElementViaShape(
 \param eleCoord              (in)   node in element coordinates (r, s)
 \param unitnormalvec         (out)  unit normal vector
 */
-template<DRT::Element::DiscretizationType DISTYPE, class M>
+template<DRT::Element::DiscretizationType DISTYPE, class M, class V>
 inline void computeNormalToSurfaceElementT(
     const M&                      xyze_surfaceElement,
-    const LINALG::Matrix<2,1>&    eleCoord,
+    const V&                      eleCoord,
     LINALG::Matrix<3,1>&          unitnormalvec)
 {
   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -186,11 +186,11 @@ inline void computeNormalAndTangentToSurfaceElementT(
 \param eleCoord              (in) :  node in element coordinates (r, s)
 \param unitnormalvec         (out):  unit normal vector
 */
-template <class M>
+template <class M, class V>
 inline void computeNormalToSurfaceElement(
     const DRT::Element::DiscretizationType  distype,
     const M&                                xyze_surfaceElement,
-    const LINALG::Matrix<2,1>&              eleCoord,
+    const V&                                eleCoord,
     LINALG::Matrix<3,1>&                    unitnormalvec)
 {
   switch (distype)

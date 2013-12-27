@@ -16,8 +16,7 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 11/12 |
  *----------------------------------------------------------------------*/
 #include "cavitation_algorithm.H"
-#include "particle_timint_centrdiff.H"
-
+#include "../drt_adapter/adapter_particle.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
@@ -37,7 +36,7 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
   Teuchos::RCP<Epetra_FEVector> void_volumes = Teuchos::rcp(new Epetra_FEVector(*fluiddis_->ElementRowMap()));
 
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispn();
-  Teuchos::RCP<Epetra_Vector> particleradius = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadius();
+  Teuchos::RCP<const Epetra_Vector> particleradius = particles_->Radius();
 
   std::set<int> examinedbins;
   int numrownodes = particledis_->NodeRowMap()->NumMyElements();

@@ -20,10 +20,8 @@ Maintainer: Georg Hammerl
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_cavitation.H"
 #include "particle_node.H"
+#include "../drt_lib/drt_element.H"
 
-/*----------------------------------------------------------------------*/
-/* defines */
-#define energyoutput
 
 // forward declarations
 namespace DRT
@@ -35,6 +33,8 @@ namespace PARTICLE
 {
   class Algorithm;
 }
+
+
 /*----------------------------------------------------------------------*/
 /* belongs to particle namespace */
 namespace PARTICLE
@@ -42,14 +42,12 @@ namespace PARTICLE
 
   /*====================================================================*/
   /*!
-   * \brief Collision handling with the discrete element method
-   *  assuming rigid spherical particles
-   *  For details see Bachelor thesis Niklas Fehn
+   * \brief Collision handler base for particle contact
    *
    * \author hammerl
    * \date 09/13
    */
-  class ParticleCollisionHandler
+  class ParticleCollisionHandlerBase
   {
 
   public:
@@ -58,7 +56,14 @@ namespace PARTICLE
     //@{
 
     //! Constructor
-    ParticleCollisionHandler(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm);
+    ParticleCollisionHandlerBase(
+      Teuchos::RCP<DRT::Discretization> discret,
+      Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
+      const Teuchos::ParameterList& particledynparams
+      );
+
+    //! Destructor
+    virtual ~ParticleCollisionHandlerBase(){ ; }
 
     //@}
 
@@ -66,52 +71,37 @@ namespace PARTICLE
     //@{
 
     /// set states from time integrator to prepare collision calculation
-    void SetState(
+    virtual void SetState(
       Teuchos::RCP<Epetra_Vector> radius,
       Teuchos::RCP<Epetra_Vector> mass
       );
 
-    /// compute collisions (inter-particle and particle-wall), returns contact energy
-    double ComputeCollisions(double dt, Teuchos::RCP<Epetra_Vector>& f_contact, Teuchos::RCP<Epetra_Vector>& m_contact);
+    /// get bins in range and call FindNeighbors
+    void GetNeighbouringParticlesAndWalls(
+      DRT::Node* CurrentParticle,
+      std::set<DRT::Node*>& NeighboringParticles,
+      std::set<DRT::Element*>& NeighboringWallEles
+      );
 
-    /// get neighboring particles and wall elements
-    void FindNeighbors(
+    /// get particles and wall elements in given bins
+    virtual void GetBinContent(
       std::set<DRT::Node*>& NeighboringParticles,
       std::set<DRT::Element*>& NeighboringWallEles,
       std::set<int>& binIds
       );
 
-    /// calculate normal contact force for single contact pair
-    void CalculateNormalContactForce(
-        double g,
-        double v_rel_normal,
-        double m_eff,
-        double& ContactForce,
-        int owner_i,
-        int owner_j
-        );
-
-    /// calculate tangential contact force
-    void CalculateTangentialContactForce(
-        double ContactForce,
-        double *normal,
-        double *TangentialContactForce,
-        PARTICLE::Collision &currentColl,
-        double *v_rel_tangential,
-        double m_eff,
-        const double dt,
-        int owner_i,
-        int owner_j
-        );
-
     /// read initial contact parameters and validate them
-    void ReadContactParameters(double density);
+    virtual void ReadContactParameters(double density);
 
     /// assemble energies of particles
-    double EnergyAssemble(double owner_i, double owner_j);
+    virtual double EnergyAssemble(double owner_i, double owner_j);
 
-    /// print maximum penetration of particles
-    void PrintMaxPenetration(int step, double time);
+    /// compute collisions (inter-particle and particle-wall), returns contact energy
+    virtual double EvaluateParticleContact(
+      double dt,
+      Teuchos::RCP<Epetra_Vector> sysvec1,
+      Teuchos::RCP<Epetra_Vector> sysvec2
+      ) = 0;
 
     //@}
 
@@ -119,14 +109,17 @@ namespace PARTICLE
     //@{
 
     /// return minimal radius to be expected
-    double GetMinRadius() { return r_min_; }
+    virtual double GetMinRadius() { return r_min_; }
 
     // return maximum radius to be expected
-    double GetMaxRadius() { return r_max_; }
+    virtual double GetMaxRadius() { return r_max_; }
+
+    /// return maximum penetration of particles
+    virtual double GetMaxPenetration() {return g_max_; }
 
     //@}
 
-  private:
+  protected:
 
     /// ID of actual processor in parallel
     int myrank_;
@@ -207,19 +200,26 @@ namespace PARTICLE
     /// maximum penetration occured
     double g_max_;
 
+    //! write system energy every given step
+    int writeenergyevery_;
+
     //@}
 
     //! @name Global properties in col layout at \f$t_{n+1}\f$ for collision detection
     //@{
 
-    // node-based
+    //! @node-based
+    //@{
     Teuchos::RCP<Epetra_Vector> radiusncol_;
     Teuchos::RCP<Epetra_Vector> masscol_;
+    //@}
 
-    // dof-based
-    Teuchos::RCP<const Epetra_Vector> disncol_;
-    Teuchos::RCP<const Epetra_Vector> velncol_;
+    //! @dof-based
+    //@{
+    Teuchos::RCP<Epetra_Vector> disncol_;
+    Teuchos::RCP<Epetra_Vector> velncol_;
     Teuchos::RCP<const Epetra_Vector> ang_velncol_;
+    //@}
 
     //@}
 
@@ -233,6 +233,269 @@ namespace PARTICLE
     };
 
   };  // class ParticleCollisionHandler
+
+
+  /*====================================================================*/
+  /*!
+   * \brief Collision handling with the discrete element method
+   *  assuming rigid spherical particles
+   *  For details see Bachelor thesis Niklas Fehn
+   *
+   * \author hammerl
+   * \date 09/13
+   */
+  class ParticleCollisionHandlerDEM : public PARTICLE::ParticleCollisionHandlerBase
+  {
+
+  public:
+
+  //! @name Life
+  //@{
+
+  //! Constructor
+  ParticleCollisionHandlerDEM(
+    Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
+    const Teuchos::ParameterList& particledynparams
+    );
+
+  //! Destructor
+  virtual ~ParticleCollisionHandlerDEM(){ ; }
+
+  //@}
+
+  //! @name Actions
+  //@{
+
+  /// compute collisions (inter-particle and particle-wall), returns contact energy
+  virtual double EvaluateParticleContact(
+    double dt,
+    Teuchos::RCP<Epetra_Vector> f_contact,
+    Teuchos::RCP<Epetra_Vector> m_contact
+    );
+
+  /// calculate normal contact force for single contact pair
+  virtual void CalculateNormalContactForce(
+    double g,
+    double v_rel_normal,
+    double m_eff,
+    double& ContactForce,
+    int owner_i,
+    int owner_j
+    );
+
+  /// calculate tangential contact force
+  virtual void CalculateTangentialContactForce(
+    double ContactForce,
+    double *normal,
+    double *TangentialContactForce,
+    PARTICLE::Collision &currentColl,
+    double *v_rel_tangential,
+    double m_eff,
+    const double dt,
+    int owner_i,
+    int owner_j
+    );
+
+  //@}
+
+   private:
+
+   };  // class ParticleCollisionHandlerDEM
+
+
+
+  // event to store future inter-particle collision
+  class Event
+  {
+  public:
+
+     /// Constructor
+    explicit Event(
+      INPAR::PARTICLE::coltype coltype,
+      double time,
+      DRT::Node* part_1,
+      DRT::Node* part_2
+      ) : coltype(coltype),
+      time(time),
+      particle_1(part_1),
+      particle_2(part_2)
+      { ; }
+
+    /// Destructor
+    virtual ~Event(){ ; }
+
+    INPAR::PARTICLE::coltype coltype;
+    double time;
+    DRT::Node* particle_1;
+    DRT::Node* particle_2;
+
+    struct Helper
+    {
+      /// operator to sort two events in increasing time
+      bool operator()(Teuchos::RCP<Event> event1, Teuchos::RCP<Event> event2);
+    };
+  };
+
+  // event to store future particle-wall collision
+  class WallEvent : public PARTICLE::Event
+  {
+  public:
+
+    /// Constructor
+    explicit WallEvent(
+      INPAR::PARTICLE::coltype coltype,
+      double time,
+      DRT::Node* part_1,
+      DRT::Element* wall,
+      LINALG::Matrix<3,1> wallcollpoint_pos,
+      LINALG::Matrix<3,1> wallcollpoint_vel
+      ) : Event(coltype, time, part_1, NULL),
+      wall(wall),
+      wallcollpoint_pos(wallcollpoint_pos),
+      wallcollpoint_vel(wallcollpoint_vel)
+      { ; }
+
+    /// Destructor
+    virtual ~WallEvent(){ ; }
+
+    DRT::Element* wall;
+    LINALG::Matrix<3,1> wallcollpoint_pos;
+    LINALG::Matrix<3,1> wallcollpoint_vel;
+  };
+
+
+
+  /*====================================================================*/
+  /*!
+   * \brief Collision handling with the molecular dynamics like type
+   *  assuming rigid spherical particles
+   *
+   * \author hammerl
+   * \date 09/13
+   */
+  class ParticleCollisionHandlerMD : public PARTICLE::ParticleCollisionHandlerBase
+  {
+  public:
+
+    //! @name Life
+    //@{
+
+    //! Constructor
+    ParticleCollisionHandlerMD(
+      Teuchos::RCP<DRT::Discretization> discret,
+      Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
+      const Teuchos::ParameterList& particledynparams
+      );
+
+    //! Destructor
+    virtual ~ParticleCollisionHandlerMD(){ ; }
+
+    //@}
+
+    //! @name Actions
+    //@{
+
+    /// compute series of collisions (inter-particle and particle-wall) during on time step, returns contact energy
+    virtual double EvaluateParticleContact(
+      double dt,
+      Teuchos::RCP<Epetra_Vector> disn,
+      Teuchos::RCP<Epetra_Vector> veln
+      );
+
+    /// contact for one event is evaluated
+    void HandleCollision(
+      Teuchos::RCP<Event> next_event,
+      const double dt
+      );
+
+    /// returns time to inter-particle collision in event
+    Teuchos::RCP<Event> ComputeCollisionWithParticle(
+      DRT::Node* particle1,
+      DRT::Node* particle2,
+      const double remaining_dt
+      );
+
+    /// returns time to particle-wall collision in event
+    Teuchos::RCP<WallEvent> ComputeCollisionWithWall(
+      DRT::Node* particle1,
+      DRT::Element* wall,
+      const double dt
+      );
+
+    /// setup of initial event queue at time step begin
+    void InitializeEventQueue(
+      std::set<Teuchos::RCP<Event>, PARTICLE::Event::Helper>& eventqueue,
+      const double dt
+      );
+
+    /// event queue is filled with new events based on particles that have just collided
+    void SearchForNewCollisions(
+      Teuchos::RCP<Event> event,
+      std::set<Teuchos::RCP<Event>, Event::Helper>& eventqueue,
+      const double dt
+      );
+
+    /// computes time to collision between a particle and and an element for hard sphere
+    /// particles (templated on distype of element)
+    template<DRT::Element::DiscretizationType DISTYPE>
+    void ComputeCollisionOfParticleWithElementT(
+        const Epetra_SerialDenseMatrix& xyze_n,
+        const Epetra_SerialDenseMatrix& xyze_final,
+        const LINALG::Matrix<3,1>& position,
+        const LINALG::Matrix<3,1>& velocity,
+        const double radius,
+        double& timetocollision,
+        LINALG::Matrix<3,1>& wall_pos,
+        LINALG::Matrix<3,1>& wall_vel,
+        const double remaining_dt,
+        const double dt);
+
+    /// computes time to collision between a particle and and an element for hard sphere particles
+    void ComputeCollisionOfParticleWithElement(
+        const DRT::Element::DiscretizationType distype,
+        const Epetra_SerialDenseMatrix& xyze_current,
+        const Epetra_SerialDenseMatrix& xyze_final,
+        const LINALG::Matrix<3,1>& position,
+        const LINALG::Matrix<3,1>& velocity,
+        const double radius,
+        double& timetocollision,
+        LINALG::Matrix<3,1>& wall_pos,
+        LINALG::Matrix<3,1>& wall_vel,
+        const double remaining_dt,
+        const double dt);
+
+    /// necessary data for computing inter-particle collisions is returned
+    void GetCollisionData(
+      const DRT::Node* particle1,
+      const DRT::Node* particle2,
+      LINALG::Matrix<3,1>& pos_1,
+      LINALG::Matrix<3,1>& pos_2,
+      LINALG::Matrix<3,1>& vel_1,
+      LINALG::Matrix<3,1>& vel_2,
+      double& rad_1,
+      double& rad_2,
+      double& ddt_1,
+      double& ddt_2
+      );
+
+    /// necessary data for computing particle collision is returned
+    void GetCollisionData(
+      const DRT::Node* particle,
+      LINALG::Matrix<3,1>& pos,
+      LINALG::Matrix<3,1>& vel,
+      double& rad,
+      double& ddt
+      );
+
+     //@}
+
+   private:
+
+   Teuchos::RCP<Epetra_Vector> ddt_;   ///< col vector containing the current time of each particle between [0,dt)
+
+
+   };  // class ParticleCollisionHandlerMD
 
 }  // namespace PARTICLE
 

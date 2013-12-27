@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_timint_centrdiff.H
-\brief Particle time integration with central difference scheme 2nd order (explicit),
-              also known as Velocity-Verlet algorithm
+\file particle_timint_expleuler.H
+\brief Particle time integration with Forward Euler time integration
+       scheme of 1st order (explicit),
 
 <pre>
 Maintainer: Georg Hammerl
@@ -13,8 +13,8 @@ Maintainer: Georg Hammerl
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef PARTICLE_TIMINT_CENTRDIFF_H
-#define PARTICLE_TIMINT_CENTRDIFF_H
+#ifndef PARTICLE_TIMINT_EXPLEULER_H
+#define PARTICLE_TIMINT_EXPLEULER_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -28,13 +28,13 @@ namespace PARTICLE
 
   /*====================================================================*/
   /*!
-   * \brief Central differences: 2nd order accurate,
+   * \brief Explicit Euler:      1st order accurate,
    *                             explicit time integrator,
    *                             1-step method
    * \author hammerl
    * \date 09/12
    */
-  class TimIntCentrDiff : public TimIntExpl
+  class TimIntExplEuler : public PARTICLE::TimIntExpl
   {
 
   public:
@@ -43,7 +43,7 @@ namespace PARTICLE
     //@{
 
     //! Constructor
-    TimIntCentrDiff
+    TimIntExplEuler
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& particledynparams,  //!< input parameters
@@ -53,7 +53,7 @@ namespace PARTICLE
     );
 
     //! Destructor
-    virtual ~TimIntCentrDiff(){ ; }
+    virtual ~TimIntExplEuler(){ ; }
 
     //@}
 
@@ -70,9 +70,9 @@ namespace PARTICLE
 
   protected:
 
-  };  // class TimIntCentrDiff
+  };  // class TimIntExplEuler
 
 }  // namespace PARTICLE
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef PARTICLE_TIMINT_CENTRDIFF_H
+#endif  // #ifndef PARTICLE_TIMINT_EXPLEULER_H

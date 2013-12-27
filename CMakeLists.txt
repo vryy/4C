@@ -1273,7 +1273,6 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/strtimint_create.cpp
   src/drt_structure/strtimint_ab2.cpp
   src/drt_structure/strtimint_centrdiff.cpp
-  src/drt_particle/particle_timint_centrdiff.cpp
   src/drt_structure/strtimint_expl.cpp
   src/drt_structure/strtimint_expleuler.cpp
   src/drt_structure/strtimint_gemm.cpp
@@ -1294,6 +1293,11 @@ set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
 set(OBJS_DRT_PARTICLE
+  src/drt_adapter/adapter_particle.cpp
+  src/drt_particle/particle_timint.cpp
+  src/drt_particle/particle_timint_expl.cpp
+  src/drt_particle/particle_timint_centrdiff.cpp
+  src/drt_particle/particle_timint_expleuler.cpp
   src/drt_particle/particle_dyn.cpp
   src/drt_particle/binning_strategy.cpp
   src/drt_particle/particle_algorithm.cpp

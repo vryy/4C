@@ -16,7 +16,7 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 11/12 |
  *----------------------------------------------------------------------*/
 #include "scatra_particle_coupling.H"
-#include "particle_timint_centrdiff.H"
+#include "../drt_adapter/adapter_particle.H"
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_calc.H"
@@ -134,7 +134,7 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
 
   //--------------------------------------------------------------------
   // -> 1) create a set of homeless particles that are not in a bin on this proc
-  std::set<Teuchos::RCP<DRT::Node>,PARTICLE::Less> homelessparticles;
+  std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less> homelessparticles;
 
   for (int lid = 0; lid < particlerowmap->NumMyElements(); ++lid)
   {
@@ -152,17 +152,14 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   // the following has only to be done once --> skip in case of restart
   if(not restarted)
   {
-    // access structural dynamic params list which will be possibly modified while creating the time integrator
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
     // create time integrator based on structural time integration
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> particles =
-        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(), const_cast<Teuchos::ParameterList&>(sdyn), particledis_));
-    particles_ = particles->StructureFieldrcp();
+    Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
+        Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(), particledis_));
+    particles_ = particles->ParticleField();
 
     // determine consistent initial acceleration for the particles
     CalculateAndApplyForcesToParticles();
-    Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->DetermineMassDampConsistAccel();
+    particles_->DetermineMassDampConsistAccel();
   }
 
   // some output

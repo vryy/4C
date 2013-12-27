@@ -888,7 +888,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "GEMM",
                                  "ExplicitEuler",
                                  "CentrDiff",
-                                 "ParticleCentrDiff",
                                  "AdamsBashforth2",
                                  "EulerMaruyama",
                                  "EulerImpStoch",
@@ -900,7 +899,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::dyna_gemm,
                                  INPAR::STR::dyna_expleuler,
                                  INPAR::STR::dyna_centrdiff,
-                                 INPAR::STR::dyna_particle_centrdiff,
                                  INPAR::STR::dyna_ab2,
                                  INPAR::STR::dyna_euma,
                                  INPAR::STR::dyna_euimsto,
@@ -922,7 +920,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("RESULTSEVRY",1,"save displacements and contact forces every RESULTSEVRY steps",&sdyn);
   IntParameter("RESEVRYERGY",0,"write system energies every requested step",&sdyn);
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&sdyn);
-  BoolParameter("WRITE_INITIAL_MESH","yes","write initial mesh on/off",&sdyn);
   // Time loop control
   DoubleParameter("TIMESTEP",0.05,"time step size",&sdyn);
   IntParameter("NUMSTEP",200,"maximum number of steps",&sdyn);
@@ -6285,27 +6282,42 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
        false,
        "control parameters for particle problems\n");
 
-   setStringToIntegralParameter<int>("DYNAMICTYP","ParticleCentrDiff",
+   setStringToIntegralParameter<int>("DYNAMICTYP","CentrDiff",
                                 "type of time integration control",
                                 tuple<std::string>(
-                                  "ParticleCentrDiff"),
+                                  "ExplicitEuler",
+                                  "CentrDiff",
+                                  "RungeKutta"),
                                 tuple<int>(
-                                  INPAR::STR::dyna_particle_centrdiff
+                                  INPAR::PARTICLE::dyna_expleuler,
+                                  INPAR::PARTICLE::dyna_centrdiff,
+                                  INPAR::PARTICLE::dyna_rungekutta
                                 ),
                                 &particledyn);
+
+   // Output type
+   IntParameter("RESULTSEVRY",1,"save displacements and contact forces every RESULTSEVRY steps",&particledyn);
+   IntParameter("RESEVRYERGY",0,"write system energies every requested step",&particledyn);
+   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&particledyn);
+   // Time loop control
+   DoubleParameter("TIMESTEP",0.05,"time step size",&particledyn);
+   IntParameter("NUMSTEP",200,"maximum number of steps",&particledyn);
+   DoubleParameter("MAXTIME",5.0,"maximum time",&particledyn);
 
    setStringToIntegralParameter<int>(
                                "CONTACT_STRATEGY","None",
                                "Contact strategies for particle problems",
                                tuple<std::string>(
                                  "None",
-                                 "NormalContact",
-                                 "NormalAndTangentialContact"
+                                 "NormalContact_DEM",
+                                 "NormalContact_MD",
+                                 "NormalAndTangentialContact_DEM"
                                  ),
                                tuple<int>(
                                  INPAR::PARTICLE::None,
-                                 INPAR::PARTICLE::Normal,
-                                 INPAR::PARTICLE::NormalAndTang
+                                 INPAR::PARTICLE::Normal_DEM,
+                                 INPAR::PARTICLE::Normal_MD,
+                                 INPAR::PARTICLE::NormalAndTang_DEM
                                  ),
                                &particledyn);
 

@@ -2634,13 +2634,13 @@ void STR::TimInt::ApplyDisMat(
 
 /*----------------------------------------------------------------------*/
 /* Attach file handle for energy file #energyfile_                      */
-void STR::TimInt::AttachEnergyFile(std::string name)
+void STR::TimInt::AttachEnergyFile()
 {
-  if (energyfile_.is_null() or name != "")
+  if (energyfile_.is_null())
   {
     std::string energyname
       = DRT::Problem::Instance()->OutputControlFile()->FileName()
-      + name + ".energy";
+      + ".energy";
     energyfile_ = Teuchos::rcp(new std::ofstream(energyname.c_str()));
     (*energyfile_) << "# timestep time total_energy"
                    << " kinetic_energy internal_energy external_energy"

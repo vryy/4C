@@ -16,6 +16,7 @@ Maintainer: Alexander Popp
 #include <string>
 #include "stru_resulttest.H"
 #include "strtimint.H"
+#include "../drt_particle/particle_timint.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -34,6 +35,17 @@ StruResultTest::StruResultTest(STR::TimInt& tintegrator)
     dism_ = tintegrator.Dismat();
   else
     dism_=Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+StruResultTest::StruResultTest(PARTICLE::TimInt& tintegrator)
+  : DRT::ResultTest("PARTICLE")
+{
+  dis_  = tintegrator.Dispn();
+  vel_  = tintegrator.Veln();
+  acc_  = tintegrator.Accn();
+  strudisc_ = tintegrator.Discretization();
 }
 
 /*----------------------------------------------------------------------*/

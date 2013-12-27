@@ -2,7 +2,7 @@
 /*!
 \file inpar_cavitation.H
 
-\brief Input parameters for cavitation
+\brief Input parameters for particle and cavitation problems
 
 <pre>
 Maintainer: Georg Hammerl
@@ -23,12 +23,22 @@ namespace INPAR
   /// Input parameters for particle/cavitation problems
 	namespace PARTICLE
 	{
+
+    /// Type of time integrator
+    enum DynamicType
+    {
+      dyna_expleuler,                  ///< forward Euler (explicit)
+      dyna_centrdiff,                  ///< central differences (explicit)
+      dyna_rungekutta                 ///< Runge-Kutta 2/4 (explicit)
+    };
+
 	  /// Contact type for particles
 		enum ContactStrategy
 		{
 			None,
-			Normal,
-			NormalAndTang
+			Normal_DEM,
+			Normal_MD,
+			NormalAndTang_DEM
 		};
 
 		/// Normal contact law
@@ -41,6 +51,14 @@ namespace INPAR
 			KuwabaraKono,
 			Tsuji
 		};
+
+    //! type of collision
+    enum coltype
+    {
+      particle_particle,
+      particle_wall,
+      undefined
+    };
 	}
 
   /// Input parameters for cavitation

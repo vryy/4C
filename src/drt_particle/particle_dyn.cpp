@@ -37,7 +37,7 @@ void particle_drt()
   {
     case prb_particle:
     {
-      const Teuchos::ParameterList& params = DRT::Problem::Instance()->StructuralDynamicParams();
+      const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParams();
       /// algorithm is created
       Teuchos::RCP<PARTICLE::Algorithm> particlesimulation = Teuchos::rcp(new PARTICLE::Algorithm(comm,params));
 

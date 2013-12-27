@@ -1,8 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_timint_centrdiff.H
-\brief Particle time integration with central difference scheme 2nd order (explicit),
-              also known as Velocity-Verlet algorithm
+\file particle_timint_expl.H
+\brief Particle time integration with explicit time integration
 
 <pre>
 Maintainer: Georg Hammerl
@@ -13,12 +12,12 @@ Maintainer: Georg Hammerl
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef PARTICLE_TIMINT_CENTRDIFF_H
-#define PARTICLE_TIMINT_CENTRDIFF_H
+#ifndef PARTICLE_TIMINT_EXPL_H
+#define PARTICLE_TIMINT_EXPL_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "particle_timint_expl.H"
+#include "particle_timint.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -28,13 +27,16 @@ namespace PARTICLE
 
   /*====================================================================*/
   /*!
-   * \brief Central differences: 2nd order accurate,
-   *                             explicit time integrator,
-   *                             1-step method
+   * \brief Front-end for particle dynamics with explicit time integrators
+   *
+   * <h3> About </h3>
+   * This object bridges the gap between the base time integator PARITCLE::TimInt
+   * and the specific implementation of explicit time integrators.
+   *
    * \author hammerl
-   * \date 09/12
-   */
-  class TimIntCentrDiff : public TimIntExpl
+   * \date 12/13
+ */
+  class TimIntExpl : public TimInt
   {
 
   public:
@@ -43,7 +45,7 @@ namespace PARTICLE
     //@{
 
     //! Constructor
-    TimIntCentrDiff
+    TimIntExpl
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& particledynparams,  //!< input parameters
@@ -53,26 +55,49 @@ namespace PARTICLE
     );
 
     //! Destructor
-    virtual ~TimIntCentrDiff(){ ; }
+    virtual ~TimIntExpl(){ ; }
 
     //@}
+
+    /// update at the end of the time step
+    virtual void Update()
+    {
+      UpdateStepState();
+      UpdateStepTime();
+      return;
+    }
 
     //! @name Actions
     //@{
 
     //! mostly init of collision handling
-    virtual void Init();
+    virtual void Init() = 0;
 
     //! Do time integration of single step
-    virtual int IntegrateStep();
+    virtual int IntegrateStep() = 0;
 
     //@}
 
   protected:
 
-  };  // class TimIntCentrDiff
+    //! apply initial condition for particle radius
+    virtual void ApplyInitialRadiusCondition();
+
+    //! update step
+    virtual void UpdateStepState();
+
+    //! states are given to the collision handler
+    virtual void SetStatesForCollision();
+
+    //! initialization of vector for visualization of the particle orientation
+    virtual void InitializeOrientVector();
+
+    //! update of vector for visualization of the particle orientation
+    virtual void RotateOrientVector(double dt);
+
+  };  // class TimIntExpl
 
 }  // namespace PARTICLE
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef PARTICLE_TIMINT_CENTRDIFF_H
+#endif  // #ifndef PARTICLE_TIMINT_EXPL_H

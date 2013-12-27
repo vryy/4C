@@ -16,7 +16,7 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 11/12 |
  *----------------------------------------------------------------------*/
 #include "cavitation_algorithm.H"
-#include "particle_timint_centrdiff.H"
+#include "../drt_adapter/adapter_particle.H"
 #include "particle_node.H"
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
@@ -139,7 +139,7 @@ void CAVITATION::Algorithm::InitCavitation()
 
   //--------------------------------------------------------------------
   // -> 1) create a set of homeless particles that are not in a bin on this proc
-  std::set<Teuchos::RCP<DRT::Node>,PARTICLE::Less> homelessparticles;
+  std::set<Teuchos::RCP<DRT::Node>,BINSTRATEGY::Less> homelessparticles;
 
   for (int lid = 0; lid < particlerowmap->NumMyElements(); ++lid)
   {
@@ -164,25 +164,20 @@ void CAVITATION::Algorithm::InitCavitation()
   AssignWallElesToBins();
 
   // copy structural dynamic params list and adapt particle specific entries
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  Teuchos::RCP<Teuchos::ParameterList> modifiedsdyn = Teuchos::rcp(new Teuchos::ParameterList(sdyn));
-  const Teuchos::ParameterList& particledyn = DRT::Problem::Instance()->ParticleParams();
-  modifiedsdyn->set("DYNAMICTYP",particledyn.get<std::string>("DYNAMICTYP").c_str());
-  modifiedsdyn->set("WRITE_INITIAL_MESH","No");
-  modifiedsdyn->set<int>("LINEAR_SOLVER",-2);
+  const Teuchos::ParameterList& cavitationdyn = DRT::Problem::Instance()->CavitationParams();
 
-  // create time integrator based on structural time integration
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> particles =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(), *modifiedsdyn, particledis_));
-  particles_ = particles->StructureFieldrcp();
+  // create particle time integrator
+  Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
+      Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(cavitationdyn, particledis_));
+  particles_ = particles->ParticleField();
 
   // set cavitation algorithm into time integration
-  Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->SetParticleAlgorithm(Teuchos::rcp(this,false));
-  Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->Init();
+  particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
+  particles_->Init();
 
   // determine consistent initial acceleration for the particles
   CalculateAndApplyForcesToParticles();
-  Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->DetermineMassDampConsistAccel();
+  particles_->DetermineMassDampConsistAccel();
 
   // compute volume of each fluid element and store it
   ele_volume_ = LINALG::CreateVector(*fluiddis_->ElementRowMap(), false);
@@ -255,7 +250,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispn();
   Teuchos::RCP<const Epetra_Vector> bubblevel = particles_->Veln();
-  Teuchos::RCP<Epetra_Vector> bubbleradius = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadius();
+  Teuchos::RCP<const Epetra_Vector> bubbleradius = particles_->Radius();
 
   // vectors to be filled with forces, note: global assemble is needed for fluidforces due to the case with large bins and small fluid eles
   Teuchos::RCP<Epetra_Vector> bubbleforces = LINALG::CreateVector(*particledis_->DofRowMap(),true);
@@ -269,7 +264,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 
   double rho_l = actmat->Density();
   double mu_l = actmat->Viscosity();
-  double rho_b = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ParticleDensity();
+  double rho_b = particles_->ParticleDensity();
 
   // define element matrices and vectors
   Epetra_SerialDenseMatrix elematrix1;
@@ -625,7 +620,7 @@ void CAVITATION::Algorithm::ParticleInflow()
     for(particleiter=biniter->second.begin(); particleiter!=biniter->second.end(); ++particleiter)
     {
       std::vector<double> inflow_position = (*particleiter)->inflow_position_;
-      std::set<Teuchos::RCP<DRT::Node>,PARTICLE::Less> homelessparticles;
+      std::set<Teuchos::RCP<DRT::Node>,BINSTRATEGY::Less> homelessparticles;
       int newbubbleid = maxbubbleid + (*particleiter)->inflowid_;
       Teuchos::RCP<DRT::Node> newparticle = Teuchos::rcp(new PARTICLE::ParticleNode(newbubbleid, &inflow_position[0], myrank_));
       PlaceNodeCorrectly(newparticle, &inflow_position[0], homelessparticles);
@@ -641,16 +636,16 @@ void CAVITATION::Algorithm::ParticleInflow()
   particledis_->FillComplete(true, false, true);
 
   // update of state vectors to the new maps
-  Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->UpdateStatesAfterParticleTransfer();
+  particles_->UpdateStatesAfterParticleTransfer();
 
   // insert data for new bubbles into state vectors
   const Epetra_Map* dofrowmap = particledis_->DofRowMap();
   const Epetra_Map* noderowmap = particledis_->NodeRowMap();
   Teuchos::RCP<Epetra_Vector> disn = particles_->WriteAccessDispnp();
   Teuchos::RCP<Epetra_Vector> veln = particles_->WriteAccessVelnp();
-  Teuchos::RCP<Epetra_Vector> radiusn = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadius();
-  Teuchos::RCP<Epetra_Vector> massn = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractMass();
-  double density = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ParticleDensity();
+  Teuchos::RCP<Epetra_Vector> radiusn = particles_->WriteAccessRadius();
+  Teuchos::RCP<Epetra_Vector> massn = particles_->WriteAccessMass();
+  const double density = particles_->ParticleDensity();
 
   for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
   {

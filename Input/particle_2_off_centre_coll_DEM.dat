@@ -18,7 +18,6 @@ NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Particle
 RESTART                         0
-//RESTART                       6
 SHAPEFCT                        Meshfree
 --------------------------------------------------------------------------IO
 OUTPUT_GID                      No
@@ -33,18 +32,8 @@ WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              -1
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
-BUBNOV                          Yes
-PARTITION_OF_UNITY              Yes
-NEGATIVITY                      0.0
-NEWTON_TOL                      1e-6
-NEWTON_MAX                      100
-T_PRIOR                         Gauss
-T_SKEW                          None
-T_VARIANCE                      .01                             // = sigma^2 = gamma/h^2
-T_RANGE_TOL                     1e-6
 CUTOFF_RADIUS                   1.0
-BOUNDINGBOX -3.000001 -3.000001 -3.000001 3.000001 3.000001 3.000001
-T_COMPLIANCE                    linear
+BOUNDINGBOX                     -3.000001 -3.000001 -3.000001 3.000001 3.000001 3.000001
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     100
@@ -63,9 +52,15 @@ TOLDISP                         1.0E-08
 TOLRES                          1.0E-08
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
-DYNAMICTYP                      ParticleCentrDiff
+DYNAMICTYP                      CentrDiff
+RESULTSEVRY                     100 
+RESTARTEVRY                     1000000
+RESEVRYERGY                     5   
+TIMESTEP                        0.5E-5
+NUMSTEP                         4000
+MAXTIME                         0.5 
 GRAVITY_ACCELERATION            0.0 0.0 0.0
-CONTACT_STRATEGY                NormalAndTangentialContact
+CONTACT_STRATEGY                NormalAndTangentialContact_DEM
 NORMAL_CONTACT_LAW              LinearSpringDamp
 MIN_RADIUS                      0.01
 MAX_RADIUS                      0.01
@@ -95,7 +90,6 @@ NDVOL                           0
 NDPARTICLE                      2
 --------------------------------------DESIGN PARTICLE INIT RADIUS CONDITIONS
 DPARTICLE                       0
-//E 1 - SCALAR 12.3 FUNCT 1
 ------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
 DPARTICLE                       2
 E 1 - Velocity 1
@@ -152,12 +146,11 @@ FUNCT2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
 // initial velocity (z component)
 FUNCT2 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-//bei reibungshehaftetem stoss
-STRUCTURE DIS particle NODE 2 QUANTITY dispx VALUE 1.94976584290106406e-02 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 2 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 2 QUANTITY dispz VALUE -1.76630827558620432e-02 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 2 QUANTITY velx VALUE 5.97102959215523810e-01 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 2 QUANTITY vely VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-12
-STRUCTURE DIS particle NODE 2 QUANTITY velz VALUE -6.88607632276584836e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 2 QUANTITY dispx VALUE 1.94976584290106406e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 2 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 2 QUANTITY dispz VALUE -1.76630827558620432e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 2 QUANTITY velx VALUE 5.97102959215523810e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 2 QUANTITY vely VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 2 QUANTITY velz VALUE -6.88607632276584836e-01 TOLERANCE 1.0e-12
 -------------------------------------------------------------------------END
 //                              END

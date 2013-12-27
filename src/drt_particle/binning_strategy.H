@@ -21,7 +21,6 @@ Maintainer: Georg Hammerl
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 09/12 |
  *----------------------------------------------------------------------*/
-#include "../drt_adapter/adapter_algorithmbase.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 #include "Epetra_MpiComm.h"
@@ -54,33 +53,41 @@ namespace BINSTRATEGY
   {
   public:
 
+    /// constructor
     BinningStrategy(
       const Epetra_Comm& lcomm,  ///< local epetra communicator
       double cutoff_radius,   ///< radius of influence
       LINALG::Matrix<3,2> XAABB   ///< radius of influence
       );
 
+    /// constructor
+    BinningStrategy(
+      const Epetra_Comm& lcomm  ///< local epetra communicator
+      );
+
+    /// destructor
+    virtual ~BinningStrategy(){};
+
     /// elements are assigned to bins (either slave or master side of mortar interface)
-    void DistributeElesToBins(
-      DRT::Discretization& mortardis,   ///< mortar interface discretization
-      std::map<int, std::set<int> >& binelemap,   /// map of bins and assigned elements
+    virtual void DistributeElesToBins(
+      const DRT::Discretization& mortardis,   ///< mortar interface discretization
+      std::map<int, std::set<int> >& binelemap,   ///< map of bins and assigned elements
       bool isslave   ///< decide whether slave or master side is processed
       );
 
+    /// elements from the underlying discretization are assigned to bins
+    virtual void DistributeElesToBins(
+      Teuchos::RCP<DRT::Discretization> underlyingdis,   ///< discret of which the elements are distributed to bins
+      std::map<int, std::set<int> >& elesinbin   ///< map of bins and assigned elements
+      );
+
     /// element map with extended ghosting for master side of mortar problem is returned
-    Teuchos::RCP<Epetra_Map> ExtendGhosting(
+    virtual Teuchos::RCP<Epetra_Map> ExtendGhosting(
       DRT::Discretization& mortardis,   ///< mortar interface discretization
       Teuchos::RCP<Epetra_Map> initial_elecolmap,   ///< initial element col map for standard ghosting
       std::map<int, std::set<int> >& slavebinelemap,    /// map of bins and assigned slave elements
       std::map<int, std::set<int> >& masterbinelemap   /// map of bins and assigned master elements
       );
-
-    virtual ~BinningStrategy(){};
-
-  protected:
-
-    // bins are created based on XAABB and cutoff radius
-    void CreateBins(Teuchos::RCP<DRT::Discretization> dis);
 
     /// convert i,j,k into bin id
     virtual int ConvertijkToGid(
@@ -88,10 +95,9 @@ namespace BINSTRATEGY
       );
 
     /// get all bin ids for given range of ijk
-    void GidsInijkRange(
+    virtual void GidsInijkRange(
       int* ijk_bound,   ///< given range of ijk
       std::set<int>& binIds,   ///< all bin ids in the specified range
-      DRT::Discretization& dis,   /// underlying discretization
       bool checkexistence   ///< check can be added whether the gids are on this proc
       );
 
@@ -102,51 +108,57 @@ namespace BINSTRATEGY
       );
 
     /// convert position into bin id
-    int ConvertPosToGid(
+    virtual int ConvertPosToGid(
       const std::vector<double>& pos  ///< position of which the corresponding bin id is asked for
       );
 
     /// convert position into bin id
-    int ConvertPosToGid(
+    virtual int ConvertPosToGid(
       const double* pos   ///< position of which the corresponding bin id is asked for
       );
 
     ///convert position into i,j,k
-    void ConvertPosToijk(
+    virtual void ConvertPosToijk(
       const double* pos,   ///< position to be converted into i,j,k
       int* ijk   ///< resulting i,j,k
       );
 
     /// convert position into bin id
-    int ConvertPosToGid(
+    virtual int ConvertPosToGid(
       const LINALG::Matrix<3,1> pos   ///< position of which the corresponding bin id is asked for
       );
 
     ///convert position into i,j,k
-    void ConvertPosToijk(
+    virtual void ConvertPosToijk(
       const LINALG::Matrix<3,1> pos,   ///< position to be converted into i,j,k
       int* ijk  ///< resulting i,j,k
       );
 
     /// get 26 neighboring bin ids to binId (if existing)
-    void GetBinConnectivity(
+    virtual void GetBinConnectivity(
       int binId,   ///< bin id whose connectivity is asked for
       std::vector<int>& binIds   ///< all neighboring bins on axes
       );  
 
     /// get nodal coordinates of bin with given id
-    void GetBinCorners(
+    virtual void GetBinCorners(
       int binId,   ///< bin id of which corners are calculated
       std::vector<LINALG::Matrix<3,1> >& bincorners   ///< corner position of given bin
       );
 
     /// centroid position for given bin id is returned
-    LINALG::Matrix<3,1> GetBinCentroid(
+    virtual LINALG::Matrix<3,1> GetBinCentroid(
       int binId   ///< bin id of which centroid is calculated
       );
 
-    //! @name binning strategy related stuff
-    //@{
+  protected:
+
+    /// bins are created based on XAABB and cutoff radius
+    virtual void CreateBins(
+      Teuchos::RCP<DRT::Discretization> dis   ///< underlying discret which can be used to compute bounding box
+      );
+
+    Teuchos::RCP<DRT::Discretization> particledis_;     ///< particle discretization with bins
 
     double cutoff_radius_;    ///< maximum influence radius
 
@@ -155,8 +167,6 @@ namespace BINSTRATEGY
     double bin_size_[3];    ///< size of each bin in Cartesian coordinates
 
     int bin_per_dir_[3];    ///< number of bins per direction
-
-    //@}
 
     //! @name miscellaneous stuff
     //@{
@@ -174,8 +184,8 @@ namespace BINSTRATEGY
     bool operator()(const Teuchos::RCP<const DRT::Node>& first, const Teuchos::RCP<const DRT::Node>& second) const;
   };
 
-} // namespace PARTICLE
+} // namespace BINSTRATEGY
 
 
 /*----------------------------------------------------------------------*/
-#endif  // PARTICLE_ALGORITHM_H
+#endif  // BINNING_STRATEGY_H

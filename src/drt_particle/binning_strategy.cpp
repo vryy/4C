@@ -16,7 +16,7 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 11/13 |
  *----------------------------------------------------------------------*/
 #include "binning_strategy.H"
-
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../linalg/linalg_utils.H"
@@ -32,6 +32,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   double cutoff_radius,
   LINALG::Matrix<3,2> XAABB
   ) :
+  particledis_(Teuchos::null),
   cutoff_radius_(cutoff_radius),
   XAABB_(XAABB),
   myrank_(comm.MyPID())
@@ -50,10 +51,47 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
 
 
 /*----------------------------------------------------------------------*
+ | Binning strategy constructor                             ghamm 11/13 |
+ *----------------------------------------------------------------------*/
+BINSTRATEGY::BinningStrategy::BinningStrategy(
+  const Epetra_Comm& comm
+  ) :
+  particledis_(Teuchos::null),
+  myrank_(comm.MyPID())
+{
+  const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
+
+  // get cutoff radius
+  cutoff_radius_ = meshfreeparams.get<double>("CUTOFF_RADIUS");
+
+  XAABB_.PutScalar(1.0e12);
+  // get bounding box specified in the input file
+  std::istringstream xaabbstream(Teuchos::getNumericStringParameter(meshfreeparams,"BOUNDINGBOX"));
+  for(int col=0; col<2; col++)
+  {
+    for(int row=0; row<3; row++)
+    {
+      double value = 1.0e12;
+      if(xaabbstream >> value)
+        XAABB_(row,col) = value;
+    }
+  }
+
+  // initialize bin size
+  for(int dim=0; dim<3; ++dim)
+  {
+    bin_size_[dim] = 0.0;
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | assign elements into bins                                 ghamm 11/13 |
  *----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
-  DRT::Discretization& mortardis,
+  const DRT::Discretization& mortardis,
   std::map<int, std::set<int> >& binelemap,
   bool isslave)
 {
@@ -96,7 +134,7 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
 
       // get corresponding bin ids in ijk range
       std::set<int> binIds;
-      GidsInijkRange(&ijk_range[0], binIds, mortardis, false);
+      GidsInijkRange(&ijk_range[0], binIds, false);
 
       // assign element to bins
       for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
@@ -108,9 +146,68 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
 }
 
 
-//--------------------------------------------------------------------
-// extend ghosting according to bin distribution         ghamm 11/13 |
-//--------------------------------------------------------------------
+/*----------------------------------------------------------------------*
+| assign elements into bins                                 ghamm 11/13 |
+ *----------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
+  Teuchos::RCP<DRT::Discretization> underlyingdis,
+  std::map<int, std::set<int> >& elesinbin
+  )
+{
+  // exploit bounding box idea for elements in underlying discretization and bins
+  {
+    // loop over row elements is enough, extended ghosting always includes standard ghosting
+    for (int lid = 0; lid < underlyingdis->NumMyRowElements(); ++lid)
+    {
+      DRT::Element* fluidele = underlyingdis->lRowElement(lid);
+      DRT::Node** fluidnodes = fluidele->Nodes();
+      const int numnode = fluidele->NumNode();
+
+      // initialize ijk_range with ijk of first node of fluid element
+      int ijk[3];
+      {
+        const DRT::Node* node = fluidnodes[0];
+        const double* coords = node->X();
+        ConvertPosToijk(coords, ijk);
+      }
+
+      // ijk_range contains: i_min i_max j_min j_max k_min k_max
+      int ijk_range[] = {ijk[0], ijk[0], ijk[1], ijk[1], ijk[2], ijk[2]};
+
+      // fill in remaining nodes
+      for (int j=1; j<numnode; ++j)
+      {
+        const DRT::Node* node = fluidnodes[j];
+        const double* coords = node->X();
+        int ijk[3];
+        ConvertPosToijk(coords, ijk);
+
+        for(int dim=0; dim<3; ++dim)
+        {
+          if(ijk[dim]<ijk_range[dim*2])
+            ijk_range[dim*2]=ijk[dim];
+          if(ijk[dim]>ijk_range[dim*2+1])
+            ijk_range[dim*2+1]=ijk[dim];
+        }
+      }
+
+      // get corresponding bin ids in ijk range
+      std::set<int> binIds;
+      GidsInijkRange(&ijk_range[0], binIds, false);
+
+      // assign fluid element to bins
+      for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
+        elesinbin[*biniter].insert(fluidele->Id());
+    }
+  }
+
+  return;
+}
+
+
+/*-------------------------------------------------------------------*
+| extend ghosting according to bin distribution          ghamm 11/13 |
+ *-------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
   DRT::Discretization& mortardis,
   Teuchos::RCP<Epetra_Map> initial_elecolmap,
@@ -224,7 +321,6 @@ void BINSTRATEGY::BinningStrategy::CreateBins(Teuchos::RCP<DRT::Discretization> 
     bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0))/bin_per_dir_[dim];
   }
 
-  // test output
 //  if(myrank_ == 0)
 //  {
 //    std::cout << "Global bounding box size: " << XAABB_
@@ -341,8 +437,11 @@ void BINSTRATEGY::BinningStrategy::ConvertGidToijk(int gid, int* ijk)
 /*----------------------------------------------------------------------*
  | get all bins in ijk range                               ghamm 02/13  |
  *----------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::GidsInijkRange(int* ijk_range, std::set<int>& binIds, DRT::Discretization& dis, bool checkexistence)
+void BINSTRATEGY::BinningStrategy::GidsInijkRange(int* ijk_range, std::set<int>& binIds, bool checkexistence)
 {
+  if(checkexistence == true and particledis_ == Teuchos::null)
+    dserror("particle discretization is not set up correctly");
+
   for(int i=ijk_range[0]; i<=ijk_range[1]; ++i)
   {
     for(int j=ijk_range[2]; j<=ijk_range[3]; ++j)
@@ -356,7 +455,7 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(int* ijk_range, std::set<int>&
         {
           if(checkexistence)
           {
-            if(dis.HaveGlobalElement(gid))
+            if(particledis_->HaveGlobalElement(gid))
               binIds.insert(gid);
           }
           else

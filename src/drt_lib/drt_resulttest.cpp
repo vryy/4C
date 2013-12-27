@@ -370,6 +370,17 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddOptionalNamedString("NAME")
     ;
 
+  DRT::INPUT::LineDefinition particle;
+  particle
+    .AddTag("PARTICLE")
+    .AddNamedString("DIS")
+    .AddNamedInt("NODE")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
+
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION"));
   lines->Add(structure);
   lines->Add(fluid_node);
@@ -384,6 +395,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(fsi_node);
   lines->Add(fsi_special);
   lines->Add(invana);
+  lines->Add(particle);
 
   return lines;
 }

@@ -22,14 +22,16 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 09/12 |
  *----------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_algorithmbase.H"
+#include "binning_strategy.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
-#include "Epetra_MpiComm.h"
+#include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 #include <Epetra_CrsGraph.h>
 #include <vector>
+
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 09/12 |
@@ -42,6 +44,7 @@ namespace DRT
 namespace ADAPTER
 {
   class Structure;
+  class Particle;
 }
 namespace IO
 {
@@ -58,10 +61,8 @@ namespace LINALG
 /// PARTICLE: Particle simulation
 namespace PARTICLE
 {
-  // forward declaration
-  class Less;
 
-  class Algorithm : public ADAPTER::AlgorithmBase
+  class Algorithm : public ADAPTER::AlgorithmBase, public BINSTRATEGY::BinningStrategy
   {
   public:
 
@@ -97,24 +98,6 @@ namespace PARTICLE
     /// get underlyling structural problem
     Teuchos::RCP<ADAPTER::Structure> Structure() { return structure_; }
 
-    /// convert i,j,k into bin id
-    virtual int ConvertijkToGid(
-      int* ijk  ///< i,j,k to be converted into a bin id
-      );
-
-    /// get all bin ids for given range of ijk
-    void GidsInijkRange(
-      int* ijk_bound,   ///< given range of ijk
-      std::set<int>& binIds,   ///< all bin ids in the specified range
-      bool checkexistence   ///< check can be added whether the gids are on this proc
-      );
-
-    ///convert bin id into i,j,k
-    virtual void ConvertGidToijk(
-      int gid,  ///< bin id to be converted into i,j,k
-      int* ijk  ///< resulting i,j,k
-      );
-
     // return gravity acceleration
     LINALG::Matrix<3,1> GetGravityAcc() {return gravity_acc_ ; }
 
@@ -139,11 +122,6 @@ namespace PARTICLE
     /// output particle time step
     virtual void Output();
 
-    /// find XAABB and divide into bins using the cutoff radius
-    virtual void CreateBins(
-      Teuchos::RCP<DRT::Discretization> dis   ///< based on this discretization the bins are created
-      );
-
     /// bins are distributed to the processors
     virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs();
 
@@ -155,14 +133,14 @@ namespace PARTICLE
 
     /// round robin loop to fill particles into its correct bin on according proc
     virtual void FillParticlesIntoBins(
-      std::set<Teuchos::RCP<DRT::Node>,Less>& homelessparticles  ///< set of homeless particles
+      std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles  ///< set of homeless particles
       );
 
     /// node is placed into the correct row bin or put into the set of homeless particles
     virtual bool PlaceNodeCorrectly(
       Teuchos::RCP<DRT::Node> node,  ///< node to be placed
       const double* currpos,  ///< current position of this node
-      std::set<Teuchos::RCP<DRT::Node>,Less>& homelessparticles  ///< set of homeless particles
+      std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles  ///< set of homeless particles
       );
 
     /// setup ghosting of bins and particles
@@ -190,69 +168,15 @@ namespace PARTICLE
       std::map<int, std::set<int> >& fluideles  ///< map from bin id to fluid elements in this bin
       );
 
-    /// convert position into bin id
-    int ConvertPosToGid(
-      const std::vector<double>& pos  ///< position of which the corresponding bin id is asked for
-      );
-
-    /// convert position into bin id
-    int ConvertPosToGid(
-      const double* pos   ///< position of which the corresponding bin id is asked for
-      );
-
-    ///convert position into i,j,k
-    void ConvertPosToijk(
-      const double* pos,   ///< position to be converted into i,j,k
-      int* ijk   ///< resulting i,j,k
-      );
-
-    /// convert position into bin id
-    int ConvertPosToGid(
-      const LINALG::Matrix<3,1> pos   ///< position of which the corresponding bin id is asked for
-      );
-
-    ///convert position into i,j,k
-    void ConvertPosToijk(
-      const LINALG::Matrix<3,1> pos,   ///< position to be converted into i,j,k
-      int* ijk  ///< resulting i,j,k
-      );
-
-    /// get 26 neighboring bin ids to binId (if existing)
-    void GetBinConnectivity(
-      int binId,   ///< bin id whose connectivity is asked for
-      std::vector<int>& binIds   ///< all neighboring bins on axes
-      );  
-
-    /// get nodal coordinates of bin with given id
-    void GetBinCorners(
-      int binId,   ///< bin id of which corners are calculated
-      std::vector<LINALG::Matrix<3,1> >& bincorners   ///< corner position of given bin
-      );
-
-    /// centroid position for given bin id is returned
-    LINALG::Matrix<3,1> GetBinCentroid(
-      int binId   ///< bin id of which centroid is calculated
-      );
-
     /// assign wall elements to bins
     void AssignWallElesToBins();
 
     //! @name particle related stuff
     //@{
 
-    Teuchos::RCP<DRT::Discretization> particledis_;     ///< particle discretization
-
-    Teuchos::RCP<ADAPTER::Structure> particles_;     ///< particle time integration
+    Teuchos::RCP<ADAPTER::Particle> particles_;     ///< particle time integration
 
     Teuchos::RCP<Epetra_Map> bincolmap_;     ///< colmap of bins
-
-    double cutoff_radius_;    ///< maximum influence radius of particles
-
-    LINALG::Matrix<3,2> XAABB_;    ///< extendedAxisAlignedBoundingBox of all particles
-
-    double bin_size_[3];    ///< size of each bin in Cartesian coordinates
-
-    int bin_per_dir_[3];    ///< number of bins per direction
 
     LINALG::Matrix<3,1> gravity_acc_;   ///< acceleration due to gravity
 
@@ -266,21 +190,7 @@ namespace PARTICLE
 
     //@}
 
-    //! @name miscellaneous stuff
-    //@{
-
-    int myrank_;    ///< myrank
-
-    //@}
-
   }; // Algorithm
-
-  // class for comparing Teuchos::RCP<DRT::Node> in a std::set
-  class Less
-  {
-  public:
-    bool operator()(const Teuchos::RCP<const DRT::Node>& first, const Teuchos::RCP<const DRT::Node>& second) const;
-  };
 
 } // namespace PARTICLE
 

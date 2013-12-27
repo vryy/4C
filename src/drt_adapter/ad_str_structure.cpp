@@ -93,7 +93,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(
   case INPAR::STR::dyna_gemm :
   case INPAR::STR::dyna_expleuler:
   case INPAR::STR::dyna_centrdiff :
-  case INPAR::STR::dyna_particle_centrdiff :
   case INPAR::STR::dyna_ab2 :
   case INPAR::STR::dyna_euma :
   case INPAR::STR::dyna_euimsto :
@@ -328,8 +327,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
 
   // context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
-  bool writeinitialmesh = DRT::INPUT::IntegralValue<bool>(sdyn,"WRITE_INITIAL_MESH");
-  if (writeinitialmesh)
+  if (DRT::INPUT::IntegralValue<int>(*ioflags,"OUTPUT_BIN"))
   {
     output->WriteMesh(0, 0.0);
   }
@@ -522,8 +520,6 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver
   // check if the structural solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
-  if (linsolvernumber == (-2))
-    return Teuchos::null;
 
   solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                     actdis->Comm(),
