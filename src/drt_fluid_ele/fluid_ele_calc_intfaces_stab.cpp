@@ -2724,12 +2724,22 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     //                                nu
 
     // values obtained by analyzing various test cases, i.e., Beltrami flow, lid-driven cavity flow, turbulent channel flow, ...
-    // for further details see upcoming paper
-    gamma_p = 3.0 / 100.0;
-    gamma_u = 5.0 / 100.0;
-    gamma_div = 5.0 / 10.0;
+    // -> for further details see upcoming paper
+    // the following values worked best for beltrami flow, i.e., yield lowest errors
+    // gamma_p = 3.0 / 100.0;
+    // gamma_u = 5.0 / 100.0;
+    // gamma_div = 5.0 / 10.0;
+    // however, the divergence jump term comes along with numerical dissipation analogously to the
+    // grad-div term of residual-based stabilizations
+    // as this dissipation increases with increasing gamma_div, the previous choices are not appropriate
+    // to compute turbulent flows
+    // therefore, we suggest to use the same values as given in Burman 2007
+    // note: we integrate each face once; Burman twice -> factor two for gamma compared to Burman
+    gamma_p = 2.0 / 100.0;
+    gamma_u = 2.0 / 100.0;
+    gamma_div = 0.05 * gamma_u;
 
-    // original values
+    // original values of E.Burman, M.A.Fernandez and P.Hansbo 2006
     // gamma_p = 2.0 / 8.0;
     // gamma_u = 2.0 / 8.0;
     // gamma_div = 2.0 / 8.0;
