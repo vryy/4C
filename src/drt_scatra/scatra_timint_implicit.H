@@ -851,7 +851,7 @@ protected:
   //! maximum number of steps ? name maxtime vs. stepmax
   int stepmax_;
 
-  //! time step size (for reinitialization methods this is a pseudo time step length)
+  //! time step size
   double dta_;
 
   //! time measurement element
