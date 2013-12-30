@@ -109,7 +109,8 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
     tmppart = Teuchos::rcp(new PARTICLE::TimIntCentrDiff(ioflags, *partdyn, *xparams, actdis, output));
     break;
   }
-  case INPAR::PARTICLE::dyna_rungekutta:
+  case INPAR::PARTICLE::dyna_rungekutta2:
+  case INPAR::PARTICLE::dyna_rungekutta4:
   {
 //    tmppart = Teuchos::rcp(new PARTICLE::RungeKutta(ioflags, *partdyn, *xparams, actdis, output));
     break;

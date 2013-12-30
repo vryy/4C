@@ -55,11 +55,8 @@ INCLUDE_PARTICLE                no //yes //no
 TYPE                            Particle
 CUTOFF_RADIUS                   0.1
 //BOUNDINGBOX                     -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001 
---------------------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      ParticleCentrDiff
-RESULTSEVRY                     1
-RESTARTEVRY                     3
-LINEAR_SOLVER                   2
+------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      RungeKutta2
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      linear_full
@@ -114,8 +111,6 @@ ML_SMOTIMES                     2 0 0 0 1                     // no. smoothing s
 ML_DAMPFINE                     0.67                          // damping fine grid
 ML_DAMPMED                      1.0                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
--------------------------------------------SOLVER 2
-SOLVER         UMFPACK
 -------------------------------------------------------------------MATERIALS
 //MAT 1 MAT_scatra DIFFUSIVITY 0.0033333333333 // Pe_e = 1
 MAT 1 MAT_scatra DIFFUSIVITY 0.0006666666666 // Pe_e = 5

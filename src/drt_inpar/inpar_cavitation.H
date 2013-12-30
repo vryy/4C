@@ -29,7 +29,8 @@ namespace INPAR
     {
       dyna_expleuler,                  ///< forward Euler (explicit)
       dyna_centrdiff,                  ///< central differences (explicit)
-      dyna_rungekutta                 ///< Runge-Kutta 2/4 (explicit)
+      dyna_rungekutta2,                ///< Runge-Kutta 2 (explicit)
+      dyna_rungekutta4                 ///< Runge-Kutta 4 (explicit)
     };
 
 	  /// Contact type for particles
