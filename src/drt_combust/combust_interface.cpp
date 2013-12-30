@@ -340,9 +340,7 @@ std::size_t COMBUST::InterfaceHandleCombust::NumBoundaryIntCells(
  *------------------------------------------------------------------------------------------------*/
 const double COMBUST::InterfaceHandleCombust::ComputeVolumeMinus()
 {
-  //dserror("not conservative in parallel: loop over row elements -> get cells belonging to this element -> loop over cells");
-
-  double volume = 0.0;
+  double myvolume = 0.0;
 
   for (int iele=0; iele<fluiddis_->NumMyRowElements(); ++iele)
   {
@@ -353,9 +351,14 @@ const double COMBUST::InterfaceHandleCombust::ComputeVolumeMinus()
     {
       // pick cells belonging to minus domain
       if (itercell->getDomainPlus() == false)
-        volume += itercell->VolumeInPhysicalDomain();
+        myvolume += itercell->VolumeInPhysicalDomain();
     }
   }
+
+  double volume = 0.0;
+
+  fluiddis_->Comm().SumAll(&myvolume,&volume,1);
+
   return volume;
 }
 
@@ -366,7 +369,7 @@ const double COMBUST::InterfaceHandleCombust::ComputeVolumeMinus()
  *------------------------------------------------------------------------------------------------*/
 const double COMBUST::InterfaceHandleCombust::ComputeSurface()
 {
-  double area = 0.0;
+  double myarea = 0.0;
 
   for (int iele=0; iele<fluiddis_->NumMyRowElements(); ++iele)
   {
@@ -413,11 +416,15 @@ const double COMBUST::InterfaceHandleCombust::ComputeSurface()
       crossP(2) = edgeBA(0)*edgeBC(1) - edgeBA(1)*edgeBC(0);
 
       if (itercell->Shape() == DRT::Element::tri3)
-        area += crossP.Norm2() / 2.0;
+        myarea += crossP.Norm2() / 2.0;
       else
-        area += crossP.Norm2();
+        myarea += crossP.Norm2();
     }
   }
+
+  double area = 0.0;
+
+  fluiddis_->Comm().SumAll(&myarea,&area,1);
 
   return area;
 }

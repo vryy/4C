@@ -1207,6 +1207,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRefLength(
     }
     case INPAR::FLUID::metric_tensor:
     {
+      if (nsd_ != 3) dserror("Turbulence is 3d!");
       /*          +-           -+   +-           -+   +-           -+
                 |             |   |             |   |             |
                 |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
@@ -1215,14 +1216,14 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRefLength(
                 |    i     j  |   |    i     j  |   |    i     j  |
                 +-           -+   +-           -+   +-           -+
       */
-      LINALG::Matrix<3,3> G;
+      LINALG::Matrix<nsd_,nsd_> G;
 
-      for (int nn=0;nn<3;++nn)
+      for (int nn=0;nn<nsd_;++nn)
       {
-        for (int rr=0;rr<3;++rr)
+        for (int rr=0;rr<nsd_;++rr)
         {
           G(nn,rr) = xij_(nn,0)*xij_(rr,0);
-          for (int mm=1;mm<3;++mm)
+          for (int mm=1;mm<nsd_;++mm)
           {
             G(nn,rr) += xij_(nn,mm)*xij_(rr,mm);
           }
@@ -1237,9 +1238,9 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRefLength(
                  i,j
      */
      double normG = 0;
-     for (int nn=0;nn<3;++nn)
+     for (int nn=0;nn<nsd_;++nn)
      {
-       for (int rr=0;rr<3;++rr)
+       for (int rr=0;rr<nsd_;++rr)
        {
          normG+=G(nn,rr)*G(nn,rr);
        }

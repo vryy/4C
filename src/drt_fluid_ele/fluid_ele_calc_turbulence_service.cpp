@@ -691,6 +691,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       }
       case INPAR::FLUID::metric_tensor:
       {
+        if (nsd_ != 3) dserror("Turbulence is 3d!");
         /*          +-           -+   +-           -+   +-           -+
                     |             |   |             |   |             |
                     |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
@@ -699,14 +700,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
                     |    i     j  |   |    i     j  |   |    i     j  |
                     +-           -+   +-           -+   +-           -+
         */
-        LINALG::Matrix<3,3> G;
+        LINALG::Matrix<nsd_,nsd_> G;
 
-        for (int nn=0;nn<3;++nn)
+        for (int nn=0;nn<nsd_;++nn)
         {
-          for (int rr=0;rr<3;++rr)
+          for (int rr=0;rr<nsd_;++rr)
           {
             G(nn,rr) = xji_(nn,0)*xji_(rr,0);
-            for (int mm=1;mm<3;++mm)
+            for (int mm=1;mm<nsd_;++mm)
             {
               G(nn,rr) += xji_(nn,mm)*xji_(rr,mm);
             }
@@ -721,9 +722,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
                      i,j
         */
         double normG = 0;
-        for (int nn=0;nn<3;++nn)
+        for (int nn=0;nn<nsd_;++nn)
         {
-          for (int rr=0;rr<3;++rr)
+          for (int rr=0;rr<nsd_;++rr)
           {
             normG+=G(nn,rr)*G(nn,rr);
           }
