@@ -159,7 +159,7 @@ void PARTICLE::ParticleCollisionHandlerBase::GetBinContent(
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double density)
 {
-  //extract input-parameters
+  // extract input parameters
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
   contact_strategy_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::ContactStrategy>(particleparams,"CONTACT_STRATEGY");
   normal_contact_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(particleparams,"NORMAL_CONTACT_LAW");
@@ -179,40 +179,33 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
     if(r_min_<0.0 or r_max_<0.0 or v_max_<0.0 or c_<0.0)
       dserror("Invalid input parameter (MIN_RADIUS,MAX_RADIUS,MAX_VELOCITY,REL_PENETRATION have to be larger than zero)");
 
-    if((e_<0.0 or e_wall_<0.0) && normal_contact_ == INPAR::PARTICLE::LinSpringDamp)
+    if((e_<0.0 or e_wall_<0.0) and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or contact_strategy_==INPAR::PARTICLE::Normal_MD))
       dserror("Invalid input parameter COEFF_RESTITUTION for this kind of contact law");
 
-    //critical time step
+    // no further information necessary for MD like contact
+    if(contact_strategy_ == INPAR::PARTICLE::Normal_MD)
+      return;
+
+    // data for critical time step computation for DEM like contact
     double mass_min = 0.0;
     mass_min = density * 4.0/3.0 * M_PI * pow( r_min_ ,3.0 );
 
     double k_tkrit = 0.0;
 
-    // here the first element of the structural problem is asked for its material and assumed that wall element has same properties
-    Teuchos::RCP<DRT::Discretization> structdis = particle_algorithm_->Structure()->Discretization();
-    int local_structmatid = -1;
-    // in order to allow procs without wall element communication is necessary
-    if(structdis->NumMyColElements() != 0)
-    {
-      Teuchos::RCP<MAT::Material> mat = structdis->lColElement(0)->Material();
-      MAT::PAR::Parameter* params = mat->Parameter();
-      local_structmatid = params->Id();
-    }
-    int structmatid = -1;
-    structdis->Comm().MaxAll(&local_structmatid, &structmatid, 1);
+    // wall material properties are always taken from the first available St. Venant Kirchhoff material
+    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_stvenant);
+    if (id==-1)
+      dserror("Could not find wall material which is assumed to be the first St. Venant Kirchhoff material");
+    Teuchos::RCP<MAT::StVenantKirchhoff> wallmat = Teuchos::rcp_dynamic_cast<MAT::StVenantKirchhoff>(MAT::Material::Factory(id));
 
-    Teuchos::RCP<MAT::StVenantKirchhoff> structmat = Teuchos::rcp_dynamic_cast<MAT::StVenantKirchhoff>(MAT::Material::Factory(structmatid));
-    if(structmat == Teuchos::null)
-      dserror("only stvenantkirchhoff material is supported so far :-(");
+    double G_wall = wallmat->ShearMod();
+    double nue_wall = wallmat->PoissonRatio();
 
-    double G_wall = structmat->ShearMod();
-    double nue_wall = structmat->PoissonRatio();
+    double G = young_ / (2.0*(1.0+nue_));
 
-    double G= young_ / (2*(1+nue_));
-
-    //kappa - tangential to normal stiffness ratio
-    kappa_ = (1-nue_)/(1-0.5*nue_);
-    kappa_wall_ = ( (1-nue_)/G + (1-nue_wall)/G_wall ) / ( (1-0.5*nue_)/G + (1-0.5*nue_wall)/G_wall );
+    // kappa - tangential to normal stiffness ratio
+    kappa_ = (1.0-nue_)/(1.0-0.5*nue_);
+    kappa_wall_ = ( (1.0-nue_)/G + (1.0-nue_wall)/G_wall ) / ( (1.0-0.5*nue_)/G + (1.0-0.5*nue_wall)/G_wall );
 
     //------------stiffness----------------------------
     switch(normal_contact_)
@@ -220,9 +213,9 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
     case INPAR::PARTICLE::LinSpring:
     case INPAR::PARTICLE::LinSpringDamp:
     {
-      //stiffness calculated from relative penetration and some other input parameters (linear spring)
+      // stiffness calculated from relative penetration and some other input parameters (linear spring)
       k_normal_ = 2.0/3.0 * r_max_ * M_PI * density * pow(v_max_,2.0) / pow(c_,2.0);
-      //for tangential contact same stiffness is used
+      // for tangential contact same stiffness is used
       k_tang_ = kappa_ * k_normal_;
       k_tang_wall_ = kappa_wall_ * k_normal_;
       k_tkrit = k_normal_;
@@ -230,12 +223,12 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
       double user_normal_stiffness = particleparams.get<double>("NORMAL_STIFF");
       if(user_normal_stiffness > 0.0)
       {
-        //if user specifies normal stiffness, this stiffness will be used as normal and tangential stiffness for simulation
+        // if user specifies normal stiffness, this stiffness will be used as normal and tangential stiffness for simulation
         k_normal_ = user_normal_stiffness;
-        //for tangential contact same stiffness is used
+        // for tangential contact same stiffness is used
         k_tang_ =kappa_ * k_normal_;
         k_tang_wall_ =kappa_wall_ * k_normal_;
-        //stiffness used for calculation of critical time step
+        // stiffness used for calculation of critical time step
         k_tkrit = k_normal_;
 
         std::cout<<"WARNING: stiffness calculated from relative penetration will be overwritten by input NORMAL_STIFF!!!"<<std::endl;
@@ -250,20 +243,20 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
       if(contact_strategy_==INPAR::PARTICLE::NormalAndTang_DEM)
         dserror("tangential contact only with linear normal model implemented");
 
-      //stiffness calculated from relative penetration and some other input parameters (Hertz)
-      k_normal_ = 10.0/3.0 * M_PI * density * pow(v_max_,2.0) * pow(r_max_,0.5) / pow(2*c_,2.5);
-      //stiffness used for calculation of critical time step (linear spring stiffness needed!)
+      // stiffness calculated from relative penetration and some other input parameters (Hertz)
+      k_normal_ = 10.0/3.0 * M_PI * density * pow(v_max_,2.0) * pow(r_max_,0.5) / pow(2.0*c_,2.5);
+      // stiffness used for calculation of critical time step (linear spring stiffness needed!)
       k_tkrit = 2.0/3.0 * r_max_ * M_PI * density * pow(v_max_,2.0) / pow(c_,2.0);
 
       double user_normal_stiffness = particleparams.get<double>("NORMAL_STIFF");
       if(user_normal_stiffness > 0.0)
       {
-        //if user specifies normal stiffness, this stiffness will be used as normal stiffness for simulation
+        // if user specifies normal stiffness, this stiffness will be used as normal stiffness for simulation
         k_normal_ = user_normal_stiffness;
-        //for tangential contact the user specified (nonlinear) normal stiffness which has to be transformed into a linear normal
-        //stiffness with the same relative penetration which is used as (linear) tangential stiffness afterwards
+        // for tangential contact the user specified (nonlinear) normal stiffness which has to be transformed into a linear normal
+        // stiffness with the same relative penetration which is used as (linear) tangential stiffness afterwards
         double value = 2048.0/1875.0 * density * pow(v_max_,2.0) * M_PI * pow(r_max_,3.0) * pow(k_normal_,4.0);
-        //stiffness used for calculation of critical time step (linear spring stiffness needed!)
+        // stiffness used for calculation of critical time step (linear spring stiffness needed!)
         k_tkrit = pow(value,0.2);
 
         std::cout<<"WARNING: stiffness calculated from relative penetration will be overwritten by input NORMAL_STIFF!!!"<<std::endl;
@@ -300,7 +293,7 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
       double user_normal_damping = particleparams.get<double>("NORMAL_DAMP");
       if(user_normal_damping >= 0.0)
       {
-        //user has to specify normal damping coefficient
+        // user has to specify normal damping coefficient
         d_normal_ = user_normal_damping;
       }
       else
@@ -310,7 +303,7 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
       double user_tang_damping = particleparams.get<double>("TANG_DAMP");
       if(user_tang_damping >= 0.0)
       {
-        //user has to specify tangential damping coefficient
+        // user has to specify tangential damping coefficient
         d_tang_ = user_tang_damping;
       }
       else
@@ -343,7 +336,7 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
       double user_normal_damping = particleparams.get<double>("NORMAL_DAMP_WALL");
       if(user_normal_damping >= 0.0)
       {
-        //user has to specify normal damping coefficient
+        // user has to specify normal damping coefficient
         d_normal_wall_ = user_normal_damping;
       }
       else
@@ -353,7 +346,7 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
       double user_tang_damping = particleparams.get<double>("TANG_DAMP_WALL");
       if(user_tang_damping >= 0.0)
       {
-        //user has to specify tangential damping coefficient
+        // user has to specify tangential damping coefficient
         d_tang_wall_ = user_tang_damping;
       }
       else
@@ -368,19 +361,19 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
     double factor = 0.0;
     double safety = 0.75;
 
-    //initialize factor
+    // initialize factor
     if(contact_strategy_==INPAR::PARTICLE::Normal_DEM)
     { factor = 0.34; }
     if(contact_strategy_==INPAR::PARTICLE::NormalAndTang_DEM)
     { factor = 0.22; }
 
-    //calculate critical time step
+    // calculate critical time step for DEM like contact
     dt_krit_ = safety * factor * sqrt( mass_min / k_tkrit );
 
-    //check frictional coefficient
+    // check frictional coefficient
     if(contact_strategy_ == INPAR::PARTICLE::NormalAndTang_DEM)
     {
-      if(mu_<=0.0 or mu_wall_ <=0.0)
+      if(mu_<=0.0 or mu_wall_<=0.0)
        dserror("Friction coefficient invalid");
     }
   }
@@ -1144,7 +1137,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
 	{
 	  if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
 	  {
-	    d = 2 * fabs(log(e_)) * sqrt(k_normal_ * m_eff / (pow(log(e_),2.0)+ pow(M_PI,2.0)));
+	    d = 2.0 * fabs(log(e_)) * sqrt(k_normal_ * m_eff / (pow(log(e_),2.0)+ pow(M_PI,2.0)));
 	  }
 	  else
 	  {
@@ -1300,7 +1293,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
     // damping
     if(d_tang_wall_ < 0.0)
     {
-      d = 2 * fabs(log(e_wall_)) * sqrt(k_normal_ * m_eff / (pow(log(e_wall_),2.0)+ pow(M_PI,2.0)));
+      d = 2.0 * fabs(log(e_wall_)) * sqrt(k_normal_ * m_eff / (pow(log(e_wall_),2.0)+ pow(M_PI,2.0)));
     }
     else
     {
@@ -1316,7 +1309,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
 	  // damping
 	  if(d_tang_ < 0.0)
 	  {
-	    d = 2 * fabs(log(e_)) * sqrt(k_normal_ * m_eff / (pow(log(e_),2.0)+ pow(M_PI,2.0)));
+	    d = 2.0 * fabs(log(e_)) * sqrt(k_normal_ * m_eff / (pow(log(e_),2.0)+ pow(M_PI,2.0)));
 	  }
 	  else
 	  {
@@ -1913,10 +1906,10 @@ Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeColli
 
   double discriminant = b * b - 4.0 * a * c;
 
-  if (discriminant >= 0.0)
+  if (discriminant >= 0.0 and a>0.0)
   {
-    double tc1 = (-b - sqrt(discriminant)) / (2 * a);
-    double tc2 = (-b + sqrt(discriminant)) / (2 * a);
+    double tc1 = (-b - sqrt(discriminant)) / (2.0 * a);
+    double tc2 = (-b + sqrt(discriminant)) / (2.0 * a);
 
     // immediate collision of particles expected
     if (abs(tc1) <= GEO::TOL14 or abs(tc2) <= GEO::TOL14)
