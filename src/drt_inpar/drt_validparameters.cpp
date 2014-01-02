@@ -5088,6 +5088,25 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
     BoolParameter("INCLUDE_PARTICLE","No","Activate a hybrid particle-level-set method",&ls_particle);
 
+    setStringToIntegralParameter<int>("DIMENSION","3D",
+                                 "number of space dimensions for handling of quasi-2D problems with 3D particles",
+                                 tuple<std::string>(
+                                   "3D",
+                                   "2Dx",
+                                   "2Dy",
+                                   "2Dz"),
+                                 tuple<int>(
+                                   INPAR::PARTICLE::particle_3D,
+                                   INPAR::PARTICLE::particle_2Dx,
+                                   INPAR::PARTICLE::particle_2Dy,
+                                   INPAR::PARTICLE::particle_2Dz),
+                                 &ls_particle);
+
+    IntParameter("NUMPARTICLE",64,"number of particles in bins around interface (usually 3D: 64, 2D: 32)",&ls_particle);
+    DoubleParameter("PARTICLEBANDWIDTH",3.0,"multiple of maximal element length defining band around interface filled with particles, i.e., alpha*max(dx,dy,dz): here we give alpha, max(dx,dy,dz) is defined by the cut_off radius for the bins!",&ls_particle);
+    DoubleParameter("MIN_RADIUS",-1.0,"minimal radius of particles, usually a multiple of min(dx,dy,dz)",&ls_particle);
+    DoubleParameter("MAX_RADIUS",-1.0,"maximal radius of particles, usually a multiple of min(dx,dy,dz)",&ls_particle);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& biofilmcontrol = list->sublist(
       "BIOFILM CONTROL",
@@ -5285,6 +5304,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("RESTART_FROM_FLUID","No","Restart from a standard fluid problem (no scalar transport field). No XFEM dofs allowed!",&combustcontrol);
   BoolParameter("RESTART_SCATRA_INPUT","No","Use ScaTra field from .dat-file instead",&combustcontrol);
+
+  BoolParameter("WRITE_CENTER_OF_MASS","No","write center of mass to file",&combustcontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolfluid = combustcontrol.sublist("COMBUSTION FLUID",false,
@@ -5487,6 +5508,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
   setStringToIntegralParameter<int>("NITSCHE_CONVPENALTY","No","(De)activate Nitsche convective penalty term",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
+  setStringToIntegralParameter<int>("NITSCHE_MASS","No","(De)activate Nitsche mass conservation term",
+                                     yesnotuple,yesnovalue,&combustcontrolfluid);
+  setStringToIntegralParameter<int>("NITSCHE_WEIGHT","intersection_visc_based_harmonic","Definition of weighting",
+                                    tuple<std::string>(
+                                    "visc_based_harmonic",
+                                    "intersection_visc_based_harmonic"),
+                                    tuple<int>(
+                                    INPAR::COMBUST::weight_visc_based_harmonic,
+                                    INPAR::COMBUST::weight_intersection_visc_based_harmonic),
+                                    &combustcontrolfluid);
   setStringToIntegralParameter<int>("CONNECTED_INTERFACE","No","laplace-beltrami surface-tension evaluation only: consider boundary integrals if interface is not closed",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
   setStringToIntegralParameter<int>("SMOOTHED_BOUNDARY_INTEGRATION","No","Turn on/off usage of smoothed normal vectors at interface",
@@ -5527,48 +5558,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("REFINEMENT","No","Turn refinement strategy for level set function on/off",
                                      yesnotuple,yesnovalue,&combustcontrolgfunc);
   IntParameter("REFINEMENTLEVEL",-1,"number of refinement level for refinement strategy",&combustcontrolgfunc);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& combustcontrolpdereinit = combustcontrol.sublist("COMBUSTION PDE REINITIALIZATION",false,"");
-
-  setStringToIntegralParameter<int>("REINIT_TIMEINTEGR","One_Step_Theta",
-                               "Time Integration Scheme for PDE-based reinitialization",
-                               tuple<std::string>(
-                                 "One_Step_Theta"
-                                 ),
-                               tuple<int>(
-                                   INPAR::SCATRA::timeint_one_step_theta
-                                 ),
-                               &combustcontrolpdereinit);
-
-  setStringToIntegralParameter<int>("STATIONARY_CHECK", "Integrated_L1_Norm",
-                                 "Type of check for stationary solution",
-                                 tuple<std::string>(
-                                  "Integrated_L1_Norm",
-                                  "Num_Steps"),
-                                tuple<int>(
-                                  INPAR::SCATRA::reinit_stationarycheck_L1normintegrated,
-                                  INPAR::SCATRA::reinit_stationarycheck_numsteps),
-                                  &combustcontrolpdereinit);
-
-  setStringToIntegralParameter<int>("PENALTY_METHOD", "None",
-                                 "Type of interface penalizing",
-                                 tuple<std::string>(
-                                  "None",
-                                  "Intersection_Points",
-                                  "Akkerman"),
-                                tuple<int>(
-                                  INPAR::SCATRA::penalty_method_none,
-                                  INPAR::SCATRA::penalty_method_intersection_points,
-                                  INPAR::SCATRA::penalty_method_akkerman),
-                                  &combustcontrolpdereinit);
-
-  IntParameter("NUMPSEUDOSTEPS", 5, "number of pseudo time steps for pde based reinitialization", &combustcontrolpdereinit);
-  DoubleParameter("PSEUDOTIMESTEP_FACTOR", 0.1, "factor for pseudo time step size for pde based reinitialization (factor*meshsize)", &combustcontrolpdereinit);
-  DoubleParameter("PENALTY_INTERFACE", 100.0, "factor for penalizing interface moving during ", &combustcontrolpdereinit);
-  DoubleParameter("EPSILON_BANDWIDTH", 2.0, "factor for interface thickness (multiplied by meshsize)", &combustcontrolpdereinit);
-  DoubleParameter("SHOCK_CAPTURING_DIFFUSIVITY", 1e-003, "diffusivity used for shock capturing operator", &combustcontrolpdereinit);
-  BoolParameter("SHOCK_CAPTURING","no","Switch on shock capturing",&combustcontrolpdereinit);
   /*----------------------------------------------------------------------*/
 
 

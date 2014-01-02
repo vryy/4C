@@ -310,10 +310,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       const double variablesurftens = params.get<double>("variablesurftens");
       const double second_deriv = params.get<bool>("second_deriv");
 
-      // parameters for nitsche boundary terms
+      // parameters for Nitsche boundary terms
       const bool nitsche_convflux = params.get<bool>("nitsche_convflux");
       const bool nitsche_convstab = params.get<bool>("nitsche_convstab");
       const bool nitsche_convpenalty = params.get<bool>("nitsche_convpenalty");
+      const bool nitsche_mass = params.get<bool>("nitsche_mass");
+      const INPAR::COMBUST::WeightType weighttype = params.get<INPAR::COMBUST::WeightType>("weighttype");
 
 
       // stabilization terms
@@ -470,7 +472,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens, second_deriv,
-          connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
+          connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration,
+          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
 #endif
     }
     break;

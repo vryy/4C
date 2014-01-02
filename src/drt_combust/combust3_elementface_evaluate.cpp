@@ -116,6 +116,8 @@ int DRT::ELEMENTS::Combust3IntFace::Evaluate(
       if (pres_stab == INPAR::FLUID::EOS_PRES_xfem_gp or conv_stream_stab == INPAR::FLUID::EOS_CONV_STREAM_xfem_gp
           or conti_stab == INPAR::FLUID::EOS_DIV_div_jump_xfem_gp or conti_stab == INPAR::FLUID::EOS_DIV_vel_jump_xfem_gp)
           dserror("EOS_xfem_gp not yet supported by combustion module!");
+      // flag to indicate inclusion of ghost penalties
+      const bool xfem_stab = params.get<bool>("xfemstab");
 
       const INPAR::FLUID::EOS_ElementLength hk_def = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(params.sublist("EDGE-BASED STABILIZATION"),"EOS_H_DEFINITION");
       const INPAR::FLUID::EOS_TauType tau_def = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(params.sublist("EDGE-BASED STABILIZATION"),"EOS_DEFINITION_TAU");
@@ -168,7 +170,7 @@ int DRT::ELEMENTS::Combust3IntFace::Evaluate(
                            m_velnp, m_velaf, m_phinp,
                            s_velnp, s_velaf, s_phinp,
                            material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
-                           pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, facetype,
+                           pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, xfem_stab, facetype,
                            m_assembly_type, s_assembly_type, lm_masterDofPerFieldToPatch, lm_slaveDofPerFieldToPatch,
                            *(ParentMasterElement()->GetEleDofManager()), *(ParentSlaveElement()->GetEleDofManager()));
     }

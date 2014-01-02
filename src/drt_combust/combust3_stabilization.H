@@ -377,7 +377,12 @@ namespace UTILS
       double& tau_conv,
       double& tau_div,
       double& tau_p,
-      double& tau_ghost
+      const bool& instationary,
+      const double timefac,
+      const bool add_ghost_penalties,
+      double& tau_ghost_first_order,
+      double& tau_ghost_second_order,
+      double& tau_pres_second_order
       );
 
 

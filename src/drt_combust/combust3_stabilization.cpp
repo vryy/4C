@@ -466,7 +466,12 @@ void COMBUST::UTILS::computeStabilizationParamsEdgeBased(
     double& tau_conv,
     double& tau_div,
     double& tau_p,
-    double& tau_ghost
+    const bool& instationary,
+    const double timefac,
+    const bool add_ghost_penalties,
+    double& tau_ghost_first_order,
+    double& tau_ghost_second_order,
+    double& tau_pres_second_order
     )
 {
   // non-dimensional factors
@@ -511,9 +516,20 @@ void COMBUST::UTILS::computeStabilizationParamsEdgeBased(
 
       // values obtained by analyzing various test cases, i.e., Beltrami flow, lid-driven cavity flow, turbulent channel flow, ...
       // for further details see upcoming paper
-      gamma_p = 3.0 / 100.0;
-      gamma_u = 5.0 / 100.0;
-      gamma_div = 5.0 / 10.0;
+      // -> for further details see upcoming paper
+      // the following values worked best for beltrami flow, i.e., yield lowest errors
+      // gamma_p = 3.0 / 100.0;
+      // gamma_u = 5.0 / 100.0;
+      // gamma_div = 5.0 / 10.0;
+      // however, the divergence jump term comes along with numerical dissipation analogously to the
+      // grad-div term of residual-based stabilizations
+      // as this dissipation increases with increasing gamma_div, the previous choices are not appropriate
+      // to compute turbulent flows
+      // therefore, we suggest to use the same values as given in Burman 2007
+      // note: we integrate each face once; Burman twice -> factor two for gamma compared to Burman
+      gamma_p = 2.0 / 100.0;
+      gamma_u = 2.0 / 100.0;
+      gamma_div = 0.05 * gamma_u;
 
       // original values
       // gamma_p = 2.0 / 8.0;
@@ -659,12 +675,43 @@ void COMBUST::UTILS::computeStabilizationParamsEdgeBased(
   }
 
 
-    //--------------------------------------------------------------------------------------------------------------
-    //                                               ghost penalty
-    //--------------------------------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------------
+  //                                               ghost penalty
+  //--------------------------------------------------------------------------------------------------------------
 
-    double gamma_ghost_penalty = 0.01;
-    tau_ghost = gamma_ghost_penalty*dynvisc*hk;
+  if (add_ghost_penalties)
+  {
+    double gamma_ghost_penalty = 0.05;
+
+    // visc ghost penalty + potential transient part
+    tau_ghost_first_order = gamma_ghost_penalty*dynvisc*hk;
+    if (instationary)
+      tau_ghost_first_order += (gamma_ghost_penalty * dens * hk*hk*hk/timefac);
+                          // convective contribution contained in tau_conv
+                          // + gamma_ghost_penalty * dens * normal_vel * hk*hk;
+
+    tau_ghost_second_order = tau_ghost_first_order * hk*hk;
+    tau_pres_second_order = tau_p * hk*hk;
+
+    // set tau_conv
+    // not compared to, e.g, form of Burman, Fernandez and Hansbo, no xi-scaling
+    // is used here
+    gamma_u = 2.0 / 100.0;
+    tau_conv = gamma_u * dens * normal_vel * hk*hk;
+
+#if 0
+    if (instationary)
+    {
+      // element Reynold's number Re_K
+      double Re_K = vel_norm*hk*dens/ dynvisc;
+      double xip = std::max(1.0,Re_K);
+      double Re_T = timefac*dynvisc/(dens * hk*hk);
+      double xipt = std::max(1.0,Re_T);
+      tau_p = gamma_ghost_penalty * hk /(dens*xipt/timefac + dynvisc*xip/(hk*hk));
+    }
+    //std::cout << tau_p << " using: hk " << hk << " dynvisc " << dynvisc << " xip " << xip << std::endl;
+#endif
+  }
   return;
 }
 

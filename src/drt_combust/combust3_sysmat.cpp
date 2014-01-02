@@ -824,9 +824,11 @@ void Sysmat(
     const INPAR::COMBUST::VelocityJumpType  veljumptype,
     const INPAR::COMBUST::FluxJumpType      fluxjumptype,
     const bool                              smoothed_boundary_integration,
+    const INPAR::COMBUST::WeightType        weighttype,
     const bool                              nitsche_convflux,
     const bool                              nitsche_convstab,
-    const bool                              nitsche_convpenalty
+    const bool                              nitsche_convpenalty,
+    const bool                              nitsche_mass
 )
 {
   // initialize element stiffness matrix and force vector
@@ -971,7 +973,8 @@ void Sysmat(
           ele, ih, dofman, evelaf, epreaf, ephi, egradphi,egradphi2, ecurv, material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, marksteinlength, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, variablesurftens, second_deriv, connected_interface, veljumptype,
-          fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
+          fluxjumptype, smoothed_boundary_integration,
+          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
 #else
       COMBUST::SysmatBoundaryNitscheNormal<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelaf, epreaf, ephi, egradphi,egradphi2, material, timealgo, dt, theta, assembler,
@@ -1080,7 +1083,8 @@ void Sysmat(
           material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, marksteinlength, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, variablesurftens, second_deriv, connected_interface, INPAR::COMBUST::vel_jump_none,
-          INPAR::COMBUST::flux_jump_surface_tension, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
+          INPAR::COMBUST::flux_jump_surface_tension, smoothed_boundary_integration,
+          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
     }
   }
   break;
@@ -1128,9 +1132,11 @@ void COMBUST::callSysmat(
     const INPAR::COMBUST::VelocityJumpType veljumptype,
     const INPAR::COMBUST::FluxJumpType     fluxjumptype,
     const bool                             smoothed_boundary_integration,
+    const INPAR::COMBUST::WeightType       weighttype,
     const bool                             nitsche_convflux,
     const bool                             nitsche_convstab,
-    const bool                             nitsche_convpenalty
+    const bool                             nitsche_convpenalty,
+    const bool                             nitsche_mass
 )
 {
   if (assembly_type == XFEM::standard_assembly)
@@ -1142,35 +1148,20 @@ void COMBUST::callSysmat(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens, second_deriv,
-          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
+          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,
+          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox, variablesurftens, second_deriv,
-          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
+          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,
+          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
     break;
-//    case DRT::Element::hex27:
-//      COMBUST::Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
-//          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
-//          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
-//    break;
-//    case DRT::Element::tet4:
-//      COMBUST::Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
-//          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
-//          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
-//    break;
-//    case DRT::Element::tet10:
-//      COMBUST::Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
-//          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
-//          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
-//    break;
     default:
       dserror("standard_assembly Sysmat not templated yet");
+      break;
     };
   }
   else
@@ -1182,35 +1173,20 @@ void COMBUST::callSysmat(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens, second_deriv,
-          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
+          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,
+          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox, variablesurftens, second_deriv,
-            connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
+          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,
+          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
     break;
-//    case DRT::Element::hex27:
-//      COMBUST::Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
-//          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
-//          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
-//    break;
-//    case DRT::Element::tet4:
-//      COMBUST::Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
-//          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
-//          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
-//    break;
-//    case DRT::Element::tet10:
-//      COMBUST::Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
-//          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
-//          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
-//    break;
     default:
       dserror("xfem_assembly Sysmat not templated yet");
+      break;
     };
   }
 }
@@ -1853,6 +1829,7 @@ void Facemat(
         const INPAR::FLUID::EOS_ElementLength      hk_def,          ///< definition of characteristic element length
         const INPAR::FLUID::EOS_TauType            tau_def,         ///< definition of stab parameter
         const INPAR::FLUID::EOS_GP_Pattern         pattern,         ///< pattern for edge-based stabilization
+        const bool                                 xfem_stab,       ///< flag to indicate wheter ghost penalties should be used
         const INPAR::XFEM::FaceType                facetype,        ///< flag to define faces which have to be integrated twice
         const std::map<XFEM::PHYSICS::Field,std::vector<int> >&                    lm_masterDofPerFieldToPatch, ///< local map between master nodes and nodes in patch
         const std::map<XFEM::PHYSICS::Field,std::vector<int> >&                    lm_slaveDofPerFieldToPatch,  ///< local map between slave nodes and nodes in patch
@@ -1927,7 +1904,7 @@ void Facemat(
               ele, ih, assembler,
               evelaf_m, epreaf_m, ephi_m,
               evelaf_s, epreaf_s, ephi_s,
-              material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, facetype,
+              material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, xfem_stab, facetype,
               pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def
               );
           }
@@ -1982,7 +1959,7 @@ void Facemat(
               ele, ih, assembler,
               evelaf_m, epreaf_m, ephi_m,
               evelaf_s, epreaf_s, ephi_s,
-              material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, facetype,
+              material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, xfem_stab, facetype,
               pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def
               );
           }
@@ -2036,6 +2013,7 @@ void COMBUST::callFacemat(
      const INPAR::FLUID::EOS_ElementLength      hk_def,          ///< definition of characteristic element length
      const INPAR::FLUID::EOS_TauType            tau_def,         ///< definition of stab parameter
      const INPAR::FLUID::EOS_GP_Pattern         pattern,         ///< pattern for edge-based stabilization
+     const bool                                 xfem_stab,       ///< flag to indicate wheter ghost penalties should be used
      const INPAR::XFEM::FaceType                facetype,        ///< flag to define faces which have to be integrated twice
      const XFEM::AssemblyType                   m_assembly_type, ///< assembly type of master element
      const XFEM::AssemblyType                   s_assembly_type, ///< assembly type of slave element
@@ -2059,7 +2037,7 @@ void COMBUST::callFacemat(
                         m_velnp, m_velaf, m_phinp,
                         s_velnp, s_velaf, s_phinp,
                         material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
-                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, facetype,
+                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, xfem_stab, facetype,
                         lm_masterDofPerFieldToPatch, lm_slaveDofPerFieldToPatch,
                         m_eleDofManager, s_eleDofManager);
           else
@@ -2068,7 +2046,7 @@ void COMBUST::callFacemat(
                         m_velnp, m_velaf, m_phinp,
                         s_velnp, s_velaf, s_phinp,
                         material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
-                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, facetype,
+                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, xfem_stab, facetype,
                         lm_masterDofPerFieldToPatch, lm_slaveDofPerFieldToPatch,
                         m_eleDofManager, s_eleDofManager);
           break;
@@ -2081,7 +2059,7 @@ void COMBUST::callFacemat(
                         m_velnp, m_velaf, m_phinp,
                         s_velnp, s_velaf, s_phinp,
                         material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
-                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, facetype,
+                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, xfem_stab, facetype,
                         lm_masterDofPerFieldToPatch, lm_slaveDofPerFieldToPatch,
                         m_eleDofManager, s_eleDofManager);
           else
@@ -2090,7 +2068,7 @@ void COMBUST::callFacemat(
                         m_velnp, m_velaf, m_phinp,
                         s_velnp, s_velaf, s_phinp,
                         material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
-                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, facetype,
+                        pres_stab, conv_stream_stab, conv_cross_stab, conti_stab, hk_def, tau_def, pattern, xfem_stab, facetype,
                         lm_masterDofPerFieldToPatch, lm_slaveDofPerFieldToPatch,
                         m_eleDofManager, s_eleDofManager);
           break;

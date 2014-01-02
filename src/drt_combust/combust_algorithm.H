@@ -70,6 +70,9 @@ namespace COMBUST
 
   protected:
 
+    /// output of initial field
+    void OutputInitialField();
+
     /// compute flame velocity
     const Teuchos::RCP<Epetra_Vector> ComputeFlameVel(const Teuchos::RCP<const Epetra_Vector>& velnp,
                                                       const Teuchos::RCP<const DRT::DofSet>& dofset
@@ -104,6 +107,9 @@ namespace COMBUST
     void Redistribute();
 
   private:
+
+    /// compute center of mass of bubble etc
+    void CenterOfMass();
 
     //! @name Fluid-G-function iteration variables
     // Fluid-G-function iteration counter

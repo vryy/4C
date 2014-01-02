@@ -107,9 +107,11 @@ namespace COMBUST
       const INPAR::COMBUST::VelocityJumpType  veljumptype,
       const INPAR::COMBUST::FluxJumpType      fluxjumptype,
       const bool                              smoothed_boundary_integration,
+      const INPAR::COMBUST::WeightType        weighttype,
       const bool                              nitsche_convflux,
       const bool                              nitsche_convstab,
-      const bool                              nitsche_convpenalty
+      const bool                              nitsche_convpenalty,
+      const bool                              nitsche_mass
   );
 
   /// get material parameters for both domains
@@ -243,6 +245,7 @@ void BlendMaterial(
        const INPAR::FLUID::EOS_ElementLength      hk_def,          ///< definition of characteristic element length
        const INPAR::FLUID::EOS_TauType            tau_def,         ///< definition of stab parameter
        const INPAR::FLUID::EOS_GP_Pattern         pattern,         ///< pattern for edge-basd stabilization
+       const bool                                 xfem_stab,       ///< flag to indicate wheter ghost penalties should be used
        const INPAR::XFEM::FaceType                facetype,        ///< flag to define faces which have to be integrated twice
        const XFEM::AssemblyType                   m_assembly_type, ///< assembly type of master element
        const XFEM::AssemblyType                   s_assembly_type, ///< assembly type of slave element

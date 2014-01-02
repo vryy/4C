@@ -116,8 +116,7 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_TPF(
 
     bool isbound =true;
 
-    if(isbound==false);
-    else // line is a boundary line => integrate boundary integral for surface tension at Interface-boundaries
+    if (isbound == true) // line is a boundary line => integrate boundary integral for surface tension at Interface-boundaries
     {
       //============================ INTEGRATE BOUNDARY TERM ==============================
       //    		std::cout << "boundary line is found:\n" << *line_it;
@@ -464,8 +463,7 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
 
     bool isbound =true;
 
-    if(isbound==false);
-    else // line is a boundary line => integrate boundary integral for surface tension at Interface-boundaries
+    if (isbound == true) // line is a boundary line => integrate boundary integral for surface tension at Interface-boundaries
     {
       //============================ INTEGRATE BOUNDARY TERM ==============================
       //    		std::cout << "boundary line is found:\n" << *line_it;

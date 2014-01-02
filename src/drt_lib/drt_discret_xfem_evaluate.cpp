@@ -65,10 +65,12 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
 
   const int numrowintfaces = NumMyRowIntFaces();
 
-  // get flag to switch between complete face-based stabilization, i.e., evaluation of all faces,
+  // get flags to switch between complete face-based stabilization, i.e., evaluation of all faces,
   // or evaluation of faces belonging to elements intersected by the interface, i.e., ghost penalty
   const bool xfemstab = params.get<bool>("xfemstab");
-  // false: usual edge-based stabilization
+  bool edge_based_stab = false;
+  if (params.sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based")
+    edge_based_stab = true;
 
   for (int i=0; i<numrowintfaces; ++i)
   {
@@ -96,7 +98,7 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
     //   for a complete edge-based stabilization
 
     // check, if we have to evaluate this face
-    if ((xfemstab == false) or (xfemstab == true and (m_intersected or s_intersected)))
+    if ((edge_based_stab == true) or (xfemstab == true and (m_intersected or s_intersected)))
     {
       // do we have to loop this face twice?
       int face_loop = 1;

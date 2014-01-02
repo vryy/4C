@@ -137,7 +137,7 @@ void SysmatDomainNitsche(
       COMBUST::BlendMaterial(ele, cell->getDomainPlus(), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
     }
     // density \rho^{n}
-    // TODO until the XFEM time integration is done properly, densities from previous and
+    // until the XFEM time integration is done properly, densities from previous and
     // current time steps are identical
     const double densn = densaf;
 
@@ -644,7 +644,7 @@ void SysmatDomainNitscheGalerkin(
       COMBUST::BlendMaterial(ele, cell->getDomainPlus(), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
     }
     // density \rho^{n}
-    // TODO until the XFEM time integration is done properly, densities from previous and
+    // until the XFEM time integration is done properly, densities from previous and
     // current time steps are identical
     const double densn = densaf;
 
@@ -1236,7 +1236,7 @@ void SysmatDomainNitscheStabHexRule(
 //      COMBUST::BlendMaterial(ele, time, densaf, dynvisc, densminus, dynviscminus);
 //    }
     // density \rho^{n}
-    // TODO until the XFEM time integration is done properly, densities from previous and
+    // until the XFEM time integration is done properly, densities from previous and
     // current time steps are identical
     const double densn = densaf;
 
@@ -1589,7 +1589,7 @@ if (intpoints.nquad != 8)
       {
         for (size_t isd = 0; isd < nsd; ++isd)
           res_old(isd) = dt*(densn*gpaccam(isd)+densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-densaf*bodyforce(isd));
-        //TODO dt*(densam*gpaccam(isd)+densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-densaf*bodyforce(isd));
+        // for rho(t): dt*(densam*gpaccam(isd)+densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-densaf*bodyforce(isd));
       }
       else
       {
@@ -1633,17 +1633,15 @@ void Nitsche_SysmatBoundaryCell(
     const DRT::UTILS::GaussRule2D& intrule2D,
     M2&                            xyze,
     const DRT::ELEMENTS::Combust3* ele,                ///< the element those matrix is calculated
-    const bool&                    higher_order_ele,
+    const bool                     higher_order_ele,
     const M1&                      evelnp,
     const V1&                      eprenp,
     const M3&                      grad_ephi_smoothed, ///< smoothed nodal G-function gradient values for this element
     const M4&                      grad_ephi2_smoothed, ///< smoothed nodal G-function second derivative values for this element
     const V2&                      ecurv,
-    const double&                  flamespeed,
-    const double&                  marksteinlength,
-    const double&                  dens_minus,
-    const double                   dens_plus,
-    const double&                  timefac,
+    const double                   flamespeed,
+    const double                   marksteinlength,
+    const double                   timefac,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
 #ifndef COMBUST_SXFEM
     const XFEM::ElementEnrichmentValues&       enrvals_plus,
@@ -1652,15 +1650,17 @@ void Nitsche_SysmatBoundaryCell(
     const XFEM::ElementDofManager& dofman,       ///< dofmanager of this element
     const V2&                      ephi,         ///< nodal G-function values for this element
 #endif
-    const double&                              kappa_plus,          ///< weights of average in plus domain
-    const double&                              kappa_minus,         ///< weights of average in minus domain
-    const double&                              visc_plus,           ///< viscosity in plus domain
-    const double&                              visc_minus,          ///< viscosity in minus domain
-    const double&                              alphau,              ///< Nitsche's stabilization parameter
-    const double&                              fac_pen,             ///< stabilization parameter for convection dominated flows
-    const double&                              wallfac,             ///< wall factor to fade jump at walls (for ORACLES)
-    const size_t&                              numparamvelx,
-    const size_t&                              numparampres,
+    const double                               kappa_plus,          ///< weights of average in plus domain
+    const double                               kappa_minus,         ///< weights of average in minus domain
+    const double                               visc_plus,           ///< viscosity in plus domain
+    const double                               visc_minus,          ///< viscosity in minus domain
+    const double                               dens_plus,           ///< density in plus domain
+    const double                               dens_minus,          ///< density in minus domain
+    const double                               alphau,              ///< Nitsche's stabilization parameter
+    const double                               wallfac,             ///< wall factor to fade jump at walls (for ORACLES)
+    const double                               hk_ele,              ///< element length
+    const size_t                               numparamvelx,
+    const size_t                               numparampres,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox,      ///<
     const double                               variablesurftens,
     const bool                                 second_deriv,
@@ -1671,7 +1671,8 @@ void Nitsche_SysmatBoundaryCell(
     const bool                                 smoothed_boundary_integration,
     const bool                                 nitsche_convflux,
     const bool                                 nitsche_convstab,
-    const bool                                 nitsche_convpenalty
+    const bool                                 nitsche_convpenalty,
+    const bool                                 nitsche_mass
 )
 {
   const size_t nsd =3;
@@ -1990,10 +1991,17 @@ void Nitsche_SysmatBoundaryCell(
     //ju = trafo*ju_nt;
     ju.Multiply(trafo,ju_nt);
 #else
-    // use smoothes normal for velocity jump
-    ju(0) = ju_n*normal_smooth(0);
-    ju(1) = ju_n*normal_smooth(1);
-    ju(2) = ju_n*normal_smooth(2);
+    if (veljumptype == INPAR::COMBUST::vel_jump_premixed_combustion or
+        veljumptype == INPAR::COMBUST::vel_jump_const)
+    {
+      // TODO: macht das wirklich Sinn mit dem geglaetten Normalenvektor? Ursula
+      // use smoothes normal for velocity jump
+      ju(0) = ju_n*normal_smooth(0);
+      ju(1) = ju_n*normal_smooth(1);
+      ju(2) = ju_n*normal_smooth(2);
+    //std::cout << "ju " << ju << std::endl;
+    }
+    //else: two-phase flow with zero jump
     //std::cout << "ju " << ju << std::endl;
 #ifdef COMBUST_TESTCOUETTEFLOW
     // overwrite velocity jump condition for shear flow test case
@@ -2222,8 +2230,8 @@ void Nitsche_SysmatBoundaryCell(
       for (int isd = 0; isd < 3; ++isd)
         vel_plus(isd) += evelnp(isd,iparam)*enrfunct_plus(iparam);
 
-    double velproj_plus  = vel_plus(0)*normal_smooth(0) + vel_plus(1)*normal_smooth(1) + vel_plus(2)*normal_smooth(2);
-    double velproj_minus = vel_minus(0)*normal_smooth(0) + vel_minus(1)*normal_smooth(1) + vel_minus(2)*normal_smooth(2);
+    double velproj_plus  = vel_plus(0)*normal(0) + vel_plus(1)*normal(1) + vel_plus(2)*normal(2);
+    double velproj_minus = vel_minus(0)*normal(0) + vel_minus(1)*normal(1) + vel_minus(2)*normal(2);
     const double absvelproj = fabs(velproj_plus);
 
     if (velproj_plus > 0.0) // outflow plus domain
@@ -2243,7 +2251,16 @@ void Nitsche_SysmatBoundaryCell(
     const double halftimefacfacplus   = dens_plus*0.5*timefacfac;
     const double halftimefacfacminus  = dens_minus*0.5*timefacfac;
     const double alphatimefacfac = alphau*timefacfac;
-    const double convstabtimefacfac = 0.5*absvelproj*fac_pen*timefacfac;
+    // TODO: convstabtimefacfac = alpha_c * timefacfac
+    //       alpha_c = 0.5 * rho_max * absvelproj or rho_inflow_domain?
+    double rho_max = std::max(dens_plus,dens_minus);
+    const double convstabtimefacfac = 0.5*absvelproj*rho_max*timefacfac;
+    // TODO:
+    const double B1 = 0.05;
+    const double B2 = 0.05;
+    const double massstabtimefacfac = B1/hk_ele * 0.5 * (visc_plus+visc_minus)
+                                    + B2 * 0.5 * (dens_plus*vel_plus.Norm2()+dens_minus*vel_minus.Norm2());
+
 
 #ifdef COMBUST_NITSCHE_VISCCONSISTMEAN
     //-------------------------    |                                      |
@@ -2514,9 +2531,9 @@ void Nitsche_SysmatBoundaryCell(
 //#ifdef COMBUST_NITSCHE_CONVSTAB
 if(nitsche_convstab)
 {
-    //--------------------     |                                  |
-    // normal penalty term   + |  1/(2h)*|u*n| || v ||, || Du ||  |
-    //--------------------     |                                  |
+    //--------------------     |                                     |
+    // normal penalty term   + |  \alpha_c *|u*n| || v ||, || Du ||  |
+    //--------------------     |                                     |
 
     assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_jump.d0, convstabtimefacfac, shp_jump.d0);
     assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_jump.d0, convstabtimefacfac, shp_jump.d0);
@@ -2543,7 +2560,9 @@ if(nitsche_convstab)
 //#ifdef COMBUST_NITSCHE_CONVPENALTY
 if(nitsche_convpenalty)
 {
-    const double pentimefacfac   = fac_pen*timefacfac;
+    dserror("Either you know what this term does or you should not use it!");
+
+    const double pentimefacfac   = 1.0/hk_ele * timefacfac; // note: in Florian's Version, pen_fac was set to 1/h
     //--------------------     |                             |
     // normal penalty term   + |  1/h || v ||*n, || Du ||*n  |
     //--------------------     |                             |
@@ -2692,10 +2711,12 @@ if(nitsche_convpenalty)
 }
 //#endif
 
+
 //#ifdef COMBUST_NITSCHE_CONVFLUX
 if(nitsche_convflux)
 {
-	//---------------------------------    |                                  |
+#if 1 // this is Florian's version
+    //---------------------------------    |                                  |
     // convective flux inflow term plus  + |  v^{+} (u^{+}*n)_{in}, || Du ||  |
     //---------------------------------    |                                  |
 
@@ -2792,7 +2813,57 @@ if(nitsche_convflux)
 //    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, halftimefacfac*velproj_minus*ju(0));
 //    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, halftimefacfac*velproj_minus*ju(1));
 //    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, halftimefacfac*velproj_minus*ju(2));
+#endif
 }
+
+  //COMBUST_NITSCHE_CONTINUITY
+if(nitsche_mass)
+{
+  //--------------------     |                                                                           |
+  // normal penalty term   + | (B_1/h*{\mu}_m + B_2{\rho* norm2(u)}_m) || v || * n_int, || Du || * n_int |
+  //--------------------     |                                                                           |
+
+  assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velx>(shp_jump.d0, massstabtimefacfac*normal(0)*normal(0), shp_jump.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Vely>(shp_jump.d0, massstabtimefacfac*normal(0)*normal(1), shp_jump.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Velx,XFEM::PHYSICS::Velz>(shp_jump.d0, massstabtimefacfac*normal(0)*normal(2), shp_jump.d0);
+
+  assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velx>(shp_jump.d0, massstabtimefacfac*normal(1)*normal(0), shp_jump.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Vely>(shp_jump.d0, massstabtimefacfac*normal(1)*normal(1), shp_jump.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Vely,XFEM::PHYSICS::Velz>(shp_jump.d0, massstabtimefacfac*normal(1)*normal(2), shp_jump.d0);
+
+  assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velx>(shp_jump.d0, massstabtimefacfac*normal(2)*normal(0), shp_jump.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Vely>(shp_jump.d0, massstabtimefacfac*normal(2)*normal(1), shp_jump.d0);
+  assembler.template Matrix<XFEM::PHYSICS::Velz,XFEM::PHYSICS::Velz>(shp_jump.d0, massstabtimefacfac*normal(2)*normal(2), shp_jump.d0);
+
+  //   |                                                                           |
+  // - |  (B_1/h*{\mu}_m + B_2{\rho* norm2(u)}_m) || v || * n_int, || u || * n_int |
+  //   |                                                                           |
+
+  assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, - massstabtimefacfac*normal(0)*(veljump(0,0)*normal(0)
+                                                                                             +veljump(1,0)*normal(1)
+                                                                                             +veljump(2,0)*normal(2)));
+  assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, - massstabtimefacfac*normal(1)*(veljump(0,0)*normal(0)
+                                                                                             +veljump(1,0)*normal(1)
+                                                                                             +veljump(2,0)*normal(2)));
+  assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, - massstabtimefacfac*normal(2)*(veljump(0,0)*normal(0)
+                                                                                             +veljump(1,0)*normal(1)
+                                                                                             +veljump(2,0)*normal(2)));
+
+  //   |                                                                       |
+  // + |  (B_1/h*{\mu}_m + B_2{\rho* norm2(u)}_m) || v || * n_int, j_u * n_int |
+  //   |                                                                       |
+
+  assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0,   massstabtimefacfac*normal(0)*(ju(0,0)*normal(0)
+                                                                                             +ju(1,0)*normal(1)
+                                                                                             +ju(2,0)*normal(2)));
+  assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0,   massstabtimefacfac*normal(1)*(ju(0,0)*normal(0)
+                                                                                             +ju(1,0)*normal(1)
+                                                                                             +ju(2,0)*normal(2)));
+  assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0,   massstabtimefacfac*normal(2)*(ju(0,0)*normal(0)
+                                                                                             +ju(1,0)*normal(1)
+                                                                                             +ju(2,0)*normal(2)));
+}
+
 //#endif
 } // loop Gaussian points
 
@@ -2838,9 +2909,11 @@ void SysmatBoundaryNitsche(
     const INPAR::COMBUST::VelocityJumpType     veljumptype,
     const INPAR::COMBUST::FluxJumpType         fluxjumptype,
     const bool                                 smoothed_boundary_integration,
+    const INPAR::COMBUST::WeightType           weighttype,
     const bool                                 nitsche_convflux,
     const bool                                 nitsche_convstab,
-    const bool                                 nitsche_convpenalty
+    const bool                                 nitsche_convpenalty,
+    const bool                                 nitsche_mass
     )
 {
   if (timealgo == INPAR::FLUID::timeint_afgenalpha)
@@ -2927,34 +3000,32 @@ void SysmatBoundaryNitsche(
   // set surface tension
   COMBUST::GetMaterialParams(material, surftenscoeff);
 
-  //----------------------------------------
-  // compute Nitsche stabilization patameter
-  //----------------------------------------
-  // calculate element diameter
-  const double hk_eleDiam = COMBUST::getEleDiameter<DISTYPE>(xyze);
-
-  // get maximum of the viscosities of all fluid materials
-  const double dynvisc_max = std::max(dynvisc_plus,dynvisc_minus);
-
-  // Nitsche parameter velocity ( alph_u := 1/h_k * mu_max * gamma_u ) see Becker, Hansbo 2009
-  const double alphau = 1.0/hk_eleDiam * dynvisc_max * nitschevel;
-  //const double alphau = 1.0/hk_eleDiam * 4.0*nitschevel*(dynvisc_plus*dynvisc_minus);
-
-  // factor for the stabilization term for convection dominated flows
-  const double fac_pen = 1.0/hk_eleDiam;
-
   //-----------------------------------------------------------------------------------------
   // get weights for average operators { () } = kappa_plus * ()_plus + kappa_minus * ()_minus
   //                               and < () > = kappa_minus* ()_plus + kappa_plus  * ()_minus
   //-----------------------------------------------------------------------------------------
-  double ele_meas = ele_meas_plus + ele_meas_minus;
+
+  const double ele_meas = ele_meas_plus + ele_meas_minus;
   if(ele_meas == 0.0) dserror("element measure is zero!!! Weighted average operators can not get defined!");
   //double kappa_plus  = ele_meas_plus/ele_meas;
   //double kappa_minus = ele_meas_minus/ele_meas;
   const double a_plus = ele_meas_plus/ele_meas;
   const double a_minus = ele_meas_minus/ele_meas;
-  const double kappa_plus = dynvisc_minus*a_plus / (dynvisc_plus*a_minus + dynvisc_minus*a_plus);
-  const double kappa_minus = dynvisc_plus*a_minus / (dynvisc_plus*a_minus + dynvisc_minus*a_plus);
+
+  double kappa_plus = 0.0;
+  double kappa_minus = 0.0;
+
+  if (weighttype == INPAR::COMBUST::weight_intersection_visc_based_harmonic)
+  {
+    kappa_plus = dynvisc_minus*a_plus / (dynvisc_plus*a_minus + dynvisc_minus*a_plus);
+    kappa_minus = dynvisc_plus*a_minus / (dynvisc_plus*a_minus + dynvisc_minus*a_plus);
+  }
+  else if (weighttype == INPAR::COMBUST::weight_visc_based_harmonic)
+  {
+    kappa_plus = dynvisc_minus / (dynvisc_plus + dynvisc_minus);
+    kappa_minus = dynvisc_plus / (dynvisc_plus + dynvisc_minus);
+  }
+  else dserror("Weighting type not supported!");
 
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
@@ -2963,6 +3034,82 @@ void SysmatBoundaryNitsche(
   // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
   const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
   const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+
+  //----------------------------------------
+  // compute Nitsche stabilization patameter
+  //----------------------------------------
+  // calculate element diameter
+  const double hk_eleDiam = COMBUST::getEleDiameter<DISTYPE>(xyze);
+
+  double alphau = 0.0;
+
+  if (weighttype == INPAR::COMBUST::weight_visc_based_harmonic)
+  {
+    alphau = nitschevel/hk_eleDiam * dynvisc_minus * dynvisc_plus / (dynvisc_plus + dynvisc_minus);
+  }
+  else if (weighttype == INPAR::COMBUST::weight_intersection_visc_based_harmonic)
+  {
+    double area = 0.0;
+    // get domain integration cells for this element
+    const GEO::BoundaryIntCells& elementBoundaryIntCells = ih->ElementBoundaryIntCells(ele->Id());
+    GEO::BoundaryIntCells::const_iterator itercell;
+    for(itercell = elementBoundaryIntCells.begin(); itercell != elementBoundaryIntCells.end(); ++itercell )
+    {
+      if (!(itercell->Shape() == DRT::Element::tri3 or itercell->Shape() == DRT::Element::quad4))
+        dserror("invalid type of boundary integration cell for surface area calculation");
+
+      // get coordinates of vertices defining flame front patch
+      const LINALG::SerialDenseMatrix& coords = itercell->CellNodalPosXYZ();
+
+      // first point of flame front patch
+      LINALG::Matrix<3,1> pointA;
+      pointA(0) = coords(0,0);
+      pointA(1) = coords(1,0);
+      pointA(2) = coords(2,0);
+
+      // second point of flame front patch
+      LINALG::Matrix<3,1> pointB;
+      pointB(0) = coords(0,1);
+      pointB(1) = coords(1,1);
+      pointB(2) = coords(2,1);
+
+      // first edge of flame front patch
+      LINALG::Matrix<3,1> edgeBA;
+      edgeBA.Update(1.0, pointA, -1.0, pointB);
+
+      // third point of flame front patch
+      LINALG::Matrix<3,1> pointC;
+      pointC(0) = coords(0,2);
+      pointC(1) = coords(1,2);
+      pointC(2) = coords(2,2);
+
+      // second edge of flame front patch
+      LINALG::Matrix<3,1> edgeBC;
+      edgeBC.Update(1.0, pointC, -1.0, pointB);
+
+      LINALG::Matrix<3,1> crossP;
+      crossP(0) = edgeBA(1)*edgeBC(2) - edgeBA(2)*edgeBC(1);
+      crossP(1) = edgeBA(2)*edgeBC(0) - edgeBA(0)*edgeBC(2);
+      crossP(2) = edgeBA(0)*edgeBC(1) - edgeBA(1)*edgeBC(0);
+
+      if (itercell->Shape() == DRT::Element::tri3)
+        area += crossP.Norm2() / 2.0;
+      else
+        area += crossP.Norm2();
+     }
+
+    const double gamma = hk_eleDiam * area / ele_meas;
+    alphau = nitschevel/hk_eleDiam * ((gamma * dynvisc_minus * dynvisc_plus)/(dynvisc_plus*a_minus + dynvisc_minus*a_plus));
+  }
+
+#if 0 //Florian
+  // get maximum of the viscosities of all fluid materials
+  const double dynvisc_max = std::max(dynvisc_plus,dynvisc_minus);
+
+  // Nitsche parameter velocity ( alph_u := 1/h_k * mu_max * gamma_u ) see Becker, Hansbo 2009
+  alphau = 1.0/hk_eleDiam * dynvisc_max * nitschevel;
+  //const double alphau = 1.0/hk_eleDiam * 4.0*nitschevel*(dynvisc_plus*dynvisc_minus);
+#endif
 
   // get domain integration cells for this element
   const GEO::BoundaryIntCells& boundaryIntCells = ih->ElementBoundaryIntCells(ele->Id());
@@ -2987,36 +3134,36 @@ void SysmatBoundaryNitsche(
       COMBUST::Nitsche_SysmatBoundaryCell<DISTYPE,DRT::Element::tri3,ASSTYPE,NUMDOF>(
           *cell, DRT::UTILS::intrule_tri_37point, xyze, ele, higher_order_ele,
           evelnp, eprenp, egradphi, egradphi2, ecurv,
-          flamespeed, marksteinlength, dens_minus, dens_plus,
+          flamespeed, marksteinlength,
           timefac, assembler,
 #ifndef COMBUST_SXFEM
           enrvals_plus, enrvals_minus,
 #else
           dofman, ephi,
 #endif
-          kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
-          alphau, fac_pen, wallfac,
+          kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus, dens_plus, dens_minus,
+          alphau, wallfac, hk_eleDiam,
           numparamvelx, numparampres, surftensapprox, variablesurftens, second_deriv, surftenscoeff, connected_interface,
           veljumptype, fluxjumptype,
-          smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty
+          smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass
       );
       break;
     case DRT::Element::quad4:
       COMBUST::Nitsche_SysmatBoundaryCell<DISTYPE,DRT::Element::quad4,ASSTYPE,NUMDOF>(
           *cell, DRT::UTILS::intrule_quad_25point , xyze, ele, higher_order_ele,
           evelnp, eprenp, egradphi, egradphi2, ecurv,
-          flamespeed, marksteinlength, dens_minus, dens_plus,
+          flamespeed, marksteinlength,
           timefac, assembler,
 #ifndef COMBUST_SXFEM
           enrvals_plus, enrvals_minus,
 #else
           dofman, ephi,
 #endif
-          kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
-          alphau, fac_pen, wallfac,
+          kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus, dens_plus, dens_minus,
+          alphau, wallfac, hk_eleDiam,
           numparamvelx, numparampres, surftensapprox, variablesurftens, second_deriv, surftenscoeff, connected_interface,
           veljumptype, fluxjumptype,
-          smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty
+          smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass
       );
       break;
     default:

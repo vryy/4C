@@ -38,6 +38,7 @@ NUMSTEP                         20
 RESTARTEVRY                     20
 TIMESTEP                        0.05
 UPRES                           1
+WRITE_CENTER_OF_MASS            yes
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow_Surf
 XFEMSTABILIZATION               no

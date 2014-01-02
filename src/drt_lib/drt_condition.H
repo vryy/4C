@@ -249,7 +249,8 @@ public:
     BioSurfaceDirichlet,
     BioVolumeDirichlet,
     NeumannIntegration,
-    HomoScaTraCoupling
+    HomoScaTraCoupling,
+    LsContact
   };
 
   /*!

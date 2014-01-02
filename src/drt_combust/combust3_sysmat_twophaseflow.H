@@ -210,12 +210,6 @@ void SysmatTwoPhaseFlow(
         dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
       }
 
-      //TODO remove
-//      // schott
-//      // set measure of element in plus and minus domain
-//      if(cell->getDomainPlus() == true)        {ele_meas_plus  += fac;}
-//      else  {ele_meas_minus += fac;}
-
       // inverse of jacobian
       static LINALG::Matrix<nsd,nsd> xji;
       xji.Invert(xjm);

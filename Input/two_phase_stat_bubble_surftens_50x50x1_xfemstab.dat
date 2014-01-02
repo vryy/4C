@@ -54,7 +54,8 @@ FLUX_JUMP_TYPE                  flux_jump_surface_tension
 //                              flux_jump_premixed_combustion
 LAMINAR_FLAMESPEED              0.0
 MARKSTEIN_LENGTH                0.0
-NITSCHE_VELOCITY                100000 //default 100
+NITSCHE_VELOCITY                75
+NITSCHE_WEIGHT                  visc_based_harmonic
 //NITSCHE_PRESSURE                0
 SURFTENSAPPROX                  surface_tension_approx_laplacebeltrami_smoothed
 //                              surface_tension_approx_none
@@ -111,8 +112,8 @@ GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos // none, std_eos, xfem_gp
+EOS_PRES                        none //std_eos // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 none //std_eos // none, std_eos, xfem_gp
 EOS_CONV_CROSS                  none // none, std_eos, xfem_gp
 EOS_DIV                         none //div_jump_std_eos // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
@@ -14058,11 +14059,11 @@ FLUID DIS fluid NODE 626 QUANTITY velx VALUE 0.0000000000e+00 TOLERANCE 1e-5
 FLUID DIS fluid NODE 626 QUANTITY vely VALUE 0.0000000000e+00 TOLERANCE 1e-5
 FLUID DIS fluid NODE 626 QUANTITY pressure VALUE 1.40978396505039791e-05 TOLERANCE 1e-5
 // spurious velocities, pressure at interface
-FLUID DIS fluid NODE 562 QUANTITY velx VALUE 3.63128309915019087e-06 TOLERANCE 1e-8
+FLUID DIS fluid NODE 562 QUANTITY velx VALUE 3.91862904706922808e-06 TOLERANCE 1e-8
 FLUID DIS fluid NODE 562 QUANTITY vely VALUE 0.0000000000e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 562 QUANTITY pressure VALUE -1.04616354679652897e-03 TOLERANCE 1e-8
-FLUID DIS fluid NODE 1146 QUANTITY velx VALUE -1.70281493439940249e-06 TOLERANCE 1e-8
-FLUID DIS fluid NODE 1146 QUANTITY vely VALUE -1.70281494273367815e-06 TOLERANCE 1e-8
-FLUID DIS fluid NODE 1146 QUANTITY pressure VALUE 1.75010812783135405e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 562 QUANTITY pressure VALUE -1.94615284661020307e-05 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1146 QUANTITY velx VALUE -3.00470065037934776e-06 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1146 QUANTITY vely VALUE -3.00467051525205380e-06 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1146 QUANTITY pressure VALUE 1.74999419757845526e-01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

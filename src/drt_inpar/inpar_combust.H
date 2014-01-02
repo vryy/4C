@@ -164,6 +164,13 @@ namespace INPAR
       nitsche_error_beltrami
     };
 
+    /// type of velocity jump
+    enum WeightType
+    {
+      weight_visc_based_harmonic,
+      weight_intersection_visc_based_harmonic
+    };
+
   }  // namespace COMBUST
 
 }  // namespace INPAR

@@ -61,6 +61,7 @@ void FaceMatNitsche(
      const double                               ga_alphaF,
      const double                               ga_alphaM,
      const double                               ga_gamma,
+     const bool                                 xfem_stab,       ///< flag to indicate whether ghost penalties should be used
      const INPAR::XFEM::FaceType                facetype,        ///< flag to define faces which have to be integrated twice
      const INPAR::FLUID::EOS_Pres               pres_stab,       ///< face term to evaluate: pressure stab
      const INPAR::FLUID::EOS_Conv_Stream        conv_stream_stab,///< face term to evaluate: conv stab stream
@@ -102,8 +103,7 @@ void FaceMatNitsche(
   GEO::fillInitialPositionArray<S_DISTYPE>(slave_ele,s_xyze);
 
   // flag for higher order elements
-  // currently not used
-  const bool higher_order_ele = false; //DRT::UTILS::secondDerivativesZero<DISTYPE>();
+  const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
   // get number of parameters (dofs) for each field on master and slave side
   // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
@@ -123,6 +123,8 @@ void FaceMatNitsche(
   double densaf  = -1.0;
   // dynamic viscosity \mu^{n+1}
   double dynvisc = -1.0;
+  // furthermore, we decide if ghost penalties have to be included for the current face
+  bool add_ghost_penalties = false;
   // set density and dynamic viscosity
   {
     double densplus = -1.0;
@@ -172,15 +174,33 @@ void FaceMatNitsche(
           if (itcell == domainIntCells.end()) dserror("Domain integration cells expected for slave!");
               indomainplus = itcell->getDomainPlus();
         }
+
+        // do we have an enriched element
+        // meaning, that either master or slave have to be cut
+        // in this case, we want to include ghost penalties
+        if ( master_ele->Bisected() or slave_ele->Bisected())
+          add_ghost_penalties = true;
+
       }
       else dserror("Neither master nor salve is uncut!");
     }
     else if (facetype == INPAR::XFEM::face_type_double_plus)
+    {
       indomainplus = true;
+      add_ghost_penalties = true;
+    }
     else if (facetype == INPAR::XFEM::face_type_double_minus)
+    {
       indomainplus = false;
+      add_ghost_penalties = true;
+    }
     else
       dserror("Unknown face type!");
+
+    // undo setting for ghost penalties in case, we do not
+    // want those terms but merely use a basic edge-based
+    // stabilization also for the intersected terms
+    if (not xfem_stab) add_ghost_penalties = false;
 
     // blend smoothly to minus domain if required
     COMBUST::BlendMaterial(ele, indomainplus, time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
@@ -447,12 +467,12 @@ void FaceMatNitsche(
     static LINALG::Matrix<6,ms_numnode> s_derxy2;
     if (higher_order_ele)
     {
-      static LINALG::Matrix<6,ms_numnode> deriv2;
+      static LINALG::Matrix<6,ms_numnode> deriv2(true);
       DRT::UTILS::shape_function_3D_deriv2(deriv2,master_xi_points(iquad,0),master_xi_points(iquad,1),master_xi_points(iquad,2),M_DISTYPE);
       DRT::UTILS::gder2<M_DISTYPE>(m_xjm,m_derxy,deriv2,m_xyze,m_derxy2);
       deriv2.Clear();
-      DRT::UTILS::shape_function_3D_deriv2(deriv2,slave_xi_points(iquad,0),slave_xi_points(iquad,1),slave_xi_points(iquad,2),M_DISTYPE);
-      DRT::UTILS::gder2<M_DISTYPE>(s_xjm,s_derxy,deriv2,s_xyze,s_derxy2);
+      DRT::UTILS::shape_function_3D_deriv2(deriv2,slave_xi_points(iquad,0),slave_xi_points(iquad,1),slave_xi_points(iquad,2),S_DISTYPE);
+      DRT::UTILS::gder2<S_DISTYPE>(s_xjm,s_derxy,deriv2,s_xyze,s_derxy2);
     }
     else
     {
@@ -700,6 +720,13 @@ void FaceMatNitsche(
       }
     }
 
+    //----------------------------------------------
+    // get second derivative jump of velocity at interface
+    //----------------------------------------------
+    LINALG::Matrix<3,6> der2_vel_jump(true);
+    if (higher_order_ele)
+      der2_vel_jump.Update(1.0, s_vderxy2, -1.0, m_vderxy2);
+
     //--------------------------------------------
     // get pressure gradients at integration point
     //--------------------------------------------
@@ -731,6 +758,46 @@ void FaceMatNitsche(
     LINALG::Matrix<nsd,1> grad_pres_jump(true);
     grad_pres_jump.Update(1.0, s_gradp, -1.0, m_gradp);
 
+    //-----------------------------------------------------
+    // get second pressure derivatives at integration point
+    //-----------------------------------------------------
+    // master
+    static LINALG::Matrix<6,1> m_der2p;
+    m_der2p.Clear();
+    // slave
+    static LINALG::Matrix<6,1> s_der2p;
+    s_der2p.Clear();
+    if (higher_order_ele)
+    {
+      for (size_t iparam = 0; iparam != m_numparampres; ++iparam)
+      {
+        m_der2p(0) += eprenp_m(iparam) * m_shp.dxdx(iparam);
+        m_der2p(1) += eprenp_m(iparam) * m_shp.dydy(iparam);
+        m_der2p(2) += eprenp_m(iparam) * m_shp.dzdz(iparam);
+        m_der2p(3) += eprenp_m(iparam) * m_shp.dxdy(iparam);
+        m_der2p(4) += eprenp_m(iparam) * m_shp.dxdz(iparam);
+        m_der2p(5) += eprenp_m(iparam) * m_shp.dydz(iparam);
+      }
+
+      for (size_t iparam = 0; iparam != s_numparampres; ++iparam)
+      {
+        s_der2p(0) += eprenp_s(iparam) * s_shp.dxdx(iparam);
+        s_der2p(1) += eprenp_s(iparam) * s_shp.dydy(iparam);
+        s_der2p(2) += eprenp_s(iparam) * s_shp.dzdz(iparam);
+        s_der2p(3) += eprenp_s(iparam) * s_shp.dxdy(iparam);
+        s_der2p(4) += eprenp_s(iparam) * s_shp.dxdz(iparam);
+        s_der2p(5) += eprenp_s(iparam) * s_shp.dydz(iparam);
+      }
+    }
+
+    //-----------------------------------------------------
+    // get jump of second pressure derivatives at integration point
+    //-----------------------------------------------------
+    // D^2(p_slave) - D^2(p_master)
+    LINALG::Matrix<6,1> der2_pres_jump(true);
+    if (higher_order_ele)
+      der2_pres_jump.Update(1.0, s_der2p, -1.0, m_der2p);
+
     //------------------------------------------
     // compute stabilization parameters (3 taus)
     //------------------------------------------
@@ -739,11 +806,14 @@ void FaceMatNitsche(
     double tau_div  = 0.0;   // divergence-stabilization parameter
     double tau_p    = 0.0;   // pressure-stabilization parameter
 
-    double tau_ghost = 0.0;  // ghost-penalty stabilization parameter due to Nitsche's method in the XFEM: currently nut used
+    double tau_ghost_first_order = 0.0;   // ghost-penalty stabilization parameter due to Nitsche's method in the XFEM
+    double tau_ghost_second_order = 0.0;  // ghost-penalty stabilization parameter due to Nitsche's method in the XFEM
+    double tau_pres_second_order = 0.0;   // ghost-penalty stabilization parameter due to Nitsche's method in the XFEM
 
     COMBUST::UTILS::computeStabilizationParamsEdgeBased(
             dynvisc, densaf, vel_norm, normal_vel, hk,
-            tau_def, tau_conv, tau_div, tau_p, tau_ghost);
+            tau_def, tau_conv, tau_div, tau_p, instationary, timefac,
+            add_ghost_penalties, tau_ghost_first_order, tau_ghost_second_order, tau_pres_second_order);
 
     //----------------------------------------------
     // build stiffness matrix stabilization entries
@@ -755,8 +825,10 @@ void FaceMatNitsche(
             gpvelnp, m_vderxy, s_vderxy,
             gppresnp, s_gradp, s_gradp,
             grad_pres_jump, vdiv_jump, grad_vel_jump,
+            der2_vel_jump, der2_pres_jump,
             pres_stab, conv_stream_stab, conv_cross_stab, conti_stab,
-            tau_conv, tau_div, tau_p);
+            tau_conv, tau_div, tau_p, add_ghost_penalties, tau_ghost_first_order, tau_ghost_second_order, tau_pres_second_order,
+            higher_order_ele);
   } // end: loop all gaussian points
 
   //----------------------------------------

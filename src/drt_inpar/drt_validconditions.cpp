@@ -3854,7 +3854,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfpartwall);
 
   /*--------------------------------------------------------------------*/
+  // level-set condition for contact points
+
+  Teuchos::RCP<ConditionDefinition> linelscontact =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE LEVEL SET CONTACT CONDITION",
+                                         "LsContact",
+                                         "level-set condition for contact points",
+                                         DRT::Condition::LsContact,
+                                         false,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> pointlscontact =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT LEVEL SET CONTACT CONDITION",
+                                         "LsContact",
+                                         "level-set condition for contact points",
+                                         DRT::Condition::LsContact,
+                                         false,
+                                         DRT::Condition::Point));
+
+  condlist.push_back(linelscontact);
+  condlist.push_back(pointlscontact);
+
+  /*--------------------------------------------------------------------*/
   return vc;
 
 }
+
 

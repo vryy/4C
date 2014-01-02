@@ -368,11 +368,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based" or
      DRT::INPUT::IntegralValue<bool>(params_->sublist("COMBUSTION FLUID"),"XFEMSTABILIZATION") == true)
   {
-    // do some checks first
-    if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based" and
-       DRT::INPUT::IntegralValue<bool>(params_->sublist("COMBUSTION FLUID"),"XFEMSTABILIZATION") == true)
-       dserror("Combination of face-based stabilization and ghost-penalty stabilization for XFEM currently not supported!");
-
     // if the definition of internal faces would be included
     // in the standard discretization, these lines can be removed
     // and CreateInternalFacesExtension() can be called once
@@ -651,6 +646,8 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
     {
       timealgo_ = INPAR::FLUID::timeint_one_step_theta;
       theta_ = params_->get<double>("start theta");
+      if (myrank_ == 0)
+        IO::cout << "/!\\ first time step computed with theta =  " << theta_ << IO::endl;
     }
     // regular time step (step_>1)
     else
@@ -1530,12 +1527,12 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
 
 
         // additional terms for Nitsche's method (see Diss Florian)
-        const bool   nitscheconvflux    = DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_CONVFLUX");
-        const bool   nitscheconvstab    = DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_CONVSTAB");
-        const bool   nitscheconvpenalty    = DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_CONVPENALTY");
-        eleparams.set<bool>("nitsche_convflux",nitscheconvflux);
-        eleparams.set<bool>("nitsche_convstab",nitscheconvstab);
-        eleparams.set<bool>("nitsche_convpenalty",nitscheconvpenalty);
+        eleparams.set<bool>("nitsche_convflux",DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_CONVFLUX"));
+        eleparams.set<bool>("nitsche_convstab",DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_CONVSTAB"));
+        eleparams.set<bool>("nitsche_convpenalty",DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_CONVPENALTY"));
+        // further terms and parameters related to Nitsche's method
+        eleparams.set<bool>("nitsche_mass",DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_MASS"));
+        eleparams.set<INPAR::COMBUST::WeightType>("weighttype",DRT::INPUT::IntegralValue<INPAR::COMBUST::WeightType>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_WEIGHT"));
 
 
 #ifdef SUGRVEL_OUTPUT
@@ -1614,6 +1611,7 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
            faceeleparams.set<Teuchos::RCP<COMBUST::InterfaceHandleCombust> >("interface handle",interfacehandle_);
 
            // parameters for stabilization
+           faceeleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
            faceeleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
            // set scheme-specific element parameters and vector values
@@ -2460,15 +2458,11 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   // # be written. Therefore, the map stack of the DiscretizationWriter is erased and all     #
   // # outdated maps are deleted (see below).                                                 #
   // ##########################################################################################
+  output_->ClearMapCache();
 
   const bool write_visualization_data = step_%upres_ == 0;
   const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
   const bool do_time_sample = special_flow_!="no" && step_>=samstart_ && step_<=samstop_;
-
-  // in case of redistribution stored maps in the DiscretizationWriter get invalid and need to be 
-  // erased in order to keep memory usage bounded
-  if(redist_this_step_)
-    output_->ClearMapCache();
 
   // -------------------------------------------------------------------
   //         calculate lift'n'drag forces from the residual
@@ -2533,6 +2527,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 
       // write domain decomposition for visualization
       output_->WriteElementData(redist_this_step_);
+      redist_this_step_ = false;
 
 #if 0
     for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
@@ -2715,7 +2710,8 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   // write restart
   if (write_restart_data)
   {
-    IO::cout << "---  write restart... ";// << IO::flush;
+    if (myrank_ == 0)
+      IO::cout << "---  write restart... ";// << IO::flush;
     //IO::cout << state_.velnp_->GlobalLength() << IO::endl;
     output_->WriteVector("velnp", state_.velnp_);
     //IO::cout << state_.veln_->GlobalLength() << IO::endl;
@@ -2733,7 +2729,8 @@ void FLD::CombustFluidImplicitTimeInt::Output()
       //IO::cout << state_.accam_->GlobalLength() << IO::endl;
       output_->WriteVector("accam" , state_.accam_);
     }
-    IO::cout << "done" << IO::endl;
+    if (myrank_ == 0)
+      IO::cout << "done" << IO::endl;
   }
 
   //if (step_ % 10 == 0 or step_== 1) //write every 5th time step only
@@ -2756,8 +2753,6 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   // dump turbulence statistics
   // --------------------------
   turbstatisticsmanager_->DoOutput((*output_), step_, 0);
-
-  redist_this_step_ = false;
 
   return;
 }
@@ -2929,6 +2924,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
       if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion or
           combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump)
       {
+        {
         gmshfilecontent << "View \" " << "Pressure Jump \" {\n";
 #ifdef GMSH_AVERAGE_JUMP
         double presjumpnorm = 0.0;
@@ -3132,6 +3128,48 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         IO::cout << "avpresjump " << avpresjump << IO::endl;
 #endif
         gmshfilecontent << "};\n";
+      }
+
+      {
+        gmshfilecontent << "View \" " << "Pressure Enrichment \" {\n";
+
+        for (int iele=0; iele<discret_->NumMyRowElements(); ++iele)
+        {
+          const DRT::Element* ele = discret_->lRowElement(iele);
+
+          // output only for bisected elements
+          if (interfacehandle_->ElementSplit(ele->Id()))
+          {
+            // get node coordinates for this element
+            const size_t numnode = DRT::UTILS::getNumberOfElementNodes(ele->Shape());
+            LINALG::SerialDenseMatrix xyze(3,numnode);
+            GEO::fillInitialPositionArray(ele,xyze);
+
+            // vector for enrichment values
+            LINALG::SerialDenseVector enrichmentval(numnode);
+
+            const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+            for (size_t inode = 0; inode<numnode; inode++)
+            {
+              // node gid
+              int nodegid = ele->Nodes()[inode]->Id();
+              // setup dof key
+              const XFEM::FieldEnr fieldenr(XFEM::PHYSICS::Pres,XFEM::Enrichment(XFEM::Enrichment::typeJump,0));
+              const XFEM::DofKey dofkey(nodegid, fieldenr);
+              // get gid of correseponding dof
+              const int dofgid = state_.nodalDofDistributionMap_.find(dofkey)->second;
+              // store value
+              enrichmentval(inode) =(*state_.velnp_)[dofrowmap->LID(dofgid)];
+            }
+
+            // write to file
+            IO::GMSH::cellWithScalarFieldToStream(ele->Shape(), enrichmentval, xyze, gmshfilecontent);
+          }// end split
+        }// elements
+        gmshfilecontent << "};\n";
+      }
+
       }
 #endif
     }
@@ -4004,6 +4042,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
       if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion or
           combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump)
       {
+        {
 #ifdef GMSH_AVERAGE_JUMP
         double veljumpnormsquare = 0.0;
 #endif
@@ -4298,6 +4337,65 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 #endif
 #endif
         gmshfilecontent << "};\n";
+      }
+
+      {
+        gmshfilecontent << "View \" " << "Velocity Enrichment \" {\n";
+
+        for (int iele=0; iele<discret_->NumMyRowElements(); ++iele)
+        {
+          const DRT::Element* ele = discret_->lRowElement(iele);
+
+          // output only for bisected elements
+          if (interfacehandle_->ElementSplit(ele->Id()))
+          {
+            // get node coordinates for this element
+            const size_t numnode = DRT::UTILS::getNumberOfElementNodes(ele->Shape());
+            LINALG::SerialDenseMatrix xyze(3,numnode);
+            GEO::fillInitialPositionArray(ele,xyze);
+
+            // vector for enrichment values
+            LINALG::SerialDenseMatrix enrichmentval(3,numnode);
+
+            const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+            for (size_t inode = 0; inode<numnode; inode++)
+            {
+              // node gid
+              int nodegid = ele->Nodes()[inode]->Id();
+
+              // setup dof key
+              const XFEM::FieldEnr fieldenrvelx(XFEM::PHYSICS::Velx,XFEM::Enrichment(XFEM::Enrichment::typeJump,0));
+              const XFEM::DofKey dofkeyvelx(nodegid, fieldenrvelx);
+              // get gid of correseponding dof
+              const int dofgidx = state_.nodalDofDistributionMap_.find(dofkeyvelx)->second;
+              // store value
+              enrichmentval(0,inode) =(*state_.velnp_)[dofrowmap->LID(dofgidx)];
+
+              // setup dof key
+              const XFEM::FieldEnr fieldenrvely(XFEM::PHYSICS::Vely,XFEM::Enrichment(XFEM::Enrichment::typeJump,0));
+              const XFEM::DofKey dofkeyvely(nodegid, fieldenrvely);
+              // get gid of correseponding dof
+              const int dofgidy = state_.nodalDofDistributionMap_.find(dofkeyvely)->second;
+              // store value
+              enrichmentval(1,inode) =(*state_.velnp_)[dofrowmap->LID(dofgidy)];
+
+              // setup dof key
+              const XFEM::FieldEnr fieldenrvelz(XFEM::PHYSICS::Velz,XFEM::Enrichment(XFEM::Enrichment::typeJump,0));
+              const XFEM::DofKey dofkeyvelz(nodegid, fieldenrvelz);
+              // get gid of correseponding dof
+              const int dofgidz = state_.nodalDofDistributionMap_.find(dofkeyvelz)->second;
+              // store value
+              enrichmentval(2,inode) =(*state_.velnp_)[dofrowmap->LID(dofgidz)];
+            }
+
+              // write to file
+              IO::GMSH::cellWithVectorFieldToStream(ele->Shape(), enrichmentval, xyze, gmshfilecontent);
+            }// end split
+          }// elements
+        gmshfilecontent << "};\n";
+      }
+
       }
 #endif
     }

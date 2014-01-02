@@ -25,6 +25,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_mat/matlist.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_io/io_control.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_levelset/levelset_algorithm.H"
@@ -126,10 +127,6 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   //--------------------------------------------------------
   // update fluid interface with flamefront
   FluidField().ImportFlameFront(flamefront_,true);
-  // output fluid initial state
-  if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary
-      and DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false)
-    FluidField().Output();
   // clear fluid's memory to flamefront
   FluidField().ImportFlameFront(Teuchos::null,true);
 
@@ -149,10 +146,6 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
 
   }
 
-  // output G-function initial state
-  if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary and
-      DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false )
-    ScaTraField().Output();
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -167,6 +160,9 @@ COMBUST::Algorithm::~Algorithm()
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::TimeLoop()
 {
+  // output of initial fields
+  OutputInitialField();
+
   // get initial field by solving stationary problem first
   // however, calculate it if and only if the problem has not been restarted
   if(DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == true and restart_==false)
@@ -259,6 +255,36 @@ void COMBUST::Algorithm::SolveStationaryProblem()
 
   // write output to screen and files (and Gmsh)
   Output();
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | protected: output of initial field                                             rasthofer 09/13 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Algorithm::OutputInitialField()
+{
+  if (Step() == 0)
+  {
+    // update fluid interface with flamefront
+    FluidField().ImportFlameFront(flamefront_,false);
+    // output fluid initial state
+    if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary
+        and DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false)
+      FluidField().Output();
+    // clear fluid's memory to flamefront
+    FluidField().ImportFlameFront(Teuchos::null,false);
+
+    // output G-function initial state
+    if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_stationary and
+        DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false )
+      ScaTraField().Output();
+
+    // write center of mass
+    if (DRT::INPUT::IntegralValue<bool>(combustdyn_,"WRITE_CENTER_OF_MASS"))
+      CenterOfMass();
+  }
 
   return;
 }
@@ -938,6 +964,104 @@ void COMBUST::Algorithm::Output()
   // we have to call the output of averaged fields for scatra separately
   if (FluidField().TurbulenceStatisticManager() != Teuchos::null)
     FluidField().TurbulenceStatisticManager()->DoOutputForScaTra(ScaTraField().DiscWriter(),ScaTraField().Step());
+
+  // write position of center of mass to file
+  if (DRT::INPUT::IntegralValue<bool>(combustdyn_,"WRITE_CENTER_OF_MASS"))
+    CenterOfMass();
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | compute center of mass                                                         rasthofer 12/13 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Algorithm::CenterOfMass()
+{
+  // get interface handle
+  const Teuchos::RCP<InterfaceHandleCombust> ih = flamefront_->InterfaceHandle();
+
+  // initialize vector for local sum
+  std::vector<double > my_part(3);
+  for (int idim=0; idim<3; idim++)
+    my_part[idim] = 0.0;
+  // initialize local volume
+  double my_vol = 0.0;
+
+  const Epetra_Map* elerowmap = FluidField().Discretization()->ElementRowMap();
+
+  // loop all row elements
+  for (int iele=0; iele<FluidField().Discretization()->NumMyRowElements(); iele++)
+  {
+    const int ele_gid = elerowmap->GID(iele);
+    // get integration cells
+    GEO::DomainIntCells domainIntCells = ih->ElementDomainIntCells(ele_gid);
+    for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+    {
+      // include all contributions to minus domain
+      if (cell->getDomainPlus() == false)
+      {
+        // get center of cell
+        const LINALG::Matrix<3,1> center_cell = cell->GetPhysicalCenterPosition();
+        // get volume of cell
+        const double vol_cell = cell->VolumeInPhysicalDomain();
+
+        // sum up
+        for (int idim=0; idim<3; idim++)
+          my_part[idim] += center_cell(idim)*vol_cell;
+
+        my_vol += vol_cell;
+      }
+    }
+  }
+
+  // initalize vector for global sum
+  std::vector<double > center(3);
+  for (int idim=0; idim<3; idim++)
+    center[idim] = 0.0;
+  // initialize global volume
+  double vol = 0.0;
+
+  // compute sum over all procs
+  FluidField().Discretization()->Comm().SumAll(&(my_part[0]),&(center[0]),3);
+  FluidField().Discretization()->Comm().SumAll(&my_vol,&vol,1);
+
+  // finally compute center position
+  for (int idim=0; idim<3; idim++)
+    center[idim] /= vol;
+
+  if (Comm().MyPID()==0)
+  {
+
+    // write to file
+    const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    const std::string fname = simulation+"_center_of_mass.txt";
+
+    if (Step()==0)
+    {
+      std::ofstream f;
+      f.open(fname.c_str());
+      f << "#| Step | Time |       x       |       y       |       z       |\n";
+      f << "  "<< std::setw(2) << std::setprecision(10) << Step() << "    " << std::setw(3)<< std::setprecision(5)
+        << Time() << std::setw(4) << std::setprecision(8) << "  "
+        << center[0] << "    " << std::setprecision(8) << center[1] << "    " << std::setprecision(8) << center[2] << " " <<"\n";
+
+      f.flush();
+      f.close();
+    }
+    else
+    {
+      std::ofstream f;
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+      f << "  "<< std::setw(2) << std::setprecision(10) << Step() << "    " << std::setw(3)<< std::setprecision(5)
+      << Time() << std::setw(4) << std::setprecision(8) << "  "
+      << center[0] << "    " << std::setprecision(8) << center[1] << "    " << std::setprecision(8) << center[2] << " " <<"\n";
+
+      f.flush();
+      f.close();
+    }
+
+  }
 
   return;
 }

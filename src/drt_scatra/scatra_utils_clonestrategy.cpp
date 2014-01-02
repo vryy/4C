@@ -61,6 +61,9 @@ std::map<std::string,std::string> SCATRA::ScatraFluidCloneStrategy::ConditionsTo
   // for coupled scalar transport fields
   conditions_to_copy.insert(std::pair<std::string,std::string>("ScaTraCoupling","ScaTraCoupling"));
 
+  // for level-set problems
+  conditions_to_copy.insert(std::pair<std::string,std::string>("LsContact","LsContact"));
+
   return conditions_to_copy;
 }
 
