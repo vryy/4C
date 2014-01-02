@@ -2,28 +2,25 @@
 /*!
 \file scatra_particle_coupling.cpp
 
-\brief Algorithm to control cavitation simulations
+\brief Algorithm to track particles for level-set problems
 
 <pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15236
 </pre>
 *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 11/12 |
  *----------------------------------------------------------------------*/
+
+#include "particle_algorithm.H"
 #include "scatra_particle_coupling.H"
+#include "particle_timint_rk.H"
 #include "../drt_adapter/adapter_particle.H"
-#include "../drt_adapter/ad_fld_base_algorithm.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_fluid_ele/fluid_ele_calc.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/particle_mat.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -42,7 +39,6 @@ Maintainer: Georg Hammerl
 #include "../drt_cut/cut_position.H"
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_inpar/inpar_cavitation.H"
 #include "../drt_io/io_pstream.H"
 #include "../headers/definitions.h"
 
@@ -50,15 +46,16 @@ Maintainer: Georg Hammerl
 #include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
- | Algorithm constructor                                rasthofer 09/13 |
+ | algorithm constructor                                rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 PARTICLE::ScatraParticleCoupling::ScatraParticleCoupling(
   Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
-  const Epetra_Comm& comm,
-  const Teuchos::ParameterList& params
-  ) : PARTICLE::Algorithm(comm,params),
+  Teuchos::RCP<Teuchos::ParameterList> params
+  ) : PARTICLE::Algorithm(scatra->Discretization()->Comm(),*params),
   scatra_(scatra),
-  scatradis_(scatra->Discretization())
+  scatradis_(scatra->Discretization()),
+  params_(params),
+  particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(params->sublist("PARTICLE"),"DIMENSION"))
 {
 
   Init(false);
@@ -68,69 +65,23 @@ PARTICLE::ScatraParticleCoupling::ScatraParticleCoupling(
 
 
 /*----------------------------------------------------------------------*
- | time loop of the cavitation algorithm                rasthofer 09/13 |
- *----------------------------------------------------------------------*/
-void PARTICLE::ScatraParticleCoupling::Timeloop()
-{
-  // time loop
-  while (NotFinished())
-  {
-    // counter and print header; predict solution of both fields
-    PrepareTimeStep();
-
-    // particle time step is solved
-    Integrate();
-
-    // deal with particle inflow
-//    ParticleInflow();
-
-    // transfer particles into their correct bins
-    TransferParticles();
-
-    // update displacements, velocities, accelerations
-    // after this call we will have disn_==dis_, etc
-    // update time and step
-    Update();
-
-    // write output to screen and files
-    Output();
-
-  }  // NotFinished
-
-}
-
-
-/*----------------------------------------------------------------------*
- | setup of the system                                      ghamm 11/12 |
- *----------------------------------------------------------------------*/
-void PARTICLE::ScatraParticleCoupling::SetupSystem()
-{
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | initialization of the system                             ghamm 11/12 |
  *----------------------------------------------------------------------*/
 void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
 {
+  // -------------------------------------------------------------------
+  //               setup particle discretization
+  // -------------------------------------------------------------------
+
   // FillComplete() necessary for DRT::Geometry .... could be removed perhaps
   particledis_->FillComplete(false,false,false);
   // extract noderowmap because it will be called Reset() after adding elements
   Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*particledis_->NodeRowMap()));
-  CreateBins();
+  CreateBins(scatradis_);
 
-  // gather all fluid coleles in each bin for proper extended ghosting
-  std::map<int, std::set<int> > fluideles;
-  Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcs(fluideles);
-
-  // the following has only to be done once --> skip in case of restart
-  if(not restarted)
-  {
-    // read out bubble inflow condition and set bubble inflows in corresponding bins
-    // assumption: only row bins are available up to here
-//    BuildBubbleInflowCondition();
-  }
+  // gather all scatra coleles in each bin for proper extended ghosting
+  std::map<int, std::set<int> > scatraelesinbins;
+  Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcsBasedOnUnderlyingDiscret(scatradis_, scatraelesinbins);
 
   //--------------------------------------------------------------------
   // -> 1) create a set of homeless particles that are not in a bin on this proc
@@ -147,52 +98,31 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   FillParticlesIntoBins(homelessparticles);
 
   // ghost bins, particles and fluid elements according to the bins
-  SetupGhosting(binrowmap, fluideles);
-
-  // the following has only to be done once --> skip in case of restart
-  if(not restarted)
-  {
-    // create time integrator based on structural time integration
-    Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
-        Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(), particledis_));
-    particles_ = particles->ParticleField();
-
-    // determine consistent initial acceleration for the particles
-    CalculateAndApplyForcesToParticles();
-    particles_->DetermineMassDampConsistAccel();
-  }
+  SetupGhosting(binrowmap, scatraelesinbins);
 
   // some output
   IO::cout << "after ghosting" << IO::endl;
   DRT::UTILS::PrintParallelDistribution(*particledis_);
   DRT::UTILS::PrintParallelDistribution(*scatradis_);
 
-  return;
-}
+  // -------------------------------------------------------------------
+  //               setup time integration
+  // -------------------------------------------------------------------
 
-
-/*----------------------------------------------------------------------*
- | prepare time step                                       ghamm 11/12  |
- *----------------------------------------------------------------------*/
-//void PARTICLE::ScatraParticleCoupling::PrepareTimeStep()
-//{
-//  PARTICLE::Algorithm::PrepareTimeStep();
-//  scatra_->PrepareTimeStep();
-//  return;
-//}
-
-
-/*----------------------------------------------------------------------*
- | solve the current particle time step                    ghamm 11/12  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ScatraParticleCoupling::Integrate()
-{
-
-  // apply forces and solve particle time step
-  PARTICLE::Algorithm::Integrate();
-
+  // the following has only to be done once --> skip in case of restart
+  // remark:
+  // read restart deletes all initial particles, here the ones of the inital seeding
+  // this is ok
+  // then Init() is called once more
+  // therefore, we have to ensure that the time integrator is only setup once
+  if(not restarted)
   {
-//    scatra_->Solve();
+    // create time integrator
+    Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
+        Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm((*params_), particledis_));
+    particles_ = particles->ParticleField();
+    // set particle algorithm into time integration
+    particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
   }
 
   return;
@@ -200,656 +130,1255 @@ void PARTICLE::ScatraParticleCoupling::Integrate()
 
 
 /*----------------------------------------------------------------------*
- | calculate fluid forces on particle and apply it         ghamm 01/13  |
+ | initialize particle field with particles             rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void PARTICLE::ScatraParticleCoupling::CalculateAndApplyForcesToParticles()
+void PARTICLE::ScatraParticleCoupling::InitialSeeding()
 {
-//  const int dim = 3;
-//
-//  scatradis_->ClearState();
-//  particledis_->ClearState();
-//
-//  //TODO 1: Test whether these states are updated enough
-//  // at the beginning of the time step: veln := velnp(previous step)
-//  scatradis_->SetState("veln",scatra_->Veln());
-//  scatradis_->SetState("velnm",scatra_->Velnm());
-//
-//  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->ExtractDispn();
-//  Teuchos::RCP<const Epetra_Vector> bubblevel = particles_->ExtractVeln();
-//  Teuchos::RCP<Epetra_Vector> bubbleradius = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadiusnp();
-//
-//  // vectors to be filled with forces, note: global assemble is needed for fluidforces due to the case with large bins and small fluid eles
-//  Teuchos::RCP<Epetra_Vector> bubbleforces = LINALG::CreateVector(*particledis_->DofRowMap(),true);
-//  Teuchos::RCP<Epetra_FEVector> fluidforces = Teuchos::rcp(new Epetra_FEVector(*scatradis_->DofRowMap()));
-//
-//  if(scatradis_->NumMyColElements() <= 0)
-//    dserror("there is no fluid element to ask for material parameters");
-//  Teuchos::RCP<MAT::NewtonianFluid> actmat = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(scatradis_->lColElement(0)->Material());
-//  if(actmat == Teuchos::null)
-//    dserror("type cast of fluid material failed");
-//
-//  double rho_l = actmat->Density();
-//  double mu_l = actmat->Viscosity();
-//  double rho_b = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ParticleDensity();
-//
-//  // define element matrices and vectors
-//  Epetra_SerialDenseMatrix elematrix1;
-//  Epetra_SerialDenseMatrix elematrix2;
-//  Epetra_SerialDenseVector elevector1;
-//  Epetra_SerialDenseVector elevector2;
-//  Epetra_SerialDenseVector elevector3;
-//
-//  // only row particles are evaluated
-//  for(int i=0; i<particledis_->NodeRowMap()->NumMyElements(); ++i)
-//  {
-//    DRT::Node* currparticle = particledis_->lRowNode(i);
-//    // fill particle position
-//    LINALG::Matrix<3,1> particleposition;
-//    std::vector<int> lm_b = particledis_->Dof(currparticle);
-//    int posx = bubblepos->Map().LID(lm_b[0]);
-//    for (int d=0; d<dim; ++d)
-//      particleposition(d) = (*bubblepos)[posx+d];
-//
-//
-//    //--------------------------------------------------------------------
-//    // 1st step: element coordinates of particle position in fluid element
-//    //--------------------------------------------------------------------
-//
-//    // variables to store information about element in which the particle is located
-//    DRT::Element* targetfluidele = NULL;
-//    LINALG::Matrix<3,1> elecoord(true);
-//
-//    // find out in which fluid element the current particle is located
-//    if(currparticle->NumElement() != 1)
-//      dserror("ERROR: A particle is assigned to more than one bin!");
-//    DRT::Element** currele = currparticle->Elements();
-//#ifdef DEBUG
-//    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
-//    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
-//#endif
-//    DRT::MESHFREE::MeshfreeMultiBin* currbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
-//    DRT::Element** fluidelesinbin = currbin->AssociatedFluidEles();
-//    int numfluidelesinbin = currbin->NumAssociatedFluidEle();
-//
-//    std::set<int>::const_iterator eleiter;
-//    // search for underlying fluid element with fast search if desired
-//    for(int ele=0; ele<numfluidelesinbin; ++ele)
-//    {
-//      DRT::Element* fluidele = fluidelesinbin[ele];
-//      const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
-//
-//      //get coordinates of the particle position in parameter space of the element
-//      bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, particleposition, elecoord, approxelecoordsinit_);
-//
-//      if(insideele == true)
-//      {
-//        targetfluidele = fluidele;
-//        // leave loop over all fluid eles in bin
-//        break;
-//      }
-//    }
-//
-//    // repeat search for underlying fluid element with standard search in case nothing was found
-//    if(targetfluidele == NULL and approxelecoordsinit_ == true)
-//    {
-//      for(int ele=0; ele<numfluidelesinbin; ++ele)
-//      {
-//        DRT::Element* fluidele = fluidelesinbin[ele];
-//        const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
-//
-//        //get coordinates of the particle position in parameter space of the element
-//        bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, particleposition, elecoord, false);
-//
-//        if(insideele == true)
-//        {
-//          targetfluidele = fluidele;
-//          // leave loop over all fluid eles in bin
-//          break;
-//        }
-//      }
-//    }
-//
-//
-//    //--------------------------------------------------------------------
-//    // 2nd step: forces on this bubble are calculated
-//    //--------------------------------------------------------------------
-//
-//    if(targetfluidele == NULL)
-//    {
-//      std::cout << "INFO: currparticle with Id: " << currparticle->Id() << " and position: " << particleposition(0) << " "
-//          << particleposition(1) << " " << particleposition(2) << " " << " does not have an underlying fluid element -> no forces calculated" << std::endl;
-//
-//      std::vector<double> tmpposition(dim);
-//      for(int d=0; d<dim; ++d)
-//        tmpposition[d] = particleposition(d);
-//      int bubbleBinId = ConvertPosToGid(tmpposition);
-//      std::cout << "particle is in binId: " << bubbleBinId << " while currbin->Id() is " << currbin->Id() <<
-//          " . The following number of fluid eles is in this bin:" << numfluidelesinbin << std::endl;
-//
-//      // do not assemble forces for this bubble and continue with next bubble
-//      continue;
-//    }
-//
-//    // get element location vector and ownerships
-//    std::vector<int> lm_f;
-//    std::vector<int> lmowner_f;
-//    std::vector<int> lmstride;
-//    targetfluidele->LocationVector(*scatradis_,lm_f,lmowner_f,lmstride);
-//
-//    // Reshape element matrices and vectors and initialize to zero
-//    elevector1.Size(dim);
-//    elevector2.Size(dim);
-//    elevector3.Size(dim);
-//
-//    // set action in order to calculate the velocity and material derivative of the velocity
-//    Teuchos::ParameterList params;
-//    params.set<int>("action",FLD::calc_mat_deriv_u_and_rot_u);
-//    params.set<double>("timestep",Dt());
-//    params.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
-//
-//    // call the element specific evaluate method (elevec1 = fluid vel u; elevec2 = mat deriv of fluid vel, elevec3 = rot of fluid vel)
-//    targetfluidele->Evaluate(params,*scatradis_,lm_f,elematrix1,elematrix2,elevector1,elevector2,elevector3);
-//
-//    // get bubble velocity and acceleration
-//    std::vector<double> v_bub(lm_b.size());
-//    DRT::UTILS::ExtractMyValues(*bubblevel,v_bub,lm_b);
-//
-//    // get bubble radius
-//    double r_bub = (*bubbleradius)[ particledis_->NodeRowMap()->LID(currparticle->Id()) ];
-//
-//    // bubble Reynolds number
-//    LINALG::Matrix<3,1> v_rel(false);
-//    for (int d=0; d<dim; ++d)
-//      v_rel(d) = elevector1[d] - v_bub[d];
-//
-//    double v_relabs = v_rel.Norm2();
-//    double Re_b = 2.0 * r_bub * v_relabs * rho_l / mu_l;
-//
-//    bool output = false;
-//    if(output)
-//    {
-//      std::cout << "v_rel: " << v_rel(0) << "  " << v_rel(1) << "  " << v_rel(2) << "  " << std::endl;
-//      std::cout << "v_relabs: " << v_relabs << std::endl;
-//      std::cout << "bubble Reynolds number: " << Re_b << std::endl;
-//    }
-//
-//    // variable to sum forces for the current bubble under observation
-//    LINALG::Matrix<3,1> sumforces;
-//    /*------------------------------------------------------------------*/
-//    //// 2.1) drag force = 0.5 * c_d * rho_l * Pi * r_b^2 * |u-v| * (u-v) or
-//    //// Stokes law for very small Re: drag force = 6.0 * Pi * mu_l * r_b * (u-v)
-//    double coeff1 = 0.0;
-//    if(Re_b < 0.1)
-//    {
-//      coeff1 = 6.0 * M_PI * mu_l * r_bub;
-//    }
-//    else
-//    {
-//      double c_d = 0.0;
-//      if(Re_b < 1000.0)
-//        c_d = 24.0 * (1.0 + 0.15 * pow(Re_b,0.687)) / Re_b;
-//      else
-//        c_d = 0.44;
-//
-//      coeff1 = 0.5 * c_d * rho_l * M_PI * r_bub * r_bub * v_relabs;
-//    }
-//
-//    LINALG::Matrix<3,1> dragforce(v_rel);
-//    dragforce.Scale(coeff1);
-//    //assemble
-//    sumforces.Update(1.0, dragforce);
-//    /*------------------------------------------------------------------*/
-//
-//    /*------------------------------------------------------------------*/
-//    //// 2.2) lift force = c_l * rho_l * volume_b * (u-v) x rot_u   with rot_u = nabla x u
-//    double c_l = 0.5;
-//    double vol_b = 4.0 / 3.0 * M_PI * r_bub * r_bub* r_bub;
-//    LINALG::Matrix<3,1> rot_u;
-//    for (int d=0; d<dim; ++d)
-//      rot_u(d) = elevector3(d);
-//
-//    LINALG::Matrix<3,1> liftforce = GEO::computeCrossProduct(v_rel, rot_u);
-//
-//    double coeff2 = c_l * rho_l * vol_b;
-//    liftforce.Scale(coeff2);
-//    //assemble
-//    sumforces.Update(1.0, liftforce, 1.0);
-//    // store forces for coupling to fluid
-//    LINALG::Matrix<3,1> couplingforce(sumforces);
-//    /*------------------------------------------------------------------*/
-//
-//    /*------------------------------------------------------------------*/
-//    //// 2.3) gravity and buoyancy forces = volume_b * rho_bub * g - volume_b * rho_l * ( g - Du/Dt )
-//    LINALG::Matrix<3,1> Du_Dt;
-//    for (int d=0; d<dim; ++d)
-//      Du_Dt(d) = elevector2[d];
-//
-//    LINALG::Matrix<3,1> grav_buoy_force;
-//    grav_buoy_force.Update(rho_b, gravity_acc_);
-//    grav_buoy_force.Update(-rho_l, gravity_acc_, rho_l, Du_Dt, 1.0);
-//    grav_buoy_force.Scale(vol_b);
-//    //assemble
-//    sumforces.Update(1.0, grav_buoy_force, 1.0);
-//    /*------------------------------------------------------------------*/
-//
-//    /*------------------------------------------------------------------*/
-//    //// 2.4) virtual/added mass = c_VM * rho_l * volume_b * ( Du/Dt - Dv/Dt )
-//    //// Note: implicit treatment of bubble acceleration in added mass, other forces explicit
-//    //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) + c_VM * rho_l * volume_b * Du/Dt }{ 1 + c_VM * rho_l / rho_b }
-//    double c_VM = 0.5;
-//    double coeff3 = c_VM * rho_l * vol_b;
-//    double coeff4 = 1.0 + c_VM * rho_l / rho_b;
-//
-//    LINALG::Matrix<3,1> bubbleforce;
-//    bubbleforce.Update(1.0/coeff4, sumforces, coeff3/coeff4, Du_Dt);
-//    /*------------------------------------------------------------------*/
-//
-//
-//    //--------------------------------------------------------------------
-//    // 3rd step: assemble bubble forces
-//    //--------------------------------------------------------------------
-//
-//    // assemble of bubble forces (note: row nodes evaluated)
-//    Epetra_SerialDenseVector forcecurrbubble(3);
-//    for(int d=0; d<dim; ++d)
-//      forcecurrbubble[d] = bubbleforce(d);
-//    std::vector<int> lmowner_b(lm_b.size(), myrank_);
-//    LINALG::Assemble(*bubbleforces,forcecurrbubble,lm_b,lmowner_b);
-//
-//    // coupling forces between fluid and particle only include certain forces
-//    // calculate added mass force
-//    LINALG::Matrix<3,1> addedmassforce;
-//    double m_b = vol_b * rho_b;
-//    addedmassforce.Update(coeff3, Du_Dt, -coeff3/m_b, bubbleforce);
-//    //// coupling force = -(dragforce + liftforce + addedmassforce); actio = reactio --> minus sign
-//    couplingforce.Update(-1.0, addedmassforce, -1.0);
-//
-//    if(coupalgo_ != INPAR::CAVITATION::OneWay)
-//    {
-//      // assemble of fluid forces must be done globally because col entries in the fluid can occur
-//      // although only row particles are evaluated
-//      const int numnode = targetfluidele->NumNode();
-//      Epetra_SerialDenseVector funct(numnode);
-//      // get shape functions of the element; evaluated at the bubble position --> distribution
-//      DRT::UTILS::shape_function_3D(funct,elecoord(0,0),elecoord(1,0),elecoord(2,0),targetfluidele->Shape());
-//      // prepare assembly for fluid forces (pressure degrees do not have to be filled)
-//
-//      int numdofperfluidele = numnode*(dim+1);
-//      double val[numdofperfluidele];
-//      for(int iter=0; iter<numnode; ++iter)
-//      {
-//        for(int d=0; d<dim; ++d)
-//        {
-//          val[iter*(dim+1) + d] = funct[iter] * couplingforce(d);
-//        }
-//      }
-//      // do assembly of bubble forces on fluid
-//      int err = fluidforces->SumIntoGlobalValues(numdofperfluidele, &lm_f[0], &val[0]);
-//      if (err<0)
-//        dserror("summing into Epetra_FEVector failed");
-//    }
-//
-//
-//    //--------------------------------------------------------------------
-//    // 4th step: output
-//    //--------------------------------------------------------------------
-//    if(output)
-//    {
-//      // gravity
-//      LINALG::Matrix<3,1> gravityforce(gravity_acc_);
-//      gravityforce.Scale(rho_b*vol_b);
-//      std::cout << "gravity force       : " << gravityforce << std::endl;
-//
-//      // buoyancy
-//      double coeff5 = - vol_b * rho_l;
-//      LINALG::Matrix<3,1> buoyancyforce(true);
-//      buoyancyforce.Update(coeff5, gravity_acc_);
-//      std::cout << "buoyancy force      : " << buoyancyforce << std::endl;
-//
-//      // effective buoyancy / inertia term
-//      LINALG::Matrix<3,1> effectbuoyancyforce;
-//      effectbuoyancyforce.Update(-coeff5, Du_Dt);
-//      std::cout << "effective buoy force: " << effectbuoyancyforce << std::endl;
-//
-//      // drag, lift and added mass force
-//      std::cout << "dragforce force     : " << dragforce << std::endl;
-//      std::cout << "liftforce force     : " << liftforce << std::endl;
-//      std::cout << "added mass force    : " << addedmassforce << std::endl;
-//
-//      // sum over all bubble forces
-//      std::cout << "sum over all forces : " << bubbleforce << std::endl;
-//
-//      // fluid force
-//      std::cout << "fluid force         : " << couplingforce << std::endl;
-//    }
-//
-//  } // end iparticle
-//
-//  //--------------------------------------------------------------------
-//  // 4th step: apply forces to bubbles and fluid field
-//  //--------------------------------------------------------------------
-//  particledis_->SetState("particleforces", bubbleforces);
-//
-//  if(coupalgo_ != INPAR::CAVITATION::OneWay)
-//  {
-//    // call global assemble
-//    int err = fluidforces->GlobalAssemble(Add, false);
-//    if (err<0)
-//      dserror("global assemble into fluidforces failed");
-//
-//    scatra_->ApplyExternalForces(fluidforces);
-//  }
-//
-//  return;
-}
 
+  // -------------------------------------------------------------------
+  //               setup initial seeding
+  // -------------------------------------------------------------------
 
-///*----------------------------------------------------------------------*
-// | particles are inserted into domain                      ghamm 11/12  |
-// *----------------------------------------------------------------------*/
-//void PARTICLE::ScatraParticleCoupling::ParticleInflow()
-//{
-//  std::map<int, std::list<Teuchos::RCP<BubbleSource> > >::const_iterator biniter;
-//
-//  int timeforinflow = 0;
-//  for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
-//  {
-//    // all particles have the same inflow frequency --> it is enough to test one
-//    // assumption only valid in case of one condition or conditions with identical inflow frequency
-//    if(biniter->second.size() != 0)
-//    {
-//      double inflowtime = 1.0 / biniter->second.front()->inflow_freq_;
-//      if(Step() % ((int)(inflowtime/Dt())) == 0)
-//      {
-//        timeforinflow = 1;
-//        break;
-//      }
-//    }
-//  }
-//
-//  int globaltimeforinflow = 0;
-//  particledis_->Comm().MaxAll(&timeforinflow, &globaltimeforinflow, 1);
-//  if(globaltimeforinflow == 0)
-//    return; // no inflow detected
-//
-//
-//  // initialize bubble id with largest bubble id in use + 1 (on each proc)
-//  int maxbubbleid = particledis_->NodeRowMap()->MaxAllGID()+1;
-//
-//  // start filling particles
-//  int inflowcounter = 0;
-//  for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
-//  {
-//    std::list<Teuchos::RCP<BubbleSource> >::const_iterator particleiter;
-//    for(particleiter=biniter->second.begin(); particleiter!=biniter->second.end(); ++particleiter)
-//    {
-//      std::vector<double> inflow_position = (*particleiter)->inflow_position_;
-//      std::set<Teuchos::RCP<DRT::Node>,PARTICLE::Less> homelessparticles;
-//      int newbubbleid = maxbubbleid + (*particleiter)->inflowid_;
-//      Teuchos::RCP<DRT::Node> newparticle = Teuchos::rcp(new DRT::Node(newbubbleid, &inflow_position[0], myrank_));
-//      PlaceNodeCorrectly(newparticle, &inflow_position[0], homelessparticles);
-//      if(homelessparticles.size() != 0)
-//        dserror("New bubble could not be inserted on this proc! Bubble inflow broken.");
-//    }
-//    inflowcounter += (int)biniter->second.size();
-//  }
-//
-//  std::cout << "Inflow of " << inflowcounter << " bubbles on proc " << myrank_ << std::endl;
-//
-//  // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
-//  particledis_->FillComplete(true, false, true);
-//
-//  // update of state vectors to the new maps
-//  Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->UpdateStatesAfterParticleTransfer();
-//
-//  // insert data for new bubbles into state vectors
-//  const Epetra_Map* dofrowmap = particledis_->DofRowMap();
-//  const Epetra_Map* noderowmap = particledis_->NodeRowMap();
-//  Teuchos::RCP<Epetra_Vector> disn = particles_->ExtractDispnp();
-//  Teuchos::RCP<Epetra_Vector> veln = particles_->ExtractVelnp();
-//  Teuchos::RCP<Epetra_Vector> radiusn = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadiusnp();
-//
-//  for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
-//  {
-//    std::list<Teuchos::RCP<BubbleSource> >::const_iterator particleiter;
-//    for(particleiter=biniter->second.begin(); particleiter!=biniter->second.end(); ++particleiter)
-//    {
-//      std::vector<double> inflow_position = (*particleiter)->inflow_position_;
-//      std::vector<double> inflow_vel = (*particleiter)->inflow_vel_;
-//      int inflow_vel_curve = (*particleiter)->inflow_vel_curve_;
-//      double inflow_radius = (*particleiter)->inflow_radius_;
-//      int newbubbleid = maxbubbleid + (*particleiter)->inflowid_;
-//
-//      double curvefac = 1.0;
-//      // curves are numbered starting with 1 in the input file
-//      if(inflow_vel_curve > 0)
-//        curvefac = DRT::Problem::Instance()->Curve(inflow_vel_curve-1).f(Time());
-//
-//      DRT::Node* currparticle = particledis_->gNode(newbubbleid);
-//      // get the first gid of a particle and convert it into a LID
-//      int lid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
-//      for(int dim=0; dim<3; ++dim)
-//      {
-//        (*disn)[lid+dim] = inflow_position[dim];
-//        (*veln)[lid+dim] = inflow_vel[dim] * curvefac;
-//      }
-//      lid = noderowmap->LID(newbubbleid);
-//      (*radiusn)[lid] = inflow_radius;
-//    }
-//  }
-//
-//  return;
-//}
-/*----------------------------------------------------------------------*
- | update the current time step                            ghamm 11/12  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ScatraParticleCoupling::Update()
-{
-  PARTICLE::Algorithm::Update();
-//  scatra_->Update();
-  return;
-}
+  // get number of particles of each sign per bin around interface
+  const int num_particles_per_bin = params_->sublist("PARTICLE").get<int>("NUMPARTICLE");
 
+  // get characteristic element length of scatra discretization
+  // assumed equal to bin edge length
+  // TODO: remove
+//  std::cout << bin_size_[0] << "  " << bin_size_[1] << "  " << bin_size_[2] << std::endl;
+//  if (std::abs(bin_size_[0]-bin_size_[1]) > 10e-9 or std::abs(bin_size_[0]-bin_size_[2]) > 10e-9)
+//    dserror("Cubic bins expected");
+  const double binlength = cutoff_radius_; // should be equal to bin_size_[0] for the present settings
 
-/*----------------------------------------------------------------------*
-| read restart information for given time step              ghamm 03/13 |
- *----------------------------------------------------------------------*/
-void PARTICLE::ScatraParticleCoupling::ReadRestart(int restart)
-{
-  PARTICLE::Algorithm::ReadRestart(restart);
-//  scatra_->ReadRestart(restart);
-  return;
-}
+  // define band of elements around interface to be filled with particles, i.e., band of size bandwith * h
+  // on both sides of the interface
+  const double bandwith = params_->sublist("PARTICLE").get<double>("PARTICLEBANDWIDTH");
 
+  // -------------------------------------------------------------------
+  //               find bins to be filled
+  // -------------------------------------------------------------------
 
-/*----------------------------------------------------------------------*
-| find XAABB and divide into bins                           ghamm 11/12 |
- *----------------------------------------------------------------------*/
-void PARTICLE::ScatraParticleCoupling::CreateBins()
-{
-  // if not yet specified, get XAABB_ from underlying discretization
-  if( XAABB_(2,1) > 0.9e12  and  XAABB_(2,1) < 1.1e12 )
+  // vector containing id of bins (equal to elements) which will be filled with particles
+  std::vector<int> particlebins;
+
+  // get phinp
+  const Teuchos::RCP<const Epetra_Vector> phinp = scatra_->Phinp();
+
+  // loop all row bins on this proc
+  for (int ibin = 0; ibin < particledis_->NumMyRowElements(); ibin++)
   {
-    IO::cout << "XAABB is computed based on the underlying fluid discretization" << IO::endl;
-    XAABB_ = GEO::getXAABBofDis(*scatradis_);
-    // local bounding box
-    double locmin[3] = {XAABB_(0,0), XAABB_(1,0), XAABB_(2,0)};
-    double locmax[3] = {XAABB_(0,1), XAABB_(1,1), XAABB_(2,1)};
-    // global bounding box
-    double globmin[3];
-    double globmax[3];
-    // do the necessary communication
-    Comm().MinAll(&locmin[0], &globmin[0], 3);
-    Comm().MaxAll(&locmax[0], &globmax[0], 3);
+    // get pointer to current bin
+    DRT::Element* actele = particledis_->lRowElement(ibin);
+    DRT::MESHFREE::MeshfreeMultiBin* actbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
 
-    for(int dim=0; dim<3; ++dim)
+    // get pointer to associated scatra elements
+    DRT::Element** scatraelesinbin = actbin->AssociatedFluidEles();
+
+    // bool to go to next bin if this bin is to far away from the interface
+    // or as soon as this bin is identified to be sufficiently close to set particles
+    bool next_bin = false;
+
+    // loop all elements in bin
+    for(int iele = 0; iele < actbin->NumAssociatedFluidEle(); iele++)
     {
-      XAABB_(dim,0) = globmin[dim];
-      XAABB_(dim,1) = globmax[dim];
-    }
-  }
+      DRT::Element* scatraele = scatraelesinbin[iele];
+      if (scatraele->Shape() != DRT::Element::hex8)
+       dserror("Other element than hex8 not yet supported!");
 
-  // divide global bounding box into bins
-  for (int dim = 0; dim < 3; ++dim)
-  {
-    // std::floor leads to bins that are at least of size cutoff_radius
-    bin_per_dir_[dim] = std::max(1, (int)((XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_));
-    bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0))/bin_per_dir_[dim];
-  }
+      // get nodal phi values
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      lm.clear();
+      lmowner.clear();
+      lmstride.clear();
+      scatraele->LocationVector(*scatradis_,lm,lmowner,lmstride);
+      std::vector<double> myphinp(lm.size());
+      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
-  IO::cout << "Global bounding box size: " << XAABB_;
-  IO::cout << "bins per direction: " << "x = " << bin_per_dir_[0] << " y = " << bin_per_dir_[1] << " z = " << bin_per_dir_[2] << IO::endl;
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
-| bins are distributed to the processors                    ghamm 11/12 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> PARTICLE::ScatraParticleCoupling::DistributeBinsToProcs(std::map<int, std::set<int> >& fluideles)
-{
-  //--------------------------------------------------------------------
-  // 1st step: exploiting bounding box idea for scatra elements and bins
-  //--------------------------------------------------------------------
-  {
-    // loop over row scatra elements is enough, extended ghosting always includes standard ghosting
-    for (int lid = 0; lid < scatradis_->NumMyRowElements(); ++lid)
-    {
-      DRT::Element* fluidele = scatradis_->lRowElement(lid);
-      DRT::Node** fluidnodes = fluidele->Nodes();
-      const int numnode = fluidele->NumNode();
-
-      // initialize ijk_range with ijk of first node of fluid element
-      int ijk[3];
+      // check, if bin is close to the interface
+      if (myphinp[0] > (2.0 * bandwith * binlength))
       {
-        const DRT::Node* node = fluidnodes[0];
-        const double* coords = node->X();
-        ConvertPosToijk(coords, ijk);
+        // bin is located away from the interface
+        // abort loop elements and go to the next bin
+        break; // loop all elements
       }
 
-      // ijk_range contains: i_min i_max j_min j_max k_min k_max
-      int ijk_range[] = {ijk[0], ijk[0], ijk[1], ijk[1], ijk[2], ijk[2]};
+      // get element center
+      const DRT::Element::DiscretizationType distype = DRT::Element::hex8;
+      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-      // fill in remaining nodes
-      for (int j=1; j<numnode; ++j)
+      // get center coordinates of current element
+      LINALG::Matrix<3,1> elecenter(true);
+      LINALG::Matrix<3,numnode> xyzele(true);
+      GEO::fillInitialPositionArray<distype>(scatraele, xyzele);
+
+      for (int inode = 0; inode < numnode; inode++)
+        for (int idim = 0; idim < 3; idim++)
+          elecenter(idim,0) += xyzele(idim,inode);
+
+      for (int idim = 0; idim < 3; idim++)
+        elecenter(idim,0) /= numnode;
+
+      // assuming bin length to be chosen such that only one element has its center inside the bin,
+      // we only check the distance of this element to the interface
+      // get center of current bin
+      LINALG::Matrix<3,1> center(true);
+      center = GetBinCentroid(ibin);
+      if ((elecenter(0,0) > (center(0,0) - (bin_size_[0]/2.0))) and (elecenter(0,0) < (center(0,0) + (bin_size_[0]/2.0))))
       {
-        const DRT::Node* node = fluidnodes[j];
-        const double* coords = node->X();
-        int ijk[3];
-        ConvertPosToijk(coords, ijk);
-
-        for(int dim=0; dim<3; ++dim)
+        if ((elecenter(1,0) > (center(1,0) - (bin_size_[1]/2.0))) and (elecenter(1,0) < (center(1,0) + (bin_size_[1]/2.0))))
         {
-          if(ijk[dim]<ijk_range[dim*2])
-            ijk_range[dim*2]=ijk[dim];
-          if(ijk[dim]>ijk_range[dim*2+1])
-            ijk_range[dim*2+1]=ijk[dim];
+          if ((elecenter(2,0) > (center(2,0) - (bin_size_[1]/2.0))) and (elecenter(2,0) < (center(2,0) + (bin_size_[2]/2.0))))
+          {
+            // loop all nodes of this element
+            for (int inode = 0; inode < numnode; inode++)
+              if (std::abs(myphinp[inode]) < (bandwith * binlength))
+              {
+                // bin is close to the interface and particles should be set
+                // add bin to list
+                particlebins.push_back(ibin);
+                // element with center in bin is found and we may go to the next bin
+                next_bin = true;
+                break;
+              }
+          }
         }
       }
 
-      // get corresponding bin ids in ijk range
-      std::set<int> binIds;
-      GidsInijkRange(&ijk_range[0], binIds, false);
+      // note: we only abort the element loop if the element with center in the bin
+      //       is sufficiently close to the interface; if this is not the case,
+      //       we loop the remaining elements although we expect only one element
+      //       with center in the bin; with respect to inhomogeneous meshes, for which
+      //       more elements with center in the bin cannot be excluded, this choice represents
+      //       a saver strategy
+      if (next_bin == true)
+        break; // loop all elements
 
-      // assign fluid element to bins
-      for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
-        fluideles[*biniter].insert(fluidele->Id());
+    } // end loop all elements
+
+  }  // end loop all bins
+
+  // Output for testing
+  std::cout << "bins with particles " << particlebins.size() << std::endl;
+//  for (std::size_t i=0; i<particlebins.size(); i++)
+//    std::cout << particlebins[i] << std::endl;
+//  dserror("ENDE");
+
+  // -------------------------------------------------------------------
+  //               seed particles in selected bins
+  // -------------------------------------------------------------------
+
+  // initialize particle id with largest particle id in use + 1 (on each proc)
+  int maxparticleid = particledis_->NodeRowMap()->MaxAllGID();
+  int currentparticleid = maxparticleid;
+
+  // list of all particles and their position
+  std::map<int,std::vector<double> > particle_positions;
+  // list of all particles and their sign
+  std::map<int,double > particle_sign;
+
+  // loop all bins which should be filled
+  for (std::size_t ibin = 0; ibin < particlebins.size(); ibin++)
+  {
+    // set particle id
+    currentparticleid += 1;
+
+    // get center of current bin
+    LINALG::Matrix<3,1> center(true);
+    center = GetBinCentroid(ibin);
+    // get max and min values of bin corners
+    std::vector<LINALG::Matrix<3,1> > bincorners(2);
+    for (int rr = 0; rr<2; rr++)
+    {
+      for (int idim=0; idim<3; idim++)
+        (bincorners[rr])(idim,0) = center(idim,0) + pow(-1.0,(double)rr+1.0) * 0.5 * bin_size_[idim];
+    }
+//    double xmin = center(0,0)-(0.5*bin_size_[0]);
+//    double xmax = center(0,0)+(0.5*bin_size_[0]);
+//
+//    double ymin = center(1,0)-(0.5*bin_size_[1]);
+//    double ymax = center(1,0)+(0.5*bin_size_[1]);
+//
+//    double zmin = center(2,0)-(0.5*bin_size_[2]);
+//    double zmax = center(2,0)+(0.5*bin_size_[2]);
+
+    // loop number of particles to be seeded
+    for (int ipart = 0; ipart < (2 * num_particles_per_bin); ipart++)
+    {
+      // get position randomly in bin
+      std::vector<double> position(3);
+
+      DRT::UTILS::Random* random = DRT::Problem::Instance()->Random();
+
+      for (int idim=0; idim<3; idim++)
+      {
+        // set range (default: [-1;1])
+        random->SetRandRange((bincorners[0])(idim,0),(bincorners[1])(idim,0));
+        // get position
+        position[idim] = random->Uni();
+      }
+
+      // set particle to mid plane in case of quasi-2D simulations
+      switch (particle_dim_)
+      {
+        case INPAR::PARTICLE::particle_2Dx:
+        {
+          position[0] = 0.0;
+          break;
+        }
+        case INPAR::PARTICLE::particle_2Dy:
+        {
+          position[1] = 0.0;
+          break;
+        }
+        case INPAR::PARTICLE::particle_2Dz:
+        {
+          position[2] = 0.0;
+          break;
+        }
+        default:
+          break;
+      }
+
+      // place particle with id and position
+      std::set<Teuchos::RCP<DRT::Node>,BINSTRATEGY::Less> homelessparticles;
+      Teuchos::RCP<DRT::Node> newparticle = Teuchos::rcp(new DRT::Node(currentparticleid, &position[0], myrank_));
+      PlaceNodeCorrectly(newparticle, &position[0], homelessparticles);
+      if (homelessparticles.size() != 0)
+        dserror("New particle could not be inserted on this proc!.");
+
+      // add particle to list
+      particle_positions.insert(std::pair<int,std::vector<double> >(currentparticleid,position));
+      // set sign (+ for the first half, - for the second one)
+      if (ipart < num_particles_per_bin)
+        particle_sign.insert(std::pair<int,double>(currentparticleid,1.0));
+      else
+        particle_sign.insert(std::pair<int,double>(currentparticleid,-1.0));
     }
   }
 
+  // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
+  particledis_->FillComplete(true, false, true);
 
-  //--------------------------------------------------------------------
-  // 2nd step: decide which proc will be owner of each bin
-  //--------------------------------------------------------------------
+  // update of state vectors to the new maps
+  Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->UpdateStatesAfterParticleTransfer();
 
-  std::vector<int> rowbins;
+  // -------------------------------------------------------------------
+  //               initialize state vectors
+  // -------------------------------------------------------------------
+
+  // get position vector at time_(n+1)
+  Teuchos::RCP<Epetra_Vector> disnp = particles_->WriteAccessDispnp();
+  // get sign vector
+  Teuchos::RCP<Epetra_Vector> sign = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->WriteAccessSign();
+
+  // get maps
+  const Epetra_Map* dofrowmap = particledis_->DofRowMap();
+  const Epetra_Map* noderowmap = particledis_->NodeRowMap();
+
+  for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
   {
-    // NOTE: This part of the setup can be the bottleneck because vectors of all bins
-    // are needed on each proc (memory issue!!); std::map could perhaps help when gathering
-    // num fluid nodes in each bin, then block wise communication after copying data to vector
+    // get global id of current particle
+    const int gid = noderowmap->GID(inode);
 
-    int numbins = bin_per_dir_[0]*bin_per_dir_[1]*bin_per_dir_[2];
-    std::vector<int> mynumeles_per_bin(numbins,0);
+    DRT::Node* currparticle = particledis_->gNode(gid);
+    // get the first dof gid of a particle and convert it into a LID
+    int doflid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
 
-    std::map<int, std::set<int> >::const_iterator iter;
-    for(iter=fluideles.begin(); iter!=fluideles.end(); ++ iter)
+    // insert values into state vectors
+    (*sign)[inode] = particle_sign[gid];
+    for (int idim=0; idim<3; ++idim)
+      (*disnp)[doflid+idim] = (particle_positions[gid])[idim];
+  }
+
+  // get position vector at time_(n)
+  Teuchos::RCP<Epetra_Vector> disn = particles_->WriteAccessDispn();
+  disn->Update(1.0,*disnp,0.0);
+  // reset to zero just to be sure
+  Teuchos::RCP<Epetra_Vector> radius = particles_->WriteAccessRadius();
+  radius->Scale(0.0);
+
+  // -------------------------------------------------------------------
+  //               attraction step
+  // -------------------------------------------------------------------
+  // move particle to the correct side of the interface
+  
+  // prepare required vectors
+  // noderowmap-based vectors
+  // predictor
+  Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
+  // intialize with 1.0
+  lambda->PutScalar(1.0);
+  // target phi_goal
+  Teuchos::RCP<Epetra_Vector> phi_target = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
+  // current phi of particle
+  Teuchos::RCP<Epetra_Vector> phi_particle = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
+  // dofrowmap-based vectors
+  // normal vector of level-set field at particle position
+  Teuchos::RCP<Epetra_Vector> norm_gradphi_particle = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
+    // increment position vector for attraction loop
+  Teuchos::RCP<Epetra_Vector> inc_dis = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
+
+  // get minimal radius of particles
+  const double r_min = params_->sublist("PARTICLE").get<double>("MIN_RADIUS");
+  if (r_min < 0.0) dserror("Set minimal particle radius in input file!");
+
+  // loop all particles and intialize phi_target, phi_particle and gradphi_particle
+  for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+  {
+    // get sign of particle
+    const double signP = (*sign)[inode];
+
+    // get target phi for this particle
+    DRT::UTILS::Random* random = DRT::Problem::Instance()->Random();
+    random->SetRandRange(r_min,(bandwith * binlength));
+    const double local_phi_target = signP * random->Uni();
+    (*phi_target)[inode] = local_phi_target;
+
+    // get phi and gradient of particle at current particle position
+    double current_phi_particle = 0.0;
+//    current_phi_particle = GetPhiParticle(inode);
+    LINALG::Matrix<3,1> normal_particle(true);
+
+    // element coordinates of particle position in scatra element
+    LINALG::Matrix<3,1> elecoord(true);
+    DRT::Element* scatraele = GetEleCoordinates(inode,elecoord);
+
+    // compute level-set value
+    GetLSValParticle(current_phi_particle,normal_particle,scatraele,elecoord);
+    // GetLSValParticle return gardient of phi, which we have to normalize here
+    const double norm = normal_particle.Norm2();
+    normal_particle.Scale(1.0/norm);
+
+    // store values
+    (*phi_particle)[inode] = current_phi_particle;
+
+    // get global id of current particle
+    const int gid = noderowmap->GID(inode);
+
+    DRT::Node* currparticle = particledis_->gNode(gid);
+    // get the first dof gid of a particle and convert it into a LID
+    int doflid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
+    for (int idim=0; idim<3; ++idim)
+      (*norm_gradphi_particle)[doflid+idim] = normal_particle(idim,0);
+    
+    // initialize increment position vector, i.e., multiply by lambda*(phi_target-current_phi_particle)
+    // note lambda is set to 1.0 at the beginning and skiped here
+    const double fac = local_phi_target - current_phi_particle;
+    normal_particle.Scale(fac);
+    for (int idim=0; idim<3; ++idim)
+      (*inc_dis)[doflid+idim] = normal_particle(idim,0);
+  }
+
+  // number of placed particles should finally be equal to the number of seeded particles
+  // important: this number must be global and takes into account the placed particles on
+  // all procs
+  int num_placed_particles = 0;
+  // total (global) number of seeded particles
+  const int global_num_particles = particledis_->NumGlobalNodes();
+  // counter for number of attraction steps
+  int step_counter = 0;
+  // define vector for update of map-based vectors
+  Teuchos::RCP<Epetra_Vector> old;
+
+  // attraction loop
+  while ((num_placed_particles < global_num_particles) and step_counter < 15)
+  {
+    // increment counter
+    step_counter += 1;
+
+    // compute new position
+    disnp = particles_->WriteAccessDispnp();
+    disn = particles_->WriteAccessDispn();
+    sign = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntRK>(particles_)->WriteAccessSign();
+    // x_P^new = x_P + lambda*(phi_target-current_phi_particle) * n_p
+    disnp->Update(1.0,*inc_dis,1.0);
+
+    // transfer particles to bins
+    TransferParticles(false);
+    // update of state vectors to the new maps
+    Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->UpdateStatesAfterParticleTransfer();
+    // likewise update present vectors according to the new distribution of particles
+    old = lambda;
+    lambda = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *lambda);
+
+    old = phi_target;
+    phi_target = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *phi_target);
+
+    old = phi_particle;
+    phi_particle = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *phi_particle);
+
+    old = norm_gradphi_particle;
+    norm_gradphi_particle = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    LINALG::Export(*old, *norm_gradphi_particle);
+
+    old = inc_dis;
+    inc_dis = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    LINALG::Export(*old, *inc_dis);
+
+    // check new position
+    // counter for local placed particles
+    int local_num_placed_particles = 0;
+    
+    // loop all particles
+    for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
     {
-      mynumeles_per_bin[iter->first] = iter->second.size();
-    }
+      // get phi and gradient of particle at current particle position
+      double current_phi_particle = 0.0;
+      LINALG::Matrix<3,1> normal_particle(true);
 
-    // find maximum number of eles in each bin over all procs (init with -1)
-    std::vector<int> maxnumeles_per_bin(numbins,-1);
-    scatradis_->Comm().MaxAll(&mynumeles_per_bin[0], &maxnumeles_per_bin[0], numbins);
+      // element coordinates of particle position in scatra element
+      LINALG::Matrix<3,1> elecoord(true);
+      DRT::Element* scatraele = GetEleCoordinates(inode,elecoord);
 
-    // it is possible that several procs have the same number of eles in a bin
-    // only proc which has maximum number of eles in a bin writes its rank
-    std::vector<int> myrank_per_bin(numbins,-1);
-    for(int i=0; i<numbins; ++i)
-    {
-      if(mynumeles_per_bin[i] == maxnumeles_per_bin[i])
-        myrank_per_bin[i] = myrank_;
-    }
+      // get dof lid
+      const int gid = noderowmap->GID(inode);
+      DRT::Node* currparticle = particledis_->gNode(gid);
+      int doflid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
 
-    mynumeles_per_bin.clear();
-    maxnumeles_per_bin.clear();
-
-    // find maximum myrank for each bin over all procs (init with -1)
-    std::vector<int> maxmyrank_per_bin(numbins,-1);
-    scatradis_->Comm().MaxAll(&myrank_per_bin[0], &maxmyrank_per_bin[0], numbins);
-
-    // distribute bins to proc with highest rank
-    for(int gid=0; gid<numbins; ++gid)
-    {
-      if(myrank_ == maxmyrank_per_bin[gid])
+      if (scatraele != NULL) // particle has not left domain
       {
-        Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEMULTIBIN","dummy", gid, myrank_);
-        particledis_->AddElement(bin);
-        rowbins.push_back(gid);
+        // compute level-set value
+        GetLSValParticle(current_phi_particle,normal_particle,scatraele,elecoord);
+        // GetLSValParticle return gradient of phi, which we have to normalize here
+        const double norm = normal_particle.Norm2();
+        normal_particle.Scale(1.0/norm);
+        
+        const double signP = (*sign)[inode];
+        if ((current_phi_particle >= (signP * r_min))
+            and (current_phi_particle <= (signP * bandwith * binlength))
+            and ((*lambda)[inode] == 1.0)) // particle in correct band
+        {
+          // this means particle is placed correctly
+          local_num_placed_particles += 1;
+          // store actual phi value
+          (*phi_particle)[inode] = current_phi_particle;
+          // set lambda to zero to avoid further movement of this particle
+          (*lambda)[inode] = 0.0;
+        }
+        else
+        {
+          if ((*lambda)[inode] == 1.0) // we could not move the particle to the correct band
+          {
+            // we go back to our initial position
+            // we do not overwrite phi_particle and norm_gradphi_particle
+            // we set disnp back to disn
+            for (int idim=0; idim<3; ++idim)
+              (*disnp)[doflid+idim] = (*disn)[doflid+idim];
+            // and only go half of the distance in the next step
+            (*lambda)[inode] = 0.5;
+          }
+          else // we accept the new position and start the attraction step from this point with lambda again set to 1.0
+          {
+            // store new phi value
+            (*phi_particle)[inode] = current_phi_particle;
+            // set lamda to 1.0
+            (*lambda)[inode] = 1.0;
+            // store new gradient
+            for (int idim=0; idim<3; ++idim)
+              (*norm_gradphi_particle)[doflid+idim] = normal_particle(idim,0);
+          }
+        }
+      }
+      else
+      {
+        // if we are outside of the domain, we go back to our initial position
+        // we do not overwrite phi_particle and norm_gradphi_particle
+        // we set disnp back to disn
+        for (int idim=0; idim<3; ++idim)
+          (*disnp)[doflid+idim] = (*disn)[doflid+idim];
+        // and start another attraction step with lambda halved
+        double mylambda = (*lambda)[inode];
+        (*lambda)[inode] = 0.5 * mylambda;
+      }
+
+      // set new increment vector
+      const double fac = (*lambda)[inode] * ((*phi_target)[inode] - (*phi_particle)[inode]);
+      for (int idim=0; idim<3; ++idim)
+        (*inc_dis)[doflid+idim] = fac * (*norm_gradphi_particle)[doflid+idim];
+
+    } // end loop all particles
+
+    // collect correctly placed particles of this step form all procs
+    int global_num_placed_particles = 0;
+    scatradis_->Comm().SumAll(&local_num_placed_particles,&global_num_placed_particles,1);
+    // update number of placed particles
+    num_placed_particles += global_num_placed_particles;
+
+    // possibly position have been reverted and particles changed the bin or even the processor
+    // therefore, we have to recall the following steps
+    TransferParticles(false);
+    // update of state vectors to the new maps
+    Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->UpdateStatesAfterParticleTransfer();
+    // likewise update present vectors according to the new distribution of particles
+    Teuchos::RCP<Epetra_Vector> old;
+    old = lambda;
+    lambda = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *lambda);
+
+    old = phi_target;
+    phi_target = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *phi_target);
+
+    old = phi_particle;
+    phi_particle = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *phi_particle);
+
+    old = norm_gradphi_particle;
+    norm_gradphi_particle = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    LINALG::Export(*old, *norm_gradphi_particle);
+
+    old = inc_dis;
+    inc_dis = LINALG::CreateVector(*particledis_->DofRowMap(),true);
+    LINALG::Export(*old, *inc_dis);
+
+    // update state vectors
+    disnp = particles_->WriteAccessDispnp();
+    disn = particles_->WriteAccessDispn();
+    disn->Update(1.0,*disnp,0.0);
+  }
+  
+  // delete particles which could not be attracted correctly -> all particles with lambda != 0.0
+  if (num_placed_particles != global_num_particles) // we have particles with lambda != 0.0
+  {
+    // loop all particles
+    for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+    {
+      // particles with lambda != 0.0 will be deleted
+      if ((*lambda)[inode] > (0.0+1.0e-8))
+      {
+        // get particle
+        DRT::Node *currparticle = particledis_->lRowNode(inode);
+        // get gid
+        const double gid = currparticle->Id();
+        if(currparticle->NumElement() != 1)
+          dserror("ERROR: A particle is assigned to more than one bin!");
+        // get corresponding bin
+        DRT::Element** currele = currparticle->Elements();
+        DRT::Element* currbin = currele[0];
+
+        // remove particle from bin
+        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currbin)->DeleteNode(gid);
+
+        // remove particle from discretization
+        particledis_->DeleteNode(gid);
       }
     }
 
-    myrank_per_bin.clear();
-    maxmyrank_per_bin.clear();
+    // finish discretization
+    particledis_->FillComplete(true,false,false);
+    // adapt state vectors to new maps
+    Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->UpdateStatesAfterParticleTransfer();
+    // adapt also phi_particle which will be used below to set the radius
+    old = phi_particle;
+    phi_particle = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *phi_particle);
   }
 
-  // return binrowmap (without having called FillComplete on particledis_ so far)
-  return Teuchos::rcp(new Epetra_Map(-1,(int)rowbins.size(),&rowbins[0],0,Comm()));
+  // -------------------------------------------------------------------
+  //               set radius
+  // -------------------------------------------------------------------
+  
+  // get radius
+  radius = particles_->WriteAccessRadius();
+
+  // get maximal radius of particles
+  const double r_max = params_->sublist("PARTICLE").get<double>("MAX_RADIUS");
+  if (r_max < 0.0) dserror("Set maximal particle radius in input file!");
+
+  for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
+  {
+    // get phi
+    const double myphi = (*phi_particle)[inode];
+    if (std::abs(myphi) > r_max)
+      (*radius)[inode] = r_max;
+    else if (std::abs(myphi) < r_min)
+      (*radius)[inode] = r_min;
+    else
+      (*radius)[inode] = std::abs(myphi);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | prepare time step                                   rasthofer 09/13  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ScatraParticleCoupling::PrepareTimeStep()
+{
+  // update time and step
+  Algorithm::PrepareTimeStep();
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | solve the current particle time step                 rasthofer 09/13 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ScatraParticleCoupling::Integrate()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::Integrate");
+  particles_->IntegrateStep();
+
+  return;
+}
+
+
+void PARTICLE::ScatraParticleCoupling::SetVelocity()
+{
+  // TODO: insert velocity in particles: veln_, vel_(0) whatever you need :-)
+#if 0
+  //Define pointers to vectors veln and disn (which are defined in timint.cpp)
+  Teuchos::RCP<Epetra_Vector> velnp = particles_->ExtractVelnp();
+  Teuchos::RCP<Epetra_Vector> disnp = particles_->ExtractDispnp();
+
+  const int nsd = 3;
+
+  LINALG::Matrix<nsd,1> particleposition;
+  LINALG::Matrix<nsd,1> elecoord(true);
+  DRT::Element* targetscatraele = NULL;
+
+  int NumParticles = particledis_->NumMyRowNodes();
+  std::cout << "Number of Nodes (=Particles) is " << NumParticles << endl;
+
+  int maxparticleid = particledis_->NodeRowMap()->MaxAllGID();
+  std::cout << "maxparticleid is " << maxparticleid << endl;
+
+  for (int k = 0; k < NumParticles; k++)
+  {
+
+    DRT::Node* currentparticle = particledis_->lRowNode(k);  //input: LID!
+
+    if(currentparticle->NumElement() != 1)
+      dserror("ERROR: A particle is assigned to more than one bin!");
+    DRT::Element** currelement = currentparticle->Elements();
+  #ifdef DEBUG
+      DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currelement[0]);
+      if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
+  #endif
+
+    DRT::MESHFREE::MeshfreeMultiBin* currbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currelement[0]);
+    DRT::Element** scatraelesinbin = currbin->AssociatedFluidEles();
+    int numscatraelesinbin = currbin->NumAssociatedFluidEle();
+
+    std::set<int>::const_iterator eleiter;
+
+    // search for underlying scatra element with standard search in case nothing was found
+    for(int ele=0; ele<numscatraelesinbin; ++ele)
+    {
+      DRT::Element* scatraele = scatraelesinbin[ele];
+      const DRT::Element::DiscretizationType distype = DRT::Element::hex8;
+      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+      // get node coordinates of the current element
+      static LINALG::Matrix<nsd,numnode> xyze;
+      GEO::fillInitialPositionArray<distype>(scatraele, xyze);
+
+      std::vector<int> lm_b = particledis_->Dof(currentparticle);
+      int posx = disnp->Map().LID(lm_b[0]);
+      for (int d=0; d<3; ++d)
+        particleposition(d) = (*disnp)[posx+d];
+
+      //get coordinates of the particle position in parameter space of the element
+      bool insideele = GEO::currentToVolumeElementCoordinates(scatraele->Shape(), xyze, particleposition, elecoord, false);
+
+      if(insideele == true)
+      {
+        targetscatraele = scatraele;
+
+        // shape functions
+        LINALG::Matrix<numnode,1> funct;
+
+        //fill vector
+        DRT::UTILS::shape_function_3D(funct,elecoord(0),elecoord(1),elecoord(2),targetscatraele->Shape());
+
+        //Find values of Phi on 8 nodes of each element
+        // extract local values from the global vectors
+        // get element location vector and ownerships
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
+        targetscatraele->LocationVector(*scatradis_,lm,lmowner,lmstride);
+
+        const Teuchos::RCP<Epetra_MultiVector> vel_field = scatra_->ConVel();  //Address External Velocity Field
+        Epetra_SerialDenseMatrix my_velocities(nsd, numnode);
+
+        DRT::UTILS::ExtractMyNodeBasedValues(targetscatraele, my_velocities, vel_field, nsd); //fill my_velocities with x,y,z-velocities on nodes
+
+        //convert SerialDenseMatrix to LINALG::Matrix
+        LINALG::Matrix<nsd,numnode> my_velocities_in_matrix;
+        for (int i = 0; i < nsd; i ++)
+        {
+          for (int j = 0; j < numnode; j ++)
+          {
+            my_velocities_in_matrix(i,j) = my_velocities(i,j);
+          }
+        }
+
+        LINALG::Matrix<nsd,1> particle_velocity;
+        particle_velocity.Multiply(my_velocities_in_matrix,funct); //(3x8) * (8x1) = (3x1)-Matrix (x_vel, y_vel, z_vel)^T
+
+        //fill veln-vector with external velocity field values (on particle positions)
+        for(int dim=0; dim<3; ++dim)
+        {
+          (*velnp)[3*k+dim] = particle_velocity(dim,0);
+        }
+      } //end: if inside element
+    } //end: for all elements
+  } //end: for all particles
+
+#endif
+
+  return;
+}
+
+
+
+Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
+{
+  //Loop over all particles to find those which have escaped
+    Teuchos::RCP<Epetra_Vector> phinp_copy = Teuchos::rcp(new Epetra_Vector(*(scatradis_->DofRowMap()),true));
+#if 0
+  //Define pointers to vectors (which are defined in timint.cpp)
+  Teuchos::RCP<Epetra_Vector> disn = particles_->ExtractDispnp();
+  Teuchos::RCP<Epetra_Vector> radiusn = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadiusnp();
+  const Teuchos::RCP<Epetra_IntVector> signn = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractSignVector();
+
+  const Teuchos::RCP<const Epetra_Vector> phinp = scatra_->Phinp();
+
+  Teuchos::RCP<Epetra_Vector> phinp_copy = Teuchos::rcp(new Epetra_Vector(*(scatradis_->DofRowMap()),true));
+  phinp_copy->Update(1.0,*(scatra_->Phinp()),0.0);
+
+  const int nsd = 3;
+
+  LINALG::Matrix<nsd,1> particleposition;
+  LINALG::Matrix<nsd,1> elecoord(true);
+  DRT::Element* targetscatraele = NULL;
+
+  int NumParticles = particledis_->NumMyRowNodes();
+  std::cout << "Number of Nodes (=Particles) is " << NumParticles << endl;
+
+  int maxparticleid = particledis_->NodeRowMap()->MaxAllGID();
+  std::cout << "maxparticleid is " << maxparticleid << endl;
+
+  //loop over all particles
+  for (int k = 0; k < maxparticleid; k ++)
+  {
+    //extract values from disn-epetra-vector, fill into standard matrix
+    std::vector <double> currparticlepos(nsd);
+  //  LINALG::Matrix<nsd,1> currparticlepos(false);
+    for(int dim=0; dim < nsd; ++dim)
+    {
+      currparticlepos[dim] = (*disn)[3*k+dim];
+    }
+    DRT::Node* currentparticle = particledis_->lRowNode(k);  //input: LID!
+
+    if(currentparticle->NumElement() != 1)
+      dserror("ERROR: A particle is assigned to more than one bin!");
+    DRT::Element** currelement = currentparticle->Elements();
+  #ifdef DEBUG
+      DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currelement[0]);
+      if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
+  #endif
+
+    DRT::MESHFREE::MeshfreeMultiBin* currbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currelement[0]);
+    DRT::Element** scatraelesinbin = currbin->AssociatedFluidEles();
+    int numscatraelesinbin = currbin->NumAssociatedFluidEle();
+
+    std::set<int>::const_iterator eleiter;
+    // search for underlying scatra element with standard search in case nothing was found
+    for(int ele=0; ele<numscatraelesinbin; ++ele)
+    {
+      DRT::Element* scatraele = scatraelesinbin[ele];
+      const DRT::Element::DiscretizationType distype = DRT::Element::hex8;
+      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+      // get node coordinates of the current element
+      static LINALG::Matrix<nsd,numnode> currelecoords;
+      GEO::fillInitialPositionArray<distype>(scatraele, currelecoords);
+
+      std::vector<int> lm_b = particledis_->Dof(currentparticle);
+      int posx = disn->Map().LID(lm_b[0]);
+      for (int d=0; d<3; ++d)
+        particleposition(d) = (*disn)[posx+d];
+
+      //get coordinates of the particle position in parameter space of the element
+      bool insideele = GEO::currentToVolumeElementCoordinates(scatraele->Shape(), currelecoords, particleposition, elecoord, false);
+
+      if(insideele == true)
+      {
+        targetscatraele = scatraele;
+
+        // shape functions
+        LINALG::Matrix<numnode,1> funct;
+
+        //fill vector
+        DRT::UTILS::shape_function_3D(funct,elecoord(0),elecoord(1),elecoord(2),targetscatraele->Shape());
+
+        //Find values of Phi on 8 nodes of each element
+        // extract local values from the global vectors
+        // get element location vector and ownerships
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
+        targetscatraele->LocationVector(*scatradis_,lm,lmowner,lmstride);
+
+        if (phinp_copy==Teuchos::null)
+          dserror("Cannot get state vector 'hist' and/or 'phinp'");
+        std::vector<double> myphinp(numnode);
+        DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm); //fill phinp with phi values
+
+        LINALG::Matrix<numnode,1> phi_vector_values;
+        for (int s = 0; s < numnode; s++)
+        {
+          phi_vector_values(s,0) = myphinp[s];  //fill values in myphinp in new vector
+        }
+
+        //value of phi on current particle position
+        LINALG::Matrix<1,1> phi_particle;
+        phi_particle.MultiplyTN(funct,phi_vector_values);
+
+        double phi_particle_position = phi_particle(0,0);
+
+        //if a particle has escaped: address 8 nodes
+//        if (phi_particle_position*((*signn)[k]) < 0)
+//        {
+//          double Krit = phi_particle_position*((*signn)[k]);
+//          std::cout << "Kriterium ist " << Krit << endl;
+//          //for all corners of the underlying element (in which particle is located)
+//          for (int corner = 0; corner < numnode; corner++)
+//          {
+//            double local_phi = (*signn)[k]*((*radiusn)[k] - sqrt(
+//                                        (currparticlepos[0]-currelecoords(0,corner))*(currparticlepos[0]-currelecoords(0,corner))
+//                                      + (currparticlepos[1]-currelecoords(1,corner))*(currparticlepos[1]-currelecoords(1,corner))
+//                                      + (currparticlepos[2]-currelecoords(2,corner))*(currparticlepos[2]-currelecoords(2,corner))));
+//            if ((*signn)[k] > 0)
+//            {
+//              double phi_plus = max(local_phi, myphinp[corner]);
+//              //renew phi on node: extract LID of node!
+//              const int nodegid = (targetscatraele->Nodes()[corner])->Id();
+//              const int lid = phinp_copy->Map().LID(nodegid);
+//              if (abs(phi_plus < abs(myphinp[corner])))
+//              {
+//                (*phinp_copy)[lid] = phi_plus;
+//                std::cout << "corrected!!!" << endl;
+//              }
+//            }
+//
+//            if ((*signn)[k] < 0)
+//            {
+//              double phi_minus = min(local_phi, myphinp[corner]);
+//              //renew phi on node: extract LID of node!
+//              const int nodegid = (targetscatraele->Nodes()[corner])->Id();
+//              const int lid = phinp_copy->Map().LID(nodegid);
+//              if (abs(phi_minus < abs(myphinp[corner])))
+//              {
+//                (*phinp_copy)[lid] = phi_minus;
+//                std::cout << "corrected!!!" << endl;
+//              }
+//            }
+//          }
+//        }
+
+        /// improved correction algorithm: Wang et al., Journal of Computational Physics
+        if (phi_particle_position*((*signn)[k]) < 0)
+        {
+          double Krit = phi_particle_position*((*signn)[k]);
+          std::cout << "Kriterium ist " << Krit << endl;
+          //for all corners of the underlying element (in which particle is located)
+          for (int corner = 0; corner < numnode; corner++)
+          {
+            double local_phi_minus = (*signn)[k]*((*radiusn)[k] - sqrt(
+                                        (currparticlepos[0]-currelecoords(0,corner))*(currparticlepos[0]-currelecoords(0,corner))
+                                      + (currparticlepos[1]-currelecoords(1,corner))*(currparticlepos[1]-currelecoords(1,corner))
+                                      + (currparticlepos[2]-currelecoords(2,corner))*(currparticlepos[2]-currelecoords(2,corner))));
+            double local_phi_plus = (*signn)[k]*((*radiusn)[k] + sqrt(
+                                        (currparticlepos[0]-currelecoords(0,corner))*(currparticlepos[0]-currelecoords(0,corner))
+                                      + (currparticlepos[1]-currelecoords(1,corner))*(currparticlepos[1]-currelecoords(1,corner))
+                                      + (currparticlepos[2]-currelecoords(2,corner))*(currparticlepos[2]-currelecoords(2,corner))));
+            if ((*signn)[k] > 0)
+            {
+              //renew phi on node: extract LID of node!
+              const int nodegid = (targetscatraele->Nodes()[corner])->Id();
+              const int lid = phinp_copy->Map().LID(nodegid);
+
+              if (myphinp[corner] <= 0)
+              {
+                if ((abs(myphinp[corner]-(*phinp_copy)[lid]) < 0.001) || (abs(local_phi_minus) < abs(((*phinp_copy)[lid]))))
+                  (*phinp_copy)[lid] = local_phi_minus;
+              }
+              if (myphinp[corner] > 0)
+              {
+                if ((abs(myphinp[corner]-(*phinp_copy)[lid]) < 0.001) || (abs(local_phi_plus) < abs(((*phinp_copy)[lid]))))
+                  (*phinp_copy)[lid] = local_phi_plus;
+              }
+            }
+
+            if ((*signn)[k] < 0)
+            {
+              //renew phi on node: extract LID of node!
+              const int nodegid = (targetscatraele->Nodes()[corner])->Id();
+              const int lid = phinp_copy->Map().LID(nodegid);
+
+              if (myphinp[corner] <= 0)
+              {
+                if ((abs(myphinp[corner]-(*phinp_copy)[lid]) < 0.001) || (abs(local_phi_plus) < abs(((*phinp_copy)[lid]))))
+                  (*phinp_copy)[lid] = local_phi_plus;
+              }
+              if (myphinp[corner] > 0)
+              {
+                if ((abs(myphinp[corner]-(*phinp_copy)[lid]) < 0.001) || (abs(local_phi_minus) < abs(((*phinp_copy)[lid]))))
+                  (*phinp_copy)[lid] = local_phi_minus;
+              }
+            }
+          }
+        }
+
+      } //end: if inside element
+    } //end: for all elements
+  } //end: for all particles
+
+  //for each node: work out distance from escaped particle to node
+
+  //compare this distance to local phi-value, decide if phi-value on that node has to be updated
+
+  //if an escaped particle is detected in the same bin, we can easily proceed with our algorithm
+ // double rsdst = 352.3;
+# endif
+
+  return phinp_copy;
+}
+
+
+/*----------------------------------------------------------------------*
+ | transfer particles into their correct bins and update solution       |
+ |                                                      rasthofer 09/13 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ScatraParticleCoupling::Update()
+{
+  // transfer particles into their correct bins
+  // note: this function has to be called for each time step
+  // TODO: einmal sollte reichen, ggf. nach correction und nochmal nach reseeding
+  //Algorithm::TransferParticles();
+
+  // update displacements, velocities, accelerations
+  // after this call we will have disn_==dis_, etc
+  // update time and step
+  //Algorithm::Update();
+  particles_->Update();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | output particle time step                            rasthofer 09/13 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ScatraParticleCoupling::Output()
+{
+  // write data to file
+  Algorithm::Output();
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute level-set value of particle with local id    rasthofer 12/13 |
+ *----------------------------------------------------------------------*/
+double PARTICLE::ScatraParticleCoupling::GetPhiParticle(
+  const int particle_lid              ///< local particle id
+  )
+{
+  //------------------------------------------------------------------------
+  // element coordinates of particle position in scatra element
+  //------------------------------------------------------------------------
+
+  // get particle corresponding to lid
+  DRT::Node* currparticle = particledis_->lRowNode(particle_lid);
+
+  Teuchos::RCP<const Epetra_Vector> particlepos = particles_->Dispnp();
+  // fill particle position
+  LINALG::Matrix<3,1> particleposition;
+  std::vector<int> lm_b = particledis_->Dof(currparticle);
+  int posx = particlepos->Map().LID(lm_b[0]);
+  for (int idim=0; idim<3; ++idim)
+    particleposition(idim,0) = (*particlepos)[posx+idim];
+
+  // variables to store information about element in which the particle is located
+  DRT::Element* targetscatraele = NULL;
+  LINALG::Matrix<3,1> elecoord(true);
+
+  // find out in which scatra element the current particle is located
+  if(currparticle->NumElement() != 1)
+      dserror("ERROR: A particle is assigned to more than one bin!");
+
+  DRT::Element** currele = currparticle->Elements();
+#ifdef DEBUG
+  DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+  if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
+#endif
+  DRT::MESHFREE::MeshfreeMultiBin* currbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+  DRT::Element** scatraelesinbin = currbin->AssociatedFluidEles();
+  int numscatraelesinbin = currbin->NumAssociatedFluidEle();
+
+  std::set<int>::const_iterator eleiter;
+
+  // search for underlying scatra element with standard search in case nothing was found
+  for(int ele=0; ele<numscatraelesinbin; ++ele)
+  {
+    DRT::Element* scatraele = scatraelesinbin[ele];
+    const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(scatraele));
+
+    //get coordinates of the particle position in parameter space of the element
+    bool insideele = GEO::currentToVolumeElementCoordinates(scatraele->Shape(), xyze, particleposition, elecoord, false);
+
+    if(insideele == true)
+    {
+      targetscatraele = scatraele;
+      // leave loop over all scatra eles in bin
+      break;
+    }
+  }
+
+  if(targetscatraele == NULL) dserror("Could not found corresponding element!");
+
+  //------------------------------------------------------------------------
+  // compute level-set value
+  //------------------------------------------------------------------------
+
+  if (targetscatraele->Shape() != DRT::Element::hex8)
+    dserror("Other element than hex8 not yet supported!");
+  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+
+  // get phinp
+  const Teuchos::RCP<const Epetra_Vector> phinp = scatra_->Phinp();
+
+  // get nodal phi values
+  std::vector<int> lm;
+  std::vector<int> lmowner;
+  std::vector<int> lmstride;
+  lm.clear();
+  lmowner.clear();
+  lmstride.clear();
+  targetscatraele->LocationVector(*scatradis_,lm,lmowner,lmstride);
+  std::vector<double> myphinp(lm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+  // fill all element arrays
+  LINALG::Matrix<numnode,1> ephinp(true);
+  for (int i=0;i<numnode;++i)
+  {
+    // split for each transported scalar, insert into element arrays
+    ephinp(i,0) = myphinp[i];
+  } // for i
+
+  // shape functions
+  LINALG::Matrix<numnode,1> funct(true);
+  //fill vectors
+  DRT::UTILS::shape_function_3D(funct,elecoord(0),elecoord(1),elecoord(2),targetscatraele->Shape());
+
+  // finally compute phi
+  double phi = funct.Dot(ephinp);
+
+  LINALG::Matrix<3,numnode> xyze(true);
+  GEO::fillInitialPositionArray<DRT::Element::hex8,3,LINALG::Matrix<3,numnode> >(targetscatraele,xyze);
+
+  LINALG::Matrix<3,numnode> deriv(true);
+  DRT::UTILS::shape_function_3D_deriv1(deriv,elecoord(0),elecoord(1),elecoord(2),targetscatraele->Shape());
+  // get transposed of the jacobian matrix d x / d \xi
+  // xjm(i,j) = deriv(i,k)*xyze(j,k)
+  static LINALG::Matrix<3,3> xjm(true);
+  xjm.MultiplyNT(deriv,xyze);
+  const double det = xjm.Determinant();
+  if (det < 0.0)
+    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", targetscatraele->Id(), det);
+  // inverse of jacobian
+  LINALG::Matrix<3,3> xji(true);
+  xji.Invert(xjm);
+  // compute global derivates
+  LINALG::Matrix<3,numnode> derxy(true);
+  // derxy(i,j) = xji(i,k) * deriv(k,j)
+  derxy.Multiply(xji,deriv);
+
+  // get gradient of phi
+  LINALG::Matrix<3,1> gradphi(true);
+  gradphi.Multiply(derxy,ephinp);
+
+  return phi;
+}
+
+
+/*----------------------------------------------------------------------*
+ | get underlying element as well as particle position   rasthofer 12/13 |
+ *----------------------------------------------------------------------*/
+DRT::Element* PARTICLE::ScatraParticleCoupling::GetEleCoordinates(
+  const int particle_lid,             ///< local particle id
+  LINALG::Matrix<3,1>& elecoord       ///< matrix to be filled with particle coordinates in element space
+  )
+{
+  // get particle corresponding to lid
+  DRT::Node* currparticle = particledis_->lRowNode(particle_lid);
+
+  Teuchos::RCP<const Epetra_Vector> particlepos = particles_->Dispnp();
+  // fill particle position
+  LINALG::Matrix<3,1> particleposition;
+  std::vector<int> lm_b = particledis_->Dof(currparticle);
+  int posx = particlepos->Map().LID(lm_b[0]);
+  for (int idim=0; idim<3; ++idim)
+    particleposition(idim,0) = (*particlepos)[posx+idim];
+
+  // variables to store information about element in which the particle is located
+  DRT::Element* targetscatraele = NULL;
+  elecoord.Clear();
+
+  // find out in which scatra element the current particle is located
+  if(currparticle->NumElement() != 1)
+      dserror("ERROR: A particle is assigned to more than one bin!");
+
+  DRT::Element** currele = currparticle->Elements();
+#ifdef DEBUG
+  DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+  if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
+#endif
+  DRT::MESHFREE::MeshfreeMultiBin* currbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+  DRT::Element** scatraelesinbin = currbin->AssociatedFluidEles();
+  int numscatraelesinbin = currbin->NumAssociatedFluidEle();
+
+  std::set<int>::const_iterator eleiter;
+
+  // search for underlying scatra element with standard search in case nothing was found
+  for(int ele=0; ele<numscatraelesinbin; ++ele)
+  {
+    DRT::Element* scatraele = scatraelesinbin[ele];
+    const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(scatraele));
+
+    //get coordinates of the particle position in parameter space of the element
+    bool insideele = GEO::currentToVolumeElementCoordinates(scatraele->Shape(), xyze, particleposition, elecoord, false);
+
+    if(insideele == true)
+    {
+      targetscatraele = scatraele;
+      // leave loop over all scatra eles in bin
+      break;
+    }
+  }
+
+  if(targetscatraele == NULL) dserror("Could not found corresponding element!"); // TODO bei erweitertem gebiet sollte das bei partikel ausserhalb auftreten
+
+  return targetscatraele;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute level-set value of particle with local id    rasthofer 12/13 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ScatraParticleCoupling::GetLSValParticle(
+  double& phi_particle,               ///< phi value at particle position
+  LINALG::Matrix<3,1>& gradphi,       ///< gradient of level-set field at particle position
+  DRT::Element* scatraele,            ///< corresponding scatra element
+  const LINALG::Matrix<3,1> elecoord  ///< matrix containing particle coordinates in element space
+  )
+{
+  if (scatraele->Shape() != DRT::Element::hex8)
+    dserror("Other element than hex8 not yet supported!");
+  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+
+  // get phinp
+  const Teuchos::RCP<const Epetra_Vector> phinp = scatra_->Phinp();
+
+  // get nodal phi values
+  std::vector<int> lm;
+  std::vector<int> lmowner;
+  std::vector<int> lmstride;
+  lm.clear();
+  lmowner.clear();
+  lmstride.clear();
+  scatraele->LocationVector(*scatradis_,lm,lmowner,lmstride);
+  std::vector<double> myphinp(lm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+  // fill all element arrays
+  LINALG::Matrix<numnode,1> ephinp(true);
+  for (int i=0;i<numnode;++i)
+  {
+    // split for each transported scalar, insert into element arrays
+    ephinp(i,0) = myphinp[i];
+  } // for i
+
+  // shape functions
+  LINALG::Matrix<numnode,1> funct(true);
+  //fill vectors
+  DRT::UTILS::shape_function_3D(funct,elecoord(0),elecoord(1),elecoord(2),scatraele->Shape());
+
+  // finally compute phi
+  phi_particle = funct.Dot(ephinp);
+
+  LINALG::Matrix<3,numnode> xyze(true);
+  GEO::fillInitialPositionArray<DRT::Element::hex8,3,LINALG::Matrix<3,numnode> >(scatraele,xyze);
+
+  LINALG::Matrix<3,numnode> deriv(true);
+  DRT::UTILS::shape_function_3D_deriv1(deriv,elecoord(0),elecoord(1),elecoord(2),scatraele->Shape());
+  // get transposed of the jacobian matrix d x / d \xi
+  // xjm(i,j) = deriv(i,k)*xyze(j,k)
+  static LINALG::Matrix<3,3> xjm(true);
+  xjm.MultiplyNT(deriv,xyze);
+  const double det = xjm.Determinant();
+  if (det < 0.0)
+    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", scatraele->Id(), det);
+  // inverse of jacobian
+  LINALG::Matrix<3,3> xji(true);
+  xji.Invert(xjm);
+  // compute global derivates
+  LINALG::Matrix<3,numnode> derxy(true);
+  // derxy(i,j) = xji(i,k) * deriv(k,j)
+  derxy.Multiply(xji,deriv);
+
+  // get gradient of phi
+  gradphi.Clear();
+  gradphi.Multiply(derxy,ephinp);
+
+  return;
 }
 
 
 /*----------------------------------------------------------------------*
 | setup ghosting of bins, particles & underlying fluid      ghamm 11/12 |
  *----------------------------------------------------------------------*/
-void PARTICLE::ScatraParticleCoupling::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, std::map<int, std::set<int> >& fluideles)
+void PARTICLE::ScatraParticleCoupling::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, std::map<int, std::set<int> >& scatraelesinbins)
 {
   //--------------------------------------------------------------------
-  // 1st and 2nd step
+  // 1st step: no ghosting for bins and particles
   //--------------------------------------------------------------------
 
-  PARTICLE::Algorithm::SetupGhosting(binrowmap);
+  // Note: IndependentDofSet is used; new dofs are numbered from zero, minnodgid is ignored and it does not register in static_dofsets_
+  particledis_->FillComplete(true, false, true);
 
+  // set bin row map to be equal to bin col map because we do not have ghosting
+  bincolmap_ = binrowmap;
 
   //--------------------------------------------------------------------
-  // 3st step: extend ghosting of underlying fluid discretization according to bin distribution
+  // 2nd step: extend ghosting of underlying scatra discretization according to bin distribution
   //--------------------------------------------------------------------
-  std::map<int, std::set<int> > extendedfluidghosting;
+  std::map<int, std::set<int> > extendedscatraghosting;
   {
     // do communication to gather all elements for extended ghosting
     const int numproc = scatradis_->Comm().NumProc();
 
     for (int iproc = 0; iproc < numproc; ++iproc)
     {
-      // first: proc i tells all procs how many col bins it has
-      int numbin = bincolmap_->NumMyElements();
+      // first: proc i tells all procs how many row bins it has
+      int numbin = binrowmap->NumMyElements();
       scatradis_->Comm().Broadcast(&numbin, 1, iproc);
-      // second: proc i tells all procs which col bins it has
+      // second: proc i tells all procs which row bins it has
       std::vector<int> binid(numbin,0);
       if(iproc == myrank_)
       {
-        int* bincolmap = bincolmap_->MyGlobalElements();
+        int* binrowmapentries = binrowmap->MyGlobalElements();
         for (int i=0; i<numbin; ++i)
-          binid[i] = bincolmap[i];
+          binid[i] = binrowmapentries[i];
       }
       scatradis_->Comm().Broadcast(&binid[0], numbin, iproc);
 
@@ -859,7 +1388,7 @@ void PARTICLE::ScatraParticleCoupling::SetupGhosting(Teuchos::RCP<Epetra_Map> bi
 
       for(int i=0; i<numbin; ++i)
       {
-        sdata[binid[i]].insert(fluideles[binid[i]].begin(),fluideles[binid[i]].end());
+        sdata[binid[i]].insert(scatraelesinbins[binid[i]].begin(),scatraelesinbins[binid[i]].end());
       }
 
       LINALG::Gather<int>(sdata, rdata, 1, &iproc, scatradis_->Comm());
@@ -867,35 +1396,35 @@ void PARTICLE::ScatraParticleCoupling::SetupGhosting(Teuchos::RCP<Epetra_Map> bi
       // proc i has to store the received data
       if(iproc == myrank_)
       {
-        extendedfluidghosting = rdata;
+        extendedscatraghosting = rdata;
       }
     }
 
-    //reduce map of sets to one set and copy to a vector to create fluidcolmap
-    std::set<int> redufluideleset;
+    // reduce map of sets to one set and copy to a vector to create extended scatra colmap
+    std::set<int> reduscatraeleset;
     std::map<int, std::set<int> >::iterator iter;
-    for(iter=extendedfluidghosting.begin(); iter!= extendedfluidghosting.end(); ++iter)
+    for(iter=extendedscatraghosting.begin(); iter!= extendedscatraghosting.end(); ++iter)
     {
-      redufluideleset.insert(iter->second.begin(),iter->second.end());
+      reduscatraeleset.insert(iter->second.begin(),iter->second.end());
     }
-    std::vector<int> fluidcolgids(redufluideleset.begin(),redufluideleset.end());
-    Teuchos::RCP<Epetra_Map> fluidcolmap = Teuchos::rcp(new Epetra_Map(-1,(int)fluidcolgids.size(),&fluidcolgids[0],0,Comm()));
+    std::vector<int> scatracolgids(reduscatraeleset.begin(),reduscatraeleset.end());
+    Teuchos::RCP<Epetra_Map> scatracolmap = Teuchos::rcp(new Epetra_Map(-1,(int)scatracolgids.size(),&scatracolgids[0],0,Comm()));
 
-    scatradis_->ExtendedGhosting(*fluidcolmap,true,true,true,false);
+    scatradis_->ExtendedGhosting(*scatracolmap,true,true,true,false);
 
   }
 
   //--------------------------------------------------------------------
-  // 4th step: assign fluid elements to bins
+  // 4th step: assign scatra elements to bins
   //--------------------------------------------------------------------
   {
-    for(std::map<int, std::set<int> >::const_iterator biniter=extendedfluidghosting.begin(); biniter!=extendedfluidghosting.end(); ++biniter)
+    for(std::map<int, std::set<int> >::const_iterator biniter=extendedscatraghosting.begin(); biniter!=extendedscatraghosting.end(); ++biniter)
     {
       DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(particledis_->gElement(biniter->first));
-      for(std::set<int>::const_iterator fluideleiter=biniter->second.begin(); fluideleiter!=biniter->second.end(); ++fluideleiter)
+      for(std::set<int>::const_iterator scatraeleiter=biniter->second.begin(); scatraeleiter!=biniter->second.end(); ++scatraeleiter)
       {
-        int fluideleid = *fluideleiter;
-        currbin->AddAssociatedFluidEle(fluideleid, scatradis_->gElement(fluideleid));
+        int scatraeleid = *scatraeleiter;
+        currbin->AddAssociatedFluidEle(scatraeleid, scatradis_->gElement(scatraeleid));
 //          cout << "in bin with id:" << currbin->Id() << " is fluid ele with id" << fluideleid << "with pointer" << fluiddis_->gElement(fluideleid) << endl;
       }
     }
@@ -905,208 +1434,27 @@ void PARTICLE::ScatraParticleCoupling::SetupGhosting(Teuchos::RCP<Epetra_Map> bi
 }
 
 
-///*----------------------------------------------------------------------*
-//| build connectivity from fluid elements to bins            ghamm 07/13 |
-// *----------------------------------------------------------------------*/
-//void PARTICLE::ScatraParticleCoupling::BuildElementToBinPointers()
-//{
-//  // first call base class to associate potential particle walls
-//  PARTICLE::Algorithm::BuildElementToBinPointers();
-//
-//  // loop over column bins and fill fluid elements
-//  const int numcolbin = particledis_->NumMyColElements();
-//  for (int ibin=0; ibin<numcolbin; ++ibin)
-//  {
-//    DRT::Element* actele = particledis_->lColElement(ibin);
-//    DRT::MESHFREE::MeshfreeMultiBin* actbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
-//    const int numfluidele = actbin->NumAssociatedFluidEle();
-//    const int* fluideleids = actbin->AssociatedFluidEleIds();
-//    std::vector<DRT::Element*> fluidelements(numfluidele);
-//    for(int iele=0; iele<numfluidele; ++iele)
-//    {
-//      const int fluideleid = fluideleids[iele];
-//      fluidelements[iele] = scatradis_->gElement(fluideleid);
-//    }
-//    actbin->BuildFluidElePointers(&fluidelements[0]);
-//  }
-//
-//  return;
-//}
-
-
 /*----------------------------------------------------------------------*
-| single fields are tested                                  ghamm 11/12 |
+| build connectivity from fluid elements to bins            ghamm 07/13 |
  *----------------------------------------------------------------------*/
-void PARTICLE::ScatraParticleCoupling::TestResults(const Epetra_Comm& comm)
+void PARTICLE::ScatraParticleCoupling::BuildElementToBinPointers()
 {
-//  DRT::Problem::Instance()->AddFieldTest(scatra_->CreateFieldTest());
-  PARTICLE::Algorithm::TestResults(comm);
+  // loop over column bins and fill scatra elements
+  const int numcolbin = particledis_->NumMyColElements();
+  for (int ibin=0; ibin<numcolbin; ++ibin)
+  {
+    DRT::Element* actele = particledis_->lColElement(ibin);
+    DRT::MESHFREE::MeshfreeMultiBin* actbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
+    const int numfluidele = actbin->NumAssociatedFluidEle();
+    const int* fluideleids = actbin->AssociatedFluidEleIds();
+    std::vector<DRT::Element*> fluidelements(numfluidele);
+    for(int iele=0; iele<numfluidele; ++iele)
+    {
+      const int fluideleid = fluideleids[iele];
+      fluidelements[iele] = scatradis_->gElement(fluideleid);
+    }
+    actbin->BuildFluidElePointers(&fluidelements[0]);
+  }
+
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- | output particle time step                                ghamm 11/12  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ScatraParticleCoupling::Output()
-{
-//  scatra_->Output();
-  PARTICLE::Algorithm::Output();
-  return;
-}
-
-
-///*----------------------------------------------------------------------*
-// | get adjacent bins to corner, where ijk is in 1st octant ghamm 02/13  |
-// *----------------------------------------------------------------------*/
-//std::vector<int> PARTICLE::ScatraParticleCoupling::AdjacentBinstoCorner(int* ijk)
-//{
-//  std::vector<int> adjbins;
-//  adjbins.reserve(8);
-//
-//  // get all adjacent bins to the current corner, including the bin itself
-//  for(int i=-1;i<1;i++)
-//  {
-//    for(int j=-1;j<1;j++)
-//    {
-//      for(int k=-1;k<1;k++)
-//      {
-//        int ijk_neighbor[3] = {ijk[0]+i, ijk[1]+j, ijk[2]+k};
-//
-//        int neighborgid = ConvertijkToGid(&ijk_neighbor[0]);
-//        if(neighborgid != -1)
-//        {
-//          adjbins.push_back(neighborgid);
-//        }
-//      } // end for int k
-//    } // end for int j
-//  } // end for int i
-//
-//  return adjbins;
-//}
-
-
-///*----------------------------------------------------------------------*
-//| setup of bubble inflow                                    ghamm 01/13 |
-// *----------------------------------------------------------------------*/
-//void PARTICLE::ScatraParticleCoupling::BuildBubbleInflowCondition()
-//{
-//  // build inflow boundary condition
-//  std::vector<DRT::Condition*> conds;
-//  particledis_->GetCondition("ParticleInflow", conds);
-//  // unique bubbleinflow id over all inflow conditions
-//  int bubbleinflowid = 0;
-//  for (size_t i=0; i<conds.size(); ++i)
-//  {
-//    if(i>0)
-//      dserror("only taken care of one particle inflow condition so far. "
-//          "Remedy: bubble_source_ needs to be a vector of the current layout");
-//    /*
-//     * inflow condition --> bubble sources
-//     *
-//     *  example: num_per_dir = {4, 5, 1}
-//     *
-//     *       <-> (dist_x = (vertex2_x-vertex1_x)/(num_per_dir_x-1))
-//     *
-//     *   x  x  x  x<-------- vertex2
-//     *
-//     *   x  x  x  x
-//     *
-//     *   x  x  x  x   ^
-//     *                | (dist_y = (vertex2_y-vertex1_y)/(num_per_dir_y-1) )
-//     *   x  x  x  x   ^
-//     *
-//     *   x  x  x  x
-//     *   ^
-//     *   |
-//     * vertex1
-//     *
-//     */
-//
-//    // extract data from inflow condition
-//    const std::vector<double>* vertex1 = conds[i]->Get<std::vector<double> >("vertex1");
-//    const std::vector<double>* vertex2 = conds[i]->Get<std::vector<double> >("vertex2");
-//    const std::vector<int>* num_per_dir = conds[i]->Get<std::vector<int> >("num_per_dir");
-//    const std::vector<double>* inflow_vel = conds[i]->Get<std::vector<double> >("inflow_vel");
-//    int inflow_vel_curve = conds[i]->GetInt("inflow_vel_curve");
-//    double inflow_freq = conds[i]->GetDouble("inflow_freq");
-//
-//    // make sure that a particle material is defined in the dat-file
-//    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
-//    if (id==-1)
-//      dserror("Could not find particle material");
-//
-//    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-//    const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
-//    double initial_radius = actmat->initialradius_;
-//
-//    double inflowtime = 1.0 / inflow_freq;
-//    if(std::abs(inflowtime/Dt() - (int)(inflowtime/Dt())) > EPS9)
-//      dserror("1/inflow_freq with inflow_freq = %f cannot be divided by fluid time step %f", inflowtime, Dt());
-///* MUST BE ADDED WHEN PARTICLE CONTACT IS CONSIDERED
-//    double inflow_vel_mag = sqrt((*inflow_vel)[0]*(*inflow_vel)[0] + (*inflow_vel)[1]*(*inflow_vel)[1] + (*inflow_vel)[2]*(*inflow_vel)[2]);
-//    if(initial_radius/inflow_vel_mag > inflowtime)
-//      dserror("Overlap for inflowing bubbles expected: initial_radius/inflow_vel_mag = %f s > inflow_freq = %f s", initial_radius/inflow_vel_mag, inflowtime);
-//*/
-//    // loop over all bubble inflow positions and fill them into bin when they are on this proc;
-//    // up to here, only row bins are available
-//    std::vector<double> source_pos(3);
-//    for(int z=0; z<(*num_per_dir)[2]; ++z)
-//    {
-//      double dist_z = ((*vertex2)[2] - (*vertex1)[2]) / ((((*num_per_dir)[2]-1)!=0) ? ((*num_per_dir)[2]-1) : 1);
-//      source_pos[2] = (*vertex1)[2] + z * dist_z;
-//      for(int y=0; y<(*num_per_dir)[1]; ++y)
-//      {
-//        double dist_y = ((*vertex2)[1] - (*vertex1)[1]) / ((((*num_per_dir)[1]-1)!=0) ? ((*num_per_dir)[1]-1) : 1);
-//        source_pos[1] = (*vertex1)[1] + y * dist_y;
-//        for(int x=0; x<(*num_per_dir)[0]; ++x)
-//        {
-//          double dist_x = ((*vertex2)[0] - (*vertex1)[0]) / ((((*num_per_dir)[0]-1)!=0) ? ((*num_per_dir)[0]-1) : 1);
-//          source_pos[0] = (*vertex1)[0] + x * dist_x;
-//          // check whether this source position is on this proc
-//          int binId = ConvertPosToGid(source_pos);
-//          bool found = particledis_->HaveGlobalElement(binId);
-//          if(found == true)
-//          {
-//            Teuchos::RCP<BubbleSource> bubbleinflow = Teuchos::rcp(new BubbleSource(
-//                                                                          bubbleinflowid,
-//                                                                          source_pos,
-//                                                                          *inflow_vel,
-//                                                                          inflow_vel_curve,
-//                                                                          initial_radius,
-//                                                                          inflow_freq));
-//            bubble_source_[binId].push_back(bubbleinflow);
-//#ifdef DEBUG
-//            if(particledis_->gElement(binId)->Owner() != myrank_)
-//              dserror("Only row bins should show up here. Either add additional if-case or move ghosting to a later point in time.");
-//#endif
-//          }
-//          bubbleinflowid++;
-//        }
-//      }
-//    }
-//  }
-//
-//  return;
-//}
-
-
-///*----------------------------------------------------------------------*
-// | particle source                                         ghamm 02/13  |
-// *----------------------------------------------------------------------*/
-//CAVITATION::BubbleSource::BubbleSource(
-//  int bubbleinflowid,
-//  std::vector<double> inflow_position,
-//  std::vector<double> inflow_vel,
-//  int inflow_vel_curve,
-//  double inflow_radius,
-//  double inflow_freq
-//  ) :
-//  inflowid_(bubbleinflowid),
-//  inflow_position_(inflow_position),
-//  inflow_vel_(inflow_vel),
-//  inflow_vel_curve_(inflow_vel_curve),
-//  inflow_radius_(inflow_radius),
-//  inflow_freq_(inflow_freq)
-//{
-//}

@@ -56,7 +56,7 @@ void levelset_dyn(int restart)
   // check velocity field
   const INPAR::SCATRA::VelocityField veltype
     = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
-  if (veltype != INPAR::SCATRA::velocity_function)
+  if (veltype != INPAR::SCATRA::velocity_function and veltype != INPAR::SCATRA::velocity_function_and_curve)
     dserror("Other velocity fields than a field given by a function not yet supported for level-set problems");
 
   // we directly use the elements from the scalar transport elements section
@@ -73,10 +73,6 @@ void levelset_dyn(int restart)
 
   // get pointer to time integrator
   Teuchos::RCP<SCATRA::ScaTraTimIntImpl> levelsetalgo = scatrabase->ScaTraFieldrcp();
-
-  // TODO: Ursula: delete
-//  // initialize level-set algorithm for specific time-integration scheme
-//  levelsetalgo->Init();
 
   // set velocity field
   //(This is done only once. Time-dependent velocity fields are not supported)

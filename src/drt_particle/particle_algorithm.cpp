@@ -785,7 +785,7 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
 /*----------------------------------------------------------------------*
  | particles are checked and transferred if necessary       ghamm 10/12 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::TransferParticles()
+void PARTICLE::Algorithm::TransferParticles(bool ghosting)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles");
 
@@ -884,10 +884,9 @@ void PARTICLE::Algorithm::TransferParticles()
   // oldmap in ExportColumnElements must be Reset() on every proc or nowhere
   particledis_->CheckFilledGlobally();
 
-  // new ghosting is necessary
-  particledis_->ExtendedGhosting(*bincolmap_,true,false,true,false);
-
-
+  // new ghosting if necessary
+  if (ghosting)
+    particledis_->ExtendedGhosting(*bincolmap_,true,false,true,false);
 
   // reconstruct element -> bin pointers for fixed particle wall elements and fluid elements
   bool rebuildwallpointer = true;

@@ -80,6 +80,7 @@ PARTICLE::TimInt::TimInt
   disn_(Teuchos::null),
   veln_(Teuchos::null),
   accn_(Teuchos::null),
+  radius_(Teuchos::null),
   mass_(Teuchos::null),
   inertia_(Teuchos::null),
   ang_vel_(Teuchos::null),

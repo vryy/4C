@@ -39,6 +39,12 @@ public:
   /// initialize time-integration scheme
   virtual void Init();
 
+  /// read restart data
+  virtual void ReadRestart(int step){dserror("You should not need this function!"); return;};
+
+  /// redistribute the scatra discretization and vectors according to nodegraph
+  void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph){dserror("You should not need this function!"); return;};
+
 protected:
 
   /// update phi within the reinitialization loop

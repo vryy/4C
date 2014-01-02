@@ -17,10 +17,12 @@ Maintainer: Ursula Rasthofer
 #include "levelset_algorithm.H"
 #include "levelset_intersection_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_scatra_ele/scatra_ele_impl_utils.H"
 #include "../drt_xfem/xfem_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
@@ -38,12 +40,19 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(
   Teuchos::RCP<const DRT::DofSet>   dofset,
   Teuchos::RCP<DRT::Discretization> dis)
 {
+  // update convective velocity
+  conveln_->Update(1.0,*convel_,0.0);
+
   // call routine of base class
   ScaTraTimIntImpl::SetVelocityField(convvel, acc, vel, fsvel, dofset, dis);
 
   // manipulate velocity field away from the interface
-  if (convel_layers_ > 0)
+  if (extract_interface_vel_)
     ManipulateFluidFieldForGfunc();
+
+  // estimate velocity at contact points, i.e., intersection points of interface and (no-slip) walls
+  if (cpbc_)
+    ApplyContactPointBoundaryCondition();
 
   return;
 }
@@ -137,7 +146,6 @@ void SCATRA::LevelSetAlgorithm::MassConservationCheck(
 
       if (writetofile)
       {
-        std::ostringstream temp;
         const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
         const std::string fname = simulation+"_massconservation.relerror";
 
@@ -172,6 +180,131 @@ void SCATRA::LevelSetAlgorithm::MassConservationCheck(
         IO::cout << " there is no 'minus domain'! -> division by zero checking mass conservation" << IO::endl;
     }
   }
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | compute convective velocity for contact points no-slip wall and interface      rasthofer 12/13 |
+ *------------------------------------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
+{
+  // get condition
+  std::vector<DRT::Condition*> lscontactpoint;
+  discret_->GetCondition("LsContact",lscontactpoint);
+
+  // map to store node gid and corrected values
+  std::map<int,std::vector<double> > nodal_correction;
+
+  // export velocity vector to col map
+  // this is necessary here, since the elements adjacent to a row node may have
+  // ghosted nodes, which are only contained in the col format
+  const Epetra_Map* nodecolmap = discret_->NodeColMap();
+  int numcol = convel_->NumVectors();
+  RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+  LINALG::Export(*convel_,*tmp);
+
+  // loop all conditions
+  for (std::size_t icond=0; icond<lscontactpoint.size(); icond++)
+  {
+    DRT::Condition* mycondition = lscontactpoint[icond];
+
+    // loop all nodes belonging to this condition
+    // for these nodes, new values have to be set
+    const std::vector<int>* mynodes = mycondition->Nodes();
+    for (std::size_t inode=0; inode<mynodes->size(); inode++)
+    {
+      // for all nodes on this proc: is this check really necessary here
+      if (discret_->HaveGlobalNode((*mynodes)[inode]))
+      {
+        // get node
+        DRT::Node* actnode = discret_->gNode((*mynodes)[inode]);
+
+        // exclude ghosted nodes, since we need all adjacent elements here,
+        // which are only available for nodes belonging to the this proc
+        if (actnode->Owner() == myrank_)
+        {
+          // get adjacent elements
+          const DRT::Element*const* adjelements = actnode->Elements();
+
+          // initialize vector for averaged center velocity
+          // note: velocity in scatra algorithm has three components (see also basic constructor)
+          std::vector<double> averagedvel(3);
+          for (int rr=0; rr<3; rr++)
+            averagedvel[rr] = 0.0;
+
+          // loop all adjacent elements
+          for (int iele=0; iele<actnode->NumElement(); iele++)
+          {
+            // get discretization type
+            if ((adjelements[iele])->Shape() != DRT::Element::hex8)
+              dserror("Currently only hex8 supported");
+            const DRT::Element::DiscretizationType distype = DRT::Element::hex8;
+
+            // in case of further distypes, move the following block to a templated function
+            {
+              // get number of element nodes 
+              const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+              //get number of space dimensions
+              const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+              // get nodal velocities
+              LINALG::Matrix<nsd,nen> evel(true);
+              // extract nodal values
+              DRT::UTILS::ExtractMyNodeBasedValues(adjelements[iele],evel,tmp,nsd);
+
+              // use one-point Gauss rule to do calculations at the element center
+              // used here to get center coordinates
+              DRT::UTILS::IntPointsAndWeights<nsd> centercoord(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+              LINALG::Matrix<nsd,1> xsi(true);
+              const double* gpcoord = (centercoord.IP().qxg)[0];
+              for (int idim=0 ;idim<nsd; idim++)
+                xsi(idim,0) = gpcoord[idim];
+
+              // compute shape functions at element center
+              LINALG::Matrix<nen,1> funct(true);
+              DRT::UTILS::shape_function<distype>(xsi,funct);
+
+              // get velocity at integration point
+              LINALG::Matrix<nsd,1> velint(true);
+              velint.Multiply(evel,funct);
+
+              // add to averaged velocity vector
+              for (int idim=0 ;idim<nsd; idim++)
+                averagedvel[idim] += velint(idim,0);
+            }
+          } // end loop elements
+
+          // computed averaged value
+          for (int rr=0; rr<3; rr++)
+            averagedvel[rr] /= (double)(actnode->NumElement());
+
+          // store value in map, if not yet stored (i.e., multiple conditions intersect at one point)
+          if (nodal_correction.find(actnode->Id()) == nodal_correction.end())
+            nodal_correction.insert(std::pair<int,std::vector<double> >(actnode->Id(),averagedvel));
+        }
+      }
+    } // end loop nodes
+  } // end loop conditions
+
+  // replace values in velocity vector
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  for (std::map<int,std::vector<double> >::iterator iter = nodal_correction.begin(); iter != nodal_correction.end(); iter++)
+  {
+    const int gnodeid = iter->first;
+    const int lnodeid = noderowmap->LID(gnodeid);
+    std::vector<double > myvel = iter->second;
+    for (int index=0; index<3; ++index)
+    {
+      const double convelocity = myvel[index];
+      int err = convel_->ReplaceMyValue(lnodeid,index,convelocity);
+      if (err != 0) dserror("Error while inserting value into vector convel_!");
+    }
+  }
+
+  // update also velocity vector
+  vel_->Update(1.0,*convel_,0.0);
 
   return;
 }

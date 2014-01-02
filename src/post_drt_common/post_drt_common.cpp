@@ -622,7 +622,10 @@ void PostProblem::read_meshes()
         std::cout << std::endl;
       }
 
-      if ((currfield.problem()->Problemtype()==prb_particle or currfield.problem()->Problemtype()==prb_cavitation)
+      if ((currfield.problem()->Problemtype()==prb_particle
+          or currfield.problem()->Problemtype()==prb_cavitation
+          or currfield.problem()->Problemtype()==prb_level_set
+          or currfield.problem()->Problemtype()==prb_combust)
           and currfield.discretization()->Name() == "particle")
       {
         Teuchos::RCP<DRT::Discretization> particledis = currfield.discretization();

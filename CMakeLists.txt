@@ -1298,6 +1298,7 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_timint_expl.cpp
   src/drt_particle/particle_timint_centrdiff.cpp
   src/drt_particle/particle_timint_expleuler.cpp
+  src/drt_particle/particle_timint_rk.cpp
   src/drt_particle/particle_dyn.cpp
   src/drt_particle/binning_strategy.cpp
   src/drt_particle/particle_algorithm.cpp

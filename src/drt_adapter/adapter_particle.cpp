@@ -19,6 +19,7 @@ Maintainer: Georg Hammerl
 #include "adapter_particle.H"
 #include "../drt_particle/particle_timint_centrdiff.H"
 #include "../drt_particle/particle_timint_expleuler.H"
+#include "../drt_particle/particle_timint_rk.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
@@ -112,7 +113,7 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
   case INPAR::PARTICLE::dyna_rungekutta2:
   case INPAR::PARTICLE::dyna_rungekutta4:
   {
-//    tmppart = Teuchos::rcp(new PARTICLE::RungeKutta(ioflags, *partdyn, *xparams, actdis, output));
+    tmppart = Teuchos::rcp(new PARTICLE::TimIntRK(ioflags, *partdyn, *xparams, actdis, output));
     break;
   }
   default :

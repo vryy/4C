@@ -283,7 +283,22 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
      if (probtype == prb_level_set)
        lsparams = Teuchos::rcp(new Teuchos::ParameterList(prbdyn));
      else
+     {
        lsparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LevelSetControl()));
+       // overrule certain parameters for coupled problems
+       // this has already been ensured for scatratimeparams, but has also been ensured for the level-set
+       // parameter which are potentially handled down to the particle algorithm in a hybrid approach
+       // time step size
+       lsparams->set<double>   ("TIMESTEP"    ,prbdyn.get<double>("TIMESTEP"));
+       // maximum simulation time
+       lsparams->set<double>   ("MAXTIME"     ,prbdyn.get<double>("MAXTIME"));
+       // maximum number of timesteps
+       lsparams->set<int>      ("NUMSTEP"     ,prbdyn.get<int>("NUMSTEP"));
+       // restart
+       lsparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
+       // solution output
+       lsparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
+     }
 
      switch(timintscheme)
      {

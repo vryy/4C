@@ -5,10 +5,10 @@
 \brief Algorithm to control cavitation simulations
 
 <pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
+Maintainer: Georg Hammerl / Ursula Rasthofer
+            hammerl/rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15237/15236
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -21,8 +21,10 @@ Maintainer: Georg Hammerl
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 11/12 |
  *----------------------------------------------------------------------*/
-#include "cavitation_algorithm.H"
-#include "../drt_inpar/inpar_cavitation.H"
+#include "particle_algorithm.H"
+#include "../drt_inpar/inpar_levelset.H"
+#include "particle_timint_centrdiff.H"
+#include "../drt_structure/strtimint_centrdiff.H"
 
 #include "Epetra_MpiComm.h"
 #include <Teuchos_RCP.hpp>
@@ -43,124 +45,95 @@ namespace DRT
 }
 
 /*----------------------------------------------------------------------*
- | cavitation algorithm                                     ghamm 11/12 |
+ | scatra-particle algorithm                                ghamm 11/12 |
  *----------------------------------------------------------------------*/
-/// CAVITATION: Cavitation problem
 namespace PARTICLE
 {
-  // forward declaration
-//  class BubbleSource;
-
   class ScatraParticleCoupling : public PARTICLE::Algorithm
   {
   public:
 
     ScatraParticleCoupling(
       Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,   ///< underlying scatra field
-      const Epetra_Comm& lcomm,  ///< local epetra communicator
-      const Teuchos::ParameterList& params   ///< problem parameters
+      Teuchos::RCP<Teuchos::ParameterList> params      ///< problem parameters
       );
 
     /// do initialization of problem
-    virtual void Init(bool restarted);
+    void Init(bool restarted);
 
-    /// read restart
-    virtual void ReadRestart(
-      int restart  ///< time step from which to restart
-      );
+    /// initialize particle field with particles
+    void InitialSeeding();
 
-    /// setup of the system
-    virtual void SetupSystem();
+    /// prepare time step
+    void PrepareTimeStep();
 
-    /// outer time loop for cavitation problem
-    virtual void Timeloop();
+    /// solve the current particle time step
+    void Integrate();
 
-    /// test results (if necessary)
-    virtual void TestResults(
-      const Epetra_Comm& comm  ///< local epetra communicator
-      );
+    /// transfer particles into their correct bins and update solution
+    void Update();
 
+    /// correct level set function with escaped particles
+    Teuchos::RCP<Epetra_Vector> CorrectionStep();
+
+    /// output particle time step
+    void Output();
 
   protected:
 
-    /// prepare time step
-    virtual void PrepareTimeStep();
-
-    /// solve the current particle time step
-    virtual void Integrate();
-
-    /// force on particles is calculated and applied
-    virtual void CalculateAndApplyForcesToParticles();
-
-    /// insert particles into domain
-//    void ParticleInflow();
-
-    /// update the current time step
-    virtual void Update();
-
-    /// output particle time step
-    virtual void Output();
-
-    /// find XAABB and divide into bins using the cutoff radius
-    virtual void CreateBins();
-
-    /// bins are distributed to the processors
-    virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs(
-      std::map<int, std::set<int> >& fluideles  ///< map from bin id to fluid elements in this bin
-      );
-
-    /// setup of bubble sources in each bin
-//    virtual void BuildBubbleInflowCondition();
-
-    /// setup ghosting of bins, particles & underlying fluid
+    /// setup ghosting of bins, particles & underlying scatra
     virtual void SetupGhosting(
       Teuchos::RCP<Epetra_Map> binrowmap,  ///< rowmap of bins
-      std::map<int, std::set<int> >& fluideles   ///< map from bin id to fluid elements in this bin
+      std::map<int, std::set<int> >& fluideles   ///< map from bin id to scatra elements in this bin
       );
+
+    /// build connectivity from fluid elements to bins
+    virtual void BuildElementToBinPointers();
+
+    /// set velocity of particle
+    void SetVelocity();
 
      //@}
 
   private:
 
+    /// compute level-set value of particle with local id
+    double GetPhiParticle(
+      const int particle_lid              ///< local particle id
+      );
+
+    /// get underlying element as well as particle position
+    DRT::Element* GetEleCoordinates(
+      const int particle_lid,             ///< local particle id
+      LINALG::Matrix<3,1>& elecoord       ///< matrix to be filled with particle coordinates in element space
+    );
+
+    /// compute level-set value of particle with local id
+    void GetLSValParticle(
+      double& phi_particle,               ///< phi value at particle position
+      LINALG::Matrix<3,1>& gradphi,       ///< gradient of level-set field at particle position
+      DRT::Element* scatraele,            ///< corresponding scatra element
+      const LINALG::Matrix<3,1> elecoord  ///< matrix containing particle coordinates in element space
+    );
+
     //! @name scatra related stuff
     //@{
 
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;     ///< underlying fluid time integrator
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;     ///< underlying scatra time integrator
 
-    Teuchos::RCP<DRT::Discretization> scatradis_;     ///< underlying fluid discretization
+    Teuchos::RCP<DRT::Discretization> scatradis_;       ///< underlying scatra discretization
 
-//    std::map<int, std::list<Teuchos::RCP<BubbleSource> > > bubble_source_;   ///< store particle sources for each bin
+    const Teuchos::RCP<Teuchos::ParameterList> params_;       ///< the parameter list
+
+    INPAR::PARTICLE::ParticleDim particle_dim_;         ///< dimension of problem
 
     //@}
 
   }; // Algorithm
 
 
-//  class BubbleSource
-//  {
-//  public:
-//
-//    BubbleSource(
-//      int bubbleinflowid,   ///< unique id over all inflow conditions
-//      std::vector<double> inflow_position,  ///< position of particle source
-//      std::vector<double> inflow_vel,   ///< inflow velocity
-//      int inflow_vel_curve,   ///< inflow velocity can be superposed with a time curve
-//      double inflow_radius,   ///< initial radius of particle
-//      double inflow_freq   ///< frequency of entering particles
-//      );
-//
-//    // internal variables
-//    int inflowid_;
-//    std::vector<double> inflow_position_;
-//    std::vector<double> inflow_vel_;
-//    int inflow_vel_curve_;
-//    double inflow_radius_;
-//    double inflow_freq_;
-//
-//  }; // BubbleSource
-
-} // namespace CAVITATION
+} // namespace PARTICLE
 
 
 /*----------------------------------------------------------------------*/
-#endif  // CAVITATION_ALGORITHM_H
+#endif  // SCATRA_PARTICLE_COUPLING_H

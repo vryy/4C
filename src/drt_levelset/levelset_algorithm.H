@@ -72,8 +72,8 @@ namespace SCATRA
     /// output solution and restart data to file
     void Output(const int num =0);
 
-    /// read restart
-    void ReadRestart(bool restart);
+    /// read restart data
+    virtual void ReadRestart(int step) = 0;
 
     /// set convective velocity field (+ pressure and acceleration field as
     /// well as fine-scale velocity field, if required)
@@ -146,8 +146,18 @@ namespace SCATRA
     /// manipulate velocity field away from the interface
     void ManipulateFluidFieldForGfunc();
 
+    /// modification of convective velocity at contact points
+    void ApplyContactPointBoundaryCondition();
+
     // -----------------------------------------------------------------
-    // reinitialization and mass conservation methods
+    // hybrid method including particles
+    // -----------------------------------------------------------------
+
+    /// correct zero level-set by particles
+    void ParticleCorrection();
+
+    // -----------------------------------------------------------------
+    // reinitialization
     // -----------------------------------------------------------------
 
     /// reinitialize level-set
@@ -257,7 +267,13 @@ namespace SCATRA
     // -----------------------------------------------------------------
 
     // --------------
-    // members related to reinitalization and mass conservation
+    // members related to scalar transport
+
+    /// convective velocity at time n
+    Teuchos::RCP<Epetra_MultiVector> conveln_;
+
+    // --------------
+    // members related to reinitialization and mass conservation
 
     /// initial volume of minus domain
     double initvolminus_;
@@ -304,6 +320,9 @@ namespace SCATRA
 
     /// number of element layers around the interface with unmodified velocity
     int convel_layers_;
+
+    /// flag for modification of convective velocity at contact points
+    bool cpbc_;
 
   };
 

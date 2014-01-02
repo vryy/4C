@@ -87,6 +87,19 @@ namespace INPAR
 
   }  // namespace SCATRA
 
+  namespace PARTICLE
+  {
+    /// problem dimsion in case of quasi 2D
+    enum ParticleDim
+    {
+      particle_3D,
+      particle_2Dx,
+      particle_2Dy,
+      particle_2Dz
+    };
+
+  }  // namespace PARTICLE
+
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/

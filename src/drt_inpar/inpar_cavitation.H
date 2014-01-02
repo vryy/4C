@@ -21,8 +21,8 @@ Maintainer: Georg Hammerl
 namespace INPAR
 {
   /// Input parameters for particle/cavitation problems
-	namespace PARTICLE
-	{
+  namespace PARTICLE
+  {
 
     /// Type of time integrator
     enum DynamicType
@@ -33,25 +33,25 @@ namespace INPAR
       dyna_rungekutta4                 ///< Runge-Kutta 4 (explicit)
     };
 
-	  /// Contact type for particles
-		enum ContactStrategy
-		{
-			None,
-			Normal_DEM,
-			Normal_MD,
-			NormalAndTang_DEM
-		};
+    /// Contact type for particles
+    enum ContactStrategy
+    {
+      None,
+      Normal_DEM,
+      Normal_MD,
+      NormalAndTang_DEM
+    };
 
-		/// Normal contact law
-		enum NormalContact
-		{
-			LinSpring,
-			Hertz,
-			LinSpringDamp,
-			LeeHerrmann,
-			KuwabaraKono,
-			Tsuji
-		};
+    /// Normal contact law
+    enum NormalContact
+    {
+      LinSpring,
+      Hertz,
+      LinSpringDamp,
+      LeeHerrmann,
+      KuwabaraKono,
+      Tsuji
+    };
 
     //! type of collision
     enum coltype
@@ -60,7 +60,7 @@ namespace INPAR
       particle_wall,
       undefined
     };
-	}
+  }
 
   /// Input parameters for cavitation
   namespace CAVITATION

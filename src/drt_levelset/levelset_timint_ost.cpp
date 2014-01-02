@@ -169,7 +169,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::SetOldPartOfRighthandside()
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetTimIntOneStepTheta::Update(const int num)
 {
-  if (not switchreinit_)
+  if ((not switchreinit_) and particle_ == Teuchos::null)
   {
     // compute time derivative at time n+1
     ComputeTimeDerivative();
@@ -198,7 +198,8 @@ void SCATRA::LevelSetTimIntOneStepTheta::Update(const int num)
     phin_ ->Update(1.0,*phinp_,0.0);
 
     // reinitialization is done, reset flag
-    switchreinit_ = false;
+    if (switchreinit_ == true)
+      switchreinit_ = false;
 
     // compute time derivative at time n (and n+1)
 
@@ -228,9 +229,9 @@ void SCATRA::LevelSetTimIntOneStepTheta::Update(const int num)
     SetElementTimeParameter();
   }
 
-//  // update also particle field
-//  if (particle_ != Teuchos::null)
-//    particle_->TransferAndUpdate();
+  // update also particle field
+  if (particle_ != Teuchos::null)
+    particle_->Update();
 
   return;
 }
@@ -281,6 +282,22 @@ void SCATRA::LevelSetTimIntOneStepTheta::Redistribute(const Teuchos::RCP<Epetra_
     fsphinp_ = LINALG::CreateVector(*newdofrowmap,true);
     LINALG::Export(*old, *fsphinp_);
   }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | setup problem after restart                          rasthofer 09/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetTimIntOneStepTheta::ReadRestart(int start)
+{
+  // do basic restart
+  TimIntOneStepTheta::ReadRestart(start);
+
+  // read restart for particles
+  if (particle_ != Teuchos::null)
+    particle_->ReadRestart(start);
 
   return;
 }

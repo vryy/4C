@@ -150,7 +150,7 @@ namespace PARTICLE
 
     /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary
-    virtual void TransferParticles();
+    virtual void TransferParticles(bool ghosting = true);
 
     /// particle walls are set up and assigned to bins
     virtual void SetupParticleWalls(

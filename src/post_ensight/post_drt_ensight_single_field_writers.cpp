@@ -408,7 +408,9 @@ void ParticleEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim(), 0, fillzeros);
   EnsightWriter::WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim(), 0, fillzeros);
   EnsightWriter::WriteResult("radius", "radius", nodebased, 1);
+  EnsightWriter::WriteResult("sign", "sign", nodebased, 1);
   EnsightWriter::WriteResult("orientation", "orientation", dofbased, field->problem()->num_dim(), 0, fillzeros);
+
 }
 
 /*----------------------------------------------------------------------*

@@ -40,6 +40,9 @@ public:
   /// initialize time-integration scheme
   virtual void Init();
 
+  /// read restart data
+  virtual void ReadRestart(int step);
+
   /// redistribute the scatra discretization and vectors according to nodegraph
   void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
 
