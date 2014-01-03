@@ -546,11 +546,6 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     // set zero displacement state
     cmtman_->GetStrategy().SetState("displacement",zeros_);
 
-    // visualization of initial configuration
-#ifdef MORTARGMSH3
-    cmtman_->GetStrategy().VisualizeGmsh(0,0);
-#endif // #ifdef MORTARGMSH3
-
     // initialization of contact or meshtying
     {
       // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
@@ -563,6 +558,11 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       // (1) Explicitly store gap-scaling factor kappa
       cmtman_->GetStrategy().SaveReferenceState(zeros_);
     }
+
+    // visualization of initial configuration
+#ifdef MORTARGMSH3
+    cmtman_->GetStrategy().VisualizeGmsh(0,0);
+#endif // #ifdef MORTARGMSH3
 
     //**********************************************************************
     // prepare solvers for contact/meshtying problem
