@@ -134,17 +134,19 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
  *----------------------------------------------------------------------*/
 void PARTICLE::ScatraParticleCoupling::InitialSeeding()
 {
-
   // -------------------------------------------------------------------
   //               setup initial seeding
   // -------------------------------------------------------------------
+
+  if (myrank_ == 0)
+      std::cout << "-------- INITIAL SEEDING --------- " << std::endl;
 
   // get number of particles of each sign per bin around interface
   const int num_particles_per_bin = params_->sublist("PARTICLE").get<int>("NUMPARTICLE");
 
   // get characteristic element length of scatra discretization
   // assumed equal to bin edge length
-  // TODO: remove
+//  std::cout << "number of bins " << particledis_->NumMyRowElements() << std::endl;
 //  std::cout << bin_size_[0] << "  " << bin_size_[1] << "  " << bin_size_[2] << std::endl;
 //  if (std::abs(bin_size_[0]-bin_size_[1]) > 10e-9 or std::abs(bin_size_[0]-bin_size_[2]) > 10e-9)
 //    dserror("Cubic bins expected");
@@ -197,7 +199,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
       // check, if bin is close to the interface
-      if (myphinp[0] > (2.0 * bandwith * binlength))
+      if (std::abs(myphinp[0]) > (2.0 * bandwith * binlength))
       {
         // bin is located away from the interface
         // abort loop elements and go to the next bin
@@ -260,10 +262,9 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   }  // end loop all bins
 
   // Output for testing
-  std::cout << "bins with particles " << particlebins.size() << std::endl;
-//  for (std::size_t i=0; i<particlebins.size(); i++)
-//    std::cout << particlebins[i] << std::endl;
-//  dserror("ENDE");
+  //std::cout << "bins with particles " << particlebins.size() << std::endl;
+  //  for (std::size_t i=0; i<particlebins.size(); i++)
+  //    std::cout << particlebins[i] << std::endl;
 
   // -------------------------------------------------------------------
   //               seed particles in selected bins
@@ -276,17 +277,15 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   // list of all particles and their position
   std::map<int,std::vector<double> > particle_positions;
   // list of all particles and their sign
-  std::map<int,double > particle_sign;
+  std::map<int,double> particle_sign;
 
   // loop all bins which should be filled
   for (std::size_t ibin = 0; ibin < particlebins.size(); ibin++)
   {
-    // set particle id
-    currentparticleid += 1;
-
     // get center of current bin
     LINALG::Matrix<3,1> center(true);
-    center = GetBinCentroid(ibin);
+    center = GetBinCentroid(particlebins[ibin]);
+
     // get max and min values of bin corners
     std::vector<LINALG::Matrix<3,1> > bincorners(2);
     for (int rr = 0; rr<2; rr++)
@@ -306,6 +305,9 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     // loop number of particles to be seeded
     for (int ipart = 0; ipart < (2 * num_particles_per_bin); ipart++)
     {
+      // set particle id
+      currentparticleid += 1;
+
       // get position randomly in bin
       std::vector<double> position(3);
 
@@ -362,7 +364,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   particledis_->FillComplete(true, false, true);
 
   // update of state vectors to the new maps
-  Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->UpdateStatesAfterParticleTransfer();
+  particles_->UpdateStatesAfterParticleTransfer();
 
   // -------------------------------------------------------------------
   //               initialize state vectors
@@ -403,7 +405,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   //               attraction step
   // -------------------------------------------------------------------
   // move particle to the correct side of the interface
-  
+
   // prepare required vectors
   // noderowmap-based vectors
   // predictor
@@ -424,7 +426,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   const double r_min = params_->sublist("PARTICLE").get<double>("MIN_RADIUS");
   if (r_min < 0.0) dserror("Set minimal particle radius in input file!");
 
-  // loop all particles and intialize phi_target, phi_particle and gradphi_particle
+  // loop all particles and initialize phi_target, phi_particle and gradphi_particle
   for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
   {
     // get sign of particle
@@ -447,9 +449,12 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
 
     // compute level-set value
     GetLSValParticle(current_phi_particle,normal_particle,scatraele,elecoord);
-    // GetLSValParticle return gardient of phi, which we have to normalize here
+    // GetLSValParticle return gradient of phi, which we have to normalize here
     const double norm = normal_particle.Norm2();
-    normal_particle.Scale(1.0/norm);
+    if (norm > 1.0e-9)
+      normal_particle.Scale(1.0/norm);
+    else
+      normal_particle.PutScalar(0.0);
 
     // store values
     (*phi_particle)[inode] = current_phi_particle;
@@ -464,7 +469,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
       (*norm_gradphi_particle)[doflid+idim] = normal_particle(idim,0);
     
     // initialize increment position vector, i.e., multiply by lambda*(phi_target-current_phi_particle)
-    // note lambda is set to 1.0 at the beginning and skiped here
+    // note lambda is set to 1.0 at the beginning and skipped here
     const double fac = local_phi_target - current_phi_particle;
     normal_particle.Scale(fac);
     for (int idim=0; idim<3; ++idim)
@@ -482,11 +487,16 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   // define vector for update of map-based vectors
   Teuchos::RCP<Epetra_Vector> old;
 
+  if (myrank_ == 0)
+    std::cout << "--- total number of seeded particles  "<< global_num_particles << std::endl;
+
   // attraction loop
   while ((num_placed_particles < global_num_particles) and step_counter < 15)
   {
     // increment counter
     step_counter += 1;
+    if (myrank_ == 0)
+      std::cout << "--- attraction step  "<< step_counter << std::endl;
 
     // compute new position
     disnp = particles_->WriteAccessDispnp();
@@ -498,7 +508,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     // transfer particles to bins
     TransferParticles(false);
     // update of state vectors to the new maps
-    Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->UpdateStatesAfterParticleTransfer();
+    particles_->UpdateStatesAfterParticleTransfer();
     // likewise update present vectors according to the new distribution of particles
     old = lambda;
     lambda = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
@@ -527,74 +537,88 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     // loop all particles
     for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
     {
-      // get phi and gradient of particle at current particle position
-      double current_phi_particle = 0.0;
-      LINALG::Matrix<3,1> normal_particle(true);
-
-      // element coordinates of particle position in scatra element
-      LINALG::Matrix<3,1> elecoord(true);
-      DRT::Element* scatraele = GetEleCoordinates(inode,elecoord);
+      // get new maps
+      const Epetra_Map* att_dofrowmap = particledis_->DofRowMap();
+      const Epetra_Map* att_noderowmap = particledis_->NodeRowMap();
 
       // get dof lid
-      const int gid = noderowmap->GID(inode);
+      const int gid = att_noderowmap->GID(inode);
       DRT::Node* currparticle = particledis_->gNode(gid);
-      int doflid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
+      int doflid = att_dofrowmap->LID(particledis_->Dof(currparticle, 0));
 
-      if (scatraele != NULL) // particle has not left domain
+      if ((*lambda)[inode] > 0.0)
       {
-        // compute level-set value
-        GetLSValParticle(current_phi_particle,normal_particle,scatraele,elecoord);
-        // GetLSValParticle return gradient of phi, which we have to normalize here
-        const double norm = normal_particle.Norm2();
-        normal_particle.Scale(1.0/norm);
-        
-        const double signP = (*sign)[inode];
-        if ((current_phi_particle >= (signP * r_min))
-            and (current_phi_particle <= (signP * bandwith * binlength))
-            and ((*lambda)[inode] == 1.0)) // particle in correct band
+
+        // get phi and gradient of particle at current particle position
+        double current_phi_particle = 0.0;
+        LINALG::Matrix<3,1> normal_particle(true);
+        // element coordinates of particle position in scatra element
+        LINALG::Matrix<3,1> elecoord(true);
+        DRT::Element* scatraele = GetEleCoordinates(inode,elecoord);
+
+        if (scatraele != NULL) // particle has not left domain
         {
-          // this means particle is placed correctly
-          local_num_placed_particles += 1;
-          // store actual phi value
-          (*phi_particle)[inode] = current_phi_particle;
-          // set lambda to zero to avoid further movement of this particle
-          (*lambda)[inode] = 0.0;
+          // compute level-set value
+          GetLSValParticle(current_phi_particle,normal_particle,scatraele,elecoord);
+          // GetLSValParticle return gradient of phi, which we have to normalize here
+          const double norm = normal_particle.Norm2();
+          if (norm > 1.0e-9)
+            normal_particle.Scale(1.0/norm);
+          else
+            normal_particle.PutScalar(0.0);
+
+          const double signP = (*sign)[inode];
+          if ( (( signP > 0.0 and (current_phi_particle >= r_min)
+                              and (current_phi_particle <= (bandwith * binlength)))
+              or
+                ( signP < 0.0 and (current_phi_particle <= (signP * r_min))
+                              and (current_phi_particle >= (signP * bandwith * binlength))) )
+              and ((*lambda)[inode] == 1.0)) // particle in correct band
+          {
+            // this means particle is placed correctly
+            local_num_placed_particles += 1;
+            // store actual phi value
+            (*phi_particle)[inode] = current_phi_particle;
+            // set lambda to zero to avoid further movement of this particle
+            (*lambda)[inode] = 0.0;
+          }
+          else
+          {
+            if ((*lambda)[inode] == 1.0) // we could not move the particle to the correct band
+            {
+              // we go back to our initial position
+              // we do not overwrite phi_particle and norm_gradphi_particle
+              // we set disnp back to disn
+              for (int idim=0; idim<3; ++idim)
+                (*disnp)[doflid+idim] = (*disn)[doflid+idim];
+              // and only go half of the distance in the next step
+              (*lambda)[inode] = 0.5;
+            }
+            else // we accept the new position and start the attraction step from this point with lambda again set to 1.0
+            {
+              // store new phi value
+              (*phi_particle)[inode] = current_phi_particle;
+              // set lamda to 1.0
+              (*lambda)[inode] = 1.0;
+              // store new gradient
+              for (int idim=0; idim<3; ++idim)
+                (*norm_gradphi_particle)[doflid+idim] = normal_particle(idim,0);
+            }
+          }
         }
         else
         {
-          if ((*lambda)[inode] == 1.0) // we could not move the particle to the correct band
-          {
-            // we go back to our initial position
-            // we do not overwrite phi_particle and norm_gradphi_particle
-            // we set disnp back to disn
-            for (int idim=0; idim<3; ++idim)
-              (*disnp)[doflid+idim] = (*disn)[doflid+idim];
-            // and only go half of the distance in the next step
-            (*lambda)[inode] = 0.5;
-          }
-          else // we accept the new position and start the attraction step from this point with lambda again set to 1.0
-          {
-            // store new phi value
-            (*phi_particle)[inode] = current_phi_particle;
-            // set lamda to 1.0
-            (*lambda)[inode] = 1.0;
-            // store new gradient
-            for (int idim=0; idim<3; ++idim)
-              (*norm_gradphi_particle)[doflid+idim] = normal_particle(idim,0);
-          }
+          // if we are outside of the domain, we go back to our initial position
+          // we do not overwrite phi_particle and norm_gradphi_particle
+          // we set disnp back to disn
+          for (int idim=0; idim<3; ++idim)
+            (*disnp)[doflid+idim] = (*disn)[doflid+idim];
+          // and start another attraction step with lambda halved
+          double mylambda = (*lambda)[inode];
+          (*lambda)[inode] = 0.5 * mylambda;
         }
-      }
-      else
-      {
-        // if we are outside of the domain, we go back to our initial position
-        // we do not overwrite phi_particle and norm_gradphi_particle
-        // we set disnp back to disn
-        for (int idim=0; idim<3; ++idim)
-          (*disnp)[doflid+idim] = (*disn)[doflid+idim];
-        // and start another attraction step with lambda halved
-        double mylambda = (*lambda)[inode];
-        (*lambda)[inode] = 0.5 * mylambda;
-      }
+
+      } // lambda != 0
 
       // set new increment vector
       const double fac = (*lambda)[inode] * ((*phi_target)[inode] - (*phi_particle)[inode]);
@@ -608,12 +632,14 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     scatradis_->Comm().SumAll(&local_num_placed_particles,&global_num_placed_particles,1);
     // update number of placed particles
     num_placed_particles += global_num_placed_particles;
+    if (myrank_ == 0)
+      std::cout << "--- placed particles  " << num_placed_particles << std::endl;
 
     // possibly position have been reverted and particles changed the bin or even the processor
     // therefore, we have to recall the following steps
     TransferParticles(false);
     // update of state vectors to the new maps
-    Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->UpdateStatesAfterParticleTransfer();
+    particles_->UpdateStatesAfterParticleTransfer();
     // likewise update present vectors according to the new distribution of particles
     Teuchos::RCP<Epetra_Vector> old;
     old = lambda;
@@ -641,10 +667,16 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     disn = particles_->WriteAccessDispn();
     disn->Update(1.0,*disnp,0.0);
   }
-  
+
   // delete particles which could not be attracted correctly -> all particles with lambda != 0.0
   if (num_placed_particles != global_num_particles) // we have particles with lambda != 0.0
   {
+    if (myrank_ == 0)
+      std::cout << "--- delete unplaced particles  "<< global_num_particles-num_placed_particles << std::endl;
+
+    // vector with particles to delete
+    std::vector<int> part_del;
+
     // loop all particles
     for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)
     {
@@ -653,30 +685,40 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
       {
         // get particle
         DRT::Node *currparticle = particledis_->lRowNode(inode);
-        // get gid
-        const double gid = currparticle->Id();
-        if(currparticle->NumElement() != 1)
-          dserror("ERROR: A particle is assigned to more than one bin!");
-        // get corresponding bin
-        DRT::Element** currele = currparticle->Elements();
-        DRT::Element* currbin = currele[0];
-
-        // remove particle from bin
-        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currbin)->DeleteNode(gid);
-
-        // remove particle from discretization
-        particledis_->DeleteNode(gid);
+        // store gid
+        part_del.push_back(currparticle->Id());
       }
+    }
+
+    // remove particles
+    for (std::size_t ipart=0; ipart<part_del.size(); ipart++)
+    {
+      // get gid
+      const double gid = part_del[ipart];
+      // get particle
+      DRT::Node *currparticle = particledis_->gNode(gid);
+      if(currparticle->NumElement() != 1)
+        dserror("ERROR: A particle is assigned to more than one bin!");
+      // get corresponding bin
+      DRT::Element** currele = currparticle->Elements();
+      DRT::Element* currbin = currele[0];
+
+      // remove particle from bin
+      static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currbin)->DeleteNode(gid);
+
+      // remove particle from discretization
+      particledis_->DeleteNode(gid);
     }
 
     // finish discretization
     particledis_->FillComplete(true,false,false);
     // adapt state vectors to new maps
-    Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->UpdateStatesAfterParticleTransfer();
+    particles_->UpdateStatesAfterParticleTransfer();
     // adapt also phi_particle which will be used below to set the radius
     old = phi_particle;
     phi_particle = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
     LINALG::Export(*old, *phi_particle);
+
   }
 
   // -------------------------------------------------------------------
@@ -701,6 +743,9 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     else
       (*radius)[inode] = std::abs(myphi);
   }
+
+  if (myrank_ == 0)
+    std::cout << "----------------------------- " << std::endl;
 
   return;
 }

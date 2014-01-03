@@ -887,6 +887,8 @@ void PARTICLE::Algorithm::TransferParticles(bool ghosting)
   // new ghosting if necessary
   if (ghosting)
     particledis_->ExtendedGhosting(*bincolmap_,true,false,true,false);
+  else
+    particledis_->FillComplete(true, false, true);
 
   // reconstruct element -> bin pointers for fixed particle wall elements and fluid elements
   bool rebuildwallpointer = true;

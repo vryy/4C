@@ -466,7 +466,7 @@ void COMBUST::UTILS::computeStabilizationParamsEdgeBased(
     double& tau_conv,
     double& tau_div,
     double& tau_p,
-    const bool& instationary,
+    const bool instationary,
     const double timefac,
     const bool add_ghost_penalties,
     double& tau_ghost_first_order,

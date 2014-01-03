@@ -223,7 +223,7 @@ void PARTICLE::TimIntRK::UpdateStatesAfterParticleTransfer()
   if (sign_ != Teuchos::null)
   {
     old = sign_;
-    radius_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
+    sign_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
     LINALG::Export(*old, *sign_);
   }
 
