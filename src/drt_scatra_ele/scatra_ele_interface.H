@@ -17,15 +17,10 @@ Maintainer: Andreas Ehrl
 #define SCATRA_ELE_INTERFACE_H
 
 #include <vector>
-#include <map>
-#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
-
 #include "../drt_lib/drt_singletondestruction.H"
-#include "../drt_lib/drt_element.H"
 
 namespace DRT
 {

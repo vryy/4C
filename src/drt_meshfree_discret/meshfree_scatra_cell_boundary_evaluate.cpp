@@ -13,7 +13,7 @@
 \*--------------------------------------------------------------------------*/
 
 #include "meshfree_scatra_cell.H"
-#include "meshfree_scatra_boundary_impl.H"
+//#include "meshfree_scatra_boundary_impl.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
@@ -28,10 +28,11 @@ int DRT::ELEMENTS::MeshfreeTransportBoundary::Evaluate(
     Epetra_SerialDenseVector& elevec2,
     Epetra_SerialDenseVector& elevec3)
 {
+  dserror("MeshfreeTransportBoundary not implemented, yet.");
   // the type of scalar transport problem has to be provided for all actions!
-  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
-  if (scatratype == INPAR::SCATRA::scatratype_undefined)
-    dserror("Element parameter SCATRATYPE has not been set!");
+//  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
+//  if (scatratype == INPAR::SCATRA::scatratype_undefined)
+//    dserror("Element parameter SCATRATYPE has not been set!");
 
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Transport
@@ -65,10 +66,12 @@ int DRT::ELEMENTS::MeshfreeTransportBoundary::EvaluateNeumann(
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
+  dserror("MeshfreeTransportBoundary not implemented, yet.");
+
   // the type of scalar transport problem has to be provided for all actions!
-  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
-  if (scatratype == INPAR::SCATRA::scatratype_undefined)
-    dserror("Element parameter SCATRATYPE has not been set!");
+//  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
+//  if (scatratype == INPAR::SCATRA::scatratype_undefined)
+//    dserror("Element parameter SCATRATYPE has not been set!");
 
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Transport

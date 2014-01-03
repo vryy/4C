@@ -13,8 +13,49 @@
 \*--------------------------------------------------------------------------*/
 
 #include "meshfree_scatra_cell.H"       // eh klar...
-#include "../drt_inpar/inpar_scatra.H"  // enums ScaTraType and FluxType
-#include "meshfree_scatra_impl.H"       // DRT::ELEMENTS::MeshfreeScaTraImplInterface
+#include "meshfree_scatra_cell_interface.H"       // DRT::ELEMENTS::MeshfreeScaTraImplInterface
+
+#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_scatra_ele/scatra_ele_parameter.H"
+#include "../drt_scatra_ele/scatra_ele_parameter_std.H"
+#include "../drt_scatra_ele/scatra_ele_factory.H"
+#include "../drt_scatra_ele/scatra_ele_impl_utils.H"
+
+#include "../drt_inpar/inpar_scatra.H"
+
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
+#include "../drt_lib/drt_discret.H"
+#include "../drt_mat/material.H"
+#include "../drt_mat/elchmat.H"
+
+/*---------------------------------------------------------------------*
+|  Call the element to set all basic parameter               nis Dec13 |
+*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::MeshfreeTransportType::PreEvaluate(
+  DRT::Discretization&                 dis,
+  Teuchos::ParameterList&              p,
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+  Teuchos::RCP<Epetra_Vector>          systemvector1,
+  Teuchos::RCP<Epetra_Vector>          systemvector2,
+  Teuchos::RCP<Epetra_Vector>          systemvector3)
+{
+  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(p,"action");
+
+  if (action == SCATRA::set_general_scatra_parameter)
+  {
+    DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
+    scatrapara->SetElementGeneralScaTraParameter(p,dis.Comm().MyPID());
+  }
+  else if (action == SCATRA::set_time_parameter)
+  {
+    DRT::ELEMENTS::ScaTraEleParameterTimInt* scatrapara = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance();
+    scatrapara->SetElementTimeParameter(p);
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             nis Mar12 |
@@ -34,48 +75,96 @@ int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
   if (scatratype == INPAR::SCATRA::scatratype_undefined)
     dserror("Element parameter SCATRATYPE has not been set!");
 
-  switch (distype_) {
-    /*----------------------------------------------------------------------*
-       Meshfree discretisation integrated on a backgroundmesh:
-       ========================================================
-       all physics-related stuff is included in the implementation class that
-       can be used in principle inside any element. Elements themself are only
-       used for non-overlapping domain decomposition and the creation of Gauss
-       points. Since no information like basis function values can be stored
-       in an impl-class approach, this implementation serves the purposes of
-       validation. For efficient computations, non-meshbased schemes should be
-       implemented and used.
-     *----------------------------------------------------------------------*/
+  // we assume here, that numdofpernode is equal for every node within
+  // the discretization and does not change during the csomputations
+  const int numdofpernode = this->NumDofPerNode(*(this->Nodes()[0]));
+  int numscal = numdofpernode;
+  if (SCATRA::IsElchProblem(scatratype))
+  {
+    numscal -= 1;
 
-  case hex8:
-  case tet4:
-  case quad4:
-  case tri3:
-  case line2:
+    // get the material of the first element
+    // we assume here, that the material is equal for all elements in this discretization
+    Teuchos::RCP<MAT::Material> material = this->Material();
+    if (material->MaterialType() == INPAR::MAT::m_elchmat)
+    {
+      const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(material.get());
 
-    return DRT::ELEMENTS::MeshfreeScaTraImplInterface::Impl(this,scatratype)->Evaluate(
-        this,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elemat2,
-        elevec1,
-        elevec2,
-        elevec3
-        );
-    break;
-
-    /*----------------------------------------------------------------------*
-       Meshfree discretisation with meshfree integration:
-       ========================================================
-       to be implemented
-     *----------------------------------------------------------------------*/
-
-  default:
-    dserror("No element evaluate implemented for this distype.");
-    return(-1);
+      if (actmat->Current())
+        numscal -= DRT::UTILS::getDimension(this->Shape());
+    }
   }
+
+  // switch between different physical types as used below
+  std::string impltype = "std_meshfree";
+  switch(scatratype)
+  {
+  case INPAR::SCATRA::scatratype_condif:
+    impltype = "std_meshfree";
+    break;
+  default:
+    dserror("Unknown meshfree scatratype for calc_mat_and_rhs!");
+    break;
+  }
+
+  // check for the action parameter
+  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
+  switch(action){
+    // all physics-related stuff is included in the implementation class(es) that can
+    // be used in principle inside any element (at the moment: only Transport element)
+    case SCATRA::calc_mat_and_rhs:
+    {
+      return DRT::ELEMENTS::ScaTraFactory::ProvideMeshfreeImpl(Shape(), impltype, numdofpernode, numscal)->Evaluate(
+              this,
+              params,
+              discretization,
+              lm,
+              elemat1,
+              elemat2,
+              elevec1,
+              elevec2,
+              elevec3
+              );
+      break;
+    }
+    case SCATRA::integrate_shape_functions:
+//    {
+//      return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(), impltype, numdofpernode, numscal)->EvaluateService(
+//               this,
+//               params,
+//               discretization,
+//               lm,
+//               elemat1,
+//               elemat2,
+//               elevec1,
+//               elevec2,
+//               elevec3);
+//      break;
+//    }
+    case SCATRA::calc_initial_time_deriv:
+    case SCATRA::calc_flux_domain:
+    case SCATRA::calc_mean_scalars:
+    case SCATRA::calc_domain_and_bodyforce:
+    case SCATRA::calc_scatra_box_filter:
+    case SCATRA::calc_turbulent_prandtl_number:
+    case SCATRA::calc_vreman_scatra:
+    case SCATRA::calc_subgrid_diffusivity_matrix:
+    case SCATRA::calc_mean_Cai:
+    case SCATRA::calc_dissipation:
+    case SCATRA::calc_mat_and_rhs_lsreinit_correction_step:
+    case SCATRA::calc_node_based_reinit_velocity:
+    case SCATRA::set_general_scatra_parameter:
+    case SCATRA::set_turbulence_scatra_parameter:
+    case SCATRA::set_time_parameter:
+    case SCATRA::set_mean_Cai:
+    case SCATRA::set_lsreinit_scatra_parameter:
+      break;
+    default:
+      dserror("Unknown type of action '%i' for MeshfreeScaTra", action);
+      break;
+  } // end of switch(act)
+
+  return(0);
 }
 
 /*----------------------------------------------------------------------*

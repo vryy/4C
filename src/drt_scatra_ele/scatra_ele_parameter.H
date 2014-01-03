@@ -110,19 +110,14 @@ public:
   bool AdaptCsgsPhi(){return adapt_Csgs_phi_;};
   bool TurbInflow(){return turbinflow_;};
 
-   /*--------------------------*/
-   //! @name loma parameters
-   /*--------------------------*/
-
-
-
-
-
 protected:
 
-   /*--------------------------*/
-   //! @name general parameters
-   /*--------------------------*/
+  /// private Constructor since we are a Singleton.
+  ScaTraEleParameter();
+
+  /*--------------------------*/
+  //! @name general parameters
+  /*--------------------------*/
 
   //! type of scatra problem
   INPAR::SCATRA::ScaTraType scatratype_;
@@ -131,11 +126,9 @@ protected:
   //! flag for conservative form
   bool is_conservative_;
 
-
-
-   /*--------------------------*/
-   //! @name stabilization parameters
-   /*--------------------------*/
+  /*--------------------------*/
+  //! @name stabilization parameters
+  /*--------------------------*/
 
   //! type of stabilization
   INPAR::SCATRA::StabType stabtype_;
@@ -188,17 +181,6 @@ protected:
   bool adapt_Csgs_phi_;
   // further parameter
   bool turbinflow_;
-
-
-  /*--------------------------*/
-  //! @name loma parameters
-  /*--------------------------*/
-
-
-
-
-  /// private Constructor since we are a Singleton.
-  ScaTraEleParameter();
 
 private:
 

@@ -20,6 +20,8 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_calc_elch.H"
 #include "scatra_ele_calc_loma.H"
 
+#include "../drt_meshfree_discret/meshfree_scatra_cell_calc_std.H"
+
 #include "../drt_lib/drt_element.H"
 
 
@@ -118,6 +120,44 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
 }
 
 /*--------------------------------------------------------------------------*
+ |                                                       (public) nis Jan14 |
+ *--------------------------------------------------------------------------*/
+DRT::ELEMENTS::MeshfreeScaTraCellInterface* DRT::ELEMENTS::ScaTraFactory::ProvideMeshfreeImpl(
+  DRT::Element::DiscretizationType distype,
+  std::string problem,
+  const int numdofpernode,
+  const int numscal)
+{
+  switch(distype)
+  {
+  case DRT::Element::hex8:
+  {
+    return DefineMeshfreeProblemType<DRT::Element::hex8>(problem,numdofpernode,numscal);
+  }
+  case DRT::Element::tet4:
+  {
+    return DefineMeshfreeProblemType<DRT::Element::tet4>(problem,numdofpernode,numscal);
+  }
+  case DRT::Element::quad4:
+  {
+    return DefineMeshfreeProblemType<DRT::Element::quad4>(problem,numdofpernode,numscal);
+  }
+  case DRT::Element::tri3:
+  {
+    return DefineMeshfreeProblemType<DRT::Element::tri3>(problem,numdofpernode,numscal);
+  }
+  case DRT::Element::line2:
+  {
+    return DefineMeshfreeProblemType<DRT::Element::line2>(problem,numdofpernode,numscal);
+  }
+  default:
+    dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(distype).c_str());
+    break;
+  }
+  return NULL;
+}
+
+/*--------------------------------------------------------------------------*
  |                                               (public) ehrl        Dec13 |
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
@@ -134,6 +174,23 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     return DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(numdofpernode,numscal);
   else if (problem == "elch")
     return DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Instance(numdofpernode,numscal);
+  else
+    dserror("Defined problem type does not exist!!");
+
+  return NULL;
+}
+
+/*--------------------------------------------------------------------------*
+ |                                                       (public) nis Jan14 |
+ *--------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::MeshfreeScaTraCellInterface* DRT::ELEMENTS::ScaTraFactory::DefineMeshfreeProblemType(
+  std::string problem,
+  const int numdofpernode,
+  const int numscal)
+{
+  if (problem == "std_meshfree")
+    return DRT::ELEMENTS::MeshfreeScaTraCellCalcStd<distype>::Instance(numdofpernode,numscal);
   else
     dserror("Defined problem type does not exist!!");
 

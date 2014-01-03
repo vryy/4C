@@ -68,6 +68,14 @@ public:
 
   virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
+  //!< pre-evaluation
+  virtual void PreEvaluate(DRT::Discretization&                dis,
+                          Teuchos::ParameterList&              p,
+                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                          Teuchos::RCP<Epetra_Vector>          systemvector1,
+                          Teuchos::RCP<Epetra_Vector>          systemvector2,
+                          Teuchos::RCP<Epetra_Vector>          systemvector3);
 private:
 
   //!< static instance of this element type (for self-instantiation)

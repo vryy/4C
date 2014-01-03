@@ -18,6 +18,8 @@ Maintainer: Andreas Ehrl
 
 #include "scatra_ele_interface.H"
 
+#include "../drt_meshfree_discret/meshfree_scatra_cell_interface.H"
+
 #include "../drt_lib/drt_element.H"
 
 namespace DRT
@@ -42,10 +44,24 @@ public:
     const int numdofpernode,
     const int numscal);
 
+  //! ProvideMeshfreeImpl
+  static MeshfreeScaTraCellInterface* ProvideMeshfreeImpl(
+    DRT::Element::DiscretizationType distype,
+    std::string problem,
+    const int numdofpernode,
+    const int numscal);
+
 private:
   //! define ScatraEle instances dependent on problem
   template<DRT::Element::DiscretizationType distype>
   static ScaTraEleInterface* DefineProblemType(
+    std::string problem,
+    const int numdofpernode,
+    const int numscal);
+
+  //! define MeshfreeScatraCell instances dependent on problem
+  template<DRT::Element::DiscretizationType distype>
+  static MeshfreeScaTraCellInterface* DefineMeshfreeProblemType(
     std::string problem,
     const int numdofpernode,
     const int numscal);

@@ -988,8 +988,8 @@ set(OBJS_DRT_MESHFREE_SCATRA_LIB
   src/drt_meshfree_discret/meshfree_scatra_cell.cpp
   src/drt_meshfree_discret/meshfree_scatra_cell_evaluate.cpp
   src/drt_meshfree_discret/meshfree_scatra_cell_boundary_evaluate.cpp
-  src/drt_meshfree_discret/meshfree_scatra_impl.cpp
-#  src/drt_meshfree_discret/meshfree_scatra_boundary_impl.cpp
+  src/drt_meshfree_discret/meshfree_scatra_cell_calc.cpp
+  src/drt_meshfree_discret/meshfree_scatra_cell_calc_std.cpp
 )
 set(OBJS_DRT_T2_LIB
   src/drt_truss2/truss2.cpp
