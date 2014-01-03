@@ -660,12 +660,10 @@ void MORTAR::MortarIntegrator::EleBased_Integration(
     }
     else if (ShapeFcn() == INPAR::MORTAR::shape_dual)
     {
-      if (is_on_mele==true)
+        // integrate dseg (boundary modification)
+      if (is_on_mele==true && bound)
       {
         for (int j=0;j<nrow*ndof;++j)
-        {
-        // integrate dseg (boundary modification)
-        if (bound)
         {
           MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[(int)(j/ndof)]);
           if (!mymrtrnode) dserror("ERROR: EleBased_integration: Null pointer!");
@@ -692,7 +690,6 @@ void MORTAR::MortarIntegrator::EleBased_Integration(
           if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
             (*dseg)(j,k) += prod*dxdsxi*dsxideta*wgt;
           }
-        }
         }
       }
     }
