@@ -23,6 +23,7 @@
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_krylov_projector.H"
 #include <Epetra_CrsMatrix.h>
 #include <Teuchos_Time.hpp>
@@ -55,8 +56,20 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
                                           bool reset,
                                           Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
+  // Assume the input matrix to be a single block matrix
+  bool bIsCrsMatrix = true;
+
+  // try to cast input matrix to a Epetra_CrsMatrix
+  // if the cast fails, the input matrix is a blocked operator which cannot be handled by a direct
+  // solver unless the matrix is merged. This is a very expensive operation
+  Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>( matrix );
+  if(crsA == Teuchos::null) bIsCrsMatrix = false;
+
+  // store projector in internal member variable
+  // If no projector is used it is Teuchos::null
   projector_ = projector;
 
+  // Set internal member variables (store system matrix, rhs vector and solution vector)
   if ( projector_!=Teuchos::null)
   {
     // instead of
@@ -69,11 +82,10 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
     //
 
     // cast system matrix to LINALG::SparseMatrix
-    Teuchos::RCP<Epetra_CrsMatrix> A_Crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
     // check whether cast was successfull
-    if (A_Crs==Teuchos::null) {dserror("Could not cast system matrix to Epetra_CrsMatrix.");}
+    if (crsA==Teuchos::null) {dserror("Could not cast system matrix to Epetra_CrsMatrix.");}
     // get view on systemmatrix as LINALG::SparseMatrix - this is no copy!
-    LINALG::SparseMatrix A_view(A_Crs);
+    LINALG::SparseMatrix A_view(crsA);
 
     // apply projection to A without computing projection matrix thus avoiding
     // matrix-matrix multiplication
@@ -89,9 +101,27 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
   }
   else
   {
+    if(bIsCrsMatrix == true) {
+      A_ = matrix;
+    } else {
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> Ablock = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(matrix);
+
+      int matrixDim = Ablock->FullRangeMap().NumGlobalElements();
+      if(matrixDim > 33000) {
+        Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+        fos->setOutputToRootOnly( 0 );
+        *fos << "---------------------------- ATTENTION -----------------------" << std::endl;
+        *fos << "  Merging a " << Ablock->Rows() << " x " << Ablock->Cols() << " block matrix " << std::endl;
+        *fos << "  of size " << matrixDim << " is a very expensive operation. " << std::endl;
+        *fos << "  For performance reasons, try iterative solvers instead!" << std::endl;
+        *fos << "---------------------------- ATTENTION -----------------------" << std::endl;
+      }
+
+      Teuchos::RCP<LINALG::SparseMatrix> Ablock_merged = Ablock->Merge();
+      A_ = Ablock_merged->EpetraMatrix();
+    }
     x_ = x;
     b_ = b;
-    A_ = matrix;
   }
 
   // fill the linear problem

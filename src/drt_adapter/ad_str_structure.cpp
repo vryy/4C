@@ -549,13 +549,19 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
         dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
       // plausibility check
-      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
-      if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
-          prec != INPAR::SOLVER::azprec_TekoSIMPLE  &&
-          prec != INPAR::SOLVER::azprec_MueLuAMG_contactSP)  // TODO adapt error message
-        dserror("Mortar/Contact with saddlepoint system only possible with SIMPLE preconditioner. Choose CheapSIMPLE or TekoSIMPLE in the SOLVER %i block in your dat file.",linsolvernumber);
 
-      // build meshtying solver
+      // solver can be either UMFPACK (direct solver) or an Aztec_MSR/Belos (iterative solver)
+      INPAR::SOLVER::SolverType sol  = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"SOLVER");
+      if (sol != INPAR::SOLVER::umfpack) {
+        // if an iterative solver is chosen we need a block preconditioner like CheapSIMPLE
+        INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
+        if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
+            prec != INPAR::SOLVER::azprec_TekoSIMPLE  &&
+            prec != INPAR::SOLVER::azprec_MueLuAMG_contactSP)  // TODO adapt error message
+          dserror("You have chosen an iterative linear solver. For mortar/Contact in saddlepoint formulation you have to choose a block preconditioner such as SIMPLE. Choose CheapSIMPLE, TekoSIMPLE (if Teko is available) or MueLu_contactSP (if MueLu is available) in the SOLVER %i block in your dat file.",linsolvernumber);
+      }
+
+      // build meshtying/contact solver
       solver =
       Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                              actdis->Comm(),
@@ -563,14 +569,14 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
 
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
+      // feed the solver object with additional information
       INPAR::CONTACT::ApplicationType apptype = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(mcparams,"APPLICATION");
       if     (apptype == INPAR::CONTACT::app_mortarcontact) solver->Params().set<bool>("CONTACT",true);
       else if(apptype==INPAR::CONTACT::app_mortarmeshtying) solver->Params().set<bool>("MESHTYING",true);
       else dserror("this cannot be: no saddlepoint problem for beamcontact or pure structure problem.");
 
       INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mcparams,"STRATEGY");
-      INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(mcparams,"SYSTEM");
-      if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
+      if (soltype==INPAR::CONTACT::solution_lagmult)
       {
         // get the solver number used for structural problems
         const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -579,16 +585,11 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
           dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
 
         // provide null space information
+        INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
         if (prec == INPAR::SOLVER::azprec_CheapSIMPLE ||
                   prec == INPAR::SOLVER::azprec_TekoSIMPLE) {
           actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1")); // Inverse2 is created within blockpreconditioners.cpp
-        } else if (prec == INPAR::SOLVER::azprec_MueLuAMG_contactSP) {
-          // note: the null space is definitely too long and wrong for the Lagrange multipliers
-          // don't forget to call FixMLNullspace for "Inverse1"!
-          //actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1")); // TODO do we need this?
-        }
-
-
+        } else if (prec == INPAR::SOLVER::azprec_MueLuAMG_contactSP) { /* do nothing here */    }
       }
     }
     break;
