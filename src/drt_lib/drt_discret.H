@@ -157,7 +157,7 @@ public:
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
   */
-  Discretization(const std::string name, RCP<Epetra_Comm> comm);
+  Discretization(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
   /*!
   \brief Destructor
@@ -321,7 +321,7 @@ public:
   \brief Replace the dofset associated with the discretisation by a new dofset.
                  Sets havedof_ to false.
   */
-  virtual void ReplaceDofSet(RCP<DofSet> newdofset, bool replaceinstatdofsets = false);
+  virtual void ReplaceDofSet(Teuchos::RCP<DofSet> newdofset, bool replaceinstatdofsets = false);
 
   //@}
 
@@ -1094,8 +1094,8 @@ public:
   */
   virtual void BuildElementRowColumn(const Epetra_Map& noderowmap,
                                      const Epetra_Map& nodecolmap,
-                                     RCP<Epetra_Map>& elerowmap,
-                                     RCP<Epetra_Map>& elecolmap
+                                     Teuchos::RCP<Epetra_Map>& elerowmap,
+                                     Teuchos::RCP<Epetra_Map>& elecolmap
                                      ) const;
 
   /*!
@@ -1240,7 +1240,7 @@ public:
   \return Graph of discretization distributed across processors according to
           the discretization distribution
   */
-  virtual RCP<Epetra_CrsGraph> BuildNodeGraph() const;
+  virtual Teuchos::RCP<Epetra_CrsGraph> BuildNodeGraph() const;
 
   //@}
 
@@ -1257,7 +1257,7 @@ public:
   If the vector is supplied in DofColMap() a reference to it will be stored.
   If the vector is NOT supplied in DofColMap(), but in DofRowMap(),
    a vector with column map is allocated and the supplied vector is exported to it.
-  Everything is stored/referenced using RCP.
+  Everything is stored/referenced using Teuchos::RCP.
 
   \param nds (in): number of dofset
   \param name (in): Name of data
@@ -1265,7 +1265,7 @@ public:
 
   \note This class will not take ownership or in any way modify the solution vector.
   */
-  virtual void SetState(unsigned nds,const std::string& name,RCP<const Epetra_Vector> state);
+  virtual void SetState(unsigned nds,const std::string& name,Teuchos::RCP<const Epetra_Vector> state);
 
   /*!
   \brief Get a reference to a data vector
@@ -1279,12 +1279,12 @@ public:
 
   \return Reference to solution state
   */
-  virtual RCP<const Epetra_Vector> GetState(unsigned nds,const std::string& name) const
+  virtual Teuchos::RCP<const Epetra_Vector> GetState(unsigned nds,const std::string& name) const
   {
     dsassert(nds<dofsets_.size(),"undefined dof set");
     if (state_.size()<=nds)
       return Teuchos::null;
-    std::map<std::string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
+    std::map<std::string,Teuchos::RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
     if (fool==state_[nds].end()) dserror("Cannot find state %s",&name[0]);
     else return fool->second;
     return Teuchos::null;
@@ -1293,14 +1293,14 @@ public:
   /*!
     \brief Tell whether a state vector has been set
     \param nds (in): number of dofset
-    \param name (in): Name of solution state
+    \param name (in): Name of solution states
    */
   virtual bool HasState(unsigned nds,const std::string& name) const
   {
     dsassert(nds<dofsets_.size(),"undefined dof set");
     if (state_.size()<=nds)
       return false;
-    std::map<std::string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
+    std::map<std::string,Teuchos::RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
     return fool!=state_[nds].end();
   }
 
@@ -1323,14 +1323,14 @@ public:
   If the vector is supplied in DofColMap() a reference to it will be stored.
   If the vector is NOT supplied in DofColMap(), but in DofRowMap(),
    a vector with column map is allocated and the supplied vector is exported to it.
-  Everything is stored/referenced using RCP.
+  Everything is stored/referenced using Teuchos::RCP.
 
   \param name (in): Name of data
   \param state (in): vector of some data
 
   \note This class will not take ownership or in any way modify the solution vector.
   */
-  virtual void SetState(const std::string& name,RCP<const Epetra_Vector> state) { SetState(0,name,state); }
+  virtual void SetState(const std::string& name,Teuchos::RCP<const Epetra_Vector> state) { SetState(0,name,state); }
 
   /*!
   \brief Get a reference to a data vector
@@ -1343,7 +1343,7 @@ public:
 
   \return Reference to solution state
   */
-  virtual RCP<const Epetra_Vector> GetState(const std::string& name) const { return GetState(0,name); }
+  virtual Teuchos::RCP<const Epetra_Vector> GetState(const std::string& name) const { return GetState(0,name); }
 
   /*!
     \brief Tell whether a state vector has been set
@@ -1559,7 +1559,7 @@ public:
   virtual void EvaluateCondition
   (
     Teuchos::ParameterList& params,  ///< List of parameters for use at element level
-    RCP<Epetra_Vector> systemvector1, ///< Vector to assemble BCs to.(NOT initialized to zero by this method)
+    Teuchos::RCP<Epetra_Vector> systemvector1, ///< Vector to assemble BCs to.(NOT initialized to zero by this method)
     const std::string& condstring, ///< Name of condition to be evaluated
     const int condid=-1  ///< condition ID
   );
@@ -1621,11 +1621,11 @@ public:
   void EvaluateCondition
   (
     Teuchos::ParameterList& params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
-    RCP<Epetra_Vector> systemvector1,
-    RCP<Epetra_Vector>    systemvector2,
-    RCP<Epetra_Vector>    systemvector3,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1,
+    Teuchos::RCP<Epetra_Vector>    systemvector2,
+    Teuchos::RCP<Epetra_Vector>    systemvector3,
     const std::string& condstring,
     const int condid=-1
   );
@@ -1710,19 +1710,8 @@ public:
 
   */
   void EvaluateInitialField(const std::string& fieldstring,
-                            RCP<Epetra_Vector> fieldvector,
+                            Teuchos::RCP<Epetra_Vector> fieldvector,
                             const std::vector<int> locids
-  );
-
-  /*!
-  \brief Evaluate a specified initial field (scalar or vector field)
-
-  This is the actual evaluation method.
-
-  */
-  void DoInitialField(DRT::Condition& cond,
-                      RCP<Epetra_Vector> fieldvector,
-                      const std::vector<int> locids
   );
 
   //@}
@@ -1737,7 +1726,7 @@ public:
 
     \note Filled()=true is a prerequisite
    */
-  RCP<std::vector<char> > PackMyElements() const;
+  Teuchos::RCP<std::vector<char> > PackMyElements() const;
 
   /*!
     \brief Pack local nodes (row map) into buffer.
@@ -1747,7 +1736,7 @@ public:
 
     \note Filled()=true is a prerequisite
    */
-  RCP<std::vector<char> > PackMyNodes() const;
+  Teuchos::RCP<std::vector<char> > PackMyNodes() const;
 
     /*!
     \brief Pack condition (this is done by one processor, since data is redundant).
@@ -1757,7 +1746,7 @@ public:
 
     \note Filled()=true is a prerequisite
    */
-  RCP<std::vector<char> > PackCondition(
+  Teuchos::RCP<std::vector<char> > PackCondition(
           const std::string condname     ///< name of condition as it is used in GetCondition() or SetCondition()
           ) const;
 
@@ -1771,7 +1760,7 @@ public:
 
     \note Sets Filled()=false
    */
-  void UnPackMyElements(RCP<std::vector<char> > e);
+  void UnPackMyElements(Teuchos::RCP<std::vector<char> > e);
 
   /*!
     \brief Unpack nodal buffer and create local nodes.
@@ -1783,7 +1772,7 @@ public:
 
     \note Sets Filled()=false
    */
-  void UnPackMyNodes(RCP<std::vector<char> > e);
+  void UnPackMyNodes(Teuchos::RCP<std::vector<char> > e);
 
   /*!
     \brief Unpack one condition.
@@ -1796,7 +1785,7 @@ public:
 
     \note Sets Filled()=false
    */
-  void UnPackCondition(const RCP<std::vector<char> > e, const std::string condname);
+  void UnPackCondition(const Teuchos::RCP<std::vector<char> > e, const std::string condname);
 
   //@}
 
@@ -1878,26 +1867,26 @@ private:
   \brief Build the geometry of lines for a certain line condition
 
   */
-  virtual void BuildLinesinCondition(const std::string name,RCP<DRT::Condition> cond);
+  virtual void BuildLinesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
 
   /*!
   \brief Build the geometry of surfaces for a certain surface condition
 
   */
-  virtual void BuildSurfacesinCondition(const std::string name,RCP<DRT::Condition> cond);
+  virtual void BuildSurfacesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
 
   /*!
   \brief Build the geometry of volumes for a certain volume condition
 
   */
-  virtual void BuildVolumesinCondition(const std::string name,RCP<DRT::Condition> cond);
+  virtual void BuildVolumesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
 
   /*!
   \brief Build the geometry of surfaces belonging to the structure-fluid
   volume coupling condition -> this is special since an associated volume
   conditions also needs to be considered
   */
-  void FindAssociatedEleIDs(RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string name);
+  void FindAssociatedEleIDs(Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string name);
 
 
 protected:
@@ -1932,6 +1921,43 @@ protected:
 
   */
   virtual void BoundaryConditionsGeometry();
+
+  /*!
+  \brief Evaluate a specified initial field (scalar or vector field)
+
+  This is the actual evaluation method.
+
+  */
+  void DoInitialField(DRT::Condition& cond,
+                      Teuchos::RCP<Epetra_Vector> fieldvector,
+                      const std::vector<int> locids
+  );
+
+  /*!
+  \brief Determine Dirichlet condition at given time and apply its
+         values to a system vector
+
+  \param cond            The condition object
+  \param usetime
+  \param time            Evaluation time
+  \param systemvector    Vector to apply DBCs to (eg displ. in structure, vel. in fluids)
+  \param systemvectord   First time derivative of DBCs
+  \param systemvectordd  Second time derivative of DBCs
+  \param toggle          Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
+  \param dbcgids         Map containing DOFs subjected to Dirichlet boundary
+  conditions
+
+  \date 02/08
+  */
+  virtual void DoDirichletCondition(
+    DRT::Condition&             cond,
+    const bool                  usetime,
+    const double                time,
+    Teuchos::RCP<Epetra_Vector> systemvector,
+    Teuchos::RCP<Epetra_Vector> systemvectord,
+    Teuchos::RCP<Epetra_Vector> systemvectordd,
+    Teuchos::RCP<Epetra_Vector> toggle,
+    Teuchos::RCP<std::set<int> > dbcgids);
 
   /*!
   \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)

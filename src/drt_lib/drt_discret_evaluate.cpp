@@ -378,33 +378,6 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*!
-\brief Determine Dirichlet condition at given time and apply its
-       values to a system vector
-
-\param cond            The condition object
-\param dis             The discretisation
-\param usetime
-\param time            Evaluation time
-\param systemvector    Vector to apply DBCs to (eg displ. in structure, vel. in fluids)
-\param systemvectord   First time derivative of DBCs
-\param systemvectordd  Second time derivative of DBCs
-\param toggle          Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
-\param dbcgids         Map containing DOFs subjected to Dirichlet boundary conditions
-\date 02/08
-*/
-static void DoDirichletCondition(DRT::Condition&             cond,
-                                 DRT::Discretization&        dis,
-                                 const bool                  usetime,
-                                 const double                time,
-                                 Teuchos::RCP<Epetra_Vector> systemvector,
-                                 Teuchos::RCP<Epetra_Vector> systemvectord,
-                                 Teuchos::RCP<Epetra_Vector> systemvectordd,
-                                 Teuchos::RCP<Epetra_Vector> toggle,
-                                 Teuchos::RCP<std::set<int> > dbcgids);
-
-
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                   mwgee 01/07|
  *----------------------------------------------------------------------*/
@@ -447,7 +420,7 @@ void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::VolumeDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,
+    DoDirichletCondition(*(fool->second),usetime,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -456,7 +429,7 @@ void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::SurfaceDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,
+    DoDirichletCondition(*(fool->second),usetime,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -465,7 +438,7 @@ void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::LineDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,
+    DoDirichletCondition(*(fool->second),usetime,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -474,7 +447,7 @@ void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::PointDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,
+    DoDirichletCondition(*(fool->second),usetime,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -544,7 +517,7 @@ void DRT::Discretization::EvaluateGrowthDirichlet(Teuchos::ParameterList& params
   {
     if (fool->first != "BioDirichlet") continue;
     if (fool->second->Type() != DRT::Condition::BioVolumeDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,
+    DoDirichletCondition(*(fool->second),usetime,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -553,7 +526,7 @@ void DRT::Discretization::EvaluateGrowthDirichlet(Teuchos::ParameterList& params
   {
     if (fool->first != "BioDirichlet") continue;
     if (fool->second->Type() != DRT::Condition::BioSurfaceDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,
+    DoDirichletCondition(*(fool->second),usetime,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -563,7 +536,7 @@ void DRT::Discretization::EvaluateGrowthDirichlet(Teuchos::ParameterList& params
     if (fool->first != "BioDirichlet") continue;
     std::cout<<"after if fool first"<< std::endl;
     if (fool->second->Type() != DRT::Condition::BioLineDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,
+    DoDirichletCondition(*(fool->second),usetime,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
 
@@ -574,7 +547,7 @@ void DRT::Discretization::EvaluateGrowthDirichlet(Teuchos::ParameterList& params
   {
     if (fool->first != "BioDirichlet") continue;
     if (fool->second->Type() != DRT::Condition::BioPointDirichlet) continue;
-    DoDirichletCondition(*(fool->second),*this,usetime,time,
+    DoDirichletCondition(*(fool->second),usetime,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -605,15 +578,15 @@ void DRT::Discretization::EvaluateGrowthDirichlet(Teuchos::ParameterList& params
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                   mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DoDirichletCondition(DRT::Condition&             cond,
-                          DRT::Discretization&        dis,
-                          const bool                  usetime,
-                          const double                time,
-                          Teuchos::RCP<Epetra_Vector> systemvector,
-                          Teuchos::RCP<Epetra_Vector> systemvectord,
-                          Teuchos::RCP<Epetra_Vector> systemvectordd,
-                          Teuchos::RCP<Epetra_Vector> toggle,
-                          Teuchos::RCP<std::set<int> > dbcgids)
+void DRT::Discretization::DoDirichletCondition(
+  DRT::Condition&              cond,
+  const bool                   usetime,
+  const double                 time,
+  Teuchos::RCP<Epetra_Vector>  systemvector,
+  Teuchos::RCP<Epetra_Vector>  systemvectord,
+  Teuchos::RCP<Epetra_Vector>  systemvectordd,
+  Teuchos::RCP<Epetra_Vector>  toggle,
+  Teuchos::RCP<std::set<int> > dbcgids)
 {
   const std::vector<int>* nodeids = cond.Nodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
@@ -651,12 +624,12 @@ void DoDirichletCondition(DRT::Condition&             cond,
   for (int i=0; i<nnode; ++i)
   {
     // do only nodes in my row map
-    int nlid = dis.NodeRowMap()->LID((*nodeids)[i]);
+    int nlid = this->NodeRowMap()->LID((*nodeids)[i]);
     if (nlid < 0) continue;
-    DRT::Node* actnode = dis.lRowNode( nlid );
+    DRT::Node* actnode = this->lRowNode( nlid );
 
     // call explicitly the main dofset, i.e. the first column
-    std::vector<int> dofs = dis.Dof(0,actnode);
+    std::vector<int> dofs = this->Dof(0,actnode);
     const unsigned total_numdf = dofs.size();
 
     // Get native number of dofs at this node. There might be multiple dofsets
@@ -666,7 +639,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
     const DRT::Element * const * myele = actnode->Elements();
     int numdf = 0;
     for (int j=0; j<numele; ++j)
-      numdf = std::max(numdf,myele[j]->NumDofPerNode(0,*actnode,dis.Name()));
+      numdf = std::max(numdf,myele[j]->NumDofPerNode(0,*actnode,this->Name()));
 
     if ( ( total_numdf % numdf ) != 0 )
       dserror( "illegal dof set number" );
@@ -708,7 +681,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
             DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(onesetj,
                                                                   actnode->X(),
                                                                   time,
-                                                                  &dis);
+                                                                  this);
       }
 
       // apply factors to Dirichlet value
@@ -980,8 +953,8 @@ void DRT::Discretization::EvaluateScalars(
   {
     // pointer to current element
     DRT::Element* actele = lRowElement(i);
-    
-    if (!scalars->Map().MyGID(actele->Id())) 
+
+    if (!scalars->Map().MyGID(actele->Id()))
       dserror("Proc does not have global element %d",actele->Id());
 
     // get element location vector
@@ -1002,7 +975,7 @@ void DRT::Discretization::EvaluateScalars(
     {
       (*sca(j))[i] = elescalars(j);
     }
-    
+
   } // for (int i=0; i<numrowele; ++i)
 
 
