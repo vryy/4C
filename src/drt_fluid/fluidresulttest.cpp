@@ -116,10 +116,12 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
           dserror("Cannot test result for tractionz in 2D case.");
         result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(0,actnode,2))];
       }
-      else if(position=="errvel")
+      else if(position=="L2errvel")
         result = (*myerror_)[0];
-      else if(position=="errpre")
+      else if(position=="L2errpre")
         result = (*myerror_)[1];
+      else if(position=="H1errvel")
+        result = (*myerror_)[2];
       else if(position=="divu")
         result = (*mydivu_);
       else

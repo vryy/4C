@@ -3988,9 +3988,10 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
   case INPAR::FLUID::byfunct1:
   {
     // std::vector containing
-    // [0]: relative velocity error
-    // [1]: relative pressure error
-    Teuchos::RCP<std::vector<double> > error = Teuchos::rcp(new std::vector<double>(2));
+    // [0]: relative L2 velocity error
+    // [1]: relative L2 pressure error
+    // [2]: relative H1 velocity error
+    Teuchos::RCP<std::vector<double> > relerror = Teuchos::rcp(new std::vector<double>(3));
 
     // create the parameters for the discretization
     Teuchos::ParameterList eleparams;
@@ -4008,43 +4009,51 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
     }
 
     // get (squared) error values
-    // 0: vel_mag
-    // 1: p
-    // 2: u_mag,analytical
-    // 3: p_analytic
-    // (4: vel_x)
-    // (5: vel_y)
-    // (6: vel_z)
+    // 0: delta velocity for L2-error norm
+    // 1: delta p for L2-error norm
+    // 2: delta velocity for H1-error norm
+    // 3: analytical velocity for L2 norm
+    // 4: analytical p for L2 norm
+    // 5: analytical velocity for H1 norm
     Teuchos::RCP<Epetra_SerialDenseVector> errors
-      = Teuchos::rcp(new Epetra_SerialDenseVector(2+2));
-    //  = Teuchos::rcp(new Epetra_SerialDenseVector(numdim_+2+2))
+      = Teuchos::rcp(new Epetra_SerialDenseVector(3+3));
 
     // call loop over elements (assemble nothing)
     discret_->EvaluateScalars(eleparams, errors);
     discret_->ClearState();
 
-    (*error)[0] = sqrt((*errors)[0])/sqrt((*errors)[2]);
-    (*error)[1] = sqrt((*errors)[1])/sqrt((*errors)[3]);
+    (*relerror)[0] = sqrt((*errors)[0])/sqrt((*errors)[3]);
+    (*relerror)[1] = sqrt((*errors)[1])/sqrt((*errors)[4]);
+
+    if(calcerr==INPAR::FLUID::beltrami_flow)
+      (*relerror)[2] = sqrt((*errors)[2])/sqrt((*errors)[5]);
+    else
+    {
+      (*relerror)[2] = 0.0;
+      if (myrank_ == 0)
+      {
+        std::cout << std::endl << "Warning: H_1 velocity error norm for analytical solution Nr. " <<
+          DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") <<
+          " is not implemented yet!!" << std::endl;
+      }
+    }
 
     if (myrank_ == 0)
     {
       {
         std::cout.precision(8);
-        std::cout << std::endl << "----relative L_2 error norm for analytical solution Nr. " <<
+        std::cout << std::endl << "---- error norm for analytical solution Nr. " <<
           DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") <<
           " ----------" << std::endl;
-        std::cout << "| velocity:  " << (*error)[0] << std::endl;
-        std::cout << "| pressure:  " << (*error)[1] << std::endl;
+        std::cout << "| relative L_2 velocity error norm:     " << (*relerror)[0] << std::endl;
+        std::cout << "| relative L_2 velocity pressure norm:  " << (*relerror)[1] << std::endl;
+        std::cout << "| absolute H_1 velocity error norm:     " << (*relerror)[2] << std::endl;
         std::cout << "--------------------------------------------------------------------" << std::endl << std::endl;
+        std::cout << "H1 velocity scaling  " << sqrt((*errors)[5]) << std::endl;
       }
 
-      //velerrx = sqrt((*errors)[4]);
-      //velerry = sqrt((*errors)[5]);
-      //if (numdim_==3)
-      //  velerrz = sqrt((*errors)[6]);
-
       // print last error in a seperate file
-      /*
+
       // append error of the last time step to the error file
       if ((step_==stepmax_) or (time_==maxtime_))// write results to file
       {
@@ -4055,12 +4064,12 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
         std::ofstream f;
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
         f << "#| " << simulation << "\n";
-        f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
-        f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
+        f << "#| Step | Time | rel. L2-error velocity  |  rel. L2-error pressure  |  rel. H1-error velocity  |\n";
+        f << step_ << " " << time_ << " " << (*relerror)[0] << " " << (*relerror)[1] << " "<< (*relerror)[2] << "\n";
         f.flush();
         f.close();
       }
-      */
+
 
       std::ostringstream temp;
       const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -4070,10 +4079,10 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
       {
         std::ofstream f;
         f.open(fname.c_str());
-        f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
-        f << "  "<< std::setw(2) << std::setprecision(10) << step_ << "    " << std::setw(3)<< std::setprecision(5)
-          << time_ << std::setw(8) << std::setprecision(10) << "    "
-          << (*error)[0] << std::setw(15) << std::setprecision(10) << "    " << (*error)[1] << " "<<"\n";
+        f << "#| Step | Time | rel. L2-error velocity  |  rel. L2-error pressure  |  rel. H1-error velocity  |\n";
+        f << std::setprecision(10) << step_ << " " << std::setw(1)<< std::setprecision(5)
+          << time_ << std::setw(1) << std::setprecision(6) << " "
+          << (*relerror)[0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[1] << std::setprecision(6) << " "<< (*relerror)[2] <<"\n";
 
         f.flush();
         f.close();
@@ -4082,15 +4091,15 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
       {
         std::ofstream f;
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-        f << "  "<< std::setw(2) << std::setprecision(10) << step_ << "    " << std::setw(3)<< std::setprecision(5)
-        << time_ << std::setw(8) << std::setprecision(10) << "    "
-        << (*error)[0] << std::setw(15) << std::setprecision(10) << "    " << (*error)[1] << " "<<"\n";
+        f << std::setprecision(10) << step_ << " " << std::setw(3)<< std::setprecision(5)
+        << time_ << std::setw(1) << std::setprecision(6) << " "
+        << (*relerror)[0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[1] << std::setprecision(6) << " "<< (*relerror)[2] <<"\n";
 
         f.flush();
         f.close();
       }
     }
-    return error;
+    return relerror;
   }
   break;
   default:
