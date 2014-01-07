@@ -39,7 +39,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
   case DRT::Element::hex8:
   {
     return DefineProblemType<DRT::Element::hex8>(problem,numdofpernode,numscal);
-  } /*
+  }
 //  case DRT::Element::hex20:
 //  {
 //    return ScaTraImpl<DRT::Element::hex20>::Instance(problem,numdofpernode,numscal);
@@ -56,14 +56,14 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
 //  {
 //    return ScaTraImpl<DRT::Element::nurbs27>::Instance(problem,numdofpernode,numscal);
 //  }
-//  case DRT::Element::tet4:
-//  {
-//    return ScaTraImpl<DRT::Element::tet4>::Instance(problem,numdofpernode,numscal);
-//  } /*
-//  case DRT::Element::tet10:
-//  {
-//    return ScaTraImpl<DRT::Element::tet10>::Instance(problem,numdofpernode,numscal);
-//  }*/
+  case DRT::Element::tet4:
+  {
+    return DefineProblemType<DRT::Element::tet4>(problem,numdofpernode,numscal);
+  }
+  case DRT::Element::tet10:
+  {
+    return DefineProblemType<DRT::Element::tet10>(problem,numdofpernode,numscal);
+  }
 //  case DRT::Element::wedge6:
 //  {
 //    return ScaTraImpl<DRT::Element::wedge6>::Instance(problem,numdofpernode,numscal);

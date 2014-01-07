@@ -63,22 +63,24 @@ DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofper
 }
 
 
-
 // template classes
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex8>;
+
+// 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2>;
+//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3>;
+//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4>;
-////template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex20>;
+//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad8>;
+//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad9>;
+
+// 3D elements
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex8>;
+//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex20>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex27>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet4>;
-////template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet10>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::wedge6>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::pyramid5>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4>;
-////template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad8>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad9>;
-//template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3>;
-////template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs9>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs27>;
 

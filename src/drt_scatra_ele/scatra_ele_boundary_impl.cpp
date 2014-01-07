@@ -105,10 +105,10 @@ DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInt
   {
     return ScaTraBoundaryImpl<DRT::Element::tri3>::Instance(numdofpernode,numscal);
   }
-  /*  case DRT::Element::tri6:
+  case DRT::Element::tri6:
   {
     return ScaTraBoundaryImpl<DRT::Element::tri6>::Instance(numdofpernode,numscal);
-  }*/
+  }
   case DRT::Element::line2:
   {
     return ScaTraBoundaryImpl<DRT::Element::line2>::Instance(numdofpernode,numscal);

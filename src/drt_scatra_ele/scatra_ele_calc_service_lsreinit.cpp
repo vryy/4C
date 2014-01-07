@@ -446,19 +446,22 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
 
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex8>;
+
+// 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line2>;
+//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri3>;
+//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad4>;
-////template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex20>;
+//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad8>;
+//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad9>;
+
+// 3D elements
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex8>;
+//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex20>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex27>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tet4>;
-////template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tet10>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::wedge6>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::pyramid5>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad4>;
-////template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad8>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad9>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri3>;
-////template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::nurbs9>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::nurbs27>;

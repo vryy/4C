@@ -1011,19 +1011,22 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrDiffMatrix(
 
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex8>;
+
+// 2D elements
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2>;
+//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3>;
+//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4>;
-////template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex20>;
+//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad8>;
+//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad9>;
+
+// 3D elements
+template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex8>;
+//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex20>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex27>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet4>;
-////template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet10>;
+template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::wedge6>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::pyramid5>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4>;
-////template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad8>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad9>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3>;
-////template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs9>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs27>;
