@@ -3612,67 +3612,10 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
 
   //**********************************************************************
   // Build and solve saddle point system
-  // (A) Standard coupled version
+  // There is no distinction between block and merged version
   //**********************************************************************
-  if (systype==INPAR::CONTACT::system_spcoupled)
-  {
-    // build merged matrix
-    mergedmt = Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap,100,false,true));
-    mergedmt->Add(*stiffmt,false,1.0,1.0);
-    mergedmt->Add(*trkdz,false,1.0,1.0);
-    mergedmt->Add(*trkzd,false,1.0,1.0);
-    mergedmt->Add(*trkzz,false,1.0,1.0);
-    if(weardiscr_)
-    {
-      mergedmt->Add(*trkwd,false,1.0,1.0);
-      mergedmt->Add(*trkwz,false,1.0,1.0);
-      mergedmt->Add(*trkww,false,1.0,1.0);
-      mergedmt->Add(*trkzw,false,1.0,1.0);
-
-      if(wearbothdiscr_)
-      {
-        mergedmt->Add(*trkwmd,false,1.0,1.0);
-        mergedmt->Add(*trkwmz,false,1.0,1.0);
-        mergedmt->Add(*trkwmwm,false,1.0,1.0);
-      }
-    }
-    mergedmt->Complete();
-
-    // build merged rhs
-    Teuchos::RCP<Epetra_Vector> fresmexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*fd,*fresmexp);
-    mergedrhs->Update(1.0,*fresmexp,1.0);
-    Teuchos::RCP<Epetra_Vector> constrexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*constrrhs,*constrexp);
-    mergedrhs->Update(1.0,*constrexp,1.0);
-    if (weardiscr_)
-    {
-      Teuchos::RCP<Epetra_Vector> wearexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-      LINALG::Export(*wearrhs,*wearexp);
-      mergedrhs->Update(1.0,*wearexp,1.0);
-
-      if(wearbothdiscr_)
-      {
-        Teuchos::RCP<Epetra_Vector> wearexpM = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-        LINALG::Export(*wearrhsM,*wearexpM);
-        mergedrhs->Update(1.0,*wearexpM,1.0);
-      }
-    }
-
-    // adapt dirichtoggle vector and apply DBC
-    Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*dirichtoggle,*dirichtoggleexp);
-    LINALG::ApplyDirichlettoSystem(mergedmt,mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
-
-    // standard solver call
-    solver.Solve(mergedmt->EpetraMatrix(),mergedsol,mergedrhs,true,numiter==0);
-  }
-
-  //**********************************************************************
-  // Build and solve saddle point system
-  // (B) SIMPLER preconditioner version
-  //**********************************************************************
-  else if (systype==INPAR::CONTACT::system_spsimpler)
+  if (systype==INPAR::CONTACT::system_spcoupled ||
+      systype==INPAR::CONTACT::system_spsimpler)
   {
     // apply Dirichlet conditions to (0,0) and (0,1) blocks
     Teuchos::RCP<Epetra_Vector> zeros   = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(),true));

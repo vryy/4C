@@ -2236,50 +2236,10 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
 
   //**********************************************************************
   // Build and solve saddle point system
-  // (A) Standard coupled version
+  // There is no distinction between block and merged version
   //**********************************************************************
-  if (systype==INPAR::CONTACT::system_spcoupled)
-  {
-    // adapt dirichtoggle vector and apply DBC
-    Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*dirichtoggle,*dirichtoggleexp);
-#ifdef CONTACTCONSTRAINTXYZ
-    Teuchos::RCP<Epetra_Vector> lmDBC = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    LINALG::Export(*dirichtoggle,*lmDBC);
-    lmDBC->ReplaceMap(*glmdofrowmap_);
-    Teuchos::RCP<Epetra_Vector> lmDBCexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*lmDBC,*lmDBCexp);
-    dirichtoggleexp->Update(1.,*lmDBCexp,1.);
-#endif
-
-    // build merged matrix
-    mergedmt = Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap,100,false,true));
-    mergedmt->Add(*stiffmt,false,1.0,1.0);
-    mergedmt->Add(*trkdz,false,1.0,1.0);
-    mergedmt->Add(*trkzd,false,1.0,1.0);
-    mergedmt->Add(*trkzz,false,1.0,1.0);
-
-    mergedmt->Complete();
-       
-    // build merged rhs
-    Teuchos::RCP<Epetra_Vector> fresmexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*fd,*fresmexp);
-    mergedrhs->Update(1.0,*fresmexp,1.0);
-    Teuchos::RCP<Epetra_Vector> constrexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*constrrhs,*constrexp);
-    mergedrhs->Update(1.0,*constrexp,1.0);
-
-    LINALG::ApplyDirichlettoSystem(mergedmt,mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
-
-    // standard solver call
-    solver.Solve(mergedmt->EpetraMatrix(),mergedsol,mergedrhs,true,numiter==0);
-  }
-  
-  //**********************************************************************
-  // Build and solve saddle point system
-  // (B) SIMPLER preconditioner version
-  //**********************************************************************
-  else if (systype==INPAR::CONTACT::system_spsimpler)
+  if (systype==INPAR::CONTACT::system_spcoupled ||
+      systype==INPAR::CONTACT::system_spsimpler)
   {
     Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
     LINALG::Export(*dirichtoggle,*dirichtoggleexp);

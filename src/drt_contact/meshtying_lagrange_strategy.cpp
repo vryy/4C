@@ -729,75 +729,10 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   
   //**********************************************************************
   // Build and solve saddle point system
-  // (A) Standard coupled version
+  // There is no distinction between block and merged version
   //**********************************************************************
-  if (systype==INPAR::CONTACT::system_spcoupled)
-  {
-    // adapt dirichtoggle vector and apply DBC
-    Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*dirichtoggle,*dirichtoggleexp);
-
-    // build merged matrix
-    mergedmt = Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap,100,false,true));
-    mergedmt->Add(*stiffmt,false,1.0,1.0);
-    mergedmt->Add(*constrmt,false,1.0-alphaf_,1.0);
-    mergedmt->Add(*constrmt,true,1.0,1.0);
-
-//#ifdef CONTACTCONSTRAINTXYZ
-    // we need a kzz block with the appropriate graph to apply the symmetry
-    // dirichlet condition for the Lagrange multipliers
-    Teuchos::RCP<LINALG::SparseMatrix> kzz    = Teuchos::null;
-    kzz=Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,1,false,true));
-    Teuchos::RCP<Epetra_Vector> lmDBC=LINALG::CreateVector(*gsdofrowmap_,true);
-    LINALG::Export(*pgsdirichtoggle_,*lmDBC);
-    for (int i=0; i<lmDBC->MyLength(); ++i)
-      if ((*lmDBC)[i]==1.)
-        kzz->Assemble(0.,gsdofrowmap_->GID(i),gsdofrowmap_->GID(i));
-    kzz->Complete(*gsdofrowmap_,*gsdofrowmap_);
-
-    // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
-    Teuchos::RCP<LINALG::SparseMatrix> trkzz;
-    trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,glmdofrowmap_,glmdofrowmap_);
-    mergedmt->Add(*trkzz,false,1.,1.);
-
-    LINALG::Export(*dirichtoggle,*lmDBC);
-    lmDBC->ReplaceMap(*glmdofrowmap_);
-    Teuchos::RCP<Epetra_Vector> lmDBCexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*lmDBC,*lmDBCexp);
-    dirichtoggleexp->Update(1.,*lmDBCexp,1.);
-//#endif
-    mergedmt->Complete();    
-       
-    // build merged rhs
-    Teuchos::RCP<Epetra_Vector> fresmexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*fd,*fresmexp);
-    mergedrhs->Update(1.0,*fresmexp,1.0);
-    Teuchos::RCP<Epetra_Vector> constrexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
-    LINALG::Export(*constrrhs,*constrexp);
-    mergedrhs->Update(1.0,*constrexp,1.0);
-    
-    // apply Dirichlet B.C. to mergedrhs and mergedsol
-    LINALG::ApplyDirichlettoSystem(mergedmt,mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
-    
-    //std::cout << "sdofrowmap\n" << *gsdofrowmap_;
-    //std::cout << "mdofrowmap\n" << *gmdofrowmap_;
-    //std::cout << "glmdofrowmap_\n"      << *glmdofrowmap_;
-    //LINALG::PrintMatrixInMatlabFormat("xxx.contact.dat",*(mergedmt->EpetraMatrix()),true);
-    //LINALG::PrintVectorInMatlabFormat("xxx.contact.vec",*mergedrhs,true);
-    //LINALG::PrintMapInMatlabFormat("xxx.contact.smap",*gsdofrowmap_,true);
-    //LINALG::PrintMapInMatlabFormat("xxx.contact.mmap",*gmdofrowmap_,true);
-    //LINALG::PrintMapInMatlabFormat("xxx.contact.lmmap",*glmdofrowmap_,true);
-    //LINALG::PrintSparsityToPostscript(*(mergedmt->EpetraMatrix()));
-    
-    // standard solver call (note: single SparseMatrix, you can only use UMFPACK direct solver or maybe use Teko and split the matrix again)
-    solver.Solve(mergedmt->EpetraMatrix(),mergedsol,mergedrhs,true,numiter==0);
-  }
-  
-  //**********************************************************************
-  // Build and solve saddle point system
-  // (B) SIMPLER preconditioner version
-  //**********************************************************************
-  else if (systype==INPAR::CONTACT::system_spsimpler)
+  if (systype==INPAR::CONTACT::system_spcoupled ||
+      systype==INPAR::CONTACT::system_spsimpler)
   {
     // build transposed constraint matrix
     Teuchos::RCP<LINALG::SparseMatrix> trconstrmt = Teuchos::rcp(new LINALG::SparseMatrix(*glmdofrowmap_,100,false,true));
