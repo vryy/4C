@@ -19,6 +19,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_calc_lsreinit.H"
 #include "scatra_ele_calc_elch.H"
 #include "scatra_ele_calc_loma.H"
+#include "scatra_ele_calc_poro.H"
 
 #include "../drt_meshfree_discret/meshfree_scatra_cell_calc_std.H"
 
@@ -84,10 +85,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
 //  {
 //    return ScaTraImpl<DRT::Element::quad8>::Instance(problem,numdofpernode,numscal);
 //  } */
-//  case DRT::Element::quad9:
-//  {
-//    return ScaTraImpl<DRT::Element::quad9>::Instance(problem,numdofpernode,numscal);
-//  } /*
+  case DRT::Element::quad9:
+  {
+    return DefineProblemType<DRT::Element::quad9>(problem,numdofpernode,numscal);
+  } /*
 //  case DRT::Element::nurbs4:
 //  {
 //    return ScaTraImpl<DRT::Element::nurbs4>::Instance(problem,numdofpernode,numscal);
@@ -174,6 +175,8 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     return DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(numdofpernode,numscal);
   else if (problem == "elch")
     return DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Instance(numdofpernode,numscal);
+  else if (problem == "poro")
+    return DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(numdofpernode,numscal);
   else
     dserror("Defined problem type does not exist!!");
 

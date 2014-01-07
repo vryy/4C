@@ -463,7 +463,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (scatrapara_->MatGP())
-      GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+      GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc,iquad);
 
     // loop all scalars
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
@@ -1036,7 +1036,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetMaterialParams(
   double&             densam,    //!< density at t_(n+alpha_M)
   Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
   Teuchos::RCP<ScaTraEleReaManager>  reamanager,   //!< reaction manager
-  double&             visc       //!< fluid viscosity
+  double&             visc,      //!< fluid viscosity
+  const int           iquad      //!< id of current gauss point
   )
 {
 // get the material
@@ -1054,11 +1055,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      Materials(singlemat,k,densn,densnp,densam,diffmanager,reamanager,visc);
+      Materials(singlemat,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
     }
   }
   else
-    Materials(material,0,densn,densnp,densam,diffmanager,reamanager,visc);
+    Materials(material,0,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
 
   return;
 } //ScaTraEleCalc::GetMaterialParams
@@ -1076,11 +1077,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Materials(
   double&                                 densam,   //!< density at t_(n+alpha_M)
   Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
   Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
-  double&                                 visc          //!< fluid viscosity
+  double&                                 visc,         //!< fluid viscosity
+  const int                               iquad         //!< id of current gauss point
   )
 {
   if (material->MaterialType() == INPAR::MAT::m_scatra)
-    MatScaTra(material,k,densn,densnp,densam,diffmanager,reamanager,visc);
+    MatScaTra(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
   //else if (material->MaterialType() == INPAR::MAT::m_biofilm)
   //  MatBioFilm(material,densn,densnp,densam,diffus,visc);
   //else if (material->MaterialType() == INPAR::MAT::m_myocard)
@@ -1103,7 +1105,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatScaTra(
   double&                                 densam,   //!< density at t_(n+alpha_M)
   Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
   Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
-  double&                                 visc      //!< fluid viscosity
+  double&                                 visc,     //!< fluid viscosity
+  const int                               iquad     //!< id of current gauss point
   )
 {
   const Teuchos::RCP<const MAT::ScatraMat>& actmat
@@ -1147,7 +1150,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatScaTra(
    }
 
   return;
-} // ScaTraEleCalc<distype>::GetLaplacianStrongForm
+} // ScaTraEleCalc<distype>::MatScaTra
 
 
 /*----------------------------------------------------------------------*
@@ -2145,7 +2148,8 @@ template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad8>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs9>;
 
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex8>;
@@ -2155,7 +2159,6 @@ template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::wedge6>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs9>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs27>;
 
 

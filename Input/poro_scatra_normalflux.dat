@@ -172,7 +172,7 @@ ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Zero
-EVALUATION_MAT                  element_center
+EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  element_center
 STABTYPE                        no_stabilization
 SUGRVEL                         no

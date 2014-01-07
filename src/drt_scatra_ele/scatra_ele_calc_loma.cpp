@@ -768,7 +768,8 @@ template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::line2>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad8>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::nurbs9>;
 
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::hex8>;
@@ -778,7 +779,6 @@ template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::wedge6>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::nurbs9>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLoma<DRT::Element::nurbs27>;
 
 

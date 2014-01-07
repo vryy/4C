@@ -221,7 +221,8 @@ namespace ELEMENTS
       double&             densam,    //!< density at t_(n+alpha_M)
       Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
       Teuchos::RCP<ScaTraEleReaManager>  reamanager,   //!< reaction manager
-      double&             visc       //!< fluid viscosity
+      double&             visc,       //!< fluid viscosity
+      const int           iquad=-1    //!< id of current gauss point (default = -1)
     );
 
     //! evaluate material
@@ -233,11 +234,12 @@ namespace ELEMENTS
       double&                                 densam,   //!< density at t_(n+alpha_M)
       Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
       Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
-      double&                                 visc      //!< fluid viscosity
+      double&                                 visc,      //!< fluid viscosity
+      const int                               iquad=-1   //!< id of current gauss point (default = -1)
     );
 
     //! material ScaTra
-    void MatScaTra(
+    virtual void MatScaTra(
       const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       const int                               k,        //!< id of current scalar
       double&                                 densn,    //!< density at t_(n)
@@ -245,7 +247,8 @@ namespace ELEMENTS
       double&                                 densam,   //!< density at t_(n+alpha_M)
       Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
       Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
-      double&                                 visc      //!< fluid viscosity
+      double&                                 visc,      //!< fluid viscosity
+      const int                               iquad=-1   //!< id of current gauss point (default = -1)
     );
 
     //! material BioFilm

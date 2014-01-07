@@ -974,6 +974,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_elch.cpp
   src/drt_scatra_ele/scatra_ele_calc_loma.cpp
   src/drt_scatra_ele/scatra_ele_calc_lsreinit.cpp
+  src/drt_scatra_ele/scatra_ele_calc_poro.cpp
   src/drt_scatra_ele/scatra_ele_parameter.cpp
   src/drt_scatra_ele/scatra_ele_parameter_std.cpp
   src/drt_scatra_ele/scatra_ele_parameter_lsreinit.cpp
