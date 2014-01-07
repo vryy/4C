@@ -24,9 +24,9 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_comm/comm_utils.H"
+#include "../drt_mat/particle_mat.H"
+#include "../drt_mat/matpar_bundle.H"
 
-#include <Epetra_SerialDenseVector.h>
 #include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/
@@ -125,33 +125,45 @@ PARTICLE::TimInt::TimInt
   if ( (writeenergyevery_ != 0) and (myrank_ == 0) )
     AttachEnergyFile();
 
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* initialization of time integration */
+void PARTICLE::TimInt::Init()
+{
   Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*DofRowMapView(), true);
 
-  // Map containing Dirichlet DOFs
-  {
-    Teuchos::ParameterList p;
-    p.set("total time", timen_);
-    discret_->EvaluateDirichlet(p, zeros, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
-  }
+   // Map containing Dirichlet DOFs
+   {
+     Teuchos::ParameterList p;
+     p.set("total time", timen_);
+     discret_->EvaluateDirichlet(p, zeros, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
+   }
 
-  // displacements D_{n}
-  dis_ = Teuchos::rcp(new STR::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-  // velocities V_{n}
-  vel_ = Teuchos::rcp(new STR::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-  // accelerations A_{n}
-  acc_ = Teuchos::rcp(new STR::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+   // displacements D_{n}
+   dis_ = Teuchos::rcp(new STR::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+   // velocities V_{n}
+   vel_ = Teuchos::rcp(new STR::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+   // accelerations A_{n}
+   acc_ = Teuchos::rcp(new STR::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
-  // displacements D_{n+1} at t_{n+1}
-  disn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  // velocities V_{n+1} at t_{n+1}
-  veln_ = LINALG::CreateVector(*DofRowMapView(), true);
-  // accelerations A_{n+1} at t_{n+1}
-  accn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  // create empty interface force vector
-  fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
+   // displacements D_{n+1} at t_{n+1}
+   disn_ = LINALG::CreateVector(*DofRowMapView(), true);
+   // velocities V_{n+1} at t_{n+1}
+   veln_ = LINALG::CreateVector(*DofRowMapView(), true);
+   // accelerations A_{n+1} at t_{n+1}
+   accn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
-  // set initial fields
-  SetInitialFields();
+   // create empty interface force vector
+   fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
+   // radius of each particle
+   radius_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+   // mass of each particle
+   mass_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+
+   // set initial fields
+   SetInitialFields();
 
   return;
 }
@@ -160,11 +172,76 @@ PARTICLE::TimInt::TimInt
 /* Set intitial fields in structure (e.g. initial velocities */
 void PARTICLE::TimInt::SetInitialFields()
 {
-  //***************************************************
-  // Data that needs to be handed into discretization:
-  // - std::string field: name of initial field to be set
-  // - std::vector<int> localdofs: local dof ids affected
-  //***************************************************
+  // make sure that a particle material is defined in the dat-file
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
+  if (id==-1)
+    dserror("Could not find particle material");
+
+  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+  const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
+  // all particles have identical density and initially the same radius
+  density_ = actmat->density_;
+  double initial_radius = actmat->initialradius_;
+
+  double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
+
+  // initialize displacement field, radius and mass vector
+  for(int n=0; n<discret_->NumMyRowNodes(); ++n)
+  {
+    DRT::Node* actnode = discret_->lRowNode(n);
+    // get the first gid of a node and convert it into a LID
+    int gid = discret_->Dof(actnode, 0);
+    int lid = discret_->DofRowMap()->LID(gid);
+    for (int dim=0; dim<3; ++dim)
+    {
+      if(amplitude)
+      {
+        double randomwert = DRT::Problem::Instance()->Random()->Uni();
+        (*(*dis_)(0))[lid+dim] = actnode->X()[dim] + randomwert * amplitude * initial_radius;
+      }
+      else
+      {
+        (*(*dis_)(0))[lid+dim] = actnode->X()[dim];
+      }
+    }
+
+    // initialize radii of particles
+    (*radius_)[n] = initial_radius;
+
+    // mass-vector: m = rho * 4/3 * PI *r^3
+    (*mass_)[n] = density_ * 4.0/3.0 * M_PI * pow(initial_radius, 3.0);
+  }
+
+  // set initial radius condition if existing
+  std::vector<DRT::Condition*> condition;
+  discret_->GetCondition("InitialParticleRadius", condition);
+
+  // loop over conditions
+  for (size_t i=0; i<condition.size(); ++i)
+  {
+    double scalar  = condition[i]->GetDouble("SCALAR");
+    int funct_num  = condition[i]->GetInt("FUNCT");
+
+    const std::vector<int>* nodeids = condition[i]->Nodes();
+    //loop over particles in current condition
+    for(size_t counter=0; counter<(*nodeids).size(); ++counter)
+    {
+      int lid = discret_->NodeRowMap()->LID((*nodeids)[counter]);
+      if(lid != -1)
+      {
+        DRT::Node *currparticle = discret_->gNode((*nodeids)[counter]);
+        double function_value =  DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(0, currparticle->X(),0.0,discret_.get());
+        double r_p = (*radius_)[lid];
+        r_p *= function_value * scalar;
+        (*radius_)[lid] = r_p;
+        if(r_p <= 0.0)
+          dserror("negative initial radius");
+
+        // mass-vector: m = rho * 4/3 * PI * r^3
+        (*mass_)[lid] = density_ * 4.0/3.0 * M_PI * pow(r_p, 3.0);
+      }
+    }
+  }
 
   // set initial velocity field if existing
   const std::string field = "Velocity";

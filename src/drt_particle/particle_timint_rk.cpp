@@ -59,10 +59,10 @@ void PARTICLE::TimIntRK::Init()
 int PARTICLE::TimIntRK::IntegrateStep()
 {
   // get time integration scheme
-  if (rk_scheme_ == INPAR::PARTICLE::dyna_rungekutta2)
+  if (rk_scheme_ == INPAR::PARTICLE::dyna_rk2)
     // use Runge-Kutta scheme 2nd order
     Integrate_RK_Second();
-  else if (rk_scheme_ == INPAR::PARTICLE::dyna_rungekutta4)
+  else if (rk_scheme_ == INPAR::PARTICLE::dyna_rk4)
     // use Runge-Kutta scheme 4th order
     Integrate_RK_Fourth();
   else

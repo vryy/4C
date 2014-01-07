@@ -73,6 +73,20 @@ void PARTICLE::TimIntCentrDiff::Init()
   // call base class init
   PARTICLE::TimIntExpl::Init();
 
+  // check for validity of input data
+  if(collhandler_ != Teuchos::null)
+  {
+    double maxradius = 1.0e12;
+    radius_->MaxValue(&maxradius);
+    if(maxradius > collhandler_->GetMaxRadius())
+      dserror("Input parameter MAX_RADIUS invalid");
+
+    double minradius = -1.0;
+    radius_->MinValue(&minradius);
+    if(minradius < collhandler_->GetMinRadius())
+      dserror("Input parameter MIN_RADIUS invalid");
+  }
+
   return;
 }
 

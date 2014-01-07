@@ -56,7 +56,7 @@ TYPE                            Particle
 CUTOFF_RADIUS                   0.1
 //BOUNDINGBOX                     -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001 
 ------------------------------------------------------------PARTICLE DYNAMIC
-DYNAMICTYP                      RungeKutta2
+DYNAMICTYP                      RK2
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      linear_full

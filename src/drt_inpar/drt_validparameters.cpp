@@ -6276,13 +6276,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 tuple<std::string>(
                                   "ExplicitEuler",
                                   "CentrDiff",
-                                  "RungeKutta2",
-                                  "RungeKutta4"),
+                                  "RK2",
+                                  "RK4"),
                                 tuple<int>(
                                   INPAR::PARTICLE::dyna_expleuler,
                                   INPAR::PARTICLE::dyna_centrdiff,
-                                  INPAR::PARTICLE::dyna_rungekutta2,
-                                  INPAR::PARTICLE::dyna_rungekutta4
+                                  INPAR::PARTICLE::dyna_rk2,
+                                  INPAR::PARTICLE::dyna_rk4
                                 ),
                                 &particledyn);
 

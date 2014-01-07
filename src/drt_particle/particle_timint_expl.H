@@ -71,7 +71,7 @@ namespace PARTICLE
     //@{
 
     //! mostly init of collision handling
-    virtual void Init() = 0;
+    virtual void Init();
 
     //! Do time integration of single step
     virtual int IntegrateStep() = 0;
@@ -79,9 +79,6 @@ namespace PARTICLE
     //@}
 
   protected:
-
-    //! apply initial condition for particle radius
-    virtual void ApplyInitialRadiusCondition();
 
     //! update step
     virtual void UpdateStepState();

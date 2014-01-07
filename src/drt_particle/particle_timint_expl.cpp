@@ -15,14 +15,9 @@ Maintainer: Georg Hammerl
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "particle_timint_expl.H"
-#include "particle_algorithm.H"
 #include "particle_contact.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_io/io.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_mat/particle_mat.H"
-#include "../drt_mat/matpar_bundle.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 
@@ -43,53 +38,6 @@ PARTICLE::TimIntExpl::TimIntExpl(
     output
   )
 {
-  // allocate vectors
-  radius_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
-  mass_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
-
-  // make sure that a particle material is defined in the dat-file
-  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
-  if (id==-1)
-    dserror("Could not find particle material");
-
-  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-  const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
-  // all particles have identical density and initially the same radius
-  density_ = actmat->density_;
-  double initial_radius = actmat->initialradius_;
-
-  const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParams();
-  double amplitude = params.get<double>("RANDOM_AMPLITUDE");
-
-  // initialize displacement field, radius and mass vector
-  for(int n=0; n<discret_->NumMyRowNodes(); ++n)
-  {
-    DRT::Node* actnode = discret_->lRowNode(n);
-    // get the first gid of a node and convert it into a LID
-    int gid = discret_->Dof(actnode, 0);
-    int lid = discret_->DofRowMap()->LID(gid);
-    for (int dim=0; dim<3; ++dim)
-    {
-      if(amplitude)
-      {
-        double randomwert = DRT::Problem::Instance()->Random()->Uni();
-        (*(*dis_)(0))[lid+dim] = actnode->X()[dim] + randomwert * amplitude * initial_radius;
-      }
-      else
-      {
-        (*(*dis_)(0))[lid+dim] = actnode->X()[dim];
-      }
-    }
-
-    // initialize radii of particles
-    (*radius_)[n] = initial_radius;
-
-    // mass-vector: m = rho * 4/3 * PI *r^3
-    (*mass_)[n] = density_ * 4.0/3.0 * M_PI * pow(initial_radius, 3.0);
-  }
-
-  // DetermineMassDampConsistAccel() is called at the end of Algorithm::Init() after proper setup of the problem
-
   return;
 }
 
@@ -98,6 +46,9 @@ PARTICLE::TimIntExpl::TimIntExpl(
 /* mostly init of collision handling  */
 void PARTICLE::TimIntExpl::Init()
 {
+  // call base class init
+  TimInt::Init();
+
   // decide whether there is particle contact
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
   INPAR::PARTICLE::ContactStrategy contact_strategy = DRT::INPUT::IntegralValue<INPAR::PARTICLE::ContactStrategy>(particleparams,"CONTACT_STRATEGY");
@@ -115,7 +66,7 @@ void PARTICLE::TimIntExpl::Init()
 
     if(writeorientation_)
     {
-      //initialize orientation-vector for visualization
+      // initialize orientation-vector for visualization
       orient_ = LINALG::CreateVector(*DofRowMapView(),true);
       InitializeOrientVector();
     }
@@ -128,67 +79,6 @@ void PARTICLE::TimIntExpl::Init()
       //inertia-vector: sphere: I = 2/5 * m * r^2
       (*inertia_)[n] = 0.4 * (*mass_)[n] * pow(r_p, 2.0);
     }
-  }
-
-  //Initial radius condition
-  ApplyInitialRadiusCondition();
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/* apply initial condition for particle radius */
-void PARTICLE::TimIntExpl::ApplyInitialRadiusCondition()
-{
-  std::vector<DRT::Condition*> condition;
-  discret_->GetCondition("InitialParticleRadius", condition);
-
-  //loop over conditions
-  for (size_t i=0; i<condition.size(); ++i)
-  {
-    double scalar  = condition[i]->GetDouble("SCALAR");
-    int funct_num  = condition[i]->GetInt("FUNCT");
-
-    const std::vector<int>* nodeids = condition[i]->Nodes();
-    //loop over particles in current condition
-    for(size_t counter=0; counter<(*nodeids).size(); ++counter)
-    {
-      int lid = discret_->NodeRowMap()->LID((*nodeids)[counter]);
-      if(lid != -1)
-      {
-        DRT::Node *currparticle = discret_->gNode((*nodeids)[counter]);
-        double function_value =  DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(0, currparticle->X(),0.0,discret_.get());
-        double r_p = (*radius_)[lid];
-        r_p *= function_value * scalar;
-        (*radius_)[lid] = r_p;
-        if(r_p <= 0.0)
-          dserror("negative initial radius");
-
-        // mass-vector: m = rho * 4/3 * PI * r^3
-        (*mass_)[lid] = density_ * 4.0/3.0 * M_PI * pow(r_p, 3.0);
-
-        if(collhandler_ != Teuchos::null)
-        {
-          //inertia-vector: sphere: I = 2/5 * m * r^2
-          (*inertia_)[lid] = 0.4 * (*mass_)[lid] * pow(r_p, 2.0);
-        }
-      }
-    }
-  }
-
-  if(collhandler_ != Teuchos::null)
-  {
-    // check for validity of input data
-    double maxradius = 1.0e12;
-    radius_->MaxValue(&maxradius);
-    if(maxradius > collhandler_->GetMaxRadius())
-      dserror("Input parameter MAX_RADIUS invalid");
-
-    double minradius = -1.0;
-    radius_->MinValue(&minradius);
-    if(minradius < collhandler_->GetMinRadius())
-      dserror("Input parameter MIN_RADIUS invalid");
   }
 
   return;

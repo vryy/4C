@@ -123,8 +123,8 @@ namespace PARTICLE
     //! Do time integration of single step
     virtual int IntegrateStep() = 0;
 
-    /// initialize particle problem
-    virtual void Init() = 0;
+    /// initialize time integration
+    virtual void Init();
 
     /// update at time step end
     virtual void Update() = 0;
