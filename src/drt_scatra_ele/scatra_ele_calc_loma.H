@@ -94,7 +94,7 @@ private:
       Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
       Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
       double&                                 visc,      //!< fluid viscosity
-      const int                               iquad         //!< id of current gauss point
+      const int                               iquad=-1   //!< id of current gauss point (default = -1)
     );
 
     //! material mixfrac
