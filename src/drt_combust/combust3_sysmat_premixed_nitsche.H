@@ -2258,8 +2258,8 @@ void Nitsche_SysmatBoundaryCell(
     // TODO:
     const double B1 = 0.05;
     const double B2 = 0.05;
-    const double massstabtimefacfac = B1/hk_ele * 0.5 * (visc_plus+visc_minus)
-                                    + B2 * 0.5 * (dens_plus*vel_plus.Norm2()+dens_minus*vel_minus.Norm2());
+    const double massstabtimefacfac = (B1/hk_ele * 0.5 * (visc_plus+visc_minus)
+                                    + B2 * 0.5 * (dens_plus*vel_plus.Norm2()+dens_minus*vel_minus.Norm2())) * timefacfac;
 
 
 #ifdef COMBUST_NITSCHE_VISCCONSISTMEAN
