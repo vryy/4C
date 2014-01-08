@@ -106,9 +106,9 @@ CURVE2 on EXPR FUNC 1-(t-51) t1 51 t2 53
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 37 QUANTITY dispmx VALUE 1.34365016989355268e-05 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 37 QUANTITY dispmy VALUE 8.20683247127884652e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 40 QUANTITY dispmy VALUE 2.44530385549346363e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 37 QUANTITY dispmx VALUE 1.34601762015036829e-05 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 37 QUANTITY dispmy VALUE 8.20811507190666312e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 40 QUANTITY dispmy VALUE 2.44281851592677984e-03 TOLERANCE 1e-8
 
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0

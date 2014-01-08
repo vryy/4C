@@ -50,8 +50,8 @@ K_DAMP                          0.00001
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
-TOLRES                          1.0E-10
-TOLDISP                         1.0E-10
+TOLRES                          1.0E-8
+TOLDISP                         1.0E-8
 MAXITER                         50
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
@@ -104,9 +104,9 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR -1.0 -1.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 155 QUANTITY dispmx VALUE -2.00265021540465549e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 155 QUANTITY dispmy VALUE -2.00265021540554367e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 155 QUANTITY dispmz VALUE  2.40393801941930718e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 155 QUANTITY dispmx VALUE -1.99716110849195161e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 155 QUANTITY dispmy VALUE -1.99716287256951341e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 155 QUANTITY dispmz VALUE  2.40025573765187517e-01 TOLERANCE 1e-7
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          2

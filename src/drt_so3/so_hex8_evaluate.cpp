@@ -1280,7 +1280,6 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // reference coord. of element
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;
-  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xmat;   // material coord. of element
 
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOH8; ++i)
@@ -1293,14 +1292,6 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH8+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
-
-    // material displacements for structure with ale
-    if(structale_ == true)
-    {
-      xmat(i,0)  = xrefe(i,0) + dispmat[i*NODDOF_SOH8+0];
-      xmat(i,1)  = xrefe(i,1) + dispmat[i*NODDOF_SOH8+1];
-      xmat(i,2)  = xrefe(i,2) + dispmat[i*NODDOF_SOH8+2];
-    }
 
     if (pstype_==INPAR::STR::prestress_mulf)
     {

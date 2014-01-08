@@ -89,7 +89,7 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm)
   wearnp_i_  = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->Map(AleField().Interface()->cond_ale_wear)),true);
   wearnp_ip_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->Map(AleField().Interface()->cond_ale_wear)),true);
   wearincr_  = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->Map(AleField().Interface()->cond_ale_wear)),true);
-  delta_ale_= Teuchos::rcp(new Epetra_Vector(AleField().Dispnp()->Map(),true));
+  delta_ale_ = Teuchos::rcp(new Epetra_Vector(AleField().Dispnp()->Map(),true));
 
   alepara_   = DRT::Problem::Instance()->AleDynamicParams();
 }
@@ -312,7 +312,7 @@ bool WEAR::Partitioned::ConvergenceCheck(int iter)
     std::cout << "---------------------------------------------" << std::endl;
   }
 
-  if (abs(Wincr)<1e-10 and abs(ALEincr)<1e-10)
+  if (abs(Wincr)<1e-8 and abs(ALEincr)<1e-8)
     return true;
 
   if (iter>50)
@@ -625,7 +625,7 @@ void WEAR::Partitioned::ApplyMeshDisplacement(bool iterated)
       XMesh[2]=node->X()[2]+(*dispnp)[locid+2]+(*disale)[locid+2];
 
     // create updated  XMat --> via nonlinear interpolation between nodes (like gp projection)
-    AdvectionMap(&XMat[0],&XMat[1],&XMat[2],&XMesh[0],&XMesh[1],&XMesh[2],ElementPtr,numelement);
+    AdvectionMap(XMat,XMesh,ElementPtr,numelement);
 
     // create delta displacement in material configuration
     (*dismat)[locid] = XMat[0]-node->X()[0];
@@ -647,14 +647,10 @@ void WEAR::Partitioned::ApplyMeshDisplacement(bool iterated)
 }  // STRU_ALE::Algorithm::SubtractWear()
 
 /*----------------------------------------------------------------------*
- | material coordinates evaluated from spatial ones          mgit 05/11 |
+ | material coordinates evaluated from spatial ones         farah 12/13 |
  *----------------------------------------------------------------------*/
-void WEAR::Partitioned::AdvectionMap(double* XMat1,
-                                       double* XMat2,
-                                       double* XMat3,
-                                       double* XMesh1,
-                                       double* XMesh2,
-                                       double* XMesh3,
+void WEAR::Partitioned::AdvectionMap(double* XMat,
+                                       double* XMesh,
                                        DRT::Element** ElementPtr,
                                        int numelements)
 {
@@ -665,9 +661,7 @@ void WEAR::Partitioned::AdvectionMap(double* XMat1,
   bool found = false;
 
   // parameter space coordinates
-  double e1 = 0.0;
-  double e2 = 0.0;
-  double e3 = 0.0;
+  double e[3];
   double ge1 = 1e12;
   double ge2 = 1e12;
   double ge3 = 1e12;
@@ -691,25 +685,15 @@ void WEAR::Partitioned::AdvectionMap(double* XMat1,
     if (ndim == 2)
     {
       if (actele->Shape() == DRT::Element::quad4)
-      {
-        WEAR::UTILS::av<DRT::Element::quad4>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-      }
+        WEAR::UTILS::av<DRT::Element::quad4>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
       else if (actele->Shape() == DRT::Element::quad8)
-      {
-        WEAR::UTILS::av<DRT::Element::quad8>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-      }
+        WEAR::UTILS::av<DRT::Element::quad8>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
       else if (actele->Shape() == DRT::Element::quad9)
-      {
-        WEAR::UTILS::av<DRT::Element::quad8>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-      }
+        WEAR::UTILS::av<DRT::Element::quad9>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
       else if (actele->Shape() == DRT::Element::tri3)
-      {
-        WEAR::UTILS::av<DRT::Element::tri3>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-      }
+        WEAR::UTILS::av<DRT::Element::tri3>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
       else if (actele->Shape() == DRT::Element::tri6)
-      {
-        WEAR::UTILS::av<DRT::Element::tri6>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-      }
+        WEAR::UTILS::av<DRT::Element::tri6>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
       else
         dserror("shape function not supported!");
 
@@ -719,14 +703,14 @@ void WEAR::Partitioned::AdvectionMap(double* XMat1,
 
       if (found==false)
       {
-        if (abs(ge1)>1.0 and abs(e1)<abs(ge1))
+        if (abs(ge1)>1.0 and abs(e[0])<abs(ge1))
         {
-          ge1=e1;
+          ge1=e[0];
           gele=jele;
         }
-        if (abs(ge2)>1.0 and abs(e2)<abs(ge2))
+        if (abs(ge2)>1.0 and abs(e[1])<abs(ge2))
         {
-          ge2=e2;
+          ge2=e[1];
           gele=jele;
         }
       }
@@ -734,53 +718,33 @@ void WEAR::Partitioned::AdvectionMap(double* XMat1,
     else
     {
       if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance())
-      {
-        // cast element to solid hex8 element
-        DRT::ELEMENTS::So_hex8* ele = static_cast<DRT::ELEMENTS::So_hex8*>(actele);
-        WEAR::UTILS::av<DRT::Element::hex8>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-      }
+        WEAR::UTILS::av<DRT::Element::hex8>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_hex20Type::Instance())
-      {
-        // cast element to solid hex20 element
-        DRT::ELEMENTS::So_hex20* ele = static_cast<DRT::ELEMENTS::So_hex20*>(actele);
-        WEAR::UTILS::av<DRT::Element::hex20>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-      }
+        WEAR::UTILS::av<DRT::Element::hex20>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_hex27Type::Instance())
-      {
-        // cast element to solid hex27 element
-        DRT::ELEMENTS::So_hex27* ele = static_cast<DRT::ELEMENTS::So_hex27*>(actele);
-        WEAR::UTILS::av<DRT::Element::hex27>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-      }
+        WEAR::UTILS::av<DRT::Element::hex27>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_tet4Type::Instance())
-      {
-        // cast element to solid tet4 element
-        DRT::ELEMENTS::So_tet4* ele = static_cast<DRT::ELEMENTS::So_tet4*>(actele);
-        WEAR::UTILS::av<DRT::Element::tet4>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-      }
+        WEAR::UTILS::av<DRT::Element::tet4>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_tet10Type::Instance())
-      {
-        // cast element to solid tet10 element
-        DRT::ELEMENTS::So_tet10* ele = static_cast<DRT::ELEMENTS::So_tet10*>(actele);
-        WEAR::UTILS::av<DRT::Element::tet10>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-      }
+        WEAR::UTILS::av<DRT::Element::tet10>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
       else
         dserror("elementtype not supported!");
 
       if (found==false)
       {
-        if (abs(ge1)>1.0 and abs(e1)<abs(ge1))
+        if (abs(ge1)>1.0 and abs(e[0])<abs(ge1))
         {
-          ge1=e1;
+          ge1=e[0];
           gele=jele;
         }
-        if (abs(ge2)>1.0 and abs(e2)<abs(ge2))
+        if (abs(ge2)>1.0 and abs(e[1])<abs(ge2))
         {
-          ge2=e2;
+          ge2=e[1];
           gele=jele;
         }
-        if (abs(ge3)>1.0 and abs(e3)<abs(ge3))
+        if (abs(ge3)>1.0 and abs(e[2])<abs(ge3))
         {
-          ge3=e3;
+          ge3=e[2];
           gele=jele;
         }
       }
@@ -809,60 +773,30 @@ void WEAR::Partitioned::AdvectionMap(double* XMat1,
   if (ndim == 2)
   {
     if (actele->Shape() == DRT::Element::quad4)
-    {
-      WEAR::UTILS::av<DRT::Element::quad4>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-    }
+      WEAR::UTILS::av<DRT::Element::quad4>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
     else if (actele->Shape() == DRT::Element::quad8)
-    {
-      WEAR::UTILS::av<DRT::Element::quad8>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-    }
+      WEAR::UTILS::av<DRT::Element::quad8>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
     else if (actele->Shape() == DRT::Element::quad9)
-    {
-      WEAR::UTILS::av<DRT::Element::quad8>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-    }
+      WEAR::UTILS::av<DRT::Element::quad9>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
     else if (actele->Shape() == DRT::Element::tri3)
-    {
-      WEAR::UTILS::av<DRT::Element::tri3>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-    }
+      WEAR::UTILS::av<DRT::Element::tri3>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
     else if (actele->Shape() == DRT::Element::tri6)
-    {
-      WEAR::UTILS::av<DRT::Element::tri6>(actele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-    }
+      WEAR::UTILS::av<DRT::Element::tri6>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
     else
       dserror("shape function not supported!");
   }
   else
   {
     if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance())
-    {
-      // cast element to solid hex8 element
-      DRT::ELEMENTS::So_hex8* ele = static_cast<DRT::ELEMENTS::So_hex8*>(actele);
-      WEAR::UTILS::av<DRT::Element::hex8>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-    }
+      WEAR::UTILS::av<DRT::Element::hex8>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_hex20Type::Instance())
-    {
-      // cast element to solid hex20 element
-      DRT::ELEMENTS::So_hex20* ele = static_cast<DRT::ELEMENTS::So_hex20*>(actele);
-      WEAR::UTILS::av<DRT::Element::hex20>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-    }
+      WEAR::UTILS::av<DRT::Element::hex20>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_hex27Type::Instance())
-    {
-      // cast element to solid hex27 element
-      DRT::ELEMENTS::So_hex27* ele = static_cast<DRT::ELEMENTS::So_hex27*>(actele);
-      WEAR::UTILS::av<DRT::Element::hex27>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-    }
+      WEAR::UTILS::av<DRT::Element::hex27>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_tet4Type::Instance())
-    {
-      // cast element to solid tet4 element
-      DRT::ELEMENTS::So_tet4* ele = static_cast<DRT::ELEMENTS::So_tet4*>(actele);
-      WEAR::UTILS::av<DRT::Element::tet4>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-    }
+      WEAR::UTILS::av<DRT::Element::tet4>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_tet10Type::Instance())
-    {
-      // cast element to solid tet10 element
-      DRT::ELEMENTS::So_tet10* ele = static_cast<DRT::ELEMENTS::So_tet10*>(actele);
-      WEAR::UTILS::av<DRT::Element::tet10>(ele,XMat1,XMat2,XMat3,XMesh1,XMesh2,XMesh3,disp,dispmat,la[0].lm_,found,e1,e2,e3);
-    }
+      WEAR::UTILS::av<DRT::Element::tet10>(actele,XMat,XMesh,disp,dispmat,la[0].lm_,found,e);
     else
       dserror("elementtype not supported!");
   }

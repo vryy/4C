@@ -3624,8 +3624,18 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     trkdz->ApplyDirichlet(dirichtoggle,false);
 
     // row map (equals domain map) extractor
-    LINALG::MapExtractor rowmapext(*mergedmap,glmdofrowmap_,ProblemDofs());
-    LINALG::MapExtractor dommapext(*mergedmap,glmdofrowmap_,ProblemDofs());
+    std::vector<Teuchos::RCP<const Epetra_Map> > mapvec;
+    mapvec.push_back(ProblemDofs());
+    mapvec.push_back(glmdofrowmap_);
+    if(weardiscr_)
+    {
+      mapvec.push_back(gwdofrowmap_);
+      if(wearbothdiscr_)
+        mapvec.push_back(gwmdofrowmap_);
+    }
+
+    LINALG::MultiMapExtractor rowmapext(*mergedmap,mapvec);
+    LINALG::MultiMapExtractor dommapext(*mergedmap,mapvec);
 
     // set a helper flag for the CheapSIMPLE preconditioner (used to detect, if Teuchos::nullspace has to be set explicitely)
     // do we need this? if we set the Teuchos::nullspace when the solver is constructed?
@@ -3638,6 +3648,24 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     mat->Assign(0,1,View,*trkdz);
     mat->Assign(1,0,View,*trkzd);
     mat->Assign(1,1,View,*trkzz);
+
+    // add wear blocks
+    if(weardiscr_)
+    {
+      mat->Assign(2,0,View,*trkwd);
+      mat->Assign(2,1,View,*trkwz);
+      mat->Assign(2,2,View,*trkww);
+      mat->Assign(1,2,View,*trkzw);
+
+      if(wearbothdiscr_)
+      {
+        mat->Assign(3,0,View,*trkwmd);
+        mat->Assign(3,1,View,*trkwmz);
+        mat->Assign(3,3,View,*trkwmwm);
+      }
+    }
+
+    // matrix filling done
     mat->Complete();
 
     // we also need merged rhs here
@@ -3647,6 +3675,21 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     Teuchos::RCP<Epetra_Vector> constrexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
     LINALG::Export(*constrrhs,*constrexp);
     mergedrhs->Update(1.0,*constrexp,1.0);
+
+    // add wear rhs
+    if (weardiscr_)
+    {
+      Teuchos::RCP<Epetra_Vector> wearexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
+      LINALG::Export(*wearrhs,*wearexp);
+      mergedrhs->Update(1.0,*wearexp,1.0);
+
+      if(wearbothdiscr_)
+      {
+        Teuchos::RCP<Epetra_Vector> wearexpM = Teuchos::rcp(new Epetra_Vector(*mergedmap));
+        LINALG::Export(*wearrhsM,*wearexpM);
+        mergedrhs->Update(1.0,*wearexpM,1.0);
+      }
+    }
 
     // apply Dirichlet B.C. to mergedrhs and mergedsol
     Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
@@ -4623,6 +4666,8 @@ void CONTACT::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& read
   StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
   StoreNodalQuantities(MORTAR::StrategyBase::lmold);
 
+  // TODO: same procedure for discrete wear...
+
   // only for Augmented strategy
   // TODO: this should be moved to contact_penalty_strategy
   INPAR::CONTACT::SolvingStrategy st = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
@@ -5103,7 +5148,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
 }
 
 /*----------------------------------------------------------------------*
- |  Update Wear rhs for seq. staggered paritioned sol.       farah 11/13|
+ |  Update Wear rhs for seq. staggered partitioned sol.      farah 11/13|
  *----------------------------------------------------------------------*/
 void CONTACT::WearLagrangeStrategy::UpdateWearDiscretIterate(bool store)
 {

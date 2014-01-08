@@ -81,15 +81,11 @@ namespace WEAR
     void ApplyMeshDisplacement(bool iterated=false);
     
     /// material coordinates evaluated from spatial ones
-    void AdvectionMap(double* XMat1,
-                      double* XMat2,
-                      double* XMat3,
-                      double* XMesh1,
-                      double* XMesh2,
-                      double* XMesh3,
+    void AdvectionMap(double* XMat,
+                      double* XMesh,
                       DRT::Element** ElementPtr,
                       int numelements);
-    
+
     // check convergence
     bool ConvergenceCheck(int iter);
 
