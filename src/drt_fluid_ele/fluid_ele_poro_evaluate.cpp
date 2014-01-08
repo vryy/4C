@@ -71,15 +71,13 @@ int DRT::ELEMENTS::FluidPoro::Evaluate( Teuchos::ParameterList&   params,
   RCP<MAT::Material> mat = Material();
 
   // switch between different physical types as used below
-  std::string impltype = "std";
-  switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
+  std::string impltype = "poro";
+  switch(params.get<int>("physical type",INPAR::FLUID::poro))
   {
-  //incompressible case included for setting general fluid parameters
-  case INPAR::FLUID::incompressible:    impltype = "std";                 break;
   case INPAR::FLUID::poro:              impltype = "poro";                break;
   case INPAR::FLUID::poro_p1:           impltype = "poro_p1";             break;
   case INPAR::FLUID::poro_p2:           impltype = "poro_p2";             break;
-  default: dserror("invalid physical type '%s' for porous fluid!",impltype.c_str() );  break;
+  default: dserror("invalid physical type for porous fluid!");  break;
   }
 
   switch(act)

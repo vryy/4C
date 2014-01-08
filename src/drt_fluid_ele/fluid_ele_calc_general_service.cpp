@@ -118,7 +118,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::EvaluateService(
     }
     break;
     default:
-      dserror("Unknown type of action for Fluid");
+      dserror("Unknown type of action '%i' for Fluid EvaluateService()", act);
     break;
   } // end of switch(act)
 
