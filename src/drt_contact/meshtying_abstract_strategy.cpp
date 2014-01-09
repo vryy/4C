@@ -422,10 +422,10 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   for (int i=0; i<(int)interface_.size(); ++i)
     interface_[i]->RestrictSlaveSets();
 
-  // Step 3: re-setup global maps and vectors (with flag redistributed=TRUE)
-  // (this flag is necessary here, because the slave set has changed and
-  // thus the non-interface set needs to be updated as well)
-  Setup(true);
+  // Step 3: re-setup global maps and vectors with flag redistributed=FALSE
+  // (this flag must be FALSE here, because the slave set has been reduced and
+  // thus the non-interface set N needs to be updated / re-setup as well)
+  Setup(false);
 
   // Step 4: re-setup slave dof row map with parallel distribution of
   // underlying problem discretization (i.e. slave dof row maps before
