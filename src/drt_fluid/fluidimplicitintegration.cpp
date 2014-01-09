@@ -535,11 +535,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       dserror("No problem types involving TangVel predictors are supported for use with locsys conditions!");
     }
 
-    // Nonlinear boundary conditions
-    if (nonlinearbc_ == true) {
-      dserror("No problem types involving nonlinear boundary conditions (via function ApplyNonlinearBoundaryConditions) are supported for use with locsys conditions!");
-    }
-
     // Meshtying
     if (msht_ != INPAR::FLUID::no_meshtying) {
       dserror("No problem types involving meshtying are supported for use with locsys conditions!");
@@ -792,7 +787,13 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // Update local coordinate systems (which may be time dependent)
   // -------------------------------------------------------------------
   if (locsysman_ != Teuchos::null) {
+    discret_->ClearState();
+    if (alefluid_)
+    {
+      discret_->SetState("dispnp", dispnp_);
+    }
     locsysman_->Setup(time_);
+    discret_->ClearState();
   }
 
   // -------------------------------------------------------------------
@@ -1039,6 +1040,15 @@ void FLD::FluidImplicitTimeInt::PrepareSolve()
   if(msht_ != INPAR::FLUID::no_meshtying)
     meshtying_->PrepareMeshtyingSystem(sysmat_, residual_);
 
+  // update local coordinate systems for ALE fluid case
+  // (which may be time and displacement dependent)
+  if ((locsysman_ != Teuchos::null) && (alefluid_)){
+    discret_->ClearState();
+    discret_->SetState("dispnp", dispnp_);
+    locsysman_->Setup(time_);
+    discret_->ClearState();
+  }
+
   // apply Dirichlet boundary conditions to system of equations
   ApplyDirichletToSystem();
 } // FluidImplicitTimeInt::PrepareSolve
@@ -1227,8 +1237,10 @@ void FLD::FluidImplicitTimeInt::TreatTurbulenceModels(Teuchos::ParameterList& el
 /*----------------------------------------------------------------------*
  | application of nonlinear boundary conditions to system, such as      |
  | 1) Neumann inflow boundary conditions                                |
- | 2) weak Dirichlet boundary conditions                                |
- | 3) mixed/hybrid Dirichlet boundary conditions                        |
+ | 2) flow-dependent pressure boundary conditions                       |
+ | 3) weak Dirichlet boundary conditions                                |
+ | 4) mixed/hybrid Dirichlet boundary conditions                        |
+ | 5) BC-free boundary conditions                                       |
  |                                                             vg 06/13 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
@@ -1595,6 +1607,141 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
 
     // clear state
     discret_->ClearState();
+  }
+
+  //------------------------------------------------------------------------
+  // 5) BC-free boundary conditions                             [hahn 12/13]
+  //    ("BoundaryCondition-free Boundary Condition", used for counteracting
+  //     spurious velocities at curved boundaries with slip-conditions. For
+  //     details see Behr M., 2003, "On the Application of Slip Boundary
+  //     Condition on Curved Boundaries".)
+  //------------------------------------------------------------------------
+
+  // check whether there are bc-free boundary conditions
+  std::vector<DRT::Condition*> bcfreeline;
+  discret_->GetCondition("LineBCFree",bcfreeline);
+  std::vector<DRT::Condition*> bcfreesurf;
+  discret_->GetCondition("SurfaceBCFree",bcfreesurf);
+
+  if (bcfreeline.size() != 0 or bcfreesurf.size() != 0)
+  {
+    // get a vector layout from the discretization to construct matching
+    // vectors and matrices local <-> global dof numbering
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    // decide on whether it is a line or a surface condition and set condition
+    // name accordingly. Both types simultaneously is not supported
+    if ((bcfreeline.size() != 0) && (bcfreesurf.size() != 0))
+      dserror("Line and surface bc-free boundary conditions simultaneously prescribed!");
+
+    std::string bcfcondname;
+    if (bcfreeline.size() != 0)      bcfcondname = "LineBCFree";
+    else if (bcfreesurf.size() != 0) bcfcondname = "SurfaceBCFree";
+
+    // get condition vector
+    std::vector<DRT::Condition*> bcfcond;
+    discret_->GetCondition(bcfcondname,bcfcond);
+
+    // assign ID to all conditions
+    for (int bcfcondid = 0; bcfcondid < (int) bcfcond.size(); bcfcondid++)
+    {
+      // check for already existing ID and add ID
+      const std::vector<int>* bcfcondidvec = bcfcond[bcfcondid]->Get<std::vector<int> >("ConditionID");
+      if (bcfcondidvec)
+      {
+        if ((*bcfcondidvec)[0] != bcfcondid) dserror("BC-free boundary condition %s has non-matching ID",bcfcondname.c_str());
+      }
+      else bcfcond[bcfcondid]->Add("ConditionID",bcfcondid);
+    }
+
+    //----------------------------------------------------------------------
+    // evaluate bc-free boundary conditions
+    //----------------------------------------------------------------------
+
+    for (int bcfcondid = 0; bcfcondid < (int) bcfcond.size(); bcfcondid++)
+    {
+      // Obtain node normals
+      // ******************************************************************
+      DRT::Condition* currbcfree = bcfcond[bcfcondid];
+
+      const std::vector<int>*    funct  = currbcfree->Get<std::vector<int> >("functfornodenormal");
+      const std::vector<int>*    useUpdatedNodePos  = currbcfree->Get<std::vector<int> >("useupdatednodepos");
+      const std::vector<int>*    nodes = currbcfree->Nodes();
+
+      // Create node normal vector and initialize with zeros
+      Teuchos::RCP<Epetra_Vector> nodeNormal = LINALG::CreateVector(*dofrowmap,true);
+
+      for (int inode=0;inode<(int)nodes->size();++inode)
+      {
+        bool haveNode = discret_->HaveGlobalNode((*nodes)[inode]);
+        if (!haveNode) continue;
+
+        DRT::Node* node = discret_->gNode((*nodes)[inode]);
+
+        bool isOwner = (node->Owner() == myrank_);
+        if (!isOwner) continue;
+
+        std::vector<int> nodeGIDs;
+        discret_->Dof(node,nodeGIDs);
+
+        for (int jdim=0;jdim<numdim_;jdim++)
+        {
+          // Evaluate function
+          if ((*funct)[jdim]>0)
+          {
+            double functval = 0.0;
+
+            // Determine node position, which shall be used for evaluating the function, and evaluate it
+            if ((*useUpdatedNodePos)[0] == 1) {
+              // Obtain current displacement for node
+              std::vector<double> currDisp;
+              currDisp.resize(nodeGIDs.size());
+
+              DRT::UTILS::ExtractMyValues(*dispnp_,currDisp,nodeGIDs);
+
+              // Calculate current position for node
+              double currPos[numdim_];
+              const double* xp = node->X();
+
+              for (int i=0; i<numdim_; ++i) {
+                currPos[i] = xp[i] + currDisp[i];
+              }
+
+              // Evaluate function with current node position
+              functval=(DRT::Problem::Instance()->Funct((*funct)[jdim]-1)).Evaluate(jdim, &currPos[0], 0.0, &(*discret_));
+            } else {
+              // Evaluate function with reference node position
+              functval=(DRT::Problem::Instance()->Funct((*funct)[jdim]-1)).Evaluate(jdim, node->X(), 0.0, &(*discret_));
+            }
+
+            // Write to global vector
+            int localID = nodeNormal->Map().LID(nodeGIDs[jdim]);
+            (*nodeNormal)[localID] = functval;
+          }
+        }
+      }
+
+      // Evaluate condition
+      // ******************************************************************
+      // create parameter list
+      Teuchos::ParameterList bcfreeparams;
+
+      // set action for elements
+      bcfreeparams.set<int>("action",FLD::bc_free_bc);
+
+      // set required state vectors
+      SetStateTimInt();
+      if (alefluid_) discret_->SetState("dispnp",dispnp_);
+      discret_->SetState("nodenormal",nodeNormal);
+
+      // evaluate all bc-free boundary conditions
+      discret_->EvaluateCondition(bcfreeparams,sysmat_,Teuchos::null,
+                                  residual_,Teuchos::null,Teuchos::null,
+                                  bcfcondname,bcfcondid);
+
+      // clear state
+      discret_->ClearState();
+    }
   }
 
   return;

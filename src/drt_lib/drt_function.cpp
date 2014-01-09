@@ -787,6 +787,45 @@ namespace UTILS {
     LINALG::Matrix<3,1> acc_B_;
   };
 
+  /// special implementation for the node normals of a sphere
+  class NodeNormalSphereFunction : public Function
+  {
+  public:
+    /// ctor
+    NodeNormalSphereFunction(std::vector<double>* origin);
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+  private:
+    // Problem dimension (2D or 3D, i.e. 2 or 3)
+    int dim_;
+
+    // Origin of the sphere
+    std::vector<double> origin_;
+
+  };
+
+  /// special implementation for the rotation vector used in locsys conditions
+  class RotationVectorForNormalSystemFunction : public Function
+  {
+  public:
+
+    /// ctor
+    RotationVectorForNormalSystemFunction(int geoFunct);
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+  private:
+    // Problem dimension (2D or 3D, i.e. 2 or 3)
+    int dim_;
+
+    // Function that calculates the node normal for the specified geometry
+    int geoFunct_;
+
+  };
+
 }
 }
 
@@ -1025,6 +1064,20 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedString("FILE")
     ;
 
+  DRT::INPUT::LineDefinition nodenormalsphere;
+  nodenormalsphere
+    .AddNamedInt("FUNCT")
+    .AddTag("NODENORMALSPHERE")
+    .AddNamedDoubleVector("ORIGIN",3)
+    ;
+
+  DRT::INPUT::LineDefinition rotationvectorfornormalsystem;
+  rotationvectorfornormalsystem
+    .AddNamedInt("FUNCT")
+    .AddTag("ROTATIONVECTORFORNORMALSYSTEM")
+    .AddNamedInt("FUNCTFORGEOMETRY")
+    ;
+
   DRT::INPUT::LineDefinition componentexpr;
   componentexpr
     .AddNamedInt("FUNCT")
@@ -1073,6 +1126,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(levelsetcuttest);
   lines->Add(controlledrotation);
   lines->Add(accelerationprofile);
+  lines->Add(nodenormalsphere);
+  lines->Add(rotationvectorfornormalsystem);
   lines->Add(componentexpr);
   lines->Add(expr);
   return lines;
@@ -1413,6 +1468,20 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           function->ExtractString("FILE", fileName);
 
           functions_.push_back(Teuchos::rcp(new AccelerationProfileFunction(fileName)));
+      }
+      else if (function->HaveNamed("NODENORMALSPHERE"))
+      {
+          std::vector<double> origin;
+          function->ExtractDoubleVector("ORIGIN",origin);
+
+          functions_.push_back(Teuchos::rcp(new NodeNormalSphereFunction(&origin)));
+      }
+      else if (function->HaveNamed("ROTATIONVECTORFORNORMALSYSTEM"))
+      {
+          int geoFunct;
+          function->ExtractInt("FUNCTFORGEOMETRY",geoFunct);
+
+          functions_.push_back(Teuchos::rcp(new RotationVectorForNormalSystemFunction(geoFunct)));
       }
       else if (function->HaveNamed("EXPR"))
       {
@@ -4093,4 +4162,116 @@ double DRT::UTILS::AccelerationProfileFunction::Evaluate(int index, const double
     // Return the acceleration of the node for the given index
     // *****************************************************************************
     return acc_B_(index,0);
+}
+
+/*----------------------------------------------------------------------*
+ | Constructor of NodeNormalSphere                           hahn 12/13 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::NodeNormalSphereFunction::NodeNormalSphereFunction(std::vector<double>* origin) :
+Function()
+{
+  // Get problem dimension (2D or 3D)
+  dim_ = DRT::Problem::Instance()->NDim();
+
+  // Get origin of the sphere
+  origin_ = *origin;
+}
+
+/*---------------------------------------------------------------------*
+ | Evaluate NodeNormalSphere and return the resp. unit normal vector   |
+ | of the given node on the sphere with the given index.    hahn 12/13 |
+ *---------------------------------------------------------------------*/
+double DRT::UTILS::NodeNormalSphereFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  // Calculate node vector length
+  double nodeVecLength = 0;
+  if (dim_ == 2) {
+
+    const double diffX = xp[0] - origin_[0];
+    const double diffY = xp[1] - origin_[1];
+
+    nodeVecLength = sqrt(diffX*diffX + diffY*diffY);
+
+  } else if (dim_ == 3) {
+
+    const double diffX = xp[0] - origin_[0];
+    const double diffY = xp[1] - origin_[1];
+    const double diffZ = xp[2] - origin_[2];
+
+    nodeVecLength = sqrt(diffX*diffX + diffY*diffY + diffZ*diffZ);
+
+  } else {
+    dserror("Dimension must be 2 or 3!");
+  }
+
+  // Return unit node normal for the given node and given index
+  return (xp[index] - origin_[index]) / nodeVecLength;
+}
+
+/*----------------------------------------------------------------------*
+ | Constructor of RotationVectorForNormalSystem              hahn 12/13 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::RotationVectorForNormalSystemFunction::RotationVectorForNormalSystemFunction(int geoFunct) :
+Function()
+{
+  // Get problem dimension (2D or 3D)
+  dim_ = DRT::Problem::Instance()->NDim();
+
+  // Get function that calculates the node normal for the specified geometry
+  geoFunct_ = geoFunct;
+}
+
+/*---------------------------------------------------------------------*
+ | Evaluate RotationVectorForNormalSystem and return the rotation      |
+ | vector (which is later used in locsys conditions) for the given     |
+ | node on the given geometry with the given index, which transforms   |
+ | the local coordinate system of the node into the 'normal system'.   |
+ |                                                          hahn 01/14 |
+ *---------------------------------------------------------------------*/
+double DRT::UTILS::RotationVectorForNormalSystemFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  // Determine normal vector for the given geometry and node
+  double nodeNormal[3];
+  for (int i=0; i<dim_; ++i) {
+    nodeNormal[i] = (DRT::Problem::Instance()->Funct(geoFunct_-1)).Evaluate(i, xp, 0.0, dis);
+  }
+  if (dim_ == 2) {
+    nodeNormal[2] = 0;
+  }
+
+  // Determine L2-norm of normal vector
+  const double nodeNormalNorm = sqrt(nodeNormal[0]*nodeNormal[0]+nodeNormal[1]*nodeNormal[1]+nodeNormal[2]*nodeNormal[2]);
+
+  // Adapt normal vector, if it doesn't have unit length
+  if (abs(nodeNormalNorm-1) > 1e-9) {
+    for (int i=0; i<3; ++i) {
+      nodeNormal[i] = nodeNormal[i] / nodeNormalNorm;
+    }
+  }
+
+  // Determine rotation angle
+  const double rotAngle = acos(nodeNormal[0]);
+
+  // Calculate the L2-norm of the rotation vector (which is given by (0, -nodeNormal[2], nodeNormal[1]))
+  const double rotVecNorm = sqrt(nodeNormal[1]*nodeNormal[1]+nodeNormal[2]*nodeNormal[2]);
+
+  // Calculate the requested rotation vector component
+  double rotVectorComp = 0;
+
+  if (rotVecNorm > 1e-9) { // normal vector is not (+-1,0,0), thus rotate as planned
+    if (index == 1) {
+      rotVectorComp = rotAngle * (-1) * nodeNormal[2] / rotVecNorm;
+    } else if (index == 2) {
+      rotVectorComp = rotAngle * nodeNormal[1] / rotVecNorm;
+    }
+  } else if (nodeNormal[0] < 0) { // normal vector is (-1,0,0), thus rotate 180 deg about z-axis, i.e. (0,0,pi)
+    if (index == 2) {
+      rotVectorComp = PI;
+    }
+  }
+  // Note: All other cases are handled by the initialization (i.e. rotVectorComp = 0)
+  //       and the fact that the normal vector has unit length!
+
+  // Return the requested rotation vector component
+  return rotVectorComp;
 }

@@ -131,6 +131,17 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec1);
     break;
   }
+  case FLD::bc_free_bc:
+  {
+    DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(this)->BCFreeBC(
+        this,
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elevec1);
+    break;
+  }
   case FLD::ba_calc_adjoint_neumann:
   {
     DRT::ELEMENTS::FluidAdjoint3BoundaryImplInterface::Impl(this)->EvaluateNeumann(
@@ -192,6 +203,7 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(
   case FLD::enforce_weak_dbc:
   case FLD::mixed_hybrid_dbc:
   case FLD::flow_dep_pressure_bc:
+  case FLD::bc_free_bc:
   case FLD::fpsi_coupling:
     // special cases: the boundary element assembles also into
     // the inner dofs of its parent element

@@ -191,9 +191,9 @@ DPOINT                          0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DLINE                           2
-E 2 - ROTANGLE 0.0 0.0 -2.677945045 CURVE none none none FUNCT 0 0 0
+E 2 - ROTANGLE 0.0 0.0 -2.677945045 CURVE none none none FUNCT 0 0 0 USEUPDATEDNODEPOS 0
 //NORMAL -0.894427191 -0.447213596 0.0
-E 4 - ROTANGLE 0.0 0.0 -0.4636476090 CURVE none none none FUNCT 0 0 0
+E 4 - ROTANGLE 0.0 0.0 -0.4636476090 CURVE none none none FUNCT 0 0 0 USEUPDATEDNODEPOS 0
 //NORMAL 0.894427191 -0.447213596 0.0
 -----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId

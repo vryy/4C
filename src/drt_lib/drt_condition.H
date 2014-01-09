@@ -137,6 +137,8 @@ public:
     BlendMaterial,
     LineFlowDepPressure,
     SurfaceFlowDepPressure,
+    LineBCFree,
+    SurfaceBCFree,
     LineWeakDirichlet,
     SurfaceWeakDirichlet,
     LineMixHybDirichlet,

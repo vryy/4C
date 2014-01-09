@@ -803,6 +803,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   locsyscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve", 3, true, true)));
   locsyscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
   locsyscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",3,false,false)));
+  locsyscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("USEUPDATEDNODEPOS")));
+  locsyscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("useupdatednodepos", 1)));
 
   Teuchos::RCP<ConditionDefinition> pointlocsys =
     Teuchos::rcp(new ConditionDefinition("DESIGN POINT LOCSYS CONDITIONS",
@@ -1079,6 +1081,41 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // and append it to the list of all conditions
   condlist.push_back(lineflowdeppressure);
   condlist.push_back(surfflowdeppressure);
+
+  /*--------------------------------------------------------------------*/
+  // BC-free boundary conditions
+
+  std::vector<Teuchos::RCP<ConditionComponent> > bcfreecomponents;
+
+  bcfreecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCTFORNODENORMAL")));
+  bcfreecomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("functfornodenormal",3,false,false)));
+  bcfreecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("USEUPDATEDNODEPOS")));
+  bcfreecomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("useupdatednodepos", 1)));
+
+  Teuchos::RCP<ConditionDefinition> linebcfree =
+   Teuchos::rcp(new ConditionDefinition("DESIGN LINE BC-FREE BOUNDARY CONDITIONS",
+                                        "LineBCFree",
+                                        "LineBCFree",
+                                        DRT::Condition::LineBCFree,
+                                        true,
+                                        DRT::Condition::Line));
+
+  Teuchos::RCP<ConditionDefinition> surfbcfree =
+   Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE BC-FREE BOUNDARY CONDITIONS",
+                                        "SurfaceBCFree",
+                                        "SurfaceBCFree",
+                                        DRT::Condition::SurfaceBCFree,
+                                        true,
+                                        DRT::Condition::Surface));
+
+  for (unsigned i=0; i<bcfreecomponents.size(); ++i)
+   {
+     linebcfree->AddComponent(bcfreecomponents[i]);
+     surfbcfree->AddComponent(bcfreecomponents[i]);
+   }
+
+  condlist.push_back(linebcfree);
+  condlist.push_back(surfbcfree);
 
    /*--------------------------------------------------------------------*/
   // weak Dirichlet conditions

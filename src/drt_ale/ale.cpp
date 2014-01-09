@@ -163,7 +163,10 @@ void ALE::Ale::PrepareTimeStep()
 
   // Update local coordinate systems (which may be time dependent)
   if (locsysman_ != Teuchos::null) {
+    discret_->ClearState();
+    discret_->SetState("dispnp", dispnp_);
     locsysman_->Setup(time_);
+    discret_->ClearState();
   }
 }
 
