@@ -540,6 +540,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
   switch(DRT::INPUT::IntegralValue<int>(mcparams,"SYSTEM"))
   {
     case INPAR::CONTACT::system_spsimpler:
+    case INPAR::CONTACT::system_spcoupled:
     {
       // meshtying/contact for structure
       // get the solver number used for meshtying/contact problems
@@ -552,9 +553,9 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
 
       // solver can be either UMFPACK (direct solver) or an Aztec_MSR/Belos (iterative solver)
       INPAR::SOLVER::SolverType sol  = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"SOLVER");
+      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
       if (sol != INPAR::SOLVER::umfpack) {
         // if an iterative solver is chosen we need a block preconditioner like CheapSIMPLE
-        INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
         if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
             prec != INPAR::SOLVER::azprec_TekoSIMPLE  &&
             prec != INPAR::SOLVER::azprec_MueLuAMG_contactSP)  // TODO adapt error message
@@ -585,7 +586,6 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
           dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
 
         // provide null space information
-        INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
         if (prec == INPAR::SOLVER::azprec_CheapSIMPLE ||
                   prec == INPAR::SOLVER::azprec_TekoSIMPLE) {
           actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1")); // Inverse2 is created within blockpreconditioners.cpp
