@@ -454,6 +454,24 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
     pgsdofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)data.size(),&data[0],0,Comm()));
   }
 
+  // Step 5: re-setup internal dof row map (non-interface dofs)
+  // (this one has been re-computed in Setup() above, but is possibly
+  // incorrect due to parallel redistribution of the interfaces)
+  // --> recompute based on splitting with slave and master dof row maps
+  // before parallel redistribution!
+  if (ParRedist())
+  {
+    gndofrowmap_ = LINALG::SplitMap(*ProblemDofs(), *pgsdofrowmap_);
+    gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *pgmdofrowmap_);
+  }
+
+  // Step 6: re-setup displacement dof row map with current parallel
+  // distribution (possibly wrong, same argument as above)
+  if (ParRedist())
+  {
+    gdisprowmap_  = LINALG::MergeMap(*gndofrowmap_,*gsmdofrowmap_,false);
+  }
+
   return;
 }
 
