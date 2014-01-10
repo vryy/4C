@@ -43,7 +43,24 @@ L1 :  1,  2,  4
 L2 :  2,  0,  5
 \end{verbatim}
 
+\subsection{Quadratic NURBS 9 Element}
 
+\begin{figure}[h!]
+\begin{center}
+\subfigure[quadratic elements]{\label{fig:conventions:quad_nurbs} \includegraphics[width=0.45\textwidth]{figures/quad_nurbs}}
+%\subfigure[triangular elements]{\label{fig:conventions:tri} \includegraphics[width=0.41\textwidth]{figures/tri}}
+\caption{Node numbering scheme and surface lines for NURBS 9. We apply NURBS specific cartesian numbering.}
+\label{fig:conventions:2d}
+\end{center}
+\end{figure}
+
+Line pattern:
+\begin{verbatim}
+L0 :  0,  1,  2
+L1 :  2,  5,  8
+L2 :  6,  7,  8
+L3 :  0,  3,  6
+\end{verbatim}
 
 
 
@@ -87,6 +104,47 @@ L8 :  4,  5, 16
 L9 :  5,  6, 17
 L10:  6,  7, 18
 L11:  4,  7, 19
+\end{verbatim}
+
+\newpage
+\subsection{Hexahedral NURBS Elements}
+
+\subsubsection{Hex27 NURBS Element}
+\begin{figure}[h!]
+\begin{center}
+\subfigure[node pattern]{\label{fig:conventions:hex27nurbs_nodes}
+\includegraphics[width=0.46\textwidth]{figures/hex27nurbs_nodes}}
+\subfigure[surface and line pattern]{\label{fig:conventions:hex27nurbs_surface_lines}
+\includegraphics[width=0.43\textwidth]{figures/hex27nurbs_surfaces_lines}}
+\caption{Node numbering scheme and surface and lines patterns for NURBS 27. We apply NURBS specific cartesian numbering.}
+\label{fig:conventions:hex27nurbs}
+\end{center}
+\end{figure}
+
+Surface pattern:
+\begin{verbatim}
+S0 :   0,  1,  2,  3,  4,  5,  6,  7, 8
+S1 :  18, 19, 20, 21, 22, 23, 24, 25, 26
+S2 :   0,  1,  2,  9, 10, 11, 18, 19, 20
+S3 :   6,  7,  8, 15, 16, 17, 24, 25, 26
+S4 :   2,  5,  8, 11, 14, 17, 20, 23, 26
+S5 :   0,  3,  6,  9, 12, 15, 18, 21, 24
+\end{verbatim}
+
+Line pattern:
+\begin{verbatim}
+L0 :   0,  1,  2
+L1 :   2,  5,  8
+L2 :   6,  7,  8
+L3 :   0,  3,  6
+L4 :   0,  9, 18
+L5 :   2, 11, 20
+L6 :   8, 17, 26
+L7 :   6, 15, 24
+L8 :  18, 19, 20
+L9 :  20, 23, 26
+L10:  24, 25, 26
+L11:  18, 21, 24
 \end{verbatim}
 
 \newpage
@@ -149,8 +207,6 @@ L5 :  2,  3,  9
 \label{fig:conventions:pyramid}
 \end{center}
 \end{figure}
-
-
 
 
 

@@ -16,6 +16,7 @@
 #include "so_tet4.H"
 #include "so_hex27.H"
 #include "so_tet10.H"
+#include "so_nurbs27.H"
 
 namespace DRT
 {
@@ -139,6 +140,35 @@ public:
 private:
 
   static So_tet10PoroType instance_;
+};
+
+/*----------------------------------------------------------------------*
+ |  NURBS 27 Element                                       |
+ *----------------------------------------------------------------------*/
+class So_nurbs27PoroType : public NURBS::So_nurbs27Type
+{
+public:
+
+  std::string Name() const { return "So_nurbs27PoroType"; }
+
+  static So_nurbs27PoroType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
+                                             const int id,
+                                             const int owner );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
+
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+private:
+
+  static So_nurbs27PoroType instance_;
 };
 
 

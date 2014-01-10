@@ -38,18 +38,21 @@ DRT::ELEMENTS::So3_Poro<so3_ele,distype>::So3_Poro(int id, int owner):
 so3_ele(id,owner),
 data_(),
 intpoints_(distype),
+init_(false),
+scatracoupling_(false),
+isNurbs_(false),
+weights_(true),
+myknots_(numdim_),
 fluidmat_(Teuchos::null),
 structmat_(Teuchos::null)
 {
   numgpt_ = intpoints_.NumPoints();
-  ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
+  //ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
 
   invJ_.resize(numgpt_, LINALG::Matrix<numdim_,numdim_>(true));
   detJ_.resize(numgpt_, 0.0);
   xsi_.resize(numgpt_, LINALG::Matrix<numdim_,1>(true));
 
-  init_=false;
-  scatracoupling_=false;
   return;
 }
 
@@ -66,9 +69,12 @@ invJ_(old.invJ_),
 detJ_(old.detJ_),
 xsi_(old.xsi_),
 intpoints_(distype),
-ishigherorder_(old.ishigherorder_),
+//ishigherorder_(old.ishigherorder_),
 init_(old.init_),
 scatracoupling_(old.scatracoupling_),
+isNurbs_(old.isNurbs_),
+weights_(old.weights_),
+myknots_(old.myknots_),
 fluidmat_(old.fluidmat_),
 structmat_(old.structmat_)
 {
@@ -123,6 +129,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Pack(DRT::PackBuffer& data) const
   // scatracoupling_
   so3_ele::AddtoPack(data,scatracoupling_);
 
+  // isNurbs_
+  so3_ele::AddtoPack(data,isNurbs_);
+
   // add base class Element
   so3_ele::Pack(data);
 
@@ -166,6 +175,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Unpack(const std::vector<char>& d
 
   // scatracoupling_
   scatracoupling_ = (bool)( so3_ele::ExtractInt(position,data) );
+
+  // isNurbs_
+  isNurbs_ = (bool)( so3_ele::ExtractInt(position,data) );
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -287,6 +299,9 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::UniqueParObjectId() const
   case DRT::Element::hex27:
     return So_hex27PoroType::Instance().UniqueParObjectId();
     break;
+  case DRT::Element::nurbs27:
+    return So_nurbs27PoroType::Instance().UniqueParObjectId();
+    break;
   default: dserror("unknown element type!");
     break;
   }
@@ -308,6 +323,8 @@ DRT::ElementType & DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ElementType() const
     return So_hex8PoroType::Instance();
   case DRT::Element::hex27:
     return So_hex27PoroType::Instance();
+  case DRT::Element::nurbs27:
+    return So_nurbs27PoroType::Instance();
   default: dserror("unknown element type!");
     break;
   }

@@ -1810,6 +1810,28 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
                                           ele->SurfaceNumber());
 
 
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  // --------------------------------------------------
+
+  // In the case of nurbs the normal vector is multiplied with normalfac
+  double normalfac = 0.0;
+  std::vector<Epetra_SerialDenseVector> mypknots(my::nsd_);
+  std::vector<Epetra_SerialDenseVector> myknots (my::bdrynsd_);
+  Epetra_SerialDenseVector weights(my::bdrynen_);
+
+  // for isogeometric elements --- get knotvectors for parent
+  // element and surface element, get weights
+  if(IsNurbs<distype>::isnurbs)
+  {
+     bool zero_size = my::GetKnotVectorAndWeightsForNurbs(ele, discretization, mypknots, myknots, weights, normalfac);
+     if(zero_size)
+     {
+       return;
+     }
+  }
+  // --------------------------------------------------
+
   //structure velocity at gausspoint
   LINALG::Matrix<my::nsd_,1> gridvelint;
 
@@ -1848,7 +1870,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,&myknots,&weights);
 
     my::velint_.Multiply(evelnp,my::funct_);
     gridvelint.Multiply(egridvel,my::funct_);
@@ -2522,6 +2544,27 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
                                           distype  ,
                                           ele->SurfaceNumber());
 
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  // --------------------------------------------------
+
+  // In the case of nurbs the normal vector is multiplied with normalfac
+  double normalfac = 0.0;
+  std::vector<Epetra_SerialDenseVector> mypknots(my::nsd_);
+  std::vector<Epetra_SerialDenseVector> myknots (my::bdrynsd_);
+  Epetra_SerialDenseVector weights(my::bdrynen_);
+
+  // for isogeometric elements --- get knotvectors for parent
+  // element and surface element, get weights
+  if(IsNurbs<distype>::isnurbs)
+  {
+     bool zero_size = my::GetKnotVectorAndWeightsForNurbs(ele, discretization, mypknots, myknots, weights, normalfac);
+     if(zero_size)
+     {
+       return;
+     }
+  }
+  // --------------------------------------------------
 
   //structure velocity at gausspoint
   LINALG::Matrix<my::nsd_,1> gridvelint;
@@ -2561,7 +2604,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,&myknots,&weights);
 
     const double timefacpre = my::fldparatimint_->TimeFacPre() ;
     const double timefacfacpre = my::fldparatimint_->TimeFacPre() * my::fac_;
@@ -2787,12 +2830,34 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
     epressnp(inode)   = myvelnp[my::nsd_+(inode*my::numdofpernode_)];
   }
 
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  // --------------------------------------------------
+
+  // In the case of nurbs the normal vector is multiplied with normalfac
+  double normalfac = 0.0;
+  std::vector<Epetra_SerialDenseVector> mypknots(my::nsd_);
+  std::vector<Epetra_SerialDenseVector> myknots (my::bdrynsd_);
+  Epetra_SerialDenseVector weights(my::bdrynen_);
+
+  // for isogeometric elements --- get knotvectors for parent
+  // element and surface element, get weights
+  if(IsNurbs<distype>::isnurbs)
+  {
+     bool zero_size = my::GetKnotVectorAndWeightsForNurbs(ele, discretization, mypknots, myknots, weights, normalfac);
+     if(zero_size)
+     {
+       return;
+     }
+  }
+  // --------------------------------------------------
+
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+    this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,&myknots,&weights);
 
     const double timefac       = my::fldparatimint_->TimeFac() ;
     const double timefacfac    = my::fldparatimint_->TimeFac() * my::fac_;

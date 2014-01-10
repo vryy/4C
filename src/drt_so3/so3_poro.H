@@ -561,13 +561,13 @@ protected:
       LINALG::Matrix<numdim_,numnod_>&  N_XYZ
       );
 
-  void ComputeSecondDerivativesOfShapeFunctions(
-      const int &                             gp,
-      const LINALG::Matrix<numdim_,numnod_>&  xrefe,
-      LINALG::Matrix<numdim_,numnod_>&        deriv ,
-      LINALG::Matrix<numderiv2_,numnod_>&     deriv2,
-      LINALG::Matrix<numdim_,numnod_>&        N_XYZ,
-      LINALG::Matrix<numderiv2_,numnod_>&     N_XYZ2);
+//  void ComputeSecondDerivativesOfShapeFunctions(
+//      const int &                             gp,
+//      const LINALG::Matrix<numdim_,numnod_>&  xrefe,
+//      LINALG::Matrix<numdim_,numnod_>&        deriv ,
+//      LINALG::Matrix<numderiv2_,numnod_>&     deriv2,
+//      LINALG::Matrix<numdim_,numnod_>&        N_XYZ,
+//      LINALG::Matrix<numderiv2_,numnod_>&     N_XYZ2);
 
   double ComputeJacobianDeterminant(
      const int & gp,
@@ -602,13 +602,21 @@ protected:
   DRT::UTILS::GaussIntegration intpoints_;
 
   //!flag indicating higher order element
-  bool ishigherorder_;
+  //bool ishigherorder_;
 
   //!flag indicating if element has been initialized
   bool init_;
 
   //! flag for scatra coupling
   bool scatracoupling_;
+
+  //! flag for nurbs
+  bool isNurbs_;
+
+  //! weights for nurbs elements
+  LINALG::Matrix<numnod_,1> weights_;
+  //! knot vector for nurbs elements
+  std::vector<Epetra_SerialDenseVector> myknots_;
 
   //!corresponding fluid material
   Teuchos::RCP< MAT::FluidPoro > fluidmat_;

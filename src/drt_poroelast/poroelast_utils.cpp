@@ -177,6 +177,7 @@ bool POROELAST::UTILS::CheckPoro(
       actele->ElementType() == DRT::ELEMENTS::So_tet4PoroType::Instance()    or
       actele->ElementType() == DRT::ELEMENTS::So_tet10PoroType::Instance()   or
       actele->ElementType() == DRT::ELEMENTS::So_hex27PoroType::Instance()   or
+      actele->ElementType() == DRT::ELEMENTS::So_nurbs27PoroType::Instance() or
       actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroType::Instance()  or
       actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroType::Instance()  or
       actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP2Type::Instance() or

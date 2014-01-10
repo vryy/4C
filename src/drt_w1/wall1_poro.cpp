@@ -33,7 +33,9 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner) :
 DRT::ELEMENTS::Wall1(id,owner),
 data_(),
-intpoints_(distype)
+intpoints_(distype),
+weights_(true),
+myknots_(numdim_)
 {
   numgpt_ = intpoints_.NumPoints();
   ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
@@ -63,7 +65,9 @@ xsi_(old.xsi_),
 intpoints_(distype),
 ishigherorder_(old.ishigherorder_),
 init_(old.init_),
-scatracoupling_(old.scatracoupling_)
+scatracoupling_(old.scatracoupling_),
+weights_(old.weights_),
+myknots_(old.myknots_)
 {
   numgpt_ = intpoints_.NumPoints();
 
@@ -288,5 +292,10 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::v
   return so3mat->VisData(name, data, numgpt_,this->Id());
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>;
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs4>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs9>;

@@ -22,6 +22,7 @@ Maintainer: Anh-Tu Vuong
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
 #include "../drt_fem_general/drt_utils_gder2.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
 #include "../drt_geometry/position_array.H"
 
@@ -37,6 +38,8 @@ Maintainer: Anh-Tu Vuong
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_inpar/inpar_fpsi.H"
+
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -307,6 +310,19 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype, my::nsd_, LINALG::Matrix<my::nsd_, my::nen_> >(
       ele, my::xyze_);
+
+  //----------------------------------------------------------------
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  //----------------------------------------------------------------
+  if(my::isNurbs_)
+  {
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+    return(0);
+  } // Nurbs specific stuff
 
   PreEvaluate(params,ele,discretization);
 

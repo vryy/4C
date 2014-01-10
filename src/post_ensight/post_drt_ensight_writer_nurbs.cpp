@@ -1897,6 +1897,10 @@ void EnsightWriter::WriteDofResultStepForNurbs(
           name == "averaged_velocity"
               ||
               name == "ale_displacement"
+                  ||
+                  name == "convective_velocity"
+                      ||
+                      name == "grid_velocity"
       )
       {
         if(dim!=numdf)
@@ -2060,6 +2064,10 @@ void EnsightWriter::WriteDofResultStepForNurbs(
        name == "averaged_velocity"
        ||
        name == "ale_displacement"
+       ||
+       name == "convective_velocity"
+       ||
+       name == "grid_velocity"
       )
     {
       my_data.resize(dim*numnp);

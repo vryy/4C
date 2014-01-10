@@ -1249,8 +1249,16 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_poroelast:
   {
     // create empty discretizations
-    structdis     = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-    porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid"   ,reader.Comm()));
+    if(distype == "Nurbs")
+    {
+      structdis  = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
+      porofluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("porofluid",reader.Comm()));
+    }
+    else
+    {
+      structdis     = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+      porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid"   ,reader.Comm()));
+    }
 
     AddDis("structure", structdis);
     AddDis("porofluid", porofluiddis);

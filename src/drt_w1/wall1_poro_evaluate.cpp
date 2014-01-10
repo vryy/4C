@@ -32,6 +32,8 @@
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
 //#include "Sacado.hpp"
 
 /*----------------------------------------------------------------------*
@@ -199,6 +201,42 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
   else if (action=="calc_struct_stress")                act = calc_struct_stress;
   //else if (action=="postprocess_stress")                act = postprocess_stress;
   //else dserror("Unknown type of action for Wall1_Poro: %s",action.c_str());
+
+
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  if (Shape() == DRT::Element::nurbs4 || Shape() == DRT::Element::nurbs9)
+  {
+    myknots_.resize(2);
+
+    switch (act)
+    {
+    case calc_struct_nlnstiffmass:
+    case calc_struct_nlnstifflmass:
+    case calc_struct_nlnstiff:
+    case calc_struct_internalforce:
+    case calc_struct_multidofsetcoupling:
+    case calc_struct_stress:
+    {
+      DRT::NURBS::NurbsDiscretization* nurbsdis =
+          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+      bool zero_sized = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_,Id());
+
+      // skip zero sized elements in knot span --- they correspond to interpolated nodes
+      if (zero_sized)
+      {
+        return (0);
+      }
+
+      break;
+    }
+    default:
+      myknots_.clear();
+      break;
+    }
+  }
+
   // what should the element do
   switch(act)
   {
@@ -534,6 +572,19 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoop(
                                     LINALG::Matrix<numdof_,1>*              force
                                         )
 {
+
+  /*--------------------------------- get node weights for nurbs elements */
+  if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs9)
+  {
+    for (int inode=0; inode<numnod_; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+
+      weights_(inode) = cp->W();
+    }
+  }
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1612,8 +1663,27 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeShapeFunctionsAndDerivatives(
     LINALG::Matrix<numdim_,numnod_>& deriv ,
     LINALG::Matrix<numdim_,numnod_>& N_XYZ)
 {
-  DRT::UTILS::shape_function<distype>(xsi_[gp],shapefct);
-      DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+
+  // get values of shape functions and derivatives in the gausspoint
+  if(distype != DRT::Element::nurbs4
+     and
+     distype != DRT::Element::nurbs9)
+  {
+  // shape functions and their derivatives for polynomials
+    DRT::UTILS::shape_function<distype>(xsi_[gp],shapefct);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+  }
+  else
+  {
+    // nurbs version
+    DRT::NURBS::UTILS::nurbs_get_funct_deriv
+    (shapefct  ,
+      deriv  ,
+      xsi_[gp],
+      myknots_,
+      weights_,
+      distype );
+  }
 
   /* get the inverse of the Jacobian matrix which looks like:
    **            [ X_,r  Y_,r  Z_,r ]^-1
@@ -1862,3 +1932,5 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ExtractValuesFromGlobalVector(
  *----------------------------------------------------------------------*/
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>;
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs4>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs9>;

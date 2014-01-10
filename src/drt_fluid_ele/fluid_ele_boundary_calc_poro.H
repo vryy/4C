@@ -52,6 +52,10 @@ public:
                       Epetra_SerialDenseVector&       elevec2,
                       Epetra_SerialDenseVector&       elevec3);
 
+private:
+  /// private constructor since we are singleton
+  FluidEleBoundaryCalcPoro();
+
   /*!
   \brief apply boundary integral for porous media problems
 
@@ -164,11 +168,6 @@ public:
       DRT::Discretization&       discretization,
       std::vector<int>&          lm,
       Epetra_SerialDenseVector&  elevec1);
-
-
-private:
-  /// private constructor since we are singleton
-  FluidEleBoundaryCalcPoro();
 
   /*!
   \brief apply boundary integral (mass flux over boundary in continuity equation) for porous media problems

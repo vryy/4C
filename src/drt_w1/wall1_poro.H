@@ -594,6 +594,11 @@ namespace ELEMENTS
     //!own poro structure material
     Teuchos::RCP< MAT::StructPoro > structmat_;
 
+    //! weights for nurbs elements
+    LINALG::Matrix<numnod_,1> weights_;
+    //! knot vector for nurbs elements
+    std::vector<Epetra_SerialDenseVector> myknots_;
+
   }; // class So3_Poro
 
 }

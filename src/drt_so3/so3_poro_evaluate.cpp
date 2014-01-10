@@ -32,6 +32,9 @@
 
 #include "../drt_fem_general/drt_utils_integration.H"
 
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+
 //#include "Sacado.hpp"
 
 /*----------------------------------------------------------------------*
@@ -285,6 +288,16 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     LINALG::Matrix<numdof_,numdof_>* matptr = NULL;
     if (elemat1.IsInitialized()) matptr = &elemat1;
 
+    if(isNurbs_)
+    {
+      // access knots and weights for this element
+      bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,this,myknots_,weights_);
+
+      // if we have a zero sized element due to a interpolated point -> exit here
+      if(zero_size)
+        return 0;
+    }
+
     // need current fluid state,
     // call the fluid discretization: fluid equates 2nd dofset
     // disassemble velocities and pressures
@@ -330,6 +343,16 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
 
     LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* matptr = NULL;
     if (elemat1.IsInitialized()) matptr = &elemat1;
+
+    if(isNurbs_)
+    {
+      // access knots and weights for this element
+      bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,this,myknots_,weights_);
+
+      // if we have a zero sized element due to a interpolated point -> exit here
+      if(zero_size)
+        return 0;
+    }
 
     // need current fluid state,
     // call the fluid discretization: fluid equates 2nd dofset
@@ -1017,24 +1040,32 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::InitElement()
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
   }
+
+  if(distype == DRT::Element::nurbs27)
+    isNurbs_=true;
+
   invJ_.resize(numgpt_);
   detJ_.resize(numgpt_);
   xsi_.resize(numgpt_);
 
-  for (int gp=0; gp<numgpt_; ++gp)
-  {
-    const double* gpcoord = intpoints_.Point(gp);
-    for (int idim=0;idim<numdim_;idim++)
+  //if(not isNurbs_)
+    for (int gp=0; gp<numgpt_; ++gp)
     {
-       xsi_[gp](idim) = gpcoord[idim];
+      const double* gpcoord = intpoints_.Point(gp);
+      for (int idim=0;idim<numdim_;idim++)
+      {
+         xsi_[gp](idim) = gpcoord[idim];
+      }
+
+      if(not isNurbs_)
+      {
+        DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+
+        invJ_[gp].Multiply(deriv,xrefe);
+        detJ_[gp] = invJ_[gp].Invert();
+        if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
+      }
     }
-
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
-
-    invJ_[gp].Multiply(deriv,xrefe);
-    detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
-  }
 
   init_=true;
 
@@ -1356,8 +1387,35 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeShapeFunctionsAndDerivativ
     LINALG::Matrix<numdim_,numnod_>& deriv ,
     LINALG::Matrix<numdim_,numnod_>& N_XYZ)
 {
-  DRT::UTILS::shape_function<distype>(xsi_[gp],shapefct);
-  DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+  if(!isNurbs_)
+  {
+    DRT::UTILS::shape_function<distype>(xsi_[gp],shapefct);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+  }
+  else
+  {
+    DRT::NURBS::UTILS::nurbs_get_funct_deriv
+    (shapefct  ,
+        deriv  ,
+        xsi_[gp],
+        myknots_,
+        weights_,
+        distype );
+
+    LINALG::Matrix<numnod_,numdim_> xrefe;
+    for (int i=0; i<numnod_; ++i)
+    {
+      Node** nodes=Nodes();
+      if(!nodes) dserror("Nodes() returned null pointer");
+      xrefe(i,0) = Nodes()[i]->X()[0];
+      xrefe(i,1) = Nodes()[i]->X()[1];
+      xrefe(i,2) = Nodes()[i]->X()[2];
+    }
+
+    invJ_[gp].Multiply(deriv,xrefe);
+    detJ_[gp] = invJ_[gp].Invert();
+    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
+  }
 
   /* get the inverse of the Jacobian matrix which looks like:
    **            [ X_,r  Y_,r  Z_,r ]^-1
@@ -1374,35 +1432,49 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeShapeFunctionsAndDerivativ
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeSecondDerivativesOfShapeFunctions(
-    const int & gp,
-    const LINALG::Matrix<numdim_,numnod_>& xrefe,
-    LINALG::Matrix<numdim_,numnod_>& deriv ,
-    LINALG::Matrix<numderiv2_,numnod_>& deriv2,
-    LINALG::Matrix<numdim_,numnod_>& N_XYZ,
-    LINALG::Matrix<numderiv2_,numnod_>& N_XYZ2)
-{
-
-  if( ishigherorder_ )
-  {
-    // transposed jacobian "dX/ds"
-    LINALG::Matrix<numdim_,numdim_> xjm0;
-    xjm0.MultiplyNT(deriv,xrefe);
-
-    // get the second derivatives of standard element at current GP w.r.t. rst
-    DRT::UTILS::shape_function_deriv2<distype>(xsi_[gp],deriv2);
-    // get the second derivatives of standard element at current GP w.r.t. XYZ
-    DRT::UTILS::gder2<distype>(xjm0,N_XYZ,deriv2,xrefe,N_XYZ2);
-  }
-  else
-  {
-    deriv2.Clear();
-    N_XYZ2.Clear();
-  }
-
-  return;
-}
+//template<class so3_ele, DRT::Element::DiscretizationType distype>
+//void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeSecondDerivativesOfShapeFunctions(
+//    const int & gp,
+//    const LINALG::Matrix<numdim_,numnod_>& xrefe,
+//    LINALG::Matrix<numdim_,numnod_>& deriv ,
+//    LINALG::Matrix<numderiv2_,numnod_>& deriv2,
+//    LINALG::Matrix<numdim_,numnod_>& N_XYZ,
+//    LINALG::Matrix<numderiv2_,numnod_>& N_XYZ2)
+//{
+//
+//  if( ishigherorder_ )
+//  {
+//    // transposed jacobian "dX/ds"
+//    LINALG::Matrix<numdim_,numdim_> xjm0;
+//    xjm0.MultiplyNT(deriv,xrefe);
+//
+//    if(!isNurbs_)
+//    {
+//      // get the second derivatives of standard element at current GP w.r.t. rst
+//      DRT::UTILS::shape_function_deriv2<distype>(xsi_[gp],deriv2);
+//      // get the second derivatives of standard element at current GP w.r.t. XYZ
+//      DRT::UTILS::gder2<distype>(xjm0,N_XYZ,deriv2,xrefe,N_XYZ2);
+//    }
+//    else
+//    {
+//      DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2
+//      (funct_  ,
+//          deriv  ,
+//          deriv2 ,
+//          xsi_    ,
+//          myknots_,
+//          weights_,
+//          distype );
+//    }
+//  }
+//  else
+//  {
+//    deriv2.Clear();
+//    N_XYZ2.Clear();
+//  }
+//
+//  return;
+//}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

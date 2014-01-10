@@ -3,6 +3,7 @@
  \file so3_poro_interface.H
 
  \brief
+ Interface class for access to a poro element
 
  <pre>
    Maintainer: Anh-Tu Vuong

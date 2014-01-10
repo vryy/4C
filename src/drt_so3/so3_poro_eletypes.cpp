@@ -77,7 +77,7 @@ int DRT::ELEMENTS::So_hex8PoroType::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8> * actele =
         dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8> * >(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8_poro* failed");
-    actele->So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>::InitElement();
+    actele->InitElement();
   }
   return 0;
 }
@@ -286,6 +286,75 @@ int DRT::ELEMENTS::So_tet10PoroType::Initialize(DRT::Discretization& dis)
         dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10> * >(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet10_poro* failed");
     actele->So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>::InitElement();
+  }
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
+ |  NURBS 27 Element                                       |
+ *----------------------------------------------------------------------*/
+
+
+DRT::ELEMENTS::So_nurbs27PoroType DRT::ELEMENTS::So_nurbs27PoroType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_nurbs27PoroType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>* object =
+        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PoroType::Create( const std::string eletype,
+                                                            const std::string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SONURBS27PORO" )
+  {
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>
+                                                                    (id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PoroType::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>
+                                                                   (id,owner));
+  return ele;
+}
+
+void DRT::ELEMENTS::So_nurbs27PoroType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >  definitions_nurbs27;
+  NURBS::So_nurbs27Type::SetupElementDefinition(definitions_nurbs27);
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs_nurbs27 =
+      definitions_nurbs27["SONURBS27"];
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs =
+      definitions["SONURBS27PORO"];
+
+  defs["NURBS27"]=defs_nurbs27["NURBS27"];
+}
+
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                           |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_nurbs27PoroType::Initialize(DRT::Discretization& dis)
+{
+  NURBS::So_nurbs27Type::Initialize(dis);
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->ElementType() != *this) continue;
+    DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>* actele =
+        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27> * >(dis.lColElement(i));
+    if (!actele) dserror("cast to So_nurbs27_poro* failed");
+    actele->So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>::InitElement();
   }
   return 0;
 }
