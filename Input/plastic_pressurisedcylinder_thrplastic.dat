@@ -141,7 +141,7 @@ DVOL                            1
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
 DSURF                           1
-E 3 - ROTANGLE 1.570796052 2.720699205 0 CURVE none none none FUNCT 0 0 0
+E 3 - ROTANGLE 1.570796052 2.720699205 0 CURVE none none none FUNCT 0 0 0 USEUPDATEDNODEPOS 0
 //normal -0.5 0.866025 0.0 tangent 0.866025 0.5 0.0
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
