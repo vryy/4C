@@ -554,7 +554,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
       // solver can be either UMFPACK (direct solver) or an Aztec_MSR/Belos (iterative solver)
       INPAR::SOLVER::SolverType sol  = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"SOLVER");
       INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
-      if (sol != INPAR::SOLVER::umfpack) {
+      if (sol != INPAR::SOLVER::umfpack && sol != INPAR::SOLVER::superlu) {
         // if an iterative solver is chosen we need a block preconditioner like CheapSIMPLE
         if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
             prec != INPAR::SOLVER::azprec_TekoSIMPLE  &&
