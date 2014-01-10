@@ -127,17 +127,17 @@ void  DRT::UTILS::ComputeMetricTensorForSurface(
        in weak dirichlet boundary conditions).
 
   -----------------------------------------------------------------*/
-template<class V,class W>
+template<class V,class W,typename IntegrationPoints>
 void DRT::UTILS::LineGPToParentGP(
   V              & pqxg     ,
   W              & derivtrafo,
-  const DRT::UTILS::IntegrationPoints1D & intpoints,
+  const IntegrationPoints               & intpoints,
   const DRT::Element::DiscretizationType  pdistype ,
   const DRT::Element::DiscretizationType  distype  ,
   const int                               lineid   )
 {
   // resize output array
-  //pqxg.Shape(intpoints.nquad,2);
+  //pqxg.Shape(pqxg.M(),2);
   //derivtrafo.Shape(2,2);
 
   if( (distype==DRT::Element::line2 && pdistype==DRT::Element::quad4) or
@@ -176,9 +176,9 @@ void DRT::UTILS::LineGPToParentGP(
              0   1   2             0   1   2
 
       */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      for (int iquad=0;iquad<pqxg.M();++iquad)
       {
-        pqxg(iquad,0)= intpoints.qxg[iquad][0];
+        pqxg(iquad,0)= intpoints.Point(iquad)[0];
         pqxg(iquad,1)=-1.0;
       }
       derivtrafo(0,0)= 1.0;
@@ -218,10 +218,10 @@ void DRT::UTILS::LineGPToParentGP(
                       +                     +
                      2                     0
       */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      for (int iquad=0;iquad<pqxg.M();++iquad)
       {
         pqxg(iquad,0)= 1.0;
-        pqxg(iquad,1)= intpoints.qxg[iquad][0];
+        pqxg(iquad,1)= intpoints.Point(iquad)[0];
       }
       derivtrafo(0,1)= 1.0;
       derivtrafo(1,0)= 1.0;
@@ -258,9 +258,9 @@ void DRT::UTILS::LineGPToParentGP(
 
       */
 
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      for (int iquad=0;iquad<pqxg.M();++iquad)
       {
-        pqxg(iquad,0)=-intpoints.qxg[iquad][0];
+        pqxg(iquad,0)=-intpoints.Point(iquad)[0];
         pqxg(iquad,1)= 1.0;
       }
       derivtrafo(0,0)=-1.0;
@@ -300,10 +300,10 @@ void DRT::UTILS::LineGPToParentGP(
                +                            +
               0                            0
       */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      for (int iquad=0;iquad<pqxg.M();++iquad)
       {
         pqxg(iquad,0)=-1.0;
-        pqxg(iquad,1)=-intpoints.qxg[iquad][0];
+        pqxg(iquad,1)=-intpoints.Point(iquad)[0];
       }
       derivtrafo(0,1)=-1.0;
       derivtrafo(1,0)=-1.0;
@@ -330,9 +330,9 @@ void DRT::UTILS::LineGPToParentGP(
              0   1   2             0   1   2
 
       */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      for (int iquad=0;iquad<pqxg.M();++iquad)
       {
-        pqxg(iquad,0)= intpoints.qxg[iquad][0];
+        pqxg(iquad,0)= intpoints.Point(iquad)[0];
         pqxg(iquad,1)=-1.0;
       }
       derivtrafo(0,0)= 1.0;
@@ -354,10 +354,10 @@ void DRT::UTILS::LineGPToParentGP(
                       +                     +
                      2                     0
       */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      for (int iquad=0;iquad<pqxg.M();++iquad)
       {
         pqxg(iquad,0)= 1.0;
-        pqxg(iquad,1)= intpoints.qxg[iquad][0];
+        pqxg(iquad,1)= intpoints.Point(iquad)[0];
       }
       derivtrafo(0,1)= 1.0;
       derivtrafo(1,0)= 1.0;
@@ -376,9 +376,9 @@ void DRT::UTILS::LineGPToParentGP(
 
       */
 
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      for (int iquad=0;iquad<pqxg.M();++iquad)
       {
-        pqxg(iquad,0)= intpoints.qxg[iquad][0];
+        pqxg(iquad,0)= intpoints.Point(iquad)[0];
         pqxg(iquad,1)= 1.0;
       }
       derivtrafo(0,0)= 1.0;
@@ -400,10 +400,10 @@ void DRT::UTILS::LineGPToParentGP(
                +                            +
               0                            0
       */
-      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      for (int iquad=0;iquad<pqxg.M();++iquad)
       {
         pqxg(iquad,0)=-1.0;
-        pqxg(iquad,1)= intpoints.qxg[iquad][0];
+        pqxg(iquad,1)= intpoints.Point(iquad)[0];
       }
       derivtrafo(1,0)=-1.0;
       derivtrafo(0,1)= 1.0;
@@ -477,8 +477,8 @@ const int                                                                     su
 //! specialization for 3D
 template<>
 void DRT::UTILS::BoundaryGPToParentGP<3>(
-    Epetra_SerialDenseMatrix                                                    & pqxg     ,
-    LINALG::Matrix<3,3>                                                    & derivtrafo,
+    Epetra_SerialDenseMatrix                                                & pqxg     ,
+    LINALG::Matrix<3,3>                                                     & derivtrafo,
 const DRT::UTILS::IntPointsAndWeights<2> &                                    intpoints,
 const DRT::Element::DiscretizationType                                        pdistype ,
 const DRT::Element::DiscretizationType                                        distype  ,
@@ -501,8 +501,8 @@ const int                                                                     su
 //! specialization for 2D
 template<>
 void DRT::UTILS::BoundaryGPToParentGP<2>(
-    Epetra_SerialDenseMatrix                                                    & pqxg     ,
-    LINALG::Matrix<2,2>                                                    & derivtrafo,
+    Epetra_SerialDenseMatrix                                                & pqxg     ,
+    LINALG::Matrix<2,2>                                                     & derivtrafo,
 const DRT::UTILS::IntPointsAndWeights<1> &                                    intpoints,
 const DRT::Element::DiscretizationType                                        pdistype ,
 const DRT::Element::DiscretizationType                                        distype  ,
@@ -516,6 +516,103 @@ const int                                                                     su
     pqxg     ,
     derivtrafo,
     intpoints.IP(),
+    pdistype ,
+    distype  ,
+    surfaceid);
+  return;
+}
+
+//! specializations for GaussPoint quadrature rules
+//! specialization for 3D
+template<>
+void DRT::UTILS::BoundaryGPToParentGP<3>(
+Epetra_SerialDenseMatrix                                                    & pqxg     ,
+Epetra_SerialDenseMatrix                                                    & derivtrafo,
+const DRT::UTILS::GaussPoints            &                                    intpoints,
+const DRT::Element::DiscretizationType                                        pdistype ,
+const DRT::Element::DiscretizationType                                        distype  ,
+const int                                                                     surfaceid)
+{
+  // resize output array
+  pqxg.Shape(intpoints.NumPoints(),3);
+  derivtrafo.Shape(3,3);
+
+  DRT::UTILS::SurfaceGPToParentGP(
+    pqxg     ,
+    derivtrafo,
+    intpoints,
+    pdistype ,
+    distype  ,
+    surfaceid);
+  return;
+}
+
+//! specialization for 2D
+template<>
+void DRT::UTILS::BoundaryGPToParentGP<2>(
+Epetra_SerialDenseMatrix                                                    & pqxg     ,
+Epetra_SerialDenseMatrix                                                    & derivtrafo,
+const DRT::UTILS::GaussPoints            &                                    intpoints,
+const DRT::Element::DiscretizationType                                        pdistype ,
+const DRT::Element::DiscretizationType                                        distype  ,
+const int                                                                     surfaceid)
+{
+  // resize output array
+  pqxg.Shape(intpoints.NumPoints(),2);
+  derivtrafo.Shape(2,2);
+
+  DRT::UTILS::LineGPToParentGP(
+    pqxg     ,
+    derivtrafo,
+    intpoints,
+    pdistype ,
+    distype  ,
+    surfaceid);
+  return;
+}
+
+//! specialization for 3D
+template<>
+void DRT::UTILS::BoundaryGPToParentGP<3>(
+    Epetra_SerialDenseMatrix                                                & pqxg     ,
+    LINALG::Matrix<3,3>                                                     & derivtrafo,
+const DRT::UTILS::GaussPoints            &                                    intpoints,
+const DRT::Element::DiscretizationType                                        pdistype ,
+const DRT::Element::DiscretizationType                                        distype  ,
+const int                                                                     surfaceid)
+{
+  // resize output array
+  pqxg.Shape(intpoints.NumPoints(),3);
+  derivtrafo.Clear();
+
+  DRT::UTILS::SurfaceGPToParentGP(
+    pqxg     ,
+    derivtrafo,
+    intpoints,
+    pdistype ,
+    distype  ,
+    surfaceid);
+  return;
+}
+
+//! specialization for 2D
+template<>
+void DRT::UTILS::BoundaryGPToParentGP<2>(
+    Epetra_SerialDenseMatrix                                                & pqxg     ,
+    LINALG::Matrix<2,2>                                                     & derivtrafo,
+const DRT::UTILS::GaussPoints &                                               intpoints,
+const DRT::Element::DiscretizationType                                        pdistype ,
+const DRT::Element::DiscretizationType                                        distype  ,
+const int                                                                     surfaceid)
+{
+  // resize output array
+  pqxg.Shape(intpoints.NumPoints(),2);
+  derivtrafo.Clear();
+
+  DRT::UTILS::LineGPToParentGP(
+    pqxg     ,
+    derivtrafo,
+    intpoints,
     pdistype ,
     distype  ,
     surfaceid);

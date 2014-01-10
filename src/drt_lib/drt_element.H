@@ -159,7 +159,7 @@ public:
     /// Owner of dof (that is owner of node or element the dof belongs to)
     std::vector<int> lmowner_;
 
-    /// Nodal stride (that is, how many dofs are guaranteed to be contigous in the system matrix)
+    /// Nodal stride (that is, how many dofs are guaranteed to be contiguous in the system matrix)
     std::vector<int> stride_;
   };
 
@@ -308,9 +308,17 @@ public:
   virtual int NumVolume() const {return 0;}
 
   /*!
+  /brief Return the number of faces to the element.
+   *
+   * As opposed to NumLine(), NumSurface(), etc which have fixed dimension,
+   * this is always the object one dimension less than the element dimension.
+   */
+  int NumFace() const;
+
+  /*!
   \brief Return id's of nodes adjacent to this element
   */
-  inline const int* NodeIds() const { if (nodeid_.size()) return &nodeid_[0];
+  const int* NodeIds() const { if (nodeid_.size()) return &nodeid_[0];
                                       else                return NULL;     }
   /*!
     \brief Return Element center coordinates
@@ -329,7 +337,7 @@ public:
   \return Ptr to pointers to nodes of the element in local nodal ordering.
           Returns NULL if pointers to not exist.
   */
-  virtual inline Node** Nodes()
+  virtual Node** Nodes()
   { if (node_.size()) return &node_[0]; else return NULL; }
 
 
@@ -349,7 +357,7 @@ public:
   \return Ptr to pointers to nodes of the element in local nodal ordering.
           Returns NULL if pointers to not exist.
   */
-  virtual inline const Node*const* Nodes() const
+  const Node*const* Nodes() const
   { if (node_.size()) return (const DRT::Node*const*)(&node_[0]); else return NULL; }
 
 
@@ -370,9 +378,9 @@ public:
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Lines()
   {
-    std::vector<Teuchos::RCP<DRT::Element> > lines(0);
-   return lines;
+    return std::vector<Teuchos::RCP<DRT::Element> >(0);
   }
+  
   //virtual const Element*const* Lines() const { dserror("unexpected base method called."); return NULL; }
 
   /*!
@@ -392,8 +400,7 @@ public:
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces()
   {
-    std::vector<Teuchos::RCP<DRT::Element> > surfaces(0);
-   return surfaces;
+    return std::vector<Teuchos::RCP<DRT::Element> >(0);
   }
   //virtual const Element*const* Surfaces() const { dserror("unexpected base method called."); return NULL; }
 
@@ -414,32 +421,104 @@ public:
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes()
   {
-    std::vector<Teuchos::RCP<DRT::Element> > volumes(0);
-   return volumes;
+    return std::vector<Teuchos::RCP<DRT::Element> >(0);
   }
 
   /*!
-  \brief Get vector of RCPs to the internal faces for which this element is the master element
+  \brief Returns whether the given element actually is a face element with degrees of freedom living there
+  */
+  bool IsFaceElement() const
+  {
+    // an element is a face element if and only if there is at least one parent element
+    return parent_master_ != NULL;
+  }
 
-  This is a base class dummy routine that always returns NULL.
-  The derived element class is expected to allocate and store
-  an surface/line element that represents the internal face between this element (master element)
+  /*!
+  \brief Get vector of RCPs to the faces of this element (as opposed to the Lines or Surfaces)
+  */
+  DRT::Element** Faces()
+  {
+    return face_;
+  }
+
+  /*!
+  \brief Get vector of RCPs to the faces of this element (as opposed to the Lines or Surfaces)
+  */
+  const DRT::Element*const * Faces() const
+  {
+    return face_;
+  }
+
+  /*!
+  \brief Return the master element the face element is currently connected to
+
+  If no parent master has been assigned, NULL is returned (e.g. on non-face discretizations)
+  */
+  DRT::Element* ParentMasterElement() const
+  {
+    dsassert(parent_master_ != NULL, "Parent master element has not been set");
+    return parent_master_;
+  }
+
+  /*!
+  \brief Return the slave element the face element is currently connected to
+
+  If no parent slave has been assigned, NULL is returned (non-face discretizations, boundary faces)
+  */
+  DRT::Element* ParentSlaveElement() const
+  {
+    dsassert(parent_slave_ != NULL, "Parent slave element has not been set");
+    return parent_slave_;
+  }
+
+  /*!
+  \brief Get a pointer to the neighboring element behind the given face. Returns 0 if at boundary or faces are not created
+  */
+  DRT::Element* Neighbor(const int face) const;
+
+  /*!
+   \brief Get the index of the given face element within the given parent element (0 = master, 1 = slave)
+   */
+  int FaceMasterNumber () const
+  {
+    dsassert(lface_master_ != -1, "Face information has not been filled");
+    return lface_master_;
+  }
+
+  /*!
+   \brief Get the index of the given face element within the given parent element (0 = master, 1 = slave)
+   */
+  int FaceSlaveNumber() const
+  {
+    dsassert(lface_slave_ != -1, "Face information has not been filled");
+    return lface_slave_;
+  }
+
+  /*!
+  \brief Construct a face element between this element and the given slave element
+
+  This is a base class routine that constructs a plain element without association to physics,
+  containing only the geometry and topology information. A surface/line element is created
+  that represents the face between this element (master element) and parent_slave element (in case it exists).
+  The derived element class is expected to provide physics information when allocate and store
+  an surface/line element that represents the face between this element (master element)
   and parent_slave element.
-  This element is then used to create and evaluate edge stabilizations.
+
+  This element is e.g. used to create and evaluate edge stabilizations or for HDG discretizations
 
   \author schott 03/12
   */
-  virtual Teuchos::RCP<DRT::Element> CreateInternalFaces( DRT::Element* parent_slave,          //!< parent slave element
-                                                          int nnode,                           //!< number of nodes
-                                                          const int* nodeids,                  //!< node ids
-                                                          DRT::Node** nodes,                   //!< nodeids
-                                                          const int lsurface_master,           //!< local index of surface w.r.t master element
-                                                          const int lsurface_slave,            //!< local index of surface w.r.t slave element
-                                                          const std::vector<int> localtrafomap //!< local trafo map
+  virtual Teuchos::RCP<DRT::Element> CreateFaceElement( DRT::Element* parent_slave,          //!< parent slave element
+                                                        int nnode,                           //!< number of nodes
+                                                        const int* nodeids,                  //!< node ids
+                                                        DRT::Node** nodes,                   //!< nodeids
+                                                        const int lsurface_master,           //!< local index of surface w.r.t master element
+                                                        const int lsurface_slave,            //!< local index of surface w.r.t slave element
+                                                        const std::vector<int>& localtrafomap//!< local trafo map
   )
   {
-   Teuchos::RCP<DRT::Element> intface;
-   return intface;
+   Teuchos::RCP<DRT::Element> face;
+   return face;
   }
 
 
@@ -466,7 +545,7 @@ public:
 
   The element decides how many degrees of freedom its nodes must have.
   As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
+  number of degrees of freedom per node along the way for each of its nodes
   separately.
 
   This method is used by the DRT::Discretization to determine how many
@@ -500,6 +579,52 @@ public:
   {
     dserror("not implemented");
     return -1;
+  }
+
+  /*!
+  \brief Get number of degrees of freedom per surface
+
+  The element decides how many element degrees of freedom it has.
+  It can redecide along the way of a simulation.
+
+  Usually, a standard finite element would not have surface degrees of
+  freedom and would therefore return zero here.
+
+  \note Face degrees of freedom mentioned here are dofs that are supposed
+        to be visible at the global system level. Purely internal
+        element dofs that are condensed internally should NOT be considered.
+        The DRT::Discretization will use this method to determine how many degrees
+        of freedom it should include in the degree of freedom row and column map
+        for the global system of equations.
+  */
+  virtual int NumDofPerFace(const unsigned face,
+                            const unsigned nds) const
+  {
+    if (nds==0)
+      return NumDofPerFace(face);
+    dserror("only one dof set supported");
+    return 0;
+  }
+
+  /*!
+  \brief Get number of degrees of freedom per face
+
+  The element decides how many element degrees of freedom it has.
+  It can redecide along the way of a simulation.
+
+  Usually, a standard finite element would not have face degrees of
+  freedom and would therefore return zero here.
+
+  \note Face degrees of freedom mentioned here are dofs that are supposed
+        to be visible at the global system level. Purely internal
+        element dofs that are condensed internally should NOT be considered.
+        The DRT::Discretization will use this method to determine how many degrees
+        of freedom it should include in the degree of freedom row and column map
+        for the global system of equations.
+  */
+  virtual int NumDofPerFace(const unsigned /* face */) const
+  {
+    return 0;
   }
 
   /*!
@@ -634,7 +759,7 @@ public:
   /*!
   \brief Set global id of this element
   */
-  virtual inline void SetId(const int id) { id_ = id; return; }
+  inline void SetId(const int id) { id_ = id; return; }
 
   /*!
   \brief Read input for this element
@@ -648,7 +773,7 @@ public:
 
     \param lid: processor local col id
    */
-  virtual inline void SetLID(int lid) { lid_ = lid; }
+  inline void SetLID(int lid) { lid_ = lid; }
 
   /*!
   \brief Set ownership
@@ -663,7 +788,7 @@ public:
            the DRT::Discretization the element is stored in.
 
   */
-  virtual inline void SetOwner(const int owner) { owner_ = owner; return; }
+  inline void SetOwner(const int owner) { owner_ = owner; return; }
 
   /*!
   \brief Set a list of node ids this element is connected to
@@ -685,6 +810,20 @@ public:
   Here the node ids are directly taken from an input line.
   */
   void SetNodeIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef);
+
+  /*!
+  \brief Set a the face with index faceindex this element is connected to
+
+  Sets the face pointer of the face adjacent to this element, using NumFace() as
+  number of faces. This method is used in the construction phase of a discretization.
+  It allows, that elements and faces are created separately and be combined later
+  on the way.
+
+  \param faceindex   : index of the given face
+  \param faceelement : face object
+  */
+  void SetFace(const int     faceindex,
+               DRT::Element* faceelement);
 
   /// Set element material
   /*!
@@ -1056,6 +1195,44 @@ public:
 
   //@}
 
+protected:
+
+  /*!
+  \brief Set the master element this face element is connected to
+
+  Sets the pointers of the main parent element adjacent to the current face.
+  This method is used in the construction phase of a discretization.
+  It allows that elements and faces are created separately and be combined later
+  on the way.
+
+  \param master: parent element which shares the orientation of faces
+  \param lface_master: local number of face within master element
+  */
+  void SetParentMasterElement(DRT::Element* master,
+                              const int     lface_master)
+  {
+    parent_master_ = master;
+    lface_master_  = lface_master;
+  }
+
+  /*!
+  \brief Set the slave element this face element is connected to
+
+  Sets the pointers of the second parent element adjacent to the current face.
+  This method is used in the construction phase of a discretization.
+  It allows that elements and faces are created separately and be combined later
+  on the way.
+
+  \param master: second parent element when there already is a master element
+  */
+  void SetParentSlaveElement(DRT::Element* slave,
+                             const int     lface_slave)
+  {
+    parent_slave_ = slave;
+    lface_slave_  = lface_slave;
+  }
+
+
 private:
 
   //! \brief A unique global element id
@@ -1073,6 +1250,21 @@ private:
   //! \brief Pointers to adjacent nodes in element local ordering
   std::vector<DRT::Node*> node_;
 
+  //! \brief List of my faces, length NumFace(). Only filled if face elements are created, when using DiscretizationFaces
+  DRT::Element** face_;
+
+  //! \brief The master parent element of face element. NULL for usual elements
+  DRT::Element* parent_master_;
+
+  //! \brief The master parent element of face element. NULL for usual elements
+  DRT::Element* parent_slave_;
+
+  //! The local surface number of this surface w.r.t to the parent_master_ element
+  int lface_master_;
+
+  //! The local surface number of this surface w.r.t to the parent_slave_ element
+  int lface_slave_;
+
   //! \brief Some conditions e.g. BCs
   std::multimap<std::string,Teuchos::RCP<Condition> > condition_;
 
@@ -1080,6 +1272,8 @@ private:
   Teuchos::RCP<MAT::Material> mat_;
 
 }; // class Element
+
+
 
 /*!
  * \brief translate to string for screen output

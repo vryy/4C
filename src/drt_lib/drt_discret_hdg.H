@@ -1,0 +1,142 @@
+/*!----------------------------------------------------------------------
+\file drt_discret_hdg.H
+
+\brief a class to manage an enhanced discretization for hybridizable
+     discontinuous Galerkin methods (HDG)
+
+
+</pre>
+
+<pre>
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifndef DISCRET_HDG_H
+#define DISCRET_HDG_H
+
+#include "drt_discret_faces.H"
+#include "drt_dserror.H"
+
+#include "Teuchos_RCP.hpp"
+#include "Epetra_Comm.h"
+#include <string>
+
+
+namespace LINALG
+{
+  class MapExtractor;
+  class SparseMatrix;
+}
+
+
+/*!
+\brief DRT: namespace of the baci discretization module
+
+*/
+namespace DRT
+{
+
+class DiscretizationHDG : public DiscretizationFaces
+{
+public:
+
+
+  /*!
+  \brief Standard Constructor
+
+  \param name (in): name of this discretization
+  \param comm (in): An epetra comm object associated with this discretization
+  */
+  DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~DiscretizationHDG()
+  {
+    return;
+  };
+
+
+  /*!
+  \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
+
+  After adding or deleting nodes or elements or redistributing them in parallel,
+  or adding/deleting boundary conditions, this method has to be called to (re)construct
+  pointer topologies.<br>
+  It builds in this order:<br>
+  Standard FillComplete of base class
+  - row map of nodes
+  - column map of nodes
+  - row map of elements
+  - column map of elements
+  - pointers from elements to nodes
+  - pointers from nodes to elements
+  - assigns degrees of freedoms
+  - map of element register classes
+  - calls all element register initialize methods
+  - build geometries of all Dirichlet and Neumann boundary conditions
+
+  Additional features
+  - build internal faces elements
+  - build maps and pointers for internal faces
+
+  \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
+                                       assigning of degrees of freedoms to nodes and
+                                       elements.
+  \param initelements (in) : if true, build element register classes and call Initialize()
+                             on each type of finite element present
+  \param doboundaryconditions (in) : if true, build geometry of boundary conditions
+                                     present.
+
+  \note In order to receive a fully functional discretization, this method must be called
+        with all parameters set to true (the default). The parameters though can be
+        used to turn off specific tasks to allow for more flexibility in the
+        construction of a discretization, were it is known that this method will
+        be called more than once.
+
+  \note Sets Filled()=true
+  */
+  int FillComplete(bool assigndegreesoffreedom = true,
+                   bool initelements = true,
+                   bool doboundaryconditions = true);
+
+  /*!
+  \brief Determine Dirichlet condition at given time and apply its
+         values to a system vector
+
+  \param cond            The condition object
+  \param usetime
+  \param time            Evaluation time
+  \param systemvector    Vector to apply DBCs to (eg displ. in structure, vel. in fluids)
+  \param systemvectord   First time derivative of DBCs
+  \param systemvectordd  Second time derivative of DBCs
+  \param toggle          Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
+  \param dbcgids         Map containing DOFs subjected to Dirichlet boundary
+  conditions
+
+  \date 02/08
+  */
+  virtual void DoDirichletCondition(
+    DRT::Condition&             cond,
+    const bool                  usetime,
+    const double                time,
+    Teuchos::RCP<Epetra_Vector> systemvector,
+    Teuchos::RCP<Epetra_Vector> systemvectord,
+    Teuchos::RCP<Epetra_Vector> systemvectordd,
+    Teuchos::RCP<Epetra_Vector> toggle,
+    Teuchos::RCP<std::set<int> > dbcgids);
+
+}; // class DiscretizationHDG
+} // namespace DRT
+
+/// << operator
+std::ostream& operator << (std::ostream& os, const DRT::DiscretizationHDG& dis);
+
+
+#endif  // #ifndef DISCRET_FACES_H

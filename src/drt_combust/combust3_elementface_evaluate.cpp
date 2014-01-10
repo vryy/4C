@@ -139,7 +139,7 @@ int DRT::ELEMENTS::Combust3IntFace::Evaluate(
       else
         DRT::UTILS::ExtractMyValues(*discretization.GetState("velaf") ,m_velaf ,lm_master);
 
-      DRT::UTILS::ExtractMyNodeBasedValues(parent_master_, m_phinp,*phinp);
+      DRT::UTILS::ExtractMyNodeBasedValues(ParentMasterElement(), m_phinp,*phinp);
 
       std::vector<double> s_velnp;     ///< velocity/pressure unknowns at n+1 (slave)
       std::vector<double> s_velaf;     ///< velocity/pressure unknowns at alpha+f for generalized alpha scheme (slave)
@@ -149,7 +149,7 @@ int DRT::ELEMENTS::Combust3IntFace::Evaluate(
       else
         DRT::UTILS::ExtractMyValues(*discretization.GetState("velaf") ,s_velaf ,lm_slave);
 
-      DRT::UTILS::ExtractMyNodeBasedValues(parent_slave_, s_phinp,*phinp);
+      DRT::UTILS::ExtractMyNodeBasedValues(ParentSlaveElement(), s_phinp,*phinp);
 
       // get assembly type for master and slave element
       XFEM::AssemblyType m_assembly_type=XFEM::standard_assembly;

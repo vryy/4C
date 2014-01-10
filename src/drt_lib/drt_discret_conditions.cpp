@@ -167,7 +167,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
  *
  *  h.kue 09/07
  */
-static void AssignGlobalIDs( const Epetra_Comm& comm,
+void DRT::Discretization::AssignGlobalIDs( const Epetra_Comm& comm,
                              const std::map< std::vector<int>, RCP<DRT::Element> >& elementmap,
                              std::map< int, RCP<DRT::Element> >& finalelements )
 {

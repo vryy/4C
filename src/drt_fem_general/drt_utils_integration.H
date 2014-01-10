@@ -47,10 +47,17 @@ Maintainer: Axel Gerstenberger
 #include <iostream>
 #include <cstdlib>
 
+#include "../drt_lib/drt_dserror.H"
+
 namespace DRT
 {
 namespace UTILS
 {
+// forward declarations
+class IntegrationPoints1D;
+class IntegrationPoints2D;
+class IntegrationPoints3D;
+
 
 //! supported 3d integration rules
 //!
@@ -185,7 +192,12 @@ enum GaussRule1D
     intrule_line_lobatto2point,    ///< degree of precision: 1  (closed)
     intrule_line_lobatto3point,    ///< degree of precision: 3  (closed)
     intrule_line_lobatto4point,    ///< degree of precision: 5  (closed)
-    intrule_line_lobatto5point     ///< degree of precision: 7  (closed)
+    intrule_line_lobatto5point,    ///< degree of precision: 7  (closed)
+    intrule_line_lobatto6point,    ///< degree of precision: 9  (closed)
+    intrule_line_lobatto7point,    ///< degree of precision: 11 (closed)
+    intrule_line_lobatto8point,    ///< degree of precision: 13 (closed)
+    intrule_line_lobatto9point,    ///< degree of precision: 15 (closed)
+    intrule_line_lobatto10point    ///< degree of precision: 17 (closed)
 
 };
 
@@ -272,6 +284,14 @@ public:
   int           nquad;               ///< number of gausspoints
   double        qxg[max_nquad][3];   ///< coordinates
   double        qwgt[max_nquad];     ///< weights
+
+  /// gauss point coordinates
+  const double * Point( int point ) const
+  {
+    dsassert(point < max_nquad, "Index out of range");
+    return qxg[point];
+  };
+
   /// get used integration rule
   DRT::UTILS::GaussRule3D GetIntRule() const { return intrule_; };
 };
@@ -298,6 +318,14 @@ public:
   int           nquad;                ///< number of gausspoints
   double        qxg[max_nquad][2];    ///< coordinates
   double        qwgt[max_nquad];      ///< weights
+
+  /// gauss point coordinates
+  const double * Point( int point ) const
+  {
+    dsassert(point < max_nquad, "Index out of range");
+    return qxg[point];
+  };
+
   /// get used integration rule
   DRT::UTILS::GaussRule2D GetIntRule() const { return intrule_; };
 };
@@ -325,6 +353,14 @@ public:
   int           nquad;                ///< number of integration points
   double        qxg[max_nquad][1];    ///< coordinates
   double        qwgt[max_nquad];      ///< weights
+
+  /// gauss point coordinates
+  const double * Point( int point ) const
+  {
+    dsassert(point < max_nquad, "Index out of range");
+    return qxg[point];
+  };
+
   /// get used integration rule
   DRT::UTILS::GaussRule1D GetIntRule() const { return intrule_; };
 };

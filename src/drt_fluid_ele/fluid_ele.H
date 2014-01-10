@@ -193,14 +193,14 @@ public:
   /*!
   \brief Get RCP to the internal face adjacent to this element as master element and the parent_slave element
   */
-  virtual Teuchos::RCP<DRT::Element> CreateInternalFaces(
+  virtual Teuchos::RCP<DRT::Element> CreateFaceElement(
                                                 DRT::Element* parent_slave,          //!< parent slave fluid3 element
                                                 int nnode,                           //!< number of surface nodes
                                                 const int* nodeids,                  //!< node ids of surface element
                                                 DRT::Node** nodes,                   //!< nodes of surface element
                                                 const int lsurface_master,           //!< local surface number w.r.t master parent element
                                                 const int lsurface_slave,            //!< local surface number w.r.t slave parent element
-                                                const std::vector<int> localtrafomap //! local trafo map
+                                                const std::vector<int>& localtrafomap//! local trafo map
       );
 
   /*!
@@ -581,7 +581,7 @@ public:
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
-    return parent_->NumDofPerNode(node);
+    return ParentMasterElement()->NumDofPerNode(node);
   }
 
   /*!
@@ -596,7 +596,7 @@ public:
   */
   virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
   {
-    return parent_->NumDofPerNode(nds,node,disname);
+    return ParentMasterElement()->NumDofPerNode(nds,node,disname);
   }
 
   /*!
@@ -678,14 +678,17 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-  virtual DRT::ELEMENTS::Fluid* ParentElement()
+  DRT::ELEMENTS::Fluid* ParentElement() const
   {
-    return parent_;
+    DRT::Element* parent = this->DRT::Element::ParentMasterElement();
+    // make sure the static cast below is really valid
+    dsassert(dynamic_cast<DRT::ELEMENTS::Fluid*>(parent) != NULL, "Master element is no fluid element");
+    return static_cast<DRT::ELEMENTS::Fluid*>(parent);
   }
 
-  virtual int SurfaceNumber()
+  int SurfaceNumber()
   {
-    return lsurface_;
+    return FaceMasterNumber();
   }
 
   //@}
@@ -728,17 +731,10 @@ public:
                               Teuchos::ParameterList& params
                               ) const;
 
-protected:
-  //! The parent element of this surface
-  DRT::ELEMENTS::Fluid* parent_;
-
 private:
 
   // don't want = operator
   FluidBoundary& operator = (const FluidBoundary& old);
-
-  //! The local surface number of this surface w.r.t to the parent_ element
-  int lsurface_;
 
 }; // class FluidBoundary
 
@@ -909,7 +905,8 @@ public:
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
-    return std::max(parent_master_->NumDofPerNode(node),parent_slave_->NumDofPerNode(node));
+    return std::max(ParentMasterElement()->NumDofPerNode(node),
+                    ParentSlaveElement()->NumDofPerNode(node));
   }
 
   /*!
@@ -924,7 +921,8 @@ public:
   */
   virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
   {
-    return std::max(parent_master_->NumDofPerNode(nds,node,disname),parent_slave_->NumDofPerNode(nds,node,disname));
+    return std::max(ParentMasterElement()->NumDofPerNode(nds,node,disname),
+                    ParentSlaveElement()->NumDofPerNode(nds,node,disname));
   }
 
   /*!
@@ -1029,35 +1027,24 @@ public:
   /*!
   \brief return the master parent fluid element
   */
-  virtual DRT::ELEMENTS::Fluid* ParentMasterElement()
+  DRT::ELEMENTS::Fluid* ParentMasterElement() const
   {
-    return parent_master_;
+    DRT::Element* parent = this->DRT::Element::ParentMasterElement();
+    // make sure the static cast below is really valid
+    dsassert(dynamic_cast<DRT::ELEMENTS::Fluid*>(parent) != NULL, "Master element is no fluid element");
+    return static_cast<DRT::ELEMENTS::Fluid*>(parent);
   }
 
   /*!
   \brief return the slave parent fluid element
   */
-  virtual DRT::ELEMENTS::Fluid* ParentSlaveElement()
+  DRT::ELEMENTS::Fluid* ParentSlaveElement() const
   {
-    return parent_slave_;
+    DRT::Element* parent = this->DRT::Element::ParentSlaveElement();
+    // make sure the static cast below is really valid
+    dsassert(dynamic_cast<DRT::ELEMENTS::Fluid*>(parent) != NULL, "Slave element is no fluid element");
+    return static_cast<DRT::ELEMENTS::Fluid*>(parent);
   }
-
-  /*!
-  \brief return the local surface number w.r.t. the master parent fluid element
-  */
-  virtual int SurfaceMasterNumber()
-  {
-    return lsurface_master_;
-  }
-
-  /*!
-  \brief return the local surface number w.r.t. the slave parent fluid element
-  */
-  virtual int SurfaceSlaveNumber()
-  {
-    return lsurface_slave_;
-  }
-
 
   /*!
   \brief return the local trafo map between the face's master numbering and the face's slave numbering
@@ -1073,18 +1060,6 @@ private:
 
   // don't want = operator
   FluidIntFace& operator = (const FluidIntFace& old);
-
-  //! The master parent element of this surface
-  DRT::ELEMENTS::Fluid* parent_master_;
-
-  //! The parent slave element of this surface
-  DRT::ELEMENTS::Fluid* parent_slave_;
-
-  //! The local surface number of this surface w.r.t to the parent_master_ element
-  int lsurface_master_;
-
-  //! The local surface number of this surface w.r.t to the parent_slave_ element
-  int lsurface_slave_;
 
   /*!
    \brief map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system

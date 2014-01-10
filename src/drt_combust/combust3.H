@@ -193,14 +193,14 @@ private:
         /*!
         \brief Get RCP to the internal face adjacent to this element as master element and the parent_slave element
         */
-        virtual Teuchos::RCP<DRT::Element> CreateInternalFaces(
+        virtual Teuchos::RCP<DRT::Element> CreateFaceElement(
                                                       DRT::Element* parent_slave,          //!< parent slave fluid3 element
                                                       int nnode,                           //!< number of surface nodes
                                                       const int* nodeids,                  //!< node ids of surface element
                                                       DRT::Node** nodes,                   //!< nodes of surface element
                                                       const int lsurface_master,           //!< local surface number w.r.t master parent element
                                                       const int lsurface_slave,            //!< local surface number w.r.t slave parent element
-                                                      const std::vector<int> localtrafomap //! local trafo map
+                                                      const std::vector<int>& localtrafomap//! local trafo map
             );
 
         virtual int UniqueParObjectId() const { return Combust3Type::Instance().UniqueParObjectId(); }
@@ -1041,7 +1041,7 @@ private:
       */
       virtual int NumDofPerNode(const DRT::Node& node) const
       {
-        return std::max(parent_master_->NumDofPerNode(node),parent_slave_->NumDofPerNode(node));
+        return std::max(ParentMasterElement()->NumDofPerNode(node),ParentSlaveElement()->NumDofPerNode(node));
       }
 
       /*!
@@ -1054,12 +1054,12 @@ private:
       separately.
 
       */
-      virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
+      virtual int NumDofPerNode(const unsigned, const DRT::Node& node, const std::string) const
       {
         // TODO: darf ich hier den Dofmanager fragen?
         //  std::cout << "NumDofPerNode()" << std::endl;
         //return std::max(parent_master_->NumDofPerNode(nds,node),parent_slave_->NumDofPerNode(nds,node));
-        return std::max(parent_master_->NumDofPerNode(node),parent_slave_->NumDofPerNode(node));
+        return NumDofPerNode(node);
       }
 
       /*!
@@ -1168,40 +1168,29 @@ private:
       /*!
       \brief return the master parent fluid element
       */
-      virtual DRT::ELEMENTS::Combust3* ParentMasterElement() const
+      DRT::ELEMENTS::Combust3* ParentMasterElement() const
       {
-        return parent_master_;
+        DRT::Element* parent = this->DRT::Element::ParentMasterElement();
+        // make sure the static cast below is really valid
+        dsassert(dynamic_cast<DRT::ELEMENTS::Combust3*>(parent) != NULL, "Master element is no combust element");
+        return static_cast<DRT::ELEMENTS::Combust3*>(parent);
       }
 
       /*!
       \brief return the slave parent fluid element
       */
-      virtual DRT::ELEMENTS::Combust3* ParentSlaveElement() const
+      DRT::ELEMENTS::Combust3* ParentSlaveElement() const
       {
-        return parent_slave_;
+        DRT::Element* parent = this->DRT::Element::ParentSlaveElement();
+        // make sure the static cast below is really valid
+        dsassert(dynamic_cast<DRT::ELEMENTS::Combust3*>(parent) != NULL, "Master element is no combust element");
+        return static_cast<DRT::ELEMENTS::Combust3*>(parent);
       }
-
-      /*!
-      \brief return the local surface number w.r.t. the master parent fluid element
-      */
-      virtual int SurfaceMasterNumber() const
-      {
-        return lsurface_master_;
-      }
-
-      /*!
-      \brief return the local surface number w.r.t. the slave parent fluid element
-      */
-      virtual int SurfaceSlaveNumber() const
-      {
-        return lsurface_slave_;
-      }
-
 
       /*!
       \brief return the local trafo map between the face's master numbering and the face's slave numbering
       */
-      virtual std::vector<int> GetLocalTrafoMap() const
+      std::vector<int> GetLocalTrafoMap() const
       {
         return localtrafomap_;
       }
@@ -1222,18 +1211,6 @@ private:
 
       //! convert string to desired action
       ActionType convertStringToActionType(const std::string& action) const;
-
-      //! The master parent element of this surface
-      DRT::ELEMENTS::Combust3* parent_master_;
-
-      //! The parent slave element of this surface
-      DRT::ELEMENTS::Combust3* parent_slave_;
-
-      //! The local surface number of this surface w.r.t to the parent_master_ element
-      int lsurface_master_;
-
-      //! The local surface number of this surface w.r.t to the parent_slave_ element
-      int lsurface_slave_;
 
       /*!
        \brief map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system

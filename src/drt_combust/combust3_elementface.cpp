@@ -42,12 +42,10 @@ DRT::ELEMENTS::Combust3IntFace::Combust3IntFace(int id,                         
                                           const std::vector<int> localtrafomap   ///< get the transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
 ):
 DRT::Element(id,owner),
-parent_master_(parent_master),
-parent_slave_(parent_slave),
-lsurface_master_(lsurface_master),
-lsurface_slave_(lsurface_slave),
 localtrafomap_(localtrafomap)
 {
+  SetParentMasterElement(parent_master,lsurface_master);
+  SetParentSlaveElement(parent_slave,lsurface_slave);
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -58,10 +56,6 @@ localtrafomap_(localtrafomap)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3IntFace::Combust3IntFace(const DRT::ELEMENTS::Combust3IntFace& old) :
 DRT::Element(old),
-parent_master_(old.parent_master_),
-parent_slave_(old.parent_slave_),
-lsurface_master_(old.lsurface_master_),
-lsurface_slave_(old.lsurface_slave_),
 localtrafomap_(old.localtrafomap_)
 {
   return;
@@ -84,7 +78,7 @@ DRT::Element* DRT::ELEMENTS::Combust3IntFace::Clone() const
 DRT::Element::DiscretizationType DRT::ELEMENTS::Combust3IntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), parent_master_->Shape());
+  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -133,12 +127,12 @@ void DRT::ELEMENTS::Combust3IntFace::PatchLocationVector(
   // *this Combust3IntFace element only once (no duplicates)
 
   //-----------------------------------------------------------------------
-  const int m_numnode = parent_master_->NumNode();
-  DRT::Node** m_nodes = parent_master_->Nodes();
+  const int m_numnode = ParentMasterElement()->NumNode();
+  DRT::Node** m_nodes = ParentMasterElement()->Nodes();
 
   //-----------------------------------------------------------------------
-  const int s_numnode = parent_slave_->NumNode();
-  DRT::Node** s_nodes = parent_slave_->Nodes();
+  const int s_numnode = ParentSlaveElement()->NumNode();
+  DRT::Node** s_nodes = ParentSlaveElement()->Nodes();
 
   //-----------------------------------------------------------------------
   const int f_numnode = NumNode();
@@ -148,8 +142,8 @@ void DRT::ELEMENTS::Combust3IntFace::PatchLocationVector(
   int owner = this->Owner();
 
   // get element dof manager
-  Teuchos::RCP<XFEM::ElementDofManager> master_eledofmanager = parent_master_->GetEleDofManager();
-  Teuchos::RCP<XFEM::ElementDofManager> slave_eledofmanager = parent_slave_->GetEleDofManager();
+  Teuchos::RCP<XFEM::ElementDofManager> master_eledofmanager = ParentMasterElement()->GetEleDofManager();
+  Teuchos::RCP<XFEM::ElementDofManager> slave_eledofmanager = ParentSlaveElement()->GetEleDofManager();
 //      std::cout << "Master num dof node  " << master_eledofmanager->NumNodeDof() << " Slave num dof node  " << slave_eledofmanager->NumNodeDof() << std::endl;
 //      std::cout << "Master dof field  " << master_eledofmanager->NumDofPerField(XFEM::PHYSICS::Velx) << "Slave dof field  " << slave_eledofmanager->NumDofPerField(XFEM::PHYSICS::Velx) << std::endl;
 

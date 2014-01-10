@@ -549,6 +549,13 @@ namespace UTILS
       const DRT::Element::DiscretizationType&     distype);
 
   /*!
+ \brief Returns the number of faces
+        for each discretization type (as opposed to Lines/Surfaces, this is always dim-1)
+   */
+  int getNumberOfElementFaces(
+      const DRT::Element::DiscretizationType&     distype);
+
+  /*!
   \brief Fills a vector< std::vector<int> > with all nodes for every surface
          for each discretization type
 
@@ -758,6 +765,75 @@ namespace UTILS
 
 
   /*!
+  \brief    Returns the shape of face elements of a given element at compile time
+  (invalid for wedge and pyramid as it depends on the face number)
+  */
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct DisTypeToFaceShapeType {static const DRT::Element::DiscretizationType shape = DRT::Element::max_distype;};
+  //template<> struct DisTypeToFaceShapeType<DRT::Element::point1>   {}; // invalid
+  template<> struct DisTypeToFaceShapeType<DRT::Element::line2>    {static const DRT::Element::DiscretizationType shape = DRT::Element::point1;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::line3>    {static const DRT::Element::DiscretizationType shape = DRT::Element::point1;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::nurbs2>   {static const DRT::Element::DiscretizationType shape = DRT::Element::point1;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::nurbs3>   {static const DRT::Element::DiscretizationType shape = DRT::Element::point1;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::quad4>    {static const DRT::Element::DiscretizationType shape = DRT::Element::line2;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::quad8>    {static const DRT::Element::DiscretizationType shape = DRT::Element::line3;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::quad9>    {static const DRT::Element::DiscretizationType shape = DRT::Element::line3;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::nurbs4>   {static const DRT::Element::DiscretizationType shape = DRT::Element::nurbs2;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::nurbs9>   {static const DRT::Element::DiscretizationType shape = DRT::Element::nurbs3;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::tri3>     {static const DRT::Element::DiscretizationType shape = DRT::Element::line2;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::tri6>     {static const DRT::Element::DiscretizationType shape = DRT::Element::line3;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::hex8>     {static const DRT::Element::DiscretizationType shape = DRT::Element::quad4;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::hex20>    {static const DRT::Element::DiscretizationType shape = DRT::Element::quad8;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::hex27>    {static const DRT::Element::DiscretizationType shape = DRT::Element::quad9;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::nurbs8>   {static const DRT::Element::DiscretizationType shape = DRT::Element::nurbs4;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::nurbs27>  {static const DRT::Element::DiscretizationType shape = DRT::Element::nurbs9;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::tet4>     {static const DRT::Element::DiscretizationType shape = DRT::Element::tri3;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::tet10>    {static const DRT::Element::DiscretizationType shape = DRT::Element::tri6;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::wedge6>   {static const DRT::Element::DiscretizationType shape = DRT::Element::tri3;}; //invalid
+  template<> struct DisTypeToFaceShapeType<DRT::Element::wedge15>  {static const DRT::Element::DiscretizationType shape = DRT::Element::tri6;}; //invalid
+  template<> struct DisTypeToFaceShapeType<DRT::Element::pyramid5> {static const DRT::Element::DiscretizationType shape = DRT::Element::tri3;}; //invalid
+
+
+
+  /*!
+  \brief    Returns the shape of face elements of a given element
+  (invalid for wedge and pyramid as it depends on the face number)
+  */
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct DisTypeToNumFaces {static const int numFaces = 0;};
+  //template<> struct DisTypeToNumFaces<DRT::Element::point1>   {}; // invalid
+  template<> struct DisTypeToNumFaces<DRT::Element::line2>    {static const int numFaces = 2;};
+  template<> struct DisTypeToNumFaces<DRT::Element::line3>    {static const int numFaces = 2;};
+  template<> struct DisTypeToNumFaces<DRT::Element::nurbs2>   {static const int numFaces = 2;};
+  template<> struct DisTypeToNumFaces<DRT::Element::nurbs3>   {static const int numFaces = 2;};
+  template<> struct DisTypeToNumFaces<DRT::Element::quad4>    {static const int numFaces = 4;};
+  template<> struct DisTypeToNumFaces<DRT::Element::quad8>    {static const int numFaces = 4;};
+  template<> struct DisTypeToNumFaces<DRT::Element::quad9>    {static const int numFaces = 4;};
+  template<> struct DisTypeToNumFaces<DRT::Element::nurbs4>   {static const int numFaces = 4;};
+  template<> struct DisTypeToNumFaces<DRT::Element::nurbs9>   {static const int numFaces = 4;};
+  template<> struct DisTypeToNumFaces<DRT::Element::tri3>     {static const int numFaces = 3;};
+  template<> struct DisTypeToNumFaces<DRT::Element::tri6>     {static const int numFaces = 3;};
+  template<> struct DisTypeToNumFaces<DRT::Element::hex8>     {static const int numFaces = 6;};
+  template<> struct DisTypeToNumFaces<DRT::Element::hex20>    {static const int numFaces = 6;};
+  template<> struct DisTypeToNumFaces<DRT::Element::hex27>    {static const int numFaces = 6;};
+  template<> struct DisTypeToNumFaces<DRT::Element::nurbs8>   {static const int numFaces = 6;};
+  template<> struct DisTypeToNumFaces<DRT::Element::nurbs27>  {static const int numFaces = 6;};
+  template<> struct DisTypeToNumFaces<DRT::Element::tet4>     {static const int numFaces = 4;};
+  template<> struct DisTypeToNumFaces<DRT::Element::tet10>    {static const int numFaces = 4;};
+  template<> struct DisTypeToNumFaces<DRT::Element::wedge6>   {static const int numFaces = 5;};
+  template<> struct DisTypeToNumFaces<DRT::Element::wedge15>  {static const int numFaces = 5;};
+  template<> struct DisTypeToNumFaces<DRT::Element::pyramid5> {static const int numFaces = 5;};
+
+
+  /*!
+  \brief    Returns the number of nodes on face elements
+  (invalid for wedge and pyramid as it depends on the face number)
+  */
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct DisTypeToNumNodePerFace { static const int numNodePerFace = DisTypeToNumNodePerEle<DisTypeToFaceShapeType<DISTYPE>::shape>::numNodePerElement; };
+
+
+  /*!
     \brief    Returns the order of an element edges based on its discretization-type
               Template version
    */
@@ -858,6 +934,25 @@ namespace UTILS
       const int nen, ///< number of nodes of the boundary element
       const DRT::Element::DiscretizationType parentshape ///< shape of parent element
   );
+
+  /*!
+   * returns the power of a number as a compile time constant
+   */
+  template <int a, int N>
+  struct FixedPower
+  {
+    static const int value = a * FixedPower<a,N-1>::value;
+  };
+
+  /*!
+   * Base case for fixed power: A number raised to power 0 is 1.
+   */
+  template <int a>
+  struct FixedPower<a,0>
+  {
+    static const int value = 1;
+  };
+
 
 } // namespace UTILS
 } // namespace DRT

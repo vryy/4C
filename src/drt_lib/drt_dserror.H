@@ -67,7 +67,13 @@ void cpp_dsassert_func(const char* file, const int line, const bool test, const 
   return;
 } /* end of dsassert_func */
 
+// do not emit any code in release mode for dsassert (i.e., 'test' is not evaluated and optimized away)
+#ifdef DEBUG
 #define dsassert(test, string) cpp_dsassert_func(__FILE__, __LINE__, test, string)
+#else
+#define dsassert(test, string)
+#endif
+
 #define dserror cpp_dslatest(__FILE__, __LINE__), cpp_dserror_func
 
 #else

@@ -7,8 +7,8 @@
 </pre>
 
 <pre>
-Maintainer: Benedikt Schott
-            schott@lnm.mw.tum.de
+Maintainer: Benedikt Schott, Martin Kronbichler
+            [schott,kronbichler]@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
@@ -45,7 +45,7 @@ class DiscretizationFaces : public Discretization
 public:
 
   /*!
-   * \brief internal class that holds the information used to create internal faces elements
+   * \brief internal class that holds the information used to create face elements
    *
    * \author Benedikt Schott (schott@lnm.mw.tum.de)
    */
@@ -70,16 +70,6 @@ public:
       nodes_ = nodes;
     }
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~InternalFacesData()
-    {
-      return;
-    };
-
-
     /*--- set ------------------------------------------*/
 
     //! set the parent element id for slave parent element
@@ -98,23 +88,23 @@ public:
     /*--- get ------------------------------------------*/
 
     //! get the master parent element id
-    int GetMasterPeid(){return master_peid_;}
+    int GetMasterPeid() const {return master_peid_;}
 
     //! get the slave parent element id
-    int GetSlavePeid(){return slave_peid_;}
+    int GetSlavePeid() const {return slave_peid_;}
 
     //! get the local surface number w.r.t master parent element
-    int GetLSurfaceMaster(){return lsurface_master_;}
+    int GetLSurfaceMaster() const {return lsurface_master_;}
 
     //! get the local surface number w.r.t slave parent element
-    int GetLSurfaceSlave(){return lsurface_slave_;}
+    int GetLSurfaceSlave() const {return lsurface_slave_;}
 
     //! get the transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
     //! and the slave element's face's coordinate system
-    std::vector<int> GetLocalNumberingMap(){return localtrafomap_;}
+    const std::vector<int>& GetLocalNumberingMap() const {return localtrafomap_;}
 
     //! get surface's nodes (unsorted, original)
-    std::vector<DRT::Node*> GetNodes(){return nodes_;}
+    const std::vector<DRT::Node*>& GetNodes() const {return nodes_;}
 
   private:
 
@@ -143,8 +133,7 @@ public:
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
   */
-  DiscretizationFaces(const std::string name, RCP<Epetra_Comm> comm)
-  :Discretization(name, comm) { extension_filled_ = false; }; // use base class constructor
+  DiscretizationFaces(const std::string name, RCP<Epetra_Comm> comm);
 
   /*!
   \brief Destructor
@@ -212,7 +201,8 @@ public:
                              on each type of finite element present
   \param doboundaryconditions (in) : if true, build geometry of boundary conditions
                                      present.
-  \param createinternalfacdes (in) : if true, build geometry of internal faces.
+  \param createinternalfaces (in) : if true, build geometry of internal faces.
+  \param createboundaryfaces (in) : if true,
 
   \note In order to receive a fully functional discretization, this method must be called
         with all parameters set to true (the default). The parameters though can be
@@ -235,25 +225,25 @@ public:
   virtual inline bool FilledExtension() const {return extension_filled_;}
 
   /*!
-  \brief Get map associated with the distribution of the ownership of internal faces
+  \brief Get map associated with the distribution of the ownership of faces
          (Filled()==true prerequisite)
 
-  This map includes all internal faces stored on this proc and also owned by this proc.
+  This map includes all faces stored on this proc and also owned by this proc.
   This map is non-ambiguous, meaning that it is a non-overlapping map.
 
   \return NULL if Filled() is false. A call to FillComplete() is a prerequisite.
   */
-  virtual const Epetra_Map* IntFacesRowMap() const;
+  virtual const Epetra_Map* FaceRowMap() const;
   /*!
-  \brief Get map associated with the distribution of elements including ghosted internal faces
+  \brief Get map associated with the distribution of elements including ghosted faces
          (Filled()==true prerequisite)
 
-  This map includes all internal faces stored on this proc including any ghosted internal faces
+  This map includes all internal faces stored on this proc including any ghosted faces
   This map is ambiguous, meaning that it is an overlapping map
 
   \return NULL if Filled() is false. A call to FillComplete() is a prerequisite.
   */
-  virtual const Epetra_Map* IntFacesColMap() const;
+  virtual const Epetra_Map* FaceColMap() const;
 
   /*!
   \brief Get global number of internal faces (true number of total elements)
@@ -261,19 +251,19 @@ public:
 
   This is a collective call
   */
-  virtual int NumGlobalIntFaces() const;
+  virtual int NumGlobalFaces() const;
 
   /*!
   \brief Get processor local number of internal faces owned by this processor
          (Filled()==true prerequisite)
   */
-  virtual int NumMyRowIntFaces() const;
+  virtual int NumMyRowFaces() const;
 
   /*!
   \brief Get processor local number of internal faces including ghost elements
          (Filled()==true NOT prerequisite)
   */
-  virtual int NumMyColIntFaces() const;
+  virtual int NumMyColFaces() const;
 
   /*!
   \brief Get the internal face element with local row id lid (Filled()==true prerequisite)
@@ -284,12 +274,12 @@ public:
 
   \return Adress of internal face element if element is owned by calling proc
   */
-  virtual inline DRT::Element* lRowIntFace(int lid) const
+  virtual inline DRT::Element* lRowFace(int lid) const
   {
     #ifdef DEBUG
     if (!Filled()) dserror("DRT::DiscretizationFaces::lRowIntFace: Filled() != true");
     #endif
-    return intfacerowptr_[lid];
+    return facerowptr_[lid];
   }
 
   /*!
@@ -299,15 +289,33 @@ public:
   Will also return any ghosted element.
   This is an individual call and Filled()=true is a prerequisite
 
-  \return Adress of internal face element if element is stored by calling proc
+  \return Address of internal face element if element is stored by calling proc
   */
-  virtual inline DRT::Element* lColIntFace(int lid) const
+  virtual inline DRT::Element* lColFace(int lid) const
   {
   #ifdef DEBUG
     if (!Filled()) dserror("DRT::DiscretizationFaces::lColIntFace: Filled() != true");
   #endif
-    return intfacecolptr_[lid];
+    return facecolptr_[lid];
   }
+
+  /*!
+  \brief Query whether a Face with global id gid is stored on this proc
+         (Filled()==true NOT prerequisite)
+
+  */
+  virtual bool HaveGlobalFace(int gid) const;
+
+  /*!
+  \brief Get the face with global row id gid (Filled()==true NOT prerequisite)
+
+  Returns the face with global row id gid if node is on this proc.
+  Will return row or column face, ghosted or not.
+  This is an individual call
+
+  \return Address of face if face is stored on calling proc
+  */
+  virtual DRT::Element* gFace(int gid) const;
 
   /*!
   \brief Build internal faces extension
@@ -324,10 +332,10 @@ public:
   );
 
   /*!
-  \brief Complete construction of a internal faces elements
+  \brief Complete construction of a face elements
   */
-  void BuildInternalFaces(Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave,
-                          const bool verbose = false);
+  void BuildFaces(Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave,
+                  const bool verbose = false);
 
   /*!
   \brief Build intfacerowmap_ (Filled()==true NOT prerequisite)
@@ -340,7 +348,7 @@ public:
   \note This is a collective call
 
   */
-  virtual void BuildIntFaceRowMap();
+  virtual void BuildFaceRowMap();
 
   /*!
   \brief Build intfacecolmap_ (Filled()==true NOT prerequisite)
@@ -352,7 +360,7 @@ public:
   \note This is a collective call
 
   */
-  virtual void BuildIntFaceColMap();
+  virtual void BuildFaceColMap();
 
   /*!
   \brief Print Print internal faces discretization to os (Filled()==true NOT prerequisite)
@@ -360,17 +368,18 @@ public:
 
   \note This is a collective call
   */
-  void PrintIntFaces(std::ostream& os) const;
+  void PrintFaces(std::ostream& os) const;
 
 
 protected:
 
-  bool                                  extension_filled_;      ///< flag indicating whether intfaces extension has been filled
+  bool                                  extension_filled_;      ///< flag indicating whether faces extension has been filled
+  bool                                  doboundaryfaces_;  ///< flag set to true by derived HDG class for boundary face elements
 
-  Teuchos::RCP<Epetra_Map>              intfacerowmap_;         ///< unique distribution of element ownerships
-  Teuchos::RCP<Epetra_Map>              intfacecolmap_;         ///< distribution of elements including ghost elements
-  std::vector<DRT::Element*>            intfacerowptr_;         ///< vector of pointers to row elements for faster access
-  std::vector<DRT::Element*>            intfacecolptr_;         ///< vector of pointers to column elements for faster access
+  Teuchos::RCP<Epetra_Map>              facerowmap_;            ///< unique distribution of element ownerships
+  Teuchos::RCP<Epetra_Map>              facecolmap_;            ///< distribution of elements including ghost elements
+  std::vector<DRT::Element*>            facerowptr_;            ///< vector of pointers to row elements for faster access
+  std::vector<DRT::Element*>            facecolptr_;            ///< vector of pointers to column elements for faster access
   std::map<int,RCP<DRT::Element> >      faces_;                 ///< map of internal faces elements
 
 

@@ -555,15 +555,15 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Volumes()
 
 
 /*----------------------------------------------------------------------*
- |  get internal faces element (public)                     schott 03/12|
+ |  get face element (public)                               schott 03/12|
  *----------------------------------------------------------------------*/
-RCP<DRT::Element> DRT::ELEMENTS::Fluid::CreateInternalFaces( DRT::Element* parent_slave,           //!< parent slave fluid3 element
-                                                              int nnode,                           //!< number of surface nodes
-                                                              const int* nodeids,                  //!< node ids of surface element
-                                                              DRT::Node** nodes,                   //!< nodes of surface element
-                                                              const int lsurface_master,           //!< local surface number w.r.t master parent element
-                                                              const int lsurface_slave,            //!< local surface number w.r.t slave parent element
-                                                              const std::vector<int> localtrafomap //! local trafo map
+RCP<DRT::Element> DRT::ELEMENTS::Fluid::CreateFaceElement( DRT::Element* parent_slave,           //!< parent slave fluid3 element
+                                                           int nnode,                            //!< number of surface nodes
+                                                           const int* nodeids,                   //!< node ids of surface element
+                                                           DRT::Node** nodes,                    //!< nodes of surface element
+                                                           const int lsurface_master,            //!< local surface number w.r.t master parent element
+                                                           const int lsurface_slave,             //!< local surface number w.r.t slave parent element
+                                                           const std::vector<int> &localtrafomap //! local trafo map
 )
 {
   // dynamic cast for slave parent element

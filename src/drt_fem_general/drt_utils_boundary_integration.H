@@ -24,6 +24,7 @@ Maintainer: Georg Bauer
 #include "drt_utils_local_connectivity_matrices.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "drt_utils_integration.H"
+#include "drt_utils_gausspoints.H"
 
 namespace DRT
 {
@@ -34,11 +35,10 @@ namespace UTILS
 
 /*-----------------------------------------------------------------
 
-\brief Transform Gausspoints on surface element to 3d space of
-       parent element (required for integrations of parent-element
-       shape functions over boundary elements, required for example
-       in weak dirichlet boundary conditions).
-
+  \brief Transform Gausspoints on surface element to 3d space of
+         parent element (required for integrations of parent-element
+         shape functions over boundary elements, required for example
+         in weak dirichlet boundary conditions).
 
 \param pqxg       (o) transformed integration points of surface
                       elements in parent elements reference
@@ -54,436 +54,429 @@ namespace UTILS
 \author gammi (gamnitzer@lnm.mw.tum.de), 05/09
 
   -----------------------------------------------------------------*/
-  /*-----------------------------------------------------------------
-
-  \brief Transform Gausspoints on surface element to 3d space of
-         parent element (required for integrations of parent-element
-         shape functions over boundary elements, required for example
-         in weak dirichlet boundary conditions).
-
-    -----------------------------------------------------------------*/
-  template<class V,class W>
-  void SurfaceGPToParentGP(
-    V              & pqxg     ,
-    W              & derivtrafo,
-    const DRT::UTILS::IntegrationPoints2D & intpoints,
-    const DRT::Element::DiscretizationType  pdistype ,
-    const DRT::Element::DiscretizationType  distype  ,
-    const int                               surfaceid)
+template<class V,class W,typename IntegrationPoints>
+void SurfaceGPToParentGP(
+  V              & pqxg     ,
+  W              & derivtrafo,
+  const IntegrationPoints               & intpoints,
+  const DRT::Element::DiscretizationType  pdistype ,
+  const DRT::Element::DiscretizationType  distype  ,
+  const int                               surfaceid)
   {
 
-    if( (distype==DRT::Element::quad4 && pdistype==DRT::Element::hex8) or
-        (distype==DRT::Element::quad9 && pdistype==DRT::Element::hex27) )
+
+  if( (distype==DRT::Element::quad4 && pdistype==DRT::Element::hex8) or
+      (distype==DRT::Element::quad9 && pdistype==DRT::Element::hex27) )
+  {
+    switch(surfaceid)
     {
-      switch(surfaceid)
-      {
-      case 0:
-      {
-        // t=-1
-        /*
-                  parent               surface
-
-                   r|                    s|
-                    |                     |
-               1         2           3         2
-                +-------+             +-------+
-                |   |   |      s      |   |   |      r
-                |   +-- |  -----      |   +-- |  -----
-                |       |             |       |
-                +-------+             +-------+
-               0         3           0         1
-        */
-
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= intpoints.qxg[iquad][1];
-          pqxg(iquad,1)= intpoints.qxg[iquad][0];
-          pqxg(iquad,2)=-1.0;
-        }
-        derivtrafo(0,1)= 1.0;
-        derivtrafo(1,0)= 1.0;
-        derivtrafo(2,2)= -1.0;
-        break;
-      }
-      case 1:
-      {
-        // s=-1
-        /*
-                  parent               surface
-
-                   t|                    s|
-                    |                     |
-               4         5           3         2
-                +-------+             +-------+
-                |   |   |      r      |   |   |      r
-                |   +-- |  -----      |   +-- |  -----
-                |       |             |       |
-                +-------+             +-------+
-               0         1           0         1
-        */
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= intpoints.qxg[iquad][0];
-          pqxg(iquad,1)= -1.0;
-          pqxg(iquad,2)= intpoints.qxg[iquad][1];
-        }
-        derivtrafo(0,0)= 1.0;
-        derivtrafo(1,2)= -1.0;
-        derivtrafo(2,1)= 1.0;
-        break;
-      }
-      case 2:
-      {
-        // r= 1
-        /*
-                  parent               surface
-
-                   t|                    s|
-                    |                     |
-               5         6           3         2
-                +-------+             +-------+
-                |   |   |      s      |   |   |      r
-                |   +-- |  -----      |   +-- |  -----
-                |       |             |       |
-                +-------+             +-------+
-               1         2           0         1
-        */
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= 1.0;
-          pqxg(iquad,1)= intpoints.qxg[iquad][0];
-          pqxg(iquad,2)= intpoints.qxg[iquad][1];
-        }
-        derivtrafo(0,2)= 1.0;
-        derivtrafo(1,0)= 1.0;
-        derivtrafo(2,1)= 1.0;
-        break;
-      }
-      case 3:
-      {
-        // s= 1
-        /*
-                  parent               surface
-
-                   t|                    s|
-                    |                     |
-               6         7           3         2
-                +-------+             +-------+
-          r     |   |   |             |   |   |      r
-          ----  |   +-- |             |   +-- |  -----
-                |       |             |       |
-                +-------+             +-------+
-               2         3           0         1
-        */
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)=-intpoints.qxg[iquad][0];
-          pqxg(iquad,1)= 1.0;
-          pqxg(iquad,2)= intpoints.qxg[iquad][1];
-        }
-        derivtrafo(0,0)= -1.0;
-        derivtrafo(1,2)= 1.0;
-        derivtrafo(2,1)= 1.0;
-        break;
-      }
-      case 4:
-      {
-        // r=-1
-        /*
-                  parent               surface
-
-                   s|                    s|
-                    |                     |
-               3         7           3         2
-                +-------+             +-------+
-                |   |   |      t      |   |   |      r
-                |   +-- |  -----      |   +-- |  -----
-                |       |             |       |
-                +-------+             +-------+
-               0         4           0         1
-        */
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= -1.0;
-          pqxg(iquad,1)= intpoints.qxg[iquad][1];
-          pqxg(iquad,2)= intpoints.qxg[iquad][0];
-        }
-        derivtrafo(0,2)= -1.0;
-        derivtrafo(1,1)= 1.0;
-        derivtrafo(2,0)= 1.0;
-        break;
-      }
-      case 5:
-      {
-        // t=1
-        /*
-                  parent               surface
-
-                   s|                    s|
-                    |                     |
-               7         6           3         2
-                +-------+             +-------+
-                |   |   |      r      |   |   |      r
-                |   +-- |  -----      |   +-- |  -----
-                |       |             |       |
-                +-------+             +-------+
-               4         5           0         1
-        */
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= intpoints.qxg[iquad][0];
-          pqxg(iquad,1)= intpoints.qxg[iquad][1];
-          pqxg(iquad,2)= 1.0;
-        }
-        derivtrafo(0,0)= 1.0;
-        derivtrafo(1,1)= 1.0;
-        derivtrafo(2,2)= 1.0;
-        break;
-      }
-      default:
-        dserror("invalid number of surfaces, unable to determine intpoint in parent");
-      }
-    }
-    else if(distype==DRT::Element::nurbs9 && pdistype==DRT::Element::nurbs27)
+    case 0:
     {
-      switch(surfaceid)
-      {
-      case 0:
-      {
-        // t=-1
-        /*
-                  parent               surface
+      // t=-1
+      /*
+                parent               surface
 
-                   s|                    s|
-                    |                     |
-                +---+---+             +---+---+
-               6|  7|  8|      r     6|  7|  8|      r
-                +   +-- +  -----      +   +-- +  -----
-               3|  4   5|            3|  4   5|
-                +---+---+             +---+---+
-               0   1   2             0   1   2
-        */
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= intpoints.qxg[iquad][0];
-          pqxg(iquad,1)= intpoints.qxg[iquad][1];
-          pqxg(iquad,2)=-1.0;
-        }
-        derivtrafo(0,0)= 1.0;
-        derivtrafo(1,1)= 1.0;
-        derivtrafo(2,2)=-1.0;
-        break;
-      }
-      case 1:
+                 r|                    s|
+                  |                     |
+             1         2           3         2
+              +-------+             +-------+
+              |   |   |      s      |   |   |      r
+              |   +-- |  -----      |   +-- |  -----
+              |       |             |       |
+              +-------+             +-------+
+             0         3           0         1
+      */
+
+      for (int iquad=0;iquad<pqxg.M();++iquad)
       {
-        // t=+1
-        /*
-                  parent               surface
-
-                   s|                    s|
-                    |                     |
-                +---+---+             +---+---+
-              24| 25| 26|      r     6|  7|  8|      r
-                +   +-- +  -----      +   +-- +  -----
-              21| 22  23|            3|  4   5|
-                +---+---+             +---+---+
-              18  19  20             0   1   2
-        */
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= intpoints.qxg[iquad][0];
-          pqxg(iquad,1)= intpoints.qxg[iquad][1];
-          pqxg(iquad,2)= 1.0;
-        }
-        derivtrafo(0,0)= 1.0;
-        derivtrafo(1,1)= 1.0;
-        derivtrafo(2,2)= 1.0;
-        break;
+        pqxg(iquad,0)= intpoints.Point(iquad)[1];
+        pqxg(iquad,1)= intpoints.Point(iquad)[0];
+        pqxg(iquad,2)=-1.0;
       }
-      case 2:
-      {
-        // s=-1
-        /*
-                  parent               surface
-
-                   t|                    s|
-                    |                     |
-                +---+---+             +---+---+
-              18| 19| 20|      r     6|  7|  8|      r
-                +   +-- +  -----      +   +-- +  -----
-               9| 10  11|            3|  4   5|
-                +---+---+             +---+---+
-               0   1   2             0   1   2
-        */
-
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= intpoints.qxg[iquad][0];
-          pqxg(iquad,1)= -1.0;
-          pqxg(iquad,2)= intpoints.qxg[iquad][1];
-        }
-        derivtrafo(0,0)= 1.0;
-        derivtrafo(1,2)= -1.0;
-        derivtrafo(2,1)= 1.0;
-        break;
-      }
-      case 3:
-      {
-        // s=+1
-        /*
-                  parent               surface
-
-                   t|                    s|
-                    |                     |
-                +---+---+             +---+---+
-              24| 25| 26|    r       6|  7|  8|      r
-                +   +-- + ----        +   +-- +  -----
-              15| 16  17|            3|  4   5|
-                +---+---+             +---+---+
-               6   7   8             0   1   2
-        */
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= intpoints.qxg[iquad][0];
-          pqxg(iquad,1)= 1.0;
-          pqxg(iquad,2)= intpoints.qxg[iquad][1];
-        }
-        derivtrafo(0,0)= 1.0;
-        derivtrafo(1,2)= 1.0;
-        derivtrafo(2,1)= 1.0;
-        break;
-      }
-      case 4:
-      {
-        // r=+1
-        /*
-                  parent               surface
-
-                   t|                    s|
-                    |                     |
-                +---+---+             +---+---+
-              20| 23| 26|      s     6|  7|  8|      r
-                +   +-- +  -----      +   +-- +  -----
-              11| 14  17|            3|  4   5|
-                +---+---+             +---+---+
-               2   5   8             0   1   2
-        */
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= 1.0;
-          pqxg(iquad,1)= intpoints.qxg[iquad][0];
-          pqxg(iquad,2)= intpoints.qxg[iquad][1];
-        }
-        derivtrafo(0,2)= 1.0;
-        derivtrafo(1,0)= 1.0;
-        derivtrafo(2,1)= 1.0;
-        break;
-      }
-      case 5:
-      {
-        // r=-1
-        /*
-                  parent               surface
-
-                   t|                    s|
-                    |                     |
-                +---+---+             +---+---+
-              18| 21| 24|      s     6|  7|  8|      r
-                +   +-- +  -----      +   +-- +  -----
-               9| 12  15|            3|  4   5|
-                +---+---+             +---+---+
-               0   3   6             0   1   2
-        */
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= -1.0;
-          pqxg(iquad,1)= intpoints.qxg[iquad][0];
-          pqxg(iquad,2)= intpoints.qxg[iquad][1];
-        }
-        derivtrafo(0,2)= -1.0;
-        derivtrafo(1,0)= 1.0;
-        derivtrafo(2,1)= 1.0;
-        break;
-      }
-      default:
-        dserror("invalid number of surfaces, unable to determine intpoint in parent");
-      }
+      derivtrafo(0,1)= 1.0;
+      derivtrafo(1,0)= 1.0;
+      derivtrafo(2,2)= -1.0;
+      break;
     }
-    else if( (distype==DRT::Element::tri3 && pdistype==DRT::Element::tet4) or
-             (distype==DRT::Element::tri6 && pdistype==DRT::Element::tet10))
+    case 1:
     {
-      switch(surfaceid)
-      {
-      case 0:
-      {
-        // s=0
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= intpoints.qxg[iquad][0];
-          pqxg(iquad,1)= 0.0;
-          pqxg(iquad,2)= intpoints.qxg[iquad][1];
-        }
-        derivtrafo(0,0)= 1.0;
-        derivtrafo(1,2)= -1.0;
-        derivtrafo(2,1)= 1.0;
-        break;
-      }
-      case 1:
-      {
-        // r+s+t=1
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= 1.0 - intpoints.qxg[iquad][0] - intpoints.qxg[iquad][1];
-          pqxg(iquad,1)= intpoints.qxg[iquad][0];
-          pqxg(iquad,2)= intpoints.qxg[iquad][1];
-        }
-        derivtrafo(0,0)= -1.0;
-        derivtrafo(0,1)= -1.0;
-        derivtrafo(0,2)= 1.0;
-        derivtrafo(1,0)= 1.0;
-        derivtrafo(1,2)= 1.0;
-        derivtrafo(2,1)= 1.0;
-        derivtrafo(2,2)= 1.0;
-        break;
-      }
-      case 2:
-      {
-        // r=0
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= 0.0;
-          pqxg(iquad,1)= intpoints.qxg[iquad][1];
-          pqxg(iquad,2)= intpoints.qxg[iquad][0];
-        }
-        derivtrafo(0,2)= -1.0;
-        derivtrafo(1,1)= 1.0;
-        derivtrafo(2,0)= 1.0;
-        break;
-      }
-      case 3:
-      {
-        // t=0
-        for (int iquad=0;iquad<intpoints.nquad;++iquad)
-        {
-          pqxg(iquad,0)= intpoints.qxg[iquad][1];
-          pqxg(iquad,1)= intpoints.qxg[iquad][0];
-          pqxg(iquad,2)= 0.0;
-        }
-        derivtrafo(0,1)= 1.0;
-        derivtrafo(1,0)= 1.0;
-        derivtrafo(2,2)=-1.0;
-        break;
-      }
-      default:
-        dserror("invalid number of surfaces, unable to determine intpoint in parent");
-      }
-    }
-    else
-    {
-        dserror("only quad4/hex8, quad9/hex27, tri3/tet4 and nurbs9/nurbs27 mappings of surface gausspoint to parent element implemented up to now\n");
-    }
+      // s=-1
+      /*
+                parent               surface
 
-    return;
+                 t|                    s|
+                  |                     |
+             4         5           3         2
+              +-------+             +-------+
+              |   |   |      r      |   |   |      r
+              |   +-- |  -----      |   +-- |  -----
+              |       |             |       |
+              +-------+             +-------+
+             0         1           0         1
+      */
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= intpoints.Point(iquad)[0];
+        pqxg(iquad,1)= -1.0;
+        pqxg(iquad,2)= intpoints.Point(iquad)[1];
+      }
+      derivtrafo(0,0)= 1.0;
+      derivtrafo(1,2)= -1.0;
+      derivtrafo(2,1)= 1.0;
+      break;
+    }
+    case 2:
+    {
+      // r= 1
+      /*
+                parent               surface
+
+                 t|                    s|
+                  |                     |
+             5         6           3         2
+              +-------+             +-------+
+              |   |   |      s      |   |   |      r
+              |   +-- |  -----      |   +-- |  -----
+              |       |             |       |
+              +-------+             +-------+
+             1         2           0         1
+      */
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= 1.0;
+        pqxg(iquad,1)= intpoints.Point(iquad)[0];
+        pqxg(iquad,2)= intpoints.Point(iquad)[1];
+      }
+      derivtrafo(0,2)= 1.0;
+      derivtrafo(1,0)= 1.0;
+      derivtrafo(2,1)= 1.0;
+      break;
+    }
+    case 3:
+    {
+      // s= 1
+      /*
+                parent               surface
+
+                 t|                    s|
+                  |                     |
+             6         7           3         2
+              +-------+             +-------+
+        r     |   |   |             |   |   |      r
+        ----  |   +-- |             |   +-- |  -----
+              |       |             |       |
+              +-------+             +-------+
+             2         3           0         1
+      */
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)=-intpoints.Point(iquad)[0];
+        pqxg(iquad,1)= 1.0;
+        pqxg(iquad,2)= intpoints.Point(iquad)[1];
+      }
+      derivtrafo(0,0)= -1.0;
+      derivtrafo(1,2)= 1.0;
+      derivtrafo(2,1)= 1.0;
+      break;
+    }
+    case 4:
+    {
+      // r=-1
+      /*
+                parent               surface
+
+                 s|                    s|
+                  |                     |
+             3         7           3         2
+              +-------+             +-------+
+              |   |   |      t      |   |   |      r
+              |   +-- |  -----      |   +-- |  -----
+              |       |             |       |
+              +-------+             +-------+
+             0         4           0         1
+      */
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= -1.0;
+        pqxg(iquad,1)= intpoints.Point(iquad)[1];
+        pqxg(iquad,2)= intpoints.Point(iquad)[0];
+      }
+      derivtrafo(0,2)= -1.0;
+      derivtrafo(1,1)= 1.0;
+      derivtrafo(2,0)= 1.0;
+      break;
+    }
+    case 5:
+    {
+      // t=1
+      /*
+                parent               surface
+
+                 s|                    s|
+                  |                     |
+             7         6           3         2
+              +-------+             +-------+
+              |   |   |      r      |   |   |      r
+              |   +-- |  -----      |   +-- |  -----
+              |       |             |       |
+              +-------+             +-------+
+             4         5           0         1
+      */
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= intpoints.Point(iquad)[0];
+        pqxg(iquad,1)= intpoints.Point(iquad)[1];
+        pqxg(iquad,2)= 1.0;
+      }
+      derivtrafo(0,0)= 1.0;
+      derivtrafo(1,1)= 1.0;
+      derivtrafo(2,2)= 1.0;
+      break;
+    }
+    default:
+      dserror("invalid number of surfaces, unable to determine intpoint in parent");
+    }
+  }
+  else if(distype==DRT::Element::nurbs9 && pdistype==DRT::Element::nurbs27)
+  {
+    switch(surfaceid)
+    {
+    case 0:
+    {
+      // t=-1
+      /*
+                parent               surface
+
+                 s|                    s|
+                  |                     |
+              +---+---+             +---+---+
+             6|  7|  8|      r     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+             3|  4   5|            3|  4   5|
+              +---+---+             +---+---+
+             0   1   2             0   1   2
+      */
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= intpoints.Point(iquad)[0];
+        pqxg(iquad,1)= intpoints.Point(iquad)[1];
+        pqxg(iquad,2)=-1.0;
+      }
+      derivtrafo(0,0)= 1.0;
+      derivtrafo(1,1)= 1.0;
+      derivtrafo(2,2)=-1.0;
+      break;
+    }
+    case 1:
+    {
+      // t=+1
+      /*
+                parent               surface
+
+                 s|                    s|
+                  |                     |
+              +---+---+             +---+---+
+            24| 25| 26|      r     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+            21| 22  23|            3|  4   5|
+              +---+---+             +---+---+
+            18  19  20             0   1   2
+      */
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= intpoints.Point(iquad)[0];
+        pqxg(iquad,1)= intpoints.Point(iquad)[1];
+        pqxg(iquad,2)= 1.0;
+      }
+      derivtrafo(0,0)= 1.0;
+      derivtrafo(1,1)= 1.0;
+      derivtrafo(2,2)= 1.0;
+      break;
+    }
+    case 2:
+    {
+      // s=-1
+      /*
+                parent               surface
+
+                 t|                    s|
+                  |                     |
+              +---+---+             +---+---+
+            18| 19| 20|      r     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+             9| 10  11|            3|  4   5|
+              +---+---+             +---+---+
+             0   1   2             0   1   2
+      */
+
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= intpoints.Point(iquad)[0];
+        pqxg(iquad,1)= -1.0;
+        pqxg(iquad,2)= intpoints.Point(iquad)[1];
+      }
+      derivtrafo(0,0)= 1.0;
+      derivtrafo(1,2)= -1.0;
+      derivtrafo(2,1)= 1.0;
+      break;
+    }
+    case 3:
+    {
+      // s=+1
+      /*
+                parent               surface
+
+                 t|                    s|
+                  |                     |
+              +---+---+             +---+---+
+            24| 25| 26|    r       6|  7|  8|      r
+              +   +-- + ----        +   +-- +  -----
+            15| 16  17|            3|  4   5|
+              +---+---+             +---+---+
+             6   7   8             0   1   2
+      */
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= intpoints.Point(iquad)[0];
+        pqxg(iquad,1)= 1.0;
+        pqxg(iquad,2)= intpoints.Point(iquad)[1];
+      }
+      derivtrafo(0,0)= 1.0;
+      derivtrafo(1,2)= 1.0;
+      derivtrafo(2,1)= 1.0;
+      break;
+    }
+    case 4:
+    {
+      // r=+1
+      /*
+                parent               surface
+
+                 t|                    s|
+                  |                     |
+              +---+---+             +---+---+
+            20| 23| 26|      s     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+            11| 14  17|            3|  4   5|
+              +---+---+             +---+---+
+             2   5   8             0   1   2
+      */
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= 1.0;
+        pqxg(iquad,1)= intpoints.Point(iquad)[0];
+        pqxg(iquad,2)= intpoints.Point(iquad)[1];
+      }
+      derivtrafo(0,2)= 1.0;
+      derivtrafo(1,0)= 1.0;
+      derivtrafo(2,1)= 1.0;
+      break;
+    }
+    case 5:
+    {
+      // r=-1
+      /*
+                parent               surface
+
+                 t|                    s|
+                  |                     |
+              +---+---+             +---+---+
+            18| 21| 24|      s     6|  7|  8|      r
+              +   +-- +  -----      +   +-- +  -----
+             9| 12  15|            3|  4   5|
+              +---+---+             +---+---+
+             0   3   6             0   1   2
+      */
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= -1.0;
+        pqxg(iquad,1)= intpoints.Point(iquad)[0];
+        pqxg(iquad,2)= intpoints.Point(iquad)[1];
+      }
+      derivtrafo(0,2)= -1.0;
+      derivtrafo(1,0)= 1.0;
+      derivtrafo(2,1)= 1.0;
+      break;
+    }
+    default:
+      dserror("invalid number of surfaces, unable to determine intpoint in parent");
+    }
+  }
+  else if( (distype==DRT::Element::tri3 && pdistype==DRT::Element::tet4) or
+           (distype==DRT::Element::tri6 && pdistype==DRT::Element::tet10))
+  {
+    switch(surfaceid)
+    {
+    case 0:
+    {
+      // s=0
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= intpoints.Point(iquad)[0];
+        pqxg(iquad,1)= 0.0;
+        pqxg(iquad,2)= intpoints.Point(iquad)[1];
+      }
+      derivtrafo(0,0)= 1.0;
+      derivtrafo(1,2)= -1.0;
+      derivtrafo(2,1)= 1.0;
+      break;
+    }
+    case 1:
+    {
+      // r+s+t=1
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= 1.0 - intpoints.Point(iquad)[0] - intpoints.Point(iquad)[1];
+        pqxg(iquad,1)= intpoints.Point(iquad)[0];
+        pqxg(iquad,2)= intpoints.Point(iquad)[1];
+      }
+      derivtrafo(0,0)= -1.0;
+      derivtrafo(0,1)= -1.0;
+      derivtrafo(0,2)= 1.0;
+      derivtrafo(1,0)= 1.0;
+      derivtrafo(1,2)= 1.0;
+      derivtrafo(2,1)= 1.0;
+      derivtrafo(2,2)= 1.0;
+      break;
+    }
+    case 2:
+    {
+      // r=0
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= 0.0;
+        pqxg(iquad,1)= intpoints.Point(iquad)[1];
+        pqxg(iquad,2)= intpoints.Point(iquad)[0];
+      }
+      derivtrafo(0,2)= -1.0;
+      derivtrafo(1,1)= 1.0;
+      derivtrafo(2,0)= 1.0;
+      break;
+    }
+    case 3:
+    {
+      // t=0
+      for (int iquad=0;iquad<pqxg.M();++iquad)
+      {
+        pqxg(iquad,0)= intpoints.Point(iquad)[1];
+        pqxg(iquad,1)= intpoints.Point(iquad)[0];
+        pqxg(iquad,2)= 0.0;
+      }
+      derivtrafo(0,1)= 1.0;
+      derivtrafo(1,0)= 1.0;
+      derivtrafo(2,2)=-1.0;
+      break;
+    }
+    default:
+      dserror("invalid number of surfaces, unable to determine intpoint in parent");
+    }
+  }
+  else
+  {
+      dserror("only quad4/hex8, quad9/hex27, tri3/tet4 and nurbs9/nurbs27 mappings of surface gausspoint to parent element implemented up to now\n");
+  }
+
+  return;
   }
 
 /*-----------------------------------------------------------------
@@ -508,11 +501,11 @@ namespace UTILS
 \author gammi (gamnitzer@lnm.mw.tum.de), 05/09
 
   -----------------------------------------------------------------*/
-template<class V,class W>
+template<class V,class W,typename IntegrationPoints>
 void LineGPToParentGP(
   V              & pqxg     ,
   W              & derivtrafo,
-  const DRT::UTILS::IntegrationPoints1D & intpoints,
+  const IntegrationPoints               & intpoints,
   const DRT::Element::DiscretizationType  pdistype ,
   const DRT::Element::DiscretizationType  distype  ,
   const int                               lineid   );
@@ -536,19 +529,19 @@ void LineGPToParentGP(
   ----------------------------------------------------------------------------------*/
 template<const int NSD>
 void BoundaryGPToParentGP(
-  Epetra_SerialDenseMatrix                                                    & pqxg     ,
-  Epetra_SerialDenseMatrix                                                    & derivtrafo,
-  const DRT::UTILS::IntPointsAndWeights<NSD-1> &                                intpoints,
-  const DRT::Element::DiscretizationType                                        pdistype ,
-  const DRT::Element::DiscretizationType                                        distype  ,
-  const int                                                                     surfaceid);
+  Epetra_SerialDenseMatrix                     & pqxg     ,
+  Epetra_SerialDenseMatrix                     & derivtrafo,
+  const DRT::UTILS::IntPointsAndWeights<NSD-1> & intpoints,
+  const DRT::Element::DiscretizationType         pdistype ,
+  const DRT::Element::DiscretizationType         distype  ,
+  const int                                      surfaceid);
 
 //! specialization for 3D
 template<>
 void BoundaryGPToParentGP<3>(
 Epetra_SerialDenseMatrix                                                    & pqxg     ,
 Epetra_SerialDenseMatrix                                                    & derivtrafo,
-const DRT::UTILS::IntPointsAndWeights<2> &                                    intpoints,
+const DRT::UTILS::IntPointsAndWeights<2>  &                                   intpoints,
 const DRT::Element::DiscretizationType                                        pdistype ,
 const DRT::Element::DiscretizationType                                        distype  ,
 const int                                                                     surfaceid);
@@ -559,15 +552,77 @@ void BoundaryGPToParentGP<2>(
 Epetra_SerialDenseMatrix                                                    & pqxg     ,
 Epetra_SerialDenseMatrix                                                    & derivtrafo,
 const DRT::UTILS::IntPointsAndWeights<1> &                                    intpoints,
+const DRT::Element::DiscretizationType                                        pdistype ,
+const DRT::Element::DiscretizationType                                        distype  ,
+const int                                                                     surfaceid);
+
+
+
+template<const int NSD>
+void BoundaryGPToParentGP(
+    Epetra_SerialDenseMatrix                                                  & pqxg     ,
+  LINALG::Matrix<NSD,NSD>                                                     & derivtrafo,
+  const DRT::UTILS::IntPointsAndWeights<NSD-1> &                                intpoints,
+  const DRT::Element::DiscretizationType                                        pdistype ,
+  const DRT::Element::DiscretizationType                                        distype  ,
+  const int                                                                     surfaceid);
+
+//! specialization for 3D
+template<>
+void BoundaryGPToParentGP<3>(
+    Epetra_SerialDenseMatrix                                                & pqxg     ,
+    LINALG::Matrix<3,3>                                                     & derivtrafo,
+const DRT::UTILS::IntPointsAndWeights<2> &                                    intpoints,
+const DRT::Element::DiscretizationType                                        pdistype ,
+const DRT::Element::DiscretizationType                                        distype  ,
+const int                                                                     surfaceid);
+
+//! specialization for 2D
+template<>
+void BoundaryGPToParentGP<2>(
+    Epetra_SerialDenseMatrix                                                & pqxg     ,
+    LINALG::Matrix<2,2>                                                     & derivtrafo,
+const DRT::UTILS::IntPointsAndWeights<1> &                                    intpoints,
+const DRT::Element::DiscretizationType                                        pdistype ,
+const DRT::Element::DiscretizationType                                        distype  ,
+const int                                                                     surfaceid);
+
+
+
+template<const int NSD>
+void BoundaryGPToParentGP(
+  Epetra_SerialDenseMatrix                     & pqxg     ,
+  Epetra_SerialDenseMatrix                     & derivtrafo,
+  const DRT::UTILS::GaussPoints                & intpoints,
+  const DRT::Element::DiscretizationType         pdistype ,
+  const DRT::Element::DiscretizationType         distype  ,
+  const int                                      surfaceid);
+
+//! specialization for 3D
+template<>
+void BoundaryGPToParentGP<3>(
+Epetra_SerialDenseMatrix                                                    & pqxg     ,
+Epetra_SerialDenseMatrix                                                    & derivtrafo,
+const DRT::UTILS::GaussPoints             &                                   intpoints,
+const DRT::Element::DiscretizationType                                        pdistype ,
+const DRT::Element::DiscretizationType                                        distype  ,
+const int                                                                     surfaceid);
+
+//! specialization for 2D
+template<>
+void BoundaryGPToParentGP<2>(
+Epetra_SerialDenseMatrix                                                    & pqxg     ,
+Epetra_SerialDenseMatrix                                                    & derivtrafo,
+const DRT::UTILS::GaussPoints &                                               intpoints,
 const DRT::Element::DiscretizationType                                        pdistype ,
 const DRT::Element::DiscretizationType                                        distype  ,
 const int                                                                     surfaceid);
 
 template<const int NSD>
 void BoundaryGPToParentGP(
-    Epetra_SerialDenseMatrix                                                    & pqxg     ,
-  LINALG::Matrix<NSD,NSD>                                                    & derivtrafo,
-  const DRT::UTILS::IntPointsAndWeights<NSD-1> &                                intpoints,
+    Epetra_SerialDenseMatrix                                                  & pqxg     ,
+  LINALG::Matrix<NSD,NSD>                                                     & derivtrafo,
+  const DRT::UTILS::GaussPoints &                                               intpoints,
   const DRT::Element::DiscretizationType                                        pdistype ,
   const DRT::Element::DiscretizationType                                        distype  ,
   const int                                                                     surfaceid);
@@ -575,9 +630,9 @@ void BoundaryGPToParentGP(
 //! specialization for 3D
 template<>
 void BoundaryGPToParentGP<3>(
-    Epetra_SerialDenseMatrix                                                    & pqxg     ,
-    LINALG::Matrix<3,3>                                                    & derivtrafo,
-const DRT::UTILS::IntPointsAndWeights<2> &                                    intpoints,
+    Epetra_SerialDenseMatrix                                                & pqxg     ,
+    LINALG::Matrix<3,3>                                                     & derivtrafo,
+const DRT::UTILS::GaussPoints           &                                     intpoints,
 const DRT::Element::DiscretizationType                                        pdistype ,
 const DRT::Element::DiscretizationType                                        distype  ,
 const int                                                                     surfaceid);
@@ -585,9 +640,9 @@ const int                                                                     su
 //! specialization for 2D
 template<>
 void BoundaryGPToParentGP<2>(
-    Epetra_SerialDenseMatrix                                                    & pqxg     ,
-    LINALG::Matrix<2,2>                                                    & derivtrafo,
-const DRT::UTILS::IntPointsAndWeights<1> &                                    intpoints,
+    Epetra_SerialDenseMatrix                                                & pqxg     ,
+    LINALG::Matrix<2,2>                                                     & derivtrafo,
+const DRT::UTILS::GaussPoints            &                                    intpoints,
 const DRT::Element::DiscretizationType                                        pdistype ,
 const DRT::Element::DiscretizationType                                        distype  ,
 const int                                                                     surfaceid);
@@ -643,8 +698,8 @@ void ComputeMetricTensorForBoundaryEle(
   |
   |   dxyzdrs(1,2) = deriv(1,iel) * xyze(2, iel)^T
    */
-  LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,1 + DRT::UTILS::DisTypeToDim<DISTYPE>::dim> dxyzdrs(true);
-  dxyzdrs.MultiplyNT(1.0,deriv,xyze,0.0);
+  LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,1 + DRT::UTILS::DisTypeToDim<DISTYPE>::dim> dxyzdrs;
+  dxyzdrs.MultiplyNT(deriv,xyze);
 
   /* 2D boundary Element
   |
@@ -667,7 +722,7 @@ void ComputeMetricTensorForBoundaryEle(
    */
 
   metrictensor.Clear();
-  metrictensor.MultiplyNT(1.0,dxyzdrs,dxyzdrs,0.0);
+  metrictensor.MultiplyNT(dxyzdrs,dxyzdrs);
 
   /*
                             +--------------+

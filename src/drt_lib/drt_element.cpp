@@ -98,10 +98,13 @@ DRT::Element::Element(int id, int owner) :
 ParObject(),
 id_(id),
 lid_(-1),
-owner_(owner)
-{
-  return;
-}
+owner_(owner),
+face_(NULL),
+parent_master_(NULL),
+parent_slave_(NULL),
+lface_master_(-1),
+lface_slave_(-1)
+{}
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
@@ -112,8 +115,21 @@ id_(old.id_),
 lid_(old.lid_),
 owner_(old.owner_),
 nodeid_(old.nodeid_),
-node_(old.node_)
+node_(old.node_),
+face_(NULL),
+parent_master_(old.parent_master_),
+parent_slave_(old.parent_slave_),
+lface_master_(old.lface_master_),
+lface_slave_(old.lface_slave_)
 {
+  if (old.face_ != NULL)
+  {
+    const int nface = old.NumFace();
+    face_ = new DRT::Element*[nface];
+    for (int i=0; i<nface; ++i)
+      face_[i] = old.face_[i];
+  }
+
   // we do NOT want a deep copy of the condition_ as the condition
   // is only a reference in the elements anyway
   std::map<std::string,Teuchos::RCP<Condition> >::const_iterator fool;
@@ -131,6 +147,9 @@ node_(old.node_)
  *----------------------------------------------------------------------*/
 DRT::Element::~Element()
 {
+  if (face_ != NULL)
+    delete[] face_;
+
   return;
 }
 
@@ -286,8 +305,13 @@ void DRT::Element::Unpack(const std::vector<char>& data)
     mat_ = Teuchos::null;
   }
 
-  // node_ is NOT communicated
+  // node_, face_, parent_master_, parent_slave_ are NOT communicated
   node_.resize(0);
+  if (face_ != NULL)
+    delete[] face_;
+  face_ = NULL;
+  parent_master_ = NULL;
+  parent_slave_  = NULL;
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -488,6 +512,24 @@ void DRT::Element::LocationVector( const DRT::Discretization & dis,
       lmowner.push_back(owner);
       lm.push_back(dof[j]);
     }
+
+    // fill the vector with face dofs
+    if (this->NumDofPerFace(0) > 0)
+    {
+      for (int i=0; i<NumFace(); ++i)
+      {
+        const int owner = face_[i]->Owner();
+        std::vector<int> dof = dis.Dof(dofset,face_[i]);
+        if (dof.size())
+          lmstride.push_back(dof.size());
+        for (unsigned j=0; j<dof.size(); ++j)
+        {
+          lmowner.push_back(owner);
+          lm.push_back(dof[j]);
+        }
+      }
+    }
+
     if (doDirichlet)
     {
       const std::vector<int>* flag = NULL;
@@ -581,6 +623,24 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
       lmowner.push_back(owner);
       lm.push_back(dof[j]);
     }
+
+    // fill the vector with face dofs
+    if (this->NumDofPerFace(0) > 0)
+    {
+      for (int i=0; i<NumFace(); ++i)
+      {
+        const int owner = face_[i]->Owner();
+        std::vector<int> dof = dis.Dof(dofset,face_[i]);
+        if (dof.size())
+          lmstride.push_back(dof.size());
+        for (unsigned j=0; j<dof.size(); ++j)
+        {
+          lmowner.push_back(owner);
+          lm.push_back(dof[j]);
+        }
+      }
+    }
+
     if (doDirichlet)
     {
       const std::vector<int>* flag = NULL;
@@ -682,7 +742,24 @@ void DRT::Element::LocationVector(const Discretization& dis,
   unsigned aft = lm.size();
   if (aft-bef) lmstride.push_back((int)(aft-bef));
   lmowner.resize(lm.size(),Owner());  
-  
+
+  // fill the vector with face dofs
+  if (this->NumDofPerFace(0) > 0)
+  {
+    for (int i=0; i<NumFace(); ++i)
+    {
+      const int owner = face_[i]->Owner();
+      std::vector<int> dof = dis.Dof(0,face_[i]);
+      if (dof.size())
+        lmstride.push_back(dof.size());
+      for (unsigned j=0; j<dof.size(); ++j)
+      {
+        lmowner.push_back(owner);
+        lm.push_back(dof[j]);
+      }
+    }
+  }
+
   // do dirichlet BCs
   const std::vector<int>* flag = NULL;
   DRT::Condition* dirich = GetCondition("Dirichlet");
@@ -748,6 +825,61 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
   lmowner.resize(lm.size(),Owner());
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  return number of faces (public)                    kronbichler 05/13|
+ *----------------------------------------------------------------------*/
+int DRT::Element::NumFace() const
+{
+  switch (DRT::UTILS::getDimension(this->Shape()))
+  {
+  case 2:
+    return NumLine();
+  case 3:
+    return NumSurface();
+  default:
+    dserror("faces for discretization type %s not yet implemented", (DRT::DistypeToString(Shape())).c_str());
+    return 0;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  returns neighbor of element (public)               kronbichler 05/13|
+ *----------------------------------------------------------------------*/
+DRT::Element* DRT::Element::Neighbor(const int face) const
+{
+  if (face_ == NULL)
+    return NULL;
+  dsassert(face < NumFace(), "there is no face with the given index");
+  DRT::Element* faceelement = face_[face];
+  if (faceelement->parent_master_ == this)
+  {
+    if (faceelement->parent_slave_ != NULL)
+      return faceelement->parent_slave_;
+  }
+  else if (faceelement->parent_slave_ == this)
+    return faceelement->parent_master_;
+  return NULL;
+}
+
+/*----------------------------------------------------------------------*
+ |  set faces (public)                                 kronbichler 05/13|
+ *----------------------------------------------------------------------*/
+void DRT::Element::SetFace(const int     faceindex,
+                           DRT::Element* faceelement)
+{
+  const int nface = NumFace();
+  if (face_ == NULL)
+  {
+    face_ = new DRT::Element*[nface];
+    for (int f=0; f<nface; ++f)
+      face_[f] = NULL;
+  }
+  dsassert(faceindex < NumFace(), "there is no face with the given index");
+  face_[faceindex] = faceelement;
+}
+
+
 
 /*----------------------------------------------------------------------*
  |  evaluate element dummy (public)                          mwgee 12/06|

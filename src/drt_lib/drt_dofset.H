@@ -33,8 +33,8 @@ http://www.lnm.mw.tum.de
 </pre>
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
 
@@ -75,21 +75,21 @@ This class represents one set of degrees of freedom for the
 Discretization class in the usual parallel fashion. That is there is a
 DofRowMap() and a DofColMap() that return the maps of the global FE
 system of equation in row and column setting respectively. These maps
-are used by the algorithm's Epetra_Vector classes amoung others.
+are used by the algorithm's Epetra_Vector classes among others.
 
-There can be dofs in nodes and in elements. And additionally to the
+There can be dofs in nodes, faces, and elements. And additionally to the
 above maps this class needs to know the global dof ids of all nodes
 and elements. In order to provide this information nodal and elemental
 column vectors are provided that store the number of dofs and the
 local column map id of the first dof for each node and element. Since
 dof numbers to one object are always consecutive this is all that's
-needed. So the methods NumDof() and Dof() can be provided for nodes
-and elements.
+needed. So the methods NumDof() and Dof() can be provided for nodes,
+faces, and elements.
 
 One has to keep in mind, however, that the lookup of one dof gid
 involves some table lookups. Therefore there is a special version of
 Dof() that gathers and returns all dof gids to one node or element at
-once. This is to be prefered if more that one lookup is needed.
+once. This is to be preferred if more that one lookup is needed.
 
 The point of holding these maps and vectors in a class of its own is
 to enable multiple sets of dofs on the same mesh. But judging from
@@ -119,10 +119,10 @@ change. To achieve this we keep a list of dof sets internally.
 <h3>Copying behaviour</h3>
 
 Please note that even though Michael does not like it this class
-contains neither copy constructor nor assignment operatior. This is
+contains neither copy constructor nor assignment operator. This is
 intended. It is legal to copy this objects of class. The internal
 variables (all RCPs) know how to copy themselves. So the
-default versions will do just fine. (Far better that buggy hand
+default versions will do just fine. (Far better than buggy hand
 written versions.) And due to the two possible states there is no
 reason to deep copy any of the local map and vector variables.
 
@@ -162,10 +162,14 @@ public:
   /// Get number of dofs for given element
   virtual int NumDof(const Element* element) const
     {
+      // check if this is a face element
       int lid = element->LID();
       if (lid==-1)
         return 0;
-      return (*numdfcolelements_)[lid];
+      if (element->IsFaceElement())
+        return (*numdfcolfaces_)[lid];
+      else
+        return (*numdfcolelements_)[lid];
     }
 
   /// Get the gid of a dof for given node
@@ -183,7 +187,10 @@ public:
       int lid = element->LID();
       if (lid==-1)
         return -1;
-      return (*idxcolelements_)[lid]+dof;
+      if (element->IsFaceElement())
+        return (*numdfcolfaces_)[lid]+dof;
+      else
+        return (*idxcolelements_)[lid]+dof;
     }
 
   /// Get the gid of all dofs of a node
@@ -205,8 +212,9 @@ public:
       int lid = element->LID();
       if (lid==-1)
         return std::vector<int>();
-      int idx = (*idxcolelements_)[lid];
-      std::vector<int> dof((*numdfcolelements_)[lid]);
+      int idx = element->IsFaceElement() ? (*idxcolfaces_)[lid] : (*idxcolelements_)[lid];
+      std::vector<int> dof(element->IsFaceElement() ?
+          (*numdfcolfaces_)[lid] : (*numdfcolelements_)[lid]);
       for (unsigned i=0; i<dof.size(); ++i)
         dof[i] = idx+i;
       return dof;
@@ -247,8 +255,8 @@ public:
       int lid = element->LID();
       if (lid==-1)
         return;
-      int idx = (*idxcolelements_)[lid];
-      int size = (*numdfcolelements_)[lid];
+      int idx = element->IsFaceElement() ? (*idxcolfaces_)[lid] : (*idxcolelements_)[lid];
+      int size = element->IsFaceElement() ? (*numdfcolfaces_)[lid] : (*numdfcolelements_)[lid];
       for (int i=0; i<size; ++i)
         lm.push_back(idx+i);
     }
@@ -345,11 +353,17 @@ protected:
   /// number of dofs for each node
   Teuchos::RCP<Epetra_IntVector>                 numdfcolnodes_;
 
+  /// number of dofs for each face
+  Teuchos::RCP<Epetra_IntVector>                 numdfcolfaces_;
+
   /// number of dofs for each element
   Teuchos::RCP<Epetra_IntVector>                 numdfcolelements_;
 
   /// column map gid of first dof for each node
   Teuchos::RCP<Epetra_IntVector>                 idxcolnodes_;
+
+  /// column map gid of first dof for each face
+  Teuchos::RCP<Epetra_IntVector>                 idxcolfaces_;
 
   /// column map gid of first dof for each element
   Teuchos::RCP<Epetra_IntVector>                 idxcolelements_;

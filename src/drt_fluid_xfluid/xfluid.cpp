@@ -853,14 +853,14 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
       RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(xfluid_.discret_, true);
 
-      const int numrowintfaces = xdiscret->NumMyRowIntFaces();
+      const int numrowintfaces = xdiscret->NumMyRowFaces();
 
       // REMARK: in this XFEM framework the whole evaluate routine uses only row internal faces
       // and assembles into EpetraFECrs matrix
       // this is baci-unusual but more efficient in all XFEM applications
       for (int i=0; i<numrowintfaces; ++i)
       {
-        DRT::Element* actface = xdiscret->lRowIntFace(i);
+        DRT::Element* actface = xdiscret->lRowFace(i);
 
         DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
         if ( ele==NULL ) dserror( "expect FluidIntFace element" );
@@ -2040,14 +2040,14 @@ void FLD::XFluid::XFluidState::GradientPenalty( Teuchos::ParameterList & elepara
 
       RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(xfluid_.discret_, true);
 
-      const int numrowintfaces = xdiscret->NumMyRowIntFaces();
+      const int numrowintfaces = xdiscret->NumMyRowFaces();
 
       // REMARK: in this XFEM framework the whole evaluate routine uses only row internal faces
       // and assembles into EpetraFECrs matrix
       // this is baci-unusual but more efficient in all XFEM applications
       for (int i=0; i<numrowintfaces; ++i)
       {
-        DRT::Element* actface = xdiscret->lRowIntFace(i);
+        DRT::Element* actface = xdiscret->lRowFace(i);
 
         DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
         if ( ele==NULL ) dserror( "expect FluidIntFace element" );
@@ -5118,9 +5118,9 @@ void FLD::XFluid::Output()
       // draw internal faces elements with associated face's gid
       gmshfilecontent << "View \" " << "ghost penalty stabilized \" {\n";
 
-      for (int i=0; i<xdiscret->NumMyRowIntFaces(); ++i)
+      for (int i=0; i<xdiscret->NumMyRowFaces(); ++i)
       {
-        const DRT::Element* actele = xdiscret->lRowIntFace(i);
+        const DRT::Element* actele = xdiscret->lRowFace(i);
         std::map<int,int> & ghost_penalty_map = state_->EdgeStab()->GetGhostPenaltyMap();
 
         std::map<int,int>::iterator it = ghost_penalty_map.find(actele->Id());
@@ -5139,9 +5139,9 @@ void FLD::XFluid::Output()
       // draw internal faces elements with associated face's gid
       gmshfilecontent << "View \" " << "edgebased stabilized \" {\n";
 
-      for (int i=0; i<xdiscret->NumMyRowIntFaces(); ++i)
+      for (int i=0; i<xdiscret->NumMyRowFaces(); ++i)
       {
-        const DRT::Element* actele = xdiscret->lRowIntFace(i);
+        const DRT::Element* actele = xdiscret->lRowFace(i);
         std::map<int,int> & edge_based_map = state_->EdgeStab()->GetEdgeBasedMap();
         std::map<int,int>::iterator it = edge_based_map.find(actele->Id());
 
@@ -5465,9 +5465,9 @@ void FLD::XFluid::disToStream(Teuchos::RCP<DRT::Discretization> dis,
       if(facecol)
       {
         s << " col f->Id() \" {\n";
-        for (int i=0; i<xdis->NumMyColIntFaces(); ++i)
+        for (int i=0; i<xdis->NumMyColFaces(); ++i)
         {
-          const DRT::Element* actele = xdis->lColIntFace(i);
+          const DRT::Element* actele = xdis->lColFace(i);
           if(curr_pos == NULL)
             IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
           else
@@ -5477,9 +5477,9 @@ void FLD::XFluid::disToStream(Teuchos::RCP<DRT::Discretization> dis,
       else
       {
         s << " row f->Id() \" {\n";
-        for (int i=0; i<xdis->NumMyRowIntFaces(); ++i)
+        for (int i=0; i<xdis->NumMyRowFaces(); ++i)
         {
-          const DRT::Element* actele = xdis->lRowIntFace(i);
+          const DRT::Element* actele = xdis->lRowFace(i);
           if(curr_pos == NULL)
             IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
           else

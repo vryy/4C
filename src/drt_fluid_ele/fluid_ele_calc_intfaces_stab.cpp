@@ -614,14 +614,14 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
         face_xi_points_master,
         pdistype,
         distype,
-        intface->SurfaceMasterNumber());
+        intface->FaceMasterNumber());
 
     // get the local gp coordinates w.r.t neighbor (slave) element
     DRT::UTILS::BoundaryGPToParentGP2(n_xi_points,
         face_xi_points_slave,
         ndistype,
         distype,
-        intface->SurfaceSlaveNumber());
+        intface->FaceSlaveNumber());
   }
   else if(nsd_==3)
   {
@@ -630,14 +630,14 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
         face_xi_points_master,
         pdistype,
         distype,
-        intface->SurfaceMasterNumber());
+        intface->FaceMasterNumber());
 
     // get the local gp coordinates w.r.t parent (master) element
     DRT::UTILS::BoundaryGPToParentGP3(n_xi_points,
         face_xi_points_slave,
         ndistype,
         distype,
-        intface->SurfaceSlaveNumber());
+        intface->FaceSlaveNumber());
   }
 
 
@@ -2369,8 +2369,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
     // Max distance to oppositve surface
     if(eos_element_length == INPAR::FLUID::EOS_he_max_dist_to_opp_surf)
     {
-      int masterlocalid = intface->SurfaceMasterNumber();
-      int slavelocalid = intface->SurfaceSlaveNumber();
+      int masterlocalid = intface->FaceMasterNumber();
+      int slavelocalid = intface->FaceSlaveNumber();
 
       unsigned int nnode_psurf_m = m_connectivity[masterlocalid].size();
 
@@ -2533,8 +2533,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
     if(eos_element_length == INPAR::FLUID::EOS_he_max_dist_to_opp_surf)
     {
 
-      int masterlocalid = intface->SurfaceMasterNumber();
-      int slavelocalid = intface->SurfaceSlaveNumber();
+      int masterlocalid = intface->FaceMasterNumber();
+      int slavelocalid = intface->FaceSlaveNumber();
 
       // find the neighboring surfaces
       int p_surf_neighbor_m = 0;

@@ -7,8 +7,8 @@
 </pre>
 
 <pre>
-Maintainer: Benedikt Schott
-            schott@lnm.mw.tum.de
+Maintainer: Benedikt Schott, Martin Kronbichler
+            [schott,kronbichler]@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
@@ -19,7 +19,6 @@ Maintainer: Benedikt Schott
 
 
 #include "drt_discret_faces.H"
-#include "drt_globalproblem.H"
 #include "../linalg/linalg_mapextractor.H"
 
 #include "drt_exporter.H"
@@ -34,6 +33,15 @@ Maintainer: Benedikt Schott
 #include "../drt_inpar/inpar_xfem.H"
 
 
+/*----------------------------------------------------------------------*
+ |  Constructor (public)                                    schott 03/12|
+ *----------------------------------------------------------------------*/
+DRT::DiscretizationFaces::DiscretizationFaces(const std::string name, RCP<Epetra_Comm> comm)
+  :
+  Discretization(name, comm), // use base class constructor
+  extension_filled_(false),
+  doboundaryfaces_(false)
+{};
 
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                          schott 03/12|
@@ -57,137 +65,6 @@ int DRT::DiscretizationFaces::FillCompleteFaces(Teuchos::RCP<std::map<int,std::v
 }
 
 
-/*
- *  A helper function for BuildInternalFaces and
- *  BuildSurfacesinCondition, below.
- *  Gets a map (vector_of_nodes)->Element that maps
- *
- *  (A map with globally unique ids.)
- *
- *  \param comm (i) communicator
- *  \param elementmap (i) map (vector_of_nodes_ids)->(element) that maps
- *  the nodes of an element to the element itself.
- *
- *  \param finalelements (o) map (global_id)->(element) that can be
- *  added to a condition.
- *
- *  h.kue 09/07
- */
-static void AssignGlobalIDs( const Epetra_Comm& comm,
-                             const std::map< std::vector<int>, RCP<DRT::Element> >& elementmap,
-                             std::map< int, RCP<DRT::Element> >& finalelements )
-{
-
-  // The point here is to make sure the element gid are the same on any
-  // parallel distribution of the elements. Thus we allreduce thing to
-  // processor 0 and sort the element descriptions (vectors of nodal ids)
-  // there.
-  //
-  // This routine has not been optimized for efficiency. I don't think that is
-  // needed.
-  //
-  // pack elements on all processors
-
-  int size = 0;
-  std::map<std::vector<int>, Teuchos::RCP<DRT::Element> >::const_iterator elemsiter;
-  for (elemsiter=elementmap.begin();
-       elemsiter!=elementmap.end();
-       ++elemsiter)
-  {
-    size += elemsiter->first.size()+1;
-  }
-  std::vector<int> sendblock;
-  sendblock.reserve(size);
-  for (elemsiter=elementmap.begin();
-       elemsiter!=elementmap.end();
-       ++elemsiter)
-  {
-    sendblock.push_back(elemsiter->first.size());
-    std::copy(elemsiter->first.begin(), elemsiter->first.end(), std::back_inserter(sendblock));
-  }
-
-  // communicate elements to processor 0
-
-  int mysize = sendblock.size();
-  comm.SumAll(&mysize,&size,1);
-  int mypos = LINALG::FindMyPos(sendblock.size(),comm);
-
-  std::vector<int> send(size);
-  std::fill(send.begin(),send.end(),0);
-  std::copy(sendblock.begin(),sendblock.end(),&send[mypos]);
-  sendblock.clear();
-  std::vector<int> recv(size);
-  comm.SumAll(&send[0],&recv[0],size);
-
-  send.clear();
-
-  // unpack, unify and sort elements on processor 0
-
-  if (comm.MyPID()==0)
-  {
-    std::set<std::vector<int> > elements;
-    int index = 0;
-    while (index < static_cast<int>(recv.size()))
-    {
-      int esize = recv[index];
-      index += 1;
-      std::vector<int> element;
-      element.reserve(esize);
-      std::copy(&recv[index], &recv[index+esize], std::back_inserter(element));
-      index += esize;
-      elements.insert(element);
-    }
-    recv.clear();
-
-    // pack again to distribute pack to all processors
-
-    send.reserve(index);
-    for (std::set<std::vector<int> >::iterator i=elements.begin();
-         i!=elements.end();
-         ++i)
-    {
-      send.push_back(i->size());
-      std::copy(i->begin(), i->end(), std::back_inserter(send));
-    }
-    size = send.size();
-  }
-  else
-  {
-    recv.clear();
-  }
-
-  // broadcast sorted elements to all processors
-
-  comm.Broadcast(&size,1,0);
-  send.resize(size);
-  comm.Broadcast(&send[0],send.size(),0);
-
-  // Unpack sorted elements. Take element position for gid.
-
-  int index = 0;
-  int gid = 0;
-  while (index < static_cast<int>(send.size()))
-  {
-    int esize = send[index];
-    index += 1;
-    std::vector<int> element;
-    element.reserve(esize);
-    std::copy(&send[index], &send[index+esize], std::back_inserter(element));
-    index += esize;
-
-    // set gid to my elements
-    std::map<std::vector<int>, RCP<DRT::Element> >::const_iterator iter = elementmap.find(element);
-    if (iter!=elementmap.end())
-    {
-      iter->second->SetId(gid);
-      finalelements[gid] = iter->second;
-    }
-
-    gid += 1;
-  }
-
-} // AssignGlobalIDs
-
 
 /*----------------------------------------------------------------------*
  |  Build internal faces extension (public)                 schott 03/12|
@@ -200,11 +77,11 @@ void DRT::DiscretizationFaces::CreateInternalFacesExtension(
   TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationFaces::CreateInternalFaces" );
 
   // create internal faces for stabilization along edges
-  BuildInternalFaces(col_pbcmapmastertoslave, verbose);
+  BuildFaces(col_pbcmapmastertoslave, verbose);
 
   // (re)build map of internal faces
-  BuildIntFaceRowMap();
-  BuildIntFaceColMap();
+  BuildFaceRowMap();
+  BuildFaceColMap();
 
   extension_filled_ =  true;
 
@@ -212,7 +89,7 @@ void DRT::DiscretizationFaces::CreateInternalFacesExtension(
   {
     //std::cout << "my rank " << comm_->MyPID() << " row faces " << intfacerowptr_.size() << std::endl;
 
-    int summyfaces = intfacerowptr_.size();
+    int summyfaces = facerowptr_.size();
     int summall = 0;
     comm_->SumAll(&summyfaces,&summall,1);
 
@@ -255,11 +132,11 @@ void DRT::DiscretizationFaces::EvaluateEdgeBased(
 
   Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(new LINALG::SparseMatrix(sysmat_FE,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
-  const int numrowintfaces = NumMyRowIntFaces();
+  const int numrowintfaces = NumMyRowFaces();
 
   for (int i=0; i<numrowintfaces; ++i)
   {
-    DRT::Element* actface = lRowIntFace(i);
+    DRT::Element* actface = lRowFace(i);
 
     DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>(actface);
     if ( ele==NULL ) dserror( "expect FluidIntFace element" );
@@ -326,8 +203,8 @@ void DRT::DiscretizationFaces::EvaluateEdgeBased(
 /*----------------------------------------------------------------------*
  |  Build internal faces geometry (public)                  schott 03/12|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationFaces::BuildInternalFaces(Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave,
-                                                  const bool verbose)
+void DRT::DiscretizationFaces::BuildFaces(Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave,
+                                          const bool verbose)
 {
   if (verbose and comm_->MyPID()==0)
   {
@@ -452,7 +329,6 @@ void DRT::DiscretizationFaces::BuildInternalFaces(Teuchos::RCP<std::map<int,std:
 
         surf_it->second.SetLocalNumberingMap(localtrafomap);
       }
-
     } // loop iele
 
   } // loop elecolptr_
@@ -478,6 +354,11 @@ void DRT::DiscretizationFaces::BuildInternalFaces(Teuchos::RCP<std::map<int,std:
     int master_peid = face_it->second.GetMasterPeid();
     int slave_peid  = face_it->second.GetSlavePeid();
     if (master_peid == -1) dserror("Face master expected!");
+
+    DRT::Element* parent_master = gElement(master_peid);
+    DRT::Element* parent_slave  = slave_peid != -1 ? gElement(slave_peid) : NULL;
+    dsassert(master_peid == parent_master->Id(), "Internal error");
+    dsassert(slave_peid == -1 || slave_peid == parent_slave->Id(), "Internal error");
 
     // check for potential periodic boundary conditions and connect respective faces/elements
     // do we have pbcs? check this first
@@ -1082,12 +963,12 @@ void DRT::DiscretizationFaces::BuildInternalFaces(Teuchos::RCP<std::map<int,std:
     }
     }
 
-    // decide which internal faces elements have to be build and create them
-    // create a face when there are both parent elements available as column elements
-    if((master_peid != -1) and (slave_peid != -1))
+    // create faces
+    if ( doboundaryfaces_ || (master_peid != -1 && slave_peid != -1) )
     {
+      dsassert(master_peid != -1, "At least the master element should be present");
       DRT::Element* parent_master = gElement(master_peid);
-      DRT::Element* parent_slave  = gElement(slave_peid);
+      DRT::Element* parent_slave  = slave_peid != -1 ? gElement(slave_peid) : NULL;
 
       // get the unsorted nodes
       std::vector<DRT::Node*> nodes = face_it->second.GetNodes();
@@ -1097,13 +978,13 @@ void DRT::DiscretizationFaces::BuildInternalFaces(Teuchos::RCP<std::map<int,std:
       std::transform( nodes.begin(), nodes.end(), nodeids.begin(), std::mem_fun( &DRT::Node::Id ) );
 
       // create the internal face element
-      RCP<DRT::Element> surf = parent_master->CreateInternalFaces(parent_slave,
-                                                                  nodeids.size(),
-                                                                  &nodeids[0],
-                                                                  &nodes[0],
-                                                                  face_it->second.GetLSurfaceMaster(),
-                                                                  face_it->second.GetLSurfaceSlave(),
-                                                                  face_it->second.GetLocalNumberingMap()
+      Teuchos::RCP<DRT::Element> surf = parent_master->CreateFaceElement(parent_slave,
+                                                                         nodeids.size(),
+                                                                         &nodeids[0],
+                                                                         &nodes[0],
+                                                                         face_it->second.GetLSurfaceMaster(),
+                                                                         face_it->second.GetLSurfaceSlave(),
+                                                                         face_it->second.GetLocalNumberingMap()
       );
 
       // create a clone (the internally created element does not exist anymore when all RCP's finished)
@@ -1118,16 +999,20 @@ void DRT::DiscretizationFaces::BuildInternalFaces(Teuchos::RCP<std::map<int,std:
       surf_clone->SetOwner( owner );
 
       // insert the newly created element
-      faces.insert(std::pair<std::vector<int>, RCP<DRT::Element> >(face_it->first, surf_clone));
+      faces.insert(std::pair<std::vector<int>, Teuchos::RCP<DRT::Element> >(face_it->first, surf_clone));
 
+      // set face to elements
+      parent_master->SetFace(face_it->second.GetLSurfaceMaster(), surf_clone.get());
+      if (slave_peid != -1)
+        parent_slave->SetFace(face_it->second.GetLSurfaceSlave(), surf_clone.get());
     }
   }
 
   // Surfaces be added to the faces_-map: (line_id) -> (surface).
   // this clear is important to have here
   // if the discretization has been redistributed (combustion module), we have to
-  // rebuild the faces and therfore we have to be sure that the map faces is clear
-  // therfore, the old faces are deleted and repaced by new ones
+  // rebuild the faces and therefore we have to be sure that the map faces_ is clear
+  // therefore, the old faces are deleted and repaced by new ones
   faces_.clear();
   AssignGlobalIDs( Comm(), faces, faces_ );
 
@@ -1140,10 +1025,11 @@ void DRT::DiscretizationFaces::BuildInternalFaces(Teuchos::RCP<std::map<int,std:
 } // DRT::DiscretizationFaces::BuildInternalFaces
 
 
+
 /*----------------------------------------------------------------------*
  |  Build intfacerowmap_ (private)                          schott 03/12|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationFaces::BuildIntFaceRowMap()
+void DRT::DiscretizationFaces::BuildFaceRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
@@ -1152,17 +1038,17 @@ void DRT::DiscretizationFaces::BuildIntFaceRowMap()
     if (curr->second->Owner()==myrank)
       nummyeles++;
   std::vector<int> eleids(nummyeles);
-  intfacerowptr_.resize(nummyeles);
+  facerowptr_.resize(nummyeles);
   int count=0;
   for (curr=faces_.begin(); curr != faces_.end(); ++curr)
     if (curr->second->Owner()==myrank)
     {
       eleids[count] = curr->second->Id();
-      intfacerowptr_[count] = curr->second.get();
+      facerowptr_[count] = curr->second.get();
       ++count;
     }
   if (count != nummyeles) dserror("Mismatch in no. of internal faces");
-  intfacerowmap_ = Teuchos::rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
+  facerowmap_ = Teuchos::rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
   return;
 }
 
@@ -1170,22 +1056,22 @@ void DRT::DiscretizationFaces::BuildIntFaceRowMap()
 /*----------------------------------------------------------------------*
  |  Build intfacecolmap_ (private)                          schott 03/12|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationFaces::BuildIntFaceColMap()
+void DRT::DiscretizationFaces::BuildFaceColMap()
 {
   int nummyeles = (int)faces_.size();
   std::vector<int> eleids(nummyeles);
-  intfacecolptr_.resize(nummyeles);
+  facecolptr_.resize(nummyeles);
   std::map<int,RCP<DRT::Element> >::iterator curr;
   int count=0;
   for (curr=faces_.begin(); curr != faces_.end(); ++curr)
   {
     eleids[count] = curr->second->Id();
-    intfacecolptr_[count] = curr->second.get();
+    facecolptr_[count] = curr->second.get();
     curr->second->SetLID(count);
     ++count;
   }
   if (count != nummyeles) dserror("Mismatch in no. of elements");
-  intfacecolmap_ = Teuchos::rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
+  facecolmap_ = Teuchos::rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
   return;
 }
 
@@ -1193,70 +1079,73 @@ void DRT::DiscretizationFaces::BuildIntFaceColMap()
 /*----------------------------------------------------------------------*
  |  get internal faces row map (public)                     schott 03/12|
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::DiscretizationFaces::IntFacesRowMap() const
+const Epetra_Map* DRT::DiscretizationFaces::FaceRowMap() const
 {
-#ifdef DEBUG
-  if (Filled()) return intfacerowmap_.get();
-  else dserror("FillCompleteXFEM() must be called before call to IntFacesRowMap()");
-  return NULL;
-#else
-  return intfacerowmap_.get();
-#endif
+  dsassert(Filled(), "FillComplete() must be called before call to FaceRowMap()");
+  return facerowmap_.get();
 }
 
 
 /*----------------------------------------------------------------------*
  |  get internal faces col map (public)                     schott 03/12|
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::DiscretizationFaces::IntFacesColMap() const
+const Epetra_Map* DRT::DiscretizationFaces::FaceColMap() const
 {
-#ifdef DEBUG
-  if (Filled()) return intfacecolmap_.get();
-  else dserror("FillCompleteXFEM() must be called before call to IntFacesColMap()");
-  return NULL;
-#else
-  return intfacecolmap_.get();
-#endif
+  dsassert(Filled(), "FillComplete() must be called before call to FaceColMap()");
+  return facecolmap_.get();
 }
 
 
 /*----------------------------------------------------------------------*
  |  get global no of internal faces (public)                schott 03/12|
  *----------------------------------------------------------------------*/
-int DRT::DiscretizationFaces::NumGlobalIntFaces() const
+int DRT::DiscretizationFaces::NumGlobalFaces() const
 {
-#ifdef DEBUG
-  if (Filled()) return IntFacesRowMap()->NumGlobalElements();
-  else dserror("FillCompleteXFEM() must be called before call to NumGlobalElements()");
-  return -1;
-#else
-  return IntFacesRowMap()->NumGlobalElements();
-#endif
+  dsassert(Filled(), "FillComplete() must be called before call to NumGlobalFaces()");
+  return FaceRowMap()->NumGlobalElements();
 }
 
 
 /*----------------------------------------------------------------------*
  |  get no of my row internal faces (public)                schott 03/12|
  *----------------------------------------------------------------------*/
-int DRT::DiscretizationFaces::NumMyRowIntFaces() const
+int DRT::DiscretizationFaces::NumMyRowFaces() const
 {
-#ifdef DEBUG
-  if (Filled()) return IntFacesRowMap()->NumMyElements();
-  else dserror("FillCompleteXFEM() must be called before call to NumMyRowIntFaces()");
-  return -1;
-#else
-  return IntFacesRowMap()->NumMyElements();
-#endif
+  dsassert(Filled(), "FillComplete() must be called before call to NumMyRowFaces()");
+  return FaceRowMap()->NumMyElements();
 }
 
 
 /*----------------------------------------------------------------------*
  |  get no of my column internal faces (public)             schott 03/12|
  *----------------------------------------------------------------------*/
-int DRT::DiscretizationFaces::NumMyColIntFaces() const
+int DRT::DiscretizationFaces::NumMyColFaces() const
 {
-  if (Filled()) return IntFacesColMap()->NumMyElements();
+  if (Filled()) return FaceColMap()->NumMyElements();
   else return (int)faces_.size();
+}
+
+/*----------------------------------------------------------------------*
+ |  query existance of element (public)                kronbichler 05/13|
+ *----------------------------------------------------------------------*/
+bool DRT::DiscretizationFaces::HaveGlobalFace(int gid) const
+{
+  std::map<int,RCP<DRT::Element> >:: const_iterator curr = faces_.find(gid);
+  if (curr == faces_.end()) return false;
+  else                      return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  get element with global id (public)                kronbichler 05/13|
+ *----------------------------------------------------------------------*/
+DRT::Element* DRT::DiscretizationFaces::gFace(int gid) const
+{
+  std::map<int,RCP<DRT::Element> >:: const_iterator curr = faces_.find(gid);
+#ifdef DEBUG
+  if (curr == faces_.end())
+    dserror("Face with gobal id gid=%d not stored on this proc", gid);
+#endif
+  return curr->second.get();
 }
 
 
@@ -1268,7 +1157,7 @@ std::ostream& operator << (std::ostream& os, const DRT::DiscretizationFaces& dis
   // print standard discretization info
   dis.Print(os);
   // print additional info about internal faces
-  dis.PrintIntFaces(os);
+  dis.PrintFaces(os);
 
   return os;
 }
@@ -1277,12 +1166,12 @@ std::ostream& operator << (std::ostream& os, const DRT::DiscretizationFaces& dis
 /*----------------------------------------------------------------------*
  |  Print internal faces discretization (public)            schott 03/12|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationFaces::PrintIntFaces(std::ostream& os) const
+void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
 {
   int numglobalfaces = 0;
   if (Filled())
   {
-    numglobalfaces = NumGlobalIntFaces();
+    numglobalfaces = NumGlobalFaces();
   }
   else
   {

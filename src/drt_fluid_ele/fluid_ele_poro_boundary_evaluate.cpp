@@ -97,7 +97,7 @@ void DRT::ELEMENTS::FluidPoroBoundary::LocationVector(
     // special cases: the boundary element assembles also into
     // the inner dofs of its parent element
     // note: using these actions, the element will get the parent location vector
-    parent_->LocationVector(dis,la,doDirichlet);
+    ParentElement()->LocationVector(dis,la,doDirichlet);
     break;
   case FLD::ba_none:
     dserror("No action supplied");

@@ -44,12 +44,10 @@ DRT::ELEMENTS::FluidIntFace::FluidIntFace(int id,                               
                                           const std::vector<int> localtrafomap   ///< get the transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
 ):
 DRT::Element(id,owner),
-parent_master_(parent_master),
-parent_slave_(parent_slave),
-lsurface_master_(lsurface_master),
-lsurface_slave_(lsurface_slave),
 localtrafomap_(localtrafomap)
 {
+  SetParentMasterElement(parent_master,lsurface_master);
+  SetParentSlaveElement(parent_slave,lsurface_slave);
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -60,10 +58,6 @@ localtrafomap_(localtrafomap)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidIntFace::FluidIntFace(const DRT::ELEMENTS::FluidIntFace& old) :
 DRT::Element(old),
-parent_master_(old.parent_master_),
-parent_slave_(old.parent_slave_),
-lsurface_master_(old.lsurface_master_),
-lsurface_slave_(old.lsurface_slave_),
 localtrafomap_(old.localtrafomap_)
 {
   return;
@@ -86,7 +80,7 @@ DRT::Element* DRT::ELEMENTS::FluidIntFace::Clone() const
 DRT::Element::DiscretizationType DRT::ELEMENTS::FluidIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), parent_master_->Shape());
+  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -141,8 +135,8 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: PatchLocationVector" );
 
   //-----------------------------------------------------------------------
-  const int m_numnode = parent_master_->NumNode();
-  DRT::Node** m_nodes = parent_master_->Nodes();
+  const int m_numnode = ParentMasterElement()->NumNode();
+  DRT::Node** m_nodes = ParentMasterElement()->Nodes();
 
   if ( m_numnode != static_cast<int>( nds_master.size() ) )
   {
@@ -150,8 +144,8 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   }
 
   //-----------------------------------------------------------------------
-  const int s_numnode = parent_slave_->NumNode();
-  DRT::Node** s_nodes = parent_slave_->Nodes();
+  const int s_numnode = ParentSlaveElement()->NumNode();
+  DRT::Node** s_nodes = ParentSlaveElement()->Nodes();
 
   if ( s_numnode != static_cast<int>( nds_slave.size() ) )
   {
@@ -182,6 +176,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   // for each master node, the offset for node's dofs in master_lm
   std::map<int, int> m_node_lm_offset;
 
+
   // ---------------------------------------------------
   int dofset = 0; // assume dofset 0
 
@@ -197,12 +192,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
     const int size = NumDofPerNode(dofset,*node,discretization.Name());
     const int offset = size*nds_master[k];
 
-#ifdef DEBUG
-    if ( dof.size() < static_cast<unsigned>( offset+size ) )
-    {
-      dserror( "illegal physical dofs offset" );
-    }
-#endif
+    dsassert ( dof.size() >= static_cast<unsigned>( offset+size ), "illegal physical dofs offset" );
 
     //insert a pair of node-Id and current length of master_lm ( to get the start offset for node's dofs)
     m_node_lm_offset.insert(std::pair<int,int>(node->Id(), master_lm.size()));
@@ -242,12 +232,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
       const int size = NumDofPerNode(dofset,*node,discretization.Name());
       const int offset = size*nds_slave[k];
 
-  #ifdef DEBUG
-      if ( dof.size() < static_cast<unsigned>( offset+size ) )
-      {
-        dserror( "illegal physical dofs offset" );
-      }
-  #endif
+      dsassert ( dof.size() >= static_cast<unsigned>( offset+size ), "illegal physical dofs offset" );
       for (int j=0; j< size; ++j)
       {
         int actdof = dof[offset + j];

@@ -32,10 +32,10 @@ http://www.lnm.mw.tum.de
 </pre>
 
 <pre>
-Maintainer: Ulrrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -47,6 +47,7 @@ Maintainer: Ulrrich Kuettler
 #include "drt_dofset.H"
 #include "drt_dofset_proxy.H"
 #include "drt_discret.H"
+#include "drt_discret_hdg.H"
 #include "drt_utils.H"
 #include "drt_globalproblem.H"
 
@@ -111,7 +112,7 @@ void DRT::DofSet::Print(std::ostream& os) const
           os << (idx+j) << " ";
         os << "\n";
       }
-      os << endl;
+      os << std::endl;
     }
     numdfcolelements_->Comm().Barrier();
   }
@@ -130,7 +131,7 @@ void DRT::DofSet::Print(std::ostream& os) const
           os << (idx+j) << " ";
         os << "\n";
       }
-      os << endl;
+      os << std::endl;
     }
     numdfcolnodes_->Comm().Barrier();
   }
@@ -192,9 +193,13 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   // Get highest GID used so far and add one
   int count = MaxGIDinList(dis.Comm()) + 1;
 
-  // Now this is tricky. We have to care for nodes and elements, both
-  // row and column maps. In general both nodes and elements can have
-  // dofs. In both cases these dofs might be shared with other nodes
+  // Check if we have a face discretization which supports degrees of freedom on faces
+  Teuchos::RCP<const DiscretizationHDG> facedis =
+    Teuchos::rcp_dynamic_cast<const DiscretizationHDG>(Teuchos::rcp(&dis,false));
+
+  // Now this is tricky. We have to care for nodes, faces, and elements, both
+  // row and column maps. In general both nodes, faces, and elements can have
+  // dofs. In all cases these dofs might be shared with other nodes, faces,
   // or elements. (The very general case. For elements we'd probably
   // don't need that.)
   //
@@ -211,10 +216,14 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   // numdf for all nodes and elements
   numdfcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
   numdfcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
+  if (facedis != Teuchos::null && facedis->FaceColMap() != NULL)
+    numdfcolfaces_ = Teuchos::rcp(new Epetra_IntVector(*facedis->FaceColMap()));
 
   // index of first dof for all nodes and elements
   idxcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
   idxcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
+  if (facedis != Teuchos::null && facedis->FaceColMap() != NULL)
+    idxcolfaces_ = Teuchos::rcp(new Epetra_IntVector(*facedis->FaceColMap()));
 
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
@@ -222,6 +231,8 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   int maxelementnumdf = 0;
   std::map<int,std::vector<int> > nodedofset;
   std::map<int,std::vector<int> > elementdofset;
+  std::map<int,std::vector<int> > facedofset;
+
   // bandwidth optimization is implemented here and works. It though leads to
   // a totally different dof numbering (mixed between elements and nodes) and therefore
   // currently crashes the I/O of results. 
@@ -451,7 +462,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   //////////////////////////////////////////////////////////////////
   else // don't do bandwidth optimization
   {  
-    
+
     // do the nodes first
     Epetra_IntVector numdfrownodes(*dis.NodeRowMap());
     Epetra_IntVector idxrownodes(*dis.NodeRowMap());
@@ -487,7 +498,65 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     err = idxcolnodes_->Import( idxrownodes, nodeimporter, Insert );
     if (err) dserror( "Import using importer returned err=%d", err );
 
-    count = idxrownodes.MaxValue() + maxnodenumdf + 1;
+    count = maxnodenumdf>0 ? idxrownodes.MaxValue() + maxnodenumdf : 0;
+
+    //////////////////////////////////////////////////////////////////
+
+    // Now do it again for the faces
+    if (facedis != Teuchos::null && facedis->FaceRowMap() != NULL)
+    {
+      Epetra_IntVector numdfrowfaces(*facedis->FaceRowMap());
+      Epetra_IntVector idxrowfaces(*facedis->FaceRowMap());
+      int numcolelements = dis.NumMyColElements();
+
+      const int mypid = dis.Comm().MyPID();
+      for (int i=0; i<numcolelements; ++i)
+      {
+        DRT::Element** faces = dis.lColElement(i)->Faces();
+        for (int face=0; face<dis.lColElement(i)->NumFace(); ++face)
+          if (faces[face]->Owner() == mypid) {
+            const int mylid = facedis->FaceRowMap()->LID(faces[face]->Id());
+            numdfrowfaces[mylid] =
+                dis.lColElement(i)->NumDofPerFace(face,dspos);
+          }
+      }
+
+      int minfacegid = facedis->FaceRowMap()->MinAllGID();
+      int maxfacenumdf = numdfrowfaces.MaxValue();
+
+      for (int i=0; i<numcolelements; ++i)
+      {
+        DRT::Element** faces = dis.lColElement(i)->Faces();
+        for (int face=0; face<dis.lColElement(i)->NumFace(); ++face)
+          if (faces[face]->Owner() == mypid)
+          {
+            const int gid = faces[face]->Id();
+            const int mylid = facedis->FaceRowMap()->LID(gid);
+            int numdf = numdfrowfaces[mylid];
+            int dof = count + ( gid-minfacegid )*maxfacenumdf;
+            idxrowfaces[mylid] = dof;
+            std::vector<int> & dofs = facedofset[gid];
+            // do not visit the same face more than once
+            if (dofs.empty())
+            {
+              dofs.reserve( numdf );
+              for ( int j=0; j<numdf; ++j )
+              {
+                dofs.push_back( dof+j );
+              }
+            }
+          }
+      }
+
+      Epetra_Import faceimporter( numdfcolfaces_->Map(), numdfrowfaces.Map() );
+      err = numdfcolfaces_->Import( numdfrowfaces, faceimporter, Insert );
+      if (err) dserror( "Import using importer returned err=%d", err );
+      err = idxcolfaces_->Import( idxrowfaces, faceimporter, Insert );
+      if (err) dserror( "Import using importer returned err=%d", err );
+
+      count = idxrowfaces.MaxValue() + maxfacenumdf;
+    }
+
 
     //////////////////////////////////////////////////////////////////
 
@@ -550,13 +619,23 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     //for (unsigned j=0; j<dofs.size(); ++j) printf(" %d ",dofs[j]);
     //printf("\n");
   }
+  for ( std::map<int,std::vector<int> >::iterator i=facedofset.begin();
+        i!=facedofset.end();
+        ++i )
+  {
+    std::vector<int> & dofs = i->second;
+    std::copy( dofs.begin(), dofs.end(), std::back_inserter( localrowdofs ) );
+    //printf("Proc %d ele gid %d ndofs %d\n",dis.Comm().MyPID(),i->first,(int)dofs.size());
+    //for (unsigned j=0; j<dofs.size(); ++j) printf(" %d ",dofs[j]);
+    //printf("\n");
+  }
   for ( std::map<int,std::vector<int> >::iterator i=elementdofset.begin();
         i!=elementdofset.end();
         ++i )
   {
     std::vector<int> & dofs = i->second;
     std::copy( dofs.begin(), dofs.end(), std::back_inserter( localrowdofs ) );
-    //printf("Proc %d ele gid %d ndofs %d\n",proc,i->first,(int)dofs.size());
+    //printf("Proc %d ele gid %d ndofs %d\n",dis.Comm().MyPID(),i->first,(int)dofs.size());
     //for (unsigned j=0; j<dofs.size(); ++j) printf(" %d ",dofs[j]);
     //printf("\n");
   }
@@ -567,8 +646,21 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   Exporter elementexporter( *dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm() );
   elementexporter.Export( elementdofset );
 
+  if (facedis != Teuchos::null && facedis->FaceRowMap() != NULL)
+  {
+    Exporter faceexporter( *facedis->FaceRowMap(), *facedis->FaceColMap(), dis.Comm() );
+    faceexporter.Export( facedofset );
+  }
+
   for ( std::map<int,std::vector<int> >::iterator i=nodedofset.begin();
         i!=nodedofset.end();
+        ++i )
+  {
+    std::vector<int> & dofs = i->second;
+    std::copy( dofs.begin(), dofs.end(), std::back_inserter( localcoldofs ) );
+  }
+  for ( std::map<int,std::vector<int> >::iterator i=facedofset.begin();
+        i!=facedofset.end();
         ++i )
   {
     std::vector<int> & dofs = i->second;

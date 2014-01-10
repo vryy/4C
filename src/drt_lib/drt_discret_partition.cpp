@@ -619,7 +619,7 @@ void DRT::Discretization::BuildElementRowColumn(
         continue;
 
       // check whether I ghost all nodes of this element
-      // this is neccessary to be able to own or ghost the element
+      // this is necessary to be able to own or ghost the element
       for (int j=0; j<numnode; ++j)
         if (!nodecolmap.MyGID(nodeids[j]))
           dserror("I do not have own/ghosted node gid=%d",nodeids[j]);

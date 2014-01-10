@@ -319,14 +319,14 @@ void FaceMatNitsche(
       face_xi_points_master,
       M_DISTYPE,
       DISTYPE,
-      ele->SurfaceMasterNumber());
+      ele->FaceMasterNumber());
 
   // get the local gp coordinates w.r.t slave element
   DRT::UTILS::BoundaryGPToParentGP3(slave_xi_points,
       face_xi_points_slave,
       S_DISTYPE,
       DISTYPE,
-      ele->SurfaceSlaveNumber());
+      ele->FaceSlaveNumber());
 
   //--------------------------------------------
   // prepare evaluation of enrichment function

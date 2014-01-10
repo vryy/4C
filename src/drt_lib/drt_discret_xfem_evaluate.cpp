@@ -63,7 +63,7 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
 
   Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(new LINALG::SparseMatrix(sysmat_FE,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
-  const int numrowintfaces = NumMyRowIntFaces();
+  const int numrowintfaces = NumMyRowFaces();
 
   // get flags to switch between complete face-based stabilization, i.e., evaluation of all faces,
   // or evaluation of faces belonging to elements intersected by the interface, i.e., ghost penalty
@@ -74,7 +74,7 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
 
   for (int i=0; i<numrowintfaces; ++i)
   {
-    DRT::Element* actface = lRowIntFace(i);
+    DRT::Element* actface = lRowFace(i);
 
     DRT::ELEMENTS::Combust3IntFace * ele = dynamic_cast<DRT::ELEMENTS::Combust3IntFace *>(actface);
     if ( ele==NULL ) dserror( "expect Combust3IntFace element" );

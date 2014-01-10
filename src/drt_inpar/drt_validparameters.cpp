@@ -686,8 +686,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("RESTART",0,"",&type);
   setStringToIntegralParameter<int>("SHAPEFCT","Polynomial","Defines the function spaces for the spatial approximation",
-                                    tuple<std::string>("Polynomial","Nurbs","Meshfree"),
-                                    tuple<int>(1,0,2),
+                                    tuple<std::string>("Polynomial","Nurbs","Meshfree","HDG"),
+                                    tuple<int>(1,0,2,3),
                                     &type);
   IntParameter("RANDSEED",-1,"Set the random seed. If < 0 use current time.",&type);
 

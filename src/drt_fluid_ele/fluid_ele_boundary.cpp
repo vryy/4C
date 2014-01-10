@@ -32,10 +32,9 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Fluid* parent,
                               const int lsurface) :
-DRT::Element(id,owner),
-parent_(parent),
-lsurface_(lsurface)
+DRT::Element(id,owner)
 {
+  SetParentMasterElement(parent,lsurface);
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -45,9 +44,7 @@ lsurface_(lsurface)
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundary::FluidBoundary(const DRT::ELEMENTS::FluidBoundary& old) :
-DRT::Element(old),
-parent_(old.parent_),
-lsurface_(old.lsurface_)
+DRT::Element(old)
 {
   return;
 }
@@ -68,7 +65,7 @@ DRT::Element* DRT::ELEMENTS::FluidBoundary::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::FluidBoundary::Shape() const
 {
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), parent_->Shape());
+  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*

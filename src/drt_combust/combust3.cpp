@@ -500,15 +500,15 @@ DRT::ELEMENTS::Combust3::DLMInfo::DLMInfo(const int nd, const int na)
 
 
 /*-----------------------------------------------------------------------*
- |  get internal faces element (public)                  rasthofer 04 /12|
+ |  get internal face  element (public)                  rasthofer 04 /12|
  *-----------------------------------------------------------------------*/
-RCP<DRT::Element> DRT::ELEMENTS::Combust3::CreateInternalFaces( DRT::Element* parent_slave,           //!< parent slave fluid3 element
+RCP<DRT::Element> DRT::ELEMENTS::Combust3::CreateFaceElement( DRT::Element* parent_slave,           //!< parent slave fluid3 element
                                                              int nnode,                           //!< number of surface nodes
                                                              const int* nodeids,                  //!< node ids of surface element
                                                              DRT::Node** nodes,                   //!< nodes of surface element
                                                              const int lsurface_master,           //!< local surface number w.r.t master parent element
                                                              const int lsurface_slave,            //!< local surface number w.r.t slave parent element
-                                                             const std::vector<int> localtrafomap //! local trafo map
+                                                             const std::vector<int> &localtrafomap //! local trafo map
 )
 {
  // dynamic cast for slave parent element

@@ -264,11 +264,11 @@ namespace UTILS
     if(eos_element_length == INPAR::FLUID::EOS_he_max_dist_to_opp_surf)
     {
       // get all lines perpendicular to face with respect to master element
-      int face_id_wrt_master = ele->SurfaceMasterNumber();
+      int face_id_wrt_master = ele->FaceMasterNumber();
       std::vector<int> lines_master;
 
       // get all lines perpendicular to face with respect to slave element
-      int face_id_wrt_slave = ele->SurfaceSlaveNumber();
+      int face_id_wrt_slave = ele->FaceSlaveNumber();
       std::vector<int> lines_slave;
 
       switch (M_DISTYPE)

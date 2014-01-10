@@ -312,6 +312,22 @@ int DRT::UTILS::getNumberOfElementVolumes(
 }
 
 /*----------------------------------------------------------------------*
+ |  returns the number of faces                        kronbichler 05/13|
+ |  for each discretization type                                        |
+ *----------------------------------------------------------------------*/
+int DRT::UTILS::getNumberOfElementFaces(
+    const DRT::Element::DiscretizationType&     distype)
+{
+  if (getDimension(distype) == 3)
+    return getNumberOfElementSurfaces(distype);
+  else if (getDimension(distype) == 2)
+    return getNumberOfElementLines(distype);
+  else
+    dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
  |  Fills a std::vector< std::vector<int> > with all nodes for    u.may 08/07|
  |  every surface for each discretization type                          |
  *----------------------------------------------------------------------*/
@@ -833,7 +849,7 @@ LINALG::SerialDenseMatrix DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
 {
     const int nNode = getNumberOfElementNodes(distype);
     const int dim = getDimension(distype);
-    LINALG::SerialDenseMatrix   map(3, nNode);
+    LINALG::SerialDenseMatrix   map(dim, nNode);
 
     switch(distype)
     {

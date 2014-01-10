@@ -184,6 +184,12 @@ bool DRT::Problem::BandWidthOpt() const
 /*----------------------------------------------------------------------*/
 std::string DRT::Problem::SpatialApproximation() const
 {
+  // TODO: fix downstream use in fluid_ele.cpp
+  // in case we do not have the global list available (post-processing etc)
+  if (getParameterList() == Teuchos::null ||
+      (not getParameterList()->isSublist("PROBLEM TYP")))
+    return "Polynomial";
+
   // decide which kind of spatial representation is required
   const Teuchos::ParameterList& ptype = ProblemTypeParams();
 

@@ -100,7 +100,7 @@ The parallel distribution is handled via Epetra_Map objects. There are
 row-maps that are unique without any overlap. There are column-maps that
 extend the row-maps with the overlap information. Elements, nodes and dofs are
 managed by using maps. That is all three items have a globally unique id,
-oftentimes called gid. Global ids are arbitrary numbers. Appart from the fact
+oftentimes called gid. Global ids are arbitrary numbers. Apart from the fact
 that these numbers are unique there comes no guarantee whatsoever with these
 numbers. You must never use the numerical value of a gid.
 
@@ -619,11 +619,11 @@ public:
 
   Returns the element with global row id gid if element is on this proc.
   Will return row or column element, ghosted or not.
-  This is an individual call. Will test on existance of element in
-  DEBUG version and thorw error message of not. Will crash in non-DEBUG
+  This is an individual call. Will test for existence of element in
+  DEBUG version and throw an error message if not. Will crash in non-DEBUG
   version if element does not exist on calling processor.
 
-  \return Adress of element if element is owned by calling proc, returns NULL
+  \return Address of element if element is owned by calling proc, returns NULL
           otherwise
   */
   virtual DRT::Element* gElement(int gid) const;
@@ -1020,11 +1020,11 @@ public:
     \param checkghosting (in): additional check can be performed
 
     */
-    virtual void ExtendedGhosting(const Epetra_Map& elecolmap,
-                                  bool assigndegreesoffreedom = true,
-                                  bool initelements           = true,
-                                  bool doboundaryconditions   = true,
-                                  bool checkghosting          = true);
+  virtual void ExtendedGhosting(const Epetra_Map& elecolmap,
+                                bool assigndegreesoffreedom = true,
+                                bool initelements           = true,
+                                bool doboundaryconditions   = true,
+                                bool checkghosting          = true);
 
 //-----------------------------------------------------------------------------------
 // this is temporary to hide away this method SetupGhosting and only give access to the
@@ -1888,8 +1888,19 @@ private:
   */
   void FindAssociatedEleIDs(Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string name);
 
-
 protected:
+
+  /*!
+  \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)
+
+  Resets all maps and sets flags filled_ and havedof_ to false.
+
+  \param killdofs (in): if true reset existing dofsets in discretization
+
+  \note This is a collective call
+  */
+  // set protected to be accessible from derived class DRT::MESHFREE::MeshfreeDiscretization (nis) Jan12
+  virtual void Reset(bool killdofs = true, bool killcond = true);
 
   /*!
   \brief Assign degrees of freedom to discretization (Filled()==true prerequisite)
@@ -1960,28 +1971,38 @@ protected:
     Teuchos::RCP<std::set<int> > dbcgids);
 
   /*!
-  \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)
-
-  Resets all maps and sets flags filled_ and havedof_ to false.
-
-  \param killdofs (in): if true reset existing dofsets in discretization
-
-  \note This is a collective call
-  */
-  // set protected to be accessible from derived class DRT::MESHFREE::MeshfreeDiscretization (nis) Jan12
-  virtual void Reset(bool killdofs = true, bool killcond = true);
+   *  A helper function for BuildSurfacesinCondition,
+   *  BuildLinesinCondition, BuildInternalFaces, etc.
+   *
+   *  Gets a map (vector_of_nodes)->Element that maps
+   *
+   *  (A map with globally unique ids.)
+   *
+   *  \param comm (i) communicator
+   *  \param elementmap (i) map (vector_of_nodes_ids)->(element) that maps
+   *  the nodes of an element to the element itself.
+   *
+   *  \param finalelements (o) map (global_id)->(element) that can be
+   *  added to a condition.
+   *
+   *  h.kue 09/07
+   */
+  static void AssignGlobalIDs(const Epetra_Comm& comm,
+                              const std::map< std::vector<int>,
+                              RCP<DRT::Element> >& elementmap,
+                              std::map< int, RCP<DRT::Element> >& finalelements );
 
   // internal data
-  std::string                                name_;              // name of this discretization
-  Teuchos::RCP<Epetra_Comm>             comm_;              // an Epetra_comm
-  bool                                  filled_;            // flag indicating whether getOrganized has been called
-  bool                                  havedof_;           // flag indicating whether degrees of freedom where assigned
+  std::string                            name_;              // name of this discretization
+  Teuchos::RCP<Epetra_Comm>              comm_;              // an Epetra_comm
+  bool                                   filled_;            // flag indicating whether getOrganized has been called
+  bool                                   havedof_;           // flag indicating whether degrees of freedom where assigned
 
   Teuchos::RCP<Epetra_Map>               elerowmap_;         // unique distribution of element ownerships
   Teuchos::RCP<Epetra_Map>               elecolmap_;         // distribution of elements including ghost elements
   std::vector<DRT::Element*>             elerowptr_;         // vector of pointers to row elements for faster access
   std::vector<DRT::Element*>             elecolptr_;         // vector of pointers to column elements for faster access
-  std::map<int,Teuchos::RCP<DRT::Element> > element_;           // map of elements
+  std::map<int,Teuchos::RCP<DRT::Element> > element_;        // map of elements
 
   Teuchos::RCP<Epetra_Map>               noderowmap_;        // unique distribution of nodal ownerships
   Teuchos::RCP<Epetra_Map>               nodecolmap_;        // distribution of nodes including ghost nodes
