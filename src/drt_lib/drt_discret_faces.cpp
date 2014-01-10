@@ -355,10 +355,8 @@ void DRT::DiscretizationFaces::BuildFaces(Teuchos::RCP<std::map<int,std::vector<
     int slave_peid  = face_it->second.GetSlavePeid();
     if (master_peid == -1) dserror("Face master expected!");
 
-    DRT::Element* parent_master = gElement(master_peid);
-    DRT::Element* parent_slave  = slave_peid != -1 ? gElement(slave_peid) : NULL;
-    dsassert(master_peid == parent_master->Id(), "Internal error");
-    dsassert(slave_peid == -1 || slave_peid == parent_slave->Id(), "Internal error");
+    dsassert(master_peid == gElement(master_peid)->Id(), "Internal error");
+    dsassert(slave_peid == -1 || slave_peid == gElement(slave_peid)->Id(), "Internal error");
 
     // check for potential periodic boundary conditions and connect respective faces/elements
     // do we have pbcs? check this first
@@ -969,6 +967,9 @@ void DRT::DiscretizationFaces::BuildFaces(Teuchos::RCP<std::map<int,std::vector<
       dsassert(master_peid != -1, "At least the master element should be present");
       DRT::Element* parent_master = gElement(master_peid);
       DRT::Element* parent_slave  = slave_peid != -1 ? gElement(slave_peid) : NULL;
+
+    dsassert(master_peid == parent_master->Id(), "Internal error");
+    dsassert(slave_peid == -1 || slave_peid == parent_slave->Id(), "Internal error");
 
       // get the unsorted nodes
       std::vector<DRT::Node*> nodes = face_it->second.GetNodes();

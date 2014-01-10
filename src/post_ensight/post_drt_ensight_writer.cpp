@@ -1975,7 +1975,6 @@ void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions
 
   const Epetra_Map* nodemap = dis->NodeRowMap();
   const int numnp = nodemap->NumMyElements();
-  const int numnpglobal = nodemap->NumGlobalElements();
   nodecoords = Teuchos::rcp(new Epetra_MultiVector(*nodemap,3));
 
   // loop over the nodes on this proc and store the coordinate information
@@ -2006,7 +2005,7 @@ void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions
   {
     double* coords = allnodecoords->Values();
     int numentries = (3*(allnodecoords->GlobalLength()));
-    dsassert(numentries == (3*numnpglobal),"proc 0 has not all of the node coordinates");
+    dsassert(numentries == (3*nodemap->NumGlobalElements()),"proc 0 has not all of the node coordinates");
     if (nodeidgiven_)
     {
       // first write node global ids (default)
