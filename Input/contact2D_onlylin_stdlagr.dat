@@ -62,7 +62,7 @@ LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
 PENALTYPARAM                    1.0e2
-SYSTEM                          spcoupled
+SYSTEM                          saddlepoint
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0e3
 SEMI_SMOOTH_CT                  1.0

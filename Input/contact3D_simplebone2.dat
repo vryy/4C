@@ -68,7 +68,7 @@ FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              yes
 SEMI_SMOOTH_CN                  1000.0
 SEMI_SMOOTH_CT                  1000.0
-SYSTEM                          SaddlePointSimpler
+SYSTEM                          Saddlepoint
 INITCONTACTBYGAP                Yes
 INITCONTACTGAPVALUE             0.001
 -------------------------------------------------------------MORTAR COUPLING

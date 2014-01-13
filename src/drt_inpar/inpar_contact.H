@@ -82,9 +82,8 @@ namespace INPAR
     /// (this enum represents the input file parameter SYSTEM)
     enum SystemType
     {
-      system_condensed,  ///< condensed system
-      system_spcoupled,  ///< saddle point system, coupled solution
-      system_spsimpler   ///< saddle point system, SIMPLE(R) preconditioner
+      system_condensed,   ///< condensed system
+      system_saddlepoint  ///< saddle point system
     };
     
     /// Type of energy and momentum output

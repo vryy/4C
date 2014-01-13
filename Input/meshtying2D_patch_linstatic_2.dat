@@ -62,7 +62,7 @@ LINEAR_SOLVER                   1
 -------------------------------------------------------------CONTACT DYNAMIC
 APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
-SYSTEM                          SaddlePointCoupled
+SYSTEM                          Saddlepoint
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              yes
 LINEAR_SOLVER                   2

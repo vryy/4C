@@ -61,7 +61,7 @@ FRICTION                        Coulomb
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  100
 SEMI_SMOOTH_CT                  50
-SYSTEM                          spcoupled
+SYSTEM                          saddlepoint
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
 ALE_TYPE                        incr_lin

@@ -59,7 +59,7 @@ LINEAR_SOLVER                   2
 APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
 ERROR_NORMS                     bending
-SYSTEM                          spsimpler
+SYSTEM                          saddlepoint
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Standard
 LAGMULT_QUAD                    quad_quad

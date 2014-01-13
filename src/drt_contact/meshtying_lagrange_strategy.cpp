@@ -728,11 +728,9 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   constrrhs_ = constrrhs; // set constraint rhs vector
   
   //**********************************************************************
-  // Build and solve saddle point system
-  // There is no distinction between block and merged version
+  // build and solve saddle point system
   //**********************************************************************
-  if (systype==INPAR::CONTACT::system_spcoupled ||
-      systype==INPAR::CONTACT::system_spsimpler)
+  if (systype==INPAR::CONTACT::system_saddlepoint)
   {
     // build transposed constraint matrix
     Teuchos::RCP<LINALG::SparseMatrix> trconstrmt = Teuchos::rcp(new LINALG::SparseMatrix(*glmdofrowmap_,100,false,true));

@@ -3611,11 +3611,9 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     dserror("unknown wear algorithm!");
 
   //**********************************************************************
-  // Build and solve saddle point system
-  // There is no distinction between block and merged version
+  // build and solve saddle point system
   //**********************************************************************
-  if (systype==INPAR::CONTACT::system_spcoupled ||
-      systype==INPAR::CONTACT::system_spsimpler)
+  if (systype==INPAR::CONTACT::system_saddlepoint)
   {
     // apply Dirichlet conditions to (0,0) and (0,1) blocks
     Teuchos::RCP<Epetra_Vector> zeros   = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(),true));

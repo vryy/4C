@@ -2235,11 +2235,9 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   }
 
   //**********************************************************************
-  // Build and solve saddle point system
-  // There is no distinction between block and merged version
+  // build and solve saddle point system
   //**********************************************************************
-  if (systype==INPAR::CONTACT::system_spcoupled ||
-      systype==INPAR::CONTACT::system_spsimpler)
+  if (systype==INPAR::CONTACT::system_saddlepoint)
   {
     Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
     LINALG::Export(*dirichtoggle,*dirichtoggleexp);

@@ -61,7 +61,7 @@ MAXITER                         50
 LINEAR_SOLVER                   2
 APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
-SYSTEM                          SaddlePointCoupled
+SYSTEM                          Saddlepoint
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Standard
 ---------------------------------------------------------------FLUID DYNAMIC

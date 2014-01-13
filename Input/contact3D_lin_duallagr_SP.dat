@@ -50,7 +50,7 @@ MAXITER      50
 LINEAR_SOLVER        2
 APPLICATION          MortarContact
 STRATEGY             Lagrange
-SYSTEM               spsimpler
+SYSTEM               saddlepoint
 TOLCONTCONSTR        1e-6
 TOLLAGR              1e+1 
 NORMCOMBI_RESFCONTCONSTR And

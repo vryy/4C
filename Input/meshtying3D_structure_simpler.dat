@@ -61,7 +61,7 @@ MAXITER                         50
 LINEAR_SOLVER                   4
 APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
-SYSTEM                          SaddlePointSimpler
+SYSTEM                          Saddlepoint
 TOLLAGR                         1.0E-8
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Standard

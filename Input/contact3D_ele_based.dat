@@ -69,7 +69,7 @@ ALPHA_F                         0.5
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
-SYSTEM                          SaddlePointCoupled
+SYSTEM                          Saddlepoint
 FRICTION                        None
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Standard

@@ -67,7 +67,7 @@ ALPHA_F                         0.5
 LINEAR_SOLVER                   2
 APPLICATION                     MortarContact
 STRATEGY                        Lagrange
-SYSTEM                          spsimpler
+SYSTEM                          saddlepoint
 -------------------------------------------------------------MORTAR COUPLING
 SHAPEFCN                        Standard
 SEARCH_ALGORITHM                Binarytree

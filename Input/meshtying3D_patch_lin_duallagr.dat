@@ -61,7 +61,7 @@ ALPHA_F                         0.5
 LINEAR_SOLVER                   2
 APPLICATION                     MortarMeshtying
 STRATEGY                        Lagrange
-SYSTEM                          SaddlePointCoupled
+SYSTEM                          Saddlepoint
 FRICTION                        none
 SEMI_SMOOTH_NEWTON              Yes
 SEMI_SMOOTH_CN                  1.0
