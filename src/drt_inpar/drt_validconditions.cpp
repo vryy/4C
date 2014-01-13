@@ -3180,7 +3180,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfredairtis);
 
   /*--------------------------------------------------------------------*/
-  // Monolithic coupling of 3D structure and 0D Windkessel
+  // Monolithic coupling of structure and three-element Windkessel
 
   Teuchos::RCP<ConditionDefinition> windkesselcondition =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF WINDKESSEL CONDITIONS",
@@ -3199,7 +3199,31 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(windkesselcondition);
 
   /*--------------------------------------------------------------------*/
-  // Monolithic coupling of 3D structure and 0D Windkessel
+  // Monolithic coupling of structure and nonlin heart three-element Windkessel
+
+  Teuchos::RCP<ConditionDefinition> nlnheartwindkesselcondition =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF NONLIN HEART WINDKESSEL CONDITIONS",
+                                         "NonlinHeartWindkesselStructureCond",
+                                         "Surface nonlin heart Windkessel",
+                                         DRT::Condition::NonlinHeartWindkesselStructure,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  AddNamedInt(nlnheartwindkesselcondition,"id");
+  AddNamedReal(nlnheartwindkesselcondition,"r1_closed");
+  AddNamedReal(nlnheartwindkesselcondition,"r1_opened");
+  AddNamedReal(nlnheartwindkesselcondition,"c_closed");
+  AddNamedReal(nlnheartwindkesselcondition,"c_opened");
+  AddNamedReal(nlnheartwindkesselcondition,"r2_closed");
+  AddNamedReal(nlnheartwindkesselcondition,"r2_opened");
+  AddNamedReal(nlnheartwindkesselcondition,"p_open");
+  AddNamedReal(nlnheartwindkesselcondition,"k_p");
+  AddNamedReal(nlnheartwindkesselcondition,"p_init");
+
+  condlist.push_back(nlnheartwindkesselcondition);
+
+  /*--------------------------------------------------------------------*/
+  // Monolithic coupling of structure and three-element Windkessel: Neumann bc surface
 
   std::vector<Teuchos::RCP<ConditionComponent> > windkstructcomponents;
 

@@ -161,6 +161,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==AreaMonitor_3D)                os << "Area monitor condition: ";
   else if (Type()==AreaMonitor_2D)                os << "Area monitor condition: ";
   else if (Type()==WindkesselStructure)           os << "Surface Windkessel condition: ";
+  else if (Type()==NonlinHeartWindkesselStructure) os << "Surface nonlin heart Windkessel condition: ";
   else if (Type()==WindkesselStructureCoupling)   os << "Surface Windkessel structure coupling condition: ";
   else if (Type()==ImpedanceCond)                 os << "Impedance boundary condition: ";
   else if (Type()==Impedance_Calb_Cond)           os << "Impedance calibration boundary condition: ";

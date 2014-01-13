@@ -3,6 +3,29 @@
 
 \brief Basic Windkessel class, dealing with Windkessel functions living on boundaries
 
+**************************************************************************************************************************
+Monolithic coupling of a three-element Windkessel governed by
+
+either the standard linear version in p
+(1) c dp/dt - c r2 dq/dt + p/r1 - (1 + r2/r1) q(d) = 0
+
+or a special nonlinear heart version to mimic opened and closed valves
+(2) c(p) dp/dt - c(p) r2(p) dq/dt + p/r1(p) - (1 + r2(p)/r1(p)) q(d) = 0
+
+with
+c(p) = (c_closed - c_opened)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + c_opened
+r1(p) = (r1_closed - r1_opened)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r1_opened
+r2(p) = (r2_closed - r2_opened)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r2_opened
+
+[c: compliance, r1: first resistance, r2: second resistance, q = -dV/dt: flux, p: pressure variable]
+
+and the standard structural dynamics governing equation
+
+M a + C v + f_int(d) - f_ext(d,p) = 0,
+
+with q being a function of the displacement vector d and f_ext additionally being a function of the Windkessel pressure p.
+**************************************************************************************************************************
+
 <pre>
 Maintainer: Marc Hirschvogel
             hirschvogel@lnm.mw.tum.de
@@ -50,6 +73,7 @@ namespace UTILS
     {
       none,
       rcr,
+      rcr_nlnheart,
     };
 
     /*!
@@ -105,8 +129,8 @@ namespace UTILS
     void Initialize
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<Epetra_Vector>    systemvector1,  ///< distributed vector that may be filled by assembly of element contributions
-      Teuchos::RCP<Epetra_Vector>    systemvector2  ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec1,  ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec2  ///< distributed vector that may be filled by assembly of element contributions
     );
 
     /// initialization routine called at restart to activate the right conditions
@@ -119,14 +143,18 @@ namespace UTILS
     void Evaluate
     (
       Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<LINALG::SparseMatrix> systemmatrix1, ///< Windkessel stiffness matrix
-      Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< Windkessel offdiagonal matrix dV/dd
-      Teuchos::RCP<LINALG::SparseOperator> systemmatrix3, ///< Windkessel offdiagonal matrix dfext/dp
-      Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by assembly of element contributions
-      Teuchos::RCP<Epetra_Vector> systemvector2,
-      Teuchos::RCP<Epetra_Vector> systemvector3,
-      Teuchos::RCP<Epetra_Vector> systemvector4,
-      Teuchos::RCP<Epetra_Vector> systemvector5
+      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Windkessel stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Windkessel offdiagonal matrix dV/dd
+      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Windkessel offdiagonal matrix dfext/dp
+      Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vectors that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector> sysvec2,
+      Teuchos::RCP<Epetra_Vector> sysvec3,
+      Teuchos::RCP<Epetra_Vector> sysvec4,
+      Teuchos::RCP<Epetra_Vector> sysvec5,
+      Teuchos::RCP<Epetra_Vector> sysvec6,
+      Teuchos::RCP<Epetra_Vector> sysvec7,
+      Teuchos::RCP<Epetra_Vector> sysvec8,
+      Teuchos::RCP<Epetra_Vector> sysvec9
     );
 
     ///Return type of Windkessel function
@@ -160,25 +188,43 @@ namespace UTILS
     );
 
     //! Evaluate Windkessel conditions and assemble the results
-    void EvaluateWindkessel
+    void EvaluateRCRWindkessel
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<LINALG::SparseMatrix> systemmatrix1, ///< Windkessel stiffness matrix
-      Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< Windkessel offdiagonal matrix dV/dd
-      Teuchos::RCP<LINALG::SparseOperator> systemmatrix3, ///< Windkessel offdiagonal matrix dfext/dp
-      Teuchos::RCP<Epetra_Vector>    systemvector1,  ///< distributed vector that may be filled by aasembly of element contributions
-      Teuchos::RCP<Epetra_Vector>    systemvector2,
-      Teuchos::RCP<Epetra_Vector>    systemvector3,
-      Teuchos::RCP<Epetra_Vector>    systemvector4,
-      Teuchos::RCP<Epetra_Vector>    systemvector5
-      );
+      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Windkessel stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Windkessel offdiagonal matrix dV/dd
+      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Windkessel offdiagonal matrix dfext/dp
+      Teuchos::RCP<Epetra_Vector>    sysvec1,  ///< distributed vectors that may be filled by aasembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec2,
+      Teuchos::RCP<Epetra_Vector>    sysvec3,
+      Teuchos::RCP<Epetra_Vector>    sysvec4,
+      Teuchos::RCP<Epetra_Vector>    sysvec5
+    );
+
+    //! Evaluate Windkessel conditions and assemble the results
+    void EvaluateNonlinHeartRCRWindkessel
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Windkessel stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Windkessel offdiagonal matrix dV/dd
+      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Windkessel offdiagonal matrix dfext/dp
+      Teuchos::RCP<Epetra_Vector>    sysvec1,  ///< distributed vectors that may be filled by aasembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec2,
+      Teuchos::RCP<Epetra_Vector>    sysvec3,
+      Teuchos::RCP<Epetra_Vector>    sysvec4,
+      Teuchos::RCP<Epetra_Vector>    sysvec5,
+      Teuchos::RCP<Epetra_Vector>    sysvec6,
+      Teuchos::RCP<Epetra_Vector>    sysvec7,
+      Teuchos::RCP<Epetra_Vector>    sysvec8,
+      Teuchos::RCP<Epetra_Vector>    sysvec9
+    );
 
     //! Compute and assemble initial Windkessel values (depending on user specific activation times)
     void InitializeWindkessel
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by assembly of element contributions
-      Teuchos::RCP<Epetra_Vector>    systemvector2 ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec1, ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec2 ///< distributed vector that may be filled by assembly of element contributions
     );
   }; //class
 } //namespace

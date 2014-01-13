@@ -6,8 +6,18 @@
 **************************************************************************************************************************
 Monolithic coupling of a three-element Windkessel governed by
 
-c dp/dt - c r_2 dq/dt + p/r_1 - (1 + r_2/r_1) q(d) = 0
-(c: compliance, r_1: first resistance, r2: second resistance, q = -dV/dt: flux, p: pressure variable)
+either the standard linear version in p
+(1) c dp/dt - c r2 dq/dt + p/r1 - (1 + r2/r1) q(d) = 0
+
+or a special nonlinear heart version to mimic opened and closed valves
+(2) c(p) dp/dt - c(p) r2(p) dq/dt + p/r1(p) - (1 + r2(p)/r1(p)) q(d) = 0
+
+with
+c(p) = (c_closed - c_opened)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + c_opened
+r1(p) = (r1_closed - r1_opened)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r1_opened
+r2(p) = (r2_closed - r2_opened)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r2_opened
+
+[c: compliance, r1: first resistance, r2: second resistance, q = -dV/dt: flux, p: pressure variable]
 
 and the standard structural dynamics governing equation
 
@@ -331,7 +341,8 @@ namespace UTILS
     Teuchos::RCP<LINALG::SparseOperator> coupoffdiag_fext_p_;  ///< additional rectangular matrix
     Teuchos::RCP<LINALG::SparseMatrix> windkesselstiffness_;  ///< additional rectangular matrix
     bool havewindkessel_;  ///< are there Windkessel bcs at all?
-    Teuchos::RCP<Windkessel> rc_;
+    RCP<Windkessel> rcr_;
+    RCP<Windkessel> rcr_nlnheart_;
     int myrank_;
     Teuchos::RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counts how often #Solve is called

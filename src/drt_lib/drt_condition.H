@@ -168,6 +168,7 @@ public:
     AreaMonitor_3D,
     AreaMonitor_2D,
     WindkesselStructure,
+    NonlinHeartWindkesselStructure,
     WindkesselStructureCoupling,
     ImpedanceCond,
     Impedance_Calb_Cond,
