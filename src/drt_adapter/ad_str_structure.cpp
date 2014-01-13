@@ -539,8 +539,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
 //  INPAR::CONTACT::ApplicationType apptype    = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(mcparams,"APPLICATION");
   switch(DRT::INPUT::IntegralValue<int>(mcparams,"SYSTEM"))
   {
-    case INPAR::CONTACT::system_spsimpler:
-    case INPAR::CONTACT::system_spcoupled:
+    case INPAR::CONTACT::system_saddlepoint:
     {
       // meshtying/contact for structure
       // get the solver number used for meshtying/contact problems
