@@ -211,7 +211,7 @@ public:
   \brief Return the LM interpolation / testing type for quadratic FE
 
   */
-  virtual INPAR::MORTAR::LagMultQuad LagMultQuad() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LAGMULT_QUAD"); }
+  virtual INPAR::MORTAR::LagMultQuad LagMultQuad() { return lmquadtype_; };
 
   /*!
   \brief Get interface contact parameter list
@@ -223,8 +223,7 @@ public:
   \brief Return the LM shape fcn type
 
   */
-  INPAR::MORTAR::ShapeFcn ShapeFcn()
-      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN"); }
+  INPAR::MORTAR::ShapeFcn ShapeFcn() { return shapefcn_; };
 
 
   //@}
@@ -476,7 +475,9 @@ protected:
 
     DRT::Discretization&       idiscret_;    // discretization of the contact interface
     int                        dim_;         // problem dimension (here: 3D)
+    INPAR::MORTAR::ShapeFcn    shapefcn_;    // lm shape function type
     bool                       quad_;        // flag indicating coupling type (true = quadratic)
+    INPAR::MORTAR::LagMultQuad lmquadtype_;  // type of quadratic lm interpolation
 
     MORTAR::MortarElement&     sele_;        // slave element to perform coupling for
     MORTAR::MortarElement&     mele_;        // master element to perform coupling for
@@ -549,14 +550,6 @@ public:
   */
   MORTAR::IntElement& MasterIntElement() const { return mintele_; }
 
-  /*!
-  \brief Return the Lagrange multiplier interpolation and testing type
-
-  */
-  INPAR::MORTAR::LagMultQuad LagMultQuad() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(),"LAGMULT_QUAD"); }
-  
-  //@}
-
 protected:
 
     // don't want = operator and cctor
@@ -626,13 +619,25 @@ public:
   \brief Get type of integration scheme
 
   */
-  virtual INPAR::MORTAR::IntType IntType() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE"); };
+  virtual INPAR::MORTAR::IntType IntType() { return integrationtype_; }
 
   /*!
   \brief Get coupling type
 
   */
   virtual const bool& Quad() {return quad_;};
+
+  /*!
+  \brief Get flag indicating nodal scaling of lm
+
+  */
+  virtual bool LMNodalScale() { return lmnodalscale_; }
+
+  /*!
+  \brief Get flag indicating dual consistent lm
+
+  */
+  virtual bool LMDualConsistent() { return lmdualconsistent_; }
 
   /*!
   \brief Get communicator
@@ -650,8 +655,7 @@ public:
   \brief Return the LM shape fcn type
 
   */
-  INPAR::MORTAR::ShapeFcn ShapeFcn()
-      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN"); }
+  INPAR::MORTAR::ShapeFcn ShapeFcn() { return shapefcn_; }
 
   /*!
   \brief Calculate consistent dual shape functions in boundary elements
@@ -669,8 +673,12 @@ protected:
 
     DRT::Discretization&                 idiscret_;         // discretization of the contact interface
     int                                  dim_;              // problem dimension (here: 3D)
+    INPAR::MORTAR::IntType               integrationtype_;  // integration type
+    INPAR::MORTAR::ShapeFcn              shapefcn_;         // lm shape function type
+    bool                                 lmnodalscale_;     // flag indicating scaling of lm
+    bool                                 lmdualconsistent_; // flag indicating dual consistent lm
     bool                                 quad_;             // flag indicating coupling type (true = quadratic)
-    Teuchos::ParameterList&              imortar_;         // containing contact input parameters
+    Teuchos::ParameterList&              imortar_;          // containing contact input parameters
     MORTAR::MortarElement*               sele_;             // slave element
     std::vector<MORTAR::MortarElement*>  mele_;             // master elements
     std::vector<Teuchos::RCP<MORTAR::Coupling3d> >  coup_;  // coupling pairs
@@ -729,7 +737,7 @@ public:
   \brief Get integration type
 
   */
-   INPAR::MORTAR::IntType IntType() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE"); }
+   INPAR::MORTAR::IntType IntType() { return integrationtype_; }
 
   /*!
   \brief Get coupling type
@@ -757,6 +765,7 @@ protected:
 
   DRT::Discretization&                            idiscret_;         // discretization of the contact interface
   int                                             dim_;              // problem dimension (here: 3D)
+  INPAR::MORTAR::IntType                          integrationtype_;  // integration type
   bool                                            quad_;             // flag indicating coupling type (true = quadratic)
   Teuchos::ParameterList&                         imortar_;         // containing contact input parameters
   MORTAR::MortarElement*                          sele_;             // slave element

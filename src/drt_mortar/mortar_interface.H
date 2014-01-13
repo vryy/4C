@@ -177,6 +177,14 @@ public:
   virtual const bool& Quadslave() { return quadslave_; };
 
   /*!
+  \brief Get flag indicating nodal scaling for lm
+
+  If chosen a nodal scaling factor is calculated for each LM
+
+  */
+  virtual bool LMNodalScale() { return lmnodalscale_; } ;
+
+  /*!
   \brief Get redundant storage flag
 
   Returns status of redundancy in interface storage (nodes, elements).
@@ -188,16 +196,20 @@ public:
   \brief Get type of search algorithm
 
   */
-  virtual const INPAR::MORTAR::SearchAlgorithm SearchAlg()
-  {return DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(imortar_,"SEARCH_ALGORITHM");};
+  virtual const INPAR::MORTAR::SearchAlgorithm SearchAlg() { return searchalgo_; };
 
   /*!
   \brief Get search algorithm parameter
 
   */
-  virtual const double SearchParam()
-  {return imortar_.get<double>("SEARCH_PARAM");};
+  virtual const double SearchParam() { return searchparam_; };
   
+  /*!
+  \brief bool whether auxiliary position is used when computing dops
+
+  */
+  virtual const bool SearchUseAuxPos() { return searchuseauxpos_; };
+
   /*!
   \brief Get column map of all interface nodes (Filled()==true is prerequisite)
 
@@ -693,6 +705,7 @@ protected:
   Teuchos::ParameterList             imortar_;      // containing contact input parameters of interface
   INPAR::MORTAR::ShapeFcn            shapefcn_;      // employed type of shape function set
   bool                               quadslave_;     // flag indicating quadratic 2d/3d slave elements
+  bool                               lmnodalscale_;  // flag indicating scaling of lm
   INPAR::MORTAR::RedundantStorage    redundant_;     // employed type of redundancy in storage of interface
   
   Teuchos::RCP<Epetra_Map>           oldnodecolmap_; // column map of all interface nodes (overlap=1)
@@ -721,7 +734,10 @@ protected:
   Teuchos::RCP<Epetra_Map>           lmdofmap_;      // row map of all Lagrange multiplier dofs
   int                                maxdofglobal_;  // maximum dof ID in global discretization
   
+  const INPAR::MORTAR::SearchAlgorithm searchalgo_;  // type of search algorithm
   Teuchos::RCP<MORTAR::BinaryTree>   binarytree_;    // binary searchtree
+  const double                       searchparam_;   // search parameter
+  const bool                         searchuseauxpos_; // use auxiliary position when computing dops
 
   double                             inttime_interface_;// integration time
 

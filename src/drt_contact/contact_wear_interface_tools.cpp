@@ -254,8 +254,8 @@ void CONTACT::WearInterface::FDCheckGapDeriv()
         for (int j=0;j<dim;++j)
           defgap-= (kcnode->MoData().n()[j])*wii*(kcnode->xspatial()[j]);
 
-        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
-        std::map<int,double>::iterator mcurr;
+        std::vector<std::map<int,double> >& mmap = kcnode->MoData().GetM();
+        std::map<int,double>::const_iterator mcurr;
 
         for (int m=0;m<mnodefullmap->NumMyElements();++m)
         {
@@ -1521,10 +1521,10 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
         znor += (cnode->MoData().n()[dim])*(cnode->MoData().lm()[dim]);
       }
 
-      std::vector<std::map<int,double> > mmap = cnode->MoData().GetM();
-      std::vector<std::map<int,double> > mmapold = cnode->FriData().GetMOld();
+      std::vector<std::map<int,double> >& mmap = cnode->MoData().GetM();
+      std::vector<std::map<int,double> >& mmapold = cnode->FriData().GetMOld();
 
-      std::map<int,double>::iterator colcurr;
+      std::map<int,double>::const_iterator colcurr;
       std::set <int> mnodes;
 
       for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)

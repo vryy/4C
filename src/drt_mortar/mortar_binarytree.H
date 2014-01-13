@@ -96,6 +96,7 @@ public:
   \param dopnormals  reference to DOP normals
   \param kdop        refernece to no. of vertices
   \param dim         dimension of problem
+  \param useauxpos   bool whether auxiliary position is used when computing dops
   \param layer       current layer of treenode
   \param ...map      references to maps
 
@@ -103,7 +104,7 @@ public:
   BinaryTreeNode(BinaryTreeNodeType type, DRT::Discretization& discret,
                  Teuchos::RCP<BinaryTreeNode> parent, std::vector<int> elelist,
                  const Epetra_SerialDenseMatrix& dopnormals,
-                 const int& kdop, const int& dim, const int layer,
+                 const int& kdop, const int& dim, const bool& useauxpos, const int layer,
                  std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & streenodesmap,
                  std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & mtreenodesmap,
                  std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & sleafsmap,
@@ -337,6 +338,9 @@ private:
   //! reference to dim. of problem
   const int& dim_;
 
+  //! bool whether auxiliary position is used when computing dops
+  const bool& useauxpos_;
+
   //! layer of TreeNode in Tree (0=rootnode!)
   int layer_;
 
@@ -380,7 +384,7 @@ public:
   BinaryTree(DRT::Discretization& discret,
              Teuchos::RCP<Epetra_Map> selements,
              Teuchos::RCP<Epetra_Map> melements,
-             int dim, double eps);
+             int dim, double eps, bool useauxpos);
 
   /*!
   \brief Destructor
@@ -578,6 +582,7 @@ protected:
   double                                 minlengthele_;   // minimum of length of fe-elements
   const int                              dim_;            // problem dimension (2D or 3D)
   double                                 eps_;            // epsilon for enlarging dops (of user)
+  bool                                   useauxpos_;      // bool whether auxiliary position is used when computing dops
   double                                 enlarge_;        // to enlarge dops
   Epetra_SerialDenseMatrix               dopnormals_;     // defining vertices of DOP
   int                                    kdop_;           // sets k for DOP (8 for 2D, 18 for 3D)

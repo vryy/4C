@@ -1516,6 +1516,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("SEARCH_PARAM",0.3,"Radius / Bounding volume inflation for contact search",&mortar);
 
+  setStringToIntegralParameter<int>("SEARCH_USE_AUX_POS","Yes","If chosen auxiliary position is used for computing dops",
+                               yesnotuple,yesnovalue,&mortar);
+
   setStringToIntegralParameter<int>("LAGMULT_QUAD","undefined","Type of LM interpolation/weighting function",
        tuple<std::string>("undefined",
                           "quad_quad", "quadratic_quadratic",

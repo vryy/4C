@@ -58,7 +58,9 @@ MORTAR::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad
                                Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele) :
 idiscret_(idiscret),
 dim_(dim),
+shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params,"SHAPEFCN")),
 quad_(quad),
+lmquadtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params,"LAGMULT_QUAD")),
 sele_(sele),
 mele_(mele),
 imortar_(params)
@@ -3667,6 +3669,10 @@ MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int 
                                              std::vector<MORTAR::MortarElement*> mele) :
 idiscret_(idiscret),
 dim_(dim),
+integrationtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(params,"INTTYPE")),
+shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params,"SHAPEFCN")),
+lmnodalscale_(DRT::INPUT::IntegralValue<int>(params,"LM_NODAL_SCALE")),
+lmdualconsistent_(DRT::INPUT::IntegralValue<int>(params,"LM_DUAL_CONSISTENT")),
 quad_(quad),
 imortar_(params),
 sele_(sele),
@@ -3689,6 +3695,7 @@ MORTAR::Coupling3dQuadManager::Coupling3dQuadManager(DRT::Discretization& idiscr
                                              bool empty) :
 idiscret_(idiscret),
 dim_(dim),
+integrationtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(params,"INTTYPE")),
 quad_(quad),
 imortar_(params),
 sele_(sele),
@@ -3715,7 +3722,7 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
   if (IntType()==INPAR::MORTAR::inttype_segments)
   {
     // switch, if consistent boundary modification chosen
-    if (   DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true
+    if ( LMDualConsistent()==true
         && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
        )
     {
@@ -3782,7 +3789,7 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
       Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
       Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
-      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
+      if (LMNodalScale())
         scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
       bool boundary_ele=false;
@@ -3794,7 +3801,7 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
       {
         if (boundary_ele==true)
         {
-          if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==false)
+          if (LMDualConsistent()==false)
           {
             // loop over all master elements associated with this slave element
             for (int m=0;m<(int)MasterElements().size();++m)
@@ -4003,11 +4010,11 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
     dserror("ConsistentDualShape() called for standard LM interpolation.");
 
   // Consistent modification only for linear LM interpolation
-  if (Quad()==true && DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true)
+  if (Quad()==true && LMDualConsistent()==true)
     dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
 
   // you should not be here
-  if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==false)
+  if (LMDualConsistent()==false)
     dserror("You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
 
   if (Coupling().size()==0)

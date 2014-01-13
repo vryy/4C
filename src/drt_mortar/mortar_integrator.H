@@ -117,14 +117,13 @@ public:
   \brief Return the LM shape fcn type
 
   */
-  INPAR::MORTAR::ShapeFcn ShapeFcn()
-      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN"); }
+  INPAR::MORTAR::ShapeFcn ShapeFcn() {return shapefcn_;};
 
   /*!
   \brief Return the LM interpolation / testing type for quadratic FE
 
   */
-  INPAR::MORTAR::LagMultQuad LagMultQuad() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LAGMULT_QUAD") ; }
+  INPAR::MORTAR::LagMultQuad LagMultQuad() {return lmquadtype_;};
 
   /*!
   \brief Return number of Gauss points for this instance
@@ -345,6 +344,8 @@ protected:
 
     Teuchos::ParameterList&       imortar_;     // containing contact input parameters
     int                           dim_;         // dimension of problem (2D or 3D)
+    INPAR::MORTAR::ShapeFcn       shapefcn_;    // lm shape function type
+    INPAR::MORTAR::LagMultQuad    lmquadtype_;  // type of quadratic lm interpolation
     int                           ngp_;         // number of Gauss points
     Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates
     std::vector<double>           weights_;     // Gauss point weights

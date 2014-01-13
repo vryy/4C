@@ -55,7 +55,7 @@ MORTAR::BinaryTreeNode::BinaryTreeNode(
                      Teuchos::RCP<BinaryTreeNode> parent,
                      std::vector<int> elelist,
                      const Epetra_SerialDenseMatrix& dopnormals,
-                     const int& kdop, const int& dim,
+                     const int& kdop, const int& dim, const bool& useauxpos,
                      const int layer,
                      std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & streenodesmap,
                      std::vector<std::vector<Teuchos::RCP<BinaryTreeNode> > > & mtreenodesmap,
@@ -68,6 +68,7 @@ elelist_(elelist),
 dopnormals_(dopnormals),
 kdop_(kdop),
 dim_(dim),
+useauxpos_(useauxpos),
 layer_(layer),
 streenodesmap_(streenodesmap),
 mtreenodesmap_(mtreenodesmap),
@@ -311,34 +312,37 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
         if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
       }
 
-      // enlarge slabs with auxiliary position
-      // first calculate element normal at current node
-      double xi[2] = {0.0, 0.0};
-      double normal[3] = {0.0, 0.0, 0.0};
-      mrtrelement->LocalCoordinatesOfNode(k,xi);
-      mrtrelement->ComputeUnitNormalAtXi(xi,normal);
-
-      // now the auxiliary position
-      double auxpos [3] = {0.0, 0.0, 0.0};
-      double scalar=0.0;
-      for (int j=0;j<dim_;j++)
-        scalar=scalar+(mrtrnode->X()[j]+mrtrnode->uold()[j]-mrtrnode->xspatial()[j])*normal[j];
-      for (int j=0;j<dim_;j++)
-        auxpos[j]=mrtrnode->xspatial()[j]+scalar*normal[j];
-
-      for(int j=0; j<kdop_/2;j++)
+      if(useauxpos_)
       {
-        //= ax+by+cz=d/sqrt(aa+bb+cc)
-        double num = dopnormals_(j,0)*auxpos[0]
-                   + dopnormals_(j,1)*auxpos[1]
-                   + dopnormals_(j,2)*auxpos[2];
-        double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
-                           +(dopnormals_(j,1)*dopnormals_(j,1))
-                           +(dopnormals_(j,2)*dopnormals_(j,2)));
-        double dcurrent = num/denom;
+        // enlarge slabs with auxiliary position
+        // first calculate element normal at current node
+        double xi[2] = {0.0, 0.0};
+        double normal[3] = {0.0, 0.0, 0.0};
+        mrtrelement->LocalCoordinatesOfNode(k,xi);
+        mrtrelement->ComputeUnitNormalAtXi(xi,normal);
 
-        if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
-        if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
+        // now the auxiliary position
+        double auxpos [3] = {0.0, 0.0, 0.0};
+        double scalar=0.0;
+        for (int j=0;j<dim_;j++)
+          scalar=scalar+(mrtrnode->X()[j]+mrtrnode->uold()[j]-mrtrnode->xspatial()[j])*normal[j];
+        for (int j=0;j<dim_;j++)
+          auxpos[j]=mrtrnode->xspatial()[j]+scalar*normal[j];
+
+        for(int j=0; j<kdop_/2;j++)
+        {
+          //= ax+by+cz=d/sqrt(aa+bb+cc)
+          double num = dopnormals_(j,0)*auxpos[0]
+                     + dopnormals_(j,1)*auxpos[1]
+                     + dopnormals_(j,2)*auxpos[2];
+          double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
+                             +(dopnormals_(j,1)*dopnormals_(j,1))
+                             +(dopnormals_(j,2)*dopnormals_(j,2)));
+          double dcurrent = num/denom;
+
+          if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
+          if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
+      }
       }
     }
 
@@ -499,12 +503,12 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 
     // build left child treenode
     leftchild_= Teuchos::rcp(new BinaryTreeNode(lefttype,idiscret_, Teuchos::rcp(this, false),
-                    leftelements, dopnormals_, kdop_, dim_, (layer_+1), streenodesmap_, mtreenodesmap_,
+                    leftelements, dopnormals_, kdop_, dim_, useauxpos_, (layer_+1), streenodesmap_, mtreenodesmap_,
                     sleafsmap_, mleafsmap_));
 
     // build right child treenode
     rightchild_= Teuchos::rcp(new BinaryTreeNode(righttype,idiscret_, Teuchos::rcp(this, false),
-                     rightelements, dopnormals_, kdop_, dim_, (layer_+1), streenodesmap_, mtreenodesmap_,
+                     rightelements, dopnormals_, kdop_, dim_, useauxpos_, (layer_+1), streenodesmap_, mtreenodesmap_,
                      sleafsmap_, mleafsmap_));
 
     // update slave and mastertreenodes map
@@ -917,12 +921,13 @@ void MORTAR::BinaryTreeNode::EnlargeGeometry(double& enlarge)
 MORTAR::BinaryTree::BinaryTree(DRT::Discretization& discret,
                                Teuchos::RCP<Epetra_Map> selements,
                                Teuchos::RCP<Epetra_Map> melements,
-                               int dim, double eps) :
+                               int dim, double eps, bool useauxpos) :
 idiscret_(discret),
 selements_(selements),
 melements_(melements),
 dim_(dim),
-eps_(eps)
+eps_(eps),
+useauxpos_(useauxpos)
 {
   // initialize sizes
   streenodesmap_.resize(1);
@@ -992,7 +997,7 @@ eps_(eps)
   if (slist.size()>=2)
   {
     sroot_ = Teuchos::rcp(new BinaryTreeNode(MORTAR::SLAVE_INNER,idiscret_,sroot_ ,slist,DopNormals(),
-             Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+             Kdop(),Dim(),useauxpos_,0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // do initialization
     streenodesmap_[0].push_back(sroot_);
@@ -1001,7 +1006,7 @@ eps_(eps)
   else if (slist.size()==1)
   {
     sroot_ = Teuchos::rcp(new BinaryTreeNode(MORTAR::SLAVE_LEAF,idiscret_,sroot_,slist,DopNormals(),
-             Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+             Kdop(),Dim(),useauxpos_,0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // trivial initialization
     streenodesmap_[0].push_back(sroot_);
@@ -1010,7 +1015,7 @@ eps_(eps)
   else
   {
     sroot_ = Teuchos::rcp(new BinaryTreeNode(MORTAR::NOSLAVE_ELEMENTS,idiscret_,sroot_,slist,DopNormals(),
-             Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+             Kdop(),Dim(),useauxpos_,0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // trivial initialization
     streenodesmap_[0].push_back(sroot_);
@@ -1020,7 +1025,7 @@ eps_(eps)
   if (mlist.size()>=2)
   {
     mroot_ = Teuchos::rcp(new BinaryTreeNode(MORTAR::MASTER_INNER,idiscret_,mroot_,mlist,DopNormals(),
-             Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+             Kdop(),Dim(),useauxpos_,0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // do initialization
     mtreenodesmap_[0].push_back(mroot_);
@@ -1029,7 +1034,7 @@ eps_(eps)
   else if (mlist.size()==1)
   {
     mroot_ = Teuchos::rcp(new BinaryTreeNode(MORTAR::MASTER_LEAF,idiscret_,mroot_,mlist,DopNormals(),
-             Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+             Kdop(),Dim(),useauxpos_,0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // trivial initialization
     mtreenodesmap_[0].push_back(mroot_);
@@ -1038,7 +1043,7 @@ eps_(eps)
   else
   {
     mroot_ = Teuchos::rcp(new BinaryTreeNode(MORTAR::NOMASTER_ELEMENTS,idiscret_,mroot_,mlist,DopNormals(),
-             Kdop(),Dim(),0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+             Kdop(),Dim(),useauxpos_,0,streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
 
     // trivial initialization / error
     mtreenodesmap_[0].push_back(mroot_);

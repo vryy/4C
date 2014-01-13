@@ -73,8 +73,12 @@ dim_(dim),
 imortar_(imortar),
 shapefcn_(INPAR::MORTAR::shape_undefined),
 quadslave_(false),
+lmnodalscale_(DRT::INPUT::IntegralValue<int>(imortar,"LM_NODAL_SCALE")),
 redundant_(redundant),
-maxdofglobal_(-1)
+maxdofglobal_(-1),
+searchalgo_(DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(imortar,"SEARCH_ALGORITHM")),
+searchparam_(imortar.get<double>("SEARCH_PARAM")),
+searchuseauxpos_(DRT::INPUT::IntegralValue<int>(imortar,"SEARCH_USE_AUX_POS"))
 {
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(Comm().Clone());
   if (Dim()!=2 && Dim()!=3) dserror("ERROR: Mortar problem must be 2D or 3D");
@@ -1022,7 +1026,7 @@ void MORTAR::MortarInterface::CreateSearchTree()
     Teuchos::RCP<Epetra_Map> melefullmap = LINALG::AllreduceEMap(*melerowmap_);
 
     // create binary tree object for search and setup tree
-    binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap,Dim(),SearchParam()));
+    binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap,Dim(),SearchParam(),SearchUseAuxPos()));
   }
 }
 
@@ -1747,6 +1751,9 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
   else
     dserror("ERROR: Problem dimension must be 2D or 3D!");
 
+  // decide whether auxiliary positions are used when computing dops
+  const bool useauxpos = SearchUseAuxPos();
+
   // define slave and master slabs
   Epetra_SerialDenseMatrix sslabs(kdop/2,2);
   Epetra_SerialDenseMatrix mslabs(kdop/2,2);
@@ -1796,27 +1803,30 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
 
     // add auxiliary positions
     // (last converged positions for all slave nodes)
-    for (int j=0;j<element->NumNode();j++)
+    if(useauxpos == true)
     {
-      //get pointer to slave node
-      MortarNode* mrtrnode=static_cast<MortarNode*>(node[j]);
-
-      double auxpos [3] = {0.0, 0.0, 0.0};
-      double scalar=0.0;
-      for (int k=0; k<dim_;k++)
-        scalar+=(mrtrnode->X()[k]+mrtrnode->uold()[k]-mrtrnode->xspatial()[k])*mrtrnode->MoData().n()[k];
-      for (int k=0;k<dim_;k++)
-        auxpos[k]= mrtrnode->xspatial()[k]+scalar*mrtrnode->MoData().n()[k];
-
-      for(int j=0;j<kdop/2;j++)
+      for (int j=0;j<element->NumNode();j++)
       {
-        //= ax+by+cz=d/sqrt(aa+bb+cc)
-        dcurrent = (dopnormals(j,0)*auxpos[0]+dopnormals(j,1)*auxpos[1]+dopnormals(j,2)*auxpos[2])
-          /sqrt((dopnormals(j,0)*dopnormals(j,0))+(dopnormals(j,1)*dopnormals(j,1))+(dopnormals(j,2)*dopnormals(j,2)));
-        if (dcurrent > sslabs(j,1))
-          sslabs(j,1)=dcurrent;
-        if (dcurrent < sslabs(j,0))
-          sslabs(j,0)=dcurrent;
+        //get pointer to slave node
+        MortarNode* mrtrnode=static_cast<MortarNode*>(node[j]);
+
+        double auxpos [3] = {0.0, 0.0, 0.0};
+        double scalar=0.0;
+        for (int k=0; k<dim_;k++)
+          scalar+=(mrtrnode->X()[k]+mrtrnode->uold()[k]-mrtrnode->xspatial()[k])*mrtrnode->MoData().n()[k];
+        for (int k=0;k<dim_;k++)
+          auxpos[k]= mrtrnode->xspatial()[k]+scalar*mrtrnode->MoData().n()[k];
+
+        for(int j=0;j<kdop/2;j++)
+        {
+          //= ax+by+cz=d/sqrt(aa+bb+cc)
+          dcurrent = (dopnormals(j,0)*auxpos[0]+dopnormals(j,1)*auxpos[1]+dopnormals(j,2)*auxpos[2])
+            /sqrt((dopnormals(j,0)*dopnormals(j,0))+(dopnormals(j,1)*dopnormals(j,1))+(dopnormals(j,2)*dopnormals(j,2)));
+          if (dcurrent > sslabs(j,1))
+            sslabs(j,1)=dcurrent;
+          if (dcurrent < sslabs(j,0))
+            sslabs(j,0)=dcurrent;
+        }
       }
     }
 
@@ -2329,7 +2339,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
     /**************************************************** D-matrix ******/
     if ((mrtrnode->MoData().GetD()).size()>0)
     {
-      std::vector<std::map<int,double> > dmap = mrtrnode->MoData().GetD();
+      const std::vector<std::map<int,double> >& dmap = mrtrnode->MoData().GetD();
       int rowsize = mrtrnode->NumDof();
       int colsize = (int)dmap[0].size();
 
@@ -2337,7 +2347,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
         if ((int)dmap[j].size() != (int)dmap[j+1].size())
           dserror("ERROR: AssembleDM: Column dim. of nodal D-map is inconsistent!");
 
-      std::map<int,double>::iterator colcurr;
+      std::map<int,double>::const_iterator colcurr;
 
       for (int j=0;j<rowsize;++j)
       {
@@ -2349,8 +2359,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
           int col = colcurr->first;
           double val = colcurr->second;
 
-          if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
-              mrtrnode->MoData().GetScale() != 0.0)
+          if (LMNodalScale()==true && mrtrnode->MoData().GetScale() != 0.0)
             val /= mrtrnode->MoData().GetScale();
 
 
@@ -2396,7 +2405,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
     /**************************************************** M-matrix ******/
     if ((mrtrnode->MoData().GetM()).size()>0)
     {
-      std::vector<std::map<int,double> > mmap = mrtrnode->MoData().GetM();
+      const std::vector<std::map<int,double> >& mmap = mrtrnode->MoData().GetM();
       int rowsize = mrtrnode->NumDof();
       int colsize = (int)mmap[0].size();
 
@@ -2404,7 +2413,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
         if ((int)mmap[j].size() != (int)mmap[j+1].size())
           dserror("ERROR: AssembleDM: Column dim. of nodal M-map is inconsistent!");
 
-      std::map<int,double>::iterator colcurr;
+      std::map<int,double>::const_iterator colcurr;
 
       for (int j=0;j<rowsize;++j)
       {
@@ -2416,8 +2425,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
           int col = colcurr->first;
           double val = colcurr->second;
 
-          if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
-              mrtrnode->MoData().GetScale() != 0.0)
+          if (LMNodalScale()==true && mrtrnode->MoData().GetScale() != 0.0)
             val /= mrtrnode->MoData().GetScale();
 
 
@@ -2434,7 +2442,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
     /************************************************* Mmod-matrix ******/
     if ((mrtrnode->MoData().GetMmod()).size()>0)
     {
-      std::vector<std::map<int,double> > mmap = mrtrnode->MoData().GetMmod();
+      const std::vector<std::map<int,double> >& mmap = mrtrnode->MoData().GetMmod();
       int rowsize = mrtrnode->NumDof();
       int colsize = (int)mmap[0].size();
 
@@ -2446,7 +2454,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
       std::vector<int> lmrow(rowsize);
       std::vector<int> lmcol(colsize);
       std::vector<int> lmrowowner(rowsize);
-      std::map<int,double>::iterator colcurr;
+      std::map<int,double>::const_iterator colcurr;
 
       for (int j=0;j<rowsize;++j)
       {
@@ -3000,8 +3008,8 @@ void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
     MortarNode* mrtrnode = static_cast<MortarNode*>(node);
 
     // perform detection
-    std::vector<std::map<int,double> > dmap = mrtrnode->MoData().GetD();
-    std::vector<std::map<int,double> > mmap = mrtrnode->MoData().GetM();
+    const std::vector<std::map<int,double> >& dmap = mrtrnode->MoData().GetD();
+    const std::vector<std::map<int,double> >& mmap = mrtrnode->MoData().GetM();
     int sized = dmap.size();
     int sizem = mmap.size();
 

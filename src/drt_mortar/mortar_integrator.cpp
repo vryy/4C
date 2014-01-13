@@ -53,7 +53,9 @@ Maintainer: Alexander Popp
  *----------------------------------------------------------------------*/
 MORTAR::MortarIntegrator::MortarIntegrator(Teuchos::ParameterList& params,
                                DRT::Element::DiscretizationType eletype) :
-imortar_(params)
+imortar_(params),
+shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params,"SHAPEFCN")),
+lmquadtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params,"LAGMULT_QUAD"))
 {
   InitializeGP(eletype);
 }
@@ -416,9 +418,6 @@ void MORTAR::MortarIntegrator::EleBased_Integration(
        std::vector<MORTAR::MortarElement*> meles,
        bool *boundary_ele)
 {
-  // get LMtype
-  INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
-
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
 
@@ -452,7 +451,7 @@ void MORTAR::MortarIntegrator::EleBased_Integration(
 
   // decide whether linear LM are used for quadratic FE here
   bool linlm = false;
-  if (lmtype == INPAR::MORTAR::lagmult_lin_lin && sele.Shape() == DRT::Element::line3)
+  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin_lin && sele.Shape() == DRT::Element::line3)
   {
     bound = false; // crosspoints and linear LM NOT at the same time!!!!
     linlm = true;

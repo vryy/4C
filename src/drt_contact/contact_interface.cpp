@@ -1250,7 +1250,7 @@ void CONTACT::CoInterface::CreateSearchTree()
         dserror("Choosen parallel strategy not supported!");
 
       // create binary tree object for contact search and setup tree
-      binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap,Dim(),SearchParam()));
+      binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(),selecolmap_,melefullmap,Dim(),SearchParam(),SearchUseAuxPos()));
 
       // initialize active contact nodes via binarytree
       // binarytree_->SearchContactInit(binarytree_->Sroot(), binarytree_->Mroot());
@@ -2075,8 +2075,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
 
     if(activeinfuture==true)
     {
-      std::vector<std::map<int,double> > dmap = cnode->MoData().GetD();
-      std::vector<std::map<int,double> > dmapold = cnode->FriData().GetDOld();
+      std::vector<std::map<int,double> >& dmap = cnode->MoData().GetD();
+      std::vector<std::map<int,double> >& dmapold = cnode->FriData().GetDOld();
       double scalefac=1.;
       std::map<int,double> dscmap = cnode->CoData().GetDerivScale();
       bool scderiv=false;
@@ -2118,11 +2118,11 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
         }
       } //  loop over adjacent slave nodes
 
-      std::vector<std::map<int,double> > mmap = cnode->MoData().GetM();
-      std::vector<std::map<int,double> > mmapold = cnode->FriData().GetMOld();
+      std::vector<std::map<int,double> >& mmap = cnode->MoData().GetM();
+      std::vector<std::map<int,double> >& mmapold = cnode->FriData().GetMOld();
 
-      std::set <int> mnodescurrent = cnode->FriData().GetMNodes();
-      std::set <int> mnodesold = cnode->FriData().GetMNodesOld();
+      const std::set <int>& mnodescurrent = cnode->FriData().GetMNodes();
+      const std::set <int>& mnodesold = cnode->FriData().GetMNodesOld();
 
       // check if there are entries in the M map
       if(mmap.size()< 1)
@@ -6263,8 +6263,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
 
         // we need the nodal entries of the M-matrix and the old one
-        std::vector<std::map<int,double> > mmap = cnode->MoData().GetM();
-        std::vector<std::map<int,double> > mmapold = cnode->FriData().GetMOld();
+        std::vector<std::map<int,double> >& mmap = cnode->MoData().GetM();
+        std::vector<std::map<int,double> >& mmapold = cnode->FriData().GetMOld();
 
         // create a set of nodes including nodes according to M entries
         // from current and previous time step
