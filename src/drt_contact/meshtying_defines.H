@@ -44,8 +44,6 @@ Maintainer: Alexander Popp
 /* Meshtying algorithm options                                          */
 /************************************************************************/
 
-#define DELTALM 		     /* flag for incremental lagrange multipliers */
-
 /************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
