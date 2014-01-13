@@ -45,7 +45,7 @@ int DRT::DiscretizationHDG::FillComplete(bool assigndegreesoffreedom,
   // packing, extract the node ids, communicate them, and change the node ids in the element
   Exporter nodeexporter( *facerowmap_, *facecolmap_, Comm() );
   std::map<int, std::vector<int> > nodeIds;
-  for (typename std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator f=faces_.begin();
+  for (std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator f=faces_.begin();
        f!= faces_.end(); ++f) {
     std::vector<int> ids(f->second->NumNode());
     for (int i=0; i<f->second->NumNode(); ++i)
@@ -55,7 +55,7 @@ int DRT::DiscretizationHDG::FillComplete(bool assigndegreesoffreedom,
 
   nodeexporter.Export( nodeIds );
 
-  for (typename std::map<int, Teuchos::RCP<DRT::Element> >::iterator f=faces_.begin();
+  for (std::map<int, Teuchos::RCP<DRT::Element> >::iterator f=faces_.begin();
        f!= faces_.end(); ++f) {
     if ( f->second->Owner() == Comm().MyPID() )
       continue;
