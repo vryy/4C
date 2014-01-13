@@ -1056,10 +1056,6 @@ protected:
   //! \brief a vector just for the sake of visual quality
   Teuchos::RCP<Epetra_MultiVector> visualizepositions_;
 
-  //TODO reactivate if passive linkers are needed
-  //! \brief a vector holding information on whether or not a crosslink molecule searches for neighbours (switch for active/passive crosslinker)
-  //Teuchos::RCP<Epetra_Vector> searchforneighbours_;
-
   //! \brief a vector holding indices used in DensityDensityCorrOutput()
   Teuchos::RCP<std::vector<double> > startindex_;
 
