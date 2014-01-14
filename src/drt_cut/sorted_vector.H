@@ -235,7 +235,7 @@ namespace CUT
 
     void clear()
     {
-      return vec_.clear();
+      vec_.clear();
     }
 
     void swap( Myt_ & x )

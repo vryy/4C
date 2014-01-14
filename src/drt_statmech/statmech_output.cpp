@@ -145,7 +145,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
         fpnumbering = fopen(numberingfilename.str().c_str(), "w");
         std::stringstream filecontent;
         filecontent << "Next Number: " << (outputfilenumber_ + 1);
-        fprintf(fpnumbering, filecontent.str().c_str());
+        fputs(filecontent.str().c_str(), fpnumbering);
         fclose(fpnumbering);
       }
 
@@ -235,7 +235,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
         std::stringstream filecontent;
         filecontent << "Next Number: " << (outputfilenumber_ + 1);
         //write fileconent into file!
-        fprintf(fpnumbering, filecontent.str().c_str());
+        fputs(filecontent.str().c_str(), fpnumbering);
         //close file
         fclose(fpnumbering);
       }
@@ -314,7 +314,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
         std::stringstream filecontent;
         filecontent << "Next Number: " << (outputfilenumber_ + 1);
         //write fileconent into file!
-        fprintf(fpnumbering, filecontent.str().c_str());
+        fputs(filecontent.str().c_str(), fpnumbering);
         //close file
         fclose(fpnumbering);
       }
@@ -391,7 +391,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
         std::stringstream filecontent;
         filecontent << "Next Number: " << (outputfilenumber_ + 1);
         //write fileconent into file!
-        fprintf(fpnumbering, filecontent.str().c_str());
+        fputs(filecontent.str().c_str(), fpnumbering);
         //close file
         fclose(fpnumbering);
 
@@ -435,7 +435,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
         //filecontent << "Output for measurement of viscoelastic properties written by processor "<< discret_->Comm().MyPID() << std::endl;
 
         // move temporary std::stringstream to file and close it
-        fprintf(fp, filecontent.str().c_str());
+        fputs(filecontent.str().c_str(), fp);
         fclose(fp);
       }
       linkernodepairs_ = Teuchos::null;
@@ -461,13 +461,13 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
         //filecontent << "Output for measurement of viscoelastic properties written by processor "<< discret_->Comm().MyPID() << std::endl;
 
         // move temporary std::stringstream to file and close it
-        fprintf(fp, filecontent.str().c_str());
+        fputs(filecontent.str().c_str(), fp);
         fclose(fp);
 
         std::ostringstream outpufilename2;
         outpufilename2 << outputrootpath_ << "/StatMechOutput/StructCOGInertia.dat";
         fp = fopen(outpufilename2.str().c_str(), "w");
-        fprintf(fp, filecontent.str().c_str());
+        fputs(filecontent.str().c_str(), fp);
         fclose(fp);
       }
     }
@@ -558,7 +558,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
             filecontent << std::scientific << std::setprecision(15) << time - starttimeoutput_ << "  " << DeltaR2 << std::endl;
 
             // move temporary std::stringstream to file and close it
-            fprintf(fp, filecontent.str().c_str());
+            fputs(filecontent.str().c_str(), fp);
             fclose(fp);
           }
         }
@@ -623,7 +623,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
                         << endtoend << " " << fint[num_dof - discret_->NumDof(
                            discret_->gNode(discret_->NumMyRowNodes() - 1))] << std::endl;
             // move temporary std::stringstream to file and close it
-            fprintf(fp, filecontent.str().c_str());
+            fputs(filecontent.str().c_str(), fp);
             fclose(fp);
           }
         }
@@ -688,7 +688,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
             filecontent << " " << cosdiffer[id];
 
           filecontent << std::endl;
-          fprintf(fp, filecontent.str().c_str());
+          fputs(filecontent.str().c_str(), fp);
           fclose(fp);
         }
 
@@ -815,7 +815,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
 //              << sumrotmiddle_ * sumrotmiddle_ << std::endl;
 
           // move temporary std::stringstream to file and close it
-          fprintf(fp, filecontent.str().c_str());
+          fputs(filecontent.str().c_str(), fp);
           fclose(fp);
 
           //write position
@@ -833,7 +833,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
           filecontent2 << std::scientific << std::setprecision(15) <<midpoint(0)<<" "<<midpoint(1)<<" "<<midpoint(2)<< std::endl;
 
           // move temporary std::stringstream to file and close it
-          fprintf(fp, filecontent2.str().c_str());
+          fputs(filecontent2.str().c_str(), fp);
           fclose(fp);
         }
 
@@ -1102,7 +1102,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
     gmshfileheader << "View \" Step " << step << " \" {" << std::endl;
 
     //write content into file and close it
-    fprintf(fp, gmshfileheader.str().c_str());
+    fputs(gmshfileheader.str().c_str(), fp);
     fclose(fp);
   }
 
@@ -1281,7 +1281,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
           GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id(),false);
       }
       //write content into file and close it (this way we make sure that the output is written serially)
-      fprintf(fp, gmshfilecontent.str().c_str());
+      fputs(gmshfilecontent.str().c_str(), fp);
       fclose(fp);
     }
     discret_->Comm().Barrier();
@@ -1329,7 +1329,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
     if(periodlength_->at(0)==0.0)
       gmshfileend << "SP("<<periodlength_->at(0)<<",0,"<<periodlength_->at(2)<<"){0,0};"<<std::endl;
     gmshfileend << "};" << std::endl;
-    fprintf(fp, gmshfileend.str().c_str());
+    fputs(gmshfileend.str().c_str(), fp);
     fclose(fp);
   }
 
@@ -1628,7 +1628,7 @@ void STATMECH::StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matr
     gmshfilefooter << xmax << "," << ymin << "," << zmax << "," << xmin << "," << ymin<< "," << zmax;
     gmshfilefooter << ")" << "{" << std::scientific << boundarycolor << ","<< boundarycolor << "};" << std::endl;
 
-    fprintf(fp, gmshfilefooter.str().c_str());
+    fputs(gmshfilefooter.str().c_str(), fp);
     fclose(fp);
   }
   // wait for Proc 0 to catch up to the others
@@ -1804,7 +1804,7 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
           continue;
       }
     }
-    fprintf(fp, gmshfilebonds.str().c_str());
+    fputs(gmshfilebonds.str().c_str(), fp);
     fclose(fp);
   }
 
@@ -2867,7 +2867,7 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector&      disrow,
       //std::cout<<"  "<<phibins[i]<<"    "<<thetabins[i]<<"    "<<costhetabins[i]<<"    "<<radialdistbins[i]<<std::endl;
     }
 
-    fprintf(fp, histogram.str().c_str());
+    fputs(histogram.str().c_str(), fp);
     fclose(fp);
   }
   if(!discret_->Comm().MyPID())
@@ -3730,7 +3730,7 @@ void STATMECH::StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disr
     for(int j=0; j<15; j++)
       structuretype<<"    "<<0.0;
     structuretype<<std::endl;
-    fprintf(fp, structuretype.str().c_str());
+    fputs(structuretype.str().c_str(), fp);
     fclose(fp);
 
     // clear the vector first
@@ -4129,7 +4129,7 @@ void STATMECH::StatMechManager::LinkerUnbindingTimes(const std::ostringstream& f
       if((*crosslinkunbindingtimes_)[0][i]<-0.9 && (*crosslinkunbindingtimes_)[1][i]>=0.0)
         unbindingtimes << (*crosslinkunbindingtimes_)[1][i] <<std::endl;
     }
-    fprintf(fp, unbindingtimes.str().c_str());
+    fputs(unbindingtimes.str().c_str(), fp);
     fclose(fp);
   }
   return;
@@ -4411,9 +4411,9 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
         }
       }
     }
-    fprintf(fp, distances.str().c_str());
+    fputs(distances.str().c_str(), fp);
     fclose(fp);
-    fprintf(fp2, linkerpositions.str().c_str());
+    fputs(linkerpositions.str().c_str(), fp2);
     fclose(fp2);
   }
   return;
@@ -4507,7 +4507,7 @@ void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow
       std::stringstream internalforce;
       internalforce << std::scientific << std::setprecision(15) << distance.Norm2()<< "  " << (distance.Norm2()-l0)/l0<<"  "<< fint(0) <<std::endl;
 
-      fprintf(fp, internalforce.str().c_str());
+      fputs(internalforce.str().c_str(), fp);
       fclose(fp);
 
 //      // every 20000 steps (in the 2 vertical filament case only), change the stiffness of the truss
@@ -4563,7 +4563,7 @@ void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector&    
     for(int j=0; j<(int)internalenergy.size(); j++)
       elasticenergy << std::scientific << std::setprecision(15)<< internalenergy[j] <<" ";
     elasticenergy<<std::endl;
-    fprintf(fp, elasticenergy.str().c_str());
+    fputs(elasticenergy.str().c_str(), fp);
     fclose(fp);
   }
   discret_->Comm().Barrier();
@@ -4588,7 +4588,7 @@ void STATMECH::StatMechManager::OutputNodalDisplacements(const Epetra_Vector&   
     // retrieve translational node displacements
     for(int i=0; i<discret_->DofColMap()->NumMyElements(); i=i+6)
         dispnode << discol[i]<<" "<< discol[i+1]<<" "<< discol[i+2]<<std::endl;
-    fprintf(fp, dispnode.str().c_str());
+    fputs(dispnode.str().c_str(), fp);
     fclose(fp);
   }
   return;
@@ -4618,7 +4618,7 @@ void STATMECH::StatMechManager::OutputNodalPositions(const Epetra_Vector&      d
                                                       << colnode->X()[dofnode[1]]+discol[dofnode[1]]<<"\t"
                                                       << colnode->X()[dofnode[1]]+discol[dofnode[2]]<<std::endl;
     }
-    fprintf(fp, posnode.str().c_str());
+    fputs(posnode.str().c_str(), fp);
     fclose(fp);
   }
   return;
@@ -4677,7 +4677,7 @@ void STATMECH::StatMechManager::OutputElementSpatialInternalForces(const std::os
         elementfint << fabsolute <<std::endl;
       }
 
-      fprintf(fp, elementfint.str().c_str());
+      fputs(elementfint.str().c_str(), fp);
       fclose(fp);
     }
     discret_->Comm().Barrier();
@@ -4782,7 +4782,7 @@ void STATMECH::StatMechManager::OutputFreeFilamentLength(const Epetra_Vector&   
         freelength = 0.0;
       }
     }
-    fprintf(fp, freefillength.str().c_str());
+    fputs(freefillength.str().c_str(), fp);
     fclose(fp);
   }
 
@@ -4873,7 +4873,7 @@ void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra
         }
       }
       // write filament information
-      fprintf(fp, filelefint.str().c_str());
+      fputs(filelefint.str().c_str(), fp);
       fclose(fp);
     }
     discret_->Comm().Barrier();
@@ -4886,7 +4886,7 @@ void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra
     {
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "a");
-      fprintf(fp, crosselefint.str().c_str());
+      fputs(crosselefint.str().c_str(), fp);
       fclose(fp);
     }
     discret_->Comm().Barrier();
@@ -4929,7 +4929,7 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
 
       coverage << sum << " "<< std::setprecision(5) <<(double)(sum)/(double)(numbspots_) <<std::endl;
       // print to file and close
-      fprintf(fp, coverage.str().c_str());
+      fputs(coverage.str().c_str(), fp);
       fclose(fp);
     }
   }
@@ -4961,7 +4961,7 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
           break;
       }
       // print to file and close
-      fprintf(fp, coverage.str().c_str());
+      fputs(coverage.str().c_str(), fp);
       fclose(fp);
     }
   }
@@ -5013,7 +5013,7 @@ void STATMECH::StatMechManager::CrosslinkCount(const std::ostringstream& filenam
     for(int i=0; i<13; i++)
       ccount<<"    0";
     ccount<<std::endl;
-    fprintf(fp, ccount.str().c_str());
+    fputs(ccount.str().c_str(), fp);
     fclose(fp);
   }
 
@@ -5207,7 +5207,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
       for(int i=0; i<numbins; i++)
         histogram<<i+1<<"    "<<angles[i]<<"    "<<std::setprecision(12)<<orderparameterinc[i][1]<<"    "<<orderparameterinc[i][0]<<"    "<<orderparameterexc[i][1]<<"    "<<orderparameterexc[i][0]<<std::endl;
       //write content into file and close it
-      fprintf(fp, histogram.str().c_str());
+      fputs(histogram.str().c_str(), fp);
       fclose(fp);
     }
   }
@@ -5399,7 +5399,7 @@ void STATMECH::StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow
       histogram<<i+1<<"    "<<std::setprecision(12)<<fillength[i]<<std::endl;
 
     //write content into file and close it
-    fprintf(fp, histogram.str().c_str());
+    fputs(histogram.str().c_str(), fp);
     fclose(fp);
   }
 }
@@ -5454,7 +5454,7 @@ void STATMECH::StatMechManager::ViscoelasticityOutput(const double&        time,
     //Putting time, displacement, meanforce  in Filestream
     filecontent << "   "<< d << "   " << fglob << "   " << discret_->NumGlobalElements() << std::endl; //changed
     //writing filecontent into output file and closing it
-    fprintf(fp,filecontent.str().c_str());
+    fputs(filecontent.str().c_str(), fp);
     fclose(fp);
   }
 }
@@ -5480,7 +5480,7 @@ void STATMECH::StatMechManager::CreepDisplacementOutput(Epetra_Vector&      disc
     filecontent << dbcnode->Id() <<"\t"<<std::scientific<<std::setprecision(8)<<dbcnode->X()[freedir]<<"\t"<<discol[freedof]<<std::endl;
   }
 
-  fprintf(fp,filecontent.str().c_str());
+  fputs(filecontent.str().c_str(), fp);
   fclose(fp);
 
   return;
@@ -5538,7 +5538,7 @@ void STATMECH::StatMechManager::OutputSlidingMotion(const Epetra_Vector& disrow,
         filecontent<<" "<<(*numbond_)[(*bspotstatus_)[bspotlid1]];
       filecontent<<std::endl;
     }
-    fprintf(fp,filecontent.str().c_str());
+    fputs(filecontent.str().c_str(), fp);
     fclose(fp);
   }
   return;
@@ -5601,7 +5601,7 @@ void STATMECH::StatMechManager::StructureCOGInertiaTensorOutput(const int&      
     }
 
 
-    fprintf(fp,filecontent.str().c_str());
+    fputs(filecontent.str().c_str(), fp);
     fclose(fp);
   }
 }
@@ -5624,7 +5624,7 @@ void STATMECH::StatMechManager::BellsEquationOutput(const Epetra_Vector&      di
       if((*unbindingprobability_)[0][i]>tol) // there are either two non-zero entries or none
         filecontent<<std::scientific<<std::setprecision(6)<<(*unbindingprobability_)[0][i]<<" "<<(*unbindingprobability_)[1][i]<<" "<<(*crosslinkerpositions_)[0][i]<<" "<<(*crosslinkerpositions_)[1][i]<<" "<<(*crosslinkerpositions_)[2][i]<<std::endl;
 
-    fprintf(fp,filecontent.str().c_str());
+    fputs(filecontent.str().c_str(), fp);
     fclose(fp);
   }
 
@@ -5680,7 +5680,7 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
         nodecoords<<i<<"\t"<<std::scientific<<std::setprecision(8)<<coord(0)<<"\t"<<coord(1)<<"\t"<<coord(2)<<std::endl;
       }
     }
-    fprintf(fp, nodecoords.str().c_str());
+    fputs(nodecoords.str().c_str(), fp);
     fclose(fp);
   }
 
@@ -5752,7 +5752,7 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
     discret_->Comm().Barrier();
   }
 
-  fprintf(fp02, linkerforces.str().c_str());
+  fputs(linkerforces.str().c_str(), fp02);
   fclose(fp02);
 
   return;
@@ -5974,7 +5974,7 @@ void STATMECH::StatMechManager::FilamentOrientations(const Epetra_Vector& discol
     }
     if(fileoutput)
     {
-      fprintf(fp, fileleorientation.str().c_str());
+      fputs(fileleorientation.str().c_str(), fp);
       fclose(fp);
     }
   }
