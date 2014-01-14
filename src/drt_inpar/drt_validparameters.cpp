@@ -2942,8 +2942,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("ALLDOFCOUPLED","Yes","all dof (incl. pressure) are coupled",&fdyn);
 
   {
-   Teuchos::Tuple<std::string,16> name;
-   Teuchos::Tuple<int,16> label;
+   Teuchos::Tuple<std::string,17> name;
+   Teuchos::Tuple<int,17> label;
 
    name[ 0] = "no";                             label[ 0] = INPAR::FLUID::no_error_calculation;
    name[ 1] = "beltrami_flow";                  label[ 1] = INPAR::FLUID::beltrami_flow;
@@ -2961,6 +2961,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    name[13] = "kimmoin_instat_stokes";          label[13] = INPAR::FLUID::kimmoin_instat_stokes;
    name[14] = "kimmoin_instat_navier_stokes";   label[14] = INPAR::FLUID::kimmoin_instat_navier_stokes;
    name[15] = "fsi_fluid_pusher";               label[15] = INPAR::FLUID::fsi_fluid_pusher;
+   name[16] = "topopt_channel";                 label[16] = INPAR::FLUID::topoptchannel;
 
    setStringToIntegralParameter<int>("CALCERROR","no",
                                      "Flag to (de)activate error calculations",
@@ -5197,10 +5198,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Initial Field for density = topology optimization's optimization variable",
                                tuple<std::string>(
                                  "zero_field",
-                                 "field_by_function"),
+                                 "field_by_function",
+                                 "poro_channel",
+                                 "poro_channel_with_step"),
                                tuple<int>(
                                    INPAR::TOPOPT::initdensfield_zero_field,
-                                   INPAR::TOPOPT::initdensfield_field_by_function),
+                                   INPAR::TOPOPT::initdensfield_field_by_function,
+                                   INPAR::TOPOPT::initdensfield_poro_channelflow,
+                                   INPAR::TOPOPT::initdensfield_poro_channelstepflow),
                                &topoptoptimizer);
 
   setStringToIntegralParameter<int>("TESTCASE","test_no","test case for optimizer",
@@ -5208,12 +5213,22 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
           "test_no",
           "test_snake_one_constr",
           "test_snake_multiple_constr",
-          "test_workflow_without_fluiddata"),
+          "test_workflow_without_fluiddata",
+          "test_channel",
+          "test_channel_with_step",
+          "test_lin_poro",
+          "test_quad_poro",
+          "test_cubic_poro"),
           tuple<int>(
               INPAR::TOPOPT::optitest_no,
               INPAR::TOPOPT::optitest_snake_one_constr,
               INPAR::TOPOPT::optitest_snake_multiple_constr,
-              INPAR::TOPOPT::optitest_workflow_without_fluiddata),
+              INPAR::TOPOPT::optitest_workflow_without_fluiddata,
+              INPAR::TOPOPT::optitest_channel,
+              INPAR::TOPOPT::optitest_channel_with_step,
+              INPAR::TOPOPT::optitest_lin_poro,
+              INPAR::TOPOPT::optitest_quad_poro,
+              INPAR::TOPOPT::optitest_cub_poro),
               &topoptoptimizer);
 
   IntParameter("INITFUNCNO",-1,"function number for initial density field in topology optimization",&topoptoptimizer);

@@ -227,6 +227,7 @@ namespace INPAR
       no_error_calculation,
       beltrami_flow,
       channel2D,
+      topoptchannel,
       gravitation,
       shear_flow,
       jeffery_hamel_flow,

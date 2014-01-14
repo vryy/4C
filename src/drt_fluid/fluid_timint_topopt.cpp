@@ -121,7 +121,26 @@ void FLD::TimIntTopOpt::SetElementCustomParameter()
 
         eleparams.set("MIN_PORO",mat->poro_bd_down_);
         eleparams.set("MAX_PORO",mat->poro_bd_up_);
-        eleparams.set("SMEAR_FAC",mat->smear_fac_);
+
+        const INPAR::TOPOPT::OptiCase testcase = (INPAR::TOPOPT::OptiCase)(params_->get<int>("opti testcase"));
+        switch (testcase)
+        {
+        case INPAR::TOPOPT::optitest_channel:
+        case INPAR::TOPOPT::optitest_channel_with_step:
+        case INPAR::TOPOPT::optitest_lin_poro:
+        case INPAR::TOPOPT::optitest_quad_poro:
+        case INPAR::TOPOPT::optitest_cub_poro:
+        {
+          eleparams.set("SMEAR_FAC",(double)(-(int)testcase));
+          break;
+        }
+        default:
+        {
+          eleparams.set("SMEAR_FAC",mat->smear_fac_);
+          break;
+        }
+        }
+
         break;
       }
       default:
@@ -137,6 +156,5 @@ void FLD::TimIntTopOpt::SetElementCustomParameter()
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
-
 
 

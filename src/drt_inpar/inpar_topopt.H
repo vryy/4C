@@ -66,7 +66,9 @@ namespace INPAR
     enum InitialDensityField
     {
       initdensfield_zero_field,
-      initdensfield_field_by_function
+      initdensfield_field_by_function,
+      initdensfield_poro_channelflow,
+      initdensfield_poro_channelstepflow
     };
 
     /// type of initial fluid field
@@ -96,7 +98,12 @@ namespace INPAR
       optitest_no,
       optitest_snake_one_constr,
       optitest_snake_multiple_constr,
-      optitest_workflow_without_fluiddata
+      optitest_workflow_without_fluiddata,
+      optitest_channel,
+      optitest_channel_with_step,
+      optitest_lin_poro,
+      optitest_quad_poro,
+      optitest_cub_poro
     };
   }
 }

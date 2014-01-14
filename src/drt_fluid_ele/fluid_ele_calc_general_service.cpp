@@ -830,6 +830,24 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
         dserror("3D analytical solution is not implemented yet");
     }
     break;
+    case INPAR::FLUID::topoptchannel:
+     {
+      // Y=xyzint(1); y=0 is located in the middle of the channel
+
+      if (xyzint(1)>-0.1-1.0e-014 && xyzint(1)<0.1+1.0e-014){
+        u(0) = 1-100*xyzint(1)*xyzint(1);
+        u(1) = 0.0;
+        p = -200*xyzint(0)+100;
+        }
+      else{
+        u(0) = 0.0;
+        u(1) = 0.0;
+        //p = preint; //pressure error outside of channel not factored in
+        p=0.0;
+        preint=0.0;
+        }
+      }
+    break;
     case INPAR::FLUID::jeffery_hamel_flow:
     {
       //LINALG::Matrix<3,1> physpos(true);

@@ -71,6 +71,12 @@ gradienttype_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::GradientType>(params_,"GR
     num_constr_ = 5;
     break;
   }
+  case INPAR::TOPOPT::optitest_channel:
+  case INPAR::TOPOPT::optitest_channel_with_step:
+  case INPAR::TOPOPT::optitest_lin_poro:
+  case INPAR::TOPOPT::optitest_quad_poro:
+  case INPAR::TOPOPT::optitest_cub_poro:
+    break;
   default:
   {
     dserror("unknown optimization case");
@@ -308,6 +314,9 @@ void TOPOPT::Optimizer::SetInitialDensityField(
     }
     break;
   }
+  case INPAR::TOPOPT::initdensfield_poro_channelflow:
+  case INPAR::TOPOPT::initdensfield_poro_channelstepflow:
+    break;
   default:
   {
     dserror("unknown initial field");

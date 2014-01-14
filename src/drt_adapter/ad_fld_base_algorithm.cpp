@@ -28,6 +28,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_poroelast.H"
+#include "../drt_inpar/inpar_topopt.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_timint_loma_genalpha.H"
@@ -452,6 +453,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const Teuchos::ParameterList& xfdyn     = DRT::Problem::Instance()->XFluidDynamicParams();
     fluidtimeparams->sublist("XFEM").set<bool>("DLM_condensation", DRT::INPUT::IntegralValue<int>(xfdyn.sublist("STABILIZATION"),"DLM_CONDENSATION")==1 );
   }
+
+  if (probtype == prb_fluid_topopt)
+    fluidtimeparams->set<int>("opti testcase",DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(prbdyn.sublist("TOPOLOGY OPTIMIZER"),"TESTCASE"));
 
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective

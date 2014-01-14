@@ -151,6 +151,7 @@ namespace TOPOPT
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
     Teuchos::RCP<const DRT::Discretization> OptiDis(){return optidis_;}
+    const Teuchos::ParameterList& OptiParams(){return params_;}
     Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportFluidData() const {return fluidvel_;} /// fluid velocity
     Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportAdjointData() const {return adjointvel_;} /// fluid velocity
     Teuchos::RCP<Epetra_Vector> Density() const {return dens_;}
@@ -210,7 +211,7 @@ namespace TOPOPT
     //@}
 
     //! @name fields for optimization
-    Teuchos::RCP<Epetra_Vector> dens_; /// new density in row map
+    Teuchos::RCP<Epetra_Vector> dens_; /// new density in col map
 
     double obj_; /// value of the objective (adjoint solution not required)
     Teuchos::RCP<Epetra_Vector> obj_der_; /// gradient of the objective (with help of the adjoint solution)
