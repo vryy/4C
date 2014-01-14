@@ -651,12 +651,11 @@ DRT::ELEMENTS::TransportBoundary::TransportBoundary(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Transport* parent,
                               const int lbeleid) :
-DRT::Element(id,owner),
-parent_(parent),
-lbeleid_(lbeleid)
+DRT::Element(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
+  SetParentMasterElement(parent,lbeleid);
   return;
 }
 
@@ -664,9 +663,7 @@ lbeleid_(lbeleid)
  |  copy-ctor (public)                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TransportBoundary::TransportBoundary(const DRT::ELEMENTS::TransportBoundary& old) :
-DRT::Element(old),
-parent_(old.parent_),
-lbeleid_(old.lbeleid_)
+DRT::Element(old)
 {
   return;
 }
@@ -685,7 +682,7 @@ DRT::Element* DRT::ELEMENTS::TransportBoundary::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::TransportBoundary::Shape() const
 {
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), parent_->Shape());
+  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*

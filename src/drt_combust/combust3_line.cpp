@@ -28,13 +28,12 @@ DRT::ELEMENTS::Combust3Line::Combust3Line(
     DRT::Node** nodes,
     DRT::Element* parent,
     const int lline) :
-DRT::Element(id,owner),
-parent_(parent),
-lline_(lline)
+DRT::Element(id,owner)
 {
-    SetNodeIds(nnode,nodeids);
-    BuildNodalPointers(nodes);
-    return;
+  SetNodeIds(nnode,nodeids);
+  BuildNodalPointers(nodes);
+  SetParentMasterElement(parent,lline);
+  return;
 }
 
 
@@ -42,9 +41,7 @@ lline_(lline)
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3Line::Combust3Line(const DRT::ELEMENTS::Combust3Line& old) :
-DRT::Element(old),
-parent_(old.parent_),
-lline_(old.lline_)
+DRT::Element(old)
 {
   return;
 }

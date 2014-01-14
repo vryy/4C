@@ -483,7 +483,7 @@ namespace ELEMENTS
     virtual int NumLine() const
     {
       // get spatial dimension of boundary
-      const int nsd = DRT::UTILS::getDimension(parent_->Shape()) - 1;
+      const int nsd = DRT::UTILS::getDimension(ParentElement()->Shape()) - 1;
 
       if ( (NumNode() == 4) or (NumNode() == 8) or (NumNode() == 9) )
         return 4;
@@ -506,7 +506,7 @@ namespace ELEMENTS
     virtual int NumSurface() const
     {
       // get spatial dimension of parent element
-      const int nsd = DRT::UTILS::getDimension(parent_->Shape());
+      const int nsd = DRT::UTILS::getDimension(ParentElement()->Shape());
 
       if (nsd == 3)
         return 1;
@@ -552,7 +552,7 @@ namespace ELEMENTS
     //! separately.
     virtual int NumDofPerNode(const DRT::Node& node) const
     {
-      return parent_->NumDofPerNode(node);
+      return ParentElement()->NumDofPerNode(node);
     }
 
     //! \brief Get number of degrees of freedom of a certain node
@@ -565,14 +565,16 @@ namespace ELEMENTS
     //! extendes method for volume coupling (here: TSI)
     virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
     {
-      return parent_->NumDofPerNode(nds,node,disname);
+      return ParentElement()->NumDofPerNode(nds,node,disname);
     }
 
+    /*
     //! Return a pointer to the parent element of this boundary element
     virtual DRT::ELEMENTS::Thermo* ParentElement()
     {
       return parent_;
     }
+    */
 
     //! \brief Get number of degrees of freedom per element
     //!       (implements pure virtual DRT::Element)
@@ -662,11 +664,6 @@ namespace ELEMENTS
 
     // don't want = operator
     ThermoBoundary& operator = (const ThermoBoundary& old);
-
-    //! The parent element of this boundary element
-    DRT::ELEMENTS::Thermo* parent_;
-    //! The local boundary element number of this surface w.r.t. to the parent_ element
-    int lbeleid_;
 
   }; // class ThermoBoundary
 

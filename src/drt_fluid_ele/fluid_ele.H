@@ -680,7 +680,7 @@ public:
 
   DRT::ELEMENTS::Fluid* ParentElement() const
   {
-    DRT::Element* parent = this->DRT::Element::ParentMasterElement();
+    DRT::Element* parent = this->DRT::Element::ParentElement();
     // make sure the static cast below is really valid
     dsassert(dynamic_cast<DRT::ELEMENTS::Fluid*>(parent) != NULL, "Master element is no fluid element");
     return static_cast<DRT::ELEMENTS::Fluid*>(parent);

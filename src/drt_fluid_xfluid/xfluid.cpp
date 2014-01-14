@@ -3663,7 +3663,7 @@ void FLD::XFluid::Solve()
 
      solver_->Solve(state_->sysmat_->EpetraOperator(),state_->incvel_,state_->residual_,true,itnum==1, projector_);
 
-      if(gmsh_debug_out_)
+     if(gmsh_debug_out_)
       {
         const Epetra_Map* colmap = discret_->DofColMap();
         Teuchos::RCP<Epetra_Vector> output_col_incvel = LINALG::CreateVector(*colmap,false);
@@ -3687,6 +3687,9 @@ void FLD::XFluid::Solve()
     // update velocity and pressure values by increments
     // -------------------------------------------------------------------
     state_->velnp_->Update(1.0,*state_->incvel_,1.0);
+    double f_norm = 0;
+    state_->velnp_->Norm2(&f_norm);
+    std::cout << std::setprecision(14) << f_norm << std::endl;
 
 
     // -------------------------------------------------------------------

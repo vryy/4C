@@ -139,7 +139,7 @@ public:
       return NumDofPerNode(node);
     else
     //ask the parent element for the number of dofs of the other dofset
-      return parent_->NumDofPerNode(nds,node,disname);
+      return ParentElement()->NumDofPerNode(nds,node,disname);
   };
 
   /*!
@@ -210,10 +210,10 @@ public:
 
   //! Return a pointer to the parent element of this boundary element
   virtual DRT::Element* ParentElement() const
-  {return parent_;}
+  {return ParentMasterElement();}
 
   //! Return local surface number
-  const int LSurfNumber() const {return lsurface_;}
+  const int LSurfNumber() const {return FaceMasterNumber();}
 
 protected:
 
@@ -248,10 +248,6 @@ protected:
 
   // variables
 
-  //! The parent element of this surface
-  DRT::Element*               parent_;
-  //! The local surface number of this surface w.r.t to the parent_ element
-  int                         lsurface_;
   //! gaussian integration to be used
   DRT::UTILS::GaussRule2D     gaussrule_;
 

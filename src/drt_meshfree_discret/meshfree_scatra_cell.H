@@ -669,7 +669,7 @@ public:
   /*------------------------------------------------------------------------*/
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
-    return parent_->NumDofPerNode(node);
+    return ParentElement()->NumDofPerNode(node);
   }
 
   /*------------------------------------------------------------------------*/
@@ -677,20 +677,24 @@ public:
    * \brief Return a pointer to the parent cell of this boundary cell
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
+  /*
   virtual DRT::ELEMENTS::MeshfreeTransport* ParentElement()
   {
     return parent_;
   }
+  */
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Return a boundary element id of this boundary cell
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
+  /*
   virtual int BeleNumber()
   {
     return lbeleid_;
   }
+  */
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -791,16 +795,6 @@ private:
   // don't want = operator
   /*------------------------------------------------------------------------*/
   MeshfreeTransportBoundary& operator = (const MeshfreeTransportBoundary& old);
-
-  /*------------------------------------------------------------------------*/
-  //! The parent element of this boundary element
-  /*------------------------------------------------------------------------*/
-  MeshfreeTransport* parent_;
-
-  /*------------------------------------------------------------------------*/
-  //! The local boundary element number of this surface w.r.t. the parent_ element
-  /*------------------------------------------------------------------------*/
-  int lbeleid_;
 
 }; // class MeshfreeTransportBoundary
 

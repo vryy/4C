@@ -482,12 +482,11 @@ DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(
   DRT::ELEMENTS::Thermo* parent,
   const int lbeleid
   )
-: DRT::Element(id,owner),
-  parent_(parent),
-  lbeleid_(lbeleid)
+: DRT::Element(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
+  SetParentMasterElement(parent,lbeleid);
   return;
 }  // ctor
 
@@ -498,9 +497,7 @@ DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(
 DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(
   const DRT::ELEMENTS::ThermoBoundary& old
   )
-: DRT::Element(old),
-  parent_(old.parent_),
-  lbeleid_(old.lbeleid_)
+: DRT::Element(old)
 {
   return;
 }  // copy-ctor
@@ -525,7 +522,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::ThermoBoundary::Shape() const
   {
   case 2: return line2;
   case 3:
-    if ( (parent_->Shape() == quad8) or (parent_->Shape() == quad9) )
+    if ( (ParentElement()->Shape() == quad8) or (ParentElement()->Shape() == quad9) )
       return line3;
     else
       return tri3;

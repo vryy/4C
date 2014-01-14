@@ -261,7 +261,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     // for isogeometric elements --- get knotvectors for parent
     // element and boundary element, get weights
     bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
-        ele, ele->BeleNumber(), ele->ParentElement()->Id(), discretization, mypknots_, myknots_, weights_, normalfac_);
+        ele, ele->FaceParentNumber(), ele->ParentElement()->Id(), discretization, mypknots_, myknots_, weights_, normalfac_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if(zero_size) return(0);
@@ -1108,7 +1108,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
     // for isogeometric elements --- get knotvectors for parent
     // element and boundary element, get weights
     bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
-        ele, ele->BeleNumber(), ele->ParentElement()->Id(), discretization, mypknots_, myknots_, weights_, normalfac_);
+        ele, ele->FaceParentNumber(), ele->ParentElement()->Id(), discretization, mypknots_, myknots_, weights_, normalfac_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if(zero_size) return(0);
@@ -3593,11 +3593,11 @@ template <DRT::Element::DiscretizationType bdistype,
     }
     if(pnsd==2)
     {
-      DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+      DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,ele->FaceParentNumber());
     }
     else if (pnsd==3)
     {
-      DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+      DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,ele->FaceParentNumber());
     }
 
   }
@@ -4667,11 +4667,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBou
     }
     if(pnsd==2)
     {
-      DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+      DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,ele->FaceParentNumber());
     }
     else if (pnsd==3)
     {
-      DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+      DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,ele->FaceParentNumber());
     }
   }
 

@@ -491,17 +491,18 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return parent_->NumDofPerNode(node);}
-
+  {return ParentElement()->NumDofPerNode(node);}
+/*
   //! Return a pointer to the parent element of this boundary element
   virtual DRT::ELEMENTS::TopOpt* ParentElement()
-  {return parent_;}
+  {return ParentElement();}
 
   //! Return a boundary element id of this boundary element
   virtual int BeleNumber()
   {
     return lbeleid_;
   }
+  */
 
 
   /*!
@@ -607,12 +608,6 @@ private:
 
   // don't want = operator
   TopOptBoundary& operator = (const TopOptBoundary& old);
-
-  //! The parent element of this boundary element
-  DRT::ELEMENTS::TopOpt* parent_;
-
-  //! The local boundary element number of this surface w.r.t to the parent_ element
-  int                       lbeleid_;
 
   /*!
    * \brief convert std::string to action type

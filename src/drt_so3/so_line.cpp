@@ -34,12 +34,11 @@ DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner,
                                               DRT::Node** nodes,
                                               DRT::Element* parent,
                                               const int lline) :
-DRT::Element(id,owner),
-parent_(parent),
-lline_(lline)
+DRT::Element(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
+  SetParentMasterElement(parent,lline);
   // type of gaussian integration
   switch(Shape())
   {
@@ -60,8 +59,6 @@ lline_(lline)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::StructuralLine::StructuralLine(const DRT::ELEMENTS::StructuralLine& old) :
 DRT::Element(old),
-parent_(old.parent_),
-lline_(old.lline_),
 gaussrule_(old.gaussrule_)
 {
   return;

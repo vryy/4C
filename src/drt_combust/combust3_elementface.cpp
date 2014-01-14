@@ -44,10 +44,10 @@ DRT::ELEMENTS::Combust3IntFace::Combust3IntFace(int id,                         
 DRT::Element(id,owner),
 localtrafomap_(localtrafomap)
 {
-  SetParentMasterElement(parent_master,lsurface_master);
-  SetParentSlaveElement(parent_slave,lsurface_slave);
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
+  SetParentMasterElement(parent_master,lsurface_master);
+  SetParentSlaveElement(parent_slave,lsurface_slave);
   return;
 }
 

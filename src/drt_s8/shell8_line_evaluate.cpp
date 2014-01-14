@@ -56,18 +56,18 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
 
   // init gaussian points of parent element
   S8_DATA s8data;
-  parent_->s8_integration_points(s8data);
+  ParentElement()->s8_integration_points(s8data);
 
   // number of parent element nodes
-  const int iel = parent_->NumNode();
+  const int iel = ParentElement()->NumNode();
 
-  const int nir = parent_->ngp_[0];
-  const int nis = parent_->ngp_[1];
+  const int nir = ParentElement()->ngp_[0];
+  const int nis = ParentElement()->ngp_[1];
   const int numdf = 6;
-  const std::vector<double>* thick = parent_->data_.Get<std::vector<double> >("thick");
+  const std::vector<double>* thick = ParentElement()->data_.Get<std::vector<double> >("thick");
   if (!thick) dserror("Cannot find vector of nodal thicknesses");
 
-  const Epetra_SerialDenseMatrix* a3ref = parent_->data_.Get<Epetra_SerialDenseMatrix>("a3ref");
+  const Epetra_SerialDenseMatrix* a3ref = ParentElement()->data_.Get<Epetra_SerialDenseMatrix>("a3ref");
   if (!a3ref) dserror("Cannot find array of directors");
 
   std::vector<double> funct(iel);
@@ -79,13 +79,13 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
   // get geometry
   for (int k=0; k<iel; ++k)
   {
-    xrefe[0][k] = parent_->Nodes()[k]->X()[0];
-    xrefe[1][k] = parent_->Nodes()[k]->X()[1];
-    xrefe[2][k] = parent_->Nodes()[k]->X()[2];
+    xrefe[0][k] = ParentElement()->Nodes()[k]->X()[0];
+    xrefe[1][k] = ParentElement()->Nodes()[k]->X()[1];
+    xrefe[2][k] = ParentElement()->Nodes()[k]->X()[2];
   }
 
   // check which line this is to the parent and get no. of gaussian points
-  const int line = lline_;
+  const int line = FaceParentNumber();
   int ngp = 0;
   if (line==0 || line==2) ngp = nir;
   else                    ngp = nis;
@@ -166,9 +166,9 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
 
     // shape function and derivatives at this point
     if (dir==0) // integration in r
-      parent_->s8_shapefunctions(funct,deriv,e1,e2,parent_->NumNode(),1);
+      ParentElement()->s8_shapefunctions(funct,deriv,e1,e2,ParentElement()->NumNode(),1);
     else
-      parent_->s8_shapefunctions(funct,deriv,e2,e1,parent_->NumNode(),1);
+      ParentElement()->s8_shapefunctions(funct,deriv,e2,e1,ParentElement()->NumNode(),1);
     // covariant metrics
     // g1,g2,g3 stored in xjm
     // Jacobian matrix J = (g1,g2,g3)

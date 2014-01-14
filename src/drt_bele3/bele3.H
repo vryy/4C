@@ -331,12 +331,6 @@ private:
   //! don't want = operator
   Bele3Line& operator = (const Bele3Line& old);
 
-  //! The parent element of this line
-  DRT::ELEMENTS::Bele3* parent_;
-  //! The local line number of this line w.r.t to the parent_ element
-  int                    lline_;
-
-
 
   //! compute infintesimal line element dr for integration along the line
   double  f2_substitution(

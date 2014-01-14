@@ -907,7 +907,7 @@ public:
       return NumDofPerNode(node);
     else
     //ask the parent element for the number of dofs of the other dofset
-      return parent_->NumDofPerNode(nds,node,disname);
+      return ParentElement()->NumDofPerNode(nds,node,disname);
   };
 
   /// Get number of degrees of freedom per element
@@ -976,13 +976,6 @@ public:
 
   //@}
 
-  //! Return a pointer to the parent element of this boundary element
-  virtual const DRT::Element* ParentElement() const
-  {return parent_;}
-
-  //! Return local surface number
-  const int LLineNumber() const {return lline_;}
-
 private:
 
   /// digestible actions
@@ -998,11 +991,6 @@ private:
 
   /// don't want = operator
   Wall1Line& operator = (const Wall1Line& old);
-
-  /// The parent element of this line
-  DRT::Element* parent_;
-  /// The local line number of this line w.r.t to the parent_ element
-  int lline_;
 
   /// Submethod to compute necessary change to stiffness matrix due to the constraint
   void ComputeAreaConstrStiff(

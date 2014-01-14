@@ -680,11 +680,6 @@ private:
   // don't want = operator
   Ale3Surface& operator = (const Ale3Surface& old);
 
-  //! The parent element of this surface
-  DRT::ELEMENTS::Ale3* parent_;
-  //! The local surface number of this surface w.r.t to the parent_ element
-  int                    lsurface_;
-
   //  compute kovariant metric tensor G for ale surface element
   //                                                  gammi 04/07
   void  f3_metric_tensor_for_surface(

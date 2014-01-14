@@ -35,12 +35,11 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner,
                                                     DRT::Element* parent,
                                                     const int lsurface) :
 DRT::Element(id,owner),
-parent_(parent),
-lsurface_(lsurface),
 gaussrule_(DRT::UTILS::intrule2D_undefined)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
+  SetParentMasterElement(parent, lsurface);
   // type of gaussian integration
   switch(Shape())
   {
@@ -74,8 +73,6 @@ gaussrule_(DRT::UTILS::intrule2D_undefined)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::StructuralSurface::StructuralSurface(const DRT::ELEMENTS::StructuralSurface& old) :
 DRT::Element(old),
-parent_(old.parent_),
-lsurface_(old.lsurface_),
 gaussrule_(old.gaussrule_)
 {
   return;

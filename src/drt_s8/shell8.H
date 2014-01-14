@@ -764,6 +764,17 @@ public:
   virtual int NumDofPerElement() const { return 0; }
 
   /*!
+   * \brief Return pointer to the parent element
+  */
+  virtual DRT::ELEMENTS::Shell8* ParentElement() const
+  {
+    DRT::Element* parent = this->DRT::Element::ParentElement();
+    // make sure the static cast below is really valid
+    dsassert(dynamic_cast<DRT::ELEMENTS::Shell8*>(parent) != NULL, "Parent element is no shell element");
+    return static_cast<DRT::ELEMENTS::Shell8*>(parent);
+  }
+
+  /*!
   \brief Print this element
   */
   void Print(std::ostream& os) const;
@@ -802,11 +813,6 @@ private:
 
   // don't want = operator
   Shell8Line& operator = (const Shell8Line& old);
-
-  //! The parent element of this line
-  DRT::ELEMENTS::Shell8* parent_;
-  //! The local line number of this line w.r.t to the parent_ element
-  int                    lline_;
 
 }; // class Shell8Line
 

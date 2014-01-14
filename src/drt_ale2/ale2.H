@@ -504,11 +504,6 @@ private:
   // don't want = operator
   Ale2Line& operator = (const Ale2Line& old);
 
-  //! The parent element of this line
-  DRT::ELEMENTS::Ale2* parent_;
-  //! The local line number of this line w.r.t to the parent_ element
-  int                    lline_;
-
 }; // class Ale2Line
 
 

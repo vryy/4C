@@ -439,12 +439,6 @@ private:
   //! set number of gauss points to element shape default
   DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype) const;
 
-      //! The parent element of this line
-  DRT::ELEMENTS::Vele3*         parent_;
-
-  //! The local line number of this line w.r.t to the parent_ element
-  int                           lsurface_;
-
 }; // class Vele3Surface
 
 
@@ -573,12 +567,6 @@ private:
 
   //! don't want = operator
   Vele3Line& operator = (const Vele3Line& old);
-
-    //! The parent element of this line
-  DRT::Element*                 parent_;
-
-  //! The local line number of this line w.r.t to the parent_ element
-  int                           lline_;
 
   //! Get Rule for Gaussintegration according to DRT::UTIL
   DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);

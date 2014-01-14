@@ -28,12 +28,11 @@ DRT::ELEMENTS::Wall1Line::Wall1Line(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Wall1* parent,
                               const int lline) :
-DRT::Element(id,owner),
-parent_(parent),
-lline_(lline)
+DRT::Element(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
+  SetParentMasterElement(parent,lline);
   return;
 }
 
@@ -41,9 +40,7 @@ lline_(lline)
  |  copy-ctor (public)                                       mgit 03/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1Line::Wall1Line(const DRT::ELEMENTS::Wall1Line& old) :
-DRT::Element(old),
-parent_(old.parent_),
-lline_(old.lline_)
+DRT::Element(old)
 {
   return;
 }

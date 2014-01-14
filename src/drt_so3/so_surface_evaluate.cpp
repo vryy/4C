@@ -216,7 +216,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
   double normalfac=1.0;
 
   // local surface id
-  const int surfaceid =lsurface_;
+  const int surfaceid = LSurfNumber();
 
   // knot vectors for parent volume and this surface
   std::vector<Epetra_SerialDenseVector> mypknots(3);
@@ -233,7 +233,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
     bool zero_size=knots->GetBoundaryEleAndParentKnots(mypknots     ,
                                                        myknots      ,
                                                        normalfac    ,
-                                                       parent_->Id(),
+                                                       ParentElement()->Id(),
                                                        surfaceid    );
     // elements that have zero size in knotspan are skipped
     // (only required to enforce interpolation at certain points

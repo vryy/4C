@@ -24,19 +24,16 @@ DRT::ELEMENTS::Ale3Surface::Ale3Surface(int id,
                                         DRT::Node** nodes,
                                         DRT::ELEMENTS::Ale3* parent,
                                         const int lsurface)
-  : DRT::Element(id,owner),
-    parent_(parent),
-    lsurface_(lsurface)
+  : DRT::Element(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
+  SetParentMasterElement(parent,lsurface);
 }
 
 
 DRT::ELEMENTS::Ale3Surface::Ale3Surface(const DRT::ELEMENTS::Ale3Surface& old)
-  : DRT::Element(old),
-    parent_(old.parent_),
-    lsurface_(old.lsurface_)
+  : DRT::Element(old)
 {
 }
 

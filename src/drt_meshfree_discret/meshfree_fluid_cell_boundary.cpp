@@ -56,12 +56,11 @@ DRT::ELEMENTS::MeshfreeFluidBoundary::MeshfreeFluidBoundary(
                                     DRT::MESHFREE::MeshfreeNode** knots,
                                     DRT::ELEMENTS::MeshfreeFluid* parent,
                                     const int lsurface) :
-  DRT::MESHFREE::Cell(id,owner),
-  parent_(parent),
-  lsurface_(lsurface)
+  DRT::MESHFREE::Cell(id,owner)
 {
   SetKnotIds(nknot,knotids);
   BuildKnotPointers(knots);
+  SetParentMasterElement(parent,lsurface);
 
   // temporary assignement of nodes for call in DRT::Discretization::BuildLinesinCondition)
   // must and will be redefined in AssignNodesToKnotsAndCells
@@ -76,9 +75,7 @@ DRT::ELEMENTS::MeshfreeFluidBoundary::MeshfreeFluidBoundary(
  |  copy-ctor                                            (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeFluidBoundary::MeshfreeFluidBoundary(const DRT::ELEMENTS::MeshfreeFluidBoundary& old) :
-  DRT::MESHFREE::Cell(old),
-  parent_(old.parent_),
-  lsurface_(old.lsurface_)
+  DRT::MESHFREE::Cell(old)
 {
   return;
 }
@@ -105,7 +102,7 @@ DRT::ELEMENTS::MeshfreeFluidBoundary::~MeshfreeFluidBoundary()
  *--------------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::MeshfreeFluidBoundary::Shape() const
 {
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), parent_->Shape());
+  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
 }
 
 /*---------------------------------------------------------------------------*

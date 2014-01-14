@@ -534,12 +534,11 @@ DRT::ELEMENTS::MeshfreeTransportBoundary::MeshfreeTransportBoundary(
                                     DRT::MESHFREE::MeshfreeNode** knots,
                                     DRT::ELEMENTS::MeshfreeTransport* parent,
                                     const int lbeleid) :
-  DRT::MESHFREE::Cell(id,owner),
-  parent_(parent),
-  lbeleid_(lbeleid)
+  DRT::MESHFREE::Cell(id,owner)
 {
   SetKnotIds(nknot,knotids);
   BuildKnotPointers(knots);
+  SetParentMasterElement(parent,lbeleid);
   return;
 }
 
@@ -547,9 +546,7 @@ DRT::ELEMENTS::MeshfreeTransportBoundary::MeshfreeTransportBoundary(
  |  copy-ctor                                             (public) nis Jan12 |
  *---------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeTransportBoundary::MeshfreeTransportBoundary(const DRT::ELEMENTS::MeshfreeTransportBoundary& old) :
-DRT::MESHFREE::Cell(old),
-parent_(old.parent_),
-lbeleid_(old.lbeleid_)
+DRT::MESHFREE::Cell(old)
 {
   return;
 }
@@ -576,7 +573,7 @@ DRT::ELEMENTS::MeshfreeTransportBoundary::~MeshfreeTransportBoundary()
  *---------------------------------------------------------------------------*/
 inline DRT::Element::DiscretizationType DRT::ELEMENTS::MeshfreeTransportBoundary::Shape() const
 {
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), parent_->Shape());
+  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
 }
 
 /*---------------------------------------------------------------------------*

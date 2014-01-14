@@ -374,7 +374,7 @@ int DRT::ELEMENTS::MeshfreeFluid::NumDofPerNode(const DRT::Node& node) const
 /*--------------------------------------------------------------------------*
  |  Returns number of degrees of freedom at node         (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
-int DRT::ELEMENTS::MeshfreeFluid::NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+int DRT::ELEMENTS::MeshfreeFluid::NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string) const
 {
   if (nds==1)
   {

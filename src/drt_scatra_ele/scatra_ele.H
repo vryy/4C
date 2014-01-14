@@ -600,19 +600,18 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return parent_->NumDofPerNode(node);}
+  {return ParentElement()->NumDofPerNode(node);}
 
   virtual int NumDofPerNode(const unsigned nds,const DRT::Node& node,  const std::string disname) const
-  {return parent_->NumDofPerNode(nds,node,disname);}
+  {return ParentElement()->NumDofPerNode(nds,node,disname);}
 
   //! Return a pointer to the parent element of this boundary element
   virtual DRT::ELEMENTS::Transport* ParentElement() const
-  {return parent_;}
-
-  //! Return a boundary element id of this boundary element
-  virtual int BeleNumber()
   {
-    return lbeleid_;
+    DRT::Element* parent = this->DRT::Element::ParentElement();
+    // make sure the static cast below is really valid
+    dsassert(dynamic_cast<DRT::ELEMENTS::Transport*>(parent) != NULL, "Master element is no fluid element");
+    return static_cast<DRT::ELEMENTS::Transport*>(parent);
   }
 
 
@@ -747,12 +746,6 @@ private:
 
   // don't want = operator
   TransportBoundary& operator = (const TransportBoundary& old);
-
-  //! The parent element of this boundary element
-  DRT::ELEMENTS::Transport* parent_;
-
-  //! The local boundary element number of this surface w.r.t to the parent_ element
-  int                       lbeleid_;
 
 }; // class TransportBoundary
 

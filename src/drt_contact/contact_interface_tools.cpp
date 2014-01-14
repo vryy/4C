@@ -627,9 +627,9 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
       }
 
       // move everything to gmsh post-processing files and close them
-      fprintf(fp,gmshfilecontent.str().c_str());
-      fprintf(fps,gmshfilecontentslave.str().c_str());
-      fprintf(fpm,gmshfilecontentmaster.str().c_str());
+      fputs(gmshfilecontent.str().c_str(),fp);
+      fputs(gmshfilecontentslave.str().c_str(),fps);
+      fputs(gmshfilecontentmaster.str().c_str(),fpm);
       fclose(fp);
       fclose(fps);
       fclose(fpm);

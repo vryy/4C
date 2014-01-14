@@ -820,7 +820,7 @@ public:
            the DRT::Discretization the element is stored in.
 
   */
-  void SetOwner(const int owner) { owner_ = owner; return; }
+  void SetOwner(const int owner) { owner_ = owner; }
 
   /*!
   \brief Set a list of node ids this element is connected to

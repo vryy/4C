@@ -657,7 +657,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
                                         intpoints,
                                         parentele->Shape() ,
                                         distype  ,
-                                        LLineNumber());
+                                        FaceParentNumber());
 
     for (int gp=0; gp<ngp; ++gp)
     {
@@ -700,7 +700,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       structmat->ComputeSurfPorosity( params,
                                       press,
                                       J,
-                                      LLineNumber(),
+                                      FaceParentNumber(),
                                       gp,
                                       porosity);
     }

@@ -145,7 +145,10 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
 
   // First, do the things that are needed for all actions:
   // get the material (of the parent element)
-  DRT::ELEMENTS::Thermo* parentele = ele->ParentElement();
+  DRT::Element* genericparent = ele->ParentElement();
+  // make sure the static cast below is really valid
+  dsassert(dynamic_cast<DRT::ELEMENTS::Thermo*>(genericparent) != NULL, "Parent element is no fluid element");
+  DRT::ELEMENTS::Thermo* parentele = static_cast<DRT::ELEMENTS::Thermo*>(genericparent);
   Teuchos::RCP<MAT::Material> mat = parentele->Material();
 
   // Now, check for the action parameter
@@ -294,7 +297,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
 #endif // THRASOUTPUT
 
     // get kinematic type from parent element
-    int kintype = ele->ParentElement()->kintype_;
+    int kintype = parentele->kintype_;
 
     // ------------------------------------------------------ default
     // ------------ purely thermal / geometrically linear TSI problem
@@ -399,7 +402,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     // -------------------------- geometrically nonlinear TSI problem
 
     // get kinematic type from parent element
-    int kintype = ele->ParentElement()->kintype_;
+    int kintype = parentele->kintype_;
 
     // initialise the vectors
     // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage

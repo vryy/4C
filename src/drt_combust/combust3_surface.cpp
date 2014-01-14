@@ -30,12 +30,11 @@ DRT::ELEMENTS::Combust3Surface::Combust3Surface(
     DRT::Node** nodes,
     DRT::ELEMENTS::Combust3* parent,
     const int lsurface) :
-DRT::Element(id,owner),
-parent_(parent),
-lsurface_(lsurface)
+DRT::Element(id,owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
+  SetParentMasterElement(parent,lsurface);
   return;
 }
 
@@ -43,9 +42,7 @@ lsurface_(lsurface)
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3Surface::Combust3Surface(const DRT::ELEMENTS::Combust3Surface& old) :
-DRT::Element(old),
-parent_(old.parent_),
-lsurface_(old.lsurface_)
+DRT::Element(old)
 {
   return;
 }

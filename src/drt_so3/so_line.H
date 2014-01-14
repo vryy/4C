@@ -193,10 +193,6 @@ private:
   // don't want = operator
   StructuralLine& operator = (const StructuralLine& old);
 
-  //! The parent element of this line
-  DRT::Element* parent_;
-  //! The local line number of this line w.r.t to the parent_ element
-  int           lline_;
   //! gaussian integration to be used
   DRT::UTILS::GaussRule1D gaussrule_;
 

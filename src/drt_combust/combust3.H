@@ -601,9 +601,22 @@ private:
         //! @name Access methods
 
         virtual int NumDofPerNode(const DRT::Node& node) const
-        {return parent_->NumDofPerNode(node);}
+        {return ParentElement()->NumDofPerNode(node);}
 
         virtual int NumDofPerElement() const { return 0; }
+
+
+        /*!
+         * \brief Return pointer to the parent element
+         */
+        virtual DRT::ELEMENTS::Combust3* ParentElement() const
+        {
+          DRT::Element* parent = this->DRT::Element::ParentElement();
+          // make sure the static cast below is really valid
+          dsassert(dynamic_cast<DRT::ELEMENTS::Combust3*>(parent) != NULL, "Parent element is no combust element");
+          return static_cast<DRT::ELEMENTS::Combust3*>(parent);
+        }
+
 
         void Print(std::ostream& os) const;
 
@@ -682,11 +695,6 @@ private:
 
         //! don't want = operator
         Combust3Surface& operator = (const Combust3Surface& old);
-
-        //! The parent element of this surface
-        DRT::ELEMENTS::Combust3* parent_;
-        //! The local surface number of this surface w.r.t to the parent_ element
-        const int                    lsurface_;
 
         //!  compute kovariant metric tensor G for fluid surface element
         void ComputeMetricTensorForSurface(
@@ -793,7 +801,7 @@ private:
         virtual DiscretizationType Shape() const;
 
         virtual int NumDofPerNode(const DRT::Node& node) const
-        {return parent_->NumDofPerNode(node);}
+        {return ParentElement()->NumDofPerNode(node);}
 
         virtual int NumDofPerElement() const { return 0; }
 
@@ -872,12 +880,6 @@ private:
 
         // don't want = operator
         Combust3Line& operator = (const Combust3Line& old);
-
-        //! The volume parent element of this line
-        DRT::Element* parent_;
-
-        //! The local line number of this line w.r.t to the parent_ element
-        int                    lline_;
 
     }; // class Combust3Line
 

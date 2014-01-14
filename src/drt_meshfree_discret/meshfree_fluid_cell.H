@@ -290,7 +290,8 @@ public:
    *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual int NumDofPerNode(const unsigned nds,
-                            const DRT::Node& node
+                            const DRT::Node& node,
+                            const std::string disname
     ) const;
 
   /*------------------------------------------------------------------------*/
@@ -624,12 +625,12 @@ public:
   /*------------------------------------------------------------------------*/
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
-    return parent_->NumDofPerNode(node);
+    return ParentElement()->NumDofPerNode(node);
   }
 
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
   {
-    return parent_->NumDofPerNode(nds,node);
+    return ParentElement()->NumDofPerNode(nds,node,disname);
   }
 
   /*------------------------------------------------------------------------*/
@@ -656,20 +657,14 @@ public:
    * \brief Return pointer to the parent element
    *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
-  virtual DRT::ELEMENTS::MeshfreeFluid* ParentElement()
+  virtual DRT::ELEMENTS::MeshfreeFluid* ParentElement() const
   {
-    return parent_;
+    DRT::Element* parent = this->DRT::Element::ParentElement();
+    // make sure the static cast below is really valid
+    dsassert(dynamic_cast<DRT::ELEMENTS::MeshfreeFluid*>(parent) != NULL, "Parent element is no fluid element");
+    return static_cast<DRT::ELEMENTS::MeshfreeFluid*>(parent);
   }
 
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief return local surface number w.r.t the parent_ element
-   *///                                                   (public) nis Jan13
-  /*------------------------------------------------------------------------*/
-  virtual int SurfaceNumber()
-  {
-    return lsurface_;
-  }
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -770,12 +765,6 @@ private:
 
   // don't want = operator
   MeshfreeFluidBoundary& operator = (const MeshfreeFluidBoundary& old);
-
-  //! The parent element of this surface
-  DRT::ELEMENTS::MeshfreeFluid* parent_;
-
-  //! The local surface number of this surface w.r.t. the parent_ element
-  int lsurface_;
 
 }; // class MeshfreeFluidBoundary
 

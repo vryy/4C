@@ -301,6 +301,8 @@ void DRT::Element::Unpack(const std::vector<char>& data)
   }
   parent_master_ = NULL;
   parent_slave_  = NULL;
+  lface_master_ = -1;
+  lface_slave_  = -1;
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

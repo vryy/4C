@@ -79,9 +79,9 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
       {
         //std::cout << "ich werte jetzt den Neumann inflow Term aus!" << std::endl;
         //this->Print(std::cout);
-        Epetra_Vector* phinp = parent_->Phinp();
+        Epetra_Vector* phinp = ParentElement()->Phinp();
 
-        if (this->parent_->Shape() != DRT::Element::hex8)
+        if (this->ParentElement()->Shape() != DRT::Element::hex8)
           dserror("Neumann inflow term evaluation only implemented for hex8 elements");
 
         // remark: surface (2D) elements have been build on entering this function
@@ -101,12 +101,12 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
           // vector holding G-function values for the parent (hex8) element
           std::vector<double> gfuncvalues_parent;
           // extract local (element level) G-function values from global vector
-          DRT::UTILS::ExtractMyNodeBasedValues(this->parent_, gfuncvalues_parent, *phinp);
+          DRT::UTILS::ExtractMyNodeBasedValues(this->ParentElement(), gfuncvalues_parent, *phinp);
 
           // get node coordinates of the parent (3D) element
           const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
           LINALG::Matrix<3,numnode> xyze;
-          GEO::fillInitialPositionArray<DRT::Element::hex8>(this->parent_, xyze);
+          GEO::fillInitialPositionArray<DRT::Element::hex8>(this->ParentElement(), xyze);
 
           // get node coordinates of the surface (2D) element
           std::vector<std::vector<double> > xicoord(4, std::vector<double>(3, 0.0));
@@ -139,7 +139,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
             }
           }
           // create refinement cell from a fluid element -> cell will have same geometry as element!
-          const Teuchos::RCP<COMBUST::RefinementCell> surfcell = Teuchos::rcp(new COMBUST::RefinementCell(parent_, DRT::Element::quad4, xicoord));
+          const Teuchos::RCP<COMBUST::RefinementCell> surfcell = Teuchos::rcp(new COMBUST::RefinementCell(ParentElement(), DRT::Element::quad4, xicoord));
 
           // reset G-function values close to 0 with in tolerance 1.0e-10
           // remark: facilitates handling of special cases
@@ -456,7 +456,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
                     // get shape functions at vertex point
                     static LINALG::Matrix<numnode,1> funct;
                     funct.Clear();
-                    DRT::UTILS::shape_function_3D(funct,tcoord(0),tcoord(1),tcoord(2),parent_->Shape());
+                    DRT::UTILS::shape_function_3D(funct,tcoord(0),tcoord(1),tcoord(2),ParentElement()->Shape());
 
                     double phi = 0;
                     // interpolate phi value
@@ -467,7 +467,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
                     averageGvalue += phi;
                   }
 
-                  GEO::elementToCurrentCoordinatesInPlace(parent_->Shape(), xyze, tcoord);
+                  GEO::elementToCurrentCoordinatesInPlace(ParentElement()->Shape(), xyze, tcoord);
                   for(int  dim=0; dim<3; dim++)
                     phystrianglecoord(dim,inode) = tcoord(dim);
                 }
@@ -656,7 +656,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
           {
             //const bool screen_out = false;
             //
-            //const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("NeumannSurface", parent_->Id(), 200, screen_out, 0);
+            //const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("NeumannSurface", ParentElement()->Id(), 200, screen_out, 0);
             //std::ofstream gmshfilecontent(filename.c_str());
             //{
             //  gmshfilecontent << "View \" " << "SurfaceCell \" {\n";
@@ -693,7 +693,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
         //--------------------------------------------------
         // build map of surface nodes for element dofmanager
         //--------------------------------------------------
-        Teuchos::RCP<XFEM::ElementDofManager> eleDofManager = parent_->GetEleDofManager();
+        Teuchos::RCP<XFEM::ElementDofManager> eleDofManager = ParentElement()->GetEleDofManager();
 
         //----------------------
         // unpack all parameters
@@ -729,18 +729,18 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
         // assemble Neumann inflow term
         //-----------------------------
         // get the list of materials
-        const Teuchos::RCP<MAT::Material> material = parent_->Material();
+        const Teuchos::RCP<MAT::Material> material = ParentElement()->Material();
 
         // extract local (element level) vectors from global state vectors
         DRT::ELEMENTS::Combust3::MyStateSurface mystate(
-            discretization, (lm), true, false, false, parent_, phinp);
+            discretization, (lm), true, false, false, ParentElement(), phinp);
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
-            *eleDofManager, parent_->NumNode(), parent_->NodeIds());
+            *eleDofManager, ParentElement()->NumNode(), ParentElement()->NodeIds());
 
         COMBUST::callSysmatNeumannInflow(
             assembly_type,
-            this->parent_,
+            this->ParentElement(),
             this,
             *eleDofManager,
             mystate,
@@ -1269,7 +1269,7 @@ void DRT::ELEMENTS::Combust3Surface::LocationVector(
     // the inner dofs of its parent element
     // note: using these actions, the element will get the parent location vector
     //       as input in the respective evaluate routines
-    parent_->LocationVector(dis,la,doDirichlet);
+    ParentElement()->LocationVector(dis,la,doDirichlet);
     break;
   default:
     DRT::Element::LocationVector(dis,la,doDirichlet);
