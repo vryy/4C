@@ -698,7 +698,7 @@ namespace DRT
      template <int numnodeparentele>
      void FindOppositeSurface1D(int surfacelocalid,int & surf_neighbor)
      {
-    	 dserror("The implementation of FindOppositeSurface1D is not tested 2D elements!");
+//    	 dserror("The implementation of FindOppositeSurface1D is not tested 2D elements!");
     	 if ((numnodeparentele == 4) or (numnodeparentele == 8))
     	  {
     	    switch (surfacelocalid)
