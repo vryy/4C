@@ -634,7 +634,6 @@ public:
   {
     if (nds==0)
       return NumDofPerFace(face);
-    dserror("only one dof set supported");
     return 0;
   }
 
