@@ -84,6 +84,17 @@ with the discretization management module has to implement this class.
 It implements various basic element methods and
 stores basic information such as element to node connectivity.
 
+The same type of element is used to denote both usual elements and face elements
+(i.e., boundary elements or interior faces). The distinction is made based on
+the construction implemented in a derived class. However, the general information
+is present in this base class. A face element can be attached to one (for boundary faces) or two
+elements (for interior faces). In the latter case, we distinguish between the so-called
+parent master element and the parent slave element. The parent master element is
+the element that shares the node numbering with the face element. Boundary elements
+have only one parent and the methods ParentElement() and ParentMasterElement()
+return the same element. The parent slave element is the element on the other
+side that usually has a different orientation of nodes.
+
 \author gee (gee@lnm.mw.tum.de)
 */
 class Element : public DRT::ParObject
@@ -318,8 +329,8 @@ public:
   /*!
   \brief Return id's of nodes adjacent to this element
   */
-  const int* NodeIds() const { if (nodeid_.size()) return &nodeid_[0];
-                                      else                return NULL;     }
+  const int* NodeIds() const
+  { if (nodeid_.size()) return &nodeid_[0]; else                return NULL; }
   /*!
     \brief Return Element center coordinates
     */
@@ -402,7 +413,6 @@ public:
   {
     return std::vector<Teuchos::RCP<DRT::Element> >(0);
   }
-  //virtual const Element*const* Surfaces() const { dserror("unexpected base method called."); return NULL; }
 
   /*!
   \brief Get vector of RCPs to the volumes of this element
@@ -438,7 +448,7 @@ public:
   */
   DRT::Element** Faces()
   {
-    return face_;
+    return face_.empty() ? NULL : &face_[0];
   }
 
   /*!
@@ -446,28 +456,39 @@ public:
   */
   const DRT::Element*const * Faces() const
   {
-    return face_;
+    return face_.empty() ? NULL : &face_[0];
   }
 
   /*!
-  \brief Return the master element the face element is currently connected to
+  \brief Return the parent element the face element is connected to (for interior faces, the parent master element).
+
+  If no parent master has been assigned, NULL is returned (e.g. on non-face discretizations)
+  */
+  DRT::Element* ParentElement() const
+  {
+    dsassert(parent_master_ != NULL, "Parent element has not been set or this is not a face element");
+    return parent_master_;
+  }
+
+  /*!
+  \brief Return the master element the face element is connected to
 
   If no parent master has been assigned, NULL is returned (e.g. on non-face discretizations)
   */
   DRT::Element* ParentMasterElement() const
   {
-    dsassert(parent_master_ != NULL, "Parent master element has not been set");
+    dsassert(parent_master_ != NULL, "Parent master element has not been set or this is not a face element");
     return parent_master_;
   }
 
   /*!
-  \brief Return the slave element the face element is currently connected to
+  \brief Return the slave element the face element is connected to
 
   If no parent slave has been assigned, NULL is returned (non-face discretizations, boundary faces)
   */
   DRT::Element* ParentSlaveElement() const
   {
-    dsassert(parent_slave_ != NULL, "Parent slave element has not been set");
+    dsassert(parent_slave_ != NULL, "Parent slave element has not been set or this is not a face element");
     return parent_slave_;
   }
 
@@ -477,20 +498,29 @@ public:
   DRT::Element* Neighbor(const int face) const;
 
   /*!
-   \brief Get the index of the given face element within the given parent element (0 = master, 1 = slave)
+   \brief Get the index of a face element within the parent element
    */
-  int FaceMasterNumber () const
+  int FaceParentNumber () const
   {
-    dsassert(lface_master_ != -1, "Face information has not been filled");
+    dsassert(lface_master_ != -1, "Face information has not been filled or this is not a face element");
     return lface_master_;
   }
 
   /*!
-   \brief Get the index of the given face element within the given parent element (0 = master, 1 = slave)
+   \brief Get the index of a face element within the parent master element
+   */
+  int FaceMasterNumber () const
+  {
+    dsassert(lface_master_ != -1, "Face information has not been filled or this is not a face element");
+    return lface_master_;
+  }
+
+  /*!
+   \brief Get the index of a face element within the parent slave element
    */
   int FaceSlaveNumber() const
   {
-    dsassert(lface_slave_ != -1, "Face information has not been filled");
+    dsassert(lface_slave_ != -1, "Face information has not been filled or this is not a face element with slave parent");
     return lface_slave_;
   }
 
@@ -552,6 +582,8 @@ public:
   degrees of freedom should be assigned to each node. The discretization will
   assign a node the max number of dofs the adjacent elements demand by this
   method.
+
+  TODO: pass disname by reference, not by value
 
   */
   virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
@@ -759,7 +791,7 @@ public:
   /*!
   \brief Set global id of this element
   */
-  inline void SetId(const int id) { id_ = id; return; }
+  void SetId(const int id) { id_ = id; }
 
   /*!
   \brief Read input for this element
@@ -773,7 +805,7 @@ public:
 
     \param lid: processor local col id
    */
-  inline void SetLID(int lid) { lid_ = lid; }
+  void SetLID(int lid) { lid_ = lid; }
 
   /*!
   \brief Set ownership
@@ -788,7 +820,7 @@ public:
            the DRT::Discretization the element is stored in.
 
   */
-  inline void SetOwner(const int owner) { owner_ = owner; return; }
+  void SetOwner(const int owner) { owner_ = owner; return; }
 
   /*!
   \brief Set a list of node ids this element is connected to
@@ -1251,7 +1283,7 @@ private:
   std::vector<DRT::Node*> node_;
 
   //! \brief List of my faces, length NumFace(). Only filled if face elements are created, when using DiscretizationFaces
-  DRT::Element** face_;
+  std::vector<DRT::Element*> face_;
 
   //! \brief The master parent element of face element. NULL for usual elements
   DRT::Element* parent_master_;

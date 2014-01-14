@@ -99,7 +99,6 @@ ParObject(),
 id_(id),
 lid_(-1),
 owner_(owner),
-face_(NULL),
 parent_master_(NULL),
 parent_slave_(NULL),
 lface_master_(-1),
@@ -116,20 +115,12 @@ lid_(old.lid_),
 owner_(old.owner_),
 nodeid_(old.nodeid_),
 node_(old.node_),
-face_(NULL),
+face_(old.face_),
 parent_master_(old.parent_master_),
 parent_slave_(old.parent_slave_),
 lface_master_(old.lface_master_),
 lface_slave_(old.lface_slave_)
 {
-  if (old.face_ != NULL)
-  {
-    const int nface = old.NumFace();
-    face_ = new DRT::Element*[nface];
-    for (int i=0; i<nface; ++i)
-      face_[i] = old.face_[i];
-  }
-
   // we do NOT want a deep copy of the condition_ as the condition
   // is only a reference in the elements anyway
   std::map<std::string,Teuchos::RCP<Condition> >::const_iterator fool;
@@ -147,10 +138,6 @@ lface_slave_(old.lface_slave_)
  *----------------------------------------------------------------------*/
 DRT::Element::~Element()
 {
-  if (face_ != NULL)
-    delete[] face_;
-
-  return;
 }
 
 
@@ -307,9 +294,11 @@ void DRT::Element::Unpack(const std::vector<char>& data)
 
   // node_, face_, parent_master_, parent_slave_ are NOT communicated
   node_.resize(0);
-  if (face_ != NULL)
-    delete[] face_;
-  face_ = NULL;
+  if ( !face_.empty() )
+  {
+    std::vector<DRT::Element*> empty;
+    std::swap(face_, empty);
+  }
   parent_master_ = NULL;
   parent_slave_  = NULL;
 
@@ -514,7 +503,7 @@ void DRT::Element::LocationVector( const DRT::Discretization & dis,
     }
 
     // fill the vector with face dofs
-    if (this->NumDofPerFace(0) > 0)
+    if (this->NumDofPerFace(dofset) > 0)
     {
       for (int i=0; i<NumFace(); ++i)
       {
@@ -625,7 +614,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
     }
 
     // fill the vector with face dofs
-    if (this->NumDofPerFace(0) > 0)
+    if (this->NumDofPerFace(dofset) > 0)
     {
       for (int i=0; i<NumFace(); ++i)
       {
@@ -848,7 +837,7 @@ int DRT::Element::NumFace() const
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Element::Neighbor(const int face) const
 {
-  if (face_ == NULL)
+  if (face_.empty())
     return NULL;
   dsassert(face < NumFace(), "there is no face with the given index");
   DRT::Element* faceelement = face_[face];
@@ -869,12 +858,8 @@ void DRT::Element::SetFace(const int     faceindex,
                            DRT::Element* faceelement)
 {
   const int nface = NumFace();
-  if (face_ == NULL)
-  {
-    face_ = new DRT::Element*[nface];
-    for (int f=0; f<nface; ++f)
-      face_[f] = NULL;
-  }
+  if (face_.empty())
+    face_.resize(nface, NULL);
   dsassert(faceindex < NumFace(), "there is no face with the given index");
   face_[faceindex] = faceelement;
 }

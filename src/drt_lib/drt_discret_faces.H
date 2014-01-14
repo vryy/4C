@@ -374,13 +374,13 @@ public:
 protected:
 
   bool                                  extension_filled_;      ///< flag indicating whether faces extension has been filled
-  bool                                  doboundaryfaces_;  ///< flag set to true by derived HDG class for boundary face elements
+  bool                                  doboundaryfaces_;       ///< flag set to true by derived HDG class for boundary face elements
 
   Teuchos::RCP<Epetra_Map>              facerowmap_;            ///< unique distribution of element ownerships
   Teuchos::RCP<Epetra_Map>              facecolmap_;            ///< distribution of elements including ghost elements
   std::vector<DRT::Element*>            facerowptr_;            ///< vector of pointers to row elements for faster access
   std::vector<DRT::Element*>            facecolptr_;            ///< vector of pointers to column elements for faster access
-  std::map<int,RCP<DRT::Element> >      faces_;                 ///< map of internal faces elements
+  std::map<int,Teuchos::RCP<DRT::Element> > faces_;             ///< map of internal faces elements
 
 
 }; // class DiscretizationXFEM

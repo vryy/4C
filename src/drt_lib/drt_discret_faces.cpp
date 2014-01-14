@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_discret_xfem.cpp
+\file drt_discret_faces.cpp
 
 \brief a class to manage an enhanced discretization including the faces between elements
 
@@ -54,7 +54,7 @@ int DRT::DiscretizationFaces::FillCompleteFaces(Teuchos::RCP<std::map<int,std::v
 
 {
   // call standard FillComlete of base class
-  FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
+  DRT::Discretization::FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
   if(createinternalfaces)
   {
@@ -968,8 +968,8 @@ void DRT::DiscretizationFaces::BuildFaces(Teuchos::RCP<std::map<int,std::vector<
       DRT::Element* parent_master = gElement(master_peid);
       DRT::Element* parent_slave  = slave_peid != -1 ? gElement(slave_peid) : NULL;
 
-    dsassert(master_peid == parent_master->Id(), "Internal error");
-    dsassert(slave_peid == -1 || slave_peid == parent_slave->Id(), "Internal error");
+      dsassert(master_peid == parent_master->Id(), "Internal error");
+      dsassert(slave_peid == -1 || slave_peid == parent_slave->Id(), "Internal error");
 
       // get the unsorted nodes
       std::vector<DRT::Node*> nodes = face_it->second.GetNodes();
@@ -987,6 +987,7 @@ void DRT::DiscretizationFaces::BuildFaces(Teuchos::RCP<std::map<int,std::vector<
                                                                          face_it->second.GetLSurfaceSlave(),
                                                                          face_it->second.GetLocalNumberingMap()
       );
+      dsassert(surf != Teuchos::null, "Creating a face element failed. Check overloading of CreateFaceElement");
 
       // create a clone (the internally created element does not exist anymore when all RCP's finished)
       RCP<DRT::Element> surf_clone = Teuchos::rcp( surf->Clone() );
