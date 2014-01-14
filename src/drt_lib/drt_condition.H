@@ -224,7 +224,7 @@ public:
     ThermoConvections,
     ScaTraFluxCalc,
     ScaTraCoupling,
-    EmbeddingTissue,
+    SpringDashpot,
     TotalTractionCorrectionCond,
     NoPenetration,
     TotalTractionCorrectionBorderNodes,

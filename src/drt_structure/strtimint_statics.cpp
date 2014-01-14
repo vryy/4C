@@ -150,8 +150,9 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(bool predict)
   ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
   TestForceStiffPotential(timen_, disn_, step_);
 
-  // apply forces and stiffness due to embedding tissue condition
-  ApplyForceStiffEmbedTissue(stiff_,fintn_,disn_,predict);
+  // add forces and stiffness due to spring dashpot condition
+  Teuchos::ParameterList psprdash;
+  ApplyForceStiffSpringDashpot(stiff_,fintn_,disn_,veln_,predict,psprdash);
 
   // build residual  Res = F_{int;n+1}
   //                     - F_{ext;n+1}

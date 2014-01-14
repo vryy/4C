@@ -133,9 +133,9 @@ DLINE                           0
 DSURF                           2
 E 5 - 2 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
 E 7 - 2 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
--------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
-DSURF                           1
-E 13 - stiff 1.0e3 offset 0.0 lin
+---------------------------------------DESIGN SURF SPRING DASHPOT CONDITIONS
+DSURF 1
+E 13 - spring_stiff 1.0e3 spring_offset 0.0 dashpot_visc 0.0 direction_all
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

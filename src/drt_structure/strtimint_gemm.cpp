@@ -229,6 +229,13 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(bool predict)
   // potential forces
   ApplyForceStiffPotential(timen_, dism_, fintm_, stiff_);
 
+  // add forces and stiffness due to spring dashpot condition
+  Teuchos::ParameterList psprdash;
+  psprdash.set("scale_gamma", gamma_);
+  psprdash.set("scale_beta", beta_);
+  psprdash.set("time_step_size", (*dt_)[0]);
+  ApplyForceStiffSpringDashpot(stiff_,fintm_,disn_,veln_,predict,psprdash);
+
   // inertial forces #finertm_
   mass_->Multiply(false, *accm_, *finertm_);
 

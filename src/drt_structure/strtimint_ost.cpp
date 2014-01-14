@@ -302,6 +302,13 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
     ApplyForceStiffInternalAndInertial(timen_, (*dt_)[0], timintfac_dis, timintfac_vel, disn_, disi_, veln_, accn_, fintn_, finertn_, stiff_, mass_);
   }
 
+  // add forces and stiffness due to spring dashpot condition
+  Teuchos::ParameterList psprdash;
+  psprdash.set("scale_gamma", theta_);
+  psprdash.set("scale_beta", theta_*theta_);
+  psprdash.set("time_step_size", (*dt_)[0]);
+  ApplyForceStiffSpringDashpot(stiff_,fintn_,disn_,veln_,predict,psprdash);
+
   // apply forces and stiffness due to constraints
   Teuchos::ParameterList pcon;
   //constraint matrix has to be scaled with the same value fintn_ is scaled with

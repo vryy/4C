@@ -1388,6 +1388,7 @@ set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/windkessel.cpp
   src/drt_constraint/windkessel_manager.cpp
   src/drt_constraint/windkesseldofset.cpp
+  src/drt_constraint/springdashpot.cpp
 )
 set(OBJS_DRT_IO_LIB
   src/drt_io/io.cpp

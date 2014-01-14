@@ -248,13 +248,15 @@ namespace STR
       bool predict                        //!< flag indicating predictor step
     );
 
-    //! Evaluate forces and stiffness due to embedding tissue condition
-    void ApplyForceStiffEmbedTissue
+    //! Evaluate forces and stiffness due to spring dashpot boundary condition
+    void ApplyForceStiffSpringDashpot
     (
       Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness is modified
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal forces are modified
       Teuchos::RCP<Epetra_Vector> dis,   //!< current displacement state
-      bool predict                        //!< flag indicating predictor step
+      Teuchos::RCP<Epetra_Vector> vel,   //!< current velocity state
+      bool predict,                      //!< flag indicating predictor step
+      Teuchos::ParameterList psprdash    //!< Parameterlist containing scale factors for matrix entries
     );
 
     //@}

@@ -51,6 +51,7 @@ Maintainer: Alexander Popp
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_constraint/windkessel_manager.H"
+#include "../drt_constraint/springdashpot.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_statmech/statmech_manager.H"
@@ -341,6 +342,17 @@ STR::TimInt::TimInt
     }
   }
 
+  {
+		// check for presence of spring dashpot bc
+		std::vector<DRT::Condition*> springdashpotcond(0);
+		discret_->GetCondition("SpringDashpot", springdashpotcond);
+		if (springdashpotcond.size())
+		{
+			//initialize spring dashpot conditions
+			SPRINGDASHPOT::SpringDashpot(discret_);
+		}
+  }
+
   // check if we have elements which use a continuous displacement and pressure
   // field
   {
@@ -384,7 +396,6 @@ STR::TimInt::TimInt
   if (DRT::INPUT::IntegralValue<int>(patspec,"PATSPEC"))
   {
 	  pslist_ = Teuchos::rcp(new Teuchos::ParameterList());
-	  pslist_->set("haveembedtissue", false);
     // check if patspeccond are already initialized
     // this is of relevance for Montecarlo Simulation
     std::vector<DRT::Condition*> pscond;

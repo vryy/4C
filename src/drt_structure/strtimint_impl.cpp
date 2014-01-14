@@ -35,6 +35,7 @@ Maintainer: Alexander Popp
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_constraint/windkessel_manager.H"
+#include "../drt_constraint/springdashpot.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_lib/drt_locsys.H"
@@ -873,17 +874,21 @@ void STR::TimIntImpl::ApplyForceStiffBeamContact
   return;
 }
 
-void STR::TimIntImpl::ApplyForceStiffEmbedTissue
+void STR::TimIntImpl::ApplyForceStiffSpringDashpot
 (
   Teuchos::RCP<LINALG::SparseOperator> stiff,
   Teuchos::RCP<Epetra_Vector> fint,
   Teuchos::RCP<Epetra_Vector> disn,
-  bool predict
+  Teuchos::RCP<Epetra_Vector> veln,
+  bool predict,
+  Teuchos::ParameterList psprdash
 )
 {
-  if (pslist_ != Teuchos::null && pslist_->get<bool>("haveembedtissue") && !predict)
+  std::vector<DRT::Condition*> springdashpotcond(0);
+  discret_->GetCondition("SpringDashpot", springdashpotcond);
+  if (springdashpotcond.size() && !predict)
   {
-    PATSPEC::CheckEmbeddingTissue(discret_,stiff,fint,disn);
+  	SPRINGDASHPOT::EvaluateSpringDashpot(discret_,stiff,fint,disn,veln,psprdash);
   }
 
   return;

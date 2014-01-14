@@ -3180,7 +3180,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfredairtis);
 
   /*--------------------------------------------------------------------*/
-  // Monolithic coupling of structure and three-element Windkessel
+  // Monolithic coupling of structure and three-element Windkessel - mhv 11/13
 
   Teuchos::RCP<ConditionDefinition> windkesselcondition =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF WINDKESSEL CONDITIONS",
@@ -3199,7 +3199,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(windkesselcondition);
 
   /*--------------------------------------------------------------------*/
-  // Monolithic coupling of structure and nonlin heart three-element Windkessel
+  // Monolithic coupling of structure and nonlin heart three-element Windkessel - mhv 01/14
 
   Teuchos::RCP<ConditionDefinition> nlnheartwindkesselcondition =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF NONLIN HEART WINDKESSEL CONDITIONS",
@@ -3223,7 +3223,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(nlnheartwindkesselcondition);
 
   /*--------------------------------------------------------------------*/
-  // Monolithic coupling of structure and three-element Windkessel: Neumann bc surface
+  // Monolithic coupling of structure and three-element Windkessel: Neumann bc surface - mhv 11/13
 
   std::vector<Teuchos::RCP<ConditionComponent> > windkstructcomponents;
 
@@ -3673,28 +3673,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(linethermoconvect);
   condlist.push_back(surfthermoconvect);
 
+
   /*--------------------------------------------------------------------*/
 
-  // Embedding Tissue
+  // parallel spring dashpot boundary condition - mhv 01/14
 
-  Teuchos::RCP<ConditionDefinition> embeddingtissuecond =
-    Teuchos::rcp(new ConditionDefinition("DESIGN SURF EMBEDDING TISSUE CONDITIONS",
-                                         "EmbeddingTissue",
-                                         "Embedding Tissue",
-                                         DRT::Condition::EmbeddingTissue,
+  Teuchos::RCP<ConditionDefinition> springdashpotcond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF SPRING DASHPOT CONDITIONS",
+                                         "SpringDashpot",
+                                         "Spring Dashpot",
+                                         DRT::Condition::SpringDashpot,
                                          true,
                                          DRT::Condition::Surface));
 
 
-  AddNamedReal(embeddingtissuecond,"stiff");
-  AddNamedReal(embeddingtissuecond,"offset");
-  embeddingtissuecond->AddComponent(Teuchos::rcp(new StringConditionComponent("model", "lin",
-                                                                                       Teuchos::tuple<std::string>("lin","nonlin"),
-                                                                                       Teuchos::tuple<std::string>("lin","nonlin"),
+  AddNamedReal(springdashpotcond,"spring_stiff");
+  AddNamedReal(springdashpotcond,"spring_offset");
+  AddNamedReal(springdashpotcond,"dashpot_visc");
+  springdashpotcond->AddComponent(Teuchos::rcp(new StringConditionComponent("direction", "direction_all",
+                                                                                       Teuchos::tuple<std::string>("direction_all","direction_surfnormal"),
+                                                                                       Teuchos::tuple<std::string>("direction_all","direction_surfnormal"),
                                                                                        true)));
 
-  condlist.push_back(embeddingtissuecond);
-  //embeddingtissuecond->Print(std::cout, NULL, "");
+  condlist.push_back(springdashpotcond);
 
   /*--------------------------------------------------------------------*/
   // no penetration for darcy flow in porous media

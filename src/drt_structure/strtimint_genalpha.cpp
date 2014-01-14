@@ -336,8 +336,12 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
   ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
   TestForceStiffPotential(timen_, disn_, step_);
 
-  // add forces and stiffness due to embedding tissue condition
-  ApplyForceStiffEmbedTissue(stiff_,fintn_,disn_,predict);
+  // add forces and stiffness due to spring dashpot condition
+  Teuchos::ParameterList psprdash;
+  psprdash.set("scale_gamma", gamma_);
+  psprdash.set("scale_beta", beta_);
+  psprdash.set("time_step_size", (*dt_)[0]);
+  ApplyForceStiffSpringDashpot(stiff_,fintn_,disn_,veln_,predict,psprdash);
 
   // total internal mid-forces F_{int;n+1-alpha_f} ----> TR-like
   // F_{int;n+1-alpha_f} := (1.-alphaf) * F_{int;n+1} + alpha_f * F_{int;n}
