@@ -145,7 +145,7 @@ void FS3I::UTILS::DelaunayTriangulation
 	//    Input, int BASE, the base for the indexing of TRI_VERT.
 	int base = 0;
 
-	int triangle_num;
+	int triangle_num = 0;
 	int triangle_order = 3;
 	int length_triangle = triangle_order * 3 * aerocoords.size();
 	int triangle_node[length_triangle];
