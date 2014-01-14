@@ -505,7 +505,7 @@ void DRT::Element::LocationVector( const DRT::Discretization & dis,
     }
 
     // fill the vector with face dofs
-    if (this->NumDofPerFace(dofset) > 0)
+    if (this->NumDofPerFace(0, dofset) > 0)
     {
       for (int i=0; i<NumFace(); ++i)
       {
@@ -616,7 +616,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
     }
 
     // fill the vector with face dofs
-    if (this->NumDofPerFace(dofset) > 0)
+    if (this->NumDofPerFace(0, dofset) > 0)
     {
       for (int i=0; i<NumFace(); ++i)
       {
