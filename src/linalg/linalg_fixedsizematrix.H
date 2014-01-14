@@ -3115,7 +3115,7 @@ public:
     \param setzero
       whether matrix should be initialised to zero
    */
-  explicit TMatrix(bool setzero = false);
+  explicit TMatrix(bool setzero = true);
 
   /// Constructor
   /*!
@@ -4284,7 +4284,7 @@ class Matrix : public TMatrix<double, rows, cols>
 public:
 
   /// Constructor
-  explicit Matrix(bool setzero = false) : TMatrix<double, rows, cols>( setzero ) {}
+  explicit Matrix(bool setzero = true) : TMatrix<double, rows, cols>( setzero ) {}
 
   /// Constructor
   explicit Matrix(double* d, bool view=false) : TMatrix<double, rows, cols>( d, view ) {}

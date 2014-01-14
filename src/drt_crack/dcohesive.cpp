@@ -94,7 +94,11 @@ DRT::ELEMENTS::Dcohesive::Dcohesive(int id, int owner) :
 DRT::Element(id,owner),
 failNorm_(false),
 failTang_(false),
-area_(0.0)/*,
+area_(0.0),
+model_(INPAR::CRACK::linear),
+tracSepLaw_(INPAR::CRACK::linear),
+alfa_ppr_(0),
+beta_ppr_(0),
 isinit_(false),
 lrefe_(0),
 crosssec_(0),
@@ -109,7 +113,7 @@ alphaconv_(0),
 alpha0_(0),
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
-gaussrule_(DRT::UTILS::intrule_line_2point)*/
+gaussrule_(DRT::UTILS::intrule_line_2point)
 {
   return;
 }
@@ -124,8 +128,11 @@ damagePrev_(old.damagePrev_),
 area_(old.area_),
 coheStrength_(old.coheStrength_),
 fracEnergy_(old.fracEnergy_),
-tracSepLaw_(old.tracSepLaw_)
-/*isinit_(old.isinit_),
+model_(old.model_),
+tracSepLaw_(old.tracSepLaw_),
+alfa_ppr_(old.alfa_ppr_),
+beta_ppr_(old.beta_ppr_),
+isinit_(old.isinit_),
 lrefe_(old.lrefe_),
 crosssec_(old.crosssec_),
 crosssecshear_(old.crosssecshear_),
@@ -140,7 +147,7 @@ alpha0_(old.alpha0_),
 jacobi_(old.jacobi_),
 jacobimass_(old.jacobimass_),
 jacobinode_(old.jacobinode_),
-gaussrule_(old.gaussrule_)*/
+gaussrule_(old.gaussrule_)
 {
   return;
 }
