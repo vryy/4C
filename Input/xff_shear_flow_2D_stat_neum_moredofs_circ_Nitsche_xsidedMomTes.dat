@@ -392,8 +392,6 @@ DLINE                           0
 DLINE                           0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF                           0
--------------------------------------DESIGN SURF EMBEDDING TISSUE CONDITIONS
-DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
