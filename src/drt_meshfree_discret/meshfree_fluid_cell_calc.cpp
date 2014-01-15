@@ -290,8 +290,8 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
   LINALG::SerialDenseMatrix velforce(nsd_,nen_,true);
 
   // definition of velocity-based momentum residual vectors
-  LINALG::SerialDenseMatrix lin_resM_Du(nsd_*nsd_,nen_,true);
-  LINALG::Matrix<nsd_,1>    resM_Du(true);
+  LINALG::SerialDenseMatrix lin_resM_Du(nsd_*nsd_,nen_,false);
+  LINALG::Matrix<nsd_,1>    resM_Du(false);
 
   // add displacement when fluid nodes and knots move in the ALE case
   if (isale)
@@ -352,7 +352,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
     }
 
     // calculate basis functions and derivatives via max-ent optimization
-    int error = discret_->solutionfunct_->GetMeshfreeBasisFunction(funct_,deriv_,distng,nsd_);
+    int error = discret_->GetMeshfreeSolutionApprox()->GetMeshfreeBasisFunction(funct_,deriv_,distng,nsd_);
     if (error) dserror("Something went wrong when calculating the meshfree basis functions.");
 
     //----------------------------------------------------------------------
@@ -382,6 +382,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
     convvelint_ = velint_;
     if (isale)
     {
+      dserror("Meshfree fluid not tested for ALE yet. Remove dserror at own risk.");
       // construct SerialDense-view on gridvelint_
       LINALG::SerialDenseVector gridvelint_sdm(View, gridvelint_.A(), nsd_);
       gridvelint_sdm.Multiply('N','N',1.0,egridv,funct_,0.0);
@@ -432,7 +433,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
     // compute convective term from previous iteration and convective operator
     // (both zero for reactive problems, for the time being)
     // winklmaier: zero only for previous reactive (= darcy???) problems
-    if (fldpara_->Darcy() or (not fldpara_->PhysicalType() == INPAR::FLUID::stokes))
+    if (fldpara_->Darcy() or (fldpara_->PhysicalType() == INPAR::FLUID::stokes))
     {
       conv_old_.Clear();
       conv_c_.Zero();
@@ -497,6 +498,10 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
         rhsmom_.Update((densn_/fldparatimint_->Dt()/fldparatimint_->Theta()),histmom_,1.0);
       }
     }
+
+    // set velocity-based momentum residual vectors to zero
+    lin_resM_Du.Zero();
+    resM_Du.Clear();
 
     // compute first version of velocity-based momentum residual containing
     // inertia term, convection term (convective and reactive part),
@@ -682,8 +687,8 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::BodyForce(
-           const DRT::ELEMENTS::MeshfreeFluid *      cell,
-           const double *                            cgxyz)
+  const DRT::ELEMENTS::MeshfreeFluid *      cell,
+  const double *                            cgxyz)
 {
   std::vector<DRT::Condition*> myneumcond;
 
@@ -722,9 +727,9 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::BodyForce(
       curvefac = 1.0;
 
     // get values and switches from the condition
-    const std::vector<int>*    onoff = myneumcond[0]->Get<std::vector<int> >   ("onoff");
-    const std::vector<double>* val   = myneumcond[0]->Get<std::vector<double> >("val"  );
-    const std::vector<int>*    functions = myneumcond[0]->Get<std::vector<int> >("funct");
+    const std::vector<int>*    onoff     = myneumcond[0]->Get<std::vector<int   > >("onoff");
+    const std::vector<double>* val       = myneumcond[0]->Get<std::vector<double> >("val"  );
+    const std::vector<int>*    functions = myneumcond[0]->Get<std::vector<int   > >("funct");
 
     // factor given by spatial function
     double functionfac = 1.0;
@@ -841,7 +846,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::LinGalMomResU(
   }
 
   // convection, convective (only for Newton)
-  if(fldpara_->IsNewton())
+  if(fldpara_->IsNewton() and (not (fldpara_->PhysicalType()==INPAR::FLUID::stokes)))
   {
     for (int ui=0; ui<nen_; ++ui)
     {
@@ -858,6 +863,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::LinGalMomResU(
       }
     }
   }
+
 
   // reaction part
   if (fldpara_->Reaction())
@@ -885,9 +891,9 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::InertiaConvectionReactionGalPart(
   LINALG::SerialDenseMatrix & estif_u,
   LINALG::SerialDenseMatrix & velforce,
-  LINALG::SerialDenseMatrix & lin_resM_Du,
+  const LINALG::SerialDenseMatrix & lin_resM_Du,
   LINALG::Matrix<nsd_,1> &    resM_Du,
-  const double               rhsfac)
+  const double                rhsfac)
 {
   //------------------------------------------------------------------------
   // multiply instationary/convective/reaction-aggregate with test function
@@ -1179,7 +1185,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::PressureProjectionFinalize(
   ppmat.Multiply('N','T',-1.0/D_,E_,E_,1.0);
   ppmat.Scale(1.0/visc_);
 
-  // from F_ compute pressure-Galerkin and continuity-Galerkin term
+  // compute pressure-Galerkin and continuity-Galerkin term from F_
   LINALG::SerialDenseVector F_vec(View,F_.A(),2*nen_);
   estif_q_u.Multiply('N','T', 1.0/D_,E_,F_vec,0.0);
   estif_p_v.Multiply('N','T',-1.0/D_,F_vec,E_,0.0);
@@ -1191,11 +1197,12 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::PressureProjectionFinalize(
   // compute velocity rhs-contribution from pressure-Galerkin term
   LINALG::SerialDenseVector temp_v(2*nen_,false);
   temp_v.Multiply('N','N',1.0,estif_p_v,epre,0.0);
-  // add velocity rhs-contribution from pressure-Galerkin term
+
+  // add velocity rhs-contributions
   LINALG::SerialDenseMatrix temp_v_mat(View,temp_v.A(),2,2,nen_);
   velforce.Update(-fldparatimint_->TimeFacRhs(),temp_v_mat,1.0);
 
-  // compute and add pressure rhs-contribution from pressure-projection term
+  // compute pressure rhs-contribution from pressure-projection term
   LINALG::SerialDenseVector temp_p(nen_,false);
   temp_p.Multiply('N','N',1.0,ppmat,epre,0.0);
   // compute pressure rhs-contribution from continuity-Galerkin term

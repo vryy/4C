@@ -328,11 +328,11 @@ protected:
   //! Compute element matrix and rhs entries: inertia, convective and
   //! reactive terms of the Galerkin part
   void InertiaConvectionReactionGalPart(
-    LINALG::SerialDenseMatrix & estif_u,        //< block (weighting function v x u)
-    LINALG::SerialDenseMatrix & velforce,       //< rhs forces velocity
-    LINALG::SerialDenseMatrix & lin_resM_Du,    //< linearisation of the Garlerkin momentum residual
-    LINALG::Matrix<nsd_,1> &    resM_Du,        //< linearisation of the Garlerkin momentum residual
-    const double                rhsfac          //< right-hand-side factor
+    LINALG::SerialDenseMatrix       & estif_u,        //< block (weighting function v x u)
+    LINALG::SerialDenseMatrix       & velforce,       //< rhs forces velocity
+    const LINALG::SerialDenseMatrix & lin_resM_Du,    //< linearisation of the Garlerkin momentum residual
+    LINALG::Matrix<nsd_,1>          & resM_Du,        //< linearisation of the Garlerkin momentum residual
+    const double                      rhsfac          //< right-hand-side factor
     );
 
   //! Compute element matrix entries: for the viscous terms of the Galerkin part

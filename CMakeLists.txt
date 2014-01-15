@@ -1132,9 +1132,11 @@ set(OBJS_DRT_MESHFREE_DISCRET_LIB
   src/drt_particle/particle_node.cpp
   src/drt_meshfree_discret/drt_meshfree_bin.cpp
   src/drt_meshfree_discret/drt_meshfree_multibin.cpp
+  src/drt_meshfree_discret/drt_meshfree_utils.cpp
   src/drt_meshfree_discret/drt_meshfree_cell.cpp
   src/drt_meshfree_discret/drt_meshfree_cell_utils.cpp
   src/drt_meshfree_discret/drt_meshfree_discret.cpp
+  src/drt_meshfree_discret/drt_meshfree_discret_evaluate.cpp
   src/drt_meshfree_discret/drt_meshfree_discret_fillcomplete.cpp
 )
 set(OBJS_DRT_TOPOPT
@@ -1535,9 +1537,9 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/selfcontact_binarytree.cpp
 )
 set(OBJS_DRT_CRACK
-	src/drt_crack/InsertCohesiveElements.cpp
-	src/drt_crack/dcohesive.cpp
-	src/drt_crack/dcohesive_evaluate.cpp
+  src/drt_crack/InsertCohesiveElements.cpp
+  src/drt_crack/dcohesive.cpp
+  src/drt_crack/dcohesive_evaluate.cpp
 )
 set(OBJS_DRT_CUT
   src/drt_cut/base_vol.cpp
@@ -1949,13 +1951,13 @@ target_link_libraries (${baciname}
   drt_adapter 
   ${SINGLEFIELD_LIBRARIES}
   drt_nurbs
-#  drt_meshfree
   drt_mortar 
   drt_constraint
   drt_lib_register
   ${ELEMENT_LIBRARIES}
   ${SUPPORT_LIBRARIES}
-  drt_micromat drt_mat
+  drt_micromat 
+  drt_mat
   drt_lib_utils
   libsolver
   linalg
@@ -1966,10 +1968,11 @@ set(FILTER_LIBRARIES
   post_drt_common
   drt_lib_register
   ${ELEMENT_LIBRARIES}
-  linalg                  #linalg requires symbols from drt_lib which are in the SUPPORT_LIBRARIES
   ${SUPPORT_LIBRARIES}
   drt_mat
   drt_lib_utils
+  libsolver
+  linalg                  #linalg requires symbols from drt_lib which are in the SUPPORT_LIBRARIES
   filter_common
   drt_comm
   ${LIBRARIES})

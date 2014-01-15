@@ -1,5 +1,5 @@
 /*!-------------------------------------------------------------------------*\
- * \file drt_meshfree_discret.H
+ * \file drt_meshfree_discret.cpp
  *
  * \brief discretisation with additional reference point vector
  *        (meshfree analysis)
@@ -20,25 +20,46 @@
 #include "../drt_fem_general/drt_utils_maxent_basisfunctions.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_factory.H"
+#include "../linalg/linalg_solver.H"
+#include "../drt_io/io_control.H"
 
 /*--------------------------------------------------------------------------*
  |  ctor                                                 (public) nis Oct11 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::MeshfreeDiscretization::MeshfreeDiscretization(
-  const std::string             name,
-  RCP<Epetra_Comm> comm,
+  const std::string         name,
+  Teuchos::RCP<Epetra_Comm> comm,
   const Teuchos::ParameterList & params)
   : DRT::Discretization::Discretization(name,comm),
     assigned_(false)
 {
+  // neighbourhood search
   nodeassigntype_ = DRT::INPUT::IntegralValue<INPAR::MESHFREE::NodeAssignType>(params,"NODEKNOTASSIGNMENT");
 
+  // type of meshfree approximation
   INPAR::MESHFREE::meshfreetype meshfreetype = DRT::INPUT::IntegralValue<INPAR::MESHFREE::meshfreetype>(params,"TYPE");
   switch (meshfreetype)
   {
-  case INPAR::MESHFREE::maxent:{solutionfunct_ = Teuchos::rcp(new MaxEntProblem(params)); break;}
+  case INPAR::MESHFREE::maxent:
+  {
+    solutionapprox_  = Teuchos::rcp(new MaxEntApprox(params));
+    weightingapprox_ = Teuchos::null;
+    break;
+  }
   default: dserror("No valid meshfree discretization.");
   }
+
+  // create solver for DirichletBC with non-interpolatory basis functions if necessary
+  dbcsolver_ = Teuchos::null;
+  const int dbcsolvernumber = params.get<int>("DBC_SOLVER");
+  if (dbcsolvernumber != (-1))
+  {
+    dbcsolver_ = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(dbcsolvernumber),
+                                                 this->Comm(),
+                                                 DRT::Problem::Instance()->ErrorFile()->Handle()));
+    //this->ComputeNullSpaceIfNecessary(dbcsolver_->Params());
+  }
+
   return;
 }
 
@@ -120,7 +141,7 @@ int DRT::MESHFREE::MeshfreeDiscretization::NumMyColKnots() const
  *--------------------------------------------------------------------------*/
 bool DRT::MESHFREE::MeshfreeDiscretization::HaveGlobalKnot(int gid) const
 {
-  std::map<int,RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr = knot_.find(gid);
+  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr = knot_.find(gid);
   if (curr == knot_.end()) return false;
   else                     return true;
 }
@@ -131,7 +152,7 @@ bool DRT::MESHFREE::MeshfreeDiscretization::HaveGlobalKnot(int gid) const
 DRT::MESHFREE::MeshfreeNode* DRT::MESHFREE::MeshfreeDiscretization::gKnot(int gid) const
 {
 #ifdef DEBUG
-  std::map<int,RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr = knot_.find(gid);
+  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr = knot_.find(gid);
   if (curr == knot_.end()) dserror("Knot with global id gid=%d not stored on this proc",gid);
   else                     return curr->second.get();
   return NULL;
@@ -143,7 +164,7 @@ DRT::MESHFREE::MeshfreeNode* DRT::MESHFREE::MeshfreeDiscretization::gKnot(int gi
 /*--------------------------------------------------------------------------*
  | add a knot                                            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::AddKnot(RCP<DRT::MESHFREE::MeshfreeNode> knot)
+void DRT::MESHFREE::MeshfreeDiscretization::AddKnot(Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> knot)
 {
   knot_[knot->Id()] = knot;
   Reset();
@@ -153,9 +174,9 @@ void DRT::MESHFREE::MeshfreeDiscretization::AddKnot(RCP<DRT::MESHFREE::MeshfreeN
 /*--------------------------------------------------------------------------*
  | delete an knot                                        (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-bool DRT::MESHFREE::MeshfreeDiscretization::DeleteKnot(RCP<DRT::MESHFREE::MeshfreeNode> knot)
+bool DRT::MESHFREE::MeshfreeDiscretization::DeleteKnot(Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> knot)
 {
-  std::map<int,RCP<DRT::MESHFREE::MeshfreeNode> >::iterator fool = knot_.find(knot->Id());
+  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator fool = knot_.find(knot->Id());
   if (fool==knot_.end()) return false;
   knot_.erase(fool);
   Reset();
@@ -167,7 +188,7 @@ bool DRT::MESHFREE::MeshfreeDiscretization::DeleteKnot(RCP<DRT::MESHFREE::Meshfr
  *--------------------------------------------------------------------------*/
 bool DRT::MESHFREE::MeshfreeDiscretization::DeleteKnot(const int gid)
 {
-  std::map<int,RCP<DRT::MESHFREE::MeshfreeNode> >::iterator fool = knot_.find(gid);
+  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator fool = knot_.find(gid);
   if (fool==knot_.end()) return false;
   knot_.erase(fool);
   Reset();
@@ -177,7 +198,7 @@ bool DRT::MESHFREE::MeshfreeDiscretization::DeleteKnot(const int gid)
 /*--------------------------------------------------------------------------*
  |  Pack local knots (row map) into buffer               (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-RCP<std::vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyKnots() const
+Teuchos::RCP<std::vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyKnots() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
 
@@ -201,7 +222,7 @@ RCP<std::vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyKnots() con
     k->Pack(buffer);
   }
 
-  RCP<std::vector<char> > block = Teuchos::rcp(new std::vector<char>);
+  Teuchos::RCP<std::vector<char> > block = Teuchos::rcp(new std::vector<char>);
   std::swap( *block, buffer() );
   return block;
 }
@@ -209,7 +230,7 @@ RCP<std::vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyKnots() con
 /*--------------------------------------------------------------------------*
  |  Unpack knot buffer and create local knots            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::UnPackMyKnots(RCP<std::vector<char> > k)
+void DRT::MESHFREE::MeshfreeDiscretization::UnPackMyKnots(Teuchos::RCP<std::vector<char> > k)
 {
   std::vector<char>::size_type index = 0;
   while (index < k->size())
@@ -385,7 +406,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToKnotsAndCells()
 
     const int myrank(this->Comm().MyPID()); // id of this processor
     const int numproc(Comm().NumProc());    // total number of processors
-    const double range(solutionfunct_->GetRange()); // range of basis functions
+    const double range(solutionapprox_->GetRange()); // range of basis functions
 
     // procmap: <rank <nodeid,knotid> >
     std::map<int, std::map<int,int> > procmap; // maps to ranks a map that maps to nodes the initial knot
@@ -496,17 +517,17 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
   else
   {
     int nummyele   = 0;
-    std::map<int,RCP<DRT::Element> >::const_iterator ecurr;
+    std::map<int,Teuchos::RCP<DRT::Element> >::const_iterator ecurr;
     for (ecurr=element_.begin(); ecurr != element_.end(); ++ecurr)
       if (ecurr->second->Owner() == Comm().MyPID()) nummyele++;
 
     int nummynodes = 0;
-    std::map<int,RCP<DRT::Node> >::const_iterator ncurr;
+    std::map<int,Teuchos::RCP<DRT::Node> >::const_iterator ncurr;
     for (ncurr=node_.begin(); ncurr != node_.end(); ++ncurr)
       if (ncurr->second->Owner() == Comm().MyPID()) nummynodes++;
 
     int nummyknots = 0;
-    std::map<int,RCP<DRT::MESHFREE::MeshfreeNode> >::const_iterator kcurr;
+    std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::const_iterator kcurr;
     for (kcurr=knot_.begin(); kcurr != knot_.end(); ++kcurr)
       if (kcurr->second->Owner() == Comm().MyPID()) nummyknots++;
 
@@ -536,7 +557,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
     {
       if ((int)element_.size())
         os << "-------------------------- Proc " << proc << " :\n";
-      std::map<int,RCP<DRT::Element> >:: const_iterator curr;
+      std::map<int,Teuchos::RCP<DRT::Element> >:: const_iterator curr;
       for (curr = element_.begin(); curr != element_.end(); ++curr)
       {
         os << *(curr->second);
@@ -562,7 +583,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
     {
       if ((int)node_.size())
         os << "-------------------------- Proc " << proc << " :\n";
-      std::map<int,RCP<DRT::Node> >:: const_iterator curr;
+      std::map<int,Teuchos::RCP<DRT::Node> >:: const_iterator curr;
       for (curr = node_.begin(); curr != node_.end(); ++curr)
       {
         os << *(curr->second);
@@ -588,7 +609,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
     {
       if ((int)knot_.size())
         os << "-------------------------- Proc " << proc << " :\n";
-      std::map<int,RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr;
+      std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr;
       for (curr = knot_.begin(); curr != knot_.end(); ++curr)
       {
         os << *(curr->second);
@@ -618,7 +639,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
       if (numcond)
       {
         os << numcond << " Conditions:\n";
-        std::map<std::string,RCP<Condition> >::const_iterator curr;
+        std::map<std::string,Teuchos::RCP<Condition> >::const_iterator curr;
         for (curr=condition_.begin(); curr != condition_.end(); ++curr)
         {
           os << curr->first << " ";

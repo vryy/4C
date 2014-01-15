@@ -259,15 +259,17 @@ public:
   /*!
   \brief Type of geometry this conditions lives on
 
+  \warning The order is crucial for and must not be changed!!!
+           (used in BoundaryConditionsGeometry())
   */
   enum GeometryType
   {
-    NoGeom,
     Point,
     Line,
     Surface,
     Volume,
-    Particle
+    Particle,
+    NoGeom
   };
 
   //@}

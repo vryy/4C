@@ -22,7 +22,7 @@ Maintainer: Keijo Nissen
 /*--------------------------------------------------------------------------*
  | ctor MaxentProblem                                             nis Mar12 |
  *--------------------------------------------------------------------------*/
-DRT::MESHFREE::MaxEntProblem::MaxEntProblem(Teuchos::ParameterList const & params)
+DRT::MESHFREE::MaxEntApprox::MaxEntApprox(Teuchos::ParameterList const & params)
 {
   // determine type of prior
   prior_ = DRT::INPUT::IntegralValue<INPAR::MESHFREE::priortype>(params,"T_PRIOR");
@@ -66,7 +66,7 @@ DRT::MESHFREE::MaxEntProblem::MaxEntProblem(Teuchos::ParameterList const & param
 /*--------------------------------------------------------------------------*
  | set range_ of basis function according to prior types          nis Mar12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MaxEntProblem::SetRange(double rangeTol)
+void DRT::MESHFREE::MaxEntApprox::SetRange(double rangeTol)
 {
   // for gaussian priors
   if (prior_==INPAR::MESHFREE::p_gauss) {
@@ -97,10 +97,10 @@ void DRT::MESHFREE::MaxEntProblem::SetRange(double rangeTol)
  | ctor DualProblem                                               nis Mar12 |
  *--------------------------------------------------------------------------*/
 template<int dim>
-DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::DualProblem(
-  bool const     pu,
-  double const   neg,
-  MaxEntProblem* that
+DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualProblem(
+  bool const    pu,
+  double const  neg,
+  MaxEntApprox* that
 )
 {
   // determine type of gap function/projection if necessary
@@ -109,7 +109,7 @@ DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::DualProblem(
   //  enum gaptype gap    = params->get<enum gaptype>("gaptype");
   // assing correct functions to function pointers according to
 
-  // make this-pointer of MaxEntProblem (that) known to DualProblem
+  // make this-pointer of MaxEntApprox (that) known to DualProblem
   this_ = that;
 
   // set funtion pointers once
@@ -133,7 +133,7 @@ DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::DualProblem(
  *--------------------------------------------------------------------------*/
 
 template<int dim>
-int DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::maxent_basisfunction(
+int DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::maxent_basisfunction(
   LINALG::SerialDenseVector &           funct , // basis functions values
   LINALG::SerialDenseMatrix &           deriv , // spatial derivatives of basis functions
   LINALG::SerialDenseMatrix const &     diffx   // distance vector between node and integration point
@@ -141,11 +141,16 @@ int DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::maxent_basisfunction(
 {
   // get number of nodes
   const int  na  = diffx.N();
-  const bool der = deriv.M();
+  const bool der = (deriv.M()!=0);
+
+  // check some dimensions
+  if (diffx.M()!=dim) dserror("Number of rows of diffx is %i but must be  %i (dim)!",diffx.M(),dim);
+  if (funct.Length()!=na) funct.LightSize(na);
+  if (der and (deriv.M()!=dim or deriv.N()!=na)) deriv.LightShape(dim,na);
 
   // initilize vector/matrix for prior functions
   LINALG::SerialDenseVector q(na);
-  LINALG::SerialDenseMatrix dxq;
+  LINALG::SerialDenseMatrix dxq(0,0);
   if (der) {
     dxq.Reshape(dim,na);
   }
@@ -154,7 +159,7 @@ int DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::maxent_basisfunction(
 
   // initilize matrices for consistency/compliance conditions
   LINALG::SerialDenseMatrix c(dim,na);
-  std::vector<LINALG::SerialDenseMatrix> dxc;
+  std::vector<LINALG::SerialDenseMatrix> dxc(0);
   if (der) {
     dxc.resize(dim);
     for (size_t i=0; i<dim; i++) {
@@ -208,7 +213,7 @@ int DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::maxent_basisfunction(
  | function to compute the prior function and its derivatives.    nis Jan12 |
  *--------------------------------------------------------------------------*/
 template<int dim>
-void DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::SetPriorFunctDeriv(
+void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::SetPriorFunctDeriv(
   LINALG::SerialDenseVector       & q    ,
   LINALG::SerialDenseMatrix       & dxq  , // scaled by 1/q
   LINALG::SerialDenseMatrix const & diffx
@@ -246,7 +251,7 @@ void DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::SetPriorFunctDeriv(
  | function to compute the compliance condition and derivatives.  nis Jan12 |
  *--------------------------------------------------------------------------*/
 template<int dim>
-void DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::SetComplCondFunctDeriv(
+void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::SetComplCondFunctDeriv(
   LINALG::SerialDenseMatrix              & c    , // (dim x numnodes)-matrix
   std::vector<LINALG::SerialDenseMatrix> & dxc  , // dim-vector of (dim x numnodes)-matrix
   const LINALG::SerialDenseMatrix        & diffx  // (dim x numnodes)-matrix
@@ -280,7 +285,7 @@ void DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::SetComplCondFunctDeriv(
  | partition-of-unity constraint                         (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 template<int dim>
-void DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::DualStandard::UpdateParams(
+void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualStandard::UpdateParams(
   LINALG::SerialDenseVector       & funct,
   LINALG::Matrix<dim,1>           & r    ,
   LINALG::Matrix<dim,dim>         & J    ,
@@ -333,7 +338,7 @@ void DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::DualStandard::UpdateParams(
  | partition-of-unity constraint                         (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 template<int dim>
-void DRT::MESHFREE::MaxEntProblem::DualProblem<dim>::DualStandard::GetDerivs(
+void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualStandard::GetDerivs(
   const LINALG::SerialDenseVector              & funct, // basis functions values
         LINALG::SerialDenseMatrix              & deriv, // spatial derivatives of basis functions
   const LINALG::Matrix<dim,1>                  & lam   , // argmax of dual problem

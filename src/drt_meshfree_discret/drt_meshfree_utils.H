@@ -12,11 +12,15 @@ Maintainer: Keijo Nissen
 </pre>
 */
 /*----------------------------------------------------------------------*/
+#include <vector>
 
 #ifndef DRT_MESHFREE_UTILS_H
 #define DRT_MESHFREE_UTILS_H
 
-#include "../drt_lib/drt_element.H"
+namespace LINALG
+{
+  class SerialDenseMatrix;
+}
 
 namespace DRT
 {
@@ -26,25 +30,19 @@ namespace MESHFREE
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Determines whether a given element is a MeshfreeElement or not.
+   * \brief Reduces node position to dimensions of the face in which the nodes
+   *        lie. Herefore, node position are collected in a SerialDenseMatrix
+   *        and given back in another SerialDenseMatrix.
    *
-   *///                                                   (public) nis Jan12
+   * \param xyz         (in) : original node positions; size: dim x number of nodes
+   * \param xyz_reduced (out): reduced node positions; size: face dim x number of nodes
+   * \param dims        (out): dimensions in which face lies
+   *///                                                   (public) nis Jan14
   /*------------------------------------------------------------------------*/
-inline bool IsMeshfree(const enum DRT::Element::DiscretizationType& distype)
-{
-  dserror("discretisation type for meshfree cell still to be defined!");
-  return false;
-//  switch(distype)
-//  {
-//  case DRT::Element::nurbs8:
-//  {
-//    return true;
-//    break;
-//  }
-//  default:
-//    return false;
-//  }
-};
+  std::vector<int> ReduceDimensionOfFaceNodes(
+    const LINALG::SerialDenseMatrix & xyz,
+    LINALG::SerialDenseMatrix       & xyz_reduced
+    );
 
 } // namespace MESHFREE
 

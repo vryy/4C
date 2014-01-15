@@ -712,13 +712,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     &meshfree);
   BoolParameter("BUBNOV","No","Bubnov-Galerkin approx, i.e. weight=test function",&meshfree);
   BoolParameter("PARTITION_OF_UNITY","Yes","Enforcement of partition of unity constraint",&meshfree);
+  IntParameter("DBC_SOLVER",-1,"Solver number for solving non-constant Dirichlet BC if necessary.",&meshfree);
   DoubleParameter("NEGATIVITY",0.0,"Decides if and to which degree negativity is allowed",&meshfree);
   DoubleParameter("T_VARIANCE",1,"Variance of the basis solution function prior.",&meshfree);
   DoubleParameter("NEWTON_TOL",1e-6,"Tolerance at which Newton is considered to be converged.",&meshfree);
   DoubleParameter("NEWTON_MAX",100,"Maximum number of Newton steps.",&meshfree);
   DoubleParameter("T_RANGE_TOL",1,"Threshhold at which basis solution function prior is considered nmuerically zero.",&meshfree);
   DoubleParameter("CUTOFF_RADIUS",1e30,"Cutoff radius for influence of meshfree points on each other.",&meshfree);
-  setNumericStringParameter("BOUNDINGBOX","-1e12 -1e12 -1e12 1e12 1e121e12",
+  setNumericStringParameter("BOUNDINGBOX","-1e12 -1e12 -1e12 1e12 1e12 1e12",
                             "Bounding box for binning strategy in particle simulations.",
                             &meshfree);
   setStringToIntegralParameter<int>("T_PRIOR","Gauss","Defines the prior type of the basis solution function.",

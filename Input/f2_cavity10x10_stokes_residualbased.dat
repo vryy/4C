@@ -38,15 +38,11 @@ CONVTOL                         1.0E-9
 NUMSTASTEPS                     0
 INITIALFIELD                    zero_field
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        edge_based
+STABTYPE                        residual_based
 TRANSIENT                       no_transient    
---------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                         // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 none                            // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                            // none, std_eos, xfem_gp
-EOS_DIV                         none                            // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
-EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION                EOS_he_surf_with_max_diameter   // EOS_he_max_dist_to_opp_surf     //
+SUPG                            no
+DEFINITION_TAU                  Hughes_Franca_Balestra_wo_dt
+GRAD_DIV                        no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

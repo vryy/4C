@@ -257,7 +257,7 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
     }
 
     // calculate basis functions and derivatives via max-ent optimization
-    int error = discret_->solutionfunct_->GetMeshfreeBasisFunction(funct_,deriv_,distng,nsd_);
+    int error = discret_->GetMeshfreeSolutionApprox()->GetMeshfreeBasisFunction(funct_,deriv_,distng,nsd_);
     if (error) dserror("Something went wrong when calculating the meshfree basis functions.");
 
     //----------------------------------------------------------------------

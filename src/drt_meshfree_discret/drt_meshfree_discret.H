@@ -19,6 +19,13 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_meshfree.H"
 
+namespace LINALG
+{
+  class Solver;
+  class MapExtractor;
+  class SparseMatrix;
+}
+
 namespace DRT
 {
 
@@ -39,7 +46,7 @@ namespace MESHFREE
 // forward declaration
 /*==========================================================================*/
   class MeshfreeNode;
-  class MeshfreeProblem;
+  class MeshfreeApprox;
 
 /*--------------------------------------------------------------------------*/
 /*!
@@ -218,7 +225,7 @@ public:
    * \note Sets Filled()=false
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual void AddKnot(RCP<MeshfreeNode> knot);
+  virtual void AddKnot(Teuchos::RCP<MeshfreeNode> knot);
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -238,7 +245,7 @@ public:
    * \note Sets Filled()=false and calls Reset() upon discretization.
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual bool DeleteKnot(RCP<MeshfreeNode> knot);
+  virtual bool DeleteKnot(Teuchos::RCP<MeshfreeNode> knot);
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -271,7 +278,7 @@ public:
    * \note Filled()=true is a prerequisite
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  RCP<std::vector<char> > PackMyKnots() const;
+  Teuchos::RCP<std::vector<char> > PackMyKnots() const;
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -285,7 +292,29 @@ public:
    * \note Sets Filled()=false
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  void UnPackMyKnots(RCP<std::vector<char> > k);
+  void UnPackMyKnots(Teuchos::RCP<std::vector<char> > k);
+
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Evaluate meshfree Dirichlet boundary conditions for
+   *        non-interpolatory basis functions with weak Kronecker-delta and
+   *        partion-of-unity property
+   *
+   * \param params (in): List of parameters
+   * \param systemvector (out): Vector holding prescribed Dirichlet values
+   * \param systemvectord (out): Vector holding 1st time derivative of prescribed Dirichlet values
+   * \param systemvectordd (out): Vector holding 2nd time derivative prescribed Dirichlet values
+   * \param toggle (out): Vector containing 1.0 for each Dirichlet dof and 0 for everything else
+   * \param dbcmapextractor (out): Map extractor containing maps for the DOFs subjected to
+   *                               Dirichlet boundary conditions and the remaining/free DOFs
+   *///                                                   (public) nis Jan14
+  /*------------------------------------------------------------------------*/
+  virtual void EvaluateDirichlet(Teuchos::ParameterList& params,
+                                 Teuchos::RCP<Epetra_Vector> systemvector,
+                                 Teuchos::RCP<Epetra_Vector> systemvectord,
+                                 Teuchos::RCP<Epetra_Vector> systemvectordd,
+                                 Teuchos::RCP<Epetra_Vector> toggle,
+                                 Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -338,10 +367,30 @@ public:
                            bool initelements = true,
                            bool doboundaryconditions = true);
 
+  /*------------------------------------------------------------------------*/
   /*!
-    \brief Get flag indicating whether discretization has been filled and assigned
-  */
+   * \brief Get flag indicating whether discretization has been filled and assigned
+   *///                                                   (public) nis Jan12
+  /*------------------------------------------------------------------------*/
   virtual inline bool Filled() const {return (assigned_ and filled_);}
+
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Returns pointer to the meshfree approximation of the solution function
+   *
+   *\note This is a collective call
+   *///                                                   (public) nis Jan12
+  /*------------------------------------------------------------------------*/
+  virtual Teuchos::RCP<MeshfreeApprox> GetMeshfreeSolutionApprox(){return solutionapprox_;}
+
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Returns pointer to the meshfree approximation of the weighting function
+   *
+   *\note This is a collective call
+   *///                                                   (public) nis Jan12
+  /*------------------------------------------------------------------------*/
+  virtual Teuchos::RCP<MeshfreeApprox> GetMeshfreeWeightingApprox(){return weightingapprox_;}
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -478,22 +527,41 @@ private:
   /*------------------------------------------------------------------------*/
   virtual void BuildKnotToElementPointers();
 
-
 protected:
-  // internal data
-  bool                     assigned_;         //!< status for assigned of nodes to cells/knots
-  INPAR::MESHFREE::NodeAssignType      nodeassigntype_;   //!< way the neighbourhood search for nodes<>elements is managed
 
-  Teuchos::RCP<Epetra_Map> knotrowmap_;       //!< unique distribution of nodal ownerships
-  Teuchos::RCP<Epetra_Map> knotcolmap_;       //!< distribution of knots including ghost knots
-  std::vector<MeshfreeNode*>    knotrowptr_;       //!< vector of pointers to row knots for faster access
-  std::vector<MeshfreeNode*>    knotcolptr_;       //!< vector of pointers to column knots for faster access
-  std::vector<MeshfreeNode*>    knotghoptr_;       //!< vector of pointers to ghosted knots for faster access
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Fill Dirichlet BC to compute nodal values from values at nodes if
+   *        necessary. Needs to be done since meshfree methods are usually not
+   *        interpolatory. Prerequisite: weak Kronecker-delta property
+   *///                                                (protected) nis Jan14
+  /*------------------------------------------------------------------------*/
+  void FillDBCMatrix(
+    const DRT::Condition& cond,
+    const int             facedim,
+    const int             numdof,
+    std::set<int>&        nodegids,
+    bool&                 isconst,
+    std::vector<const double*>&          constvalue,
+    Teuchos::RCP<LINALG::SparseMatrix>   dbcmatrix,
+    const Teuchos::RCP<const Epetra_Map> dbcdofmap
+    );
+
+  // internal data
+  bool assigned_;                                  //!< status for assigned of nodes to cells/knots
+  INPAR::MESHFREE::NodeAssignType nodeassigntype_; //!< way the neighbourhood search for nodes<>elements is managed
+
+  Teuchos::RCP<Epetra_Map> knotrowmap_;            //!< unique distribution of nodal ownerships
+  Teuchos::RCP<Epetra_Map> knotcolmap_;            //!< distribution of knots including ghost knots
+  std::vector<MeshfreeNode*> knotrowptr_;          //!< vector of pointers to row knots for faster access
+  std::vector<MeshfreeNode*> knotcolptr_;          //!< vector of pointers to column knots for faster access
+  std::vector<MeshfreeNode*> knotghoptr_;          //!< vector of pointers to ghosted knots for faster access
   std::map<int,Teuchos::RCP<MeshfreeNode> > knot_; //!< map from knot Gid to knot pointers
 
-public: // hack ?
-  Teuchos::RCP<MeshfreeProblem> solutionfunct_;  //!< defines the meshfree problem for the (basis) solution function
-  Teuchos::RCP<MeshfreeProblem> weightingfunct_; //!< defines the meshfree problem for the (basis) weighting function
+  Teuchos::RCP<MeshfreeApprox> solutionapprox_;    //!< defines the meshfree approximation for the (basis) solution function
+  Teuchos::RCP<MeshfreeApprox> weightingapprox_;   //!< defines the meshfree approximation for the (basis) weighting function
+
+  Teuchos::RCP<LINALG::Solver> dbcsolver_;         //!< linear solver to strongly enforce non-constant DirichletBC
 
 }; // class MeshfreeDiscretization
 
@@ -503,6 +571,6 @@ public: // hack ?
 } // namespace DRT
 
 /// << operator
-std::ostream& operator << (std::ostream& os, const DRT::Discretization& dis);
+std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::MeshfreeDiscretization& dis);
 
 #endif  // #ifndef MESHFREE_DISCRET_H

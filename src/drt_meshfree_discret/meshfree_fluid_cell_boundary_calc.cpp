@@ -15,9 +15,10 @@ Maintainer: Keijo Nissen
 
 #include "meshfree_fluid_cell_boundary_calc.H"
 #include "meshfree_fluid_cell.H"
-#include "drt_meshfree_node.H"              // to get Gauss points in real space
-#include "drt_meshfree_cell_utils.H"              // to get Gauss points in real space
-#include "drt_meshfree_discret.H"              // to get Gauss points in real space
+#include "drt_meshfree_node.H"
+#include "drt_meshfree_cell_utils.H"
+#include "drt_meshfree_discret.H"
+#include "drt_meshfree_utils.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_parameter_std.H"
@@ -141,33 +142,23 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
   // get time factor for Neumann term
   const double timefac = fldparatimint_->TimeFacRhs();
 
+  // through dserror for ALE
+  if (cell->ParentElement()->IsAle())
+    dserror("Can't handle ALE for meshfree Neumann boundaries, yet!");
+
   //------------------------------------------------------------------------
   // get local node coordinates
   //------------------------------------------------------------------------
 
   // matrix for nodes position in dimensions of parent cell
-  LINALG::SerialDenseMatrix nxyz_parent(nsd_,bdrynen_,false);
+  LINALG::SerialDenseMatrix nxyz_pdim(nsd_,bdrynen_,false);
   // get nodes position in dimensions of parent cell
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::SerialDenseMatrix>(cell,nxyz_parent);
-
-  // add potential ALE displacements
-  if (cell->ParentElement()->IsAle())
-  {
-    dserror("can't handel ALE for meshfree Neumann boundaries, yet!");
-    // get nodal ALE-displacements
-    Teuchos::RCP<const Epetra_Vector>  dispnp;
-    std::vector<double>                mydispnp;
-    dispnp = discret_->GetState("dispnp");
-    if (dispnp != Teuchos::null)
-    {
-      mydispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+  double const * cnxyz_pdim;
+  for (int j=0; j<bdrynen_; j++){
+    cnxyz_pdim =  cell->Nodes()[j]->X();
+    for (int k=0; k<nsd_; k++){
+      nxyz_pdim(k,j) = cnxyz_pdim[k];
     }
-
-    // add nodal ALE-displacements to nodal positions
-    for (int inode=0;inode<bdrynen_;++inode)
-      for(int idim=0;idim<nsd_;++idim)
-        nxyz_parent(idim,inode) += mydispnp[numdofpernode_*inode+idim];
   }
 
   //------------------------------------------------------------------------
@@ -176,39 +167,16 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
   // handeled)
   //------------------------------------------------------------------------
 
-  // find coordinates in which boundary lies
-  std::vector<int> dims;
-  int ndims = 0;
-  for(int idim=0; idim<nsd_; ++idim)
-  {
-    for(int inode=0; inode<(bdrynen_-1); ++inode)
-    {
-      if (!(abs(nxyz_parent(idim,inode)-nxyz_parent(idim,inode+1))<EPS12))
-      {
-        if (ndims<bdrynsd_)
-        {
-          dims.push_back(idim);
-          ndims++;
-          break;
-        }
-        else
-          dserror("So far, meshfree Neumann boundary has to be aligned with a coordinate axis!");
-      }
-    }
-  }
-  if (!(ndims==bdrynsd_))
-    dserror("Too few dimensions selected for meshfree boundary cell.");
+  // get matrix of cell node positions in reduced dimensions
+  std::vector<int> dims = DRT::MESHFREE::ReduceDimensionOfFaceNodes(nxyz_pdim,nxyz_);
+  if ((int)(dims.size())!=bdrynsd_) dserror("Nodes lie on a face of dimension unequal to dimension of boundary element.");
 
-  // copy node positions for reduced dimension
-  for(int idim=0; idim<bdrynsd_; ++idim)
-    for(int inode=0; inode<bdrynen_; ++inode)
-      nxyz_(idim,inode) = nxyz_parent(dims[idim],inode);
-  // fill matrix of cell knots position in xyz
-  double const * kxyz_parent;
-  for (int j=0; j<bdrynek_; j++){
-    kxyz_parent =  cell->Knots()[j]->X();
-    for (int k=0; k<bdrynsd_; k++){
-      kxyz_(k,j) = kxyz_parent[dims[k]];
+  // fill matrix of cell knot positions in reduced dimensions
+  double const * kxyz_pdim;
+  for (int iknot=0; iknot<bdrynek_; iknot++){
+    kxyz_pdim =  cell->Knots()[iknot]->X();
+    for (int idim=0; idim<bdrynsd_; ++idim){
+      kxyz_(idim,iknot) = kxyz_pdim[dims[idim]];
     }
   }
 
@@ -247,7 +215,7 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
     }
 
     // calculate basis functions and derivatives via max-ent optimization
-    int error = discret_->solutionfunct_->GetMeshfreeBasisFunction(funct_,deriv_,distng,bdrynsd_);
+    int error = discret_->GetMeshfreeSolutionApprox()->GetMeshfreeBasisFunction(funct_,deriv_,distng,bdrynsd_);
     if (error) dserror("Something went wrong when calculating the meshfree basis functions.");
 
     // get the required material information

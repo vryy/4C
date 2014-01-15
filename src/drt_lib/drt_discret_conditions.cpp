@@ -45,6 +45,7 @@ Maintainer: Michael Gee
 #include "drt_dserror.H"
 #include "drt_parobject.H"
 
+#include "drt_globalproblem.H"
 #include "drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
 
@@ -102,15 +103,16 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     else if (fool->second->GType()==DRT::Condition::NoGeom) continue;
     // do not build anything for point wise conditions
     else if (fool->second->GType()==DRT::Condition::Point)  continue;
+    // build element geometry description without creating new elements if no boundary condition
+    // (e.g. all true volume conditions)
+    else if ((int)(fool->second->GType())==DRT::Problem::Instance()->NDim())
+      BuildVolumesinCondition(fool->first,fool->second);
     // build a line element geometry description
     else if (fool->second->GType()==DRT::Condition::Line)
       BuildLinesinCondition(fool->first,fool->second);
     // build a surface element geometry description
     else if (fool->second->GType()==DRT::Condition::Surface)
       BuildSurfacesinCondition(fool->first,fool->second);
-    // build a volume element geometry description
-    else if (fool->second->GType()==DRT::Condition::Volume)
-      BuildVolumesinCondition(fool->first,fool->second);
 
     if (fool->second->GType()!=DRT::Condition::Volume)
     {

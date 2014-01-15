@@ -218,7 +218,7 @@ int DRT::ELEMENTS::MeshfreeFluid::NumVolume() const
 
 
 /*--------------------------------------------------------------------------*
- |  Get vector of RCPs to the lines of this cell         (public) nis Jan13 |
+ | Get vector of Teuchos::RCPs to lines of this cell     (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeFluid::Lines()
 {
@@ -237,7 +237,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeFluid::Lines()
   else if (NumLine()==1) // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
   {
     // 1D (we return the element itself)
-    std::vector<RCP<Element> > lines(1);
+    std::vector<Teuchos::RCP<Element> > lines(1);
     lines[0]= Teuchos::rcp(this, false);
     return lines;
   }
@@ -250,7 +250,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeFluid::Lines()
 
 
 /*--------------------------------------------------------------------------*
- |  Get vector of RCPs to the surfaces of this cell      (public) nis Jan13 |
+ | Get vector of Teuchos::RCPs to surface of this cell   (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeFluid::Surfaces()
 {
@@ -267,7 +267,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeFluid::Surfaces(
   else if (NumSurface() == 1) // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
   {
     // 2D (we return the element itself)
-    std::vector<RCP<Element> > surfaces(1);
+    std::vector<Teuchos::RCP<Element> > surfaces(1);
     surfaces[0]= Teuchos::rcp(this, false);
     return surfaces;
   }
@@ -280,13 +280,13 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeFluid::Surfaces(
 
 
 /*--------------------------------------------------------------------------*
- |  Get vector of RCPs to the volumes of this cell       (public) nis Jan13 |
+ | Get vector of Teuchos::RCPs to volumes of this cell   (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeFluid::Volumes()
 {
   if (NumVolume()==1) // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
   {
-    std::vector<RCP<Element> > volumes(1);
+    std::vector<Teuchos::RCP<Element> > volumes(1);
     volumes[0]= Teuchos::rcp(this, false);
     return volumes;
   }

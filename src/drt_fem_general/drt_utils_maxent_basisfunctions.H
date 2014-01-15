@@ -44,9 +44,9 @@ namespace MESHFREE
  * \brief abstract meshfree problem class
  *///                                                                nis Mar12
 /*----------------------------------------------------------------------------*/
-class MeshfreeProblem{
+class MeshfreeApprox{
 public:
-  virtual ~MeshfreeProblem(){};
+  virtual ~MeshfreeApprox(){};
 
   virtual double GetRange(){return range_;};
 
@@ -68,20 +68,18 @@ protected:
 
 /*============================================================================*/
 /*!
- * \brief Maximum-Entropy problem class
+ * \brief Maximum-Entropy approximation class
  *///                                                                nis Mar12
 /*============================================================================*/
-class MaxEntProblem: public MeshfreeProblem {
+class MaxEntApprox: public MeshfreeApprox {
 private:
 
   // forward declaration of DualProblem class
   template<int dim> class DualProblem;
-  // DualProblem is a friend of the MaxEntProblem
-//  template<int dim> friend class DualProblem;
 
 public:
   //! ctor
-  MaxEntProblem(
+  MaxEntApprox(
     Teuchos::ParameterList const & params //!< (i) parameter list for maxent basis functions
   );
 
@@ -136,7 +134,7 @@ private:
     DualProblem(
       bool const     pu,
       double const   neg,
-      MaxEntProblem* that
+      MaxEntApprox* that
     );
 
     /*--------------------------------------------------------------------------*/
@@ -254,8 +252,8 @@ private:
 
     /*------------------------------------------------------------------------*/
 
-    //! explicite this_-pointer; this_-pointer of MaxEntProblem is thus also known in DualProblem.
-    MaxEntProblem* this_;
+    //! explicite this_-pointer; this_-pointer of MaxEntApprox is thus also known in DualProblem.
+    MaxEntApprox* this_;
 
     //! pointer to DualProblemType to specify routine for updating parameters
     //! and evaluating spatial derivatives
@@ -283,7 +281,7 @@ private:
   double NewtonTol_;
   //! maximum number of Newton steps
   int NewtonMax_;
-}; // end  class MaxEntProblem
+}; // end  class MaxEntApprox
 
 } // end MESHFREE
 } // end DRT
