@@ -203,8 +203,6 @@ void FaceMatTwoPhase(
     // blend smoothly to minus domain if required
     COMBUST::BlendMaterial(ele, indomainplus, time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
 
-    if ((master_ele->Touched()) and (slave_ele->Touched()))
-      dserror("Touched elements not yet considered");
   }
 
   //----------------------------------------------

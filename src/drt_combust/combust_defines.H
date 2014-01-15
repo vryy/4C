@@ -23,7 +23,6 @@ Maintainer: Ursula Rasthofer
 // combustion algorithm options
 //-----------------------------
 //#define COMBUST_DECOUPLEDXFEM   // turn on/off boundary integrals for premixed combustion system matrix
-#define COMBUST_NITSCHE      // turn on/off Nitsche method for interface conditions
 //#define COMBUST_PROJCELLEDGES // turn on/off old method to find facing flame front patches
 //#define COMBUST_SXFEM
 //#define COMBUST_SETJUMP

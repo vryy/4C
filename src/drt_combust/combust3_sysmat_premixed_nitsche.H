@@ -150,7 +150,7 @@ void SysmatDomainNitsche(
     //----------------------------------------------
     // get Gaussian points for this integration cell
     //----------------------------------------------
-    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Bisected(), cell->Shape());
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Splited(), cell->Shape());
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
     //--------------------------------------
     // integration loop over Gaussian points
@@ -656,7 +656,7 @@ void SysmatDomainNitscheGalerkin(
     //----------------------------------------------
     // get Gaussian points for this integration cell
     //----------------------------------------------
-    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Bisected(), cell->Shape());
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Splited(), cell->Shape());
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
     //--------------------------------------
     // integration loop over Gaussian points
@@ -1022,7 +1022,7 @@ void SysmatDomainNitscheGalerkin(
 
       if (ASSTYPE== XFEM::xfem_assembly)
       {
-        if(ele->Bisected())
+        if(ele->Splited())
         {
 //          std::cout << "funct" << funct << std::endl;
 //          std::cout << "evelnp " << evelnp << std::endl;
@@ -2250,7 +2250,8 @@ void Nitsche_SysmatBoundaryCell(
 
     const double halftimefacfacplus   = dens_plus*0.5*timefacfac;
     const double halftimefacfacminus  = dens_minus*0.5*timefacfac;
-    const double alphatimefacfac = alphau*timefacfac;
+    const double alphatimefacfac = alphau*timefacfac; //(alphau + 0.05/hk_ele * 0.5 * (visc_plus+visc_minus)+ 0.05 * 0.5 * (dens_plus*vel_plus.Norm2()+dens_minus*vel_minus.Norm2()) )*timefacfac;
+//    std::cout << alphau << "   " << 0.05/hk_ele * 0.5 * (visc_plus+visc_minus) << "   " << hk_ele << std::endl;
     // TODO: convstabtimefacfac = alpha_c * timefacfac
     //       alpha_c = 0.5 * rho_max * absvelproj or rho_inflow_domain?
     double rho_max = std::max(dens_plus,dens_minus);

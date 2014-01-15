@@ -209,9 +209,11 @@ private:
 
         virtual void Unpack(const std::vector<char>& data);
 
-        virtual bool Bisected() const { return bisected_; };
+        virtual bool Intersected() const { return intersected_; };
 
-        virtual bool Touched() const { return touched_; };
+        virtual bool Splited() const { return splited_; };
+
+        virtual bool Bisected() const { return bisected_; };
 
         virtual COMBUST::InterfaceHandleCombust* InterfaceHandle() const { return ih_; };
 
@@ -357,36 +359,12 @@ private:
         //! store the curvature
         Epetra_Vector* curvature_;
 
-        //! boolean indicating whether element is bisected by the interface
+        //! boolean indicating whether element has boundary cells
+        bool intersected_;
+        //! boolean indicating whether element has more than one domain integration cell
+        bool splited_;
+        //! boolean indicating whether element is completely enriched
         bool bisected_;
-
-        //! boolean indicating whether element is trisected by the interface
-        bool trisected_;
-
-        //! boolean indicating whether element is touched by the interface at a whole 2D face
-        bool touched_;
-
-        //! store element stress info and corresponding matrices used during condensation
-        class DLMInfo
-        {
-        public:
-          //! Kaa inv of old iteration step
-          Teuchos::RCP<LINALG::SerialDenseMatrix>      oldKaainv_;
-          //! Kad of old iteration step
-          Teuchos::RCP<LINALG::SerialDenseMatrix>      oldKad_;
-          //! fa inv of old iteration step
-          Teuchos::RCP<LINALG::SerialDenseVector>      oldfa_;
-          //! this map stores all element stresses (independent of the xfem label)
-          Teuchos::RCP<LINALG::SerialDenseVector>      stressdofs_;
-
-          //! constructor
-          explicit DLMInfo(const int nd, const int na);
-        private:
-          //! disabled standard constructor
-          DLMInfo();
-          //! disabled copy constructor
-          DLMInfo(const DLMInfo&);
-        };
 
         // internal calculation methods
 

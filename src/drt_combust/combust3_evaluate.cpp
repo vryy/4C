@@ -123,6 +123,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       // something was left from the last nonlinear iteration.
       eleDofManager_ = Teuchos::null;
       ih_ = NULL;
+      intersected_ = false;
+      splited_ = false;
+      bisected_ = false;
       epetra_phinp_ = NULL;
       gradphi_ = NULL;
       gradphi2_ = NULL;
@@ -135,6 +138,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       // reset element dof manager if present
       eleDofManager_ = Teuchos::null;
       ih_ = NULL;
+      intersected_ = false;
+      splited_ = false;
+      bisected_ = false;
       epetra_phinp_ = NULL;
       gradphi_ = NULL;
       gradphi2_ = NULL;
@@ -155,9 +161,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       //--------------------------------------------------
       // remark: initialization call of fluid time integration scheme will also end up here: The initial
       //         flame front has not been incorporated into the fluid field -> no XFEM dofs, yet!
-      this->bisected_      = false;
-      this->trisected_     = false;
-      this->touched_  = false;
+      this->intersected_ = false;
+      this->splited_ = false;
+      this->bisected_ = false;
 
       if (flamefront != Teuchos::null) // not the initial call
       {
@@ -168,23 +174,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
         if (flamefront->GradPhi2()!=Teuchos::null) gradphi2_ = flamefront->GradPhi2().get();
         if (flamefront->Curvature()!=Teuchos::null) curvature_ = flamefront->Curvature().get();
 
-        const COMBUST::InterfaceHandleCombust::CutStatus cutstat = ih_->ElementCutStatus(this->Id());
-
-        if (cutstat == COMBUST::InterfaceHandleCombust::uncut)
-        {// nothing to do
-        }
-        else if (cutstat == COMBUST::InterfaceHandleCombust::bisected)
-        {
-          this->bisected_ = true;
-        }
-        else if (cutstat == COMBUST::InterfaceHandleCombust::trisected)
-          this->trisected_ = true;
-        else if (cutstat == COMBUST::InterfaceHandleCombust::touched)
-        {
-          this->touched_ = true;
-        }
-        else
-          dserror("cut status not available for element % ",this->Id());
+        this->intersected_ = ih_->ElementIntersected(this->Id());
+        this->splited_ = ih_->ElementSplit(this->Id());
+        this->bisected_ = ih_->ElementBisected(this->Id());
       }
       else
       {

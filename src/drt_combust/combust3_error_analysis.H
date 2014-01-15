@@ -1330,11 +1330,11 @@ void Nitsche_BuildDomainIntegratedErrors(
     // order of convergence because u_h and p_h approximates u and p only with this order of convergence
     DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
     if (!withkinks)
-      gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Bisected(), cell->Shape());
+      gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Splited(), cell->Shape());
     // special getXFEMGaussruleKinkEnr for kink enrichment is called as parabolic shape functions are obtained
     // after multipying N and Psi
     else
-      gaussrule = XFEM::getXFEMGaussruleKinkEnr<DISTYPE>(ele, xyze, ele->Bisected(),cell->Shape());
+      gaussrule = XFEM::getXFEMGaussruleKinkEnr<DISTYPE>(ele, xyze, ele->Splited(),cell->Shape());
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
     //--------------------------------------
     // integration loop over Gaussian points

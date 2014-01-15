@@ -153,7 +153,7 @@ void SysmatTwoPhaseFlow(
 
     // special getXFEMGaussruleKinkEnr for kink enrichment is called as parabolic shape functions are obtained
     // after multipying N and Psi
-    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussruleKinkEnr<DISTYPE>(ele, xyze, ele->Bisected(),cell->Shape());
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussruleKinkEnr<DISTYPE>(ele, xyze, ele->Splited(),cell->Shape());
 
     // gaussian points
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -179,7 +179,7 @@ void SysmatTwoPhaseFlow(
       // sets AssemblyType to XFEM Assembly, otherwise detEtaToXi3D is always 1.0
       // and coordinate mapping is incorrect!
       double detcell_temp=0.0;
-      if(ASSTYPE==XFEM::standard_assembly and ele->Bisected())
+      if(ASSTYPE==XFEM::standard_assembly and ele->Splited())
       {
         GEO::mapEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain, posXiDomain);
         detcell_temp = GEO::detEtaToXi3D<XFEM::xfem_assembly>(*cell, pos_eta_domain);

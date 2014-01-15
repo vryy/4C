@@ -136,7 +136,12 @@ void FaceMatNitsche(
 
     if (facetype == INPAR::XFEM::face_type_std)
     {
-      //face is not intersected -> master and/or slave is also not intersected
+      // face is not intersected -> master and/or slave is also not intersected
+      // note: We have to ask for fully enriched elements or actually bisected elements here,
+      //       since we want to ask the element, which is completely in one domain (i.e., has only
+      //       domain int cells of one subdomain with respect to tolerances) for the subdomain we are
+      //       dealing with. Due to tolerances, this may be a so-called touched element with domain and
+      //       boundary int cells such that we cannot ask for Intersected() or Splited() here.
       if ( (not master_ele->Bisected()) or (not slave_ele->Bisected()))
       {
         if (not master_ele->Bisected())
@@ -204,9 +209,6 @@ void FaceMatNitsche(
 
     // blend smoothly to minus domain if required
     COMBUST::BlendMaterial(ele, indomainplus, time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
-
-    if ((master_ele->Touched()) and (slave_ele->Touched()))
-      dserror("Touched elements not yet considered");
   }
 
   //----------------------------------------------

@@ -819,35 +819,14 @@ void Sysmat(
   {
     double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
     double ele_meas_minus = 0.0; // for different averages <> and {}
-//    if (ele->Bisected())
-//    {
-//      COMBUST::SysmatDomainNitscheGalerkin<DISTYPE,ASSTYPE,NUMDOF>(
-//          ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
-//          ele_meas_plus, ele_meas_minus);
-//
-//      // plus call
-//      COMBUST::SysmatDomainNitscheStabHexRule<DISTYPE,ASSTYPE,NUMDOF>(
-//          ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
-//          true);
-//      // minus call
-//      COMBUST::SysmatDomainNitscheStabHexRule<DISTYPE,ASSTYPE,NUMDOF>(
-//          ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
-//          false);
-//    }
-//    else
-    {
       COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
           ele_meas_plus, ele_meas_minus);
-    }
 
 #ifndef COMBUST_DECOUPLEDXFEM
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
-    if (ele->Bisected() or ele->Touched() )
+    if (ele->Intersected() )
     {
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
@@ -884,7 +863,7 @@ void Sysmat(
         genalpha, assembler);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
-    if (ele->Bisected() or ele->Touched())
+    if (ele->Intersected())
     {
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
@@ -915,7 +894,7 @@ void Sysmat(
         ele_meas_plus, ele_meas_minus);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
-    if (ele->Bisected() or ele->Touched())
+    if (ele->Intersected())
     {
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
@@ -1324,7 +1303,7 @@ void NitscheErrors(
     COMBUST::Nitsche_BuildDomainIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
       eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, material, time, ele_meas_plus, ele_meas_minus, false);
 
-    if (ele->Bisected() or ele->Touched() )
+    if (ele->Intersected())
     {
       LINALG::Matrix<3,numnode> egradphi;
       egradphi.Clear();
@@ -1349,7 +1328,7 @@ void NitscheErrors(
 
     if (combusttype == INPAR::COMBUST::combusttype_twophaseflow_surf)
     {
-      if (ele->Bisected() or ele->Touched() )
+      if (ele->Intersected())
       {
         LINALG::Matrix<3,numnode> egradphi;
         egradphi.Clear();
@@ -1515,7 +1494,7 @@ void IntegrateShape(
   {
     // special getXFEMGaussruleKinkEnr for kink enrichment is called as parabolic shape functions are obtained
     // after multipying N and Psi
-    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussruleKinkEnr<DISTYPE>(ele, xyze, ele->Bisected(),cell->Shape());
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussruleKinkEnr<DISTYPE>(ele, xyze, ele->Splited(),cell->Shape());
 
     // gaussian points
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);

@@ -140,9 +140,9 @@ DRT::ELEMENTS::Combust3::Combust3(int id, int owner) :
 DRT::Element(id,owner),
 eleDofManager_(Teuchos::null),
 standard_mode_(false),
-bisected_(false),
-trisected_(false),
-touched_(false)
+intersected_(false),
+splited_(false),
+bisected_(false)
 {
     return;
 }
@@ -155,9 +155,9 @@ DRT::ELEMENTS::Combust3::Combust3(const DRT::ELEMENTS::Combust3& old) :
 DRT::Element(old),
 eleDofManager_(old.eleDofManager_),
 standard_mode_(old.standard_mode_),
-bisected_(old.bisected_),
-trisected_(old.trisected_),
-touched_(old.touched_)
+intersected_(old.intersected_),
+splited_(old.splited_),
+bisected_(old.bisected_)
 {
     return;
 }
@@ -210,9 +210,9 @@ void DRT::ELEMENTS::Combust3::Pack(DRT::PackBuffer& data) const
   Element::Pack(data);
 
   AddtoPack(data,standard_mode_);
+  AddtoPack(data,intersected_);
+  AddtoPack(data,splited_);
   AddtoPack(data,bisected_);
-  AddtoPack(data,trisected_);
-  AddtoPack(data,touched_);
 
   return;
 }
@@ -235,9 +235,9 @@ void DRT::ELEMENTS::Combust3::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   standard_mode_ = ExtractInt(position,data);
+  intersected_ = ExtractInt(position,data);
+  splited_ = ExtractInt(position,data);
   bisected_ = ExtractInt(position,data);
-  trisected_ = ExtractInt(position,data);
-  touched_ = ExtractInt(position,data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -413,7 +413,7 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
   {
     // extract local (element level) G-function values from global vector
     // only if element is intersected; only adjacent nodal values are calculated
-    if(ele->Bisected() or ele->Touched() )
+    if(ele->Intersected() )
     {
       // remark: - for the normal enrichment strategy all enriched elements are needed here
       //         - the intersected elements are not enough since normal shape functions are also
@@ -427,7 +427,7 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
   }
   if(gradphi2_)
   {
-    if(ele->Bisected() or ele->Touched() )
+    if(ele->Intersected() )
     {
       if (gradphi2np == NULL) {dserror("no second gradient of phi has been computed!");}
       else{DRT::UTILS::ExtractMyNodeBasedValues(ele, gradphi2np_,*gradphi2np);}
@@ -479,19 +479,6 @@ DRT::ELEMENTS::Combust3::MyStateSurface::MyStateSurface(
 
   // extract local (element level) G-function values from global vector
   DRT::UTILS::ExtractMyNodeBasedValues(ele, phinp_, *phinp);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Combust3::DLMInfo::DLMInfo(const int nd, const int na)
-{
-  oldKaainv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(na,na,true));
-  oldKad_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(na,nd,true));
-  oldfa_ = Teuchos::rcp(new LINALG::SerialDenseVector(na,true));
-  stressdofs_ = Teuchos::rcp(new LINALG::SerialDenseVector(na,true));
-
-  return;
 }
 
 
