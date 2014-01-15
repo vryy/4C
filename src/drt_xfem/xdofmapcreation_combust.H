@@ -88,9 +88,7 @@ namespace XFEM
       const COMBUST::InterfaceHandleCombust&    ih,            ///< interface information
       const Epetra_Vector*                      phinp,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap,    ///< enriched fields per node
-      std::map<int, std::set<XFEM::FieldEnr> >& elementDofMap, ///< enriched fields per element
       const std::set<XFEM::PHYSICS::Field>&     fieldset,      ///< physical fields to enrich
-      const XFEM::ElementAnsatz&                elementAnsatz, ///< approach for extra stress field
       const Teuchos::ParameterList&             params         ///< XFEM parameter list
       );
 
@@ -102,24 +100,6 @@ namespace XFEM
       const DRT::Element*                           xfemele,   ///<
       const std::set<XFEM::PHYSICS::Field>&         fieldset,  ///<
       std::map<int, std::set<XFEM::FieldEnr> >&     nodeDofMap ///<
-      );
-
-  /*!
-   * \brief apply standard dofs to nodes
-   * \note preliminary split-off function from applyStandardEnrichment() for combustion problems
-   */
-  void ApplyElementEnrichmentCombust(
-      const DRT::Element*                                                xfemele,           ///<
-      const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,    ///< element dofs
-      std::map<int, std::set<XFEM::FieldEnr> >&                          elementDofMap,     ///<
-      const COMBUST::InterfaceHandleCombust&                             ih                 ///<
-      );
-
-  void ApplyElementEnrichmentCombust(
-      const DRT::Element*                                                xfemele,
-      const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
-      std::set<XFEM::FieldEnr>&                                          elementFieldEnrSet,
-      const COMBUST::InterfaceHandleCombust&                             ih
       );
 
 } // namespace XFEM

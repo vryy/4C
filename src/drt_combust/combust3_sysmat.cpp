@@ -17,7 +17,6 @@ Maintainer: Ursula Rasthofer
 
 #include "combust_interface.H"
 #include "combust3_sysmat_premixed_nitsche.H"
-#include "combust3_sysmat_premixed_stress.H"
 #include "combust3_sysmat_twophaseflow.H"
 #include "combust3_error_analysis.H"
 #include "combust3_facemat_premixed_nitsche.H"
@@ -818,8 +817,6 @@ void Sysmat(
   {
   case INPAR::COMBUST::combusttype_premixedcombustion:
   {
-#ifdef COMBUST_NITSCHE
-
     double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
     double ele_meas_minus = 0.0; // for different averages <> and {}
 //    if (ele->Bisected())
@@ -847,23 +844,8 @@ void Sysmat(
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
           ele_meas_plus, ele_meas_minus);
     }
-#endif
-
-#ifdef COMBUST_EPSPRES_BASED
-    COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor, ediscpres,
-        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
-        newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler);
-#ifdef COMBUST_SIGMA_BASED
-    // TODO: der aufruf ist doch der gleiche wie der darueber? -> COMBUST_SIGMA_BASED raus?
-    COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor, ediscpres,
-        material, timealgo, dt, theta, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler);
-#endif
-#endif
 
 #ifndef COMBUST_DECOUPLEDXFEM
-#ifdef COMBUST_NITSCHE
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
     if (ele->Bisected() or ele->Touched() )
     {
@@ -882,33 +864,6 @@ void Sysmat(
           surftensapprox, variablesurftens, second_deriv, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration,
           weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
-    }
-#endif
-    // boundary integrals are only added for intersected elements (fully enriched elements)
-    if (ele->Bisected() or ele->Touched() )
-    {
-#ifdef COMBUST_STRESS_BASED
-      // get smoothed gradient of phi for surface tension applications
-      LINALG::Matrix<3,numnode> egradphi;
-      egradphi.Clear();
-      LINALG::Matrix<9,numnode> egradphi2;
-      egradphi2.Clear();
-      LINALG::Matrix<numnode,1> ecurv;
-      ecurv.Clear();
-      if (smoothed_boundary_integration)
-        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi,egradphi2, ecurv);
-
-#ifdef COMBUST_EPSPRES_BASED
-      COMBUST::SysmatBoundaryStress<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
-          theta, ga_alphaF, ga_alphaM, ga_gamma, assembler, flamespeed);
-#ifdef COMBUST_SIGMA_BASED
-      COMBUST::SysmatBoundarySigma<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
-          theta, assembler, flamespeed);
-#endif
-#endif
-#endif // COMBUST_STRESS_BASED
     }
 #endif //COMBUST_DECOUPLEDXFEM
   }

@@ -352,9 +352,7 @@ void XFEM::createDofMapCombust(
   const COMBUST::InterfaceHandleCombust&    ih,
   const Epetra_Vector*                      phinp,
   std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap,
-  std::map<int, std::set<XFEM::FieldEnr> >& elementDofMap,
   const std::set<XFEM::PHYSICS::Field>&     fieldset,
-  const XFEM::ElementAnsatz&                elementAnsatz,
   const Teuchos::ParameterList&             params
   )
 {
@@ -367,18 +365,6 @@ void XFEM::createDofMapCombust(
     const DRT::Element* xfemele = ih.FluidDis()->lColElement(i);
 
     bool skipped_node_enr = false;
-
-#ifdef COMBUST_STRESS_BASED
-    // create an empty element ansatz map
-    std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
-
-    // add discontinuous stress unknowns for this element, if DLM condensation is turned off
-    if (not params.get<bool>("DLM_condensation"))
-    {
-      // ask for appropriate element ansatz (shape functions) for this type of element
-      element_ansatz = elementAnsatz.getElementAnsatz(xfemele->Shape());
-    }
-#endif
 
     //-------------------------------------------------------
     // apply standard enrichments to every node in every call
@@ -411,11 +397,6 @@ void XFEM::createDofMapCombust(
         {
           // apply jump enrichments to all nodes of a bisected element
           skipped_node_enr = ApplyJumpEnrichment(xfemele, fieldset, nodeDofMap);
-
-#ifdef COMBUST_STRESS_BASED
-          // apply element stress enrichments to a bisected element
-          ApplyElementEnrichmentCombust(xfemele, element_ansatz, elementDofMap, ih);
-#endif
         }
         break;
         case INPAR::COMBUST::combusttype_twophaseflow:
@@ -468,15 +449,8 @@ void XFEM::createDofMapCombust(
         case INPAR::COMBUST::combusttype_premixedcombustion:
         {
           std::cout << "\n---  element "<< xfemele->Id() << " is touched at a face and nodes with G=0.0 get additionally enriched";
-          // TODO: implementation of  additional degrees of freedom for touched elements for premixed combustion STRESS BASED!!!
-#ifdef COMBUST_STRESS_BASED
-          // apply element stress enrichments to an intersected element
-          //skipped_elem_enr = ApplyElementEnrichmentCombust(xfemele, element_ansatz, elementDofMap, ih);
-          dserror(" apply enrichments for premixedcombustion with touched elements");
-#endif
-#ifdef COMBUST_NITSCHE
+
           skipped_node_enr += ApplyJumpEnrichmentToTouched(ih,phinp,xfemele, fieldset, nodeDofMap);
-#endif
         }
         break;
         case INPAR::COMBUST::combusttype_twophaseflow:
@@ -547,44 +521,4 @@ void XFEM::ApplyStandardEnrichmentCombust(
       //std::cout << "Standard Enrichment applied for node " << nodeid << std::endl;
     }
   };
-}
-
-
-void XFEM::ApplyElementEnrichmentCombust(
-    const DRT::Element*                                                xfemele,
-    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
-    std::map<int, std::set<XFEM::FieldEnr> >&                          elementDofMap,
-    const COMBUST::InterfaceHandleCombust&                             ih
-)
-{
-  // type of enrichment corresponds to name of function; label (second argument) = 0
-  const XFEM::Enrichment elementenr1(XFEM::Enrichment::typeStandard, 0);
-  const XFEM::Enrichment elementenr2(XFEM::Enrichment::typeJump, 0);
-
-  std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
-  for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
-  {
-    elementDofMap[xfemele->Id()].insert(XFEM::FieldEnr(fielditer->first, elementenr1));
-    elementDofMap[xfemele->Id()].insert(XFEM::FieldEnr(fielditer->first, elementenr2));
-    std::cout << "added element enrichment on crearedofmapCombust" << std::endl;
-  }
-}
-
-void XFEM::ApplyElementEnrichmentCombust(
-    const DRT::Element*                                                xfemele,
-    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
-    std::set<XFEM::FieldEnr>&                                          elementFieldEnrSet,
-    const COMBUST::InterfaceHandleCombust&                             ih
-)
-{
-  // type of enrichment corresponds to name of function; label (second argument) = 0
-  const XFEM::Enrichment elementenr1(XFEM::Enrichment::typeStandard, 0);
-  const XFEM::Enrichment elementenr2(XFEM::Enrichment::typeVoid, 0);
-
-  std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
-  for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
-  {
-    elementFieldEnrSet.insert(XFEM::FieldEnr(fielditer->first, elementenr1));
-    elementFieldEnrSet.insert(XFEM::FieldEnr(fielditer->first, elementenr2));
-  }
 }

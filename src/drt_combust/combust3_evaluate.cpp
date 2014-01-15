@@ -122,13 +122,11 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       // anymore). This way, one can see, if all information is generated correctly or whether
       // something was left from the last nonlinear iteration.
       eleDofManager_ = Teuchos::null;
-      eleDofManager_uncondensed_ = Teuchos::null;
       ih_ = NULL;
       epetra_phinp_ = NULL;
       gradphi_ = NULL;
       gradphi2_ = NULL;
       curvature_ = NULL;
-      DLM_info_ = Teuchos::null;
     }
     break;
     case set_standard_mode:
@@ -136,7 +134,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       standard_mode_ = true;
       // reset element dof manager if present
       eleDofManager_ = Teuchos::null;
-      eleDofManager_uncondensed_ = Teuchos::null;
       ih_ = NULL;
       epetra_phinp_ = NULL;
       gradphi_ = NULL;
@@ -205,76 +202,16 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       // get access to global dofman
       const Teuchos::RCP<const XFEM::DofManager> globaldofman = params.get< Teuchos::RCP< XFEM::DofManager > >("dofmanager");
 
-#ifdef COMBUST_STRESS_BASED
-#ifdef COMBUST_EPSPRES_BASED
-      Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz = Teuchos::rcp(new COMBUST::EpsilonPressureAnsatz());
-#endif
-#ifdef COMBUST_SIGMA_BASED
-      Teuchos::RCP<XFEM::ElementAnsatz> elementAnsatz = Teuchos::rcp(new COMBUST::CauchyStressAnsatz());
-#endif
-#endif
       // create an empty element ansatz map to be filled in the following
       std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled;
       // create an empty element ansatz map
       const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
-#ifdef COMBUST_STRESS_BASED
-      // ask for appropriate element ansatz (shape functions) for this type of element and fill the map
-      element_ansatz_filled = elementAnsatz->getElementAnsatz(this->Shape());
-#endif
       //-------------------------------------------------------------------------
       // build element dof manager according to global dof manager
       // remark: this procedure is closely related to XFEM::createDofMapCombust()
       //-------------------------------------------------------------------------
-#ifdef COMBUST_STRESS_BASED
-      if (params.get<bool>("DLM_condensation")) // DLM condensation turned on
-      {
-        // add node dofs, but no element dofs (stress unknowns) for this element
-        eleDofManager_ = Teuchos::rcp(new XFEM::ElementDofManager(*this, element_ansatz_empty, *globaldofman));
-      }
-      else // DLM condensation turned off
-      {
-        // add node dofs and element dofs (stress unknowns) for this element
-        eleDofManager_ = Teuchos::rcp(new XFEM::ElementDofManager(*this, element_ansatz_filled, *globaldofman));
-      }
-#else
       // add node dofs, but no element dofs (stress unknowns) for this element
       eleDofManager_ = Teuchos::rcp(new XFEM::ElementDofManager(*this, element_ansatz_empty, *globaldofman));
-#endif
-
-      //----------------------------------------------------------------------------
-      // build element dof manager holding element unknowns for intersected elements
-      // remark: this procedure is closely related to XFEM::createDofMapCombust()
-      //         condensation for uncut elements is not possible and unneccessary
-      //----------------------------------------------------------------------------
-      // TODO @Florian implement eleDofs for touched elements
-      // schott Aug 3, 2010
-      if (this->bisected_ || this->trisected_ || this->touched_)
-      {
-        // create empty set of enrichment fields
-        std::set<XFEM::FieldEnr> elementFieldEnrSet;
-
-#ifdef COMBUST_STRESS_BASED
-        // control boolean not used here
-        //bool skipped_elem_enr = false;
-        // apply element enrichments (fill elementFieldEnrSet)
-        // remark: This procedure must give the same result as the element enrichment procedure in
-        //         createDofMapCombust(). The element dof manager has to be consistent with the
-        //         global dof manager!
-        ApplyElementEnrichmentCombust(this, element_ansatz_filled, elementFieldEnrSet, *ih_);
-
-        // add node dofs and element dofs (stress unknowns) for this element
-        eleDofManager_uncondensed_ = Teuchos::rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), elementFieldEnrSet, element_ansatz_filled));
-#else
-        // add node dofs and element dofs (stress unknowns) for this element
-        eleDofManager_uncondensed_ = Teuchos::rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), elementFieldEnrSet, element_ansatz_empty));
-#endif
-        DLM_info_ = Teuchos::rcp(new DLMInfo(eleDofManager_uncondensed_->NumNodeDof(), eleDofManager_uncondensed_->NumElemDof()));
-      }
-      else // element not intersected
-      {
-        eleDofManager_uncondensed_ = Teuchos::null;
-        DLM_info_ = Teuchos::null;
-      }
     }
     break;
     case calc_fluid_systemmat_and_residual:
@@ -394,73 +331,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
           gradphi2_,
           curvature_);
 
-#ifdef COMBUST_STRESS_BASED
-      // integrate and assemble all unknowns
-      if ((not this->bisected_ and not this->trisected_) or
-          not params.get<bool>("DLM_condensation"))
-      {
-        if (ih_->NumBoundaryIntCells(this->Id()) > 0)
-          std::cout << "/!\\ warning === element " << this->Id() << " is not intersected, but has boundary integration cells!" << std::endl;
-
-        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
-            *eleDofManager_, NumNode(), NodeIds());
-
-        // calculate element coefficient matrix and rhs
-        COMBUST::callSysmat(assembly_type,
-          this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary,
-          genalpha,combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
-          connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration));
-      }
-      // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
-      else
-      {
-        if (eleDofManager_uncondensed_ == Teuchos::null)
-          dserror("Intersected element %d has no element dofs", this->Id());
-
-        UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
-
-        // create uncondensed element matrix and vector
-        const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
-        //std::cout << "element " <<  this->Id() << "number of node dofs " << eleDofManager_uncondensed_->NumNodeDof() << std::endl;
-        //std::cout << "element " <<  this->Id() << "number of element dofs " << eleDofManager_uncondensed_->NumElemDof() << std::endl;
-        //std::cout << "element " <<  this->Id() << "total number of dofs " << numdof_uncond << std::endl;
-        Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
-        Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
-
-        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
-            *eleDofManager_uncondensed_, NumNode(), NodeIds());
-
-//        if (assembly_type == XFEM::standard_assembly) std::cout << "element " << this->Id() << " standard assembly " << std::endl;
-//        if (assembly_type == XFEM::xfem_assembly) std::cout << "element " << this->Id() << " xfem assembly " << std::endl;
-
-//        const int numnodes = this->NumNode();
-//        const int* nodeidptrs = this->NodeIds();
-//        for (int inode = 0; inode<numnodes; ++inode)
-//        {
-//          const int nodeid = nodeidptrs[inode];
-//          std::cout << "num dof per node " << eleDofManager_->NumDofPerNode(nodeid) << std::endl;
-//        }
-//        std::cout << "num dof per field velx " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Velx)->second << std::endl;
-//        std::cout << "num dof per field vely " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Vely)->second << std::endl;
-//        std::cout << "num dof per field velz " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Velz)->second << std::endl;
-//        std::cout << "num dof per field veln " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Veln)->second << std::endl;
-//        std::cout << "num dof per field pres " << eleDofManager_uncondensed_->NumParamsPerField().find(XFEM::PHYSICS::Pres)->second << std::endl;
-
-        // calculate element coefficient matrix and rhs
-        COMBUST::callSysmat(assembly_type,
-          this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
-          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
-          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
-          connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration));
-
-        // condensation
-        CondenseElementStressAndStoreOldIterationStep(
-            elemat1_uncond, elevec1_uncond,
-            elemat1, elevec1
-        );
-      }
-#else
       XFEM::AssemblyType assembly_type=XFEM::standard_assembly;
 
       // suppress enrichment dofs
@@ -474,7 +344,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens, second_deriv,
           connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration,
           weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
-#endif
     }
     break;
     case calc_fluid_beltrami_error:
@@ -970,147 +839,3 @@ void DRT::ELEMENTS::Combust3::calc_volume_fraction(
   return;
 } // DRT::ELEMENTS::Combust3::calc_volume_fraction
 
-
-/*------------------------------------------------------------------------------------------------*
- | evaluate element stresses and pressure and update element solution vector          henke 04/10 |
- *------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Combust3::UpdateOldDLMAndDLMRHS(
-    const DRT::Discretization&      discretization,
-    const std::vector<int>&         lm,
-    MyState&                        mystate
-    ) const
-{
-  const int numnodedof = eleDofManager_uncondensed_->NumNodeDof();
-  const int numeledof = eleDofManager_uncondensed_->NumElemDof();
-
-  // check if element dofs really exist
-  if (numeledof > 0)
-  {
-    // add Kda . inc_velnp to feas
-    // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-
-    // extract local (element) increment from global vector
-    std::vector<double> inc_velnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*discretization.GetState("velpres nodal iterinc"),inc_velnp,lm);
-
-    static const Epetra_BLAS blas;
-
-    //-------------------------------------------------------
-    // update old iteration residual of stresses and pressure
-    //-------------------------------------------------------
-    // DLM_info_->oldfa_(i) += DLM_info_->oldKad_(i,j)*inc_velnp[j];
-    blas.GEMV('N', numeledof, numnodedof,-1.0, DLM_info_->oldKad_->A(), DLM_info_->oldKad_->LDA(), &inc_velnp[0], 1.0, DLM_info_->oldfa_->A());
-
-    //--------------------------------------
-    // compute element stresses and pressure
-    //--------------------------------------
-    // DLM_info_->stressdofs_(i) -= DLM_info_->oldKaainv_(i,j)*DLM_info_->oldfa_(j);
-    blas.GEMV('N', numeledof, numeledof,1.0, DLM_info_->oldKaainv_->A(), DLM_info_->oldKaainv_->LDA(), DLM_info_->oldfa_->A(), 1.0, DLM_info_->stressdofs_->A());
-
-    //----------------------------------------------------------------------
-    // paste element dofs (stresses and pressure) in lovcal (element) vector
-    //----------------------------------------------------------------------
-    // increase size of element vectors (old values stay and zeros are added)
-    const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
-    mystate.velnp_.resize(numdof_uncond,0.0);
-    if (mystate.instationary_)
-    {
-      mystate.veln_ .resize(numdof_uncond,0.0);
-      mystate.velnm_.resize(numdof_uncond,0.0);
-      mystate.accn_ .resize(numdof_uncond,0.0);
-    }
-    for (int ieledof=0;ieledof<numeledof;ieledof++)
-    {
-      mystate.velnp_[numnodedof+ieledof] = (*DLM_info_->stressdofs_)(ieledof);
-    }
-  }
-  else
-    dserror("You should never have come here in the first place!");
-}
-
-
-/*------------------------------------------------------------------------------------------------*
- | condense element dofs             henke 04/10 |
- *------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Combust3::CondenseElementStressAndStoreOldIterationStep(
-    const Epetra_SerialDenseMatrix& elemat1_uncond,
-    const Epetra_SerialDenseVector& elevec1_uncond,
-    Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseVector& elevec1
-) const
-{
-  const size_t numnodedof = eleDofManager_uncondensed_->NumNodeDof();
-  const size_t numeledof = eleDofManager_uncondensed_->NumElemDof();
-
-  // copy nodal dof entries
-  // TODO why is this done? henke 09/04/10
-  for (size_t i = 0; i < numnodedof; ++i)
-  {
-    elevec1(i) = elevec1_uncond(i);
-    for (size_t j = 0; j < numnodedof; ++j)
-    {
-      elemat1(i,j) = elemat1_uncond(i,j);
-    }
-  }
-
-  // check if element dofs really exist
-  if (numeledof > 0)
-  {
-    // note: the full (u,p,sigma) matrix is asymmetric,
-    // hence we need both rectangular matrices Kda and Kad
-    LINALG::SerialDenseMatrix Gus   (numnodedof,numeledof);
-    LINALG::SerialDenseMatrix Kssinv(numeledof,numeledof);
-    LINALG::SerialDenseMatrix KGsu  (numeledof,numnodedof);
-    LINALG::SerialDenseVector fs    (numeledof);
-
-//    std::cout << elemat1_uncond << std::endl;
-
-    // copy data of uncondensed matrix into submatrices
-    for (size_t i=0;i<numnodedof;i++)
-      for (size_t j=0;j<numeledof;j++)
-        Gus(i,j) = elemat1_uncond(i,numnodedof+j);
-
-    for (size_t i=0;i<numeledof;i++)
-      for (size_t j=0;j<numeledof;j++)
-        Kssinv(i,j) = elemat1_uncond(numnodedof+i,numnodedof+j);
-
-    for (size_t i=0;i<numeledof;i++)
-      for (size_t j=0;j<numnodedof;j++)
-        KGsu(i,j) = elemat1_uncond(numnodedof+i,j);
-
-    for (size_t i=0;i<numeledof;i++)
-      fs(i) = elevec1_uncond(numnodedof+i);
-
-    // DLM-stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
-    // DLM-internal force is: fint - Kda . Kaa^-1 . feas
-
-    // we need the inverse of Kaa
-    Epetra_SerialDenseSolver solve_for_inverseKaa;
-    solve_for_inverseKaa.SetMatrix(Kssinv);
-    solve_for_inverseKaa.Invert();
-
-    static const Epetra_BLAS blas;
-    {
-      LINALG::SerialDenseMatrix GusKssinv(numnodedof,numeledof); // temporary Gus.Kss^{-1}
-
-      // GusKssinv(i,j) = Gus(i,k)*Kssinv(k,j);
-      blas.GEMM('N','N',numnodedof,numeledof,numeledof,1.0,Gus.A(),Gus.LDA(),Kssinv.A(),Kssinv.LDA(),0.0,GusKssinv.A(),GusKssinv.LDA());
-
-      // elemat1(i,j) += - GusKssinv(i,k)*KGsu(k,j);   // note that elemat1 = Cuu below
-      blas.GEMM('N','N',numnodedof,numnodedof,numeledof,-1.0,GusKssinv.A(),GusKssinv.LDA(),KGsu.A(),KGsu.LDA(),1.0,elemat1.A(),elemat1.LDA());
-
-      // elevec1(i) += - GusKssinv(i,j)*fs(j);
-      blas.GEMV('N', numnodedof, numeledof,-1.0, GusKssinv.A(), GusKssinv.LDA(), fs.A(), 1.0, elevec1.A());
-    }
-
-    // store current DLM data in iteration history
-    //DLM_info_->oldKaainv_.Update(1.0,Kaa,0.0);
-    blas.COPY(DLM_info_->oldKaainv_->M()*DLM_info_->oldKaainv_->N(), Kssinv.A(), DLM_info_->oldKaainv_->A());
-    //DLM_info_->oldKad_.Update(1.0,Kad,0.0);
-    blas.COPY(DLM_info_->oldKad_->M()*DLM_info_->oldKad_->N(), KGsu.A(), DLM_info_->oldKad_->A());
-    //DLM_info_->oldfa_.Update(1.0,fa,0.0);
-    blas.COPY(DLM_info_->oldfa_->M()*DLM_info_->oldfa_->N(), fs.A(), DLM_info_->oldfa_->A());
-  }
-  else
-    dserror("You should never have come here in the first place!");
-}

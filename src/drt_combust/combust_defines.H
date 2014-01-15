@@ -25,9 +25,6 @@ Maintainer: Ursula Rasthofer
 //-----------------------------
 //#define COMBUST_DECOUPLEDXFEM   // turn on/off boundary integrals for premixed combustion system matrix
 #define COMBUST_NITSCHE      // turn on/off Nitsche method for interface conditions
-//#define COMBUST_STRESS_BASED   // turn on/off stress-based method for interface conditions
-//#define COMBUST_EPSPRES_BASED  // turn on/off epsilon stress-based method
-//#define COMBUST_SIGMA_BASED  // turn on/off sigma stress-based method
 //#define COMBUST_PROJCELLEDGES // turn on/off old method to find facing flame front patches
 //#define COMBUST_SXFEM
 //#define COMBUST_SETJUMP
@@ -68,54 +65,6 @@ Maintainer: Ursula Rasthofer
 #define COMBUST_NITSCHE_CONVFLUX          // turn on/off convective inflow flux terms
 #define COMBUST_NITSCHE_CONVSTAB          // turn on/off Nitsche convective stabilization terms
 //#define COMBUST_NITSCHE_CONVPENALTY       // turn on/off Nitsche normal and tangential penalty/stabilization terms
-
-//----------------------------------------------------------
-// combustion domain integral terms stress-based formulation
-//----------------------------------------------------------
-#define COMBUST_EPSPRES_BASED_STRAIN_COUPLING
-#define COMBUST_EPSPRES_BASED_PRESSURE_COUPLING
-#define COMBUST_EPSPRES_BASED_ZERO_TRACE
-//#define COMBUST_EPSPRES_BASED_FORTHTERM
-//------------------------------------------------
-// combustion stress-based boundary integral terms
-//------------------------------------------------
-//#define COMBUST_EPSPRES_BASED_CONSISTVISCJUMP    // turn on/off
-//#define COMBUST_EPSPRES_BASED_CONSISTPRESJUMP    // turn on/off
-#define COMBUST_EPSPRES_BASED_FLUXJUMP           // turn on/off
-#define COMBUST_EPSPRES_BASED_CONSISTVISCMEAN    // turn on/off
-#define COMBUST_EPSPRES_BASED_CONSISTPRESMEAN    // turn on/off
-#define COMBUST_EPSPRES_BASED_ADJCONSISTVISCJUMP // turn on/off
-#define COMBUST_EPSPRES_BASED_ADJCONSISTPRESJUMP // turn on/off
-//#define COMBUST_EPSPRES_BASED_NEUMANN_INFLOW     // turn on/off
-//#define COMBUST_EPSPRES_BASED_ADVECTIVEFLUX      // turn on/off
-//#define COMBUST_EPSPRES_BASED_NITSCHEVEL
-
-//----------------------------------------------------------
-// combustion domain integral terms strain-based formulation
-//----------------------------------------------------------
-#define COMBUST_SIGMA_BASED_FIELD_COUPLING
-#define COMBUST_SIGMA_BASED_TRACE
-//------------------------------------------------
-// combustion strain-based boundary integral terms
-//------------------------------------------------
-#define COMBUST_SIGMA_BASED_FLUXJUMP           // turn on/off
-#define COMBUST_SIGMA_BASED_CONSISTVISCMEAN    // turn on/off
-#define COMBUST_SIGMA_BASED_ADJCONSISTVISCJUMP // turn on/off
-//#define COMBUST_SIGMA_BASED_NEUMANN_INFLOW     // turn on/off
-//#define COMBUST_SIGMA_BASED_ADVECTIVEFLUX      // turn on/off
-
-//--------------------------------------------------------------------
-// combustion stress-based double one-sided formulation boundary terms
-//--------------------------------------------------------------------
-//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED
-//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_TAU_PLUS
-//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_TAU_MINUS
-//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_PRES_PLUS
-//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_CONSIST_PRES_MINUS
-//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_TAU_DIRICH_PLUS
-//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_TAU_DIRICH_MINUS
-//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_PRES_DIRICH_PLUS
-//#define COMBUST_STRESS_BASED_DOUBLE_ONESIDED_PRES_DIRICH_MINUS
 
 //-----------------------------
 // combustion test case options

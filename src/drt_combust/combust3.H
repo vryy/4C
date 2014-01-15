@@ -224,65 +224,6 @@ private:
 
         //! @name Access methods
 
-// TODO: das brauche ich wohl nicht weil ich den dof manager fragen muss
-//        /*!
-//        \brief Get number of degrees of freedom of a certain node
-//               (implements pure virtual DRT::Element)
-//
-//        The element decides how many degrees of freedom its nodes must have.
-//        As this may vary along a simulation, the element can redecide the
-//        number of degrees of freedom per node along the way for each of it's nodes
-//        separately.
-//        */
-//        virtual int NumDofPerNode(const DRT::Node& node) const
-//        {
-//          // number of Dof's is fluid-specific.
-//          // Therefore, it is not pushed into drt_utilis_local_connectivity
-//          switch(distype_)
-//          {
-//          case DRT::Element::hex8:
-//          case DRT::Element::hex20:
-//          case DRT::Element::hex27:
-//          case DRT::Element::tet4:
-//          case DRT::Element::tet10:
-//          case DRT::Element::wedge6:
-//          case DRT::Element::wedge15:
-//          case DRT::Element::pyramid5:
-//          case DRT::Element::nurbs8:
-//          case DRT::Element::nurbs27:
-//            return 4;
-//            break;
-//          case DRT::Element::quad4:
-//          case DRT::Element::quad8:
-//          case DRT::Element::quad9:
-//          case DRT::Element::nurbs4:
-//          case DRT::Element::nurbs9:
-//          case DRT::Element::tri3:
-//          case DRT::Element::tri6:
-//            return 3;
-//            break;
-//          case DRT::Element::line2:
-//          case DRT::Element::line3: dserror("1D Fluid elements are not supported"); break;
-//            break;
-//          default:
-//            dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype_)).c_str());
-//            break;
-//          }
-//          return 0;
-//        }
-//
-//        /*!
-//        \brief Get number of degrees of freedom of a certain node in case of multiple
-//               dofsets, i.e. monolithic solution approaches! (implements pure virtual DRT::Element)
-//
-//        The element decides how many degrees of freedom its nodes must have.
-//        As this may vary along a simulation, the element can redecide the
-//        number of degrees of freedom per node along the way for each of it's nodes
-//        separately.
-//
-//        */
-//        virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const;
-
         virtual int NumDofPerNode(const DRT::Node& node) const;
 
         virtual int NumDofPerElement() const;
@@ -398,13 +339,6 @@ private:
         //! this dofman will answer to the outside world, how many dofs this element has
         Teuchos::RCP<XFEM::ElementDofManager> eleDofManager_;
 
-        //! store information about the unknowns of this element - only for intersected elements
-        //!
-        //! this dofman contains also element dofs, that are not part of the global dofs
-        //! it is used for integration only. After integration, condensation on the element level
-        //! will remove all dofs that are not in eleDofManager_
-        Teuchos::RCP<XFEM::ElementDofManager> eleDofManager_uncondensed_;
-
         //! if element is in 'standard mode', it will answer without asking the elementdofmanager
         //! -> it will pretend to have 4 dofs per node and no element dofs
         //! needed for postprocessing in the filters (output) and for some initialization procedures
@@ -454,8 +388,6 @@ private:
           DLMInfo(const DLMInfo&);
         };
 
-        Teuchos::RCP<DLMInfo>            DLM_info_;
-
         // internal calculation methods
 
         //! don't want = operator
@@ -489,21 +421,6 @@ private:
           const std::vector<double>& solution,
           Teuchos::ParameterList&    params
           );
-
-        //! compute stresses from previous newton iteration and store them in dlm_info_
-        void UpdateOldDLMAndDLMRHS(
-            const DRT::Discretization& discretization,
-            const std::vector<int>&    lm,
-            MyState&                   mystate
-        ) const;
-
-        //! condense (u,p,sigma) matrix to (u,p) matrix and store this iterations sub-matrices
-        void CondenseElementStressAndStoreOldIterationStep(
-            const Epetra_SerialDenseMatrix& elemat1_uncond,
-            const Epetra_SerialDenseVector& elevec1_uncond,
-            Epetra_SerialDenseMatrix&       elemat1,
-            Epetra_SerialDenseVector&       elevec1
-        ) const;
 
         /*!
          * \brief get optimal gaussrule for given discretization type

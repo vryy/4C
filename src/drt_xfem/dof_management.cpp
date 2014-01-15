@@ -28,7 +28,6 @@ XFEM::DofManager::DofManager(
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle,
     const Teuchos::RCP<Epetra_Vector>&                   phinp,
     const std::set<XFEM::PHYSICS::Field>&                fieldset,
-    const XFEM::ElementAnsatz&                           element_ansatz,
     const Teuchos::ParameterList&                        params,
     const Teuchos::RCP<std::map<int,std::vector<int> > >           pbcmap
     ) :
@@ -39,16 +38,13 @@ XFEM::DofManager::DofManager(
   //  std::cout << "Constructing DofManager for combustion problem" << std::endl;
 
   std::map<int, std::set<XFEM::FieldEnr> >    nodeDofMap;
-  std::map<int, std::set<XFEM::FieldEnr> >    elementDofMap;
 
   // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
   XFEM::createDofMapCombust(
       *interfacehandle,
       phinp.get(),
       nodeDofMap,
-      elementDofMap,
       fieldset,
-      element_ansatz,
       params);
 
   //------------------------------------
@@ -122,15 +118,10 @@ XFEM::DofManager::DofManager(
   //           because member functions like "toGmsh" and "GatherUniqueEnrichments" rely on them
   //
   // what the following code does, is basically:   nodalDofSet_ = nodeDofMap
-  //                                             elementalDofs_ = elementDofMap
   //------------------------------------------------------------------------------------------------
   for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = nodeDofMap.begin(); oneset != nodeDofMap.end(); ++oneset )
   {
     nodalDofSet_.insert( make_pair(oneset->first, oneset->second));
-  };
-  for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = elementDofMap.begin(); oneset != elementDofMap.end(); ++oneset )
-  {
-    elementalDofs_.insert( make_pair(oneset->first, oneset->second));
   };
 
   // collect all unique enrichments and print them on the screen (only needed for verification)
@@ -160,17 +151,6 @@ void XFEM::DofManager::GatherUniqueEnrichments() const
     }
   }
 
-  // collect enrichments from elemental dofs
-  for (std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator fieldenriter=elementalDofs_.begin();
-  fieldenriter!=elementalDofs_.end(); ++fieldenriter)
-  {
-    const std::set<XFEM::FieldEnr> enrfieldset = fieldenriter->second;
-    for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-      enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-    {
-      unique_enrichments.insert(enrfield->getEnrichment());
-    }
-  }
 
 #ifdef DEBUG
   // screen output
@@ -519,23 +499,6 @@ void XFEM::DofManager::toGmsh(
         const DRT::Node* actnode = ih_->FluidDis()->lColNode(i);
         const LINALG::Matrix<3,1> pos(actnode->X());
         IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
-      }
-      gmshfilecontent << "};\n";
-    }
-    {
-      gmshfilecontent << "View \" " << " Stress unknowns in element \" {\n";
-      for (int i=0; i<ih_->FluidDis()->NumMyColElements(); ++i)
-      {
-        const DRT::Element* actele = ih_->FluidDis()->lColElement(i);
-        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator iter =
-            elementalDofs_.find(actele->Id());
-
-        if (iter != elementalDofs_.end())
-        {
-          const std::set<XFEM::FieldEnr> fieldenrset = iter->second;
-          const double val = (double)fieldenrset.size();
-          IO::GMSH::elementAtInitialPositionToStream(val, actele, gmshfilecontent);
-        }
       }
       gmshfilecontent << "};\n";
     }

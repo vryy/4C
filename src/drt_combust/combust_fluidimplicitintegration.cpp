@@ -217,23 +217,13 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Vely);
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velz);
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Pres);
-#ifdef COMBUST_STRESS_BASED
-#ifdef COMBUST_EPSPRES_BASED
-  // define approach for extra stress field (stress-based Lagrange Multiplier approach)
-  physprob_.elementAnsatz_ = Teuchos::rcp(new COMBUST::EpsilonPressureAnsatz());
-#endif
-#ifdef COMBUST_SIGMA_BASED
-  // define approach for extra stress field (stress-based Lagrange Multiplier approach)
-  physprob_.elementAnsatz_ = Teuchos::rcp(new COMBUST::CauchyStressAnsatz());
-#endif
-#else
   // for the Nitsche method assign an arbitrary element ansatz to compile
   physprob_.elementAnsatz_ = Teuchos::rcp(new COMBUST::TauPressureAnsatz());
-#endif
+
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = Teuchos::rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null));
   // create dummy instance of dof manager assigning standard enrichments to all nodes
-  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = Teuchos::rcp(new XFEM::DofManager(ihdummy,Teuchos::null,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_,Teuchos::null));
+  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = Teuchos::rcp(new XFEM::DofManager(ihdummy,Teuchos::null,physprob_.xfemfieldset_,xparams_,Teuchos::null));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanagerdummy;
@@ -883,7 +873,6 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
       interfacehandle_,
       phinp_,
       physprob_.xfemfieldset_,
-      *physprob_.elementAnsatz_,
       xparams_,
       col_pbcmapmastertoslave_)
   );
@@ -3915,17 +3904,8 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         const DRT::Element* ele = discret_->lRowElement(i);
 
         // create local copy of information about dofs
-#ifdef COMBUST_STRESS_BASED
-#ifdef COMBUST_EPSPRES_BASED
-        const COMBUST::EpsilonPressureAnsatz elementAnsatz;
-#endif
-#ifdef COMBUST_SIGMA_BASED
-        const COMBUST::CauchyStressAnsatz elementAnsatz;
-#endif
-#else
         // just define a default element ansatz; it is not used anyway
         const COMBUST::TauPressureAnsatz elementAnsatz;
-#endif
         const XFEM::ElementDofManager eledofman(*ele,elementAnsatz.getElementAnsatz(ele->Shape()),*dofmanagerForOutput_);
 
         std::vector<int> lm;
@@ -5207,7 +5187,7 @@ void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_Cr
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = Teuchos::rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null));
   // create dummy instance of dof manager assigning standard enrichments to all nodes
-  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = Teuchos::rcp(new XFEM::DofManager(ihdummy,Teuchos::null,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_,Teuchos::null));
+  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = Teuchos::rcp(new XFEM::DofManager(ihdummy,Teuchos::null,physprob_.xfemfieldset_,xparams_,Teuchos::null));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanagerdummy;
@@ -5263,7 +5243,6 @@ void FLD::CombustFluidImplicitTimeInt::TransferVectorsToNewDistribution(
       flamefront->InterfaceHandle(),
       flamefront->Phinp(),
       physprob_.xfemfieldset_,
-      *physprob_.elementAnsatz_,
       xparams_,
       col_pbcmapmastertoslave_)
   );

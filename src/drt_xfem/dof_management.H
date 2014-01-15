@@ -52,7 +52,6 @@ namespace XFEM
           const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle, ///< geometrical interface information
           const Teuchos::RCP<Epetra_Vector>&                   phinp,
           const std::set<XFEM::PHYSICS::Field>&                fieldset,        ///< physical fields to be enriched
-          const XFEM::ElementAnsatz&                           element_ansatz,  ///< element dofs
           const Teuchos::ParameterList&                        params,          ///< XFEM parameters
           const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap           ///< nodes on periodic boundaries
           );
@@ -89,18 +88,12 @@ namespace XFEM
         return entry->second;
       };
 
-
       //! return set with enriched fields for requested element
       const std::set<XFEM::FieldEnr>& getElementDofSet(
           const int gid      ///< global element id
           ) const
       {
-        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = elementalDofs_.find(gid);
-        if (entry == elementalDofs_.end())
-        {
-          return emptyset_;
-        }
-        return entry->second;
+        return emptyset_;
       };
 
       //! fill maps with nodal and element dof positions in EpetraVectors for all DofKeys on this proc
