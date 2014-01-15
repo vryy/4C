@@ -87,8 +87,8 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
     const bool m_intersected = p_master->Bisected();
     const bool s_intersected = p_slave->Bisected();
 
-    if (p_master->Touched() or p_slave->Touched())
-      dserror("Touched element not yet considered.");
+//    if (p_master->Touched() or p_slave->Touched())
+//      dserror("Touched element not yet considered.");
 
     // - if master is cut and slave is uncut or master is uncut and slave is cut,
     //   the face has to be considered in the xfem stabilization
