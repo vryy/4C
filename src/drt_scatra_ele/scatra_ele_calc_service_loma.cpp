@@ -50,7 +50,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateService(
   // check for the action parameter
   const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
 
-  if (action == SCATRA::calc_dissipation)
+  if (action == SCATRA::calc_dissipation or action == SCATRA::calc_mean_Cai)
   {
     if (my::scatraparatimint_->IsGenAlpha())
     {
