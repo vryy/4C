@@ -1935,11 +1935,11 @@ void COMBUST::FlameFront::ComputeAveragedNodalCurvature(const Teuchos::Parameter
        * is cut. If none of them are cut we do not need the curvature       *
        **********************************************************************/
 
-      // the curvature is only needed in cut elements
+      // the curvature is only needed for elements with boundary cells
       bool iscut = false;
       for (size_t i=0; i < numele; ++i)
       {
-        if (InterfaceHandle()->ElementCutStatus(adjeles[i]->Id()) != COMBUST::InterfaceHandleCombust::uncut)
+        if (InterfaceHandle()->ElementIntersected(adjeles[i]->Id()))
         {
           iscut = true;
           break;
@@ -1955,7 +1955,7 @@ void COMBUST::FlameFront::ComputeAveragedNodalCurvature(const Teuchos::Parameter
           DRT::Element** slaveadjeles = fluiddis_->gNode(*islave)->Elements();
           for (size_t i=0; i < slavenumele; ++i)
           {
-            if (InterfaceHandle()->ElementCutStatus(slaveadjeles[i]->Id()) != COMBUST::InterfaceHandleCombust::uncut)
+            if (InterfaceHandle()->ElementIntersected((slaveadjeles[i]->Id())))
             {
               iscut = true;
               break;
