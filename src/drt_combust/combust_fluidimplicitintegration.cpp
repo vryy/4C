@@ -216,9 +216,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velx);
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Vely);
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velz);
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Veln);
-#endif
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Pres);
 #ifdef COMBUST_STRESS_BASED
 #ifdef COMBUST_EPSPRES_BASED
@@ -3943,9 +3940,6 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         const std::vector<int>& dofposvelx = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
         const std::vector<int>& dofposvely = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
         const std::vector<int>& dofposvelz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
-#ifdef COMBUST_NORMAL_ENRICHMENT
-        const std::vector<int>& dofposveln = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Veln);
-#endif
 
         const int numparamvelx = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
         LINALG::SerialDenseMatrix elementvalues(4, numparamvelx,true);
@@ -3955,13 +3949,6 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           elementvalues(1, iparam) = myvelnp[dofposvely[iparam]];
           elementvalues(2, iparam) = myvelnp[dofposvelz[iparam]];
         }
-#ifdef COMBUST_NORMAL_ENRICHMENT
-        const int numparamveln = eledofman.NumDofPerField(XFEM::PHYSICS::Veln);
-        for (int iparam=0; iparam<numparamveln; ++iparam)
-        {
-          elementvalues(3, iparam) = myvelnp[dofposveln[iparam]];
-        }
-#endif
 
         //------------------------------------------------------------------------------------------
         // extract local level-set (G-function) values from global vector
@@ -3970,25 +3957,6 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         std::vector<double> myphinp(numnode);
         // extract G-function values to element level
         DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp_);
-
-#ifdef COMBUST_NORMAL_ENRICHMENT
-        // get pointer to vector holding smoothed  G-function gradient values at the fluid nodes
-        const Teuchos::RCP<Epetra_MultiVector> gradphinp = flamefront_->GradPhi();
-        std::vector<double> mygradphi;
-        DRT::UTILS::ExtractMyNodeBasedValues(ele, mygradphi,*gradphinp);
-
-        if (numnode != 8) dserror("only available for hex8 elements!");
-        LINALG::Matrix<3,8> egradphi(true);
-
-        unsigned ipos;
-        for (size_t inode=0; inode<numnode; ++inode)
-        {
-          ipos = inode*3;
-          egradphi(0, inode) = mygradphi[ipos  ];
-          egradphi(1, inode) = mygradphi[ipos+1];
-          egradphi(2, inode) = mygradphi[ipos+2];
-        }
-#endif
 
         const GEO::DomainIntCells& domainintcells = interfacehandle_->ElementDomainIntCells(ele->Id());
         for (GEO::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
@@ -4000,14 +3968,9 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           case INPAR::COMBUST::combusttype_premixedcombustion:
           case INPAR::COMBUST::combusttype_twophaseflowjump:
           {
-#ifndef COMBUST_NORMAL_ENRICHMENT
             //
             XFEM::InterpolateCellValuesFromElementValuesLevelSet(*ele, eledofman, *cell, myphinp, XFEM::PHYSICS::Velx,
               elementvalues, cellvalues);
-#else
-            XFEM::InterpolateCellValuesFromElementValuesLevelSetNormal(*ele, eledofman, *cell, myphinp, egradphi, XFEM::PHYSICS::Velx,
-              elementvalues, cellvalues);
-#endif
             break;
           }
           case INPAR::COMBUST::combusttype_twophaseflow:
@@ -4069,24 +4032,6 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             for (size_t iparam=0; iparam<numnode; ++iparam)
               ephi(iparam) = myphinp[iparam];
 
-#ifdef COMBUST_NORMAL_ENRICHMENT
-            // get pointer to vector holding smoothed  G-function gradient values at the fluid nodes
-            const Teuchos::RCP<Epetra_MultiVector> gradphinp = flamefront_->GradPhi();
-            std::vector<double> mygradphi;
-            DRT::UTILS::ExtractMyNodeBasedValues(ele, mygradphi,*gradphinp);
-
-            if (numnode != 8) dserror("only available for hex8 elements!");
-            LINALG::Matrix<3,8> egradphi(true);
-
-            unsigned ipos;
-            for (size_t inode=0; inode<numnode; ++inode)
-            {
-              ipos = inode*3;
-              egradphi(0, inode) = mygradphi[ipos  ];
-              egradphi(1, inode) = mygradphi[ipos+1];
-              egradphi(2, inode) = mygradphi[ipos+2];
-            }
-#endif
             // create local copy of information about dofs
             const XFEM::ElementDofManager eledofman(*ele,physprob_.elementAnsatz_->getElementAnsatz(ele->Shape()),*dofmanagerForOutput_);
 
@@ -4104,9 +4049,6 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             const std::vector<int>& dofposvelx = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
             const std::vector<int>& dofposvely = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
             const std::vector<int>& dofposvelz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
-#ifdef COMBUST_NORMAL_ENRICHMENT
-            const std::vector<int>& dofposveln = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Veln);
-#endif
 
             const size_t numparamvelx = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
             LINALG::SerialDenseMatrix evel(4, numparamvelx,true);
@@ -4116,13 +4058,6 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
               evel(1,iparam) = myvelnp[dofposvely[iparam]];
               evel(2,iparam) = myvelnp[dofposvelz[iparam]];
             }
-#ifdef COMBUST_NORMAL_ENRICHMENT
-            const size_t numparamveln = eledofman.NumDofPerField(XFEM::PHYSICS::Veln);
-            for (size_t iparam=0; iparam<numparamveln; ++iparam)
-            {
-              evel(3, iparam) = myvelnp[dofposveln[iparam]];
-            }
-#endif
             // get node coordinates for this element
             LINALG::SerialDenseMatrix xyze(3,numnode);
             GEO::fillInitialPositionArray(ele,xyze);
@@ -4162,14 +4097,9 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
                 DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),ele->Shape());
 
 #ifdef DEBUG
-#ifndef COMBUST_NORMAL_ENRICHMENT
                 if (numparamvelx != 16) dserror("velocity jump output only available for fully enriched hex8 elements!");
-#else
-                if (numparamvelx != 8 or numparamveln != 8) dserror("velocity jump output only available for fully enriched hex8 elements!");
-#endif
 #endif
 
-#ifndef COMBUST_NORMAL_ENRICHMENT
                 LINALG::SerialDenseVector enrfunct_plus(numparamvelx,true);
                 LINALG::SerialDenseVector enrfunct_minus(numparamvelx,true);
 
@@ -4189,45 +4119,6 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
                   veljump(1) += evel(1,iparam)*shp_jump.d0(iparam);
                   veljump(2) += evel(2,iparam)*shp_jump.d0(iparam);
                 }
-#else
-#ifdef COLLAPSE_FLAME
-                LINALG::Matrix<3,1> normal(true);
-                for (unsigned i=0;i<numnode;i++)
-                {
-                  normal(0) += funct(i)*xyze(0,i);
-                  normal(1) += funct(i)*xyze(1,i);
-                }
-                const double norm = normal.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
-                if (norm == 0.0) dserror("norm of normal vector is zero!");
-                normal.Scale(1.0/norm);
-#endif
-                // temporary arrays holding enriched shape functions (N * \Psi) on either side of the interface
-                XFEM::ApproxFuncNormalVector<0,8> enrfunct_plus(true);
-                XFEM::ApproxFuncNormalVector<0,8> enrfunct_minus(true);
-
-                enrvals_plus.ComputeNormalShapeFunction(funct, egradphi,
-#ifdef COLLAPSE_FLAME
-                    normal,
-#endif
-                    enrfunct_plus);
-                enrvals_minus.ComputeNormalShapeFunction(funct, egradphi,
-#ifdef COLLAPSE_FLAME
-                    normal,
-#endif
-                    enrfunct_minus);
-
-                // remark: initialization is essentiual here, since standard shape functions must be zero!
-                XFEM::ApproxFuncNormalVector<0,8> shp_jump(true);     // [[ ]] notation
-                for (size_t iparam = 0; iparam < numparamveln; ++iparam)
-                {
-                  shp_jump.velx.d0.n(iparam) = enrfunct_minus.velx.d0.n(iparam) - enrfunct_plus.velx.d0.n(iparam);
-                  shp_jump.vely.d0.n(iparam) = enrfunct_minus.vely.d0.n(iparam) - enrfunct_plus.vely.d0.n(iparam);
-                  shp_jump.velz.d0.n(iparam) = enrfunct_minus.velz.d0.n(iparam) - enrfunct_plus.velz.d0.n(iparam);
-                }
-                // velocity jump
-                LINALG::Matrix<3,1> veljump(true);
-                veljump = XFEM::interpolateVectorFieldToIntPointNormal(evel, shp_jump, numparamvelx, ele, eledofman);
-#endif
 
                 // norm of velocity jump
                 const double veljumpnorm = veljump.Norm2();
@@ -5043,7 +4934,6 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       const int dofpos = state_.nodalDofDistributionMap_.find(dofkey)->second;
       if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
       {
-#ifndef COMBUST_NORMAL_ENRICHMENT
         if (fieldenr->getField() == XFEM::PHYSICS::Velx)
         {
           (*state_.veln_)[dofrowmap.LID(dofpos)] = (-0.5*velrad + 0.5*gfuncval*velgrad)*coords(0)/coordsnorm;
@@ -5064,14 +4954,6 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
           (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.0;
 #endif
         }
-#else
-        if (fieldenr->getField() == XFEM::PHYSICS::Veln)
-        {
-          // -0.5 *jump + 0.5*dist*kink
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = -0.5*velrad + 0.5*gfuncval*velgrad;
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = -0.5*velrad + 0.5*gfuncval*velgrad;
-        }
-#endif
         else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
         {
           // -0.5 *jump + 0.5*dist*kink

@@ -53,16 +53,8 @@ bool XFEM::ApplyJumpEnrichment(
     //      {
     for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
     {
-#ifdef COMBUST_NORMAL_ENRICHMENT
-      if ((*field == XFEM::PHYSICS::Veln) or
-          (*field == XFEM::PHYSICS::Pres))
-      {
-#endif
         nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
         //std::cout << "Jump Enrichment applied for node " << nodeid << std::endl;
-#ifdef COMBUST_NORMAL_ENRICHMENT
-      }
-#endif
     }
   };
 
@@ -551,15 +543,8 @@ void XFEM::ApplyStandardEnrichmentCombust(
     //std::cout << "element " << xfemele->Id() << " node ID: " << nodeid << std::endl;
     for (std::set<XFEM::PHYSICS::Field>::const_iterator fields = fieldset.begin();fields != fieldset.end();++fields)
     {
-#ifdef COMBUST_NORMAL_ENRICHMENT
-      if (*fields != XFEM::PHYSICS::Veln)
-      {
-#endif
       nodeDofMap[nodeid].insert(XFEM::FieldEnr(*fields, stdenr));
       //std::cout << "Standard Enrichment applied for node " << nodeid << std::endl;
-#ifdef COMBUST_NORMAL_ENRICHMENT
-      }
-#endif
     }
   };
 }

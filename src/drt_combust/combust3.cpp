@@ -413,10 +413,8 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
   {
     // extract local (element level) G-function values from global vector
     // only if element is intersected; only adjacent nodal values are calculated
-#ifndef COMBUST_NORMAL_ENRICHMENT
     if(ele->Bisected() or ele->Touched() )
     {
-#endif
       // remark: - for the normal enrichment strategy all enriched elements are needed here
       //         - the intersected elements are not enough since normal shape functions are also
       //           needed for partially enriched elements
@@ -425,9 +423,7 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
       DRT::UTILS::ExtractMyNodeBasedValues(ele, gradphinp_,*gradphinp);
       if (curvature == NULL) dserror("no curvature has been computed!");
       DRT::UTILS::ExtractMyNodeBasedValues(ele, curv_,*curvature);
-#ifndef COMBUST_NORMAL_ENRICHMENT
     }
-#endif
   }
   if(gradphi2_)
   {

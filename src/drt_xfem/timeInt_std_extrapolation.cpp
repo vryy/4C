@@ -652,10 +652,6 @@ void XFEM::ExtrapolationOld::interpolation(
   std::vector<LINALG::Matrix<nsd,2*numnode> > nodeveldata(oldVectors_.size(),LINALG::Matrix<nsd,2*numnode>(true));
   // node pressures of the element nodes for the data that should be changed
   std::vector<LINALG::Matrix<1,2*numnode> > nodepresdata(oldVectors_.size(),LINALG::Matrix<1,2*numnode>(true));
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  std::vector<LINALG::Matrix<1,numnode> > nodevelenrdata(oldVectors_.size(),LINALG::Matrix<1,numnode>(true));
-  LINALG::Matrix<1,numnode> nodevelenr(true);
-#endif
 
   // required enriched shape functions
   LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true);
@@ -668,27 +664,6 @@ void XFEM::ExtrapolationOld::interpolation(
   LINALG::Matrix<nsd,2*numnode> dummy_enrShapeXYPresDeriv1(true);
 
   // evaluate data for the given point
-#ifdef COMBUST_NORMAL_ENRICHMENT
-#ifdef COLLAPSE_FLAME_NORMAL
-  LINALG::Matrix<nsd,1> normal(node->X());
-  normal(2) = 0.0;
-  normal.Scale(1.0/normal.Norm2());
-#endif
-  ApproxFuncNormalVector<2,2*numnode> shp;
-  pointdataXFEMNormal<numnode,DISTYPE>(
-      ele,
-#ifdef COLLAPSE_FLAME_NORMAL
-      normal,
-#endif
-      xi,
-      xji,
-      shapeFcn,
-      enrShapeFcnPres,
-      enrShapeXYPresDeriv1,
-      shp,
-      false
-  );
-#else
   pointdataXFEM<numnode,DISTYPE>(
       ele,
       xi,
@@ -700,7 +675,6 @@ void XFEM::ExtrapolationOld::interpolation(
       dummy_enrShapeXYPresDeriv1,
       false
   );
-#endif
 
   const int* elenodeids = ele->NodeIds();
 
@@ -708,9 +682,6 @@ void XFEM::ExtrapolationOld::interpolation(
   int dofcounterVely = 0;
   int dofcounterVelz = 0;
   int dofcounterPres = 0;
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  int dofcounterVeln = 0;
-#endif
 
   for (int nodeid=0;nodeid<ele->NumNode();nodeid++) // loop over element nodes
   {
@@ -746,14 +717,6 @@ void XFEM::ExtrapolationOld::interpolation(
             nodeveldata[index](2,dofcounterVelz) = (*oldVectors_[index])[olddofcolmap_.LID(olddofpos)];
           dofcounterVelz++;
         }
-#ifdef COMBUST_NORMAL_ENRICHMENT
-        else if (fieldenr->getField() == XFEM::PHYSICS::Veln)
-        {
-          for (size_t index=0;index<oldVectors_.size();index++)
-            nodevelenrdata[index](0,dofcounterVeln) = (*oldVectors_[index])[olddofcolmap_.LID(olddofpos)];
-          dofcounterVeln++;
-        }
-#endif
         else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
         {
           for (size_t index=0;index<oldVectors_.size();index++)
@@ -1136,10 +1099,6 @@ void XFEM::ExtrapolationNew::interpolation(
   std::vector<LINALG::Matrix<nsd,2*numnode> > nodeveldata(oldVectors_.size(),LINALG::Matrix<nsd,2*numnode>(true));
   // node pressures of the element nodes for the data that should be changed
   std::vector<LINALG::Matrix<1,2*numnode> > nodepresdata(oldVectors_.size(),LINALG::Matrix<1,2*numnode>(true));
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  std::vector<LINALG::Matrix<1,numnode> > nodevelenrdata(oldVectors_.size(),LINALG::Matrix<1,numnode>(true));
-  LINALG::Matrix<1,numnode> nodevelenr(true);
-#endif
 
   // required enriched shape functions
   LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true);
@@ -1152,27 +1111,6 @@ void XFEM::ExtrapolationNew::interpolation(
   LINALG::Matrix<nsd,2*numnode> dummy_enrShapeXYPresDeriv1(true);
 
   // evaluate data for the given point
-#ifdef COMBUST_NORMAL_ENRICHMENT
-#ifdef COLLAPSE_FLAME_NORMAL
-  LINALG::Matrix<nsd,1> normal(node->X());
-  normal(2) = 0.0;
-  normal.Scale(1.0/normal.Norm2());
-#endif
-  ApproxFuncNormalVector<2,2*numnode> shp;
-  pointdataXFEMNormal<numnode,DISTYPE>(
-      ele,
-#ifdef COLLAPSE_FLAME_NORMAL
-      normal,
-#endif
-      xi,
-      xji,
-      shapeFcn,
-      enrShapeFcnPres,
-      enrShapeXYPresDeriv1,
-      shp,
-      false
-  );
-#else
   pointdataXFEM<numnode,DISTYPE>(
       ele,
       xi,
@@ -1185,7 +1123,6 @@ void XFEM::ExtrapolationNew::interpolation(
       false,
       side
   );
-#endif
 
   const int* elenodeids = ele->NodeIds();
 
@@ -1193,9 +1130,6 @@ void XFEM::ExtrapolationNew::interpolation(
   int dofcounterVely = 0;
   int dofcounterVelz = 0;
   int dofcounterPres = 0;
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  int dofcounterVeln = 0;
-#endif
 
   for (int nodeid=0;nodeid<ele->NumNode();nodeid++) // loop over element nodes
   {
@@ -1231,14 +1165,6 @@ void XFEM::ExtrapolationNew::interpolation(
             nodeveldata[index](2,dofcounterVelz) = (*oldVectors_[index])[olddofcolmap_.LID(olddofpos)];
           dofcounterVelz++;
         }
-#ifdef COMBUST_NORMAL_ENRICHMENT
-        else if (fieldenr->getField() == XFEM::PHYSICS::Veln)
-        {
-          for (size_t index=0;index<oldVectors_.size();index++)
-            nodevelenrdata[index](0,dofcounterVeln) = (*oldVectors_[index])[olddofcolmap_.LID(olddofpos)];
-          dofcounterVeln++;
-        }
-#endif
         else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
         {
           for (size_t index=0;index<oldVectors_.size();index++)

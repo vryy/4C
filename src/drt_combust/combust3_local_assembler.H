@@ -198,71 +198,6 @@ public:
       }
     }
 
-    //! assemble one expression for the element stiffness matrix for a given test and trial field
-    template <XFEM::PHYSICS::Field testfield,
-              XFEM::PHYSICS::Field trialfield,
-              size_t shpVecSize>
-    void MatrixSN(
-        const LINALG::Matrix<shpVecSize,1>& testshape,
-        const double&                       fac,
-        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& trialshape
-    ) const
-    {
-#ifndef COMBUST_NORMAL_ENRICHMENT
-      dserror("wrong function!");
-#endif
-      Matrix<testfield,trialfield>         (testshape, fac, trialshape.s);
-      Matrix<testfield,XFEM::PHYSICS::Veln>(testshape, fac, trialshape.n);
-    }
-
-    //! assemble one expression for the element stiffness matrix for a given test and trial field
-    template <XFEM::PHYSICS::Field testfield,
-              XFEM::PHYSICS::Field trialfield,
-              size_t shpVecSize>
-    void MatrixNS(
-        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& testshape,
-        const double&                       fac,
-        const LINALG::Matrix<shpVecSize,1>& trialshape
-    ) const
-    {
-#ifndef COMBUST_NORMAL_ENRICHMENT
-      dserror("wrong function!");
-#endif
-      Matrix<testfield          ,trialfield> (testshape.s, fac, trialshape);
-      Matrix<XFEM::PHYSICS::Veln,trialfield> (testshape.n, fac, trialshape);
-    }
-
-    //! assemble one expression for the element stiffness matrix for a given test and trial field
-    template <XFEM::PHYSICS::Field testfield,
-              XFEM::PHYSICS::Field trialfield>
-    void MatrixNN(
-        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& testshape,
-        const double& fac,
-        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& trialshape
-    ) const
-    {
-#ifndef COMBUST_NORMAL_ENRICHMENT
-      dserror("wrong function!");
-#endif
-      //if(numparamtest != numparamtrial) dserror("so nicht");
-
-      //std::cout << physVarToString(testfield) << std::endl;
-
-      //for (int i=0;i<numparamtest;i++)
-      //{
-      //  std::cout << "testparam " << i << " " << testdof[i] << std::endl;
-      //}
-      //std::cout << physVarToString(trialfield) << std::endl;
-      //for (int i=0;i<numparamtrial;i++)
-      //{
-      //  std::cout << "trialparam " << i << " " << trialdof[i] << std::endl;
-      //}
-
-      Matrix<testfield          ,trialfield>         (testshape.s, fac, trialshape.s);
-      Matrix<testfield          ,XFEM::PHYSICS::Veln>(testshape.s, fac, trialshape.n);
-      Matrix<XFEM::PHYSICS::Veln,trialfield>         (testshape.n, fac, trialshape.s);
-      Matrix<XFEM::PHYSICS::Veln,XFEM::PHYSICS::Veln>(testshape.n, fac, trialshape.n);
-    }
 
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield,
@@ -299,21 +234,6 @@ public:
             vi++;
         }
         }
-    }
-
-    //! assemble one expression for the element rhs for a given test field
-    template <XFEM::PHYSICS::Field testfield>
-    void VectorN(
-        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& testshape,
-        const double& fac
-    ) const
-    {
-#ifndef COMBUST_NORMAL_ENRICHMENT
-      dserror("wrong function!");
-#endif
-
-      Vector<testfield>          (testshape.s, fac);
-      Vector<XFEM::PHYSICS::Veln>(testshape.n, fac);
     }
 
     void PrintMat()
@@ -402,53 +322,6 @@ public:
         }
     }
 
-    //! assemble one expression for the element stiffness matrix for a given test and trial field
-    template <XFEM::PHYSICS::Field testfield,
-              XFEM::PHYSICS::Field trialfield,
-              size_t shpVecSize>
-    void MatrixNS(
-        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& testshape,
-        const double& fac,
-        const LINALG::Matrix<shpVecSize,1>& trialshape
-    )
-    {
-#ifndef COMBUST_NORMAL_ENRICHMENT
-      dserror("wrong function!");
-#endif
-      Matrix<testfield,trialfield>(testshape.s,fac,trialshape);
-    }
-
-    //! assemble one expression for the element stiffness matrix for a given test and trial field
-    template <XFEM::PHYSICS::Field testfield,
-              XFEM::PHYSICS::Field trialfield,
-              size_t shpVecSize>
-    void MatrixSN(
-        const LINALG::Matrix<shpVecSize,1>& testshape,
-        const double& fac,
-        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& trialshape
-    )
-    {
-#ifndef COMBUST_NORMAL_ENRICHMENT
-      dserror("wrong function!");
-#endif
-      Matrix<testfield,trialfield>(testshape,fac,trialshape.s);
-    }
-
-    //! assemble one expression for the element stiffness matrix for a given test and trial field
-    template <XFEM::PHYSICS::Field testfield,
-              XFEM::PHYSICS::Field trialfield>
-    void MatrixNN(
-        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& testshape,
-        const double& fac,
-        const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& trialshape
-    )
-    {
-#ifndef COMBUST_NORMAL_ENRICHMENT
-      dserror("wrong function!");
-#endif
-      Matrix<testfield,trialfield>(testshape.s,fac,trialshape.s);
-    }
-
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield,
               class V1>
@@ -467,19 +340,6 @@ public:
             const std::size_t testpos = NUMDOF*vi + FieldNum<testfield>::pos;
             eforce_(testpos) += fac*testshape(vi);
         }
-    }
-
-    //! assemble one expression for the element rhs for a given test field
-    template <XFEM::PHYSICS::Field testfield>
-    void VectorN(
-            const XFEM::ApproxFuncNormalPair<DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& testshape,
-            const double& fac
-            )
-    {
-#ifndef COMBUST_NORMAL_ENRICHMENT
-      dserror("wrong function!");
-#endif
-      Vector<testfield>(testshape.s,fac);
     }
 
     void PrintMat()

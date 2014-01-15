@@ -1216,7 +1216,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRefLength(
                 |    i     j  |   |    i     j  |   |    i     j  |
                 +-           -+   +-           -+   +-           -+
       */
-      LINALG::Matrix<nsd_,nsd_> G;
+      LINALG::Matrix<nsd_,nsd_> G(true);
 
       for (int nn=0;nn<nsd_;++nn)
       {
@@ -1237,7 +1237,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRefLength(
         -   -   +----
                  i,j
      */
-     double normG = 0;
+     double normG = 0.0;
      for (int nn=0;nn<nsd_;++nn)
      {
        for (int rr=0;rr<nsd_;++rr)

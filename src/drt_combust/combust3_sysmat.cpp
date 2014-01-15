@@ -17,9 +17,7 @@ Maintainer: Ursula Rasthofer
 
 #include "combust_interface.H"
 #include "combust3_sysmat_premixed_nitsche.H"
-#include "combust3_sysmat_premixed_nitsche_normal.H"
 #include "combust3_sysmat_premixed_stress.H"
-#include "combust3_sysmat_premixed_stress_normal.H"
 #include "combust3_sysmat_twophaseflow.H"
 #include "combust3_error_analysis.H"
 #include "combust3_facemat_premixed_nitsche.H"
@@ -50,7 +48,6 @@ void fillElementUnknownsArrays(
 {
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-#ifndef COMBUST_NORMAL_ENRICHMENT
   // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
   //const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
   const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
@@ -60,47 +57,17 @@ void fillElementUnknownsArrays(
   // since partial enrichments of single fields are allowed now,
   // this assumption is not valid any more
   //dsassert((numparamvelx == numparamvely) and (numparamvelx == numparamvelz) and (numparamvelx == numparampres), "assumption violation");
-#else
-  // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-  //const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
-  const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman,XFEM::PHYSICS::Velx);
-  const size_t numparamvely = XFEM::NumParam<numnode,ASSTYPE>::get(dofman,XFEM::PHYSICS::Vely);
-  const size_t numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman,XFEM::PHYSICS::Velz);
-  const size_t numparamveln = XFEM::NumParam<0,ASSTYPE>::get(dofman,XFEM::PHYSICS::Veln);
-  const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman,XFEM::PHYSICS::Pres);
-  dsassert((numparamvelx == 8) and (numparamvely == 8) and (numparamvelz == 8), "assumption violation");
-#endif
-#ifndef COMBUST_NORMAL_ENRICHMENT
+
   const size_t shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*numnode;
   if (numparamvelx > shpVecSize)
   {
     dserror("increase SizeFac for nodal unknowns");
   }
-#else
-  const size_t shpVecSizeVel = COMBUST::SizeFacVel<ASSTYPE>::fac*numnode;
-  if (numparamvelx > shpVecSizeVel)
-  {
-    dserror("increase SizeFac for nodal unknowns for velocity");
-  }
-  const size_t shpVecSizePres = COMBUST::SizeFacPres<ASSTYPE>::fac*numnode;
-  if (numparampres > shpVecSizePres)
-  {
-    dserror("increase SizeFac for nodal unknowns for pressure");
-  }
-#endif
 
-#ifndef COMBUST_NORMAL_ENRICHMENT
   const std::vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
   const std::vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
   const std::vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
   const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
-#else
-  const std::vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
-  const std::vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
-  const std::vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
-  const std::vector<int>& velndof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Veln>());
-  const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
-#endif
 
   if (mystate.instationary_)
   {
@@ -158,19 +125,6 @@ void fillElementUnknownsArrays(
       evelaf(2,iparam) = mystate.velnp_[velzdof[iparam]];
   }
 
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  for (size_t iparam=0; iparam<numparamveln; ++iparam)
-  {
-    evelaf(3,iparam) = mystate.velnp_[velndof[iparam]];
-    if (mystate.instationary_)
-    {
-      eveln( 3,iparam) = mystate.veln_[ velndof[iparam]];
-      evelnm(3,iparam) = mystate.velnm_[velndof[iparam]];
-      // TODO@Florian ist das richtig, mit der Beschleunigung?
-      eaccn( 3,iparam) = mystate.accn_[ velndof[iparam]];
-    }
-  }
-#endif
   if (mystate.genalpha_)
   {
     for (size_t iparam=0; iparam<numparampres; ++iparam)
@@ -846,16 +800,6 @@ void Sysmat(
   const int shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
   const int shpVecSizeDiscPres = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement;
 
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  const size_t shpVecSizeVel = COMBUST::SizeFacVel<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-  const size_t shpVecSizePres = COMBUST::SizeFacPres<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-  LINALG::Matrix<4,shpVecSizeVel> evelaf(true);
-  LINALG::Matrix<4,shpVecSizeVel> eveln(true);
-  LINALG::Matrix<4,shpVecSizeVel> evelnm(true);
-  LINALG::Matrix<4,shpVecSizeVel> eaccn(true);
-  LINALG::Matrix<4,shpVecSizeVel> eaccam(true);
-  LINALG::Matrix<shpVecSizePres,1> epreaf(true);
-#else
   const int shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   LINALG::Matrix<3,shpVecSize> evelaf(true);
   LINALG::Matrix<3,shpVecSize> eveln(true);
@@ -863,7 +807,6 @@ void Sysmat(
   LINALG::Matrix<3,shpVecSize> eaccn(true);
   LINALG::Matrix<3,shpVecSize> eaccam(true);
   LINALG::Matrix<shpVecSize,1> epreaf(true);
-#endif
   LINALG::Matrix<numnode,1> ephi(true);
   LINALG::Matrix<6,shpVecSizeStress> etensor(true);
   LINALG::Matrix<shpVecSizeDiscPres,1> ediscpres(true);
@@ -879,7 +822,6 @@ void Sysmat(
 
     double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
     double ele_meas_minus = 0.0; // for different averages <> and {}
-#ifndef COMBUST_NORMAL_ENRICHMENT
 //    if (ele->Bisected())
 //    {
 //      COMBUST::SysmatDomainNitscheGalerkin<DISTYPE,ASSTYPE,NUMDOF>(
@@ -905,42 +847,9 @@ void Sysmat(
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
           ele_meas_plus, ele_meas_minus);
     }
-#else
-        LINALG::Matrix<3,numnode> egradphi(true);
-        LINALG::Matrix<9,numnode> egradphi2(true);
-        LINALG::Matrix<numnode,1> ecurv(true);
-     // boundary integrals are only added for intersected elements (fully enriched elements)
-//    if (ele->Bisected() == true)
-//    {
-      if (smoothed_boundary_integration)
-        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi,egradphi2, ecurv);
-//    }
-    COMBUST::SysmatDomainNitscheNormal<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, egradphi,
-        material, timealgo, time, dt, theta, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
-        ele_meas_plus, ele_meas_minus);
 #endif
-#endif
+
 #ifdef COMBUST_EPSPRES_BASED
-#ifdef COMBUST_NORMAL_ENRICHMENT
-    // get smoothed gradient of phi for surface tension applications
-    LINALG::Matrix<3,numnode> egradphi(true);
-    LINALG::Matrix<9,numnode> egradphi2(true);
-    LINALG::Matrix<numnode,1> ecurv(true);
-     // boundary integrals are only added for intersected elements (fully enriched elements)
-//    if (ele->Bisected() == true)
-//    {
-      if (smoothed_boundary_integration)
-        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi,egradphi2, ecurv);
-//    }
-
-//std::cout << "phi gradient danach" << ele->Id() << " " << egradphi << std::endl;
-
-    COMBUST::SysmatDomainStressNormal<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, egradphi, etensor, ediscpres,
-        material, timealgo, dt, theta, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler);
-
-#else
     COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor, ediscpres,
         material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
@@ -950,7 +859,6 @@ void Sysmat(
     COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor, ediscpres,
         material, timealgo, dt, theta, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler);
-#endif
 #endif
 #endif
 
@@ -968,20 +876,12 @@ void Sysmat(
       ecurv.Clear();
       if (smoothed_boundary_integration)
         fillElementGradPhi<DISTYPE>(mystate, egradphi,egradphi2, ecurv);
-#ifndef COMBUST_NORMAL_ENRICHMENT
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelaf, epreaf, ephi, egradphi,egradphi2, ecurv, material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, marksteinlength, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, variablesurftens, second_deriv, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration,
           weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
-#else
-      COMBUST::SysmatBoundaryNitscheNormal<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelaf, epreaf, ephi, egradphi,egradphi2, material, timealgo, dt, theta, assembler,
-          flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
-          surftensapprox, variablesurftens, connected_interface, veljumptype,
-          fluxjumptype, smoothed_boundary_integration);
-#endif
     }
 #endif
     // boundary integrals are only added for intersected elements (fully enriched elements)
@@ -999,15 +899,9 @@ void Sysmat(
         COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi,egradphi2, ecurv);
 
 #ifdef COMBUST_EPSPRES_BASED
-#ifdef COMBUST_NORMAL_ENRICHMENT
-      COMBUST::SysmatBoundaryStressNormal<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
-          theta, assembler, flamespeed);
-#else
       COMBUST::SysmatBoundaryStress<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelaf, epreaf, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
           theta, ga_alphaF, ga_alphaM, ga_gamma, assembler, flamespeed);
-#endif
 #ifdef COMBUST_SIGMA_BASED
       COMBUST::SysmatBoundarySigma<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelaf, epreaf, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,

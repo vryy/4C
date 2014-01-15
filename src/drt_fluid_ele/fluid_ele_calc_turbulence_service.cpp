@@ -700,7 +700,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
                     |    i     j  |   |    i     j  |   |    i     j  |
                     +-           -+   +-           -+   +-           -+
         */
-        LINALG::Matrix<nsd_,nsd_> G;
+        LINALG::Matrix<nsd_,nsd_> G(true);
 
         for (int nn=0;nn<nsd_;++nn)
         {
@@ -721,7 +721,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
             -   -   +----
                      i,j
         */
-        double normG = 0;
+        double normG = 0.0;
         for (int nn=0;nn<nsd_;++nn)
         {
           for (int rr=0;rr<nsd_;++rr)

@@ -1096,12 +1096,6 @@ critTol_(1.0e-02)
 
 
 {
-  // check if enrichment defines are set sensible
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  if (timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
-    dserror("if veln-field available no additional scalar computation required! Fix this!");
-#endif
-
   // Initialization
   if (timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_standard)
     getCritCutElements();

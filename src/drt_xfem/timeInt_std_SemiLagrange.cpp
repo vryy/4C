@@ -355,91 +355,10 @@ void XFEM::SemiLagrange::NewtonIter(
   LINALG::Matrix<nsd,2*numnode> nodevel(true); // node velocities of the element nodes
   LINALG::Matrix<1,2*numnode> nodepres(true); // node pressures, just for function call
 
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  LINALG::Matrix<1,numnode> nodevelenr(true);
-  LINALG::Matrix<nsd,nsd> vderxy(true);
-  ApproxFuncNormalVector<2,2*numnode> shp;
-#else
   LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true); // dummy
   LINALG::Matrix<nsd,2*numnode> enrShapeXYVelDeriv1(true);
-#endif
 
   // build systemMatrix
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  pointdataXFEMNormal<numnode,DISTYPE>(
-      ele,
-#ifdef COLLAPSE_FLAME_NORMAL
-      data->startpoint_,
-#endif
-      xi,
-      xji,
-      shapeFcn,
-      enrShapeFcnPres,
-      enrShapeXYPresDeriv1,
-      shp,
-      false
-  );
-
-  elementsNodalData<numnode>(
-      ele,
-      veln_,
-      olddofman_,
-      olddofcolmap_,
-      oldNodalDofColDistrib_,
-      nodevel,
-      nodevelenr,
-      nodepres); // nodal data of the element nodes
-
-  vderxy.Clear();
-  { // build sysmat
-    const int* nodeids = ele->NodeIds();
-    size_t velncounter = 0;
-
-    // vderxy = enr_derxy(j,k)*evelnp(i,k);
-    for (size_t inode = 0; inode < numnode; ++inode) // loop over element nodes
-    {
-      // standard shape functions are identical for all vector components
-      // e.g. shp.velx.dx.s == shp.vely.dx.s == shp.velz.dx.s
-      vderxy(0,0) += nodevel(0,inode)*shp.velx.dx.s(inode);
-      vderxy(0,1) += nodevel(0,inode)*shp.velx.dy.s(inode);
-      vderxy(0,2) += nodevel(0,inode)*shp.velx.dz.s(inode);
-
-      vderxy(1,0) += nodevel(1,inode)*shp.vely.dx.s(inode);
-      vderxy(1,1) += nodevel(1,inode)*shp.vely.dy.s(inode);
-      vderxy(1,2) += nodevel(1,inode)*shp.vely.dz.s(inode);
-
-      vderxy(2,0) += nodevel(2,inode)*shp.velz.dx.s(inode);
-      vderxy(2,1) += nodevel(2,inode)*shp.velz.dy.s(inode);
-      vderxy(2,2) += nodevel(2,inode)*shp.velz.dz.s(inode);
-
-      const int gid = nodeids[inode];
-      const std::set<XFEM::FieldEnr>& enrfieldset = olddofman_->getNodeDofSet(gid);
-
-      for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-          enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-      {
-        if (enrfield->getField() == XFEM::PHYSICS::Veln)
-        {
-          vderxy(0,0) += nodevelenr(0,velncounter)*shp.velx.dx.n(velncounter);
-          vderxy(0,1) += nodevelenr(0,velncounter)*shp.velx.dy.n(velncounter);
-          vderxy(0,2) += nodevelenr(0,velncounter)*shp.velx.dz.n(velncounter);
-
-          vderxy(1,0) += nodevelenr(0,velncounter)*shp.vely.dx.n(velncounter);
-          vderxy(1,1) += nodevelenr(0,velncounter)*shp.vely.dy.n(velncounter);
-          vderxy(1,2) += nodevelenr(0,velncounter)*shp.vely.dz.n(velncounter);
-
-          vderxy(2,0) += nodevelenr(0,velncounter)*shp.velz.dx.n(velncounter);
-          vderxy(2,1) += nodevelenr(0,velncounter)*shp.velz.dy.n(velncounter);
-          vderxy(2,2) += nodevelenr(0,velncounter)*shp.velz.dz.n(velncounter);
-
-          velncounter += 1;
-        }
-      }
-    } // end loop over element nodes
-  } // sysmat built
-
-  sysmat.Update((1.0-theta_curr_)*dt_,vderxy);
-#else
   pointdataXFEM<numnode,DISTYPE>(
       ele,
       xi,
@@ -462,7 +381,7 @@ void XFEM::SemiLagrange::NewtonIter(
       nodepres); // nodal data of the element nodes
 
   sysmat.MultiplyNT((1.0-Theta(data))*dt_,nodevel,enrShapeXYVelDeriv1); // (1-theta) * dt * v_nodes * dN/dx
-#endif
+
   for (int i=0;i<nsd;i++)
     sysmat(i,i) += 1.0; // I + dt*velDerivXY
   sysmat.Invert();
@@ -735,10 +654,6 @@ void XFEM::SemiLagrange::backTracking(
   std::vector<LINALG::Matrix<nsd,2*numnode> > nodeveldata(oldVectors_.size(),LINALG::Matrix<nsd,2*numnode>(true));
   // node pressures of the element nodes for the data that should be changed
   std::vector<LINALG::Matrix<1,2*numnode> > nodepresdata(oldVectors_.size(),LINALG::Matrix<1,2*numnode>(true));
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  std::vector<LINALG::Matrix<1,numnode> > nodevelenrdata(oldVectors_.size(),LINALG::Matrix<1,numnode>(true));
-  LINALG::Matrix<1,numnode> nodevelenr(true);
-#endif
   std::vector<LINALG::Matrix<nsd,1> > velValues(oldVectors_.size(),LINALG::Matrix<nsd,1>(true)); // velocity of the data that should be changed
   std::vector<double> presValues(oldVectors_.size(),0); // pressures of the data that should be changed
 
@@ -748,9 +663,6 @@ void XFEM::SemiLagrange::backTracking(
     {
       nodeveldata[index].Clear();
       nodepresdata[index].Clear();
-#ifdef COMBUST_NORMAL_ENRICHMENT
-      nodevelenrdata[index].Clear();
-#endif
     }
 
     DRT::Element* ele = NULL; // current element
@@ -781,27 +693,6 @@ void XFEM::SemiLagrange::backTracking(
       ele = fittingele;
 
     // evaluate data for the given point
-#ifdef COMBUST_NORMAL_ENRICHMENT
-#ifdef COLLAPSE_FLAME_NORMAL
-    LINALG::Matrix<nsd,1> normal(node->X());
-    normal(2) = 0.0;
-    normal.Scale(1.0/normal.Norm2());
-#endif
-    ApproxFuncNormalVector<2,2*numnode> shp;
-    pointdataXFEMNormal<numnode,DISTYPE>(
-        ele,
-#ifdef COLLAPSE_FLAME_NORMAL
-        normal,
-#endif
-        xi,
-        xji,
-        shapeFcn,
-        enrShapeFcnPres,
-        enrShapeXYPresDeriv1,
-        shp,
-        false
-    );
-#else
     LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true);
     LINALG::Matrix<nsd,2*numnode> enrShapeXYVelDeriv1(true); // dummy
 
@@ -816,7 +707,6 @@ void XFEM::SemiLagrange::backTracking(
         enrShapeXYPresDeriv1,
         false
     );
-#endif
 
     const int* elenodeids = ele->NodeIds();
 
@@ -824,9 +714,6 @@ void XFEM::SemiLagrange::backTracking(
     int dofcounterVely = 0;
     int dofcounterVelz = 0;
     int dofcounterPres = 0;
-#ifdef COMBUST_NORMAL_ENRICHMENT
-    int dofcounterVeln = 0;
-#endif
 
     for (int nodeid=0;nodeid<ele->NumNode();nodeid++) // loop over element nodes
     {
@@ -868,15 +755,6 @@ void XFEM::SemiLagrange::backTracking(
               nodeveldata[index](2,dofcounterVelz) = (*oldVectors_[index])[olddofcolmap_.LID(olddofpos)];
             dofcounterVelz++;
           }
-#ifdef COMBUST_NORMAL_ENRICHMENT
-          else if (fieldenr->getField() == XFEM::PHYSICS::Veln)
-          {
-            nodevelenr(0,dofcounterVeln) =  (*veln_)[olddofcolmap_.LID(olddofpos)];
-            for (size_t index=0;index<oldVectors_.size();index++)
-              nodevelenrdata[index](0,dofcounterVeln) = (*oldVectors_[index])[olddofcolmap_.LID(olddofpos)];
-            dofcounterVeln++;
-          }
-#endif
           else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
           {
             for (size_t index=0;index<oldVectors_.size();index++)
@@ -903,34 +781,8 @@ void XFEM::SemiLagrange::backTracking(
 
     if (iele==0) // compute transportvel just once!
     {
-#ifdef COMBUST_NORMAL_ENRICHMENT
-      size_t velncounter = 0;
-      for (int inode=0; inode<numnode; ++inode)
-      {
-        // standard shape functions are identical for all vector components
-        // shp.velx.d0.s == shp.vely.d0.s == shp.velz.d0.s
-        transportVeln(0) += nodevel(0,inode)*shp.velx.d0.s(inode);
-        transportVeln(1) += nodevel(1,inode)*shp.vely.d0.s(inode);
-        transportVeln(2) += nodevel(2,inode)*shp.velz.d0.s(inode);
-
-        const std::set<XFEM::FieldEnr>& enrfieldset = olddofman_->getNodeDofSet(elenodeids[inode]);
-        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-            enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-        {
-          if (enrfield->getField() == XFEM::PHYSICS::Veln)
-          {
-            transportVeln(0) += nodevelenr(0,velncounter)*shp.velx.d0.n(velncounter);
-            transportVeln(1) += nodevelenr(0,velncounter)*shp.vely.d0.n(velncounter);
-            transportVeln(2) += nodevelenr(0,velncounter)*shp.velz.d0.n(velncounter);
-
-            velncounter += 1;
-          }
-        }
-      } // end loop over elenodes
-#else
       // interpolate velocity and pressure values at starting point
       transportVeln.Multiply(nodevel, enrShapeFcnVel);
-#endif
 
       // computing pseudo time-step deltaT
       // remark: if x is the Lagrange-origin of node, deltaT = dt with respect to small errors.
@@ -952,73 +804,13 @@ void XFEM::SemiLagrange::backTracking(
     // interpolate velocity and pressure gradients for all fields at starting point and get final values
     for (size_t index=0;index<oldVectors_.size();index++)
     {
-#ifdef COMBUST_NORMAL_ENRICHMENT
-      size_t velncounter = 0;
-      // vderxy = enr_derxy(j,k)*evelnp(i,k);
-      for (int inode = 0; inode < numnode; ++inode)
-      {
-        // standard shape functions are identical for all vector components
-        // shp.velx.d0.s == shp.vely.d0.s == shp.velz.d0.s
-        if (iele==0)
-        {
-          veln[index](0) += nodevel(0,inode)*shp.velx.d0.s(inode);
-          veln[index](1) += nodevel(1,inode)*shp.vely.d0.s(inode);
-          veln[index](2) += nodevel(2,inode)*shp.velz.d0.s(inode);
-        }
-
-        velnDeriv1[index](0,0) += nodeveldata[index](0,inode)*shp.velx.dx.s(inode);
-        velnDeriv1[index](0,1) += nodeveldata[index](0,inode)*shp.velx.dy.s(inode);
-        velnDeriv1[index](0,2) += nodeveldata[index](0,inode)*shp.velx.dz.s(inode);
-
-        velnDeriv1[index](1,0) += nodeveldata[index](1,inode)*shp.vely.dx.s(inode);
-        velnDeriv1[index](1,1) += nodeveldata[index](1,inode)*shp.vely.dy.s(inode);
-        velnDeriv1[index](1,2) += nodeveldata[index](1,inode)*shp.vely.dz.s(inode);
-
-        velnDeriv1[index](2,0) += nodeveldata[index](2,inode)*shp.velz.dx.s(inode);
-        velnDeriv1[index](2,1) += nodeveldata[index](2,inode)*shp.velz.dy.s(inode);
-        velnDeriv1[index](2,2) += nodeveldata[index](2,inode)*shp.velz.dz.s(inode);
-
-        const std::set<XFEM::FieldEnr>& enrfieldset = olddofman_->getNodeDofSet(elenodeids[inode]);
-        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-            enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-        {
-          if (enrfield->getField() == XFEM::PHYSICS::Veln)
-          {
-            if (iele==0)
-            {
-              veln[index](0) += nodevelenr(0,velncounter)*shp.velx.d0.n(velncounter);
-              veln[index](1) += nodevelenr(0,velncounter)*shp.vely.d0.n(velncounter);
-              veln[index](2) += nodevelenr(0,velncounter)*shp.velz.d0.n(velncounter);
-            }
-
-
-            velnDeriv1[index](0,0) += nodeveldata[index](0,velncounter)*shp.velx.dx.n(velncounter);
-            velnDeriv1[index](0,1) += nodeveldata[index](0,velncounter)*shp.velx.dy.n(velncounter);
-            velnDeriv1[index](0,2) += nodeveldata[index](0,velncounter)*shp.velx.dz.n(velncounter);
-
-            velnDeriv1[index](1,0) += nodeveldata[index](0,velncounter)*shp.vely.dx.n(velncounter);
-            velnDeriv1[index](1,1) += nodeveldata[index](0,velncounter)*shp.vely.dy.n(velncounter);
-            velnDeriv1[index](1,2) += nodeveldata[index](0,velncounter)*shp.vely.dz.n(velncounter);
-
-            velnDeriv1[index](2,0) += nodeveldata[index](0,velncounter)*shp.velz.dx.n(velncounter);
-            velnDeriv1[index](2,1) += nodeveldata[index](0,velncounter)*shp.velz.dy.n(velncounter);
-            velnDeriv1[index](2,2) += nodeveldata[index](0,velncounter)*shp.velz.dz.n(velncounter);
-
-            velncounter += 1;
-          } // end if veln field
-        } // end loop over fieldenrset
-      } // end loop over element nodes
-      if (index==0)
-        std::cout << *ele << "with nodevels " << nodeveldata[0] << ", nodeenrvals " << nodevelenrdata[0]
-                                                                                                 << " and summed up velnderiv currently is " << velnDeriv1[0] << std::endl;
-#else
       if (iele==0)
         veln[index].Multiply(nodeveldata[index],enrShapeFcnVel);
       velnDeriv1[index].MultiplyNT(1.0,nodeveldata[index],enrShapeXYVelDeriv1,1.0);
       //      if (index==0)
       //        std::cout << *ele << "with nodevels " << nodeveldata[index] << ", shapefcnderiv " <<
       //            enrShapeXYVelDeriv1 << " and summed up velnderiv currently is " << velnDeriv1[index] << std::endl;
-#endif
+
       presnDeriv1[index].MultiplyNT(1.0,nodepresdata[index],enrShapeXYPresDeriv1,1.0);
     } // end loop over vectors to be read from
   } // end loop over elements containing the point (usually one)
@@ -1319,13 +1111,8 @@ void XFEM::SemiLagrange::computeNodalGradient(
   LINALG::Matrix<numnode,1> shapeFcnDummy(true);
   LINALG::Matrix<2*numnode,1> enrShapeFcnDummy(true);
 
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  LINALG::Matrix<1,numnode> nodevelenr(true);
-  ApproxFuncNormalVector<2,2*numnode> shp;
-#else
   LINALG::Matrix<nsd,2*numnode> enrShapeXYVelDeriv1(true);
   LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true);
-#endif
 
   { // get local coordinates
     bool elefound = false;
@@ -1348,20 +1135,6 @@ void XFEM::SemiLagrange::computeNodalGradient(
     }
   }
 
-#ifdef COMBUST_NORMAL_ENRICHMENT
-  pointdataXFEMNormal<numnode,DISTYPE>(
-      ele,
-#ifdef COLLAPSE_FLAME_NORMAL
-      coords,
-#endif
-      xi,
-      jacobiDummy,
-      shapeFcnDummy,
-      enrShapeFcnDummy,
-      enrShapeXYPresDeriv1,
-      shp,
-      true);
-#else
   pointdataXFEM<numnode,DISTYPE>(
       (DRT::Element*)ele,
       xi,
@@ -1372,68 +1145,10 @@ void XFEM::SemiLagrange::computeNodalGradient(
       enrShapeXYVelDeriv1,
       enrShapeXYPresDeriv1,
       true);
-#endif
 
   //std::cout << "shapefcnvel is " << enrShapeFcnVel << ", velderiv is " << enrShapeXYVelDeriv1 << " and presderiv is " << enrShapeXYPresDeriv1 << std::endl;
   for (size_t i=0;i<newColVectors.size();i++)
   {
-#ifdef COMBUST_NORMAL_ENRICHMENT
-    elementsNodalData<numnode>(
-        ele,
-        newColVectors[i],
-        dofman_,
-        newdofcolmap,
-        newNodalDofColDistrib,
-        nodevel,
-        nodevelenr,
-        nodepres);
-
-    const int* nodeids = currele->NodeIds();
-    size_t velncounter = 0;
-
-    // vderxy = enr_derxy(j,k)*evelnp(i,k);
-    for (int inode = 0; inode < numnode; ++inode)
-    {
-      // standard shape functions are identical for all vector components
-      // e.g. shp.velx.dx.s == shp.vely.dx.s == shp.velz.dx.s
-      velnpDeriv1[i](0,0) += nodevel(0,inode)*shp.velx.dx.s(inode);
-      velnpDeriv1[i](0,1) += nodevel(0,inode)*shp.velx.dy.s(inode);
-      velnpDeriv1[i](0,2) += nodevel(0,inode)*shp.velx.dz.s(inode);
-
-      velnpDeriv1[i](1,0) += nodevel(1,inode)*shp.vely.dx.s(inode);
-      velnpDeriv1[i](1,1) += nodevel(1,inode)*shp.vely.dy.s(inode);
-      velnpDeriv1[i](1,2) += nodevel(1,inode)*shp.vely.dz.s(inode);
-
-      velnpDeriv1[i](2,0) += nodevel(2,inode)*shp.velz.dx.s(inode);
-      velnpDeriv1[i](2,1) += nodevel(2,inode)*shp.velz.dy.s(inode);
-      velnpDeriv1[i](2,2) += nodevel(2,inode)*shp.velz.dz.s(inode);
-
-      const int gid = nodeids[inode];
-      const std::set<XFEM::FieldEnr>& enrfieldset = olddofman_->getNodeDofSet(gid);
-
-      for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-          enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-      {
-        if (enrfield->getField() == XFEM::PHYSICS::Veln)
-        {
-          velnpDeriv1[i](0,0) += nodevelenr(0,velncounter)*shp.velx.dx.n(velncounter);
-          velnpDeriv1[i](0,1) += nodevelenr(0,velncounter)*shp.velx.dy.n(velncounter);
-          velnpDeriv1[i](0,2) += nodevelenr(0,velncounter)*shp.velx.dz.n(velncounter);
-
-          velnpDeriv1[i](1,0) += nodevelenr(0,velncounter)*shp.vely.dx.n(velncounter);
-          velnpDeriv1[i](1,1) += nodevelenr(0,velncounter)*shp.vely.dy.n(velncounter);
-          velnpDeriv1[i](1,2) += nodevelenr(0,velncounter)*shp.vely.dz.n(velncounter);
-
-          velnpDeriv1[i](2,0) += nodevelenr(0,velncounter)*shp.velz.dx.n(velncounter);
-          velnpDeriv1[i](2,1) += nodevelenr(0,velncounter)*shp.velz.dy.n(velncounter);
-          velnpDeriv1[i](2,2) += nodevelenr(0,velncounter)*shp.velz.dz.n(velncounter);
-
-          velncounter += 1;
-        }
-      }
-    }
-
-#else
     elementsNodalData<numnode>(
         (DRT::Element*)ele,
         newColVectors[i],
@@ -1445,7 +1160,6 @@ void XFEM::SemiLagrange::computeNodalGradient(
 
     velnpDeriv1[i].MultiplyNT(1.0,nodevel,enrShapeXYVelDeriv1,1.0);
     presnpDeriv1[i].MultiplyNT(1.0,nodepres,enrShapeXYPresDeriv1,1.0);
-#endif
   }
 } // end function compute nodal gradient
 

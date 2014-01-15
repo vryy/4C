@@ -701,7 +701,6 @@ protected:
       TimeIntData::state state
   ) const;
 
-#ifndef COMBUST_NORMAL_ENRICHMENT
   //! data at an arbitrary point lying in an element
   template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
   void pointdataXFEM(
@@ -829,151 +828,6 @@ protected:
         XFEM::PHYSICS::Pres,shapeFcn,shapeXYDeriv1,dummy1,
         enrShapeFcnPres,enrShapeXYPresDeriv1,dummy2);
   }; // end template pointdataXFEM
-#else // normal enrichment
-  //! data at an arbitrary point in an element with normal enrichment
-  template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
-  void pointdataXFEMnormal(
-      DRT::Element*& element,
-#ifdef COLLAPSE_FLAME_NORMAL
-      LINALG::Matrix<3,1> xyz,
-#endif
-      LINALG::Matrix<3,1>& xi,
-      LINALG::Matrix<3,3>& xji,
-      LINALG::Matrix<numnode,1>& shapeFcn,
-      LINALG::Matrix<2*numnode,1>& enrShapeFcnPres,
-      LINALG::Matrix<3,2*numnode>& enrShapeXYPresDeriv1,
-      ApproxFuncNormalVector<2,2*numnode>& shp,
-      bool currentTimeStep
-  ) const
-  {
-    dserror("normal enrichment not working! probably some error in the shape functions (wrong 1st global derivative in cut elements!");
-    const int* elenodeids = element->NodeIds();  // nodeids of element
-
-    if (DISTYPE != DRT::Element::hex8)
-      dserror("element type not implemented until now!");
-
-    RCP<XFEM::DofManager> dofman; // required dofmanager
-    RCP<Epetra_Vector> phi; // required phi-field
-    if (newTimeStep) // new time step -> new data
-    {
-      dofman = newdofman_;
-      phi = phinp_;
-    }
-    else // old time step -> old data
-    {
-      dofman = olddofman_;
-      phi = phin_;
-    }
-
-    // clear data that should be filled
-    funct.Clear();
-    shp.Clear();
-
-    LINALG::Matrix<numnode,1> nodephi(true); // nodal phivalues
-    LINALG::Matrix<nsd,numnode> nodecoords(true); // node coordinates of the element
-    for (size_t nodeid=0;nodeid<numnode;nodeid++) // set nodal data
-    {
-      DRT::Node* currnode = discret_->gNode(elenodeids[nodeid]);
-      nodephi(nodeid,0) = (*phi)[currnode->LID()];
-      for (int i=0;i<nsd;i++)
-        nodecoords(i,nodeid) = currnode->X()[i];
-    }
-
-    LINALG::Matrix<nsd,numnode> shapeXiDeriv1(true); // local derivation of the shape function
-    DRT::UTILS::shape_function_3D(shapeFcn, xi(0),xi(1),xi(2),DISTYPE); // evaluate shape functions at xi
-    DRT::UTILS::shape_function_3D_deriv1(shapeXiDeriv1, xi(0),xi(1),xi(2),DISTYPE); // evaluate derivative of shape functions at xi
-
-    LINALG::Matrix<nsd,nsd> xjm(true); // jacobi matrix
-    xjm.MultiplyNT(shapeXiDeriv1,nodecoords);   // jacobian J = (dx/dxi)^T
-    xji.Invert(xjm);       // jacobian inverted J^(-1) = dxi/dx
-
-    LINALG::Matrix<nsd,numnode> derxy(true); // first derivation of global shape functions
-    derxy.Multiply(xji,shapeXiDeriv1); // (dN/dx)^T = (dN/dxi)^T * J^(-T)
-    //  std::cout << "deriv1 of global shape fcn is " << shapeXYDeriv1 << std::endl;
-
-    // second  derivative of (enriched) shape function in local and global coordinates
-    LINALG::Matrix<2*nsd,numnode> dummy1(true); // just needed for function call
-    LINALG::Matrix<2*nsd,2*numnode> dummy2(true); // just needed for function call so just one for vel and pres
-
-    // create an element dof manager
-    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty; // ansatz map needed for eledofman
-    Teuchos::RCP<XFEM::ElementDofManager> eleDofManager = Teuchos::rcp(new XFEM::ElementDofManager(*element,element_ansatz_empty,*dofman));
-
-    // the enrichment functions may depend on the point
-    // therefore the computation of the enrichment functions is called here
-    // the gauss point is contained in shapeFcn!
-    const XFEM::ElementEnrichmentValues enrvals(
-        *element,*eleDofManager,nodephi,
-        funct,derxy,dummy2);
-
-    // get pointer to vector holding SMOOTHED G-function values at the fluid nodes
-    Teuchos::RCP<Epetra_MultiVector> gradphiVec;
-    //  bool oldTimeStep = true;
-    //  if (oldTimeStep)
-    //    gradphiVec = flamefront_->GradPhiOld();
-    //  else
-    gradphiVec = flamefront_->GradPhi();
-
-    if (gradphiVec == Teuchos::null)
-      dserror("No gradient of phi computed!");
-
-    std::vector<double> gradphi; ///< smoothed G-function gradient at n+1
-
-    DRT::UTILS::ExtractMyNodeBasedValues(element, gradphi,*gradphiVec);
-
-    LINALG::Matrix<nsd,numnode> egradphi; // nodal phi gradient
-    unsigned ipos;
-    for (size_t iparam=0; iparam<numnode; ++iparam)
-    {
-      ipos = iparam*3;
-      egradphi(0,iparam) = gradphi[ipos];
-      egradphi(1,iparam) = gradphi[ipos+1];
-      egradphi(2,iparam) = gradphi[ipos+2];
-    }
-
-#ifdef COLLAPSE_FLAME_NORMAL
-    LINALG::Matrix<nsd,1> normal(true);
-    normal(0) = xyz(0);
-    normal(1) = xyz(1);
-    normal.Scale(1.0/normal.Norm2());
-#endif
-    // enriched shape functions and derivatives for nodal parameters (dofs)
-    enrvals.ComputeNormalShapeFunction(
-        funct,
-        derxy,
-        dummy2,
-        egradphi,
-#ifdef COLLAPSE_FLAME_NORMAL
-        normal,
-        xyz,
-#endif
-        shp
-    );
-
-    for (size_t iparam = 0; iparam < numnode; ++iparam)
-    {
-      shp.velx.d0.s(iparam) = funct(iparam);
-      shp.vely.d0.s(iparam) = funct(iparam);
-      shp.velz.d0.s(iparam) = funct(iparam);
-
-      shp.velx.dx.s(iparam) = derxy(0,iparam);
-      shp.vely.dx.s(iparam) = derxy(0,iparam);
-      shp.velz.dx.s(iparam) = derxy(0,iparam);
-
-      shp.velx.dy.s(iparam) = derxy(1,iparam);
-      shp.vely.dy.s(iparam) = derxy(1,iparam);
-      shp.velz.dy.s(iparam) = derxy(1,iparam);
-
-      shp.velx.dz.s(iparam) = derxy(2,iparam);
-      shp.vely.dz.s(iparam) = derxy(2,iparam);
-      shp.velz.dz.s(iparam) = derxy(2,iparam);
-    }
-
-    enrvals.ComputeModifiedEnrichedNodalShapefunction(
-        XFEM::PHYSICS::Pres,funct,derxy,dummy1,
-        enrShapeFcnPres,enrShapeXYPresDeriv1,dummy2);
-  }; // end template pointdataXFEMNormal
-#endif
 
   //! compute local element coordinates and check whether the according point is inside the element
   template<DRT::Element::DiscretizationType DISTYPE>
@@ -1099,61 +953,6 @@ public:
     LINALG::Matrix<1,2*numnode> nodepres(true); // node pressures, dummy
 
     // evaluate data for the given point
-#ifdef COMBUST_NORMAL_ENRICHMENT
-
-    ApproxFuncNormalVector<2,2*numnode> shp; // shape function data
-    LINALG::Matrix<1,numnode> nodevelenr(true); // nodal enrichment values of normal enrichment
-
-    pointdataXFEMNormal<numnode,DISTYPE>(
-        ele,
-#ifdef COLLAPSE_FLAME_NORMAL
-        x,
-#endif
-        xi,
-        xji,
-        shapeFcn,
-        enrShapeFcnPres,
-        enrShapeXYPresDeriv1,
-        shp,
-        false
-    );
-
-    elementsNodalData<numnode>(
-        ele,
-        veln_,
-        olddofman_,
-        olddofcolmap_,
-        oldNodalDofColDistrib_,
-        nodevel,
-        nodevelenr,
-        nodepres); // nodal data of the element
-
-    size_t velncounter = 0;
-    for (size_t inode=0; inode<numnode; ++inode)
-    {
-      // standard shape functions are identical for all vector components
-      // shp.velx.d0.s == shp.vely.d0.s == shp.velz.d0.s
-      vel(0) += nodevel(0,inode)*shp.velx.d0.s(inode);
-      vel(1) += nodevel(1,inode)*shp.vely.d0.s(inode);
-      vel(2) += nodevel(2,inode)*shp.velz.d0.s(inode);
-
-      const int gid = elenodeids[inode]; // global node id
-      const set<XFEM::FieldEnr>& enrfieldset = olddofman_->getNodeDofSet(gid); // field enr set of node
-
-      for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-          enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-      {
-        if (enrfield->getField() == XFEM::PHYSICS::Veln)
-        {
-          vel(0) += nodevelenr(0,velncounter)*shp.velx.d0.n(velncounter);
-          vel(1) += nodevelenr(0,velncounter)*shp.vely.d0.n(velncounter);
-          vel(2) += nodevelenr(0,velncounter)*shp.velz.d0.n(velncounter);
-
-          velncounter += 1;
-        }
-      }
-    }
-#else
     LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true); // enriched shape functions for velocity
     LINALG::Matrix<nsd,2*numnode> enrShapeXYVelDeriv1(true); // dummy
     LINALG::Matrix<nsd,nsd> xji; // jacobi-matrix, dummy
@@ -1181,7 +980,6 @@ public:
 
     // interpolate velocity and pressure values at starting point
     vel.Multiply(nodevel, enrShapeFcnVel);
-#endif
   }; // end template getGPValues
 
   //! extract nodal pressures and velocities for element nodes
@@ -1193,16 +991,10 @@ public:
       const Epetra_Map& dofMap, // DofMap fitting to field and dofDistribution
       const std::map<DofKey, DofGID>& dofDistribution, // dofDistribution fitting to Epetra_Vector and field
       LINALG::Matrix<3,2*numnode>& nodevel,
-#ifdef COMBUST_NORMAL_ENRICHMENT
-      LINALG::Matrix<1,numnode>& nodevelenr,
-#endif
       LINALG::Matrix<1,2*numnode>& nodepres
   ) const
   {
     nodevel.Clear();
-#ifdef COMBUST_NORMAL_ENRICHMENT
-    nodevelenr.Clear();
-#endif
     nodepres.Clear();
 
     const int* elenodeids = element->NodeIds();  // nodegids of element nodes
@@ -1211,9 +1003,6 @@ public:
     int dofcounterVely = 0; // counter for vely dofs
     int dofcounterVelz = 0; // counter for velz dofs
     int dofcounterPres = 0; // counter for pressure dofs
-#ifdef COMBUST_NORMAL_ENRICHMENT
-    int dofcounterVeln = 0; // counter for normal velocity dofs
-#endif
 
     for (int nodeid=0;nodeid<element->NumNode();nodeid++) // loop over element nodes
     {
@@ -1246,13 +1035,6 @@ public:
             nodevel(2,dofcounterVelz) = (*field)[dofMap.LID(dofpos)];
             dofcounterVelz++;
           }
-#ifdef COMBUST_NORMAL_ENRICHMENT
-          else if (fieldenr->getField() == XFEM::PHYSICS::Veln)
-          {
-            nodevelenr(0,dofcounterVeln) = (*field)[dofMap.LID(dofpos)];
-            dofcounterVeln++;
-          }
-#endif
           else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
           {
             nodepres(0,dofcounterPres) = (*field)[dofMap.LID(dofpos)];
