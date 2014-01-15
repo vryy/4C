@@ -232,7 +232,7 @@ void FS3I::AeroTFSI::Timeloop()
   std::vector<double> timestep(1);
   // get the first time step from INCA; timen_ and dt has to be set correctly
   GetTimeStep(timestep);
-  SetInitialTimeStepAndTime(timestep);
+  SetInitialDtAndTime(timestep[0]);
 
   // time loop
   while (tsi_->NotFinished() and !stopflag_)
@@ -419,7 +419,7 @@ void FS3I::AeroTFSI::Timeloop()
       INCATime += t_end;
 
       // set the time step received from INCA
-      SetTimeStep(timestep);
+      SetDt(timestep[0]);
     }
 
     t_start = Teuchos::Time::wallTime();
@@ -569,15 +569,15 @@ bool FS3I::AeroTFSI::INCAfinshed()
 /*----------------------------------------------------------------------*
  | apply time step from INCA to BACI                        ghamm 12/11 |
  *----------------------------------------------------------------------*/
-void FS3I::AeroTFSI::SetTimeStep(
-  std::vector<double>& timestepsize
+void FS3I::AeroTFSI::SetDt(
+  const double dt
   )
 {
-  tsi_->StructureField()->SetDt(timestepsize[0]);
+  tsi_->StructureField()->SetDt(dt);
 
-  tsi_->ThermoField()->SetTimeStepSize(timestepsize[0]);
+  tsi_->ThermoField()->SetDt(dt);
 
-  tsi_->SetDt(timestepsize[0]);
+  tsi_->SetDt(dt);
 
   return;
 }
@@ -586,15 +586,15 @@ void FS3I::AeroTFSI::SetTimeStep(
 /*----------------------------------------------------------------------*
  | apply first time step and adapt time                     ghamm 12/11 |
  *----------------------------------------------------------------------*/
-void FS3I::AeroTFSI::SetInitialTimeStepAndTime(
-  std::vector<double>& timestepsize
+void FS3I::AeroTFSI::SetInitialDtAndTime(
+  const double timestepsize
   )
 {
-  tsi_->StructureField()->SetInitialTimeStepAndTime(timestepsize[0]);
+  tsi_->StructureField()->SetInitialDtAndTime(timestepsize);
 
-  tsi_->ThermoField()->SetInitialTimeStepAndTime(timestepsize[0]);
+  tsi_->ThermoField()->SetInitialDtAndTime(timestepsize);
 
-  tsi_->SetDt(timestepsize[0]);
+  tsi_->SetDt(timestepsize);
 
   return;
 }

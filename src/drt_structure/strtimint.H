@@ -788,7 +788,7 @@ namespace STR
     //@{
 
     //! Return current step number map
-    double GetTime() const { return (*time_)[0]; }
+    virtual double GetTime() const { return (*time_)[0]; }
 
     //! Sets the current time \f$t_{n}\f$
     virtual void SetTime(const double time) { (*time_)[0]=time; }
@@ -797,19 +797,19 @@ namespace STR
     virtual void SetTimen(const double time) { timen_ = time; }
 
     //! Get upper limit of time range of interest
-    double GetTimeEnd() const { return timemax_; }
+    virtual double GetTimeEnd() const { return timemax_; }
 
     //! Set upper limit of time range of interest
-    void SetTimeEnd(double timemax){timemax_=timemax; }
+    virtual void SetTimeEnd(double timemax){timemax_=timemax; }
 
     //! Get time step size \f$\Delta t_n\f$
-    double GetTimeStepSize() const { return (*dt_)[0]; }
+    virtual double Dt() const { return (*dt_)[0]; }
 
     //! Set time step size \f$\Delta t_n\f$
-    void SetDt(const double dtnew) { (*dt_)[0] = dtnew; }
+    virtual void SetDt(const double dtnew) { (*dt_)[0] = dtnew; }
 
     //! Set time step size and time in the first step \f$\Delta t_n\f$
-    void SetInitialTimeStepAndTime(const double dt)
+    virtual void SetInitialDtAndTime(const double dt)
     {
     	(*dt_)[0] = dt;
     	timen_ = (*time_)[0] + (*dt_)[0];

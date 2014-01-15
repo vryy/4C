@@ -299,12 +299,6 @@ namespace PARTICLE
     //! Return current step number map
     double GetTime() const { return (*time_)[0]; }
 
-    //! Get time step size \f$\Delta t_n\f$
-    double GetTimeStepSize() const { return (*dt_)[0]; }
-
-    //! Set time step size \f$\Delta t_n\f$
-    void SetDt(const double dtnew) { (*dt_)[0] = dtnew; }
-
     //! Return current step number map
     int GetStep() const { return step_; }
 

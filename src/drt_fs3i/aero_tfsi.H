@@ -94,13 +94,13 @@ namespace FS3I
     );
 
     /// apply time step from INCA to BACI
-    void SetTimeStep(
-    std::vector<double>& timestepsize  ///< time step size to be applied to BACI
+    void SetDt(
+    const double dt  ///< time step size to be applied to BACI
     );
 
     /// apply time step from INCA to BACI
-    void SetInitialTimeStepAndTime(
-    std::vector<double>& timestepsize  ///< time step size to be applied to BACI
+    void SetInitialDtAndTime(
+    const double timestepsize  ///< time step size to be applied to BACI
     );
 
     /// communication with INCA in order to receive forces and temperatures in the interface

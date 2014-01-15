@@ -119,7 +119,7 @@ const double ADAPTER::StructureFSITimIntAda::CalculateDt(const double norm)
 
 /*----------------------------------------------------------------------------*/
 /* Get time step size of adaptive structural time integrator */
-const double ADAPTER::StructureFSITimIntAda::Dt()
+double ADAPTER::StructureFSITimIntAda::Dt() const
 {
   return StrAda()->Dt();
 }

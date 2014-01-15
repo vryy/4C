@@ -245,7 +245,7 @@ namespace ADAPTER {
     virtual void SetTimeEnd(double timemax) = 0;
 
     /// Get time step size \f$\Delta t_n\f$
-    virtual double GetTimeStepSize() const = 0;
+    virtual double Dt() const = 0;
 
     /// Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
     virtual int GetTimeStep() const = 0;
@@ -264,7 +264,7 @@ namespace ADAPTER {
     virtual void PrepareTimeStep() = 0;
 
     /// set time step size
-    virtual void SetDt(double timestepsize) = 0;
+    virtual void SetDt(const double dtnew) = 0;
 
     //! Sets the current time \f$t_{n}\f$
     virtual void SetTime(const double time) = 0;
@@ -273,7 +273,7 @@ namespace ADAPTER {
     virtual void SetTimen(const double time) = 0;
 
     /// set time step size and time
-    virtual void SetInitialTimeStepAndTime(double timestepsize) = 0;
+    virtual void SetInitialDtAndTime(double timestepsize) = 0;
 
     /*!
     \brief update displacement and evaluate elements

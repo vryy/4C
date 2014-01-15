@@ -480,30 +480,30 @@ namespace THR
     const Epetra_Map& DomainMap() { return tang_->DomainMap(); }
 
     //! Return current step number map
-    double GetTime() const { return (*time_)[0]; }
+    virtual double GetTime() const { return (*time_)[0]; }
 
     //! Get upper limit of time range of interest
-    double GetTimeEnd() const { return timemax_; }
+    virtual double GetTimeEnd() const { return timemax_; }
 
     //! Get time step size \f$\Delta t_n\f$
-    double GetTimeStepSize() const { return (*dt_)[0]; }
+    virtual double Dt() const { return (*dt_)[0]; }
 
     //! Set time step size \f$\Delta t_n\f$
-    void SetTimeStepSize(double timestepsize)
+    virtual void SetDt(double timestepsize)
     { (*dt_)[0] = timestepsize; }
 
     //! Set time step size \f$\Delta t_n\f$ and timen_
-    void SetInitialTimeStepAndTime(double timestepsize)
+    virtual void SetInitialDtAndTime(double timestepsize)
     { (*dt_)[0] = timestepsize; timen_ = (*time_)[0] + (*dt_)[0]; }
 
     //! Return current step number map
-    int GetStep() const { return step_; }
+    virtual int GetStep() const { return step_; }
 
     //! Get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
     virtual int GetTimeStep() const { return step_; }
 
     //! Get number of time steps
-    int GetTimeNumStep() const { return stepmax_; }
+    virtual int GetTimeNumStep() const { return stepmax_; }
 
     //! Get communicator
     virtual inline const Epetra_Comm& Comm() const {return discret_->Comm();}

@@ -210,8 +210,8 @@ namespace ADAPTER
     { structure_->SetTimeEnd(timemax); }
 
     /// get time step size \f$\Delta t_n\f$
-    virtual double GetTimeStepSize() const
-    { return structure_->GetTimeStepSize(); }
+    virtual double Dt() const
+    { return structure_->Dt(); }
 
     /// get current time step \f$n\f$ (sometimes called \f$k\f$ [but not in Baci])
     virtual int GetTimeStep() const
@@ -225,12 +225,12 @@ namespace ADAPTER
     virtual int Integrate() { return structure_->Integrate(); }
 
     /// set time step size
-    virtual void SetDt(double dtnew)
+    virtual void SetDt(const double dtnew)
     { return structure_->SetDt(dtnew); }
 
     /// set time step size and time
-    virtual void SetInitialTimeStepAndTime(double timestepsize)
-    { return structure_->SetInitialTimeStepAndTime(timestepsize); }
+    virtual void SetInitialDtAndTime(double timestepsize)
+    { return structure_->SetInitialDtAndTime(timestepsize); }
 
     /// start new time step
     virtual void PrepareTimeStep()

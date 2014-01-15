@@ -203,12 +203,12 @@ void ADAPTER::Thermo::Integrate()
   // a few parameters
   double time = GetTime();
   const double timeend = GetTimeEnd();
-  const double timestepsize = GetTimeStepSize();
+  const double timestepsize = Dt();
   int step = GetTimeStep();
   const int stepend = GetTimeNumStep();
 
   // loop ahead --- if timestepsize>0
-  while ( ((time + (1.e-10)*GetTimeStepSize())< timeend) and (step < stepend) )
+  while ( ((time + (1.e-10)*Dt())< timeend) and (step < stepend) )
   {
     IntegrateStep();
 

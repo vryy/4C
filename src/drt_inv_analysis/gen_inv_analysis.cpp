@@ -727,7 +727,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
       }
 
       // check if timestepsize is smaller than the tolerance above
-      double deltat = sti_->GetTimeStepSize();
+      const double deltat = sti_->Dt();
       if (deltat < 1.0e-5)
         dserror("your time step size is too small, you will have problems with the monitored steps, thus adapt the tolerance");
     }
@@ -825,7 +825,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
       }
 
       // check if timestepsize is smaller than the tolerance above
-      double deltat = sti_->GetTimeStepSize();
+      const double deltat = sti_->Dt();
       if (deltat < 1.0e-5)
         dserror("your time step size is too small, you will have problems with the monitored steps, thus adapt the tolerance");
     }

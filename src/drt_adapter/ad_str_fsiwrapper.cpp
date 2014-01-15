@@ -81,7 +81,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
   if (pstype != INPAR::STR::prestress_none)
   {
     time = GetTime();
-    dt = GetTimeStepSize();
+    dt = Dt();
     pstime = sdyn.get<double>("PRESTRESSTIME");
   }
 
@@ -113,7 +113,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
     if (pstype != INPAR::STR::prestress_none && time+dt <= pstime)
       dserror("only constant interface predictor useful for prestressing");
 
-    double dt = GetTimeStepSize();
+    double dt = Dt();
 
     idis = interface_->ExtractFSICondVector(Dispn());
     Teuchos::RCP<Epetra_Vector> ivel
@@ -128,7 +128,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
     if (pstype != INPAR::STR::prestress_none && time+dt <= pstime)
       dserror("only constant interface predictor useful for prestressing");
 
-    double dt = GetTimeStepSize();
+    double dt = Dt();
 
     idis = interface_->ExtractFSICondVector(Dispn());
     Teuchos::RCP<Epetra_Vector> ivel
@@ -188,7 +188,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp
   if (pstype != INPAR::STR::prestress_none)
   {
     time = GetTime();
-    dt = GetTimeStepSize();
+    dt = Dt();
     pstime = sdyn.get<double>("PRESTRESSTIME");
   }
 

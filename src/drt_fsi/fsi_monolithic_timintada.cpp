@@ -624,7 +624,7 @@ bool FSI::Monolithic::CheckIfDtsSame()
 {
   // get time step sizes from all fields
   const double dtfsi = Dt();
-  const double dtstruct = StructureField()->GetTimeStepSize();
+  const double dtstruct = StructureField()->Dt();
   const double dtfluid = FluidField().Dt();
   const double dtale = AleField().Dt();
 

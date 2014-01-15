@@ -70,7 +70,7 @@ namespace ADAPTER {
     //! Access routines
     //{@
 
-    const Teuchos::RCP<STR::TimAda>& StrAda() { return structure_; }
+    Teuchos::RCP<STR::TimAda> StrAda() const { return structure_; }
 
     //@}
 

@@ -510,7 +510,7 @@ void STR::MLMC::IntegrateNoReset()
           // get all information
           structadaptor.GetRestartData(cont_step_,cont_time_,cont_disn_init_,cont_veln_,cont_accn_,cont_elementdata_init_);
           // Get timestep size
-          //time_step_size=structadaptor.GetTimeStepSize();
+          //time_step_size=structadaptor.Dt();
         }
         else
         {
@@ -610,7 +610,7 @@ int STR::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int r
   *cont_disn_=*cont_disn_init_;
 
   // Get timestep size
-  double time_step_size=structadaptor.GetTimeStepSize();
+  const double time_step_size=structadaptor.Dt();
 
   // for loop to encapsulate parameter continuation scheme
   for(unsigned int k =0 ; k<num_cont_steps ; k++)
