@@ -43,6 +43,11 @@ Maintainer: Ursula Rasthofer
 #endif
 
 
+// this flag turns on the former post-evaluation of the cut algorithm implemented by Florian Henke
+// due to the inclusion of ghost-penalty terms in the xfem formulation, this is not necessary anymore
+// for the time being, Forian's framework is kept
+// however, if problems are not observed with the new framework, it will be removed
+#define TOL_ADAPTION_FOR_CUT
 #define VOLTOL 1e-6
 
 
@@ -789,13 +794,208 @@ void COMBUST::FlameFront::CaptureFlameFront(
           volcells = cutele->VolumeCells();
           const int numvolcells = volcells.size();
 
+          //---------------------------------------------------------------
+          // SOME IMPORTANT REMARKS ON THE CUT SITUATION IN THE CUT !!!!!
+          //---------------------------------------------------------------
+
+          // In the cut algorithm, we are dealing with several tolerances. Two tolerances are particularly relevant for
+          // the present level-set intersection:
+          //
+          // - #define VOLUMETOL   1e-14  // the tolerance when created integration cells are discarded, the boundary cell however will be created
+          //   If the intersected element exhibits a volume cell which does not represent a simple geometry, i.e. a hexahedra, a tetrahedra, a wedge,...,
+          //   and cannot be tetrahedralize using a simple a priori known scheme (cut library), TetMesh is called to tetrahedralize the volume cell. This
+          //   tolerance will prevent TetMesh to tetrahedralize volumes smaller than the given value. Boundary cells obtained from the
+          //   adjacent volume cell are kept!
+          // - #define TOLERANCE   1e-12
+          //   Based on this tolerance for nodal values, the cut algorithm determines whether to start cutting the element.
+          //
+          // This has the following impact on critical intersection situations:
+          //
+          // Case 1: a touched element
+          //                   |
+          //         ----------|--
+          //         |         | |
+          //         |         | |
+          //         |         | |
+          //         |         | |
+          //         |         | |
+          //         ----------|--
+          //                   |
+          //              straight interface approaching right boundary
+          //
+          //         element is bisected until interface and, hence, level-set values at the right nodes are within the tolerance
+          //         -> two volume cells, one face boundary
+          //         then, when the tolerance is reached, the cut returns a touched element
+          //         -> one volume cell, one face boundary
+          //
+          // Case 2: from skew interface to touched element
+          //                    |
+          //         ----------|--
+          //         |        |  |
+          //         |       |   |
+          //         |      |    |
+          //         |     |     |
+          //         |    |      |
+          //         ----|--------
+          //            |
+          //         skew interface approaching right boundary at the lower corner and being zero at the upper right corner
+          //
+          //         element is bisected until interface and, hence, level-set value at the lower right node is within the tolerance
+          //         -> two volume cells, one face boundary
+          //         then, when the tolerance is reached, the cut returns a touched element
+          //         -> one volume cell, one face boundary
+          //
+          // Note: This smooth transition from bisected to touched is possible, since the related volume cells represent geometries with
+          //       simple tetrahedralization. A call of TetMesh is not required.
+          //
+          // Case 3: small tetrahedra (one edge of a three dimensional domain is cut off) and wedge cuts
+          //
+          //         -------------
+          //         |           |
+          //         |           |
+          //         |           |
+          //         |           |
+          //         |          /|
+          //         -------------
+          //                   interface cuts of small tetrahedra or wedge
+          //
+          //         For this case, two volume cells are first created. Since the left part of the element does not constitute a simple
+          //         geometry anymore, TetMesh is called to mesh the entire geometry (we need matching boundary cells at the interface).
+          //         If the right element part is too small, i.e., below the aforementioned volume, TetMesh will only mesh the large volume
+          //         cell. The boundary cells at the interface are stored for both volume cells however.
+          //
+          // Note: While we can directly take the suggestion of the cut algorithm for case 1 and 2, special care for this case is required.
+
+
+#ifndef TOL_ADAPTION_FOR_CUT
+          //-----------------
+          // cell is not intersected: CASE 1 and 2
+          //-----------------
+          if (numvolcells==1)
+          {
+            //IO::cout << "element " << rootcell->Ele()->Id() << " is uncut " << IO::endl;
+            // store domain integration cells
+            const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
+            if (numstoredvol != 1) dserror("No volume stored for touched element!");
+
+            // check for potential boundary cells: corresponds to touched elements
+            const GEO::CUT::plain_boundarycell_set bcells = volcells.at(0)->BoundaryCells();
+            if (bcells.size() > 0)
+            {
+              //IO::cout << "element " << rootcell->Ele()->Id() << " is potentially touched" << IO::endl;
+              //element is touched and we have to store the corresponding boundary cell
+              const size_t numstoredbound = StoreBoundaryIntegrationCells(cutele,listBoundaryIntCellsperEle,xyze);
+              if (numstoredbound == 1)
+              {
+                //IO::cout << "element " << rootcell->Ele()->Id() << " is touched" << IO::endl;
+                cutstat = COMBUST::InterfaceHandleCombust::touched;
+              }
+              else if (numstoredbound == 0)
+                cutstat = COMBUST::InterfaceHandleCombust::uncut;
+              else
+               dserror("Unexpected number of boundaries!");
+            }
+            else
+              cutstat = COMBUST::InterfaceHandleCombust::uncut;
+          }
+          //-----------------
+          // cell is bisected
+          //-----------------
+          else if (numvolcells==2)
+          {
+            //IO::cout << "element " << rootcell->Ele()->Id() << " is really bisected" << IO::endl;
+            // store domain integration cells
+            const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
+            // store boundary integration cells
+            const size_t numstoredbound =StoreBoundaryIntegrationCells(cutele,listBoundaryIntCellsperEle,xyze);
+            if (numstoredbound != 1) dserror("One interface boundary expected for bisected element!");
+
+//            IO::cout << "storedvol " << numstoredvol << IO::endl;
+//            IO::cout << "storedbound " << numstoredbound << IO::endl;
+
+            // all volume cells and boundary cells have been stored (this is the usual case)
+            if (numstoredvol==2)
+            {
+
+              cutstat = COMBUST::InterfaceHandleCombust::bisected;
+              //std::cout << "element " << rootcell->Ele()->Id() << " is bisected" << IO::endl;
+            }
+            // element is intersected but one volume cell is small (boundary is likewise small) and falls below
+            // the tolerance for TetMesh such that it does not get any domain integration cells
+            // in this case, the element is treated as uncut
+            else if (numstoredvol==1)
+            {
+              // the dofmap creator will consider nodes of touched elements as enriched if phi_node < (0.1*hk_eleDiam)
+              // for an element to be treated as touched four nodes have to be below this tolerance
+              // this has to be checked here before an element will be denoted as touched
+
+              unsigned nodecount = 0;
+              const double hk_eleDiam = COMBUST::getEleDiameter<DRT::Element::hex8>(xyze);
+              // enrich only nodes which are touched, that means nodes which have Gfunc ~ 0.0
+              for (std::size_t rr = 0; rr<gfuncvalues.size(); ++rr)
+              {
+                if (std::abs(gfuncvalues[rr]) < 0.05*hk_eleDiam)// this tolerance here must be equal to the one given in xdofmapcreation_combust.cpp
+                  nodecount += 1;
+              }
+
+              if (nodecount == 4)
+                cutstat = COMBUST::InterfaceHandleCombust::touched;
+              else if (nodecount < 4)
+                  cutstat = COMBUST::InterfaceHandleCombust::uncut;
+              else
+                dserror("To many nodes with zero level-set for bisected element!");
+            }
+            // something went wrong
+            else
+            {
+              FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
+              dserror("flame front for bisected element %d could not be captured",rootcell->Ele()->Id());
+            }
+          }
+          //---------------------------------------
+          // cell is trisected (multi-sected)
+          //---------------------------------------
+          else if (numvolcells==3)
+          {
+            // store domain integration cells
+            const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
+            // store also boundary integration cells
+            const size_t numstoredbound = StoreBoundaryIntegrationCells(cutele,listBoundaryIntCellsperEle,xyze);
+            if (numstoredbound != 2) dserror("Two interface boundaries expected for trisected element!");
+
+            if (numstoredvol == 3 or numstoredvol == 2)
+            {
+              // treat element as bisected
+              cutstat = COMBUST::InterfaceHandleCombust::bisected;
+            }
+            // element is trisected, but two volume cells do not contain any domain integration cell
+            // thus element is considered uncut
+            else if (numstoredvol == 1)
+            {
+              // update cut status of root cell (element)
+              cutstat = COMBUST::InterfaceHandleCombust::uncut;
+              // we cannot simply distinguish between not touched, touched and double touched here
+              // moreover, everything we are doing here is currently wrong since multiple enrichments are not
+              // available in the current implementation
+              // therefore, we simply take the easiest way
+            }
+            else
+            {
+              FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
+              dserror("flame front for bisected element %d could not be captured",rootcell->Ele()->Id());
+            }
+          }
+          else dserror("cut status could not be determined");
+
+#else
+
           //--------------------------------------------------------
           // cell is touched (interface aligned with a cell surface)
           //--------------------------------------------------------
           // remark: this is unusual, since the
           if (numvolcells==1)
           {
-            //std::cout << "element " << rootcell->Ele()->Id() << " is really touched" << IO::endl;
+            //IO::cout << "element " << rootcell->Ele()->Id() << " is uncut " << IO::endl;
             // store domain integration cells
             const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
             // store boundary integration cells
@@ -809,7 +1009,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
             else if (numstoredvol==1 and numstoredbound==1)
             {
               cutstat = COMBUST::InterfaceHandleCombust::touched;
-              //std::cout << "element " << rootcell->Ele()->Id() << " is touched" << IO::endl;
+              //IO::cout << "element " << rootcell->Ele()->Id() << " is touched" << IO::endl;
             }
             else
               dserror("there should be a volume cell for a touched element");
@@ -819,14 +1019,14 @@ void COMBUST::FlameFront::CaptureFlameFront(
           //-----------------
           else if (numvolcells==2)
           {
-            //std::cout << "element " << rootcell->Ele()->Id() << " is really bisected" << IO::endl;
+            //IO::cout << "element " << rootcell->Ele()->Id() << " is really bisected" << IO::endl;
             // store domain integration cells
             const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
             // store boundary integration cells
             const size_t numstoredbound = StoreBoundaryIntegrationCells(cutele,listBoundaryIntCellsperEle,xyze);
 
-            //std::cout << "storedvol " << numstoredvol << IO::endl;
-            //std::cout << "storedbound " << numstoredbound << IO::endl;
+            //IO::cout << "storedvol " << numstoredvol << IO::endl;
+            //IO::cout << "storedbound " << numstoredbound << IO::endl;
 
             // all volume cells and boundary cells have been stored
             if (numstoredvol==2 and numstoredbound==1)
@@ -953,6 +1153,9 @@ void COMBUST::FlameFront::CaptureFlameFront(
             FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
             dserror("cut status could not be determined");
           }
+
+#endif
+
         }
       }
       //--------------
@@ -966,6 +1169,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
         StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
         // remark: no boundary integration cell required
       }
+
     } // end loop over all refinement cells
     break;
   }
@@ -2613,6 +2817,249 @@ void COMBUST::FlameFront::StoreBoundaryIntegrationCell(
 }
 
 
+#ifndef TOL_ADAPTION_FOR_CUT
+/*------------------------------------------------------------------------------------------------*
+ | store domain integration cell                                                  rasthofer 01/14 |
+ *------------------------------------------------------------------------------------------------*/
+std::size_t COMBUST::FlameFront::StoreDomainIntegrationCells(
+    GEO::CUT::Element*         element,
+    GEO::DomainIntCells&       domainintcelllist,
+    LINALG::SerialDenseMatrix& xyze
+)
+{
+  // number of stored volumes (not domain integration cells!)
+  std::size_t numstoredvol = 0;
+
+  // get volume cells
+  GEO::CUT::plain_volumecell_set volcells;
+  volcells = element->VolumeCells();
+
+  //-------------------------------------
+  // add domain integration cells to list
+  //-------------------------------------
+
+  // loop all volume cells
+  for ( GEO::CUT::plain_volumecell_set::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
+  {
+    GEO::CUT::VolumeCell * volcell = *ivolcell;
+    //std::cout << "volumen " << std::setw(24)<< std::setprecision(20) << volcell->Volume() << std::endl;
+    //volcell->Print(std::cout);
+
+    // get domain integration cells
+    const GEO::CUT::plain_integrationcell_set cells = volcell->IntegrationCells();
+
+    // check, if this volume cell has integration cells
+    // this necessary here, since there is a tolerance in the cut algorithm which prevents TetMesh to tetrahedralize
+    // volume cells smaller than 10^-14 (boundary cells are created!)
+    std::size_t domcellcount = 0;
+    if (cells.size()>0)
+    {
+
+      // loop domain integration cells
+      for ( GEO::CUT::plain_integrationcell_set::const_iterator icell=cells.begin(); icell!=cells.end(); ++icell )
+      {
+        GEO::CUT::IntegrationCell * ic = *icell;
+        DRT::Element::DiscretizationType distype = ic->Shape();
+        int numnode = DRT::UTILS::getNumberOfElementNodes( distype );
+
+        LINALG::SerialDenseMatrix physCoord(3,numnode);
+        LINALG::SerialDenseMatrix coord = ic->Coordinates();
+
+        for (int ivert=0; ivert<numnode; ivert++)
+        {
+          // write 'coord' to fixed size matrix format
+          LINALG::Matrix<3,1> vertcoord;
+          std::copy(&coord(0,ivert), &coord(0,ivert)+3, vertcoord.A());
+
+          // transform vertex from local (element) coordinates to global (physical) coordinates
+          GEO::elementToCurrentCoordinatesInPlace(element->Shape(), xyze, vertcoord);
+
+          // write as 'physCoord'
+          std::copy(vertcoord.A(), vertcoord.A()+3, &physCoord(0,ivert));
+        }
+
+        bool inGplus = false;
+        if (ic->Position() == GEO::CUT::Point::outside) // volume cell is in G-plus domain (G>0)
+          inGplus = true;
+
+        if (distype != DRT::Element::hex8 and
+            distype != DRT::Element::tet4)
+        {
+          IO::cout << "distype " << distype << IO::endl;
+          dserror("unexpected type of domain integration cell");
+        }
+
+        double physvolume = GEO::DomainIntCell( distype, coord, physCoord, inGplus ).VolumeInPhysicalDomain();
+        if (physvolume < 0.0)
+          IO::cout << "negative volume detected for domain integration cell!" << IO::endl;
+
+         domainintcelllist.push_back( GEO::DomainIntCell( distype, coord, physCoord, inGplus ) );
+         domcellcount += 1;
+
+      }
+
+      numstoredvol += 1;
+      // at least one domain integration cell has been stored
+      if (domcellcount == 0) dserror("no domain integration cells for this volume cell");
+    }
+
+  }
+
+  return numstoredvol;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | store a list of boundary integration cells                                     rasthofer 01/14 |
+ *------------------------------------------------------------------------------------------------*/
+size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
+    GEO::CUT::Element*         element,
+    GEO::BoundaryIntCells&     boundaryintcelllist,
+    LINALG::SerialDenseMatrix& xyze
+)
+{
+  // number of stored boundaries (not boundary integration cells!)
+  size_t numstoredbound = 0;
+
+  // get volume cells
+  GEO::CUT::plain_volumecell_set volcells;
+  volcells = element->VolumeCells();
+  const int numvolcells = volcells.size();
+
+  // the volume cells (G-plus or G-minus) we want to loop to determine what boundary cells to store
+  GEO::CUT::Point::PointPosition loopvol = GEO::CUT::Point::undecided;
+
+  // regular call of this function
+  if(numvolcells!=1)
+  {
+    // compute G-plus and total volume
+    double refvol = 0.0;
+    double refvolplus = 0.0;
+    for ( GEO::CUT::plain_volumecell_set::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
+    {
+      GEO::CUT::VolumeCell * volcell = *ivolcell;
+
+      // compute positive (G>0) volume
+      if (volcell->Position() == GEO::CUT::Point::outside)
+      {
+        refvolplus += volcell->Volume();
+      }
+      // volume of all volume cells (since we work in parameter space, the result should always be 2.0^3=8.0)
+      refvol += volcell->Volume();
+    }
+
+    // remark: We want to loop those volume cells (plus or minus) occupying the larger portion of
+    //         the element volume.
+    // G-plus cells are larger
+    if (refvolplus > (refvol-refvolplus))
+      loopvol = GEO::CUT::Point::outside; // loop the volume cells in the G-plus domain (G>0)
+    // G-minus cells are larger
+    else
+      loopvol = GEO::CUT::Point::inside; // loop the volume cells in the G-minus domain (G<0)
+  }
+  else // the touched case
+  {
+    // loop the G-plus cells
+    // remark: if this is not a G-plus cell, the loop will do nothing
+    //         there will be a G-plus neighbor element which will contribute its boundary cell so
+    //         we create no hole in the interface
+    loopvol = GEO::CUT::Point::outside;
+  }
+
+  //---------------------------------------
+  // add boundary integration cells to list
+  //---------------------------------------
+  // temporary vectors
+  LINALG::Matrix<3,1> physCoordVertex;
+  LINALG::Matrix<3,1> eleCoordVertex;
+
+  for ( GEO::CUT::plain_volumecell_set::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
+  {
+    GEO::CUT::VolumeCell * volcell = *ivolcell;
+
+    // if the cell belongs to the domain we want to loop
+    if (volcell->Position() == loopvol)
+    {
+      // get boundary integration cells
+      const GEO::CUT::plain_boundarycell_set & bcells = volcell->BoundaryCells();
+
+      std::size_t bcellcount = 0;
+
+      for ( GEO::CUT::plain_boundarycell_set::const_iterator ibcell=bcells.begin(); ibcell!=bcells.end(); ++ibcell )
+      {
+        GEO::CUT::BoundaryCell * bcell = *ibcell;
+
+        DRT::Element::DiscretizationType distype = bcell->Shape();
+        int numnode = DRT::UTILS::getNumberOfElementNodes( distype );
+
+        if (distype != DRT::Element::tri3 and
+            distype != DRT::Element::quad4)
+        {
+          IO::cout << "distype " << distype << IO::endl;
+          dserror("unexpected type of boundary integration cell");
+        }
+
+        // get physical coordinates of this cell
+        LINALG::SerialDenseMatrix physCoord(3,numnode);
+        // local coordinates of this cell
+        LINALG::SerialDenseMatrix coord = bcell->Coordinates();
+
+        // for negative (G<0) volume cells, we have to reverse the order of vertices to reverse
+        // the normal vector
+        if(loopvol == GEO::CUT::Point::inside)
+        {
+          LINALG::SerialDenseMatrix tmpcoord = coord;
+          for (int ivert=0; ivert<numnode; ivert++)
+            std::copy(&tmpcoord(0,ivert), &tmpcoord(0,ivert)+3, &coord(0,numnode-ivert-1));
+        }
+
+        for (int ivert=0; ivert<numnode; ivert++)
+        {
+          // write 'coord' to fixed size matrix format
+          LINALG::Matrix<3,1> vertcoord;
+          std::copy(&coord(0,ivert), &coord(0,ivert)+3, vertcoord.A());
+
+          // transform vertex from local (element) coordinates to global (physical) coordinates
+          GEO::elementToCurrentCoordinatesInPlace(element->Shape(), xyze, vertcoord);
+
+          // write as 'physCoord'
+          std::copy(vertcoord.A(), vertcoord.A()+3, &physCoord(0,ivert));
+        }
+
+        boundaryintcelllist.push_back(GEO::BoundaryIntCell(distype, -1, coord, Teuchos::null, physCoord, true));
+        bcellcount += 1;
+
+      }
+
+      // at least one boundary integration cell has been stored
+      if (bcellcount==0) dserror("no boundary integration cells for this volume cell");
+
+      if (numvolcells >= 3)
+      {
+        // remark: Trisected elements consist of three volume cells and two boundaries in between
+        //         them. The middle volume cell has two facets which are boundaries. If the middle
+        //         volume cell belongs to the 'outside' the two facets stand for two non-connected
+        //         boundaries.
+        GEO::CUT::plain_facet_set facets = volcell->Facets();
+        for ( GEO::CUT::plain_facet_set::const_iterator ifacet=facets.begin(); ifacet!=facets.end(); ++ifacet )
+        {
+          if ((*ifacet)->OnCutSide())
+            numstoredbound += 1;
+         }
+      }
+      // for bisected and touched elements there will only be one facet which is the boundary
+      // remark: this is only a shortcut; we could also loop the facets (there is only one!)
+      else
+        numstoredbound += 1;
+
+    }
+  }
+
+  return numstoredbound;
+}
+
+#else
+
 /*------------------------------------------------------------------------------------------------*
  | store domain integration cell                                                      henke 04/11 |
  *------------------------------------------------------------------------------------------------*/
@@ -2912,7 +3359,7 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
 
   return numstoredbound;
 }
-
+#endif
 
 
 /*------------------------------------------------------------------------------------------------*
