@@ -108,7 +108,7 @@ inline bool IsNurbs(DRT::Element::DiscretizationType distype)
 \param dis              (i) the discretisation
 \param myknots          (o) parent knot vector (to be filled)
 \param myknots          (o) knot vector for boundary element (to be filled)
-\param weights          (o) weight vector (to be filled)
+\param weights          (o) weight vector for boundary element (to be filled)
 \param normalfac        (o) normalfac (to be filled)
 
 \date 12/10
@@ -156,6 +156,76 @@ bool GetKnotVectorAndWeightsForNurbsBoundary(
   return zero_size;
 } // GetKnotVectorAndWeightsForNurbsBoundary()
 
+/*!
+\brief A service method for accessing knotvector and weights for
+       an isogeometric boundary element and parent element
+
+</pre>
+
+\param boundaryele      (i) a pointer to the boundary element
+\param localsurfaceid   (i) local id of this boundary element
+\param parenteleid      (i) global id of parent element
+\param dis              (i) the discretisation
+\param pmyknots         (o) parent knot vector (to be filled)
+\param myknots          (o) knot vector for boundary element (to be filled)
+\param pweights         (o) weight vector for parent element (to be filled)
+\param weights          (o) weight vector for boundary element (to be filled)
+\param normalfac        (o) normalfac (to be filled)
+
+\date 01/14
+*/
+template <class WG>
+bool GetKnotVectorAndWeightsForNurbsBoundaryAndParent(
+    DRT::Element*                               parentele,
+    DRT::Element*                               boundaryele,
+    const int                                   localsurfaceid,
+    DRT::Discretization&                        discretization,
+    std::vector<Epetra_SerialDenseVector>&      mypknots,
+    std::vector<Epetra_SerialDenseVector>&      myknots,
+    WG&                                         pweights,
+    WG&                                         weights,
+    double&                                     normalfac)
+{
+  // get knotvector(s)
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+  = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+  RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+
+  bool zero_size = knots->GetBoundaryEleAndParentKnots(mypknots     ,
+      myknots      ,
+      normalfac    ,
+      parentele->Id()  ,
+      localsurfaceid);
+
+  // if we have a zero sized element due to a interpolated
+  // point --- exit here and tell the outside world about that
+  if(zero_size)
+  {
+    return(zero_size);
+  }
+  // you are still here? So get the node weights as well
+  DRT::Node** nodes = boundaryele->Nodes();
+  const int boundarynen = boundaryele->NumNode();
+  for (int inode=0; inode<boundarynen; inode++)
+  {
+    DRT::NURBS::ControlPoint* cp
+    = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+    weights(inode) = cp->W();
+  }
+
+  DRT::Node** pnodes = parentele->Nodes();
+  const int pnen = parentele->NumNode();
+  for (int inode=0; inode<pnen; inode++)
+  {
+    DRT::NURBS::ControlPoint* cp
+    = dynamic_cast<DRT::NURBS::ControlPoint* > (pnodes[inode]);
+    pweights(inode) = cp->W();
+  }
+
+  // goodbye
+  return zero_size;
+} // GetKnotVectorAndWeightsForNurbsBoundary()
 
 } // namespace NURBS
 

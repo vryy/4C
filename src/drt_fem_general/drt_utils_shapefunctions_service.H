@@ -56,6 +56,8 @@ bool secondDerivativesZero()
   case DRT::Element::wedge6:
   case DRT::Element::wedge15:
   case DRT::Element::pyramid5:
+  case DRT::Element::nurbs9:
+  case DRT::Element::nurbs27:
     hoele = true;
     break;
   case DRT::Element::tet4:

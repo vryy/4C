@@ -412,7 +412,6 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
   std::vector<Epetra_SerialDenseVector> myknots (bdrynsd_);
   Epetra_SerialDenseVector weights(bdrynen_);
 
@@ -420,7 +419,10 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
   // element and surface element, get weights
   if(IsNurbs<distype>::isnurbs)
   {
-     bool zero_size = GetKnotVectorAndWeightsForNurbs(ele, discretization, mypknots, myknots, weights, normalfac);
+    std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
+
+    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
+        ele, ele->SurfaceNumber(), ele->ParentElement()->Id(), discretization, mypknots, myknots, weights, normalfac);
      if(zero_size)
      {
        return 0;
@@ -590,7 +592,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
 
   if(IsNurbs<distype>::isnurbs)
   {
-     bool zero_size = GetKnotVectorAndWeightsForNurbs(ele, discretization, mypknots, myknots, weights, normalfac);
+    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
+        ele, ele->SurfaceNumber(), ele->ParentElement()->Id(), discretization, mypknots, myknots, weights, normalfac);
      if(zero_size)
      {
        return;
@@ -832,7 +835,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(
   // for isogeometric elements
   if(IsNurbs<distype>::isnurbs)
   {
-     bool zero_size = GetKnotVectorAndWeightsForNurbs(ele, discretization, mypknots, myknots, weights, normalfac);
+    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
+        ele, ele->SurfaceNumber(), ele->ParentElement()->Id(), discretization, mypknots, myknots, weights, normalfac);
      if(zero_size)
      {
        return;
@@ -2154,28 +2158,13 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvalShapeFuncAtBouIntPoint(
   // only for NURBS!!!
   else
   {
-    if (bdrynsd_==2)
-    {
-      // this is just a temporary work-around
-      Epetra_SerialDenseVector gp(2);
-      gp(0)=xsi_(0);
-      gp(1)=xsi_(1);
-
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+      DRT::NURBS::UTILS::nurbs_get_funct_deriv
         (funct_  ,
          deriv_  ,
-         gp     ,
-         (*myknots),
-         (*weights),
+         xsi_    ,
+         *myknots,
+         *weights,
          distype);
-    }
-    else if(bdrynsd_==1)
-    {
-      //const double gp = xsi_(0);
-      dserror("1d FluidBoundary nurbs elements not yet implemented");
-      //DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(funct_,deriv_,gp,myknots,weights,distype);
-    }
-    else dserror("Discretisation type %s not yet implemented",DRT::DistypeToString(distype).c_str());
   }
 
   // compute measure tensor for surface element, infinitesimal area element drs
@@ -2187,56 +2176,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvalShapeFuncAtBouIntPoint(
   fac_ = intpoints.IP().qwgt[gpid]*drs_;
 
   return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetKnotVectorAndWeightsForNurbs(
-    DRT::ELEMENTS::FluidBoundary*              ele,
-    DRT::Discretization&                        discretization,
-    std::vector<Epetra_SerialDenseVector>&      mypknots,
-    std::vector<Epetra_SerialDenseVector>&      myknots,
-    Epetra_SerialDenseVector&                   weights,
-    double&                                     normalfac)
-{
-  // TODO: Check function 1D / 2D for Nurbs
-  // ehrl
-  if (bdrynsd_ == 1)
-    dserror("1D line element -> It is not check if it is working.");
-
-  // get pointer to parent element
-  DRT::ELEMENTS::Fluid* parent_ele = ele->ParentElement();
-
-  // local surface id
-  const int surfaceid = ele->SurfaceNumber();
-
-  // --------------------------------------------------
-  // get knotvector
-
-  DRT::NURBS::NurbsDiscretization* nurbsdis
-    =
-    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-
-  Teuchos::RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
-
-  bool zero_size = knots->GetBoundaryEleAndParentKnots(mypknots     ,
-                                                     myknots      ,
-                                                     normalfac    ,
-                                                     parent_ele->Id(),
-                                                     surfaceid    );
-
-  // --------------------------------------------------
-  // get node weights for nurbs elements
-  for (int inode=0; inode<bdrynen_; ++inode)
-  {
-    DRT::NURBS::ControlPoint* cp
-      =
-      dynamic_cast<DRT::NURBS::ControlPoint* > (ele->Nodes()[inode]);
-
-    weights(inode) = cp->W();
-  }
-  return zero_size;
 }
 
 

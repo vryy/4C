@@ -117,6 +117,12 @@ namespace ELEMENTS
       case DRT::Element::quad9:
         return DRT::ELEMENTS::WallQuad9PoroType::Instance().UniqueParObjectId();
         break;
+      case DRT::Element::nurbs4:
+        return DRT::ELEMENTS::WallNurbs4PoroType::Instance().UniqueParObjectId();
+        break;
+      case DRT::Element::nurbs9:
+        return DRT::ELEMENTS::WallNurbs9PoroType::Instance().UniqueParObjectId();
+        break;
       default:
         dserror("unknown element type");
         break;
@@ -192,6 +198,12 @@ namespace ELEMENTS
         break;
       case DRT::Element::quad9:
         return DRT::ELEMENTS::WallQuad9PoroType::Instance();
+        break;
+      case DRT::Element::nurbs4:
+        return DRT::ELEMENTS::WallNurbs4PoroType::Instance();
+        break;
+      case DRT::Element::nurbs9:
+        return DRT::ELEMENTS::WallNurbs9PoroType::Instance();
         break;
       default:
         dserror("unknown element type");

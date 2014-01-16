@@ -19,11 +19,14 @@ Maintainers: Anh-Tu Vuong and Andreas Rauch
 
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
 #include "../drt_geometry/position_array.H"
 //
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
+
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/fluidporo.H"
@@ -1824,7 +1827,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   // element and surface element, get weights
   if(IsNurbs<distype>::isnurbs)
   {
-     bool zero_size = my::GetKnotVectorAndWeightsForNurbs(ele, discretization, mypknots, myknots, weights, normalfac);
+    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
+        ele, ele->SurfaceNumber(), ele->ParentElement()->Id(), discretization, mypknots, myknots, weights, normalfac);
      if(zero_size)
      {
        return;
@@ -1871,6 +1875,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     // Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
     this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,&myknots,&weights);
+
+    // in the case of nurbs the normal vector must be scaled with a special factor
+    if (IsNurbs<distype>::isnurbs)
+      my::unitnormal_.Scale(normalfac);
 
     my::velint_.Multiply(evelnp,my::funct_);
     gridvelint.Multiply(egridvel,my::funct_);
@@ -2307,6 +2315,24 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     }
     break;
   }
+  case DRT::Element::nurbs3:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::nurbs9)
+    {
+      PoroBoundary<DRT::Element::nurbs9>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elemat1,
+          elevec1);
+    }
+    else
+    {
+      dserror("expected combination nurbs3/nurbs9 for line/parent pair");
+    }
+    break;
+  }
   // 3D:
   case DRT::Element::quad4:
   {
@@ -2553,19 +2579,21 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   std::vector<Epetra_SerialDenseVector> mypknots(my::nsd_);
   std::vector<Epetra_SerialDenseVector> myknots (my::bdrynsd_);
   Epetra_SerialDenseVector weights(my::bdrynen_);
+  Epetra_SerialDenseVector pweights(pele->NumNode());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
   if(IsNurbs<distype>::isnurbs)
   {
-     bool zero_size = my::GetKnotVectorAndWeightsForNurbs(ele, discretization, mypknots, myknots, weights, normalfac);
+    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(
+        pele,ele, ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
+
      if(zero_size)
      {
        return;
      }
   }
   // --------------------------------------------------
-
   //structure velocity at gausspoint
   LINALG::Matrix<my::nsd_,1> gridvelint;
 
@@ -2583,9 +2611,24 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     for (int idim=0;idim<my::nsd_ ;idim++)
       pxsi(idim) = pqxg(gpid,idim);
 
-    DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
-    DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv_loc);
-
+    // get shape functions and derivatives of the parent element
+    if(not IsNurbs<distype>::isnurbs)
+    {
+      // shape functions and their first derivatives of parent element
+      DRT::UTILS::shape_function<pdistype>(pxsi,pfunct);
+      DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv_loc);
+    }
+    // only for NURBS!!!
+    else
+    {
+      DRT::NURBS::UTILS::nurbs_get_funct_deriv
+         (pfunct  ,
+          pderiv_loc  ,
+          pxsi     ,
+          mypknots,
+          pweights,
+          pdistype);
+    }
     pderiv.Multiply(derivtrafo,pderiv_loc);
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
@@ -2606,6 +2649,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     // Computation of nurb specific stuff is not activated here
     this->EvalShapeFuncAtBouIntPoint(intpoints,gpid,&myknots,&weights);
 
+    // in the case of nurbs the normal vector must be scaled with a special factor
+    if (IsNurbs<distype>::isnurbs)
+      my::unitnormal_.Scale(normalfac);
+
     const double timefacpre = my::fldparatimint_->TimeFacPre() ;
     const double timefacfacpre = my::fldparatimint_->TimeFacPre() * my::fac_;
     const double rhsfac        = my::fldparatimint_->TimeFacRhs() * my::fac_;
@@ -2621,7 +2668,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     double porosity_gp=0.0;
 
     params.set<double>("scalar",scalar);
-
     if(porositydof)
     {
       porosity_gp = eporosity.Dot(my::funct_);
@@ -2679,6 +2725,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
         normalderiv(1,my::nsd_*node)   += -pderiv(0,node) ;
         normalderiv(1,my::nsd_*node+1) += 0.;
       }
+
+    // in the case of nurbs the normal vector must be scaled with a special factor
+    if (IsNurbs<distype>::isnurbs)
+      normalderiv.Scale(normalfac);
 
     //------------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J * N_x
     LINALG::Matrix<1,my::nsd_*nenparent> dJ_dus;
@@ -2844,7 +2894,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
   // element and surface element, get weights
   if(IsNurbs<distype>::isnurbs)
   {
-     bool zero_size = my::GetKnotVectorAndWeightsForNurbs(ele, discretization, mypknots, myknots, weights, normalfac);
+    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
+        ele, ele->SurfaceNumber(), ele->ParentElement()->Id(), discretization, mypknots, myknots, weights, normalfac);
      if(zero_size)
      {
        return;
@@ -2869,6 +2920,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
     // dxyzdrs vector -> normal which is not normalized
     LINALG::Matrix<my::bdrynsd_,my::nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(my::deriv_,my::xyze_);
+
+    // in the case of nurbs the normal vector must be scaled with a special factor
+    if (IsNurbs<distype>::isnurbs)
+      my::unitnormal_.Scale(normalfac);
 
     //  derivatives of surface normals wrt mesh displacements
     LINALG::Matrix<3,my::bdrynen_*3> normalderiv(true);
@@ -2902,6 +2957,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
         normalderiv(1,my::nsd_*node)   += -my::deriv_(0,node) * my::funct_(node) ;
         normalderiv(1,my::nsd_*node+1) += 0.;
       }
+
+    // in the case of nurbs the normal vector must be scaled with a special factor
+    if (IsNurbs<distype>::isnurbs)
+      normalderiv.Scale(normalfac);
 
     //fill element matrix
     for (int inode=0;inode<my::bdrynen_;inode++)

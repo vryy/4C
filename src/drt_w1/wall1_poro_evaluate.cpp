@@ -613,7 +613,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoop(
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
 
-    // non-linear B-operator (may so be called, meaning
+    // non-linear B-operator
     LINALG::Matrix<numstr_,numdof_> bop;
     ComputeBOperator(bop,defgrd,N_XYZ);
 
@@ -1056,6 +1056,22 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopOD(
                                         )
 {
 
+  /*--------------------------------- get node weights for nurbs elements */
+  if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs9)
+  {
+    for (int inode=0; inode<numnod_; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+
+      weights_(inode) = cp->W();
+    }
+  }
+
+  /* =========================================================================*/
+  /* ================================================= Loop over Gauss Points */
+  /* =========================================================================*/
   LINALG::Matrix<numdim_,numnod_> N_XYZ;       //  first derivatives at gausspoint w.r.t. X, Y,Z
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
@@ -1497,12 +1513,18 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::InitElement()
     {
        xsi_[gp](idim) = gpcoord[idim];
     }
+  }
 
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+  if (distype != DRT::Element::nurbs4 and distype != DRT::Element::nurbs9)
+  {
+    for (int gp=0; gp<numgpt_; ++gp)
+    {
+      DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
 
-    invJ_[gp].Multiply(deriv,xrefe);
-    detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
+      invJ_[gp].Multiply(deriv,xrefe);
+      detJ_[gp] = invJ_[gp].Invert();
+      if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
+    }
   }
 
   scatracoupling_=false;
@@ -1683,6 +1705,18 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeShapeFunctionsAndDerivatives(
       myknots_,
       weights_,
       distype );
+
+    LINALG::Matrix<numnod_,numdim_> xrefe;
+    for (int i=0; i<numnod_; ++i)
+    {
+      Node** nodes=Nodes();
+      if(!nodes) dserror("Nodes() returned null pointer");
+      xrefe(i,0) = Nodes()[i]->X()[0];
+      xrefe(i,1) = Nodes()[i]->X()[1];
+    }
+    invJ_[gp].Multiply(deriv,xrefe);
+    detJ_[gp] = invJ_[gp].Invert();
+    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
   }
 
   /* get the inverse of the Jacobian matrix which looks like:

@@ -209,7 +209,7 @@ void DRT::ELEMENTS::WallNurbs4PoroType::SetupElementDefinition( std::map<std::st
   std::map<std::string, DRT::INPUT::LineDefinition>& defs =
       definitions["WALLN4PORO"];
 
-  defs["QUAD4"]=defs_wall["QUAD4"];
+  defs["NURBS4"]=defs_wall["NURBS4"];
 }
 
 /*----------------------------------------------------------------------*
@@ -279,7 +279,7 @@ void DRT::ELEMENTS::WallNurbs9PoroType::SetupElementDefinition( std::map<std::st
   std::map<std::string, DRT::INPUT::LineDefinition>& defs =
       definitions["WALLN9PORO"];
 
-  defs["QUAD9"]=defs_wall["QUAD9"];
+  defs["NURBS9"]=defs_wall["NURBS9"];
 }
 
 /*----------------------------------------------------------------------*

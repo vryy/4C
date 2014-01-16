@@ -363,16 +363,6 @@ protected:
       const Epetra_SerialDenseVector*                  weights
   );
 
-  //! evaluate Nurbs specific knots and weights
-  bool GetKnotVectorAndWeightsForNurbs(
-      DRT::ELEMENTS::FluidBoundary*              ele,              ///< pointer to the boundary element
-      DRT::Discretization&                        discretization,   ///< A reference to the underlying discretization
-      std::vector<Epetra_SerialDenseVector>&      mypknots,         ///< nurbs specific knots
-      std::vector<Epetra_SerialDenseVector>&      myknots,          ///< nurbs specific ...
-      Epetra_SerialDenseVector&                   weights,          ///< nurbs specific weights
-      double&                                     normalfac       ///< nurbs specific factor for normal
-  );
-
   //! get density
   void GetDensity(Teuchos::RCP<const MAT::Material> material,      ///< reference pointer to material
                   const LINALG::Matrix<bdrynen_,1>& escaaf,        ///< scalar at time n+alpha_f / n+1

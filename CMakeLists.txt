@@ -1421,7 +1421,6 @@ set(OBJS_DRT_POTENTIAL
 )
 set(OBJS_DRT_NURBS_DISCRET
   src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.cpp
-  src/drt_nurbs_discret/drt_nurbs_utils.cpp
 )
 set(OBJS_DRT_B3_LIB
   src/drt_beam3/beam3.cpp
