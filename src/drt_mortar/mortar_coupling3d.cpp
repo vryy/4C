@@ -3201,10 +3201,6 @@ bool MORTAR::Coupling3d::IntegrateCells()
   // nothing to do here, if there are no cells
   if (Cells().size()==0) return false;
 
-  // create an integrator instance with correct NumGP and Dim
-  // it is sufficient to do this once as all IntCells are triangles
-  MORTAR::MortarIntegrator integrator(imortar_,Cells()[0]->Shape());
-
   // loop over all integration cells
   for (int i=0;i<(int)(Cells().size());++i)
   {
@@ -3245,7 +3241,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
     if (!Quad())
     {
       // call integrator
-      integrator.IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn());
+      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(),IParams())->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
     }
 
     // *******************************************************************
@@ -3257,7 +3253,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
+      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(),IParams())->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
     }
 
     // *******************************************************************
@@ -3273,7 +3269,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
       MORTAR::IntElement& sintref = static_cast<MORTAR::IntElement&>(SlaveIntElement());
       MORTAR::IntElement& mintref = static_cast<MORTAR::IntElement&>(MasterIntElement());
 
-      integrator.IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
+      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(),IParams())->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
     }
 
     // *******************************************************************
@@ -3782,26 +3778,23 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
       int ncol  = nmele*nmdof;
       int ndof  = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
 
-      // create an integrator instance with correct NumGP and Dim
-      MORTAR::MortarIntegrator integrator(imortar_,SlaveElement().Shape());
-
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
       Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
       Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
-      if (LMNodalScale())
+      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
         scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
 
       bool boundary_ele=false;
 
       //integrate D and M -- 2 Cells
-      integrator.IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,scseg,&boundary_ele);
+      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,scseg,&boundary_ele);
 
       if (IntType()==INPAR::MORTAR::inttype_elements_BS)
       {
         if (boundary_ele==true)
         {
-          if (LMDualConsistent()==false)
+          if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==false)
           {
             // loop over all master elements associated with this slave element
             for (int m=0;m<(int)MasterElements().size();++m)
@@ -3846,17 +3839,17 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
         else
         {
           // assembly of intcell contributions to D and M
-          integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-          integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
-          if (scseg!=Teuchos::null) integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
+          MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleD(Comm(),SlaveElement(),*dseg);
+          MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
+          if (scseg!=Teuchos::null) MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleScale(Comm(),SlaveElement(),*scseg);
         }
       }
       else
       {
         // assembly of intcell contributions to D and M
-        integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-        integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
-        if (scseg!=Teuchos::null) integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
+        MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleD(Comm(),SlaveElement(),*dseg);
+        MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
+        if (scseg!=Teuchos::null) MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleScale(Comm(),SlaveElement(),*scseg);
       }
     }
     else
@@ -3930,9 +3923,6 @@ bool MORTAR::Coupling3dQuadManager::EvaluateCoupling()
     int ncol  = nmele*nmdof;
     int ndof  = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
 
-    // create an integrator instance with correct NumGP and Dim
-    MORTAR::MortarIntegrator integrator(imortar_,SlaveElement().Shape());
-
     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
     Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;
@@ -3942,7 +3932,7 @@ bool MORTAR::Coupling3dQuadManager::EvaluateCoupling()
     bool boundary_ele=false;
 
     //integrate D and M -- 2 Cells
-    integrator.IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,scseg,&boundary_ele);
+    MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->IntegrateDerivCell3D_EleBased(SlaveElement(),MasterElements(),dseg,mseg,gseg,scseg,&boundary_ele);
 
     if (IntType()==INPAR::MORTAR::inttype_elements_BS)
     {
@@ -3977,15 +3967,15 @@ bool MORTAR::Coupling3dQuadManager::EvaluateCoupling()
       else
       {
         // assembly of intcell contributions to D and M
-        integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-        integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
+        MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleD(Comm(),SlaveElement(),*dseg);
+        MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
       }
     }
     else
     {
       // assembly of intcell contributions to D and M
-      integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-      integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
+      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleD(Comm(),SlaveElement(),*dseg);
+      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
     }
   }
   //**********************************************************************
@@ -4010,11 +4000,11 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
     dserror("ConsistentDualShape() called for standard LM interpolation.");
 
   // Consistent modification only for linear LM interpolation
-  if (Quad()==true && LMDualConsistent()==true)
+  if (Quad()==true && DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true)
     dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
 
   // you should not be here
-  if (LMDualConsistent()==false)
+  if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==false)
     dserror("You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
 
   if (Coupling().size()==0)
@@ -4025,7 +4015,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
     // check if fully projecting
     bool boundary_ele=false;
 
-    MORTAR::MortarIntegrator integrator(imortar_,SlaveElement().Shape());
+    MORTAR::ElementIntegrator integrator(SlaveElement().Shape());
     for (int gp=0;gp<integrator.nGP();++gp)
     {
       // coordinates and weight
@@ -4053,8 +4043,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
       for(int nummaster=0;nummaster<(int)Coupling().size();++nummaster)
       {
         // project Gauss point onto master element
-        MORTAR::MortarProjector projector(3);
-        projector.ProjectGaussPoint3D(SlaveElement(),sxi,Coupling()[nummaster]->MasterElement(),mxi,projalpha);
+        MORTAR::MortarProjector::Impl(Coupling()[nummaster]->MasterElement())->ProjectGaussPoint3D(SlaveElement(),sxi,Coupling()[nummaster]->MasterElement(),mxi,projalpha);
 
         bool is_on_mele=true;
 
@@ -4109,12 +4098,12 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
        RCP<MORTAR::IntCell> currcell = Coupling()[m]->Cells()[c];
 
        // create an integrator for this cell
-       MORTAR::MortarIntegrator integrator(imortar_,currcell->Shape());
-       for (int gp=0;gp<integrator.nGP(); ++gp)
+       for (int gp=0;gp<MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(m),imortar_)->nGP(); ++gp)
        {
          // coordinates and weight
-         double eta[2] = {integrator.Coordinate(gp,0), integrator.Coordinate(gp,1)};
-         double wgt = integrator.Weight(gp);
+         double eta[2] = {MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(m),imortar_)->Coordinate(gp,0),
+             MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(m),imortar_)->Coordinate(gp,1)};
+         double wgt = MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(m),imortar_)->Weight(gp);
 
          // get global Gauss point coordinates
          double globgp[3] = {0.0, 0.0, 0.0};
@@ -4123,8 +4112,9 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
          // project Gauss point onto slave integration element
          double sxi[2] = {0.0, 0.0};
          double sprojalpha = 0.0;
-         MORTAR::MortarProjector projector(3);
-         projector.ProjectGaussPointAuxn3D(globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
+
+         //TODO random?
+         MORTAR::MortarProjector::Impl(SlaveElement())->ProjectGaussPointAuxn3D(globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
 
          // create vector for shape function evaluation
          LINALG::SerialDenseVector sval (nnodes);

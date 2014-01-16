@@ -46,25 +46,101 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+
+#include "mortar_calc_utils.H"
 /*----------------------------------------------------------------------*
- |  ctor (public)                                             popp 01/08|
+ |  impl...                                                  farah 01/14|
  *----------------------------------------------------------------------*/
-MORTAR::MortarProjector::MortarProjector(int dim) :
-dim_(dim)
+MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& ele)
 {
-  if (Dim()!=2 && Dim()!=3)
-    dserror("ERROR: Contact problem must be 2D or 3D");
+  switch (ele.Shape())
+  {
+  case DRT::Element::quad4:
+  {
+    return MortarProjectorCalc<DRT::Element::quad4>::Instance();
+  }
+  case DRT::Element::quad8:
+  {
+    return MortarProjectorCalc<DRT::Element::quad8>::Instance();
+  }
+  case DRT::Element::quad9:
+  {
+    return MortarProjectorCalc<DRT::Element::quad9>::Instance();
+  }
+  case DRT::Element::tri3:
+  {
+    return MortarProjectorCalc<DRT::Element::tri3>::Instance();
+  }
+  case DRT::Element::tri6:
+  {
+    return MortarProjectorCalc<DRT::Element::tri6>::Instance();
+  }
+  case DRT::Element::line2:
+  {
+    return MortarProjectorCalc<DRT::Element::line2>::Instance();
+  }
+  case DRT::Element::line3:
+  {
+    return MortarProjectorCalc<DRT::Element::line3>::Instance();
+  }
+  default:
+    dserror("Element shape %d (%d nodes) not activated. Just do it.", ele.Shape(), ele.NumNode()); break;
+  }
+  return NULL;
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                            farah 01/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+MORTAR::MortarProjectorCalc<distype>::MortarProjectorCalc()
+{
+  //nothing
+}
+
+/*----------------------------------------------------------------------*
+ |  Instance (public)                                        farah 01/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+MORTAR::MortarProjectorCalc<distype> * MORTAR::MortarProjectorCalc<distype>::Instance(bool create)
+{
+  static MortarProjectorCalc<distype> * instance;
+  if (create)
+  {
+    if (instance==NULL)
+      instance = new MortarProjectorCalc<distype>();
+  }
+  else
+  {
+    if (instance!=NULL)
+      delete instance;
+    instance = NULL;
+  }
+  return instance;
+}
+
+/*----------------------------------------------------------------------*
+ |  Done (public)                                             farah 01/14|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void MORTAR::MortarProjectorCalc<distype>::Done()
+{
+  // delete this pointer! Afterwards we have to go! But since this is a
+  // cleanup call, we can do it this way.
+  Instance( false );
 }
 
 /*----------------------------------------------------------------------*
  |  Project a node along its nodal normal (public)            popp 01/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarProjector::ProjectNodalNormal(MORTAR::MortarNode& node,
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::ProjectNodalNormal(MORTAR::MortarNode& node,
                                                  MORTAR::MortarElement& ele,
                                                  double* xi)
 {
   bool ok = true;
-  if (Dim()==2)
+  if (ndim_==2)
   {
     // local Newton iteration for xi, start in the element middle
     double eta[2] = {0.0, 0.0};
@@ -115,12 +191,13 @@ bool MORTAR::MortarProjector::ProjectNodalNormal(MORTAR::MortarNode& node,
 /*----------------------------------------------------------------------*
  |  Project a node along element's normal field (public)      popp 01/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarProjector::ProjectElementNormal(MORTAR::MortarNode& node,
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::ProjectElementNormal(MORTAR::MortarNode& node,
                                                    MORTAR::MortarElement& ele,
                                                    double* xi)
 {
   bool ok = true;
-  if (Dim()==2)
+  if (ndim_==2)
   {
     // local Newton iteration for xi, start in the element middle
     double eta[2] = {0.0, 0.0};
@@ -169,118 +246,54 @@ bool MORTAR::MortarProjector::ProjectElementNormal(MORTAR::MortarNode& node,
 }
 
 /*----------------------------------------------------------------------*
- |  Project a node along element's normal field (3D)          popp 11/08|
- *----------------------------------------------------------------------*/
-bool MORTAR::MortarProjector::ProjectElementNormal3D(MORTAR::MortarNode& node,
-                                                     MORTAR::MortarElement& ele,
-                                                     double* xi, double& par)
-{
-  if (Dim()==3)
-  {
-    // start in the element center
-    DRT::Element::DiscretizationType dt = ele.Shape();
-    double eta[2] = {0.0, 0.0};
-    if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
-    {
-      eta[0] = 1.0/3;
-      eta[1] = 1.0/3;
-    }
-
-    // auxiliary variable
-    double alpha = 0.0;
-
-    // function f (vector-valued)
-    double f[3] = {0.0, 0.0, 0.0};
-
-    // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-    LINALG::Matrix<3,3> df;
-
-    // start iteration
-    int k=0;
-    double conv = 0.0;
-
-    for (k=0;k<MORTARMAXITER;++k)
-    {
-      EvaluateFElementNormal3D(f,node,ele,eta,alpha);
-      conv = sqrt(f[0]*f[0]+f[1]*f[1]+f[2]*f[2]);
-      //std::cout << "Iteration " << k << ": -> |f|=" << conv << std::endl;
-      if (conv <= MORTARCONVTOL) break;
-      EvaluateGradFElementNormal3D(df,node,ele,eta,alpha);
-
-      // solve deta = - inv(df) * f
-      double jacdet = df.Invert();
-      if (abs(jacdet)<1.0e-12) dserror("ERROR: Singular Jacobian for projection");
-
-      // update eta and alpha
-      eta[0] += -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
-      eta[1] += -df(1,0)*f[0] - df(1,1)*f[1] - df(1,2)*f[2];
-      alpha  += -df(2,0)*f[0] - df(2,1)*f[1] - df(2,2)*f[2];
-    }
-
-    // Newton iteration unconverged
-    if (conv > MORTARCONVTOL)
-      dserror("ERROR: ProjectElementNormal3D: Newton unconverged for NodeID %i "
-              "and MortarElementID %i", node.Id(), ele.Id());
-
-    // Newton iteration converged
-    xi[0]=eta[0];
-    xi[1]=eta[1];
-    par=alpha;
-    //std::cout << "Newton iteration converged in " << k << " steps!" << std::endl;
-  }
-
-  else dserror("ERROR: ProjectElementNormal: Called 3D version for 2D problem!");
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
  |  Project a Gauss point along its normal (public)           popp 01/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarProjector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPoint(MORTAR::MortarElement& gpele,
                                                 const double* gpeta,
                                                 MORTAR::MortarElement& ele,
                                                 double* xi)
 {
   bool ok = true;
-  if (Dim()==2)
+  if (ndim_==2)
   {
-    // collect necessary data (slave side, for GP)
-    int nnodes = gpele.NumNode();
-    LINALG::SerialDenseVector val(nnodes);
-    LINALG::SerialDenseMatrix deriv(nnodes,1);
-    LINALG::SerialDenseMatrix coord(3,nnodes);
+    LINALG::Matrix<n_,1>          val;
+    LINALG::Matrix<ndim_,n_>   coord;
+
     DRT::Node** mynodes = gpele.Nodes();
     if(!mynodes) dserror("ERROR: ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
-    gpele.EvaluateShape(gpeta, val, deriv, nnodes);
+    DRT::UTILS::shape_function_1D (val  ,gpeta[0],distype);
 
     // get interpolated GP normal and GP coordinates
-    double gpn[3] = {0.0, 0.0, 0.0};
-    double gpx[3] = {0.0, 0.0, 0.0};
-    for (int i=0;i<nnodes;++i)
+    double gpn[ndim_];
+    double gpx[ndim_];
+    for (int i=0;i<ndim_;++i)
+    {
+      gpn[i] = 0.0;
+      gpx[i] = 0.0;
+    }
+
+    for (int i=0;i<n_;++i)
     {
       MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
 
-      gpn[0]+=val[i]*mymrtrnode->MoData().n()[0];
-      gpn[1]+=val[i]*mymrtrnode->MoData().n()[1];
-      gpn[2]+=val[i]*mymrtrnode->MoData().n()[2];
+      for (int j=0;j<ndim_;++j)
+      {
+        gpn[j]     += val(i)*mymrtrnode->MoData().n()[j];
 
-      coord(0,i) = mymrtrnode->xspatial()[0];
-      coord(1,i) = mymrtrnode->xspatial()[1];
-      coord(2,i) = mymrtrnode->xspatial()[2];
+        coord(j,i) =  mymrtrnode->xspatial()[j];
 
-      gpx[0]+=val[i]*coord(0,i);
-      gpx[1]+=val[i]*coord(1,i);
-      gpx[2]+=val[i]*coord(2,i);
+        gpx[j]     +=val(i)*coord(j,i);
+      }
     }
 
     // local Newton iteration for xi, start in the element middle
     double eta[2] = {0.0, 0.0};
-    double f = 0.0;
-    double df = 0.0;
-    int k=0;
+    double f      = 0.0;
+    double df     = 0.0;
+    int k         = 0;
 
     for (k=0;k<MORTARMAXITER;++k)
     {
@@ -303,13 +316,6 @@ bool MORTAR::MortarProjector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
       dserror("ERROR: ProjectGaussPoint: Newton unconverged for GP at xi=%d"
               " from MortarElementID %i", gpeta[0], gpele.Id());
     }
-
-    /*
-    else
-    {
-      std::cout << "GP Newton iteration converged in " << k << " step(s)!" << std::endl
-           << "The result is: " << xi[0] << std::endl;
-    }*/
   }
 
   else dserror("ERROR: ProjectGaussPoint: Called 2D version for 3D problem!");
@@ -320,7 +326,8 @@ bool MORTAR::MortarProjector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
 /*----------------------------------------------------------------------*
  | Check projection for warped elements quad4 elements       farah 01/13|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarProjector::CheckProjection4AUXPLANE(MORTAR::MortarElement& ele,
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::CheckProjection4AUXPLANE(MORTAR::MortarElement& ele,
                                              double* ngp, double* globgp )
 {
   if (ele.Shape()==DRT::Element::tri3)
@@ -485,42 +492,45 @@ bool MORTAR::MortarProjector::CheckProjection4AUXPLANE(MORTAR::MortarElement& el
 /*----------------------------------------------------------------------*
  |  Project a Gauss point along its normal (3D)               popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
                                                   const double* gpeta,
                                                   MORTAR::MortarElement& ele,
                                                   double* xi, double& par)
 {
-  if (Dim()==3)
+  if (ndim_==3)
   {
-    // collect necessary data (slave side, for GP)
-    int nnodes = gpele.NumNode();
-    LINALG::SerialDenseVector val(nnodes);
-    LINALG::SerialDenseMatrix deriv(nnodes,2,true);
-    LINALG::SerialDenseMatrix coord(3,nnodes);
+    LINALG::Matrix<n_,1>          val;
+    LINALG::Matrix<ndim_,n_>      coord;
+    coord.Clear();
+
     DRT::Node** mynodes = gpele.Nodes();
-    if(!mynodes) dserror("ERROR: ProjectGaussPoint3D: Null pointer!");
+    if(!mynodes) dserror("ERROR: ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
-    gpele.EvaluateShape(gpeta, val, deriv, nnodes);
+    DRT::UTILS::shape_function_2D (val,gpeta[0],gpeta[1],distype);
 
     // get interpolated GP normal and GP coordinates
-    double gpn[3] = {0.0, 0.0, 0.0};
-    double gpx[3] = {0.0, 0.0, 0.0};
-    for (int i=0;i<nnodes;++i)
+    double gpn[3];
+    double gpx[3];
+    for (int i=0;i<ndim_;++i)
+    {
+      gpn[i] = 0.0;
+      gpx[i] = 0.0;
+    }
+
+    for (int i=0;i<n_;++i)
     {
       MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
 
-      gpn[0]+=val[i]*mymrtrnode->MoData().n()[0];
-      gpn[1]+=val[i]*mymrtrnode->MoData().n()[1];
-      gpn[2]+=val[i]*mymrtrnode->MoData().n()[2];
+      for (int j=0;j<ndim_;++j)
+      {
+        gpn[j]     += val(i)*mymrtrnode->MoData().n()[j];
 
-      coord(0,i) = mymrtrnode->xspatial()[0];
-      coord(1,i) = mymrtrnode->xspatial()[1];
-      coord(2,i) = mymrtrnode->xspatial()[2];
+        coord(j,i) =  mymrtrnode->xspatial()[j];
 
-      gpx[0]+=val[i]*coord(0,i);
-      gpx[1]+=val[i]*coord(1,i);
-      gpx[2]+=val[i]*coord(2,i);
+        gpx[j]     +=val(i)*coord(j,i);
+      }
     }
 
     // start in the element center
@@ -566,9 +576,7 @@ bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
       {
         bool check = CheckProjection4AUXPLANE(ele, gpn,gpx); 
         if (check==false)
-        {
           dserror("!!! STOP !!!   -->   Projection Error: Newton unconverged but GP on mele !!!");
-        }
       }
     }
 
@@ -594,12 +602,13 @@ bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
 /*----------------------------------------------------------------------*
  |  Project a Gauss point along AuxPlane normal (3D)          popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarProjector::ProjectGaussPointAuxn3D(const double* globgp,
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPointAuxn3D(const double* globgp,
                                                       const double* auxn,
                                                       MORTAR::MortarElement& ele,
                                                       double* xi, double& par)
 {
-  if (Dim()==3)
+  if (ndim_==3)
   {
     // start in the element center
     DRT::Element::DiscretizationType dt = ele.Shape();
@@ -661,7 +670,8 @@ bool MORTAR::MortarProjector::ProjectGaussPointAuxn3D(const double* globgp,
 /*----------------------------------------------------------------------*
  |  Evaluate F for nodal normal case (public)                 popp 01/08|
  *----------------------------------------------------------------------*/
-double MORTAR::MortarProjector::EvaluateFNodalNormal(MORTAR::MortarNode& node,
+template<DRT::Element::DiscretizationType distype>
+double MORTAR::MortarProjectorCalc<distype>::EvaluateFNodalNormal(MORTAR::MortarNode& node,
                                                      MORTAR::MortarElement& ele,
                                                      const double* eta)
 {
@@ -675,13 +685,12 @@ double MORTAR::MortarProjector::EvaluateFNodalNormal(MORTAR::MortarNode& node,
   double fval = 0.0;
 
   // build interpolation of master node coordinates for current eta
-  double nx[3] = {0.0, 0.0, 0.0};
-  ele.LocalToGlobal(eta,nx,0);
+  double nx[ndim_];
+  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nx,0);
 
   // subtract slave node coordinates
-  nx[0]-=node.xspatial()[0];
-  nx[1]-=node.xspatial()[1];
-  nx[2]-=node.xspatial()[2];
+  for (int i=0;i<ndim_;++i)
+    nx[i]-=node.xspatial()[i];
 
   //calculate F
   fval = nx[0]*node.MoData().n()[1]-nx[1]*node.MoData().n()[0];
@@ -692,7 +701,8 @@ double MORTAR::MortarProjector::EvaluateFNodalNormal(MORTAR::MortarNode& node,
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for nodal normal case (public)             popp 01/08|
  *----------------------------------------------------------------------*/
-double MORTAR::MortarProjector::EvaluateGradFNodalNormal(MORTAR::MortarNode& node,
+template<DRT::Element::DiscretizationType distype>
+double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFNodalNormal(MORTAR::MortarNode& node,
                                                          MORTAR::MortarElement& ele,
                                                          const double* eta)
 {
@@ -707,8 +717,8 @@ double MORTAR::MortarProjector::EvaluateGradFNodalNormal(MORTAR::MortarNode& nod
 
   // build interpolation of master node coordinates for current eta
   // use shape function derivatives for interpolation (hence "1")
-  double nxeta[3] = {0.0, 0.0, 0.0};
-  ele.LocalToGlobal(eta,nxeta,1);
+  double nxeta[ndim_];
+  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nxeta,1);
 
   // calculate GradF
   fgrad =  nxeta[0]*node.MoData().n()[1]-nxeta[1]*node.MoData().n()[0];
@@ -720,7 +730,8 @@ double MORTAR::MortarProjector::EvaluateGradFNodalNormal(MORTAR::MortarNode& nod
 /*----------------------------------------------------------------------*
  |  Evaluate F for element normal case (public)               popp 01/08|
  *----------------------------------------------------------------------*/
-double MORTAR::MortarProjector::EvaluateFElementNormal(MORTAR::MortarNode& node,
+template<DRT::Element::DiscretizationType distype>
+double MORTAR::MortarProjectorCalc<distype>::EvaluateFElementNormal(MORTAR::MortarNode& node,
                                                        MORTAR::MortarElement& ele,
                                                        const double* eta)
 {
@@ -735,39 +746,41 @@ double MORTAR::MortarProjector::EvaluateFElementNormal(MORTAR::MortarNode& node,
   double fval = 0.0;
 
   // collect necessary data (slave side)
-  int nnodes = ele.NumNode();
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes,1);
-  LINALG::SerialDenseMatrix coord(3,nnodes);
   DRT::Node** mynodes = ele.Nodes();
   if(!mynodes) dserror("ERROR: EvaluateFElementNormal: Null pointer!");
 
-  // get shape function values and derivatives at eta
-  ele.EvaluateShape(eta, val, deriv, nnodes);
+  LINALG::Matrix<n_,1>          val;
+  LINALG::Matrix<ndim_,n_>   coord;
+
+  // get shape function values and derivatives at gpeta
+  DRT::UTILS::shape_function_1D (val,eta[0],distype);
 
   // get interpolated normal and proj. coordinates for current eta
-  double nn[3] = {0.0, 0.0, 0.0};
-  double nx[3] = {0.0, 0.0, 0.0};
-  for (int i=0;i<nnodes;++i)
+  double nn[ndim_];
+  double nx[ndim_];
+  for (int j=0;j<ndim_;++j)
+  {
+    nn[j]=0.0;
+    nx[j]=0.0;
+  }
+
+  for (int i=0;i<n_;++i)
   {
     MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
-    nn[0]+=val[i]*mymrtrnode->MoData().n()[0];
-    nn[1]+=val[i]*mymrtrnode->MoData().n()[1];
-    nn[2]+=val[i]*mymrtrnode->MoData().n()[2];
 
-    coord(0,i) = mymrtrnode->xspatial()[0];
-    coord(1,i) = mymrtrnode->xspatial()[1];
-    coord(2,i) = mymrtrnode->xspatial()[2];
+    for (int j=0;j<ndim_;++j)
+    {
+      nn[j]+=val(i)*mymrtrnode->MoData().n()[j];
 
-    nx[0]+=val[i]*coord(0,i);
-    nx[1]+=val[i]*coord(1,i);
-    nx[2]+=val[i]*coord(2,i);
+      coord(j,i) = mymrtrnode->xspatial()[j];
+
+      nx[j]+=val(i)*coord(j,i);
+    }
   }
 
   // subtract master node coordinates
-  nx[0]-=node.xspatial()[0];
-  nx[1]-=node.xspatial()[1];
-  nx[2]-=node.xspatial()[2];
+  for (int j=0;j<ndim_;++j)
+    nx[j]-=node.xspatial()[j];
 
   // calculate F
   fval = nx[0]*nn[1]-nx[1]*nn[0];
@@ -778,10 +791,14 @@ double MORTAR::MortarProjector::EvaluateFElementNormal(MORTAR::MortarNode& node,
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for element normal case (public)           popp 01/08|
  *----------------------------------------------------------------------*/
-double MORTAR::MortarProjector::EvaluateGradFElementNormal(MORTAR::MortarNode& node,
+template<DRT::Element::DiscretizationType distype>
+double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(MORTAR::MortarNode& node,
                                                            MORTAR::MortarElement& ele,
                                                            const double* eta)
 {
+  if (ndim_==3)
+    dserror("This Projector is only for 2D Problems!");
+
   /* Evaluate the function GradF(eta)
       = ( Ni,eta * xis ) * ( Nj * nyjs )
       + ( Ni * xis - xm ) * ( Nj,eta * nyjs )
@@ -796,50 +813,47 @@ double MORTAR::MortarProjector::EvaluateGradFElementNormal(MORTAR::MortarNode& n
   double fgrad = 0.0;
 
   // collect necessary data (slave side)
-  int nnodes = ele.NumNode();
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes,1);
-  LINALG::SerialDenseMatrix coord(3,nnodes);
+  LINALG::Matrix<n_,1>        val;
+  LINALG::Matrix<ndim_-1,n_>  deriv;
+  LINALG::Matrix<ndim_,n_>    coord;
+
   DRT::Node** mynodes = ele.Nodes();
   if(!mynodes) dserror("ERROR: EvaluateGradFElementNormal: Null pointer!");
 
-  // get shape function values and derivatives at eta
-  ele.EvaluateShape(eta, val, deriv, nnodes);
+  // get shape function values and derivatives at gpeta
+  DRT::UTILS::shape_function_1D        (val,eta[0],distype);
+  DRT::UTILS::shape_function_1D_deriv1 (deriv,eta[0],distype);
 
   // get interpolated normal and proj. coordinates for current eta
-  double nn[3] = {0.0, 0.0, 0.0};
-  double nneta[3] = {0.0, 0.0, 0.0};
-  double nx[3] = {0.0, 0.0, 0.0};
-  double nxeta[3] = {0.0, 0.0, 0.0};
-  for (int i=0;i<nnodes;++i)
+  double nn[ndim_];
+  double nneta[ndim_];
+  double nx[ndim_];
+  double nxeta[ndim_];
+  for (int j=0;j<ndim_;++j)
+  {
+    nn[j]=0.0;
+    nneta[j]=0.0;
+    nx[j]=0.0;
+    nxeta[j]=0.0;
+  }
+
+  for (int i=0;i<n_;++i)
   {
     MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
 
-    nn[0]+=val[i]*mymrtrnode->MoData().n()[0];
-    nn[1]+=val[i]*mymrtrnode->MoData().n()[1];
-    nn[2]+=val[i]*mymrtrnode->MoData().n()[2];
-
-    nneta[0]+=deriv(i,0)*mymrtrnode->MoData().n()[0];
-    nneta[1]+=deriv(i,0)*mymrtrnode->MoData().n()[1];
-    nneta[2]+=deriv(i,0)*mymrtrnode->MoData().n()[2];
-
-    coord(0,i) = mymrtrnode->xspatial()[0];
-    coord(1,i) = mymrtrnode->xspatial()[1];
-    coord(2,i) = mymrtrnode->xspatial()[2];
-
-    nx[0]+=val[i]*coord(0,i);
-    nx[1]+=val[i]*coord(1,i);
-    nx[2]+=val[i]*coord(2,i);
-
-    nxeta[0]+=deriv(i,0)*coord(0,i);
-    nxeta[1]+=deriv(i,0)*coord(1,i);
-    nxeta[2]+=deriv(i,0)*coord(2,i);
+    for (int j=0;j<ndim_;++j)
+    {
+      nn[j]     += val(i)*mymrtrnode->MoData().n()[j];
+      nneta[j]  += deriv(0,i)*mymrtrnode->MoData().n()[j];
+      coord(j,i) = mymrtrnode->xspatial()[j];
+      nx[j]     += val(i)*coord(j,i);
+      nxeta[j]  += deriv(0,i)*coord(j,i);
+    }
   }
 
   // subtract master node coordinates
-  nx[0]-=node.xspatial()[0];
-  nx[1]-=node.xspatial()[1];
-  nx[2]-=node.xspatial()[2];
+  for(int j=0;j<ndim_;++j)
+    nx[j]-=node.xspatial()[j];
 
   // calculate GradF
   fgrad =   nxeta[0]*nn[1] + nx[0]*nneta[1]
@@ -849,138 +863,10 @@ double MORTAR::MortarProjector::EvaluateGradFElementNormal(MORTAR::MortarNode& n
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate F for element normal case (3D)                   popp 11/08|
- *----------------------------------------------------------------------*/
-bool MORTAR::MortarProjector::EvaluateFElementNormal3D(
-                              double* f,
-                              MORTAR::MortarNode& node,
-                              MORTAR::MortarElement& ele,
-                              const double* eta,
-                              const double& alpha)
-{
-  /* Evaluate the function F(eta,alpha) = Ni * xi + alpha * (Ni * ni) -xm
-     which is a vector-valued function with 3 components!
-
-       Ni      shape functions of element to project on
-       xi      coords of nodes of element to project on
-       ni      outward normal of nodes of element to project on
-       xm      node to project (master)                                 */
-
-  // collect necessary data
-  int nnodes = ele.NumNode();
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
-  LINALG::SerialDenseMatrix coord(3,nnodes);
-  DRT::Node** mynodes = ele.Nodes();
-  if(!mynodes) dserror("ERROR: EvaluateFElementNormal3D: Null pointer!");
-
-  // get shape function values and derivatives at eta
-  ele.EvaluateShape(eta, val, deriv, nnodes);
-
-  // get interpolated normal and proj. coordinates for current eta
-  double nn[3] = {0.0, 0.0, 0.0};
-  double nx[3] = {0.0, 0.0, 0.0};
-  for (int i=0;i<nnodes;++i)
-  {
-    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
-    nn[0]+=val[i]*mymrtrnode->MoData().n()[0];
-    nn[1]+=val[i]*mymrtrnode->MoData().n()[1];
-    nn[2]+=val[i]*mymrtrnode->MoData().n()[2];
-
-    coord(0,i) = mymrtrnode->xspatial()[0];
-    coord(1,i) = mymrtrnode->xspatial()[1];
-    coord(2,i) = mymrtrnode->xspatial()[2];
-
-    nx[0]+=val[i]*coord(0,i);
-    nx[1]+=val[i]*coord(1,i);
-    nx[2]+=val[i]*coord(2,i);
-  }
-
-  // evaluate function f
-  for (int i=0;i<3;++i)
-    f[i] = nx[i] + alpha * nn[i] - node.xspatial()[i];
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
- |  Evaluate GradF for element normal case (3D)               popp 11/08|
- *----------------------------------------------------------------------*/
-bool MORTAR::MortarProjector::EvaluateGradFElementNormal3D(
-                              LINALG::Matrix<3,3>& fgrad,
-                              MORTAR::MortarNode& node,
-                              MORTAR::MortarElement& ele,
-                              const double* eta,
-                              const double& alpha)
-{
-  /* Evaluate the gradient of the function F(eta,alpha) = Ni * xi -
-     + alpha * (Ni * ni) - xm, which is a (3x3)-matrix!
-
-       Ni      shape functions of element to project on
-       xi      coords of nodes of element to project on
-       ni      outward normal of nodes of element to project on
-       xm      node to project (master)                                 */
-
-  // collect necessary data
-  int nnodes = ele.NumNode();
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
-  LINALG::SerialDenseMatrix coord(3,nnodes);
-  DRT::Node** mynodes = ele.Nodes();
-  if(!mynodes) dserror("ERROR: EvaluateGradFElementNormal3D: Null pointer!");
-
-  // get shape function values and derivatives at eta
-  ele.EvaluateShape(eta, val, deriv, nnodes);
-
-  // get interpolated normal + deriv and proj. coordinates deriv for current eta
-  double nn[3] = {0.0, 0.0, 0.0};
-  double nneta1[3] = {0.0, 0.0, 0.0};
-  double nneta2[3] = {0.0, 0.0, 0.0};
-  double nxeta1[3] = {0.0, 0.0, 0.0};
-  double nxeta2[3] = {0.0, 0.0, 0.0};
-  for (int i=0;i<nnodes;++i)
-  {
-    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
-    nn[0]+=val[i]*mymrtrnode->MoData().n()[0];
-    nn[1]+=val[i]*mymrtrnode->MoData().n()[1];
-    nn[2]+=val[i]*mymrtrnode->MoData().n()[2];
-
-    nneta1[0]+=deriv(i,0)*mymrtrnode->MoData().n()[0];
-    nneta1[1]+=deriv(i,0)*mymrtrnode->MoData().n()[1];
-    nneta1[2]+=deriv(i,0)*mymrtrnode->MoData().n()[2];
-
-    nneta2[0]+=deriv(i,1)*mymrtrnode->MoData().n()[0];
-    nneta2[1]+=deriv(i,1)*mymrtrnode->MoData().n()[1];
-    nneta2[2]+=deriv(i,1)*mymrtrnode->MoData().n()[2];
-
-    coord(0,i) = mymrtrnode->xspatial()[0];
-    coord(1,i) = mymrtrnode->xspatial()[1];
-    coord(2,i) = mymrtrnode->xspatial()[2];
-
-    nxeta1[0]+=deriv(i,0)*coord(0,i);
-    nxeta1[1]+=deriv(i,0)*coord(1,i);
-    nxeta1[2]+=deriv(i,0)*coord(2,i);
-
-    nxeta2[0]+=deriv(i,1)*coord(0,i);
-    nxeta2[1]+=deriv(i,1)*coord(1,i);
-    nxeta2[2]+=deriv(i,1)*coord(2,i);
-  }
-
-  //evaluate function f gradient
-  for (int i=0;i<3;++i)
-  {
-    fgrad(i,0) = nxeta1[i] + alpha*nneta1[i];
-    fgrad(i,1) = nxeta2[i] + alpha*nneta2[i];
-    fgrad(i,2) = nn[i];
-  }
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
  |  Evaluate F for Gauss point case (public)                  popp 01/08|
  *----------------------------------------------------------------------*/
-double MORTAR::MortarProjector::EvaluateFGaussPoint(const double* gpx,
+template<DRT::Element::DiscretizationType distype>
+double MORTAR::MortarProjectorCalc<distype>::EvaluateFGaussPoint(const double* gpx,
                                                     const double* gpn,
                                                     MORTAR::MortarElement& ele,
                                                     const double* eta)
@@ -996,13 +882,12 @@ double MORTAR::MortarProjector::EvaluateFGaussPoint(const double* gpx,
   double fval = 0.0;
 
   // build interpolation of master node coordinates for current eta
-  double nx[3] = {0.0, 0.0, 0.0};
-  ele.LocalToGlobal(eta,nx,0);
+  double nx[ndim_];
+  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nx,0);
 
   // subtract GP coordinates
   nx[0]-=gpx[0];
   nx[1]-=gpx[1];
-  nx[2]-=gpx[2];
 
   // calculate F
   fval = nx[0]*gpn[1]-nx[1]*gpn[0];
@@ -1014,7 +899,8 @@ double MORTAR::MortarProjector::EvaluateFGaussPoint(const double* gpx,
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for Gauss point case (public)              popp 01/08|
  *----------------------------------------------------------------------*/
-double MORTAR::MortarProjector::EvaluateGradFGaussPoint(const double* gpn,
+template<DRT::Element::DiscretizationType distype>
+double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFGaussPoint(const double* gpn,
                                                         MORTAR::MortarElement& ele,
                                                         const double* eta)
 {
@@ -1029,8 +915,8 @@ double MORTAR::MortarProjector::EvaluateGradFGaussPoint(const double* gpn,
 
   // build interpolation of master node coordinates for current eta
   // use shape function derivatives for interpolation (hence "1")
-  double nxeta[3] = {0.0, 0.0, 0.0};
-  ele.LocalToGlobal(eta,nxeta,1);
+  double nxeta[ndim_];
+  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nxeta,1);
 
   // calculate GradF
   fgrad = nxeta[0]*gpn[1]-nxeta[1]*gpn[0];
@@ -1041,7 +927,8 @@ double MORTAR::MortarProjector::EvaluateGradFGaussPoint(const double* gpn,
 /*----------------------------------------------------------------------*
  |  Evaluate F for Gauss point case (3D)                      popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarProjector::EvaluateFGaussPoint3D(
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::EvaluateFGaussPoint3D(
                               double* f,
                               const double* gpx,
                               const double* gpn,
@@ -1058,11 +945,11 @@ bool MORTAR::MortarProjector::EvaluateFGaussPoint3D(
        gpn     normal of GP along which to project                  */
 
   // build interpolation of ele node coordinates for current eta
-  double nx[3] = {0.0, 0.0, 0.0};
-  ele.LocalToGlobal(eta,nx,0);
+  double nx[ndim_];
+  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nx,0);
 
   // evaluate function f
-  for (int i=0; i<3; ++i)
+  for (int i=0; i<ndim_; ++i)
     f[i] = nx[i] - alpha * gpn[i] - gpx[i];
 
   return true;
@@ -1071,7 +958,8 @@ bool MORTAR::MortarProjector::EvaluateFGaussPoint3D(
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for Gauss point case (3D)                  popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarProjector::EvaluateGradFGaussPoint3D(
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::EvaluateGradFGaussPoint3D(
                               LINALG::Matrix<3,3>& fgrad,
                               const double* gpx,
                               const double* gpn,
@@ -1088,13 +976,18 @@ bool MORTAR::MortarProjector::EvaluateGradFGaussPoint3D(
        gpn     normal of GP along which to project                  */
 
   // build interpolation of ele node coordinates for current eta
-  double nxeta1[3] = {0.0, 0.0, 0.0};
-  double nxeta2[3] = {0.0, 0.0, 0.0};
-  ele.LocalToGlobal(eta,nxeta1,1);
-  ele.LocalToGlobal(eta,nxeta2,2);
+//  double nxeta1[3] = {0.0, 0.0, 0.0};
+//  double nxeta2[3] = {0.0, 0.0, 0.0};
+//  ele.LocalToGlobal(eta,nxeta1,1);
+//  ele.LocalToGlobal(eta,nxeta2,2);
+
+  double nxeta1[ndim_];
+  double nxeta2[ndim_];
+  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nxeta1,1);
+  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nxeta2,2);
 
   //evaluate function f gradient
-  for (int i=0;i<3;++i)
+  for (int i=0;i<ndim_;++i)
   {
     fgrad(i,0) = nxeta1[i];
     fgrad(i,1) = nxeta2[i];
@@ -1107,7 +1000,8 @@ bool MORTAR::MortarProjector::EvaluateGradFGaussPoint3D(
 /*----------------------------------------------------------------------*
  |  Evaluate F for AuxPlane Gauss point case (3D)             popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarProjector::EvaluateFGaussPointAuxn3D(
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::EvaluateFGaussPointAuxn3D(
                               double* f,
                               const double* globgp,
                               const double* auxn,
@@ -1124,11 +1018,11 @@ bool MORTAR::MortarProjector::EvaluateFGaussPointAuxn3D(
        auxn    normal of AuxPlane along which to project            */
 
   // build interpolation of ele node coordinates for current eta
-  double nx[3] = {0.0, 0.0, 0.0};
-  ele.LocalToGlobal(eta,nx,0);
+  double nx[ndim_];
+  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nx,0);
 
   // evaluate function f
-  for (int i=0; i<3; ++i)
+  for (int i=0; i<ndim_; ++i)
     f[i] = nx[i] - alpha * auxn[i] - globgp[i];
 
   return true;
@@ -1137,7 +1031,8 @@ bool MORTAR::MortarProjector::EvaluateFGaussPointAuxn3D(
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for AuxPlane Gauss point case (3D)         popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarProjector::EvaluateGradFGaussPointAuxn3D(
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::EvaluateGradFGaussPointAuxn3D(
                               LINALG::Matrix<3,3>& fgrad,
                               const double* globgp,
                               const double* auxn,
@@ -1154,13 +1049,13 @@ bool MORTAR::MortarProjector::EvaluateGradFGaussPointAuxn3D(
        auxn    normal of AuxPlane along which to project            */
 
   // build interpolation of ele node coordinates for current eta
-  double nxeta1[3] = {0.0, 0.0, 0.0};
-  double nxeta2[3] = {0.0, 0.0, 0.0};
-  ele.LocalToGlobal(eta,nxeta1,1);
-  ele.LocalToGlobal(eta,nxeta2,2);
+  double nxeta1[ndim_];
+  double nxeta2[ndim_];
+  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nxeta1,1);
+  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nxeta2,2);
 
   // evaluate function f gradient
-  for (int i=0;i<3;++i)
+  for (int i=0;i<ndim_;++i)
   {
     fgrad(i,0) = nxeta1[i];
     fgrad(i,1) = nxeta2[i];

@@ -842,3 +842,34 @@ bool CONTACT::CoIntegrator::AssembleWear(const Epetra_Comm& comm,
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ |  Assemble scale factor contribution (2D / 3D)             seitz 03/12|
+ |  This method assembles the contrubution of a 1D/2D slave             |
+ |  element to the scale factor of the adjacent slave nodes.            |
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::AssembleScale(const Epetra_Comm& comm,
+                                             MORTAR::MortarElement& sele,
+                                             Epetra_SerialDenseVector& scseg)
+{
+  // get adjacent slave nodes to assemble to
+  DRT::Node** snodes = sele.Nodes();
+  if (!snodes) dserror("ERROR: AssembleG: Null pointer for snodes!");
+
+  // loop over all slave nodes
+  for (int slave=0;slave<sele.NumNode();++slave)
+  {
+    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+
+    // only process slave node rows that belong to this proc
+    if (snode->Owner() != comm.MyPID()) continue;
+
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound()) continue;
+
+    double val = scseg(slave);
+    snode->AddScValue(val);
+
+  }
+  return true;
+}

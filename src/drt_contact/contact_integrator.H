@@ -66,20 +66,20 @@ namespace CONTACT
 \author popp (popp@lnm.mw.tum.de)
 */
 
-class CoIntegrator : public MORTAR::MortarIntegrator
+class CoIntegrator
 {
 public:
 
   /*!
   \brief Constructor  with shape function specification
-  
+
   Constructs an instance of this class using a specific type of shape functions.<br>
   Note that this is \b not a collective call as overlaps are
   integrated in parallel by individual processes.<br>
   Note also that this constructor relies heavily on the
   DRT::UTILS::IntegrationPoints structs to get Gauss points
   and corresponding weights.
-  
+
   */
   CoIntegrator(Teuchos::ParameterList& params,
                DRT::Element::DiscretizationType eletype);
@@ -94,7 +94,12 @@ public:
   */
   virtual ~CoIntegrator() {}
 
-  //! @name 2D and 3D integration methods
+  /*!
+  \brief Initialize Gauss rule (points, weights) for this MortarIntegrator
+
+  */
+  void InitializeGP(DRT::Element::DiscretizationType eletype);
+
 
   //! @name 2D and 3D integration methods
 
@@ -392,6 +397,16 @@ public:
        const std::map<int,double>& dgapgp,
        const std::map<int,double>& jacintcellmap,
        const std::vector<std::map<int,double> >& dsxigp);
+
+  /*!
+  \brief evaluate scaling at GP
+
+  */
+  void inline GP_2D_Scaling(
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       double& dsxideta, double& wgt);
+
   /*!
   \brief evaluate and lin scaling at GP
 
@@ -404,6 +419,16 @@ public:
        double& dsxideta, double& wgt,
        const std::map<int,double>& dsxigp,
        const std::vector<std::map<int,double> >& ximaps);
+
+  /*!
+  \brief evaluate scaling at GP
+
+  */
+  void inline GP_3D_Scaling(
+       MORTAR::MortarElement& sele,
+       LINALG::SerialDenseVector& sval,
+       double& jac, double& wgt,
+       double* sxi);
 
   /*!
   \brief evaluate and lin scaling at GP
@@ -873,6 +898,14 @@ public:
                  Epetra_SerialDenseMatrix& D_seg);
 
   /*!
+  \brief Assemble scale factor contribution of current overlap into slave nodes
+
+  */
+  bool AssembleScale(const Epetra_Comm& comm,
+                     MORTAR::MortarElement& sele,
+                     Epetra_SerialDenseVector& scseg);
+
+  /*!
   \brief Assemble T contribution of current overlap into slave nodes
 
   */
@@ -1028,8 +1061,50 @@ public:
   */
   INPAR::CONTACT::WearType WearType()
       { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(imortar_,"WEARTYPE"); }
+
+  /*!
+  \brief Return the LM shape fcn type
+
+  */
+  INPAR::MORTAR::ShapeFcn ShapeFcn()
+      { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"SHAPEFCN"); }
+
+  /*!
+  \brief Return the LM interpolation / testing type for quadratic FE
+
+  */
+  INPAR::MORTAR::LagMultQuad LagMultQuad() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LAGMULT_QUAD") ; }
   //@}
 
+
+  // GP calls
+  /*!
+  \brief Return number of Gauss points for this instance
+
+  */
+  int nGP() {return ngp_;}
+
+  /*!
+  \brief Return coordinates of a specific GP in 1D/2D CElement
+
+  */
+  double Coordinate(int& gp, int dir) {return coords_(gp,dir);}
+
+  /*!
+  \brief Return weight of a specific GP in 1D/2D CElement
+
+  */
+  double Weight(int& gp) {return weights_[gp];}
+
+  /*!
+  \brief Get problem dimension
+
+  Note that only 2D and 3D are possible here as this refers to the global
+  problem dimension. On integration level this corresponds to 1D integration
+  (dim_==2) and 2D integration (dim_==3) on the interface!
+
+  */
+  virtual const int& Dim() {return dim_;};
    
 protected:
 
@@ -1037,6 +1112,7 @@ protected:
     CoIntegrator operator = (const CoIntegrator& old);
     CoIntegrator(const CoIntegrator& old);
 
+    Teuchos::ParameterList&                          imortar_;     // containing contact input parameters
     DRT::Node**                                      mynodes_;   // slave element nodes
     LINALG::SerialDenseMatrix                        scoord_;    // slave element nodal coordinates
     LINALG::SerialDenseMatrix                        mcoord_;    // master element nodal coordinates
@@ -1044,7 +1120,13 @@ protected:
     bool                                             duallin_;   // flag indicating linearization of dual shape fct.
     std::vector<std::vector<std::map<int,double> > > dualmap_;   // storage for dual shape fct. derivatives
     std::vector<std::map<int,double> >               ximaps_;    // storage for 2d segment endpoints derivatives
-    const Epetra_Comm&                                Comm_;
+    const Epetra_Comm&                               Comm_;
+
+    int                                              ngp_;         // number of Gauss points
+    Epetra_SerialDenseMatrix                         coords_;      // Gauss point coordinates
+    std::vector<double>                              weights_;     // Gauss point weights
+    int                                              dim_;         // dimension of problem (2D or 3D)
+
     //wear-specific stuff
     bool                                             wearimpl_;  // flag for implicit wear algorithm
 

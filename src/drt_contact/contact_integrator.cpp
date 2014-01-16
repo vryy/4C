@@ -49,6 +49,7 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_wear.H"
 
@@ -58,9 +59,11 @@ Maintainer: Alexander Popp
 CONTACT::CoIntegrator::CoIntegrator(Teuchos::ParameterList& params,
                                     DRT::Element::DiscretizationType eletype,
                                     const Epetra_Comm& comm) :
-MORTAR::MortarIntegrator(params,eletype),
+imortar_(params),
 Comm_(comm)
 {
+  // init gp
+  InitializeGP(eletype);
 
   // set wear contact status
   INPAR::CONTACT::WearType wtype = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(params,"WEARTYPE");
@@ -68,6 +71,355 @@ Comm_(comm)
     wearimpl_ = true;
   else
     wearimpl_ = false;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Initialize gauss points                                   popp 06/09|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletype)
+{
+  //**********************************************************************
+  // Create integration points according to eletype!
+  //
+  // For segment-based integration, we have pre-defined default
+  // values for the Gauss rules according to the segment type.
+  //
+  // default for integrals on 1D lines:
+  // --> 5 GP (degree of precision: 9)
+  //
+  // default for integrals on 2D triangles:
+  // --> 7 GP (degree of precision: 5)
+  //
+  // default for integrals on 2D quadrilaterals:
+  // --> 9 GP (degree of precision: 5)
+  //
+  // For element-based integration, we choose the Gauss rules according
+  // to the user's wish (i.e. according to the parameter NUMGP_PER_DIM).
+  //
+  // possibilites for integrals on 1D lines:
+  // --> 1,2,3,4,5,6,7,8,9,10,16,20,32 GPs
+  //
+  // possibilities for integrals on 2D triangles:
+  // --> 1,3,6,7,12,37,64 GPs
+  //
+  // possibilities for integrals on 2D quadrilaterals
+  // --> 1,4,9,16,25,36,49,64,81,100,256,400,1024 GPs
+  //**********************************************************************
+
+  // get numgp (for element-based integration)
+  int numgp = imortar_.get<int>("NUMGP_PER_DIM");
+
+  // get integration type
+  INPAR::MORTAR::IntType integrationtype =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE");
+
+  //**********************************************************************
+  // choose Gauss rule according to (a) element type (b) input parameter
+  //**********************************************************************
+  switch(eletype)
+  {
+  case DRT::Element::line2:
+  case DRT::Element::line3:
+  {
+    dim_=2;
+
+    // set default value for segment-based version first
+    DRT::UTILS::GaussRule1D mygaussrule = DRT::UTILS::intrule_line_5point;
+
+    // GP switch if element-based version and non-zero value provided by user
+    if(integrationtype==INPAR::MORTAR::inttype_elements ||integrationtype==INPAR::MORTAR::inttype_elements_BS)
+    {
+      if (numgp>0)
+      {
+        switch(numgp)
+        {
+          case 1:
+          {
+            dserror("Our experience says that 1 GP per slave element is not enough.");
+            break;
+          }
+          case 2:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_2point;
+            break;
+          }
+          case 3:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_3point;
+            break;
+          }
+          case 4:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_4point;
+            break;
+          }
+          case 5:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_5point;
+            break;
+          }
+          case 6:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_6point;
+            break;
+          }
+          case 7:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_7point;
+            break;
+          }
+          case 8:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_8point;
+            break;
+          }
+          case 9:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_9point;
+            break;
+          }
+          case 10:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_10point;
+            break;
+          }
+          case 16:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_16point;
+            break;
+          }
+          case 20:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_20point;
+            break;
+          }
+          case 32:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_32point;
+            break;
+          }
+          default:
+          {
+            dserror("Requested GP-Number is not implemented!");
+            break;
+          }
+        }
+      }
+    }
+
+    const DRT::UTILS::IntegrationPoints1D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(nGP(),2);
+    weights_.resize(nGP());
+    for (int i=0;i<nGP();++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=0.0;
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  case DRT::Element::tri3:
+  case DRT::Element::tri6:
+  {
+    dim_=3;
+
+    // set default value for segment-based version first
+    DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_tri_7point;
+
+    // GP switch if element-based version and non-zero value provided by user
+    if(integrationtype==INPAR::MORTAR::inttype_elements || integrationtype==INPAR::MORTAR::inttype_elements_BS)
+    {
+      if (numgp>0)
+      {
+        switch(numgp)
+        {
+          case 1:
+          {
+            dserror("Our experience says that 1 GP per slave element is not enough.");
+            break;
+          }
+          case 2:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_6point;
+            break;
+          }
+          case 3:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_7point;
+            break;
+          }
+          case 4:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_12point;
+            break;
+          }
+          case 5:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_12point;
+            break;
+          }
+          case 6:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_37point;
+            break;
+          }
+          case 7:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_37point;
+            break;
+          }
+          case 8:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_64point;
+            break;
+          }
+          case 9:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_64point;
+            break;
+          }
+          case 10:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_64point;
+            break;
+          }
+          case 20:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_64point;
+            break;
+          }
+          default:
+          {
+            dserror("Requested GP-Number is not implemented!");
+            break;
+          }
+        }
+      }
+    }
+
+    const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(nGP(),2);
+    weights_.resize(nGP());
+    for (int i=0;i<nGP();++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  case DRT::Element::quad4:
+  case DRT::Element::quad8:
+  case DRT::Element::quad9:
+  {
+    dim_=3;
+
+    // set default value for segment-based version first
+    DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_quad_9point;
+
+    // GP switch if element-based version and non-zero value provided by user
+    if(integrationtype==INPAR::MORTAR::inttype_elements ||integrationtype==INPAR::MORTAR::inttype_elements_BS)
+    {
+      if (numgp>0)
+      {
+        switch(numgp)
+        {
+          case 1:
+          {
+            dserror("Our experience says that 1 GP per slave element is not enough.");
+            break;
+          }
+          case 2:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_4point;
+            break;
+          }
+          case 3:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_9point;
+            break;
+          }
+          case 4:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_16point;
+            break;
+          }
+          case 5:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_25point;
+            break;
+          }
+          case 6:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_36point;
+            break;
+          }
+          case 7:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_49point;
+            break;
+          }
+          case 8:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_64point;
+            break;
+          }
+          case 9:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_81point;
+            break;
+          }
+          case 10:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_100point;
+            break;
+          }
+          case 16:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_256point;
+            break;
+          }
+          case 20:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_400point;
+            break;
+          }
+          case 32:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_1024point;
+            break;
+          }
+          default:
+          {
+            dserror("Requested GP-Number is not implemented!");
+            break;
+          }
+        }
+      }
+    }
+
+    const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(nGP(),2);
+    weights_.resize(nGP());
+    for (int i=0;i<nGP();++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  default:
+  {
+    dserror("ERROR: MortarIntegrator: This contact element type is not implemented!");
+    break;
+  }
+  } // switch(eletype)
 
   return;
 }
@@ -85,7 +437,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
      MORTAR::MortarElement& sele, double& sxia, double& sxib,
      MORTAR::MortarElement& mele, double& mxia, double& mxib,
      const Epetra_Comm& comm)
-{ 
+{
   // *********************************************************************
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
@@ -133,7 +485,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   if(!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
   // contact with wear
-  bool wear = false;  
+  bool wear = false;
   if(imortar_.get<double>("WEARCOEFF")!= 0.0)
     wear = true;
 
@@ -178,21 +530,21 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   LINALG::SerialDenseMatrix m2deriv(ncol,1);
   LINALG::SerialDenseVector lm2val(ncol);
   LINALG::SerialDenseMatrix lm2deriv(ncol,1);
-  
+
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseMatrix ssecderiv(nrow,1);
-  
+
   // get slave and master nodal coords for Jacobian / GP evaluation
   LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
   LINALG::SerialDenseMatrix mcoord(3,mele.NumNode());
   sele.GetNodalCoords(scoord);
   mele.GetNodalCoords(mcoord);
-  
+
   // nodal coords from previous time step and lagrange mulitplier
   Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
   Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
   Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
-  
+
   if(wear or DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
   {
     scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
@@ -202,7 +554,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     mele.GetNodalCoordsOld(*mcoordold);
     sele.GetNodalLagMult(*lagmult);
   }
-  
+
   // map iterator
   typedef std::map<int,double>::const_iterator CI;
 
@@ -253,8 +605,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
-    MORTAR::MortarProjector projector(2);
-    projector.ProjectGaussPoint(sele,sxi,mele,mxi);
+    MORTAR::MortarProjector::Impl(mele)->ProjectGaussPoint(sele,sxi,mele,mxi);
 
     // check GP projection
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
@@ -530,8 +881,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector projector_test(3);
-        projector_test.ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
+        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
 
         if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
         {
@@ -602,8 +952,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector projector_test(3);
-        projector_test.ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
+        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
 
         if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
         {
@@ -673,8 +1022,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector projector_test(3);
-        projector_test.ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
+        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
 
         if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
         {
@@ -740,8 +1088,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector projector_test(3);
-        projector_test.ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
+        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
 
         if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
         {
@@ -810,8 +1157,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector projector_test(3);
-        projector_test.ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
+        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
 
         if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
         {
@@ -908,8 +1254,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
         meles[nummaster]->GetNodalCoords(mcoord);
 
         // project Gauss point onto master element
-        MORTAR::MortarProjector projector(3);
-        projector.ProjectGaussPoint3D(sele,sxi,*meles[nummaster],mxi,projalpha);
+        MORTAR::MortarProjector::Impl(*meles[nummaster])->ProjectGaussPoint3D(sele,sxi,*meles[nummaster],mxi,projalpha);
 
         is_on_mele=true;
 
@@ -1615,9 +1960,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     // project Gauss point onto master element
     double sprojalpha = 0.0;
     double mprojalpha = 0.0;
-    MORTAR::MortarProjector projector(3);
-    projector.ProjectGaussPointAuxn3D(globgp,auxn,sele,sxi,sprojalpha);
-    projector.ProjectGaussPointAuxn3D(globgp,auxn,mele,mxi,mprojalpha);
+    MORTAR::MortarProjector::Impl(sele)->ProjectGaussPointAuxn3D(globgp,auxn,sele,sxi,sprojalpha);
+    MORTAR::MortarProjector::Impl(mele)->ProjectGaussPointAuxn3D(globgp,auxn,mele,mxi,mprojalpha);
 
     // check GP projection (SLAVE)
     double tol = 0.01;
@@ -1997,9 +2341,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     // project Gauss point onto master integration element
     double sprojalpha = 0.0;
     double mprojalpha = 0.0;
-    MORTAR::MortarProjector projector(3);
-    projector.ProjectGaussPointAuxn3D(globgp,auxn,sintele,sxi,sprojalpha);
-    projector.ProjectGaussPointAuxn3D(globgp,auxn,mintele,mxi,mprojalpha);
+    MORTAR::MortarProjector::Impl(sintele)->ProjectGaussPointAuxn3D(globgp,auxn,sintele,sxi,sprojalpha);
+    MORTAR::MortarProjector::Impl(mintele)->ProjectGaussPointAuxn3D(globgp,auxn,mintele,mxi,mprojalpha);
 
     // check GP projection (SLAVE)
     double tol = 0.01;
@@ -2311,8 +2654,7 @@ void CONTACT::CoIntegrator::EleBased_Integration(
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector projector_test(2);
-        projector_test.ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
+        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
 
         if ((mxi_test[0]>=-1.0) && (mxi_test[0]<=1.0))
         {
@@ -2349,8 +2691,7 @@ void CONTACT::CoIntegrator::EleBased_Integration(
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector projector_test(2);
-        projector_test.ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
+        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
 
         if ((mxi_test[0]>=-1.0) && (mxi_test[0]<=1.0))
         {
@@ -2423,8 +2764,7 @@ void CONTACT::CoIntegrator::EleBased_Integration(
 
         // project Gauss point onto master element
         double mxi[2] = {0.0, 0.0};
-        MORTAR::MortarProjector projector(2);
-        projector.ProjectGaussPoint(sele,sxi,*meles[nummaster],mxi);
+        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,sxi,*meles[nummaster],mxi);
 
         // evaluate trace space shape functions
         meles[nummaster]->EvaluateShape(mxi,mval,mderiv,ncol);
@@ -7600,6 +7940,57 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
          dsliptmatrixgp[p->first] += absx * (p->second) * jumptan(2,0);
      }
    }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute scaling entries at GP                            farah 09/13|
+ *----------------------------------------------------------------------*/
+void inline CONTACT::CoIntegrator::GP_2D_Scaling(
+     MORTAR::MortarElement& sele,
+     LINALG::SerialDenseVector& sval,
+     double& dsxideta, double& wgt)
+{
+  double nrow = sele.NumNode();
+  DRT::Node** snodes = sele.Nodes();
+
+  for (int j=0;j<nrow;++j)
+  {
+    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*> (snodes[j]);
+
+    double prod = wgt*sval[j]*dsxideta/sele.Nodes()[j]->NumElement();
+    snode->AddScValue(prod);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Compute entries for scaling at GP                        farah 12/13|
+ *----------------------------------------------------------------------*/
+void inline CONTACT::CoIntegrator::GP_3D_Scaling(
+     MORTAR::MortarElement& sele,
+     LINALG::SerialDenseVector& sval,
+     double& jac, double& wgt,
+     double* sxi)
+{
+  double nrow = sele.NumNode();
+  double jacsele = sele.Jacobian(sxi);
+
+  DRT::Node** snodes = sele.Nodes();
+
+  for (int j=0;j<nrow;++j)
+  {
+    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*> (snodes[j]);
+
+    double prod = (wgt * sval[j] * jac / jacsele)/(sele.Nodes()[j]->NumElement());
+    if (sele.Shape() == DRT::Element::tri3 )
+      prod *= 6.0;
+
+    snode->AddScValue(prod);
+  }
 
   return;
 }

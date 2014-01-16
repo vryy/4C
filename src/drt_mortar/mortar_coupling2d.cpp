@@ -124,15 +124,14 @@ bool MORTAR::Coupling2d::Project()
   DRT::Node** mymnodes = MasterElement().Nodes();
   if (!mymnodes) dserror("ERROR: IntegrateOverlap: Null pointer for mymnodes!");
 
-  // create a projector instance of problem dimension Dim()
-  MORTAR::MortarProjector projector(Dim());
-
   // project slave nodes onto master element
   for (int i=0;i<SlaveElement().NumNode();++i)
   {
     MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(mysnodes[i]);
     double xi[2] = {0.0, 0.0};
-    projector.ProjectNodalNormal(*snode,MasterElement(),xi);
+
+    //TODO random?
+    MORTAR::MortarProjector::Impl(SlaveElement())->ProjectNodalNormal(*snode,MasterElement(),xi);
 
     // save projection if it is feasible
     // we need an expanded feasible domain in order to check pathological
@@ -155,7 +154,9 @@ bool MORTAR::Coupling2d::Project()
   {
     MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(mymnodes[i]);
     double xi[2] = {0.0, 0.0};
-    projector.ProjectElementNormal(*mnode,SlaveElement(),xi);
+
+    //TODO random?
+    MORTAR::MortarProjector::Impl(SlaveElement())->ProjectElementNormal(*mnode,SlaveElement(),xi);
 
     // save projection if it is feasible
     // we need an expanded feasible domain in order to check pathological
@@ -564,9 +565,6 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
   double mxia = xiproj_[2];
   double mxib = xiproj_[3];
 
-  // create an integrator instance with correct NumGP and Dim
-  MORTAR::MortarIntegrator integrator(imortar_,SlaveElement().Shape());
-
   // *******************************************************************
   // different options for mortar integration
   // *******************************************************************
@@ -585,7 +583,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
       (Quad() && lmtype==INPAR::MORTAR::lagmult_lin_lin))
   {
     // do the overlap integration (integrate and linearize both M and gap)
-    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib);
+    MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(),IParams())->IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,Comm());
   }
 
   // *******************************************************************
@@ -739,9 +737,6 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
     if ((int)MasterElements().size()==0)
       return false;
 
-    // create an integrator instance with correct NumGP and Dim
-    MORTAR::MortarIntegrator integrator(imortar_,SlaveElement().Shape());
-
     int nrow = SlaveElement().NumNode();
     int ncol = (MasterElements().size())*MasterElement(0).NumNode();
     int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
@@ -770,7 +765,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
         (Quad() && lmtype==INPAR::MORTAR::lagmult_quad_quad) ||
         (Quad() && lmtype==INPAR::MORTAR::lagmult_lin_lin))
     {
-      integrator.EleBased_Integration(dseg,mseg,scseg,SlaveElement(),MasterElements(),&boundary_ele);
+      MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->EleBased_Integration(dseg,mseg,scseg,SlaveElement(),MasterElements(),&boundary_ele);
 
       // Perform Boundary Segmentation if required
       if (IntType()==INPAR::MORTAR::inttype_elements_BS)
@@ -830,16 +825,16 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
         }
         else
         {
-          integrator.AssembleD(idiscret_.Comm(),SlaveElement(),*dseg);
-          integrator.AssembleM_EleBased(idiscret_.Comm(),SlaveElement(),MasterElements(),*mseg);
-          if (scseg!=Teuchos::null) integrator.AssembleScale(idiscret_.Comm(),SlaveElement(),*scseg);
+          MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleD(idiscret_.Comm(),SlaveElement(),*dseg);
+          MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleM_EleBased(idiscret_.Comm(),SlaveElement(),MasterElements(),*mseg);
+          if (scseg!=Teuchos::null) MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleScale(idiscret_.Comm(),SlaveElement(),*scseg);
         }
       }
       else
       {
-        integrator.AssembleD(idiscret_.Comm(),SlaveElement(),*dseg);
-        integrator.AssembleM_EleBased(idiscret_.Comm(),SlaveElement(),MasterElements(),*mseg);
-        if (scseg!=Teuchos::null) integrator.AssembleScale(idiscret_.Comm(),SlaveElement(),*scseg);
+        MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleD(idiscret_.Comm(),SlaveElement(),*dseg);
+        MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleM_EleBased(idiscret_.Comm(),SlaveElement(),MasterElements(),*mseg);
+        if (scseg!=Teuchos::null) MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(0),imortar_)->AssembleScale(idiscret_.Comm(),SlaveElement(),*scseg);
       }
     }
   }

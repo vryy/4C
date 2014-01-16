@@ -39,7 +39,8 @@ Maintainer: Alexander Popp
 #define MORTAR_PROJECTOR_H
 
 #include "../linalg/linalg_fixedsizematrix.H"
-
+#include "../drt_lib/drt_element.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 /*!
 \brief MORTAR: namespace of the BACI mortar coupling algorithms
@@ -58,37 +59,69 @@ class MortarElement;
 \author popp (popp@lnm.mw.tum.de)
 */
 
-class MortarProjector
+class MortarProjector : DRT::SingletonDestruction
 {
 public:
 
-  /*!
-  \brief Standard constructor
+  MortarProjector() {};
 
-  Constructs an instance of this class.<br>
-  Note that this is \b not a collective call as projections are
-  performed in parallel by individual processes.
-
-  \param dim (in): Global problem dimension
-
-  */
-  MortarProjector(int dim);
-
-  /*!
-  \brief Destructor
-
-  */
   virtual ~MortarProjector() {}
 
   //! @name Access methods
 
-  /*!
-  \brief Get problem dimension
+  /// Internal implementation class
+  static MortarProjector* Impl(MortarElement& ele);
 
-  */
-  virtual const int& Dim() {return dim_;};
+  //! @name virtual functions
+  virtual bool ProjectNodalNormal(MORTAR::MortarNode& node,
+                          MORTAR::MortarElement& ele,
+                          double* xi) = 0;
 
-  //@}
+  virtual bool ProjectElementNormal(MORTAR::MortarNode& node,
+                            MORTAR::MortarElement& ele,
+                            double* xi) = 0;
+
+  virtual bool ProjectGaussPoint(MORTAR::MortarElement& gpele,
+                         const double* gpeta,
+                         MORTAR::MortarElement& ele,
+                         double* xi) = 0;
+
+  virtual bool ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
+                           const double* gpeta,
+                           MORTAR::MortarElement& ele,
+                           double* xi, double& par) = 0;
+
+  virtual bool ProjectGaussPointAuxn3D(const double* globgp,
+                               const double* auxn,
+                               MORTAR::MortarElement& ele,
+                               double* xi, double& par) = 0;
+}; // class MortarProjector
+
+/*!
+\brief A class to perform projections of nodes onto opposing elements
+
+\author farah (farah@lnm.mw.tum.de)
+*/
+template<DRT::Element::DiscretizationType distype>
+class MortarProjectorCalc : public MortarProjector
+{
+
+public:
+
+  // constructor
+  MortarProjectorCalc();
+
+  /// called upon destruction
+  virtual void Done();
+
+  /// Singleton access method
+  static MortarProjectorCalc<distype> * Instance(bool create=true);
+
+  //! n_: number of element nodes
+  static const int n_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+  //! number of space dimensions ("+1" due to considering only interface elements)
+  static const int ndim_ = DRT::UTILS::DisTypeToDim<distype>::dim + 1;
 
   //! @name 2D and 3D projection methods
 
@@ -136,28 +169,6 @@ public:
                             double* xi);
 
   /*!
-  \brief Project a node onto an element along the interpolated
-         outward normal field of the element (3D)
-
-  Used to project a master side node onto an element of the slave side (3D)
-
-  This method will compute the coordinates of a projection of a node in
-  the local coordinate system of an element. The projection point will
-  not neccesarily fall inside the element. However, if the projection
-  point is far outside the segment's boundaries, problems with the
-  internal nonlinear iteration might occur.
-
-  \param node (in): Master node to project
-  \param ele (in) : Slave element to project on
-  \param xi (out) : Local coordinates of projection on element
-  \param par (out): Projection parameter alpha
-
-  */
-  bool ProjectElementNormal3D(MORTAR::MortarNode& node,
-                              MORTAR::MortarElement& ele,
-                              double* xi, double& par);
-
-  /*!
   \brief Project a Gauss point onto an element along GP normal
 
   Used to project a slave side GP onto an element of the master side
@@ -197,22 +208,6 @@ public:
                            double* xi, double& par);
 
   /*!
-  \brief Check intersection of projection normal with warped element to project on.
-
-  Create aux-plane for every ele-node with adjacent element edges.
-  If all intersection points of the projection normal and the aux-planes
-  are located inside the corresponding ele-edges, then the gp lie on the element.
-  --> return false for projection check
-
-  \param ele(in)    : element to project on
-  \param ngp(in)    : gp-normal to project along
-  \param globgp(in) : global gp coordinates
-
-  */
-  bool CheckProjection4AUXPLANE(MORTAR::MortarElement& ele,
-                       double* ngp, double* globgp);
-
-  /*!
   \brief Project a Gauss point onto an element along AuxPlane normal (3D)
 
   Used to project an AuxPlane GP onto an element of the slave or master side
@@ -232,6 +227,24 @@ public:
                                MORTAR::MortarElement& ele,
                                double* xi, double& par);
 
+  /*!
+  \brief Check intersection of projection normal with warped element to project on.
+
+  Create aux-plane for every ele-node with adjacent element edges.
+  If all intersection points of the projection normal and the aux-planes
+  are located inside the corresponding ele-edges, then the gp lie on the element.
+  --> return false for projection check
+
+  \param ele(in)    : element to project on
+  \param ngp(in)    : gp-normal to project along
+  \param globgp(in) : global gp coordinates
+
+  */
+  bool CheckProjection4AUXPLANE(MORTAR::MortarElement& ele,
+                       double* ngp, double* globgp);
+
+
+protected:
   /*!
   \brief Evaluate F for nodal normal projection
 
@@ -263,26 +276,6 @@ public:
   double EvaluateGradFElementNormal(MORTAR::MortarNode& node,
                                     MORTAR::MortarElement& ele,
                                     const double* eta);
-
-  /*!
-  \brief Evaluate F for element normal projection (3D)
-
-  */
-  bool EvaluateFElementNormal3D(double* f,
-                                MORTAR::MortarNode& node,
-                                MORTAR::MortarElement& ele,
-                                const double* eta,
-                                const double& alpha);
-
-  /*!
-  \brief Evaluate GradF for element normal projection (3D)
-
-  */
-  bool EvaluateGradFElementNormal3D(LINALG::Matrix<3,3>& fgrad,
-                              MORTAR::MortarNode& node,
-                              MORTAR::MortarElement& ele,
-                              const double* eta,
-                              const double& alpha);
 
   /*!
   \brief Evaluate F for Gauss point projection
@@ -344,18 +337,7 @@ public:
                                      MORTAR::MortarElement& ele,
                                      const double* eta,
                                      const double& alpha);
-
-  //@}
-
-protected:
-
-  // don't want = operator and cctor
-  MortarProjector operator = (const MortarProjector& old);
-  MortarProjector(const MortarProjector& old);
-
-  int       dim_;          // dimension of problem (2D or 3D)
-
-}; // class MortarProjector
+};
 }  // namespace MORTAR
 
 

@@ -837,12 +837,12 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
   {
     if (MoData().DualShape()==Teuchos::null)
     {
-    val[0] = 3-4*xi[0]-4*xi[1];
-    val[1] = 4*xi[0]-1;
-    val[2] = 4*xi[1]-1;
-    deriv(0,0) = -4.0; deriv(0,1) = -4.0;
-    deriv(1,0) =  4.0; deriv(1,1) =  0.0;
-    deriv(2,0) =  0.0; deriv(2,1) =  4.0;
+      val[0] = 3-4*xi[0]-4*xi[1];
+      val[1] = 4*xi[0]-1;
+      val[2] = 4*xi[1]-1;
+      deriv(0,0) = -4.0; deriv(0,1) = -4.0;
+      deriv(1,0) =  4.0; deriv(1,1) =  0.0;
+      deriv(2,0) =  0.0; deriv(2,1) =  4.0;
     }
     else
     {

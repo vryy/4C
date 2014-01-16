@@ -1260,7 +1260,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
     if (ShapeFcn() == INPAR::MORTAR::shape_standard && LagMultQuad()==INPAR::MORTAR::lagmult_quad_quad
         && (SlaveElement().Shape()==DRT::Element::quad8 || SlaveElement().Shape()==DRT::Element::tri6))
       dserror("ERROR: Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for quad9");
-      
+
     if ((int)MasterElements().size()==0)
       return false;
 
@@ -1321,14 +1321,14 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
           } // for saux
         } // for m
       }
-    	else if (boundary_ele==false && proj==true) //do not assemble entries when a master-element has no GP
-    	{
-      	integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-      	integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
-      	integrator.AssembleG(Comm(),SlaveElement(),*gseg);
-    	}
+      else if (boundary_ele==false && proj==true) //do not assemble entries when a master-element has no GP
+      {
+        integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+        integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
+        integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+      }
     }
-		else if (proj==true && IntType()==INPAR::MORTAR::inttype_elements) //do not assemble entries when a master-element has no GP
+    else if (proj==true && IntType()==INPAR::MORTAR::inttype_elements) //do not assemble entries when a master-element has no GP
     {
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
       integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
@@ -1405,8 +1405,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
         {
           double mxi_test[2] = {0.0, 0.0};
-          MORTAR::MortarProjector projector_test(3);
-          projector_test.ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
+          MORTAR::MortarProjector::Impl(SlaveElement())->ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
 
           DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterElement().Shape();
           if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
@@ -1441,8 +1440,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
         {
           double mxi_test[2] = {0.0, 0.0};
-          MORTAR::MortarProjector projector_test(3);
-          projector_test.ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
+          MORTAR::MortarProjector::Impl(SlaveElement())->ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
 
           DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterElement().Shape();
           if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
@@ -1513,8 +1511,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
          // project Gauss point onto slave integration element
          double sxi[2] = {0.0, 0.0};
          double sprojalpha = 0.0;
-         MORTAR::MortarProjector projector(3);
-         projector.ProjectGaussPointAuxn3D(globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
+         MORTAR::MortarProjector::Impl(SlaveElement())->ProjectGaussPointAuxn3D(globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
 
          // create vector for shape function evaluation
          LINALG::SerialDenseVector sval (nnodes);

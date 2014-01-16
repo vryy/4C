@@ -43,6 +43,8 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
 
 // forward declarations
 namespace LINALG
@@ -62,6 +64,84 @@ class MortarElement;
 class IntElement;
 class IntCell;
 
+
+/*!
+\brief A class to implement MortarIntegratorCalc
+
+\author farah (farah@lnm.mw.tum.de)
+*/
+class MortarIntegrator : DRT::SingletonDestruction
+{
+public:
+
+  MortarIntegrator() {};
+
+  virtual ~MortarIntegrator() {}
+
+  //! @name Access methods
+  /// Internal implementation class
+  static MortarIntegrator* Impl(MortarElement& sele, MortarElement& mele,
+      Teuchos::ParameterList& params);
+
+  //! @ pure virtual functions --> access per MortarIntegratorCalc
+  virtual void EleBased_Integration(
+         Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+         Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+         Teuchos::RCP<Epetra_SerialDenseVector> scseg,
+         MORTAR::MortarElement& sele,
+         std::vector<MORTAR::MortarElement*> meles,
+         bool *boundary_ele) = 0;
+
+  virtual void IntegrateDerivSegment2D(
+      MORTAR::MortarElement& sele, double& sxia, double& sxib,
+      MORTAR::MortarElement& mele, double& mxia, double& mxib,
+      const Epetra_Comm& comm) = 0;
+
+  virtual Teuchos::RCP<Epetra_SerialDenseMatrix> IntegrateMmod2D(
+       MORTAR::MortarElement& sele,
+       double& sxia, double& sxib,
+       MORTAR::MortarElement& mele,
+       double& mxia, double& mxib) = 0;
+
+  virtual void IntegrateDerivCell3D_EleBased(
+      MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> scseg,
+      bool *boundary_ele) = 0;
+
+  virtual void IntegrateDerivCell3DAuxPlane(
+     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
+     const Epetra_Comm& comm) = 0;
+
+  virtual void IntegrateDerivCell3DAuxPlaneQuad(
+     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+     MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
+     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn) = 0;
+
+  virtual bool AssembleM_EleBased(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& sele,
+                 std::vector<MORTAR::MortarElement*> meles,
+                 Epetra_SerialDenseMatrix& M_seg) = 0;
+
+  virtual bool AssembleD(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& sele,
+                 Epetra_SerialDenseMatrix& D_seg) = 0;
+
+  virtual bool AssembleScale(const Epetra_Comm& comm,
+                     MORTAR::MortarElement& sele,
+                     Epetra_SerialDenseVector& scseg) = 0;
+
+  virtual int nGP() = 0;
+
+  virtual double Coordinate(int& gp, int dir) = 0;
+
+  virtual double Weight(int& gp) = 0;
+};
+
+
 /*!
 \brief A class to perform Gaussian integration and assembly of Mortar
        matrices on the overlap of two MortarElements (1 Slave, 1 Master)
@@ -70,81 +150,44 @@ class IntCell;
 
 \author popp (popp@lnm.mw.tum.de)
 */
-
-class MortarIntegrator
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+class MortarIntegratorCalc : public MortarIntegrator
 {
 public:
 
   /*!
   \brief Constructor  with shape function specification
-  
+
   Constructs an instance of this class using a specific type of shape functions.<br>
   Note that this is \b not a collective call as overlaps are
   integrated in parallel by individual processes.<br>
   Note also that this constructor relies heavily on the
   DRT::UTILS::IntegrationPoints structs to get Gauss points
   and corresponding weights.
-  
-  */
-  MortarIntegrator(Teuchos::ParameterList& params,
-                   DRT::Element::DiscretizationType eletype);
-
-  /*!
-  \brief Destructor
 
   */
-  virtual ~MortarIntegrator() {}
+  MortarIntegratorCalc(Teuchos::ParameterList& params);
 
-  /*!
-  \brief Initialize Gauss rule (points, weights) for this MortarIntegrator
+  //destructor
+  virtual ~MortarIntegratorCalc() {};
 
-  */
-  void InitializeGP(DRT::Element::DiscretizationType eletype);
-    
-  //! @name Access methods
 
-  /*!
-  \brief Get problem dimension
+  /// called upon destruction
+  virtual void Done();
 
-  Note that only 2D and 3D are possible here as this refers to the global
-  problem dimension. On integration level this corresponds to 1D integration
-  (dim_==2) and 2D integration (dim_==3) on the interface!
+  /// Singleton access method
+  static MortarIntegratorCalc<distypeS,distypeM> * Instance(bool create, Teuchos::ParameterList& params);
 
-  */
-  virtual const int& Dim() {return dim_;};
+  //! ns_: number of slave element nodes
+  static const int ns_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
 
-  /*!
-  \brief Return the LM shape fcn type
+  //! nm_: number of master element nodes
+  static const int nm_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
 
-  */
-  INPAR::MORTAR::ShapeFcn ShapeFcn() {return shapefcn_;};
-
-  /*!
-  \brief Return the LM interpolation / testing type for quadratic FE
-
-  */
-  INPAR::MORTAR::LagMultQuad LagMultQuad() {return lmquadtype_;};
-
-  /*!
-  \brief Return number of Gauss points for this instance
-
-  */
-  int nGP() {return ngp_;}
-
-  /*!
-  \brief Return coordinates of a specific GP in 1D/2D CElement
-
-  */
-  double Coordinate(int& gp, int dir) {return coords_(gp,dir);}
-
-  /*!
-  \brief Return weight of a specific GP in 1D/2D CElement
-
-  */
-  double Weight(int& gp) {return weights_[gp];}
+  //! number of space dimensions ("+1" due to considering only interface elements)
+  static const int ndim_ = DRT::UTILS::DisTypeToDim<distypeS>::dim + 1;
 
   //@}
-
   //! @name 2D and 3D integration methods
 
   /*!
@@ -166,7 +209,8 @@ public:
   */
   virtual void IntegrateDerivSegment2D(
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
-      MORTAR::MortarElement& mele, double& mxia, double& mxib);
+      MORTAR::MortarElement& mele, double& mxia, double& mxib,
+      const Epetra_Comm& comm);
 
   /*!
   \brief Integrate modification Mmod on a 1D slave / master overlap
@@ -204,7 +248,8 @@ public:
   */
   virtual void IntegrateDerivCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn);
+     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
+     const Epetra_Comm& comm);
 
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
@@ -217,7 +262,33 @@ public:
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn);
   
+//protected:
+  /*!
+  \brief Initialize Gauss rule (points, weights) for this MortarIntegrator
 
+  */
+  void InitializeGP();
+
+  //! @name Access methods
+  /*!
+  \brief Return number of Gauss points for this instance
+
+  */
+  int nGP() {return ngp_;}
+
+  /*!
+  \brief Return coordinates of a specific GP in 1D/2D CElement
+
+  */
+  double Coordinate(int& gp, int dir) {return coords_(gp,dir);}
+
+  /*!
+  \brief Return weight of a specific GP in 1D/2D CElement
+
+  */
+  double Weight(int& gp) {return weights_[gp];}
+
+  //----------------- GP EVALUATIONS ---------------
   /*!
   \brief evaluate D/M-matrix entries at GP
 
@@ -225,12 +296,13 @@ public:
   void inline GP_DM(
        MORTAR::MortarElement& sele,
        MORTAR::MortarElement& mele,
-       LINALG::SerialDenseVector& lmval,
-       LINALG::SerialDenseVector& sval,
-       LINALG::SerialDenseVector& mval,
+       LINALG::Matrix<ns_,1>& lmval,
+       LINALG::Matrix<ns_,1>& sval,
+       LINALG::Matrix<nm_,1>& mval,
        double& jac,
        double& wgt, int& nrow, int& ncol,
-       int& ndof, bool& bound);
+       int& ndof, bool& bound,
+       const Epetra_Comm& comm);
 
   /*!
   \brief evaluate D/M-matrix entries at GP (3D and quadratic)
@@ -242,8 +314,8 @@ public:
        MORTAR::IntElement& sintele,
        LINALG::SerialDenseVector& lmval,
        LINALG::SerialDenseVector& lmintval,
-       LINALG::SerialDenseVector& sval,
-       LINALG::SerialDenseVector& mval,
+       LINALG::Matrix<ns_,1>& sval,
+       LINALG::Matrix<nm_,1>& mval,
        double& jac,
        double& wgt, int& nrow,int& nintrow, int& ncol,
        int& ndof, bool& bound);
@@ -252,18 +324,18 @@ public:
   \brief evaluate scaling at GP
 
   */
-  void GP_2D_Scaling(
+  virtual void GP_2D_Scaling(
        MORTAR::MortarElement& sele,
-       LINALG::SerialDenseVector& sval,
+       LINALG::Matrix<ns_,1>& sval,
        double& dsxideta, double& wgt);
 
   /*!
   \brief evaluate scaling at GP
 
   */
-  void GP_3D_Scaling(
+  virtual void GP_3D_Scaling(
        MORTAR::MortarElement& sele,
-       LINALG::SerialDenseVector& sval,
+       LINALG::Matrix<ns_,1>& sval,
        double& jac, double& wgt,
        double* sxi);
   //@}
@@ -320,7 +392,7 @@ public:
   \brief Assemble Mmod contribution of current overlap into slave nodes
 
   */
-  bool AssembleMmod(const Epetra_Comm& comm,
+  virtual bool AssembleMmod(const Epetra_Comm& comm,
                     MORTAR::MortarElement& sele,
                     MORTAR::MortarElement& mele,
                     Epetra_SerialDenseMatrix& Mmod_seg);
@@ -329,27 +401,19 @@ public:
   \brief Assemble scale factor contribution of current overlap into slave nodes
 
   */
-  bool AssembleScale(const Epetra_Comm& comm,
+  virtual bool AssembleScale(const Epetra_Comm& comm,
                      MORTAR::MortarElement& sele,
                      Epetra_SerialDenseVector& scseg);
 
-
   //@}
-  
-protected:
-
-    // don't want = operator and cctor
-    MortarIntegrator operator = (const MortarIntegrator& old);
-    MortarIntegrator(const MortarIntegrator& old);
-
-    Teuchos::ParameterList&       imortar_;     // containing contact input parameters
-    int                           dim_;         // dimension of problem (2D or 3D)
-    INPAR::MORTAR::ShapeFcn       shapefcn_;    // lm shape function type
-    INPAR::MORTAR::LagMultQuad    lmquadtype_;  // type of quadratic lm interpolation
-    int                           ngp_;         // number of Gauss points
-    Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates
-    std::vector<double>           weights_;     // Gauss point weights
-
+private:
+  Teuchos::ParameterList&       imortar_;     // merged parameter list
+  INPAR::MORTAR::ShapeFcn       shapefcn_;    // lm shape function type
+  INPAR::MORTAR::LagMultQuad    lmquadtype_;  // type of quadratic lm interpolation
+  int                           scale_;       // scaling
+  int                           ngp_;         // number of Gauss points
+  Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates
+  std::vector<double>           weights_;     // Gauss point weights
 }; // class MortarIntegrator
 }  // namespace MORTAR
 
