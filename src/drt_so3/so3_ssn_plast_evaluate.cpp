@@ -709,8 +709,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
   double expisohard=plmat->Expisohard();
   double infyield=plmat->Infyield();
   double inityield=plmat->Inityield();
-  double cpl=plparams_->get<double>("SEMI_SMOOTH_CPL");
-  double stab_s=plparams_->get<double>("STABILIZATION_S");
 
   // converged active set
   bool converged_active_set=true;
@@ -918,7 +916,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
 
     // eta_trial
     LINALG::Matrix<nsd_,nsd_> eta_trial(eta);
-    eta_trial.Update(-1.*cpl,DeltaAlphaK,1.);
+    eta_trial.Update(-1.*cpl_,DeltaAlphaK,1.);
     LINALG::Matrix<5,1> eta_trial_vec(false);
     eta_trial_vec(0) = eta_trial(0,0);
     eta_trial_vec(1) = eta_trial(1,1);
@@ -953,7 +951,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     {
       if (activity_state_->at(gp)==false) // gp switches state
         if (abs(Ypl-absetatrial)>AS_CONVERGENCE_TOL*inityield
-            || DalphaK_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+            || DalphaK_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl_)
           converged_active_set = false;
       activity_state_->at(gp) = true;
     }
@@ -962,7 +960,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     {
       if (activity_state_->at(gp)==true) // gp switches state
         if (abs(Ypl-absetatrial)>AS_CONVERGENCE_TOL*inityield
-            || DalphaK_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+            || DalphaK_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl_)
           converged_active_set = false;
       activity_state_->at(gp) = false;
     }
@@ -1184,18 +1182,18 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
             LINALG::Matrix<5,1> dabs_eta_trial_dbeta(true);
             for (int j=0;j<2; j++)
               for (int i=0; i<5; i++)
-                dabs_eta_trial_dbeta(i) += (2.*eta_trial_vec(j)+ eta_trial_vec((j+1)%2))*(detadbeta(j,i)-id5(i,j)*cpl)/absetatrial;
+                dabs_eta_trial_dbeta(i) += (2.*eta_trial_vec(j)+ eta_trial_vec((j+1)%2))*(detadbeta(j,i)-id5(i,j)*cpl_)/absetatrial;
             for (int j=2; j<5; j++)
               for (int i=0; i<5; i++)
-                dabs_eta_trial_dbeta(i) += (2.*eta_trial_vec(j))*(detadbeta(j,i)-id5(i,j)*cpl)/absetatrial;
+                dabs_eta_trial_dbeta(i) += (2.*eta_trial_vec(j))*(detadbeta(j,i)-id5(i,j)*cpl_)/absetatrial;
 
             // build kbb from the previous linearizations
             KbbInv_->at(gp).Clear();
             KbbInv_->at(gp).Update(1.-Ypl/absetatrial,detadbeta,1.);
-            KbbInv_->at(gp).Update(Ypl/absetatrial*cpl,id5,1.);
+            KbbInv_->at(gp).Update(Ypl/absetatrial*cpl_,id5,1.);
             KbbInv_->at(gp).MultiplyNT(-1./absetatrial,eta_trial_vec,dYpl_dbeta,1.);
-            KbbInv_->at(gp).MultiplyNT((1-stab_s)*Ypl/pow(absetatrial,2.),eta_trial_vec,dabs_eta_trial_dbeta,1.);
-            KbbInv_->at(gp).MultiplyNT(stab_s*apl/absetatrial,eta_vec,dabs_eta_trial_dbeta,1.);
+            KbbInv_->at(gp).MultiplyNT((1-stab_s_)*Ypl/pow(absetatrial,2.),eta_trial_vec,dabs_eta_trial_dbeta,1.);
+            KbbInv_->at(gp).MultiplyNT(stab_s_*apl/absetatrial,eta_vec,dabs_eta_trial_dbeta,1.);
 
             // **************************************************************
             // end of stiffness matrix [k^e_{beta beta}]_ij (i=1..5; j=1..5)
@@ -1216,8 +1214,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
 
             Kbd_->at(gp).Clear();
             Kbd_->at(gp).Update(1.-1.*Ypl/absetatrial,detadd,1.);
-            Kbd_->at(gp).MultiplyNT(stab_s*apl/absetatrial,eta_vec,dabs_eta_trial_dd,1.);
-            Kbd_->at(gp).MultiplyNT((1.-stab_s)*Ypl/absetatrial/absetatrial,eta_trial_vec,dabs_eta_trial_dd,1.);
+            Kbd_->at(gp).MultiplyNT(stab_s_*apl/absetatrial,eta_vec,dabs_eta_trial_dd,1.);
+            Kbd_->at(gp).MultiplyNT((1.-stab_s_)*Ypl/absetatrial/absetatrial,eta_trial_vec,dabs_eta_trial_dd,1.);
             Kbd_->at(gp).MultiplyNT(-1./absetatrial,eta_trial_vec,dYpl_dd,1.);
             // **************************************************************
             // end of stiffness matrix [k^e_{beta d}]_ij (i=1..5; j=1..numdof)
@@ -1241,13 +1239,13 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
 
             // Complementarity function independent from displacements
             Kbd_->at(gp).Clear();
-            Kbd_->at(gp).MultiplyNT(stab_s*cpl/Ypl,DalphaK_last_iter_->at(gp),dYpl_dd,1.);
+            Kbd_->at(gp).MultiplyNT(stab_s_*cpl_/Ypl,DalphaK_last_iter_->at(gp),dYpl_dd,1.);
 
-            KbbInv_->at(gp).Update(cpl,id5,0.);
-            KbbInv_->at(gp).MultiplyNT(stab_s/Ypl * cpl,DalphaK_last_iter_->at(gp),dYpl_dbeta,1.);
+            KbbInv_->at(gp).Update(cpl_,id5,0.);
+            KbbInv_->at(gp).MultiplyNT(stab_s_/Ypl * cpl_,DalphaK_last_iter_->at(gp),dYpl_dbeta,1.);
 
             // right hand side term
-            fbeta_->at(gp).Update(cpl,DalphaK_last_iter_->at(gp),0.);
+            fbeta_->at(gp).Update(cpl_,DalphaK_last_iter_->at(gp),0.);
           }
 
           // **************************************************************
@@ -1388,8 +1386,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
   double expisohard=plmat->Expisohard();
   double infyield=plmat->Infyield();
   double inityield=plmat->Inityield();
-  double cpl=plparams_->get<double>("SEMI_SMOOTH_CPL");
-  double stab_s=plparams_->get<double>("STABILIZATION_S");
   LINALG::Matrix<5,5> PlAniso(plmat->PlAniso());
   LINALG::Matrix<5,5> InvPlAniso(plmat->InvPlAniso());
   double PlSpinEta=-plmat->PlSpinEta();
@@ -1617,7 +1613,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
 
     // eta_trial
     LINALG::Matrix<5,1> eta_trial_vec(eta_vec);
-    eta_trial_vec.Multiply(-cpl,InvPlAniso,DeltaAlphaK_vec,1.);
+    eta_trial_vec.Multiply(-cpl_,InvPlAniso,DeltaAlphaK_vec,1.);
     LINALG::Matrix<5,1> AetaTr(false);
     AetaTr.Multiply(PlAniso,eta_trial_vec);
 
@@ -1667,7 +1663,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
     {
       if (activity_state_->at(gp)==false) // gp switches state
         if (abs(Ypl-AnormEtatrial)>AS_CONVERGENCE_TOL*inityield
-            || mDLp_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+            || mDLp_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl_)
           converged_active_set = false;
       activity_state_->at(gp) = true;
     }
@@ -1676,7 +1672,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
     {
       if (activity_state_->at(gp)==true) // gp switches state
         if (abs(Ypl-AnormEtatrial)>AS_CONVERGENCE_TOL*inityield
-            || mDLp_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+            || mDLp_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl_)
           converged_active_set = false;
       activity_state_->at(gp) = false;
     }
@@ -1848,7 +1844,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
               }
               detatrialdbeta(i,j) = detadbeta(i,j);
               if (j<5)
-                detatrialdbeta(i,j) -= cpl*InvPlAniso(i,j);
+                detatrialdbeta(i,j) -= cpl_*InvPlAniso(i,j);
             }
 
           // calculate derivative detadd
@@ -1954,15 +1950,15 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
 
             LINALG::Matrix<5,5> etasAetatr;
             LINALG::Matrix<5,1> etas;
-            etas.Update(1.-stab_s*Ypl/AnormEtatrial,eta_trial_vec);
-            etas.Update(stab_s*apl,eta_vec,1.);
+            etas.Update(1.-stab_s_*Ypl/AnormEtatrial,eta_trial_vec);
+            etas.Update(stab_s_*apl,eta_vec,1.);
             etasAetatr.MultiplyNT(etas,AetaTr);
 
             DcplSymDbeta.Update(1.-Ypl/AnormEtatrial,detadbeta,1.);
-            DcplSymDbeta.Multiply(cpl*Ypl/AnormEtatrial,InvPlAniso,DalphaKdbeta,1.);
+            DcplSymDbeta.Multiply(cpl_*Ypl/AnormEtatrial,InvPlAniso,DalphaKdbeta,1.);
             DcplSymDbeta.MultiplyNT(-1./AnormEtatrial,eta_trial_vec,dYpl_dbeta,1.);
-            DcplSymDbeta.MultiplyNT((1.-stab_s)*Ypl/AnormEtatrial/AnormEtatrial,eta_trial_vec,dAnormEtaTrialDbeta,1.);
-            DcplSymDbeta.MultiplyNT(stab_s*apl/AnormEtatrial,eta_vec,dAnormEtaTrialDbeta,1.);
+            DcplSymDbeta.MultiplyNT((1.-stab_s_)*Ypl/AnormEtatrial/AnormEtatrial,eta_trial_vec,dAnormEtaTrialDbeta,1.);
+            DcplSymDbeta.MultiplyNT(stab_s_*apl/AnormEtatrial,eta_vec,dAnormEtaTrialDbeta,1.);
 
             // **************************************************************
             // end of stiffness matrix [k^e_{beta beta}]_ij (i=1..5; j=1..5)
@@ -1978,8 +1974,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
             dAnormEtaDd.MultiplyTN(1./AnormEta,detadd,Aeta,1.);
 
             DcplSymDd.Update(1.-Ypl/AnormEtatrial,detadd,1.);
-            DcplSymDd.MultiplyNT((1.-stab_s)*Ypl/AnormEtatrial/AnormEtatrial,eta_trial_vec,dAnormEtatrialDd,1.);
-            DcplSymDd.MultiplyNT(stab_s*apl/AnormEtatrial,eta_vec,dAnormEtatrialDd,1.);
+            DcplSymDd.MultiplyNT((1.-stab_s_)*Ypl/AnormEtatrial/AnormEtatrial,eta_trial_vec,dAnormEtatrialDd,1.);
+            DcplSymDd.MultiplyNT(stab_s_*apl/AnormEtatrial,eta_vec,dAnormEtatrialDd,1.);
             DcplSymDd.MultiplyNT(1./AnormEtatrial,eta_trial_vec,dYpl_dd,1.);
 
           } // active Gauss points
@@ -1990,12 +1986,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
             AiDalphak.Multiply(InvPlAniso,DeltaAlphaK_vec);
 
             DcplSymDd.Clear();
-            DcplSymDd.MultiplyNT(stab_s*cpl/Ypl,AiDalphak,dYpl_dd,1.);
+            DcplSymDd.MultiplyNT(stab_s_*cpl_/Ypl,AiDalphak,dYpl_dd,1.);
 
-            DcplSymDbeta.Multiply(cpl,InvPlAniso,DalphaKdbeta);
-            DcplSymDbeta.MultiplyNT(cpl*stab_s/Ypl,AiDalphak,dYpl_dbeta,1.);
+            DcplSymDbeta.Multiply(cpl_,InvPlAniso,DalphaKdbeta);
+            DcplSymDbeta.MultiplyNT(cpl_*stab_s_/Ypl,AiDalphak,dYpl_dbeta,1.);
 
-            CplSym.Multiply(cpl,InvPlAniso,DeltaAlphaK_vec);
+            CplSym.Multiply(cpl_,InvPlAniso,DeltaAlphaK_vec);
           }
           // symmetric NCP done
 
@@ -2181,7 +2177,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
 //
 //            // eta_trial
 //            LINALG::Matrix<5,1> eta_trial_vec_new(eta_vec_new);
-//            eta_trial_vec_new.Multiply(-cpl,InvPlAniso,DeltaAlphaK_vec,1.);
+//            eta_trial_vec_new.Multiply(-cpl_,InvPlAniso,DeltaAlphaK_vec,1.);
 //
 //            double AnormEtatrial_new=0.; // sqrt( eta_tr : A : eta_tr )
 //            LINALG::Matrix<1,1> tmp11;
@@ -2204,7 +2200,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
 //
 ////            // eta_trial
 ////            LINALG::Matrix<5,1> eta_trial_vec_new(eta_vec_new);
-////            eta_trial_vec_new.Multiply(-cpl,InvPlAniso,DeltaAlphaK_vec_new,1.);
+////            eta_trial_vec_new.Multiply(-cpl_,InvPlAniso,DeltaAlphaK_vec_new,1.);
 ////
 ////            double AnormEtatrial_new=0.; // sqrt( eta_tr : A : eta_tr )
 ////            LINALG::Matrix<1,1> tmp11;
@@ -2338,7 +2334,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
 //
 //            // eta_trial
 //            LINALG::Matrix<5,1> eta_trial_vec_new(eta_vec_new);
-//            eta_trial_vec_new.Multiply(-cpl,InvPlAniso,DeltaAlphaK_vec,1.);
+//            eta_trial_vec_new.Multiply(-cpl_,InvPlAniso,DeltaAlphaK_vec,1.);
 //
 //            double AnormEtatrial_new=0.; // sqrt( eta_tr : A : eta_tr )
 //            LINALG::Matrix<1,1> tmp11;
@@ -2361,8 +2357,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
 //
 //            LINALG::Matrix<5,1> CplSym_new(true);
 //            CplSym_new.Update(1.-Ypl/AnormEtatrial_new,Aeta_new,1.);
-//            CplSym_new.Update(Ypl/AnormEtatrial_new*cpl,DeltaAlphaK_vec,1.);
-//            CplSym_new.Scale(pow(AnormEtatrial_new,stab_s));
+//            CplSym_new.Update(Ypl/AnormEtatrial_new*cpl_,DeltaAlphaK_vec,1.);
+//            CplSym_new.Scale(pow(AnormEtatrial_new,stab_s_));
 //
 //            LINALG::Matrix<3,1> SpEq_new;
 //            SpEq_new(0) = -mDLp_last_iter_->at(gp)(5) -PlSpinEta/inityield *
@@ -2602,8 +2598,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
   double expisohard=plmat->Expisohard();
   double infyield=plmat->Infyield();
   double inityield=plmat->Inityield();
-  double cpl=plparams_->get<double>("SEMI_SMOOTH_CPL");
-  double stab_s=plparams_->get<double>("STABILIZATION_S");
 
   // converged active set
   bool converged_active_set=true;
@@ -2824,7 +2818,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
 
     // eta_trial
     LINALG::Matrix<3,3> eta_bar_trial(eta_bar);
-    eta_bar_trial.Update(-1.*cpl,DeltaAlphaK,1.);
+    eta_bar_trial.Update(-1.*cpl_,DeltaAlphaK,1.);
     LINALG::Matrix<5,1> eta_bar_trial_vec(false);
     eta_bar_trial_vec(0) = eta_bar_trial(0,0);
     eta_bar_trial_vec(1) = eta_bar_trial(1,1);
@@ -2860,7 +2854,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
       if (activity_state_->at(gp)==false) // gp switches state
       {
         if (abs(Ypl-absetatrial_bar)>AS_CONVERGENCE_TOL*inityield
-            || DalphaK_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+            || DalphaK_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl_)
           converged_active_set = false;
       }
       activity_state_->at(gp) = true;
@@ -2871,7 +2865,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
       if (activity_state_->at(gp)==true) // gp switches state
       {
         if (abs(Ypl-absetatrial_bar)>AS_CONVERGENCE_TOL*inityield
-            || DalphaK_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+            || DalphaK_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl_)
           converged_active_set = false;
       }
       activity_state_->at(gp) = false;
@@ -3120,21 +3114,21 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
             for (int j=0;j<2; j++)
             {
               for (int i=0; i<5; i++)
-                dabs_eta_trial_dbeta(i) += (2.*eta_bar_trial_vec(j)+ eta_bar_trial_vec((j+1)%2))*(detadbeta(j,i)-id5(i,j)*cpl)/absetatrial_bar;
+                dabs_eta_trial_dbeta(i) += (2.*eta_bar_trial_vec(j)+ eta_bar_trial_vec((j+1)%2))*(detadbeta(j,i)-id5(i,j)*cpl_)/absetatrial_bar;
             }
             for (int j=2; j<5; j++)
             {
               for (int i=0; i<5; i++)
-                dabs_eta_trial_dbeta(i) += (2.*eta_bar_trial_vec(j))*(detadbeta(j,i)-id5(i,j)*cpl)/absetatrial_bar;
+                dabs_eta_trial_dbeta(i) += (2.*eta_bar_trial_vec(j))*(detadbeta(j,i)-id5(i,j)*cpl_)/absetatrial_bar;
             }
 
             // build kbb from all previous linearizations
             KbbInv_->at(gp).Clear();
             KbbInv_->at(gp).Update(1.-Ypl/absetatrial_bar,detadbeta,1.);
-            KbbInv_->at(gp).Update(Ypl/absetatrial_bar*cpl,id5,1.);
+            KbbInv_->at(gp).Update(Ypl/absetatrial_bar*cpl_,id5,1.);
             KbbInv_->at(gp).MultiplyNT(-1./absetatrial_bar,eta_bar_trial_vec,dYpl_dbeta,1.);
-            KbbInv_->at(gp).MultiplyNT((1-stab_s)*Ypl/absetatrial_bar/absetatrial_bar,eta_bar_trial_vec,dabs_eta_trial_dbeta,1.);
-            KbbInv_->at(gp).MultiplyNT(stab_s*apl/absetatrial_bar,eta_bar_vec,dabs_eta_trial_dbeta,1.);
+            KbbInv_->at(gp).MultiplyNT((1-stab_s_)*Ypl/absetatrial_bar/absetatrial_bar,eta_bar_trial_vec,dabs_eta_trial_dbeta,1.);
+            KbbInv_->at(gp).MultiplyNT(stab_s_*apl/absetatrial_bar,eta_bar_vec,dabs_eta_trial_dbeta,1.);
 
             // **************************************************************
             // end of stiffness matrix [k^e_{beta beta}]_ij (i=1..5; j=1..5)
@@ -3155,8 +3149,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
 
             Kbd_->at(gp).Clear();
             Kbd_->at(gp).Update(1.-1.*Ypl/absetatrial_bar,detadd,1.);
-            Kbd_->at(gp).MultiplyNT(stab_s*apl/absetatrial_bar,eta_bar_vec,dabs_eta_trial_dd,1.);
-            Kbd_->at(gp).MultiplyNT((1.-stab_s)*Ypl/absetatrial_bar/absetatrial_bar,eta_bar_trial_vec,dabs_eta_trial_dd,1.);
+            Kbd_->at(gp).MultiplyNT(stab_s_*apl/absetatrial_bar,eta_bar_vec,dabs_eta_trial_dd,1.);
+            Kbd_->at(gp).MultiplyNT((1.-stab_s_)*Ypl/absetatrial_bar/absetatrial_bar,eta_bar_trial_vec,dabs_eta_trial_dd,1.);
             Kbd_->at(gp).MultiplyNT(-1./absetatrial_bar,eta_bar_trial_vec,dYpl_dd,1.);
 
             // **************************************************************
@@ -3182,13 +3176,13 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
 
             // Complementarity function independent from displacements
             Kbd_->at(gp).Clear();
-            Kbd_->at(gp).MultiplyNT(stab_s*cpl/Ypl,DalphaK_last_iter_->at(gp),dYpl_dd,1.);
+            Kbd_->at(gp).MultiplyNT(stab_s_*cpl_/Ypl,DalphaK_last_iter_->at(gp),dYpl_dd,1.);
 
-            KbbInv_->at(gp).Update(cpl,id5,0.);
-            KbbInv_->at(gp).MultiplyNT(stab_s/Ypl * cpl,DalphaK_last_iter_->at(gp),dYpl_dbeta,1.);
+            KbbInv_->at(gp).Update(cpl_,id5,0.);
+            KbbInv_->at(gp).MultiplyNT(stab_s_/Ypl * cpl_,DalphaK_last_iter_->at(gp),dYpl_dbeta,1.);
 
             // right hand side term
-            fbeta_->at(gp).Update(cpl,DalphaK_last_iter_->at(gp),0.);
+            fbeta_->at(gp).Update(cpl_,DalphaK_last_iter_->at(gp),0.);
           }
 
           // **************************************************************
@@ -3224,13 +3218,13 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
           // independent of displacements
           Kbd_->at(gp).Clear();
           // We can state the inverse right away
-          KbbInv_->at(gp).Update(1./cpl,id5);
+          KbbInv_->at(gp).Update(1./cpl_,id5);
           // right hand side
-          fbeta_->at(gp).Update(cpl,DalphaK_last_iter_->at(gp));
+          fbeta_->at(gp).Update(cpl_,DalphaK_last_iter_->at(gp));
 
           // condensation to internal force vector
           if (force!=NULL)
-            force->Multiply(-1./cpl,kdbeta,fbeta_->at(gp),1.);
+            force->Multiply(-1./cpl_,kdbeta,fbeta_->at(gp),1.);
         }
       }
       // reset for elastic GP with no plastic flow increment in this time step
@@ -3356,8 +3350,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
   double expisohard=plmat->Expisohard();
   double infyield=plmat->Infyield();
   double inityield=plmat->Inityield();
-  double cpl=plparams_->get<double>("SEMI_SMOOTH_CPL");
-  double stab_s=plparams_->get<double>("STABILIZATION_S");
   LINALG::Matrix<5,5> PlAniso(plmat->PlAniso());
   LINALG::Matrix<5,5> InvPlAniso(plmat->InvPlAniso());
   double PlSpinEta=-plmat->PlSpinEta();
@@ -3599,7 +3591,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
 
     // eta_trial
     LINALG::Matrix<5,1> eta_trial_vec(eta_vec);
-    eta_trial_vec.Multiply(-cpl,InvPlAniso,DeltaAlphaK_vec,1.);
+    eta_trial_vec.Multiply(-cpl_,InvPlAniso,DeltaAlphaK_vec,1.);
     LINALG::Matrix<5,1> AetaTr(false);
     AetaTr.Multiply(PlAniso,eta_trial_vec);
 
@@ -3649,7 +3641,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
     {
       if (activity_state_->at(gp)==false) // gp switches state
         if (abs(Ypl-AnormEtatrial)>AS_CONVERGENCE_TOL*inityield
-            || mDLp_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+            || mDLp_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl_)
           converged_active_set = false;
       activity_state_->at(gp) = true;
     }
@@ -3658,7 +3650,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
     {
       if (activity_state_->at(gp)==true) // gp switches state
         if (abs(Ypl-AnormEtatrial)>AS_CONVERGENCE_TOL*inityield
-            || mDLp_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl)
+            || mDLp_last_iter_->at(gp).NormInf()>AS_CONVERGENCE_TOL*inityield/cpl_)
           converged_active_set = false;
       activity_state_->at(gp) = false;
     }
@@ -3872,7 +3864,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
               }
               detatrialdbeta(i,j) = detadbeta(i,j);
               if (j<5)
-                detatrialdbeta(i,j) -= cpl*InvPlAniso(i,j);
+                detatrialdbeta(i,j) -= cpl_*InvPlAniso(i,j);
             }
 
           LINALG::Matrix<8,1> dAnormEtaDbeta(true);
@@ -3961,10 +3953,10 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
             dAnormEtaTrialDbeta.MultiplyTN(1./AnormEtatrial,detatrialdbeta,Aetatr);
 
             DcplSymDbeta.Update(1.-Ypl/AnormEtatrial,detadbeta,1.);
-            DcplSymDbeta.Multiply(cpl*Ypl/AnormEtatrial,InvPlAniso,DalphaKdbeta,1.);
+            DcplSymDbeta.Multiply(cpl_*Ypl/AnormEtatrial,InvPlAniso,DalphaKdbeta,1.);
             DcplSymDbeta.MultiplyNT(-1./AnormEtatrial,eta_trial_vec,dYpl_dbeta,1.);
-            DcplSymDbeta.MultiplyNT((1.-stab_s)*Ypl/AnormEtatrial/AnormEtatrial,eta_trial_vec,dAnormEtaTrialDbeta,1.);
-            DcplSymDbeta.MultiplyNT(stab_s*apl/AnormEtatrial,eta_vec,dAnormEtaTrialDbeta,1.);
+            DcplSymDbeta.MultiplyNT((1.-stab_s_)*Ypl/AnormEtatrial/AnormEtatrial,eta_trial_vec,dAnormEtaTrialDbeta,1.);
+            DcplSymDbeta.MultiplyNT(stab_s_*apl/AnormEtatrial,eta_vec,dAnormEtaTrialDbeta,1.);
 
             // **************************************************************
             // end of stiffness matrix [k^e_{beta beta}]_ij (i=1..5; j=1..5)
@@ -3980,8 +3972,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
             dAnormEtaDd.MultiplyTN(1./AnormEta,detadd,Aeta,1.);
 
             DcplSymDd.Update(1.-Ypl/AnormEtatrial,detadd,1.);
-            DcplSymDd.MultiplyNT((1.-stab_s)*Ypl/AnormEtatrial/AnormEtatrial,eta_trial_vec,dAnormEtatrialDd,1.);
-            DcplSymDd.MultiplyNT(stab_s*apl/AnormEtatrial,eta_vec,dAnormEtatrialDd,1.);
+            DcplSymDd.MultiplyNT((1.-stab_s_)*Ypl/AnormEtatrial/AnormEtatrial,eta_trial_vec,dAnormEtatrialDd,1.);
+            DcplSymDd.MultiplyNT(stab_s_*apl/AnormEtatrial,eta_vec,dAnormEtatrialDd,1.);
             DcplSymDd.MultiplyNT(1./AnormEtatrial,eta_trial_vec,dYpl_dd,1.);
             // **************************************************************
             // end of stiffness matrix [k^e_{beta d}]_ij (i=1..5; j=1..numdof)
@@ -3996,12 +3988,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
             AiDalphak.Multiply(InvPlAniso,DeltaAlphaK_vec);
 
             DcplSymDd.Clear();
-            DcplSymDd.MultiplyNT(stab_s*cpl/Ypl,AiDalphak,dYpl_dd,1.);
+            DcplSymDd.MultiplyNT(stab_s_*cpl_/Ypl,AiDalphak,dYpl_dd,1.);
 
-            DcplSymDbeta.Multiply(cpl,InvPlAniso,DalphaKdbeta,1.);
-            DcplSymDbeta.MultiplyNT(cpl*stab_s/Ypl,AiDalphak,dYpl_dbeta,1.);
+            DcplSymDbeta.Multiply(cpl_,InvPlAniso,DalphaKdbeta,1.);
+            DcplSymDbeta.MultiplyNT(cpl_*stab_s_/Ypl,AiDalphak,dYpl_dbeta,1.);
 
-            CplSym.Multiply(cpl,InvPlAniso,DeltaAlphaK_vec);
+            CplSym.Multiply(cpl_,InvPlAniso,DeltaAlphaK_vec);
           }
           // symmetric NCP done
 
@@ -4176,7 +4168,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
 //
 //            // eta_trial
 //            LINALG::Matrix<5,1> eta_trial_vec_new(eta_vec_new);
-//            eta_trial_vec_new.Multiply(-cpl,InvPlAniso,DeltaAlphaK_vec_new,1.);
+//            eta_trial_vec_new.Multiply(-cpl_,InvPlAniso,DeltaAlphaK_vec_new,1.);
 //
 //            double AnormEtatrial_new=0.; // sqrt( eta_tr : A : eta_tr )
 //            LINALG::Matrix<1,1> tmp11;
@@ -4241,8 +4233,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
 //
 //            LINALG::Matrix<5,1> CplSym_new(true);
 //            CplSym_new.Update(1.-Ypl_new/AnormEtatrial_new,Aeta_new,1.);
-//            CplSym_new.Update(Ypl_new/AnormEtatrial_new*cpl,DeltaAlphaK_vec_new,1.);
-//            //            CplSym_new.Scale(pow(AnormEtatrial_new,stab_s));
+//            CplSym_new.Update(Ypl_new/AnormEtatrial_new*cpl_,DeltaAlphaK_vec_new,1.);
+//            //            CplSym_new.Scale(pow(AnormEtatrial_new,stab_s_));
 //            //
 //            LINALG::Matrix<numdofperelement_,1> FintGp_new;
 //            FintGp_new.MultiplyTN(detJ_w, bop, pk2_stress_new, 0.0);
@@ -5118,20 +5110,20 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponential3x3( LINALG::Ma
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<6,6>& MatrixExpDeriv)
 {
-  double Norm=MatrixIn.Norm2();
+  double norm=MatrixIn.Norm2();
 
   LINALG::Matrix<6,6> id4sharp(true);
   for (int i=0; i<3; i++) id4sharp(i,i) = 1.0;
   for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
 
   // direct calculation for zero-matrix
-  if (Norm==0.)
+  if (norm==0.)
   {
     MatrixExpDeriv = id4sharp;
     return;
   }
 
-  if(Norm<0.) // fixme
+  if(norm<0.4)
   {
     // see Souza-Neto: Computational Methods for plasticity, Box B.2.
     int nmax=0;

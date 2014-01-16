@@ -34,6 +34,8 @@ DRT::ELEMENTS::So3_Plast<so3_ele,distype>::So3_Plast(
 : so3_ele(id,owner),
   So3_Base(),
   intpoints_(distype),
+  stab_s_(-1.),
+  cpl_(-1.),
   last_plastic_defgrd_inverse_(Teuchos::null),
   DalphaK_last_iter_(Teuchos::null),
   DalphaK_last_timestep_(Teuchos::null),
@@ -120,6 +122,10 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Pack(
   for (int i=0; i<size; ++i)
     so3_ele::AddtoPack(data,invJ_[i]);
 
+  // parameters
+  so3_ele::AddtoPack(data,stab_s_);
+  so3_ele::AddtoPack(data,cpl_);
+
   // add base class Element
   so3_ele::Pack(data);
 
@@ -173,6 +179,10 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
   invJ_.resize(size, LINALG::Matrix<nsd_,nsd_>(true));
   for (int i=0; i<size; ++i)
     so3_ele::ExtractfromPack(position,data,invJ_[i]);
+
+  // paramters
+  so3_ele::ExtractfromPack(position,data,stab_s_);
+  so3_ele::ExtractfromPack(position,data,cpl_);
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -520,6 +530,17 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::HaveHillPlasticity()
      else
        dserror("so3_ssn_plast elements only with PlasticElastHyper material");
      return (bool)plmat->HaveHillPlasticity();
+}
+
+/*----------------------------------------------------------------------*
+ | read relevant parameters from paramter list              seitz 01/14 |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadParameterList(Teuchos::RCP<Teuchos::ParameterList> plparams)
+{
+
+  cpl_=plparams->get<double>("SEMI_SMOOTH_CPL");
+  stab_s_=plparams->get<double>("STABILIZATION_S");
 }
 
 
