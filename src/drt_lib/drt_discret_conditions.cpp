@@ -103,16 +103,25 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     else if (fool->second->GType()==DRT::Condition::NoGeom) continue;
     // do not build anything for point wise conditions
     else if (fool->second->GType()==DRT::Condition::Point)  continue;
-    // build element geometry description without creating new elements if no boundary condition
-    // (e.g. all true volume conditions)
+    // build element geometry description without creating new elements if no
+    // boundary condition; this would be:
+    //  - line conditions in 1D
+    //  - surface conditions in 2D
+    //  - volume conditions in 3D
     else if ((int)(fool->second->GType())==DRT::Problem::Instance()->NDim())
       BuildVolumesinCondition(fool->first,fool->second);
+    // dimension of condition must not larger than the one of the problem itself
+    else if ((int)(fool->second->GType())>DRT::Problem::Instance()->NDim())
+      dserror("Dimension of condition is larger than the problem dimension.");
     // build a line element geometry description
     else if (fool->second->GType()==DRT::Condition::Line)
       BuildLinesinCondition(fool->first,fool->second);
     // build a surface element geometry description
     else if (fool->second->GType()==DRT::Condition::Surface)
       BuildSurfacesinCondition(fool->first,fool->second);
+    // this should be it. if not: dserror.
+    else
+      dserror("Somehow the condition geometry does not fit to the problem dimension.");
 
     if (fool->second->GType()!=DRT::Condition::Volume)
     {
