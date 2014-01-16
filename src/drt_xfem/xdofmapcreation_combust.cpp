@@ -104,7 +104,7 @@ bool XFEM::ApplyJumpEnrichmentToTouched(
       const int nodeid = nodeidptrs[inode];
       // to avoid phi-values near zero and bad conditioned element matrices, we enrich only
       // the nodes with phi-value approximative 0.0
-      if (fabs(phinp_[inode]) < 0.1*hk_eleDiam)//1.0E-10)
+      if (fabs(phinp_[inode]) < 0.05*hk_eleDiam)//1.0E-10)
       {
         for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)
         {
@@ -224,7 +224,7 @@ bool XFEM::ApplyKinkJumpEnrichmentToTouched(
 //      if ((plusDomain(phinp_[inode]) == true) and (plusDomain(-phinp_[inode]) == true))
       // to avoid phi-values near zero and bad conditioned element matrices, we enrich only
       // the nodes with phi-value approximative 0.0
-      if (fabs(phinp_[inode]) < 0.1*hk_eleDiam)
+      if (fabs(phinp_[inode]) < 0.05*hk_eleDiam)
       {
 //        // pressure fields gets jump enrichment
 //        if (*field == XFEM::PHYSICS::Pres){

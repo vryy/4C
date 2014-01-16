@@ -3119,12 +3119,16 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
       {
         gmshfilecontent << "View \" " << "Pressure Enrichment \" {\n";
 
+        const Epetra_Map* dofcolmap = discret_->DofColMap();
+        std::map<XFEM::DofKey,XFEM::DofGID> dofColDistrib;
+        dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
+
         for (int iele=0; iele<discret_->NumMyRowElements(); ++iele)
         {
           const DRT::Element* ele = discret_->lRowElement(iele);
 
-          // output only for bisected elements
-          if (interfacehandle_->ElementSplit(ele->Id()))
+          // output only for bisected elements (fully enriched elements) and touched elements
+          if (interfacehandle_->ElementBisected(ele->Id()) or interfacehandle_->ElementTouched(ele->Id()))
           {
             // get node coordinates for this element
             const size_t numnode = DRT::UTILS::getNumberOfElementNodes(ele->Shape());
@@ -3134,8 +3138,6 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
             // vector for enrichment values
             LINALG::SerialDenseVector enrichmentval(numnode);
 
-            const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
             for (size_t inode = 0; inode<numnode; inode++)
             {
               // node gid
@@ -3143,10 +3145,16 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
               // setup dof key
               const XFEM::FieldEnr fieldenr(XFEM::PHYSICS::Pres,XFEM::Enrichment(XFEM::Enrichment::typeJump,0));
               const XFEM::DofKey dofkey(nodegid, fieldenr);
-              // get gid of correseponding dof
-              const int dofgid = state_.nodalDofDistributionMap_.find(dofkey)->second;
-              // store value
-              enrichmentval(inode) =(*state_.velnp_)[dofrowmap->LID(dofgid)];
+              // get gid of correseponding dof of node is enriched
+              int dofgid = 0;
+              if (dofColDistrib.find(dofkey) != dofColDistrib.end())
+              {
+                dofgid = dofColDistrib.find(dofkey)->second;
+                // store value
+                enrichmentval(inode) = (*output_col_vel)[dofcolmap->LID(dofgid)];
+              }
+              else
+                enrichmentval(inode) = 0.0;
             }
 
             // write to file
@@ -4213,12 +4221,19 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
       {
         gmshfilecontent << "View \" " << "Velocity Enrichment \" {\n";
 
+        // get a copy on column parallel distribution
+        Teuchos::RCP<const Epetra_Vector> output_col_vel = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_);
+
+        const Epetra_Map* dofcolmap = discret_->DofColMap();
+        std::map<XFEM::DofKey,XFEM::DofGID> dofColDistrib;
+        dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
+
         for (int iele=0; iele<discret_->NumMyRowElements(); ++iele)
         {
           const DRT::Element* ele = discret_->lRowElement(iele);
 
-          // output only for bisected elements
-          if (interfacehandle_->ElementSplit(ele->Id()))
+          // output only for bisected elements(fully enriched elements) and touched elements
+          if (interfacehandle_->ElementBisected(ele->Id()) or interfacehandle_->ElementTouched(ele->Id()))
           {
             // get node coordinates for this element
             const size_t numnode = DRT::UTILS::getNumberOfElementNodes(ele->Shape());
@@ -4239,25 +4254,43 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
               const XFEM::FieldEnr fieldenrvelx(XFEM::PHYSICS::Velx,XFEM::Enrichment(XFEM::Enrichment::typeJump,0));
               const XFEM::DofKey dofkeyvelx(nodegid, fieldenrvelx);
               // get gid of correseponding dof
-              const int dofgidx = state_.nodalDofDistributionMap_.find(dofkeyvelx)->second;
-              // store value
-              enrichmentval(0,inode) =(*state_.velnp_)[dofrowmap->LID(dofgidx)];
+              int dofgidx = 0;
+              if (dofColDistrib.find(dofkeyvelx) != dofColDistrib.end())
+              {
+                dofgidx = dofColDistrib.find(dofkeyvelx)->second;
+                // store value
+                enrichmentval(0,inode) = (*output_col_vel)[dofcolmap->LID(dofgidx)];
+              }
+              else
+                enrichmentval(0,inode) = 0.0;
 
               // setup dof key
               const XFEM::FieldEnr fieldenrvely(XFEM::PHYSICS::Vely,XFEM::Enrichment(XFEM::Enrichment::typeJump,0));
               const XFEM::DofKey dofkeyvely(nodegid, fieldenrvely);
               // get gid of correseponding dof
-              const int dofgidy = state_.nodalDofDistributionMap_.find(dofkeyvely)->second;
-              // store value
-              enrichmentval(1,inode) =(*state_.velnp_)[dofrowmap->LID(dofgidy)];
+              int dofgidy = 0;
+              if (dofColDistrib.find(dofkeyvely) != dofColDistrib.end())
+              {
+                dofgidy = dofColDistrib.find(dofkeyvely)->second;
+                // store value
+                enrichmentval(1,inode) = (*output_col_vel)[dofcolmap->LID(dofgidy)];
+              }
+              else
+                enrichmentval(1,inode) = 0.0;
 
               // setup dof key
               const XFEM::FieldEnr fieldenrvelz(XFEM::PHYSICS::Velz,XFEM::Enrichment(XFEM::Enrichment::typeJump,0));
               const XFEM::DofKey dofkeyvelz(nodegid, fieldenrvelz);
               // get gid of correseponding dof
-              const int dofgidz = state_.nodalDofDistributionMap_.find(dofkeyvelz)->second;
-              // store value
-              enrichmentval(2,inode) =(*state_.velnp_)[dofrowmap->LID(dofgidz)];
+              int dofgidz = 0;
+              if (dofColDistrib.find(dofkeyvelz) != dofColDistrib.end())
+              {
+                dofgidz = dofColDistrib.find(dofkeyvelz)->second;
+                // store value
+                enrichmentval(2,inode) = (*output_col_vel)[dofcolmap->LID(dofgidz)];
+              }
+              else
+                enrichmentval(2,inode) = 0.0;
             }
 
               // write to file
