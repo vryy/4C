@@ -118,7 +118,8 @@ double MAT::Biofilm::ComputeReactionCoeff(const double csnp) const
 
 double MAT::Biofilm::ComputeReactionCoeffDeriv(const double csnp) const
 {
-  const double reacoeffderiv = (ReaRate()*SatCoeff())/pow((SatCoeff()+csnp),2);
+//  const double reacoeffderiv = (ReaRate()*SatCoeff())/pow((SatCoeff()+csnp),2);
+  const double reacoeffderiv = -1.0*ReaRate()/pow((SatCoeff()+csnp),2);
 
   return reacoeffderiv;
 }

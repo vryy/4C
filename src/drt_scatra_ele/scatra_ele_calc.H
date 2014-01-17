@@ -251,16 +251,6 @@ namespace ELEMENTS
       const int                               iquad=-1   //!< id of current gauss point (default = -1)
     );
 
-    //! material BioFilm
-    void MatBioFilm(
-      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-      double&                                 densn,    //!< density at t_(n)
-      double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-      double&                                 densam,   //!< density at t_(n+alpha_M)
-      double&                                 diffus,   //!< diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      double&                                 visc      //!< fluid viscosity
-    );
-
     //! material MyoCard
     void MatMyoCard(
       const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
@@ -694,13 +684,14 @@ namespace ELEMENTS
     );
 
     //! calculation of reactive element matrix
-    void CalcMatReact(
+    virtual void CalcMatReact(
       Epetra_SerialDenseMatrix&          emat,        //!< element matrix to be filled
       const int                          k,           //!< index of current scalar
       const double                       timefacfac,  //!< domain-integration factor times time-integration factor
       const double                       timetaufac,  //!< domain-integration factor times time-integration factor times tau
       const double                       taufac,      //!< domain-integration factor times tau
       const double                       densnp,      //!< density at time_(n+1)
+      const double                       phinp,       //!< scalar at time_(n+1)
       Teuchos::RCP<ScaTraEleReaManager>  reamanager,  //!< reaction manager
       const LINALG::Matrix<nen_,1>&      conv,        //!< convective operator
       const LINALG::Matrix<nen_,1>&      sgconv,      //!< subgrid-scale convective operator
@@ -1003,6 +994,7 @@ namespace ELEMENTS
 
     ScaTraEleReaManager(int numscal):
       reacoeff_(numscal,0.0),
+      reacoeffderiv_(numscal,0.0),
       reaterm_(numscal,0.0),
       include_me_(false)
       {return;}
@@ -1017,8 +1009,17 @@ namespace ELEMENTS
       if (reacoeff < 0.0) dserror("Reaction coefficient is not positive: %f",0,reacoeff);
 
       reacoeff_[k] = reacoeff;
-      include_me_ = true;
+      if( reacoeff!=0.0 )
+        include_me_=true;
 
+      return;
+    }
+
+    //! Set the derivative of reaction coefficient
+    virtual void SetReaCoeffDeriv(const double reacoeffderiv, const int k)
+    {
+
+      reacoeffderiv_[k] = reacoeffderiv;
       return;
     }
 
@@ -1027,6 +1028,9 @@ namespace ELEMENTS
     //! Return the reaction coefficient
     virtual double GetReaCoeff(const int k){return reacoeff_[k];}
 
+    //! Return the reaction coefficient
+    virtual double GetReaCoeffDeriv(const int k){return reacoeffderiv_[k];}
+
     //! return flag: reaction activated
     virtual bool Active(){return include_me_;}
 
@@ -1034,6 +1038,9 @@ namespace ELEMENTS
 
     //! scalar reaction coefficient
     std::vector<double> reacoeff_;
+
+    //! scalar reaction coefficient
+    std::vector<double> reacoeffderiv_;
 
     //! rhs term for reaction
     std::vector<double> reaterm_;

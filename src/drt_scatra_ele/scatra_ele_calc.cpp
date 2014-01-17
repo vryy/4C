@@ -706,7 +706,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
 
       // including stabilization
       if (reamanager_->Active())
-        CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,reamanager_,conv,sgconv,diff);
+        CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,phinp,reamanager_,conv,sgconv,diff);
 
       //----------------------------------------------------------------
       // 4) element right hand side
@@ -1154,61 +1154,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatScaTra(
 
 
 /*----------------------------------------------------------------------*
- |  Material BioFilm                                         ehrl 11/13 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatBioFilm(
-  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-  double&                                 densn,    //!< density at t_(n)
-  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-  double&                                 densam,   //!< density at t_(n+alpha_M)
-  double&                                 diffus,   //!< diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  double&                                 visc      //!< fluid viscosity
-  )
-{
-  // TODO: SCATRA_ELE_CLEANING
-#if 0
-  dsassert(numdofpernode_==1,"more than 1 dof per node for BIOFILM material");
-
-  const Teuchos::RCP<const MAT::Biofilm>& actmat
-    = Teuchos::rcp_dynamic_cast<const MAT::Biofilm>(material);
-
-  diffus_[0] = actmat->Diffusivity();
-  // double rearate_k = actmat->ReaRate();
-  // double satcoeff_k = actmat->SatCoeff();
-
-  // set reaction flag to true
-  is_reactive_ = true;
-
-  // get substrate concentration at n+1 or n+alpha_F at integration point
-  const double csnp = funct_.Dot(ephinp_[0]);
-  //const double conp = funct_.Dot(ephinp_[1]);
-
-  // compute reaction coefficient for species equation
-  reacoeff_[0] = actmat->ComputeReactionCoeff(csnp);
-  reacoeffderiv_[0] = actmat->ComputeReactionCoeffDeriv(csnp);
-
-  // scalar at integration point
-  const double phi = funct_.Dot(ephinp_[0]);
-  reacterm_[0]=reacoeff_[0]*phi;
-
-  // set specific heat capacity at constant pressure to 1.0
-  shc_ = 1.0;
-
-  // set temperature rhs for reactive equation system to zero
-  reatemprhs_[0] = 0.0;
-
-  // set density at various time steps and density gradient factor to 1.0/0.0
-  densn_[0]       = 1.0;
-  densnp_[0]      = 1.0;
-  densam_[0]      = 1.0;
-#endif
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  |  Material MyoCard                                         ehrl 11/13 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -1599,6 +1544,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatReact(
   const double                       timetaufac,
   const double                       taufac,
   const double                       densnp,
+  const double                       phinp,
   Teuchos::RCP<ScaTraEleReaManager>  reamanager,
   const LINALG::Matrix<nen_,1>&      conv,
   const LINALG::Matrix<nen_,1>&      sgconv,

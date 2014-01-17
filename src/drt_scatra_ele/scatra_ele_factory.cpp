@@ -20,6 +20,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_calc_elch.H"
 #include "scatra_ele_calc_loma.H"
 #include "scatra_ele_calc_poro.H"
+#include "scatra_ele_calc_advanced_reaction.H"
 
 #include "../drt_meshfree_discret/meshfree_scatra_cell_calc_std.H"
 
@@ -177,6 +178,8 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     return DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Instance(numdofpernode,numscal);
   else if (problem == "poro")
     return DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(numdofpernode,numscal);
+  else if (problem == "advreac")
+    return DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Instance(numdofpernode,numscal);
   else
     dserror("Defined problem type does not exist!!");
 

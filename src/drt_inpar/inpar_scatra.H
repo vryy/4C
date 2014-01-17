@@ -180,6 +180,7 @@ namespace INPAR
       scatratype_elch_diffcond,
       scatratype_levelset,
       scatratype_poro,
+      scatratype_advreac,
       scatratype_cardio_monodomain
     };
 

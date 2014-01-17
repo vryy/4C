@@ -167,7 +167,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
         dserror("Please define SCATRATYPE in datfile!");
     }
     else if (prbtype == prb_gas_fsi)      scatratype_ = INPAR::SCATRA::scatratype_condif;
-    else if (prbtype == prb_biofilm_fsi)  scatratype_ = INPAR::SCATRA::scatratype_condif;
+    else if (prbtype == prb_biofilm_fsi)  scatratype_ = INPAR::SCATRA::scatratype_advreac;
     else if (prbtype == prb_thermo_fsi)   scatratype_ = INPAR::SCATRA::scatratype_loma;
     else if (prbtype == prb_poroscatra)   scatratype_ = INPAR::SCATRA::scatratype_poro;
     else if (prbtype == prb_ssi)
