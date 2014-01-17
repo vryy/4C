@@ -252,15 +252,15 @@ mastermaxeleid_(0)
     int dofpernode = 4;
     Teuchos::ParameterList input(DRT::Problem::Instance()->MortarCouplingParams());
     // set options for mortar coupling
-    input.set<string>("SEARCH_ALGORITHM","Binarytree");
+    input.set<std::string>("SEARCH_ALGORITHM","Binarytree");
     input.set<double>("SEARCH_PARAM", 0.1);
-    input.set<string>("SEARCH_USE_AUX_POS", "no");
-    input.set<string>("PARALLEL_REDIST","no");
-    input.set<string>("SHAPEFCN","dual");
+    input.set<std::string>("SEARCH_USE_AUX_POS", "no");
+    input.set<std::string>("PARALLEL_REDIST","no");
+    input.set<std::string>("SHAPEFCN","dual");
     // master side is given to the mortar interface once in the beginning with full overlap
-    input.set<string>("REDUNDANT_STORAGE","Master");
+    input.set<std::string>("REDUNDANT_STORAGE","Master");
     // for triangles which will be almost all lying in a quad element on the master side, this should be a good set of params
-    input.set<string>("INTTYPE","Elements");
+    input.set<std::string>("INTTYPE","Elements");
     input.set<int>("NUMGP_PER_DIM",3);
 
     // create mortar interface for each coupling interface with INCA
