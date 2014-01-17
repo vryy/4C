@@ -42,7 +42,7 @@ Maintainer: Georg Hammerl
 // forward declaration
 namespace TSI
 {
-  class Algorithm;
+  class Monolithic;
 }
 
 
@@ -68,6 +68,9 @@ namespace FS3I
 
     virtual ~AeroTFSI(){};
 
+    /// write output of TSI system and additional restart info
+    virtual void Output();
+
     /// read restart
     virtual void ReadRestart();
 
@@ -86,12 +89,10 @@ namespace FS3I
   protected:
 
     /// get information whether INCA will stop in this time step
-    bool INCAfinshed();
+    void INCAfinshed();
 
-    /// get time step from INCA
-    void GetTimeStep(
-    std::vector<double>& timestep  ///< received time step size
-    );
+    /// Receive time step from INCA via MPI and set it in Baci
+    void GetAndSetDt();
 
     /// apply time step from INCA to BACI
     void SetDt(
@@ -103,8 +104,11 @@ namespace FS3I
     const double timestepsize  ///< time step size to be applied to BACI
     );
 
+    /// counter and print header; predict solution of both fields
+    void PrepareTimeStep();
+
     /// communication with INCA in order to receive forces and temperatures in the interface
-    void ReceiveAeroData(
+    int ReceiveAeroData(
     std::vector<double>& aerodata  ///< raw data from INCA containing interface loads
     );
 
@@ -113,12 +117,11 @@ namespace FS3I
     std::vector<double>& aerosenddata  ///< interface data is stored in here
     );
 
-    /// modifiy the reveived data into a more useful format
+    /// modifiy the received data into a more useful format
     double SplitData(
     std::vector<double>& aerodata,  ///< raw data from INCA
-    std::map<int, LINALG::Matrix<3,1> >& aerocoords,  ///< coordinates where loads are applied
-    std::map<int, LINALG::Matrix<4,1> >& aeroforces,  ///< loads to be applied
-    int startingvalue   ///< entry number in aerodata to start with
+    std::vector<LINALG::Matrix<3,1> >& aerocoords,  ///< coordinates where loads are applied
+    std::vector<LINALG::Matrix<4,1> >& aeroloads  ///< loads to be applied
     );
 
     /// received and processed data is applied to the structural/thermal solver
@@ -127,10 +130,8 @@ namespace FS3I
     Teuchos::RCP<Epetra_Vector> thrfifc  ///< interface thermal loads due to the fluid (on full vector)
     );
 
-    void PrintCouplingStrategy();   ///< print chosen coupling strategy for TFSI to screen
-
-    /// call the solver for the current TSI time step
-    void SolveTSIstep();
+    /// print chosen coupling strategy for TFSI to screen
+    void PrintCouplingStrategy();   
 
 
     int localBACIleader_;  ///< leading processor in BACI that communicates with INCA in local communicator
@@ -139,22 +140,18 @@ namespace FS3I
 
     MPI_Comm intercomm_;  ///< intercommunicator between INCA and BACI for point to point communication
 
-    const Epetra_Comm& lcomm_;  ///< local communicator in BACI
+    const Epetra_Comm& lcomm_;  ///< local communicator in BACI stored as Epetra_Comm
+
+    const MPI_Comm mpilcomm_;   ///< local communicator in BACI stored as MPI_Comm
 
 
   private:
 
-    Teuchos::RCP<TSI::Algorithm> tsi_;  ///< Monolithic TSI system that is calculated
-
-    INPAR::TSI::SolutionSchemeOverFields coupling_;  ///< Coupling type of the TSI system
+    Teuchos::RCP<TSI::Monolithic> tsi_;  ///< Monolithic TSI system that is calculated
 
     INPAR::TSI::BaciIncaCoupling tfsi_coupling_;   ///< Coupling strategy for TFSI problem
 
     Teuchos::RCP<FS3I::UTILS::AeroCouplingUtils> aerocoupling_;  ///< Aero coupling helper class
-
-    bool additional_boundary_layer_;   ///< bool whether an additional boundary layer is used for mortar coupling
-
-    bool fluid_forces_transfer_;   ///< bool whether fluid forces are transferred from INCA
 
     int stopflag_;   ///< stop flag that is sent from INCA
 

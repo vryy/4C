@@ -454,6 +454,14 @@ public:
   virtual void AddMortarElement(Teuchos::RCP<MORTAR::MortarElement> mrtrele);
 
   /*!
+  \brief delete all elements/nodes on one side of the interface
+
+  \param slaveside (in): bool to choose side of interface that will be deleted
+
+  */
+  virtual void RemoveSingleInterfaceSide(bool slaveside);
+
+  /*!
   \brief Finalize construction of mortar interface
 
   The methods completes construction phase of a mortar interface.
@@ -465,11 +473,11 @@ public:
 
   \param maxdof (in): maximum dof ID in global discretization
                       (if default=0, then no lmdofrowmap is created)
+  \param newghosting (in): bool to decide whether ghosting needs to be build (default=true)
 
   \return Filled()==true
-
   */
-  virtual void FillComplete(int maxdof = 0);
+  virtual void FillComplete(int maxdof = 0, bool newghosting = true);
   
   /*!
   \brief Redistribute interface among all procs

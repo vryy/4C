@@ -57,6 +57,11 @@ namespace STR
   }
 }
 
+namespace MORTAR
+{
+  class MortarInterface;
+}
+
 struct sendingdata {
    double x;
    double y;
@@ -91,49 +96,26 @@ namespace FS3I
       /// empty destructor
       virtual ~AeroCouplingUtils(){}
 
-      /// forces from the aero code are projected on the structural surface and distributed to the nodes
-      void ProjectForceOnStruct
-      (
-        int interface,   ///< interface id
-        Teuchos::RCP<Epetra_Vector> idispn,  ///< structural interface displacement of the current time step
-        std::map<int, LINALG::Matrix<3,1> >& aerocoords,  ///< coordinates where the corresponding aero forces affect
-        std::map<int, LINALG::Matrix<4,1> >& aeroforces,  ///< forces from the aero code
-        Teuchos::RCP<Epetra_Vector> iforce,  ///< distributed interface force that loads the structure
-        Teuchos::RCP<Epetra_Vector> iredutemp  ///< redundant distributed interface temperatures on the thermal interface
-      );
-
       /// mortar matrices to map data from INCA to Baci are set up
       void BuildMortarCoupling
       (
         int interf,   ///< interface id
         Teuchos::RCP<Epetra_Vector> idispn,  ///< structural interface displacement of the current time step
-        std::map<int, LINALG::Matrix<3,1> >& aerocoords  ///< coordinates where the corresponding aero forces affect
+        std::vector<LINALG::Matrix<3,1> >& aerocoords,  ///< coordinates where the corresponding aero forces affect
+        const int nodeoffset   ///< node offset for mortar from proc to proc
       );
 
-      /// loads from the aero code are transferred via mortar to the structure (for dual shape functions in mortar)
-      void TransferFluidLoadsToStructDual
+      /// transfer load vector from fluid to structure
+      void TransferFluidLoadsToStruct
       (
         int interf,   ///< interface id
-        std::map<int, LINALG::Matrix<4,1> >& aeroforces,  ///< forces from the aero code
-        Teuchos::RCP<Epetra_Vector> iforce,  ///< distributed interface force that loads the structure
-        Teuchos::RCP<Epetra_Vector> iredutemp  ///< redundant distributed interface temperatures on the thermal interface
+        std::vector<LINALG::Matrix<4,1> >& aeroforces,   ///< loads given from INCA
+        Teuchos::RCP<Epetra_Vector> iforce,   ///< interface load on structure
+        Teuchos::RCP<Epetra_Vector> ithermoload   ///< interface load on thermal problem
       );
 
-      /// loads from the aero code are transferred via mortar to the structure (for standard shape functions in mortar)
-      void TransferFluidLoadsToStructStd
-      (
-        int interf,   ///< interface id
-        std::map<int, LINALG::Matrix<4,1> >& aeroforces,  ///< forces from the aero code
-        Teuchos::RCP<Epetra_Vector> iredutemp  ///< redundant distributed interface temperatures on the thermal interface
-      );
-
-      Teuchos::RCP<Epetra_Vector> StructToFluid
-      (
-        int interf,   ///< interface id
-        Teuchos::RCP<Epetra_Vector> mv  ///< incoming structural/thermal interface values to be transferred
-      ) const;
-
-      Teuchos::RCP<Epetra_Vector> FluidToStruct
+      /// transfer vector from slave to master
+      Teuchos::RCP<Epetra_MultiVector> SlaveToMaster
       (
         int interf,   ///< interface id
         Teuchos::RCP<Epetra_Vector> sv  ///< incoming fluid interface values to be transferred
@@ -143,47 +125,32 @@ namespace FS3I
       void PackData
       (
         int interf,   ///< interface id
-        Teuchos::RCP<Epetra_Vector> idispnp,  ///< interface displacements
-        Teuchos::RCP<Epetra_Vector> itempnp,  ///< interface temperatures
+        Teuchos::RCP<const Epetra_Vector> idispnp,  ///< interface displacements
+        Teuchos::RCP<const Epetra_Vector> itempnp,  ///< interface temperatures
         std::vector<double>& packeddata, ///< output: packed data, ready for sending
         bool writedata = true   ///< bool whether interface point data is written to file
       );
 
-      /// data is gathered on proc 0 and packed in a specific way before transferring it to INCA
-      void PackDataRBFI
+      /// data is gathered on proc 0 and packed in a specific way before transferring it to INCA using Immersed Boundary Method
+      void TransferStructValuesToFluid
       (
         int interf,   ///< interface id
-        Teuchos::RCP<Epetra_Vector> idispnp,  ///< interface displacements
-        Teuchos::RCP<Epetra_Vector> itempnp,  ///< interface temperatures
-        std::vector<double>& packeddata, ///< output: packed data, ready for sending
+        Teuchos::RCP<const Epetra_Vector> idisp,   ///< interface displacements
+        Teuchos::RCP<const Epetra_Vector> ivel,   ///< interface velocities
+        Teuchos::RCP<const Epetra_Vector> itemp,   ///< interface temperatures
+        std::vector<double>& packeddata,   ///< output: packed data, ready for sending
         bool writedata = true   ///< bool whether interface point data is written to file
       );
 
-      /// data is gathered on proc 0 and packed in a specific way before transferring it to INCA (for mortarcoupling)
-      void TransferStructValuesToFluidDual
+      /// data is gathered on proc 0 and packed in a specific way before transferring it to INCA using conforming interface mesh
+      void TransferStructValuesToFluidConforming
       (
         int interf,   ///< interface id
-        int sizeofphysicaldomain,    ///< size of physical domain
-        std::map<int, LINALG::Matrix<3,1> >& aerocoords,  ///< interface displacements of fluid
-        Teuchos::RCP<Epetra_Vector> idispnp,  ///< interface displacements
-        Teuchos::RCP<Epetra_Vector> itempnp,  ///< interface temperatures
-        std::vector<double>& packeddata, ///< output: packed data, ready for sending
+        Teuchos::RCP<const Epetra_Vector> idisp,   ///< interface displacements
+        Teuchos::RCP<const Epetra_Vector> itemp,   ///< interface temperatures
+        std::vector<double>& packeddata,   ///< output: packed data, ready for sending
         bool writedata = true   ///< bool whether interface point data is written to file
       );
-
-      /// data is gathered on proc 0 and packed in a specific way before transferring it to INCA (for mortarcoupling)
-      void TransferStructValuesToFluidStd
-      (
-        int interf,   ///< interface id
-        int sizeofphysicaldomain,    ///< size of physical domain
-        std::map<int, LINALG::Matrix<3,1> >& aerocoords,  ///< interface displacements of fluid
-        Teuchos::RCP<Epetra_Vector> itempnp,  ///< interface temperatures
-        std::vector<double>& packeddata, ///< output: packed data, ready for sending
-        bool writedata = true   ///< bool whether interface point data is written to file
-      );
-
-      /// get material configuration
-//      Teuchos::RCP<Epetra_Vector> GetMatConfig(){ return matconfig_;}
 
       /// access function for the ith interface discretization
       Teuchos::RCP<DRT::Discretization> GetInterfaceStructDis(int i){ return istructdis_[i]; }
@@ -209,7 +176,7 @@ namespace FS3I
       );
 
       /// apply interface tractions from the interface to a full field
-      void StrApplyInterfaceVal
+      void StrInsertInterfaceVal
       (
         int interf,   ///< interface id
         Teuchos::RCP<Epetra_Vector> iforce,  ///< state vector of the structural interface
@@ -217,54 +184,24 @@ namespace FS3I
       );
 
       /// apply interface heat flux from the interface to a full field
-      void ThrApplyInterfaceVal
+      void ThrInsertInterfaceVal
       (
         int interf,   ///< interface id
         Teuchos::RCP<Epetra_Vector> iforce,  ///< state vector of the thermal interface
         Teuchos::RCP<Epetra_Vector> force  ///< state vector of the full thermal field
       );
 
+      /// length scaling factor for coupling is returned
+      double LengthScaling() { return lengthscaling_; }
 
-    protected:
-      /// calculate current position of structural interface nodes
-      std::map<int,LINALG::Matrix<3,1> > CurrentInterfacePos
-      (
-        int interf,   ///< interface id
-        Teuchos::RCP<Epetra_Vector> redudisp  ///< redundant version of structure displacements
-      );
-
-      /// fluid loads (forces & heat fluxes) are distributed to the adjacent nodes of the closest element 
-      void DistributeForceToNodes
-      (
-        int eleid,  ///< element id of the closest element to the fluid load
-        int interf,  /// interface id in which the eleid is contained
-        std::map<int,LINALG::Matrix<3,1> >& currentpositions,  ///< current position of structural interface nodes
-        LINALG::Matrix<3,1>& projpoint,  ///< projection point on the closest element
-        LINALG::Matrix<4,1>& aeroforce,  ///< fluid induced loads (3x forces + 1x heat flux)
-        Teuchos::RCP<Epetra_Vector> distributedforces,  ///< distributed forces to the nodes of the element
-        Teuchos::RCP<Epetra_Vector> ithermoload  ///< distributed heat fluxes to the nodes of the element
-      );
-
-      /// compares first the z coord and then the x coord of data struct
-      static bool MyComparePairs (const sendingdata& first, const sendingdata& second)
-      {
-        if(fabs(first.z - second.z) < EPS6)
-        {
-          if (first.x < second.x)
-            return true;
-          else
-            return false;
-        }
-
-        if (first.z < second.z)
-          return true;
-        else
-          return false;
-       }
+      /// time scaling factor for coupling is returned
+      double TimeScaling() { return timescaling_; }
 
     private:
       std::vector<Teuchos::RCP<DRT::Discretization> > istructdis_;  ///< discretization of structural interface
       std::vector<Teuchos::RCP<DRT::Discretization> > ithermodis_;  ///< discretization of thermal interface
+
+      std::vector<Teuchos::RCP<MORTAR::MortarInterface> > mortarinterface_;   ///< mortar interfaces
 
       std::vector<Teuchos::RCP<const Epetra_Map> > istructdofredumap_;  ///< dof map of fully redundant structural interface
       std::vector<Teuchos::RCP<const Epetra_Map> > ithermodofredumap_;  ///< dof map of fully redundant structural interface
@@ -274,13 +211,10 @@ namespace FS3I
       std::vector<Teuchos::RCP<const LINALG::MapExtractor> > structrowmapext_;  ///< map extractor between struct discret and interface struct dis
       std::vector<Teuchos::RCP<const LINALG::MapExtractor> > thermorowmapext_;  ///< map extractor between thermo discret and interface thermo dis
 
+      std::vector<Teuchos::RCP<const Epetra_Import> > istructproc0importer_;   ///< map extractor between distributed struct interface and data on proc 0
+      std::vector<Teuchos::RCP<const Epetra_Import> > ithermoproc0importer_;   ///< map extractor between distributed thermo interface and data on proc 0
+
       std::vector<Teuchos::RCP<LINALG::SparseMatrix> > DinvM_;  ///< projection operator for mortar coupling
-
-      Teuchos::RCP<Epetra_MpiComm> serialcomm_;   ///< current implementation of mortar coupling is just serial
-
-//      Teuchos::RCP<Epetra_Vector> matconfig_; ///< material configuration of structural gids
-
-      double maxmindist_; ///< search radius to find close elements on the structural interface
 
       int maxid_; ///< max id of the interfaces
 
@@ -288,7 +222,15 @@ namespace FS3I
 
       int mastermaxnodeid_; ///< max node id on TSI side
 
+      int mastermaxeleid_;   /// max ele id on TSI side
+
       bool fixedfluidinterface_; ///< bool whether a fixed fluid interface is used
+
+      // fluid uses [m] which becomes here e.g. 100.0 [cm] or 1000.0 [mm]
+      double lengthscaling_; ///< scaling factor for extensions for the coupling if other than SI unit [m] is used
+
+      // fluid uses [s] which becomes here e.g. 1000.0 [ms] or 1.0e6 [mikros]
+      double timescaling_; ///< scaling factor for time for the coupling if other than SI unit [s] is used
 
     }; // class AeroCouplingUtils
 

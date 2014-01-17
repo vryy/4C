@@ -22,7 +22,6 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_thermo.H"
 #include "../drt_tsi/tsi_monolithic.H"
-#include "../drt_tsi/tsi_partitioned.H"
 #include "../drt_tsi/tsi_utils.H"
 #include "aero_tfsi_serv.H"
 #include "../drt_inpar/inpar_mortar.H"
@@ -41,17 +40,18 @@ FS3I::AeroTFSI::AeroTFSI(
   ) :
   FS3I_Base(),
   lcomm_(lcomm),
+  mpilcomm_(dynamic_cast<const Epetra_MpiComm&>(lcomm).GetMpiComm()),
   tsi_(Teuchos::null),
-  stopflag_(false)
+  stopflag_(0)
 {
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
-  // decide if monolithic or partitioned coupling
-  coupling_ = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
+  // coupling strategy for INCA and BACI
   tfsi_coupling_ = DRT::INPUT::IntegralValue<INPAR::TSI::BaciIncaCoupling>(tsidyn,"TFSI_COUPALGO");
-  additional_boundary_layer_ = DRT::INPUT::IntegralValue<INPAR::TSI::BaciIncaCoupling>(tsidyn,"TFSI_MORTAR_ADDITIONAL_BOUNDLAYER");
-  fluid_forces_transfer_ = DRT::INPUT::IntegralValue<INPAR::TSI::BaciIncaCoupling>(tsidyn,"TFSI_FLUID_FORCES_TRANSFER");
-  PrintCouplingStrategy();
+
+  // leaders for each code are hard coded as follows
+  localBACIleader_ = 0;
+  INCAleader_ = 0;
 
 #ifdef INCA_COUPLING
   // check if INCA is called first when starting the coupled simulation
@@ -61,20 +61,10 @@ FS3I::AeroTFSI::AeroTFSI(
   if(worldrank == lcomm.MyPID())
     dserror("ERROR: INCA must!! be always started first in a coupled simulation");
 
-  // first: typecast the Epetra_Comm to Epetra_MpiComm
-  const Epetra_MpiComm& epetrampicomm = dynamic_cast<const Epetra_MpiComm&>(lcomm);
-  if (!(&epetrampicomm))
-    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
-  const MPI_Comm localcomm = epetrampicomm.GetMpiComm();
-
-  // leaders for each code are hard coded as follows
-  localBACIleader_ = 0;
-  INCAleader_ = 0;
-
   // intercommunicator is created; tag is important here because the same tag is used in INCA
   int tag = 0;
   int remoteleader = INCAleader_;
-  MPI_Intercomm_create(localcomm, 0, MPI_COMM_WORLD, remoteleader, tag, &intercomm_);
+  MPI_Intercomm_create(mpilcomm_, 0, MPI_COMM_WORLD, remoteleader, tag, &intercomm_);
 
   MPI_Barrier(intercomm_);
 #endif
@@ -82,45 +72,15 @@ FS3I::AeroTFSI::AeroTFSI(
   // setup of the discretizations, including clone strategy
   TSI::UTILS::SetupTSI(lcomm);
 
-  switch(coupling_)
-  {
-  case INPAR::TSI::Monolithic:
-  {
-    // create an TSI::Monolithic instance
-    const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
-    tsi_ = Teuchos::rcp(new TSI::Monolithic(lcomm,sdynparams));
-    break;
-  }
-  case INPAR::TSI::IterStagg:
-  {
-    // create an TSI::Partitioned instance
-    tsi_ = Teuchos::rcp(new TSI::Partitioned(lcomm));
-    break;
-  }
-  default:
-  {
-    dserror("For TFSI coupling only Monolithic or IterStagg is available.");
-    break;
-  }
-  }
-
-  switch(tfsi_coupling_)
-  {
-  case INPAR::TSI::conforming :
-  case INPAR::TSI::proj_RBFI :
-  {
-    if(additional_boundary_layer_ == true)
-      dserror("There is no additional boundary layer available for non-mortar coupled TFSI problems");
-    break;
-
-  }
-  default:
-    break;
-  }
+  // create a TSI::Monolithic instance
+  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+  tsi_ = Teuchos::rcp(new TSI::Monolithic(lcomm,sdynparams));
 
   // setup of the helper class
   aerocoupling_ = Teuchos::rcp(new FS3I::UTILS::AeroCouplingUtils(tsi_->StructureField()->Discretization(),
-                            tsi_->ThermoField()->Discretization()));
+                                                                  tsi_->ThermoField()->Discretization()));
+
+  PrintCouplingStrategy();
 
 }
 
@@ -130,86 +90,48 @@ FS3I::AeroTFSI::AeroTFSI(
  *----------------------------------------------------------------------*/
 void FS3I::AeroTFSI::Timeloop()
 {
-  FILE *outFile;
-  outFile = fopen("interfaceTemp.txt", "w");
-  fclose(outFile);
-  outFile = fopen("interfaceFlux.txt", "w");
-  fclose(outFile);
+  if(DRT::Problem::Instance()->Restart() == 0)
+  {
+    FILE* outFile;
+    outFile = fopen("interfaceDisp.txt", "w");
+    fclose(outFile);
+    outFile = fopen("interfaceFlux.txt", "w");
+    fclose(outFile);
+    outFile = fopen("coupling_status_baci.dat", "w");
+    fprintf(outFile, "#   itstep          time\n");
+    fclose(outFile);
+  }
 
   double t_start = 0.0;
   double t_end = 0.0;
   double CommTime = 0.0;
   double INCATime = 0.0;
   double BACITime = 0.0;
+  double BACICouplingTime = 0.0;
 
   // it is expected to have identical temperatures in the interface at the beginning
   // --> structural data can always be sent (and applied) to INCA
 #ifdef INCA_COUPLING
   for(int interf=0; interf<aerocoupling_->NumInterfaces(); interf++)
   {
-    std::map<int, LINALG::Matrix<3,1> > aerocoords;
-    std::map<int, LINALG::Matrix<4,1> > aeroforces;
-    int lengthphysicaldomain = 0;
-    if( tfsi_coupling_ == INPAR::TSI::mortar_mortar_dual or
-        tfsi_coupling_ == INPAR::TSI::proj_mortar_dual)
-    {
-      t_start = Teuchos::Time::wallTime();
-
-      std::vector<double> aerodata;
-      // receive data from INCA for physical domain
-      ReceiveAeroData(aerodata);
-
-      //fill data from INCA into suitable variables
-      SplitData(aerodata, aerocoords, aeroforces,0);
-
-      lengthphysicaldomain = aerocoords.size();
-
-      aerodata.clear();
-      // receive data from INCA for boundary layer around physical domain
-      ReceiveAeroData(aerodata);
-
-      SplitData(aerodata, aerocoords, aeroforces,lengthphysicaldomain);
-
-      t_end = Teuchos::Time::wallTime()-t_start;
-      CommTime += t_end;
-
-      t_start = Teuchos::Time::wallTime();
-
-      // current displacement of the interface
-      Teuchos::RCP<Epetra_Vector> idispn = aerocoupling_->StrExtractInterfaceVal(interf, tsi_->StructureField()->Dispn());
-
-      aerocoupling_->BuildMortarCoupling(interf, idispn, aerocoords);
-
-      t_end = Teuchos::Time::wallTime()-t_start;
-      BACITime += t_end;
-    }
-
     t_start = Teuchos::Time::wallTime();
 
     // sending initial data to INCA
-    Teuchos::RCP<Epetra_Vector> idispnStart = aerocoupling_->StrExtractInterfaceVal(interf, tsi_->StructureField()->Dispn());
-//    Teuchos::RCP<Epetra_Vector> ivelnRestart = aerocoupling_->StrExtractInterfaceVal(interf, tsi_->StructureField()->Veln());
-    Teuchos::RCP<Epetra_Vector> ithermoloadStart = aerocoupling_->ThrExtractInterfaceVal(interf, tsi_->ThermoField()->ExtractTempn());
+    Teuchos::RCP<const Epetra_Vector> idispnStart = aerocoupling_->StrExtractInterfaceVal(interf, tsi_->StructureField()->Dispn());
+    Teuchos::RCP<const Epetra_Vector> ivelnStart = aerocoupling_->StrExtractInterfaceVal(interf, tsi_->StructureField()->Veln());
+    Teuchos::RCP<const Epetra_Vector> ithermoloadStart = aerocoupling_->ThrExtractInterfaceVal(interf, tsi_->ThermoField()->ExtractTempn());
 
     std::vector<double> aerosenddata;
     switch(tfsi_coupling_)
     {
     case INPAR::TSI::conforming :
     {
-      aerocoupling_->PackData(interf, idispnStart, ithermoloadStart, aerosenddata, false);
+      aerocoupling_->TransferStructValuesToFluidConforming(interf, idispnStart, ithermoloadStart, aerosenddata, false);
       break;
     }
     case INPAR::TSI::mortar_mortar_dual :
-    case INPAR::TSI::proj_mortar_dual :
     {
-      aerocoupling_->TransferStructValuesToFluidDual(interf, lengthphysicaldomain, aerocoords, idispnStart,  ithermoloadStart, aerosenddata);
-      break;
-    }
-    case INPAR::TSI::proj_RBFI :
-    {
-      aerocoupling_->PackDataRBFI(interf, idispnStart, ithermoloadStart, aerosenddata, false);
-      // additional send which will be removed 15.05.2013
-      SendAeroData(aerosenddata);
+      aerocoupling_->TransferStructValuesToFluid(interf, idispnStart, ivelnStart, ithermoloadStart, aerosenddata, false);
       break;
     }
     default:
@@ -218,7 +140,7 @@ void FS3I::AeroTFSI::Timeloop()
     }
 
     t_end = Teuchos::Time::wallTime()-t_start;
-    BACITime += t_end;
+    BACICouplingTime += t_end;
 
     t_start = Teuchos::Time::wallTime();
 
@@ -228,126 +150,127 @@ void FS3I::AeroTFSI::Timeloop()
     CommTime += t_end;
   }
 #endif
-
-  std::vector<double> timestep(1);
-  // get the first time step from INCA; timen_ and dt has to be set correctly
-  GetTimeStep(timestep);
-  SetInitialDtAndTime(timestep[0]);
+  t_start = Teuchos::Time::wallTime();
 
   // time loop
-  while (tsi_->NotFinished() and !stopflag_)
+  while (tsi_->NotFinished() and stopflag_ == 0)
   {
     if(lcomm_.MyPID() == 0)
     {
-      FILE *outFile;
-      outFile = fopen("interfaceTemp.txt", "a");
-      fprintf(outFile, "%.8e  ", tsi_->Time());
+      FILE* outFile;
+      outFile = fopen("interfaceDisp.txt", "a");
+      fprintf(outFile, "%.8e  ", (tsi_->Time()/aerocoupling_->TimeScaling()));
       fclose(outFile);
       outFile = fopen("interfaceFlux.txt", "a");
-      fprintf(outFile, "%.12e  ", tsi_->Time());
+      fprintf(outFile, "%.12e  ", tsi_->Time()/aerocoupling_->TimeScaling());
       fclose(outFile);
     }
     double flux_in = 0.0;
     double flux_struct = 0.0;
 
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    // INCA is working at the moment
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    // get the time step from INCA and set it in the TSI system
+    GetAndSetDt();
+
+    t_end = Teuchos::Time::wallTime()-t_start;
+    INCATime += t_end;
+    t_start = Teuchos::Time::wallTime();
+
+    // stopflag_ is received from INCA which can have the following meanings
+    // 0: continue
+    // 1: shutdown without computing the time step, just write restart output
+    // 2: shutdown after computing last time step and output
+    INCAfinshed();
+
+    if(stopflag_ == 1)
+    {
+      // write output to screen and files and leave time loop
+      Output();
+      break;
+    }
+
     // full vectors of structural and thermal field to be filled and applied to the TSI problem
     Teuchos::RCP<Epetra_Vector> strfifc = LINALG::CreateVector(*tsi_->StructureField()->Discretization()->DofRowMap(), true);
     Teuchos::RCP<Epetra_Vector> thrfifc = LINALG::CreateVector(*tsi_->ThermoField()->Discretization()->DofRowMap(), true);
-    std::map<int, LINALG::Matrix<3,1> > aerocoords;
-    std::map<int, LINALG::Matrix<4,1> > aeroforces;
-    int lengthphysicaldomain[aerocoupling_->NumInterfaces()];
+    std::vector<LINALG::Matrix<3,1> > aerocoords;
+    std::vector<LINALG::Matrix<4,1> > aeroforces;
+    t_end = Teuchos::Time::wallTime()-t_start;
+    BACITime += t_end;
     for(int interf=0; interf<aerocoupling_->NumInterfaces(); interf++)
     {
       t_start = Teuchos::Time::wallTime();
 
       std::vector<double> aerodata;
       // receive data from INCA
-      ReceiveAeroData(aerodata);
+      int nodeoffset = ReceiveAeroData(aerodata);
 
-      //fill data from INCA into suitable variables
-      flux_in += SplitData(aerodata, aerocoords, aeroforces, 0);
-
-      // receive data from INCA for boundary layer around physical domain
-      // only geometry is important, forces are dropped
-      if( tfsi_coupling_ == INPAR::TSI::mortar_mortar_dual or
-          tfsi_coupling_ == INPAR::TSI::proj_mortar_dual)
-      {
-        lengthphysicaldomain[interf] = aerocoords.size();
-        aerodata.clear();
-        ReceiveAeroData(aerodata);
-        SplitData(aerodata, aerocoords, aeroforces,lengthphysicaldomain[interf]);
-      }
       t_end = Teuchos::Time::wallTime()-t_start;
       CommTime += t_end;
-
       t_start = Teuchos::Time::wallTime();
 
-      //get new vectors for mapping the fluid interface data
+      // fill data from INCA into suitable variables
+      double flux_serial = SplitData(aerodata, aerocoords, aeroforces);
+
+      // get new vectors for mapping the fluid interface data
       Teuchos::RCP<Epetra_Vector> iforce = LINALG::CreateVector(*(aerocoupling_->GetInterfaceStructDis(interf)->DofRowMap()), true);
       Teuchos::RCP<Epetra_Vector> ithermoload = LINALG::CreateVector(*(aerocoupling_->GetInterfaceThermoDis(interf)->DofRowMap()), true);
 
       // current displacement of the interface
       Teuchos::RCP<Epetra_Vector> idispn = aerocoupling_->StrExtractInterfaceVal(interf, tsi_->StructureField()->Dispn());
 
-      switch(tfsi_coupling_)
-      {
-      case INPAR::TSI::proj_mortar_dual :
-      {
-        aerocoupling_->BuildMortarCoupling(interf, idispn, aerocoords);
-        // no break here!
-      }
-      case INPAR::TSI::conforming :
-      case INPAR::TSI::proj_RBFI :
-      {
-        aerocoupling_->ProjectForceOnStruct(interf, idispn, aerocoords, aeroforces, iforce, ithermoload);
-        break;
-      }
-      case INPAR::TSI::mortar_mortar_dual :
-      {
-        aerocoupling_->BuildMortarCoupling(interf, idispn, aerocoords);
-        aerocoupling_->TransferFluidLoadsToStructDual(interf, aeroforces, iforce, ithermoload);
-        break;
-      }
-      default:
-        dserror("Coupling strategy %d is not yet implemented.", tfsi_coupling_);
-        break;
-      }
+      // setup mortar coupling and transfer loads
+      aerocoupling_->BuildMortarCoupling(interf, idispn, aerocoords, nodeoffset);
+      aerocoupling_->TransferFluidLoadsToStruct(interf, aeroforces, iforce, ithermoload);
 
       // apply structural interface tractions to the structural field
-      aerocoupling_->StrApplyInterfaceVal(interf, iforce, strfifc);
+      aerocoupling_->StrInsertInterfaceVal(interf, iforce, strfifc);
       // apply thermal interface heat flux to the thermal field
-      aerocoupling_->ThrApplyInterfaceVal(interf, ithermoload, thrfifc);
+      aerocoupling_->ThrInsertInterfaceVal(interf, ithermoload, thrfifc);
 
-      double flux_serial = 0.0;
+      // incoming flux is summed over all procs
       double flux_global = 0.0;
+      lcomm_.SumAll(&flux_serial, &flux_global, 1);
+      flux_in += flux_global;
+
+      // transfered flux is summed over all procs
+      flux_serial = 0.0;
+      flux_global = 0.0;
       for(int k=0; k<ithermoload->MyLength(); k++)
         flux_serial += (*ithermoload)[k];
       lcomm_.SumAll(&flux_serial, &flux_global, 1);
       flux_struct += flux_global;
 
       t_end = Teuchos::Time::wallTime()-t_start;
-      BACITime += t_end;
-    }
-
-    if(lcomm_.MyPID() == 0)
-    {
-      outFile = fopen("interfaceFlux.txt", "a");
-      fprintf(outFile, "%.12e  ", flux_in);
-      fprintf(outFile, "%.12e  ", flux_struct);
-      fprintf(outFile, "%.12e\n", flux_in/flux_struct);
-      fclose(outFile);
+      BACICouplingTime += t_end;
     }
 
     t_start = Teuchos::Time::wallTime();
+
+    if(lcomm_.MyPID() == 0)
+    {
+      FILE* outFile = fopen("interfaceFlux.txt", "a");
+      fprintf(outFile, "%.12e  ", flux_in);
+      fprintf(outFile, "%.12e  ", flux_struct);
+      if(flux_struct != 0.0)
+        fprintf(outFile, "%.12e\n", flux_in/flux_struct);
+      else
+        fprintf(outFile, "\n");
+      fclose(outFile);
+    }
 
     // apply filled vectors to the TSI problem
     ApplyInterfaceData(strfifc, thrfifc);
 
     // counter and print header; predict solution of both fields
-    tsi_->PrepareTimeStep();
+    PrepareTimeStep();
 
     // TSI time step is solved
-    SolveTSIstep();
+    tsi_->NewtonFull();
 
     // calculate stresses, strains, energies
     tsi_->PrepareOutput();
@@ -356,8 +279,8 @@ void FS3I::AeroTFSI::Timeloop()
     BACITime += t_end;
 
     // communication with AERO-code to send interface position and temperature
-    // skip last sending procedure in the simulation because INCA has already finished
-    if(/*!INCAfinshed() and */ tsi_->NotFinished())  // ghamm 04.10.2013 needs to be added when combined with latest INCA versions
+    // skip last sending procedure in the simulation if INCA has already finished
+    if(stopflag_ != 2 and tsi_->NotFinished())
     {
       for(int interf=0; interf<aerocoupling_->NumInterfaces(); interf++)
       {
@@ -365,26 +288,20 @@ void FS3I::AeroTFSI::Timeloop()
 
         // gather data and send it to INCA
         Teuchos::RCP<Epetra_Vector> idispnp = aerocoupling_->StrExtractInterfaceVal(interf,tsi_->StructureField()->Dispnp());
-        // calculate velocity of the structure currently not needed
-        Teuchos::RCP<Epetra_Vector> itemp = aerocoupling_->ThrExtractInterfaceVal(interf, tsi_->ThermoField()->ExtractTempnp());
+        Teuchos::RCP<Epetra_Vector> ivelnp = aerocoupling_->StrExtractInterfaceVal(interf,tsi_->StructureField()->Velnp());
+        Teuchos::RCP<Epetra_Vector> itempnp = aerocoupling_->ThrExtractInterfaceVal(interf, tsi_->ThermoField()->ExtractTempnp());
 
         std::vector<double> aerosenddata;
         switch(tfsi_coupling_)
         {
         case INPAR::TSI::conforming :
         {
-          aerocoupling_->PackData(interf, idispnp, itemp, aerosenddata);
+          aerocoupling_->TransferStructValuesToFluidConforming(interf, idispnp, itempnp, aerosenddata);
           break;
         }
         case INPAR::TSI::mortar_mortar_dual :
-        case INPAR::TSI::proj_mortar_dual :
         {
-          aerocoupling_->TransferStructValuesToFluidDual(interf, lengthphysicaldomain[interf], aerocoords, idispnp, itemp, aerosenddata);
-          break;
-        }
-        case INPAR::TSI::proj_RBFI :
-        {
-          aerocoupling_->PackDataRBFI(interf, idispnp, itemp, aerosenddata, true);
+          aerocoupling_->TransferStructValuesToFluid(interf, idispnp, ivelnp, itempnp, aerosenddata);
           break;
         }
         default:
@@ -393,8 +310,7 @@ void FS3I::AeroTFSI::Timeloop()
         }
 
         t_end = Teuchos::Time::wallTime()-t_start;
-        BACITime += t_end;
-
+        BACICouplingTime += t_end;
         t_start = Teuchos::Time::wallTime();
 
         SendAeroData(aerosenddata);
@@ -402,24 +318,6 @@ void FS3I::AeroTFSI::Timeloop()
         t_end = Teuchos::Time::wallTime()-t_start;
         CommTime += t_end;
       }
-
-      t_start = Teuchos::Time::wallTime();
-
-
-      //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      // INCA is working at the moment
-      //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-      // get the time step from INCA for the next time step in BACI
-      GetTimeStep(timestep);
-
-      t_end = Teuchos::Time::wallTime()-t_start;
-      INCATime += t_end;
-
-      // set the time step received from INCA
-      SetDt(timestep[0]);
     }
 
     t_start = Teuchos::Time::wallTime();
@@ -428,27 +326,29 @@ void FS3I::AeroTFSI::Timeloop()
     tsi_->Update();
 
     // write output to screen and files
-    tsi_->Output(stopflag_);
-
-    t_end = Teuchos::Time::wallTime()-t_start;
-    BACITime += t_end;
+    Output();
 
   }  // NotFinished
 
+  t_end = Teuchos::Time::wallTime()-t_start;
+  BACITime += t_end;
 
   // brief (and not totally correct) time monitoring at the end of the simulation
   double ParCommTime = 0.0;
   double ParINCATime = 0.0;
   double ParBACITime = 0.0;
+  double ParBACICouplingTime = 0.0;
   lcomm_.MaxAll(&CommTime,&ParCommTime,1);
   lcomm_.MaxAll(&INCATime,&ParINCATime,1);
   lcomm_.MaxAll(&BACITime,&ParBACITime,1);
+  lcomm_.MaxAll(&BACICouplingTime,&ParBACICouplingTime,1);
   if(lcomm_.MyPID()==0)
   {
     std::cout<<"Brief (and rough) time monitoring for a coupled simulation:" << std::endl;
     std::cout <<"Communication time: "<< ParCommTime << std::endl;
     std::cout <<"INCA solution time: "<< ParINCATime << std::endl;
     std::cout <<"BACI solution time: "<< ParBACITime << std::endl;
+    std::cout <<"BACI coupling time: "<< ParBACICouplingTime << std::endl;
   }
 
 }  // TimeLoop
@@ -475,7 +375,6 @@ void FS3I::AeroTFSI::ApplyInterfaceData(
 {
   // apply structural interface tractions to the structural field
   tsi_->StructureField()->SetForceInterface(strfifc);
-  tsi_->StructureField()->PreparePartitionStep();
 
   // apply thermal interface heat flux to the thermal field
   tsi_->ThermoField()->SetForceInterface(thrfifc);
@@ -485,51 +384,36 @@ void FS3I::AeroTFSI::ApplyInterfaceData(
 
 
 /*----------------------------------------------------------------------*
- | Solve the current TSI time step                         ghamm 02/12  |
+ | Receive time step from INCA via MPI and set it in Baci   ghamm 12/11 |
  *----------------------------------------------------------------------*/
-void FS3I::AeroTFSI::SolveTSIstep()
+void FS3I::AeroTFSI::GetAndSetDt()
 {
-  switch(coupling_)
-  {
-  case INPAR::TSI::Monolithic:
-  {
-    Teuchos::rcp_dynamic_cast<TSI::Monolithic>(tsi_,true)->NewtonFull();
-    break;
-  }
-  case INPAR::TSI::IterStagg:
-  {
-    Teuchos::rcp_dynamic_cast<TSI::Partitioned>(tsi_,true)->TimeLoopFull();
-    break;
-  }
-  default:
-  {
-    dserror("For TFSI coupling only Monolithic or IterStagg is available.");
-    break;
-  }
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | Receive time step from INCA via MPI                      ghamm 12/11 |
- *----------------------------------------------------------------------*/
-void FS3I::AeroTFSI::GetTimeStep(
-  std::vector<double>& timestep
-  )
-{
+  // this is just a dummy time for debug reasons when INCA is not available
+  double timen = (tsi_->Step()+1)*0.001;
 #ifdef INCA_COUPLING
   // get time step from INCA
-  if(lcomm_.MyPID() == 0)
+  if(lcomm_.MyPID() == localBACIleader_)
   {
     MPI_Status status;
     int tag_timestep = 3000;
-    MPI_Recv(&timestep[0], 1, MPI_DOUBLE, INCAleader_, tag_timestep, intercomm_, &status);
+    MPI_Recv(&timen, 1, MPI_DOUBLE, INCAleader_, tag_timestep, intercomm_, &status);
+    timen *= aerocoupling_->TimeScaling();
   }
-  // broadcast time step to all processors in BACI
-  lcomm_.Broadcast(&timestep[0], 1 , localBACIleader_);
 #endif
+  // broadcast time step to all processors in BACI
+  lcomm_.Broadcast(&timen, 1 , localBACIleader_);
+
+  const double dt = timen - tsi_->Time();
+
+  // set time step in TSI and initially timen_ needs to be overwritten
+  if(DRT::Problem::Instance()->Restart() == tsi_->Step())
+  {
+   SetInitialDtAndTime(dt);
+  }
+  else
+  {
+    SetDt(dt);
+  }
 
   return;
 }
@@ -538,11 +422,11 @@ void FS3I::AeroTFSI::GetTimeStep(
 /*----------------------------------------------------------------------*
  | Receive flag from INCA via MPI whether to stop           ghamm 10/13 |
  *----------------------------------------------------------------------*/
-bool FS3I::AeroTFSI::INCAfinshed()
+void FS3I::AeroTFSI::INCAfinshed()
 {
 #ifdef INCA_COUPLING
   // get stop tag
-  if(lcomm_.MyPID() == 0)
+  if(lcomm_.MyPID() == localBACIleader_)
   {
     MPI_Status status;
     int tag_stopflag = 2000;
@@ -551,18 +435,17 @@ bool FS3I::AeroTFSI::INCAfinshed()
 
     if(stopflag_ != 0)
     {
-      FILE *outFile;
-      outFile = fopen("result_status_baci.inp", "w");
+      FILE* outFile = fopen("result_status_baci.inp", "w");
       // assumption that restart is always written when simulation is stopped by INCA
       fprintf(outFile, "%s\t%d", DRT::Problem::Instance()->OutputControlFile()->FileName().c_str(), tsi_->Step());
       fclose(outFile);
     }
   }
+#endif
   // broadcast stop flag to all processors in BACI
   lcomm_.Broadcast(&stopflag_, 1 , localBACIleader_);
-#endif
 
-  return stopflag_;
+  return;
 }
 
 
@@ -599,21 +482,38 @@ void FS3I::AeroTFSI::SetInitialDtAndTime(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | prepare time step, increment counters                    ghamm 12/11 |
+ *----------------------------------------------------------------------*/
+void FS3I::AeroTFSI::PrepareTimeStep()
+{
+  tsi_->PrepareTimeStep();
+
+  if(lcomm_.MyPID() == 0)
+  {
+    FILE* outFile = fopen("coupling_status_baci.dat", "a");
+    fprintf(outFile, "%10d", tsi_->Step());
+    fprintf(outFile, " %20.14f\n", (tsi_->Time()/aerocoupling_->TimeScaling()));
+    fclose(outFile);
+  }
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  | communication with AERO-code to receive the interface forces         |
  *----------------------------------------------------------------------*/
-void FS3I::AeroTFSI::ReceiveAeroData(
+int FS3I::AeroTFSI::ReceiveAeroData(
   std::vector<double>& aerodata
   )
 {
-
+  int lengthRecv = 0;
+  std::vector<double> receivebuf;
 #ifdef INCA_COUPLING
   // ==================================================================
   // intercommunicator is used to receive data on proc 0
-  int lengthRecv = 0;
-
-  if(lcomm_.MyPID() == 0)
+  if(lcomm_.MyPID() == localBACIleader_)
   {
     MPI_Status status;
     //first: receive length of data from aero code
@@ -624,30 +524,96 @@ void FS3I::AeroTFSI::ReceiveAeroData(
 
     //second: receive data
     tag = 5000;
-    aerodata.resize(lengthRecv);
-    MPI_Recv(&aerodata[0], lengthRecv, MPI_DOUBLE, INCAleader_, tag, intercomm_, &status);
-
-    FILE *outFile;
-    outFile = fopen("interfaceTemp.txt", "a");
-    fprintf(outFile, "%.10e ", aerodata[699]);
-    fclose(outFile);
-
+    receivebuf.resize(lengthRecv);
+    MPI_Recv(&receivebuf[0], lengthRecv, MPI_DOUBLE, INCAleader_, tag, intercomm_, &status);
   }
+#else
+  // for testing with a flat plate
+  lengthRecv = 26;
+  receivebuf.resize(lengthRecv);
 
-  // ==================================================================
-  // broadcast received data in BACI to all processors
-  // again: length first, then data
-  lcomm_.Broadcast(&lengthRecv, 1 , localBACIleader_);
+  //tri 1
+  receivebuf[0] = 0.1;
+  receivebuf[1] = 0.0;
+  receivebuf[2] = 0.0;
+  receivebuf[3] = 0.3;
+  receivebuf[4] = 0.0;
+  receivebuf[5] = 0.0;
+  receivebuf[6] = 0.1;
+  receivebuf[7] = 0.0;
+  receivebuf[8] = 0.008;
 
-  aerodata.resize(lengthRecv);
+  receivebuf[9] = 0.0;
+  receivebuf[10] = 1.0e-3 * 1.2*3.0;
+  receivebuf[11] = 0.0;
 
-  //aero forces have to be redundant on all processors
-  lcomm_.Broadcast(&aerodata[0], lengthRecv , localBACIleader_);
+  receivebuf[12] = 1.0e-3 * 0.01*3.0;
 
-  lcomm_.Barrier();
+  //tri 2
+  receivebuf[13+0] = 0.1;
+  receivebuf[13+1] = 0.0;
+  receivebuf[13+2] = 0.008;
+  receivebuf[13+3] = 0.3;
+  receivebuf[13+4] = 0.0;
+  receivebuf[13+5] = 0.0;
+  receivebuf[13+6] = 0.3;
+  receivebuf[13+7] = 0.0;
+  receivebuf[13+8] = 0.008;
+
+  receivebuf[13+9] = 0.0;
+  receivebuf[13+10] = 1.0e-3 * 1.2*3.0;
+  receivebuf[13+11] = 0.0;
+
+  receivebuf[13+12] = 1.0e-3 * 0.01*3.0;
 #endif
 
-  return;
+  // ==================================================================
+  // scatter received data in BACI to all processors
+  lcomm_.Broadcast(&lengthRecv, 1 , localBACIleader_);
+
+  // one data set (=tri) consists of 13 doubles (9*position + 3*forces + 1*heatflux)
+  int numtris = lengthRecv / 13;
+  int numproc = lcomm_.NumProc();
+
+  // equal distribution of the tris for the beginning
+  int triperproc = int(floor(numtris/numproc));
+  std::vector<int> distribution(numproc, triperproc);
+  // remaining tris are added to the procs in the beginning
+  int remainingtris = numtris - triperproc*numproc;
+  if(remainingtris >= numproc)
+    dserror("distribution failed");
+  for(int k=0; k<remainingtris; ++k)
+  {
+    distribution[k]++;
+  }
+
+  // compute offset in send buffer for data scattering
+  int sumdoubles = 0;
+  int displs[numproc];
+  for(int k=0; k<numproc; ++k)
+  {
+    displs[k] = sumdoubles;
+    // scaling with 13 in order to obtain number of doubles instead of number of tris
+    distribution[k] *= 13;
+    sumdoubles += distribution[k];
+  }
+
+  int nummydoubles = distribution[lcomm_.MyPID()];
+  aerodata.resize(nummydoubles);
+
+  // aero data is scattered
+  MPI_Scatterv(&receivebuf[0], &distribution[0], &displs[0], MPI_DOUBLE, &aerodata[0], nummydoubles, MPI_DOUBLE, localBACIleader_, mpilcomm_);
+
+  // get nodal distribution over procs for offsets in mortar (3 nodes per tri and 13 doubles per tri)
+  for(int k=0; k<numproc; ++k)
+  {
+    distribution[k] = displs[k] * 3 / 13;
+  }
+
+  lcomm_.Barrier();
+
+  // returns node offset for mortar
+  return distribution[lcomm_.MyPID()];
 }
 
 
@@ -656,55 +622,55 @@ void FS3I::AeroTFSI::ReceiveAeroData(
  *----------------------------------------------------------------------*/
 double FS3I::AeroTFSI::SplitData(
   std::vector<double>& aerodata,
-  std::map<int, LINALG::Matrix<3,1> >& aerocoords,
-  std::map<int, LINALG::Matrix<4,1> >& aeroforces,
-  int startingvalue
+  std::vector<LINALG::Matrix<3,1> >& aerocoords,
+  std::vector<LINALG::Matrix<4,1> >& aeroloads
   )
 {
-  // without additional boundary layer leave here
-  if(startingvalue != 0 and additional_boundary_layer_ == false)
-    return 0.0;
-
   double flux_in = 0.0;
 
-  // incoming data from INCA (xxxxyyyyzzzzffff) splitted into xyzxyzxyzxyz & ffff
-  // or in case of forces that are included:
-  // incoming data from INCA (xxxx yyyy zzzz hhhh fxfxfxfx fyfyfyfy fzfzfzfz) splitted into xyzxyzxyzxyz & hfxfyfz.hfxfyfz.hfxfyfz
-  size_t length = aerodata.size();
-  size_t numfluidpoints;
-  if(fluid_forces_transfer_)
-    numfluidpoints = length/7;
-  else
-    numfluidpoints = length/4;
+  double lengthscaling = aerocoupling_->LengthScaling();
+  double timescaling = aerocoupling_->TimeScaling();
+  // heat flux scaling
+  double heatscalingfac = lengthscaling*lengthscaling/timescaling/timescaling/timescaling;
+  // force scaling
+  double forcescalingfac = lengthscaling/timescaling/timescaling;
 
-  for(size_t out=startingvalue; out<(numfluidpoints+startingvalue); out++)
+  // incoming data from INCA (x1y1z1 x2y2z2 x3y3z3 fx fy fz hf)
+  // split into coordinates and loads per node
+  // loads are equally divided onto the three nodes of a tri because constant value on fluid side (= Finite Volume scheme)
+  size_t numtris = aerodata.size()/13;
+  aerocoords.resize(numtris*3);
+  aeroloads.resize(numtris*3);
+  const size_t dim = 3;
+
+  LINALG::Matrix<3,1> tmp1;
+  LINALG::Matrix<4,1> tmp2;
+  int nodecounter = 0;
+  // loop over all tris
+  for(size_t tri=0; tri<numtris; ++tri)
   {
-    LINALG::Matrix<3,1> tmp1;
-    LINALG::Matrix<4,1> tmp2(true);
-
-    for(size_t in=0; in<3; in++)
+    size_t numnode = 3;
+    // loop over nodes of this tri --> count inverse in order to flip normal (pointing outward of fluid)
+    for(int node=numnode-1; node>=0; --node)
     {
-      tmp1(in)=aerodata[in*numfluidpoints + out - startingvalue];
-    }
-    aerocoords[out] = tmp1;
-
-    // only geometry is important in case of the additional boundary layer --> no fluxes/forces
-    if(startingvalue == 0)
-    {
-      // pull out heat flux
-      tmp2(0)=aerodata[3*numfluidpoints + out];
-
-      // pull out forces (if available)
-      if(fluid_forces_transfer_)
+      // geometry has to be scaled with lengthscaling
+      for(size_t d=0; d<dim; ++d)
       {
-        for(size_t in=1; in<4; in++)
-        {
-          tmp2(in)=aerodata[(in+3)*numfluidpoints + out];
-        }
-      }
+        // pull out fluid position
+        tmp1(d) = aerodata[tri*13 + node*dim + d] * lengthscaling;
 
-      aeroforces[out] = tmp2;
-      flux_in += tmp2(0);
+        // pull out fluid forces
+        tmp2(d) = aerodata[tri*13 + 9 + d] / 3.0 * forcescalingfac;
+      }
+      aerocoords[nodecounter] = tmp1;
+
+      // pull out fluid heat flux
+      tmp2(3) = aerodata[tri*13 + 12] / 3.0 * heatscalingfac;
+
+      aeroloads[nodecounter] = tmp2;
+      flux_in += tmp2(3);
+
+      nodecounter++;
     }
   }
 
@@ -722,7 +688,7 @@ void FS3I::AeroTFSI::SendAeroData(
 #ifdef INCA_COUPLING
   // ==================================================================
   // intercommunicator is used to send data to INCA proc 0
-  if(lcomm_.MyPID() == 0)
+  if(lcomm_.MyPID() == localBACIleader_)
   {
     int lengthSend = aerosenddata.size();
     //first: send length of data from aero code
@@ -735,6 +701,49 @@ void FS3I::AeroTFSI::SendAeroData(
   }
 
 #endif
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | write output of TSI system and additional restart info   ghamm 12/13 |
+ *----------------------------------------------------------------------*/
+void FS3I::AeroTFSI::Output()
+{
+  // call the TSI parameter list
+  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
+  int uprestart = tsidyn.get<int>("RESTARTEVRY");
+  if(stopflag_ != 2)
+  {
+    // do either normal output or forced output when stopflag == 1
+    tsi_->Output(stopflag_);
+  }
+  else
+  {
+    if((uprestart != 0) and (tsi_->Step()%uprestart == 0))
+    {
+      // normal restart output
+      tsi_->Output(false);
+    }
+    else
+    {
+      // forced output is written
+      tsi_->Output(true);
+    }
+  }
+
+  // write latest step to file for proper restarting
+  if(((uprestart != 0) and (tsi_->Step()%uprestart == 0)) or stopflag_!=0)
+  {
+    if(lcomm_.MyPID() == 0)
+    {
+      FILE *outFile;
+      outFile = fopen("result_status_baci.inp", "w");
+      fprintf(outFile, "%s\t%d", DRT::Problem::Instance()->OutputControlFile()->FileName().c_str(), tsi_->Step());
+      fclose(outFile);
+    }
+  }
 
   return;
 }
@@ -775,32 +784,28 @@ void FS3I::AeroTFSI::TestResults(const Epetra_Comm& comm)
  *----------------------------------------------------------------------*/
 void FS3I::AeroTFSI::PrintCouplingStrategy()
 {
-  switch(tfsi_coupling_)
+  if(lcomm_.MyPID() == 0)
   {
-  case INPAR::TSI::conforming :
-  {
-    IO::cout << "\nTFSI coupling: conforming meshes. \n" << IO::endl;
-    break;
+    switch(tfsi_coupling_)
+    {
+    case INPAR::TSI::conforming :
+    {
+      IO::cout << "\nTFSI coupling: conforming meshes. \n" << IO::endl;
+      break;
+    }
+    case INPAR::TSI::mortar_mortar_dual :
+    {
+      IO::cout << "\nTFSI coupling: mortar coupling with dual shape functions for Lagrange multiplier. \n" << IO::endl;
+      break;
+    }
+    default:
+      dserror("Coupling strategy %d is not yet implemented.", tfsi_coupling_);
+      break;
+    }
+
+    IO::cout << "\n using the following scaling parameters for length: " << aerocoupling_->LengthScaling()
+        << " and time: " << aerocoupling_->TimeScaling() << "\n" << IO::endl;
   }
-  case INPAR::TSI::mortar_mortar_dual :
-  {
-    IO::cout << "\nTFSI coupling: mortar coupling with dual shape functions for Lagrange multiplier. \n" << IO::endl;
-    break;
-  }
-  case INPAR::TSI::proj_mortar_dual:
-  {
-    IO::cout << "\nTFSI coupling: conservative projection from fluid to structure and mortar coupling \n"
-        "with dual shape functions for Lagrange multiplier for structure to fluid. \n" << IO::endl;
-    break;
-  }
-  case INPAR::TSI::proj_RBFI:
-  {
-    IO::cout << "\nTFSI coupling: conservative projection from fluid to structure and radial basis function \n"
-        "interpolation for structure to fluid. \n" << IO::endl;
-    break;
-  }
-  default:
-    dserror("Coupling strategy %d is not yet implemented.", tfsi_coupling_);
-    break;
-  }
+
+  return;
 }

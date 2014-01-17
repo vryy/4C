@@ -17,7 +17,6 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 12/11 |
  *----------------------------------------------------------------------*/
 #include "aero_tfsi_serv.H"
-#include "aero_tfsi_delaunay.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -36,9 +35,11 @@ Maintainer: Georg Hammerl
 #include "../drt_mortar/mortar_element.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_solver.H"
 #include "../drt_inpar/inpar_tsi.H"
 #include "../drt_io/io_pstream.H"
+
+#include <Epetra_FEVector.h>
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -55,7 +56,9 @@ structreduelements_(0),
 structrowmapext_(0),
 thermorowmapext_(0),
 DinvM_(0),
-serialcomm_(Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_SELF)))
+mastermaxdof_(0),
+mastermaxnodeid_(0),
+mastermaxeleid_(0)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   if(ndim != 3)
@@ -64,6 +67,8 @@ serialcomm_(Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_SELF)))
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
   fixedfluidinterface_ = DRT::INPUT::IntegralValue<INPAR::TSI::BaciIncaCoupling>(tsidyn,"TFSI_FIXED_FLUID_INTERF");
+  lengthscaling_ = Teuchos::getIntegralValue<double>(tsidyn,"TFSI_length_unit");
+  timescaling_ = Teuchos::getIntegralValue<double>(tsidyn,"TFSI_time_unit");
 
   // declare struct objects in interface
   std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > > structelements;
@@ -228,224 +233,68 @@ serialcomm_(Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_SELF)))
     // map extractor for the communication between the full thermo field and the newly created thermo surf discret
     thermorowmapext_.push_back(Teuchos::rcp(new LINALG::MapExtractor(*(thermodis->DofRowMap()),Teuchos::rcp(ithermonewdis->DofRowMap(), false))));
 
-  }
+    // importer in order to contract result values on proc0 for communication with INCA (proc0 gets everything, other procs empty)
+    Teuchos::RCP<Epetra_Map> proc0datamap = LINALG::AllreduceEMap(*istructnewdis->DofRowMap(),0);
+    istructproc0importer_.push_back(Teuchos::rcp(new Epetra_Import (*proc0datamap,*istructdis_[interf]->DofRowMap())));
+    proc0datamap = LINALG::AllreduceEMap(*ithermonewdis->DofRowMap(),0);
+    ithermoproc0importer_.push_back(Teuchos::rcp(new Epetra_Import (*proc0datamap,*ithermodis_[interf]->DofRowMap())));
 
-  // initial search radius in search tree
-  maxmindist_ = 1.0e-2;
+    // find largest dof/node/element id in TSI problem for offset in mortar
+    mastermaxdof_ = std::max(mastermaxdof_, thermodis->DofRowMap()->MaxAllGID() + 1);
+    mastermaxnodeid_ = std::max(mastermaxnodeid_, thermodis->NodeRowMap()->MaxAllGID() + 1);
+    mastermaxeleid_ = std::max(mastermaxeleid_, istructdis_[interf]->ElementRowMap()->MaxAllGID() + 1);
 
-  // find largest dof id and node id in TSI problem for offset in mortar
-  int localmastermaxdof = thermodis->DofRowMap()->MaxAllGID();
-  localmastermaxdof++;
-  com->MaxAll(&localmastermaxdof, &mastermaxdof_, 1);
-  int localmastermaxnodeid = thermodis->NodeRowMap()->MaxAllGID();
-  localmastermaxnodeid++;
-  // to get a nice number, starting from at least 10^5
-  localmastermaxnodeid = ((localmastermaxnodeid/100000)+1)*100000;
-  com->MaxAll(&localmastermaxnodeid, &mastermaxnodeid_, 1);
-  
-//  // this can be interesting when interface is allowed to move
-//  // epetra_vector with material configuration of row nodes is created
-//  matconfig_ = LINALG::CreateVector(*(istructdis_->DofRowMap()), true);
-//  for(int myl=0; myl<istructnoderowmap->NumMyElements(); myl++)
-//  {
-//    int gid = istructnoderowmap->GID(myl);
-//    const DRT::Node* node = istructdis_->gNode(gid);
-//
-//    std::vector<int> lm;
-//    lm.reserve(3);
-//    // extract global dof ids
-//    istructdis_->Dof(node, lm);
-//
-//    for (int a=0; a<3; a++)
-//    {
-//      int gid = lm[a];
-//      double val = node->X()[a];
-//      matconfig_->ReplaceGlobalValues(1, &val, &gid);
-//    }
-//  }
+    // build mortar interface and fill it initially with fully redundant master side (=structural side)
+    const Epetra_Comm& lcomm = istructdis_[interf]->Comm();
 
+    // transfer of four degrees of freedom per node
+    const int dim = 3;
+    int dofpernode = 4;
+    Teuchos::ParameterList input(DRT::Problem::Instance()->MortarCouplingParams());
+    // set options for mortar coupling
+    input.set<string>("SEARCH_ALGORITHM","Binarytree");
+    input.set<double>("SEARCH_PARAM", 0.1);
+    input.set<string>("SEARCH_USE_AUX_POS", "no");
+    input.set<string>("PARALLEL_REDIST","no");
+    input.set<string>("SHAPEFCN","dual");
+    // master side is given to the mortar interface once in the beginning with full overlap
+    input.set<string>("REDUNDANT_STORAGE","Master");
+    // for triangles which will be almost all lying in a quad element on the master side, this should be a good set of params
+    input.set<string>("INTTYPE","Elements");
+    input.set<int>("NUMGP_PER_DIM",3);
 
+    // create mortar interface for each coupling interface with INCA
+    Teuchos::RCP<MORTAR::MortarInterface> interface = Teuchos::rcp(
+        new MORTAR::MortarInterface(interf, lcomm, dim, input, INPAR::MORTAR::redundant_master));
 
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::map<int,LINALG::Matrix<3,1> > FS3I::UTILS::AeroCouplingUtils::CurrentInterfacePos
-(
-  int interf,
-  Teuchos::RCP<Epetra_Vector> redudisp
-)
-{
-  std::map<int,LINALG::Matrix<3,1> > currentpositions;
-  std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator eleiter;
-
-  //loop over all elements in the interface due to fully redundant storage
-  for(eleiter=structreduelements_[interf].begin(); eleiter!=structreduelements_[interf].end(); eleiter++)
-  {
-    Teuchos::RCP<DRT::Element> tmpele = eleiter->second;
-
-    const int* n = tmpele->NodeIds();
-
-    // fill currentpositions
-    for (int j=0; j < tmpele->NumNode(); j++)
+    // feeding master nodes to the interface including ghosted nodes
+    for(int lid=0; lid<istructdis_[interf]->NumMyColNodes(); lid++)
     {
-      const int gid = n[j];
-      const DRT::Node* node = istructdis_[interf]->gNode(gid);
-      std::vector<int> lm;
-      lm.reserve(3);
-      // extract global dof ids
-      istructdis_[interf]->Dof(node, lm);
-      std::vector<double> mydisp(3);
-      LINALG::Matrix<3,1> currpos;
+      DRT::Node* node = istructdis_[interf]->lColNode(lid);
+      std::vector<int> dofids(dofpernode);
+      // get the dofs of the structural node
+      for (int k=0; k<dim; ++k)
+       dofids[k] = istructdis_[interf]->Dof(node)[k];
+      // fill in remaining thermal dof
+      dofids[dim] = ithermodis_[interf]->Dof(ithermodis_[interf]->lColNode(lid))[0];
 
-      DRT::UTILS::ExtractMyValues(*redudisp,mydisp,lm);
+      Teuchos::RCP<MORTAR::MortarNode> mrtrnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),
+         node->X(), node->Owner(), dofpernode, dofids, false));
 
-      for (int a=0; a<3; a++)
-      {
-        currpos(a,0) = node->X()[a] + mydisp[a];
-      }
-      currentpositions[node->Id()] = currpos;
-    }
-  }
-
-    return currentpositions;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::UTILS::AeroCouplingUtils::ProjectForceOnStruct
-(
-  int interf,
-  Teuchos::RCP<Epetra_Vector> idispn,
-  std::map<int, LINALG::Matrix<3,1> >& aerocoords,
-  std::map<int, LINALG::Matrix<4,1> >& aeroforces,
-  Teuchos::RCP<Epetra_Vector> iforce,
-  Teuchos::RCP<Epetra_Vector> ithermoload
-)
-{
-  // Redistribute displacement of structural nodes on the interface to all processors --> redundant disp needed
-  Teuchos::RCP<Epetra_Import> interimpo = Teuchos::rcp(new Epetra_Import(*istructdofredumap_[interf],*(istructdis_[interf]->DofRowMap())));
-  Teuchos::RCP<Epetra_Vector> redudisp = LINALG::CreateVector(*istructdofredumap_[interf],true);
-  redudisp -> Import(*idispn,*interimpo,Add);
-
-  //current position of structural nodes for the search tree (always 3 coordinates)
-  std::map<int,LINALG::Matrix<3,1> > currentpositions = CurrentInterfacePos(interf, redudisp);
-
-  //projection of the aero forces onto the closest element of each structural interface
-  std::map<int, LINALG::Matrix<4,1> >::iterator forcesiter;
-  for(forcesiter = aeroforces.begin(); forcesiter != aeroforces.end(); ++forcesiter)
-  {
-    LINALG::Matrix<3,1> forcecoords = aerocoords[forcesiter->first];
-    //init of 3D search tree
-    Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(8));
-    const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofEles(structreduelements_[interf], currentpositions);
-    searchTree->initializeTreeSlideALE(rootBox, structreduelements_[interf], GEO::TreeType(GEO::OCTTREE));
-
-    //search for near elements to the aero coords
-    std::map<int,std::set<int> >  closeeles =
-        searchTree->searchElementsInRadius(*istructdis_[interf],currentpositions,forcecoords,maxmindist_,0);
-
-    //if no close elements could be found, try with a much larger radius and print a warning
-    if (closeeles.empty())
-    {
-      cout<<"WARNING: no elements found in radius r="<<maxmindist_<<". Will try once with a bigger radius!"<<endl;
-      closeeles = searchTree->searchElementsInRadius(*istructdis_[interf],currentpositions,forcecoords,100.0*maxmindist_,0);
-      maxmindist_ *= 10.0;
-
-      // if still no element is found, complain about it!
-      if (closeeles.empty())
-        dserror("No elements in a large radius! Should not happen!");
+      interface->AddMortarNode(mrtrnode);
     }
 
-    //search for the closest object, more exactly it's coordinates and the corresponding surface id
-    LINALG::Matrix<3,1> minDistCoords;
-    int eleid = GEO::nearest3DObjectInNode(istructdis_[interf], structreduelements_[interf], currentpositions,
-        closeeles, forcecoords, minDistCoords);
-    if(eleid == -1)
-      dserror("Surface id couldn't be found. Weird! Hence, a distribution of the aero force is not performed!");
-
-    //corresponding forces (from the aero code) to the coords that are about to be distributed
-    LINALG::Matrix<4,1> force = forcesiter->second;
-
-    //distribution of forces takes place in here
-    DistributeForceToNodes(eleid, interf, currentpositions, minDistCoords, force, iforce, ithermoload);
-
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::UTILS::AeroCouplingUtils::DistributeForceToNodes
-(
-  int eleid,
-  int interf,
-  std::map<int,LINALG::Matrix<3,1> >& currentpositions,
-  LINALG::Matrix<3,1>& projpoint,
-  LINALG::Matrix<4,1>& aeroforce,
-  Teuchos::RCP<Epetra_Vector> distributedforces,
-  Teuchos::RCP<Epetra_Vector> ithermoload
-)
-{
-  Teuchos::RCP<DRT::Element> element = structreduelements_[interf][eleid];
-
-  LINALG::Matrix<2,1> elecoord(true);
-  const LINALG::SerialDenseMatrix xyze(GEO::getCurrentNodalPositions(element, currentpositions));
-
-  //get coordinates of the projection point in parameter space of the element
-  GEO::CurrentToSurfaceElementCoordinates(element->Shape(), xyze, projpoint, elecoord);
-
-  const int numnode = element->NumNode();
-  Epetra_SerialDenseVector   funct(numnode);
-
-  // get shape functions of the element; evaluated at the projection point --> distribution
-  DRT::UTILS::shape_function_2D(funct,elecoord(0,0),elecoord(1,0),element->Shape());
-
-  for(int iter=0; iter<numnode; iter++)
-  {
-    // firstly, care about forces
-    DRT::Node* snode = element->Nodes()[iter];
-
-    // prepare assembly
-    int num = 3;
-    Epetra_SerialDenseVector val(num);
-    std::vector<int> slm;
-    slm.reserve(num);
-    std::vector<int> lmowner(num);
-    // extract global dof ids
-    istructdis_[interf]->Dof(snode, slm);
-    // aeroforce[1...3] are forces
-    for(int k=0; k<num; k++)
+    // feeding master elements to the interface
+    for(int lid=0; lid<istructdis_[interf]->NumMyColElements(); ++lid)
     {
-      val[k] = funct[iter] * aeroforce(k+1);
-      lmowner[k] = snode->Owner();
+     DRT::Element* currele = istructdis_[interf]->lColElement(lid);
+     Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(new MORTAR::MortarElement(currele->Id(),
+         currele->Owner(), currele->Shape(), currele->NumNode(), currele->NodeIds(), false));
+
+     interface->AddMortarElement(mrtrele);
     }
 
-    // do assembly of structural forces
-    LINALG::Assemble(*distributedforces,val,slm,lmowner);
-
-    // secondly, care about heat fluxes
-    DRT::Node* tnode = ithermodis_[interf]->gNode(snode->Id());
-
-    // prepare assembly
-    num = 1;
-    Epetra_SerialDenseVector tval(num);
-    std::vector<int> tlm;
-    tlm.reserve(num);
-    std::vector<int> tlmowner(num);
-    // extract global dof ids
-    ithermodis_[interf]->Dof(tnode, tlm);
-    // aeroforce[0] is a thermal flux
-    tval[0] = funct[iter] * aeroforce(0);
-    tlmowner[0] = tnode->Owner();
-
-    // do assembly of thermal fluxes
-    LINALG::Assemble(*ithermoload,tval,tlm,tlmowner);
-
+    mortarinterface_.push_back(interface);
   }
 
   return;
@@ -458,302 +307,180 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
 (
   int interf,
   Teuchos::RCP<Epetra_Vector> idispn,
-  std::map<int, LINALG::Matrix<3,1> >& aerocoords
+  std::vector<LINALG::Matrix<3,1> >& aerocoords,
+  const int nodeoffset
 )
 {
   // new mortar coupling matrices are needed in every time step
-//  if(interf == 0)
-//    DinvM_.clear();
-  // CAREFUL HERE!
-  // As long as the interface is fixed, it is enough to build the coupling matrices just once
-  if(DinvM_.size() != 0)
-    return;
+  if(interf == 0)
+    DinvM_.clear();
 
-  // Redistribute displacement of structural nodes on the interface to all processors --> redundant disp needed
-  Teuchos::RCP<Epetra_Import> interimpo = Teuchos::rcp(new Epetra_Import(*istructdofredumap_[interf],*(istructdis_[interf]->DofRowMap())));
-  Teuchos::RCP<Epetra_Vector> redudisp = LINALG::CreateVector(*istructdofredumap_[interf],true);
-  redudisp -> Import(*idispn,*interimpo,Add);
+  // remove all slave nodes and elements for new coupling
+  mortarinterface_[interf]->RemoveSingleInterfaceSide(true);
 
-  //current position of fully redundant structural interface
-  std::map<int,LINALG::Matrix<3,1> > currentpositions = CurrentInterfacePos(interf, redudisp);
+  int myrank = mortarinterface_[interf]->Comm().MyPID();
 
-  //init of 3D search tree with fluid cloud -> zeroth interface at the moment
-  Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(8));
-  const LINALG::Matrix<3,2> nodeBox = GEO::getXAABBofPositions(aerocoords);
-  searchTree->initializePointTree(nodeBox, aerocoords,GEO::TreeType(GEO::OCTTREE));
+  // transfer of four degrees of freedom per node (3 str + 1 thr) in a 3D problem
+  const int dim = 3;
+  const int dofpernode = 4;
 
-  // input data for Mortar interface which is build on each proc
-  int interfID = 0;
-  // transfer of four degrees of freedom per node
-  int dim = 3;
-  int dofpernode = 4;
-  Teuchos::ParameterList input(DRT::Problem::Instance()->MortarCouplingParams());
-  // brute force search is the only useful option because a single master element with its neighboring slave elements is in the interface
-  input.set<string>("SEARCH_ALGORITHM","bruteforce");
-  input.set<string>("PARALLEL_REDIST","no");
-  // overwrite shape function type
-  INPAR::TSI::BaciIncaCoupling tfsi_coupling =
-      DRT::INPUT::IntegralValue<INPAR::TSI::BaciIncaCoupling>(DRT::Problem::Instance()->TSIDynamicParams(),"TFSI_COUPALGO");
-  switch(tfsi_coupling)
+  // feeding slave nodes to the interface
+  // Note: offset is needed for slave dofs and slave node ids
+  for (int nodeiter = 0; nodeiter<(int)aerocoords.size(); ++nodeiter)
   {
-  case INPAR::TSI::mortar_mortar_dual :
-  case INPAR::TSI::proj_mortar_dual :
-  {
-    input.set<string>("SHAPEFCN","dual");
-    break;
-  }
-  default:
-    dserror("ERROR: Interface must have dual shape functions for the lagrange multiplier.");
-    break;
+    double nodalpos[dim];
+    for (int k=0; k<dim; ++k)
+      nodalpos[k] = aerocoords[nodeiter](k);
+    std::vector<int> dofids(dofpernode);
+    for (int k=0; k<dofpernode; ++k)
+      dofids[k] = mastermaxdof_ + (nodeiter+nodeoffset)*dofpernode + k;
+    Teuchos::RCP<MORTAR::MortarNode> mrtrnode =
+        Teuchos::rcp(new MORTAR::MortarNode(nodeiter+nodeoffset+mastermaxnodeid_, nodalpos, myrank, dofpernode, dofids, true));
+
+    mortarinterface_[interf]->AddMortarNode(mrtrnode);
   }
 
-  // generate serialmasterdofrowmap_, no overlap is allowed for merged dof map (not needed for pure thermal coupling)
-  Teuchos::RCP<Epetra_Map> serialmasterdofrowmap = LINALG::MergeMap(istructdofredumap_[interf], ithermodofredumap_[interf], false);
-  // gids and node ids on master and slave side must not be overlapping
-  Teuchos::RCP<Epetra_Map> serialslavedofrowmap = Teuchos::rcp(new Epetra_Map((int)aerocoords.size()*dofpernode, mastermaxdof_+1, *serialcomm_));
-
-  // preparation for global AssembleDM
-  Teuchos::RCP<LINALG::SparseMatrix> D = Teuchos::rcp(new LINALG::SparseMatrix(*serialslavedofrowmap, 10));
-  Teuchos::RCP<LINALG::SparseMatrix> M = Teuchos::rcp(new LINALG::SparseMatrix(*serialslavedofrowmap, 100));
-
-  for(int lid=0; lid<istructdis_[interf]->NumMyColElements(); lid++)
+  // feeding slave elements (tris) to the interface
+  int numtris = aerocoords.size()/3;
+  for (int elemiter = 0; elemiter<numtris; ++elemiter)
   {
-    DRT::Element* currele = istructdis_[interf]->lColElement(lid);
-    // centroid of currele which is used for the search tree
-    LINALG::Matrix<3,1> querypoint(true);
-
-    // create a mortar interface for each structural interface element and the corresponding nodal fluid cloud
-    MORTAR::MortarInterface interface(interfID, *serialcomm_, dim, input, INPAR::MORTAR::redundant_all);
-
-    // feeding master nodes to the interface including ghosted nodes
-    // only consider the first 'dim' dofs
-    DRT::Node** nodes = currele->Nodes();
-    int numnode = currele->NumNode();
-    for (int inode = 0; inode < numnode; ++inode)
+    std::vector<int> nodeids(3);
+    for(int k=0; k<3; ++k)
     {
-      DRT::Node* node = nodes[inode];
-      std::vector<int> dofids(dofpernode);
-      // get the dof of the structural node
-      for (int k=0;k<3;++k)
-        dofids[k] = istructdis_[interf]->Dof(node)[k];
-      // fill in remaining thermal dof with the same id as the structural node
-      dofids[3] = ithermodis_[interf]->Dof(ithermodis_[interf]->gNode(node->Id()))[0];
-
-      double nodalpos[3];
-      for (int k=0;k<3;++k)
-        nodalpos[k] = currentpositions[node->Id()](k);
-      Teuchos::RCP<MORTAR::MortarNode> mrtrnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),
-          nodalpos, /*node->Owner()*/ serialcomm_->MyPID(), dofpernode, dofids, false));
-
-      interface.AddMortarNode(mrtrnode);
-
-      // calculate centroid of element
-      for (int k=0;k<3;++k)
-        querypoint(k) += nodalpos[k]/numnode;
+      int nodeiter = elemiter*3 + k;
+      nodeids[k] = nodeiter + nodeoffset + mastermaxnodeid_;
     }
 
-    // get an idea of the size of the element to have a good guess for the searchtree
-    const int* nodeids = currele->NodeIds();
-    LINALG::Matrix<3,1> edgelength = currentpositions[nodeids[0]];
-    edgelength -= currentpositions[nodeids[2]];
+    Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(new MORTAR::MortarElement(elemiter + nodeoffset/3 + mastermaxeleid_,
+        myrank, DRT::Element::tri3, (int)nodeids.size(), &nodeids[0], true));
 
-    // TODO: FIND GOOD VALUE HERE: CURRENT 2.5
-    double radius = 2.5 * sqrt( edgelength(0)*edgelength(0) + edgelength(1)*edgelength(1) + edgelength(2)*edgelength(2) );
-    // search close fluid nodes and triangulate them
-    std::vector<int> closefluidnodes = searchTree->searchPointsInRadius(aerocoords, querypoint, radius);
-    if(closefluidnodes.size() < 9)
-      dserror("Radius to find fluid nodes is probably to small. There are just %i nodes to triangulate!", closefluidnodes.size());
+    mortarinterface_[interf]->AddMortarElement(mrtrele);
+  }
 
-    // input data for delaunay triangulation
-    std::map<int, LINALG::Matrix<3,1> > closeaerocoords;
-    for(size_t i=0;i<closefluidnodes.size(); i++)
-      closeaerocoords[closefluidnodes[i]] = aerocoords[closefluidnodes[i]];
-    std::map<int, LINALG::Matrix<3,1> > structure;
-    std::map<int, std::vector<int> > tris;
-    // arbitrarily, the first three nodes of the structural element are chosen, needed for projection before triangulation
-    for(int k=0; k<3; k++)
-      structure[k] = currentpositions[nodeids[k]];
+  // finalize the mortar interface without new ghosting
+  mortarinterface_[interf]->FillComplete(0, false);
 
-    // do Delaunay triangulation of close fluid nodes
-    FS3I::UTILS::DelaunayTriangulation(closeaerocoords, structure, tris);
+  // print parallel distribution
+//  mortarinterface_[interf]->PrintParallelDistribution(interf);
 
-    // feeding slave nodes to the interface including ghosted nodes
-    // Note: offset is needed for slave dofs and slave node ids
-    for (size_t nodeiter = 0; nodeiter<closefluidnodes.size(); ++nodeiter)
-    {
-      double pos[3];
-      int nodeid = closefluidnodes[nodeiter];
-      for (int k=0;k<3;++k) pos[k] = aerocoords[nodeid](k);
-      std::vector<int> dofids(dofpernode);
-      for (int k=0;k<dofpernode;++k) dofids[k] = (mastermaxdof_+1) + nodeid*dofpernode+k;
-      Teuchos::RCP<MORTAR::MortarNode> mrtrnode =
-          Teuchos::rcp(new MORTAR::MortarNode(nodeid+mastermaxnodeid_, pos, serialcomm_->MyPID(), dofpernode, dofids, true));
+  // we are finally interested in D and M
+  Teuchos::RCP<Epetra_Map> slavedofrowmap  = Teuchos::rcp(new Epetra_Map(*mortarinterface_[interf]->SlaveRowDofs()));
+  Teuchos::RCP<Epetra_Map> masterdofrowmap = Teuchos::rcp(new Epetra_Map(*mortarinterface_[interf]->MasterRowDofs()));
 
-      interface.AddMortarNode(mrtrnode);
-    }
+  // interface displacement has to be merged from slave and master side
+  Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofrowmap,slavedofrowmap, false);
+  Teuchos::RCP<Epetra_Vector> mergeddispn = LINALG::CreateVector(*dofrowmap, true);
 
-    // max master element ID needed for unique eleIDs in interface discretization
-    // will be used as offset for slave elements
-    int EleOffset = istructdis_[interf]->ElementRowMap()->MaxAllGID()+1;
+  // insert current displacement status of master side; slave side is placed correctly
+  for(int i=0; i<idispn->MyLength(); ++i)
+  {
+    int gid = idispn->Map().GID(i);
+    int lid = mergeddispn->Map().LID(gid);
+    (*mergeddispn)[lid] = (*idispn)[i];
+  }
 
-    // feed single master element to the interface
-    {
-      Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
-                  new MORTAR::MortarElement(currele->Id(), /*currele->Owner()*/ serialcomm_->MyPID(), currele->Shape(),
-                      currele->NumNode(), currele->NodeIds(), false));
+  // set displacement state in mortar interface
+  mortarinterface_[interf]->SetState("displacement", mergeddispn);
 
-      interface.AddMortarElement(mrtrele);
-    }
+  // create binary search tree
+  mortarinterface_[interf]->CreateSearchTree();
 
-    // feeding slave elements to the interface; take care about offset (just within mortar)
-    for (size_t elemiter = 0; elemiter < tris.size(); ++elemiter)
-    {
-      std::vector<int> nodeids = tris[elemiter];
-      std::vector<int> nodeidswithoffset(nodeids.size());
-      for(size_t n=0; n<nodeids.size(); n++)
-        nodeidswithoffset[n] = nodeids[n] + mastermaxnodeid_;
-      Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(new MORTAR::MortarElement(elemiter + EleOffset,
-          serialcomm_->MyPID(), DRT::Element::tri3, (int)nodeidswithoffset.size(), &nodeidswithoffset[0], true));
+  // in the following two steps MORTAR does all the work
+  mortarinterface_[interf]->Initialize();
+  mortarinterface_[interf]->Evaluate();
 
-      interface.AddMortarElement(mrtrele);
-    }
-
-    // finalize the mortar interface
-    interface.FillComplete();
-
-    // store maps
-    Teuchos::RCP<Epetra_Map> partialslavedofrowmap_  = interface.SlaveRowDofs();
-    Teuchos::RCP<Epetra_Map> partialmasterdofrowmap_ = interface.MasterRowDofs();
-
-    // all the following stuff has to be done once in setup
-    // in order to get initial D and M
-
-    // interface displacement (=0) has to be merged from slave and master discretization
-    Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(*partialmasterdofrowmap_,*partialslavedofrowmap_, false);
-    Teuchos::RCP<Epetra_Vector> dispn = LINALG::CreateVector(*dofrowmap, true);
-
-    // set displacement state in mortar interface
-    interface.SetState("displacement", dispn);
-
-    //in the following two steps MORTAR does all the work
-    interface.Initialize();
-    interface.Evaluate();
-
-    // preparation for local AssembleDM
-    Teuchos::RCP<LINALG::SparseMatrix> dmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*interface.SlaveRowDofs(), 10));
-    Teuchos::RCP<LINALG::SparseMatrix> mmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*interface.SlaveRowDofs(), 100));
-    interface.AssembleDM(*dmatrix, *mmatrix);
-    dmatrix->Complete();
-    mmatrix->Complete(*partialmasterdofrowmap_,*interface.SlaveRowDofs());
-
-    // add local D and M matrix entries to the global ones
-    D->Add(*dmatrix,false,1.0,1.0);
-    M->Add(*mmatrix,false,1.0,1.0);
-
-  } // END LOOP OVER ALL ELEMENTS
-
-  // build DINVM_ once at the end
+  // preparation for AssembleDM
+  Teuchos::RCP<LINALG::SparseMatrix> D = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap, 10));
+  Teuchos::RCP<LINALG::SparseMatrix> M = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap, 100));
+  mortarinterface_[interf]->AssembleDM(*D, *M);
 
   // Complete() global Mortar matrices
   D->Complete();
-  M->Complete(*serialmasterdofrowmap, *serialslavedofrowmap);
+  M->Complete(*masterdofrowmap, *slavedofrowmap);
 
-  // Build Dinv
-  Teuchos::RCP<LINALG::SparseMatrix> Dinv = Teuchos::rcp(new LINALG::SparseMatrix(*D));
-
-  // extract diagonal of invd into diag
-  Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*serialslavedofrowmap,true);
-  Dinv->ExtractDiagonalCopy(*diag);
+  // extract diagonal of D into diag
+  Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap,true);
+  D->ExtractDiagonalCopy(*diag);
 
   // set zero diagonal values to dummy 1.0
   for (int i=0;i<diag->MyLength();++i)
-    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+  if ((*diag)[i]==0.0) (*diag)[i]=1.0;
 
   // scalar inversion of diagonal values
   diag->Reciprocal(*diag);
-  Dinv->ReplaceDiagonalValues(*diag);
 
-  Dinv->Complete( D->RangeMap(), D->DomainMap() );
+  // left scale instead of matrix-matrix multiplication Dinv * M
+  int err = M->LeftScale(*diag);
+  if(err)
+    dserror("LeftScale of M matrix failed");
 
-  // MLMultiply is not prepared for nested parallelism  --> Multiply must be enough
-  Teuchos::RCP<LINALG::SparseMatrix> DinvM = Multiply(*Dinv,false,*M,false,true);
+  // store DinvM
+  DinvM_.push_back(M);
 
-  DinvM_.push_back(DinvM);
+  // visualize interface with gmsh
+//  if(myrank==0)
+//    cout << "mortar interface is printed in gmsh file format" << endl;
+//  mortarinterface_[interf]->VisualizeGmsh(0,0);
 
   return;
 }
 
 
-// for dual shape functions in mortar
-void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStructDual
+/*----------------------------------------------------------------------*
+ | transfer load vector from fluid to structure             ghamm 12/13 |
+ *----------------------------------------------------------------------*/
+void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStruct
 (
   int interf,
-  std::map<int, LINALG::Matrix<4,1> >& aeroforces,
+  std::vector<LINALG::Matrix<4,1> >& aeroforces,
   Teuchos::RCP<Epetra_Vector> iforce,
   Teuchos::RCP<Epetra_Vector> ithermoload
 )
 {
-  Teuchos::RCP<Epetra_Vector> slavevalues = LINALG::CreateVector(DinvM_[interf]->RowMap(),true);
+  Teuchos::RCP<Epetra_Vector> iload_fl = LINALG::CreateVector(DinvM_[interf]->RowMap(),true);
 
   // NOTE: There is no dofset available for artificially created fluid nodes
-  // Hence: Here in serial (LID=GID), values from aeroforces can directly be inserted into slavevalues vector
-  std::map<int, LINALG::Matrix<4,1> >::const_iterator iter;
-  for(iter=aeroforces.begin(); iter!=aeroforces.end(); ++iter)
+  // Hence: Order is important and values from aeroforces can directly be inserted into interface load vector
+  for(size_t nodeiter=0; nodeiter<aeroforces.size(); ++nodeiter)
   {
-    int nodelid = iter->first;
-    LINALG::Matrix<4,1> currforce = iter->second;
-    // first fill in tractions
-    for(int k=0; k<3; ++k)
-      (*slavevalues)[nodelid*4+k] = currforce(k+1);
-    // then fill in heat flux
-    (*slavevalues)[nodelid*4+3] = currforce(0);
+    LINALG::Matrix<4,1> currload = aeroforces[nodeiter];
+    for(size_t k=0; k<4; ++k)
+    {
+      (*iload_fl)[nodeiter*4 + k] = currload(k);
+    }
   }
 
-  // currently the interface only lives within MPI_COMM_SELF --> not parallel
-  Teuchos::RCP<Epetra_Vector> tmpmastervalues = FluidToStruct(interf, slavevalues);
+  // compute corresponding structural values using mortar
+  // return type is Epetra_MultiVector because Epetra_FEVector is used in SlaveToMaster
+  Teuchos::RCP<Epetra_MultiVector> iload_solid = SlaveToMaster(interf, iload_fl);
 
-  // hard copy of each value which actually lives on this proc; ithermoload is of type dofrowmap
-  const Epetra_BlockMap& mastermap = tmpmastervalues->Map();
-  const Epetra_BlockMap& ithermoloadmap = ithermoload->Map();
-  const Epetra_BlockMap& iforcemap = iforce->Map();
-  // lid (serial vector) --> gid (identical)--> lid (distributed vector)
-  for(int lid=0; lid<ithermoload->MyLength(); ++lid)
-    (*ithermoload)[lid] = (*tmpmastervalues)[mastermap.LID( ithermoloadmap.GID(lid) )];
+  // split data in iload_solid into structural and thermal load (4 values per node)
+  int numnodes = iload_solid->MyLength()*0.25;
+  for(int nodeiter=0; nodeiter<numnodes; ++nodeiter)
+  {
+    // structural load
+    for(int k=0; k<3; ++k)
+    {
+      int lid = nodeiter*4 + k;
+      double val = (*(*iload_solid)(0))[lid];
+      int gid = iload_solid->Map().GID(lid);
+      (*iforce)[ iforce->Map().LID(gid) ] = val;
+    }
+    // thermal load
+    int lid = nodeiter*4 + 3;
+    double val = (*(*iload_solid)(0))[lid];
+    int gid = iload_solid->Map().GID(lid);
+    (*ithermoload)[ ithermoload->Map().LID(gid) ] = val;
+  }
 
-  for(int lid=0; lid<iforce->MyLength(); ++lid)
-    (*iforce)[lid] = (*tmpmastervalues)[mastermap.LID( iforcemap.GID(lid) )];
-
-  slavevalues = Teuchos::null;
-  tmpmastervalues = Teuchos::null;
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- | master to slave transfer helper                          ghamm 11/12 |
+ | slave to master transfer helper                          ghamm 12/13 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::UTILS::AeroCouplingUtils::StructToFluid
-(
-  int interf,
-  Teuchos::RCP<Epetra_Vector> mv
-) const
-{
-  if ( not (DinvM_[interf]->DomainMap().SameAs( mv->Map())) )
-    dserror("Vector with master dof map expected");
-
-  Teuchos::RCP<Epetra_Vector> sv = Teuchos::rcp(new Epetra_Vector(DinvM_[interf]->RowMap()));
-
-  if ( DinvM_[interf]->Multiply( false, *mv, *sv ) )
-    dserror( "D^{-1}*M*mv multiplication failed" );
-
-  return sv;
-}
-
-
-/*----------------------------------------------------------------------*
- | slave to master transfer helper                          ghamm 11/12 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::UTILS::AeroCouplingUtils::FluidToStruct
+Teuchos::RCP<Epetra_MultiVector> FS3I::UTILS::AeroCouplingUtils::SlaveToMaster
 (
   int interf,
   Teuchos::RCP<Epetra_Vector> sv
@@ -762,9 +489,47 @@ Teuchos::RCP<Epetra_Vector> FS3I::UTILS::AeroCouplingUtils::FluidToStruct
   if ( not (DinvM_[interf]->RowMap().SameAs( sv->Map())) )
     dserror("Vector with slave dof map expected");
 
-  Teuchos::RCP<Epetra_Vector> mv = Teuchos::rcp(new Epetra_Vector(DinvM_[interf]->DomainMap()));
-  if (DinvM_[interf]->Multiply(true, *sv, *mv))
-    dserror( "-(D^{-1}*M)^{T}*sv multiplication failed" );
+  // Matrix vector product -(D^{-1}*M)^{T}*sv needs to be computed manually because col and domain map of DinvM have
+  // equal entries but may be shuffled.
+  // Internal importers and exporters are not built when calling DinvM_->Multiply(..) because col and domain map
+  // are tested via SameAs which gives the correct answer regarding the entries but not the order of the entries.
+  // Background: col and domain are equal because slave elements are handled in a DG like fashion meaning that there
+  // is no node that is hold by several elements. We have distinct nodes at the same position for neighboring elements.
+  // Hence there is no ghosting needed and col and domain map have equal entries
+
+#ifdef DEBUG
+  if ( not (DinvM_[interf]->DomainMap().PointSameAs( *mortarinterface_[interf]->MasterRowDofs())) )
+    dserror("Vector with master dofs does not match domain map of coupling matrix");
+#endif
+
+  // FE_Vector for assembling -(D^{-1}*M)^{T}*sv
+  Teuchos::RCP<Epetra_FEVector> mv = Teuchos::rcp(new Epetra_FEVector(*mortarinterface_[interf]->MasterRowDofs()));
+
+  int DinvM_length = DinvM_[interf]->MaxNumEntries();
+  int DinvM_numentries = 0;
+  double DinvM_values[DinvM_length];
+  int DinvM_indices[DinvM_length];
+  double results[DinvM_length];
+  for(int irow=0; irow<DinvM_[interf]->EpetraMatrix()->NumMyRows(); ++irow)
+  {
+    int rowgid = DinvM_[interf]->RowMap().GID(irow);
+    DinvM_[interf]->EpetraMatrix()->ExtractGlobalRowCopy(rowgid, DinvM_length, DinvM_numentries, &DinvM_values[0], &DinvM_indices[0]);
+
+    // transposed of DinvM_ is used
+    for(int icol=0; icol<DinvM_numentries; ++icol)
+    {
+      results[icol] = - DinvM_values[icol] * (*sv)[irow];
+    }
+
+    int err = mv->SumIntoGlobalValues(DinvM_numentries, DinvM_indices, results);
+    if (err<0)
+      dserror("summing into Epetra_FEVector failed");
+  }
+
+  // call global assemble
+  int err = mv->GlobalAssemble(Add, false);
+  if (err<0)
+    dserror("global assemble of mv failed");
 
   return mv;
 }
@@ -772,142 +537,125 @@ Teuchos::RCP<Epetra_Vector> FS3I::UTILS::AeroCouplingUtils::FluidToStruct
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::UTILS::AeroCouplingUtils::PackData
+void FS3I::UTILS::AeroCouplingUtils::TransferStructValuesToFluid
 (
   int interf,
-  Teuchos::RCP<Epetra_Vector> idispnp,
-  Teuchos::RCP<Epetra_Vector> itempnp,
+  Teuchos::RCP<const Epetra_Vector> idisp,
+  Teuchos::RCP<const Epetra_Vector> ivel,
+  Teuchos::RCP<const Epetra_Vector> itemp,
   std::vector<double>& packeddata,
   bool writedata
 )
 {
-  // make all interface data full redundant
-  // idispn
-  Teuchos::RCP<Epetra_Import> interimpo = Teuchos::rcp(new Epetra_Import(*istructdofredumap_[interf],*(istructdis_[interf]->DofRowMap())));
-  Teuchos::RCP<Epetra_Vector> redudisp = LINALG::CreateVector(*istructdofredumap_[interf],true);
-  redudisp -> Import(*idispnp,*interimpo,Add);
+  // make all interface data available on proc 0
+  // idisp and ivel
+  Teuchos::RCP<Epetra_Vector> proc0disp = Teuchos::rcp(new Epetra_Vector(istructproc0importer_[interf]->TargetMap()));
+  int err = proc0disp->Import(*idisp,*istructproc0importer_[interf],Insert);
+  if (err>0)
+    dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+  Teuchos::RCP<Epetra_Vector> proc0vel = Teuchos::rcp(new Epetra_Vector(istructproc0importer_[interf]->TargetMap()));
+  err = proc0vel->Import(*ivel,*istructproc0importer_[interf],Insert);
+  if (err>0)
+    dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
   // itemp
-  Teuchos::RCP<Epetra_Import> interimpothermo = Teuchos::rcp(new Epetra_Import(*ithermodofredumap_[interf],*(ithermodis_[interf]->DofRowMap())));
-  Teuchos::RCP<Epetra_Vector> redutemp = LINALG::CreateVector(*ithermodofredumap_[interf],true);
-  redutemp -> Import(*itempnp,*interimpothermo,Add);
+  Teuchos::RCP<Epetra_Vector> proc0temp = Teuchos::rcp(new Epetra_Vector(ithermoproc0importer_[interf]->TargetMap()));
+  err = proc0temp->Import(*itemp,*ithermoproc0importer_[interf],Insert);
+  if (err>0)
+    dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
-  // in case the fluid interface is not able to move but the structural interface is allowed to do so --> "semi-coupling"
-  // this is just a temporary implementation and should be removed soon (12.06.2013)
-  if(fixedfluidinterface_)
-    redudisp->PutScalar(0.0);
-
-  //current position of structural nodes
-  std::map<int,LINALG::Matrix<3,1> > currentpositions = CurrentInterfacePos(interf, redudisp);
-
-  int dim = 3;
-
-  std::vector<double> INCAdata;
-
-  std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator eleiter;
-  for(eleiter=structreduelements_[interf].begin(); eleiter!=structreduelements_[interf].end(); eleiter++)
+  // gather data on TSI side on proc 0
+  if(istructdis_[interf]->Comm().MyPID() == 0)
   {
-    Teuchos::RCP<DRT::Element> tmpele = eleiter->second;
-    const int* nodeids = tmpele->NodeIds();
+    if(istructdis_[interf]->lColElement(0)->NumNode() != 4)
+      dserror("current implementation only for quad4 elements in the coupling interface");
 
-    std::vector<double> midposition(true);
-    midposition.reserve(3);
-    for (int k=0;k<3;++k) midposition[k] = 0.0;
-
-    std::vector<double> midtemp(true);
-    midtemp.reserve(1);
-    midtemp[0]=0.0;
-
-    // insert nodal positions and temperature for each quad element
-    for(int j=0; j<4; j++)
+    int numcolele = istructdis_[interf]->NumMyColElements();
+    packeddata.resize(numcolele*35);
+    for(int lid=0; lid<istructdis_[interf]->NumMyColElements(); ++lid)
     {
-      int nodalgid = nodeids[j];
+      DRT::Element* struele = istructdis_[interf]->lColElement(lid);
+      // get element location vector of structural problem
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      struele->LocationVector(*istructdis_[interf],lm,lmowner,lmstride);
 
-      // insert nodal positions
-      for(int i=0; i<dim; i++)
+      // get element data
+      // disp
+      std::vector<double> eledisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*proc0disp, eledisp ,lm);
+      // vel
+      std::vector<double> elevel(lm.size());
+      DRT::UTILS::ExtractMyValues(*proc0vel, elevel ,lm);
+
+      // get element location vector of thermal problem
+      DRT::Element* threle = ithermodis_[interf]->lColElement(lid);
+      threle->LocationVector(*ithermodis_[interf],lm,lmowner,lmstride);
+
+      // get element data
+      // temp
+      std::vector<double> eletemp(lm.size());
+      DRT::UTILS::ExtractMyValues(*proc0temp, eletemp ,lm);
+
+      // fill in position, velocity and temperature for quad4 (fifth point is center point)
+      // x1y1z1 x2y2z2 x3y3z3 x4y4z4 x5y5z5  u1v1w1 u2v2w2 u3v3w3 u4v4w4 u5v5w5  T1T2T3T4T5
+      int eleoffset = lid*35;
+      std::vector<double> xcenter(3, 0.0);
+      std::vector<double> velcenter(3, 0.0);
+      double Tcenter = 0.0;
+      // loop over nodes of element
+      for(int k=0; k<4; ++k)
       {
-        midposition[i] += (0.25 * currentpositions[nodalgid](i));
+        DRT::Node** nodes = struele->Nodes();
+
+        for(int d=0; d<3; ++d)
+        {
+          // pos
+          double pos = (nodes[k]->X()[d] + eledisp[k*3 + d]) / LengthScaling();
+          packeddata[eleoffset + k*3 + d] = pos;
+          xcenter[d] += pos/4.0;
+          // vel
+          packeddata[eleoffset + (k+5)*3 + d] = (elevel[k*3 + d]) / LengthScaling() * TimeScaling();
+          velcenter[d] += elevel[k*3 + d]/4.0;
+        }
+        // temp
+        packeddata[eleoffset + 10*3 + k] = eletemp[k];
+        Tcenter += eletemp[k]/4.0;
       }
-
-      // insert nodal temperature
-      DRT::Node* tnode = ithermodis_[interf]->gNode(nodalgid);
-      std::vector<int> lmt;
-      lmt.reserve(1);
-      ithermodis_[interf]->Dof(tnode, lmt);
-
-      int lid = ithermodofredumap_[interf]->LID(lmt[0]);
-
-      midtemp[0] += (0.25 * (redutemp->operator[](lid)));
-
-    } // end of loop over four nodes
-
-    // add the gathered data
-    for(int i=0; i<dim; i++)
-    {
-      INCAdata.push_back(midposition[i]);
-    }
-    INCAdata.push_back(midtemp[0]);
-
-  } // end elements loop
-
-  // in case of a flat plate problem (which is the only problem that we solve so far),
-  // INCA assumes the following data structure for conforming interface meshes:
-  //
-  //  z    10 11 12 13 14
-  //  ^     5  6  7  8  9
-  //  |     0  1  2  3  4
-  //  --> x
-  //
-  // only proc 0 communicates with INCA --> sorting on proc 0 is enough
-  if(istructdis_[0]->Comm().MyPID() == 0)
-  {
-    std::list<sendingdata> datatobesorted;
-    {
-      size_t size = INCAdata.size();
-      size_t sizequarter = size/4;
-      for(size_t out=0; out<sizequarter; out++)
+      // center point is added
+      for(int d=0; d<3; ++d)
       {
-        sendingdata tmp;
-        tmp.x = INCAdata[out*4 + 0];
-        tmp.y = INCAdata[out*4 + 1];
-        tmp.z = INCAdata[out*4 + 2];
-        tmp.T = INCAdata[out*4 + 3];
-        datatobesorted.push_back(tmp);
+        // pos
+        packeddata[eleoffset + 4*3 + d] = xcenter[d];
+        // vel
+        packeddata[eleoffset + 9*3 + d] = velcenter[d];
       }
-
-      // sorting is done in here
-      datatobesorted.sort(MyComparePairs);
-
-      INCAdata.clear();
-      INCAdata.reserve(size);
-      for(std::list<sendingdata>::const_iterator iter=datatobesorted.begin(); iter!=datatobesorted.end(); ++iter)
-      {
-        INCAdata.push_back(iter->x);
-        INCAdata.push_back(iter->y);
-        INCAdata.push_back(iter->z);
-        INCAdata.push_back(iter->T);
-      }
+      // temp
+      packeddata[eleoffset + 10*3 + 4] = Tcenter;
     }
-  }
 
-  // do some reordering for INCA (xyzTxyzTxyzTxyzT --> xxxxyyyyzzzzTTTT)
-  size_t size = INCAdata.size();
-  packeddata.resize(size);
-  size_t sizequarter = size/4;
-  for(size_t out=0; out<sizequarter; out++)
-  {
-    for(size_t in=0; in<4; in++)
-    {
-      packeddata[in*sizequarter + out] = INCAdata[out*4 + in];
-    }
-  }
+    // output
+//    for(int i=0; i<(int)packeddata.size(); i++)
+//    {
+//      if(i%35 == 0)
+//        std::cout << "\n element " << i/35 << " is packed: ";
+//      std::cout << packeddata[i] << "  " ;
+//    }
 
-  if(istructdis_[0]->Comm().MyPID() == 0 && interf == 0 && writedata)
-  {
-    FILE *outFile;
-    outFile = fopen("interfaceTemp.txt", "a");
-    fprintf(outFile, "%.8e\n", packeddata[699]);
-    fclose(outFile);
+//    // node 305 is observed
+//    DRT::Node* node305 = istructdis_[interf]->gNode(305);
+//    std::vector<int> lm = istructdis_[interf]->Dof(node305);
+//    std::vector<double> nodedisp(lm.size());
+//    DRT::UTILS::ExtractMyValues(*proc0disp, nodedisp ,lm);
+//
+//    if(writedata == true)
+//    {
+//      FILE *outFile;
+//      outFile = fopen("interfaceDisp.txt", "a");
+//      fprintf(outFile, "%.8e  %.8e  %.8e\n", nodedisp[0]/LengthScaling(), nodedisp[1]/LengthScaling(), nodedisp[2]/LengthScaling());
+//      fclose(outFile);
+//    }
   }
 
   return;
@@ -916,163 +664,95 @@ void FS3I::UTILS::AeroCouplingUtils::PackData
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::UTILS::AeroCouplingUtils::PackDataRBFI
+void FS3I::UTILS::AeroCouplingUtils::TransferStructValuesToFluidConforming
 (
   int interf,
-  Teuchos::RCP<Epetra_Vector> idispnp,
-  Teuchos::RCP<Epetra_Vector> itempnp,
+  Teuchos::RCP<const Epetra_Vector> idisp,
+  Teuchos::RCP<const Epetra_Vector> itemp,
   std::vector<double>& packeddata,
   bool writedata
 )
 {
-  // make all interface data full redundant
-  // idispn
-  Teuchos::RCP<Epetra_Import> interimpo = Teuchos::rcp(new Epetra_Import(*istructdofredumap_[interf],*(istructdis_[interf]->DofRowMap())));
-  Teuchos::RCP<Epetra_Vector> redudisp = LINALG::CreateVector(*istructdofredumap_[interf],true);
-  redudisp -> Import(*idispnp,*interimpo,Add);
+  // make all interface data available on proc 0
+  // idisp
+  Teuchos::RCP<Epetra_Vector> proc0disp = Teuchos::rcp(new Epetra_Vector(istructproc0importer_[interf]->TargetMap()));
+  int err = proc0disp->Import(*idisp,*istructproc0importer_[interf],Insert);
+  if (err>0)
+    dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
   // itemp
-  Teuchos::RCP<Epetra_Import> interimpothermo = Teuchos::rcp(new Epetra_Import(*ithermodofredumap_[interf],*(ithermodis_[interf]->DofRowMap())));
-  Teuchos::RCP<Epetra_Vector> redutemp = LINALG::CreateVector(*ithermodofredumap_[interf],true);
-  redutemp -> Import(*itempnp,*interimpothermo,Add);
+  Teuchos::RCP<Epetra_Vector> proc0temp = Teuchos::rcp(new Epetra_Vector(ithermoproc0importer_[interf]->TargetMap()));
+  err = proc0temp->Import(*itemp,*ithermoproc0importer_[interf],Insert);
+  if (err>0)
+    dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
-  // in case the fluid interface is not able to move but the structural interface is allowed to do so --> "semi-coupling"
-  // this is just a temporary implementation and should be removed soon (12.06.2013)
-  if(fixedfluidinterface_)
-    redudisp->PutScalar(0.0);
-
-  std::vector<double> INCAdata;
-
-  for(int i=0; i<istructdis_[interf]->NodeColMap()->NumMyElements(); i++)
+  // gather data on TSI side on proc 0
+  if(istructdis_[interf]->Comm().MyPID() == 0)
   {
-      // insert nodal position
-      DRT::Node* snode = istructdis_[interf]->lColNode(i);
-      std::vector<int> lms;
-      lms.reserve(3);
-      istructdis_[interf]->Dof(snode, lms);
-      std::vector<double> mydisp(3);
-      DRT::UTILS::ExtractMyValues(*redudisp,mydisp,lms);
-      for (int a=0; a<3; a++)
+    if(istructdis_[interf]->lColElement(0)->NumNode() != 4)
+      dserror("current implementation only for quad4 elements in the coupling interface");
+
+    int numcolele = istructdis_[interf]->NumMyColElements();
+    packeddata.resize(numcolele*4);
+    for(int lid=0; lid<istructdis_[interf]->NumMyColElements(); ++lid)
+    {
+      DRT::Element* struele = istructdis_[interf]->lColElement(lid);
+      // get element location vector of structural problem
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      struele->LocationVector(*istructdis_[interf],lm,lmowner,lmstride);
+
+      // get element data
+      // disp
+      std::vector<double> eledisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*proc0disp, eledisp ,lm);
+
+      // get element location vector of thermal problem
+      DRT::Element* threle = ithermodis_[interf]->lColElement(lid);
+      threle->LocationVector(*ithermodis_[interf],lm,lmowner,lmstride);
+
+      // get element data
+      // temp
+      std::vector<double> eletemp(lm.size());
+      DRT::UTILS::ExtractMyValues(*proc0temp, eletemp ,lm);
+
+      // fill in center position and temperature of quad4
+      // x1y1z1 T1
+      int eleoffset = lid*4;
+      std::vector<double> xcenter(3, 0.0);
+      double Tcenter = 0.0;
+      // loop over nodes of element
+      for(int k=0; k<4; ++k)
       {
-        INCAdata.push_back( snode->X()[a] + mydisp[a] );
+        DRT::Node** nodes = struele->Nodes();
+
+        for(int d=0; d<3; ++d)
+        {
+          // pos
+          double pos = (nodes[k]->X()[d] + eledisp[k*3 + d]) / LengthScaling();
+          xcenter[d] += pos/4.0;
+        }
+        // temp
+        Tcenter += eletemp[k]/4.0;
       }
-
-      // insert nodal temperature
-      DRT::Node* tnode = ithermodis_[interf]->lColNode(i);
-      std::vector<int> lmt;
-      lmt.reserve(1);
-      ithermodis_[interf]->Dof(tnode, lmt);
-      std::vector<double> mytemp(1);
-      DRT::UTILS::ExtractMyValues(*redutemp,mytemp,lmt);
-      INCAdata.push_back( mytemp[0] );
-
-  } // end nodecolmap loop
-
-
-//  // do some reordering for INCA (xyzTxyzTxyzTxyzT --> xxxxyyyyzzzzTTTT)
-  size_t size = INCAdata.size();
-  packeddata.resize(size);
-  size_t sizequarter = size/4;
-  for(size_t out=0; out<sizequarter; out++)
-  {
-    for(size_t in=0; in<4; in++)
-    {
-      packeddata[in*sizequarter + out] = INCAdata[out*4 + in];
+      // center point is written
+      for(int d=0; d<3; ++d)
+      {
+        // pos
+        packeddata[eleoffset + d] = xcenter[d];
+      }
+      // temp
+      packeddata[eleoffset + 3] = Tcenter;
     }
-  }
 
-  if(istructdis_[0]->Comm().MyPID() == 0 && interf == 0 && writedata)
-  {
-    FILE *outFile;
-    outFile = fopen("interfaceTemp.txt", "a");
-    fprintf(outFile, "%.8e\n", packeddata[699]);
-    fclose(outFile);
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::UTILS::AeroCouplingUtils::TransferStructValuesToFluidDual
-(
-  int interf,
-  int sizeofphysicaldomain,
-  std::map<int, LINALG::Matrix<3,1> >& aerocoords,
-  Teuchos::RCP<Epetra_Vector> idispnp,
-  Teuchos::RCP<Epetra_Vector> itempnp,
-  std::vector<double>& packeddata,
-  bool writedata /* = true*/
-)
-{
-  // make all interface data fully redundant
-  // idispn
-  Teuchos::RCP<Epetra_Import> interimpo = Teuchos::rcp(new Epetra_Import(*istructdofredumap_[interf],*(istructdis_[interf]->DofRowMap())));
-  Teuchos::RCP<Epetra_Vector> redudisp = LINALG::CreateVector(*istructdofredumap_[interf],true);
-  redudisp -> Import(*idispnp,*interimpo,Add);
-
-  // itemp
-  Teuchos::RCP<Epetra_Import> interimpothermo = Teuchos::rcp(new Epetra_Import(*ithermodofredumap_[interf],*(ithermodis_[interf]->DofRowMap())));
-  Teuchos::RCP<Epetra_Vector> redutemp = LINALG::CreateVector(*ithermodofredumap_[interf],true);
-  redutemp -> Import(*itempnp,*interimpothermo,Add);
-
-  // in case the fluid interface is not able to move but the structural interface is allowed to do so --> "semi-coupling"
-  // this is just a temporary implementation and should be removed soon (12.06.2013)
-  if(fixedfluidinterface_)
-    redudisp->PutScalar(0.0);
-
-  Teuchos::RCP<Epetra_Vector> mastervalues = LINALG::CreateVector(DinvM_[interf]->DomainMap(), true);
-
-  const Epetra_BlockMap& mastermap = mastervalues->Map();
-  const Epetra_BlockMap& ithermomap = redutemp->Map();
-  const Epetra_BlockMap& istructmap = redudisp->Map();
-  // lid (serial vector) --> gid (identical)--> lid (distributed vector)
-  for(int lid=0; lid<redudisp->MyLength(); ++lid)
-    (*mastervalues)[mastermap.LID( istructmap.GID(lid))] = (*redudisp)[lid];
-
-  for(int lid=0; lid<redutemp->MyLength(); ++lid)
-    (*mastervalues)[mastermap.LID( ithermomap.GID(lid))] = (*redutemp)[lid];
-
-  // currently the interface only lives within MPI_COMM_SELF --> not parallel
-  Teuchos::RCP<Epetra_Vector> slavevalues = StructToFluid(interf, mastervalues);
-
-  if(slavevalues->MyLength() != 4*(int)aerocoords.size())
-    dserror("this is not possible because aerocoords were used for building mortar matrices");
-
-  if(sizeofphysicaldomain > (int)aerocoords.size())
-    dserror("Physical domain is larger (%i) than size of aerocoords (%i); is the additional boundary layer missing?", sizeofphysicaldomain, aerocoords.size());
-
-  std::vector<double> INCAdata;
-  for(int i=0; i<sizeofphysicaldomain; i++)
-  {
-    // add the gathered data
-    for(int dim=0; dim<3; dim++)
-    {
-      INCAdata.push_back((aerocoords[i](dim))+((*slavevalues)[i*4+dim]));
-    }
-    // only pull out temperatures here at the moment
-    INCAdata.push_back((*slavevalues)[i*4+3]);
-  }
-
-  // do some reordering for INCA (xyzTxyzTxyzTxyzT --> xxxxyyyyzzzzTTTT)
-  size_t size = INCAdata.size();
-  packeddata.resize(size);
-  size_t sizequarter = size/4;
-  for(size_t out=0; out<sizequarter; out++)
-  {
-    for(size_t in=0; in<4; in++)
-    {
-      packeddata[in*sizequarter + out] = INCAdata[out*4 + in];
-    }
-  }
-
-  if(istructdis_[0]->Comm().MyPID() == 0 && interf == 0 && writedata)
-  {
-    FILE *outFile;
-    outFile = fopen("interfaceTemp.txt", "a");
-    fprintf(outFile, "%.8e\n", packeddata[699]);
-    fclose(outFile);
+    // output
+//    for(int i=0; i<(int)packeddata.size(); i++)
+//    {
+//      if(i%4 == 0)
+//        std::cout << "\n element " << i/4 << " is packed: ";
+//      std::cout << packeddata[i] << "  " ;
+//    }
   }
 
   return;
@@ -1102,7 +782,7 @@ Teuchos::RCP<Epetra_Vector> FS3I::UTILS::AeroCouplingUtils::ThrExtractInterfaceV
 
 
 /// apply interface tractions from the interface to a full field
-void FS3I::UTILS::AeroCouplingUtils::StrApplyInterfaceVal
+void FS3I::UTILS::AeroCouplingUtils::StrInsertInterfaceVal
 (
   int interf,
   Teuchos::RCP<Epetra_Vector> iforce,
@@ -1115,7 +795,7 @@ void FS3I::UTILS::AeroCouplingUtils::StrApplyInterfaceVal
 
 
 /// apply interface heat flux from the interface to a full field
-void FS3I::UTILS::AeroCouplingUtils::ThrApplyInterfaceVal
+void FS3I::UTILS::AeroCouplingUtils::ThrInsertInterfaceVal
 (
   int interf,
   Teuchos::RCP<Epetra_Vector> iforce,

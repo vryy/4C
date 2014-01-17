@@ -99,6 +99,12 @@ void TSI::Algorithm::Output(bool forced_writerestart)
   int uprestart = tsidyn.get<int>("RESTARTEVRY");
   // communicate the deformation to the thermal field,
   // current displacements are contained in Dispn()
+  if( forced_writerestart == true and
+      ( (upres!=0 and (Step()%upres == 0)) or ((uprestart != 0) and (Step()%uprestart == 0)) ) )
+  {
+    // displacement has already been written into thermo field for this step
+    return;
+  }
   if ( (upres!=0 and (Step()%upres == 0))
     or ( (uprestart != 0) and (Step()%uprestart == 0) )
     or forced_writerestart == true )

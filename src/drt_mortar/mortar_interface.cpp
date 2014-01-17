@@ -255,9 +255,74 @@ void MORTAR::MortarInterface::AddMortarElement(Teuchos::RCP<MORTAR::MortarElemen
 }
 
 /*----------------------------------------------------------------------*
+ |  delete all elements/nodes on one side of the interface   ghamm 11/13|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
+{
+  Teuchos::RCP<Epetra_Map> elecolmap;
+  Teuchos::RCP<Epetra_Map> nodecolmap;
+
+  if(idiscret_->Filled())
+  {
+    // extract maps before deleting first element/node
+    if(slaveside == true)
+    {
+      elecolmap = SlaveColElements();
+      nodecolmap = SlaveColNodes();
+    }
+    else
+    {
+      elecolmap = MasterColElements();
+      nodecolmap = MasterColNodes();
+    }
+
+    // delete elements on desired side
+    for(int i=0; i<elecolmap->NumMyElements(); ++i)
+    {
+      int gid = elecolmap->GID(i);
+      idiscret_->DeleteElement(gid);
+    }
+
+    // delete nodes on desired side
+    for(int i=0; i<nodecolmap->NumMyElements(); ++i)
+    {
+      int gid = nodecolmap->GID(i);
+      idiscret_->DeleteNode(gid);
+    }
+  }
+  else
+  {
+    idiscret_->FillComplete(false, false, false);
+    // extract maps before deleting first element/node
+    elecolmap = Teuchos::rcp(new Epetra_Map(*idiscret_->ElementColMap()));
+    nodecolmap = Teuchos::rcp(new Epetra_Map(*idiscret_->NodeColMap()));
+
+    // delete elements on desired side
+    for(int i=0; i<elecolmap->NumMyElements(); ++i)
+    {
+     int gid = elecolmap->GID(i);
+     bool isslave = static_cast<MORTAR::MortarElement*>(idiscret_->gElement(gid))->IsSlave();
+     if(isslave == slaveside)
+       idiscret_->DeleteElement(gid);
+    }
+
+    // delete nodes on desired side
+    for(int i=0; i<nodecolmap->NumMyElements(); ++i)
+    {
+     int gid = nodecolmap->GID(i);
+     bool isslave = static_cast<MORTAR::MortarNode*>(idiscret_->gNode(gid))->IsSlave();
+     if(isslave == slaveside)
+       idiscret_->DeleteNode(gid);
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  finalize construction of interface (public)              mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::FillComplete(int maxdof)
+void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
 {
   // store maximum global dof ID handed in
   // this ID is later needed when setting up the Lagrange multiplier
@@ -549,7 +614,9 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
   // fully overlapping column layout, for the ease of interface search)
   // (the only exceptions are self contact and coupled problems, where
   // also the slave is still made fully redundant)
-  CreateInterfaceGhosting();
+  // ghosting can be skipped if the desired parallel layout is already present
+  if(newghosting)
+    CreateInterfaceGhosting();
 
   // make sure discretization is complete
   Discret().FillComplete(true,false,false);

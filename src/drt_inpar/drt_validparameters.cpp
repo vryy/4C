@@ -2449,24 +2449,46 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("MERGE_TSI_BLOCK_MATRIX","No","Merge TSI block matrix",&tsidyn);
 
   // Coupling strategy for BACI-INCA coupling (TFSI)
-  setStringToIntegralParameter<int>("TFSI_COUPALGO","tfsi_conforming",
+  setStringToIntegralParameter<int>("TFSI_COUPALGO","tfsi_mortar_mortar_dual",
     "Coupling strategies for BACI-INCA coupling (TFSI)",
     tuple<std::string>(
       "tfsi_conforming",
-      "tfsi_mortar_mortar_dual",
-      "tfsi_proj_mortar_dual",
-      "tfsi_proj_RBFI"),
+      "tfsi_mortar_mortar_dual"),
     tuple<int>(
       INPAR::TSI::conforming,
-      INPAR::TSI::mortar_mortar_dual,
-      INPAR::TSI::proj_mortar_dual,
-      INPAR::TSI::proj_RBFI),
+      INPAR::TSI::mortar_mortar_dual),
       &tsidyn
       );
 
-  BoolParameter("TFSI_MORTAR_ADDITIONAL_BOUNDLAYER","No","additional boundary layer for mortar coupling",&tsidyn);
+  // scaling factor for AeroTFSI problems when length unit other than SI [m] is used
+  setStringToIntegralParameter<double>("TFSI_length_unit","m",
+    "Used unit for extension in the structural model in AeroTFSI",
+    tuple<std::string>(
+      "m",
+      "cm",
+      "mm"),
+    tuple<double>(
+        1.0,
+        100.0,
+        1000.0),
+    &tsidyn
+    );
+
+  // scaling factor for AeroTFSI problems when time unit other than SI [s] is used
+  setStringToIntegralParameter<double>("TFSI_time_unit","s",
+    "Used unit for time in the structural model in AeroTFSI",
+    tuple<std::string>(
+      "s",
+      "ms",
+      "mikros"),
+    tuple<double>(
+        1.0,
+        1.0e3,
+        1.0e6),
+    &tsidyn
+    );
+
   BoolParameter("TFSI_FIXED_FLUID_INTERF","Yes","fluid interface is fixed",&tsidyn);
-  BoolParameter("TFSI_FLUID_FORCES_TRANSFER","No","fluid forces are transferred to BACI",&tsidyn);
 
   // Output type
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tsidyn);

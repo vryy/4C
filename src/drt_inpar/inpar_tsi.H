@@ -47,9 +47,7 @@ namespace TSI
   {
     undefinded,
     conforming,
-    mortar_mortar_dual,
-    proj_mortar_dual,
-    proj_RBFI
+    mortar_mortar_dual
   };
 
   //! @name Solution technique and related stuff
