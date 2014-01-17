@@ -2011,7 +2011,7 @@ void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions
       // first write node global ids (default)
       for (int inode=0; inode<proc0map->NumGlobalElements(); ++inode)
       {
-        Write(geofile,static_cast<float>(proc0map->GID(inode))+1);
+        Write(geofile,proc0map->GID(inode)+1);
         // gid+1 delivers the node numbering of the *.dat file starting with 1
       }
     }
