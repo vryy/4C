@@ -318,9 +318,18 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
+   * \brief assign nodes to cells by brute-force search - used for boundaries
+   *
+   *///                                                   (public) nis Jan14
+  /*------------------------------------------------------------------------*/
+  virtual void AssignNodesToCells(
+    std::map<int,Teuchos::RCP<DRT::Element> >& cells,
+    const std::vector<int>& nodeids
+    );
+
+  /*------------------------------------------------------------------------*/
+  /*!
    * \brief assignment node<>{knot,cell} by neighbourhood search
-   *
-   *
    *
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
@@ -526,6 +535,24 @@ private:
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
   virtual void BuildKnotToElementPointers();
+
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Build the geometry of lines for a certain line condition
+   *        and assign nodes to new meshfree elements
+   *///                                                   (public) nis Jan14
+  /*------------------------------------------------------------------------*/
+  virtual void BuildLinesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
+
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Build the geometry of surfaces for a certain surface condition
+   *        and assign nodes to new meshfree elements
+   *///                                                   (public) nis Jan14
+  /*------------------------------------------------------------------------*/
+  virtual void BuildSurfacesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
+
+
 
 protected:
 

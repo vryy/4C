@@ -189,26 +189,3 @@ bool DRT::MESHFREE::Cell::BuildKnotPointers(DRT::MESHFREE::MeshfreeNode** knots)
   for (int i=0; i<NumKnot(); ++i) knot_[i] = knots[i];
   return true;
 }
-
-//DRT::MESHFREE::Cell::MeshfreeDiscretizationType DRT::MESHFREE::StringToDistype(std::string name)
-//{
-//  static std::map<std::string,DRT::MESHFREE::Cell::MeshfreeDiscretizationType> gid2distype;
-//  if (gid2distype.size()==0)
-//  {
-//    gid2distype["HEX8"]     = DRT::MESHFREE::Cell::hex8;
-//    gid2distype["TET4"]     = DRT::MESHFREE::Cell::tet4;
-//    gid2distype["QUAD4"]    = DRT::MESHFREE::Cell::quad4;
-//    gid2distype["TRI3"]     = DRT::MESHFREE::Cell::tri3;
-//    gid2distype["LINE2"]    = DRT::MESHFREE::Cell::line2;
-//    gid2distype["POINT1"]   = DRT::MESHFREE::Cell::point1;
-//    gid2distype["DIS_NONE"] = DRT::MESHFREE::Cell::dis_none;
-//    gid2distype["MAX_DISTYPE"] = DRT::MESHFREE::Cell::max_distype;
-//  }
-//
-//  std::map<std::string,DRT::MESHFREE::Cell::MeshfreeDiscretizationType>::iterator i;
-//  i = gid2distype.find(name);
-//  if (i!=gid2distype.end())
-//    return i->second;
-//  dserror("unsupported distype '%s'",name.c_str());
-//  return DRT::MESHFREE::Cell::dis_none;
-//}

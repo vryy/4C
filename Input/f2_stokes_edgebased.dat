@@ -8,7 +8,8 @@
 General Data File C_CARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Stokes_Cavity_MaxEnt_PolynomialProjection_Input_Testing
+LinearStokes_SkewFlow_EdgeBased_Input_Testing
+// tests linearity of stokes problem - should give exact results after one step
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      100
 //NODES                         121
@@ -38,23 +39,30 @@ CONVTOL                         1.0E-9
 NUMSTASTEPS                     0
 INITIALFIELD                    zero_field
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based
+STABTYPE                        edge_based
 TRANSIENT                       no_transient    
-SUPG                            no
-DEFINITION_TAU                  Hughes_Franca_Balestra_wo_dt
-GRAD_DIV                        no
+--------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
+EOS_PRES                        std_eos                         // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 none                            // none, std_eos, xfem_gp
+EOS_CONV_CROSS                  none                            // none, std_eos, xfem_gp
+EOS_DIV                         none                            // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_DEFINITION_TAU              Burman_Fernandez
+EOS_H_DEFINITION                EOS_he_surf_with_max_diameter   // EOS_he_max_dist_to_opp_surf     //
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR -0.5 -0.5 0 FUNCTION x-y
-FUNCT1 COMPONENT 1 EXPR -0.5 -0.5 0 FUNCTION -y
+FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION x-y
+FUNCT1 COMPONENT 1 EXPR 0 0 0 FUNCTION 0 //-y
+----------------------------------------------------------------------FUNCT2
+FUNCT2 COMPONENT 0 EXPR 0 0 0 FUNCTION 0
+FUNCT2 COMPONENT 1 EXPR 0 0 0 FUNCTION 0 //-y
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 97  QUANTITY velx     VALUE  0.0 TOLERANCE 1e-12
-FLUID DIS fluid NODE 97  QUANTITY vely     VALUE -0.2 TOLERANCE 1e-12
-FLUID DIS fluid NODE 97  QUANTITY pressure VALUE  0.3 TOLERANCE 1e-12
+FLUID DIS fluid NODE 61  QUANTITY velx     VALUE  0.0 TOLERANCE 1e-12
+FLUID DIS fluid NODE 61  QUANTITY vely     VALUE  0.0 TOLERANCE 1e-12
+FLUID DIS fluid NODE 61  QUANTITY pressure VALUE  0.0 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1   QUANTITY pressure VALUE -0.5 TOLERANCE 1e-12
 FLUID DIS fluid NODE 121 QUANTITY pressure VALUE  0.5 TOLERANCE 1e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
@@ -69,6 +77,9 @@ E 1 - fluid NUMMODES 3 ONOFF 0 0 1 integration
 DSURF                           1
 //                              Body_force
 E 1 - none 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
+//DLINE                           1
+//E 4 - none 1 1 0 0 0 0 -1.0 -1.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 1 1 0 // Node_topright   

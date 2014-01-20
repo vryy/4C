@@ -13,6 +13,7 @@ Maintainer: Keijo Nissen
 */
 /*----------------------------------------------------------------------*/
 #include <vector>
+#include "drt_meshfree_cell.H"
 
 #ifndef DRT_MESHFREE_UTILS_H
 #define DRT_MESHFREE_UTILS_H
@@ -27,6 +28,7 @@ namespace DRT
 
 namespace MESHFREE
 {
+  class Cell;
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -42,6 +44,17 @@ namespace MESHFREE
   std::vector<int> ReduceDimensionOfFaceNodes(
     const LINALG::SerialDenseMatrix & xyz,
     LINALG::SerialDenseMatrix       & xyz_reduced
+    );
+
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Return coordinates of cell center computed by knot positions
+   *///                                                   (public) nis Jan14
+  /*------------------------------------------------------------------------*/
+  void CellCenterAndMaxRadius(
+    const DRT::MESHFREE::Cell* cell,
+    LINALG::Matrix<3,1>&  center,
+    double& max_radius
     );
 
 } // namespace MESHFREE

@@ -149,8 +149,16 @@ public:
   /*------------------------------------------------------------------------*/
   virtual void Unpack(const std::vector<char>& data);
 
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Return the parameters determining the meshfree approximation
+   *
+   *///                                                   (public) nis Feb12
+  /*------------------------------------------------------------------------*/
+  Teuchos::ParameterList const * const Params() const { return params_.get(); };
+
   /*========================================================================*/
-  //! @name Query methods
+  //! @name Knot methods
   /*========================================================================*/
 
   /*------------------------------------------------------------------------*/
@@ -251,14 +259,6 @@ public:
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
   virtual void Print(std::ostream& os) const;
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Return the parameters determining the meshfree approximation
-   *
-   *///                                                   (public) nis Feb12
-  /*------------------------------------------------------------------------*/
-  Teuchos::ParameterList const * const Params() const { return params_.get(); };
 
   /*------------------------------------------------------------------------*/
   //! @name Public methods to be used by DRT::Discretization only

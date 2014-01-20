@@ -291,9 +291,7 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualStandard::UpdateParams(
   LINALG::Matrix<dim,dim>         & J    ,
   const int                         na   , // number of nodes
   const LINALG::SerialDenseVector & q    ,
-  LINALG::SerialDenseMatrix       & c    , // THIS SHOULD BE CONST!!! (Impossible
-                                           // because of LINALG::Matrix-view on its
-                                           // columns for ca)
+  const LINALG::SerialDenseMatrix & c    ,
   const LINALG::Matrix<dim,1>     & lam    // unknown Lagrange multiplier
   )
 {
@@ -312,7 +310,7 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualStandard::UpdateParams(
    *------------------------------------------------------------------------*/
   for (int i=0; i<na; i++) {
     // temporary vector for compliance of node a
-    const LINALG::Matrix<dim,1> ca(c[i],true);
+    const LINALG::Matrix<dim,1> ca(const_cast<double*>(c[i]),true);
     // functi = q_i exp(lam_j c_ji) [/ (q_k exp(-lam_l c_lk))]
     funct[i] = q[i] * exp(-lam.Dot(ca));
     // r_i  = funct_j c_ij

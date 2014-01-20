@@ -13,10 +13,11 @@
  *
 \*--------------------------------------------------------------------------*/
 
-#include "../drt_lib/drt_globalproblem.H"
 #include "drt_meshfree_discret.H"
+#include "drt_meshfree_utils.H"
 #include "drt_meshfree_node.H"
 #include "drt_meshfree_cell.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_maxent_basisfunctions.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_factory.H"
@@ -248,6 +249,53 @@ void DRT::MESHFREE::MeshfreeDiscretization::UnPackMyKnots(Teuchos::RCP<std::vect
   }
   // in case AddKnot forgets...
   Reset();
+}
+
+/*----------------------------------------------------------------------------*
+ |  Assign nodes to cells (protected)                               nis Jan14
+ |TODO: more intelligent search for surfaces than brute force
+ *----------------------------------------------------------------------------*/
+void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToCells(
+  std::map<int,Teuchos::RCP<DRT::Element> >& cells,
+  const std::vector<int>& nodeids
+  )
+{
+  // initialize variables for neighbourhood-check
+  LINALG::Matrix<3,1> center(true);
+  double maxcellradius(0.0);
+  const double range = solutionapprox_->GetRange();
+
+  // loop over all cells
+  for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator it = cells.begin(); it!=cells.end(); ++it)
+  {
+    // create vectors to hold node ids and pointers
+    std::vector<int> condnodeids(0);
+    std::vector<DRT::Node*> condnodes(0);
+
+    // get cell center and maximum radius
+    DRT::MESHFREE::Cell* ccell = dynamic_cast<DRT::MESHFREE::Cell*>(&(*(it->second)));
+    if (ccell==NULL)
+      dserror("Something went wrong when castint element to meshfree cell.");
+    CellCenterAndMaxRadius(ccell, center, maxcellradius);
+    const double truerange = range+maxcellradius;
+
+    // brute force search for nodes in neighbourhood
+    for (unsigned i=0; i<nodeids.size(); ++i)
+    {
+      DRT::Node* cnode = gNode(nodeids[i]);
+      LINALG::Matrix<3,1> dist(cnode->X());
+      dist.Update(1.0,center,1.0);
+      if (dist.Norm2()<truerange)
+      {
+        condnodeids.push_back(cnode->Id());
+        condnodes.push_back(cnode);
+      }
+    }
+
+    // set node ids and nodal pointers of cell
+    it->second->SetNodeIds(condnodeids.size(), condnodeids.data());
+    it->second->BuildNodalPointers(condnodes.data());
+  }
 }
 
 

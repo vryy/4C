@@ -102,7 +102,7 @@ DRT::ELEMENTS::MeshfreeFluidBoundary::~MeshfreeFluidBoundary()
  *--------------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::MeshfreeFluidBoundary::Shape() const
 {
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
+  return DRT::UTILS::getShapeOfBoundaryElement(NumKnot(), ParentElement()->Shape());
 }
 
 /*---------------------------------------------------------------------------*

@@ -573,7 +573,7 @@ DRT::ELEMENTS::MeshfreeTransportBoundary::~MeshfreeTransportBoundary()
  *---------------------------------------------------------------------------*/
 inline DRT::Element::DiscretizationType DRT::ELEMENTS::MeshfreeTransportBoundary::Shape() const
 {
-  return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
+  return DRT::UTILS::getShapeOfBoundaryElement(NumKnot(), ParentElement()->Shape());
 }
 
 /*---------------------------------------------------------------------------*

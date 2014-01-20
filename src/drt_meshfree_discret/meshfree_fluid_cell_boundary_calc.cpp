@@ -104,6 +104,10 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
   if (discret_==NULL)
     dserror("dynamic_cast of discretization to meshfree discretization failed!");
 
+  // through dserror for ALE
+  if (cell->ParentElement()->IsAle())
+    dserror("Can't handle ALE for meshfree Neumann boundaries, yet!");
+
   // ---------------------------------------------------------------------
   // set size of all vectors of SerialDense element arrays
   // ---------------------------------------------------------------------
@@ -117,7 +121,16 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
   nxyz_.LightShape(bdrynsd_,bdrynen_);
 
   //------------------------------------------------------------------------
-  // compute timefac
+  // get values, switches and spatial functions from the condition
+  // (assumed to be constant on element boundary)
+  //------------------------------------------------------------------------
+
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+  const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
+
+  //------------------------------------------------------------------------
+  // compute factor of curve time and density
   //------------------------------------------------------------------------
 
   // find out whether we will use a time curve
@@ -133,18 +146,8 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
   if (curvenum>=0 && usetime)
     curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
-  // get values, switches and spatial functions from the condition
-  // (assumed to be constant on element boundary)
-  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
-  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
-  const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
-
   // get time factor for Neumann term
-  const double timefac = fldparatimint_->TimeFacRhs();
-
-  // through dserror for ALE
-  if (cell->ParentElement()->IsAle())
-    dserror("Can't handle ALE for meshfree Neumann boundaries, yet!");
+  const double curve_time_fac = curvefac * fldparatimint_->TimeFacRhs();
 
   //------------------------------------------------------------------------
   // get local node coordinates
@@ -233,7 +236,7 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
     //------------------------------------------------------------------------
 
     // aggregate all factors but factor given by spatial function
-    const double fac_curve_time_dens = fac_*curvefac*timefac*densfac_;
+    const double fac_curve_time_dens = fac_ * densfac_ * curve_time_fac;
 
     // factor given by spatial function
     double functfac = 1.0;

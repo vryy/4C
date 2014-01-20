@@ -1864,6 +1864,15 @@ private:
   virtual void BuildElementToElementPointers();
 
   /*!
+  \brief Build the geometry of surfaces belonging to the structure-fluid
+  volume coupling condition -> this is special since an associated volume
+  conditions also needs to be considered
+  */
+  void FindAssociatedEleIDs(Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string name);
+
+protected:
+
+  /*!
   \brief Build the geometry of lines for a certain line condition
 
   */
@@ -1880,15 +1889,6 @@ private:
 
   */
   virtual void BuildVolumesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
-
-  /*!
-  \brief Build the geometry of surfaces belonging to the structure-fluid
-  volume coupling condition -> this is special since an associated volume
-  conditions also needs to be considered
-  */
-  void FindAssociatedEleIDs(Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string name);
-
-protected:
 
   /*!
   \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)

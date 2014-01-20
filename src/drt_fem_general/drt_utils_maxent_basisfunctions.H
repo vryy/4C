@@ -191,7 +191,7 @@ private:
         LINALG::Matrix<dim,dim>         & ,
         int                       const   ,
         LINALG::SerialDenseVector const & ,
-        LINALG::SerialDenseMatrix       & ,
+        LINALG::SerialDenseMatrix const & ,
         LINALG::Matrix<dim,1>     const &
       ) = 0;
 
@@ -231,9 +231,7 @@ private:
         LINALG::Matrix<dim,dim>         & J    , //!< (o) inverted Hessian of dual function
         int                       const   na   , //!< (i) number of nodes
         LINALG::SerialDenseVector const & q    , //!< (i) prior functions
-        LINALG::SerialDenseMatrix       & c    , //!< (i) constraints (should be const
-                                                 //! but not possible due to LINALG::Matrix-view
-                                                 //! on colums)
+        LINALG::SerialDenseMatrix const & c    , //!< (i) constraints
         LINALG::Matrix<dim,1>     const & lam    //!< (i) argmax of dual problem
       );
 

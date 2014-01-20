@@ -14,10 +14,14 @@ Maintainer: Keijo Nissen
 /*----------------------------------------------------------------------*/
 
 #include "drt_meshfree_utils.H"
+#include "drt_meshfree_node.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
+/*--------------------------------------------------------------------------*
+ | reduces node position to dimension of face                     nis Jan14 |
+ *--------------------------------------------------------------------------*/
 std::vector<int> DRT::MESHFREE::ReduceDimensionOfFaceNodes(
   const LINALG::SerialDenseMatrix & xyz,
   LINALG::SerialDenseMatrix       & xyz_reduced
@@ -58,5 +62,43 @@ std::vector<int> DRT::MESHFREE::ReduceDimensionOfFaceNodes(
 
   return dims;
 }
+
+/*----------------------------------------------------------------------*
+ |  Coordinates of cell center computed by knot position      nis Jan14 |
+ *----------------------------------------------------------------------*/
+void DRT::MESHFREE::CellCenterAndMaxRadius(
+  const DRT::MESHFREE::Cell* cell,
+  LINALG::Matrix<3,1>&  center,
+  double& max_radius)
+{
+  // make sure center is clear
+  center.Clear();
+  max_radius = 0.0;
+
+  // compute cell center
+  const DRT::MESHFREE::MeshfreeNode* const * knots = cell->Knots();
+  const int numknots = cell->NumKnot();
+  for (int i=0; i<numknots; ++i)
+  {
+    const LINALG::Matrix<3,1> cknot_xyz(const_cast<double*>(knots[i]->X()),true);
+    center.Update(1.0,cknot_xyz,1.0);
+  }
+  center.Scale(1.0/numknots);
+
+  // compute maximum radius
+  LINALG::Matrix<3,1> diff;
+  for (int i=0; i<numknots; ++i)
+  {
+    const LINALG::Matrix<3,1> cknot_xyz(const_cast<double*>(knots[i]->X()),true);
+    diff.Update(1.0,center,1.0,cknot_xyz);
+    const double dist = diff.Norm2();
+    if (dist>max_radius)
+      max_radius = dist;
+  }
+
+  return;
+}
+
+
 
 // this is a secret place!
