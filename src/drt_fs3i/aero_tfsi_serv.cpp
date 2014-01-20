@@ -66,7 +66,6 @@ mastermaxeleid_(0)
 
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
-  fixedfluidinterface_ = DRT::INPUT::IntegralValue<INPAR::TSI::BaciIncaCoupling>(tsidyn,"TFSI_FIXED_FLUID_INTERF");
   lengthscaling_ = Teuchos::getIntegralValue<double>(tsidyn,"TFSI_length_unit");
   timescaling_ = Teuchos::getIntegralValue<double>(tsidyn,"TFSI_time_unit");
 

@@ -2488,8 +2488,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     &tsidyn
     );
 
-  BoolParameter("TFSI_FIXED_FLUID_INTERF","Yes","fluid interface is fixed",&tsidyn);
-
   // Output type
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tsidyn);
 

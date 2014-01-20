@@ -224,8 +224,6 @@ namespace FS3I
 
       int mastermaxeleid_;   /// max ele id on TSI side
 
-      bool fixedfluidinterface_; ///< bool whether a fixed fluid interface is used
-
       // fluid uses [m] which becomes here e.g. 100.0 [cm] or 1000.0 [mm]
       double lengthscaling_; ///< scaling factor for extensions for the coupling if other than SI unit [m] is used
 
