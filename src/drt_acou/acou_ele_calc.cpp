@@ -744,7 +744,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::NodeBasedValues");
 
-  dsassert(elevec1.M() == (int)nen_*(nsd_+1)+1, "Vector does not have correct size");
+  dsassert(elevec1.M() == (int)nen_*(nsd_+2)+1, "Vector does not have correct size");
   elevec1.Scale(0.0);
   Epetra_SerialDenseMatrix locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
   LINALG::Matrix<1,ndofs_> values;
