@@ -121,6 +121,9 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
 
   PrintElementLines(stream,"DCOHESIVE");
 
+  PrintSectionHeader(stream,"ACOUSTIC ELEMENTS");
+  PrintElementLines(stream,"ACOUSTIC");
+
 }
 
 

@@ -175,6 +175,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
       if(scatratype_ == INPAR::SCATRA::scatratype_undefined)
              dserror("Please define SCATRATYPE in datfile!");    // scatratype_ = INPAR::SCATRA::scatratype_condif;
     }
+    else if (prbtype == prb_acou)         scatratype_ = INPAR::SCATRA::scatratype_condif;
     else
       dserror("Problemtype %s not supported", DRT::Problem::Instance()->ProblemName().c_str());
   }
@@ -1400,6 +1401,19 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
   return;
 } // ScaTraTimIntImpl::Output
 
+
+/*----------------------------------------------------------------------*
+ | output of adjoint solution vector                      schoeder 01/14|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputAsSolution(Teuchos::RCP<Epetra_Vector> phi)
+{
+  output_->WriteMesh(0,0.0);
+  output_->NewStep(step_,time_);
+  output_->WriteElementData(true);
+  output_->WriteVector("phinp",phi);
+
+  return;
+} // ScaTraTimIntImpl::OutputThisAsSolution
 
 /*==========================================================================*/
 // scalar degrees of freedom and related

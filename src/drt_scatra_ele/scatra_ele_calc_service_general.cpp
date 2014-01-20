@@ -517,6 +517,115 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
                     lm);
     break;
   }
+  case SCATRA::calc_integr_objf:
+  {
+    // don't want ghosted elements
+    if(ele->Owner() == discretization.Comm().MyPID())
+    {
+      double integralvalue = params.get<double>("integr_objf");
+      const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+      double fac = 0.0;
+      // integration loop
+      for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+      {
+        fac += EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+      }
+      double aux(1.0);
+      GetMaterialParams(ele,aux,aux,aux,diffmanager_,reamanager_,aux);
+      double reacoeff = reamanager_->GetReaCoeff(0);
+
+      // integralvalue = 0.5 * ( diffus_[0]*diffus_[0] + reacoeff_[0]*reacoeff_[0] ) * fac;
+      integralvalue = 0.5 * ( reacoeff * reacoeff ) * fac;
+      params.set<double>("integr_objf",integralvalue);
+    }
+    break;
+  }
+  case SCATRA::calc_integr_pat_rhsvec:
+  {
+    // extract local values from the global vectors w and phi
+    Teuchos::RCP<const Epetra_Vector> rhsvec = discretization.GetState("rhsnodebasedvals");
+    if (rhsvec==Teuchos::null)
+      dserror("Cannot get state vector 'rhsnodebasedvals' ");
+    std::vector<double> myrhsvec(lm.size());
+    DRT::UTILS::ExtractMyValues(*rhsvec,myrhsvec,lm);
+
+    Epetra_SerialDenseVector rhs(nen_);
+    for(int i=0; i<nen_; ++i)
+      rhs(i) = myrhsvec[i];
+
+    Epetra_SerialDenseMatrix mass(nen_,nen_);
+    const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double v = fac*funct_(vi); // no density required here
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          mass(vi,ui) += v*funct_(ui);
+        }
+      }
+    }
+
+    elevec1_epetra.Multiply('N','N',1.0,mass,rhs,0.0);
+
+    break;
+  }
+  case SCATRA::calc_integr_grad_reac:
+  {
+    // don't want ghosted elements
+    if(ele->Owner() == discretization.Comm().MyPID())
+    {
+      double integr_grad_reac = params.get<double>("integr_grad_reac");
+      double integralvalue = 0.0;
+      bool sign = params.get<bool>("signum_mu");
+      double sign_fac = 1.0;
+      if(sign) sign_fac = -1.0;
+
+      // extract local values from the global vectors w and phi
+      Teuchos::RCP<const Epetra_Vector> w = discretization.GetState("w");
+      Teuchos::RCP<const Epetra_Vector> psi = discretization.GetState("psi");
+      Teuchos::RCP<const Epetra_Vector> phi = discretization.GetState("phi");
+      if (w==Teuchos::null || phi==Teuchos::null || psi==Teuchos::null)
+        dserror("Cannot get state vector 'w' and/or 'phi' and/or 'psi'");
+      std::vector<double> myw(lm.size());
+      std::vector<double> myphi(lm.size());
+      std::vector<double> mypsi(lm.size());
+      DRT::UTILS::ExtractMyValues(*w,myw,lm);
+      DRT::UTILS::ExtractMyValues(*phi,myphi,lm);
+      DRT::UTILS::ExtractMyValues(*psi,mypsi,lm);
+
+      // calculate integral
+      // integrations points and weights
+      const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+      double fac = 0.0;
+      // integration loop
+      double temp = 0.0;
+      for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+      {
+        fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+        temp += fac;
+        double sumphi = 0.0;
+        double sumw   = 0.0;
+        for (int i=0; i<nen_; ++i)
+        {
+          sumphi += funct_(i) * myphi[i];
+          sumw   += funct_(i) * (sign_fac * myw[i] + mypsi[i]);
+        }
+        integralvalue += fac * sumphi * sumw;
+      }
+      double aux(1.0);
+      GetMaterialParams(ele,aux,aux,aux,diffmanager_,reamanager_,aux);
+      double reacoeff = reamanager_->GetReaCoeff(0);
+      integralvalue *= reacoeff;
+      integralvalue += temp * params.get<double>("regular_mu") * reacoeff;
+      integr_grad_reac += integralvalue;
+      params.set<double>("integr_grad_reac",integr_grad_reac);
+    }
+    break;
+  }
   default:
   {
     dserror("Not acting on this action. Forgot implementation?");

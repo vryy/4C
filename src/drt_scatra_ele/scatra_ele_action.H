@@ -57,7 +57,10 @@ enum Action {
   calc_elch_electrode_kinetics,    // calc_elch_electrode_kinetics,
   set_mean_Cai,                    // special action for mfs
   calc_mat_and_rhs_lsreinit_correction_step, // level-set action: setup of system for correction step
-  calc_node_based_reinit_velocity  // level-set action: compute node-based velocity field for reinitialization equation
+  calc_node_based_reinit_velocity, // level-set action: compute node-based velocity field for reinitialization equation
+  calc_integr_objf,                // calculate regularization term for photoacoustc inverse analysis
+  calc_integr_pat_rhsvec,          // calculate source term for photoacoustic adjoint scalar transport problem
+  calc_integr_grad_reac            // calculate regularization part in gradient for adjoint photoacoustics
 }; // enum Action
 
 /*--------------------------------------------------------------------------*/

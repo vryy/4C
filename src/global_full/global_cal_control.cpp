@@ -34,6 +34,7 @@ Maintainer: Michael Gee
 #include "../drt_ssi/ssi_dyn.H"
 #include "../drt_particle/particle_dyn.H"
 #include "../drt_stru_multi/microstatic_npsupport.H"
+#include "../drt_acou/acou_dyn.H"
 
 
 /*----------------------------------------------------------------------*
@@ -159,6 +160,10 @@ void ntacal()
     case prb_np_support:
       STRUMULTI::np_support_drt();
       break;
+
+    case prb_acou:
+    	acoustics_drt();
+    	break;
 
     default:
       dserror("solution of unknown problemtyp %d requested", DRT::Problem::Instance()->ProblemType());

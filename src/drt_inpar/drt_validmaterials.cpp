@@ -1619,6 +1619,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // acoustic material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Acoustic",
+                                            "acoustic material",
+                                            INPAR::MAT::m_acousticmat));
+
+    AddNamedReal(m,"DENSITY","mass density");
+    AddNamedReal(m,"C","speed of sound");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // deliver
   return vm;
 }

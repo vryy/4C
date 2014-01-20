@@ -107,6 +107,8 @@ endmacro(codetesting)
  
 ###------------------------------------------------------------------ List of tests
 ##if(NOT TRILINOS_DEV)
+baci_test(acou_pat_1d_impl 1 "")
+baci_test(acou_pat_1d_impl 2 "" minimal)
 baci_test(artaneurysm_hex 1 "")
 baci_test(artaneurysm_hex 2 "")
 post_processing(artaneurysm_hex 2 ndxyz ndxyz 10)

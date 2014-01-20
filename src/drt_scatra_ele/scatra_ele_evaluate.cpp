@@ -188,6 +188,9 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_dissipation:
     case SCATRA::calc_mat_and_rhs_lsreinit_correction_step:
     case SCATRA::calc_node_based_reinit_velocity:
+    case SCATRA::calc_integr_grad_reac:
+    case SCATRA::calc_integr_objf:
+    case SCATRA::calc_integr_pat_rhsvec:
     {
       return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(), impltype, numdofpernode, numscal)->EvaluateService(
                this,

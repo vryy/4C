@@ -53,6 +53,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_levelset.H"
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_inpar/inpar_beamcontact.H"
+#include "../drt_inpar/inpar_acou.H"
 
 #include <AztecOO.h>
 
@@ -6485,6 +6486,68 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
     DoubleParameter("SLOPE_NORMAL",0.02,"Initial slope indicator in normal direction for PPR model",&crackdyn);
     DoubleParameter("SLOPE_SHEAR",0.02,"Initial slope indicator in normal direction for PPR model",&crackdyn);
+
+	/*----------------------------------------------------------------------*/
+	Teuchos::ParameterList& acousticdyn = list->sublist("ACOUSTIC DYNAMIC",false,"control parameters for acoustic or photoacoustic problems\n");
+
+	DoubleParameter("TIMESTEP",0.01,"Time increment dt",&acousticdyn);
+	IntParameter("NUMSTEP",100,"Total number of time steps",&acousticdyn);
+	DoubleParameter("MAXTIME",1.0,"Total simulation time",&acousticdyn);
+
+	IntParameter("UPRES",1,"Increment for writing solution",&acousticdyn);
+	IntParameter("RESTARTEVRY",1,"Increment for writing restart",&acousticdyn);
+	IntParameter("LINEAR_SOLVER",-1,"Number of linear solver used for acoustical problems",&acousticdyn);
+	IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&acousticdyn);
+
+	DoubleParameter("PULSEDURATION",15e-9,"Laser pulse duration",&acousticdyn);
+	BoolParameter("PHOTOACOU","No","Coupling with Scatra for Diffusive Light Transport",&acousticdyn);
+	BoolParameter("MESHCONFORM","No","Conformity of scatra and acoustical mesh",&acousticdyn);
+	BoolParameter("ERRORMAPS","No","Output of error maps obtained by local postprocessing",&acousticdyn);
+
+	setStringToIntegralParameter<int>("TIMEINT","impl",
+									  "Type of time integration scheme",
+									  tuple<std::string>(
+										"impl",
+										"trap",
+										"dirk23",
+                    "dirk33",
+                    "dirk34",
+                    "dirk54",
+										"bdf2",
+										"bdf3",
+										"bdf4"),
+									  tuple<int>(
+										INPAR::ACOU::acou_impleuler,
+										INPAR::ACOU::acou_trapezoidal,
+										INPAR::ACOU::acou_dirk23,
+                    INPAR::ACOU::acou_dirk33,
+                    INPAR::ACOU::acou_dirk34,
+                    INPAR::ACOU::acou_dirk54,
+										INPAR::ACOU::acou_bdf2,
+										INPAR::ACOU::acou_bdf3,
+										INPAR::ACOU::acou_bdf4),
+									  &acousticdyn);
+
+	setStringToIntegralParameter<int>("INV_ANALYSIS","none",
+								 "Types of inverse analysis and on/off switch",
+								 tuple<std::string>(
+								   "none",
+								   "pat"),
+								 tuple<int>(
+								   INPAR::ACOU::inv_none,
+								   INPAR::ACOU::inv_pat),
+								 &acousticdyn);
+
+	Teuchos::ParameterList& acou_inv = acousticdyn.sublist("PA IMAGE RECONSTRUCTION",false,"");
+
+	StringParameter("MONITORFILE","none.monitor","Filename of file containing measured pressure values",&acou_inv);
+	BoolParameter("FDCHECK","No","Finite difference check",&acou_inv);
+	DoubleParameter("INV_TOL",1e-6,"Tolerance for objective function of inverse pat analysis",&acou_inv);
+	BoolParameter("INV_TOL_GRAD_YN","No","Flag to indicate check of the norm of the gradient",&acou_inv);
+	DoubleParameter("INV_TOL_GRAD",0.0,"Tolerance for norm of gradient of inverse pat analysis",&acou_inv);
+	IntParameter("INV_MAX_RUN",10,"Maximal run number for inverse pat analysis",&acou_inv);
+	IntParameter("INV_LS_MAX_RUN",10,"Maximal run number for line search in inverse pat analysis",&acou_inv);
+	DoubleParameter("ALPHA_MUA",0.0,"Regularization parameter for absorption coefficient",&acou_inv);
 
   /*----------------------------------------------------------------------*/
   // set valid parameters for solver blocks

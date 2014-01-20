@@ -110,6 +110,7 @@
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/structporo_reaction.H"
 #include "../drt_mat/fluidporo.H"
+#include "../drt_mat/acoustic.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_contact/contact_node.H"
@@ -119,6 +120,7 @@
 #include "../drt_red_airways/red_airway.H"
 #include "../drt_opti/topopt_optimizer_ele.H"
 #include "../drt_crack/dcohesive.H"
+#include "../drt_acou/acou_ele.H"
 #include "../drt_inv_analysis/smc_particle.H"
 
 
@@ -219,6 +221,9 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::TopOptType::Instance().Name() << " "
     << DRT::ELEMENTS::ThermoType::Instance().Name() << " "
     << DRT::ELEMENTS::DcohesiveType::Instance().Name() << " "
+    << DRT::ELEMENTS::AcouType::Instance().Name() << " "
+    << DRT::ELEMENTS::AcouBoundaryType::Instance().Name() << " "
+    << DRT::ELEMENTS::AcouIntFaceType::Instance().Name() << " "
     << MAT::Cnst_1d_artType::Instance().Name() << " "
     << MAT::AAAgasserType::Instance().Name() << " "
     << MAT::AAAneohookeType::Instance().Name() << " "
@@ -265,6 +270,7 @@ std::string DRT::ParObjectList()
     << MAT::RobinsonType::Instance().Name() << " "
     << MAT::DamageType::Instance().Name() << " "
     << MAT::TopOptDensType::Instance().Name() << " "
+    << MAT::AcousticMatType::Instance().Name() << " "
     << MORTAR::MortarNodeType::Instance().Name() << " "
     << MORTAR::MortarElementType::Instance().Name() << " "
     << CONTACT::CoNodeType::Instance().Name() << " "

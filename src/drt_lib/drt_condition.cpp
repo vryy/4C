@@ -243,6 +243,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==VolumeModeKrylovProjection)    os << "Volume mode for Krylov space projection";
   else if (Type()==HomoScaTraCoupling)            os << "Homogeneous ScaTra Coulping";
   else if (Type()==LsContact)                     os << "level-set condition for contact points";
+  else if (Type()==Absorb)                        os << "Absorbing boundary for acoustics";
   else dserror("no output std::string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);

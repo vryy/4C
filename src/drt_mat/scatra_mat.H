@@ -41,14 +41,23 @@ namespace MAT
       //@{
 
       /// kinematic diffusivity
-      const double diffusivity_;
+      double diffusivity_;
       /// reaction coefficient
-      const double reacoeff_;
+      double reacoeff_;
 
       //@}
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      /// @name Write methods
+      //@{
+
+      /// set kinematic diffusivity
+      void SetDiffusivity (double diffusivity ) { diffusivity_ =  diffusivity; }
+      /// set reaction coefficient
+      void SetReaCoeff    (double reacoeff    ) { reacoeff_    =  reacoeff;    }
+      //@}
 
     };  // class Scatra
 

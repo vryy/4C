@@ -34,6 +34,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_utils_createdis.H"
 #include "drt_discret.H"
 #include "drt_discret_faces.H"
+#include "drt_discret_hdg.H"
 #include "drt_discret_xfem.H"
 #include "drt_linedefinition.H"
 #include "../drt_mat/material.H"
@@ -279,6 +280,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--WEAR", *list);
   reader.ReadGidSection("--BEAM CONTACT", *list);
   reader.ReadGidSection("--SEMI-SMOOTH PLASTICITY", *list);
+  reader.ReadGidSection("--ACOUSTIC DYNAMIC", *list);
+  reader.ReadGidSection("--ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION", *list);
 
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);
@@ -809,6 +812,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> optidis         = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> particledis     = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> porofluiddis    = Teuchos::null; // fpsi, poroelast
+  Teuchos::RCP<DRT::Discretization> acoudis         = Teuchos::null;
 
   // decide which kind of spatial representation is required
   std::string distype = SpatialApproximation();
@@ -1376,6 +1380,19 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   {
     // no discretizations and nodes needed for supporting procs
     break;
+  }
+  case prb_acou:
+  {
+      acoudis = Teuchos::rcp(new DRT::DiscretizationHDG("acou",reader.Comm()));
+      scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
+
+      AddDis("acou", acoudis);
+      AddDis("scatra", scatradis);
+
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(acoudis, reader, "--ACOUSTIC ELEMENTS")));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+
+      break;
   }
   case prb_redairways_tissue:
   {

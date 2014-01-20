@@ -54,8 +54,9 @@ int DRT::IndependentDofSet::AssignDegreesOfFreedom(const DRT::Discretization& di
   if (!dis.ElementRowMap()->UniqueGIDs()) dserror("Element row map is not unique");
 
   // A definite offset is currently not supported.
-  if (start!=0)
-    dserror("right now user specified dof offsets are not supported");
+  // TODO (kronbichler) find a better solution for this
+  //if (start!=0)
+  //  dserror("right now user specified dof offsets are not supported");
 
   dspos_ = dspos;
 

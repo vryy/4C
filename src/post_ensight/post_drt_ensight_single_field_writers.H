@@ -278,6 +278,27 @@ protected:
     ) const;
 };
 
+/*!
+ \brief Writer for acoustical problems
+
+ \author schoeder
+ \date 01/14
+ */
+class AcouEnsightWriter : public EnsightWriter
+{
+public:
+  AcouEnsightWriter(
+            PostField* field,
+            std::string filename) :
+  EnsightWriter(field, filename)
+  {
+  }
+
+protected:
+
+  virtual void WriteAllResults(PostField* field);
+
+};
 
 /// Writer for undefined problem types
 /*

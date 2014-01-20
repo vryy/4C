@@ -825,6 +825,7 @@ void DatFileReader::ReadDat()
   exclude.push_back("--REDUCED D AIRWAYS ELEMENTS");
   exclude.push_back("--TRANSPORT ELEMENTS");
   exclude.push_back("--THERMO ELEMENTS");
+  exclude.push_back("--ACOUSTIC ELEMENTS");
 
   int arraysize = 0;
 

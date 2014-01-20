@@ -381,6 +381,28 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddOptionalNamedString("NAME")
     ;
 
+  DRT::INPUT::LineDefinition acou;
+  acou
+    .AddTag("ACOUSTIC")
+    .AddNamedString("DIS")
+    .AddNamedInt("NODE")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
+
+  DRT::INPUT::LineDefinition invacou;
+  invacou
+    .AddTag("ACOUSTIC_INVANA")
+    .AddNamedString("DIS")
+    .AddNamedInt("ELEMENT")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
+
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION"));
   lines->Add(structure);
   lines->Add(fluid_node);
@@ -396,6 +418,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(fsi_special);
   lines->Add(invana);
   lines->Add(particle);
+  lines->Add(acou);
+  lines->Add(invacou);
 
   return lines;
 }

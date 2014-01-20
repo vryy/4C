@@ -532,6 +532,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/hemoglobin_0d_O2_saturation.cpp
   src/drt_mat/air_0d_O2_saturation.cpp
   src/drt_mat/particle_mat.cpp
+  src/drt_mat/acoustic.cpp
 )
 set(OBJS_DRT_STATMECH
   src/drt_statmech/statmech_manager.cpp
@@ -1311,6 +1312,26 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_contact.cpp
   src/drt_particle/scatra_particle_coupling.cpp
 )
+set(OBJS_DRT_ACOU
+  src/drt_acou/acou_dyn.cpp
+  src/drt_acou/acou_impl_bdf.cpp
+  src/drt_acou/acou_impl_dirk.cpp
+  src/drt_acou/acou_impl_euler.cpp
+  src/drt_acou/acou_impl.cpp
+  src/drt_acou/acou_impl_trap.cpp
+  src/drt_acou/acou_inv_analysis.cpp
+  src/drt_acou/acou_inv_resulttest.cpp
+  src/drt_acou/acou_resulttest.cpp
+  src/drt_acou/acou_utils.cpp
+)
+set(OBJS_DRT_ACOU_LIB
+  src/drt_acou/acou_ele_boundary_calc.cpp
+  src/drt_acou/acou_ele_calc.cpp
+  src/drt_acou/acou_ele.cpp
+  src/drt_acou/acou_ele_evaluate.cpp
+  src/drt_acou/acou_ele_factory.cpp
+  src/drt_acou/acou_ele_intfaces_calc.cpp
+)
 set(OBJS_LINALG
   src/linalg/linalg_ana.cpp
   src/linalg/linalg_blocksparsematrix.cpp
@@ -1762,7 +1783,7 @@ add_library(ele_thermo ${OBJS_DRT_THERMO_LIB})
 add_library(ele_to2 ${OBJS_DRT_TO2_LIB})
 add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
 add_library(ele_w1 ${OBJS_DRT_W1_LIB})
-
+add_library(ele_acou ${OBJS_DRT_ACOU_LIB})
 
 set(ELEMENT_LIBRARIES 
   ele_ale
@@ -1789,6 +1810,7 @@ set(ELEMENT_LIBRARIES
   ele_to2
   ele_to3
   ele_w1
+  ele_acou
   )
 
 # algorithm libraries that depend on adapters
@@ -1842,6 +1864,7 @@ add_library(alg_thermo ${OBJS_DRT_THERMO})
 add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 add_library(alg_opti ${OBJS_OPTI})
 add_library(alg_particle ${OBJS_DRT_PARTICLE})
+add_library(alg_acou ${OBJS_DRT_ACOU})
 
 set(SINGLEFIELD_LIBRARIES
   alg_ale
@@ -1864,6 +1887,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_fluid_adjoint
   alg_opti
   alg_particle
+  alg_acou
   )
 
 # general framework

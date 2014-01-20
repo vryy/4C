@@ -358,8 +358,8 @@ void IO::OutputControl::NewResultFile(std::string name_appendix, int numb_run)
   name << ".control";
 
   controlfile_.close();
-  bool b = controlfile_.fail();
-  IO::cout << b << IO::endl;
+  // bool b = controlfile_.fail();
+  // IO::cout << b << IO::endl;
   controlfile_.open(name.str().c_str(),std::ios_base::out);
   if (not controlfile_)
     dserror("could not open control file '%s' for writing", name.str().c_str());

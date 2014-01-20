@@ -562,6 +562,19 @@ int main(
 
       break;
     }
+    case prb_acou:
+    {
+      PostField* field = problem.get_discretization(0);
+      AcouEnsightWriter writer(field, problem.outname());
+      writer.WriteFiles();
+      if(problem.num_discr()>1)
+      {
+        PostField* field1 = problem.get_discretization(1);
+        ScaTraEnsightWriter writer1(field1, problem.outname());
+        writer1.WriteFiles();
+      }
+      break;
+    }
     case prb_none:
     {
       // Special problem type that contains one discretization and any number

@@ -443,6 +443,18 @@ void ParticleEnsightWriter::WriteCells(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void AcouEnsightWriter::WriteAllResults(PostField* field)
+{
+  EnsightWriter::WriteResult("velnp", "velocity", nodebased, 3);
+  EnsightWriter::WriteResult("pressure", "pressure", nodebased, 1);
+  EnsightWriter::WriteResult("par_vel", "par_vel", nodebased, 1);
+  EnsightWriter::WriteResult("pressure_avg", "pressure_avg", elementbased, 1);
+  EnsightWriter::WriteResult("error", "error", elementbased, 1);
+  WriteElementResults(field);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void AnyEnsightWriter::WriteAllResults(PostField* field)
 {
   WriteDofResults(field);

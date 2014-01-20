@@ -3937,6 +3937,32 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(pointlscontact);
 
   /*--------------------------------------------------------------------*/
+  // absorbing boundary condition for acoustic problems
+
+  Teuchos::RCP<ConditionDefinition> absorbing_line =
+    Teuchos::rcp(new ConditionDefinition("DESIGN ABSORBING LINE CONDITIONS",
+                                         "Absorbing",
+                                         "Absorbing line for acoustics",
+                                         DRT::Condition::Absorb,
+                                         true,
+                                         DRT::Condition::Line));
+
+  condlist.push_back(absorbing_line);
+
+  /*--------------------------------------------------------------------*/
+  // absorbing boundary condition for acoustic problems
+
+  Teuchos::RCP<ConditionDefinition> absorbing_surface =
+    Teuchos::rcp(new ConditionDefinition("DESIGN ABSORBING SURF CONDITIONS",
+                                         "Absorbing",
+                                         "Absorbing surface for acoustics",
+                                         DRT::Condition::Absorb,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  condlist.push_back(absorbing_surface);
+
+  /*--------------------------------------------------------------------*/
   return vc;
 
 }
