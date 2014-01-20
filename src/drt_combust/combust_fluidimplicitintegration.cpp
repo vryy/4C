@@ -4243,8 +4243,6 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             // vector for enrichment values
             LINALG::SerialDenseMatrix enrichmentval(3,numnode);
 
-            const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
             for (size_t inode = 0; inode<numnode; inode++)
             {
               // node gid
