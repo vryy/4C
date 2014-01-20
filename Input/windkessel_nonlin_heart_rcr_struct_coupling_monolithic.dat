@@ -8,8 +8,8 @@
 -------------------------------------------------------------TITLE
 created by pre_exodus 
 ------------------------------------------------------PROBLEM SIZE
-ELEMENTS                        1
-NODES                           8
+ELEMENTS                        3
+NODES                           24
 DIM                             3
 -----------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0

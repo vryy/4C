@@ -3691,8 +3691,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(springdashpotcond,"spring_offset");
   AddNamedReal(springdashpotcond,"dashpot_visc");
   springdashpotcond->AddComponent(Teuchos::rcp(new StringConditionComponent("direction", "direction_all",
-                                                                                       Teuchos::tuple<std::string>("direction_all","direction_surfnormal"),
-                                                                                       Teuchos::tuple<std::string>("direction_all","direction_surfnormal"),
+                                                                                       Teuchos::tuple<std::string>("direction_all","direction_refsurfnormal"),
+                                                                                       Teuchos::tuple<std::string>("direction_all","direction_refsurfnormal"),
                                                                                        true)));
 
   condlist.push_back(springdashpotcond);

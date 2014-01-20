@@ -131,6 +131,13 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
   const Epetra_Map* nodemap = discret->NodeRowMap();
   Epetra_IntVector nodevec = Epetra_IntVector(*nodemap, true);
 
+  std::string springdasgpotcondname = "SpringDashpot";
+  Teuchos::RCP<Epetra_Vector> refnodalnormals = Teuchos::rcp(new Epetra_Vector(*(discret->DofRowMap())));
+  Teuchos::ParameterList eleparams1;
+  Teuchos::ParameterList eleparams2;
+  eleparams1.set("action","calc_ref_nodal_normals");
+  discret->EvaluateCondition(eleparams1,Teuchos::null,Teuchos::null,refnodalnormals,Teuchos::null,Teuchos::null,springdasgpotcondname);
+
 
   int dnodecount = 0;
   for (int i=0; i<(int)springdashpotcond.size(); ++i)
@@ -141,15 +148,8 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
     double dashpotvisc = springdashpotcond[i]->GetDouble("dashpot_visc");
     const std::string* dir = springdashpotcond[i]->Get<std::string>("direction");
 
-    if (*dir == "direction_surfnormal") dserror("Not implemented yet! Choose direction_all to apply bc in all dof directions!");
-
     const std::vector<double>* areapernode = springdashpotcond[i]->Get< std::vector<double> >("areapernode");
 
-    //for (int i=0; i<areapernode->size(); i++)
-    //{
-    //  IO::cout << (*areapernode)[i] << IO::endl;
-    //}
-    //exit(0);
 
     const std::vector<int>& nds = *nodes;
     for (int j=0; j<(int)nds.size(); ++j)
@@ -179,6 +179,22 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
 
         assert (numdof==3);
 
+        // extract averaged nodal ref normal and compute its absolute value
+        std::vector<double> unitrefnormal(numdof);
+        double temp_ref = 0.;
+        for (int k=0; k<numdof; ++k)
+        {
+          unitrefnormal[k] = (*refnodalnormals)[refnodalnormals->Map().LID(dofs[k])];
+          temp_ref += unitrefnormal[k]*unitrefnormal[k];
+        }
+
+        double unitrefnormalabsval = sqrt(temp_ref);
+
+        for(int k=0; k<numdof; ++k)
+        {
+          unitrefnormal[k] /= unitrefnormalabsval;
+        }
+
         std::vector<double> u(numdof);
         for (int k=0; k<numdof; ++k)
         {
@@ -191,13 +207,37 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
           v[k] = (*velo)[velo->Map().LID(dofs[k])];
         }
 
-        for (int k=0; k<numdof; ++k)
+        double uTN=0.;
+        double vTN=0.;
+        double duTN_du=0.;
+        double dvTN_du=0.;
+        for (int l=0; l<numdof; ++l)
         {
-        	double val = nodalarea*(springstiff*(u[k]-springoffset) + dashpotvisc*v[k]);
-					//double dval = nodalarea*springstiff;
-					fint->SumIntoGlobalValues(1,&val,&dofs[k]);
-					stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size)),dofs[k],dofs[k]);
-        } //loop of dofs
+          uTN += (u[l]-springoffset)*unitrefnormal[l];
+          vTN += v[l]*unitrefnormal[l];
+          duTN_du += 1.0*unitrefnormal[l];
+          dvTN_du += gamma/(beta*ts_size)*1.0*unitrefnormal[l];
+        }
+
+        if (*dir == "direction_all")
+        {
+        	for (int k=0; k<numdof; ++k)
+        	{
+						double val = nodalarea*(springstiff*(u[k]-springoffset) + dashpotvisc*v[k]);
+						fint->SumIntoGlobalValues(1,&val,&dofs[k]);
+						stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size)),dofs[k],dofs[k]);
+        	}
+        }
+        else if (*dir == "direction_refsurfnormal")
+        {
+        	for (int k=0; k<numdof; ++k)
+        	{
+						double val = nodalarea*(springstiff*uTN + dashpotvisc*vTN)*unitrefnormal[k];
+						fint->SumIntoGlobalValues(1,&val,&dofs[k]);
+						stiff->Assemble(nodalarea*(springstiff*duTN_du + dashpotvisc*dvTN_du)*unitrefnormal[k],dofs[k],dofs[k]);
+        	}
+        }
+        else dserror("Invalid direction option! Choose direction_all or direction_refsurfnormal!");
 
       } //node owned by processor?
 
