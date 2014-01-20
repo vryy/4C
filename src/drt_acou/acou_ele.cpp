@@ -198,7 +198,7 @@ DRT::ELEMENTS::Acou::~Acou()
 /*----------------------------------------------------------------------*
  |  print this element (public)                           schoeder 07/13|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Acou::Print(ostream& os) const
+void DRT::ELEMENTS::Acou::Print(std::ostream& os) const
 {
   os << "Acou ";
   Element::Print(os);
@@ -460,7 +460,7 @@ DRT::ELEMENTS::AcouBoundary::~AcouBoundary()
 /*----------------------------------------------------------------------*
  |  print this element (public)                          schoeder 07/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::AcouBoundary::Print(ostream& os) const
+void DRT::ELEMENTS::AcouBoundary::Print(std::ostream& os) const
 {
   os << "AcouBoundary ";
   Element::Print(os);
