@@ -959,11 +959,14 @@ void FLD::FluidImplicitTimeInt::Solve()
       {
         UpdateKrylovSpaceProjection();
       }
-#ifdef DEBUG
+
       // if Krylov space projection is used, check whether constant pressure
       // is in nullspace of sysmat_
-      CheckMatrixNullspace();
-#endif
+      // !!! only done for FEM since for NURBS- and meshfree-approximations,
+      //     the integration error can already disturb matrix nullspace too
+      //     much for sensitive problems
+      if (DRT::Problem::Instance()->SpatialApproximation()=="Polynomial")
+        CheckMatrixNullspace();
 
       if (msht_== INPAR::FLUID::no_meshtying)
       {
