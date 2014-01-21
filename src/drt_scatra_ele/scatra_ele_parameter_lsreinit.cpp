@@ -121,7 +121,8 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetElementLsReinitScaTraParamete
   {
     // check for matching flags
     if (not mat_gp_ or not tau_gp_)
-     dserror("Evaluation of material and stabilization parameters need to be done at the integration points if subgrid-scale velocity is included!");
+     dserror("Evaluation of material and stabilization parameters need to be done at the integration points for reinitialization");
+    // due to artificial diff
   }
 
   return;
