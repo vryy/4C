@@ -306,7 +306,7 @@ public:
    \return Filled()==true
 
    */
-   virtual void FillComplete(int maxdof = 0);
+   virtual void FillComplete(int maxdof = 0, bool newghosting = true);
 
    /*!
    \brief Assemble inactive rhs (incremental delta_w_)

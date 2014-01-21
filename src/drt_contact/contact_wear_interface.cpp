@@ -3856,7 +3856,7 @@ bool CONTACT::WearInterface::BuildActiveSet(bool init)
 /*----------------------------------------------------------------------*
  |  finalize construction of interface (public)              mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::WearInterface::FillComplete(int maxdof)
+void CONTACT::WearInterface::FillComplete(int maxdof, bool newghosting)
 {
   // store maximum global dof ID handed in
   // this ID is later needed when setting up the Lagrange multiplier
@@ -4148,7 +4148,8 @@ void CONTACT::WearInterface::FillComplete(int maxdof)
   // fully overlapping column layout, for the ease of interface search)
   // (the only exceptions are self contact and coupled problems, where
   // also the slave is still made fully redundant)
-  CreateInterfaceGhosting();
+  if(newghosting)
+    CreateInterfaceGhosting();
 
   // make sure discretization is complete
   Discret().FillComplete(true,false,false);
