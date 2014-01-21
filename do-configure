@@ -17,7 +17,13 @@ ADDITIONAL_TESTS_PATH=""
 # activate debug version: ./do-configure --debug 
 # or choose do-configure-debug which does the same
 
-OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,trilinos-debug,useACML,experimental,forceBuild -- "$@"`
+# Info about profiling mode: ./do-configure --profiling
+# This does not profile the code on its own but merely adds debug info
+# to the executable (the code performance is the same as for the release
+# version, though). This can then give per-line cost information
+# using 'valgrind --tool=callgrind ./baci-relwithdebinfo input output'
+
+OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,trilinos-debug,profiling,useACML,experimental,forceBuild -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
@@ -26,7 +32,7 @@ eval set -- $OPTIONS
 while true; do
   case "$1" in
     -h|--help) 
-      echo "usage: do-configure [--debug] [--trilinos-debug] [--experimental] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
+      echo "usage: do-configure [--debug] [--trilinos-debug] [--profiling] [--experimental] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
       exit 1
       ;;
     -c|--config) 
@@ -39,6 +45,9 @@ while true; do
       ;;
     -d|--debug) 
       BUILD_TYPE="DEBUG"
+      ;;
+    -p|--profiling) 
+      BUILD_TYPE="RELWITHDEBINFO"
       ;;
     --trilinos-debug)
       TRILINOS_BUILD_TYPE="dbg"
@@ -62,7 +71,7 @@ done
 
 if [ $# -ne 0 ]; then
   echo "unknown option(s): $@"
-  echo "usage: do-configure [--debug] [--experimental] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
+  echo "usage: do-configure [--debug] [--trilinos-debug] [--experimental] [--profiling] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
   exit 1
 fi
 
