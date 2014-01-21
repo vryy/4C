@@ -392,7 +392,6 @@ public:
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<const DRT::DofSet> DofSet();
   Teuchos::RCP<const DRT::IndependentPBCDofSet> StandardDofSet() { return standarddofset_; }
-  Teuchos::RCP<Epetra_Vector>& RobinRHS()      { return robinrhs_; }
 
   Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter()         { return velpressplitter_; }
   Teuchos::RCP<const Epetra_Map> VelocityRowMap();
@@ -632,9 +631,6 @@ protected:
 
   /// (standard) residual vector (rhs for the incremental form),
   Teuchos::RCP<Epetra_Vector>    residual_;
-
-  /// robinrhs_: additional rhs when using robin-BC
-  Teuchos::RCP<Epetra_Vector>    robinrhs_;
 
   /// true (rescaled) residual vector without zeros at dirichlet positions
   Teuchos::RCP<Epetra_Vector>    trueresidual_;

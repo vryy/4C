@@ -175,8 +175,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   // -------------------------------------------------------------------
   // create empty vectors
   // -------------------------------------------------------------------
-  // additional rhs vector for robin-BC and vector for copying the residual
-  robinrhs_ = LINALG::CreateVector(*dofrowmap,true);
 
   // Vectors passed to the element
   // -----------------------------
