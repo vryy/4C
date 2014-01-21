@@ -54,15 +54,14 @@ Maintainer: Tobias Wiesner
 #endif
 
 #include <MueLu_AggregationExportFactory.hpp>
-//#include "muelu_ContactInfoFactory_decl.hpp"
+
+
+#include <MueLu_EpetraOperator.hpp> // Aztec interface
 
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-
 #include <MueLu_UseShortNames.hpp>
-
-#include <MueLu_EpetraOperator.hpp> // Aztec interface
 
 #include "solver_muelupreconditioner.H"
 
@@ -85,9 +84,9 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
 
   if ( create )
   {
+    // check whether A is a Epetra_CrsMatrix
+    // i.e. no block matrix
     Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>( matrix );
-    if ( A==NULL )
-      dserror( "CrsMatrix expected" );
 
     // free old matrix first
     P_       = Teuchos::null;
@@ -182,7 +181,8 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
 
       // use xml file for generating hierarchy
       std::string xmlFileName = mllist_.get<std::string>("xml file");
-      std::cout << "Use XML file " << xmlFileName << " for generating MueLu multigrid hierarchy" << std::endl;
+      Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+      *fos << "Use XML file " << xmlFileName << " for generating MueLu multigrid hierarchy" << std::endl;
 
 
       // prepare nullspace vector for MueLu
@@ -192,6 +192,7 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
       Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
 
       Teuchos::RCP<MultiVector> nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
+      // TODO check whether parameter "nullspace" is available
       Teuchos::RCP<std::vector<double> > nsdata = mllist_.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
 
       for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
@@ -207,15 +208,12 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
       ParameterListInterpreter mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()));
 
       Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
-#ifdef HAVE_Trilinos_Q3_2013
-      H->setlib(Xpetra::UseEpetra);
-#endif
       H->SetDefaultVerbLevel(MueLu::Extreme);
-
       H->GetLevel(0)->Set("A", mueluOp);
       H->GetLevel(0)->Set("Nullspace", nspVector);
 #ifdef HAVE_Trilinos_Q3_2013
       H->GetLevel(0)->setlib(Xpetra::UseEpetra);
+      H->setlib(Xpetra::UseEpetra);
 #endif
 
       mueLuFactory.SetupHierarchy(*H);
@@ -230,12 +228,10 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
       // Setup MueLu Hierarchy
       MLParameterListInterpreter mueLuFactory(mllist_/*, vec*/);
       Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
-#ifdef HAVE_Trilinos_Q3_2013
-      H->setlib(Xpetra::UseEpetra);
-#endif
       H->GetLevel(0)->Set("A", mueluOp);
 #ifdef HAVE_Trilinos_Q3_2013
       H->GetLevel(0)->setlib(Xpetra::UseEpetra);
+      H->setlib(Xpetra::UseEpetra);
 #endif
       mueLuFactory.SetupHierarchy(*H);
 
@@ -244,8 +240,7 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
 #ifdef HAVE_Trilinos_Q1_2013
     }
 #endif
-
-  }
+  } // if (create)
 }
 
 #endif
