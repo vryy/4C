@@ -2389,16 +2389,16 @@ void FLD::FluidImplicitTimeInt::FreeSurfaceFlowUpdate()
  | Call routine from outside of fluid,                                  |
  | e.g. FSI, FPSI, Poro, ...                                            |
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   // update solution by adding step increment to previous converged solution
-  if (vel!=Teuchos::null)
+  if (stepinc!=Teuchos::null)
   {
-    // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
-    // values.
+    // Add stepinc to veln_ for non-Dirichlet values.
     Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-    aux->Update(1.0, *veln_, 1.0, *vel, 0.0);
-    //    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), velnp_);
+    aux->Update(1.0, *veln_, 1.0, *stepinc, 0.0);
+
+    // Set Dirichlet values
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(velnp_), aux);
 
     InsertVolumetricSurfaceFlowCondVector(velnp_,aux);
@@ -2406,19 +2406,20 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     *velnp_ = *aux;
   }
 
+  // --------------------------------------------------
   //the following steps have to be repeated after that the velocity has been updated
   // --------------------------------------------------
-  // adjust accnp according to Dirichlet values of velnp for GenAlpha
-  //
+
+  // adjust accnp_ according to Dirichlet values of velnp_ for GenAlpha
   GenAlphaUpdateAcceleration();
-  // ----------------------------------------------------------------
+
   // compute values at intermediate time steps for GenAlpha
   // ----------------------------------------------------------------
   GenAlphaIntermediateValues();
 
   if (alefluid_)
   {
-    // account for potential moving neumann boundaries
+    // account for potentially moving Neumann boundaries
     Teuchos::ParameterList eleparams;
     discret_->SetState("dispnp", dispnp_);
 
@@ -2430,6 +2431,8 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   }
 
   PrepareSolve();
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
