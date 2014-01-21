@@ -18,6 +18,38 @@ namespace LINALG
 {
   namespace SOLVER
   {
+    /// MueLu block preconditioner
+    /*!
+     * Multigrid block preconditioner based on MueLu
+     * Block preconditioners assume the Epetra_Operator to be a
+     * LINALG::BlockSparseMatrix.
+     */
+    class MueLuBlockPreconditioner : public PreconditionerType
+    {
+    public:
+
+      MueLuBlockPreconditioner( FILE * outfile,
+          Teuchos::ParameterList & params );
+
+      virtual void Setup( bool create,
+                          Epetra_Operator * matrix,
+                          Epetra_MultiVector * x,
+                          Epetra_MultiVector * b );
+
+      virtual Epetra_Operator * PrecOperator() const { return &*P_; }
+
+      virtual void Print( std::ostream & stream ) { stream << "MueLuBlockPreconditioner"; }
+
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      /*! This function is not needed since we use the XML interface */
+      virtual const std::string getParameterListName() const { return ""; }
+
+    private:
+      Teuchos::ParameterList & params_;
+
+      Teuchos::RCP<Epetra_Operator>    P_;
+    };
+
     /// SIMPLE(R) block preconditioner
     /*!
       Block preconditioners assume the Epetra_Operator to be a

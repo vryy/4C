@@ -1217,23 +1217,44 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
   {
     const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
     INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
-    if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
-        prec != INPAR::SOLVER::azprec_TekoSIMPLE)  // TODO adapt error message
-      dserror("If SIMPLER flag is set to YES you can only use CheapSIMPLE or TekoSIMPLE as preconditioners in your fluid solver. Choose CheapSIMPLE or TekoSIMPLE in the SOLVER %i block in your dat file.",linsolvernumber);
+    switch (prec) {
+    case INPAR::SOLVER::azprec_CheapSIMPLE:
+    case INPAR::SOLVER::azprec_TekoSIMPLE:
+    {
+      // add Inverse1 block for velocity dofs
+      // tell Inverse1 block about NodalBlockInformation
+      // In contrary to contact/meshtying problems this is necessary here, since we originally have built the
+      // null space for the whole problem (velocity and pressure dofs). However, if we split the matrix into
+      // velocity and pressure block, we have to adapt the null space information for the subblocks. Therefore
+      // we need the nodal block information in the first subblock for the velocities. The pressure null space
+      // is trivial to be built using a constant vector
+      Teuchos::ParameterList& inv1 = solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
+      inv1.sublist("NodalBlockInformation") = solver->Params().sublist("NodalBlockInformation");
 
-    // add Inverse1 block for velocity dofs
-    // tell Inverse1 block about NodalBlockInformation
-    // In contrary to contact/meshtying problems this is necessary here, since we originally have built the
-    // null space for the whole problem (velocity and pressure dofs). However, if we split the matrix into
-    // velocity and pressure block, we have to adapt the null space information for the subblocks. Therefore
-    // we need the nodal block information in the first subblock for the velocities. The pressure null space
-    // is trivial to be built using a constant vector
-    Teuchos::ParameterList& inv1 = solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
-    inv1.sublist("NodalBlockInformation") = solver->Params().sublist("NodalBlockInformation");
+      // CheapSIMPLE is somewhat hardwired here
+      solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
+      solver->Params().set("FLUID",true);
+    }
+    break;
+    case INPAR::SOLVER::azprec_MueLuAMG_sym:
+    {
+      // add Inverse1 block for velocity dofs
+      // tell Inverse1 block about NodalBlockInformation
+      // In contrary to contact/meshtying problems this is necessary here, since we originally have built the
+      // null space for the whole problem (velocity and pressure dofs). However, if we split the matrix into
+      // velocity and pressure block, we have to adapt the null space information for the subblocks. Therefore
+      // we need the nodal block information in the first subblock for the velocities. The pressure null space
+      // is trivial to be built using a constant vector
+      Teuchos::ParameterList& inv1 = solver->Params().sublist("MueLu Parameters").sublist("SubSmoother1");
+      inv1.sublist("NodalBlockInformation") = solver->Params().sublist("NodalBlockInformation");
 
-    // CheapSIMPLE is somewhat hardwired here
-    solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
-    solver->Params().set("FLUID",true);
+      solver->Params().sublist("MueLu Parameters").set("FLUID",true);
+    }
+    break;
+    default:
+      dserror("If SIMPLER flag is set to YES you can only use CheapSIMPLE or TekoSIMPLE as preconditioners in your fluid solver. Choose CheapSIMPLE or TekoSIMPLE in the SOLVER %i block in your dat file. Alternatively you can also try a multigrid block preconditioner. Use then \"MueLu_sym\" as preconditioner and provide a parameter xml file.",linsolvernumber);
+      break;
+    }
   }
 
   return;

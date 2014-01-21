@@ -7,12 +7,190 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#ifdef HAVE_Trilinos_Q1_2014
+#include <Xpetra_StridedMap.hpp>
+#include <Xpetra_MapExtractor.hpp>
+#include <Xpetra_MapExtractorFactory.hpp>
+#include <Xpetra_MultiVectorFactory.hpp>
+#include <Xpetra_CrsMatrix.hpp>
+#include <Xpetra_EpetraCrsMatrix.hpp>
+#include <Xpetra_BlockedCrsMatrix.hpp>
+
+#include <MueLu_ParameterListInterpreter.hpp>
+#include <MueLu_EpetraOperator.hpp> // Aztec interface
+
+// header files for default types, must be included after all other MueLu/Xpetra headers
+#include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
+#include <MueLu_UseShortNames.hpp>
+#endif
+
 #include "solver_blockpreconditioners.H"
 
 // include header files for concrete implementation
 #include "bgs2x2_operator.H"                   // Lena's BGS implementation
 #include "saddlepointpreconditioner.H"         // Tobias' saddle point preconditioner
 #include "solver_cheapsimplepreconditioner.H"  // Tobias' CheapSIMPLE
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::SOLVER::MueLuBlockPreconditioner::MueLuBlockPreconditioner( FILE * outfile,
+                                                            Teuchos::ParameterList & params)
+  : LINALG::SOLVER::PreconditionerType( outfile ),
+    params_( params )
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
+                                                  Epetra_Operator * matrix,
+                                                  Epetra_MultiVector * x,
+                                                  Epetra_MultiVector * b )
+{
+  SetupLinearProblem( matrix, x, b );
+
+  if ( create )
+  {
+    // free old matrix first
+    P_ = Teuchos::null;
+
+    // temporary hack: distinguish between "old" SIMPLER_Operator (for fluid
+    // only) and "new" more general test implementation
+    bool mt = params_.get<bool>("MESHTYING",false);
+    bool co = params_.get<bool>("CONTACT",false);
+    bool cstr = params_.get<bool>("CONSTRAINT",false);
+    bool fl = params_.isSublist("SIMPLER") || params_.get<bool>("FLUID",false); //params_.get<bool>("FLUIDSIMPLE",false); // SIMPLE for fluids
+    bool elch = params_.get<bool>("ELCH",false);
+
+    if(fl /*|| elch*/) // pure fluid problems
+    {
+#ifdef HAVE_Trilinos_Q1_2014
+      // adapt nullspace for splitted pure fluid problem
+      int nv = 0; // number of velocity dofs
+      int np = 0; // number of pressure dofs
+      int dimns = 0; // number of nullspace vectors (for velocity and pressure dofs)
+      int ndofpernode = 0; // dofs per node
+      int nlnode;
+
+      const Epetra_Map& fullmap = matrix->OperatorRangeMap();
+      const int length = fullmap.NumMyElements();
+
+      RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
+      if (A==Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
+
+      // fix null space for ML inverses
+      //Teuchos::ParameterList& inv1 = params_.sublist("Inverse1");
+      Teuchos::ParameterList& inv1 = params_.sublist("SubSmoother1");
+      Teuchos::ParameterList& inv2 = params_.sublist("SubSmoother2");
+      ndofpernode = inv1.sublist("NodalBlockInformation").get<int>("numdf",0);
+      nv = inv1.sublist("NodalBlockInformation").get<int>("nv",0);
+      np = inv1.sublist("NodalBlockInformation").get<int>("np",0);
+      dimns = inv1.sublist("NodalBlockInformation").get<int>("dimns",0);
+
+      // build fluid null space in MueLu format
+
+      if(ndofpernode == 0 || nv == 0 || np == 0) dserror("Error: PDE equations or null space dimension wrong.");
+
+      // define strided maps
+      std::vector<size_t> stridingInfo;
+      stridingInfo.push_back(nv);
+      stridingInfo.push_back(np);
+
+      Teuchos::RCP<CrsMatrix> xA11 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0,0).EpetraMatrix()));
+      Teuchos::RCP<CrsMatrix> xA12 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0,1).EpetraMatrix()));
+      Teuchos::RCP<CrsMatrix> xA21 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1,0).EpetraMatrix()));
+      Teuchos::RCP<CrsMatrix> xA22 = Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1,1).EpetraMatrix()));
+
+      // create maps
+      Teuchos::RCP<const Map> epetra_fullrangemap = Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
+      Teuchos::RCP<const StridedMap> fullrangemap = StridedMapFactory::Build(epetra_fullrangemap,stridingInfo, -1/* stridedBlock */, 0 /*globalOffset*/);
+      Teuchos::RCP<StridedMap> strMap1 = Teuchos::rcp(new StridedMap(xA11->getRowMap(), stridingInfo, xA11->getRowMap()->getIndexBase(), 0 /* stridedBlockId */, 0 /* globalOffset */));
+      Teuchos::RCP<StridedMap> strMap2 = Teuchos::rcp(new StridedMap(xA22->getRowMap(), stridingInfo, xA22->getRowMap()->getIndexBase(), 1 /* stridedBlockId */, 0 /* globalOffset */));
+      //Teuchos::RCP<StridedMap> strMap1 = Teuchos::rcp(new StridedMap(xA11->getRowMap(), stridingInfo, 0 /* stridedBlock */, 0 /*globalOffset*/));
+      //Teuchos::RCP<StridedMap> strMap2 = Teuchos::rcp(new StridedMap(xA22->getRowMap(), stridingInfo, 1 /* stridedBlock */, 0 /*0*/ /*globalOffset*/));
+
+      // build map extractor
+      std::vector<Teuchos::RCP<const Map> > xmaps;
+      xmaps.push_back(strMap1);
+      xmaps.push_back(strMap2);
+
+      Teuchos::RCP<const Xpetra::MapExtractor<Scalar,LO,GO> > map_extractor = Xpetra::MapExtractorFactory<Scalar,LO,GO>::Build(fullrangemap,xmaps);
+
+      // build blocked Xpetra operator
+      Teuchos::RCP<BlockedCrsMatrix> bOp = Teuchos::rcp(new BlockedCrsMatrix(map_extractor,map_extractor,10));
+      bOp->setMatrix(0,0,xA11);
+      bOp->setMatrix(0,1,xA12);
+      bOp->setMatrix(1,0,xA21);
+      bOp->setMatrix(1,1,xA22);
+      bOp->fillComplete();
+
+      // create velocity null space
+      Teuchos::RCP<MultiVector> nspVector1 = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(strMap1,nv,true);
+      for (int i=0; i<ndofpernode-1; ++i) {
+        ArrayRCP<Scalar> nsValues = nspVector1->getDataNonConst(i);
+        int numBlocks = nsValues.size() / (ndofpernode - 1);
+        for (int j=0; j< numBlocks; ++j) {
+          nsValues[j*(ndofpernode - 1) + i] = 1.0;
+        }
+      }
+
+      // create pressure null space
+      Teuchos::RCP<MultiVector> nspVector2 = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(strMap2,np,true);
+      ArrayRCP<Scalar> nsValues2 = nspVector2->getDataNonConst(0);
+      for (int j=0; j< nsValues2.size(); ++j) {
+        nsValues2[j] = 1.0;
+      }
+
+      std::cout << params_ << std::endl;
+
+      // use parameters from user-provided XML file
+
+      if(params_.isParameter("xml file") == false || params_.get<std::string>("xml file") == "none")
+        dserror("no xml file defined in dat file. MueLu_sym for blocked operators only works with xml parameters.");
+
+
+      // use xml file for generating hierarchy
+      std::string xmlFileName = params_.get<std::string>("xml file");
+      Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+      *fos << "Use XML file " << xmlFileName << " for generating MueLu multigrid hierarchy" << std::endl;
+
+      //////////////////////////////////////// prepare setup
+      ParameterListInterpreter mueLuFactory(xmlFileName, *(bOp->getRangeMap()->getComm()));
+
+
+      Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
+      H->setDefaultVerbLevel(Teuchos::VERB_HIGH);
+      H->SetMaxCoarseSize(/*maxCoarseSize*/ 500); // TODO
+
+      Teuchos::RCP<MueLu::Level> Finest = H->GetLevel(0);
+      Finest->setDefaultVerbLevel(Teuchos::VERB_HIGH);
+      Finest->Set("A",Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> >(bOp));
+
+      Finest->Set("Nullspace1",nspVector1);
+      Finest->Set("Nullspace2",nspVector2);
+
+      /////////////////////////////////// BEGIN setup
+
+      mueLuFactory.SetupHierarchy(*H);
+
+      ///////////////////////////////////// END setup
+
+      P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+
+
+
+      //P_ = Teuchos::rcp( new LINALG::SOLVER::MueLuPreconditioner( outfile_, params_ ) );
+
+#else
+      dserror("MueLuBlockPreconditioner only available with Trilinos Q1/2014 or later.");
+#endif
+    }
+    else
+    {
+      dserror("MueLuBlockPreconditioner does not support this problem type.");
+    }
+  }
+}
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
