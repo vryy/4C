@@ -207,16 +207,14 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
           v[k] = (*velo)[velo->Map().LID(dofs[k])];
         }
 
+        //scalar products of u and v with ref normal N
         double uTN=0.;
         double vTN=0.;
-        double duTN_du=0.;
-        double dvTN_du=0.;
+
         for (int l=0; l<numdof; ++l)
         {
           uTN += (u[l]-springoffset)*unitrefnormal[l];
           vTN += v[l]*unitrefnormal[l];
-          duTN_du += 1.0*unitrefnormal[l];
-          dvTN_du += gamma/(beta*ts_size)*1.0*unitrefnormal[l];
         }
 
         if (*dir == "direction_all")
@@ -234,7 +232,7 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
         	{
 						double val = nodalarea*(springstiff*uTN + dashpotvisc*vTN)*unitrefnormal[k];
 						fint->SumIntoGlobalValues(1,&val,&dofs[k]);
-						stiff->Assemble(nodalarea*(springstiff*duTN_du + dashpotvisc*dvTN_du)*unitrefnormal[k],dofs[k],dofs[k]);
+						stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size))*unitrefnormal[k]*unitrefnormal[k],dofs[k],dofs[k]);
         	}
         }
         else dserror("Invalid direction option! Choose direction_all or direction_refsurfnormal!");
