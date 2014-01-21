@@ -119,10 +119,10 @@ public:
   //! @name Evaluation methods
 
   /*!
-  \brief Calculate slabs of dop in initialization
+  \brief Calculate slabs of dop
 
   */
-  void CalculateSlabsDop(bool isinit);
+  void CalculateSlabsDop();
 
   /*!
   \brief Update slabs of current treenode in bottom up way
@@ -496,7 +496,7 @@ public:
   \brief Calculate minimal element length / inflation factor "enlarge"
 
   */
-  void SetEnlarge(bool isinit);
+  void SetEnlarge();
 
   /*!
   \brief Update master and slave tree in a topdown way
@@ -546,9 +546,9 @@ public:
   */
   void SearchCombined(){// if proc has no slave elements --> return;
                         if (sroot_->Type()==4) return;
-                        sroot_->CalculateSlabsDop(false);
+                        sroot_->CalculateSlabsDop();
                         sroot_->EnlargeGeometry(enlarge_);
-                        mroot_->CalculateSlabsDop(false);
+                        mroot_->CalculateSlabsDop();
                         mroot_->EnlargeGeometry(enlarge_);
                         EvaluateSearchCombined(sroot_, mroot_);
                         return;}

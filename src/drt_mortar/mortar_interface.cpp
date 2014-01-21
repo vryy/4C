@@ -2006,7 +2006,7 @@ bool MORTAR::MortarInterface::EvaluateSearchBinarytree()
   // *********************************************************************
 
   // calculate minimal element length
-  binarytree_->SetEnlarge(false);
+  binarytree_->SetEnlarge();
 
   // update tree in a top down way
   //binarytree_->UpdateTreeTopDown();

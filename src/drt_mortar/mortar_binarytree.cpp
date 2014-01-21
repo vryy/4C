@@ -100,7 +100,7 @@ void MORTAR::BinaryTreeNode::InitializeTree(double& enlarge)
   if (Elelist().size()==0) return;
 
   // calculate bounding volume
-  CalculateSlabsDop(true);
+  CalculateSlabsDop();
   EnlargeGeometry(enlarge);
 
   // if current treenode is inner treenode
@@ -152,9 +152,9 @@ void MORTAR::BinaryTreeNode::InitializeTree(double& enlarge)
 }
 
 /*----------------------------------------------------------------------*
- | Calculate slabs of DOP out of node postions (public)       popp 10/08|
+ | Calculate slabs of DOP out of current node postions        popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTreeNode::CalculateSlabsDop(bool isinit)
+void MORTAR::BinaryTreeNode::CalculateSlabsDop()
 {
   // initialize slabs
   for (int j=0; j<kdop_/2; j++)
@@ -179,13 +179,10 @@ void MORTAR::BinaryTreeNode::CalculateSlabsDop(bool isinit)
       MortarNode* mrtrnode=static_cast<MortarNode*>(nodes[k]);
       if (!mrtrnode) dserror("ERROR: Null pointer!");
 
-      // decide which position is relevant (initial or current)
+      // get current node position
       double pos[3] = {0.0, 0.0, 0.0};
       for (int j=0;j<dim_;++j)
-      {
-        if (isinit) pos[j] = mrtrnode->X()[j];
-        else        pos[j] = mrtrnode->xspatial()[j];
-      }
+        pos[j] = mrtrnode->xspatial()[j];
 
       // calculate slabs
       for(int j=0; j<kdop_/2;j++)
@@ -203,8 +200,8 @@ void MORTAR::BinaryTreeNode::CalculateSlabsDop(bool isinit)
         if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
       }
 
-      // if update for contactsearch --> add auxiliary positions
-      if (!isinit)
+      // enlarge slabs with auxiliary position
+      if(useauxpos_)
       {
         // calculate element normal at current node
         double xi[2] = {0.0, 0.0};
@@ -292,9 +289,10 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
       MortarNode* mrtrnode=static_cast<MortarNode*>(nodes[k]);
       if (!mrtrnode) dserror("ERROR: Null pointer!");
 
-      // decide which position is relevant (initial or current)
+      // get current position
       double pos[3] = {0.0, 0.0, 0.0};
-      for (int j=0;j<dim_;++j) pos[j] = mrtrnode->xspatial()[j];
+      for (int j=0;j<dim_;++j)
+        pos[j] = mrtrnode->xspatial()[j];
 
       // calculate slabs
       for(int j=0; j<kdop_/2;j++)
@@ -312,10 +310,10 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
         if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
       }
 
+      // enlarge slabs with auxiliary position
       if(useauxpos_)
       {
-        // enlarge slabs with auxiliary position
-        // first calculate element normal at current node
+        // calculate element normal at current node
         double xi[2] = {0.0, 0.0};
         double normal[3] = {0.0, 0.0, 0.0};
         mrtrelement->LocalCoordinatesOfNode(k,xi);
@@ -342,7 +340,7 @@ void MORTAR::BinaryTreeNode::UpdateSlabsBottomUp(double & enlarge)
 
           if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
           if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
-      }
+        }
       }
     }
 
@@ -937,7 +935,7 @@ useauxpos_(useauxpos)
   mleafsmap_.resize(2);
 
   // claculates minimal element length
-  SetEnlarge(true);
+  SetEnlarge();
 
   //**********************************************************************
   // check for problem dimension
@@ -1098,7 +1096,7 @@ const Epetra_Comm& MORTAR::BinaryTree::Comm() const
 /*----------------------------------------------------------------------*
  | Find min. length of master and slave elements (public)     popp 10/08|
  *----------------------------------------------------------------------*/
-void MORTAR::BinaryTree::SetEnlarge(bool isinit)
+void MORTAR::BinaryTree::SetEnlarge()
 {
   double lmin = 1.0e12;
 
@@ -1109,7 +1107,7 @@ void MORTAR::BinaryTree::SetEnlarge(bool isinit)
     DRT::Element* element = idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
     MORTAR::MortarElement* mrtrelement = (MORTAR::MortarElement*) element;
-    double mincurrent = mrtrelement->MinEdgeSize(isinit);
+    double mincurrent = mrtrelement->MinEdgeSize();
     if (mincurrent < lmin) lmin = mincurrent;
   }
 
@@ -1120,7 +1118,7 @@ void MORTAR::BinaryTree::SetEnlarge(bool isinit)
     DRT::Element* element = idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
     MORTAR::MortarElement* mrtrelement = (MORTAR::MortarElement*) element;
-    double mincurrent=mrtrelement->MinEdgeSize(isinit);
+    double mincurrent=mrtrelement->MinEdgeSize();
     if (mincurrent < lmin) lmin = mincurrent;
   }
 
@@ -1190,7 +1188,7 @@ void MORTAR::BinaryTree::EvaluateUpdateTreeTopDown(Teuchos::RCP<BinaryTreeNode> 
   //if no slave element on proc-->return
   if (treenode->Elelist().size()==0) return;
 
-  treenode->CalculateSlabsDop(false);
+  treenode->CalculateSlabsDop();
   treenode->EnlargeGeometry(enlarge_);
 
   if (treenode->Type()==0||treenode->Type()==2)
@@ -1343,13 +1341,13 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(Teuchos::RCP<BinaryTreeNode> str
     if (streenode->Type()==0 && mtreenode->Type()==2)
     {
       //std::cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
-      streenode->Leftchild()->CalculateSlabsDop(false);
+      streenode->Leftchild()->CalculateSlabsDop();
       streenode->Leftchild()->EnlargeGeometry(enlarge_);
-      streenode->Rightchild()->CalculateSlabsDop(false);
+      streenode->Rightchild()->CalculateSlabsDop();
       streenode->Rightchild()->EnlargeGeometry(enlarge_);
-      mtreenode->Leftchild()->CalculateSlabsDop(false);
+      mtreenode->Leftchild()->CalculateSlabsDop();
       mtreenode->Leftchild()->EnlargeGeometry(enlarge_);
-      mtreenode->Rightchild()->CalculateSlabsDop(false);
+      mtreenode->Rightchild()->CalculateSlabsDop();
       mtreenode->Rightchild()->EnlargeGeometry(enlarge_);
 
       EvaluateSearchCombined(streenode->Leftchild(),mtreenode->Leftchild());
@@ -1362,9 +1360,9 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(Teuchos::RCP<BinaryTreeNode> str
     if (streenode->Type()==0 && mtreenode->Type()==3)
     {
       //std::cout <<"\n"<< Comm().MyPID() << " slafe inner, master leaf!";
-      streenode->Leftchild()->CalculateSlabsDop(false);
+      streenode->Leftchild()->CalculateSlabsDop();
       streenode->Leftchild()->EnlargeGeometry(enlarge_);
-      streenode->Rightchild()->CalculateSlabsDop(false);
+      streenode->Rightchild()->CalculateSlabsDop();
       streenode->Rightchild()->EnlargeGeometry(enlarge_);
 
       EvaluateSearchCombined(streenode->Leftchild(),mtreenode);
@@ -1375,9 +1373,9 @@ void MORTAR::BinaryTree::EvaluateSearchCombined(Teuchos::RCP<BinaryTreeNode> str
     if (streenode->Type()==1 && mtreenode->Type()==2)
     {
       //std::cout <<"\n"<< Comm().MyPID() << " slave leaf, master inner!";
-      mtreenode->Leftchild()->CalculateSlabsDop(false);
+      mtreenode->Leftchild()->CalculateSlabsDop();
       mtreenode->Leftchild()->EnlargeGeometry(enlarge_);
-      mtreenode->Rightchild()->CalculateSlabsDop(false);
+      mtreenode->Rightchild()->CalculateSlabsDop();
       mtreenode->Rightchild()->EnlargeGeometry(enlarge_);
 
       EvaluateSearchCombined(streenode,mtreenode->Leftchild());

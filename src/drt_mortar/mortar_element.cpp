@@ -980,14 +980,14 @@ bool MORTAR::MortarElement::LocalToGlobal(const double* xi, double* globcoord,
 /*----------------------------------------------------------------------*
  |  Compute minimal edge size of MortarElement                popp 11/08|
  *----------------------------------------------------------------------*/
-double MORTAR::MortarElement::MinEdgeSize(bool isinit)
+double MORTAR::MortarElement::MinEdgeSize()
 {
   double minedgesize = 1.0e12;
   DRT::Element::DiscretizationType dt = Shape();
 
   // get coordinates of element nodes
   LINALG::SerialDenseMatrix coord(3,NumNode());
-  GetNodalCoords(coord,isinit);
+  GetNodalCoords(coord);
 
   // 2D case (2noded and 3noded line elements)
   if (dt==line2 || dt==line3)
@@ -1047,14 +1047,14 @@ double MORTAR::MortarElement::MinEdgeSize(bool isinit)
 /*----------------------------------------------------------------------*
  |  Compute maximal edge size of MortarElement                popp 11/08|
  *----------------------------------------------------------------------*/
-double MORTAR::MortarElement::MaxEdgeSize(bool isinit)
+double MORTAR::MortarElement::MaxEdgeSize()
 {
   double maxedgesize = 0.0;
   DRT::Element::DiscretizationType dt = Shape();
 
   // get coordinates of element nodes
   LINALG::SerialDenseMatrix coord(3,NumNode());
-  GetNodalCoords(coord,isinit);
+  GetNodalCoords(coord);
 
   // 2D case (2noded and 3noded line elements)
   if (dt==line2 || dt==line3)

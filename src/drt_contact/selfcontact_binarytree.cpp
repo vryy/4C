@@ -93,7 +93,7 @@ const Epetra_Comm& CONTACT::SelfBinaryTreeNode::Comm() const
 void CONTACT::SelfBinaryTreeNode::CompleteTree(int layer,double& enlarge)
 {
   // calculate bounding volume
-  CalculateSlabsDop(true);
+  CalculateSlabsDop();
   EnlargeGeometry(enlarge);
 
   // check root node (layer 0) for sanity
@@ -241,9 +241,9 @@ void CONTACT::SelfBinaryTreeNode::UpdateEndnodes()
 }
 
 /*----------------------------------------------------------------------*
- | Calculate slabs of DOP out of node postions (public)       popp 10/08|
+ | Calculate slabs of DOP out of current node postions        popp 10/08|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTreeNode::CalculateSlabsDop(bool isinit)
+void CONTACT::SelfBinaryTreeNode::CalculateSlabsDop()
 {
   // initialize slabs
   for (int j=0; j<kdop_/2; j++)
@@ -268,13 +268,10 @@ void CONTACT::SelfBinaryTreeNode::CalculateSlabsDop(bool isinit)
       CoNode* cnode=static_cast<CoNode*>(nodes[k]);
       if (!cnode) dserror("ERROR: Null pointer!");
 
-      // decide which position is relevant (initial or current)
+      // get current position
       double pos[3] = {0.0, 0.0, 0.0};
       for (int j=0;j<dim_;++j)
-      {
-        if (isinit) pos[j] = cnode->X()[j];
-        else        pos[j] = cnode->xspatial()[j];
-      }
+        pos[j] = cnode->xspatial()[j];
 
       // calculate slabs
       for(int j=0;j<kdop_/2;++j)
@@ -292,37 +289,34 @@ void CONTACT::SelfBinaryTreeNode::CalculateSlabsDop(bool isinit)
         if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
       }
 
-      // if update for contactsearch --> add auxiliary positions
-      if (!isinit)
+      // add auxiliary positions
+      // calculate element normal at current node
+      double xi[2] = {0.0, 0.0};
+      double normal[3] = {0.0, 0.0, 0.0};
+      celement->LocalCoordinatesOfNode(k,xi);
+      celement->ComputeUnitNormalAtXi(xi,normal);
+
+      // now the auxiliary position
+      double auxpos[3] = {0.0, 0.0, 0.0};
+      double scalar = 0.0;
+      for (int j=0;j<dim_;++j)
+        scalar = scalar + (cnode->X()[j]+cnode->uold()[j]-cnode->xspatial()[j])*normal[j];
+      for (int j=0;j<dim_;++j)
+        auxpos[j] = cnode->xspatial()[j] + scalar*normal[j];
+
+      for (int j=0;j<kdop_/2;++j)
       {
-        // calculate element normal at current node
-        double xi[2] = {0.0, 0.0};
-        double normal[3] = {0.0, 0.0, 0.0};
-        celement->LocalCoordinatesOfNode(k,xi);
-        celement->ComputeUnitNormalAtXi(xi,normal);
+        //= ax+by+cz=d/sqrt(aa+bb+cc)
+        double num = dopnormals_(j,0)*auxpos[0]
+                   + dopnormals_(j,1)*auxpos[1]
+                   + dopnormals_(j,2)*auxpos[2];
+        double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
+                           +(dopnormals_(j,1)*dopnormals_(j,1))
+                           +(dopnormals_(j,2)*dopnormals_(j,2)));
+        double dcurrent = num/denom;
 
-        // now the auxiliary position
-        double auxpos[3] = {0.0, 0.0, 0.0};
-        double scalar = 0.0;
-        for (int j=0;j<dim_;++j)
-          scalar = scalar + (cnode->X()[j]+cnode->uold()[j]-cnode->xspatial()[j])*normal[j];
-        for (int j=0;j<dim_;++j)
-          auxpos[j] = cnode->xspatial()[j] + scalar*normal[j];
-
-        for (int j=0;j<kdop_/2;++j)
-        {
-          //= ax+by+cz=d/sqrt(aa+bb+cc)
-          double num = dopnormals_(j,0)*auxpos[0]
-                     + dopnormals_(j,1)*auxpos[1]
-                     + dopnormals_(j,2)*auxpos[2];
-          double denom = sqrt((dopnormals_(j,0)*dopnormals_(j,0))
-                             +(dopnormals_(j,1)*dopnormals_(j,1))
-                             +(dopnormals_(j,2)*dopnormals_(j,2)));
-          double dcurrent = num/denom;
-
-          if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
-          if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
-        }
+        if (dcurrent > slabs_(j,1)) slabs_(j,1) = dcurrent;
+        if (dcurrent < slabs_(j,0)) slabs_(j,0) = dcurrent;
       }
     }
   }
@@ -667,7 +661,7 @@ eps_(eps)
   leafsmap_.clear();
 
   // calculate min. element length and set enlargement accordingly
-  SetEnlarge(true);
+  SetEnlarge();
 
   //**********************************************************************
   // check for problem dimension
@@ -1086,7 +1080,7 @@ const Epetra_Comm& CONTACT::SelfBinaryTree::Comm() const
 /*----------------------------------------------------------------------*
  | Find minimal length of contact elements (public)           popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::SetEnlarge(bool isinit)
+void CONTACT::SelfBinaryTree::SetEnlarge()
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -1101,7 +1095,7 @@ void CONTACT::SelfBinaryTree::SetEnlarge(bool isinit)
     DRT::Element* element = idiscret_.gElement(gid);
     if (!element) dserror("ERROR: Cannot find element with gid %\n",gid);
     CONTACT::CoElement* celement = (CoElement*) element;
-    double mincurrent=celement->MinEdgeSize(isinit);
+    double mincurrent=celement->MinEdgeSize();
     if (mincurrent < lmin) lmin = mincurrent;
   }
 
@@ -1654,9 +1648,9 @@ void CONTACT::SelfBinaryTree::SearchSelfContactCombined(Teuchos::RCP<SelfBinaryT
 
   if (treenode->Type() != SELFCO_LEAF)
   {
-    treenode->Leftchild()->CalculateSlabsDop(false);
+    treenode->Leftchild()->CalculateSlabsDop();
     treenode->Leftchild()->EnlargeGeometry(enlarge_);
-    treenode->Rightchild()->CalculateSlabsDop(false);
+    treenode->Rightchild()->CalculateSlabsDop();
     treenode->Rightchild()->EnlargeGeometry(enlarge_);
     SearchSelfContactCombined(treenode->Leftchild());
     SearchSelfContactCombined(treenode->Rightchild());
@@ -1769,13 +1763,13 @@ void CONTACT::SelfBinaryTree::SearchRootContactCombined(Teuchos::RCP<SelfBinaryT
     if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
     {
       //std::cout <<"\n"<< Comm().MyPID() << " 2 inner nodes!";
-      treenode1->Leftchild()->CalculateSlabsDop(false);
+      treenode1->Leftchild()->CalculateSlabsDop();
       treenode1->Leftchild()->EnlargeGeometry(enlarge_);
-      treenode1->Rightchild()->CalculateSlabsDop(false);
+      treenode1->Rightchild()->CalculateSlabsDop();
       treenode1->Rightchild()->EnlargeGeometry(enlarge_);
-      treenode2->Leftchild()->CalculateSlabsDop(false);
+      treenode2->Leftchild()->CalculateSlabsDop();
       treenode2->Leftchild()->EnlargeGeometry(enlarge_);
-      treenode2->Rightchild()->CalculateSlabsDop(false);
+      treenode2->Rightchild()->CalculateSlabsDop();
       treenode2->Rightchild()->EnlargeGeometry(enlarge_);
 
       SearchRootContactCombined(treenode1->Leftchild(),treenode2->Leftchild());
@@ -1787,9 +1781,9 @@ void CONTACT::SelfBinaryTree::SearchRootContactCombined(Teuchos::RCP<SelfBinaryT
     // treenode1 is inner, treenode2 is leaf
     if (treenode1->Type() != SELFCO_LEAF && treenode2->Type() == SELFCO_LEAF)
     {
-      treenode1->Leftchild()->CalculateSlabsDop(false);
+      treenode1->Leftchild()->CalculateSlabsDop();
       treenode1->Leftchild()->EnlargeGeometry(enlarge_);
-      treenode1->Rightchild()->CalculateSlabsDop(false);
+      treenode1->Rightchild()->CalculateSlabsDop();
       treenode1->Rightchild()->EnlargeGeometry(enlarge_);
 
       SearchRootContactCombined(treenode1->Leftchild(),treenode2);
@@ -1799,9 +1793,9 @@ void CONTACT::SelfBinaryTree::SearchRootContactCombined(Teuchos::RCP<SelfBinaryT
     // treenode1 is leaf, treenode3 is inner
     if (treenode1->Type() == SELFCO_LEAF && treenode2->Type() != SELFCO_LEAF)
     {
-      treenode2->Leftchild()->CalculateSlabsDop(false);
+      treenode2->Leftchild()->CalculateSlabsDop();
       treenode2->Leftchild()->EnlargeGeometry(enlarge_);
-      treenode2->Rightchild()->CalculateSlabsDop(false);
+      treenode2->Rightchild()->CalculateSlabsDop();
       treenode2->Rightchild()->EnlargeGeometry(enlarge_);
 
       SearchRootContactCombined(treenode1,treenode2->Leftchild());
@@ -1888,9 +1882,9 @@ void CONTACT::SelfBinaryTree::EvaluateContactAndAdjacency(Teuchos::RCP<SelfBinar
       {
         if (treenode1->Type() != SELFCO_LEAF)
         {
-          treenode1->Leftchild()->CalculateSlabsDop(false);
+          treenode1->Leftchild()->CalculateSlabsDop();
           treenode1->Leftchild()->EnlargeGeometry(enlarge_);
-          treenode1->Rightchild()->CalculateSlabsDop(false);
+          treenode1->Rightchild()->CalculateSlabsDop();
           treenode1->Rightchild()->EnlargeGeometry(enlarge_);
           EvaluateContactAndAdjacency(treenode1->Leftchild(),treenode2, isadjacent);
           EvaluateContactAndAdjacency(treenode1->Rightchild(),treenode2, isadjacent);
@@ -1901,9 +1895,9 @@ void CONTACT::SelfBinaryTree::EvaluateContactAndAdjacency(Teuchos::RCP<SelfBinar
       {
          if (treenode2->Type() != SELFCO_LEAF)
          {
-           treenode2->Leftchild()->CalculateSlabsDop(false);
+           treenode2->Leftchild()->CalculateSlabsDop();
            treenode2->Leftchild()->EnlargeGeometry(enlarge_);
-           treenode2->Rightchild()->CalculateSlabsDop(false);
+           treenode2->Rightchild()->CalculateSlabsDop();
            treenode2->Rightchild()->EnlargeGeometry(enlarge_);
            EvaluateContactAndAdjacency(treenode2->Leftchild(),treenode1, isadjacent);
            EvaluateContactAndAdjacency(treenode2->Rightchild(),treenode1, isadjacent);
@@ -2325,7 +2319,7 @@ void CONTACT::SelfBinaryTree::SearchContactCombined()
   //**********************************************************************
   for (int k=0;k<(int)roots_.size();++k)
   {
-    roots_[k]->CalculateSlabsDop(false);
+    roots_[k]->CalculateSlabsDop();
     roots_[k]->EnlargeGeometry(enlarge_);
   }
   UpdateNormals();

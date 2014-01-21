@@ -1766,7 +1766,7 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
   if (SelfContact())
   {
     // calculate minimal element length
-    binarytreeself_->SetEnlarge(false);
+    binarytreeself_->SetEnlarge();
 
     // update and search for contact with a combined algorithm
     //binarytreeself_->SearchContactCombined();
@@ -1817,7 +1817,7 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
     if (!lComm()) return true;
 
     // calculate minimal element length
-    binarytree_->SetEnlarge(false);
+    binarytree_->SetEnlarge();
 
     // update tree in a top down way
     //binarytree_->UpdateTreeTopDown();

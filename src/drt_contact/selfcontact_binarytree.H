@@ -112,10 +112,10 @@ public:
   //! @name Evaluation methods
   
   /*!
-  \brief Calculate slabs of dop in initialization
+  \brief Calculate slabs of dop
   
   */
-  void CalculateSlabsDop(bool isinit);
+  void CalculateSlabsDop();
   
   /*!
   \brief Update slabs of current treenode in bottom up way
@@ -712,7 +712,7 @@ public:
   \brief Calculate minimal element length / inflation factor "enlarge"
 
   */
-  void SetEnlarge(bool isinit);
+  void SetEnlarge();
    
   /*!
   \brief Initialize Tree in a bottom up way based on dual graph

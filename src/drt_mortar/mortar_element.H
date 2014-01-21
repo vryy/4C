@@ -675,16 +675,14 @@ public:
   /*!
   \brief Evaluate minimal edge size of CElement
 
-  \param isinit (in): true if called for reference coords
   */
-  virtual double MinEdgeSize(bool isinit = false);
+  virtual double MinEdgeSize();
 
   /*!
   \brief Evaluate maximal edge size of CElement
 
-  \param isinit (in): true if called for reference coords
   */
-  virtual double MaxEdgeSize(bool isinit = false);
+  virtual double MaxEdgeSize();
 
   /*!
   \brief Add one MortarElement to this MortarElement's potential contact partners
