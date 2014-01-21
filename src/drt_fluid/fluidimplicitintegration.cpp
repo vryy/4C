@@ -116,7 +116,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   dtp_ = params_->get<double>("time step size");
 
   // parameter theta for time-integration schemes (required for all schemes)
-  theta_    = params_->get<double>("theta");
+  theta_ = params_->get<double>("theta");
 
   // number of steps for starting algorithm, only for GenAlpha so far
   numstasteps_ = params_->get<int> ("number of start steps");
@@ -256,7 +256,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   // -----------------------------------------
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_   = LINALG::CreateVector(*dofrowmap,true);
+  zeros_ = LINALG::CreateVector(*dofrowmap,true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
@@ -521,7 +521,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   // Check, if features are used with the locsys manager that are not supported,
   // or better, not implemented yet.
   // ------------------------------------------------------------------------------
-  if (locsysman_ != Teuchos::null) {
+  if (locsysman_ != Teuchos::null)
+  {
     // XFEM
     if ((DRT::Problem::Instance()->ProblemType() == prb_fsi_xfem) or
         (DRT::Problem::Instance()->ProblemType() == prb_fluid_xfem)) {
@@ -552,30 +553,26 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 
 void FLD::FluidImplicitTimeInt::Initialize()
 {
+  // -------------------------------------------------------------------
+  // initialize forcing for homogeneous isotropic turbulence
+  // -------------------------------------------------------------------
+  if (special_flow_ == "forced_homogeneous_isotropic_turbulence"
+      or special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence"
+      or special_flow_ == "decaying_homogeneous_isotropic_turbulence")
+  {
+    forcing_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+    forcing_->PutScalar(0.0);
+    homisoturb_forcing_ = Teuchos::rcp(new FLD::HomIsoTurbForcing(*this));
+  }
 
+  //Set general parameters and
+  //initialize Krylov space projection
 
+  //the following two functions are overloaded (switched off) in TimIntPoro
+  SetElementGeneralFluidParameter();
+  SetElementTurbulenceParameter();
 
-    // -------------------------------------------------------------------
-    // initialize forcing for homogeneous isotropic turbulence
-    // -------------------------------------------------------------------
-    if (special_flow_ == "forced_homogeneous_isotropic_turbulence"
-        or special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence"
-        or special_flow_ == "decaying_homogeneous_isotropic_turbulence")
-    {
-      forcing_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-      forcing_->PutScalar(0.0);
-      homisoturb_forcing_ = Teuchos::rcp(new FLD::HomIsoTurbForcing(*this));
-    }
-
-    //Set general parameters and
-    //initialize Krylov space projection
-
-    //the following two functions are overloaded (switched off) in TimIntPoro
-    SetElementGeneralFluidParameter();
-    SetElementTurbulenceParameter();
-
-    InitKrylovSpaceProjection();
-
+  InitKrylovSpaceProjection();
 
   return;
 }
@@ -742,8 +739,8 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   IncrementTimeAndStep();
 
-  //Sets theta_ to a specific value for bdf2 and calculates
-  //a pseudo-theta for genalpha (the latter in case of startalgo_)
+  // Sets theta_ to a specific value for bdf2 and calculates
+  // a pseudo-theta for genalpha (the latter in case of startalgo_)
   SetTheta();
 
   // -------------------------------------------------------------------
@@ -752,9 +749,9 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   //
   // stationary/af-generalized-alpha: hist_ = 0.0
   //
-  // one-step-Theta:                  hist_ = veln_  + dt*(1-Theta)*accn_
+  // one-step-Theta:                  hist_ = veln_ + dt*(1-Theta)*accn_
   //
-  // BDF2: for constant time step:    hist_ = 4/3 veln_  - 1/3 velnm_
+  // BDF2: for constant time step:    hist_ = 4/3*veln_ - 1/3*velnm_
   //
   // -------------------------------------------------------------------
   SetOldPartOfRighthandside();
@@ -2630,7 +2627,7 @@ void FLD::FluidImplicitTimeInt::CalcIntermediateSolution()
     bool activate = true;
     if (special_flow_ == "decaying_homogeneous_isotropic_turbulence"
         and step_ > params_->sublist("TURBULENCE MODEL").get<int>("FORCING_TIME_STEPS",0))
-        activate = false;
+      activate = false;
 
     if (activate)
     {
@@ -3272,8 +3269,6 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
   const Teuchos::ParameterList& fluiddynparams =  DRT::Problem::Instance()->FluidDynamicParams();
   const int order = DRT::INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
-  double theta = fluiddynparams.get<double>("THETA");
-
   switch (order)
   {
     case INPAR::FLUID::BE:
@@ -3298,6 +3293,7 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
     case INPAR::FLUID::OST:
       /* get gridvelocity from OST time discretisation of mesh motion:
          -> needed to allow consistent linearization of FPSI problem  */
+      const double theta = fluiddynparams.get<double>("THETA");
       gridv_->Update(1/(theta*dta_), *dispnp_, -1/(theta*dta_), *dispn_, 0.0);
       gridv_->Update(-((1.0/theta)-1.0),*veln_,1.0);
     break;
@@ -3548,12 +3544,12 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
     // for NURBS discretizations we have to solve a least squares problem,
     // with high accuracy! (do nothing for Lagrangian polynomials)
-      DRT::NURBS::apply_nurbs_initial_condition(
-        *discret_  ,
-        DRT::Problem::Instance()->ErrorFile()->Handle(),
-        DRT::Problem::Instance()->UMFPACKSolverParams(),
-        startfuncno,
-        velnp_     );
+    DRT::NURBS::apply_nurbs_initial_condition(
+      *discret_,
+      DRT::Problem::Instance()->ErrorFile()->Handle(),
+      DRT::Problem::Instance()->UMFPACKSolverParams(),
+      startfuncno,
+      velnp_);
 
     // initialize veln_ as well. That's what we actually want to do here!
     veln_->Update(1.0,*velnp_ ,0.0);
@@ -3592,7 +3588,8 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
           int lid = dofrowmap->LID(gid);
 
           thisvel=(*velnp_)[lid];
-          if (mybmvel*mybmvel < thisvel*thisvel) mybmvel=thisvel;
+          if (mybmvel*mybmvel < thisvel*thisvel)
+            mybmvel=thisvel;
         }
       }
 
@@ -3627,7 +3624,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
         }
 
         // add random noise on initial function field
-        for(int index=0;index<numdim_;++index)
+        for (int index = 0; index < numdim_; ++index)
         {
           int gid = nodedofset[index];
 
@@ -3639,7 +3636,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
           err += veln_ ->SumIntoGlobalValues(1,&noise,&gid);
         }
 
-        if(err!=0)
+        if (err != 0)
         {
           dserror("dof not on proc");
         }
@@ -4877,21 +4874,32 @@ void FLD::FluidImplicitTimeInt::UpdateNewton(Teuchos::RCP<const Epetra_Vector> v
 // provide access to turbulence statistics manager (gjb 06/2011)
 // -------------------------------------------------------------------
 Teuchos::RCP<FLD::TurbulenceStatisticManager> FLD::FluidImplicitTimeInt::TurbulenceStatisticManager()
-  {return statisticsmanager_;};
+{
+  return statisticsmanager_;
+}
 
 
 // -------------------------------------------------------------------
-// provide access to box filter for dynamic Smagorinsky/
-// dynamic Vreman model rasthofer/krank
+// provide access to box filter for dynamic Smagorinsk model     rasthofer/krank
 // -------------------------------------------------------------------
-Teuchos::RCP<FLD::DynSmagFilter> FLD::FluidImplicitTimeInt::DynSmagFilter() {return DynSmag_; }
-Teuchos::RCP<FLD::Vreman> FLD::FluidImplicitTimeInt::Vreman() {return Vrem_; }
+Teuchos::RCP<FLD::DynSmagFilter> FLD::FluidImplicitTimeInt::DynSmagFilter()
+{
+  return DynSmag_;
+}
+
+// -------------------------------------------------------------------
+// provide access to box filter for dynamic Vreman model         rasthofer/krank
+// -------------------------------------------------------------------
+Teuchos::RCP<FLD::Vreman> FLD::FluidImplicitTimeInt::Vreman()
+{
+  return Vrem_;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 //Overloaded in TimIntPoro and TimIntRedModels bk 12/13
 void FLD::FluidImplicitTimeInt::UpdateIterIncrementally(
-  Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
+  Teuchos::RCP<const Epetra_Vector> vel
   )
 {
   // set the new solution we just got
@@ -4934,80 +4942,80 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
         std::cout << &std::endl;
       }
       else if(turbmodel_ == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
+      {
+        if (special_flow_ != "channel_flow_of_height_2"
+            ||
+            homdir != "xz")
         {
-          if (special_flow_ != "channel_flow_of_height_2"
-              ||
-              homdir != "xz")
-          {
-            dserror("The van Driest damping is only implemented for a channel flow with wall \nnormal direction y");
-          }
+          dserror("The van Driest damping is only implemented for a channel flow with wall \nnormal direction y");
+        }
 
-          std::cout << "                             "          ;
-          std::cout << "\n";
-          std::cout << "- Smagorinsky constant:   Cs   = "      ;
-          std::cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY");
-          std::cout << &std::endl;
-          std::cout << "- viscous length      :   l_tau= "      ;
-          std::cout << params_->sublist("SUBGRID VISCOSITY").get<double>("CHANNEL_L_TAU") << "\n";
-          std::cout << &std::endl;
-        }
-        else if(turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+        std::cout << "                             "          ;
+        std::cout << "\n";
+        std::cout << "- Smagorinsky constant:   Cs   = "      ;
+        std::cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY");
+        std::cout << &std::endl;
+        std::cout << "- viscous length      :   l_tau= "      ;
+        std::cout << params_->sublist("SUBGRID VISCOSITY").get<double>("CHANNEL_L_TAU") << "\n";
+        std::cout << &std::endl;
+      }
+      else if(turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+      {
+        if (homdir == "not_specified")
         {
-          if (homdir == "not_specified")
-          {
-            std::cout << "      no homogeneous directions specified --- so we just use pointwise clipping for Cs\n";
-            std::cout << &std::endl;
-          }
-        }
-        else if(turbmodel_ == INPAR::FLUID::scale_similarity or turbmodel_ == INPAR::FLUID::scale_similarity_basic)
-        {
-          std::cout << "                             "      ;
-          std::cout << "\n";
-          std::cout << "- Constant:  Cl   = "      ;
-          std::cout << params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<double>("C_SCALE_SIMILARITY") << "\n";
-          std::cout << "- Scale separation:  " << params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<std::string>("SCALE_SEPARATION") << "\n";
-          std::cout << &std::endl;
-        }
-        else if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-        {
-          Teuchos::ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
-          std::cout << "                             "      ;
-          std::cout << "\n";
-          std::cout << "- Csgs:              " << modelparams->get<double>("CSGS") << "\n";
-          std::cout << "- Scale separation:  " << modelparams->get<std::string>("SCALE_SEPARATION") << "\n";
-          if ((DRT::INPUT::IntegralValue<int>(*modelparams,"CALC_N")))
-          {
-            std::cout << "- Re_length:         " << modelparams->get<std::string>("REF_LENGTH") << "\n";
-            std::cout << "- Re_vel:            " << modelparams->get<std::string>("REF_VELOCITY") << "\n";
-            std::cout << "- c_nu:              " << modelparams->get<double>("C_NU") << "\n";
-          }
-          else
-            std::cout << "- N:                 " << modelparams->get<double>("N") << "\n";
-          std::cout << "- near-wall limit:   " << DRT::INPUT::IntegralValue<int>(*modelparams,"NEAR_WALL_LIMIT") << "\n";
-          std::cout << "- beta:              " << modelparams->get<double>("BETA") << "\n";
-          std::cout << "- evaluation B:      " << modelparams->get<std::string>("EVALUATION_B") << "\n";
-          std::cout << "- conservative:      " << modelparams->get<std::string>("CONVFORM") << "\n";
-          if ((DRT::INPUT::IntegralValue<int>(*modelparams,"SET_FINE_SCALE_VEL")))
-              std::cout << "WARNING: fine-scale velocity is set for nightly tests!" << "\n";
-          std::cout << &std::endl;
-        }
-        else if(turbmodel_ == INPAR::FLUID::vreman)
-        {
-          std::cout << "                             "          ;
-          std::cout << "\n";
-          std::cout << "- Vreman model with constant coefficient\n"      ;
-          std::cout << "- Use filter width method:  " << params_->sublist("SUBGRID VISCOSITY").get<std::string>("FILTER_WIDTH","CubeRootVol") << "\n";
-          std::cout << &std::endl;
-        }
-        else if(turbmodel_ == INPAR::FLUID::dynamic_vreman)
-        {
-          std::cout << "                             "          ;
-          std::cout << "\n";
-          std::cout << "- Vreman model with dynamic calculation of coefficient\n"      ;
-          std::cout << "- Use filter width method:  Only cube root volume implemented for dynamic coefficient" << "\n";
+          std::cout << "      no homogeneous directions specified --- so we just use pointwise clipping for Cs\n";
           std::cout << &std::endl;
         }
       }
+        else if(turbmodel_ == INPAR::FLUID::scale_similarity or turbmodel_ == INPAR::FLUID::scale_similarity_basic)
+      {
+        std::cout << "                             "      ;
+        std::cout << "\n";
+        std::cout << "- Constant:  Cl   = "      ;
+        std::cout << params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<double>("C_SCALE_SIMILARITY") << "\n";
+        std::cout << "- Scale separation:  " << params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<std::string>("SCALE_SEPARATION") << "\n";
+        std::cout << &std::endl;
+      }
+      else if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+      {
+        Teuchos::ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
+        std::cout << "                             "      ;
+        std::cout << "\n";
+        std::cout << "- Csgs:              " << modelparams->get<double>("CSGS") << "\n";
+        std::cout << "- Scale separation:  " << modelparams->get<std::string>("SCALE_SEPARATION") << "\n";
+        if ((DRT::INPUT::IntegralValue<int>(*modelparams,"CALC_N")))
+        {
+          std::cout << "- Re_length:         " << modelparams->get<std::string>("REF_LENGTH") << "\n";
+          std::cout << "- Re_vel:            " << modelparams->get<std::string>("REF_VELOCITY") << "\n";
+          std::cout << "- c_nu:              " << modelparams->get<double>("C_NU") << "\n";
+        }
+        else
+          std::cout << "- N:                 " << modelparams->get<double>("N") << "\n";
+        std::cout << "- near-wall limit:   " << DRT::INPUT::IntegralValue<int>(*modelparams,"NEAR_WALL_LIMIT") << "\n";
+        std::cout << "- beta:              " << modelparams->get<double>("BETA") << "\n";
+        std::cout << "- evaluation B:      " << modelparams->get<std::string>("EVALUATION_B") << "\n";
+        std::cout << "- conservative:      " << modelparams->get<std::string>("CONVFORM") << "\n";
+        if ((DRT::INPUT::IntegralValue<int>(*modelparams,"SET_FINE_SCALE_VEL")))
+            std::cout << "WARNING: fine-scale velocity is set for nightly tests!" << "\n";
+        std::cout << &std::endl;
+      }
+      else if(turbmodel_ == INPAR::FLUID::vreman)
+      {
+        std::cout << "                             "          ;
+        std::cout << "\n";
+        std::cout << "- Vreman model with constant coefficient\n"      ;
+        std::cout << "- Use filter width method:  " << params_->sublist("SUBGRID VISCOSITY").get<std::string>("FILTER_WIDTH","CubeRootVol") << "\n";
+        std::cout << &std::endl;
+      }
+      else if(turbmodel_ == INPAR::FLUID::dynamic_vreman)
+      {
+        std::cout << "                             "          ;
+        std::cout << "\n";
+        std::cout << "- Vreman model with dynamic calculation of coefficient\n"      ;
+        std::cout << "- Use filter width method:  Only cube root volume implemented for dynamic coefficient" << "\n";
+        std::cout << &std::endl;
+      }
+    }
 
   return;
 }
