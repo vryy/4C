@@ -2391,7 +2391,7 @@ void FLD::FluidImplicitTimeInt::FreeSurfaceFlowUpdate()
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
-  //transform the step increment, e.g. from fsi to an iterative increment in fluid
+  // update solution by adding step increment to previous converged solution
   if (vel!=Teuchos::null)
   {
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
@@ -2404,8 +2404,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     InsertVolumetricSurfaceFlowCondVector(velnp_,aux);
 
     *velnp_ = *aux;
-  }//is zero here in first call
-//  std::cout << "velnp_Evaluate1: "  << *velnp_ << std::endl;
+  }
 
   //the following steps have to be repeated after that the velocity has been updated
   // --------------------------------------------------
@@ -2431,10 +2430,6 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   }
 
   PrepareSolve();
-
-//  std::cout << "velnp_Evaluate2: "  << *velnp_ << std::endl;
-//  RCP<LINALG::SparseMatrix> A=Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-//  std::cout << "sysmat_Evaluate: " << *A << std::endl;
 }
 
 /*----------------------------------------------------------------------*
