@@ -291,8 +291,19 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     H->GetLevel(0)->Set("coarseAggStat",aggStat);
     H->GetLevel(0)->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSlaveDofMap));  // set map with active dofs
 
+#ifdef HAVE_Trilinos_Q1_2014
+    Teuchos::RCP<SubBlockAFactory> A11Fact = Teuchos::rcp(new SubBlockAFactory());
+    Teuchos::RCP<SubBlockAFactory> A22Fact = Teuchos::rcp(new SubBlockAFactory());
+    A11Fact->SetFactory("A",MueLu::NoFactory::getRCP());
+    A11Fact->SetParameter("block row",Teuchos::ParameterEntry(0));
+    A11Fact->SetParameter("block col",Teuchos::ParameterEntry(0));
+    A22Fact->SetFactory("A",MueLu::NoFactory::getRCP());
+    A22Fact->SetParameter("block row",Teuchos::ParameterEntry(1));
+    A22Fact->SetParameter("block col",Teuchos::ParameterEntry(1));
+#else
     Teuchos::RCP<SubBlockAFactory> A11Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 0, 0));
     Teuchos::RCP<SubBlockAFactory> A22Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 1, 1));
+#endif
 
     ///////////////////////////////////////////////////////////////////////
     // set up block 11
@@ -499,8 +510,21 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<RebalanceBlockRestrictionFactory> RebalancedBlockRFact = Teuchos::null;
     if(bDoRepartition == true) {
       // extract subblocks from coarse unbalanced matrix
+
+#ifdef HAVE_Trilinos_Q1_2014
+      Teuchos::RCP<SubBlockAFactory> rebA11Fact = Teuchos::rcp(new SubBlockAFactory());
+      Teuchos::RCP<SubBlockAFactory> rebA22Fact = Teuchos::rcp(new SubBlockAFactory());
+
+      rebA11Fact->SetFactory("A",AcFact);
+      rebA11Fact->SetParameter("block row",Teuchos::ParameterEntry(0));
+      rebA11Fact->SetParameter("block col",Teuchos::ParameterEntry(0));
+      rebA22Fact->SetFactory("A",AcFact);
+      rebA22Fact->SetParameter("block row",Teuchos::ParameterEntry(1));
+      rebA22Fact->SetParameter("block col",Teuchos::ParameterEntry(1));
+#else
       Teuchos::RCP<SubBlockAFactory> rebA11Fact = Teuchos::rcp(new SubBlockAFactory(AcFact,0,0));
       Teuchos::RCP<SubBlockAFactory> rebA22Fact = Teuchos::rcp(new SubBlockAFactory(AcFact,1,1));
+#endif
 
       // define rebalancing factory for coarse block matrix A(1,1)
       Teuchos::RCP<AmalgamationFactory> rebAmalgFact11 = Teuchos::rcp(new AmalgamationFactory());
@@ -745,7 +769,15 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   Teuchos::RCP<SimpleSmoother> smootherPrototype = Teuchos::rcp(new SimpleSmoother(sweeps,omega,bSimpleC));
 
   // define prediction smoother/solver
+#ifdef HAVE_Trilinos_Q1_2014
+  Teuchos::RCP<SubBlockAFactory> A00Fact = Teuchos::rcp(new SubBlockAFactory());
+  A00Fact->SetFactory("A",MueLu::NoFactory::getRCP());
+  A00Fact->SetParameter("block row",Teuchos::ParameterEntry(0));
+  A00Fact->SetParameter("block col",Teuchos::ParameterEntry(0));
+#else
   Teuchos::RCP<SubBlockAFactory> A00Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 0, 0));
+#endif
+
   Teuchos::RCP<SmootherPrototype> smoProtoPred = Teuchos::null;
 
   const Teuchos::ParameterList& PredList = paramList.sublist(strCoarse + ": Predictor list");
