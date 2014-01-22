@@ -452,21 +452,16 @@ void DRT::Element::LocationVector( const DRT::Discretization & dis,
         const DRT::Node* node = nodes[i];
 
         const int owner = node->Owner();
-        std::vector<int> dof = dis.Dof(dofset,node);
-        const int size = NumDofPerNode(dofset,*node,dis.Name());
+        std::vector<int> dof;
+        dis.Dof(dof,node,dofset,nds[i]);
+        const int size = dof.size();
         if (size)
           lmstride.push_back(size);
-        const int offset = size*nds[i];
-#ifdef DEBUG
-        if ( dof.size() < static_cast<unsigned>( offset+size ) )
-        {
-          dserror( "illegal physical dofs offset" );
-        }
-#endif
+
         for (int j=0; j< size; ++j)
         {
           lmowner.push_back(owner);
-          lm.push_back(dof[offset + j]);
+          lm.push_back(dof[j]);
         }
 
         if (doDirichlet)
@@ -572,8 +567,9 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
         const DRT::Node* node = nodes[i];
 
         const int owner = node->Owner();
-        std::vector<int> dof = dis.Dof(dofset,node);
-        const int size = NumDofPerNode(dofset,*(node),dis.Name());
+        std::vector<int> dof;
+        dis.Dof(dof,node,dofset,0);
+        const int size = dof.size();
         if (size) lmstride.push_back(size);
         for (int j=0; j< size; ++j)
         {
@@ -712,8 +708,9 @@ void DRT::Element::LocationVector(const Discretization& dis,
         flag = dirich->Get<std::vector<int> >("onoff");
       }
       const int owner = nodes[i]->Owner();
-      std::vector<int> dof = dis.Dof(nodes[i]);
-      const int size = NumDofPerNode(*(nodes[i]));
+      std::vector<int> dof;
+      dis.Dof(dof,nodes[i],0,0);
+      const int size = dof.size();
       lmstride.push_back(size);
       for (int j=0; j<size; ++j)
       {

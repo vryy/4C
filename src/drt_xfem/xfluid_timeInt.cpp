@@ -306,7 +306,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
       const int nds_new = 0;
 
       std::vector<int> dofs_new;
-      dofset_new_->Dof(*node, nds_new, dofs_new );
+      dofset_new_->Dof(node, nds_new, dofs_new );
 
 #ifdef DEBUG_TIMINT
       const int numdofs_new = (int)(dofs_new.size());
@@ -428,7 +428,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
       const int nds_old = 0;
 
       std::vector<int> dofs_old;
-      dofset_old_->Dof(*node, nds_old, dofs_old );
+      dofset_old_->Dof(node, nds_old, dofs_old );
 
 #ifdef DEBUG_TIMINT
       const int numdofs_old = (int)(dofs_old.size());
@@ -841,8 +841,8 @@ void XFEM::XFluidTimeInt::CopyDofs(DRT::Node*                              node,
   std::vector<int> dofs_old;
   std::vector<int> dofs_new;
 
-  dofset_new_->Dof(*node, nds_new, dofs_new );
-  dofset_old_->Dof(*node, nds_old, dofs_old );
+  dofset_new_->Dof(node, nds_new, dofs_new );
+  dofset_old_->Dof(node, nds_old, dofs_old );
 
 #ifdef DEBUG_TIMINT
   if(dofs_new.size() != dofs_old.size())
@@ -946,7 +946,7 @@ void XFEM::XFluidTimeInt::MarkDofs(
 
   // get nodal dofs for current dofset w.r.t new interface position
   std::vector<int> dofs_new;
-  dofset_new_->Dof(*node, nds_new, dofs_new );
+  dofset_new_->Dof(node, nds_new, dofs_new );
 
   // loop vectors
   for(std::vector<RCP<Epetra_Vector> >::iterator it=newRowStateVectors.begin(); it!=newRowStateVectors.end(); it++)

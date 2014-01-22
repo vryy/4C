@@ -1011,7 +1011,7 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
     std::vector<int> lm;
     std::vector<int> dofs;
 
-    dofset_new_->Dof(*node, 0, dofs ); // dofs for standard dofset
+    dofset_new_->Dof(node, 0, dofs ); // dofs for standard dofset
 
     int size = dofs.size();
 
@@ -1293,7 +1293,7 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
   {
     DRT::Node* node = ele->Nodes()[inode];
     std::vector<int> dofs;
-    dofset_old_->Dof(*node, data->nds_[inode], dofs );
+    dofset_old_->Dof(node, data->nds_[inode], dofs );
 
     int size = dofs.size();
 

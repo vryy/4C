@@ -1058,7 +1058,7 @@ void XFEM::XFLUID_STD::getGPValuesT(
   {
     DRT::Node* node = ele->Nodes()[inode];
     std::vector<int> dofs;
-    dofset.Dof(*node, nds[inode], dofs );
+    dofset.Dof(node, nds[inode], dofs );
 
     int size = dofs.size();
 
@@ -3134,7 +3134,7 @@ void XFEM::XFLUID_STD::setFinalData()
     if(data->nds_np_ == -1) dserror("cannot get dofs for dofset with number %d", data->nds_np_);
 
     std::vector<int> dofs;
-    dofset_new_->Dof(*node, data->nds_np_, dofs );
+    dofset_new_->Dof(node, data->nds_np_, dofs );
 
     if(dofs.size() != (nsd+1) ) dserror("not the right number of dofs %d for this node ", dofs.size());
 

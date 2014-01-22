@@ -10,8 +10,8 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Patchtest for hybrid mesh (sosh8p8 and sohex8).
-Note that incompressibility for sosh8p8 is deactivated.
+Patchtest for sosh8p8.
+Note that incompressibility for sosh8p8 is deactivated. Thus, the sosh8 solution is reproduced.
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        7
 NODES                           16
@@ -395,10 +395,10 @@ NODE 14 COORD 0.000000000000000e+00 4.000000000000000e+00 0.000000000000000e+00
 NODE 15 COORD 0.000000000000000e+00 0.000000000000000e+00 4.000000000000000e+00
 NODE 16 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8 HEX8 7 12 16 15 3 6 14 10 MAT 1 KINEM nonlinear EAS none
-2 SOLIDH8 HEX8 12 11 13 16 6 4 8 14 MAT 1 KINEM nonlinear EAS none
-3 SOLIDH8 HEX8 7 5 9 15 12 11 13 16 MAT 1 KINEM nonlinear EAS none
-4 SOLIDH8 HEX8 2 5 9 1 3 7 15 10 MAT 1 KINEM nonlinear EAS none
+1 SOLIDSH8P8 HEX8 7 12 16 15 3 6 14 10 MAT 1 KINEM nonlinear STAB PureDisp ANS None LIN One THICKDIR auto EAS none ISO Mat
+2 SOLIDSH8P8 HEX8 12 11 13 16 6 4 8 14 MAT 1 KINEM nonlinear STAB PureDisp ANS None LIN One THICKDIR auto EAS none ISO Mat
+3 SOLIDSH8P8 HEX8 7 5 9 15 12 11 13 16 MAT 1 KINEM nonlinear STAB PureDisp ANS None LIN One THICKDIR auto EAS none ISO Mat
+4 SOLIDSH8P8 HEX8 2 5 9 1 3 7 15 10 MAT 1 KINEM nonlinear STAB PureDisp ANS None LIN One THICKDIR auto EAS none ISO Mat
 5 SOLIDSH8P8 HEX8 2 4 8 1 5 11 13 9 MAT 1 KINEM nonlinear STAB PureDisp ANS None LIN One THICKDIR auto EAS none ISO Mat
 6 SOLIDSH8P8 HEX8 6 4 8 14 3 2 1 10 MAT 1 KINEM nonlinear STAB PureDisp ANS None LIN One THICKDIR auto EAS none ISO Mat
 7 SOLIDSH8P8 HEX8 3 2 5 7 6 4 11 12 MAT 1 KINEM nonlinear STAB PureDisp ANS None LIN One THICKDIR auto EAS none ISO Mat

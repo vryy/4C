@@ -7,18 +7,24 @@
 #include "../drt_cut/cut_node.H"
 
 
-void XFEM::FluidDofSet::Dof( DRT::Node & node, int nodaldofset, std::vector<int> & dofs ) const
+void XFEM::FluidDofSet::Dof( const DRT::Node * node, int nodaldofset, std::vector<int> & dofs ) const
 {
-  const int lid = node.LID();
+  const int lid = node->LID();
   if (lid==-1)
     return;
-  int numdf = DRT::DofSet::NumDofPerNode( node, dspos_ );
+  int numdf = DRT::DofSet::NumDofPerNode( *node, dspos_ );
   const int idx = (*idxcolnodes_)[lid] + nodaldofset*numdf;
   dofs.reserve( numdf );
   for ( int i=0; i<numdf; ++i )
   {
     dofs.push_back( idx+i );
   }
+}
+
+/// Get the gid of all dofs of a node
+void XFEM::FluidDofSet::Dof(std::vector<int>& dofs, const DRT::Node* node,unsigned nodaldofset) const
+{
+  Dof(node,nodaldofset,dofs);
 }
 
 int XFEM::FluidDofSet::NumDofPerNode( const DRT::Node & node, unsigned dspos ) const

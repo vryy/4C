@@ -206,6 +206,16 @@ public:
       return dof;
     }
 
+  /// Get the gid of all dofs of a node
+  virtual void Dof( std::vector<int>& dof, ///< vector of dof gids (to be filled)
+                    const Node* node,      ///< the node
+                    unsigned nodaldofset   ///< number of nodal dof set of the node (currently !=0 only for XFEM)
+                    ) const
+    {
+      if(nodaldofset!=0) dserror("only one nodal dofset supported!");
+      else dof = Dof(node);
+    }
+
   /// Get the gid of all dofs of a element
   virtual std::vector<int> Dof(const Element* element) const
     {

@@ -19,7 +19,25 @@ namespace XFEM
 
     }
 
-    void Dof( DRT::Node & node, int nodaldofset, std::vector<int> & dofs ) const;
+    void Dof( const DRT::Node * node, int nodaldofset, std::vector<int> & dofs ) const;
+
+    /*!
+    \brief Get the gid of all dofs of a node.
+
+    Ask the current DofSet for the gids of the dofs of this node. The
+    required vector is created and filled on the fly. So better keep it
+    if you need more than one dof gid.
+    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+
+    Additional input nodal dof set: If the node contains more than one set of dofs, which can be
+    evaluated, the number of the set needs to be given. Currently only the case for XFEM.
+
+    \param dof (in)         : vector of dof gids (to be filled)
+    \param nds (in)         : number of dofset
+    \param nodaldofset (in) : number of nodal dofset
+    \param node (in)        : the node
+    */
+    virtual void Dof(std::vector<int>& dofs, const DRT::Node* node,unsigned nodaldofset) const;
 
     virtual void MinGID(int mingid);
 
