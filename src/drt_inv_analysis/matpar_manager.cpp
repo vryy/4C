@@ -195,7 +195,7 @@ void STR::INVANA::MatParManager::ResetParams()
 /*----------------------------------------------------------------------*/
 /* evaluate gradient based on dual solution                  keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManager::Evaluate(Teuchos::RCP<Epetra_MultiVector> dfint)
+void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
 {
 
   Teuchos::RCP<const Epetra_Vector> disdual = discret_->GetState("dual displacement");
@@ -211,6 +211,7 @@ void STR::INVANA::MatParManager::Evaluate(Teuchos::RCP<Epetra_MultiVector> dfint
 
     // list to define routines at elementlevel
     Teuchos::ParameterList p;
+    p.set("total time", time);
 
     std::vector<std::string> actparams = paramap_.at( elematid );
     std::vector<std::string>::const_iterator it;
@@ -234,6 +235,104 @@ void STR::INVANA::MatParManager::Evaluate(Teuchos::RCP<Epetra_MultiVector> dfint
       // dont forget product rule in case of parametrized material parameters!
       if (metaparams_)
       {
+        double val1 = (*(*params_)( parapos_.at(elematid).at(it-actparams.begin()) ))[actele->LID()];
+        elevector1.Scale(val1);
+      }
+
+      //reuse elevector2
+      for (int l=0; l<(int)la[0].lm_.size(); l++)
+      {
+        int lid=disdual->Map().LID(la[0].lm_.at(l));
+        if (lid==-1) dserror("not found on this processor");
+        elevector2[l] = (*disdual)[lid];
+      }
+      double val2 = elevector2.Dot(elevector1);
+
+      int success = dfint->SumIntoMyValue(actele->LID(),parapos_.at(elematid).at(it-actparams.begin()),val2);
+      if (success!=0) dserror("gid %d is not on this processor", actele->LID());
+
+
+    }//loop this elements material parameters (only the ones to be optimized)
+
+  }//loop elements
+}
+
+/*----------------------------------------------------------------------*/
+/* evaluate gradient based on FD                             keh 01/14  */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::MatParManager::EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint)
+{
+  if (discret_->Comm().NumProc()>1) dserror("this does probably not run in parallel");
+
+  Epetra_MultiVector paramsbak(*params_);
+
+  Teuchos::RCP<const Epetra_Vector> disdual = discret_->GetState("dual displacement");
+
+  for (int i=0; i<discret_->NumMyColElements(); i++)
+  {
+    DRT::Element* actele;
+    actele = discret_->lColElement(i);
+    int elematid = actele->Material()->Parameter()->Id();
+
+    if (paramap_.find(elematid) == paramap_.end() )
+      continue;
+
+    // list to define routines at elementlevel
+    Teuchos::ParameterList p;
+
+    std::vector<std::string> actparams = paramap_.at( elematid );
+    std::vector<std::string>::const_iterator it;
+    for ( it=actparams.begin(); it!=actparams.end(); it++)
+    {
+      p.set("action", "calc_struct_internalforce");
+
+      double pa=1.0e-6;
+      double pb=1.0e-12;
+
+      //initialize element vectors
+      int ndof = actele->NumNode()*3;
+      Epetra_SerialDenseMatrix elematrix1(ndof,ndof,false);
+      Epetra_SerialDenseMatrix elematrix2(ndof,ndof,false);
+      Epetra_SerialDenseVector elevector1(ndof);
+      Epetra_SerialDenseVector elevector2(ndof);
+      Epetra_SerialDenseVector elevector3(ndof);
+
+      DRT::Element::LocationArray la(discret_->NumDofSets());
+      actele->LocationVector(*discret_,la,false);
+
+      double actp = (*(*params_)( parapos_.at(elematid).at(it-actparams.begin()) ))[actele->LID()];
+      double perturb = actp + pb + actp*pa;
+
+      for (int j=0; j<2; j++)
+      {
+        if (j==1)
+        {
+          params_->ReplaceGlobalValue(actele->LID(),parapos_.at(elematid).at(it-actparams.begin()),perturb);
+          SetParams();
+        }
+
+        if (j==0)
+          actele->Evaluate(p,*discret_,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+        else if(j==1)
+          actele->Evaluate(p,*discret_,la,elematrix1,elematrix2,elevector3,elevector2,elevector2);
+
+        //reset params
+        if (j==1)
+        {
+          params_->Update(1.0,paramsbak,0.0);
+          SetParams();
+        }
+      }
+
+      //build fd approx
+      elevector1.Scale(-1.0);
+      elevector1 += elevector3;
+      elevector1.Scale(1.0/(pb+actp*pa));
+
+      // dont forget product rule in case of parametrized material parameters!
+      if (metaparams_)
+      {
+        dserror("verify this first for the FD-version");
         double val1 = (*(*params_)( parapos_.at(elematid).at(it-actparams.begin()) ))[actele->LID()];
         elevector1.Scale(val1);
       }
@@ -322,7 +421,7 @@ return loc;
 
 void STR::INVANA::MatParManager::ComputeParamsMultiVectorFromSMCParticlePosition(Teuchos::RCP<Epetra_MultiVector> & params, std::vector<double> my_global_params)
 {
-  dserror("No implementatio in base class");
+  dserror("No implementation in base class");
 }
 
 

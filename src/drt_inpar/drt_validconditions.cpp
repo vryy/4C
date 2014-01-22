@@ -3916,6 +3916,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfpartwall);
 
   /*--------------------------------------------------------------------*/
+  // Surface current evaluation condition
+
+  std::vector<Teuchos::RCP<ConditionComponent> > surfcurrcomponents;
+  surfcurrcomponents.push_back(Teuchos::rcp(new IntConditionComponent("matching id")));
+
+  Teuchos::RCP<ConditionDefinition> surfcurrcond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE CURRENT EVALUATION CONDITION",
+                                         "SurfaceCurrent",
+                                         "Surface current",
+                                         DRT::Condition::SurfaceCurrent,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<surfcurrcomponents.size(); ++i)
+  {
+    surfcurrcond->AddComponent(surfcurrcomponents[i]);
+  }
+
+  condlist.push_back(surfcurrcond);
+
+  /*--------------------------------------------------------------------*/
   // level-set condition for contact points
 
   Teuchos::RCP<ConditionDefinition> linelscontact =

@@ -1464,6 +1464,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       // Read in another discretization for MultiLevel Monte Carlo use
       if (npType != copy_dat_file) ReadMultiLevelDiscretization(reader);
+
+      // Read in a target discretization for the inverse analysis
+      if (npType != copy_dat_file) ReadReferenceDiscretization(reader);
+
       break;
     }
     case prb_np_support:
@@ -1829,6 +1833,51 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
     materials_->ResetReadFromProblem();
   }
 }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::ReadReferenceDiscretization(DRT::INPUT::DatFileReader& reader)
+{
+  // check whether we do surface current based inverse analysis
+  const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
+
+  std::string reference_input_file = statinvp.get<std::string>("TARGETDISCRETIZATION");
+
+  if (reference_input_file.compare("none.dat"))
+  {
+    DRT::Problem* reference_problem = DRT::Problem::Instance(1);
+
+    DRT::INPUT::DatFileReader refreader(reference_input_file, reader.Comm(), 1);
+
+    Teuchos::RCP<DRT::Discretization> refdis = Teuchos::rcp(new DRT::Discretization("structure", refreader.Comm()));
+
+    reference_problem->AddDis("structure", refdis);
+    reference_problem->ReadParameter(refreader);
+
+    // Read in Materials
+    DRT::Problem::Instance()->materials_->SetReadFromProblem(1);
+    reference_problem->ReadMaterials(refreader);
+
+    // Read in Nodes and Elements
+    DRT::INPUT::NodeReader refnodereader(refreader, "--NODE COORDS");
+    refnodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(refdis, refreader, "--STRUCTURE ELEMENTS")));
+    refnodereader.Read();
+
+    // read conditions
+    reference_problem->ReadTimeFunctionResult(refreader);
+    reference_problem->ReadConditions(refreader);
+
+    // At this point, everything for the other levels is read,
+    // subsequent reading is only for level 0
+    refdis->FillComplete();
+
+    // set the problem number from which to call materials again to zero
+    materials_->SetReadFromProblem(0);
+
+    materials_->ResetReadFromProblem();
+  }
+
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::Problem::setParameterList(Teuchos::RCP< Teuchos::ParameterList > const &paramList)

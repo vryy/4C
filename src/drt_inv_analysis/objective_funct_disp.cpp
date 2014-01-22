@@ -40,7 +40,7 @@ msteps_(steps)
   // initialize vectors
   mdisp_ = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_,msteps_,true));
   //mask_ = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_,msteps_,true));
-  mask_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
+  mask_ = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_,msteps_,true));
 
   ReadMonitor(invap.get<std::string>("MONITORFILE"));
 
@@ -165,9 +165,7 @@ void STR::INVANA::ObjectiveFunctDisp::ReadMonitor(std::string monitorfilename)
         for (int k=0; k<(int)dofs[j].size(); k++)
         {
           mdisp_->ReplaceGlobalValue(actdofs[dofs[j][k]],i,strtod(foundit,&foundit));
-          //assuming the same dofs are measured for each time step
-          // -> mask_ can be just one vector
-          mask_->ReplaceGlobalValue(actdofs[dofs[j][k]],0,1.0);
+          mask_->ReplaceGlobalValue(actdofs[dofs[j][k]],i,1.0);
         }
       }
 

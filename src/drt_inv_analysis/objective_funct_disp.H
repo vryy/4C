@@ -75,7 +75,7 @@ private:
   const Epetra_Map* dofrowmap_;
 
   //! dof mask on measurements
-  Teuchos::RCP<Epetra_Vector> mask_;
+  Teuchos::RCP<Epetra_MultiVector> mask_;
 
   //! measured displacements
   Teuchos::RCP<Epetra_MultiVector> mdisp_;

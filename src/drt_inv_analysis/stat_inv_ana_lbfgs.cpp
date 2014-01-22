@@ -77,6 +77,7 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
   int success=0;
 
   // solve initially to get quantities:
+  ResetDiscretization();
   SolveForwardProblem();
   SolveAdjointProblem();
   EvaluateGradient();
@@ -84,9 +85,13 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
 
   //check gradient by fd:
 #if 0
-    std::cout << "gradient: " << *objgrad_ << std::endl;
+    std::cout << "gradient: " << std::endl;
+    PrintDataToScreen(*objgrad_);
     EvaluateGradientFD();
-    std::cout << "gradient approx: " << *objgrad_ << std::endl;
+
+    std::cout << "gradient approx: " << std::endl;
+    PrintDataToScreen(*objgrad_);
+    exit(0);
 #endif
 
   objgrad_o_->Update(1.0, *objgrad_, 0.0);
@@ -94,9 +99,8 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
   //get search direction from gradient:
   p_->Update(-1.0, *objgrad_o_, 0.0);
 
-  //objval_o_ = objfunct_->Evaluate(dis_,matman_);
   objval_o_ = objval_;
-
+  error_incr_ = objval_;
 
   MVNorm(objgrad_o_,2,&convcritc_);
 
@@ -132,6 +136,7 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
 
     // bring quantities to the next run
     objgrad_o_->Update(1.0, *objgrad_, 0.0);
+    error_incr_=objval_o_-objval_;
     objval_o_=objval_;
     runc_++;
 
@@ -167,20 +172,20 @@ int STR::INVANA::StatInvAnaLBFGS::EvaluateArmijoRule(double* tauopt, int* numste
 
   MVNorm(objgrad_o_,2,&gnorm);
 
-  double tau_n=std::min(1.0, 100/(1+gnorm));
+  double tau_n=std::min(stepsize_, 100.0/(1+gnorm));
   //std::cout << "trial step size: " << tau_n << std::endl;
+
+  // step based on current stepsize
+  step_->Update(tau_n, *p_, 0.0);
 
   while (i<imax && tau_n<tau_max)
   {
-    // step based on current stepsize
-    step_->Update(tau_n, *p_, 0.0);
-
     //make a step
     matman_->UpdateParams(step_);
+    ResetDiscretization();
     SolveForwardProblem();
     SolveAdjointProblem();
     EvaluateGradient();
-    //objval_ = objfunct_->Evaluate(dis_,matman_);
     EvaluateError();
 
     // check sufficient decrease:
@@ -205,6 +210,11 @@ int STR::INVANA::StatInvAnaLBFGS::EvaluateArmijoRule(double* tauopt, int* numste
     e_l=objval_;
     tau_l=tau_n;
     tau_n=*tauopt;
+
+    // next step based on proposed tauopt;
+    step_->Update(tau_n, *p_, 0.0);
+
+
     matman_->ResetParams();
     i++;
 
@@ -272,7 +282,6 @@ int STR::INVANA::StatInvAnaLBFGS::polymod(double e_o, double dfp, double tau_n, 
   return 0;
 }
 
-
 /*----------------------------------------------------------------------*/
 /* store vectors*/
 void STR::INVANA::StatInvAnaLBFGS::StoreVectors()
@@ -314,10 +323,6 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
     int ind=0;
     for (int j=matman_->NumParams(); j>0; j--)
     {
-      //(*ystore_)(i-j+1)->Dot(*(*sstore_)(i-j+1),&a);
-      //(*sstore_)(i-j+1)->Dot(*(*p_)(ind),&b);
-      //MVDotProduct(Teuchos::rcp_dynamic_cast<Epetra_MultiVector>((*ystore_)(i-j+1)),Teuchos::rcp_dynamic_cast<Epetra_MultiVector>((*sstore_)(i-j+1)),&a);
-      //MVDotProduct(Teuchos::rcp_dynamic_cast<Epetra_MultiVector>((*sstore_)(i-j+1)),Teuchos::rcp_dynamic_cast<Epetra_MultiVector>(Teuchos::rcp((*p_)(ind))),&b);
       MVDotProduct((*ystore_)(i-j+1),(*sstore_)(i-j+1),&a);
       MVDotProduct((*sstore_)(i-j+1),Teuchos::rcp((*p_)(ind), false),&b);
       ind++;
@@ -334,7 +339,7 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
     }
   }
 
-  // Some saling of the initial hessian might come in here but has not been proven to be effective
+  // Some scaling of the initial hessian might come in here but has not been proven to be effective
   // altough they say so
 
   for (int i=-actsize_+1; i<=0; i+=matman_->NumParams())
@@ -347,8 +352,6 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
 
     for (int j=0; j<matman_->NumParams(); j++)
     {
-      //(*ystore_)(i+j)->Dot(*(*sstore_)(i+j),&a);
-      //(*ystore_)(i+j)->Dot(*(*p_)(j),&b);
       MVDotProduct((*ystore_)(i+j),(*sstore_)(i+j),&a);
       MVDotProduct((*ystore_)(i+j),Teuchos::rcp((*p_)(j), false),&b);
       aa += a;
@@ -373,11 +376,16 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
 /* print final results*/
 void STR::INVANA::StatInvAnaLBFGS::PrintOptStep(double tauopt, int numsteps)
 {
+  double stepincr;
+  MVNorm(step_,0,&stepincr);
+
   if (discret_->Comm().MyPID()==0)
   {
     printf("OPTIMIZATION STEP %3d | ", runc_);
     printf("Objective function: %10.8e | ", objval_o_);
     printf("Gradient : %10.8e | ", convcritc_);
+    printf("ErrorIncr: %10.8e | ", error_incr_);
+    printf("StepIncr: %10.8e | ", stepincr);
     printf("stepsize : %10.8e | LSsteps %2d\n", tauopt, numsteps);
     fflush(stdout);
   }

@@ -83,6 +83,15 @@ isinit_(false)
 
   disdual_ = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_,msteps_,true));
 
+  {
+    std::vector<DRT::Condition*> locsysconditions(0);
+    discret_->GetCondition("Locsys", locsysconditions);
+    if (locsysconditions.size())
+    {
+      locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
+    }
+  }
+
   // get the solver associated with structural dynamic section
   CreateLinearSolver(sdyn);
 
@@ -157,7 +166,6 @@ void STR::TimIntAdjoint::EvaluateStiff()
   discret_->SetState(0,"displacement", disn_);
   discret_->SetState(0,"displacement new", disn_);
 
-  //we dont need fext of the forward problem so dummy fint is just used for the Neumann call to make it run
   discret_->EvaluateNeumann(p, fextn, stiffn_);
   stiffn_->Complete();
 
@@ -167,20 +175,34 @@ void STR::TimIntAdjoint::EvaluateStiff()
   //neumann might bring asymmetrie but we want the adjoint operator to the stiffness matrix, so add transpose
   stiff_->Add(*stiffn_,true,1.0,1.0);
 
+  //const std::string fname = "dirichlet.mtl";
+  //LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
+  //exit(0);
+
 #if 0
   //check if the system really converged in the forward problem
   // this is now fres;
   LINALG::ApplyDirichlettoSystem(fintn,fextn, zeros_,dbctoggle_);
   fintn->Update(-1.0,*fextn,1.0);
-  //give residul norm:
+  //give residual norm:
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   enum INPAR::STR::VectorNorm norm = DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdyn,"ITERNORM");
   double normfres = STR::AUX::CalculateVectorNorm(norm, fintn);
+
+  cout << "converged ?: " << normfres << endl;
 #endif
 
-  //stiff_->Complete();
+  stiff_->Complete();
   discret_->ClearState();
 
+}
+
+Teuchos::RCP<const LINALG::SparseMatrix> STR::TimIntAdjoint::GetLocSysTrafo() const
+{
+  if (locsysman_ != Teuchos::null)
+    return locsysman_->Trafo();
+
+  return Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*/
@@ -188,16 +210,20 @@ void STR::TimIntAdjoint::EvaluateStiff()
 /*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::Solve()
 {
-  // Apply Dirichlet
-  LINALG::ApplyDirichlettoSystem(stiff_, disdualn_, rhsn_,Teuchos::null,zeros_,*(dbcmaps_->CondMap()));
+  // transform to local co-ordinate systems
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateGlobalToLocal(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_), rhsn_);
 
-  //const std::string fname = "dirichlet.mtl";
+
+  // Apply Dirichlet
+  LINALG::ApplyDirichlettoSystem(stiff_, disdualn_, rhsn_,GetLocSysTrafo(),zeros_,*(dbcmaps_->CondMap()));
+
+  //const std::string fname = "stiff.mtl";
   //LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
 
   // Solve
   solver_->Solve(stiff_->EpetraOperator(),disdualn_,rhsn_,true,true, Teuchos::null);
 
-  //exit(0);
   return;
 }
 

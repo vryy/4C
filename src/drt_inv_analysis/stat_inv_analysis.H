@@ -110,6 +110,9 @@ protected:
   //! value of the objective function of the prevous step
   double objval_o_;
 
+  //! increment of the objective function
+  double error_incr_;
+
   //! gradient of the objective function
   Teuchos::RCP<Epetra_MultiVector> objgrad_;
 
@@ -140,6 +143,9 @@ protected:
   //! Evaluate FD approximation of the objective functions gradient w.r.t the design parameters
   void EvaluateGradientFD();
 
+  //! Reset discretization
+  void ResetDiscretization();
+
   //! MStep EpetraVector to EpetraMultiVector
   void MStepEpetraToEpetraMulti(Teuchos::RCP<TimIntMStep<Epetra_Vector> > mstepvec,
                                 Teuchos::RCP<Epetra_MultiVector> multivec);
@@ -153,6 +159,9 @@ protected:
 
   //! compute dot product of two vectors stored in multivector fomat for storage reasons only
   void MVDotProduct(Teuchos::RCP<Epetra_MultiVector> avector, Teuchos::RCP<Epetra_MultiVector> bvector, double* result);
+
+  // DEBUG PRINT OUT
+  void PrintDataToScreen(Epetra_MultiVector& vec);
 
 public:
 

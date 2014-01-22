@@ -41,13 +41,6 @@ namespace DRT
   }
 }
 
-namespace UTILS
-{
-  class ConstrManager;
-  class ConstraintSolver;
-  class SurfStressManager;
-}
-
 namespace LINALG
 {
   class Solver;
@@ -115,6 +108,9 @@ namespace STR
     // DBC Map
     void GetDBCMap();
 
+    //! Return (rotatory) transformation matrix of local co-ordinate systems
+    Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
+
     //! print information of time steps to screen
     int printtoscreen_;
 
@@ -126,6 +122,9 @@ namespace STR
 
     //! a solver
     Teuchos::RCP<LINALG::Solver> solver_;
+
+    //! Dirichlet BCs with local co-ordinate system
+    Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
 
     //! Map to the dirichlet boundary
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;

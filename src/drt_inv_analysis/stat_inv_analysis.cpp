@@ -42,6 +42,8 @@ Maintainer: Jonas Biehler
 #include "objective_funct_disp.H"
 #include "objective_funct_surfcurr.H"
 
+#include <Teuchos_ParameterList.hpp>
+
 
 /*----------------------------------------------------------------------*/
 /* standard constructor                                      keh 10/13  */
@@ -85,7 +87,7 @@ regweight_(0.0)
     break;
     case INPAR::STR::stat_inv_obj_surfcurr:
     {
-      objfunct_ = Teuchos::rcp(new STR::INVANA::ObjectiveFunctSurfCurr(discret_, msteps_, time_));
+      objfunct_ = Teuchos::rcp(new STR::INVANA::ObjectiveFunctSurfCurrRepresentation(discret_, msteps_, time_));
     }
     break;
     case INPAR::STR::stat_inv_obj_none:
@@ -140,6 +142,7 @@ regweight_(0.0)
   //set these infeasibly high:
   objval_ = 1.0e17;
   objval_o_ = 1.0e16;
+  error_incr_ = 1.0e16;
 
   objgrad_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumParams(),true));
   objgrad_o_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumParams(),true));
@@ -230,7 +233,7 @@ void STR::INVANA::StatInvAnalysis::SolveAdjointProblem()
   objgrad = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_,msteps_,true));
   objfunct_->EvaluateGradient(dis_,objgrad);
 
-  //initilize adjoint time integration with RHS as input
+  //initialize adjoint time integration with RHS as input
   STR::TimIntAdjoint timintadj = TimIntAdjoint(discret_, *time_);
   timintadj.SetupAdjoint(objgrad, dis_);
 
@@ -243,7 +246,7 @@ void STR::INVANA::StatInvAnalysis::SolveAdjointProblem()
 }
 
 /*----------------------------------------------------------------------*/
-/* evaluate gradient if the objective function                          */
+/* evaluate gradient of the objective function                          */
 /* using the adjoint equations                              keh 10/13   */
 /*----------------------------------------------------------------------*/
 void STR::INVANA::StatInvAnalysis::EvaluateGradient()
@@ -251,14 +254,18 @@ void STR::INVANA::StatInvAnalysis::EvaluateGradient()
   //zero out gradient vector initially
   objgrad_->Scale(0.0);
 
+  Teuchos::RCP<Epetra_Vector> zeros;
+  zeros = LINALG::CreateVector(*(dofrowmap_), true);
+  zeros->Scale(0.0);
+
   //loop the time steps
   for (int j=0; j<msteps_; j++)
   {
-    discret_->SetState("displacement", Teuchos::rcp((*dis_)(j),false));
-    discret_->SetState("residual displacement",  Teuchos::rcp((*dis_)(j),false));
-    discret_->SetState("dual displacement", Teuchos::rcp((*disdual_)(j),false));
+    discret_->SetState(0, "displacement", Teuchos::rcp((*dis_)(j),false));
+    discret_->SetState(0, "residual displacement", zeros);
+    discret_->SetState(0, "dual displacement", Teuchos::rcp((*disdual_)(j),false));
 
-    matman_->Evaluate(objgrad_);
+    matman_->Evaluate((*time_)[j], objgrad_);
   }
 
   if (havereg_)
@@ -269,15 +276,21 @@ void STR::INVANA::StatInvAnalysis::EvaluateGradient()
 
 }
 
+void STR::INVANA::StatInvAnalysis::ResetDiscretization()
+{
+  Teuchos::ParameterList p;
+  p.set("action","calc_struct_reset_all");
+  discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+}
+
 /*----------------------------------------------------------------------*/
 /* FD approximation of the gradient                         keh 10/13   */
 /*----------------------------------------------------------------------*/
 void STR::INVANA::StatInvAnalysis::EvaluateGradientFD()
 {
-  if (discret_->Comm().NumProc()) dserror("make it run parallel first");
+  if (discret_->Comm().NumProc()>1) dserror("this does probably not run in parallel");
 
   objgrad_->Scale(0.0);
-  //objval_=objfunct_->Evaluate(dis_,matman_);
   EvaluateError();
   // we need to keep this!
   double objval0 = objval_;
@@ -285,8 +298,8 @@ void STR::INVANA::StatInvAnalysis::EvaluateGradientFD()
   int numparams = matman_->NumParams();
   int numele = discret_->ElementColMap()->NumMyElements();
 
-  double perturba = 1.0e-5;
-  double perturbb = 1.0e-10;
+  double perturba = 1.0e-6;
+  double perturbb = 1.0e-12;
 
   Teuchos::RCP<Epetra_MultiVector> perturb = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumParams(),true));
   perturb->Update(1.0,*(matman_->GetParams()),0.0);
@@ -311,10 +324,10 @@ void STR::INVANA::StatInvAnalysis::EvaluateGradientFD()
       perturb->ReplaceGlobalValue(j,i,pn);
 
       matman_->ReplaceParams(perturb);
+      ResetDiscretization();
       SolveForwardProblem();
       perturb->Update(1.0,*pcurr,0.0);
 
-      //objvalp=objfunct_->Evaluate(dis_,matman_);
       EvaluateError();
       dp=(objval0-objval_)/(p-pn);
       objgrad_->ReplaceGlobalValue(j,i,dp);
@@ -325,13 +338,6 @@ void STR::INVANA::StatInvAnalysis::EvaluateGradientFD()
   objval_ = objval0;
   matman_->ReplaceParams(pcurr);
   dis_->Update(1.0, *discurr, 0.0);
-
-  if (havereg_)
-  {
-    // add regularization:
-    Epetra_MultiVector tmpvec=Epetra_MultiVector(*(matman_->GetParams()));
-    objgrad_->Update(matman_->GetRegWeight(),tmpvec,1.0);
-  }
 
 }
 
@@ -355,14 +361,19 @@ void STR::INVANA::StatInvAnalysis::EvaluateError()
 /*----------------------------------------------------------------------*/
 void STR::INVANA::StatInvAnalysis::MVNorm(Teuchos::RCP<Epetra_MultiVector> avector, int anorm, double* result)
 {
-  dsassert(anorm==2, "two norm only so far");
-
   Epetra_SerialDenseVector vnorm(avector->NumVectors());
 
   Teuchos::RCP<Epetra_MultiVector> unique = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()), avector->NumVectors(),true));
   LINALG::Export(*avector, *unique);
 
-  unique->Norm2(vnorm.Values());
+  if (anorm==2)
+    unique->Norm2(vnorm.Values());
+  else if (anorm==0)
+    unique->NormInf(vnorm.Values());
+  else if(anorm==1)
+    unique->Norm1(vnorm.Values());
+  else
+    dserror("provide norm to be computed: 0 (inf-Norm), 1 (1-Norm) or 2 (2-Norm)");
 
   *result = vnorm.Norm2();
 }
@@ -392,4 +403,16 @@ void STR::INVANA::StatInvAnalysis::MVDotProduct(Teuchos::RCP<Epetra_MultiVector>
 Teuchos::RCP<DRT::ResultTest> STR::INVANA::StatInvAnalysis::CreateFieldTest()
 {
   return Teuchos::rcp(new InvAnaResultTest(*this));
+}
+
+void STR::INVANA::StatInvAnalysis::PrintDataToScreen(Epetra_MultiVector& vec)
+{
+  for (int j=0; j<vec.NumVectors(); j++)
+  {
+    Epetra_Vector tmp(*(vec(j)));
+    for (int i=0; i<vec.MyLength(); i++)
+    {
+      printf("mypid: %2d %.16e \n", vec.Comm().MyPID(), tmp[i]);
+    }
+  }
 }

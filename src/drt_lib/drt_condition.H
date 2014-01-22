@@ -252,6 +252,7 @@ public:
     BioSurfaceDirichlet,
     BioVolumeDirichlet,
     NeumannIntegration,
+    SurfaceCurrent,
     HomoScaTraCoupling,
     LsContact,
     Absorb

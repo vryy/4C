@@ -185,6 +185,9 @@ public:
   /// set up multilvel discetizations for mulit level monte carlo simulations
   void ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reader);
 
+  /// read target discretization for surface current based inverse analysis
+  void ReadReferenceDiscretization(DRT::INPUT::DatFileReader& reader);
+
   /// input of materials
   void ReadMaterials(DRT::INPUT::DatFileReader& reader);
 

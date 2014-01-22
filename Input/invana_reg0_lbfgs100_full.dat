@@ -29,7 +29,7 @@ FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-WRITE_TO_SCREEN                 yes
+WRITE_TO_SCREEN                 no
 STDOUTEVRY                      0
 -------------------------------------------------------STAT INVERSE ANALYSIS
 STAT_INV_ANALYSIS               LBFGS //GradientDescent
@@ -68,7 +68,7 @@ ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.01
 MAXITER                         150
 UZAWAPARAM                      1.0
-LOADLIN							yes
+LOADLIN                         yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

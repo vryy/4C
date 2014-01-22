@@ -1316,6 +1316,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "filename of file containing measured displacements",
                   &statinvp);
 
+  // target discretization for surface currents
+  StringParameter("TARGETDISCRETIZATION", "none.dat",
+                  "datfile containing target discretization",
+                  &statinvp);
+
   // indicate whether to store results of the primal problem when using adjoints
   setStringToIntegralParameter<int>("MSTEPS","NO",
                                     "Store intermediate results of the primal problem?",
@@ -1348,6 +1353,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // meta parametrization of material parameters
   BoolParameter("METAPARAMS","Yes","want metaparametrization of material parameters to kept them in range?", &statinvp);
+
+  // scale of the kernel functions used in surface currents
+  DoubleParameter("KERNELSCALE", -1.0, "scale of the kernel function", &statinvp);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");

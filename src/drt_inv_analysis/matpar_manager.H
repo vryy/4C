@@ -64,8 +64,11 @@ namespace INVANA
     //!destructor
     virtual ~MatParManager() { ; };
 
-    //! evaluate derivative of the residual force vector w.r.t to the material parameters
-    void Evaluate(Teuchos::RCP<Epetra_MultiVector> dfint);
+    //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
+    void Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint);
+
+    //! evaluate derivative of the residual force vector w.r.t to the material parameters using FD
+    void EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint);
 
     //! update params
     void UpdateParams(Teuchos::RCP<Epetra_MultiVector> toadd);
@@ -87,6 +90,9 @@ namespace INVANA
 
     //! Return weight of the regularization
     double GetRegWeight(){return reg_weight_;};
+
+    //! Set weight of the regularization
+    void SetRegWeight(double weight){reg_weight_=weight;};
 
     //! Put vector index of a given material parameter <string> into loc
     int GetParameterLocation(int eleid, std::string name);
