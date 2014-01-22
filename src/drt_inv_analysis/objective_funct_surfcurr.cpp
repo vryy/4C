@@ -531,7 +531,7 @@ void STR::INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(std::map<int,Teuchos
   std::cout << "id data x y z" << std::endl;
   for (it=data.begin(); it!=data.end(); ++it)
   {
-    cout << "gid: " << it->first << " data: " << (*it->second)(0,0) << " " << (*it->second)(1,0) << " " << (*it->second)(2,0) << endl;
+    std::cout << "gid: " << it->first << " data: " << (*it->second)(0,0) << " " << (*it->second)(1,0) << " " << (*it->second)(2,0) << std::endl;
   }
 }
 
@@ -541,17 +541,17 @@ void STR::INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(std::map<int,std::ve
 
   for (it=data.begin(); it!=data.end(); ++it)
   {
-    cout << "gid: " << it->first << " data: ";
+    std::cout << "gid: " << it->first << " data: ";
     for (int j=0; j<(int)it->second.size(); j++)
-      cout << (it->second)[j] << " ";
+      std::cout << (it->second)[j] << " ";
 
-    cout << " " << endl;
+    std::cout << " " << std::endl;
   }
 }
 
 void STR::INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(Epetra_Vector& vec)
 {
-  cout << "print values of EpetraVector " << endl;
+  std::cout << "print values of EpetraVector " << std::endl;
   for (int i=0; i<vec.MyLength(); i++)
   {
     printf("mypid: %2d %10.8e \n", vec.Comm().MyPID(), vec[i]);
