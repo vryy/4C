@@ -16,7 +16,6 @@ Maintainer: Volker Gravemeier
 #include "scatra_timint_loma_bdf2.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
-#include "scatra_utils.H"
 #include "turbulence_hit_scalar_forcing.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>

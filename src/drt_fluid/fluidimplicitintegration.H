@@ -1167,7 +1167,7 @@ protected:
   Teuchos::RCP<FLD::Meshtying>   meshtying_;
 
   /// flag for mesh-tying
-  int msht_;
+  enum INPAR::FLUID::MeshTying msht_;
 
   /// face discretization (only initialized for edge-based stabilization)
   Teuchos::RCP<DRT::DiscretizationFaces>      facediscret_;

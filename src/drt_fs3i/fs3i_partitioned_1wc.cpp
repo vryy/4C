@@ -105,7 +105,7 @@ void FS3I::PartFS3I_1WC::PrepareTimeStep()
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField().PrepareTimeStep();
+    scatra->ScaTraField()->PrepareTimeStep();
   }
 }
 
@@ -150,8 +150,8 @@ bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
     double connorm(0.0);
     // set up vector of absolute concentrations
     Teuchos::RCP<Epetra_Vector> con = Teuchos::rcp(new Epetra_Vector(scatraincrement_->Map()));
-    Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->ScaTraField().Phinp();
-    Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->ScaTraField().Phinp();
+    Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->ScaTraField()->Phinp();
+    Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->ScaTraField()->Phinp();
     SetupCoupledScatraVector(con,scatra1,scatra2);
     con->Norm2(&connorm);
 

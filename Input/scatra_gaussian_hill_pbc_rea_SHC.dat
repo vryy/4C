@@ -53,43 +53,12 @@ DEFINITION_TAU                  Zero //Shakib_Hughes_Codina
 STABTYPE                        GLS
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
-IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-12                        // tolerance in (un)scaled residual
-AZITER                          1000                          // max iterations
-AZSUB                           40                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                             // unused
-AZPOLY                          1                             // polynomial order for Neumann
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                          // none sym infnorm scaling of the system
-AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-DWINDTAU                        2.5                           // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     3                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                           // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     2 0 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.67                          // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.0006666666666 REACOEFF 0.42 // Pe_e = 5
 MAT 2 MAT_scatra DIFFUSIVITY 0.0000333333333 REACOEFF 1.32 // Pe_e = 100
 MAT 3 MAT_scatra DIFFUSIVITY 0.0033333333333 // Pe_e = 1
-MAT 4 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2 3
+MAT 4 MAT_matlist LOCAL No NUMMAT 3 MATIDS 1 2 3
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
@@ -114,10 +83,10 @@ SCATRA DIS scatra NODE 215 QUANTITY phi2 VALUE 4.79500475469769871e-03 TOLERANCE
 SCATRA DIS scatra NODE 323 QUANTITY phi2 VALUE 5.79946316729075928e-01 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 464 QUANTITY phi2 VALUE 2.56214838161116197e-02 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 540 QUANTITY phi2 VALUE 9.13202843353673574e-04 TOLERANCE 1e-12
-SCATRA DIS scatra NODE 215 QUANTITY phi3 VALUE 1.08380967317984883e-02 TOLERANCE 1e-12
-SCATRA DIS scatra NODE 323 QUANTITY phi3 VALUE 5.83698439668954960e-01 TOLERANCE 1e-12
-SCATRA DIS scatra NODE 464 QUANTITY phi3 VALUE 3.24881068631145201e-02 TOLERANCE 1e-12
-SCATRA DIS scatra NODE 540 QUANTITY phi3 VALUE 8.57099803221341924e-04 TOLERANCE 1e-12
+SCATRA DIS scatra NODE 215 QUANTITY phi3 VALUE 3.64480573685546302e-02 TOLERANCE 1e-12
+SCATRA DIS scatra NODE 323 QUANTITY phi3 VALUE 5.24496615993174542e-01 TOLERANCE 1e-12
+SCATRA DIS scatra NODE 464 QUANTITY phi3 VALUE 5.31083205540726355e-02 TOLERANCE 1e-12
+SCATRA DIS scatra NODE 540 QUANTITY phi3 VALUE 4.66879790443459376e-03 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 330 QUANTITY fluxx VALUE 5.97128034457259704e-01 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 330 QUANTITY fluxy VALUE -0.00000000000000000e+00 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 330 QUANTITY fluxz VALUE -0.00000000000000000e+00 TOLERANCE 1e-12

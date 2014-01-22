@@ -1182,93 +1182,93 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
   return;
 } // ScaTraImpl::CalMatElch
 
-/*----------------------------------------------------------------------*
-  |  CalculateElectricPotentialField (ELCH) (private)          gjb 04/10 |
-  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
-  const DRT::Element*         ele,
-  const double                frt,
-  const enum INPAR::SCATRA::ScaTraType  scatratype,
-  Epetra_SerialDenseMatrix&   emat,
-  Epetra_SerialDenseVector&   erhs,
-  bool                        newman
-  )
-{
-  if(newman==false)
-    dserror("The function CalcInitialPotential is only implemented for Newman materials");
-
-  const double faraday = INPAR::SCATRA::faraday_const;
-
-  // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // integration loop
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-    // get concentration of transported scalar k at integration point
-    for (int k = 0;k<numscal_;++k)
-      conint_[k] = funct_.Dot(ephinp_[k]);
-
-    // get gradient of electric potential at integration point
-    gradpot_.Multiply(derxy_,epotnp_);
-
-    // access material parameters
-    GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
-
-    for (int k=0; k<numscal_; ++k)
-    {
-      // diffusive terms on rhs
-      // gradient of current scalar value
-      gradphi_.Multiply(derxy_,ephinp_[k]);
-
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+numscal_;
-        double laplawf(0.0);
-        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
-
-        for (int iscal=0; iscal < numscal_; ++iscal)
-        {
-          erhs[fvi] -= fac*epstort_[0]/faraday/frt_*cond_[0]*(therm_[0])*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf;
-        }
-      }
-
-      // provide something for conc. dofs: a standard mass matrix
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int    fvi = vi*numdofpernode_+k;
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+k;
-          emat(fvi,fui) += fac*funct_(vi)*funct_(ui);
-        }
-      }
-    } // for k
-
-    // ----------------------------------------matrix entries
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int    fvi = vi*numdofpernode_+numscal_;
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+numscal_;
-        double laplawf(0.0);
-        GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
-        emat(fvi,fui) += fac*epstort_[0]/faraday*cond_[0]*laplawf;
-      }
-
-      double laplawf(0.0);
-      GetLaplacianWeakFormRHS(laplawf,derxy_,gradpot_,vi);
-      erhs[fvi] -= fac*epstort_[0]/faraday*cond_[0]*laplawf;
-    }
-  } // integration loop
-
-  return;
-
-} //ScaTraImpl<distype>::CalculateElectricPotentialField
+///*----------------------------------------------------------------------*
+//  |  CalculateElectricPotentialField (ELCH) (private)          gjb 04/10 |
+//  *----------------------------------------------------------------------*/
+//template <DRT::Element::DiscretizationType distype>
+//void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
+//  const DRT::Element*         ele,
+//  const double                frt,
+//  const enum INPAR::SCATRA::ScaTraType  scatratype,
+//  Epetra_SerialDenseMatrix&   emat,
+//  Epetra_SerialDenseVector&   erhs,
+//  bool                        newman
+//  )
+//{
+//  if(newman==false)
+//    dserror("The function CalcInitialPotential is only implemented for Newman materials");
+//
+//  const double faraday = INPAR::SCATRA::faraday_const;
+//
+//  // integration points and weights
+//  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+//
+//  // integration loop
+//  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+//  {
+//    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+//
+//    // get concentration of transported scalar k at integration point
+//    for (int k = 0;k<numscal_;++k)
+//      conint_[k] = funct_.Dot(ephinp_[k]);
+//
+//    // get gradient of electric potential at integration point
+//    gradpot_.Multiply(derxy_,epotnp_);
+//
+//    // access material parameters
+//    GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
+//
+//    for (int k=0; k<numscal_; ++k)
+//    {
+//      // diffusive terms on rhs
+//      // gradient of current scalar value
+//      gradphi_.Multiply(derxy_,ephinp_[k]);
+//
+//      for (int vi=0; vi<nen_; ++vi)
+//      {
+//        const int fvi = vi*numdofpernode_+numscal_;
+//        double laplawf(0.0);
+//        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+//
+//        for (int iscal=0; iscal < numscal_; ++iscal)
+//        {
+//          erhs[fvi] -= fac*epstort_[0]/faraday/frt_*cond_[0]*(therm_[0])*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf;
+//        }
+//      }
+//
+//      // provide something for conc. dofs: a standard mass matrix
+//      for (int vi=0; vi<nen_; ++vi)
+//      {
+//        const int    fvi = vi*numdofpernode_+k;
+//        for (int ui=0; ui<nen_; ++ui)
+//        {
+//          const int fui = ui*numdofpernode_+k;
+//          emat(fvi,fui) += fac*funct_(vi)*funct_(ui);
+//        }
+//      }
+//    } // for k
+//
+//    // ----------------------------------------matrix entries
+//    for (int vi=0; vi<nen_; ++vi)
+//    {
+//      const int    fvi = vi*numdofpernode_+numscal_;
+//      for (int ui=0; ui<nen_; ++ui)
+//      {
+//        const int fui = ui*numdofpernode_+numscal_;
+//        double laplawf(0.0);
+//        GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
+//        emat(fvi,fui) += fac*epstort_[0]/faraday*cond_[0]*laplawf;
+//      }
+//
+//      double laplawf(0.0);
+//      GetLaplacianWeakFormRHS(laplawf,derxy_,gradpot_,vi);
+//      erhs[fvi] -= fac*epstort_[0]/faraday*cond_[0]*laplawf;
+//    }
+//  } // integration loop
+//
+//  return;
+//
+//} //ScaTraImpl<distype>::CalculateElectricPotentialField
 
 /*----------------------------------------------------------------------*
   |  Calculate conductivity (ELCH) (private)                   gjb 07/09 |

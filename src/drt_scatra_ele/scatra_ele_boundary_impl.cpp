@@ -24,10 +24,12 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_action.H"
 #include "scatra_ele.H"
 
+#include "scatra_ele_parameter_elch.H"
+
 #include "../drt_lib/drt_globalproblem.H" // for curves and functions
 #include "../drt_lib/standardtypes_cpp.H" // for EPS12 and so on
 #include "../drt_inpar/inpar_scatra.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_inpar/inpar_elch.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
@@ -69,7 +71,7 @@ DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInt
   const int numdofpernode = ele->NumDofPerNode(*(ele->Nodes()[0]));
   int numscal = numdofpernode;
 
-  if (SCATRA::IsElchProblem(scatratype))
+  if (scatratype==INPAR::SCATRA::scatratype_elch)
   {
     numscal -= 1;
 
@@ -182,36 +184,37 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
-(int numdofpernode,
-    int numscal)
-    : numdofpernode_(numdofpernode),
-    numscal_(numscal),
-    isale_(false),
-    is_stationary_(false),
-    is_genalpha_(false),
-    is_incremental_(true),
-    xyze_(true),  // initialize to zero
-    weights_(true),
-    myknots_(nsd_),
-    mypknots_(nsd_+1),
-    normalfac_(1.0),
-    edispnp_(true),
-    diffus_(numscal_,0),
-    //valence_(numscal_,0),
-    shcacp_(0.0),
-    xsi_(true),
-    funct_(true),
-    deriv_(true),
-    derxy_(true),
-    normal_(true),
-    velint_(true),
-    metrictensor_(true),
-    thermpress_(0.0),
-    equpot_(INPAR::ELCH::equpot_enc),
-    eps_(1.0)
-    {
-        return;
-    }
+( int numdofpernode,
+  int numscal)
+  : numdofpernode_(numdofpernode),
+  numscal_(numscal),
+  isale_(false),
+  is_stationary_(false),
+  is_genalpha_(false),
+  is_incremental_(true),
+  xyze_(true),  // initialize to zero
+  weights_(true),
+  myknots_(nsd_),
+  mypknots_(nsd_+1),
+  normalfac_(1.0),
+  edispnp_(true),
+  diffus_(numscal_,0),
+  //valence_(numscal_,0),
+  shcacp_(0.0),
+  xsi_(true),
+  funct_(true),
+  deriv_(true),
+  derxy_(true),
+  normal_(true),
+  velint_(true),
+  metrictensor_(true),
+  thermpress_(0.0),
+  equpot_(INPAR::ELCH::equpot_enc),
+  eps_(1.0)
+  {
+    elchparams_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
+    return;
+  }
 
 
 /*----------------------------------------------------------------------*
@@ -309,6 +312,11 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams_,"EQUPOT");
     }
 
+    // the type of elch problem
+    const INPAR::ELCH::ElchType elchtype = elchparams_->ElchType();
+    if (scatratype == INPAR::SCATRA::scatratype_undefined)
+      dserror("Element parameter SCATRATYPE has not been set!");
+
     // get actual values of transported scalars
     RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
@@ -358,13 +366,13 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     }
 
     // access input parameter
-    const double frt = params.get<double>("frt"); // = F/RT
-    if (frt<0.0)
+    const double frt = elchparams_->FRT(); // = F/RT
+    if (frt<=0.0)
       dserror("A negative factor frt is not possible by definition");
 
     // get control parameter from parameter list
     bool iselch(true);
-    if (not SCATRA::IsElchProblem(scatratype))
+    if (scatratype != INPAR::SCATRA::scatratype_elch)
       iselch = false;
     const bool   is_stationary = params.get<bool>("using stationary formulation");
     const double time = params.get<double>("total time");
@@ -432,7 +440,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
           pot0,
           frt,
           iselch,
-          scatratype
+          elchtype
       );
 
       // realize correct scaling of rhs contribution for gen.alpha case
@@ -527,7 +535,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
       const double time = params.get<double>("total time");
 
-      if (not SCATRA::IsElchProblem(scatratype))
+      if (scatratype != INPAR::SCATRA::scatratype_elch)
         dserror("Only available ELCH");
 
       if (curvenum>=0)
@@ -1194,13 +1202,13 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   // **********************************************************************
   // add boundary flux contributions to the potential equation as well!
   // **********************************************************************
-  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
-  if (scatratype == INPAR::SCATRA::scatratype_undefined)
+  const INPAR::ELCH::ElchType elchtype = elchparams_->ElchType();
+  if (elchtype == INPAR::ELCH::elchtype_undefined)
     dserror("Element parameter SCATRATYPE has not been set!");
 
   // this has to be done only for the following problem formulations:
-  if ((scatratype==INPAR::SCATRA::scatratype_elch_enc_pde) or
-      (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim))
+  if ((elchtype==INPAR::ELCH::elchtype_enc_pde) or
+      (elchtype==INPAR::ELCH::elchtype_enc_pde_elim))
   {
     // access the parent element's material
     DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
@@ -1239,7 +1247,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   }
 
   // the same procedure is also necessary for the concentrated solution theory based on div i
-  if(equpot_==INPAR::ELCH::equpot_divi)
+  if(equpot_==elchparams_->EquPot())
   {
     for (int k = 0; k < numscal_; k++)
     {
@@ -1681,11 +1689,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     const double                      pot0,
     const double                      frt,
     const bool                        iselch,
-    const INPAR::SCATRA::ScaTraType   scatratype
+    const INPAR::ELCH::ElchType   elchtype
 )
 {
   //for pre-multiplication of i0 with 1/(F z_k)
-  double faraday = INPAR::SCATRA::faraday_const;    // unit of F: C/mol or mC/mmol or muC / mumol
+  double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or muC / mumol
 
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -2504,8 +2512,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   // TODO (ehrl): Is it ok to use nume instead of valence?
   if (iselch)
   {
-    if ((scatratype==INPAR::SCATRA::scatratype_elch_enc_pde) or
-        (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim))
+    if ((elchtype==INPAR::ELCH::elchtype_enc_pde) or
+        (elchtype==INPAR::ELCH::elchtype_enc_pde_elim))
     {
       // we have to add boundary contributions to the potential equation as well!
       // and do not forget the corresponding matrix contributions ;-)
@@ -2560,7 +2568,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
   // necessary to perform galvanostatic simulations, for instance.
   // Think about: double layer effects for genalpha time-integratio scheme
 
-  double faraday = INPAR::SCATRA::faraday_const;    // unit of F: C/mol or mC/mmol or muC / mumol
+  double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or muC / mumol
 
   // get variables with their current values
   double currentintegral   = params.get<double>("currentintegral");

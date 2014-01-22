@@ -33,7 +33,6 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
 #include "../drt_scatra/passive_scatra_algorithm.H"
-#include "../drt_scatra/scatra_utils.H"
 
 #include "../drt_lib/drt_condition_utils.H"
 
@@ -99,15 +98,15 @@ void FS3I::PartFS3I::ExtractScatraFieldVectors(
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::CheckInterfaceDirichletBC()
 {
-  Teuchos::RCP<DRT::Discretization> masterdis = scatravec_[0]->ScaTraField().Discretization();
-  Teuchos::RCP<DRT::Discretization> slavedis = scatravec_[1]->ScaTraField().Discretization();
+  Teuchos::RCP<DRT::Discretization> masterdis = scatravec_[0]->ScaTraField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> slavedis = scatravec_[1]->ScaTraField()->Discretization();
 
   Teuchos::RCP<const Epetra_Map> mastermap = scatracoup_->MasterDofMap();
   Teuchos::RCP<const Epetra_Map> permmastermap = scatracoup_->PermMasterDofMap();
   Teuchos::RCP<const Epetra_Map> slavemap = scatracoup_->SlaveDofMap();
   Teuchos::RCP<const Epetra_Map> permslavemap = scatracoup_->PermSlaveDofMap();
 
-  const Teuchos::RCP<const LINALG::MapExtractor> masterdirichmapex = scatravec_[0]->ScaTraField().DirichMaps();
+  const Teuchos::RCP<const LINALG::MapExtractor> masterdirichmapex = scatravec_[0]->ScaTraField()->DirichMaps();
   const Teuchos::RCP<const Epetra_Map> masterdirichmap = masterdirichmapex->CondMap();
 
   // filter out master dirichlet dofs associated with the interface
@@ -122,7 +121,7 @@ void FS3I::PartFS3I::CheckInterfaceDirichletBC()
   }
   Teuchos::RCP<Epetra_Vector> test_slaveifdirich = scatracoup_->MasterToSlave(masterifdirich);
 
-  const Teuchos::RCP<const LINALG::MapExtractor> slavedirichmapex = scatravec_[1]->ScaTraField().DirichMaps();
+  const Teuchos::RCP<const LINALG::MapExtractor> slavedirichmapex = scatravec_[1]->ScaTraField()->DirichMaps();
   const Teuchos::RCP<const Epetra_Map> slavedirichmap = slavedirichmapex->CondMap();
 
   // filter out slave dirichlet dofs associated with the interface
@@ -200,7 +199,7 @@ void FS3I::PartFS3I::SetVelocityFields()
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField().SetVelocityField(convel[i],
+    scatra->ScaTraField()->SetVelocityField(convel[i],
                                            Teuchos::null,
                                            vel[i],
                                            Teuchos::null,
@@ -217,13 +216,13 @@ void FS3I::PartFS3I::SetMeshDisp()
   // fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra = scatravec_[0];
   ADAPTER::Fluid& fluidadapter = fsi_->FluidField();
-  fluidscatra->ScaTraField().ApplyMeshMovement(fluidadapter.Dispnp(),
+  fluidscatra->ScaTraField()->ApplyMeshMovement(fluidadapter.Dispnp(),
                                                fluidadapter.Discretization());
 
   // structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra = scatravec_[1];
   const Teuchos::RCP<ADAPTER::Structure>& structadapter = fsi_->StructureField();
-  structscatra->ScaTraField().ApplyMeshMovement(structadapter->Dispnp(),
+  structscatra->ScaTraField()->ApplyMeshMovement(structadapter->Dispnp(),
                                                 structadapter->Discretization());
 }
 

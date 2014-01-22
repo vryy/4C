@@ -14,7 +14,6 @@ Maintainer: Volker Gravemeier
 
 #include "scatra_timint_genalpha.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
-#include "scatra_utils.H"
 #include "turbulence_hit_scalar_forcing.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -36,6 +35,10 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   Teuchos::RCP<Teuchos::ParameterList>   extraparams,
   Teuchos::RCP<IO::DiscretizationWriter> output)
 : ScaTraTimIntImpl(actdis,solver,params,extraparams,output),
+  phiaf_(Teuchos::null),
+  phiam_(Teuchos::null),
+  phidtam_(Teuchos::null),
+  fsphiaf_(Teuchos::null),
   alphaM_(params_->get<double>("ALPHA_M")),
   alphaF_(params_->get<double>("ALPHA_F")),
   gamma_ (params_->get<double>("GAMMA")),
@@ -68,8 +71,6 @@ void SCATRA::TimIntGenAlpha::Init()
   phiam_ = LINALG::CreateVector(*dofrowmap,true);
 
   // temporal derivative of scalar at times n+1, n and n+alpha_M
-  phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
-  phidtn_  = LINALG::CreateVector(*dofrowmap,true);
   phidtam_ = LINALG::CreateVector(*dofrowmap,true);
 
   // compute specific time factor for generalized-alpha time integration:
@@ -93,9 +94,10 @@ void SCATRA::TimIntGenAlpha::Init()
   SetElementGeneralScaTraParameter();
   SetElementTurbulenceParameter();
 
+  //TODO: SCATRA_ELE_CLEANING
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)
-  if (IsElch(scatratype_))
-    ComputeTimeDerivPot0(true);
+  //if (IsElch(scatratype_))
+  //  ComputeTimeDerivPot0(true);
 
   // for initializing phiaf_, phiam based on the initial field that was
   // set for phinp_, phin_ in the TimInt base class constructor
@@ -106,7 +108,7 @@ void SCATRA::TimIntGenAlpha::Init()
   // Important: this adds the required ConditionID's to the single conditions.
   // It is necessary to do this BEFORE ReadRestart() is called!
   // Output to screen and file is suppressed
-  OutputElectrodeInfo(false,false);
+  //OutputElectrodeInfo(false,false);
 
   // setup krylov
   PrepareKrylovProjection();
@@ -161,6 +163,24 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameter()
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::SetElementTimeParameter(Teuchos::ParameterList& eleparams)
+{
+  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
+  eleparams.set<bool>("using generalized-alpha time integration",true);
+  eleparams.set<bool>("using stationary formulation",false);
+
+  eleparams.set<double>("time-step length",dta_);
+  eleparams.set<double>("total time",time_-(1-alphaF_)*dta_);
+  eleparams.set<double>("time factor",genalphafac_*dta_);
+  eleparams.set<double>("alpha_F",alphaF_);
 
   return;
 }
@@ -389,63 +409,6 @@ void SCATRA::TimIntGenAlpha::ComputeTimeDerivative()
 }
 
 
-/*-------------------------------------------------------------------------------------*
- | compute time derivative of applied electrode potential                   ehrl 08/13 |
- *-------------------------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::ComputeTimeDerivPot0(const bool init)
-{
-  std::vector<DRT::Condition*> cond;
-  discret_->GetCondition("ElectrodeKinetics",cond);
-  int numcond = cond.size();
-
-  for(int icond = 0; icond < numcond; icond++)
-  {
-    double pot0np =  cond[icond]->GetDouble("pot");
-    const int curvenum =   cond[icond]->GetInt("curve");
-    double dlcap = cond[icond]->GetDouble("dl_spec_cap");
-
-    if (init)
-    {
-      // create and initialize additional b.c. entries for galvanostatic simulations or
-      // simulations including a double layer
-      cond[icond]->Add("pot0n",0.0);
-      cond[icond]->Add("pot0dtnp",0.0);
-      cond[icond]->Add("pot0dtn",0.0);
-      cond[icond]->Add("pot0hist",0.0);
-
-      // Double layer charging can not be integrated into the exiting framework without major restructuring on element level:
-      // Derivation is based on a history vector!!
-      if(dlcap!=0.0)
-        dserror("Double layer charging and galvanostatic mode are not implemented for BDF2! You have to use one-step-theta time integration scheme");
-        //dlcapexists_=true;
-
-      //if(DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC")==true)
-      //    dserror("Double layer charging and galvanostatic mode are not implemented for generalized-alpha! You have to use one-step-theta time integration scheme");
-    }
-    else
-    {
-      // these values are not used without double layer charging
-      // compute time derivative of applied potential
-      if (curvenum>=0)
-      {
-        const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time_);
-        // adjust potential at metal side accordingly
-        pot0np *= curvefac;
-      }
-      // compute time derivative of applied potential pot0
-      // pot0dt(n+1) = (pot0(n+1)-pot0(n)) / (theta*dt) + (1-(1/theta))*pot0dt(n)
-      double pot0n = cond[icond]->GetDouble("pot0n");
-      double pot0dtn = cond[icond]->GetDouble("pot0dtn");
-      double pot0dtnp =(pot0np-pot0n)/(dta_*gamma_) + (1-(1/gamma_))*pot0dtn;
-      // add time derivative of applied potential pot0dtnp to BC
-      cond[icond]->Add("pot0dtnp", pot0dtnp);
-    }
-  }
-
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                             vg 11/08 |
@@ -480,9 +443,6 @@ void SCATRA::TimIntGenAlpha::Update(const int num)
   if (homisoturb_forcing_ != Teuchos::null)
     homisoturb_forcing_->TimeUpdateForcing();
 
-  // perform update of time-dependent electrode variables
-  ElectrodeKineticsTimeUpdate();
-
   // TODO: SCATRA_ELE_CLEANING
   // potential time update of time-dependent materials
 //  ElementMaterialTimeUpdate();
@@ -504,37 +464,6 @@ void SCATRA::TimIntGenAlpha::OutputRestart()
   // for elch problems with moving boundary
   if (isale_)
     output_->WriteVector("trueresidual", trueresidual_);
-
-  // write additional restart data for galvanostatic applications
-  if (IsElch(scatratype_))
-  {
-    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
-    {
-      // define a vector with all electrode kinetics BCs
-      std::vector<DRT::Condition*> cond;
-      discret_->GetCondition("ElectrodeKinetics",cond);
-
-      int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
-
-      std::vector<DRT::Condition*>::iterator fool;
-      // loop through conditions and find the cathode
-      for (fool=cond.begin(); fool!=cond.end(); ++fool)
-      {
-        DRT::Condition* mycond = (*(fool));
-        const int condid = mycond->GetInt("ConditionID");
-        if (condid_cathode==condid)
-        {
-          // electrode potential of the adjusted electrode kinetics BC at time n+1
-          double pot = mycond->GetDouble("pot");
-          output_->WriteDouble("pot",pot);
-
-          // electrode potential of the adjusted electrode kinetics BC at time n
-          double potn = mycond->GetDouble("pot0n");
-          output_->WriteDouble("pot0n",potn);
-        }
-      }
-    }
-  }
 
   return;
 }
@@ -561,46 +490,6 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
   // for elch problems with moving boundary
   if(isale_)
     reader.ReadVector(trueresidual_, "trueresidual");
-
-  // Initialize Nernst-BC
-  InitNernstBC();
-
-  // restart for galvanostatic applications
-  if (IsElch(scatratype_))
-  {
-    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
-    {
-      // define a vector with all electrode kinetics BCs
-      std::vector<DRT::Condition*> cond;
-      discret_->GetCondition("ElectrodeKinetics",cond);
-
-      int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
-      std::vector<DRT::Condition*>::iterator fool;
-      bool read_pot=false;
-
-      // read desired values from the .control file and add/set the value to
-      // the electrode kinetics boundary condition representing the cathode
-      for (fool=cond.begin(); fool!=cond.end(); ++fool)
-      {
-        DRT::Condition* mycond = (*(fool));
-        const int condid = mycond->GetInt("ConditionID");
-        if (condid_cathode==condid)
-        {
-          double pot = reader.ReadDouble("pot");
-          mycond->Add("pot",pot);
-
-          double potn = reader.ReadDouble("pot0n");
-          mycond->Add("pot0n",potn);
-
-          read_pot=true;
-          if (myrank_==0)
-            std::cout<<"Successfully read restart data for galvanostatic mode (condid "<<condid<<")"<<std::endl;
-        }
-      }
-      if (!read_pot)
-        dserror("Reading of electrode potential for restart not successful.");
-    }
-  }
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
@@ -656,6 +545,9 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
   // add turbulence list here and set model to no model
   Teuchos::ParameterList eleturbparams;
 
+  // we also have to modify the time-parameter list
+  //SetElementTimeParameterForForcedIncrementalSolve();
+
   eleturbparams.set<int>("action",SCATRA::set_turbulence_scatra_parameter);
 
   // set type of scalar transport problem
@@ -683,6 +575,9 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
   // call standard loop over elements
   discret_->Evaluate(eleturbparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
+  //TODO: SCATRA_ELE_CLEANING: Wie behandeln wir die ganzen Spezialfälle der Zeitintegration
+//#if 0
+  //TODO: BACI_ELE_CLEANING: different parameter definition in SetElementTimeParameterForForcedIncrementalSolve() and here
   // for genalpha, we also have to modify the time-parameter list
   Teuchos::ParameterList eletimeparams;
 
@@ -701,6 +596,7 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
 
   // call standard loop over elements
   discret_->Evaluate(eletimeparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+//#endif
 
 
   // compute time derivative of phi at time t=0
@@ -714,34 +610,5 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- | update of time-dependent variables for electrode kinetics  gjb 11/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::ElectrodeKineticsTimeUpdate()
-{
-  if (IsElch(scatratype_))
-  {
-    if((DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC")) or
-        dlcapexists_==true)
-    {
-      ComputeTimeDerivPot0(false);
-
-      std::vector<DRT::Condition*> cond;
-      discret_->GetCondition("ElectrodeKinetics",cond);
-      for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
-      {
-        {
-          double pot0np = cond[i]->GetDouble("pot");
-          cond[i]->Add("pot0n",pot0np);
-
-          //double pot0dtnp = cond[i]->GetDouble("pot0dtnp");
-          //cond[i]->Add("pot0dtn",pot0dtnp);
-        }
-      }
-    }
-  }
-  return;
-}
 
 

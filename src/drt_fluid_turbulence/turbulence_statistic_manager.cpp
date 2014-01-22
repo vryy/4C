@@ -1567,7 +1567,7 @@ namespace FLD
 
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::AddScaTraField(
-      SCATRA::ScaTraTimIntImpl& scatra_timeint
+      Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_timeint
   )
   {
     if(discret_->Comm().MyPID()==0)
@@ -1578,23 +1578,23 @@ namespace FLD
     }
 
     // store the relevant pointers to provide access
-    scatradis_ = scatra_timeint.Discretization();
-    scatraparams_ = scatra_timeint.ScatraParameterList();
+    scatradis_ = scatra_timeint->Discretization();
+    scatraparams_ = scatra_timeint->ScatraParameterList();
     // set potentially modified scatratype which is not correctly set
     // in the ScatraParameterList() is it has been modified in the
     // constructor of the scatra time integration
-    scatraparams_->set<int>("scatratype",scatra_timeint.ScaTraType());
+    scatraparams_->set<int>("scatratype",scatra_timeint->ScaTraType());
     // and sublists from extraparams
-    scatraextraparams_ = scatra_timeint.ScatraExtraParameterList();
+    scatraextraparams_ = scatra_timeint->ScatraExtraParameterList();
     // remark: this is not a good idea, since the sublists are copied and modifications
     //         during simulation are never seen in the statistics manager; moreover
     //         this would add the following sublists also to the parameter list in the
     //         scatra time integration
-    //scatraparams_->sublist("TURBULENCE MODEL") = scatra_timeint.ScatraExtraParameterList()->sublist("TURBULENCE MODEL");
-    //scatraparams_->sublist("SUBGRID VISCOSITY") = scatra_timeint.ScatraExtraParameterList()->sublist("SUBGRID VISCOSITY");
-    //scatraparams_->sublist("MULTIFRACTAL SUBGRID SCALES") = scatra_timeint.ScatraExtraParameterList()->sublist("MULTIFRACTAL SUBGRID SCALES");
-    //scatraparams_->sublist("LOMA") = scatra_timeint.ScatraExtraParameterList()->sublist("LOMA");
-    scatratimeparams_ = scatra_timeint.ScatraTimeParameterList();
+    //scatraparams_->sublist("TURBULENCE MODEL") = scatra_timeint->ScatraExtraParameterList()->sublist("TURBULENCE MODEL");
+    //scatraparams_->sublist("SUBGRID VISCOSITY") = scatra_timeint->ScatraExtraParameterList()->sublist("SUBGRID VISCOSITY");
+    //scatraparams_->sublist("MULTIFRACTAL SUBGRID SCALES") = scatra_timeint->ScatraExtraParameterList()->sublist("MULTIFRACTAL SUBGRID SCALES");
+    //scatraparams_->sublist("LOMA") = scatra_timeint->ScatraExtraParameterList()->sublist("LOMA");
+    scatratimeparams_ = scatra_timeint->ScatraTimeParameterList();
     // required vectors
     // remark: Although some of these field are already set for the fluid,
     //         we set set them here once more. They are required for integration
@@ -1602,15 +1602,15 @@ namespace FLD
     //         specific form using MultiVectors (cf. scatra time integration). If
     //         these vectors are not taken form the scatra time integration we
     //         would have to transfer them to the scatra dofs here!
-    myphinp_ = scatra_timeint.Phinp();
-    myphiaf_ = scatra_timeint.Phiaf();
-    myphiam_ = scatra_timeint.Phiam();
-    myscatraconvel_ = scatra_timeint.ConVel();
-    myscatraaccpre_ = scatra_timeint.ConAccPre();
-    myscatrafsvel_ = scatra_timeint.ConFsVel();
-    myscatrahist_ = scatra_timeint.Hist();
-    myphidtam_ = scatra_timeint.Phidtam();
-    myfsphi_ = scatra_timeint.FsPhi();
+    myphinp_ = scatra_timeint->Phinp();
+    myphiaf_ = scatra_timeint->Phiaf();
+    myphiam_ = scatra_timeint->Phiam();
+    myscatraconvel_ = scatra_timeint->ConVel();
+    myscatraaccpre_ = scatra_timeint->ConAccPre();
+    myscatrafsvel_ = scatra_timeint->ConFsVel();
+    myscatrahist_ = scatra_timeint->Hist();
+    myphidtam_ = scatra_timeint->Phidtam();
+    myfsphi_ = scatra_timeint->FsPhi();
 
     if (statistics_general_mean_!=Teuchos::null)
       statistics_general_mean_->AddScaTraResults(scatradis_, myphinp_);

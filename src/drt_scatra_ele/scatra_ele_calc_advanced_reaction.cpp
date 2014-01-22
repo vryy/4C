@@ -110,8 +110,6 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatBioFilm(
     const int                               iquad         //!< id of current gauss point
   )
 {
-  dsassert(my::numdofpernode_==1,"more than 1 dof per node for BIOFILM material");
-
   const Teuchos::RCP<const MAT::Biofilm>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::Biofilm>(material);
 

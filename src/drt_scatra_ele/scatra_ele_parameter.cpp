@@ -29,6 +29,7 @@ Maintainer: Andreas Ehrl
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter()
  : //set_general_fluid_parameter_(false),
+  set_general_scatra_parameter_(false),
   scatratype_(INPAR::SCATRA::scatratype_undefined),
   is_ale_(false),
   is_conservative_(false),
@@ -142,6 +143,16 @@ void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralScaTraParameter(
   Teuchos::ParameterList& params,
   int myrank )
 {
+  //TODO: SCATRA_ELE_CLEANING: CalcInitTimeDeriv -> zweimal gerufen
+  if(set_general_scatra_parameter_ == false)
+    set_general_scatra_parameter_ = true;
+  else
+  {
+    if (myrank == 0)
+      std::cout << "General scatra parameters should be set only once!!\n " << std::endl;
+  }
+
+
   // the type of scalar transport problem has to be provided for all actions!
  scatratype_ = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
   if (scatratype_ == INPAR::SCATRA::scatratype_undefined)
@@ -206,6 +217,7 @@ void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralScaTraParameter(
     break;
   default:
     dserror("unknown definition for stabilization parameter");
+    break;
   }
 
   // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term

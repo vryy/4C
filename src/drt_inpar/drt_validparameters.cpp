@@ -4560,12 +4560,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Undefined",
                                  "ConvectionDiffusion",
                                  "LowMachNumberFlow",
-                                 "Elch_ENC",
-                                 "Elch_ENC_PDE",
-                                 "Elch_ENC_PDE_ELIM",
-                                 "Elch_Poisson",
-                                 "Elch_Laplace",
-                                 "Elch_Diffcond",
+                                 "Elch",
                                  "LevelSet",
                                  "Poroscatra",
                                  "Advanced_Reaction",
@@ -4574,12 +4569,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::SCATRA::scatratype_undefined,
                                  INPAR::SCATRA::scatratype_condif,
                                  INPAR::SCATRA::scatratype_loma,
-                                 INPAR::SCATRA::scatratype_elch_enc,
-                                 INPAR::SCATRA::scatratype_elch_enc_pde,
-                                 INPAR::SCATRA::scatratype_elch_enc_pde_elim,
-                                 INPAR::SCATRA::scatratype_elch_poisson,
-                                 INPAR::SCATRA::scatratype_elch_laplace,
-                                 INPAR::SCATRA::scatratype_elch_diffcond,
+                                 INPAR::SCATRA::scatratype_elch,
                                  INPAR::SCATRA::scatratype_levelset,
                                  INPAR::SCATRA::scatratype_poro,
                                  INPAR::SCATRA::scatratype_advreac,
@@ -4847,6 +4837,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       false,
       "control parameters for electrochemistry problems\n");
 
+  setStringToIntegralParameter<int>("ELCHTYPE","Undefined",
+                                 "Type of elch formulation",
+                                 tuple<std::string>(
+                                   "Undefined",
+                                   "ENC",
+                                   "ENC_PDE",
+                                   "ENC_PDE_ELIM",
+                                   "Poisson",
+                                   "Laplace",
+                                   "DiffCond"),
+                                 tuple<int>(
+                                   INPAR::ELCH::elchtype_undefined,
+                                   INPAR::ELCH::elchtype_enc,
+                                   INPAR::ELCH::elchtype_enc_pde,
+                                   INPAR::ELCH::elchtype_enc_pde_elim,
+                                   INPAR::ELCH::elchtype_poisson,
+                                   INPAR::ELCH::elchtype_laplace,
+                                   INPAR::ELCH::elchtype_diffcond),
+                                   &elchcontrol);
+
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&elchcontrol);
   IntParameter("NUMSTEP",24,"Total number of time steps",&elchcontrol);
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&elchcontrol);
@@ -4883,7 +4893,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("GSTATCURVENO",-1,"function number defining the imposed current curve",&elchcontrol);
   IntParameter("GSTATITEMAX",10,"maximum number of iterations for galvanostatic mode",&elchcontrol);
   DoubleParameter("GSTAT_LENGTH_CURRENTPATH",0.0,"average length of the current path",&elchcontrol);
-  IntParameter("MAGNETICFIELD_FUNCNO",-1,"function number defining an externally imposed magnetic field",&elchcontrol);
+//  IntParameter("MAGNETICFIELD_FUNCNO",-1,"function number defining an externally imposed magnetic field",&elchcontrol);
 
   /*----------------------------------------------------------------------*/
   // attention: this list is a sublist of elchcontrol

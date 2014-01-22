@@ -104,7 +104,7 @@ void POROELAST::PORO_SCATRA_Mono::ReadRestart(int restart)
     SetPoroSolution();
 
     PoroField()->ReadRestart(restart);
-    ScatraField().ReadRestart(restart);
+    ScaTraField()->ReadRestart(restart);
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if(PoroField()->HasSubmeshes())
@@ -115,7 +115,7 @@ void POROELAST::PORO_SCATRA_Mono::ReadRestart(int restart)
     SetPoroSolution();
 
     //second restart needed due to two way coupling.
-    ScatraField().ReadRestart(restart);
+    ScaTraField()->ReadRestart(restart);
     PoroField()->ReadRestart(restart);
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
@@ -136,7 +136,7 @@ void POROELAST::PORO_SCATRA_Mono::PrepareTimeStep()
   IncrementTimeAndStep();
 
   SetPoroSolution();
-  ScatraField().PrepareTimeStep();
+  ScaTraField()->PrepareTimeStep();
   // set structure-based scalar transport values
   SetScatraSolution();
 
@@ -156,7 +156,7 @@ void POROELAST::PORO_SCATRA_Mono::PrepareOutput()
 void POROELAST::PORO_SCATRA_Mono::Output()
 {
   PoroField()->Output();
-  ScatraField().Output();
+  ScaTraField()->Output();
 }
 
 /*----------------------------------------------------------------------*
@@ -165,8 +165,8 @@ void POROELAST::PORO_SCATRA_Mono::Update()
 {
   PoroField()->Update();
 
-  ScatraField().Update();
-  ScatraField().EvaluateErrorComparedToAnalyticalSol();
+  ScaTraField()->Update();
+  ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
 }
 
 /*----------------------------------------------------------------------*
@@ -282,7 +282,7 @@ void POROELAST::PORO_SCATRA_Mono::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   // Newton update of the fluid field
   // update velocities and pressures before passed to the structural field
   //  UpdateIterIncrementally(fx),
-  ScatraField().UpdateIter(scatrainc);
+  ScaTraField()->UpdateIter(scatrainc);
 
   // call all elements and assemble rhs and matrices
   /// structural field
@@ -305,7 +305,7 @@ void POROELAST::PORO_SCATRA_Mono::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   SetScatraSolution();
 
   // monolithic Poroelasticity accesses the linearised fluid problem
-  ScatraField().PrepareLinearSolve();
+  ScaTraField()->PrepareLinearSolve();
   //cout << "  fluid time for calling Evaluate: " << timerfluid.ElapsedTime() << "\n";
 
   // fill off diagonal blocks and build monolithic system matrix
@@ -330,7 +330,7 @@ void POROELAST::PORO_SCATRA_Mono::SetupSystem()
       dserror("could not access DofRowMap of poro field!");
     // use its own DofRowMap, that is the 0th map of the discretization
     vecSpaces.push_back(PoroField()->DofRowMap());
-    const Epetra_Map* dofrowmapscatra = (ScatraField().Discretization())->DofRowMap(0);
+    const Epetra_Map* dofrowmapscatra = (ScaTraField()->Discretization())->DofRowMap(0);
     vecSpaces.push_back(Teuchos::rcp(dofrowmapscatra,false));
   }
 
@@ -347,7 +347,7 @@ void POROELAST::PORO_SCATRA_Mono::SetupSystem()
     const Teuchos::RCP<const Epetra_Map> porocondmap =
         PoroField()->CombinedDBCMap();
     const Teuchos::RCP<const Epetra_Map> scatracondmap =
-        ScatraField().DirichMaps()->CondMap();
+        ScaTraField()->DirichMaps()->CondMap();
     Teuchos::RCP<const Epetra_Map> dbcmap = LINALG::MergeMap(porocondmap, scatracondmap, false);
 
     // Finally, create the global FSI Dirichlet map extractor
@@ -366,7 +366,7 @@ void POROELAST::PORO_SCATRA_Mono::SetupSystem()
 
   std::vector<Teuchos::RCP<const Epetra_Map> > scatravecSpaces;
   {
-    const Epetra_Map* dofrowmapscatra = (ScatraField().Discretization())->DofRowMap(0);
+    const Epetra_Map* dofrowmapscatra = (ScaTraField()->Discretization())->DofRowMap(0);
     scatravecSpaces.push_back(Teuchos::rcp(dofrowmapscatra,false));
     scatrarowdofmap_.Setup(*dofrowmapscatra,scatravecSpaces);
   }
@@ -404,7 +404,7 @@ void POROELAST::PORO_SCATRA_Mono::SetupRHS(bool firstcall)
   PoroField()->SetupRHS(firstcall);
 
   // fill the Poroelasticity rhs vector rhs_ with the single field rhss
-  SetupVector(*rhs_, PoroField()->RHS(), ScatraField().Residual());
+  SetupVector(*rhs_, PoroField()->RHS(), ScaTraField()->Residual());
 }
 
 /*----------------------------------------------------------------------*
@@ -446,7 +446,7 @@ void POROELAST::PORO_SCATRA_Mono::SetupSystemMatrix()
   // 2nd diagonal block (lower right): scatra weighting - scatra solution
   //----------------------------------------------------------------------
   // get matrix block
-  Teuchos::RCP<LINALG::SparseMatrix> mat_ss = ScatraField().SystemMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> mat_ss = ScaTraField()->SystemMatrix();
 
   // uncomplete matrix block (appears to be required in certain cases)
   mat_ss->UnComplete();

@@ -64,7 +64,7 @@ void SSI::SSI_Base::ReadRestart( int restart)
 {
   if (restart)
   {
-    scatra_->ScaTraField().ReadRestart(restart);
+    scatra_->ScaTraField()->ReadRestart(restart);
     structure_->ReadRestart(restart);
 
     SetTimeStep(structure_->GetTime(), restart);

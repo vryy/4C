@@ -23,16 +23,26 @@ Maintainer: Georg Bauer
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_elch.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include "../drt_scatra/scatra_resulttest.H"
+
+// general time integration schemes
 #include "../drt_scatra/scatra_timint_stat.H"
 #include "../drt_scatra/scatra_timint_ost.H"
 #include "../drt_scatra/scatra_timint_bdf2.H"
 #include "../drt_scatra/scatra_timint_genalpha.H"
+
+// loma specific files
 #include "../drt_scatra/scatra_timint_loma_genalpha.H"
 #include "../drt_scatra/scatra_timint_loma_ost.H"
-//#include "../drt_scatra/scatra_timint_loma_bdf2.H"
+#include "../drt_scatra/scatra_timint_loma_bdf2.H"
+
+// elch specific files
+#include "../drt_scatra/scatra_timint_elch_scheme.H"
+
+// level set specific files
 #include "../drt_levelset/levelset_timint_ost.H"
 #include "../drt_levelset/levelset_timint_stat.H"
-#include "../drt_scatra/scatra_resulttest.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -158,14 +168,84 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // ----------------Eulerian or ALE formulation of transport equation(s)
   extraparams->set<bool>("isale",isale);
 
-  // -------------------sublist for electrochemistry-specific parameters
-  if (probtype == prb_elch)
-  {
-    // temperature of electrolyte solution
-    extraparams->set<double>("TEMPERATURE",prbdyn.get<double>("TEMPERATURE"));
+  // ------------------------------------get also fluid turbulence sublist
+  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  extraparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
+  extraparams->sublist("SUBGRID VISCOSITY")=fdyn.sublist("SUBGRID VISCOSITY");
+  extraparams->sublist("MULTIFRACTAL SUBGRID SCALES")=fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
+  extraparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
 
-    // we provide all available electrochemistry-related parameters
-    extraparams->sublist("ELCH CONTROL")=prbdyn;
+  // -------------------------------------------------------------------
+  // algorithm construction depending on
+  // respective time-integration (or stationary) scheme
+  // -------------------------------------------------------------------
+  INPAR::SCATRA::TimeIntegrationScheme timintscheme =
+    DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
+
+  if (probtype != prb_level_set and probtype != prb_combust and probtype != prb_loma and probtype != prb_elch)
+  {
+    switch(timintscheme)
+    {
+    case INPAR::SCATRA::timeint_stationary:
+    {
+      // create instance of time integration class (call the constructor)
+      scatra_ = Teuchos::rcp(new SCATRA::TimIntStationary(actdis, solver, scatratimeparams, extraparams, output));
+      break;
+    }
+    case INPAR::SCATRA::timeint_one_step_theta:
+    {
+      // create instance of time integration class (call the constructor)
+      scatra_ = Teuchos::rcp(new SCATRA::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
+      break;
+    }
+    case INPAR::SCATRA::timeint_bdf2:
+    {
+      // create instance of time integration class (call the constructor)
+      scatra_ = Teuchos::rcp(new SCATRA::TimIntBDF2(actdis, solver, scatratimeparams,extraparams, output));
+      break;
+    }
+    case INPAR::SCATRA::timeint_gen_alpha:
+    {
+      // create instance of time integration class (call the constructor)
+      scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
+      break;
+    }
+    default:
+      dserror("Unknown time-integration scheme for scalar transport problem");
+      break;
+    }// switch(timintscheme)
+  }
+  else if (probtype == prb_loma)
+  {
+    Teuchos::RCP<Teuchos::ParameterList> lomaparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LOMAControlParams()));
+    switch(timintscheme)
+    {
+      case INPAR::SCATRA::timeint_gen_alpha:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::TimIntLomaGenAlpha(actdis, solver, lomaparams, scatratimeparams,extraparams, output));
+        break;
+      }
+      case INPAR::SCATRA::timeint_one_step_theta:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::TimIntLomaOST(actdis, solver, lomaparams, scatratimeparams,extraparams, output));
+        break;
+      }
+//      case INPAR::SCATRA::timeint_bdf2:
+//      {
+//        // create instance of time integration class (call the constructor)
+//        scatra_ = Teuchos::rcp(new SCATRA::TimIntLomaBDF2(actdis, solver, lomaparams, scatratimeparams,extraparams, output));
+//        break;
+//      }
+      default:
+        dserror("Unknown time integration scheme for loMa!");
+        break;
+    }
+  }
+  else if (probtype == prb_elch)
+  {
+    Teuchos::RCP<Teuchos::ParameterList> elchparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
 
     // create a 2nd solver for block-preconditioning if chosen from input
     if (DRT::INPUT::IntegralValue<int>(scatradyn,"BLOCKPRECOND"))
@@ -188,154 +268,98 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
       // is trivial to be built using a constant vector
       Teuchos::ParameterList& inv1 = solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
       inv1.sublist("NodalBlockInformation") = solver->Params().sublist("NodalBlockInformation");
+    }
 
-
-      // print unused solver parameters to screen
-      /*
-      if (actdis->Comm().MyPID()==0)
+    switch(timintscheme)
+    {
+      case INPAR::SCATRA::timeint_one_step_theta:
       {
-        const Teuchos::ParameterList& solverparams2
-        = DRT::Problem::Instance()->SolverParams(linsolvernumber_simpler);
-        DRT::INPUT::PrintDefaultParameters(IO::cout, solverparams2);
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::ScaTraTimIntElchOST(actdis, solver, elchparams, scatratimeparams, extraparams, output));
+        break;
       }
-      */
+      case INPAR::SCATRA::timeint_bdf2:
+      {
+         // create instance of time integration class (call the constructor)
+         scatra_ = Teuchos::rcp(new SCATRA::ScaTraTimIntElchBDF2(actdis, solver, elchparams, scatratimeparams, extraparams, output));
+         break;
+      }
+      case INPAR::SCATRA::timeint_gen_alpha:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::ScaTraTimIntElchGenAlpha(actdis, solver, elchparams, scatratimeparams, extraparams, output));
+        break;
+      }
+      case INPAR::SCATRA::timeint_stationary:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::ScaTraTimIntElchStationary(actdis, solver, elchparams,  scatratimeparams, extraparams, output));
+        break;
+      }
+      default:
+        dserror("Unknown time integration scheme for loMa!");
+        break;
     }
   }
+  else if (probtype == prb_level_set or probtype == prb_combust)
+  {
+    Teuchos::RCP<Teuchos::ParameterList> lsparams = Teuchos::null;
+    if (probtype == prb_level_set)
+      lsparams = Teuchos::rcp(new Teuchos::ParameterList(prbdyn));
+    else
+    {
+      lsparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LevelSetControl()));
+      // overrule certain parameters for coupled problems
+      // this has already been ensured for scatratimeparams, but has also been ensured for the level-set
+      // parameter which are potentially handled down to the particle algorithm in a hybrid approach
+      // time step size
+      lsparams->set<double>   ("TIMESTEP"    ,prbdyn.get<double>("TIMESTEP"));
+      // maximum simulation time
+      lsparams->set<double>   ("MAXTIME"     ,prbdyn.get<double>("MAXTIME"));
+      // maximum number of timesteps
+      lsparams->set<int>      ("NUMSTEP"     ,prbdyn.get<int>("NUMSTEP"));
+      // restart
+      lsparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
+      // solution output
+      lsparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
+    }
 
-  // ------------------------------------get also fluid turbulence sublist
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
-  extraparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
-  extraparams->sublist("SUBGRID VISCOSITY")=fdyn.sublist("SUBGRID VISCOSITY");
-  extraparams->sublist("MULTIFRACTAL SUBGRID SCALES")=fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
-  extraparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
+    switch(timintscheme)
+    {
+      case INPAR::SCATRA::timeint_one_step_theta:
+      {
+        // create instance of time integration class (call the constructor)
+       scatra_ = Teuchos::rcp(new SCATRA::LevelSetTimIntOneStepTheta(actdis, solver, lsparams, scatratimeparams, extraparams,output));
+        break;
+      }
+      case INPAR::SCATRA::timeint_stationary:
+      {
+        // create instance of time integration class (call the constructor)
+        if (probtype != prb_level_set)
+          scatra_ = Teuchos::rcp(new SCATRA::LevelSetTimIntStationary(actdis, solver, lsparams, scatratimeparams,extraparams, output));
+        else
+          dserror("Stationary time integration scheme only supported for coupled level-set problems!");
+        break;
+      }
+      case INPAR::SCATRA::timeint_gen_alpha:
+      {
+        if (probtype == prb_combust)
+        {
+          std::cout << "\n\n\n WARNING: Level set algorithm does not yet support gen-alpha. You thus get a standard Scatra!\n\n\n" << std::endl;
+          // create instance of time integration class (call the constructor)
+          scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
+        }
+        else dserror("Unknown time-integration scheme for level-set problem");
+        break;
+      }
+      default:
+        dserror("Unknown time-integration scheme for level-set problem");
+        break;
+    }// switch(timintscheme)
+  }
 
-  // -------------------------------------------------------------------
-  // algorithm construction depending on
-  // respective time-integration (or stationary) scheme
-  // -------------------------------------------------------------------
-   INPAR::SCATRA::TimeIntegrationScheme timintscheme =
-     DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
-
-   if (probtype != prb_level_set and probtype != prb_combust and probtype != prb_loma)
-   {
-     switch(timintscheme)
-     {
-     case INPAR::SCATRA::timeint_stationary:
-     {
-       // create instance of time integration class (call the constructor)
-       scatra_ = Teuchos::rcp(new SCATRA::TimIntStationary(actdis, solver, scatratimeparams, extraparams, output));
-       break;
-     }
-     case INPAR::SCATRA::timeint_one_step_theta:
-     {
-       // create instance of time integration class (call the constructor)
-       scatra_ = Teuchos::rcp(new SCATRA::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
-       break;
-     }
-     case INPAR::SCATRA::timeint_bdf2:
-     {
-       // create instance of time integration class (call the constructor)
-       scatra_ = Teuchos::rcp(new SCATRA::TimIntBDF2(actdis, solver, scatratimeparams,extraparams, output));
-       break;
-     }
-     case INPAR::SCATRA::timeint_gen_alpha:
-     {
-       // create instance of time integration class (call the constructor)
-       scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
-       break;
-     }
-     default:
-       dserror("Unknown time-integration scheme for scalar transport problem");
-       break;
-     }// switch(timintscheme)
-   }
-   else if (probtype == prb_loma)
-   {
-     Teuchos::RCP<Teuchos::ParameterList> lomaparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LOMAControlParams()));
-     switch(timintscheme)
-     {
-       case INPAR::SCATRA::timeint_gen_alpha:
-       {
-         // create instance of time integration class (call the constructor)
-         scatra_ = Teuchos::rcp(new SCATRA::TimIntLomaGenAlpha(actdis, solver, lomaparams, scatratimeparams,extraparams, output));
-         break;
-       }
-       case INPAR::SCATRA::timeint_one_step_theta:
-       {
-         // create instance of time integration class (call the constructor)
-         scatra_ = Teuchos::rcp(new SCATRA::TimIntLomaOST(actdis, solver, lomaparams, scatratimeparams,extraparams, output));
-         break;
-       }
-//       case INPAR::SCATRA::timeint_bdf2:
-//              {
-//                // create instance of time integration class (call the constructor)
-//                scatra_ = Teuchos::rcp(new SCATRA::TimIntLomaBDF2(actdis, solver, lomaparams, scatratimeparams,extraparams, output));
-//                break;
-//              }
-       default:
-         dserror("Unknown time integration scheme for loMa!");
-         break;
-     }
-   }
-   else if (probtype == prb_level_set or probtype == prb_combust)
-   {
-     Teuchos::RCP<Teuchos::ParameterList> lsparams = Teuchos::null;
-     if (probtype == prb_level_set)
-       lsparams = Teuchos::rcp(new Teuchos::ParameterList(prbdyn));
-     else
-     {
-       lsparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LevelSetControl()));
-       // overrule certain parameters for coupled problems
-       // this has already been ensured for scatratimeparams, but has also been ensured for the level-set
-       // parameter which are potentially handled down to the particle algorithm in a hybrid approach
-       // time step size
-       lsparams->set<double>   ("TIMESTEP"    ,prbdyn.get<double>("TIMESTEP"));
-       // maximum simulation time
-       lsparams->set<double>   ("MAXTIME"     ,prbdyn.get<double>("MAXTIME"));
-       // maximum number of timesteps
-       lsparams->set<int>      ("NUMSTEP"     ,prbdyn.get<int>("NUMSTEP"));
-       // restart
-       lsparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
-       // solution output
-       lsparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
-     }
-
-     switch(timintscheme)
-     {
-       case INPAR::SCATRA::timeint_one_step_theta:
-       {
-         // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::rcp(new SCATRA::LevelSetTimIntOneStepTheta(actdis, solver, lsparams, scatratimeparams, extraparams,output));
-         break;
-       }
-       case INPAR::SCATRA::timeint_stationary:
-       {
-         // create instance of time integration class (call the constructor)
-         if (probtype != prb_level_set)
-           scatra_ = Teuchos::rcp(new SCATRA::LevelSetTimIntStationary(actdis, solver, lsparams, scatratimeparams,extraparams, output));
-         else
-           dserror("Stationary time integration scheme only supported for coupled level-set problems!");
-         break;
-       }
-       case INPAR::SCATRA::timeint_gen_alpha:
-       {
-         if (probtype == prb_combust)
-         {
-           std::cout << "\n\n\n WARNING: Level set algorithm does not yet support gen-alpha. You thus get a standard Scatra!\n\n\n" << std::endl;
-           // create instance of time integration class (call the constructor)
-           scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
-         }
-         else dserror("Unknown time-integration scheme for level-set problem");
-         break;
-       }
-       default:
-         dserror("Unknown time-integration scheme for level-set problem");
-         break;
-     }// switch(timintscheme)
-   }
-
-   // initialize algorithm for specific time-integration scheme
-   scatra_->Init();
+  // initialize algorithm for specific time-integration scheme
+  scatra_->Init();
 
   return;
 
@@ -343,22 +367,9 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::ScaTraBaseAlgorithm::~ScaTraBaseAlgorithm()
-{
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntImpl& ADAPTER::ScaTraBaseAlgorithm::ScaTraField()
-{
-  return *scatra_;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTest()
 {
-  return Teuchos::rcp(new SCATRA::ScaTraResultTest(*scatra_));
+  return Teuchos::rcp(new SCATRA::ScaTraResultTest(scatra_));
 }
 
 

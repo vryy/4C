@@ -240,7 +240,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatMixFrac(
   const Teuchos::RCP<const MAT::MixFrac>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::MixFrac>(material);
 
-  dsassert(my::numdofpernode_==1,"more than 1 dof per node for mixture-fraction material");
+  if(my::numdofpernode_!=1)
+    dserror("more than 1 dof per node for progress-variable material!");
 
   // compute mixture fraction at n+1 or n+alpha_F
   const double mixfracnp = my::funct_.Dot(my::ephinp_[0]);
@@ -300,7 +301,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
   const Teuchos::RCP<const MAT::Sutherland>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material);
 
-  dsassert(my::numdofpernode_==1,"more than 1 dof per node for Sutherland material");
+  if(my::numdofpernode_!=1)
+    dserror("more than 1 dof per node for progress-variable material!");
 
   // get specific heat capacity at constant pressure
   shc_ = actmat->Shc();
@@ -363,7 +365,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
   const Teuchos::RCP<const MAT::ArrheniusPV>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ArrheniusPV>(material);
 
-  dsassert(my::numdofpernode_==1,"more than 1 dof per node for progress-variable material");
+  if(my::numdofpernode_!=1)
+    dserror("more than 1 dof per node for progress-variable material!");
 
   // get progress variable at n+1 or n+alpha_F
   const double provarnp = my::funct_.Dot(my::ephinp_[0]);
@@ -539,6 +542,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
 
   dsassert(my::numdofpernode_==1,"more than 1 dof per node for progress-variable material");
 
+  if(my::numdofpernode_!=1)
+    dserror("more than 1 dof per node for progress-variable material!");
+
   // get progress variable at n+1 or n+alpha_F
   const double provarnp = my::funct_.Dot(my::ephinp_[0]);
 
@@ -609,7 +615,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatYoghurt(
   const Teuchos::RCP<const MAT::Yoghurt>& actmat
      = Teuchos::rcp_dynamic_cast<const MAT::Yoghurt>(material);
 
-  dsassert(my::numdofpernode_==1,"more than 1 dof per node for Yoghurt material");
+  if(my::numdofpernode_!=1)
+    dserror("more than 1 dof per node for progress-variable material!");
 
   // get specific heat capacity at constant pressure
   shc_ = actmat->Shc();

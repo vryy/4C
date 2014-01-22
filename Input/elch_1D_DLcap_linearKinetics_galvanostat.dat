@@ -36,7 +36,7 @@ WRITEFLUX                       totalflux_boundary
 OUTMEAN                         Yes
 SKIPINITDER                     Yes
 INITPOTCALC                     no
-SCATRATYPE                      Elch_ENC
+SCATRATYPE                      Elch
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10
 ABSTOLRES                       1e-20
@@ -50,6 +50,7 @@ DEFINITION_TAU                  Zero
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ------------------------------------------------------ELCH CONTROL
+ELCHTYPE                        DiffCond
 ITEMAX                          10
 MAXTIME                         0.02
 NUMSTEP                         20

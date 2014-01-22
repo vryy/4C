@@ -115,6 +115,8 @@ protected:
   /// private Constructor since we are a Singleton.
   ScaTraEleParameter();
 
+  bool set_general_scatra_parameter_;
+
   /*--------------------------*/
   //! @name general parameters
   /*--------------------------*/

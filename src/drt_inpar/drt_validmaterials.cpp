@@ -396,6 +396,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"A","constant for diffusion potential in current equation");
     AddNamedReal(m,"B","constant for diffusion potential in current equation");
     AddNamedReal(m,"C","constant for diffusion potential in current equation");
+    AddNamedBool(m,"CURSOLVAR","bool defining if current is a solution variable",false,true);
 
     AppendMaterialDefinition(matlist,m);
   }

@@ -545,7 +545,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   }
 
 
-
+  //TODO: SCATRA_ELE_CLEANING: Do we need this function
   case SCATRA::get_material_parameters:
   {
     // get the material
@@ -563,7 +563,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   }
 
 
-
+  //TODO: SCATRA_ELE_CLEANING: mycard, Christobal
   case SCATRA::time_update_material:
   {
     std::vector<Teuchos::RCP<MAT::Myocard> > updatemat;
@@ -662,7 +662,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     break;
 
   }
-
   case SCATRA::set_material_internal_state:
   {
     // NOTE: add integral values only for elements which are NOT ghosted!
@@ -717,125 +716,129 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
 
 
+// TODO:
+//  case SCATRA::calc_error:
+//  {
+//    // check if length suffices
+//    if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
+//
+//    // set specific parameter used in diffusion conduction formulation
+//    // this method need to be located inside ELCH
+//    DiffCondParams(ele, params);
+//
+//    // need current solution
+//    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+//    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+//
+//    // extract local values from the global vector
+//    std::vector<double> myphinp(lm.size());
+//    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+//
+//    // fill element arrays
+//    for (int i=0;i<nen_;++i)
+//    {
+//      // split for each transported scalar, insert into element arrays
+//      for (int k = 0; k< numscal_; ++k)
+//      {
+//        ephinp_[k](i) = myphinp[k+(i*numdofpernode_)];
+//      }
+//      // get values for el. potential at element nodes
+//      epotnp_(i) = myphinp[i*numdofpernode_+numscal_];
+//    } // for i
+//
+//    CalErrorComparedToAnalytSolution(
+//      ele,
+//      scatratype,
+//      params,
+//      elevec1_epetra);
+//
+//    break;
+//  }
 
-  case SCATRA::calc_error:
-  {
-    // check if length suffices
-    if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
 
-    // set specific parameter used in diffusion conduction formulation
-    // this method need to be located inside ELCH
-    DiffCondParams(ele, params);
-
-    // need current solution
-    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-
-    // extract local values from the global vector
-    std::vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-    // fill element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      // split for each transported scalar, insert into element arrays
-      for (int k = 0; k< numscal_; ++k)
-      {
-        ephinp_[k](i) = myphinp[k+(i*numdofpernode_)];
-      }
-      // get values for el. potential at element nodes
-      epotnp_(i) = myphinp[i*numdofpernode_+numscal_];
-    } // for i
-
-    CalErrorComparedToAnalytSolution(
-      ele,
-      scatratype,
-      params,
-      elevec1_epetra);
-
-    break;
-  }
-  case SCATRA::calc_elch_conductivity:
-  {
-    if(is_elch_)
-    {
-      // set specific parameter used in diffusion conduction formulation
-      // this method need to be located inside ELCH
-      DiffCondParams(ele, params);
-
-      // calculate conductivity of electrolyte solution
-      const double frt = params.get<double>("frt");
-      // extract local values from the global vector
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      std::vector<double> myphinp(lm.size());
-      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-      // fill element arrays
-      for (int i=0;i<nen_;++i)
-      {
-        for (int k = 0; k< numscal_; ++k)
-        {
-          // split for each transported scalar, insert into element arrays
-          ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
-        }
-      } // for i
-
-      // global element of processor 0 is printed to the screen
-      if(discretization.Comm().MyPID()==0)
-        std::cout << "Electrolyte conductivity evaluated at global element " << ele->Id() << ":" << std::endl;
-
-      CalculateConductivity(ele,frt,scatratype,elevec1_epetra);
-    }
-    else // conductivity = diffusivity for a electric potential field
-    {
-     // cout << "TEST CRISTOBAL evaluate calc_elch_conductivity" << endl;
-
-      GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
-      elevec1_epetra(0)=diffus_[0];
-      elevec1_epetra(1)=diffus_[0];
-    }
-
-    break;
-  }
-  case SCATRA::calc_elch_electrode_kinetics:
-  {
-    dserror(" ");
-    break;
-  }
+//  case SCATRA::calc_elch_conductivity:
+//  {
+//    if(is_elch_)
+//    {
+//      // set specific parameter used in diffusion conduction formulation
+//      // this method need to be located inside ELCH
+//      DiffCondParams(ele, params);
+//
+//      // calculate conductivity of electrolyte solution
+//      const double frt = params.get<double>("frt");
+//      // extract local values from the global vector
+//      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+//      std::vector<double> myphinp(lm.size());
+//      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+//
+//      // fill element arrays
+//      for (int i=0;i<nen_;++i)
+//      {
+//        for (int k = 0; k< numscal_; ++k)
+//        {
+//          // split for each transported scalar, insert into element arrays
+//          ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+//        }
+//      } // for i
+//
+//      // global element of processor 0 is printed to the screen
+//      if(discretization.Comm().MyPID()==0)
+//        std::cout << "Electrolyte conductivity evaluated at global element " << ele->Id() << ":" << std::endl;
+//
+//      CalculateConductivity(ele,frt,scatratype,elevec1_epetra);
+//    }
+//    else // conductivity = diffusivity for a electric potential field
+//    {
+//     // cout << "TEST CRISTOBAL evaluate calc_elch_conductivity" << endl;
+//
+//      GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
+//      elevec1_epetra(0)=diffus_[0];
+//      elevec1_epetra(1)=diffus_[0];
+//    }
+//
+//    break;
+//  }
+//
+//  case SCATRA::calc_elch_electrode_kinetics:
+//  {
+//    dserror(" ");
+//    break;
+//  }
   // calculate initial electric potential field caused by initial ion concentrations
-  case SCATRA::calc_elch_initial_potential:
-  {
-    // set specific parameter used in diffusion conduction formulation
-    // this method need to be located inside ELCH
-    DiffCondParams(ele, params);
+//  case SCATRA::calc_elch_initial_potential:
+//  {
+//    // set specific parameter used in diffusion conduction formulation
+//    // this method need to be located inside ELCH
+//    DiffCondParams(ele, params);
+//
+//    // need initial field -> extract local values from the global vector
+//    Teuchos::RCP<const Epetra_Vector> phi0 = discretization.GetState("phi0");
+//    if (phi0==Teuchos::null) dserror("Cannot get state vector 'phi0'");
+//    std::vector<double> myphi0(lm.size());
+//    DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
+//
+//    // fill element arrays
+//    for (int i=0;i<nen_;++i)
+//    {
+//      for (int k = 0; k< numscal_; ++k)
+//      {
+//        // split for each transported scalar, insert into element arrays
+//        ephinp_[k](i,0) = myphi0[k+(i*numdofpernode_)];
+//      }
+//      // get values for el. potential at element nodes
+//      epotnp_(i) = myphi0[i*numdofpernode_+numscal_];
+//    } // for i
+//    const double frt = params.get<double>("frt");
+//
+//    if(diffcond_==false)
+//      CalculateElectricPotentialField(ele,frt,scatratype,elemat1_epetra,elevec1_epetra);
+//    else
+//      CalculateElectricPotentialField(ele,frt,scatratype,elemat1_epetra,elevec1_epetra,newman_);
+//
+//    break;
+//  }
 
-    // need initial field -> extract local values from the global vector
-    Teuchos::RCP<const Epetra_Vector> phi0 = discretization.GetState("phi0");
-    if (phi0==Teuchos::null) dserror("Cannot get state vector 'phi0'");
-    std::vector<double> myphi0(lm.size());
-    DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
-
-    // fill element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephinp_[k](i,0) = myphi0[k+(i*numdofpernode_)];
-      }
-      // get values for el. potential at element nodes
-      epotnp_(i) = myphi0[i*numdofpernode_+numscal_];
-    } // for i
-    const double frt = params.get<double>("frt");
-
-    if(diffcond_==false)
-      CalculateElectricPotentialField(ele,frt,scatratype,elemat1_epetra,elevec1_epetra);
-    else
-      CalculateElectricPotentialField(ele,frt,scatratype,elemat1_epetra,elevec1_epetra,newman_);
-
-    break;
-  }
-
+  //TODO: SCATRA_ELE_CLEANING: Mirella
   case SCATRA::calc_integr_reaction:
   {
     // NOTE: add integral values only for elements which are NOT ghosted!
@@ -2388,238 +2391,238 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakFormRHS(
 
 
 
-/*---------------------------------------------------------------------*
-  |  calculate error compared to analytical solution           gjb 10/08|
-  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
-  const DRT::Element*                   ele,
-  const enum INPAR::SCATRA::ScaTraType  scatratype,
-  Teuchos::ParameterList&               params,
-  Epetra_SerialDenseVector&             errors
-  )
-{
-  //at the moment, there is only one analytical test problem available!
-  if (DRT::INPUT::get<SCATRA::Action>(params,"action") != SCATRA::calc_error)
-    dserror("How did you get here?");
-
-  // -------------- prepare common things first ! -----------------------
-  // in the ALE case add nodal displacements
-  if (is_ale_) dserror("No ALE for Kwok & Wu error calculation allowed.");
-
-  // set constants for analytical solution
-  const double t = params.get<double>("total time");
-  const double frt = params.get<double>("frt");
-
-  // get material constants
-  GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
-
-  if(diffcond_==true)
-  {
-    dserror("Analytical solution for Kwok and Wu is only valid for dilute electrolyte solutions!!\n"
-            "Compute corresponding transport properties on your on and activate it here");
-
-    diffus_[0] = 2.0e-3;
-    diffus_[1] = 4.0e-3;
-    valence_[0] = 1.0;
-    valence_[1] = -2.0;
-  }
-
-  // integrations points and weights
-  // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
-
-  const INPAR::SCATRA::CalcError errortype = DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
-  switch(errortype)
-  {
-  case INPAR::SCATRA::calcerror_Kwok_Wu:
-  {
-    //   References:
-    //   Kwok, Yue-Kuen and Wu, Charles C. K.
-    //   "Fractional step algorithm for solving a multi-dimensional diffusion-migration equation"
-    //   Numerical Methods for Partial Differential Equations
-    //   1995, Vol 11, 389-397
-
-    //   G. Bauer, V. Gravemeier, W.A. Wall,
-    //   A 3D finite element approach for the coupled numerical simulation of
-    //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
-
-    //if (numscal_ != 2)
-    //  dserror("Numscal_ != 2 for desired error calculation.");
-
-    // working arrays
-    double                  potint(0.0);
-    LINALG::Matrix<2,1>     conint(true);
-    LINALG::Matrix<nsd_,1>  xint(true);
-    LINALG::Matrix<2,1>     c(true);
-    double                  deltapot(0.0);
-    LINALG::Matrix<2,1>     deltacon(true);
-
-    // start loop over integration points
-    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
-    {
-      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-      // get values of all transported scalars at integration point
-      for (int k=0; k<numscal_; ++k)
-      {
-        conint(k) = funct_.Dot(ephinp_[k]);
-      }
-
-      // get el. potential solution at integration point
-      potint = funct_.Dot(epotnp_);
-
-      // get global coordinate of integration point
-      xint.Multiply(xyze_,funct_);
-
-      // compute various constants
-      const double d = frt*((diffus_[0]*valence_[0]) - (diffus_[1]*valence_[1]));
-      if (abs(d) == 0.0) dserror("division by zero");
-      const double D = frt*((valence_[0]*diffus_[0]*diffus_[1]) - (valence_[1]*diffus_[1]*diffus_[0]))/d;
-
-      // compute analytical solution for cation and anion concentrations
-      const double A0 = 2.0;
-      const double m = 1.0;
-      const double n = 2.0;
-      const double k = 3.0;
-      const double A_mnk = 1.0;
-      double expterm;
-      double c_0_0_0_t;
-
-      if (nsd_==3)
-      {
-        expterm = exp((-D)*(m*m + n*n + k*k)*t*PI*PI);
-        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*expterm);
-        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n + k*k)*t*PI*PI));
-      }
-      else if (nsd_==2)
-      {
-        expterm = exp((-D)*(m*m + n*n)*t*PI*PI);
-        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1)))*expterm);
-        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n)*t*PI*PI));
-      }
-      else if (nsd_==1)
-      {
-        expterm = exp((-D)*(m*m)*t*PI*PI);
-        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0)))*expterm);
-        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m)*t*PI*PI));
-      }
-      else
-        dserror("Illegal number of space dimensions for analyt. solution: %d",nsd_);
-
-      // compute analytical solution for anion concentration
-      c(1) = (-valence_[0]/valence_[1])* c(0);
-      // compute analytical solution for el. potential
-      const double pot = ((diffus_[1]-diffus_[0])/d) * log(c(0)/c_0_0_0_t);
-
-      // compute differences between analytical solution and numerical solution
-      deltapot = potint - pot;
-      deltacon.Update(1.0,conint,-1.0,c);
-
-      // add square to L2 error
-      errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
-      errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
-      errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
-
-    } // end of loop over integration points
-  } // Kwok and Wu
-  break;
-  case INPAR::SCATRA::calcerror_cylinder:
-  {
-    // two-ion system with Butler-Volmer kinetics between two concentric cylinders
-    //   G. Bauer, V. Gravemeier, W.A. Wall,
-    //   A 3D finite element approach for the coupled numerical simulation of
-    //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
-
-    if (numscal_ != 2)
-      dserror("Numscal_ != 2 for desired error calculation.");
-
-    // working arrays
-    LINALG::Matrix<2,1>     conint(true);
-    LINALG::Matrix<nsd_,1>  xint(true);
-    LINALG::Matrix<2,1>     c(true);
-    LINALG::Matrix<2,1>     deltacon(true);
-
-    // some constants that are needed
-    const double c0_inner = 0.6147737641011396;
-    const double c0_outer = 1.244249192148809;
-    const double r_inner = 1.0;
-    const double r_outer = 2.0;
-    const double pot_inner = 2.758240847314454;
-    const double b = log(r_outer/r_inner);
-
-    // start loop over integration points
-    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
-    {
-      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-      // get values of all transported scalars at integration point
-      for (int k=0; k<numscal_; ++k)
-      {
-        conint(k) = funct_.Dot(ephinp_[k]);
-      }
-
-      // get el. potential solution at integration point
-      const double potint = funct_.Dot(epotnp_);
-
-      // get global coordinate of integration point
-      xint.Multiply(xyze_,funct_);
-
-      // evaluate analytical solution for cation concentration at radial position r
-      if (nsd_==3)
-      {
-        const double r = sqrt(xint(0)*xint(0) + xint(1)*xint(1));
-        c(0) = c0_inner + ((c0_outer- c0_inner)*(log(r) - log(r_inner))/b);
-      }
-      else
-        dserror("Illegal number of space dimensions for analyt. solution: %d",nsd_);
-
-      // compute analytical solution for anion concentration
-      c(1) = (-valence_[0]/valence_[1])* c(0);
-      // compute analytical solution for el. potential
-      const double d = frt*((diffus_[0]*valence_[0]) - (diffus_[1]*valence_[1]));
-      if (abs(d) == 0.0) dserror("division by zero");
-      // reference value + ohmic resistance + concentration potential
-      const double pot = pot_inner + log(c(0)/c0_inner); // + (((diffus_[1]-diffus_[0])/d) * log(c(0)/c0_inner));
-
-      // compute differences between analytical solution and numerical solution
-      double deltapot = potint - pot;
-      deltacon.Update(1.0,conint,-1.0,c);
-
-      // add square to L2 error
-      errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
-      errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
-      errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
-
-    } // end of loop over integration points
-  } // concentric cylinders
-  break;
-  case INPAR::SCATRA::calcerror_electroneutrality:
-  {
-    // start loop over integration points
-    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
-    {
-      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-      // get values of transported scalars at integration point
-      // and compute electroneutrality
-      double deviation(0.0);
-      for (int k=0; k<numscal_; ++k)
-      {
-        const double conint_k = funct_.Dot(ephinp_[k]);
-        deviation += valence_[k]*conint_k;
-      }
-
-    // add square to L2 error
-    errors[0] += deviation*deviation*fac;
-    } // loop over integration points
-  }
-  break;
-  default: dserror("Unknown analytical solution!"); break;
-  } //switch(errortype)
-
-  return;
-} // ScaTraImpl::CalErrorComparedToAnalytSolution
+///*---------------------------------------------------------------------*
+//  |  calculate error compared to analytical solution           gjb 10/08|
+//  *---------------------------------------------------------------------*/
+//template <DRT::Element::DiscretizationType distype>
+//void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
+//  const DRT::Element*                   ele,
+//  const enum INPAR::SCATRA::ScaTraType  scatratype,
+//  Teuchos::ParameterList&               params,
+//  Epetra_SerialDenseVector&             errors
+//  )
+//{
+//  //at the moment, there is only one analytical test problem available!
+//  if (DRT::INPUT::get<SCATRA::Action>(params,"action") != SCATRA::calc_error)
+//    dserror("How did you get here?");
+//
+//  // -------------- prepare common things first ! -----------------------
+//  // in the ALE case add nodal displacements
+//  if (is_ale_) dserror("No ALE for Kwok & Wu error calculation allowed.");
+//
+//  // set constants for analytical solution
+//  const double t = params.get<double>("total time");
+//  const double frt = params.get<double>("frt");
+//
+//  // get material constants
+//  GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
+//
+//  if(diffcond_==true)
+//  {
+//    dserror("Analytical solution for Kwok and Wu is only valid for dilute electrolyte solutions!!\n"
+//            "Compute corresponding transport properties on your on and activate it here");
+//
+//    diffus_[0] = 2.0e-3;
+//    diffus_[1] = 4.0e-3;
+//    valence_[0] = 1.0;
+//    valence_[1] = -2.0;
+//  }
+//
+//  // integrations points and weights
+//  // more GP than usual due to (possible) cos/exp fcts in analytical solutions
+//  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
+//
+//  const INPAR::SCATRA::CalcError errortype = DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
+//  switch(errortype)
+//  {
+//  case INPAR::SCATRA::calcerror_Kwok_Wu:
+//  {
+//    //   References:
+//    //   Kwok, Yue-Kuen and Wu, Charles C. K.
+//    //   "Fractional step algorithm for solving a multi-dimensional diffusion-migration equation"
+//    //   Numerical Methods for Partial Differential Equations
+//    //   1995, Vol 11, 389-397
+//
+//    //   G. Bauer, V. Gravemeier, W.A. Wall,
+//    //   A 3D finite element approach for the coupled numerical simulation of
+//    //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
+//
+//    //if (numscal_ != 2)
+//    //  dserror("Numscal_ != 2 for desired error calculation.");
+//
+//    // working arrays
+//    double                  potint(0.0);
+//    LINALG::Matrix<2,1>     conint(true);
+//    LINALG::Matrix<nsd_,1>  xint(true);
+//    LINALG::Matrix<2,1>     c(true);
+//    double                  deltapot(0.0);
+//    LINALG::Matrix<2,1>     deltacon(true);
+//
+//    // start loop over integration points
+//    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+//    {
+//      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+//
+//      // get values of all transported scalars at integration point
+//      for (int k=0; k<numscal_; ++k)
+//      {
+//        conint(k) = funct_.Dot(ephinp_[k]);
+//      }
+//
+//      // get el. potential solution at integration point
+//      potint = funct_.Dot(epotnp_);
+//
+//      // get global coordinate of integration point
+//      xint.Multiply(xyze_,funct_);
+//
+//      // compute various constants
+//      const double d = frt*((diffus_[0]*valence_[0]) - (diffus_[1]*valence_[1]));
+//      if (abs(d) == 0.0) dserror("division by zero");
+//      const double D = frt*((valence_[0]*diffus_[0]*diffus_[1]) - (valence_[1]*diffus_[1]*diffus_[0]))/d;
+//
+//      // compute analytical solution for cation and anion concentrations
+//      const double A0 = 2.0;
+//      const double m = 1.0;
+//      const double n = 2.0;
+//      const double k = 3.0;
+//      const double A_mnk = 1.0;
+//      double expterm;
+//      double c_0_0_0_t;
+//
+//      if (nsd_==3)
+//      {
+//        expterm = exp((-D)*(m*m + n*n + k*k)*t*PI*PI);
+//        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*expterm);
+//        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n + k*k)*t*PI*PI));
+//      }
+//      else if (nsd_==2)
+//      {
+//        expterm = exp((-D)*(m*m + n*n)*t*PI*PI);
+//        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1)))*expterm);
+//        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n)*t*PI*PI));
+//      }
+//      else if (nsd_==1)
+//      {
+//        expterm = exp((-D)*(m*m)*t*PI*PI);
+//        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0)))*expterm);
+//        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m)*t*PI*PI));
+//      }
+//      else
+//        dserror("Illegal number of space dimensions for analyt. solution: %d",nsd_);
+//
+//      // compute analytical solution for anion concentration
+//      c(1) = (-valence_[0]/valence_[1])* c(0);
+//      // compute analytical solution for el. potential
+//      const double pot = ((diffus_[1]-diffus_[0])/d) * log(c(0)/c_0_0_0_t);
+//
+//      // compute differences between analytical solution and numerical solution
+//      deltapot = potint - pot;
+//      deltacon.Update(1.0,conint,-1.0,c);
+//
+//      // add square to L2 error
+//      errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
+//      errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
+//      errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
+//
+//    } // end of loop over integration points
+//  } // Kwok and Wu
+//  break;
+//  case INPAR::SCATRA::calcerror_cylinder:
+//  {
+//    // two-ion system with Butler-Volmer kinetics between two concentric cylinders
+//    //   G. Bauer, V. Gravemeier, W.A. Wall,
+//    //   A 3D finite element approach for the coupled numerical simulation of
+//    //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
+//
+//    if (numscal_ != 2)
+//      dserror("Numscal_ != 2 for desired error calculation.");
+//
+//    // working arrays
+//    LINALG::Matrix<2,1>     conint(true);
+//    LINALG::Matrix<nsd_,1>  xint(true);
+//    LINALG::Matrix<2,1>     c(true);
+//    LINALG::Matrix<2,1>     deltacon(true);
+//
+//    // some constants that are needed
+//    const double c0_inner = 0.6147737641011396;
+//    const double c0_outer = 1.244249192148809;
+//    const double r_inner = 1.0;
+//    const double r_outer = 2.0;
+//    const double pot_inner = 2.758240847314454;
+//    const double b = log(r_outer/r_inner);
+//
+//    // start loop over integration points
+//    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+//    {
+//      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+//
+//      // get values of all transported scalars at integration point
+//      for (int k=0; k<numscal_; ++k)
+//      {
+//        conint(k) = funct_.Dot(ephinp_[k]);
+//      }
+//
+//      // get el. potential solution at integration point
+//      const double potint = funct_.Dot(epotnp_);
+//
+//      // get global coordinate of integration point
+//      xint.Multiply(xyze_,funct_);
+//
+//      // evaluate analytical solution for cation concentration at radial position r
+//      if (nsd_==3)
+//      {
+//        const double r = sqrt(xint(0)*xint(0) + xint(1)*xint(1));
+//        c(0) = c0_inner + ((c0_outer- c0_inner)*(log(r) - log(r_inner))/b);
+//      }
+//      else
+//        dserror("Illegal number of space dimensions for analyt. solution: %d",nsd_);
+//
+//      // compute analytical solution for anion concentration
+//      c(1) = (-valence_[0]/valence_[1])* c(0);
+//      // compute analytical solution for el. potential
+//      const double d = frt*((diffus_[0]*valence_[0]) - (diffus_[1]*valence_[1]));
+//      if (abs(d) == 0.0) dserror("division by zero");
+//      // reference value + ohmic resistance + concentration potential
+//      const double pot = pot_inner + log(c(0)/c0_inner); // + (((diffus_[1]-diffus_[0])/d) * log(c(0)/c0_inner));
+//
+//      // compute differences between analytical solution and numerical solution
+//      double deltapot = potint - pot;
+//      deltacon.Update(1.0,conint,-1.0,c);
+//
+//      // add square to L2 error
+//      errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
+//      errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
+//      errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
+//
+//    } // end of loop over integration points
+//  } // concentric cylinders
+//  break;
+//  case INPAR::SCATRA::calcerror_electroneutrality:
+//  {
+//    // start loop over integration points
+//    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+//    {
+//      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+//
+//      // get values of transported scalars at integration point
+//      // and compute electroneutrality
+//      double deviation(0.0);
+//      for (int k=0; k<numscal_; ++k)
+//      {
+//        const double conint_k = funct_.Dot(ephinp_[k]);
+//        deviation += valence_[k]*conint_k;
+//      }
+//
+//    // add square to L2 error
+//    errors[0] += deviation*deviation*fac;
+//    } // loop over integration points
+//  }
+//  break;
+//  default: dserror("Unknown analytical solution!"); break;
+//  } //switch(errortype)
+//
+//  return;
+//} // ScaTraImpl::CalErrorComparedToAnalytSolution
 
 
 
@@ -4490,94 +4493,94 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
 } //ScaTraImpl<distype>::CalculateConductivity
 
 
-/*----------------------------------------------------------------------*
-  |  CalculateElectricPotentialField (ELCH) (private)          gjb 04/10 |
-  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
-  const DRT::Element*         ele,
-  const double                frt,
-  const enum INPAR::SCATRA::ScaTraType  scatratype,
-  Epetra_SerialDenseMatrix&   emat,
-  Epetra_SerialDenseVector&   erhs
-  )
-{
-  // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // integration loop
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-
-    // get concentration of transported scalar k at integration point
-    for (int k = 0;k<numscal_;++k)
-      conint_[k] = funct_.Dot(ephinp_[k]);
-
-    // get gradient of electric potential at integration point
-    gradpot_.Multiply(derxy_,epotnp_);
-
-    // access material parameters
-    GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
-
-    double sigmaint(0.0);
-    for (int k=0; k<numscal_; ++k)
-    {
-      double sigma_k = frt*valence_[k]*diffusvalence_[k]*conint_[k];
-      sigmaint += sigma_k;
-
-      // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
-      if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
-        sigmaint += frt*valence_[k]*diffusvalence_[numscal_]*(-conint_[k]);
-
-      // diffusive terms on rhs
-      // gradient of current scalar value
-      gradphi_.Multiply(derxy_,ephinp_[k]);
-      const double vrhs = fac*diffusvalence_[k];
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+numscal_;
-        double laplawf(0.0);
-        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
-        erhs[fvi] -= vrhs*laplawf;
-        // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
-        if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
-          erhs[fvi] -= -fac*valence_[k]*diffus_[numscal_]*laplawf;
-      }
-
-      // provide something for conc. dofs: a standard mass matrix
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int    fvi = vi*numdofpernode_+k;
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+k;
-          emat(fvi,fui) += fac*funct_(vi)*funct_(ui);
-        }
-      }
-    } // for k
-
-    // ----------------------------------------matrix entries
-    for (int vi=0; vi<nen_; ++vi)
-    {
-      const int    fvi = vi*numdofpernode_+numscal_;
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui = ui*numdofpernode_+numscal_;
-        double laplawf(0.0);
-        GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
-        emat(fvi,fui) += fac*sigmaint*laplawf;
-      }
-
-      double laplawf(0.0);
-      GetLaplacianWeakFormRHS(laplawf,derxy_,gradpot_,vi);
-      erhs[fvi] -= fac*sigmaint*laplawf;
-    }
-  } // integration loop
-
-  return;
-
-} //ScaTraImpl<distype>::CalculateElectricPotentialField
+///*----------------------------------------------------------------------*
+//  |  CalculateElectricPotentialField (ELCH) (private)          gjb 04/10 |
+//  *----------------------------------------------------------------------*/
+//template <DRT::Element::DiscretizationType distype>
+//void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
+//  const DRT::Element*         ele,
+//  const double                frt,
+//  const enum INPAR::SCATRA::ScaTraType  scatratype,
+//  Epetra_SerialDenseMatrix&   emat,
+//  Epetra_SerialDenseVector&   erhs
+//  )
+//{
+//  // integration points and weights
+//  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+//
+//  // integration loop
+//  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+//  {
+//    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+//
+//    // get concentration of transported scalar k at integration point
+//    for (int k = 0;k<numscal_;++k)
+//      conint_[k] = funct_.Dot(ephinp_[k]);
+//
+//    // get gradient of electric potential at integration point
+//    gradpot_.Multiply(derxy_,epotnp_);
+//
+//    // access material parameters
+//    GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
+//
+//    double sigmaint(0.0);
+//    for (int k=0; k<numscal_; ++k)
+//    {
+//      double sigma_k = frt*valence_[k]*diffusvalence_[k]*conint_[k];
+//      sigmaint += sigma_k;
+//
+//      // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
+//      if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+//        sigmaint += frt*valence_[k]*diffusvalence_[numscal_]*(-conint_[k]);
+//
+//      // diffusive terms on rhs
+//      // gradient of current scalar value
+//      gradphi_.Multiply(derxy_,ephinp_[k]);
+//      const double vrhs = fac*diffusvalence_[k];
+//      for (int vi=0; vi<nen_; ++vi)
+//      {
+//        const int fvi = vi*numdofpernode_+numscal_;
+//        double laplawf(0.0);
+//        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+//        erhs[fvi] -= vrhs*laplawf;
+//        // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
+//        if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+//          erhs[fvi] -= -fac*valence_[k]*diffus_[numscal_]*laplawf;
+//      }
+//
+//      // provide something for conc. dofs: a standard mass matrix
+//      for (int vi=0; vi<nen_; ++vi)
+//      {
+//        const int    fvi = vi*numdofpernode_+k;
+//        for (int ui=0; ui<nen_; ++ui)
+//        {
+//          const int fui = ui*numdofpernode_+k;
+//          emat(fvi,fui) += fac*funct_(vi)*funct_(ui);
+//        }
+//      }
+//    } // for k
+//
+//    // ----------------------------------------matrix entries
+//    for (int vi=0; vi<nen_; ++vi)
+//    {
+//      const int    fvi = vi*numdofpernode_+numscal_;
+//      for (int ui=0; ui<nen_; ++ui)
+//      {
+//        const int fui = ui*numdofpernode_+numscal_;
+//        double laplawf(0.0);
+//        GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
+//        emat(fvi,fui) += fac*sigmaint*laplawf;
+//      }
+//
+//      double laplawf(0.0);
+//      GetLaplacianWeakFormRHS(laplawf,derxy_,gradpot_,vi);
+//      erhs[fvi] -= fac*sigmaint*laplawf;
+//    }
+//  } // integration loop
+//
+//  return;
+//
+//} //ScaTraImpl<distype>::CalculateElectricPotentialField
 
 /*------------------------------------------------------------------------*
   |  calculate residual of scalar transport equation for the homogenized  |

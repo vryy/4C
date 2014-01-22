@@ -195,13 +195,13 @@ void acoustics_drt()
 
           // set velocity field
           //(this is done only once. Time-dependent velocity fields are not supported)
-          (scatraonly->ScaTraField()).SetVelocityField();
+          (scatraonly->ScaTraField())->SetVelocityField();
 
           // enter time loop to solve problem with given convective velocity
-          (scatraonly->ScaTraField()).TimeLoop();
+          (scatraonly->ScaTraField())->TimeLoop();
 
           // get the solution of the scatra problem
-          scatrainitialpress = (scatraonly->ScaTraField()).Phinp();
+          scatrainitialpress = (scatraonly->ScaTraField())->Phinp();
 
           break;
         }

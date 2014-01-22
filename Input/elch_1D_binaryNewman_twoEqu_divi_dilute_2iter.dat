@@ -37,7 +37,7 @@ BLOCKPRECOND                    No
 MATID                           1
 WRITEFLUX                       No
 OUTMEAN                         No
-SCATRATYPE                      Elch_ENC
+SCATRATYPE                      Elch
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10
 ABSTOLRES                       1e-16
@@ -51,6 +51,7 @@ DEFINITION_TAU                  Zero
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ----------------------------------------------------------------ELCH CONTROL
+ELCHTYPE			DiffCond
 ITEMAX                          2
 MAXTIME                         10
 NUMSTEP                         20

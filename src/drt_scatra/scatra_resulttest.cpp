@@ -14,22 +14,24 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_implicit.H"
+#include "scatra_timint_elch.H"
 #include "scatra_resulttest.H"
+
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SCATRA::ScaTraResultTest::ScaTraResultTest(ScaTraTimIntImpl& scatra)
+SCATRA::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatra)
   : DRT::ResultTest("SCATRA")
 {
-  dis_    = scatra.Discretization();
-  mysol_  = scatra.Phinp();
-  myflux_ = scatra.Flux();
-  myelectkin_ = scatra.OutputElectrodeInfo(false,false);
-  mystrgrowth_ = scatra.StrGrowth();
-  myfldgrowth_ = scatra.FldGrowth();
+  dis_    = scatra->Discretization();
+  mysol_  = scatra->Phinp();
+  myflux_ = scatra->Flux();
+  myelectkin_ = scatra->OutputElectrodeInfo(false,false);
+  mystrgrowth_ = scatra->StrGrowth();
+  myfldgrowth_ = scatra->FldGrowth();
 }
 
 

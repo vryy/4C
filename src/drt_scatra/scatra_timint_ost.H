@@ -50,7 +50,7 @@ public:
   void ComputeTimeDerivative();
 
   ///  compute scalar time derivate parameters of the input voltage
-  void ComputeTimeDerivPot0(const bool init);
+  virtual void ComputeTimeDerivPot0(const bool init){return;};
 
   /// update the solution after convergence of the nonlinear iteration.
   /// current solution becomes old solution of next timestep.
@@ -109,6 +109,10 @@ protected:
   /// set time parameter for element evaluation
   virtual void SetElementTimeParameter();
 
+  //TODO: SCATRA_ELE_CLEANING: ersetzten durch Liste für boundaryElemente
+  /// set time parameter for element evaluation
+  virtual void SetElementTimeParameter(Teuchos::ParameterList& eleparams);
+
   /// set time parameter for element evaluation for forced incremental solve
   virtual void SetElementTimeParameterForForcedIncrementalSolve();
 
@@ -146,10 +150,10 @@ protected:
   double ResidualScaling() const { return 1.0/(dta_*theta_); }
 
   /// update time-dependent electrode state variables at the end of an time step
-  void ElectrodeKineticsTimeUpdate();
+  virtual void ElectrodeKineticsTimeUpdate(){return;};
 
   /// set old part of RHS for galvanostatic equation
-  void ElectrodeKineticsSetOldPartOfRHS();
+  virtual void ElectrodeKineticsSetOldPartOfRHS(){return;};
 
   /// time factor for one-step-theta/BDF2 time integration
   double theta_;

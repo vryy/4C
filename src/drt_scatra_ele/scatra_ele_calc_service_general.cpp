@@ -126,36 +126,19 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
     // access control parameter for flux calculation
     INPAR::SCATRA::FluxType fluxtype = DRT::INPUT::get<INPAR::SCATRA::FluxType>(params, "fluxtype");
 
- //TODO: SCATRA_ELEL_CLANING: ELCH
-//    // initialize parameter F/RT for ELCH
-//    double frt(0.0);
-//
-//    // set values for ELCH
-//    if (SCATRA::IsElchProblem(scatratype))
-//    {
-//      // get values for el. potential at element nodes
-//      for (int i=0;i<nen_;++i)
-//      {
-//        epotnp_(i) = myphinp[i*numdofpernode_+numscal_];
-//      }
-//
-//      // get parameter F/RT
-//      frt = params.get<double>("frt");
-//    }
-
     // we always get an 3D flux vector for each node
     LINALG::Matrix<3,nen_> eflux(true);
 
     // do a loop for systems of transported scalars
-    for (int idof = 0; idof<numscal_; ++idof)
+    for (int k = 0; k<numscal_; ++k)
     {
       // calculate flux vectors for actual scalar
       eflux.Clear();
-      CalculateFlux(eflux,ele,fluxtype,idof);
+      CalculateFlux(eflux,ele,fluxtype,k);
       // assembly
       for (int inode=0;inode<nen_;inode++)
       {
-        const int fvi = inode*numdofpernode_+idof;
+        const int fvi = inode*numdofpernode_+k;
         elevec1_epetra[fvi]+=eflux(0,inode);
         elevec2_epetra[fvi]+=eflux(1,inode);
         elevec3_epetra[fvi]+=eflux(2,inode);
@@ -803,69 +786,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
         dserror("Must be incremental!");
 
     } // loop over each scalar k
-
-// TODO: SCATRA_ELE_CLEANING: ELCH
-#if 0
-    if (is_elch_)
-    {
-      // we put a dummy mass matrix here in order to have a regular
-      // matrix in the lower right block of the whole system-matrix
-      // A identity matrix would cause problems with ML solver in the SIMPLE
-      // schemes since ML needs to have off-diagonal entries for the aggregation!
-
-      // loop starts at k=numscal_ !!
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const double v = fac*funct_(vi); // no density required here
-        const int fvi = vi*numdofpernode_+numscal_;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui = ui*numdofpernode_+numscal_;
-
-          emat(fvi,fui) += v*funct_(ui);
-        }
-      }
-
-      // current as a solution variable
-      if(cursolvar_==true)
-      {
-        for(int idim=0;idim<nsd_;++idim)
-        {
-          // loop starts at k=numscal_ !!
-          for (int vi=0; vi<nen_; ++vi)
-          {
-            const double v = fac*funct_(vi); // no density required here
-            const int fvi = vi*numdofpernode_+numscal_+1+idim;
-
-            for (int ui=0; ui<nen_; ++ui)
-            {
-              const int fui = ui*numdofpernode_+numscal_+1+idim;
-
-              emat(fvi,fui) += v*funct_(ui);
-            }
-          }
-        }
-      }
-    } // if is_elch
-#endif
-
   } // integration loop
 
   // correct scaling of rhs (after subtraction!!!!)
   erhs.Scale(1.0/scatraparatimint_->TimeFac());
-
-// TODO: SCATRA_ELE_CLEANING: ELCH
-//  if (is_elch_) // ELCH
-//  {
-//    // scalar at integration point
-//    for (int vi=0; vi<nen_; ++vi)
-//    {
-//      const int fvi = vi*numdofpernode_+numscal_;
-//
-//      erhs[fvi] = 0.0; // zero out!
-//    }
-//  }
 
   return;
 } // ScaTraEleCalc::CalcInitialTimeDerivative()
@@ -974,10 +898,6 @@ const int                       k
     LINALG::Matrix<nsd_,1> gradphi(true);
     gradphi.Multiply(derxy_,ephinp_[k]);
 
-    //TODO: SCATRA_ELE_CLEANING: ELCH
-//    // get gradient of electric potential at integration point if required
-//    if (frt > 0.0) gradpot_.Multiply(derxy_,epotnp_);
-
     // allocate and initialize!
     LINALG::Matrix<nsd_,1> q(true);
 
@@ -992,10 +912,6 @@ const int                       k
     case INPAR::SCATRA::flux_diffusive_domain:
       // diffusive flux contribution
       q.Update(-(diffmanager_->GetIsotropicDiff(k)),gradphi,1.0);
-
-      //TODO: SCATRA_ELE_CLEANING: ELCH
-//    // ELCH (migration flux contribution)
-//    if (frt > 0.0) q.Update(-diffusvalence_[k]*frt*phi,gradpot_,1.0);
 
       break;
     default:

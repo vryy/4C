@@ -46,9 +46,26 @@ namespace INPAR
   /// type of scalar transport problem
   enum EquPot
   {
+    equpot_undefined,
     equpot_enc,
     equpot_divi
   };
+
+  enum DiffCondMat
+  {
+    diffcondmat_undefined,
+    diffcondmat_diffcond,
+    diffcondmat_newman
+  };
+
+  // faraday constant (general definition)
+  const double faraday_const = 96485.3399;
+
+  // gas constant (general definition)
+  const double gas_const = 8.314472;
+
+  // permittivität (not a general definition, but only once used)
+  const double epsilon = 1.e-4;
 
   }  // namespace ELCH
 

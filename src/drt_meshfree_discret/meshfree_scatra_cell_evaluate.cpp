@@ -79,7 +79,7 @@ int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
   // the discretization and does not change during the csomputations
   const int numdofpernode = this->NumDofPerNode(*(this->Nodes()[0]));
   int numscal = numdofpernode;
-  if (SCATRA::IsElchProblem(scatratype))
+  if (scatratype==INPAR::SCATRA::scatratype_elch)
   {
     numscal -= 1;
 

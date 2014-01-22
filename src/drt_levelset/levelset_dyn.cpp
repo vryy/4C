@@ -72,7 +72,7 @@ void levelset_dyn(int restart)
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatrabase = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(levelsetcontrol,false,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
   // get pointer to time integrator
-  Teuchos::RCP<SCATRA::ScaTraTimIntImpl> levelsetalgo = scatrabase->ScaTraFieldrcp();
+  Teuchos::RCP<SCATRA::ScaTraTimIntImpl> levelsetalgo = scatrabase->ScaTraField();
 
   // set velocity field
   //(This is done only once. Time-dependent velocity fields are not supported)

@@ -14,7 +14,6 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 
 #include "elch_algorithm.H"
-#include "../drt_scatra/scatra_utils.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
 #include "../linalg/linalg_mapextractor.H"
@@ -24,6 +23,8 @@ Maintainer: Georg Bauer
 #include <iostream>
 // fluid and transport solution are written to a file after each outer iteration loop
 //#define OUTPUT
+
+#include "../drt_scatra/scatra_timint_elch.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -37,7 +38,7 @@ ELCH::Algorithm::Algorithm(
    itmax_ (prbdyn.get<int>("ITEMAX")),
    ittol_ (prbdyn.get<double>("CONVTOL")),
    velincnp_ (Teuchos::rcp(new Epetra_Vector(*(FluidField().ExtractVelocityPart(FluidField().Velnp()))))),
-   conpotincnp_ (Teuchos::rcp(new Epetra_Vector(*(ScaTraField().Phinp())))),
+   conpotincnp_ (Teuchos::rcp(new Epetra_Vector(*(ScaTraField()->Phinp())))),
    samstart_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
    samstop_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))
 {
@@ -66,11 +67,11 @@ void ELCH::Algorithm::TimeLoop()
     // write out initial state
     // Output();
 
-    ScaTraField().OutputElectrodeInfo();
-    ScaTraField().OutputMeanScalars();
+    Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->OutputElectrodeInfo();
+    ScaTraField()->OutputMeanScalars();
 
     // compute error for problems with analytical solution (initial field!)
-    ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+    ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
   }
 
   // switch ELCH algorithm
@@ -103,7 +104,7 @@ void ELCH::Algorithm::TimeLoopElch()
       Update();
 
       // compute error for problems with analytical solution
-      ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+      ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
 
       // write output to screen and files
       Output();
@@ -155,9 +156,9 @@ void ELCH::Algorithm::InitialCalculations()
 
   // compute initial density
   // set initial density to time step n+1 and n
-  ScaTraField().ComputeDensity();
+  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->ComputeDensity();
   // not essential
-  ScaTraField().UpdateDensityElch();
+  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->UpdateDensityElch();
 
   return;
 }
@@ -176,7 +177,7 @@ void ELCH::Algorithm::PrepareTimeStep()
    * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
    */
-  ScaTraField().PrepareTimeStep();
+  ScaTraField()->PrepareTimeStep();
 
   return;
 }
@@ -196,30 +197,30 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
   case INPAR::FLUID::timeint_stationary:
   {
     FluidField().SetIterLomaFields(
-        ScaTraField().DensElchNp(),
-        ScaTraField().DensElchNp(), // we have to provide something here
+        Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchNp(),
+        Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchNp(), // we have to provide something here
         Teuchos::null,
         Teuchos::null,
         1.0,
         1.0,
         0.0,
         0.0,
-        ScaTraField().Discretization());
+        ScaTraField()->Discretization());
     break;
   }
   case INPAR::FLUID::timeint_one_step_theta:
   case INPAR::FLUID::timeint_bdf2:
   {
     FluidField().SetIterLomaFields(
-        ScaTraField().DensElchNp(),
-        ScaTraField().DensElchN(),
+        Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchNp(),
+        Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchN(),
         Teuchos::null,
         Teuchos::null,
         1.0,
         1.0,
         0.0,
         0.0,
-        ScaTraField().Discretization());
+        ScaTraField()->Discretization());
     break;
   }
   default: dserror("Selected time integration scheme is not available");
@@ -231,7 +232,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
   // transfer the initial(!!) convective velocity
   //(fluid initial field was set inside the constructor of fluid base class)
   if (Step()==1)
-    ScaTraField().SetVelocityField(
+    ScaTraField()->SetVelocityField(
         FluidField().Velnp(),
         FluidField().Hist(),
         Teuchos::null,
@@ -241,7 +242,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
 
   // prepare time step (+ initialize one-step-theta scheme correctly with
   // velocity given above)
-  ScaTraField().PrepareTimeStep();
+  ScaTraField()->PrepareTimeStep();
 
   return;
 }
@@ -284,7 +285,7 @@ void ELCH::Algorithm::DoTransportStep()
   case INPAR::FLUID::timeint_npgenalpha:
   case INPAR::FLUID::timeint_afgenalpha:
   {
-    ScaTraField().SetVelocityField(
+    ScaTraField()->SetVelocityField(
         FluidField().Velaf(),
         FluidField().Accam(),
         Teuchos::null,
@@ -297,7 +298,7 @@ void ELCH::Algorithm::DoTransportStep()
   case INPAR::FLUID::timeint_bdf2:
   case INPAR::FLUID::timeint_stationary:
   {
-    ScaTraField().SetVelocityField(
+    ScaTraField()->SetVelocityField(
         FluidField().Velnp(),
         FluidField().Hist(),
         Teuchos::null,
@@ -314,7 +315,7 @@ void ELCH::Algorithm::DoTransportStep()
 
   // solve coupled transport equations for ion concentrations and
   // electric potential
-  ScaTraField().Solve();
+  ScaTraField()->Solve();
 
   return;
 }
@@ -325,7 +326,7 @@ void ELCH::Algorithm::DoTransportStep()
 void ELCH::Algorithm::Update()
 {
   FluidField().Update();
-  ScaTraField().Update();
+  ScaTraField()->Update();
   return;
 }
 
@@ -335,7 +336,7 @@ void ELCH::Algorithm::Update()
 void ELCH::Algorithm::UpdateConvection()
 {
   // Update ScaTra fields
-  ScaTraField().Update();
+  ScaTraField()->Update();
 
   // OST/BDF2 time integration schemes are implemented
   // pass density to fluid discretization at time steps n+1 and n
@@ -373,7 +374,7 @@ void ELCH::Algorithm::UpdateConvection()
 
   // Update density at time steps n+1 and n
   // Update density after SetTimeLomaFields
-  ScaTraField().UpdateDensityElch();
+  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->UpdateDensityElch();
 
   return;
 }
@@ -393,21 +394,21 @@ void ELCH::Algorithm::Output()
     // if statistics for one-way coupled problems is performed, provide
     // the field for the first scalar!
     FluidField().SetTimeLomaFields(
-        ScaTraField().Phinp(),
+        ScaTraField()->Phinp(),
         0.0,
         Teuchos::null,
-        ScaTraField().Discretization(),
+        ScaTraField()->Discretization(),
         0 // do statistics for FIRST dof at every node!!
     );
   }
 
   FluidField().StatisticsAndOutput();
-  ScaTraField().Output();
+  ScaTraField()->Output();
 
   // we have to call the output of averaged fields for scatra separately
   if (  FluidField().TurbulenceStatisticManager() != Teuchos::null)
     FluidField().TurbulenceStatisticManager()
-        ->DoOutputForScaTra(ScaTraField().DiscWriter(),ScaTraField().Step());
+        ->DoOutputForScaTra(ScaTraField()->DiscWriter(),ScaTraField()->Step());
 
   return;
 }
@@ -425,8 +426,8 @@ void ELCH::Algorithm::OuterIterationConvection()
   {
     std::cout<<"\n";
     std::cout<<"**************************************************************\n";
-    std::cout<<"      OUTER ITERATION LOOP ("<<ScaTraField().MethodTitle()<<")\n";
-    printf("      Time Step %3d/%3d \n",Step(), ScaTraField().NStep());
+    std::cout<<"      OUTER ITERATION LOOP ("<<ScaTraField()->MethodTitle()<<")\n";
+    printf("      Time Step %3d/%3d \n",Step(), ScaTraField()->NStep());
     std::cout<<"**************************************************************\n";
   }
 
@@ -450,7 +451,7 @@ void ELCH::Algorithm::OuterIterationConvection()
   {
     itnum ++;
 
-    conpotincnp_->Update(1.0,*ScaTraField().Phinp(),0.0);
+    conpotincnp_->Update(1.0,*ScaTraField()->Phinp(),0.0);
     velincnp_->Update(1.0,*FluidField().ExtractVelocityPart(FluidField().Velnp()),0.0);
 
     // solve nonlinear Navier-Stokes system with body forces
@@ -462,12 +463,12 @@ void ELCH::Algorithm::OuterIterationConvection()
     // compute new denselchnp_ and pass it to the fluid discretisation
     // pass actual density field to fluid discretisation
     // Density derivative is not used for OST, BDF2 and convective formulation
-    ScaTraField().ComputeDensity();
+    Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->ComputeDensity();
     FluidField().SetTimeLomaFields(
-        ScaTraField().DensElchNp(),
+        Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchNp(),
         0.0,
         Teuchos::null,
-        ScaTraField().Discretization());
+        ScaTraField()->Discretization());
 
     // convergence check based on incremental values
     stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
@@ -512,7 +513,7 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
   //     | concentration_n+1 |_2
 
   bool stopnonliniter = false;
-  Teuchos::RCP<LINALG::MapExtractor> conpotsplitter = ScaTraField().Splitter();
+  Teuchos::RCP<LINALG::MapExtractor> conpotsplitter = ScaTraField()->Splitter();
   // Variables to save different L2 - Norms
 
   double potincnorm_L2(0.0);
@@ -533,24 +534,24 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
   // tempincnp_ includes the concentration and the potential increment
   // tempincnp_ = 1.0 * phinp_ - 1.0 * phin_
 
-  conpotincnp_->Update(1.0,*ScaTraField().Phinp(),-1.0);
-  if (SCATRA::IsElch(ScaTraField().ScaTraType()))
+  conpotincnp_->Update(1.0,*ScaTraField()->Phinp(),-1.0);
+  if ((ScaTraField()->ScaTraType())==INPAR::SCATRA::scatratype_elch)
   {
   Teuchos::RCP<Epetra_Vector> onlycon = conpotsplitter->ExtractOtherVector(conpotincnp_);
   onlycon->Norm2(&conincnorm_L2);
-  conpotsplitter->ExtractOtherVector(ScaTraField().Phinp(),onlycon);
+  conpotsplitter->ExtractOtherVector(ScaTraField()->Phinp(),onlycon);
   onlycon->Norm2(&connorm_L2);
 
   // Calculate potential increment and potential L2 - Norm
   Teuchos::RCP<Epetra_Vector> onlypot = conpotsplitter->ExtractCondVector(conpotincnp_);
   onlypot->Norm2(&potincnorm_L2);
-  conpotsplitter->ExtractCondVector(ScaTraField().Phinp(),onlypot);
+  conpotsplitter->ExtractCondVector(ScaTraField()->Phinp(),onlypot);
   onlypot->Norm2(&potnorm_L2);
   }
   else // only one scalar present (convection-diffusion)
   {
     conpotincnp_->Norm2(&conincnorm_L2);
-    ScaTraField().Phinp()->Norm2(&connorm_L2);
+    ScaTraField()->Phinp()->Norm2(&connorm_L2);
   }
 
   // care for the case that there is (almost) zero temperature or velocity

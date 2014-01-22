@@ -72,8 +72,10 @@ namespace POROELAST
     //! return pointer to porous medium problem
     const Teuchos::RCP<POROELAST::PoroBase>& PoroField(){return poro_;};
 
+    //TODO: SCATRA_ELE_CLEANING
     //! return pointer to scalar transport problem
-    SCATRA::ScaTraTimIntImpl& ScatraField(){return scatra_->ScaTraField();};
+    //SCATRA::ScaTraTimIntImpl& ScatraField(){return scatra_->ScaTraField();};
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() { return scatra_->ScaTraField(); };
 
     //! setup solver (for monolithic only)
     virtual bool SetupSolver(){return false;};

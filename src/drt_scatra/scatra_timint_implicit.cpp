@@ -24,29 +24,24 @@ Maintainer: Andreas Ehrl
 
 #include "scatra_timint_implicit.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
+
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_krylov_projector.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_sparseoperator.H"
-#include "../drt_fluid/drt_periodicbc.H"
-#include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_fluid/fluid_utils.H" // for splitter
-#include "scatra_utils.H"
-#include "scatra_utils_splitstrategy.H" // for blockmatrix-splitstrategy
+
+#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_fluid/fluid_meshtying.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
+
+#include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
+
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
-#include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
+
 #include "turbulence_hit_initial_scalar_field.H"
 #include "turbulence_hit_scalar_forcing.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_SerialDenseVector.h>
-
-#include "../drt_fluid/fluid_meshtying.H"
 
 // for the condition writer output
 /*
@@ -56,6 +51,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
 */
+
 /*
 // for output of intermediate states in Newton loop
 #include "../drt_io/io.H"
@@ -85,17 +81,20 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   params_ (params),
   extraparams_(extraparams),
   myrank_ (actdis->Comm().MyPID()),
-  // splitter, // not initialized
+  splitter_(Teuchos::null),
   errfile_  (extraparams->get<FILE*>("err file")),
   scatratype_  (DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(*params,"SCATRATYPE")),
   isale_    (extraparams->get<bool>("isale")),
   solvtype_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
-  // incremental_, // not initialized
+  incremental_(true),
   initialvelset_(false),
-  fssgd_    (DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
-  // turbmodel_, // not initialized
+  fssgd_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
+  turbmodel_(INPAR::FLUID::no_model),
   writeflux_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params,"WRITEFLUX")),
-  writefluxids_(0), // not initialized
+  writefluxids_(0),
+  flux_(Teuchos::null),
+  sumnormfluxintegral_(Teuchos::null),
+  lastfluxoutputstep_(-1),
   outmean_  (DRT::INPUT::IntegralValue<int>(*params,"OUTMEAN")),
   outputgmsh_(DRT::INPUT::IntegralValue<int>(*params,"OUTPUT_GMSH")),
   time_   (0.0),
@@ -107,33 +106,68 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   dtsolve_(0.0),
   timealgo_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
   numscal_(0),
-  // phi vectors, // all not initialized
-  // vel_, // not initialized
-  // many many not initialized
-  cdvel_    (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
+  numdofpernode_(0),
+  // Initialization of degrees of freedom variables
+  phin_(Teuchos::null),
+  phinp_(Teuchos::null),
+  phidtn_(Teuchos::null),
+  phidtnp_(Teuchos::null),
+  hist_(Teuchos::null),
+  vel_(Teuchos::null),
+  convel_(Teuchos::null),
+  fsvel_(Teuchos::null),
+  accpre_(Teuchos::null),
+  dispnp_(Teuchos::null),
+  cdvel_(DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
   discret_(actdis),
   output_ (output),
   convform_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params,"CONVFORM")),
-  // many many not initialized
-  lastfluxoutputstep_(-1),
-  msht_(DRT::INPUT::IntegralValue<int>(*params,"MESHTYING")),
-  gstatnumite_(0),
-  gstatincrement_(0.0),
-  frt_      (0.0),
-  dlcapexists_(false),
-  ektoggle_(Teuchos::null),
+  sysmat_(Teuchos::null),
+  zeros_(Teuchos::null),
+  dbcmaps_(Teuchos::null),
+  neumann_loads_(Teuchos::null),
+  pbc_(Teuchos::null),
+  pbcmapmastertoslave_(Teuchos::null),
+  normals_(Teuchos::null),
+  residual_(Teuchos::null),
+  trueresidual_(Teuchos::null),
+  increment_(Teuchos::null),
+  meshtying_(Teuchos::null),
+  msht_(DRT::INPUT::IntegralValue<INPAR::FLUID::MeshTying>(*params,"MESHTYING")),
+  // Initialization of electrophysiology variables
+  activation_time_np_(Teuchos::null),
+  activation_threshold_(0.0),
+  nb_max_mat_int_state_vars_(0),
+  material_internal_state_np_(Teuchos::null),
+  material_internal_state_np_component_(Teuchos::null),
+  nb_max_mat_ionic_currents_(0),
+  material_ionic_currents_np_(Teuchos::null),
+  material_ionic_currents_np_component_(Teuchos::null),
+  // Initialization of AVM3 variables
+  sysmat_sd_(Teuchos::null),
+  Sep_(Teuchos::null),
+  Mnsv_(Teuchos::null),
+  // Initialization of turbulent flow variables
   DynSmag_(Teuchos::null),
   Vrem_(Teuchos::null),
+  samstart_(0),
+  samstop_(0),
+  dumperiod_(0),
   turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
   numinflowsteps_(extraparams->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
+  special_flow_("initialization"),
   forcing_(Teuchos::null),
   homisoturb_forcing_(Teuchos::null),
+  // Initialization of Krylov
   updateprojection_(false),
+  projector_ (Teuchos::null),
+  // Initialization of
   upres_    (params->get<int>("UPRES")),
   uprestart_(params->get<int>("RESTARTEVRY")),
   neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
   convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),
   skipinitder_(DRT::INPUT::IntegralValue<int>(*params,"SKIPINITDER")),
+  // Initialization of Biofilm specific stuff
   scfldgrdisp_(Teuchos::null),
   scstrgrdisp_(Teuchos::null),
   outintegrreac_(DRT::INPUT::IntegralValue<int>(*params,"OUTINTEGRREAC"))
@@ -154,10 +188,10 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // vectors and variables for turbulence models are provided
   PROBLEM_TYP prbtype = DRT::Problem::Instance()->ProblemType();
 
-  if ((scatratype_ == INPAR::SCATRA::scatratype_undefined) or
-     (prbtype != prb_elch))
+  //TODO: SCATRA_ELE_CLEANING: Wollen wir hier einen Sicherheitscheck
+  if (scatratype_ == INPAR::SCATRA::scatratype_undefined)
   {
-    if (prbtype == prb_elch)              scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
+    if (prbtype == prb_elch)              scatratype_ = INPAR::SCATRA::scatratype_elch;
     else if (prbtype == prb_combust)      scatratype_ = INPAR::SCATRA::scatratype_levelset;
     else if (prbtype == prb_level_set)    scatratype_ = INPAR::SCATRA::scatratype_levelset;
     else if (prbtype == prb_loma)         scatratype_ = INPAR::SCATRA::scatratype_loma;
@@ -234,35 +268,10 @@ void SCATRA::ScaTraTimIntImpl::Init()
     mynumscal = discret_->NumDof(0,discret_->lRowNode(0));
   // to support completely empty procs, communication is required
   discret_->Comm().MaxAll(&mynumscal,&numscal_,1);
+  numdofpernode_=numscal_;
 
-  if (IsElch(scatratype_))
-  {
-    if (numscal_ > 1) // we have at least two ion species + el. potential
-    {
-      // number of concentrations transported is numdof-1
-      numscal_ -= 1;
-
-      Teuchos::ParameterList& diffcondparams = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
-
-      // currrent is a solution variable
-      if(DRT::INPUT::IntegralValue<int>(diffcondparams,"CURRENT_SOLUTION_VAR"))
-      {
-        // shape of local row element(0) -> number of space dimensions
-        //int dim = DRT::Problem::Instance()->NDim();
-        int dim = DRT::UTILS::getDimension(discret_->lRowElement(0)->Shape());
-        // number of concentrations transported is numdof-1-nsd
-        numscal_ -= dim;
-      }
-
-      if(DRT::INPUT::IntegralValue<int>(diffcondparams,"DIFFCOND_FORMULATION"))
-        ValidParameterDiffCond();
-
-    }
-    // set up the concentration-el.potential splitter
-    splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
-    FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
-  }
-  else if (scatratype_ == INPAR::SCATRA::scatratype_cardio_monodomain)
+  //TODO: SCATRA_ELE_CLEANING: Diese Funktion muss in cardio-spezifische Klasse
+  if (scatratype_ == INPAR::SCATRA::scatratype_cardio_monodomain)
   {
     // Activation time at time n+1
     activation_time_np_ = LINALG::CreateVector(*dofrowmap,true);
@@ -281,81 +290,10 @@ void SCATRA::ScaTraTimIntImpl::Init()
       material_ionic_currents_np_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),nb_max_mat_ionic_currents_,true));
       material_ionic_currents_np_component_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
     }
-
   }
 
-  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND")
-      and msht_ == INPAR::FLUID::no_meshtying)
-  {
-    // we need a block sparse matrix here
-    if (not IsElch(scatratype_))
-      dserror("Block-Preconditioning is only for ELCH problems");
-
-    if ((scatratype_!=INPAR::SCATRA::scatratype_elch_enc))
-      dserror("Special ELCH assemble strategy for block-matrix will not assemble A_11 block!");
-
-    // initial guess for non-zeros per row: 27 neighboring nodes for hex8
-    // this is enough! A higher guess would require too much memory!
-    // A more precise guess for every submatrix would read:
-    // A_00: 27*1,  A_01: 27*1,  A_10: 27*numscal_ due to electroneutrality, A_11: EMPTY matrix !!!!!
-    // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
-    Teuchos::RCP<LINALG::BlockSparseMatrix<SCATRA::SplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(*splitter_,*splitter_,27,false,true));
-    blocksysmat->SetNumScal(numscal_);
-
-    sysmat_ = blocksysmat;
-  }
-  else if(msht_!= INPAR::FLUID::no_meshtying)
-  {
-    // Important:
-    // Meshtying in scatra is not tested well!!
-
-    bool onlypotential = (DRT::INPUT::IntegralValue<int>(*params_,"ONLYPOTENTIAL"));
-
-    if(msht_== INPAR::FLUID::condensed_bmat)
-      dserror("The 2x2 block solver algorithm, which is necessary for a block matrix system,\n"
-              "is not integrated into the adapter_scatra_base_algorithm. Just do it!!");
-
-    if ((msht_== INPAR::FLUID::condensed_bmat or
-        msht_== INPAR::FLUID::condensed_bmat_merged) and
-        (scatratype_ == INPAR::SCATRA::scatratype_elch_enc))
-      dserror("In the context of mesh-tying, the ion-transport system inluding the electroneutrality condition \n"
-          "cannot be solved in a block matrix");
-
-    int numdof =0;
-    // meshtying: all dofs (all scalars + potential) are coupled
-    if (IsElch(scatratype_))
-      numdof = numscal_+1;
-    else
-      numdof = numscal_;
-
-    // define coupling
-    std::vector<int> coupleddof(numdof, 1);
-    if(onlypotential==true and IsElch(scatratype_))
-    {
-      // meshtying: only potential is coupled
-      // coupleddof = [0, 0, ..., 0, 1]
-      for(int ii=0;ii<numscal_;++ii)
-        coupleddof[ii]=0;
-    }
-
-
-    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim()));
-    sysmat_ = meshtying_->Setup(coupleddof);
-  }
-  else
-  {
-    // initialize standard (stabilized) system matrix (and save its graph!)
-    // in standard case, but do not save the graph if fine-scale subgrid
-    // diffusivity is used in non-incremental case
-    if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and not incremental_)
-    {
-      // this is a very special case
-      // only fssugrdiff_artificial is allowed in combination with non-incremental
-      sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
-    }
-    else sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
-  }
+  // Initialization of system matrix
+  InitSystemMatrix();
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
@@ -366,6 +304,8 @@ void SCATRA::ScaTraTimIntImpl::Init()
 
   // temporal solution derivative at time n+1
   phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
+  // temporal solution derivative at time n
+  phidtn_ = LINALG::CreateVector(*dofrowmap,true);
 
   // history vector (a linear combination of phinm, phin (BDF)
   // or phin, phidtn (One-Step-Theta, Generalized-alpha))
@@ -445,18 +385,25 @@ void SCATRA::ScaTraTimIntImpl::Init()
 
   // get desired scalar id's for flux output
   {
-    int    word1;
+    // write one by one of scalars (as flux output in the input file defined)
+    // to the temporary variable word1
+    int word1 = 0;
     std::istringstream mystream(Teuchos::getNumericStringParameter(*params_,"WRITEFLUX_IDS"));
     while (mystream >> word1)
       writefluxids_.push_back(word1);
 
+    // default value (-1): flux is written for all dof's
+    // scalar transport: numdofpernode_ = numscal_
+    // elch:             numdofpernode_ = numscal_+1
+    // -> current flux for potential only if div i is used to close the system otherwise zero
     if (writefluxids_[0]==(-1)) //default is to perform flux output for ALL scalars
     {
-      writefluxids_.resize(numscal_);
-      for(int k=0;k<numscal_;++k)
+      writefluxids_.resize(numdofpernode_);
+      for(int k=0;k<numdofpernode_;++k)
         writefluxids_[k]=k+1;
     }
 
+    // flux_ vector is initized when CalcFlux() is called
     if ((writeflux_!=INPAR::SCATRA::flux_no) and (myrank_ == 0))
     {
       IO::cout << "Flux output is performed for scalars: ";
@@ -464,18 +411,83 @@ void SCATRA::ScaTraTimIntImpl::Init()
       {
         const int id = writefluxids_[i];
         IO::cout << writefluxids_[i] << " ";
-        if ((id<1) or (id > numscal_)) // check validity of these numbers as well !
+        if ((id<1) or (id > numdofpernode_)) // check validity of these numbers as well !
           dserror("Received illegal scalar id for flux output: %d",id);
       }
       IO::cout << IO::endl;
     }
   }
 
+  std::cout << __FILE__ << "  " << __LINE__ << std::endl;
 
   // -------------------------------------------------------------------
   // preparations for turbulence models
   // -------------------------------------------------------------------
 
+  InitTurbulenceModel(dofrowmap, noderowmap);
+
+  std::cout << __FILE__ << "  " << __LINE__ << std::endl;
+
+  // -------------------------------------------------------------------
+  // set initial field
+  // -------------------------------------------------------------------
+  SetInitialField(DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_,"INITIALFIELD"),
+      params_->get<int>("INITFUNCNO"));
+
+  std::cout << __FILE__ << "  " << __LINE__ << std::endl;
+
+  return;
+} // ScaTraTimIntImpl::Init()
+
+
+/*----------------------------------------------------------------------*
+ | initialization of system matrix                           ehrl 12/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::InitSystemMatrix()
+{
+  // scalar transport problem type does not support a block matrix
+  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
+    dserror("Block-Preconditioning is only for ELCH problems");
+
+  if(msht_ == INPAR::FLUID::no_meshtying)
+  {
+    // initialize standard (stabilized) system matrix (and save its graph!)
+    // in standard case, but do not save the graph if fine-scale subgrid
+    // diffusivity is used in non-incremental case
+    if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and not incremental_)
+    {
+      // this is a very special case
+      // only fssugrdiff_artificial is allowed in combination with non-incremental
+      sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()),27));
+    }
+    else sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()),27,false,true));
+  }
+  else
+  {
+    // Important:
+    // Meshtying in scatra is not tested at all!!
+    if(msht_== INPAR::FLUID::condensed_bmat)
+      dserror("The 2x2 block solver algorithm, which is necessary for a block matrix system,\n"
+              "is not integrated into the adapter_scatra_base_algorithm. Just do it!!");
+
+    // define coupling
+    std::vector<int> coupleddof(numscal_, 1);
+
+    // setup of meshtying
+    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim()));
+    sysmat_ = meshtying_->Setup(coupleddof);
+  }
+
+  return;
+} // ScaTraTimIntImpl::InitSystemMatrix()
+
+/*----------------------------------------------------------------------*
+ | initialization of system matrix                           ehrl 12/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::InitTurbulenceModel(
+    const Epetra_Map* dofrowmap,
+    const Epetra_Map* noderowmap)
+{
   // get fluid turbulence sublist
   Teuchos::ParameterList * turbparams =&(extraparams_->sublist("TURBULENCE MODEL"));
 
@@ -590,7 +602,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
   }
 
   if (turbmodel_ != INPAR::FLUID::no_model and numscal_ > 1)
-   dserror("Turbulent passive scalar transport not supported for more than one scalar!");
+    dserror("Turbulent passive scalar transport not supported for more than one scalar!");
 
   // -------------------------------------------------------------------
   // initialize forcing for homogeneous isotropic turbulence
@@ -606,68 +618,8 @@ void SCATRA::ScaTraTimIntImpl::Init()
     }
   }
 
-  // -------------------------------------------------------------------
-  // set initial field
-  // -------------------------------------------------------------------
-  SetInitialField(DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_,"INITIALFIELD"),
-      params_->get<int>("INITFUNCNO"));
-
-  // initializes variables for natural convection (ELCH) if necessary
-  SetupElchNatConv();
-
-  // screen output (has to come after SetInitialField)
-  if (IsElch(scatratype_))
-  {
-    // a safety check for the solver type
-    if ((numscal_ > 1) && (solvtype_!=INPAR::SCATRA::solvertype_nonlinear))
-      dserror("Solver type has to be set to >>nonlinear<< for ion transport.");
-
-    frt_ = INPAR::SCATRA::faraday_const/(8.314472 * extraparams_->get<double>("TEMPERATURE"));
-
-    if (myrank_==0)
-    {
-      std::cout<<"\nSetup of splitter: numscal = "<<numscal_<<std::endl;
-      std::cout<<"Temperature value T (Kelvin)     = "<<extraparams_->get<double>("TEMPERATURE")<<std::endl;
-      std::cout<<"Constant F/RT                    = "<<frt_<<std::endl;
-    }
-
-    // setup of magnetic field (always three(!) components per node)
-    const int magnetfuncno = (extraparams_->sublist("ELCH CONTROL")).get<int>("MAGNETICFIELD_FUNCNO");
-    if (magnetfuncno > 0)
-    {
-      // allocate the multivector
-      magneticfield_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-      // fill it with values
-      SetMagneticField(magnetfuncno);
-    }
-  }
-  if(extraparams_->isSublist("ELCH CONTROL")) // did we get the elch sublist?
-  {
-    // conductivity must be stored for the galvanostatic condition in a global variable
-    sigma_ = ComputeConductivity(); // every processor has to do this call
-    if (myrank_==0)
-    {
-      for (int k=0;k < numscal_;k++)
-      {
-        std::cout<<"Electrolyte conductivity (species "<<k+1<<")    = "<<sigma_[k]<<std::endl;
-      }
-      if (scatratype_==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
-      {
-        double diff = sigma_[0];
-        for (int k=1;k < numscal_;k++)
-        {
-          diff += sigma_[k];
-        }
-        std::cout<<"Electrolyte conductivity (species elim) = "<<sigma_[numscal_]-diff<<std::endl;
-      }
-      std::cout<<"Electrolyte conductivity (all species)  = "<<sigma_[numscal_]<<std::endl<<std::endl;
-    }
-  }
-
   return;
-
-} // ScaTraTimIntImpl::ScaTraTimIntImpl
-
+} // ScaTraTimIntImpl::InitTurbulenceModel()
 
 /*----------------------------------------------------------------------*
  | create vectors for Krylov projection if necessary         ehrl 12/13 |
@@ -1362,8 +1314,9 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     if (writeflux_!=INPAR::SCATRA::flux_no)
     {
       // for flux output of initial field (before first solve) do:
+      // flux_ vector is initialized when CalcFlux() is called
       if (step_==0)
-        flux_= CalcFlux(true, num);
+        flux_=CalcFlux(true, num);
 
       OutputFlux(flux_);
     }
@@ -1376,10 +1329,6 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
 
     // output of electrode status to screen and file (only if existing)
     OutputElectrodeInfo();
-
-    // magnetic field (if existing)
-    if (magneticfield_ != Teuchos::null)
-      output_->WriteVector("magnetic_field", magneticfield_,IO::DiscretizationWriter::nodevector);
 
     // biofilm growth
     if (scfldgrdisp_!=Teuchos::null)
@@ -1504,10 +1453,9 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
   {
     // set initial field for ALL existing scatra fields
     const std::string field = "ScaTra";
-    const int numdofpernode = discret_->NumDof(discret_->lRowNode(0));
-    std::vector<int> localdofs(numdofpernode);
+    std::vector<int> localdofs(numdofpernode_);
 
-    for (int i = 0; i < numdofpernode; i++)
+    for (int i = 0; i < numdofpernode_; i++)
     {
       localdofs[i] = i;
     }
@@ -1917,8 +1865,7 @@ void SCATRA::ScaTraTimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcon
 
   // confirm that mode flags are number of nodal dofs/scalars
   const int nummodes = kspcond->GetInt("NUMMODES");
-  const int numdofpernode = numscal_ + IsElch(scatratype_);
-  if (nummodes!=numdofpernode)
+  if (nummodes!=numdofpernode_)
     dserror("Expecting as many mode flags as nodal dofs in Krylov projection definition. Check dat-file!");
 
   // get vector of mode flags as given in dat-file
@@ -1926,7 +1873,7 @@ void SCATRA::ScaTraTimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcon
 
   // count actual active modes selected in dat-file
   std::vector<int> activemodeids;
-  for(int rr=0;rr<numdofpernode;++rr)
+  for(int rr=0;rr<numdofpernode_;++rr)
   {
     if(((*modeflags)[rr])!=0)
     {
@@ -1981,9 +1928,8 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
     std::vector<int> modeids = projector_->Modes();
 
     // initialize dofid vector to -1
-    const int numdofpernode = numscal_ + IsElch(scatratype_);
-    Epetra_IntSerialDenseVector dofids(numdofpernode);
-    for (int rr=0;rr<numdofpernode;++rr)
+    Epetra_IntSerialDenseVector dofids(numdofpernode_);
+    for (int rr=0;rr<numdofpernode_;++rr)
     {
       dofids[rr] = -1;
     }
@@ -1992,9 +1938,9 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
 
     // set parameters for elements that do not change over mode
     mode_params.set<int>("action",SCATRA::integrate_shape_functions);
-    // TODO: SCATRA_ELEL_CLEANING
-//    mode_params.set<int>("scatratype",scatratype_);
-//    mode_params.set("isale",isale_);
+    // TODO: SCATRA_ELEL_CLEANING: Why so?
+    mode_params.set<int>("scatratype",scatratype_);
+    mode_params.set("isale",isale_);
     if (isale_)
       AddMultiVectorToParameterList(mode_params,"dispnp",dispnp_);
 
@@ -2224,21 +2170,20 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
 
   // set time for evaluation of Neumann boundary conditions as parameter
   // depending on time-integration scheme
-  Teuchos::ParameterList p;
-  SetTimeForNeumannEvaluation(p);
-  p.set<int>("scatratype",scatratype_);
-  p.set("isale",isale_);
+  Teuchos::ParameterList condparams;
+  SetTimeForNeumannEvaluation(condparams);
+  condparams.set<int>("scatratype",scatratype_);
+  condparams.set("isale",isale_);
 
   // parameters for Elch/DiffCond formulation
-  if(IsElch(scatratype_))
-    p.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
+  AddProblemSpecificParametersAndVectors(condparams);
 
   // provide displacement field in case of ALE
-  if (isale_) AddMultiVectorToParameterList(p,"dispnp",dispnp_);
+  if (isale_) AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
   discret_->ClearState();
   // evaluate Neumann conditions at actual time t_{n+1} or t_{n+alpha_F}
-  discret_->EvaluateNeumann(p,*neumann_loads);
+  discret_->EvaluateNeumann(condparams,*neumann_loads);
   discret_->ClearState();
 
   return;
@@ -2290,14 +2235,11 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // this is parameterlist is required here to get the element-based filtered constants
   eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
 
-  eleparams.set("frt",frt_);// ELCH specific factor F/RT
-
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
   AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
   AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
   AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
-  AddMultiVectorToParameterList(eleparams,"magnetic field",magneticfield_);
   // and provide fine-scale velocity for multifractal subgrid-scale modeling only
   if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
     AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);
@@ -2305,10 +2247,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // provide displacement field in case of ALE
   eleparams.set("isale",isale_);
   if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // parameters for Elch/DiffCond formulation
-  if(IsElch(scatratype_))
-    eleparams.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -2493,10 +2431,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:   + nonlin. iteration/lin. solve");
 
-  bool stopgalvanostat(false);
-  gstatnumite_=1;
-  while (!stopgalvanostat) // galvanostatic control (ELCH)
-  {
   // out to screen
   PrintTimeStepInfo();
 
@@ -2529,22 +2463,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   if (explpredictor)
     ExplicitPredictor();
 
-/*
-  const int numdim = 3;
-  //create output file name
-  std::stringstream temp;
-  temp<< DRT::Problem::Instance()->OutputControlFile()->FileName()<<".nonliniter_step"<<step_;
-  std::string outname = temp.str();
-  std::string probtype = DRT::Problem::Instance()->ProblemType();
-
-  RCP<IO::OutputControl> myoutputcontrol = Teuchos::rcp(new IO::OutputControl(discret_->Comm(),probtype,"Polynomial","myinput",outname,numdim,0,1000));
-  // create discretization writer with my own control settings
-  RCP<IO::DiscretizationWriter> myoutput =
-    Teuchos::rcp(new IO::DiscretizationWriter(discret_,myoutputcontrol));
-  // write mesh at step 0
-  myoutput->WriteMesh(0,0.0);
-*/
-
   while (stopnonliniter==false)
   {
 
@@ -2564,7 +2482,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     ScalingAndNeumann();
 
     // add contributions due to electrode kinetics conditions
-    EvaluateElectrodeKinetics(sysmat_,residual_);
+    EvaluateSolutionDependingBC(sysmat_,residual_);
 
     // blank residual DOFs which are on Dirichlet BC
     // We can do this because the values at the Dirichlet positions
@@ -2573,10 +2491,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     // the Dirichlet values as well. But it is expensive to avoid that.
 
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
-
-    //Add linearization of NernstCondition to system matrix
-    if(ektoggle_!=Teuchos::null)
-      LinearizationNernstCondition();
 
     // project residual such that only part orthogonal to nullspace is considered
     if (projector_!=Teuchos::null)
@@ -2611,28 +2525,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
         solver_->AdaptTolerance(ittol,actresidual,adaptolbetter);
       }
 
-/*
-      // matrix printing options (DEBUGGING!)
-      RCP<LINALG::SparseMatrix> A = SystemMatrix();
-      if (A != Teuchos::null)
-      {
-        // print to file in matlab format
-        const std::string fname = "sparsematrix.mtl";
-        LINALG::PrintMatrixInMatlabFormat(fname,*(A->EpetraMatrix()));
-        // print to screen
-        (A->EpetraMatrix())->Print(std::cout);
-        // print sparsity pattern to file
-        LINALG::PrintSparsityToPostscript( *(A->EpetraMatrix()) );
-      }
-      else
-      {
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> A = BlockSystemMatrix();
-        const std::string fname = "sparsematrix.mtl";
-        LINALG::PrintBlockMatrixInMatlabFormat(fname,*(A));
-      }
-      */
-      // ScaleLinearSystem();  // still experimental (gjb 04/10)
-
       // reprepare Krylov projection only if ale and projection required
       if (updateprojection_)
       {
@@ -2656,16 +2548,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     //-------- update values at intermediate time steps (only for gen.-alpha)
     ComputeIntermediateValues();
 
-    // iteration number (only after that data output is possible)
-  /*
-    myoutput->NewStep(itnum,itnum);
-    myoutput->WriteVector("phinp", phinp_);
-   */
-
   } // nonlinear iteration
-
-  stopgalvanostat = ApplyGalvanostaticControl();
-  } // galvanostatic control
 
   return;
 } // ScaTraTimIntImpl::NonlinearSolve
@@ -2692,33 +2575,8 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
 
   double conresnorminf(0.0);
 
-  if (IsElch(scatratype_))
-  {
-    Teuchos::RCP<Epetra_Vector> onlycon = splitter_->ExtractOtherVector(residual_);
-    onlycon->Norm2(&conresnorm);
-
-    splitter_->ExtractOtherVector(increment_,onlycon);
-    onlycon->Norm2(&incconnorm_L2);
-
-    splitter_->ExtractOtherVector(phinp_,onlycon);
-    onlycon->Norm2(&connorm_L2);
-
-    Teuchos::RCP<Epetra_Vector> onlypot = splitter_->ExtractCondVector(residual_);
-    onlypot->Norm2(&potresnorm);
-
-    splitter_->ExtractCondVector(increment_,onlypot);
-    onlypot->Norm2(&incpotnorm_L2);
-
-    splitter_->ExtractCondVector(phinp_,onlypot);
-    onlypot->Norm2(&potnorm_L2);
-  }
-  else
-  {
-    residual_ ->Norm2(&conresnorm);
-    increment_->Norm2(&incconnorm_L2);
-    phinp_    ->Norm2(&connorm_L2);
-    residual_ ->NormInf(&conresnorminf);
-  }
+  // Calculate problem-specific norms
+  CalcProblemSpecificNorm(conresnorm,incconnorm_L2,connorm_L2,incpotnorm_L2,potnorm_L2,potresnorm,conresnorminf);
 
   // care for the case that nothing really happens in the concentration
   // or potential field
@@ -2860,6 +2718,28 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
 
   return false;
 } // ScaTraTimIntImpl::AbortNonlinIter
+
+
+/*----------------------------------------------------------------------*
+ | Calculate problem specific norm                            ehrl 01/14|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CalcProblemSpecificNorm(
+    double& conresnorm,
+    double& incconnorm_L2,
+    double& connorm_L2,
+    double& incpotnorm_L2,
+    double& potnorm_L2,
+    double& potresnorm,
+    double& conresnorminf)
+{
+  residual_ ->Norm2(&conresnorm);
+  increment_->Norm2(&incconnorm_L2);
+  phinp_    ->Norm2(&connorm_L2);
+  residual_ ->NormInf(&conresnorminf);
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
 | returns matching std::string for each time integration scheme   gjb 08/08 |
@@ -3033,105 +2913,6 @@ void SCATRA::ScaTraTimIntImpl::ElementMaterialTimeUpdate()
 //  obsolete or unused methods - to be deleted soon (at noon)!!!
 /*==========================================================================*/
 
-/*----------------------------------------------------------------------*
- | scale lines of linear system prior to solve call           gjb 04/10 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
-{
-  if (IsElch(scatratype_))
-  {
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> A = BlockSystemMatrix();
-    if (A != Teuchos::null)
-    {
-    // scale ELCH Matrix:
-    Teuchos::RCP<Epetra_Vector> d = splitter_->Vector(0);
-    Teuchos::RCP<Epetra_Vector> scalefactors = splitter_->Vector(0);
-    Teuchos::RCP<Epetra_Vector> scalefactorsENC = splitter_->Vector(1);
-    scalefactorsENC->PutScalar(1.0);
-
-    // access values located at main diagonal
-    BlockSystemMatrix()->Matrix(0,0).ExtractDiagonalCopy(*d);
-    double firstrowvalue(0.0);
-    for (int r=0;r < d->MyLength(); r++)
-    {
-      double* values = d->Values();
-      if (r % numscal_ == 0)
-      {
-        firstrowvalue = values[r];
-        if (abs(firstrowvalue)<EPS14) dserror("diagonal value too small");
-        int err = scalefactors->ReplaceMyValue(r,0,1.0); // set scalefactor 1.0
-        if (err != 0) dserror("Error detected");
-      }
-      else
-      {
-        if(abs(values[r])<EPS14) dserror("devision by zero prevented");
-        double scalefactor = 1.0*abs(firstrowvalue/values[r]); //sign-independent!
-        int err = scalefactors->ReplaceMyValue(r,0,scalefactor);
-        if (err != 0) dserror("Error detected");
-      }
-    } // for (int r=0;r < w->MyLength(); r++)
-#if 0
-    scalefactors->Print(std::cout);
-    d->Print(std::cout);
-    (((BlockSystemMatrix()->Matrix(0,0)).EpetraMatrix()->Print(std::cout)));
-#endif
-    // scale the complete rows and rhs
-    int err = BlockSystemMatrix()->Matrix(0,0).LeftScale(*scalefactors);
-       err += BlockSystemMatrix()->Matrix(0,1).LeftScale(*scalefactors);
-// ENC scaling
-       err += BlockSystemMatrix()->Matrix(1,0).LeftScale(*scalefactorsENC);
-
-    Teuchos::RCP<Epetra_Vector> onlyconc = splitter_->ExtractOtherVector(residual_);
-#if 0
-    std::cout<<"residual:\n";
-    residual_->Print(std::cout);
-    std::cout<<"non-modified onlyconc:\n";
-    onlyconc->Print(std::cout);
-#endif
-    //Multiply a Epetra_MultiVector with another, element-by-element.
-    onlyconc->Multiply(1.0,*onlyconc,*scalefactors,0.0);
-    // insert values into the whole rhs vector
-    splitter_->InsertOtherVector(onlyconc,residual_);
-
-    Teuchos::RCP<Epetra_Vector> onlypot = splitter_->ExtractCondVector(residual_);
-    //Multiply a Epetra_MultiVector with another, element-by-element.
-    onlypot->Multiply(1.0,*onlypot,*scalefactorsENC,0.0);
-    // insert values into the whole rhs vector
-    splitter_->InsertCondVector(onlypot,residual_);
-
-#if 0
-    std::cout<<"modified onlyconc:\n";
-    onlyconc->Print(std::cout);
-    std::cout<<"modified residual:\n";
-    residual_->Print(std::cout);
-#endif
-    if (err>0) dserror("Error during pre-scaling of linear system");
-
-
-    {
-      // matrix printing options (DEBUGGING!)
-      RCP<LINALG::SparseMatrix> A = SystemMatrix();
-      if (A != Teuchos::null)
-      {
-      }
-      else
-      {
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> A = BlockSystemMatrix();
-        const std::string fname = "sparsematrix_scaled.mtl";
-        LINALG::PrintBlockMatrixInMatlabFormat(fname,*(A));
-      }
-    }
-
-    if (myrank_==0)
-    std::cout<<"Pre-Scaling of Linear System done."<<std::endl;
-
-    //scalefactors->Print(std::cout);
-
-    }
-  } // pre-scale equation system for ELCH applications
-
-  return;
-} // ScaTraTimIntImpl::ScaleLinearSystem
 
 /*----------------------------------------------------------------------*
  | construct toggle vector for Dirichlet dofs                  gjb 11/08|

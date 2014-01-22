@@ -79,7 +79,7 @@ void SCATRA::PassiveScaTraAlgorithm::PrepareTimeStep()
    * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
    */
-  ScaTraField().PrepareTimeStep();
+  ScaTraField()->PrepareTimeStep();
 
   if (Comm().MyPID()==0)
   {
@@ -127,7 +127,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   case INPAR::FLUID::timeint_npgenalpha:
   case INPAR::FLUID::timeint_afgenalpha:
   {
-    ScaTraField().SetVelocityField(
+    ScaTraField()->SetVelocityField(
         FluidField().Velaf(),
         FluidField().Accam(),
         FluidField().Velaf(),
@@ -140,7 +140,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   case INPAR::FLUID::timeint_bdf2:
   case INPAR::FLUID::timeint_stationary:
   {
-    ScaTraField().SetVelocityField(
+    ScaTraField()->SetVelocityField(
       FluidField().Velnp(),
         FluidField().Hist(),
         FluidField().Velnp(),
@@ -156,7 +156,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   }
 
   // solve the linear convection-diffusion equation(s)
-  ScaTraField().Solve();
+  ScaTraField()->Solve();
   return;
 }
 
@@ -166,7 +166,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
 void SCATRA::PassiveScaTraAlgorithm::Update(const int num)
 {
   FluidField().Update();
-  ScaTraField().Update(num);
+  ScaTraField()->Update(num);
   return;
 }
 
@@ -185,16 +185,16 @@ void SCATRA::PassiveScaTraAlgorithm::Output()
     // if statistics for one-way coupled problems is performed, provide
     // the field for the first scalar!
     FluidField().SetTimeLomaFields(
-        ScaTraField().Phinp(),
+        ScaTraField()->Phinp(),
         0.0,
-        ScaTraField().TrueResidual(),
-        ScaTraField().Discretization(),
+        ScaTraField()->TrueResidual(),
+        ScaTraField()->Discretization(),
         0 // do statistics for FIRST dof at every node!!
     );
   }
 
   FluidField().StatisticsAndOutput();
-  ScaTraField().Output();
+  ScaTraField()->Output();
 
   return;
 }
@@ -210,6 +210,6 @@ void SCATRA::PassiveScaTraAlgorithm::ReadInflowRestart(int restart)
   // as ReadRestart is only called for the FluidField
   // time and step have not been set in the superior class and the ScaTraField
   SetTimeStep(FluidField().Time(),FluidField().Step());
-  ScaTraField().SetTimeStep(FluidField().Time(),FluidField().Step());
+  ScaTraField()->SetTimeStep(FluidField().Time(),FluidField().Step());
   return;
 }

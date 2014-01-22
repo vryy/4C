@@ -14,7 +14,6 @@ Maintainer: Andreas Ehrl
 
 #include "scatra_timint_ost.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
-#include "scatra_utils.H"
 #include "turbulence_hit_scalar_forcing.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -38,7 +37,8 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   Teuchos::RCP<Teuchos::ParameterList>   extraparams,
   Teuchos::RCP<IO::DiscretizationWriter> output)
 : ScaTraTimIntImpl(actdis,solver,params,extraparams,output),
-  theta_(params_->get<double>("THETA"))
+  theta_(params_->get<double>("THETA")),
+  fsphinp_(Teuchos::null)
 {
   return;
 }
@@ -49,6 +49,8 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::Init()
 {
+  std::cout << __FILE__ << "  " << __LINE__ << std::endl;
+
   // initialize base class
   ScaTraTimIntImpl::Init();
 
@@ -58,20 +60,6 @@ void SCATRA::TimIntOneStepTheta::Init()
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // temporal solution derivative at time n
-  phidtn_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // ELCH with natural convection
-  if (extraparams_->isSublist("ELCH CONTROL"))
-  {
-    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"NATURAL_CONVECTION") == true)
-    {
-      // density at time n
-      elchdensn_ = LINALG::CreateVector(*dofrowmap,true);
-      elchdensn_->PutScalar(1.0);
-    }
-  }
 
   // fine-scale vector at time n+1
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
@@ -87,15 +75,15 @@ void SCATRA::TimIntOneStepTheta::Init()
   SetElementGeneralScaTraParameter();
   SetElementTurbulenceParameter();
 
-
+  //TODO: SCATRA_ELE_CLEANING
   // initialize time-dependent electrode kinetics variables (galvanostatic mode or double layer contribution)
-  if (IsElch(scatratype_))
-    ComputeTimeDerivPot0(true);
+  //if (IsElch(scatratype_))
+  //  ComputeTimeDerivPot0(true);
 
   // Important: this adds the required ConditionID's to the single conditions.
   // It is necessary to do this BEFORE ReadRestart() is called!
   // Output to screen and file is suppressed
-  OutputElectrodeInfo(false,false);
+  //OutputElectrodeInfo(false,false);
 
   // setup krylov
   PrepareKrylovProjection();
@@ -150,6 +138,22 @@ void SCATRA::TimIntOneStepTheta::SetElementTimeParameter()
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(Teuchos::ParameterList& eleparams)
+{
+  eleparams.set<bool>("using generalized-alpha time integration",false);
+  eleparams.set<bool>("using stationary formulation",false);
+
+  eleparams.set<double>("time-step length",dta_);
+  eleparams.set<double>("total time",time_);
+  eleparams.set<double>("time factor",theta_*dta_);
+  eleparams.set<double>("alpha_F",1.0);
 
   return;
 }
@@ -366,55 +370,6 @@ void SCATRA::TimIntOneStepTheta::ComputeTimeDerivative()
   return;
 }
 
-/*-------------------------------------------------------------------------------------*
- | compute time derivative of applied electrode potential                   ehrl 08/13 |
- *-------------------------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::ComputeTimeDerivPot0(const bool init)
-{
-  std::vector<DRT::Condition*> cond;
-  discret_->GetCondition("ElectrodeKinetics",cond);
-  int numcond = cond.size();
-
-  for(int icond = 0; icond < numcond; icond++)
-  {
-    double pot0np =  cond[icond]->GetDouble("pot");
-    const int curvenum =   cond[icond]->GetInt("curve");
-    double dlcap = cond[icond]->GetDouble("dl_spec_cap");
-
-    if (init)
-    {
-      // create and initialize additional b.c. entries for galvanostatic simulations or
-      // simulations including a double layer
-      cond[icond]->Add("pot0n",0.0);
-      cond[icond]->Add("pot0dtnp",0.0);
-      cond[icond]->Add("pot0dtn",0.0);
-      cond[icond]->Add("pot0hist",0.0);
-
-      if(dlcap!=0.0)
-        dlcapexists_=true;
-    }
-    else
-    {
-      // compute time derivative of applied potential
-      if (curvenum>=0)
-      {
-        const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time_);
-        // adjust potential at metal side accordingly
-        pot0np *= curvefac;
-      }
-      // compute time derivative of applied potential pot0
-      // pot0dt(n+1) = (pot0(n+1)-pot0(n)) / (theta*dt) + (1-(1/theta))*pot0dt(n)
-      double pot0n = cond[icond]->GetDouble("pot0n");
-      double pot0dtn = cond[icond]->GetDouble("pot0dtn");
-      double pot0dtnp =(pot0np-pot0n)/(dta_*theta_) + (1-(1/theta_))*pot0dtn;
-      // add time derivative of applied potential pot0dtnp to BC
-      cond[icond]->Add("pot0dtnp", pot0dtnp);
-    }
-  }
-
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
@@ -447,23 +402,9 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
   if (homisoturb_forcing_ != Teuchos::null)
     homisoturb_forcing_->TimeUpdateForcing();
 
-  // perform update of time-dependent electrode variables
-  ElectrodeKineticsTimeUpdate();
-
-  // TODO: SCATRA_ELE_CLEANING
+  // TODO: SCATRA_ELE_CLEANING: muss weg
   // potential time update of time-dependent materials
 //  ElementMaterialTimeUpdate();
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | update density at n for ELCH natural convection            gjb 07/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::UpdateDensityElch()
-{
-  elchdensn_->Update(1.0,*elchdensnp_,0.0);
 
   return;
 }
@@ -482,50 +423,7 @@ void SCATRA::TimIntOneStepTheta::OutputRestart()
   if (isale_)
     output_->WriteVector("trueresidual", trueresidual_);
 
-  // write additional restart data for galvanostatic applications or simulations including a double layer formulation
-  if (IsElch(scatratype_))
-  {
-    if((DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC")) or
-        dlcapexists_==true)
-    {
-      // define a vector with all electrode kinetics BCs
-      std::vector<DRT::Condition*> cond;
-      discret_->GetCondition("ElectrodeKinetics",cond);
-
-      int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
-
-       std::vector<DRT::Condition*>::iterator fool;
-       // loop through conditions and find the cathode
-       for (fool=cond.begin(); fool!=cond.end(); ++fool)
-       {
-         DRT::Condition* mycond = (*(fool));
-         const int condid = mycond->GetInt("ConditionID");
-         // galvanostatic mode: only applied potential of cathode is adapted
-         if (condid_cathode==condid or dlcapexists_==true)
-         {
-           std::stringstream temp;
-           temp << condid;
-
-           // electrode potential of the adjusted electrode kinetics BC at time n+1
-           double pot = mycond->GetDouble("pot");
-           output_->WriteDouble("pot_"+temp.str(),pot);
-
-           // electrode potential of the adjusted electrode kinetics BC at time n
-           double pot0n = mycond->GetDouble("pot0n");
-           output_->WriteDouble("pot0n_"+temp.str(),pot0n);
-
-           // electrode potential time derivative of the adjusted electrode kinetics BC at time n
-           double pot0dtn = mycond->GetDouble("pot0dtn");
-           output_->WriteDouble("pot0dtn_"+temp.str(),pot0dtn);
-
-           // history of electrode potential of the adjusted electrode kinetics BC
-           double pothist = mycond->GetDouble("pot0hist");
-           output_->WriteDouble("pot0hist_"+temp.str(),pothist);
-         }
-       }
-    }
-  }
-
+  //TODO: SCATRA_ELE_CLEANING: muss weg
   if (scatratype_ == INPAR::SCATRA::scatratype_cardio_monodomain)
   {
    output_->WriteMesh(step_,time_); // add info to control file for reading all variables in restart
@@ -555,53 +453,6 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
   // for elch problems with moving boundary
   if(isale_)
     reader.ReadVector(trueresidual_, "trueresidual");
-
-  // restart for galvanostatic applications
-  if (IsElch(scatratype_))
-  {
-    // Initialize Nernst-BC
-    InitNernstBC();
-
-    if((DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC")) or
-        dlcapexists_==true)
-    {
-      // define a vector with all electrode kinetics BCs
-      std::vector<DRT::Condition*> cond;
-      discret_->GetCondition("ElectrodeKinetics",cond);
-
-      int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
-      std::vector<DRT::Condition*>::iterator fool;
-      bool read_pot=false;
-
-      // read desired values from the .control file and add/set the value to
-      // the electrode kinetics boundary condition representing the cathode
-      for (fool=cond.begin(); fool!=cond.end(); ++fool)
-      {
-        DRT::Condition* mycond = (*(fool));
-        const int condid = mycond->GetInt("ConditionID");
-        // galvanostatic mode: only applied potential of cathode is adapted
-        if (condid_cathode==condid or dlcapexists_==true)
-        {
-          std::stringstream temp;
-          temp << condid;
-
-          double pot = reader.ReadDouble("pot_"+temp.str());
-          mycond->Add("pot",pot);
-          double pot0n = reader.ReadDouble("pot0n_"+temp.str());
-          mycond->Add("pot0n",pot0n);
-          double pot0hist = reader.ReadDouble("pot0hist_"+temp.str());
-          mycond->Add("pot0hist",pot0hist);
-          double pot0dtn = reader.ReadDouble("pot0dtn_"+temp.str());
-          mycond->Add("pot0dtn",pot0dtn);
-          read_pot=true;
-          if (myrank_==0)
-            std::cout<<"Successfully read restart data for galvanostatic mode (condid "<<condid<<")"<<std::endl;
-        }
-      }
-      if (!read_pot)
-        dserror("Reading of electrode potential for restart not successful.");
-    }
-  }
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
@@ -678,7 +529,7 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
       "Classical LES approaches require an additional model for\nthe turbulent viscosity.",
       Teuchos::tuple<std::string>("no_model"),
       Teuchos::tuple<std::string>("If classical LES is our turbulence approach, this is a contradiction and should cause a dserror."),
-      Teuchos::tuple<int>(0),
+      Teuchos::tuple<int>(INPAR::FLUID::no_model),
       &eleturbparams.sublist("TURBULENCE MODEL"));
 
   // set model-dependent parameters
@@ -704,65 +555,6 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- | update of time-dependent variables for electrode kinetics  gjb 11/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::ElectrodeKineticsTimeUpdate()
-{
-  if (IsElch(scatratype_))
-  {
-    if((DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC")) or
-        dlcapexists_==true)
-    {
-      ComputeTimeDerivPot0(false);
-
-      std::vector<DRT::Condition*> cond;
-      discret_->GetCondition("ElectrodeKinetics",cond);
-      for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
-      {
-        {
-          double pot0np = cond[i]->GetDouble("pot");
-          cond[i]->Add("pot0n",pot0np);
-
-          double pot0dtnp = cond[i]->GetDouble("pot0dtnp");
-          cond[i]->Add("pot0dtn",pot0dtnp);
-        }
-      }
-    }
-  }
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | set old part of RHS for galvanostatic equation             gjb 04/10 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::ElectrodeKineticsSetOldPartOfRHS()
-{
-  if (IsElch(scatratype_))
-  {
-    if((DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC")) or
-        dlcapexists_==true)
-    {
-      std::vector<DRT::Condition*> cond;
-      discret_->GetCondition("ElectrodeKinetics",cond);
-      for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
-      {
-        // prepare "old part of rhs" for galvanostatic equation (to be used at this time step)
-        {
-          // re-read values (just to be really sure no mix-up occurs)
-          double pot0n = cond[i]->GetDouble("pot0n");
-          double pot0dtn = cond[i]->GetDouble("pot0dtn");
-          // prepare old part of rhs for galvanostatic mode
-          double pothist = pot0n + (1.0-theta_)*dta_*pot0dtn;
-          cond[i]->Add("pot0hist",pothist);
-        }
-      }
-    }
-  }
-  return;
-}
 
 
 

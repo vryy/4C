@@ -185,7 +185,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::Evaluate(
  | extract element based or nodal values                     ehrl 12/13 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractElementAndNodeValues(
+std::vector<double>  DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractElementAndNodeValues(
   DRT::ELEMENTS::Transport*  ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
@@ -284,7 +284,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractElementAndNodeValues(
   //--------------------------------------------------------------------------------
   OtherNodeBasedSourceTerms(lm,discretization,params);
 
-  return;
+  // return extracted values of phinp
+  return myphinp;
 }
 
 
@@ -384,6 +385,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
 
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
+  //TODO: BACI_ELE_CLEANING: TauGP
   if (not scatrapara_->MatGP())
     GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
 
@@ -465,19 +467,28 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
     if (scatrapara_->MatGP())
       GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc,iquad);
 
+    // get velocity at integration point
+    LINALG::Matrix<nsd_,1> velint(true);
+    LINALG::Matrix<nsd_,1> convelint(true);
+    velint.Multiply(evelnp_,funct_);
+    convelint.Multiply(econvelnp_,funct_);
+
+    // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+    LINALG::Matrix<nen_,1> conv(true);
+    conv.MultiplyTN(derxy_,convelint);
+
+    // velocity divergence required for conservative form
+    double vdiv(0.0);
+    if (scatrapara_->IsConservative()) GetDivergence(vdiv,evelnp_);
+
+    // get fine-scale velocity and its derivatives at integration point
+    LINALG::Matrix<nsd_,1> fsvelint(true);
+    if (scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+      fsvelint.Multiply(efsvel_,funct_);
+
     // loop all scalars
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
-      // get velocity at integration point
-      LINALG::Matrix<nsd_,1> velint(true);
-      LINALG::Matrix<nsd_,1> convelint(true);
-      velint.Multiply(evelnp_,funct_);
-      convelint.Multiply(econvelnp_,funct_);
-
-      // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-      LINALG::Matrix<nen_,1> conv(true);
-      conv.MultiplyTN(derxy_,convelint);
-
       // scalar at integration point at time step n+1
       const double phinp = funct_.Dot(ephinp_[k]);
       // scalar at integration point at time step n
@@ -506,15 +517,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
       // reactive part of the form: (reaction coefficient)*phi
       double rea_phi(0.0);
       rea_phi = densnp*phinp*reamanager_->GetReaCoeff(k);
-
-      // velocity divergence required for conservative form
-      double vdiv(0.0);
-      if (scatrapara_->IsConservative()) GetDivergence(vdiv,evelnp_);
-
-      // get fine-scale velocity and its derivatives at integration point
-      LINALG::Matrix<nsd_,1> fsvelint(true);
-      if (scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
-        fsvelint.Multiply(efsvel_,funct_);
 
       // compute gradient of fine-scale part of scalar value
       LINALG::Matrix<nsd_,1> fsgradphi(true);
@@ -1111,8 +1113,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatScaTra(
 {
   const Teuchos::RCP<const MAT::ScatraMat>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
-
-  dsassert(numdofpernode_==1,"more than 1 dof per node for SCATRA material");
 
   // get constant diffusivity
   diffmanager->SetIsotropicDiff(actmat->Diffusivity(),k);

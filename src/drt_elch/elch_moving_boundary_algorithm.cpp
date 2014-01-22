@@ -19,6 +19,8 @@ Maintainer: Georg Bauer
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
+
+#include "../drt_scatra/scatra_timint_elch.H"
 //#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/
@@ -53,7 +55,7 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
     SolveScaTra(); // set-up trueresidual_
   }
   // initialize the multivector for all possible cases
-  fluxn_ = ScaTraField().CalcFluxAtBoundary(condnames,false);
+  fluxn_ = ScaTraField()->CalcFluxAtBoundary(condnames,false);
 
 
   return;
@@ -78,17 +80,17 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
     // write out initial state
     Output();
 
-    ScaTraField().OutputElectrodeInfo();
-    ScaTraField().OutputMeanScalars();
+    Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->OutputElectrodeInfo();
+    ScaTraField()->OutputMeanScalars();
 
     // compute error for problems with analytical solution (initial field!)
-    ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+    ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
   }
 
 if (not pseudotransient_)
 {
   // transfer convective velocity = fluid velocity - grid velocity
-  ScaTraField().SetVelocityField(
+  ScaTraField()->SetVelocityField(
       FluidField().ConvectiveVel(), // = velnp - grid velocity
       FluidField().Hist(),
       Teuchos::null,
@@ -98,7 +100,7 @@ if (not pseudotransient_)
   );
 }
   // transfer moving mesh data
-  ScaTraField().ApplyMeshMovement(
+  ScaTraField()->ApplyMeshMovement(
       FluidField().Dispnp(),
       FluidField().Discretization()
   );
@@ -170,7 +172,7 @@ if (not pseudotransient_)
     Update();
 
     // compute error for problems with analytical solution
-    ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+    ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
 
     // write output to screen and files
     Output();
@@ -202,7 +204,7 @@ void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
    * ScaTraFluidCouplingMovingBoundaryAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
    */
-  ScaTraField().PrepareTimeStep();
+  ScaTraField()->PrepareTimeStep();
 
   return;
 }
@@ -243,7 +245,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
     if (not pseudotransient_)
     {
       // transfer convective velocity = fluid velocity - grid velocity
-      ScaTraField().SetVelocityField(
+      ScaTraField()->SetVelocityField(
         FluidField().ConvectiveVel(), // = velnp - grid velocity
         FluidField().Hist(),
         Teuchos::null,
@@ -260,13 +262,13 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
   }
 
   // transfer moving mesh data
-  ScaTraField().ApplyMeshMovement(
+  ScaTraField()->ApplyMeshMovement(
       FluidField().Dispnp(),
       FluidField().Discretization()
   );
 
   // solve coupled electrochemistry equations
-  ScaTraField().Solve();
+  ScaTraField()->Solve();
 
   return;
 }
@@ -277,7 +279,7 @@ void ELCH::MovingBoundaryAlgorithm::Update()
 {
   FluidField().Update();
   AleField().Update();
-  ScaTraField().Update();
+  ScaTraField()->Update();
 
   // perform time shift of interface displacement
   idispn_->Update(1.0, *idispnp_ , 0.0);
@@ -313,7 +315,7 @@ void ELCH::MovingBoundaryAlgorithm::Output()
 #endif
 
   // now the other physical fiels
-  ScaTraField().Output();
+  ScaTraField()->Output();
   AleField().Output();
 
   return;
@@ -327,11 +329,11 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
   // calculate normal flux vector field only at FSICoupling boundaries (no output to file)
   std::vector<std::string> condnames(1);
   condnames[0] = "FSICoupling";
-  fluxnp_ = ScaTraField().CalcFluxAtBoundary(condnames,false);
+  fluxnp_ = ScaTraField()->CalcFluxAtBoundary(condnames,false);
 
   // access discretizations
   RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
-  RCP<DRT::Discretization> scatradis = ScaTraField().Discretization();
+  RCP<DRT::Discretization> scatradis = ScaTraField()->Discretization();
 
   // no support for multiple reactions at the interface !
   // id of the reacting species
@@ -351,9 +353,9 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
     // get the degrees of freedom associated with this fluid node
     std::vector<int> fluidnodedofs = fluiddis->Dof(fluidlnode);
 
-    if (ScaTraField().ScaTraType()== INPAR::SCATRA::scatratype_condif)
+    if (ScaTraField()->ScaTraType()== INPAR::SCATRA::scatratype_condif)
     {
-      if (ScaTraField().NumScal() != 1)
+      if (ScaTraField()->NumScal() != 1)
         dserror("What do you do! I thought you were doing a potential model?");
     }
 

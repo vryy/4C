@@ -27,7 +27,7 @@
 POROELAST::PORO_SCATRA_Part_2WC::PORO_SCATRA_Part_2WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams)
   : PORO_SCATRA_Part(comm, timeparams),
-    scaincnp_(Teuchos::rcp(new Epetra_Vector(*(ScatraField().Phinp())))),
+    scaincnp_(Teuchos::rcp(new Epetra_Vector(*(ScaTraField()->Phinp())))),
     structincnp_(Teuchos::rcp(new Epetra_Vector(*(PoroField()->StructureField()()->Dispnp())))),
     fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(PoroField()->FluidField()()->Velnp()))))
 {
@@ -69,7 +69,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::ReadRestart(int restart)
     SetPoroSolution();
 
     PoroField()->ReadRestart(restart);
-    ScatraField().ReadRestart(restart);
+    ScaTraField()->ReadRestart(restart);
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if(PoroField()->HasSubmeshes())
@@ -80,7 +80,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::ReadRestart(int restart)
     SetPoroSolution();
 
     //second restart needed due to two way coupling.
-    ScatraField().ReadRestart(restart);
+    ScaTraField()->ReadRestart(restart);
     PoroField()->ReadRestart(restart);
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
@@ -118,7 +118,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::DoScatraStep()
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  ScatraField().Solve();
+  ScaTraField()->Solve();
 
 }
 
@@ -132,7 +132,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::PrepareTimeStep()
   IncrementTimeAndStep();
 
   SetPoroSolution();
-  ScatraField().PrepareTimeStep();
+  ScaTraField()->PrepareTimeStep();
   // set structure-based scalar transport values
   SetScatraSolution();
 
@@ -148,12 +148,12 @@ void POROELAST::PORO_SCATRA_Part_2WC::UpdateAndOutput()
   PoroField()-> PrepareOutput();
 
   PoroField()-> Update();
-  ScatraField().Update();
+  ScaTraField()->Update();
 
-  ScatraField().EvaluateErrorComparedToAnalyticalSol();
+  ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
 
   PoroField()-> Output();
-  ScatraField().Output();
+  ScaTraField()->Output();
 }
 
 
@@ -175,7 +175,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::OuterLoop()
 
     // store scalar from first solution for convergence check (like in
     // elch_algorithm: use current values)
-    scaincnp_->Update(1.0,*ScatraField().Phinp(),0.0);
+    scaincnp_->Update(1.0,*ScaTraField()->Phinp(),0.0);
     structincnp_->Update(1.0,*PoroField()->StructureField()->Dispnp(),0.0);
     fluidincnp_->Update(1.0,*PoroField()->FluidField()->Velnp(),0.0);
 
@@ -224,13 +224,13 @@ bool POROELAST::PORO_SCATRA_Part_2WC::ConvergenceCheck(int itnum)
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  scaincnp_->Update(1.0,*(ScatraField().Phinp()),-1.0);
+  scaincnp_->Update(1.0,*(ScaTraField()->Phinp()),-1.0);
   structincnp_->Update(1.0,*(PoroField()->StructureField()->Dispnp()),-1.0);
   fluidincnp_->Update(1.0,*(PoroField()->FluidField()->Velnp()),-1.0);
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
-  ScatraField().Phinp()->Norm2(&scanorm_L2);
+  ScaTraField()->Phinp()->Norm2(&scanorm_L2);
   structincnp_->Norm2(&dispincnorm_L2);
   PoroField()->StructureField()->Dispnp()->Norm2(&dispnorm_L2);
   fluidincnp_->Norm2(&fluidincnorm_L2);

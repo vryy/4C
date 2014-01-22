@@ -62,28 +62,28 @@ void SSI::SSI_Part1WC::DoScatraStep()
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  scatra_->ScaTraField().PrepareTimeStep();
+  scatra_->ScaTraField()->PrepareTimeStep();
 
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  scatra_->ScaTraField().Solve();
+  scatra_->ScaTraField()->Solve();
 
   // -------------------------------------------------------------------
   //                         update solution
   //        current solution becomes old solution of next timestep
   // -------------------------------------------------------------------
-  scatra_->ScaTraField().Update();
+  scatra_->ScaTraField()->Update();
 
   // -------------------------------------------------------------------
   // evaluate error for problems with analytical solution
   // -------------------------------------------------------------------
-  scatra_->ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+  scatra_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
 
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
-  scatra_->ScaTraField().Output();
+  scatra_->ScaTraField()->Output();
 }
 
 /*----------------------------------------------------------------------*/
@@ -108,7 +108,7 @@ SSI::SSI_Part1WC_SolidToScatra::SSI_Part1WC_SolidToScatra(const Epetra_Comm& com
     = structure_->Discretization()->GetDofSetProxy();
 
   // check if scatra field has 2 discretizations, so that coupling is possible
-  if (scatra_->ScaTraField().Discretization()->AddDofSet(structdofset)!=1)
+  if (scatra_->ScaTraField()->Discretization()->AddDofSet(structdofset)!=1)
     dserror("unexpected dof sets in scatra field");
 }
 
@@ -136,7 +136,7 @@ SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& com
 {
   // build a proxy of the scatra discretization for the structure field
   Teuchos::RCP<DRT::DofSet> scatradofset
-    = scatra_->ScaTraField().Discretization()->GetDofSetProxy();
+    = scatra_->ScaTraField()->Discretization()->GetDofSetProxy();
 
   // check if structure field has 2 discretizations, so that coupling is possible
   if (structure_->Discretization()->AddDofSet(scatradofset)!=1)

@@ -87,13 +87,13 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   // remark: fluiddis cannot be of type "const Teuchos::RCP<const DRT::Dis...>", because parent
   // class. InterfaceHandle only accepts "const Teuchos::RCP<DRT::Dis...>"              henke 01/09
   const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
-  const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
+  const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField()->Discretization();
 
   // FGI vectors are initialized
   velnpi_ = Teuchos::rcp(new Epetra_Vector(FluidField().StdVelnp()->Map()),true);//*fluiddis->DofRowMap()),true);
   velnpi_->Update(1.0,*FluidField().StdVelnp(),0.0);
   phinpi_ = Teuchos::rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
-  phinpi_->Update(1.0,*ScaTraField().Phinp(),0.0);
+  phinpi_->Update(1.0,*ScaTraField()->Phinp(),0.0);
 
   /*----------------------------------------------------------------------------------------------*
    * initialize all data structures needed for the combustion algorithm
@@ -103,8 +103,8 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
    * - ...
    *----------------------------------------------------------------------------------------------*/
   // construct initial flame front
-  flamefront_ = Teuchos::rcp(new COMBUST::FlameFront(fluiddis,gfuncdis,ScaTraField().PBCmap()));
-  flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+  flamefront_ = Teuchos::rcp(new COMBUST::FlameFront(fluiddis,gfuncdis,ScaTraField()->PBCmap()));
+  flamefront_->UpdateFlameFront(combustdyn_,ScaTraField()->Phin(), ScaTraField()->Phinp());
   flamefront_->UpdateOldInterfaceHandle();
 
   //---------------------------------------------------
@@ -133,11 +133,11 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion)
   {
     // extract convection velocity from fluid solution
-    const Teuchos::RCP<const Epetra_Vector> convel = (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+    const Teuchos::RCP<const Epetra_Vector> convel = (ScaTraField()->MethodName() == INPAR::SCATRA::timeint_gen_alpha)
                                                ?(FluidField().StdVelaf())
                                                :(FluidField().StdVelnp());
 
-    ScaTraField().SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
+    ScaTraField()->SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
                                    Teuchos::null,
                                    Teuchos::null,
                                    Teuchos::null,
@@ -232,7 +232,7 @@ void COMBUST::Algorithm::SolveStationaryProblem()
     printf("--------Stationary-Combustion-------  time step ----------------------------------------\n");
   }
 
-  // check if ScaTraField().initialvelset == true
+  // check if ScaTraField()->initialvelset == true
   /* remark: initial velocity field has been transfered to scalar transport field in constructor of
    * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
@@ -242,7 +242,7 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   // remark: this was already done in ScaTraFluidCouplingAlgorithm() before
   if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary)
     dserror("Fluid time integration scheme is not stationary");
-  if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_stationary)
+  if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_stationary)
     dserror("Scatra time integration scheme is not stationary");
 
   // solve nonlinear Navier-Stokes system
@@ -277,9 +277,9 @@ void COMBUST::Algorithm::OutputInitialField()
     FluidField().ImportFlameFront(Teuchos::null,false);
 
     // output G-function initial state
-    if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_stationary and
+    if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_stationary and
         DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false )
-      ScaTraField().Output();
+      ScaTraField()->Output();
 
     // write center of mass
     if (DRT::INPUT::IntegralValue<bool>(combustdyn_,"WRITE_CENTER_OF_MASS"))
@@ -594,7 +594,7 @@ bool COMBUST::Algorithm::NotConvergedFGI()
   if (fgiter_ > 0) // nothing to do for FGI = 0
   {
     const Teuchos::RCP<const Epetra_Vector> velnpip = FluidField().StdVelnp();
-    const Teuchos::RCP<const Epetra_Vector> phinpip = ScaTraField().Phinp();
+    const Teuchos::RCP<const Epetra_Vector> phinpip = ScaTraField()->Phinp();
 
     double velnormL2 = 1.0;
     double gfuncnormL2 = 1.0;
@@ -613,7 +613,7 @@ bool COMBUST::Algorithm::NotConvergedFGI()
     incvel->Update(1.0,*velnpip,-1.0,*velnpi_,0.0);
     incvel->Norm2(&fgvelnormL2);
 
-    RCP<Epetra_Vector> incgfunc = Teuchos::rcp(new Epetra_Vector(phinpip->Map(),true));//*ScaTraField().Discretization()->DofRowMap()),true);
+    RCP<Epetra_Vector> incgfunc = Teuchos::rcp(new Epetra_Vector(phinpip->Map(),true));//*ScaTraField()->Discretization()->DofRowMap()),true);
     incgfunc->Update(1.0,*phinpip,-1.0,*phinpi_,0.0);
     incgfunc->Norm2(&fggfuncnormL2);
 
@@ -668,7 +668,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
   //-----------------------------
   fgiter_ = 0;
 
-  // check if ScaTraField().initialvelset == true
+  // check if ScaTraField()->initialvelset == true
   /* remark: initial velocity field has been transfered to scalar transport field in constructor of
    * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
@@ -707,7 +707,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
     // for two-phase flow, the fluid velocity field is continuous; it can be directly transferred to
     // the scalar transport field
 
-    ScaTraField().SetVelocityField(
+    ScaTraField()->SetVelocityField(
       FluidField().StdVelnp(),
       Teuchos::null,
       Teuchos::null,
@@ -717,7 +717,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
     );
 
     // Transfer history vector only for subgrid-velocity
-    //ScaTraField().SetVelocityField(
+    //ScaTraField()->SetVelocityField(
     //    FluidField().ExtractInterfaceVeln(),
     //    FluidField().Hist(),
     //    Teuchos::null,
@@ -733,7 +733,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
     // extract convection velocity from fluid solution
     const Teuchos::RCP<const Epetra_Vector> convel = FluidField().StdVelnp();
 
-    ScaTraField().SetVelocityField(
+    ScaTraField()->SetVelocityField(
         ComputeFlameVel(convel,FluidField().DofSet()),
         Teuchos::null,
         Teuchos::null,
@@ -745,6 +745,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
   }
   default:
     dserror("unknown type of combustion problem");
+    break;
   }
 
 
@@ -758,7 +759,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
   //         for a stationary computation
   //IncrementTimeAndStep();
   //FluidField().PrepareTimeStep();
-  //ScaTraField().PrepareTimeStep();
+  //ScaTraField()->PrepareTimeStep();
 
   // write output to screen and files (and Gmsh)
   Output();
@@ -792,12 +793,12 @@ void COMBUST::Algorithm::PrepareTimeStep()
   // remark: initial velocity field has been transferred to scalar transport field in constructor of
   //         ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such
   //         as the one-step-theta scheme, are thus initialized correctly.
-  ScaTraField().PrepareTimeStep();
+  ScaTraField()->PrepareTimeStep();
 
   // synchronicity check between combust algorithm and base algorithms
   if (FluidField().Time() != Time())
     dserror("Time in Fluid time integration differs from time in combustion algorithm");
-  if (ScaTraField().Time() != Time())
+  if (ScaTraField()->Time() != Time())
     dserror("Time in ScaTra time integration  differs from time in combustion algorithm");
 
   return;
@@ -849,7 +850,7 @@ void COMBUST::Algorithm::DoGfuncField()
   }
 
   // get the convel at the correct time
-  const Teuchos::RCP<const Epetra_Vector> convel = (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+  const Teuchos::RCP<const Epetra_Vector> convel = (ScaTraField()->MethodName() == INPAR::SCATRA::timeint_gen_alpha)
                                                    ?(FluidField().StdVelaf())
                                                    :(FluidField().StdVelnp());
   // assign the fluid velocity field to the G-function as convective velocity field
@@ -862,7 +863,7 @@ void COMBUST::Algorithm::DoGfuncField()
     // for two-phase flow, the fluid velocity field is continuous; it can be directly transferred to
     // the scalar transport field
 
-    ScaTraField().SetVelocityField(convel,
+    ScaTraField()->SetVelocityField(convel,
                                    Teuchos::null,
                                    Teuchos::null,
                                    Teuchos::null,
@@ -870,7 +871,7 @@ void COMBUST::Algorithm::DoGfuncField()
                                    FluidField().Discretization());
 
       // Transfer history vector only for subgrid-velocity
-      //ScaTraField().SetVelocityField(
+      //ScaTraField()->SetVelocityField(
       //    FluidField().ExtractInterfaceVeln(),
       //    FluidField().Hist(),
       //    Teuchos::null,
@@ -885,7 +886,7 @@ void COMBUST::Algorithm::DoGfuncField()
   {
     // for combustion, the velocity field is discontinuous; the relative flame velocity is added
 
-    ScaTraField().SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
+    ScaTraField()->SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
                                    Teuchos::null,
                                    Teuchos::null,
                                    Teuchos::null,
@@ -900,7 +901,7 @@ void COMBUST::Algorithm::DoGfuncField()
   }
 
   //solve convection-diffusion equation
-  ScaTraField().Solve();
+  ScaTraField()->Solve();
 
   return;
 }
@@ -915,12 +916,12 @@ void COMBUST::Algorithm::UpdateInterface()
     flamefront_->UpdateOldInterfaceHandle();
 
   // update flame front according to evolved G-function field
-  // remark: for only one FGI iteration, 'phinpip_' == ScaTraField().Phin()
+  // remark: for only one FGI iteration, 'phinpip_' == ScaTraField()->Phin()
   // TODO: hier scheitern die Gen-Alpha-Rechnungen, wenn Scatra nicht genalpha verwendet
   if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
-    flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phiaf());
+    flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField()->Phiaf());
   else
-    flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField().Phinp());
+    flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField()->Phinp());
 
   return;
 }
@@ -932,7 +933,7 @@ void COMBUST::Algorithm::UpdateTimeStep()
 {
   FluidField().Update();
 
-  ScaTraField().Update();
+  ScaTraField()->Update();
 
   return;
 }
@@ -959,11 +960,11 @@ void COMBUST::Algorithm::Output()
 
   // causes error in DEBUG mode (trueresidual_ is null)
   //FluidField().LiftDrag();
-  ScaTraField().Output();
+  ScaTraField()->Output();
 
   // we have to call the output of averaged fields for scatra separately
   if (FluidField().TurbulenceStatisticManager() != Teuchos::null)
-    FluidField().TurbulenceStatisticManager()->DoOutputForScaTra(ScaTraField().DiscWriter(),ScaTraField().Step());
+    FluidField().TurbulenceStatisticManager()->DoOutputForScaTra(ScaTraField()->DiscWriter(),ScaTraField()->Step());
 
   // write position of center of mass to file
   if (DRT::INPUT::IntegralValue<bool>(combustdyn_,"WRITE_CENTER_OF_MASS"))
@@ -1093,27 +1094,27 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
   Teuchos::RCP<Epetra_Vector> oldphinp   = Teuchos::null;
   if (restartscatrainput)
   {
-    oldphin  = Teuchos::rcp(new Epetra_Vector(*(ScaTraField().Phin())));
-    oldphinp = Teuchos::rcp(new Epetra_Vector(*(ScaTraField().Phinp())));
-    if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+    oldphin  = Teuchos::rcp(new Epetra_Vector(*(ScaTraField()->Phin())));
+    oldphinp = Teuchos::rcp(new Epetra_Vector(*(ScaTraField()->Phinp())));
+    if (ScaTraField()->MethodName() == INPAR::SCATRA::timeint_gen_alpha)
     {
       dserror("Check restart from scatra input for gen alpha!");
       // do we have to keep it?
-      oldphidtn= Teuchos::rcp(new Epetra_Vector(*(ScaTraField().Phidtn())));
+      oldphidtn= Teuchos::rcp(new Epetra_Vector(*(ScaTraField()->Phidtn())));
     }
   }
 
   // restart of scalar transport (G-function) field
   if (!restartfromfluid) // not if restart is done from standard fluid field; there is no scalar field
-    ScaTraField().ReadRestart(step);
+    ScaTraField()->ReadRestart(step);
 
   // get pointers to the discretizations from the time integration scheme of each field
-  const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
+  const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField()->Discretization();
 
   //-------------------------------------------------------------
   // create (old) flamefront conforming to restart state of fluid
   //-------------------------------------------------------------
-  flamefront_->UpdateFlameFront(combustdyn_, ScaTraField().Phin(), ScaTraField().Phinp());
+  flamefront_->UpdateFlameFront(combustdyn_, ScaTraField()->Phin(), ScaTraField()->Phinp());
 
   // show flame front to fluid time integration scheme
   FluidField().ImportFlameFront(flamefront_,true);
@@ -1129,20 +1130,20 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     if (Comm().MyPID()==0)
       IO::cout << "---  overwriting scalar field with field from input file... " << IO::endl;
     // now overwrite restart phis w/ the old phis
-    ScaTraField().Phinp()->Update(1.0, *(oldphinp), 0.0);
-    ScaTraField().Phin() ->Update(1.0, *(oldphin),  0.0);
-    if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+    ScaTraField()->Phinp()->Update(1.0, *(oldphinp), 0.0);
+    ScaTraField()->Phin() ->Update(1.0, *(oldphin),  0.0);
+    if (ScaTraField()->MethodName() == INPAR::SCATRA::timeint_gen_alpha)
     {
-      ScaTraField().Phidtn() ->Update(1.0, *(oldphidtn),  0.0);
-      ScaTraField().ComputeIntermediateValues();
+      ScaTraField()->Phidtn() ->Update(1.0, *(oldphidtn),  0.0);
+      ScaTraField()->ComputeIntermediateValues();
     }
-    else if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_one_step_theta)
+    else if (ScaTraField()->MethodName() == INPAR::SCATRA::timeint_one_step_theta)
     {
-      ScaTraField().Phidtn()->PutScalar(0.0);
+      ScaTraField()->Phidtn()->PutScalar(0.0);
       // calls CalcInitialPhidt()
       // ApplyDirichletBC() called within this function doesn't pose any problem since we
       // don't have any DBCs for level-set problems
-      ScaTraField().PrepareFirstTimeStep();
+      ScaTraField()->PrepareFirstTimeStep();
       // CalcInitialPhidt() copies phidtn to phidtnp
     }
     else
@@ -1153,7 +1154,7 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     //-------------------------------------------------------------
     // fill flamefront conforming to restart state
     //-------------------------------------------------------------
-    flamefront_->UpdateFlameFront(combustdyn_, ScaTraField().Phin(), ScaTraField().Phinp());
+    flamefront_->UpdateFlameFront(combustdyn_, ScaTraField()->Phin(), ScaTraField()->Phinp());
     flamefront_->UpdateOldInterfaceHandle();
 
     // show flame front to fluid time integration scheme
@@ -1172,29 +1173,29 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
         // add 'View' to Gmsh postprocessing file
         gmshfilecontent << "View \" " << "Phinp \" {" << std::endl;
         // draw scalar field 'Phinp' for every element
-        IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinp(),gmshfilecontent);
+        IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField()->Phinp(),gmshfilecontent);
         gmshfilecontent << "};" << std::endl;
       }
       {
         // add 'View' to Gmsh postprocessing file
         gmshfilecontent << "View \" " << "Phin \" {" << std::endl;
         // draw scalar field 'Phin' for every element
-        IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phin(),gmshfilecontent);
+        IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField()->Phin(),gmshfilecontent);
         gmshfilecontent << "};" << std::endl;
       }
-      if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+      if (ScaTraField()->MethodName() == INPAR::SCATRA::timeint_gen_alpha)
       {
         // add 'View' to Gmsh postprocessing file
         gmshfilecontent << "View \" " << "Phidtn \" {" << std::endl;
         // draw scalar field 'Phidtn' for every element
-        IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phidtn(),gmshfilecontent);
+        IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField()->Phidtn(),gmshfilecontent);
         gmshfilecontent << "};" << std::endl;
       }
       {
         //    // add 'View' to Gmsh postprocessing file
         //    gmshfilecontent << "View \" " << "Convective Velocity \" {" << std::endl;
         //    // draw vector field 'Convective Velocity' for every element
-        //    IO::GMSH::VectorFieldNodeBasedToGmsh(gfuncdis,ScaTraField().ConVel(),gmshfilecontent);
+        //    IO::GMSH::VectorFieldNodeBasedToGmsh(gfuncdis,ScaTraField()->ConVel(),gmshfilecontent);
         //    gmshfilecontent << "};" << std::endl;
       }
       gmshfilecontent.close();
@@ -1202,7 +1203,7 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     }
   }
 
-  phinpi_->Update(1.0,*ScaTraField().Phin(),0.0);
+  phinpi_->Update(1.0,*ScaTraField()->Phin(),0.0);
 
   if (gmshoutput_)
   {
@@ -1215,29 +1216,29 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
       // add 'View' to Gmsh postprocessing file
       gmshfilecontent << "View \" " << "Phinp \" {" << std::endl;
       // draw scalar field 'Phinp' for every element
-      IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinp(),gmshfilecontent);
+      IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField()->Phinp(),gmshfilecontent);
       gmshfilecontent << "};" << std::endl;
     }
     {
       // add 'View' to Gmsh postprocessing file
       gmshfilecontent << "View \" " << "Phin \" {" << std::endl;
       // draw scalar field 'Phin' for every element
-      IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phin(),gmshfilecontent);
+      IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField()->Phin(),gmshfilecontent);
       gmshfilecontent << "};" << std::endl;
     }
-    if (ScaTraField().MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+    if (ScaTraField()->MethodName() == INPAR::SCATRA::timeint_gen_alpha)
     {
       // add 'View' to Gmsh postprocessing file
       gmshfilecontent << "View \" " << "Phidtn \" {" << std::endl;
       // draw scalar field 'Phidtn' for every element
-      IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phidtn(),gmshfilecontent);
+      IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField()->Phidtn(),gmshfilecontent);
       gmshfilecontent << "};" << std::endl;
     }
     {
       //    // add 'View' to Gmsh postprocessing file
       //    gmshfilecontent << "View \" " << "Convective Velocity \" {" << std::endl;
       //    // draw vector field 'Convective Velocity' for every element
-      //    IO::GMSH::VectorFieldNodeBasedToGmsh(gfuncdis,ScaTraField().ConVel(),gmshfilecontent);
+      //    IO::GMSH::VectorFieldNodeBasedToGmsh(gfuncdis,ScaTraField()->ConVel(),gmshfilecontent);
       //    gmshfilecontent << "};" << std::endl;
     }
     gmshfilecontent.close();
@@ -1245,11 +1246,11 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
   }
 
   //FluidField().Output();
-  //ScaTraField().Output();
+  //ScaTraField()->Output();
 
   // set time in scalar transport time integration scheme
   if(restartfromfluid)
-    ScaTraField().SetTimeStep(FluidField().Time(),step);
+    ScaTraField()->SetTimeStep(FluidField().Time(),step);
 
   SetTimeStep(FluidField().Time(),step);
 
@@ -1310,9 +1311,9 @@ void COMBUST::Algorithm::Redistribute()
       // Building graph for later use by parmetis
       //--------------------------------------------------------------------------------------
       const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
-      const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
+      const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField()->Discretization();
       const Epetra_Map* noderowmap = fluiddis->NodeRowMap();
-      Teuchos::RCP<std::map<int,std::vector<int> > > allcoupledcolnodes = ScaTraField().PBC()->ReturnAllCoupledColNodes();
+      Teuchos::RCP<std::map<int,std::vector<int> > > allcoupledcolnodes = ScaTraField()->PBC()->ReturnAllCoupledColNodes();
 
       // weights for graph partition
       Epetra_Vector weights(*noderowmap,false);
@@ -1814,7 +1815,7 @@ void COMBUST::Algorithm::Redistribute()
         Teuchos::RCP<Epetra_Map> elerowmap;
         Teuchos::RCP<Epetra_Map> elecolmap;
 
-        ScaTraField().Discretization()->BuildElementRowColumn(newnoderowmap,newnodecolmap,elerowmap,elecolmap);
+        ScaTraField()->Discretization()->BuildElementRowColumn(newnoderowmap,newnodecolmap,elerowmap,elecolmap);
 
         int myrowele = elerowmap->NumMyElements();
         int minrowele = 1;
@@ -1836,7 +1837,7 @@ void COMBUST::Algorithm::Redistribute()
       if(Comm().MyPID()==0)
         IO::cout << "Redistributing ScaTra Discretization                                ... " << IO::endl;
 
-      dynamic_cast<SCATRA::LevelSetAlgorithm&>(ScaTraField()).Redistribute(newnodegraph);
+      Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->Redistribute(newnodegraph);
 
       if(Comm().MyPID()==0)
         IO::cout << "Redistributing Fluid Discretization                                 ... " << IO::endl;
@@ -1847,8 +1848,8 @@ void COMBUST::Algorithm::Redistribute()
         IO::cout << "done\nUpdating interface                                                  ... " << IO::endl;
 
       // update flame front according to evolved G-function field
-      // remark: for only one FGI iteration, 'phinpip_' == ScaTraField().Phin()
-      flamefront_->UpdateFlameFront(combustdyn_, ScaTraField().Phin(), ScaTraField().Phinp());
+      // remark: for only one FGI iteration, 'phinpip_' == ScaTraField()->Phin()
+      flamefront_->UpdateFlameFront(combustdyn_, ScaTraField()->Phin(), ScaTraField()->Phinp());
 
       if(Comm().MyPID()==0)
         IO::cout << "Transfering state vectors to new distribution                       ... " << IO::endl;
@@ -1888,7 +1889,7 @@ void COMBUST::Algorithm::Redistribute()
 
         // update the statistics manager to the new ScaTra discretization
 //        FluidField().TurbulenceStatisticManager()
-//            ->AddScaTraResults(ScaTraField().Discretization(),ScaTraField().Phinp());
+//            ->AddScaTraResults(ScaTraField()->Discretization(),ScaTraField()->Phinp());
 
         if(Comm().MyPID()==0)
           IO::cout << "Redistributing General Mean Statistics Manager                      ... " << IO::endl;

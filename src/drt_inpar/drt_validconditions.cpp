@@ -2626,30 +2626,30 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > homvolscatracoupcomp;
 
-  homvolscatracoupcomp.push_back( Teuchos::rcp(new SeparatorConditionComponent("numscal")) );
-  homvolscatracoupcomp.push_back( Teuchos::rcp(new IntRealBundle(
-								   "intreal bundle",
-									Teuchos::rcp(new IntConditionComponent("numscal")),
-									HSTRintsepveccomp,
-									HSTRintveccomp,
-									HSTRrealsepveccomp,
-									HSTRrealveccomp)) );
-  homvolscatracoupcomp.push_back( Teuchos::rcp(new SeparatorConditionComponent("reaccoeff")) );
-  homvolscatracoupcomp.push_back( Teuchos::rcp(new RealConditionComponent("reaccoeff")) );
-  homvolscatracoupcomp.push_back( Teuchos::rcp(new SeparatorConditionComponent("coupling")) );
-  homvolscatracoupcomp.push_back( Teuchos::rcp(new StringConditionComponent("coupling",
-  												"simple_multiplicative",
-  												Teuchos::tuple<std::string>("simple_multiplicative","other"),
-  												/*Teuchos::tuple<int>(INPAR::SCATRA::simple_multiplicative,
-  																	INPAR::SCATRA::other)*/
-  												Teuchos::tuple<std::string>("simple_multiplicative","other"))) );
+  homvolscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")) );
+  homvolscatracoupcomp.push_back(Teuchos::rcp(new IntRealBundle(
+                                 "intreal bundle",
+                                Teuchos::rcp(new IntConditionComponent("numscal")),
+                                HSTRintsepveccomp,
+                                HSTRintveccomp,
+                                HSTRrealsepveccomp,
+                                HSTRrealveccomp)) );
+  homvolscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("reaccoeff")) );
+  homvolscatracoupcomp.push_back(Teuchos::rcp(new RealConditionComponent("reaccoeff")) );
+  homvolscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("coupling")) );
+  homvolscatracoupcomp.push_back(Teuchos::rcp(new StringConditionComponent("coupling",
+                                  "simple_multiplicative",
+                                  Teuchos::tuple<std::string>("simple_multiplicative","other"),
+                                  /*Teuchos::tuple<int>(INPAR::SCATRA::simple_multiplicative,
+                                            INPAR::SCATRA::other)*/
+                                  Teuchos::tuple<std::string>("simple_multiplicative","other"))) );
   Teuchos::RCP<ConditionDefinition> homvolscatracoup =
-		 Teuchos::rcp( new ConditionDefinition("DESIGN HOMOGENEOUS SCATRA COUPLING VOLUME CONDITIONS",
-											   "HomoScaTraCoupling",
-											   "Homogenous ScaTra Volume Coupling",
-											   DRT::Condition::HomoScaTraCoupling,
-											   true,
-											   DRT::Condition::Volume) );
+    Teuchos::rcp(new ConditionDefinition("DESIGN HOMOGENEOUS SCATRA COUPLING VOLUME CONDITIONS",
+                 "HomoScaTraCoupling",
+                 "Homogenous ScaTra Volume Coupling",
+                 DRT::Condition::HomoScaTraCoupling,
+                 true,
+                 DRT::Condition::Volume) );
 
   for (unsigned i=0; i<homvolscatracoupcomp.size(); ++i)
   {

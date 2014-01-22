@@ -45,7 +45,7 @@ public:
   /*!
   \brief constructor
   */
-  ScaTraResultTest(ScaTraTimIntImpl& scatra);
+  ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatra);
 
 
   /// our version of nodal value tests

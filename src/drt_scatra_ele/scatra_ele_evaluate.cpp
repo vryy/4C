@@ -21,6 +21,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_lsreinit.H"
+#include "scatra_ele_parameter_elch.H"
 
 #include "scatra_ele_impl_utils.H"
 
@@ -89,6 +90,16 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
     // set additional problem-dependent parameters
     scatrapara->SetElementLsReinitScaTraParameter(p);
   }
+  else if (action == SCATRA::set_elch_scatra_parameter)
+  {
+    DRT::ELEMENTS::ScaTraEleParameterElch* scatrapara = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
+    // set general parameters first
+    scatrapara->SetElementGeneralScaTraParameter(p,dis.Comm().MyPID());
+    // set additional problem-dependent parameters
+    scatrapara->SetElementElchScaTraParameter(p,dis.Comm().MyPID());
+
+    scatrapara->SetElementElchDiffCondScaTraParameter(p,dis.Comm().MyPID());
+  }
 
   return;
 }
@@ -116,7 +127,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
   // the discretization and does not change during the computations
   const int numdofpernode = this->NumDofPerNode(*(this->Nodes()[0]));
   int numscal = numdofpernode;
-  if (SCATRA::IsElchProblem(scatratype))
+  if (scatratype == INPAR::SCATRA::scatratype_elch)
   {
     numscal -= 1;
 
@@ -188,6 +199,10 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_dissipation:
     case SCATRA::calc_mat_and_rhs_lsreinit_correction_step:
     case SCATRA::calc_node_based_reinit_velocity:
+    case SCATRA::calc_error:
+    case SCATRA::calc_elch_conductivity:
+    case SCATRA::calc_elch_initial_potential:
+    case SCATRA::calc_elch_electrode_kinetics:
     case SCATRA::calc_integr_grad_reac:
     case SCATRA::calc_integr_objf:
     case SCATRA::calc_integr_pat_rhsvec:
@@ -209,6 +224,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::set_time_parameter:
     case SCATRA::set_mean_Cai:
     case SCATRA::set_lsreinit_scatra_parameter:
+    case SCATRA::set_elch_scatra_parameter:
       break;
     default:
       dserror("Unknown type of action '%i' for ScaTra", action);

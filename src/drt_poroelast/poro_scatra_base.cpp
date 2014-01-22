@@ -151,26 +151,26 @@ void POROELAST::PORO_SCATRA_Base::SetPoroSolution()
 void POROELAST::PORO_SCATRA_Base::SetScatraSolution()
 {
   //porous structure
-  poro_->StructureField()->ApplyCouplingState(scatra_->ScaTraField().Phinp(),"scalar",2);
-  poro_->StructureField()->ApplyCouplingState(scatra_->ScaTraField().Phin(),"scalarn",2);
+  poro_->StructureField()->ApplyCouplingState(scatra_->ScaTraField()->Phinp(),"scalar",2);
+  poro_->StructureField()->ApplyCouplingState(scatra_->ScaTraField()->Phin(),"scalarn",2);
 
   //porous fluid
-  poro_->FluidField()->SetIterLomaFields(scatra_->ScaTraField().Phinp(),
-                                        scatra_->ScaTraField().Phin(),
-                                        scatra_->ScaTraField().Phidtnp(),
+  poro_->FluidField()->SetIterLomaFields(scatra_->ScaTraField()->Phinp(),
+                                        scatra_->ScaTraField()->Phin(),
+                                        scatra_->ScaTraField()->Phidtnp(),
                                         Teuchos::null,
                                         0.0,
                                         0.0,
                                         0.0,
                                         0.0,
-                                        scatra_->ScaTraField().Discretization());
+                                        scatra_->ScaTraField()->Discretization());
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Base::SetVelocityFields()
 {
-  scatra_->ScaTraField().SetVelocityField(
+  scatra_->ScaTraField()->SetVelocityField(
       poro_->FluidField()->ConvectiveVel(), //convective vel.
       Teuchos::null, //acceleration
       poro_->FluidField()->Velnp(), //velocity
@@ -183,7 +183,7 @@ void POROELAST::PORO_SCATRA_Base::SetVelocityFields()
 /*----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Base::SetMeshDisp()
 {
-  scatra_->ScaTraField().ApplyMeshMovement(
+  scatra_->ScaTraField()->ApplyMeshMovement(
       poro_->FluidField()->Dispnp(),
       poro_->FluidField()->Discretization());
 }
@@ -200,7 +200,7 @@ void POROELAST::PORO_SCATRA_Base::AddDofSets(bool replace)
   //get discretizations
   Teuchos::RCP<DRT::Discretization> structdis = PoroField()->StructureField()->Discretization();
   Teuchos::RCP<DRT::Discretization> fluiddis = PoroField()->FluidField()->Discretization();
-  Teuchos::RCP<DRT::Discretization> scatradis = ScatraField().Discretization();
+  Teuchos::RCP<DRT::Discretization> scatradis = ScaTraField()->Discretization();
 
   if(PoroField()->HasSubmeshes())
   {

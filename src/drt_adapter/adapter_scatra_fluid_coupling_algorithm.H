@@ -54,7 +54,7 @@ namespace ADAPTER
         );
 
     /// virtual destructor to support polymorph destruction
-    virtual ~ScaTraFluidCouplingAlgorithm();
+    virtual ~ScaTraFluidCouplingAlgorithm(){};
 
     /// outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;

@@ -164,20 +164,12 @@ namespace INPAR
       evalmat_integration_point
     };
 
-    //TODO: SCATRA_ELE_CLEANING: delete types
-    /// type of scalar transport problem
     enum ScaTraType
     {
       scatratype_undefined,
       scatratype_condif,
       scatratype_loma,
       scatratype_elch,
-      scatratype_elch_enc,
-      scatratype_elch_enc_pde,
-      scatratype_elch_enc_pde_elim,
-      scatratype_elch_poisson,
-      scatratype_elch_laplace,
-      scatratype_elch_diffcond,
       scatratype_levelset,
       scatratype_poro,
       scatratype_advreac,
@@ -217,10 +209,6 @@ namespace INPAR
       initpotcalc_standard,
       initpotcalc_fix_pot
     };
-
-    // faraday constant (general definition)
-    const double faraday_const = 96485.3399;
-
   }  // namespace SCATRA
 
 }  // namespace INPAR

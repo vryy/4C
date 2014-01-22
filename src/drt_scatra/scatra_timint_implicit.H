@@ -31,8 +31,7 @@ Maintainer: Andreas Ehrl
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 #include <Epetra_SerialDenseVector.h>
-#include <Epetra_CrsGraph.h>
-#include "../drt_lib/drt_dserror.H"
+
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_fluid.H"
 
@@ -122,6 +121,15 @@ public:
   //! initialize time integration
   virtual void Init();
 
+  //! Initialization of system matrix
+  virtual void InitSystemMatrix();
+
+  //! Initialization of turbulence models
+  //TODO: SCATRA_ELE_CLEANING: copy pointer?
+  void InitTurbulenceModel(
+      const Epetra_Map* dofrowmap,
+      const Epetra_Map* noderowmap);
+
   /*========================================================================*/
   //! @name general framework
   /*========================================================================*/
@@ -205,7 +213,7 @@ public:
   );
 
   //! calculate error compared to analytical solution
-  void EvaluateErrorComparedToAnalyticalSol();
+  virtual void EvaluateErrorComparedToAnalyticalSol(){return;};
 
   /*--- query and output ---------------------------------------------------*/
 
@@ -369,49 +377,41 @@ public:
   void OutputIntegrReac(const int num=0);
 
   /*========================================================================*/
-  //! @name ELCH
+  //! @name Elch methods
   /*========================================================================*/
 
   /*--- set, prepare, and predict ------------------------------------------*/
 
+  //! Initialize Nernst-BC
+  virtual void InitNernstBC(){return;};
+
   /*--- calculate and update -----------------------------------------------*/
 
-  //! compute density field from concentration(s) for ELCH natural convection
-  void ComputeDensity();
+  //! calculate initial field for electric potential based on ion concentrations (ELCH)
+  virtual void CalcInitialPotentialField(){return;};
 
-  //! update density field for ELCH natural convection
-  virtual void UpdateDensityElch() = 0;
-
-  /*--- query and output ---------------------------------------------------*/
-
-  //! return density field at time n+1 for ELCH natural convection
-  Teuchos::RCP<Epetra_Vector> DensElchNp() { return elchdensnp_; }
-
-  //! return density field at time n for ELCH natural convection
-  Teuchos::RCP<Epetra_Vector> DensElchN() { return elchdensn_; }
-
-  //! return density field at time n-1 for ELCH natural convection
-  Teuchos::RCP<Epetra_Vector> DensElchNm() { return elchdensnm_; }
+  //! compute contribution of electrode kinetics to eq. system
+  virtual void EvaluateSolutionDependingBC(
+    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< system matrix
+    Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
+  ){return;};
 
   //! output of all electrode information to screen and/or file (default: 2x true)
-  Teuchos::RCP< std::vector<double> > OutputElectrodeInfo(
+  virtual Teuchos::RCP< std::vector<double> > OutputElectrodeInfo(
     bool printtoscreen = true,  //!< flag for printing information to screen
     bool printtofile = true     //!< flag for printing information to file
-  );
+  ){return Teuchos::null;};
 
-  //! output of electrode information for a single boundary condition
-  Teuchos::RCP< std::vector<double> > OutputSingleElectrodeInfo(
-    DRT::Condition* condition, //!< pointer to the condition
-    const int  condid,         //!< condition id
-    const bool printtoscreen,  //!< flag for output to screen
-    const bool printtofile,    //!< flag for output to file
-    double& currentsum,        //!< net current over all boundaries (out)
-    double& pottangent,        //!< tangent of current w.r.t. electrode potential (out)
-    double& currresidual,      //!< neg. residual of current equation (out)
-    double& electrodesurface,  //!< surface of the electrode
-    double& electrodepot,      //!< electrode potential (metal side)
-    double& meanoverpot        //!< mean surface overpotential
-  );
+  //! Add Linearization for Nernst-BC
+  virtual void  LinearizationNernstCondition(){return;};
+
+  //! apply galvanostatic control (update electrode potential)
+  virtual bool ApplyGalvanostaticControl(){return true;};
+
+  //! check for negative values of concentrations (ELCH)
+  virtual void CheckConcentrationValues(
+    Teuchos::RCP<Epetra_Vector> vec //!< current phi vector to be checked
+  ){return;};
 
   /*========================================================================*/
   //! @name turbulence and related
@@ -479,6 +479,9 @@ protected:
   /*========================================================================*/
 
   virtual void SetElementTimeParameter()=0;
+
+  //TODO: SCATRA_ELE_CLEANING: ersetzten durch Liste für boundaryElemente
+  virtual void SetElementTimeParameter(Teuchos::ParameterList& eleparams)=0;
 
   virtual void SetElementTimeParameterForForcedIncrementalSolve()=0;
 
@@ -584,7 +587,7 @@ protected:
   void LinearSolve();
 
   //! contains the nonlinear iteration loop
-  void NonlinearSolve();
+  virtual void NonlinearSolve();
 
   //! check convergence (or divergence) of nonlinear iteration
   bool AbortNonlinIter(
@@ -594,6 +597,16 @@ protected:
     const double abstolres, //!< absolute tolerance for the residual norm
     double& actresidual     //!< return value of the current residual
   );
+
+  //! Calculate problem specific norm
+  virtual void CalcProblemSpecificNorm(
+      double& conresnorm,
+      double& incconnorm_L2,
+      double& connorm_L2,
+      double& incpotnorm_L2,
+      double& potnorm_L2,
+      double& potresnorm,
+      double& conresnorminf);
 
   /*--- query and output ---------------------------------------------------*/
 
@@ -658,52 +671,7 @@ protected:
 
   /*--- query and output ---------------------------------------------------*/
 
-  /*========================================================================*/
-  //! @name ELCH
-  /*========================================================================*/
 
-  /*--- set, prepare, and predict ------------------------------------------*/
-
-  //! setup of natural convection (ELCH)
-  void SetupElchNatConv();
-
-  //! set magnetic field (ELCH)
-  void SetMagneticField(
-    const int funcno //!< number of spatial function that defines the vector field
-  );
-
-  /*--- calculate and update -----------------------------------------------*/
-
-  //! calculate initial field for electric potential based on ion concentrations (ELCH)
-  void CalcInitialPotentialField();
-
-  //! computes different conductivity expressions for electrolyte solutions (ELCH)
-  Epetra_SerialDenseVector ComputeConductivity();
-
-  //! apply galvanostatic control (update electrode potential) (ELCH)
-  bool ApplyGalvanostaticControl();
-
-  //! compute contribution of electrode kinetics to eq. system
-  void EvaluateElectrodeKinetics(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< system matrix
-    Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
-  );
-
-  //! Initialize Nernst-BC
-  void InitNernstBC();
-
-  //! Add Linearization for Nernst-BC
-  void  LinearizationNernstCondition();
-
-  //! update time-dependent electrode state variables at the end of an time step
-  virtual void ElectrodeKineticsTimeUpdate() = 0;
-
-  /*--- query and output ---------------------------------------------------*/
-
-  //! check for negative values of concentrations (ELCH)
-  void CheckConcentrationValues(
-    Teuchos::RCP<Epetra_Vector> vec //!< current phi vector to be checked
-  );
 
   /*========================================================================*/
   //! @name low-Mach-number flow
@@ -750,17 +718,8 @@ protected:
   void RecomputeMeanCsgsB();
 
   /*========================================================================*/
-  //! @name elch: diffusion-conduction formulation related
-  /*========================================================================*/
-
-  void ValidParameterDiffCond();
-
-  /*========================================================================*/
   //! @name  not classified method - to be kept clean!!!
   /*========================================================================*/
-
-  //! scale lines of linear system prior to solver call (ELCH)
-  void ScaleLinearSystem();
 
   /*!
    * \brief Extract the Dirichlet toggle vector based on Dirichlet BC maps
@@ -829,6 +788,15 @@ protected:
   //! ids of scalars for which flux vectors are written (starting with 1)
   std::vector<int> writefluxids_;
 
+  //! flux vector fields
+  Teuchos::RCP<Epetra_MultiVector> flux_;
+
+  //! vector for statistical evaluation of normal fluxes
+  Teuchos::RCP<Epetra_SerialDenseVector> sumnormfluxintegral_;
+
+  //! the last step number when fluxes have been computed
+  int lastfluxoutputstep_;
+
   //! flag for printing out mean values of scalars
   const bool outmean_;
 
@@ -869,6 +837,9 @@ protected:
   //! number of transported scalars
   int numscal_;
 
+  //! number of transported scalars
+  int numdofpernode_;
+
   //! phi at times n
   Teuchos::RCP<Epetra_Vector> phin_;
   //! phi at times n+1
@@ -882,37 +853,6 @@ protected:
   //! histvector --- a linear combination of phinm, phin (BDF)
   //!                or phin, phidtn (One-Step-Theta)
   Teuchos::RCP<Epetra_Vector>    hist_;
-
-  //! initial concentrations of the electrolyte solution (ELCH)
-  std::vector<double> c0_;
-
-  /*========================================================================*/
-  //! @name electrophysiology
-  /*========================================================================*/
-
-  //! activation_time at times n+1
-  Teuchos::RCP<Epetra_Vector> activation_time_np_;
-
-  //! activation threshold for postprocessing
-  double activation_threshold_;
-
-  //! maximum expected number of material internal state variables
-  int nb_max_mat_int_state_vars_;
-
-  //! material internal state at times n+1
-  Teuchos::RCP<Epetra_MultiVector> material_internal_state_np_;
-
-  //! one component of the material internal state at times n+1 (for separated postprocessing)
-  Teuchos::RCP<Epetra_Vector> material_internal_state_np_component_;
-
-  //! maximum expected number of material ionic currents
-  int nb_max_mat_ionic_currents_;
-
-  //! material ionic currents at times n+1
-  Teuchos::RCP<Epetra_MultiVector> material_ionic_currents_np_;
-
-  //! one component of the material ionic currents at times n+1 (for separated postprocessing)
-  Teuchos::RCP<Epetra_Vector> material_ionic_currents_np_component_;
 
   /*========================================================================*/
   //! @name velocity, pressure, and related
@@ -939,13 +879,6 @@ protected:
   /*========================================================================*/
   //! @name coefficients and related
   /*========================================================================*/
-
-  //! density (nodebased!) at times n-1 for ELCH natural convection algorithm
-  Teuchos::RCP<Epetra_Vector> elchdensnm_;
-  //! density (nodebased!) at times n for ELCH natural convection algorithm
-  Teuchos::RCP<Epetra_Vector> elchdensn_;
-  //! density (nodebased!) at times n+1 for ELCH natural convection algorithm
-  Teuchos::RCP<Epetra_Vector> elchdensnp_;
 
   //! subgrid-diffusivity(-scaling) vector
   Teuchos::RCP<Epetra_Vector> subgrdiff_;
@@ -984,15 +917,6 @@ protected:
   //! unit outer normal vector field for flux output
   Teuchos::RCP<Epetra_MultiVector> normals_;
 
-  //! flux vector fields
-  Teuchos::RCP<Epetra_MultiVector> flux_;
-
-  //! vector for statistical evaluation of normal fluxes
-  Teuchos::RCP<Epetra_SerialDenseVector> sumnormfluxintegral_;
-
-  //! the last step number when fluxes have been computed
-  int lastfluxoutputstep_;
-
   //! The residual vector
   Teuchos::RCP<Epetra_Vector> residual_;
 
@@ -1005,38 +929,37 @@ protected:
   //! coupling of fluid-fluid at an internal interface
   Teuchos::RCP<FLD::Meshtying> meshtying_;
 
-  // options for meshtying ? bool?
-  int msht_;
+  // options for meshtying
+  enum INPAR::FLUID::MeshTying msht_;
 
   /*========================================================================*/
-  //! @name ELCH variables
+  //! @name electrophysiology
   /*========================================================================*/
 
-  //! number of iterations in galvanostatic mode (ELCH)
-  int gstatnumite_;
+  //TODO: SCATRA_ELE_CLEANING
+  //! activation_time at times n+1
+  Teuchos::RCP<Epetra_Vector> activation_time_np_;
 
-  //! value of electric potential increment in galvanostatic mode (ELCH)
-  double gstatincrement_;
+  //! activation threshold for postprocessing
+  double activation_threshold_;
 
-  //! magnetic field (3D vector field)
-  Teuchos::RCP<Epetra_MultiVector> magneticfield_;
+  //! maximum expected number of material internal state variables
+  int nb_max_mat_int_state_vars_;
 
-  //! conductivity of the single species and the whole electrolyte
-  Epetra_SerialDenseVector sigma_;
+  //! material internal state at times n+1
+  Teuchos::RCP<Epetra_MultiVector> material_internal_state_np_;
 
-  //! densification coefficients for ELCH natural convection
-  std::vector<double> densific_;
+  //! one component of the material internal state at times n+1 (for separated postprocessing)
+  Teuchos::RCP<Epetra_Vector> material_internal_state_np_component_;
 
-  //! ELCH-specific parameter F/RT (default value for the temperature is 298K)
-  double frt_;
+  //! maximum expected number of material ionic currents
+  int nb_max_mat_ionic_currents_;
 
-  //! true if kinetic model is butler volmer and one electrode has a double layer capacitance unequal zero
-  // initialized with true and set false if no capacitance is detected in the first timestep
-  bool dlcapexists_;
+  //! material ionic currents at times n+1
+  Teuchos::RCP<Epetra_MultiVector> material_ionic_currents_np_;
 
-  //! electro-kinetics toggle
-  //! Toggle defining the dof's with Nernst-BC
-  Teuchos::RCP<Epetra_Vector> ektoggle_;
+  //! one component of the material ionic currents at times n+1 (for separated postprocessing)
+  Teuchos::RCP<Epetra_Vector> material_ionic_currents_np_component_;
 
   /*========================================================================*/
   //! @name AVM3 variables
@@ -1112,6 +1035,7 @@ protected:
   //! @name Biofilm specific stuff
   /*========================================================================*/
 
+  //TODO: SCATRA_ELE_CLEANING
   //! scatra fluid displacement due to growth
   Teuchos::RCP<Epetra_MultiVector> scfldgrdisp_;
 
@@ -1120,11 +1044,6 @@ protected:
 
   //! flag for printing out integral values of reaction
   const bool outintegrreac_;
-
-  //! Activate/Deactivate diffcond formulation on time integration level
-  bool diffcond_;
-
-//  std::vector<double> reacintegral_;
 
 
 }; // class ScaTraTimIntImpl

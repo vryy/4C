@@ -49,8 +49,6 @@ Maintainer: Matthias Mayr
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_fluid_xfluid/xfluidfluid.H"
 
-#include "../drt_scatra/scatra_utils.H"
-
 #include "../drt_ale/ale_utils_clonestrategy.H"
 
 #include "../drt_inpar/inpar_fsi.H"

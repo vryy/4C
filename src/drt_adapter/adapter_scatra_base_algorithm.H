@@ -18,6 +18,7 @@ Maintainer: Georg Bauer
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 
+#include "../drt_lib/drt_dserror.H"
 
 // forward declarations
 namespace DRT
@@ -54,13 +55,10 @@ namespace ADAPTER {
     );
 
     /// virtual destructor to support polymorph destruction
-    virtual ~ScaTraBaseAlgorithm();
+    virtual ~ScaTraBaseAlgorithm(){};
 
     /// access to the scalar transport field solver
-    SCATRA::ScaTraTimIntImpl& ScaTraField();
-
-    /// access to the scalar transport field solver
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraFieldrcp() { return scatra_; }
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() { return scatra_; }
 
     /// create result test for scalar transport field
     Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest();

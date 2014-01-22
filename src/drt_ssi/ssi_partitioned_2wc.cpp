@@ -23,7 +23,7 @@
 SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams)
   : SSI_Part(comm, timeparams),
-    scaincnp_(Teuchos::rcp(new Epetra_Vector(*(scatra_->ScaTraField().Phinp())))),
+    scaincnp_(Teuchos::rcp(new Epetra_Vector(*(scatra_->ScaTraField()->Phinp())))),
     dispincnp_(Teuchos::rcp(new Epetra_Vector(*(structure_()->Dispnp()))))
 {
     // build a proxy of the structure discretization for the scatra field
@@ -31,10 +31,10 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
       = structure_->Discretization()->GetDofSetProxy();
     // build a proxy of the temperature discretization for the structure field
     Teuchos::RCP<DRT::DofSet> scatradofset
-      = scatra_->ScaTraField().Discretization()->GetDofSetProxy();
+      = scatra_->ScaTraField()->Discretization()->GetDofSetProxy();
 
     // check if scatra field has 2 discretizations, so that coupling is possible
-    if (scatra_->ScaTraField().Discretization()->AddDofSet(structdofset)!=1)
+    if (scatra_->ScaTraField()->Discretization()->AddDofSet(structdofset)!=1)
       dserror("unexpected dof sets in scatra field");
     if (structure_->Discretization()->AddDofSet(scatradofset)!=1)
       dserror("unexpected dof sets in structure field");
@@ -89,7 +89,7 @@ void SSI::SSI_Part2WC::DoScatraStep()
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  scatra_->ScaTraField().Solve();
+  scatra_->ScaTraField()->Solve();
 
 }
 
@@ -103,7 +103,7 @@ void SSI::SSI_Part2WC::PrepareTimeStep()
 
   structure_-> PrepareTimeStep();
   SetStructSolution();
-  scatra_->ScaTraField().PrepareTimeStep();
+  scatra_->ScaTraField()->PrepareTimeStep();
   SetScatraSolution();
 }
 
@@ -114,12 +114,12 @@ void SSI::SSI_Part2WC::UpdateAndOutput()
   structure_-> PrepareOutput();
 
   structure_-> Update();
-  scatra_->ScaTraField().Update();
+  scatra_->ScaTraField()->Update();
 
-  scatra_->ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+  scatra_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
 
   structure_-> Output();
-  scatra_->ScaTraField().Output();
+  scatra_->ScaTraField()->Output();
 }
 
 
@@ -141,7 +141,7 @@ void SSI::SSI_Part2WC::OuterLoop()
 
     // store scalar from first solution for convergence check (like in
     // elch_algorithm: use current values)
-    scaincnp_->Update(1.0,*scatra_->ScaTraField().Phinp(),0.0);
+    scaincnp_->Update(1.0,*scatra_->ScaTraField()->Phinp(),0.0);
     dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);
 
     // set structure-based scalar transport values
@@ -189,12 +189,12 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  scaincnp_->Update(1.0,*(scatra_->ScaTraField().Phinp()),-1.0);
+  scaincnp_->Update(1.0,*(scatra_->ScaTraField()->Phinp()),-1.0);
   dispincnp_->Update(1.0,*(structure_->Dispnp()),-1.0);
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
-  scatra_->ScaTraField().Phinp()->Norm2(&scanorm_L2);
+  scatra_->ScaTraField()->Phinp()->Norm2(&scanorm_L2);
   dispincnp_->Norm2(&dispincnorm_L2);
   structure_->Dispnp()->Norm2(&dispnorm_L2);
 

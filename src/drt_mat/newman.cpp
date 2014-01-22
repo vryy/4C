@@ -31,7 +31,8 @@ MAT::PAR::Newman::Newman(
   curvetrans_(matdata->GetInt("CURVE_TRANS")),
   a_(matdata->GetDouble("A")),
   b_(matdata->GetDouble("B")),
-  c_(matdata->GetDouble("C"))
+  c_(matdata->GetDouble("C")),
+  cursolvar_((matdata->GetInt("CURSOLVAR")))
 {
 }
 

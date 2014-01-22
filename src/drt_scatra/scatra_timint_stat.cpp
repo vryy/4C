@@ -13,7 +13,6 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_stat.H"
-#include "scatra_utils.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -29,7 +28,8 @@ SCATRA::TimIntStationary::TimIntStationary(
   Teuchos::RCP<Teuchos::ParameterList>   params,
   Teuchos::RCP<Teuchos::ParameterList>   extraparams,
   Teuchos::RCP<IO::DiscretizationWriter> output)
-: ScaTraTimIntImpl(actdis,solver,params,extraparams,output)
+: ScaTraTimIntImpl(actdis,solver,params,extraparams,output),
+  fsphinp_(Teuchos::null)
 {
   return;
 }
@@ -66,14 +66,15 @@ void SCATRA::TimIntStationary::Init()
   SetElementGeneralScaTraParameter();
   SetElementTurbulenceParameter();
 
+  //TODO: SCATRA_ELE_CLEANING
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)
-  if (IsElch(scatratype_))
-    ComputeTimeDerivPot0(true);
+  //if (IsElch(scatratype_))
+  //  ComputeTimeDerivPot0(true);
 
   // Important: this adds the required ConditionID's to the single conditions.
   // It is necessary to do this BEFORE ReadRestart() is called!
   // Output to screen and file is suppressed
-  OutputElectrodeInfo(false,false);
+  //OutputElectrodeInfo(false,false);
 
   // setup krylov
   PrepareKrylovProjection();
@@ -113,6 +114,27 @@ void SCATRA::TimIntStationary::SetElementTimeParameter()
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | set time parameter for element evaluation (usual call)    ehrl 11/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntStationary::SetElementTimeParameter(Teuchos::ParameterList& eleparams)
+{
+  eleparams.set<int>("action",SCATRA::set_time_parameter);
+  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
+  eleparams.set<int>("scatratype",scatratype_);
+
+  eleparams.set<bool>("using generalized-alpha time integration",false);
+  eleparams.set<bool>("using stationary formulation",true);
+  eleparams.set<bool>("incremental solver",incremental_);
+
+  eleparams.set<double>("time-step length",dta_);
+  eleparams.set<double>("total time",time_);
+  eleparams.set<double>("time factor",1.0);
+  eleparams.set<double>("alpha_F",1.0);
 
   return;
 }
@@ -180,34 +202,6 @@ void SCATRA::TimIntStationary::SetElementTimeParameterInitial()
 void SCATRA::TimIntStationary::SetOldPartOfRighthandside()
 {
   hist_->PutScalar(0.0);
-
-  return;
-}
-
-
-/*-------------------------------------------------------------------------------------*
- | compute time derivative of applied electrode potential                   ehrl 08/13 |
- *-------------------------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::ComputeTimeDerivPot0(const bool init)
-{
-  std::vector<DRT::Condition*> cond;
-  discret_->GetCondition("ElectrodeKinetics",cond);
-  int numcond = cond.size();
-
-  for(int icond = 0; icond < numcond; icond++)
-  {
-    double dlcap = cond[icond]->GetDouble("dl_spec_cap");
-
-    if (init)
-    {
-      if(dlcap!=0.0)
-        dserror("Double layer charging and galvanostatic mode are not implemented for BDF2! You have to use one-step-theta time integration scheme");
-        //dlcapexists_=true;
-
-      if(DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC")==true)
-          dserror("Double layer charging and galvanostatic mode are not implemented for BDF2! You have to use one-step-theta time integration scheme");
-    }
-  }
 
   return;
 }
@@ -285,42 +279,6 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
   // if(isale_)
   //  reader.ReadVector(trueresidual_, "trueresidual");
 
-  // Initialize Nernst-BC
-  InitNernstBC();
-
-  // restart for galvanostatic applications
-  if (IsElch(scatratype_))
-  {
-    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
-    {
-      // define a vector with all electrode kinetics BCs
-      std::vector<DRT::Condition*> cond;
-      discret_->GetCondition("ElectrodeKinetics",cond);
-
-      int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
-      std::vector<DRT::Condition*>::iterator fool;
-      bool read_pot=false;
-
-      // read desired values from the .control file and add/set the value to
-      // the electrode kinetics boundary condition representing the cathode
-      for (fool=cond.begin(); fool!=cond.end(); ++fool)
-      {
-        DRT::Condition* mycond = (*(fool));
-        const int condid = mycond->GetInt("ConditionID");
-        if (condid_cathode==condid)
-        {
-          double pot = reader.ReadDouble("pot");
-          mycond->Add("pot",pot);
-          read_pot=true;
-          if (myrank_==0)
-            std::cout<<"Successfully read restart data for galvanostatic mode (condid "<<condid<<")"<<std::endl;
-        }
-      }
-      if (!read_pot)
-        dserror("Reading of electrode potential for restart not successful.");
-    }
-  }
-
   return;
 }
 
@@ -356,33 +314,6 @@ void SCATRA::TimIntStationary::OutputRestart()
   // for elch problems with moving boundary
   //if (isale_)
   //  output_->WriteVector("trueresidual", trueresidual_);
-
-  // write additional restart data for galvanostatic applications
-  if (IsElch(scatratype_))
-  {
-    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
-    {
-      // define a vector with all electrode kinetics BCs
-      std::vector<DRT::Condition*> cond;
-      discret_->GetCondition("ElectrodeKinetics",cond);
-
-      int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
-
-      std::vector<DRT::Condition*>::iterator fool;
-      // loop through conditions and find the cathode
-      for (fool=cond.begin(); fool!=cond.end(); ++fool)
-      {
-        DRT::Condition* mycond = (*(fool));
-        const int condid = mycond->GetInt("ConditionID");
-        if (condid_cathode==condid)
-        {
-          // electrode potential of the adjusted electrode kinetics BC at time n+1
-          double pot = mycond->GetDouble("pot");
-          output_->WriteDouble("pot",pot);
-        }
-      }
-    }
-  }
 
   return;
 }

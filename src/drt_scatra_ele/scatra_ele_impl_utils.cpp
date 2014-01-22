@@ -17,21 +17,6 @@ Maintainer: Andreas Ehrl
 namespace SCATRA
 {
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-/// does the given scatratype belong to the ELCH group of problems?
-bool IsElchProblem(const enum INPAR::SCATRA::ScaTraType scatratype)
-{
-  return ((scatratype==INPAR::SCATRA::scatratype_elch_enc)
-      or (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde)
-      or (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
-      or (scatratype==INPAR::SCATRA::scatratype_elch_poisson)
-      or (scatratype==INPAR::SCATRA::scatratype_elch_laplace)
-      or (scatratype==INPAR::SCATRA::scatratype_elch_diffcond));
-}
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool IsBinaryElectrolyte(const std::vector<double>& valence)

@@ -45,7 +45,7 @@ void SSI::SSI_Part::SetStructSolution()
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Part::SetScatraSolution()
 {
-  structure_->ApplyCouplingState(scatra_->ScaTraField().Phinp(),"temperature");
+  structure_->ApplyCouplingState(scatra_->ScaTraField()->Phinp(),"temperature");
 }
 
 /*----------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ void SSI::SSI_Part::SetScatraSolution()
 void SSI::SSI_Part::SetVelocityFields()
 {
 
-  scatra_->ScaTraField().SetVelocityField(
+  scatra_->ScaTraField()->SetVelocityField(
       zeros_, //convective vel.
       Teuchos::null, //acceleration
       structure_->Velnp(), //velocity
@@ -66,7 +66,7 @@ void SSI::SSI_Part::SetVelocityFields()
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Part::SetMeshDisp()
 {
-  scatra_->ScaTraField().ApplyMeshMovement(
+  scatra_->ScaTraField()->ApplyMeshMovement(
       structure_->Dispnp(),
       structure_->Discretization());
 }

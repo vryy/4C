@@ -91,14 +91,14 @@ void elch_dyn(int restart)
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(elchcontrol,false,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
     // read the restart information, set vectors and variables
-    if (restart) scatraonly->ScaTraField().ReadRestart(restart);
+    if (restart) (scatraonly->ScaTraField())->ReadRestart(restart);
 
     // set velocity field
     //(this is done only once. Time-dependent velocity fields are not supported)
-    (scatraonly->ScaTraField()).SetVelocityField();
+    (scatraonly->ScaTraField())->SetVelocityField();
 
     // enter time loop to solve problem with given convective velocity
-    (scatraonly->ScaTraField()).TimeLoop();
+    (scatraonly->ScaTraField())->TimeLoop();
 
     // perform the result test if required
     DRT::Problem::Instance()->AddFieldTest(scatraonly->CreateScaTraFieldTest());

@@ -65,6 +65,9 @@ namespace MAT
       /// constant for diffusion potential in current equation
       const double c_;
 
+      //! bool if current is a solution variable
+      const bool cursolvar_;
+
       //@}
 
       /// create material instance of matching type with my parameters
@@ -159,6 +162,8 @@ private:
     /// return constant for diffusion potential in current equation
     double C() const { return params_->c_; }
 
+    //! return bool if current is a solution variable
+    bool CurSolVar() const {return params_->cursolvar_;}
 
     /// computation of the diffusion coefficient based on the defined curve
     double ComputeDiffusionCoefficient (const double cint) const;

@@ -56,28 +56,28 @@ void POROELAST::PORO_SCATRA_Part_1WC::DoScatraStep()
   // -------------------------------------------------------------------
   // prepare time step
   // -------------------------------------------------------------------
-  ScatraField().PrepareTimeStep();
+  ScaTraField()->PrepareTimeStep();
 
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  ScatraField().Solve();
+  ScaTraField()->Solve();
 
   // -------------------------------------------------------------------
   //                         update solution
   //        current solution becomes old solution of next timestep
   // -------------------------------------------------------------------
-  ScatraField().Update();
+  ScaTraField()->Update();
 
   // -------------------------------------------------------------------
   // evaluate error for problems with analytical solution
   // -------------------------------------------------------------------
-  ScatraField().EvaluateErrorComparedToAnalyticalSol();
+  ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
 
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
-  ScatraField().Output();
+  ScaTraField()->Output();
 }
 
 /*----------------------------------------------------------------------*/
@@ -105,7 +105,7 @@ POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::PORO_SCATRA_Part_1WC_PoroToScatra(
     = PoroField()->StructureField()->Discretization()->GetDofSetProxy();
 
   // check if scatra field has 2 discretizations, so that coupling is possible
-  if (ScatraField().Discretization()->AddDofSet(structdofset)!=1)
+  if (ScaTraField()->Discretization()->AddDofSet(structdofset)!=1)
     dserror("unexpected dof sets in scatra field");
 }
 
@@ -135,7 +135,7 @@ void POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::ReadRestart(int restart)
   {
     PoroField()->ReadRestart(restart);
     SetPoroSolution();
-    ScatraField().ReadRestart(restart);
+    ScaTraField()->ReadRestart(restart);
 
     SetTimeStep(PoroField()->Time(), restart);
   }
@@ -149,7 +149,7 @@ POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::PORO_SCATRA_Part_1WC_ScatraToPoro(
 {
   // build a proxy of the scatra discretization for the structure field
   Teuchos::RCP<DRT::DofSet> scatradofset
-    = ScatraField().Discretization()->GetDofSetProxy();
+    = ScaTraField()->Discretization()->GetDofSetProxy();
 
   // check if structure field has 2 discretizations, so that coupling is possible
   if (PoroField()->StructureField()->Discretization()->AddDofSet(scatradofset)!=1)
@@ -180,7 +180,7 @@ void POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::ReadRestart(int restart)
   // (Note that dofmaps might have changed in a redistribution call!)
   if (restart)
   {
-    ScatraField().ReadRestart(restart);
+    ScaTraField()->ReadRestart(restart);
     SetScatraSolution();
     PoroField()->ReadRestart(restart);
 

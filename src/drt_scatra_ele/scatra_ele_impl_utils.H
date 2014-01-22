@@ -21,10 +21,6 @@ Maintainer: Andreas Ehrl
 
 namespace SCATRA
 {
-
-  //! does the given scatratype belong to the ELCH group of problems?
-  bool IsElchProblem(const enum INPAR::SCATRA::ScaTraType scatratype);
-
   /*!
   \brief Decide, whether second derivatives are needed  (template version)
    *  In convection-diffusion problems, ONLY N,xx , N,yy and N,zz are needed

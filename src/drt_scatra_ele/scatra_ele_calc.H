@@ -128,7 +128,8 @@ namespace ELEMENTS
     /*========================================================================*/
 
     //! extract element based or nodal values
-    void ExtractElementAndNodeValues(
+    //  return extracted values of phinp
+    std::vector<double> ExtractElementAndNodeValues(
       DRT::ELEMENTS::Transport*  ele,
       Teuchos::ParameterList&    params,
       DRT::Discretization&       discretization,
@@ -994,8 +995,10 @@ namespace ELEMENTS
 
     ScaTraEleReaManager(int numscal):
       reacoeff_(numscal,0.0),
+
       reacoeffderiv_(numscal,0.0),
       reaterm_(numscal,0.0),
+
       include_me_(false)
       {return;}
 

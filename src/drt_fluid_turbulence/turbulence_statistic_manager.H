@@ -175,7 +175,7 @@ public:
 
   */
   void AddScaTraField(
-      SCATRA::ScaTraTimIntImpl& scatra_timeint);
+      Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_timeint);
 
   /*!
   \brief   Write (dump) the scatra-specific mean fields to the result file

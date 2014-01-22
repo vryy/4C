@@ -32,6 +32,8 @@ namespace ELEMENTS
 class Transport;
 class TransportBoundary;
 
+class ScaTraEleParameterElch;
+
 /// Interface base class for ScaTraImpl
 /*!
   This class exists to provide a common interface for all template
@@ -41,6 +43,7 @@ class TransportBoundary;
  */
 class ScaTraBoundaryImplInterface : public DRT::SingletonDestruction
 {
+  friend class ScaTraEleParameterElch;
 
 public:
   /// Empty constructor
@@ -230,7 +233,7 @@ public:
        const double              pot0,                ///< actual electrode potential on metal side
        const double               frt,                ///< factor F/RT
        const bool              iselch,                ///< problemtype elch or scatra
-       const INPAR::SCATRA::ScaTraType scatratype     ///< scatra problem type
+       const INPAR::ELCH::ElchType elchtype     ///< scatra problem type
        );
 
     //! provide electrode kinetics status information
@@ -400,6 +403,8 @@ public:
 
     //! thermodynamic pressure (LOMA specific)
     double thermpress_;
+
+    DRT::ELEMENTS::ScaTraEleParameterElch* elchparams_;
 
     //! flag for closure equation
     enum INPAR::ELCH::EquPot equpot_;

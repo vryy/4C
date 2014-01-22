@@ -86,13 +86,13 @@ void loma_dyn(int restart)
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(lomacontrol,false,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
     // read restart information
-    if (restart) scatraonly->ScaTraField().ReadRestart(restart);
+    if (restart) (scatraonly->ScaTraField())->ReadRestart(restart);
 
     // set velocity field (done only once, time-dependent fields not supported)
-    (scatraonly->ScaTraField()).SetVelocityField();
+    (scatraonly->ScaTraField())->SetVelocityField();
 
     // enter time loop to solve problem with given convective velocity field
-    (scatraonly->ScaTraField()).TimeLoop();
+    (scatraonly->ScaTraField())->TimeLoop();
 
     // perform result test if required
     problem->AddFieldTest(scatraonly->CreateScaTraFieldTest());

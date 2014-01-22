@@ -37,7 +37,7 @@ BLOCKPRECOND                    No
 MATID                           1
 WRITEFLUX                       No
 OUTMEAN                         No
-SCATRATYPE                      Elch_ENC
+SCATRATYPE                      Elch
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10
 ABSTOLRES                       1e-16
@@ -51,6 +51,7 @@ DEFINITION_TAU                  Zero
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ----------------------------------------------------------------ELCH CONTROL
+ELCHTYPE			DiffCond
 ITEMAX                          2
 MAXTIME                         10
 NUMSTEP                         20
@@ -74,7 +75,7 @@ NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_elchmat CURRENT Yes NUMSPEC 1 SPECIDS 2 NUMPHASE 1 PHASEIDS 3
-MAT 2 MAT_newman VALENCE 1.0 CURVE_DIFF 2 CURVE_TRANS 3 A 1.0 B -3.0 C -2.0
+MAT 2 MAT_newman VALENCE 1.0 CURVE_DIFF 2 CURVE_TRANS 3 A 1.0 B -3.0 C -2.0 CURSOLVAR Yes
 MAT 3 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 CONDUCTIVITY 1.0 NR 4
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/1.0)-(pi/2)))+0.5 t1 0.0 t2 1.0

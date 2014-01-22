@@ -36,7 +36,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
 {
   // transfer the initial convective velocity from initial fluid field to scalar transport field
   // subgrid scales not transferred since they are zero at time t=0.0
-  ScaTraField().SetVelocityField(
+  ScaTraField()->SetVelocityField(
       FluidField().ConvectiveVel(),
       Teuchos::null,
       Teuchos::null,
@@ -47,7 +47,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
 
   // ensure that both single field solvers use the same
   // time integration scheme
-  switch (ScaTraField().MethodName())
+  switch (ScaTraField()->MethodName())
   {
   case INPAR::SCATRA::timeint_stationary:
   {
@@ -78,7 +78,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   }
 
   // if applicable, provide scatra data to the turbulence statistics
-  if (FluidField().TurbulenceStatisticManager() != Teuchos::null and ScaTraField().MethodName()!= INPAR::SCATRA::timeint_stationary)
+  if (FluidField().TurbulenceStatisticManager() != Teuchos::null and ScaTraField()->MethodName()!= INPAR::SCATRA::timeint_stationary)
   {
     // Now, the statistics manager has access to the scatra time integration
     FluidField().TurbulenceStatisticManager()->AddScaTraField(ScaTraField());
@@ -86,11 +86,11 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
 
   // if available, allow scatra field to access dynamic Smagorinsky filter
   if (FluidField().DynSmagFilter() != Teuchos::null)
-    ScaTraField().AccessDynSmagFilter(FluidField().DynSmagFilter());
+    ScaTraField()->AccessDynSmagFilter(FluidField().DynSmagFilter());
   
   // if available, allow scatra field to access dynamic Vreman
   if (FluidField().Vreman() != Teuchos::null)
-    ScaTraField().AccessVreman(FluidField().Vreman());
+    ScaTraField()->AccessVreman(FluidField().Vreman());
 
   return;
 
@@ -99,22 +99,16 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::ScaTraFluidCouplingAlgorithm::~ScaTraFluidCouplingAlgorithm()
-{
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void ADAPTER::ScaTraFluidCouplingAlgorithm::ReadRestart(int step)
 {
   FluidField().ReadRestart(step);
-  ScaTraField().ReadRestart(step);
+  ScaTraField()->ReadRestart(step);
   SetTimeStep(FluidField().Time(),step);
 
   // read scatra-specific restart data for turbulence statistics
   if (FluidField().TurbulenceStatisticManager() != Teuchos::null)
   {
-    IO::DiscretizationReader reader(ScaTraField().Discretization(),step);
+    IO::DiscretizationReader reader(ScaTraField()->Discretization(),step);
     FluidField().TurbulenceStatisticManager()->RestartScaTra(reader,step);
   }
 

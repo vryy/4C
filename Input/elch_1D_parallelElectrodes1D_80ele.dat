@@ -27,7 +27,7 @@ MAXTIME                         1000
 NUMSTEP                         1000
 RESTARTEVRY                     10
 THETA                           0.66
-TIMEINTEGR Gen_Alpha //One_Step_Theta
+TIMEINTEGR                      Gen_Alpha //One_Step_Theta
 ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
@@ -38,10 +38,11 @@ UPRES                           10
 BLOCKPRECOND                    No
 MATID                           1
 WRITEFLUX                       totalflux_boundary
+WRITEFLUX_IDS                   1 2
 OUTMEAN                         Yes
 SKIPINITDER                     Yes
 INITPOTCALC                     no
-SCATRATYPE                      Elch_ENC
+SCATRATYPE                      Elch
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-12
 ABSTOLRES                       1e-16
@@ -55,6 +56,7 @@ DEFINITION_TAU                  Zero
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ----------------------------------------------------------------ELCH CONTROL
+ELCHTYPE                        DiffCond
 ITEMAX                          20
 MAXTIME                         10
 NUMSTEP                         20

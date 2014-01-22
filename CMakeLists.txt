@@ -851,7 +851,8 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_timint_loma_genalpha.cpp
   src/drt_scatra/scatra_timint_loma_ost.cpp
   #src/drt_scatra/scatra_timint_loma_bdf2.cpp
-  src/drt_scatra/scatra_utils.cpp
+  src/drt_scatra/scatra_timint_elch.cpp
+  src/drt_scatra/scatra_timint_elch_scheme.cpp
   src/drt_scatra/scatra_utils_clonestrategy.cpp
   src/drt_scatra/turbulence_hit_initial_scalar_field.cpp
   src/drt_scatra/turbulence_hit_scalar_forcing.cpp
@@ -980,12 +981,14 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_parameter.cpp
   src/drt_scatra_ele/scatra_ele_parameter_std.cpp
   src/drt_scatra_ele/scatra_ele_parameter_lsreinit.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_elch.cpp
   src/drt_scatra_ele/scatra_ele_parameter_timint.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_general.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_stabilization.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_turbulence.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_lsreinit.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_loma.cpp
+  src/drt_scatra_ele/scatra_ele_calc_service_elch.cpp
 )
 set(OBJS_DRT_MESHFREE_SCATRA_LIB
   src/drt_meshfree_discret/meshfree_scatra_cell.cpp
