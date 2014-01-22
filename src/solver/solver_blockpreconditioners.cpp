@@ -56,11 +56,11 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
 
     // temporary hack: distinguish between "old" SIMPLER_Operator (for fluid
     // only) and "new" more general test implementation
-    bool mt = params_.get<bool>("MESHTYING",false);
-    bool co = params_.get<bool>("CONTACT",false);
-    bool cstr = params_.get<bool>("CONSTRAINT",false);
+    //bool mt = params_.get<bool>("MESHTYING",false);
+    //bool co = params_.get<bool>("CONTACT",false);
+    //bool cstr = params_.get<bool>("CONSTRAINT",false);
     bool fl = params_.isSublist("SIMPLER") || params_.get<bool>("FLUID",false); //params_.get<bool>("FLUIDSIMPLE",false); // SIMPLE for fluids
-    bool elch = params_.get<bool>("ELCH",false);
+    //bool elch = params_.get<bool>("ELCH",false);
 
     if(fl /*|| elch*/) // pure fluid problems
     {
