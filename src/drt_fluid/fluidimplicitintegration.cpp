@@ -523,12 +523,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   // ------------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null)
   {
-    // XFEM
-    if ((DRT::Problem::Instance()->ProblemType() == prb_fsi_xfem) or
-        (DRT::Problem::Instance()->ProblemType() == prb_fluid_xfem)) {
-      dserror("No XFEM problem types are supported for use with locsys conditions!");
-    }
-
     // TangVel predictor
     if (predictor_ == "TangVel") {
       dserror("No problem types involving TangVel predictors are supported for use with locsys conditions!");
@@ -826,7 +820,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     // Transfer of boundary data if necessary
     turbulent_inflow_condition_->Transfer(veln_,velnp_,time_);
 
-    // set thermodynamic pressure
+    // add problem-dependent parameters, e.g., thermodynamic pressure in case of loma
     SetCustomEleParamsApplyNonlinearBoundaryConditions(eleparams);
 
     if (alefluid_)
