@@ -60,6 +60,50 @@ class MortarNode;
 namespace UTILS
 {
 
+// ----------------------------------------------------------------------
+// TAW 01/14
+// function declarations
+// modern compilers expect (template) functions properly declared first
+// Note: do not forget to update these declarations in case if you change
+//       the parameters! You will get strange compiler errors then!
+// ----------------------------------------------------------------------
+
+template<class V>
+void mortar_shape_function_1D(
+  V&                                       funct,   ///< to be filled with shape function values
+  const double&                            r,       ///< r coordinate
+  const MortarElement::ShapeType&          shape    ///< distuinguish between mortar shape
+  );
+
+template<class V>
+void mortar_dualshape_function_1D(
+  V&                                       funct,   ///< to be filled with shape function values
+  MORTAR::MortarElement&                   ele,
+  const double&                            r,       ///< r coordinate
+  const MortarElement::ShapeType&          shape    ///< distuinguish between mortar shape
+  );
+
+template<class V>
+void mortar_shape_function_2D(
+  V&                                       funct,   ///< to be filled with shape function values
+  const double&                            xi0,       ///< xi0 coordinate
+  const double&                            xi1,       ///< xi1 coordinate
+  const MortarElement::ShapeType&          shape    ///< distuinguish between mortar shape
+  );
+
+template<class V>
+void mortar_dualshape_function_2D(
+  V&                                       funct,   ///< to be filled with shape function values
+  MORTAR::MortarElement&                   ele,
+  const double&                            xi0,       ///< xi0 coordinate
+  const double&                            xi1,       ///< xi1 coordinate
+  const MortarElement::ShapeType&          shape    ///< distuinguish between mortar shape
+  );
+
+// ----------------------------------------------------------------------
+// function definitions
+// ----------------------------------------------------------------------
+
 /*----------------------------------------------------------------------*
  |  Evaluate displacement shape functions                     popp 01/08|
  *----------------------------------------------------------------------*/
