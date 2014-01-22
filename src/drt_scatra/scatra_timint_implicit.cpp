@@ -418,15 +418,10 @@ void SCATRA::ScaTraTimIntImpl::Init()
     }
   }
 
-  std::cout << __FILE__ << "  " << __LINE__ << std::endl;
-
   // -------------------------------------------------------------------
   // preparations for turbulence models
   // -------------------------------------------------------------------
-
   InitTurbulenceModel(dofrowmap, noderowmap);
-
-  std::cout << __FILE__ << "  " << __LINE__ << std::endl;
 
   // -------------------------------------------------------------------
   // set initial field
@@ -434,7 +429,6 @@ void SCATRA::ScaTraTimIntImpl::Init()
   SetInitialField(DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_,"INITIALFIELD"),
       params_->get<int>("INITFUNCNO"));
 
-  std::cout << __FILE__ << "  " << __LINE__ << std::endl;
 
   return;
 } // ScaTraTimIntImpl::Init()

@@ -49,8 +49,6 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::Init()
 {
-  std::cout << __FILE__ << "  " << __LINE__ << std::endl;
-
   // initialize base class
   ScaTraTimIntImpl::Init();
 

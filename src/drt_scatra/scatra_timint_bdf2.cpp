@@ -62,7 +62,7 @@ void SCATRA::TimIntBDF2::Init()
   // fine-scale vector at time n+1
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
-  std::cout << __FILE__ << "  " << __LINE__ << std::endl;
+
   // -------------------------------------------------------------------
   // set element parameters
   // -------------------------------------------------------------------
@@ -72,7 +72,7 @@ void SCATRA::TimIntBDF2::Init()
   SetElementTimeParameter();
   SetElementGeneralScaTraParameter();
   SetElementTurbulenceParameter();
-  std::cout << __FILE__ << "  " << __LINE__ << std::endl;
+
   //TODO: SCATRA_ELE_CLEANING
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)
   //if (IsElch(scatratype_))
@@ -82,10 +82,10 @@ void SCATRA::TimIntBDF2::Init()
   // It is necessary to do this BEFORE ReadRestart() is called!
   // Output to screen and file is suppressed
   //OutputElectrodeInfo(false,false);
-  std::cout << __FILE__ << "  " << __LINE__ << std::endl;
+
   // setup krylov
   PrepareKrylovProjection();
-  std::cout << __FILE__ << "  " << __LINE__ << std::endl;
+
   // -------------------------------------------------------------------
   // initialize forcing for homogeneous isotropic turbulence
   // -------------------------------------------------------------------

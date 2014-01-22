@@ -1295,7 +1295,6 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
 
   if (DRT::INPUT::IntegralValue<int>(*elchparams_,"GALVANOSTATIC"))
   {
-    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
     // set time derivate parameters of applied voltage for a double layer capacitance current density,
     if(dlcapexists_)
       ComputeTimeDerivPot0(false);
