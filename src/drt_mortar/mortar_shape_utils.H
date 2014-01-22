@@ -63,7 +63,11 @@ namespace UTILS
 // ----------------------------------------------------------------------
 // TAW 01/14
 // function declarations
-// modern compilers expect (template) functions properly declared first
+// modern compilers expect (template) functions properly declared first!
+// old gcc is a little bit sloppy when handling template functions even
+// though i'm quite sure that it would not have accepted the code before
+// when there would not have been template parameters, which made it auto-
+// matically declare the missing function declarations.
 // Note: do not forget to update these declarations in case if you change
 //       the parameters! You will get strange compiler errors then!
 // ----------------------------------------------------------------------
