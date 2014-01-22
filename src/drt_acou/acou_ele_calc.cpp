@@ -2323,7 +2323,8 @@ ComputeAbsorbingBC(DRT::ELEMENTS::Acou*        ele,
         int localnodeid = adjointrhs->Map().LID(fnodeIds[i]);
         values[i] = adjointrhs->operator ()(stepmax-step)->operator [](localnodeid); // in inverse order -> we're integrating backwards in time
         for(unsigned int d=0; d<nsd_; ++d)
-          fnodexyz[i][d] = ele->Faces()[face]->Nodes()[i]->X()[d];
+          fnodexyz[i][d] = shapes_.xyzeF(i,d);
+//          fnodexyz[i][d] = ele->Faces()[face]->Nodes()[i]->X()[d];
       }// for(int i=0; i<numfnode; ++i)
 
       // now get the nodevalues to the dof values just as in ProjectOpticalField function

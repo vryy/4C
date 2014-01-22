@@ -564,14 +564,24 @@ int main(
     }
     case prb_acou:
     {
-      PostField* field = problem.get_discretization(0);
-      AcouEnsightWriter writer(field, problem.outname());
-      writer.WriteFiles();
-      if(problem.num_discr()>1)
+
+      for (int i=0;i<problem.num_discr();i++)
       {
-        PostField* field1 = problem.get_discretization(1);
-        ScaTraEnsightWriter writer1(field1, problem.outname());
-        writer1.WriteFiles();
+        std::string disname = problem.get_discretization(i)->discretization()->Name();
+        if (disname.compare("acou") == 0) // 0=true
+        {
+          PostField* field = problem.get_discretization(i);
+          AcouEnsightWriter writer(field, problem.outname());
+          writer.WriteFiles();
+        }
+        else if(disname.compare("scatra") == 0)
+        {
+          PostField* field1 = problem.get_discretization(i);
+          ScaTraEnsightWriter writer1(field1, problem.outname());
+          writer1.WriteFiles();
+        }
+        else
+          dserror("unknown discretization for postprocessing of acoustical problem!");
       }
       break;
     }

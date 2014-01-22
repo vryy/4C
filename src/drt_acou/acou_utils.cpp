@@ -89,7 +89,7 @@ std::string ACOU::DIRKTypeToString(INPAR::ACOU::DynamicType scheme)
   case INPAR::ACOU::acou_dirk23:      s = "DIRK23";      break;
   case INPAR::ACOU::acou_dirk33:      s = "DIRK33";      break;
   case INPAR::ACOU::acou_dirk34:      s = "DIRK34";      break;
-  case INPAR::ACOU::acou_dirk54:      s = "DIRK45";      break;
+  case INPAR::ACOU::acou_dirk54:      s = "DIRK54";      break;
   default: dserror("no string for DirkType defined"); break;
   }
   return s;

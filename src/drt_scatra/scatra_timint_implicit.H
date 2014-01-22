@@ -274,9 +274,6 @@ public:
   //! output solution and restart data to file
   virtual void Output(const int num =0);
 
-  //! output the input vector as solution vector, needed for adjoint photoacoustic problem
-  void OutputAsSolution(Teuchos::RCP<Epetra_Vector> phi);
-
   /*========================================================================*/
   //! @name Time, time-step and related methods
   /*========================================================================*/

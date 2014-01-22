@@ -440,7 +440,7 @@ void ACOU::InvAnalysis::Integrate()
     std::cout<<"*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*"<<std::endl;
     std::cout<<std::endl;
   }
-  else
+  else if(!myrank_)
   {
     std::cout<<std::endl;
     std::cout<<"*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*"<<std::endl;
@@ -834,8 +834,10 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
   outname.append("_invadjoint_opti");
   scatra_output_->NewResultFile(outname,output_count_);
   output_count_++;
-  scatraalgo_->OutputAsSolution(adjoint_w_);
-
+  scatraalgo_->DiscWriter().WriteMesh(0,0.0);
+  scatraalgo_->DiscWriter().NewStep(1,1.0);
+  scatraalgo_->DiscWriter().WriteElementData(true);
+  scatraalgo_->DiscWriter().WriteVector("phinp",adjoint_w_);
   return;
 } // void ACOU::InvAnalysis::SolveAdjointOptiProblem()
 
