@@ -235,8 +235,11 @@ namespace ADAPTER {
     /// return Newmark parameter \f$beta\f$
     virtual const double GetNewmarkBeta() const = 0;
 
-    /// Get the current time
+    /// Get the current time \f$t_{n}\f$
     virtual double GetTime() const = 0;
+
+    /// Get the current target time \f$t_{n+1}\f$
+    virtual double GetTimeNew() const = 0;
 
     /// Get upper limit of time range of interest
     virtual double GetTimeEnd() const = 0;

@@ -84,6 +84,9 @@ namespace ADAPTER {
     //! Get time step size of adaptive structural time integrator
     virtual double Dt() const;
 
+    //! Get target time \f$t_{n+1}\f$ of current time step
+    virtual double GetTimeNew() const;
+
     //! Set new time step size
     virtual void SetDt(const double dtnew);
 

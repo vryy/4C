@@ -141,6 +141,9 @@ public:
    */
   virtual void ResetTime(const double dtold);
 
+  /// Get current simulation time
+  virtual double Time() { return time_; }
+
   /// Get the time step size
   virtual double Dt() { return dt_; }
 

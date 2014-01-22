@@ -197,9 +197,13 @@ namespace ADAPTER
     virtual void SetTimen(const double time)
     { structure_->SetTimen(time); }
 
-    /// get the current time
+    /// get the current time at \f$t_{n}\f$
     virtual double GetTime() const
     { return structure_->GetTime(); }
+
+    /// get the current target time at \f$t_{n+1}\f$
+    virtual double GetTimeNew() const
+    { return structure_->GetTimeNew(); }
 
     /// get upper limit of time range of interest
     virtual double GetTimeEnd() const

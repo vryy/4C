@@ -501,6 +501,9 @@ namespace FSI
     //! Check whether time step sizes are the same among all fields
     virtual bool CheckIfDtsSame();
 
+    //! Check whether times are the same among all fields
+    virtual bool CheckIfTimesSame();
+
     //@}
 
     enum ErrorAction

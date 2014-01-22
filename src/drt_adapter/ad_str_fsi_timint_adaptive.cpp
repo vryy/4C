@@ -125,6 +125,13 @@ double ADAPTER::StructureFSITimIntAda::Dt() const
 }
 
 /*----------------------------------------------------------------------------*/
+/* Get target time \f$t_{n+1}\f$ of current time step */
+double ADAPTER::StructureFSITimIntAda::GetTimeNew() const
+{
+  return StrAda()->GetTimeNew();
+}
+
+/*----------------------------------------------------------------------------*/
 /* Set new time step size */
 void ADAPTER::StructureFSITimIntAda::SetDt(const double dtnew)
 {

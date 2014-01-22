@@ -406,7 +406,7 @@ void FSI::Monolithic::AdaptTimeStepSize()
   // Increment counter for repetition of time steps
   adaptstep_++;
 
-  // Save old time step size for ResetTime()
+  // Save time step size of previous run of this time step for ResetTime()
   dtold_ = Dt();
 
   // prepare new time step size by copying the current one
@@ -605,7 +605,10 @@ void FSI::Monolithic::SetDt(const double dtnew)
 {
   // single fields
   if (IsAdaStructure())
+  {
     Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)->SetDt(dtnew); //UpdateStepSize(dtnew);
+//    Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)->UpdateStepSize(dtnew);
+  }
   else
     StructureField()->SetDt(dtnew);
 
@@ -636,19 +639,20 @@ bool FSI::Monolithic::CheckIfDtsSame()
   if (Comm().MyPID() == 0)
   {
     std::cout << std::endl << "Time step sizes:" << std::endl;
-    std::cout << "dt in FSI      : " << dtfsi << std::endl;
-    std::cout << "dt in structure: " << dtstruct << std::endl;
-    std::cout << "dt in fluid    : " << dtfluid << std::endl;
-    std::cout << "dt in ale      : " << dtale << std::endl;
+    std::cout << "dt in FSI      : " << std::setprecision(16) << dtfsi << std::endl;
+    std::cout << "dt in structure: " << std::setprecision(16) << dtstruct << std::endl;
+    std::cout << "dt in fluid    : " << std::setprecision(16) << dtfluid << std::endl;
+    std::cout << "dt in ale      : " << std::setprecision(16) << dtale << std::endl;
 
     if (IsAdaStructure())
-      std::cout << "dt in str_ada  : " << dtstrada << std::endl;
+      std::cout << "dt in str_ada  : " << std::setprecision(16) << dtstrada << std::endl;
   }
 
   //check whether time step sizes are all the same
-  if (dtfsi == dtstruct and dtfsi == dtfluid and dtfsi == dtale)
+  const double tol = 1.0e-12;
+  if (dtfsi - dtstruct < tol and dtfsi - dtfluid < tol and dtfsi - dtale < tol)
   {
-    if (IsAdaStructure() and dtfsi == dtstrada)
+    if (IsAdaStructure() and dtfsi - dtstrada < tol)
       return true;
     else if (not IsAdaStructure())
       return true;
@@ -658,6 +662,51 @@ bool FSI::Monolithic::CheckIfDtsSame()
   else
   {
     dserror("Time step sizes do not match among the fields.");
+    return false;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI::Monolithic::CheckIfTimesSame()
+{
+  // get time from all fields
+  const double tfsi = Time();
+  const double tstruct = StructureField()->GetTimeNew();
+  const double tfluid = FluidField().Time();
+  const double tale = AleField().Time();
+
+  double tstrada = tstruct;
+  if (IsAdaStructure())
+    tstrada = Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)->GetTimeNew();
+
+  // print time in all fields
+  if (Comm().MyPID() == 0)
+  {
+    std::cout << std::endl << "Time:" << std::endl;
+    std::cout << "time in FSI      : " << std::setprecision(16) << tfsi << std::endl;
+    std::cout << "time in structure: " << std::setprecision(16) << tstruct << std::endl;
+    std::cout << "time in fluid    : " << std::setprecision(16) << tfluid << std::endl;
+    std::cout << "time in ale      : " << std::setprecision(16) << tale << std::endl;
+
+    if (IsAdaStructure())
+      std::cout << "time in str_ada  : " << std::setprecision(16) << tstrada << std::endl;
+  }
+
+  //check whether times are all the same
+  const double tol = 1.0e-12;
+  if (tfsi - tstruct < tol and tfsi - tfluid < tol and tfsi - tale < tol)
+  {
+    if (IsAdaStructure() and tfsi - tstrada < tol)
+      return true;
+    else if (not IsAdaStructure())
+      return true;
+    else
+      return false;
+  }
+  else
+  {
+    dserror("Time does not match among the fields.");
     return false;
   }
 }

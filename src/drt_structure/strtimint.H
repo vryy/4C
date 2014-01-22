@@ -787,8 +787,11 @@ namespace STR
     //! @name Time step helpers
     //@{
 
-    //! Return current step number map
+    //! Return current time \f$t_{n}\f$
     virtual double GetTime() const { return (*time_)[0]; }
+
+    //! Return target time of current step \f$t_{n+1}\f$
+    virtual double GetTimeNew() const { return timen_; }
 
     //! Sets the current time \f$t_{n}\f$
     virtual void SetTime(const double time) { (*time_)[0]=time; }
