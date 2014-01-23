@@ -43,7 +43,6 @@
 #include <MueLu_VerbosityLevel.hpp>
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_NullspaceFactory.hpp>
-//#include <MueLu_SegregationATransferFactory.hpp> // TODO remove me
 #include <MueLu_Aggregates.hpp>
 #include <MueLu_MapTransferFactory.hpp>
 #include <MueLu_AggregationExportFactory.hpp>
@@ -133,7 +132,6 @@ void LINALG::SOLVER::MueLuContactPreconditioner::Setup( bool create,
     mllist_.remove("aggregation: threshold",false); // no support for aggregation: threshold TODO
 
     // Setup MueLu Hierarchy
-    //Teuchos::RCP<Hierarchy> H = MLInterpreter::Setup(mllist_, mueluOp, nspVector);
     Teuchos::RCP<Hierarchy> H = SetupHierarchy(mllist_, mueluOp, nspVector);
 
     // set preconditioner
@@ -221,7 +219,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   hierarchy->setlib(Xpetra::UseEpetra);
   hierarchy->SetDefaultVerbLevel(MueLu::toMueLuVerbLevel(eVerbLevel));
   hierarchy->SetMaxCoarseSize(Teuchos::as<Xpetra::global_size_t>(maxCoarseSize)+nSlaveDofs);
-  //hierarchy->SetDebug(true);
 
   /*int timestep = mllist_.get<int>("time-step");
   int newtoniter = mllist_.get<int>("newton-iter");
@@ -266,16 +263,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
     }
     Finest->Set("Nullspace",nspVector);                       // set user given null space
   }
-
-
-  ///////////////////////////////////////////////////////////////////////
-  // Segregation Factory for building aggregates that do not overlap
-  // contact interface
-  //   - currently not used, but would make sense in future
-  ///////////////////////////////////////////////////////////////////////
-
-  // prepare (filtered) A Factory
-  //Teuchos::RCP<SingleLevelFactoryBase> segAFact = Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("A", NULL, map_extractor));
 
   ///////////////////////////////////////////////////////////////////////
   // ContactASlaveDofFilterFactory
@@ -438,8 +425,6 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   TEUCHOS_TEST_FOR_EXCEPTION(type.empty(), MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: no ML smoother type for level. error.");
 
   const Teuchos::ParameterList smolevelsublist = paramList.sublist("smoother: list " + levelstr);
-  //std::cout << "smoother: list " << levelstr << std::endl;
-  //std::cout << smolevelsublist << std::endl;
 
   Teuchos::RCP<SmootherPrototype> smooProto;
   std::string ifpackType;
