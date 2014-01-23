@@ -49,8 +49,9 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   problem->GetDis("structale")->FillComplete();
 
   // create struct ale elements if not yet existing
-  RCP<DRT::Discretization> structaledis = problem->GetDis("structale");
-  RCP<DRT::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> structaledis = problem->GetDis("structale");
+  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
+
   // access the communicator for time measurement
   Epetra_Time time(comm);
 
@@ -70,7 +71,7 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
 
   // a new ale algorithm is needed for struct ale (disnum=1)
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
-  Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(fsidyn,1));
+  Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(fsidyn, structaledis));
   ale_ = ale->AleFieldrcp();
 
   //---------------------------------------------------------------------
@@ -561,10 +562,10 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
-                                               RCP<Epetra_Vector> iveln,
-                                               RCP<Epetra_Vector> struidispnp,
-                                               RCP<Epetra_Vector> struiveln)
+void FS3I::BiofilmFSI::ComputeInterfaceVectors(Teuchos::RCP<Epetra_Vector> idispnp,
+                                               Teuchos::RCP<Epetra_Vector> iveln,
+                                               Teuchos::RCP<Epetra_Vector> struidispnp,
+                                               Teuchos::RCP<Epetra_Vector> struiveln)
 {
   // initialize structure interface displacement at time t^{n+1}
   // shouldn't that be zeroed?
@@ -574,7 +575,7 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
   std::string biogrcondname = "BioGrCoupling";
 
   // set action for elements: compute normal vectors at nodes (for reference configuration)
-  RCP<DRT::Discretization> strudis = fsi_->StructureField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> strudis = fsi_->StructureField()->Discretization();
   Teuchos::RCP<Epetra_Vector> nodalnormals = Teuchos::rcp(new Epetra_Vector(*(strudis->DofRowMap())));
   Teuchos::ParameterList eleparams;
   eleparams.set("action","calc_ref_nodal_normals");
@@ -652,7 +653,7 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::FluidAleSolve()
 {
-  RCP<DRT::Discretization> fluidaledis = fsi_->AleField().Discretization();
+  Teuchos::RCP<DRT::Discretization> fluidaledis = fsi_->AleField().Discretization();
 
   fsi_->AleField().SetupDBCMapEx(1);
 
@@ -667,7 +668,7 @@ void FS3I::BiofilmFSI::FluidAleSolve()
 
   //change nodes reference position of the fluid field
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(fsi_->AleField().WriteAccessDispnp());
-  RCP<DRT::Discretization> fluiddis = fsi_->FluidField().Discretization();
+  Teuchos::RCP<DRT::Discretization> fluiddis = fsi_->FluidField().Discretization();
   ChangeConfig(fluiddis, fluiddisp);
 
   //change nodes reference position also for the fluid ale field
@@ -676,7 +677,7 @@ void FS3I::BiofilmFSI::FluidAleSolve()
 
   //change nodes reference position also for scatra fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[0];
-  RCP<DRT::Discretization> scatradis = scatra->ScaTraField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> scatradis = scatra->ScaTraField()->Discretization();
   ScatraChangeConfig(scatradis, fluiddis, fluiddisp);
 
   //set the total displacement due to growth for output reasons
@@ -699,7 +700,7 @@ void FS3I::BiofilmFSI::FluidAleSolve()
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::StructAleSolve()
 {
-  RCP<DRT::Discretization> structaledis = ale_->Discretization();
+  Teuchos::RCP<DRT::Discretization> structaledis = ale_->Discretization();
   ale_->SetupDBCMapEx(1);
 
   // if we have values at the structure interface we need to apply them
@@ -713,7 +714,7 @@ void FS3I::BiofilmFSI::StructAleSolve()
 
   //change nodes reference position of the structure field
   Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->WriteAccessDispnp());
-  RCP<DRT::Discretization> structdis = fsi_->StructureField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> structdis = fsi_->StructureField()->Discretization();
   ChangeConfig(structdis, structdisp);
   structdis->FillComplete(false, true, true);
 
@@ -722,7 +723,7 @@ void FS3I::BiofilmFSI::StructAleSolve()
 
   //change nodes reference position also for scatra structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
-  RCP<DRT::Discretization> struscatradis = struscatra->ScaTraField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> struscatradis = struscatra->ScaTraField()->Discretization();
   ScatraChangeConfig(struscatradis, structdis, structdisp);
 
   //set the total displacement due to growth for output reasons
@@ -787,7 +788,7 @@ Teuchos::RCP<Epetra_Vector> FS3I::BiofilmFSI::StructToAle(Teuchos::RCP<const Epe
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::ChangeConfig(RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp)
+void FS3I::BiofilmFSI::ChangeConfig(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp)
 {
   const int numnode = (dis->NodeRowMap())->NumMyElements();
   const Epetra_Vector& gvector =*disp;
@@ -822,8 +823,8 @@ void FS3I::BiofilmFSI::ChangeConfig(RCP<DRT::Discretization> dis, Teuchos::RCP<E
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::ScatraChangeConfig(RCP<DRT::Discretization> scatradis,
-                                          RCP<DRT::Discretization> dis,
+void FS3I::BiofilmFSI::ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> scatradis,
+                                          Teuchos::RCP<DRT::Discretization> dis,
                                           Teuchos::RCP<Epetra_Vector> disp)
 {
   const int numnode = (scatradis->NodeRowMap())->NumMyElements();
@@ -864,7 +865,7 @@ void FS3I::BiofilmFSI::ScatraChangeConfig(RCP<DRT::Discretization> scatradis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::VecToScatravec(RCP<DRT::Discretization> scatradis,
+void FS3I::BiofilmFSI::VecToScatravec(Teuchos::RCP<DRT::Discretization> scatradis,
                                       Teuchos::RCP<Epetra_Vector> vec,
                                       Teuchos::RCP<Epetra_MultiVector> scatravec)
 {
@@ -904,7 +905,7 @@ void FS3I::BiofilmFSI::StructGmshOutput()
 {
   const Teuchos::RCP<DRT::Discretization> structdis = fsi_->StructureField()->Discretization();
   const Teuchos::RCP<DRT::Discretization> structaledis = ale_->Discretization();
-  RCP<DRT::Discretization> struscatradis = scatravec_[1]->ScaTraField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> struscatradis = scatravec_[1]->ScaTraField()->Discretization();
 
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("struct", step_bio, 701, false, structdis->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
@@ -947,7 +948,7 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
 {
   const Teuchos::RCP<DRT::Discretization> fluiddis = fsi_->FluidField().Discretization();
   const Teuchos::RCP<DRT::Discretization> fluidaledis = fsi_->AleField().Discretization();
-  RCP<DRT::Discretization> fluidscatradis = scatravec_[0]->ScaTraField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> fluidscatradis = scatravec_[0]->ScaTraField()->Discretization();
 
   const std::string filenamefluid = IO::GMSH::GetNewFileNameAndDeleteOldFiles("fluid", step_bio, 701, false, fluiddis->Comm().MyPID());
   std::ofstream gmshfilecontent(filenamefluid.c_str());

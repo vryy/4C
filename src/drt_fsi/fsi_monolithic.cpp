@@ -80,7 +80,7 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   fluid_ = fluid->FluidFieldrcp();
 
   // ask base algorithm for the ale time integrator
-  Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(timeparams));
+  Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(timeparams, DRT::Problem::Instance()->GetDis("ale")));
   ale_ = ale->AleFieldrcp();
 
   coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());

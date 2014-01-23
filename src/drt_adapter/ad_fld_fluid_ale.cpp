@@ -27,7 +27,7 @@ Maintainer: Ulrich Kuettler
 ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                             std::string condname)
   : fluid_(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true),
-    ale_(prbdyn)
+    ale_(prbdyn, DRT::Problem::Instance()->GetDis("ale"))
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   icoupfa_ = Teuchos::rcp(new Coupling());

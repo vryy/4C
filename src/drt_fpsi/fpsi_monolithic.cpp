@@ -89,7 +89,7 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fpsidynparams,fluiddynparams,"fluid",true));
   fluid_subproblem_ = fluid->FluidFieldrcp();
   // ask base algorithm for the ale time integrator
-  Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(fpsidynparams));
+  Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(fpsidynparams, DRT::Problem::Instance()->GetDis("ale")));
   ale_ = ale->AleFieldrcp();
 
   couple_porofluid_fluid_matching_ = Teuchos::rcp(new ADAPTER::Coupling());

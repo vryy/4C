@@ -307,7 +307,7 @@ class AleBaseAlgorithm
 public:
 
   /// constructor
-  explicit AleBaseAlgorithm(const Teuchos::ParameterList& prbdyn, int disnum = 0);
+  explicit AleBaseAlgorithm(const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
 
   /// virtual destructor to support polymorph destruction
   virtual ~AleBaseAlgorithm();
@@ -321,7 +321,9 @@ private:
 
   /// setup ale algorithm (overriding some parameters with
   /// values specified in given problem-dependent ParameterList)
-  void SetupAle(const Teuchos::ParameterList& prbdyn, int disnum = 0);
+  void SetupAle(const Teuchos::ParameterList& prbdyn,     ///< parameter list
+                Teuchos::RCP<DRT::Discretization> actdis  ///< pointer to discretization
+                );
 
   /// ale field solver
   Teuchos::RCP<Ale> ale_;

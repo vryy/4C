@@ -341,9 +341,9 @@ Teuchos::RCP<const LINALG::SparseMatrix> ALE::Ale::GetLocSysTrafo() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ALE::AleBaseAlgorithm::AleBaseAlgorithm(const Teuchos::ParameterList& prbdyn, int disnum)
+ALE::AleBaseAlgorithm::AleBaseAlgorithm(const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {
-  SetupAle(prbdyn,disnum);
+  SetupAle(prbdyn,actdis);
 }
 
 
@@ -356,28 +356,10 @@ ALE::AleBaseAlgorithm::~AleBaseAlgorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int disnum)
+void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ALE::AleBaseAlgorithm::SetupAle");
   Teuchos::TimeMonitor monitor(*t);
-
-  // -------------------------------------------------------------------
-  // access the discretization
-  // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-
-  if (disnum == 0)
-  {
-  actdis = DRT::Problem::Instance()->GetDis("ale");
-  }
-  else if (disnum == 1)
-  {
-  actdis = DRT::Problem::Instance()->GetDis("structale");
-  }
-  else dserror("Disnum > 1");
-
-//  if (disnum > 0) dserror("Disnum > 0");
-//  actdis = DRT::Problem::Instance()->GetDis("ale");
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
