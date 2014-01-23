@@ -144,7 +144,10 @@ void scatra_dyn(int restart)
       break;
     } // case 2
     default:
+    {
       dserror("unknown velocity field type for transport of passive scalar");
+      break;
+    }
   }
 
   return;
