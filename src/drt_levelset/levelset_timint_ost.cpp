@@ -164,23 +164,43 @@ void SCATRA::LevelSetTimIntOneStepTheta::SetOldPartOfRighthandside()
 
 
 /*----------------------------------------------------------------------*
- | current solution becomes most recent solution of next timestep       |
- |                                                      rasthofer 09/13 |
+ | extended version for coupled level-set problems                      |
+ | including reinitialization and particle correction   rasthofer 01/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetTimIntOneStepTheta::Update(const int num)
+{
+  // -----------------------------------------------------------------
+  //                     reinitialize level-set
+  // -----------------------------------------------------------------
+  // will be done only if required
+  Reinitialization();
+
+  // -------------------------------------------------------------------
+  //                     hybrid particle method
+  // -------------------------------------------------------------------
+  // correct zero level-set by particles if available
+  ParticleCorrection();
+
+  // -------------------------------------------------------------------
+  //                         update solution
+  //        current solution becomes old solution of next time step
+  // -------------------------------------------------------------------
+  UpdateState();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | current solution becomes most recent solution of next time step      |
+ |                                                      rasthofer 09/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetTimIntOneStepTheta::UpdateState()
 {
   if ((not switchreinit_) and particle_ == Teuchos::null)
   {
     // compute time derivative at time n+1
     ComputeTimeDerivative();
-    
-    // compute flux vector field for later output BEFORE time shift of results
-    // is performed below !!
-    if (writeflux_!=INPAR::SCATRA::flux_no)
-    {
-      if (DoOutput() or DoBoundaryFluxStatistics())
-        flux_ = CalcFlux(true, num);
-    }
 
     // after the next command (time shift of solutions) do NOT call
     // ComputeTimeDerivative() anymore within the current time step!!!
@@ -228,6 +248,9 @@ void SCATRA::LevelSetTimIntOneStepTheta::Update(const int num)
     // reset element time-integration parameters
     SetElementTimeParameter();
   }
+
+  // update convective velocity
+  conveln_->Update(1.0,*convel_,0.0);
 
   // update also particle field
   if (particle_ != Teuchos::null)

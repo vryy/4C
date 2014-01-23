@@ -91,8 +91,7 @@ void levelset_dyn(int restart)
   Teuchos::TimeMonitor::summarize();
 
   // perform result test if required
-  DRT::Problem::Instance()->AddFieldTest(scatrabase->CreateScaTraFieldTest());
-  DRT::Problem::Instance()->TestAll(comm);
+  Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(levelsetalgo)->TestResults();
 
   return;
 

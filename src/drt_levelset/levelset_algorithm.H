@@ -88,6 +88,12 @@ namespace SCATRA
     /// redistribute the scatra discretization and vectors according to nodegraph
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
 
+    /// return velocity at intermediate time n+theta
+    const Teuchos::RCP<Epetra_MultiVector> ConVelTheta(double theta);
+
+    /// perform result test
+    void TestResults();
+
   protected:
 
     // -----------------------------------------------------------------
@@ -97,12 +103,25 @@ namespace SCATRA
     /// setup the variables to do a new time step
     void PrepareTimeStep();
 
-    /// solve level-set equation and perform correction
+    /// solve level-set equation
     void Solve();
 
+    /// update state vectors
+    virtual void UpdateState() = 0;
+
     // -----------------------------------------------------------------
-    // reinitialization and mass conservation methods
+    // hybrid method including particles
     // -----------------------------------------------------------------
+
+    /// correct zero level-set by particles
+    void ParticleCorrection();
+
+    // -----------------------------------------------------------------
+    // reinitialization
+    // -----------------------------------------------------------------
+
+    /// reinitialize level-set
+    void Reinitialization();
 
     /// set element parameters for reinitialization equation
     void SetReinitializationElementParameters();
@@ -116,6 +135,9 @@ namespace SCATRA
 
     // pointer to particle algorithm
     Teuchos::RCP<PARTICLE::ScatraParticleCoupling> particle_;
+
+    /// convective velocity at time n
+    Teuchos::RCP<Epetra_MultiVector> conveln_;
 
     /// flag to switch between standard integration and sub-time loop for reinitialization
     bool switchreinit_;
@@ -150,18 +172,8 @@ namespace SCATRA
     void ApplyContactPointBoundaryCondition();
 
     // -----------------------------------------------------------------
-    // hybrid method including particles
-    // -----------------------------------------------------------------
-
-    /// correct zero level-set by particles
-    void ParticleCorrection();
-
-    // -----------------------------------------------------------------
     // reinitialization
     // -----------------------------------------------------------------
-
-    /// reinitialize level-set
-    void Reinitialization();
 
     /// algebraic reinitialization via solution of equation to steady state
     void ReinitEq();
@@ -265,12 +277,6 @@ namespace SCATRA
     // -----------------------------------------------------------------
     // members
     // -----------------------------------------------------------------
-
-    // --------------
-    // members related to scalar transport
-
-    /// convective velocity at time n
-    Teuchos::RCP<Epetra_MultiVector> conveln_;
 
     // --------------
     // members related to reinitialization and mass conservation

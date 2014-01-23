@@ -47,6 +47,14 @@ public:
 
 protected:
 
+  /// update state vectors
+  /// current solution becomes old solution of next time step
+  void UpdateState(){dserror("You should not need this function!"); return;};
+
+  /// update the solution after Solve()
+  /// extended version for coupled level-set problems including reinitialization and particle correction if required
+  void Update(const int num=0){dserror("You should not need this function!"); return;};
+
   /// update phi within the reinitialization loop
   void UpdateReinit(){dserror("You should not need this function!"); return;};
 

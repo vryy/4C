@@ -60,8 +60,12 @@ protected:
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();
 
-  /// update the solution after Solve()
+  /// update state vectors
   /// current solution becomes old solution of next time step
+  void UpdateState();
+
+  /// update the solution after Solve()
+  /// extended version for coupled level-set problems including reinitialization and particle correction if required
   void Update(const int num=0);
 
   /// update phi within the reinitialization loop

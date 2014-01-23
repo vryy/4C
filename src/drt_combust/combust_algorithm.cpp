@@ -1848,7 +1848,8 @@ void COMBUST::Algorithm::Redistribute()
         IO::cout << "done\nUpdating interface                                                  ... " << IO::endl;
 
       // update flame front according to evolved G-function field
-      // remark: for only one FGI iteration, 'phinpip_' == ScaTraField()->Phin()
+      // remark: for only one FGI iteration, 'phinpip_' == ScaTraField().Phin()
+      // TODO: passt das zu Martins XFEMTimInt?
       flamefront_->UpdateFlameFront(combustdyn_, ScaTraField()->Phin(), ScaTraField()->Phinp());
 
       if(Comm().MyPID()==0)

@@ -18,11 +18,12 @@ Maintainer: Ursula Rasthofer
 
 //#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_particle/scatra_particle_coupling.H"
-
 #include "levelset_intersection_utils.H"
 
+#include "../drt_scatra/scatra_resulttest.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_io/io.H"
 
@@ -242,15 +243,27 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
     PrepareTimeStep();
 
     // -------------------------------------------------------------------
-    //                  solve nonlinear / linear equation
+    //                  solve level-set equation
     // -------------------------------------------------------------------
     Solve();
 
+    // -----------------------------------------------------------------
+    //                     reinitialize level-set
+    // -----------------------------------------------------------------
+    // will be done only if required
+    Reinitialization();
+
+    // -------------------------------------------------------------------
+    //                     hybrid particle method
+    // -------------------------------------------------------------------
+    // correct zero level-set by particles if available
+    ParticleCorrection();
+
     // -------------------------------------------------------------------
     //                         update solution
-    //        current solution becomes old solution of next timestep
+    //        current solution becomes old solution of next time step
     // -------------------------------------------------------------------
-    Update();
+    UpdateState();
 
     // -------------------------------------------------------------------
     //       evaluate error for problems with analytical solution
@@ -297,18 +310,6 @@ void SCATRA::LevelSetAlgorithm::Solve()
   else
     LinearSolve();
 
-  // -----------------------------------------------------------------
-  //                     reinitialize level-set
-  // -----------------------------------------------------------------
-  // will be done only if required
-  Reinitialization();
-
-  // -------------------------------------------------------------------
-  //                     hybrid particle method
-  // -------------------------------------------------------------------
-  // correct zero level-set by particles
-  ParticleCorrection();
-
   return;
 }
 
@@ -319,6 +320,7 @@ void SCATRA::LevelSetAlgorithm::Solve()
 void SCATRA::LevelSetAlgorithm::Reinitialization()
 {
   // check for reinitialization action first
+
   if (reinitaction_ != INPAR::SCATRA::reinitaction_none)
   {
     // check if level-set field should be reinitialized in this time step
@@ -435,16 +437,6 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
     // add restart data
     if (step_%uprestart_==0) OutputRestart();
 
-    // write flux vector field (only writing, calculation was done during Update() call)
-    // TODO: remove
-    if (writeflux_!=INPAR::SCATRA::flux_no)
-    {
-      // for flux output of initial field (before first solve) do:
-      if (step_==0)
-        flux_= CalcFlux(true, num);
-
-      OutputFlux(flux_);
-    }
   }
 
   // -----------------------------------------------------------------
@@ -467,3 +459,28 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
 }
 
 
+/*----------------------------------------------------------------------*
+ | return velocity at intermediate time n+theta         rasthofer 01/14 |
+ *----------------------------------------------------------------------*/
+const Teuchos::RCP< Epetra_MultiVector> SCATRA::LevelSetAlgorithm::ConVelTheta(double theta)
+{
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  Teuchos::RCP< Epetra_MultiVector> tmpvel = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  tmpvel->Update((1.0-theta),*conveln_,theta,*convel_,0.0);
+  return tmpvel;
+}
+
+
+/*----------------------------------------------------------------------*
+ | perform result test                                  rasthofer 01/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::TestResults()
+{
+  DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new SCATRA::ScaTraResultTest(Teuchos::rcp(this,false))));
+  if (particle_ != Teuchos::null)
+    particle_->TestResults(discret_->Comm());
+  else
+    DRT::Problem::Instance()->TestAll(discret_->Comm());
+
+  return;
+}
