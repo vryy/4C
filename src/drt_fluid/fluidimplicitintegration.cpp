@@ -5367,7 +5367,7 @@ void FLD::FluidImplicitTimeInt::SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_g
 //overloaded in TimIntRedModels bk 12/13
 void FLD::FluidImplicitTimeInt::SetupMeshtying()
 {
-  msht_ = params_->get<INPAR::FLUID::MeshTying>("MESHTYING");
+  msht_ = DRT::INPUT::get<INPAR::FLUID::MeshTying>(*params_,"MESHTYING");
   bool alldofcoupled = params_->get<bool>("ALLDOFCOUPLED");
 
   // meshtying: all dofs (velocity + pressure) are coupled

@@ -185,7 +185,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
 
-  switch(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"))
+  switch(DRT::INPUT::IntegralValue<INPAR::FLUID::MeshTying>(fdyn,"MESHTYING"))
   {
     case INPAR::FLUID::condensed_bmat:
     {
@@ -1172,7 +1172,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
 
   //--------------------------------------mesh tying for fluid
   fluidtimeparams->set<int>("MESHTYING",
-      DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"));
+      DRT::INPUT::IntegralValue<INPAR::FLUID::MeshTying>(fdyn,"MESHTYING"));
 
   fluidtimeparams->set<bool>("ALLDOFCOUPLED",DRT::INPUT::IntegralValue<bool>(fdyn,"ALLDOFCOUPLED"));
 
