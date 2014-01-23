@@ -106,6 +106,7 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetElementLsReinitScaTraParamete
     break;
   default:
     dserror("unknown definition for stabilization parameter");
+    break;
   }
 
   // set flags for subgrid-scale velocity and artificial diffusion term
