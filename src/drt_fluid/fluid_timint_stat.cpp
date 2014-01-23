@@ -129,17 +129,12 @@ void FLD::TimIntStationary::SolveStationaryProblem()
       // velnp then also holds prescribed new dirichlet values
       ApplyDirichletBC(eleparams,velnp_,Teuchos::null,Teuchos::null,false);
 
-      // update the 3D-to-reduced_D coupling data
-      Update3DToReducedDirichlet();
-
-      // Evaluate the womersley velocities
-      EvaluateWomersleyVel();
+      // additionally evaluate problem-specific boundary conditions
+      DoProblemSpecificBoundaryConditions();
 
       discret_->ClearState();
       // evaluate Neumann b.c.
       //eleparams.set("inc_density",density_);
-
-
 
       neumann_loads_->PutScalar(0.0);
       discret_->SetState("scaaf",scaaf_);

@@ -802,8 +802,8 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     // velnp then also holds prescribed new dirichlet values
     ApplyDirichletBC(eleparams,velnp_,Teuchos::null,Teuchos::null,false);
 
-    // update the 3D-to-reduced_D coupling data
-    Update3DToReducedDirichlet();
+    // additionally evaluate problem-specific boundary conditions
+    DoProblemSpecificBoundaryConditions();
 
     // By definition: Applying DC on the slave side of an internal interface is not allowed
     //                since it leads to an over-constraint system

@@ -291,12 +291,6 @@ public:
   virtual double ReturnThermpressaf(){return 0.0;}
 
   /*!
-  \brief Evaluate vel for Womersley conditions
-
-  */
-  virtual void EvaluateWomersleyVel(){return;}
-
-  /*!
   \brief Calculate time derivatives for
          stationary/one-step-theta/BDF2/af-generalized-alpha time integration
          for incompressible and low-Mach-number flow
@@ -835,10 +829,11 @@ public:
   //@}
 
   /*!
-  \brief update the 3D-to-reduced_D coupling data in TimIntRed
+  \brief evaluate and update problem-specific boundary conditions
 
   */
-  virtual void Update3DToReducedDirichlet() {return;}
+  virtual void DoProblemSpecificBoundaryConditions() {return;}
+
 protected:
 
   // don't want = operator and cctor

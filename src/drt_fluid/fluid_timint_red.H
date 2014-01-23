@@ -57,10 +57,10 @@ public:
   virtual ~TimIntRedModels();
 
   /*!
-  \brief update the 3D-to-reduced_D coupling data for dirichlet bc
+  \brief evaluate problem-dependent bounadry consitions: update the 3D-to-reduced_D coupling data for dirichlet bc in this context
 
   */
-  void Update3DToReducedDirichlet();
+  void DoProblemSpecificBoundaryConditions();
 
   /*!
   \brief update the 3D-to-reduced_D coupling data in AssembleMatAndRHS
@@ -146,12 +146,6 @@ public:
 
   */
   void ApplyDirichletToSystem();
-
-  /*!
-  \brief Evaluate vel for Womersley conditions
-
-  */
-  void EvaluateWomersleyVel();
 
 
 protected:

@@ -162,9 +162,9 @@ FLD::TimIntRedModels::~TimIntRedModels()
 }
 
 /*----------------------------------------------------------------------*
- |  Update3DToReduced                                          bk 12/13 |
+ | evaluate special boundary conditions                        bk 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::Update3DToReducedDirichlet()
+void FLD::TimIntRedModels::DoProblemSpecificBoundaryConditions()
 {
 
 #ifdef D_ALE_BFLOW
@@ -647,14 +647,5 @@ void FLD::TimIntRedModels::ApplyDirichletToSystem()
     LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bcmaps_));
 
   }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Evaluate Womersley Vel for TimIntStationary                  bk 12/13|
- *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::EvaluateWomersleyVel()
-{
-  vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
   return;
 }
