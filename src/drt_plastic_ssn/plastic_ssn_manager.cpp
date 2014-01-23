@@ -85,7 +85,14 @@ void UTILS::PlastSsnManager::SetPlasticParams(Teuchos::ParameterList& params)
  *-------------------------------------------------------------------*/
 void UTILS::PlastSsnManager::GetPlasticParams(Teuchos::ParameterList& params)
 {
-  unconvergedactiveset_=params.get<bool>("unconverged_active_set");
+  int unconverged_local=(int)params.get<bool>("unconverged_active_set");
+  int unconverged_global=0;
+  discret_->Comm().SumAll(&unconverged_local,&unconverged_global,1);
+  unconvergedactiveset_=(bool)unconverged_global;
+  if (unconvergedactiveset_)
+    if (discret_->Comm().MyPID()==0)
+      std::cout << "ACTIVE PLASTIC SET HAS CHANGED" << std::endl;
+
   int numactive_local=params.get<int>("number_active_plastic_gp");
 
   discret_->Comm().SumAll(&numactive_local,&numactive_global_,1);
@@ -106,18 +113,7 @@ void UTILS::PlastSsnManager::GetPlasticParams(Teuchos::ParameterList& params)
  *-------------------------------------------------------------------*/
 bool UTILS::PlastSsnManager::ActiveSetConverged()
 {
-  int unconverged_local = (int)unconvergedactiveset_;
-  int unconverged_global =0;
-  discret_->Comm().SumAll(&unconverged_local,&unconverged_global,1);
-
-  if (unconverged_global==0)
-    return true;
-  else
-  {
-    if (discret_->Comm().MyPID()==0)
-      std::cout << "ACTIVE PLASTIC SET HAS CHANGED" << std::endl;
-    return false;
-  }
+  return !unconvergedactiveset_;
 }
 
 /*-------------------------------------------------------------------*
