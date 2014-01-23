@@ -75,12 +75,15 @@ DIFFBASED                       No
 CURRENT_SOLUTION_VAR            No
 EQUPOT                          divi
 CONSTPARAMS                     No
+NEWMAN_CONST_A                  1.0
+NEWMAN_CONST_B                  -2.0
+NEWMAN_CONST_C                  -1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 ------------------------------------------------------MATERIALS
 MAT 1 MAT_elchmat CURRENT No NUMSPEC 1 SPECIDS 2 NUMPHASE 1 PHASEIDS 3
-MAT 2 MAT_newman VALENCE 1.0 CURVE_DIFF 1 CURVE_TRANS 2 A 1.0 B -2.0 C -1.0  
+MAT 2 MAT_newman VALENCE 1.0 CURVE_DIFF 1 CURVE_TRANS 2
 MAT 3 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 CONDUCTIVITY 1.0 NR 3 
  -----------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 1.6e-4 t1 0.0 t2 1000 //diffusion coefficient species 1

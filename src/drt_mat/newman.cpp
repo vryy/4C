@@ -29,9 +29,6 @@ MAT::PAR::Newman::Newman(
   valence_(matdata->GetDouble("VALENCE")),
   curvediff_(matdata->GetInt("CURVE_DIFF")),
   curvetrans_(matdata->GetInt("CURVE_TRANS")),
-  a_(matdata->GetDouble("A")),
-  b_(matdata->GetDouble("B")),
-  c_(matdata->GetDouble("C")),
   cursolvar_((matdata->GetInt("CURSOLVAR")))
 {
 }

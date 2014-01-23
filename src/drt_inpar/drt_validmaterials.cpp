@@ -393,9 +393,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"VALENCE","valence (= charge number)");
     AddNamedInt(m,"CURVE_DIFF","curve number for kinematic diffusivity");
     AddNamedInt(m,"CURVE_TRANS","curve number for transference number");
-    AddNamedReal(m,"A","constant for diffusion potential in current equation");
-    AddNamedReal(m,"B","constant for diffusion potential in current equation");
-    AddNamedReal(m,"C","constant for diffusion potential in current equation");
     AddNamedBool(m,"CURSOLVAR","bool defining if current is a solution variable",false,true);
 
     AppendMaterialDefinition(matlist,m);

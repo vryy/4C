@@ -379,7 +379,8 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // -------------------------------------------------------------------
   // set parameters associated to potential statistical flux evaluations
   // -------------------------------------------------------------------
-
+  if (myrank_ == 0)
+    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
   // initialize vector for statistics (assume a maximum of 10 conditions)
   sumnormfluxintegral_ = Teuchos::rcp(new Epetra_SerialDenseVector(10));
 
@@ -417,12 +418,14 @@ void SCATRA::ScaTraTimIntImpl::Init()
       IO::cout << IO::endl;
     }
   }
-
+  if (myrank_ == 0)
+    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
   // -------------------------------------------------------------------
   // preparations for turbulence models
   // -------------------------------------------------------------------
   InitTurbulenceModel(dofrowmap, noderowmap);
-
+  if (myrank_ == 0)
+    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
   // -------------------------------------------------------------------
   // set initial field
   // -------------------------------------------------------------------

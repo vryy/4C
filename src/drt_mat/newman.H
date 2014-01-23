@@ -49,22 +49,6 @@ namespace MAT
       /// transference number
       const int curvetrans_;
 
-      /// dilute solution theory (diffusion potential in current equation):
-      ///    a          b
-      ///   |--|  |----------|
-      ///   z_1 + (z_2 - z_1) t_1
-      ///  ---------------------
-      ///      z_1 z_2
-      ///     |________|
-      ///         c
-
-      /// constant for diffusion potential in current equation
-      const double a_;
-      /// constant for diffusion potential in current equation
-      const double b_;
-      /// constant for diffusion potential in current equation
-      const double c_;
-
       //! bool if current is a solution variable
       const bool cursolvar_;
 
@@ -154,13 +138,6 @@ private:
     int CurveDiff() const { return params_->curvediff_; }
     /// curve representing the transference number
     int CurveTrans() const { return params_->curvetrans_; }
-
-    /// return constant for diffusion potential in current equation
-    double A() const { return params_->a_; }
-    /// return constant for diffusion potential in current equation
-    double B() const { return params_->b_; }
-    /// return constant for diffusion potential in current equation
-    double C() const { return params_->c_; }
 
     //! return bool if current is a solution variable
     bool CurSolVar() const {return params_->cursolvar_;}

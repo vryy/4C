@@ -108,6 +108,19 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetElementElchDiffCondScaTraParamete
 
   equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams,"EQUPOT");
 
+
+  /// dilute solution theory (diffusion potential in current equation):
+  ///    A          B
+  ///   |--|  |----------|
+  ///   z_1 + (z_2 - z_1) t_1
+  /// ------------------------ (RT/F kappa 1/c_k grad c_k)
+  ///      z_1 z_2
+  ///     |________|
+  ///         C
+  newmanconsta_ = diffcondparams.get<double>("NEWMAN_CONST_A");
+  newmanconstb_ = diffcondparams.get<double>("NEWMAN_CONST_B");
+  newmanconstc_ = diffcondparams.get<double>("NEWMAN_CONST_C");
+
   if(nernstplanck_ != false)
     dserror("Somehow you are not in the Nernst-Planck framework! How did you come here?");
 

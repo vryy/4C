@@ -26,6 +26,7 @@ namespace ELEMENTS
 {
   // forward declarations
   class ScaTraEleParameterElch;
+  class ScaTraEleDiffManagerElch;
 
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcElch : public ScaTraEleCalc<distype>
@@ -200,6 +201,8 @@ private:
 
   DRT::ELEMENTS::ScaTraEleParameterElch* elchpara_;
 
+  Teuchos::RCP<ScaTraEleDiffManagerElch> dme_;
+
   INPAR::ELCH::DiffCondMat diffcondmat_;
 
   bool cursolvar_;
@@ -214,43 +217,195 @@ private:
   bool migrationinresidual_;
 
   //TODO: BACI_ELE_CLEANING
-  //! charge numbers of all ion species (ELCH specific)
-  std::vector<double> valence_;
 
   //! transference numbers
-  std::vector<double> trans_;
   double transelim_;
-  std::vector<std::vector<double> > transderiv_;
 
-  //! conductivity
-  std::vector<double> cond_;
-  std::vector<double> condderiv_;
-
-  //! thermodynamic factor
-  std::vector<double> therm_;
-  std::vector<double> thermderiv_;
-
-  std::vector<double> diffusderiv_;
   std::vector<double> diffuselimderiv_;
   double diffuselim_;
+
   std::vector<double> eps_;
   std::vector<double> tort_;
   std::vector<double> epstort_;
+};
 
-  /// dilute solution theory (diffusion potential in current equation):
-  ///    a          b
-  ///   |--|  |----------|
-  ///   z_1 + (z_2 - z_1) t_1
-  /// ------------------------ (RT/F kappa 1/c_k grad c_k)
-  ///      z_1 z_2
-  ///     |________|
-  ///         c
 
-  double a_;
-  double b_;
-  double c_;
+/// ScaTraEleDiffManagerElch implementation
+/*!
+  This class keeps all elch-specific transport parameter needed for the evaluation of an element. The
+  ScaTraEleDiffManagerElch is derived from the standard ScaTraEleDiffManager.
+  for
+*/
+class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
+{
+  public:
+
+    ScaTraEleDiffManagerElch(int numscal):
+    ScaTraEleDiffManager(numscal),
+    valence_(numscal,0.0),
+    derivdiffcoef_(numscal,std::vector<double>(numscal,0.0)),
+    transnum_(numscal,0.0),
+    derivtransnum_(numscal,std::vector<double>(numscal,0.0)),
+    cond_(0.0),
+    derivcond_(numscal,0.0),
+    thermfac_(1.0),
+    derivthermfac_(numscal,0.0)
+    {return;}
+
+    ~ScaTraEleDiffManagerElch(){};
+
+    //! Set valence of the single ionic species
+    void SetValence(const double valence,const int k)
+    {
+      valence_[k]=valence;
+      return;
+    };
+
+    //! Access routine for valence of the single ionic species
+    const double GetValence(const int k){return valence_[k];};
+
+    //! Set derivative of diffusion coefficients with respect to concentrations
+    void SetDerivIsoDiffCoef(const double derivdiffcoef,const int k,const int iscal)
+    {
+      (derivdiffcoef_[k])[iscal] = derivdiffcoef;
+      return;
+    };
+
+    //! Access routine for derivative of diffusion coefficients with respect to concentrations
+    const double GetDerivIsoDiffCoef(const int k,const int iscal){return (derivdiffcoef_[k])[iscal];};
+
+    //! Set transference numbers with respect to single ionic species
+    void SetTransNum(const double transnum,const int k)
+    {
+      transnum_[k] = transnum;
+      return;
+    };
+
+    //! Access routine for transference numbers with respect to single ionic species
+    const double GetTransNum(const int k){return transnum_[k];};
+
+    //! Set derivative of transference numbers with respect to concentrations
+    void SetDerivTransNum(const double derivtransnum,const int k,const int iscal)
+    {
+      (derivtransnum_[k])[iscal] = derivtransnum;
+      return;
+    };
+
+    //! Access routine for derivative of transference numbers with respect to concentrations
+    const double GetDerivTransNum(const int k,const int iscal){return (derivtransnum_[k])[iscal];};
+
+    //! Set conductivity of the electrolyte solution
+    void SetCond(const double cond)
+    {
+      cond_ = cond;
+      return;
+    };
+
+    //! Access routine for conductivity of the electrolyte solution
+    const double GetCond(){return cond_;};
+
+    //! Set derivative of the conductivity with respect to concentrations
+    void SetDerivCond(const double derivcond,const int k)
+    {
+      derivcond_[k] = derivcond;
+      return;
+    };
+
+    //! Access routine for derivative of the conductivity with respect to concentrations
+    const double GetDerivCond(const int k){return derivcond_[k];};
+
+    //! Set thermodynamic factor for a specific electrolyte solution
+    void SetThermFac(const double thermfac)
+    {
+      thermfac_ = thermfac;
+      return;
+    };
+
+    //! Access routine for the thermodynamic factor for a specific electrolyte solution
+    const double GetThermFac(){return thermfac_;};
+
+    //! Set derivative of thermodynamic factor with respect to concentrations
+    void SetDerivThermFac(const double derivthermfac,const int k)
+    {
+      derivthermfac_[k] = derivthermfac;
+      return;
+    };
+
+    //! Access routine for derivative of thermodynamic factor with respect to concentrations
+    const double GetDerivThermFac(const int k){return derivthermfac_[k];};
+
+    //! Output of transport parameter (to screen)
+    void OutputTransportParams(const int numscal)
+    {
+      for(int k=0;k<numscal;++k)
+        std::cout << "diffusion coefficient " << k << ":   " << diff_[k] << std::endl;
+
+      for(int k=0;k<numscal;++k)
+      {
+        for(int iscal=0;iscal<numscal;++iscal)
+        {
+          std::cout << "derivation diffusion coefficient (" << k << "," << iscal << "):  " << (derivdiffcoef_[k])[iscal] << std::endl;
+        }
+      }
+      std::cout << std::endl;
+
+      for(int k=0;k<numscal;++k)
+        std::cout << "transference number " << k << ":   " << transnum_[k] << std::endl;
+
+      for(int k=0;k<numscal;++k)
+      {
+        for(int iscal=0;iscal<numscal;++iscal)
+        {
+          std::cout << "derivation transference number (" << k << "," << iscal << "):  " << (derivtransnum_[k])[iscal] << std::endl;
+        }
+      }
+      std::cout << std::endl;
+
+      std::cout << "conductivity:   " << cond_ << std::endl;
+
+      for(int k=0;k<numscal;++k)
+        std::cout << "derivation of conductivity  " << k << ":   " << derivcond_[k] << std::endl;
+      std::cout << std::endl;
+
+      std::cout << "thermodynamic factor:   " << thermfac_ << std::endl;
+
+      for(int k=0;k<numscal;++k)
+        std::cout << "derivation of thermodynamic factor " << k << ":   " << derivthermfac_[k] << std::endl;
+      std::cout << std::endl;
+
+      return;
+    };
+
+
+  private:
+
+    //! valence of the single ionic species
+    std::vector<double> valence_;
+
+    //! derivative of diffusion coefficients with respect to concentrations
+    std::vector< std::vector<double> > derivdiffcoef_;
+
+    //! transference numbers for single ionic species
+    std::vector<double> transnum_;
+
+    //! derivative of transference numbers with respect to concentrations
+    std::vector< std::vector<double> > derivtransnum_;
+
+    //! conductivity of the electrolyte solution
+    double cond_;
+
+    //! derivative of the conductivity with respect to concentrations
+    std::vector<double> derivcond_;
+
+    //! thermodynamic factor for a specific electrolyte solution
+    //! transport parameter used only in the Newman model
+    double thermfac_;
+
+    //! derivative of thermodynamic factor with respect to concentrations
+    std::vector<double> derivthermfac_;
 
 };
+
 }
 }
 

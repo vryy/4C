@@ -80,6 +80,12 @@ public:
 
   INPAR::ELCH::EquPot EquPot(){return equpot_;};
 
+  double NewmanConstA(){return newmanconsta_;};
+
+  double NewmanConstB(){return newmanconstb_;};
+
+  double NewmanConstC(){return newmanconstc_;};
+
 protected:
 
   /// protected Constructor since we are a Singleton.
@@ -99,6 +105,21 @@ protected:
   bool constparams_;
 
   enum INPAR::ELCH::EquPot equpot_;
+
+
+  /// dilute solution theory (diffusion potential in current equation):
+  ///    A          B
+  ///   |--|  |----------|
+  ///   z_1 + (z_2 - z_1) t_1
+  /// ------------------------ (RT/F kappa 1/c_k grad c_k)
+  ///      z_1 z_2
+  ///     |________|
+  ///         C
+  double newmanconsta_;
+
+  double newmanconstb_;
+
+  double newmanconstc_;
 
 private:
 

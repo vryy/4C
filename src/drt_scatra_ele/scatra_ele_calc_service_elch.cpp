@@ -363,7 +363,7 @@ const int                       k
   double visc(0.0);
 
   // get material parameters (evaluation at element center)
-  if (not my::scatrapara_->MatGP()) my::GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
+  if (not my::scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
 
   // integration rule
   DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -375,7 +375,7 @@ const int                       k
     const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
     // get material parameters (evaluation at integration point)
-    if (my::scatrapara_->MatGP()) my::GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
+    if (my::scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
 
     // get velocity at integration point
     LINALG::Matrix<my::nsd_,1> velint(true);
@@ -415,9 +415,9 @@ const int                       k
         // no break statement here!
       case INPAR::SCATRA::flux_diffusive_domain:
         // diffusive flux contribution
-        q.Update(-(my::diffmanager_->GetIsotropicDiff(k)),gradphi,1.0);
+        q.Update(-(dme_->GetIsotropicDiff(k)),gradphi,1.0);
 
-        q.Update(-my::diffmanager_->GetIsotropicDiff(k)*valence_[k]*frt*phi,gradpot,1.0);
+        q.Update(-dme_->GetIsotropicDiff(k)*dme_->GetValence(k)*frt*phi,gradpot,1.0);
 
         break;
       default:
@@ -483,7 +483,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
   double visc(0.0);
 
   // get material parameter (constants values)
-  my::GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
+  GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
 
   //TODO: SCATRA_ELE_CLEANING: DiffCondParameter zu Parameterliste hinzufügen
 //  if(diffcond_==true)
@@ -545,9 +545,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
       xint.Multiply(my::xyze_,my::funct_);
 
       // compute various constants
-      const double d = frt*((my::diffmanager_->GetIsotropicDiff(0)*valence_[0]) - (my::diffmanager_->GetIsotropicDiff(1)*valence_[1]));
+      const double d = frt*((dme_->GetIsotropicDiff(0)*dme_->GetValence(0)) - (dme_->GetIsotropicDiff(1)*dme_->GetValence(1)));
       if (abs(d) == 0.0) dserror("division by zero");
-      const double D = frt*((valence_[0]*my::diffmanager_->GetIsotropicDiff(0)*my::diffmanager_->GetIsotropicDiff(1)) - (valence_[1]*my::diffmanager_->GetIsotropicDiff(1)*my::diffmanager_->GetIsotropicDiff(0)))/d;
+      const double D = frt*((dme_->GetValence(0)*dme_->GetIsotropicDiff(0)*dme_->GetIsotropicDiff(1)) - (dme_->GetValence(1)*dme_->GetIsotropicDiff(1)*dme_->GetIsotropicDiff(0)))/d;
 
       // compute analytical solution for cation and anion concentrations
       const double A0 = 2.0;
@@ -580,9 +580,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
         dserror("Illegal number of space dimensions for analyt. solution: %d",my::nsd_);
 
       // compute analytical solution for anion concentration
-      c(1) = (-valence_[0]/valence_[1])* c(0);
+      c(1) = (-dme_->GetValence(0)/dme_->GetValence(1))* c(0);
       // compute analytical solution for el. potential
-      const double pot = ((my::diffmanager_->GetIsotropicDiff(1)-my::diffmanager_->GetIsotropicDiff(0))/d) * log(c(0)/c_0_0_0_t);
+      const double pot = ((dme_->GetIsotropicDiff(1)-dme_->GetIsotropicDiff(0))/d) * log(c(0)/c_0_0_0_t);
 
       // compute differences between analytical solution and numerical solution
       deltapot = potint - pot;
@@ -647,9 +647,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
         dserror("Illegal number of space dimensions for analyt. solution: %d",my::nsd_);
 
       // compute analytical solution for anion concentration
-      c(1) = (-valence_[0]/valence_[1])* c(0);
+      c(1) = (-dme_->GetValence(0)/dme_->GetValence(1))* c(0);
       // compute analytical solution for el. potential
-      const double d = frt*((my::diffmanager_->GetIsotropicDiff(0)*valence_[0]) - (my::diffmanager_->GetIsotropicDiff(1)*valence_[1]));
+      const double d = frt*((dme_->GetIsotropicDiff(0)*dme_->GetValence(0)) - (dme_->GetIsotropicDiff(1)*dme_->GetValence(1)));
       if (abs(d) == 0.0) dserror("division by zero");
       // reference value + ohmic resistance + concentration potential
       const double pot = pot_inner + log(c(0)/c0_inner); // + (((diffus_[1]-diffus_[0])/d) * log(c(0)/c0_inner));
@@ -679,7 +679,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
       for (int k=0; k<my::numscal_; ++k)
       {
         const double conint_k = my::funct_.Dot(my::ephinp_[k]);
-        deviation += valence_[k]*conint_k;
+        deviation += dme_->GetValence(k)*conint_k;
       }
 
     // add square to L2 error
@@ -763,14 +763,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
   {
     for(int k=0; k < my::numscal_; k++)
     {
-      double sigma_k = factor*valence_[k]*my::diffmanager_->GetIsotropicDiff(k)*valence_[k]*conint[k];
+      double sigma_k = factor*dme_->GetValence(k)*dme_->GetIsotropicDiff(k)*dme_->GetValence(k)*conint[k];
       sigma[k] += sigma_k; // insert value for this ionic species
       sigma_all += sigma_k;
 
       // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
       if(elchtype==INPAR::ELCH::elchtype_enc_pde_elim)
       {
-        sigma_all += factor*my::diffmanager_->GetIsotropicDiff(k)*valence_[k]*valence_[k]*(-conint[k]);
+        sigma_all += factor*dme_->GetIsotropicDiff(k)*dme_->GetValence(k)*dme_->GetValence(k)*(-conint[k]);
       }
     }
   }
@@ -843,15 +843,15 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
       double sigmaint(0.0);
       for (int k=0; k<my::numscal_; ++k)
       {
-        double sigma_k = frt*valence_[k]*my::diffmanager_->GetIsotropicDiff(k)*valence_[k]*conint[k];
+        double sigma_k = frt*dme_->GetValence(k)*dme_->GetIsotropicDiff(k)*dme_->GetValence(k)*conint[k];
         sigmaint += sigma_k;
 
         // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
         if(elchtype==INPAR::ELCH::elchtype_enc_pde_elim)
-          sigmaint += frt*valence_[k]*my::diffmanager_->GetIsotropicDiff(k)*valence_[my::numscal_]*(-conint[k]);
+          sigmaint += frt*dme_->GetValence(k)*dme_->GetIsotropicDiff(k)*dme_->GetValence(my::numscal_)*(-conint[k]);
 
         // diffusive terms on rhs
-        const double vrhs = fac*my::diffmanager_->GetIsotropicDiff(k)*valence_[k];
+        const double vrhs = fac*dme_->GetIsotropicDiff(k)*dme_->GetValence(k);
         for (int vi=0; vi<my::nen_; ++vi)
         {
           const int fvi = vi*my::numdofpernode_+my::numscal_;
@@ -860,7 +860,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
           erhs[fvi] -= vrhs*laplawf;
           // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
           if(elchtype==INPAR::ELCH::elchtype_enc_pde_elim)
-            erhs[fvi] -= -fac*valence_[k]*my::diffmanager_->GetIsotropicDiff(my::numscal_)*laplawf;
+            erhs[fvi] -= -fac*dme_->GetValence(k)*dme_->GetIsotropicDiff(my::numscal_)*laplawf;
         }
 
         // provide something for conc. dofs: a standard mass matrix
@@ -894,6 +894,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
     }
     else
     {
+      // specific constants for the Newman-material:
+      // switch between a dilute solution theory like formulation and the classical concentrated solution theory
+      double newman_const_a = elchpara_->NewmanConstA();
+      double newman_const_b = elchpara_->NewmanConstB();
+      double newman_const_c = elchpara_->NewmanConstC();
+
       //TODO: SCATRA_ELE_CLEANING
       if(diffcondmat_==INPAR::ELCH::diffcondmat_diffcond)
         dserror("The function CalcInitialPotential is only implemented for Newman materials");
@@ -908,7 +914,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
 
           for (int iscal=0; iscal < my::numscal_; ++iscal)
           {
-            erhs[fvi] -= fac*epstort_[0]/faraday/frt*cond_[0]*(therm_[0])*((a_+(b_*trans_[iscal]))/c_)/conint[iscal]*laplawf;
+            erhs[fvi] -= fac*epstort_[0]/faraday/frt*dme_->GetCond()*(dme_->GetThermFac())*((newman_const_a+(newman_const_b*dme_->GetTransNum(iscal)))/newman_const_c)/conint[iscal]*laplawf;
           }
         }
 
@@ -933,12 +939,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
           const int fui = ui*my::numdofpernode_+my::numscal_;
           double laplawf(0.0);
           my::GetLaplacianWeakForm(laplawf,ui,vi);
-          emat(fvi,fui) += fac*epstort_[0]/faraday*cond_[0]*laplawf;
+          emat(fvi,fui) += fac*epstort_[0]/faraday*dme_->GetCond()*laplawf;
         }
 
         double laplawf(0.0);
         my::GetLaplacianWeakFormRHS(laplawf,gradpot,vi);
-        erhs[fvi] -= fac*epstort_[0]/faraday*cond_[0]*laplawf;
+        erhs[fvi] -= fac*epstort_[0]/faraday*dme_->GetCond()*laplawf;
       }
     }
   } // integration loop

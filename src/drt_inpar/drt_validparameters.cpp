@@ -4930,6 +4930,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::ELCH::equpot_divi),
                                     &elchdiffcondcontrol);
 
+    /// dilute solution theory (diffusion potential in current equation):
+    ///    A          B
+    ///   |--|  |----------|
+    ///   z_1 + (z_2 - z_1) t_1
+    /// ------------------------ (RT/F kappa (1+f+-) 1/c_k grad c_k)
+    ///      z_1 z_2
+    ///     |________|
+    ///         C
+    //
+    DoubleParameter("NEWMAN_CONST_A",1.0,"Constant A for the Newman model(term for the concentration overpotential)",&elchdiffcondcontrol);
+    DoubleParameter("NEWMAN_CONST_B",1.0,"Constant B for the Newman model(term for the concentration overpotential)",&elchdiffcondcontrol);
+    DoubleParameter("NEWMAN_CONST_C",1.0,"Constant C for the Newman model(term for the concentration overpotential)",&elchdiffcondcontrol);
+
     /*----------------------------------------------------------------------*/
     Teuchos::ParameterList& levelsetcontrol = list->sublist(
         "LEVEL-SET CONTROL",
