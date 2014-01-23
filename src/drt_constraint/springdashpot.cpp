@@ -207,15 +207,11 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
           v[k] = (*velo)[velo->Map().LID(dofs[k])];
         }
 
-        //scalar products of u and v with ref normal N
-        double uTN=0.;
-        double vTN=0.;
-
+        //dyadic product of ref normal with itself
+        Epetra_SerialDenseMatrix N_x_N(numdof,numdof);
         for (int l=0; l<numdof; ++l)
-        {
-          uTN += (u[l]-springoffset)*unitrefnormal[l];
-          vTN += v[l]*unitrefnormal[l];
-        }
+          for (int m=0; m<numdof; ++m)
+          	N_x_N(l,m)=unitrefnormal[l]*unitrefnormal[m];
 
         if (*dir == "direction_all")
         {
@@ -230,9 +226,12 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
         {
         	for (int k=0; k<numdof; ++k)
         	{
-						double val = nodalarea*(springstiff*uTN + dashpotvisc*vTN)*unitrefnormal[k];
-						fint->SumIntoGlobalValues(1,&val,&dofs[k]);
-						stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size))*unitrefnormal[k]*unitrefnormal[k],dofs[k],dofs[k]);
+						for (int m=0; m<numdof; ++m)
+						{
+							double val = nodalarea*N_x_N(k,m)*(springstiff*(u[m]-springoffset) + dashpotvisc*v[m]);
+							stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size))*N_x_N(k,m),dofs[k],dofs[m]);
+							fint->SumIntoGlobalValues(1,&val,&dofs[k]);
+						}
         	}
         }
         else dserror("Invalid direction option! Choose direction_all or direction_refsurfnormal!");
