@@ -686,3 +686,57 @@ void STR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWrite
   output->WriteVector("finert",finert_);
   return;
 }
+
+/*---------------------------------------------------------------------------------------------*
+ * Update all field vectors defined specific for this method, to take into account        sudhakar 12/13
+ * of the new nodes introduced by crack propagation
+ *---------------------------------------------------------------------------------------------*/
+void STR::TimIntGenAlpha::updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew )
+{
+  UpdateThisEpetraVectorCrack( dism_, oldnew );
+  UpdateThisEpetraVectorCrack( velm_, oldnew );
+  UpdateThisEpetraVectorCrack( accm_, oldnew );
+
+  UpdateThisEpetraVectorCrack( fint_, oldnew );
+  UpdateThisEpetraVectorCrack( fintm_, oldnew );
+  UpdateThisEpetraVectorCrack( fintn_, oldnew );
+
+  UpdateThisEpetraVectorCrack( fext_, oldnew );
+  UpdateThisEpetraVectorCrack( fextm_, oldnew );
+  UpdateThisEpetraVectorCrack( fextn_, oldnew );
+
+  UpdateThisEpetraVectorCrack( finert_, oldnew );
+  UpdateThisEpetraVectorCrack( finertm_, oldnew );
+  UpdateThisEpetraVectorCrack( finertn_, oldnew );
+  UpdateThisEpetraVectorCrack( fviscm_, oldnew );
+
+  if (!HaveNonlinearMass())
+  {
+    // determine mass, damping and initial accelerations
+    DetermineMassDampConsistAccel();
+  }
+  else
+  {
+    // the case of nonlinear inertia terms works so far only for examples with vanishing initial accelerations, i.e. the initial external
+    // forces and initial velocities have to be chosen consistently!!!
+    (*acc_)(0)->PutScalar(0.0);
+  }
+
+  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
+
+  if (!HaveNonlinearMass())
+  {
+    // set initial internal force vector
+    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_);
+  }
+  else
+  {
+    double timeintfac_dis=beta_*(*dt_)[0]*(*dt_)[0];
+    double timeintfac_vel=gamma_*(*dt_)[0];
+
+    // Check, if initial residuum really vanishes for acc_ = 0
+    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_);
+
+    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0));
+  }
+}

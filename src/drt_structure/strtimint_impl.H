@@ -677,6 +677,12 @@ namespace STR
     //! Linear structure solve with just an interface load
     Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
 
+    //! update all EpetraVectors as discretization changes after crack insertion
+    void updateEpetraVectorsCrack( std::map<int,int>& oldnew );
+
+	  /// update all the field vectors to account for new node introduced by crack
+    virtual void updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew ) = 0;
+
         //! Prepare system for solving with Newton's method
     //!
     //! - negative residual

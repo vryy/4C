@@ -20,10 +20,8 @@ int DRT::ELEMENTS::Dcohesive::Evaluate(Teuchos::ParameterList&    params,
   if( failNorm_ or failTang_ )
     return 0;
 
-  /*******************************************************************/ //blockkk
   if( elevec1 == Teuchos::null )
     return 0;
-  /*******************************************************************/
 
   // initialize this elements if not done before
   if( coheStrength_.size() == 0 )
@@ -51,14 +49,14 @@ int DRT::ELEMENTS::Dcohesive::Evaluate(Teuchos::ParameterList&    params,
   // calling appropriate crack modeling procedure
   switch ( model_ )
   {
-  case INPAR::CRACK::crack_dczm:
+  case INPAR::CRACK::cohesive_dczm:
   {
     // ------------------------- Discrete Cohesive Zone Modeling ----------------------------
     EvaluateDCZM( params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3 );
     break;
   }
 
-  case INPAR::CRACK::crack_ddzm:
+  case INPAR::CRACK::cohesive_ddzm:
   {
     // ------------------------- Discrete Damage Zone Modeling ----------------------------
     EvaluateDDZM( params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3 );
@@ -112,7 +110,6 @@ int DRT::ELEMENTS::Dcohesive::EvaluateDDZM( Teuchos::ParameterList&    params,
   elemat1(0,3) = elemat1(3,0) = -stiff;
   //elemat1.Print(std::cout);
   //elevec1.Print(std::cout);
-  //dserror("done");//blockkk
 
   //--------------------------------------------------------------------------
   // STEP 5 : copy new damage into old time step
@@ -159,7 +156,6 @@ int DRT::ELEMENTS::Dcohesive::EvaluateDCZM( Teuchos::ParameterList&    params,
   elemat1(3,0) = -stifSpr[0];
   elemat1.Print(std::cout);
   elevec1.Print(std::cout);
-  //dserror("done");//blockkk
 
   //double a;
   //std::cin>>a;
@@ -229,13 +225,6 @@ std::vector<double> DRT::ELEMENTS::Dcohesive::calculateDeflections( DRT::Discret
   //deflec[0] = fabs(xyzDef[0]);
   //deflec[1] = fabs(xyzDef[1]);
   //deflec[2] = fabs(xyzDef[2]);
-
-  std::cout<<"deflection = "<<deflec[0]<<"\n";//blockkk
-
-  //std::cout<<deflec[0]<<"\t"<<deflec[1]<<"\t"<<deflec[2]<<"\n";//blockkk
-  //dserror("okay");//blockkk
-
-  //std::cout<<"DEFLECTION OF SPRING = "<<deflec[0]<<"\n";//blockkk
 
   return deflec;
 }
@@ -317,7 +306,7 @@ void DRT::ELEMENTS::Dcohesive::computeDamage( double * b,
   // check whether the spring has already failed by now
   double fac = g[0]/fracEnergy_[0] + g[1]/fracEnergy_[1];
   if( fac > 0.0 )
-    std::cout<<"the criterion for fracture = "<<fabs(fac)<<"\n";//blockkkk
+    std::cout<<"the criterion for fracture = "<<fabs(fac)<<"\n";
   if( fabs(0.9-fac) < 1e-15 or (fac-0.9) > 1e-15 )
   {
     failNorm_ = true;
@@ -405,20 +394,6 @@ void DRT::ELEMENTS::Dcohesive::InitializeElement()
     break;
   }
   }
-
-
-  /***********************************************************************************/ //blockkk
-  //std::cout<<"cohesive strengths = "<<coheStrength_[0]<<"\t"<<coheStrength_[1]<<"\n";
-  //std::cout<<"fracture energies = "<<fracEnergy_[0]<<"\t"<<fracEnergy_[1]<<"\n";
-  //std::cout<<"alfa = "<<alfa_ppr_<<"\tbeta = "<<beta_ppr_<<"\n";
-  //std::cout<<"lambda = "<<iniSlop_[0]<<"\t"<<iniSlop_[1]<<"\n";
-  //std::cout<<"values of m = "<<mn_[0]<<"\n"<<mn_[1]<<"\n";
-  //std::cout<<"max disp = "<<maxDisp_[0]<<"\t"<<maxDisp_[1]<<"\n";
-  //std::cout<<"crit disp = "<<critDisp_[0]<<"\t"<<critDisp_[1]<<"\n";
-  //std::cout<<"gamma = "<<gamma_[0]<<"\t"<<gamma_[1]<<"\n";
-  //dserror("check\n");
-  /***********************************************************************************/ //blockkk
-
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -525,7 +500,7 @@ void DRT::ELEMENTS::Dcohesive::ForceStiffnessSpring( const std::vector<double>& 
         failNorm_ = true;
       forcSpr[0] = 0.0;
       stifSpr[0] = 0.0;
-      std::cout<<"spring failed = "<<tracN<<"\n"<<maxDisp_[0]<<"\n";//blockkk
+      std::cout<<"spring failed = "<<tracN<<"\n"<<maxDisp_[0]<<"\n";
     }
     else
     {

@@ -996,6 +996,9 @@ public:
   /// return all condition names defined in this discretization
   virtual void GetConditionNames( std::vector<std::string> & names ) const;
 
+  /// return all conditions defined on this discretization
+  void GetAllConditions( std::multimap<std::string,Teuchos::RCP<Condition> >& condns ){ condns = condition_; }
+
   //@}
 
   //! @name Parallel (re)distribution

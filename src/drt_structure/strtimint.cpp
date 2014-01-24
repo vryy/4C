@@ -26,6 +26,7 @@ Maintainer: Alexander Popp
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_gmsh.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/micromaterial.H"
@@ -47,6 +48,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
+#include "../drt_inpar/inpar_crack.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
@@ -67,6 +69,8 @@ Maintainer: Alexander Popp
 #include "../drt_poroelast/poroelast_utils.H"
 
 #include "../drt_io/io_pstream.H"
+
+#include "../drt_crack/propagateCrack.H"
 
 /*----------------------------------------------------------------------*/
 /* print tea time logo */
@@ -134,6 +138,9 @@ STR::TimInt::TimInt
   statmechman_(Teuchos::null),
   locsysman_(Teuchos::null),
   pressure_(Teuchos::null),
+  propcrack_(Teuchos::null),
+  isCrack_(false),
+  gmsh_out_(false),
   time_(Teuchos::null),
   timen_(0.0),
   dt_(Teuchos::null),
@@ -177,20 +184,6 @@ STR::TimInt::TimInt
     dserror("Discretisation is not complete or has no dofs!");
   }
 
-  // connect degrees of freedom for periodic boundary conditions
-  // (i.e. for multi-patch nurbs computations)
-  {
-    PeriodicBoundaryConditions pbc(discret_);
-
-    if (pbc.HasPBC())
-    {
-      pbc.UpdateDofsForPeriodicBoundaryConditions();
-
-      discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
-
-    }
-  }
-
   // time state
   time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
   dt_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
@@ -201,18 +194,6 @@ STR::TimInt::TimInt
   // output file for energy
   if ( (writeenergyevery_ != 0) and (myrank_ == 0) )
     AttachEnergyFile();
-
-  // a zero vector of full length
-  zeros_ = LINALG::CreateVector(*DofRowMapView(), true);
-
-  // Map containing Dirichlet DOFs
-  {
-    Teuchos::ParameterList p;
-    p.set("total time", timen_);
-    discret_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null,
-                                Teuchos::null, dbcmaps_);
-    zeros_->PutScalar(0.0); // just in case of change
-  }
 
   // displacements D_{n}
   dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
@@ -241,24 +222,8 @@ STR::TimInt::TimInt
   // create empty interface force vector
   fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
 
-  // create empty matrices
-  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
-  mass_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
-  if (damping_ != INPAR::STR::damp_none)
-  {
-    if (!HaveNonlinearMass())
-    {
-      damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
-    }
-    else
-    {
-      //Since our element evaluate routine is only designed for two input matrices
-      //(stiffness and damping or stiffness and mass) its not possible, to have nonlinear
-      //inertia forces AND material damping.
-      dserror("So far its not possible to model nonlinear inertia forces and damping!");
-    }
-  }
-
+  // create stiffness, mass matrix and other fields
+  createFields( solver );
 
   // set initial fields
   SetInitialFields();
@@ -313,6 +278,11 @@ STR::TimInt::TimInt
   // check for statistical mechanics
   {
     PrepareStatMech();
+  }
+
+	// check for crack propagation
+  {
+    PrepareCrackSimulation();
   }
 
   // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
@@ -411,6 +381,59 @@ STR::TimInt::TimInt
 
   // stay with us
   return;
+}
+
+/*-------------------------------------------------------------------------------------------*
+ * Either while creating timint for the first time, or when the discretization is
+ * modified as in crack propagation simulations,  this function creates fields whose    sudhakar 12/13
+ * values at previous time step are not important
+ *-------------------------------------------------------------------------------------------*/
+
+void STR::TimInt::createFields( Teuchos::RCP<LINALG::Solver>& solver )
+{
+  // connect degrees of freedom for periodic boundary conditions
+  // (i.e. for multi-patch nurbs computations)
+  {
+    PeriodicBoundaryConditions pbc(discret_);
+
+    if (pbc.HasPBC())
+    {
+      pbc.UpdateDofsForPeriodicBoundaryConditions();
+
+      discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
+    }
+  }
+
+  // a zero vector of full length
+  zeros_ = LINALG::CreateVector(*DofRowMapView(), true);
+
+  // Map containing Dirichlet DOFs
+  {
+    Teuchos::ParameterList p;
+    p.set("total time", timen_);
+    discret_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null,
+                                Teuchos::null, dbcmaps_);
+    zeros_->PutScalar(0.0); // just in case of change
+  }
+
+  // create empty matrices
+  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+  mass_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+  if (damping_ != INPAR::STR::damp_none)
+  {
+    if (!HaveNonlinearMass())
+    {
+      damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+    }
+    else
+    {
+      //Since our element evaluate routine is only designed for two input matrices
+      //(stiffness and damping or stiffness and mass) its not possible, to have nonlinear
+      //inertia forces AND material damping.
+      dserror("So far its not possible to model nonlinear inertia forces and damping!");
+    }
+  }
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -1328,6 +1351,25 @@ void STR::TimInt::OutputStep(bool forced_writerestart)
   // what's next?
   return;
 }
+
+/*-----------------------------------------------------------------------------*
+ * write GMSH output of displacement field
+ *-----------------------------------------------------------------------------*/
+void STR::TimInt::GmshOutputStep()
+{
+  if( not gmsh_out_ )
+    return;
+
+  const std::string filename = IO::GMSH::GetFileName("struct", stepn_, false, myrank_);
+  std::ofstream gmshfilecontent(filename.c_str());
+
+  // add 'View' to Gmsh postprocessing file
+  gmshfilecontent << "View \" " << "struct displacement \" {" << std::endl;
+  // draw vector field 'struct displacement' for every element
+  IO::GMSH::VectorFieldDofBasedToGmsh(discret_,WriteAccessDispn(),gmshfilecontent,true);
+  gmshfilecontent << "};" << std::endl;
+}
+
 /*----------------------------------------------------------------------*/
 /* We need the restart data to perform on "restarts" on the fly for parameter
  * continuation
@@ -2463,8 +2505,14 @@ int STR::TimInt::Integrate()
       // write output
       OutputStep();
 
+      // write Gmsh output
+      GmshOutputStep();
+
       // print info about finished time step
       PrintStep();
+
+      // propagate crack within the structure
+      UpdateCrackInformation( Dispnp() );
     }
     else // something went wrong update error code according to chosen divcont action
     {
@@ -2487,56 +2535,56 @@ int STR::TimInt::PerformErrorAction(int nonlinsoldiv)
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   enum INPAR::STR::DivContAct divcontype = (DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdyn,"DIVERCONT"));
   switch (divcontype)
-     {
-       case INPAR::STR::divcont_stop:
-       {
-         // write restart output of last converged step before stopping
-         OutputStep(true);
+  {
+    case INPAR::STR::divcont_stop:
+    {
+      // write restart output of last converged step before stopping
+      OutputStep(true);
 
-         // we should not get here, dserror for safety
-         dserror("Nonlinear solver did not converge! ");
-         return 1;
-       }
-       case INPAR::STR::divcont_continue:
-       {
-       // we should not get here, dserror for safety
-         dserror("Nonlinear solver did not converge! ");
-         return 1;
-       }
-       break;
-       case INPAR::STR::divcont_repeat_step:
-       {
-         IO::cout << "Nonlinear solver failed to converge repeat time step" << IO::endl;
-         // do nothing since we didn't update yet
-         return 0;
-       }
-       break;
-       case INPAR::STR::divcont_halve_step:
-        {
-          IO::cout << "Nonlinear solver failed to converge divide timestep in half" << IO::endl;
-          // halve the time step size
-          (*dt_)[0]=(*dt_)[0]*0.5;
-          // update the number of max time steps
-          stepmax_= stepmax_ + (stepmax_-stepn_)*2+1;
-          // reset timen_ because it is set in the constructor
-          timen_ = (*time_)[0] + (*dt_)[0];;
-          return 0;
-        }
-        break;
-       case INPAR::STR::divcont_repeat_simulation:
-       {
-         if(nonlinsoldiv==1)
-           IO::cout << "Nonlinear solver failed to converge and DIVERCONT = repeat_simulation, hence leaving structural time integration " << IO::endl;
-         else if (nonlinsoldiv==2)
-           IO::cout << "Linear solver failed to converge and DIVERCONT = repeat_simulation, hence leaving structural time integration " << IO::endl;
-         return 1; // so that time loop will be aborted
-       }
-       break;
-       default:
-         dserror("Unknown DIVER_CONT case");
-         return 1;
-         break;
-     }
+      // we should not get here, dserror for safety
+      dserror("Nonlinear solver did not converge! ");
+      return 1;
+    }
+    case INPAR::STR::divcont_continue:
+    {
+    // we should not get here, dserror for safety
+      dserror("Nonlinear solver did not converge! ");
+      return 1;
+    }
+    break;
+    case INPAR::STR::divcont_repeat_step:
+    {
+      IO::cout << "Nonlinear solver failed to converge repeat time step" << IO::endl;
+      // do nothing since we didn't update yet
+      return 0;
+    }
+    break;
+    case INPAR::STR::divcont_halve_step:
+    {
+      IO::cout << "Nonlinear solver failed to converge divide timestep in half" << IO::endl;
+      // halve the time step size
+      (*dt_)[0]=(*dt_)[0]*0.5;
+      // update the number of max time steps
+      stepmax_= stepmax_ + (stepmax_-stepn_)*2+1;
+      // reset timen_ because it is set in the constructor
+      timen_ = (*time_)[0] + (*dt_)[0];;
+      return 0;
+    }
+    break;
+    case INPAR::STR::divcont_repeat_simulation:
+    {
+      if(nonlinsoldiv==1)
+        IO::cout << "Nonlinear solver failed to converge and DIVERCONT = repeat_simulation, hence leaving structural time integration " << IO::endl;
+      else if (nonlinsoldiv==2)
+        IO::cout << "Linear solver failed to converge and DIVERCONT = repeat_simulation, hence leaving structural time integration " << IO::endl;
+      return 1; // so that time loop will be aborted
+    }
+    break;
+    default:
+      dserror("Unknown DIVER_CONT case");
+    return 1;
+    break;
+  }
   return 0; // make compiler happy
 }
 /*----------------------------------------------------------------------*/
@@ -2794,4 +2842,107 @@ void STR::TimInt::ResizeMStepTimAda()
   acc_->Resize(-1, 0, DofRowMapView(), true);
 
   return;
+}
+
+/*----------------------------------------------------------------------------------*
+ * check for crack propagation, and do preparations                           sudhakar 12/13
+ * ---------------------------------------------------------------------------------*/
+void STR::TimInt::PrepareCrackSimulation()
+{
+  const Teuchos::ParameterList& crackparam = DRT::Problem::Instance()->CrackParams();
+  if ( DRT::INPUT::IntegralValue<INPAR::CRACK::crackModel>(crackparam,"CRACK_MODEL")
+        == INPAR::CRACK::crack_lefm )
+  {
+    isCrack_ = true;
+    propcrack_ = Teuchos::rcp(new DRT::CRACK::PropagateCrack( discret_ ) );
+  }
+
+  gmsh_out_ = DRT::INPUT::IntegralValue<int>(crackparam,"GMSH_OUT")==1;
+}
+
+/*-------------------------------------------------------------------------------------------------*
+ * update all the field variables to the new discretization                           sudhakar 01/14
+ * ------------------------------------------------------------------------------------------------*/
+void STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> displace )
+{
+
+  if( not isCrack_ )
+    return;
+
+  propcrack_->propagateOperations( displace );
+
+  if (not discret_->Filled() || not discret_->HaveDofs())
+  {
+    dserror("New discretisation after crack propagation is not complete or has no dofs!");
+  }
+
+  std::map<int,int> oldnewIds = propcrack_->GetOldNewNodeIds();
+  if( oldnewIds.size() == 0 )
+  {
+    return;
+  }
+
+  std::cout<<"===============updating crack information==================\n";
+
+  // new boundary condition map is built when calling discret_->EvaluateDirichlet(...)
+  // within the createFields() funciton
+  dbcmaps_= Teuchos::rcp(new LINALG::MapExtractor());
+  createFields( solver_ );
+
+  UpdateThisEpetraVectorCrack( disn_, oldnewIds );
+  UpdateThisEpetraVectorCrack( veln_, oldnewIds );
+  UpdateThisEpetraVectorCrack( accn_, oldnewIds );
+  UpdateThisEpetraVectorCrack( fifc_, oldnewIds );
+
+  if( dismatn_ != Teuchos::null )
+    UpdateThisEpetraVectorCrack( dismatn_, oldnewIds );
+
+  if ((*dis_)(0) != Teuchos::null)
+  {
+    dis_->ReplaceMaps(discret_->DofRowMap());
+    LINALG::Export(*disn_, *(*dis_)(0));
+  }
+
+  if ((*vel_)(0) != Teuchos::null)
+  {
+    vel_->ReplaceMaps(discret_->DofRowMap());
+    LINALG::Export(*veln_, *(*vel_)(0));
+  }
+
+  if ((*acc_)(0) != Teuchos::null)
+  {
+    acc_->ReplaceMaps(discret_->DofRowMap());
+    LINALG::Export(*accn_, *(*acc_)(0));
+  }
+
+  if( dism_ != Teuchos::null )
+  {
+    dism_->ReplaceMaps(discret_->DofRowMap());
+    LINALG::Export(*dismatn_, *(*dism_)(0));
+  }
+
+	// update other field vectors related to specific integration method
+  updateEpetraVectorsCrack( oldnewIds );
+}
+
+
+/*----------------------------------------------------------------------------------------*
+ * The DOFs corresponding to the new node are zeros.
+ * We copy the field values for this node from the old node that is already       sudhakar 12/13
+ * existing at the same position
+ *----------------------------------------------------------------------------------------*/
+void STR::TimInt::UpdateThisEpetraVectorCrack( Teuchos::RCP<Epetra_Vector>& vec,
+                                               std::map<int,int>& oldnewIds )
+{
+  Teuchos::RCP<Epetra_Vector> old = vec;
+  vec = LINALG::CreateVector(*discret_->DofRowMap(),true);
+  LINALG::Export( *old, *vec );
+
+  for( std::map<int,int>::iterator it = oldnewIds.begin(); it != oldnewIds.end(); it++ )
+  {
+    int oldid = it->first;
+    int newid = it->second;
+
+    DRT::UTILS::EquateValuesAtTheseNodes( *vec, discret_, oldid, newid );
+  }
 }

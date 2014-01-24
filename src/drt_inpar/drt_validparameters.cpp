@@ -6472,19 +6472,40 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("APPROX_ELECOORDS_INIT","no","switch on/off approximate initial guess for computing element coordinates",&cavitationdyn);
 
   /*----------------------------------------------------------------------*/
-    Teuchos::ParameterList& crackdyn = list->sublist("COHESIVE CRACK",false,"");
+    Teuchos::ParameterList& crackdyn = list->sublist("CRACK",false,"");
 
-    // type of crack propagation modeling
+    // type of crack propagation model -- either using linear elastic fracture mechanics concepts, or cohesive crack models
     setStringToIntegralParameter<int>("CRACK_MODEL","none",
-                                    "type of crack propagation modeling",
+                                        "type of crack propagation modeling",
+                                        tuple<std::string>(
+                                          "none",
+                                          "lefm",
+                                          "cohesive"),
+                                        tuple<int>(
+                                          INPAR::CRACK::crack_none,
+                                          INPAR::CRACK::crack_lefm,
+                                          INPAR::CRACK::crack_cohesive),
+                                        &crackdyn);
+
+    DoubleParameter("CRITICAL_K1",50000.0,"Critical stress intensity factor in normal mode",&crackdyn);
+
+    DoubleParameter("CRITICAL_K2",50000.0,"Critical stress intensity factor in shear mode",&crackdyn);
+
+    StringParameter("THICKNESS_ASSUMPTION","plane_strain",
+                    "Whether is this plane strain or plane stress problem?",
+                     &crackdyn);
+
+    // type of cohesive crack propagation modeling
+    setStringToIntegralParameter<int>("COHESIVE_CRACK_MODEL","none",
+                                    "type of cohesive crack propagation modeling",
                                     tuple<std::string>(
                                       "none",
                                       "dczm",
                                       "ddzm"),
                                     tuple<int>(
-                                      INPAR::CRACK::crack_none,
-                                      INPAR::CRACK::crack_dczm,
-                                      INPAR::CRACK::crack_ddzm),
+                                      INPAR::CRACK::cohesive_none,
+                                      INPAR::CRACK::cohesive_dczm,
+                                      INPAR::CRACK::cohesive_ddzm),
                                     &crackdyn);
 
     setStringToIntegralParameter<int>("TRACTION_SEPARATION_LAW","exponential",
@@ -6517,6 +6538,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
     DoubleParameter("SLOPE_NORMAL",0.02,"Initial slope indicator in normal direction for PPR model",&crackdyn);
     DoubleParameter("SLOPE_SHEAR",0.02,"Initial slope indicator in normal direction for PPR model",&crackdyn);
+
+    setStringToIntegralParameter<int>("GMSH_OUT","No","Do you want to write Gmsh output of displacement each timestep?",
+                                   yesnotuple,yesnovalue,&crackdyn);
 
 	/*----------------------------------------------------------------------*/
 	Teuchos::ParameterList& acousticdyn = list->sublist("ACOUSTIC DYNAMIC",false,"control parameters for acoustic or photoacoustic problems\n");

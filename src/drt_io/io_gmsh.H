@@ -47,10 +47,13 @@ namespace IO
         );
 
     //! write dof-based vector field to Gmsh postprocessing file
+    //! when writing the given vectorfield is displacement, displacenodes can be set true
+    //! then it writes the nodal coordinates at the present time step.
     void VectorFieldDofBasedToGmsh(
         const Teuchos::RCP<DRT::Discretization> discret,
         const Teuchos::RCP<const Epetra_Vector> vectorfield,
-        std::ostream&                           s
+        std::ostream&                           s,
+        bool                                    displacenodes = false
         );
 
     //! write dof-based vector field to Gmsh postprocessing file

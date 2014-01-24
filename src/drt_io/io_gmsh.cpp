@@ -138,7 +138,8 @@ void IO::GMSH::ScalarFieldToGmsh(
 void IO::GMSH::VectorFieldDofBasedToGmsh(
     const Teuchos::RCP<DRT::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> vectorfield_row,
-    std::ostream&                           s
+    std::ostream&                           s,
+    bool                                    displacenodes
 )
 {
 #ifdef PARALLEL
@@ -165,12 +166,6 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(
       xyze(idim,inode) = nodes[inode]->X()[idim];
     }
 
-    s << "V"; // vector field indicator
-    s << distypeToGmshElementHeader(distype);
-
-    // write node coordinates to Gmsh stream
-    CoordinatesToStream(xyze, distype, s);
-
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
@@ -183,8 +178,21 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(
     // Extract velocity from local velnp_
     LINALG::SerialDenseMatrix myvectorfield(nsd,numnode);
     for (int inode = 0; inode < numnode; ++inode)
+    {
       for (int idim = 0; idim < nsd; ++idim)
-        myvectorfield(idim,inode)= extractmyvectorfield(idim + inode*(nsd+1));
+      {
+        double val = extractmyvectorfield(idim + inode*nsd);
+        myvectorfield(idim,inode)= val;
+        if( displacenodes )
+          xyze(idim,inode) += val;
+      }
+    }
+
+    s << "V"; // vector field indicator
+    s << distypeToGmshElementHeader(distype);
+
+    // write node coordinates to Gmsh stream
+    CoordinatesToStream(xyze, distype, s);
 
     // write vector field to Gmsh stream
     // remark: only the first 3 components are written to the Gmsh postprocessing file

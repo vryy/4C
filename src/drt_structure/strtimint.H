@@ -101,6 +101,13 @@ namespace IO
   class DiscretizationWriter;
 }
 
+namespace DRT
+{
+namespace CRACK
+{
+class PropagateCrack;
+}
+}
 
 /*----------------------------------------------------------------------*/
 //! Structural Dynamics
@@ -173,6 +180,9 @@ namespace STR
 
     //! Copy constructor
     TimInt(const TimInt& old) { ; }
+
+    //! create fields, based on dofrowmap, whose previous time step values are unimportant
+    void createFields( Teuchos::RCP<LINALG::Solver>& solver );
 
     //! Resize #TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;
@@ -358,6 +368,9 @@ namespace STR
     //! upon object prior to writing stuff here.
     //! \author mwgee (originally) \date 03/07
     void OutputStep(bool forced_writerestart = false);
+
+    //! write output of step to the Gmsh format
+    void GmshOutputStep();
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07
@@ -945,6 +958,8 @@ namespace STR
     //! create manager object + initialize all relevant stuff if so
     void PrepareBeamContact(const Teuchos::ParameterList& sdynparams);
 
+
+
     //@}
 
     //@}
@@ -983,6 +998,20 @@ namespace STR
 
     // set structure displacement vector due to biofilm growth
     void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp);
+    //@}
+    
+    //! @name Crack propagation methods
+		//! check for crack propagation and do preparations
+    void PrepareCrackSimulation();
+    
+    //! After introducing new nodes in crack, this performs all related operations in discretization
+    void UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> displace );
+
+		//! DOFs corresponding to the new nodes are filled with appropriate values from the already existing nodes
+    void UpdateThisEpetraVectorCrack( Teuchos::RCP<Epetra_Vector>& vec, std::map<int,int>& oldnewIds );
+
+		//! update all Epectra_vectors related to the chosen time integration
+    virtual void updateEpetraVectorsCrack( std::map<int,int>& oldnew ) = 0;
     //@}
 
   protected:
@@ -1079,8 +1108,17 @@ namespace STR
     //! Map to differentiate pressure and displacement/velocity DOFs
     Teuchos::RCP<LINALG::MapExtractor> pressure_;
 
+		//!  Holds class that propagates crack within the discretiztion
+    Teuchos::RCP<DRT::CRACK::PropagateCrack> propcrack_;
+
     //! elements with micro-materials
     bool havemicromat_;
+
+		//! Is this a crack propagation simulation?
+    bool isCrack_;
+
+		//! Is GMSH output of displacements required?
+    bool gmsh_out_;
 
     //@}
 

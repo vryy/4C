@@ -314,8 +314,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   // Add cohesive elements in case of crack propagation simulations
   {
     const Teuchos::ParameterList& crackparam = DRT::Problem::Instance()->CrackParams();
-    if (DRT::INPUT::IntegralValue<INPAR::CRACK::CrackModel>(crackparam,"CRACK_MODEL")
-          != INPAR::CRACK::crack_none)
+    if (DRT::INPUT::IntegralValue<INPAR::CRACK::crackModel>(crackparam,"CRACK_MODEL")
+          == INPAR::CRACK::crack_cohesive)
     {
       //if( (not DRT::Problem::Instance()->Restart()) and DRT::Problem::Instance()->ProblemType() == prb_structure )
       {

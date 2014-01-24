@@ -158,7 +158,6 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(bool predict)
   //                     - F_{ext;n+1}
   fres_->Update(-1.0, *fextn_, 0.0);
   fres_->Update(1.0, *fintn_, 1.0);
-//  std::cout << *fintn_ << std::endl;
 
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = K_{T}
@@ -337,4 +336,14 @@ void STR::TimIntStatics::ReadRestartForce()
 void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
   return;
+}
+
+/*---------------------------------------------------------------------------------------------*
+ * Update all field vectors defined specific for this method, to take into account        sudhakar 12/13
+ * of the new nodes introduced by crack propagation
+ *---------------------------------------------------------------------------------------------*/
+void STR::TimIntStatics::updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew )
+{
+  UpdateThisEpetraVectorCrack( fintn_, oldnew );
+  UpdateThisEpetraVectorCrack( fextn_, oldnew );
 }

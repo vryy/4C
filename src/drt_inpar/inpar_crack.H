@@ -25,12 +25,19 @@ namespace INPAR
   namespace CRACK
   {
 
-    /// Type of crack modeling
-    enum CrackModel
+    enum crackModel
     {
-      crack_none,          // no carack propagation
-      crack_dczm,          // Discrete cohesive zone modeling
-      crack_ddzm           // Discrete damage zone modeling
+      crack_none,
+      crack_lefm,
+      crack_cohesive
+    };
+
+    /// Type of cohesive crack modeling
+    enum CohesiveModel
+    {
+      cohesive_none,          // no carack propagation
+      cohesive_dczm,          // Discrete cohesive zone modeling
+      cohesive_ddzm           // Discrete damage zone modeling
     };
 
     enum tractionSeparation

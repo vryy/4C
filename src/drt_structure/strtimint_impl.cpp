@@ -3582,4 +3582,15 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
 }
 
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ * update the field vectors to account for new node introduced      sudhakar 12/13
+ * by crack propagation
+ *----------------------------------------------------------------------*/
+void STR::TimIntImpl::updateEpetraVectorsCrack( std::map<int,int>& oldnew )
+{
+  UpdateThisEpetraVectorCrack( disi_, oldnew );
+  UpdateThisEpetraVectorCrack( fres_, oldnew );
+  UpdateThisEpetraVectorCrack( freact_, oldnew );
+
+  updateMethodSpecificEpetraCrack( oldnew );
+}
