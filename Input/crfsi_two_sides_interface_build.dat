@@ -100,8 +100,9 @@ VSTAB                           no_vstab
 GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
------------------------------------------------------------------COHESIVE CRACK
-CRACK_MODEL			ddzm
+-----------------------------------------------------------------CRACK
+CRACK_MODEL								cohesive
+COHESIVE_CRACK_MODEL			ddzm
 IS_CRACK_PREDEFINED		Yes
 TRACTION_SEPARATION_LAW		ppr
 NORMAL_COHESIVE_STRENGTH	500
