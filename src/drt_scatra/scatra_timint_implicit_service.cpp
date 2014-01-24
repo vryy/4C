@@ -367,28 +367,28 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       Teuchos::ParameterList params;
 
       // TODO: SCATRA_ELE_CLEANING
-//      int addflux=0;
-//      if(condnames[i]=="ScaTraFluxCalc" and IsElch(scatratype_))
-//      {
-//        if((cond[condid])->GetInt("output")==INPAR::SCATRA::fluxeval_alldof)
-//        {
-//          // flux for additional dof
-//          addflux+=1;
-//          params.set<int>("alldof",INPAR::SCATRA::fluxeval_alldof);
-//        }
-//      }
-//      // maximal number of fluxes  (numscal+1 -> ionic species + potential) is used if it is
-//      // specified in the BC
-//      const int numfluxeval = numscal_ + addflux;
-
-      int numfluxeval=0;
-      if((cond[condid])->GetInt("output")==INPAR::SCATRA::fluxeval_alldof)
+      int addflux=0;
+      if(condnames[i]=="ScaTraFluxCalc")
       {
-        numfluxeval=numdofpernode_;
-        params.set<int>("alldof",INPAR::SCATRA::fluxeval_alldof);
+        if((cond[condid])->GetInt("output")==INPAR::SCATRA::fluxeval_alldof)
+        {
+          // flux for additional dof
+          addflux=1;
+          params.set<int>("alldof",INPAR::SCATRA::fluxeval_alldof);
+        }
       }
-      else
-        numfluxeval=numscal_;
+      // maximal number of fluxes  (numscal+1 -> ionic species + potential) is used if it is
+      // specified in the BC
+      const int numfluxeval=numscal_+addflux;
+
+//      int numfluxeval=0;
+//      if((cond[condid])->GetInt("output")==INPAR::SCATRA::fluxeval_alldof)
+//      {
+//        numfluxeval=numdofpernode_;
+//        params.set<int>("alldof",INPAR::SCATRA::fluxeval_alldof);
+//      }
+//      else
+//        numfluxeval=numscal_;
 
       // calculate integral of shape functions over indicated boundary and it's area
       params.set("boundaryint",0.0);

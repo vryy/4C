@@ -414,9 +414,10 @@ void FS3I::BiofilmFSI::InnerTimeloop()
         // get local id of the dof
         int lid = dofrowmap->LID(gid);
 
-        int lnodeid=lnode->LID();
+//        int lnodeid=lnode->LID();
 
         double lambdai=(*lambdafull)[lid];
+        int lnodeid = noderowmap->LID(lnode->Id());
         ((*lambdanode)(index))->ReplaceMyValues(1,&lambdai,&lnodeid);
       }
     }

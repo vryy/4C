@@ -426,6 +426,16 @@ public:
   void CalcIntermediateSolution();
 
   /*========================================================================*/
+  //! @name  fs3i methods
+  /*========================================================================*/
+
+  //! compute contribution of permeable surface/interface
+  void SurfacePermeability(
+    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< ?
+    Teuchos::RCP<Epetra_Vector>          rhs     //!< ?
+  );
+
+  /*========================================================================*/
   //! @name Biofilm methods
   /*========================================================================*/
 
@@ -445,11 +455,9 @@ public:
   //! @name  not classified method - to be kept clean!!!
   /*========================================================================*/
 
-  //! compute contribution of permeable surface/interface
-  void SurfacePermeability(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< ?
-    Teuchos::RCP<Epetra_Vector>          rhs     //!< ?
-  );
+  // nothing here at the moment
+
+  /*========================================================================*/
 
   /*========================================================================*/
   //! @name  obsolete or unused methods - to be deleted soon (at noon)!!!

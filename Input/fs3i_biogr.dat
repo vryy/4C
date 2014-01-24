@@ -3,6 +3,8 @@
 // coroneo@lnm.mw.tum.de
 // 089/289-15236
 //
+// Test for checking biofilm growth algorithm 
+//
 ==================================================================
 General Data File BACI
 ==================================================================
@@ -415,8 +417,8 @@ MAT 11 MAT_Struct_StVenantKirchhoff YOUNG 0.004 NUE 0.4 DENS 0.001
 FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION 1
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 3715 QUANTITY phi VALUE 8.24196381149063573e-01 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 319 QUANTITY phi VALUE 8.24176787411576628e-01 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 3715 QUANTITY phi VALUE 8.24197609639036433e-01 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 319 QUANTITY phi VALUE 8.24178092693030662e-01 TOLERANCE 1e-6
 SCATRA DIS scatra2 NODE 3715 QUANTITY scstr_growth_displx VALUE 9.03590999411364865e-02 TOLERANCE 1e-6
 SCATRA DIS scatra2 NODE 3715 QUANTITY scstr_growth_disply VALUE -1.85440113269617996e-05 TOLERANCE 1e-6
 SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_displx VALUE 9.00256640415140613e-02 TOLERANCE 1e-6
