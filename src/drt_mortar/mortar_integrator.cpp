@@ -1796,9 +1796,9 @@ void MORTAR::MortarIntegratorCalc<distypeS,distypeM>::IntegrateDerivCell3D_EleBa
     for(int nummaster=0;nummaster<msize;++nummaster)
     {
       // project Gauss point onto master element
-      MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint3D(sele,sxi,*meles[nummaster],mxi,projalpha);
-
-      bool is_on_mele=true;
+      bool is_on_mele = MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint3D(sele,sxi,*meles[nummaster],mxi,projalpha);
+      if(not is_on_mele)
+        continue;
 
       // check GP projection
       double tol = 0.00;

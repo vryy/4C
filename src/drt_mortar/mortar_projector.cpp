@@ -562,6 +562,15 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPoint3D(MORTAR::MortarEle
       if (conv <= MORTARCONVTOL) break;
       EvaluateGradFGaussPoint3D(df,gpx,gpn,ele,eta,alpha);
 
+      // safety check: if projection normal is parallel to the master element --> det can be zero
+      double det = df.Determinant();
+      if (det > -1e-12 and det < 1e-12)
+      {
+        std::cout << "WARNING: GPProjection parallel to master element --> GP skipped for this master element!" << std::endl;
+        // leave here
+        return false;
+      }
+
       // solve deta = - inv(df) * f
       double jacdet = df.Invert();
       if (abs(jacdet)<1.0e-12) dserror("ERROR: Singular Jacobian for projection");
