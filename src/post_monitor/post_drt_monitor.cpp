@@ -1220,6 +1220,7 @@ void FsiStructMonWriter::WriteTableHead(std::ofstream& outfile, int dim)
             << std::right << std::setw(16) << "v_y"
             << std::right << std::setw(16) << "a_x"
             << std::right << std::setw(16) << "a_y"
+            << std::right << std::setw(16) << "p"
             << std::right << std::setw(16) << "lambda_x"
             << std::right << std::setw(16) << "lambda_y"
             << std::endl;
