@@ -242,6 +242,8 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Print(std::ostream& os) const
 {
   os << "So3_poro ";
+  os<<" Discretization type: "<<DRT::DistypeToString(distype).c_str();
+  Element::Print(os);
   return;
 }
 

@@ -337,7 +337,7 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     // Evaluate growth law
     double ktheta = 0.0;
     double dktheta = 0.0;
-    EvaluateGrowthLaw(&ktheta, &dktheta, mandel, theta, hommandel);
+    EvaluateGrowthLaw(ktheta, dktheta, mandel, theta, hommandel);
     double residual = thetaold - theta + ktheta*(mandel-hommandel)*dt;
 
     int localistep = 0;
@@ -388,7 +388,7 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
         ktheta = 0.0;
         dktheta = 0.0;
-        EvaluateGrowthLaw(&ktheta, &dktheta, mandel, thetatemp, hommandel);
+        EvaluateGrowthLaw(ktheta, dktheta, mandel, thetatemp, hommandel);
         residualtemp = thetaold - thetatemp + ktheta*(mandel-hommandel)*dt;
       } // end of damping loop
       residual = residualtemp;
@@ -493,12 +493,12 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate growth law                           (private)        02/10|
+ |  Evaluate growth law                           (protected)        02/10|
  *----------------------------------------------------------------------*/
 void MAT::Growth::EvaluateGrowthLaw
 (
-  double * ktheta,
-  double * dktheta,
+  double & ktheta,
+  double & dktheta,
   double traceM,
   double theta,
   double hommandel
@@ -513,11 +513,11 @@ void MAT::Growth::EvaluateGrowthLaw
   double thetaminus = 0.5;
   // ktheta and dktheta should be zero!
   if (traceM > hommandel) {
-    *ktheta=kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus);
-    *dktheta=mthetaplus*kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus-1.0)/(1.0-thetaplus);
+    ktheta=kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus);
+    dktheta=mthetaplus*kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus-1.0)/(1.0-thetaplus);
   } else if (traceM < hommandel) {
-    *ktheta=kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus);
-    *dktheta=mthetaminus*kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus-1.0)/(1.0-thetaminus);
+    ktheta=kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus);
+    dktheta=mthetaminus*kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus-1.0)/(1.0-thetaminus);
   }
 
 }

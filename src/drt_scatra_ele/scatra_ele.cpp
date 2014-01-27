@@ -19,11 +19,11 @@ Maintainer: Andreas Ehrl
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/myocard.H"
+#include "../drt_mat/elasthyper.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
-#include "../drt_so3/so3_scatra.H"
 
 DRT::ELEMENTS::TransportType DRT::ELEMENTS::TransportType::instance_;
 
@@ -278,7 +278,8 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
      mat->MaterialType() == INPAR::MAT::m_biofilm or
      mat->MaterialType() == INPAR::MAT::m_th_fourier_iso or
      mat->MaterialType() == INPAR::MAT::m_thermostvenant or
-     mat->MaterialType() == INPAR::MAT::m_yoghurt
+     mat->MaterialType() == INPAR::MAT::m_yoghurt or
+     mat->MaterialType() == INPAR::MAT::m_scatra_growth_scd
      )
   {
     numdofpernode_=1; // we only have a single scalar
@@ -359,20 +360,20 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum,DRT::Element* oldele)
 {
   SetMaterial(matnum);
 
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   if(mat->MaterialType() == INPAR::MAT::m_myocard)
   {
-    MAT::Myocard* actmat = static_cast<MAT::Myocard*>(mat.get());
+    Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_static_cast<MAT::Myocard>(mat);
 
-    DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4,DRT::Element::tet4>* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4,DRT::Element::tet4>*>(oldele);
+    Teuchos::RCP<MAT::ElastHyper> somat = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(oldele->Material());
+    if(somat==Teuchos::null)
+      dserror("cast to ElastHyper failed");
 
-    if(actele == NULL)
-      dserror("cast to So3_Scatra failed");
-
-    actmat->Setup(actele->GetFiber1());
-
+    //copy fiber information from solid material to scatra material (for now, only one fiber vector)
+    std::vector<LINALG::Matrix<3,1> > fibervecs(0);
+    somat->GetFiberVecs(fibervecs);
+    actmat->Setup(fibervecs[0]);
   }
 
   return;

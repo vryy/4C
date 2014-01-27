@@ -52,6 +52,7 @@ namespace INPAR
       m_permeable_fluid,       ///< permeable fluid
       m_scatra,   ///< scalar transport material
       m_myocard,   ///< anisotropic electrophysical model of heart tissue
+      m_scatra_growth_scd,   ///< scalar transport material for coupling with growth model
       m_mixfrac,  ///< material according to mixture-fraction approach
       m_sutherland,     ///< material with temperature dependence according to Sutherland law
       m_arrhenius_spec, ///< material with Arrhenius-type chemical kinetics (species)
@@ -104,6 +105,7 @@ namespace INPAR
       mes_isoratedep,  ///< isotropic iscochoric frequency dependent viscos potential summand
       m_cnst_art,            ///< 1D_Artery constant material properties
       m_growth,   ///< integration point based growth
+      m_growthscd,   ///< integration point based growth (scalar dependent)
       m_constraintmixture,  ///< growth and remodeling of arteries
       m_biofilm,   ///< biofilm modeling (convection-diffusion-reaction)
       m_fluidporo,       ///< darcy fluid for poroelasticity problems

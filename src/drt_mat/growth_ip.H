@@ -192,10 +192,7 @@ namespace MAT
     /// Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
-  private:
-
-    /// my material parameters
-    MAT::PAR::Growth* params_;
+  protected:
 
     /// growth stretch
     Teuchos::RCP<std::vector<double> > theta_;
@@ -209,14 +206,19 @@ namespace MAT
     bool isinit_;
 
     /// Evaluate growth law
-    void EvaluateGrowthLaw
+    virtual void EvaluateGrowthLaw
     (
-      double * ktheta, ///< factor in growth law
-      double * dktheta, ///< derivative of ktheta
+      double & ktheta, ///< factor in growth law
+      double & dktheta, ///< derivative of ktheta
       double traceM, ///< trace of Mandel stress
       double theta, ///< growth parameter
       double hommandel ///< homeostatic value for mandelstress
     );
+
+  private:
+
+    /// my material parameters
+    MAT::PAR::Growth* params_;
 
   };
 

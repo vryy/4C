@@ -141,9 +141,13 @@ public:
 
   /// material call from DRT::ELEMENTS::Transport::ReadElement function
   /// to setup conductivity tensor for each element
-  void Setup(const std::vector<double> &fiber1);
+  void Setup(const LINALG::Matrix<3,1>& fiber1);
+  void Setup(const LINALG::Matrix<2,1>& fiber1);
   void Setup(DRT::INPUT::LineDefinition* linedef);
+
   void SetupDiffusionTensor(const std::vector<double> &fiber1);
+  void SetupDiffusionTensor(const LINALG::Matrix<3,1>& fiber1);
+  void SetupDiffusionTensor(const LINALG::Matrix<2,1>& fiber1);
 
   /// diffusivity
   void ComputeDiffusivity(LINALG::Matrix<1,1>& diffus3) const;

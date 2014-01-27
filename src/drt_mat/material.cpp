@@ -65,6 +65,8 @@ Maintainer: Lena Wiechert
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
 #include "growth_ip.H"
+#include "growth_scd.H"
+#include "scatra_growth_scd.H"
 #include "constraintmixture.H"
 #include "biofilm.H"
 #include "optimization_density.H"
@@ -530,6 +532,20 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ParticleMat(curmat));
     MAT::PAR::ParticleMat* params = static_cast<MAT::PAR::ParticleMat*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_growthscd:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthScd(curmat));
+    MAT::PAR::GrowthScd* params = static_cast<MAT::PAR::GrowthScd*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_scatra_growth_scd:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ScatraGrowthScd(curmat));
+    MAT::PAR::ScatraGrowthScd* params = static_cast<MAT::PAR::ScatraGrowthScd*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_acousticmat:

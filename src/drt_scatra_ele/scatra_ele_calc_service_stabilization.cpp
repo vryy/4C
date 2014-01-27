@@ -285,7 +285,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauFrancaValentin(
 
   // various parameter computations:
   // relating convective to viscous part
-  if (diffus < EPS14) dserror("Invalid diffusion coefficent");
+  if (diffus < EPS14) dserror("Invalid diffusion coefficent: %i",diffus);
   const double epe = mk * densnp * vel_norm * h / diffus;
   // relating viscous to reactive part
   double epe1 = 0.0;

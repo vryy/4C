@@ -75,7 +75,8 @@ void SCATRA::ScatraFluidCloneStrategy::CheckMaterialType(const int matid)
 // We take the material with the ID specified by the user
 // Here we check first, whether this material is of admissible type
 INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
-if ((mtype != INPAR::MAT::m_scatra) &&
+if (
+    (mtype != INPAR::MAT::m_scatra) &&
     (mtype != INPAR::MAT::m_mixfrac) &&
     (mtype != INPAR::MAT::m_sutherland) &&
     (mtype != INPAR::MAT::m_arrhenius_pv) &&
@@ -86,7 +87,9 @@ if ((mtype != INPAR::MAT::m_scatra) &&
     (mtype != INPAR::MAT::m_thermostvenant) &&
     (mtype != INPAR::MAT::m_yoghurt) &&
     (mtype != INPAR::MAT::m_matlist) &&
-    (mtype != INPAR::MAT::m_myocard))
+    (mtype != INPAR::MAT::m_myocard) &&
+    (mtype != INPAR::MAT::m_scatra_growth_scd)
+   )
   dserror("Material with ID %d is not admissible for scalar transport elements",matid);
 }
 

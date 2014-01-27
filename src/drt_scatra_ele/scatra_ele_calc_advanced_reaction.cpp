@@ -22,6 +22,8 @@
 #include "../drt_lib/drt_element.H"
 
 #include "../drt_mat/biofilm.H"
+#include "../drt_mat/scatra_growth_scd.H"
+#include "../drt_mat/growth_scd.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -85,11 +87,21 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Materials(
   const int                               iquad         //!< id of current gauss point
   )
 {
-  if (material->MaterialType() == INPAR::MAT::m_scatra)
+  switch(material->MaterialType())
+  {
+  case INPAR::MAT::m_scatra:
     my::MatScaTra(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
-  else if (material->MaterialType() == INPAR::MAT::m_biofilm)
+    break;
+  case INPAR::MAT::m_biofilm:
     MatBioFilm(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
-  else dserror("Material type %i is not supported",material->MaterialType());
+    break;
+  case INPAR::MAT::m_scatra_growth_scd:
+    MatGrowthScd(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+    break;
+  default:
+    dserror("Material type %i is not supported",material->MaterialType());
+   break;
+  }
 
   return;
 }
@@ -123,6 +135,67 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatBioFilm(
   reamanager->SetReaCoeff(actmat->ComputeReactionCoeff(csnp),k);
   // set derivative of reaction coefficient
   reamanager->SetReaCoeffDeriv(actmat->ComputeReactionCoeffDeriv(csnp),k);
+
+  // set density at various time steps and density gradient factor to 1.0/0.0
+  densn      = 1.0;
+  densnp     = 1.0;
+  densam     = 1.0;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Material GrowthScd                                       vuong 01/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatGrowthScd(
+    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+    const int                               k,        //!< id of current scalar
+    double&                                 densn,    //!< density at t_(n)
+    double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+    double&                                 densam,   //!< density at t_(n+alpha_M)
+    Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
+    Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
+    double&                                 visc,         //!< fluid viscosity
+    const int                               iquad         //!< id of current gauss point
+  )
+{
+  dsassert(my::numdofpernode_==1,"more than 1 dof per node for ScatraGrowthScd material");
+
+  if(iquad < 0) dserror("ScatraGrowthScd material has to be evaluated at gauss point!");
+
+  const Teuchos::RCP<const MAT::ScatraGrowthScd>& actmat
+    = Teuchos::rcp_dynamic_cast<const MAT::ScatraGrowthScd>(material);
+
+  //strategy to obtain theta from the structure at equivalent gauss-point
+  //access structure discretization
+   RCP<DRT::Discretization> structdis = Teuchos::null;
+   structdis = DRT::Problem::Instance()->GetDis("structure");
+   //get corresponding structure element (it has the same global ID as the scatra element)
+   DRT::Element* structele = structdis->gElement(my::eid_);
+   if (structele == NULL)
+     dserror("Structure element %i not on local processor", my::eid_);
+
+   const Teuchos::RCP<const MAT::GrowthScd>& structmat
+             = Teuchos::rcp_dynamic_cast<const MAT::GrowthScd>(structele->Material());
+   if(structmat->MaterialType() != INPAR::MAT::m_growthscd)
+     dserror("invalid structure material for scalar dependent growth");
+
+   const double theta    = structmat->Gettheta_atgp(iquad);
+   const double dtheta   = structmat->Getdtheta_atgp(iquad);
+   const double thetaold = structmat->Getthetaold_atgp(iquad);
+   const double detFe    = structmat->GetdetFe_atgp(iquad);
+
+  // get constant diffusivity
+  diffmanager->SetIsotropicDiff(actmat->Diffusivity(),k);
+
+  // get substrate concentration at n+1 or n+alpha_F at integration point
+  const double csnp = my::funct_.Dot(my::ephinp_[k]);
+
+  // set reaction coefficient
+  reamanager->SetReaCoeff(actmat->ComputeReactionCoeff(csnp,theta,dtheta,detFe),k);
+  // set derivative of reaction coefficient
+  reamanager->SetReaCoeffDeriv(actmat->ComputeReactionCoeffDeriv(csnp,theta,thetaold,1.0),k);
 
   // set density at various time steps and density gradient factor to 1.0/0.0
   densn      = 1.0;

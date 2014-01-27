@@ -266,7 +266,6 @@ public:
 
   //@}
 
-  std::vector<double> GetFiber1() {return fiber1_;};
 
 protected:
 
@@ -328,8 +327,7 @@ private:
 
   int Id() const;
 
-  std::vector<double> fiber1_;
-}; // class So3_Poro
+}; // class So3_Scatra
 
 
 //=======================================================================

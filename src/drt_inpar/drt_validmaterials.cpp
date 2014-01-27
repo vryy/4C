@@ -1617,6 +1617,45 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+   // integration point based and scalar dependent growth
+   {
+     Teuchos::RCP<MaterialDefinition> m
+       = Teuchos::rcp(new MaterialDefinition("MAT_GrowthScd",
+                                             "integration point based and scalar dependent growth",
+                                             INPAR::MAT::m_growthscd));
+
+     AddNamedReal(m,"DENS","Density");
+     AddNamedInt(m,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
+     AddNamedReal(m,"STARTTIME","start growth after this time");
+     AddNamedReal(m,"ENDTIME","end growth after this time");
+     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+     AddNamedReal(m,"KPLUS","growth law parameter kthetaplus");
+     AddNamedReal(m,"MPLUS","growth law parameter mthetaplus");
+     AddNamedReal(m,"KMINUS","growth law parameter kthetaminus");
+     AddNamedReal(m,"MMINUS"," law parameter mthetaminus");
+     AddNamedReal(m,"HOMMANDEL","homeostatic value for mandelstress");
+     AddNamedReal(m,"SATCOEFF","saturation coefficient for concentration dependent growth law");
+
+     AppendMaterialDefinition(matlist,m);
+   }
+   /*----------------------------------------------------------------------*/
+   // nutrient diffusion modeling (diffusion-reaction equation). Contains a growth-dependent
+   //reaction-term of the form 3*theta^2*time_derivative_theta*structure_density that is coupled with
+   // scalar dependent growth law via 'theta'
+   {
+     Teuchos::RCP<MaterialDefinition> m
+       = Teuchos::rcp(new MaterialDefinition("MAT_Scatra_GrowthScd",
+                                             "nutrientdiff material",
+                                             INPAR::MAT::m_scatra_growth_scd));
+
+     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
+     AddNamedReal(m,"STRDENSITY","density of structure material");
+
+     // AddNamedString(m,"KINETICS","Substrate consumption kinetics (SimpleMonod)","SimpleMonod");
+     AppendMaterialDefinition(matlist,m);
+   }
+
+/*----------------------------------------------------------------------*/
   // acoustic material
   {
     Teuchos::RCP<MaterialDefinition> m
