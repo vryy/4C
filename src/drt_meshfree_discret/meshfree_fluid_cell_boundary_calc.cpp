@@ -174,12 +174,12 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
   std::vector<int> dims = DRT::MESHFREE::ReduceDimensionOfFaceNodes(nxyz_pdim,nxyz_);
   if ((int)(dims.size())!=bdrynsd_) dserror("Nodes lie on a face of dimension unequal to dimension of boundary element.");
 
-  // fill matrix of cell knot positions in reduced dimensions
+  // fill matrix of cell point positions in reduced dimensions
   double const * kxyz_pdim;
-  for (int iknot=0; iknot<bdrynek_; iknot++){
-    kxyz_pdim =  cell->Knots()[iknot]->X();
+  for (int ipoint=0; ipoint<bdrynek_; ipoint++){
+    kxyz_pdim =  cell->Points()[ipoint]->X();
     for (int idim=0; idim<bdrynsd_; ++idim){
-      kxyz_(idim,iknot) = kxyz_pdim[dims[idim]];
+      kxyz_(idim,ipoint) = kxyz_pdim[dims[idim]];
     }
   }
 

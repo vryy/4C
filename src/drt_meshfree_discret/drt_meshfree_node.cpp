@@ -39,7 +39,7 @@ DRT::MESHFREE::MeshfreeNodeType DRT::MESHFREE::MeshfreeNodeType::instance_;
 DRT::ParObject* DRT::MESHFREE::MeshfreeNodeType::Create( const std::vector<char> & data )
 {
   double dummycoord[3] = {999.,999.,999.};
-  DRT::MESHFREE::MeshfreeNode* object = new DRT::MESHFREE::MeshfreeNode(-1,dummycoord,-1);
+  MeshfreeNode* object = new MeshfreeNode(-1,dummycoord,-1);
   object->Unpack(data);
   return object;
 }
@@ -55,7 +55,10 @@ DRT::ParObject* DRT::MESHFREE::MeshfreeNodeType::Create( const std::vector<char>
  |  ctor                                                 (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::MeshfreeNode::MeshfreeNode(int id, const double* coords, const int owner) :
-DRT::Node(id, coords, owner)
+  DRT::Node(id, coords, owner),
+  nodeid_(0),
+  node_(0),
+  facedim_(4)
 {
   return;
 }
@@ -64,7 +67,10 @@ DRT::Node(id, coords, owner)
  |  copy-ctor                                            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::MeshfreeNode::MeshfreeNode(const DRT::MESHFREE::MeshfreeNode& old) :
-Node(old)
+  Node(old),
+  nodeid_(old.nodeid_),
+  node_(old.node_),
+  facedim_(old.facedim_)
 {
   return;
 }
@@ -87,22 +93,6 @@ DRT::MESHFREE::MeshfreeNode::~MeshfreeNode()
   return;
 }
 
-/*--------------------------------------------------------------------------*
- | Delete a node from the meshfree node                  (public) nis Jan12 |
- *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeNode::DeleteNodePtr(int gid)
-{
-  for (unsigned int i = 0; i<nodeid_.size(); i++){
-    if (nodeid_[i]==gid){
-      nodeid_.erase(nodeid_.begin()+i);
-      node_.erase(node_.begin()+i);
-      return;
-    }
-  }
-  dserror("Connectivity issues: No node with specified gid to delete in meshfree node.");
-  return;
-}
-
 /*----------------------------------------------------------------------*
  |  print this meshfree node                          (public) nis Mar12|
  *----------------------------------------------------------------------*/
@@ -121,3 +111,42 @@ std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::MeshfreeNode& 
   meshfreenode.Print(os);
   return os;
 }
+
+/*--------------------------------------------------------------------------*
+ | Delete a node from the meshfree node               (protected) nis Jan12 |
+ *--------------------------------------------------------------------------*/
+void DRT::MESHFREE::MeshfreeNode::DeleteNodePtr(int gid)
+{
+  for (unsigned int i = 0; i<nodeid_.size(); i++){
+    if (nodeid_[i]==gid){
+      nodeid_.erase(nodeid_.begin()+i);
+      node_.erase(node_.begin()+i);
+      return;
+    }
+  }
+  dserror("Connectivity issues: No node with specified gid to delete in meshfree node.");
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ | Set vectors of ids and pointers to my nodes        (protected) nis Jan12 |
+ *--------------------------------------------------------------------------*/
+void DRT::MESHFREE::MeshfreeNode::SetMyNodeTopology(
+  const std::vector<int>& nodeid,
+  const std::map<int,DRT::MESHFREE::MeshfreeNode*>& nodemap)
+{
+  const int nnode = nodeid.size();
+  nodeid_.resize(nnode);
+  node_.resize(nnode);
+  std::vector<int>::const_iterator constit;
+  std::vector<int>::iterator it = nodeid_.begin();
+  std::vector<DRT::Node*>::iterator ptrit = node_.begin();
+  for(constit=nodeid.begin(); constit!=nodeid.end(); ++constit)
+  {
+    *it = *constit;
+    *ptrit = nodemap.at(*constit);
+    ++it;
+    ++ptrit;
+  }
+}
+

@@ -14,10 +14,11 @@ Maintainer: Andreas Ehrl
 
 #include "scatra_timint_stat.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_meshfree_discret/drt_meshfree_discret.H"
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_io/io.H"
-
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |
@@ -297,6 +298,11 @@ void SCATRA::TimIntStationary::Update(const int num)
     if (DoOutput() or DoBoundaryFluxStatistics())
       flux_ = CalcFlux(true, num);
   }
+
+  // compute values at nodes from nodal values for non-interpolatory basis functions
+  if (phiatmeshfreenodes_!=Teuchos::null)
+    Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_)->ComputeValuesAtNodes(phinp_, phiatmeshfreenodes_);
+
   return;
 };
 

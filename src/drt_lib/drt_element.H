@@ -41,13 +41,13 @@ Maintainer: Michael Gee
 #define ELEMENT_H
 
 
-//#include "Teuchos_RCP.hpp"
+#include "Teuchos_RCP.hpp"
+#include "Teuchos_ParameterList.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 
 #include "drt_parobject.H"
 #include "drt_condition.H"
-
 
 // forward declarations
 namespace MAT
@@ -55,25 +55,24 @@ namespace MAT
   class Material;
 }
 
-
 namespace DRT
 {
 
 namespace INPUT
 {
-class LineDefinition;
+  class LineDefinition;
 }
 
 namespace MESHFREE
 {
-class MeshfreeBin;
+  class MeshfreeBin;
 }
 
 
 // forward declarations
-class Discretization;
-class Node;
-class ElementType;
+  class Discretization;
+  class Node;
+  class ElementType;
 
 /*!
 \brief A virtual class all elements that are used in DRT have to implement
@@ -281,17 +280,17 @@ public:
   /*!
   \brief Return global id of this element
   */
-  inline int Id() const { return id_; }
+  int Id() const { return id_; }
 
   /*!
   \brief Return processor local col map id
   */
-  virtual inline int LID() const { return lid_; }
+  virtual int LID() const { return lid_; }
 
   /*!
   \brief Return owner of this element
   */
-  virtual inline int Owner() const { return owner_; }
+  virtual int Owner() const { return owner_; }
 
   /*!
   \brief Get shape type of element
@@ -301,7 +300,16 @@ public:
   /*!
   \brief Return number of nodes to this element
   */
-  inline int NumNode() const { return nodeid_.size(); }
+  virtual int NumNode() const { return nodeid_.size(); }
+
+  /*!
+   * \brief Return number of points forming the geometry of this element
+   *
+   * For finite elements, this is equal to NumNodes(). Needed for meshfree
+   * discretization where the integration cell (i.e. the "element") is not
+   * formed by the nodes and many more nodes can have influence.
+   */
+  virtual int NumPoint() const { return nodeid_.size(); }
 
   /*!
   \brief Return number of lines to this element
@@ -319,22 +327,23 @@ public:
   virtual int NumVolume() const {return 0;}
 
   /*!
-  /brief Return the number of faces to the element.
+   * \brief Return the number of faces to the element.
    *
    * As opposed to NumLine(), NumSurface(), etc which have fixed dimension,
    * this is always the object one dimension less than the element dimension.
    */
-  int NumFace() const;
+  virtual int NumFace() const;
+
+  /*!
+    \brief Return Element center coordinates
+  */
+  virtual std::vector<double> ElementCenterRefeCoords();
 
   /*!
   \brief Return id's of nodes adjacent to this element
   */
-  const int* NodeIds() const
+  virtual const int* NodeIds() const
   { if (nodeid_.size()) return &nodeid_[0]; else                return NULL; }
-  /*!
-    \brief Return Element center coordinates
-    */
-  virtual std::vector<double> ElementCenterRefeCoords();
 
   /*!
   \brief Get vector of ptrs to nodes
@@ -351,9 +360,8 @@ public:
   virtual Node** Nodes()
   { if (node_.size()) return &node_[0]; else return NULL; }
 
-
   // mgee: change to this (as const and !const):
-  //virtual inline vector<DRT::Node*>& Nodes()
+  //virtual std::vector<DRT::Node*>& Nodes()
   //{ return node_; }
 
   /*!
@@ -368,8 +376,38 @@ public:
   \return Ptr to pointers to nodes of the element in local nodal ordering.
           Returns NULL if pointers to not exist.
   */
-  const Node*const* Nodes() const
+  virtual const Node*const* Nodes() const
   { if (node_.size()) return (const DRT::Node*const*)(&node_[0]); else return NULL; }
+
+  /*!
+   * \brief Return id's of points forming the geometry of this element
+   *
+   * For finite elements, this is equal to NodeIds(). Needed for meshfree
+   * discretization where the integration cell (i.e. the "element") is not
+   * formed by the nodes and many more nodes can have influence.
+   */
+  virtual const int* PointIds() const
+  { return NodeIds();}
+
+  /*!
+   * \brief Get vector of ptrs to points forming the geometry of this element
+   *
+   * For finite elements, this is equal to Nodes(). Needed for meshfree
+   * discretization where the integration cell (i.e. the "element") is not
+   * formed by the nodes and many more nodes can have influence.
+   */
+  virtual Node** Points()
+  { return Nodes();}
+
+  /*!
+   * \brief Get const vector of ptrs to points forming the geometry of this element
+   *
+   * For finite elements, this is equal to Nodes() const. Needed for meshfree
+   * discretization where the integration cell (i.e. the "element") is not
+   * formed by the nodes and many more nodes can have influence.
+   */
+  virtual const Node*const* Points() const
+  { return Nodes();}
 
 
   /*!
@@ -391,7 +429,7 @@ public:
   {
     return std::vector<Teuchos::RCP<DRT::Element> >(0);
   }
-  
+
   //virtual const Element*const* Lines() const { dserror("unexpected base method called."); return NULL; }
 
   /*!

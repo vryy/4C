@@ -172,8 +172,8 @@ void NodeReader::Read()
               break;
             }
         }
-        // this node is a meshfree knot
-        else if (tmp=="KNOT")
+        // this node is a meshfree point
+        else if (tmp=="POINT")
         {
           double coords[3];
           int nodeid;
@@ -184,11 +184,10 @@ void NodeReader::Read()
           for (unsigned i=0; i<diss.size(); ++i)
           {
             // create node and add to discretization
-            Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(nodeid,coords,myrank));
-            Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> knot = Teuchos::rcp(new DRT::MESHFREE::MeshfreeNode(nodeid,coords,myrank));
+            Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> node = Teuchos::rcp(new DRT::MESHFREE::MeshfreeNode(nodeid,coords,myrank));
+            Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> point = Teuchos::rcp(new DRT::MESHFREE::MeshfreeNode(nodeid,coords,myrank));
             diss[i]->AddNode(node);
-            // hyper hack ?
-            Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(diss[i])->AddKnot(knot);
+            Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(diss[i])->AddPoint(point);
           }
           ++bcount;
           if (block != nblock-1) // last block takes all the rest

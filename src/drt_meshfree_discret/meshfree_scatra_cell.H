@@ -69,13 +69,15 @@ public:
   virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
   //!< pre-evaluation
-  virtual void PreEvaluate(DRT::Discretization&                dis,
-                          Teuchos::ParameterList&              p,
-                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-                          Teuchos::RCP<Epetra_Vector>          systemvector1,
-                          Teuchos::RCP<Epetra_Vector>          systemvector2,
-                          Teuchos::RCP<Epetra_Vector>          systemvector3);
+  virtual void PreEvaluate(
+    DRT::Discretization&                 dis,
+    Teuchos::ParameterList&              p,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector>          systemvector1,
+    Teuchos::RCP<Epetra_Vector>          systemvector2,
+    Teuchos::RCP<Epetra_Vector>          systemvector3);
+
 private:
 
   //!< static instance of this element type (for self-instantiation)
@@ -564,13 +566,13 @@ public:
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
   MeshfreeTransportBoundary(
-    int id,                              //!< A unique global id
-    int owner,                           //!< Processor owning this surface
-    int nknot,                           //!< Number of nodes attached to this element
-    const int* knotids,                  //!< global ids of nodes attached to this element
-    DRT::MESHFREE::MeshfreeNode** knots, //!< the discretizations map of knots to build ptrs to knots
-    MeshfreeTransport* parent,           //!< The parent fluid element of this surface
-    const int lbeleid                    //!< the local boundary element number of this surface w.r.t. the parent element
+    int id,                    //!< A unique global id
+    int owner,                 //!< Processor owning this surface
+    int npoint,                //!< Number of nodes attached to this element
+    const int* pointids,       //!< global ids of nodes attached to this element
+    DRT::Node** points,        //!< the discretizations map of points to build ptrs to points
+    MeshfreeTransport* parent, //!< The parent fluid element of this surface
+    const int lbeleid          //!< the local boundary element number of this surface w.r.t. the parent element
   );
 
   /*------------------------------------------------------------------------*/

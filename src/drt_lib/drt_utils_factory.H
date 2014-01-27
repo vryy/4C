@@ -43,7 +43,6 @@ Maintainer: Michael Gee
 
 #include "drt_discret.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_meshfree_discret/drt_meshfree_node.H"
 
 namespace DRT
 {
@@ -81,10 +80,10 @@ namespace UTILS
   \param owner   (in): owner of the new element
 
   */
-  RCP<DRT::Element> Factory(const std::string eletype,
-                                    const std::string distype,
-                                    const int id        ,
-                                    const int owner     );
+  Teuchos::RCP<DRT::Element> Factory(const std::string eletype,
+                                     const std::string distype,
+                                     const int id        ,
+                                     const int owner     );
 
   //! flag, whether surfaces or lines have to be created in the ElementBoundaryFactory
   enum BoundaryBuildType
@@ -103,21 +102,21 @@ namespace UTILS
    * \tparam ParentEle   class name of parent element, e.g. Fluid
    *
    * this templated function creates all volume / surface / line elements for a given element
-   * and fills handed over vectors with RCPs and raw pointers of these boundary elements
+   * and fills handed over vectors with Teuchos::RCPs and raw pointers of these boundary elements
    * This method is a very powerful helper function for implementing the necessary
    * Surfaces() and Lines() methods for every element class (especially in 3D)
    * using the BACI conventions for element connectivity
    *
-   * \return boundaryeles   vector filled with RCPs of allocated boundary elements
+   * \return boundaryeles   vector filled with Teuchos::RCPs of allocated boundary elements
    *
    * \author gjb
    * \date 05/08
    */
   template <class BoundaryEle, class ParentEle>
   std::vector<Teuchos::RCP<DRT::Element> > ElementBoundaryFactory(
-      const BoundaryBuildType  buildtype,  ///< flag, whether volumes, surfaces or lines have to be created
-      ParentEle*               ele         ///< pointer on the parent element
-      )
+    const BoundaryBuildType  buildtype,  ///< flag, whether volumes, surfaces or lines have to be created
+    ParentEle*               ele         ///< pointer on the parent element
+    )
   {
     // do we have to build volume, surface or line elements?
     // get node connectivity for specific distype of parent element
@@ -157,96 +156,21 @@ namespace UTILS
       // get connectivity infos
       for (unsigned int inode=0;inode<nnode;inode++)
       {
-        nodeids[inode] = ele->NodeIds()[connectivity[iele][inode]];
-        nodes  [inode] = ele->Nodes  ()[connectivity[iele][inode]];
+        nodeids[inode] = ele->PointIds()[connectivity[iele][inode]];
+        nodes  [inode] = ele->Points  ()[connectivity[iele][inode]];
       }
 
       // allocate a new boundary element
       boundaryeles[iele] = Teuchos::rcp(new BoundaryEle(iele          ,
-                                               ele->Owner()  ,
-                                               nodeids.size(),
-                                               &nodeids[0]   ,
-                                               &nodes[0]     ,
-                                               ele           ,
-                                               iele          ));
-
+                                                        ele->Owner()  ,
+                                                        nodeids.size(),
+                                                        &nodeids[0]   ,
+                                                        &nodes[0]     ,
+                                                        ele           ,
+                                                        iele          ));
     }
 
     return boundaryeles;
-  }
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * This function is doing the same  for meshfree cells as
-   * "ElementBoundaryFactory()" does for standard elements. Necessary, since
-   * nodes do not carry any topological information about cell. This job is
-   * done by knots (MeshfreeNodes).
-   *
-   * \author nis
-   * \date Dec13
-   */
-  /*------------------------------------------------------------------------*/
-  template <class BoundaryCell, class ParentCell>
-  std::vector<Teuchos::RCP<DRT::Element> > CellBoundaryFactory(
-      const BoundaryBuildType  buildtype,  ///< flag, whether volumes, surfaces or lines have to be created
-      ParentCell*              cell        ///< pointer on the parent cell
-      )
-  {
-    // do we have to build volume, surface or line elements?
-    // get node connectivity for specific distype of parent element
-    unsigned int ncell=0;
-    const DRT::Element::DiscretizationType distype = cell->Shape();
-    std::vector< std::vector<int> > connectivity;
-    switch (buildtype)
-    {
-      case buildSurfaces:
-      {
-        ncell = cell->NumSurface();
-        connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
-        break;
-      }
-      case buildLines:
-      {
-        ncell = cell->NumLine();
-        connectivity = DRT::UTILS::getEleNodeNumberingLines(distype);
-        break;
-      }
-      default: dserror("buildNothing case not handled in ElementBoundaryFactory");
-    }
-
-    // create vectors that will contain the volume, surface or line cells
-    std::vector<Teuchos::RCP<DRT::Element> > boundarycells(ncell);
-
-    // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
-    if (ncell != connectivity.size()) dserror("number of surfaces or lines does not match!");
-
-    // now, build the new surface/line elements
-    for (unsigned int icell = 0; icell < ncell; icell++)
-    {
-      // allocate node vectors
-      unsigned int nknot= connectivity[icell].size(); // this number changes for pyramids or wedges
-      std::vector<int> knotids(nknot);
-      std::vector<DRT::MESHFREE::MeshfreeNode*> knots(nknot);
-
-      // get connectivity infos
-      for (unsigned int iknot=0;iknot<nknot;iknot++)
-      {
-        knotids[iknot] = cell->KnotIds()[connectivity[icell][iknot]];
-        knots  [iknot] = cell->Knots  ()[connectivity[icell][iknot]];
-      }
-
-      // allocate a new boundary element
-      boundarycells[icell] = Teuchos::rcp(new BoundaryCell(icell         ,
-                                                         cell->Owner() ,
-                                                         knotids.size(),
-                                                         &knotids[0]   ,
-                                                         &knots[0]     ,
-                                                         cell          ,
-                                                         icell         ));
-
-    }
-
-    return boundarycells;
   }
 
   /*!
@@ -258,42 +182,42 @@ namespace UTILS
    * \tparam ParentEle   class name of parent element, e.g. Fluid
    *
    * this templated function creates an internal face element for two given parent elements
-   * and fills an RCP and raw pointers of this internal faces elements
+   * and fills an Teuchos::RCP and raw pointers of this internal faces elements
    * This method is a very powerful helper function for implementing the necessary
    * Surfaces() and Lines() methods for every element class (especially in 3D)
    * using the BACI conventions for element connectivity
    *
-   * \return intface   RCP of allocated internal face element
+   * \return intface   Teuchos::RCP of allocated internal face element
    *
    * \author schott
    * \date 03/12
    */
   template <class IntFaceEle, class ParentEle>
-  RCP<DRT::Element> ElementIntFaceFactory(
-      int id,                                  ///< element id
-      int owner,                               ///< owner (= owner of parent element with smallest gid)
-      int nnode,                               ///< number of nodes
-      const int* nodeids,                      ///< node ids
-      DRT::Node** nodes,                       ///< nodes of surface
-      ParentEle*  master_ele,                  ///< pointer on the master parent element
-      ParentEle*  slave_ele,                   ///< pointer on the slave parent element
-      const int   lsurface_master,             ///< local surface index with respect to master parent element
-      const int   lsurface_slave,              ///< local surface index with respect to slave parent element
-      const std::vector<int> localtrafomap     ///< local trafo map
-      )
+  Teuchos::RCP<DRT::Element> ElementIntFaceFactory(
+    int id,                                  ///< element id
+    int owner,                               ///< owner (= owner of parent element with smallest gid)
+    int nnode,                               ///< number of nodes
+    const int* nodeids,                      ///< node ids
+    DRT::Node** nodes,                       ///< nodes of surface
+    ParentEle*  master_ele,                  ///< pointer on the master parent element
+    ParentEle*  slave_ele,                   ///< pointer on the slave parent element
+    const int   lsurface_master,             ///< local surface index with respect to master parent element
+    const int   lsurface_slave,              ///< local surface index with respect to slave parent element
+    const std::vector<int> localtrafomap     ///< local trafo map
+    )
   {
 
     // create a new internal face element
     return Teuchos::rcp(new IntFaceEle(id,
-                              owner,
-                              nnode,
-                              nodeids,
-                              nodes,
-                              master_ele,
-                              slave_ele,
-                              lsurface_master,
-                              lsurface_slave,
-                              localtrafomap) );
+                                       owner,
+                                       nnode,
+                                       nodeids,
+                                       nodes,
+                                       master_ele,
+                                       slave_ele,
+                                       lsurface_master,
+                                       lsurface_slave,
+                                       localtrafomap) );
   }
 
 

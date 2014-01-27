@@ -26,14 +26,13 @@ http://www.lnm.mw.tum.de/Members/kuettler
 FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
   : DRT::ResultTest("FLUID")
 {
-    fluiddis_= fluid.discret_;
-    mysol_   = fluid.velnp_ ;
-    mytraction_ = fluid.CalcStresses();
-    myerror_ = fluid.EvaluateErrorComparedToAnalyticalSol();
-    mydivu_ = fluid.EvaluateDivU();
-    if(fluid.density_scaling_ != Teuchos::null)
-      mydensity_scaling_ = fluid.density_scaling_;
-
+  fluiddis_= fluid.discret_;
+  mysol_   = fluid.velnp_;
+  myvan_   = fluid.velatmeshfreenodes_;
+  mytraction_ = fluid.CalcStresses();
+  myerror_ = fluid.EvaluateErrorComparedToAnalyticalSol();
+  mydivu_ = fluid.EvaluateDivU();
+  mydensity_scaling_ = fluid.density_scaling_;
 }
 
 
@@ -78,13 +77,9 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
       std::string position;
       res.ExtractString("QUANTITY",position);
       if (position=="velx")
-      {
         result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,actnode,0))];
-      }
       else if (position=="vely")
-      {
         result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,actnode,1))];
-      }
       else if (position=="velz")
       {
         if (numdim==2)
@@ -93,18 +88,25 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
       }
       else if (position=="pressure")
       {
+        if (fluiddis_->NumDof(0,actnode)<(numdim+1))
+          dserror("too few dofs at node %d for pressure testing",actnode->Id());
+        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,actnode,numdim))];
+      }
+      else if (position=="van_velx")
+        result = (*myvan_)[velnpmap.LID(fluiddis_->Dof(0,actnode,0))];
+      else if (position=="van_vely")
+        result = (*myvan_)[velnpmap.LID(fluiddis_->Dof(0,actnode,1))];
+      else if (position=="van_velz")
+      {
         if (numdim==2)
-        {
-          if (fluiddis_->NumDof(0,actnode)<3)
-            dserror("too few dofs at node %d for pressure testing",actnode->Id());
-          result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,actnode,2))];
-        }
-        else
-        {
-          if (fluiddis_->NumDof(0,actnode)<4)
-            dserror("too few dofs at node %d for pressure testing",actnode->Id());
-          result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,actnode,3))];
-        }
+          dserror("Cannot test result for velz in 2D case.");
+        result = (*myvan_)[velnpmap.LID(fluiddis_->Dof(0,actnode,2))];
+      }
+      else if (position=="van_pressure")
+      {
+        if (fluiddis_->NumDof(0,actnode)<(numdim+1))
+          dserror("too few dofs at node %d for pressure testing",actnode->Id());
+        result = (*myvan_)[velnpmap.LID(fluiddis_->Dof(0,actnode,numdim))];
       }
       else if (position=="tractionx")
         result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(0,actnode,0))];
@@ -125,9 +127,7 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
       else if(position=="divu")
         result = (*mydivu_);
       else
-      {
         dserror("Quantity '%s' not supported in fluid testing", position.c_str());
-      }
 
       nerr += CompareValues(result, "NODE", res);
       test_count++;

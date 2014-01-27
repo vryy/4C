@@ -153,10 +153,10 @@ int DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::IntegrateShapeFunction(
     }
   }
 
-  // get global knot coordinates
+  // get global point coordinates
   double const * ckxyz;
   for (int j=0; j<nek_; j++){
-    ckxyz =  cell->Knots()[j]->X();
+    ckxyz =  cell->Points()[j]->X();
     for (int k=0; k<nsd_; k++){
       kxyz_(k,j) = ckxyz[k];
     }
@@ -171,7 +171,7 @@ int DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::IntegrateShapeFunction(
     LINALG::SerialDenseMatrix edispnp(nsd_,nen_,true);// need to be set to true??
     ExtractValuesFromGlobalVector(discretization,lm, &edispnp, NULL,"dispnp");
 
-    // get new node and knot positions for isale
+    // get new node and point positions for isale
     kxyz_ += edispnp;
     nxyz_ += edispnp;
   }

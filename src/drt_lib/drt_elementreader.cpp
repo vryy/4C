@@ -327,7 +327,7 @@ void ElementReader::Partition()
               if (cell!=Teuchos::null)
               {
                 // we have a meshfree shadow or dummy element
-                cell->SetKnotIds(distype,linedef);
+                cell->SetPointIds(distype,linedef);
               }
             }
             else

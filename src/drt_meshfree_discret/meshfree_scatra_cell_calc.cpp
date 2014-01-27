@@ -15,9 +15,9 @@
 
 #include "meshfree_scatra_cell_calc.H"           // class declarations
 #include "meshfree_scatra_cell.H"           // class declarations
-#include "drt_meshfree_discret.H"           // for cast to get knots
-#include "drt_meshfree_node.H"              // for cast to get knots
-#include "drt_meshfree_cell.H"              // for cast to get knots
+#include "drt_meshfree_discret.H"           // for cast to get points
+#include "drt_meshfree_node.H"              // for cast to get points
+#include "drt_meshfree_cell.H"              // for cast to get points
 #include "drt_meshfree_cell_utils.H"        // to get Gauss points in real space
 #include "../drt_scatra_ele/scatra_ele_action.H"// for enum of scatra actions
 #include "../drt_scatra_ele/scatra_ele_parameter.H"
@@ -94,7 +94,7 @@ int DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Evaluate(
   if (discret_==NULL)
     dserror("dynamic_cast of discretization to meshfree discretization failed!");
 
-  // cast element pointer to cell pointer to get access to knot information
+  // cast element pointer to cell pointer to get access to point information
   DRT::MESHFREE::Cell const * cell = dynamic_cast<DRT::MESHFREE::Cell const *>(ele);
   if (cell==NULL)
     dserror("dynamic_cast of element to meshfree cell failed!");
@@ -102,10 +102,10 @@ int DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Evaluate(
   // get number of nodes
   nen_ = cell->NumNode();
 
-  // get global knot coordinates
+  // get global point coordinates
   double const * ckxyz;
   for (int j=0; j<nek_; j++){
-    ckxyz =  cell->Knots()[j]->X();
+    ckxyz =  cell->Points()[j]->X();
     for (int k=0; k<nsd_; k++){
       kxyz_(k,j) = ckxyz[k];
     }

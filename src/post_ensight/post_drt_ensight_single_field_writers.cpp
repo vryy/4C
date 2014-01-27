@@ -159,7 +159,7 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   //  EnsightWriter::WriteResult("radii", "radii", nodebased, 1);
   EnsightWriter::WriteResult("par_vel", "par_vel", dofbased, field->problem()->num_dim());
 
-  //additional output for turbulent flows (subfilter/-gridstress)
+  // additional output for turbulent flows (subfilter/-gridstress)
   EnsightWriter::WriteResult("sfs11", "sfs11", nodebased, 1);
   EnsightWriter::WriteResult("sfs12", "sfs12", nodebased, 1);
   EnsightWriter::WriteResult("sfs13", "sfs13", nodebased, 1);
@@ -170,13 +170,17 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   // additional forces due to lung fsi (volume constraint)
   EnsightWriter::WriteResult("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());
 
-  //additional output for poro problems
+  // additional output for poro problems
   EnsightWriter::WriteResult("convel", "convective_velocity", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("gridv", "grid_velocity", dofbased, field->problem()->num_dim());
 
   // additional fields due to adjoint equations
   EnsightWriter::WriteResult("adjoint_velnp", "adjoint_velocity", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("adjoint_pressure", "adjoint_pressure", dofbased, 1);
+
+  // additional fields for meshfree problems
+  EnsightWriter::WriteResult("velatmeshfreenodes", "velocity_atnodes", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("pressureatmeshfreenodes", "pressure_atnodes", dofbased, 1);
 
   // Lagrange multiplier at the interface in monolithic fsi
   EnsightWriter::WriteResult("fsilambda", "fsilambda", dofbased, field->problem()->num_dim());
@@ -260,29 +264,20 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
   int numdofpernode = field->discretization()->NumDof(field->discretization()->lRowNode(0));
 
   // write results for each transported scalar
-  if (numdofpernode == 1)
+  for(int k = 1; k <= numdofpernode; k++)
   {
-    EnsightWriter::WriteResult("phinp","phi",dofbased,1);
-    EnsightWriter::WriteResult("averaged_phinp","averaged_phi",dofbased,1);
-    EnsightWriter::WriteResult("normalflux","normalflux",dofbased,1);
+    std::ostringstream temp;
+    temp << k;
+    std::string name = "phi_"+temp.str();
+    EnsightWriter::WriteResult("phinp", name, dofbased, 1,k-1);
+    EnsightWriter::WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1,k-1);
+    // additional fields for meshfree problems
+    EnsightWriter::WriteResult("phiatmeshfreenodes", name+"_atnodes", dofbased, 1,k-1);
+    // intermediate work-around for nurbs discretizations (no normal vectors applied)
+    EnsightWriter::WriteResult("normalflux","normalflux"+name,dofbased,1,k-1);
     // write flux vectors (always 3D)
-    EnsightWriter::WriteResult("flux", "flux", nodebased, 3);
+    EnsightWriter::WriteResult("flux_"+name, "flux_"+name, nodebased, 3);
     EnsightWriter::WriteResult("activation_time_np","act_time",dofbased,1);
-  }
-  else
-  {
-    for(int k = 1; k <= numdofpernode; k++)
-    {
-      std::ostringstream temp;
-      temp << k;
-      std::string name = "phi_"+temp.str();
-      EnsightWriter::WriteResult("phinp", name, dofbased, 1,k-1);
-      EnsightWriter::WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1,k-1);
-      // intermediate work-around for nurbs discretizations (no normal vectors applied)
-      EnsightWriter::WriteResult("normalflux","normalflux"+name,dofbased,1,k-1);
-      // write flux vectors (always 3D)
-      EnsightWriter::WriteResult("flux_"+name, "flux_"+name, nodebased, 3);
-    }
   }
 
   // write velocity field (always 3D)

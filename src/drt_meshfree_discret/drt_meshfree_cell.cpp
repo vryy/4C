@@ -59,8 +59,8 @@ DRT::MESHFREE::Cell::Cell(int id, int owner)
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::Cell::Cell(const DRT::MESHFREE::Cell& old)
   : DRT::MESHFREE::MeshfreeBin(old),
-    knotid_(old.knotid_),
-    knot_(old.knot_)
+    pointid_(old.pointid_),
+    point_(old.point_)
 {
   return;
 }
@@ -89,39 +89,67 @@ std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::Cell& cell)
 void DRT::MESHFREE::Cell::Print(std::ostream& os) const
 {
   DRT::Element::Print(os);
-  const int nknot = NumKnot();
-  const int* knotids = KnotIds();
-  if (nknot > 0)
+  const int npoint = NumPoint();
+  const int* pointids = PointIds();
+  if (npoint > 0)
   {
-    os << " Knots ";
-    for (int i=0; i<nknot; ++i) os << std::setw(10) << knotids[i] << " ";
+    os << " Points ";
+    for (int i=0; i<npoint; ++i) os << std::setw(10) << pointids[i] << " ";
   }
   return;
 }
 
 /*--------------------------------------------------------------------------*
- |  set knot numbers to element                          (public) nis Jan12 |
+ |  set point numbers to element                          (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::Cell::SetKnotIds(const int nknot, const int* knots)
+void DRT::MESHFREE::Cell::SetPointIds(const int npoint, const int* points)
 {
-  knotid_.resize(nknot);
-  for (int i=0; i<nknot; ++i) knotid_[i] = knots[i];
-  knot_.resize(0);
+  pointid_.resize(npoint);
+  for (int i=0; i<npoint; ++i) pointid_[i] = points[i];
+  point_.resize(0);
   return;
 }
 
 /*--------------------------------------------------------------------------*
- |  set knot numbers to element                          (public) nis Jan12 |
+ |  set point numbers to element                          (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 
-void DRT::MESHFREE::Cell::SetKnotIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+void DRT::MESHFREE::Cell::SetPointIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
-  linedef->ExtractIntVector(distype,knotid_);
-  for (unsigned i=0; i<knotid_.size(); ++i)
-    knotid_[i] -= 1;
-  knot_.resize(0);
+  linedef->ExtractIntVector(distype,pointid_);
+  for (unsigned i=0; i<pointid_.size(); ++i)
+    pointid_[i] -= 1;
+  point_.resize(0);
 }
 
+/*----------------------------------------------------------------------*
+ |  Build point pointers (protected)                           nis Jan12 |
+ *----------------------------------------------------------------------*/
+bool DRT::MESHFREE::Cell::BuildPointPointers(std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >& points)
+{
+  int        npoint   = NumPoint();
+  const int* pointids = PointIds();
+  point_.resize(npoint);
+  for (int i=0; i<npoint; ++i)
+  {
+    std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::const_iterator curr = points.find(pointids[i]);
+    // this point is not on this proc
+    if (curr==points.end()) dserror("Meshfree cell %d cannot find point %d",Id(),pointids[i]);
+    else
+      point_[i] = curr->second.get();
+  }
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Build point pointers (protected)                           nis Jan12 |
+ *----------------------------------------------------------------------*/
+bool DRT::MESHFREE::Cell::BuildPointPointers(DRT::MESHFREE::MeshfreeNode** points)
+{
+  point_.resize(NumPoint());
+  for (int i=0; i<NumPoint(); ++i) point_[i] = points[i];
+  return true;
+}
 /*----------------------------------------------------------------------*
  |  Pack data  (public)                                       nis Jan12 |
  *----------------------------------------------------------------------*/
@@ -135,8 +163,8 @@ void DRT::MESHFREE::Cell::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,type);
   // add base class DRT::MESHFREE::MeshfreeBin
   DRT::MESHFREE::MeshfreeBin::Pack(data);
-  // add vector knotid_
-  AddtoPack(data,knotid_);
+  // add vector pointid_
+  AddtoPack(data,pointid_);
   return;
 }
 
@@ -154,38 +182,43 @@ void DRT::MESHFREE::Cell::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   DRT::MESHFREE::MeshfreeBin::Unpack(basedata);
-  // extract knotid_
-  ExtractfromPack(position,data,knotid_);
-  // knot_ is NOT communicated
-  knot_.resize(0);
+  // extract pointid_
+  ExtractfromPack(position,data,pointid_);
+  // point_ is NOT communicated
+  point_.resize(0);
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  Build knot pointers (protected)                           nis Jan12 |
+ |  Coordinates of cell center computed by point position      nis Jan14 |
  *----------------------------------------------------------------------*/
-bool DRT::MESHFREE::Cell::BuildKnotPointers(std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >& knots)
+void DRT::MESHFREE::Cell::CenterAndMaxRadius(
+  LINALG::Matrix<3,1>&  center,
+  double& max_radius)
 {
-  int        nknot   = NumKnot();
-  const int* knotids = KnotIds();
-  knot_.resize(nknot);
-  for (int i=0; i<nknot; ++i)
-  {
-    std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::const_iterator curr = knots.find(knotids[i]);
-    // this knot is not on this proc
-    if (curr==knots.end()) dserror("Meshfree cell %d cannot find knot %d",Id(),knotids[i]);
-    else
-      knot_[i] = curr->second.get();
-  }
-  return true;
-}
+  // make sure center is clear
+  center.Clear();
+  max_radius = 0.0;
 
-/*----------------------------------------------------------------------*
- |  Build knot pointers (protected)                           nis Jan12 |
- *----------------------------------------------------------------------*/
-bool DRT::MESHFREE::Cell::BuildKnotPointers(DRT::MESHFREE::MeshfreeNode** knots)
-{
-  knot_.resize(NumKnot());
-  for (int i=0; i<NumKnot(); ++i) knot_[i] = knots[i];
-  return true;
+  // compute cell center
+  const int numpoints = pointid_.size();
+  for (int i=0; i<numpoints; ++i)
+  {
+    const LINALG::Matrix<3,1> cpoint_xyz(const_cast<double*>(point_[i]->X()),true);
+    center.Update(1.0,cpoint_xyz,1.0);
+  }
+  center.Scale(1.0/numpoints);
+
+  // compute maximum radius
+  LINALG::Matrix<3,1> diff;
+  for (int i=0; i<numpoints; ++i)
+  {
+    const LINALG::Matrix<3,1> cpoint_xyz(const_cast<double*>(point_[i]->X()),true);
+    diff.Update(1.0,center,1.0,cpoint_xyz);
+    const double dist = diff.Norm2();
+    if (dist>max_radius)
+      max_radius = dist;
+  }
+
+  return;
 }

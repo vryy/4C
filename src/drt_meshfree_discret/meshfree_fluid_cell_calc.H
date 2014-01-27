@@ -239,7 +239,7 @@ protected:
   //! number of space dimensions
   static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-  //! number of knots
+  //! number of points
   static const int nek_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   //! number of Gauss points
@@ -393,12 +393,12 @@ protected:
     const double                rhsfac          //< right-hand-side factor
     );
 
-  //! fill elment matrix and vectors with the global values
+  //! fill cell matrix and vectors with the global values
   void ExtractValuesFromGlobalVector(
-    const DRT::Discretization&  discretization, //< discretization
-    const std::vector<int>&     lm,             //<
-    LINALG::SerialDenseMatrix*  matrixtofill,   //< vector field
-    LINALG::SerialDenseVector*  vectortofill,   //< scalar field
+    const DRT::Discretization & discretization, //< discretization
+    const std::vector<int>    & lm,             //<
+    LINALG::SerialDenseMatrix * matrixtofill,   //< vector field
+    LINALG::SerialDenseVector * vectortofill,   //< scalar field
     const std::string           state           //< state of the global vector
     );
 
@@ -431,7 +431,7 @@ protected:
 
   //! node coordinates
   LINALG::SerialDenseMatrix nxyz_; // size: <nsd_,nen_>
-  //! knot coordinates
+  //! point coordinates
   LINALG::SerialDenseMatrix kxyz_; // size: <nsd_,nek_>
   //! Gauss point coordinates for boundary cell
   LINALG::SerialDenseMatrix gxyz_;

@@ -13,6 +13,7 @@ Maintainer: Keijo Nissen
 *----------------------------------------------------------------------*/
 
 #include "meshfree_scatra_cell.H"
+#include "drt_meshfree_node.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_mat/matlist.H"
@@ -51,10 +52,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportType::Create(
   const int owner )
 {
   if (eletype=="METRANSP")
-  {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::MeshfreeTransport(id,owner));
-    return ele;
-  }
+    return Teuchos::rcp(new DRT::ELEMENTS::MeshfreeTransport(id,owner));
+
   return Teuchos::null;
 }
 
@@ -64,10 +63,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportType::Create(
  *--------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::MeshfreeTransport(id,owner));
-  return ele;
+  return Teuchos::rcp(new DRT::ELEMENTS::MeshfreeTransport(id,owner));
 }
-
 
 /*--------------------------------------------------------------------------*
  |                                                       (public) nis Dec13 |
@@ -77,7 +74,7 @@ void DRT::ELEMENTS::MeshfreeTransportType::NodalBlockInformation(
   int & numdf,
   int & dimns,
   int & nv,
-  int & np )
+  int & np)
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
@@ -300,7 +297,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Lines
 
   // so we have to allocate new line elements:
   if (NumLine() > 1) // 3D and 2D
-    return DRT::UTILS::CellBoundaryFactory<MeshfreeTransportBoundary,MeshfreeTransport>(DRT::UTILS::buildLines,this);
+    return DRT::UTILS::ElementBoundaryFactory<MeshfreeTransportBoundary,MeshfreeTransport>(DRT::UTILS::buildLines,this);
   else
   {
     // 1D (we return the element itself)
@@ -325,7 +322,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Surfa
 
   // so we have to allocate new surface elements:
   if (NumSurface() > 1) // 3D
-    return DRT::UTILS::CellBoundaryFactory<MeshfreeTransportBoundary,MeshfreeTransport>(DRT::UTILS::buildSurfaces,this);
+    return DRT::UTILS::ElementBoundaryFactory<MeshfreeTransportBoundary,MeshfreeTransport>(DRT::UTILS::buildSurfaces,this);
   else if (NumSurface() == 1)
   {
     // 2D (we return the element itself)
@@ -527,18 +524,30 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeTransportBoundaryType::Create(
  |  ctor                                                  (public) nis Jan12 |
  *---------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeTransportBoundary::MeshfreeTransportBoundary(
-                                    int id,
-                                    int owner,
-                                    int nknot,
-                                    int const * knotids,
-                                    DRT::MESHFREE::MeshfreeNode** knots,
-                                    DRT::ELEMENTS::MeshfreeTransport* parent,
-                                    const int lbeleid) :
+  int id,
+  int owner,
+  int npoint,
+  int const * pointids,
+  DRT::Node** points,
+  MeshfreeTransport* parent,
+  const int lbeleid) :
   DRT::MESHFREE::Cell(id,owner)
 {
-  SetKnotIds(nknot,knotids);
-  BuildKnotPointers(knots);
+  SetPointIds(npoint,pointids);
+  // this can be done since MeshfreeTransportBoundary is derived from MeshfreeTransport which has MeshfreeNodes
+  DRT::MESHFREE::MeshfreeNode* meshfreepoint = dynamic_cast<DRT::MESHFREE::MeshfreeNode*>(points[0]);
+  // check if subsequent reinterpret_cast is REALLY valid
+  if (meshfreepoint==NULL)
+    dserror("Points in of meshfree transport boundary cell could not be casted to from Node to MeshfreeNode.");
+  // heavily persuade compiler that this is valid
+  DRT::MESHFREE::MeshfreeNode** meshfreepoints = reinterpret_cast<DRT::MESHFREE::MeshfreeNode**>(points);
+  BuildPointPointers(meshfreepoints);
   SetParentMasterElement(parent,lbeleid);
+
+  // temporary assignement of nodes for call in DRT::Discretization::BuildLinesinCondition)
+  // must and will be redefined in Face::AssignNodesToCells
+  SetNodeIds(npoint,pointids);
+  BuildNodalPointers(points);
   return;
 }
 
@@ -573,7 +582,7 @@ DRT::ELEMENTS::MeshfreeTransportBoundary::~MeshfreeTransportBoundary()
  *---------------------------------------------------------------------------*/
 inline DRT::Element::DiscretizationType DRT::ELEMENTS::MeshfreeTransportBoundary::Shape() const
 {
-  return DRT::UTILS::getShapeOfBoundaryElement(NumKnot(), ParentElement()->Shape());
+  return DRT::UTILS::getShapeOfBoundaryElement(NumPoint(), ParentElement()->Shape());
 }
 
 /*---------------------------------------------------------------------------*

@@ -47,15 +47,14 @@ DRT::ParObject* DRT::ELEMENTS::MeshfreeFluidType::Create( const std::vector<char
  |  create object of MeshfreeFluid type                  (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeFluidType::Create(
-  const std::string  eletype,
-  const std::string  eledistype,
-  const int     id,
-  const int     owner)
+  const std::string eletype,
+  const std::string eledistype,
+  const int id,
+  const int owner)
 {
   if (eletype=="MEFLUID")
-  {
-      return Teuchos::rcp(new DRT::ELEMENTS::MeshfreeFluid(id,owner));
-  }
+    return Teuchos::rcp(new DRT::ELEMENTS::MeshfreeFluid(id,owner));
+
   return Teuchos::null;
 }
 
@@ -232,7 +231,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeFluid::Lines()
 
   if (NumLine()>1) // 1D boundary element and 2D/3D parent element
   {
-    return DRT::UTILS::CellBoundaryFactory<MeshfreeFluidBoundary,MeshfreeFluid>(DRT::UTILS::buildLines,this);
+    return DRT::UTILS::ElementBoundaryFactory<MeshfreeFluidBoundary,MeshfreeFluid>(DRT::UTILS::buildLines,this);
   }
   else if (NumLine()==1) // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
   {
@@ -263,7 +262,9 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeFluid::Surfaces(
   // so we have to allocate new line elements:
 
   if (NumSurface() > 1)   // 2D boundary element and 3D parent element
-    return DRT::UTILS::CellBoundaryFactory<MeshfreeFluidBoundary,MeshfreeFluid>(DRT::UTILS::buildSurfaces,this);
+  {
+    return DRT::UTILS::ElementBoundaryFactory<MeshfreeFluidBoundary,MeshfreeFluid>(DRT::UTILS::buildSurfaces,this);
+  }
   else if (NumSurface() == 1) // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
   {
     // 2D (we return the element itself)
@@ -411,7 +412,6 @@ void DRT::ELEMENTS::MeshfreeFluid::Print(std::ostream& os) const
 {
   os << "MeshfreeFluid ";
   DRT::Element::Print(os);
-  //std::cout << std::endl;
   return;
 }
 

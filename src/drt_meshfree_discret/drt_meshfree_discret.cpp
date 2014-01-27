@@ -1,8 +1,7 @@
 /*!-------------------------------------------------------------------------*\
  * \file drt_meshfree_discret.cpp
  *
- * \brief discretisation with additional reference point vector
- *        (meshfree analysis)
+ * \brief discretisation for meshfree analysis
  *
  * <pre>
  * Maintainer: Keijo Nissen (nis)
@@ -22,6 +21,7 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_io/io_control.H"
 
 /*--------------------------------------------------------------------------*
@@ -32,10 +32,11 @@ DRT::MESHFREE::MeshfreeDiscretization::MeshfreeDiscretization(
   Teuchos::RCP<Epetra_Comm> comm,
   const Teuchos::ParameterList & params)
   : DRT::Discretization::Discretization(name,comm),
-    assigned_(false)
+    assigned_(false),
+    domaintopology_(4)
 {
   // neighbourhood search
-  nodeassigntype_ = DRT::INPUT::IntegralValue<INPAR::MESHFREE::NodeAssignType>(params,"NODEKNOTASSIGNMENT");
+  nodeassigntype_ = DRT::INPUT::IntegralValue<INPAR::MESHFREE::NodeAssignType>(params,"NODEPOINTASSIGNMENT");
 
   // type of meshfree approximation
   INPAR::MESHFREE::meshfreetype meshfreetype = DRT::INPUT::IntegralValue<INPAR::MESHFREE::meshfreetype>(params,"TYPE");
@@ -73,140 +74,140 @@ DRT::MESHFREE::MeshfreeDiscretization::~MeshfreeDiscretization()
 }
 
 /*--------------------------------------------------------------------------*
- |  get knot row map                                     (public) nis Oct11 |
+ |  get point row map                                     (public) nis Oct11 |
  *--------------------------------------------------------------------------*/
-const Epetra_Map* DRT::MESHFREE::MeshfreeDiscretization::KnotRowMap() const
+const Epetra_Map* DRT::MESHFREE::MeshfreeDiscretization::PointRowMap() const
 {
 #ifdef DEBUG
-  if (Filled()) return knotrowmap_.get();
-  else dserror("FillComplete() must be called before call to KnotRowMap()");
+  if (Filled()) return pointrowmap_.get();
+  else dserror("FillComplete() must be called before call to PointRowMap()");
   return NULL;
 #else
-  return knotrowmap_.get();
+  return pointrowmap_.get();
 #endif
 }
 
 /*--------------------------------------------------------------------------*
- |  get knot column map                                  (public) nis Oct11 |
+ |  get point column map                                  (public) nis Oct11 |
  *--------------------------------------------------------------------------*/
-const Epetra_Map* DRT::MESHFREE::MeshfreeDiscretization::KnotColMap() const
+const Epetra_Map* DRT::MESHFREE::MeshfreeDiscretization::PointColMap() const
 {
 #ifdef DEBUG
-  if (Filled()) return knotcolmap_.get();
-  else dserror("FillComplete() must be called before call to KnotColMap()");
+  if (Filled()) return pointcolmap_.get();
+  else dserror("FillComplete() must be called before call to PointColMap()");
   return NULL;
 #else
-  return knotcolmap_.get();
+  return pointcolmap_.get();
 #endif
 }
 
 /*--------------------------------------------------------------------------*
- | get global no of knots                                (public) nis Jan12 |
+ | get global no of points                                (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-int DRT::MESHFREE::MeshfreeDiscretization::NumGlobalKnots() const
+int DRT::MESHFREE::MeshfreeDiscretization::NumGlobalPoints() const
 {
 #ifdef DEBUG
-  if (Filled()) return KnotRowMap()->NumGlobalElements();
-  else dserror("FillComplete() must be called before call to NumGlobalKnots()");
+  if (Filled()) return PointRowMap()->NumGlobalElements();
+  else dserror("FillComplete() must be called before call to NumGlobalPoints()");
   return -1;
 #else
-  return KnotRowMap()->NumGlobalElements();
+  return PointRowMap()->NumGlobalElements();
 #endif
 }
 
 /*--------------------------------------------------------------------------*
- | get no of my row knots                                (public) nis Jan12 |
+ | get no of my row points                                (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-int DRT::MESHFREE::MeshfreeDiscretization::NumMyRowKnots() const
+int DRT::MESHFREE::MeshfreeDiscretization::NumMyRowPoints() const
 {
 #ifdef DEBUG
-  if (Filled()) return KnotRowMap()->NumMyElements();
-  else dserror("FillComplete() must be called before call to NumMyRowKnots()");
+  if (Filled()) return PointRowMap()->NumMyElements();
+  else dserror("FillComplete() must be called before call to NumMyRowPoints()");
   return -1;
 #else
-  return KnotRowMap()->NumMyElements();
+  return PointRowMap()->NumMyElements();
 #endif
 }
 
 /*--------------------------------------------------------------------------*
- | get no of my column knots                             (public) nis Jan12 |
+ | get no of my column points                             (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-int DRT::MESHFREE::MeshfreeDiscretization::NumMyColKnots() const
+int DRT::MESHFREE::MeshfreeDiscretization::NumMyColPoints() const
 {
-  if (Filled()) return KnotColMap()->NumMyElements();
-  else return (int)knot_.size();
+  if (Filled()) return PointColMap()->NumMyElements();
+  else return (int)point_.size();
 }
 
 /*--------------------------------------------------------------------------*
  | query existance of node                               (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-bool DRT::MESHFREE::MeshfreeDiscretization::HaveGlobalKnot(int gid) const
+bool DRT::MESHFREE::MeshfreeDiscretization::HaveGlobalPoint(int gid) const
 {
-  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr = knot_.find(gid);
-  if (curr == knot_.end()) return false;
+  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr = point_.find(gid);
+  if (curr == point_.end()) return false;
   else                     return true;
 }
 
 /*--------------------------------------------------------------------------*
  | get node with global id                               (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-DRT::MESHFREE::MeshfreeNode* DRT::MESHFREE::MeshfreeDiscretization::gKnot(int gid) const
+DRT::MESHFREE::MeshfreeNode* DRT::MESHFREE::MeshfreeDiscretization::gPoint(int gid) const
 {
 #ifdef DEBUG
-  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr = knot_.find(gid);
-  if (curr == knot_.end()) dserror("Knot with global id gid=%d not stored on this proc",gid);
+  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr = point_.find(gid);
+  if (curr == point_.end()) dserror("Point with global id gid=%d not stored on this proc",gid);
   else                     return curr->second.get();
   return NULL;
 #else
-  return knot_.find(gid)->second.get();
+  return point_.find(gid)->second.get();
 #endif
 }
 
 /*--------------------------------------------------------------------------*
- | add a knot                                            (public) nis Jan12 |
+ | add a point                                            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::AddKnot(Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> knot)
+void DRT::MESHFREE::MeshfreeDiscretization::AddPoint(Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> point)
 {
-  knot_[knot->Id()] = knot;
+  point_[point->Id()] = point;
   Reset();
   return;
 }
 
 /*--------------------------------------------------------------------------*
- | delete an knot                                        (public) nis Jan12 |
+ | delete an point                                        (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-bool DRT::MESHFREE::MeshfreeDiscretization::DeleteKnot(Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> knot)
+bool DRT::MESHFREE::MeshfreeDiscretization::DeletePoint(Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> point)
 {
-  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator fool = knot_.find(knot->Id());
-  if (fool==knot_.end()) return false;
-  knot_.erase(fool);
+  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator fool = point_.find(point->Id());
+  if (fool==point_.end()) return false;
+  point_.erase(fool);
   Reset();
   return true;
 }
 
 /*--------------------------------------------------------------------------*
- | delete an knot                                        (public) nis Jan12 |
+ | delete an point                                        (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-bool DRT::MESHFREE::MeshfreeDiscretization::DeleteKnot(const int gid)
+bool DRT::MESHFREE::MeshfreeDiscretization::DeletePoint(const int gid)
 {
-  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator fool = knot_.find(gid);
-  if (fool==knot_.end()) return false;
-  knot_.erase(fool);
+  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator fool = point_.find(gid);
+  if (fool==point_.end()) return false;
+  point_.erase(fool);
   Reset();
   return true;
 }
 
 /*--------------------------------------------------------------------------*
- |  Pack local knots (row map) into buffer               (public) nis Jan12 |
+ |  Pack local points (row map) into buffer               (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyKnots() const
+Teuchos::RCP<std::vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyPoints() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
 
   DRT::PackBuffer buffer;
 
-  for (std::vector<DRT::MESHFREE::MeshfreeNode*>::const_iterator i=knotrowptr_.begin();
-       i!=knotrowptr_.end();
+  for (std::vector<DRT::MESHFREE::MeshfreeNode*>::const_iterator i=pointrowptr_.begin();
+       i!=pointrowptr_.end();
        ++i)
   {
     DRT::MESHFREE::MeshfreeNode * k = *i;
@@ -215,8 +216,8 @@ Teuchos::RCP<std::vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyKn
 
   buffer.StartPacking();
 
-  for (std::vector<DRT::MESHFREE::MeshfreeNode*>::const_iterator i=knotrowptr_.begin();
-       i!=knotrowptr_.end();
+  for (std::vector<DRT::MESHFREE::MeshfreeNode*>::const_iterator i=pointrowptr_.begin();
+       i!=pointrowptr_.end();
        ++i)
   {
     DRT::MESHFREE::MeshfreeNode * k = *i;
@@ -229,9 +230,9 @@ Teuchos::RCP<std::vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyKn
 }
 
 /*--------------------------------------------------------------------------*
- |  Unpack knot buffer and create local knots            (public) nis Jan12 |
+ |  Unpack point buffer and create local points            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::UnPackMyKnots(Teuchos::RCP<std::vector<char> > k)
+void DRT::MESHFREE::MeshfreeDiscretization::UnPackMyPoints(Teuchos::RCP<std::vector<char> > k)
 {
   std::vector<char>::size_type index = 0;
   while (index < k->size())
@@ -239,198 +240,178 @@ void DRT::MESHFREE::MeshfreeDiscretization::UnPackMyKnots(Teuchos::RCP<std::vect
     std::vector<char> data;
     ParObject::ExtractfromPack(index,*k,data);
     DRT::ParObject* o = DRT::UTILS::Factory(data);
-    DRT::MESHFREE::MeshfreeNode* knot = dynamic_cast<DRT::MESHFREE::MeshfreeNode*>(o);
-    if (knot == NULL)
+    DRT::MESHFREE::MeshfreeNode* point = dynamic_cast<DRT::MESHFREE::MeshfreeNode*>(o);
+    if (point == NULL)
     {
-      dserror("Failed to build a knot from the knot data");
+      dserror("Failed to build a point from the point data");
     }
-    knot->SetOwner(comm_->MyPID());
-    AddKnot(Teuchos::rcp(knot));
+    point->SetOwner(comm_->MyPID());
+    AddPoint(Teuchos::rcp(point));
   }
-  // in case AddKnot forgets...
+  // in case AddPoint forgets...
   Reset();
 }
 
 /*----------------------------------------------------------------------------*
- |  Assign nodes to cells (protected)                               nis Jan14
- |TODO: more intelligent search for surfaces than brute force
+ |  Adds node set topology to faces (public)                        nis Jan14 |
  *----------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToCells(
-  std::map<int,Teuchos::RCP<DRT::Element> >& cells,
-  const std::vector<int>& nodeids
+void DRT::MESHFREE::MeshfreeDiscretization::AddNodeSetTopology(
+  std::vector<std::vector<std::vector<int> >* > nodeset
   )
 {
-  // initialize variables for neighbourhood-check
-  LINALG::Matrix<3,1> center(true);
-  double maxcellradius(0.0);
-  const double range = solutionapprox_->GetRange();
+  int dim = DRT::Problem::Instance()->NDim();
+  for (int i=(dim+1); i<=3; ++i)
+    if (nodeset[i]->size()>0)
+      dserror("Can't assign %i-D face in %i-D problem.",i,dim);
+  if (nodeset[dim]->size()!=1)
+    dserror("There has to be one and only one %i-D face in a %i-D problem.",dim,dim);
+  if ((int)((*(nodeset[dim]))[0].size())!=NumGlobalNodes())
+    return; // this was a dummy-dis - like for for pure scatra problems
 
-  // loop over all cells
-  for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator it = cells.begin(); it!=cells.end(); ++it)
+  for (int i=0; i<4; ++i)
   {
-    // create vectors to hold node ids and pointers
-    std::vector<int> condnodeids(0);
-    std::vector<DRT::Node*> condnodes(0);
-
-    // get cell center and maximum radius
-    DRT::MESHFREE::Cell* ccell = dynamic_cast<DRT::MESHFREE::Cell*>(&(*(it->second)));
-    if (ccell==NULL)
-      dserror("Something went wrong when castint element to meshfree cell.");
-    CellCenterAndMaxRadius(ccell, center, maxcellradius);
-    const double truerange = range+maxcellradius;
-
-    // brute force search for nodes in neighbourhood
-    for (unsigned i=0; i<nodeids.size(); ++i)
-    {
-      DRT::Node* cnode = gNode(nodeids[i]);
-      LINALG::Matrix<3,1> dist(cnode->X());
-      dist.Update(1.0,center,1.0);
-      if (dist.Norm2()<truerange)
-      {
-        condnodeids.push_back(cnode->Id());
-        condnodes.push_back(cnode);
-      }
-    }
-
-    // set node ids and nodal pointers of cell
-    it->second->SetNodeIds(condnodeids.size(), condnodeids.data());
-    it->second->BuildNodalPointers(condnodes.data());
+    const unsigned nface = nodeset[i]->size();
+    domaintopology_[i].resize(nface);
+    for (unsigned j=0; j<nface; ++j)
+      domaintopology_[i][j] = Face((*(nodeset[i]))[j],i,this);
   }
+
+  return;
 }
 
-
 /*--------------------------------------------------------------------------*
- |  initialise assignment node<>{knot,cell}              (public) nis Jan12 |
+ |  initialise assignment node<>{point,cell}              (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-bool DRT::MESHFREE::MeshfreeDiscretization::InitAssignSingleNode(double const * const & xn,
-                                                                 double const & range,
-                                                                 int const & numele,
-                                                                 DRT::Element** eles,
-                                                                 std::set<int>& elegid,
-                                                                 std::set<int>& knotgid,
-                                                                 int& init_knot)
+bool DRT::MESHFREE::MeshfreeDiscretization::InitAssignSingleNode(const double * const xn,
+                                                                 const double range,
+                                                                 const int numcell,
+                                                                 DRT::Element** cells,
+                                                                 std::set<int>& cellgid,
+                                                                 std::set<int>& pointgid,
+                                                                 int& init_point)
 {
-  // initialisiation of auxiliary pointers (and variable)
-  DRT::MESHFREE::MeshfreeNode** knots;    // pointer to vector of pointers of knots
-  DRT::MESHFREE::MeshfreeNode*  knotcurr; // pointer to current knot
-  DRT::MESHFREE::Cell* elecurr;           // pointer to current element; here: meshfree-cell
-  bool init(false);  // boolean, whether an initial knot was found for recursive search
+  // initialisiation of auxiliary variables
+  bool init(false);  // boolean, whether an initial point was found for recursive search
 
-  // loop over all elements parsed to this recursion
-  int e;
-  for (e=0; e<numele; e++){
+  // loop over all cell parsed to this recursion
+  for (int c=0; c<numcell; c++)
+  {
+    // get pointer to current cell
+    DRT::MESHFREE::Cell* cellcurr = dynamic_cast<DRT::MESHFREE::Cell*>(cells[c]);
 
-    // if not yet having dealt with this element, add to set of elegids and...
-    if ((elegid.insert(eles[e]->Id())).second){
+    // if not yet having dealt with this cell, add to set of cellgids and...
+    if ((cellgid.insert(cellcurr->Id())).second)
+    {
+      // get pointer to pointer to cell points
+      DRT::Node** points = cellcurr->Points();
 
-      // cast element to meshfree cell and get pointer to its knots
-      elecurr = dynamic_cast<DRT::MESHFREE::Cell*>(eles[e]);
-      knots = elecurr->Knots();
+      // loop over all cell points
+      for(int p=0; p< cellcurr->NumPoint(); p++)
+      {
+        // get pointer to current cell points
+        DRT::MESHFREE::MeshfreeNode* pointcurr = dynamic_cast<DRT::MESHFREE::MeshfreeNode*>(points[p]);
 
-      // loop over all element knots
-      for(int k=0; k< elecurr->NumKnot(); k++){
-        knotcurr = knots[k];
-
-        // if not yet having dealt with this knot, add to set of knotgids and...
-        if ((knotgid.insert(knotcurr->Id())).second){
-
-          // if knot is in range... TODO ? different range for weighting function
-          if (knotcurr->DistToPoint(xn)<range){
-
-            // current element to be erased, otherwise it would not be
+        // if not yet having dealt with this point, add to set of pointgids and...
+        if ((pointgid.insert(pointcurr->Id())).second)
+        {
+          // if point is in range... TODO ? different range for weighting function
+          if (pointcurr->DistToPoint(xn)<range)
+          {
+            // current cell to be erased, otherwise it would not be
             // considered in actual search of 'AssignSingleNode([...])'
-            elegid.erase(elecurr->Id());
+            cellgid.erase(cellcurr->Id());
 
-            // set init true, mark current knot as initial one and break
+            // set init true, mark current point as initial one and break
             init = true;
-            init_knot = knotcurr->Id();
+            init_point = pointcurr->Id();
             break;
 
           } // end if dist<range
-        } // end if new knot
-      } // end for all element knots
+        } // end if new point
+      } // end for all cell points
 
-      // if we already found an inital knot: break
+      // if we already found an inital point: break
       if (init) break;
 
-    } // end if new element
-  } // end for all elements
+    } // end if new cell
+
+  } // end for all cells
 
   return init;
 }
 
 /*--------------------------------------------------------------------------*
- |  recursive assignment node<>{knot,cell}               (public) nis Jan12 |
+ |  recursive assignment node<>{point,cell}               (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::AssignSingleNode(const double* const & xn,
-                                                             const int & nodeid,
-                                                             DRT::Node* & node,
-                                                             double const & range,
-                                                             const int & numele,
-                                                             DRT::Element** eles,
-                                                             std::set<int>& elegid,
-                                                             std::set<int>& knotgid,
-                                                             const int & myrank,
+void DRT::MESHFREE::MeshfreeDiscretization::AssignSingleNode(const double* const xn,
+                                                             const int nodeid,
+                                                             DRT::Node* node,
+                                                             const double range,
+                                                             const int numcell,
+                                                             DRT::Element** cells,
+                                                             std::set<int>& cellgid,
+                                                             std::set<int>& pointgid,
+                                                             const int myrank,
                                                              std::map<int, std::map<int,int> > & procmap)
 {
-  // initialisiation of auxiliary pointers
-  // (kept to minimum because of recursive calling)
-  DRT::MESHFREE::MeshfreeNode** knots;    // pointer to vector of pointers of knots
-  DRT::MESHFREE::MeshfreeNode*  knotcurr; // pointer to current knot
-  DRT::MESHFREE::Cell* elecurr;           // pointer to current element; here: meshfree-cell
+  // loop over all cellss parsed to this recursion
+  for (int c=0; c<numcell; c++)
+  {
+    // get pointer to current cell
+    DRT::MESHFREE::Cell* cellcurr = dynamic_cast<DRT::MESHFREE::Cell*>(cells[c]);
 
-  // loop over all elements parsed to this recursion
-  for (int e=0; e<numele; e++){
+    // if not yet having dealt with this cell, add to set of cellgids and...
+    if ((cellgid.insert(cellcurr->Id())).second)
+    {
+      // get pointer to pointer to cell points
+      DRT::Node** points = cellcurr->Points();
 
-    // if not yet having dealt with this element, add to set of elegids and...
-    if ((elegid.insert(eles[e]->Id())).second){
+      // loop over all cell points
+      for(int p=0; p<cellcurr->NumPoint(); p++)
+      {
+        // get pointer to current cell points
+        DRT::MESHFREE::MeshfreeNode* pointcurr = dynamic_cast<DRT::MESHFREE::MeshfreeNode*>(points[p]);
 
-      // cast element to meshfree cell and get pointer to its knots
-      elecurr = dynamic_cast<DRT::MESHFREE::Cell*>(eles[e]);
-      knots = elecurr->Knots();
-
-      // loop over all element knots
-      for(int k=0; k<elecurr->NumKnot(); k++){
-        knotcurr = knots[k];
-
-        // if not yet having dealt with this knot, add to set of knotgids and...
-        if ((knotgid.insert(knotcurr->Id())).second){
-
-          // if knot is in range... TODO ? different range for weighting function
-          if (knotcurr->DistToPoint(xn)<range){
-            // ... and knot is owned by other proc, update procmap.
-            //     (every proc only deals with its own knots)
-            if (knotcurr->Owner()!=myrank)
-              procmap[knotcurr->Owner()].insert(std::make_pair(nodeid,knotcurr->Id()));
-            // ... and proc is owner of knot, start recursion over elements of this knot.
+        // if not yet having dealt with this point, add to set of pointgids and...
+        if ((pointgid.insert(pointcurr->Id())).second)
+        {
+         // if point is in range... TODO ? different range for weighting function
+          if (pointcurr->DistToPoint(xn)<range)
+          {
+            // ... and point is owned by other proc, update procmap.
+            //     (every proc only deals with its own points)
+            if (pointcurr->Owner()!=myrank)
+              procmap[pointcurr->Owner()].insert(std::make_pair(nodeid,pointcurr->Id()));
+            // ... and proc is owner of point, start recursion over cells of this point.
             else
-              AssignSingleNode(xn,nodeid,node,range,knotcurr->NumElement(),knotcurr->Elements(),elegid,knotgid,myrank,procmap);
+              AssignSingleNode(xn,nodeid,node,range,pointcurr->NumElement(),pointcurr->Elements(),cellgid,pointgid,myrank,procmap);
 
-            // add node to knot
-            knotcurr->AddNodePtr(nodeid, node);
+            // finally add node to point
+            pointcurr->AddNodePtr(nodeid, node);
 
           } // end if dist<range
-        } // end if new knot
-      } // end for all element knots
+        } // end if new point
+      } // end for all cell points
 
-      // assign this element<>node combination (after recursive call)
-      elecurr->AddNode(nodeid, node);
-      node->AddElementPtr(elecurr);
+      // assign this cell<>node combination (after recursive call)
+      cellcurr->AddNode(nodeid, node);
+      node->AddElementPtr(cellcurr);
 
-    } // end if new element
-  } // end for all elements
+    } // end if new cell
+  } // end for all cells
+
   return;
 }
 
 /*--------------------------------------------------------------------------*
- |  assignment node<>{knot,cell} by neighbourhood search (public) nis Jan12 |
+ |  assignment node<>{point,cell} by neighbourhood search (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToKnotsAndCells()
+void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToPointsAndCells()
 {
-  if (knot_.size()==0)
+  if (point_.size()==0)
   {
     assigned_ = true;
-    return; // dserror("No knot to assign nodes to in meshfree discret.");
+    return; // dserror("No point to assign nodes to in meshfree discret.");
   }
 
   if (assigned_)
@@ -444,11 +425,11 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToKnotsAndCells()
   case INPAR::MESHFREE::procwise:
   {
     std::set<int> elegid;  // set eof element-gids already handled by this proc
-    std::set<int> knotgid; // set eof knot-gids already handled by this proc
+    std::set<int> pointgid; // set eof point-gids already handled by this proc
 
-    bool init;               // boolean, whether an initial knot was found for recursive search
-    int init_knotid;         // id of knot to start recursive search with
-    MeshfreeNode* init_knot = NULL; // knot to start recursive search with
+    bool init;               // boolean, whether an initial point was found for recursive search
+    int init_pointid;         // id of point to start recursive search with
+    MeshfreeNode* init_point = NULL; // point to start recursive search with
     int nodeid;              // id of current node
     DRT::Node* node;         // current node
 
@@ -456,47 +437,45 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToKnotsAndCells()
     const int numproc(Comm().NumProc());    // total number of processors
     const double range(solutionapprox_->GetRange()); // range of basis functions
 
-    // procmap: <rank <nodeid,knotid> >
-    std::map<int, std::map<int,int> > procmap; // maps to ranks a map that maps to nodes the initial knot
+    // procmap: <rank <nodeid,pointid> >
+    std::map<int, std::map<int,int> > procmap; // maps to ranks a map that maps to nodes the initial point
 
     // on proc assignment
     for (int n=0; n<NumMyColNodes(); n++){
       elegid.clear();
-      knotgid.clear();
-      init_knotid = -1;
+      pointgid.clear();
+      init_pointid = -1;
 
       // get new node and nodeid
       node = noderowptr_[n];
       nodeid = node->Id();
 
-      // get initial knot for recursive call on proc:
+      // get initial point for recursive call on proc:
       // first by searching on elements of node itself and than on proc
       // discretisation (only for own nodes but not for ghosted ones)
-      init = InitAssignSingleNode(node->X(),range,node->NumElement(),node->Elements(),elegid,knotgid,init_knotid);
+      init = InitAssignSingleNode(node->X(),range,node->NumElement(),node->Elements(),elegid,pointgid,init_pointid);
       if (!init){
-        if (node->Owner()==myrank) {
-          std::cout << "numproccolele = " << NumMyColElements() << std::endl;
-          init = InitAssignSingleNode(node->X(),range,NumMyColElements(),&elecolptr_[0],elegid,knotgid,init_knotid);
-        }
-        else {
+        if (node->Owner()==myrank)
+          init = InitAssignSingleNode(node->X(),range,NumMyColElements(),elecolptr_.data(),elegid,pointgid,init_pointid);
+        else
+        {
           node_.erase(node->Id());
           continue;
         }
       }
       if (!init)
-        dserror("There is no knot within the range of node %d on its proc.",nodeid);
+        dserror("There is no point within the range of node %d on its proc.",nodeid);
 
-      // get initial knot for recursive search
-      init_knot = knot_.find(init_knotid)->second.get();
+      // get initial point for recursive search
+      init_point = point_.find(init_pointid)->second.get();
 
-      if (init_knot->Owner()!=myrank){
-        procmap[init_knot->Owner()].insert(std::make_pair(nodeid,init_knot->Id()));
+      if (init_point->Owner()!=myrank){
+        procmap[init_point->Owner()].insert(std::make_pair(nodeid,init_point->Id()));
       }
 
-      // assignment node<>{knot,cell} on proc by recursive function call
+      // assignment node<>{point,cell} on proc by recursive function call
       node->ClearMyElementTopology();
-
-      AssignSingleNode(node->X(),nodeid,node,range,init_knot->NumElement(),init_knot->Elements(),elegid,knotgid,myrank,procmap);
+      AssignSingleNode(node->X(),nodeid,node,range,init_point->NumElement(),init_point->Elements(),elegid,pointgid,myrank,procmap);
     }
 
     // off proc communication, if more than one proc
@@ -540,6 +519,126 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignNodesToKnotsAndCells()
 }
 
 /*--------------------------------------------------------------------------*
+ |  Computes values at nodes from nodal values for non-interpolatory        |
+ |  basis function                                                nis Jan14 |
+ *--------------------------------------------------------------------------*/
+void DRT::MESHFREE::MeshfreeDiscretization::ComputeValuesAtNodes(
+  const Teuchos::RCP<const Epetra_Vector>& nodalvalues,
+  const Teuchos::RCP<Epetra_Vector>      & valuesatnodes) const
+{
+  // check if (meshfree!) filled - otherwise no correct node-to-node assignments
+  if (!Filled())
+    dserror("Fill complete meshfree discretisation before computing values at nodes!");
+
+  // check if we have only single dofset in meshfree discretisation
+  if (dofsets_.size()!=1)
+    dserror("Up to now values at nodes can only be computes for single dofset meshfree discretisations!");
+
+  // get number of dofs per node from first row node
+  const int nummyrownode = NumMyRowNodes();
+  if (nummyrownode==0) dserror("can't be!");//return;
+
+  // get number of dofs per node - prerequisite: equal for all nodes
+  const int numdofpernode = NumDof(noderowptr_[0]);
+
+  // check if we only have nodal dofs
+  if (DofRowMap()->NumGlobalElements()!=numdofpernode*NumGlobalNodes())
+    dserror("Either non-nodal dofs exist or number of dofs is not the same for all nodes!");
+
+  // check if nodal dofs are guaranteed te be in a stride
+//  if (DRT::Problem::Instance()->BandWidthOpt())
+//    dserror("We rely on nodal dofs being in a stride. If this is still guaranted by your BandWidthOpt, remove dserror!");
+
+  // loop over all row nodes
+  for (int i=0; i<nummyrownode; ++i)
+  {
+    //------------------------------------------------------------------------
+    // get neighbourhood information
+    //------------------------------------------------------------------------
+    const MeshfreeNode* const cnode = dynamic_cast<MeshfreeNode*>(noderowptr_[i]);
+    const int nneighbour = cnode->NumNode();
+    const DRT::Node* const * neighbours = cnode->Nodes();
+    const int facedim = cnode->GetFaceDim();
+
+    if (facedim==0)
+    {
+      //------------------------------------------------------------------------
+      // node is a vertex and thus interpolatory: copy nodal values
+      //------------------------------------------------------------------------
+      std::vector<int>    dofids(numdofpernode);
+      std::vector<double> valuesatnode(numdofpernode);
+      // loop over all dofs of this node
+      for (int idof=0; idof<numdofpernode; ++idof)
+      {
+        dofids[idof] = Dof(cnode,idof);
+        valuesatnode[idof] = (*nodalvalues)[DofRowMap()->LID(Dof(cnode,idof))];
+      }
+
+      // write values at nodes into vector
+      valuesatnodes->ReplaceGlobalValues(numdofpernode,valuesatnode.data(),dofids.data());
+    }
+    else
+    {
+      //------------------------------------------------------------------------
+      // construct matrix with distance to neighbours for basis function evaluation
+      //------------------------------------------------------------------------
+      LINALG::SerialDenseMatrix distnn_full(3,nneighbour,false);
+      const double * cx = cnode->X();
+      // loop over all neighbours
+      for (int n=0; n<nneighbour; ++n)
+      {
+        // get position of current neighbour
+        const double * xn = neighbours[n]->X();
+        // compute distance and write in respective matrix column
+        double * ccol = distnn_full[n];
+        for (int k=0; k<3; ++k)
+          ccol[k] = cx[k] - xn[k];
+      }
+
+      // reduce matrix dimension if necessary
+      Teuchos::RCP<LINALG::SerialDenseMatrix> distnn = Teuchos::null;
+      if (facedim<3)
+      {
+        distnn = Teuchos::rcp(new LINALG::SerialDenseMatrix(facedim,nneighbour,false));
+        ReduceDimensionOfFaceNodes(distnn_full,*distnn);
+      }
+      else
+        distnn = Teuchos::rcp(&distnn_full);
+
+      //------------------------------------------------------------------------
+      // get solution basis functions of neighbourhood
+      //------------------------------------------------------------------------
+      LINALG::SerialDenseVector funct(nneighbour,false);
+      LINALG::SerialDenseMatrix dummy(0,0,false);
+      solutionapprox_->GetMeshfreeBasisFunction(funct,dummy,*distnn,facedim);
+
+      //------------------------------------------------------------------------
+      // compute values at current node
+      //------------------------------------------------------------------------
+      std::vector<int>    dofids(numdofpernode);
+      std::vector<double> valuesatnode(numdofpernode);
+      // loop over all dofs of this node
+      for (int idof=0; idof<numdofpernode; ++idof)
+      {
+        dofids[idof] = Dof(cnode,idof);
+        double valueatnode = 0.0;
+        // loop over all neighbours
+        for (int n=0; n<nneighbour; ++n)
+          // u(x_i) = sum N(x_i) u_i
+          valueatnode += funct[n]*(*nodalvalues)[DofRowMap()->LID(Dof(neighbours[n],idof))];
+        valuesatnode[idof] = valueatnode;
+      }
+
+      // write values at nodes into vector
+      valuesatnodes->ReplaceGlobalValues(numdofpernode,valuesatnode.data(),dofids.data());
+    }
+
+  }
+
+  return;
+}
+
+/*--------------------------------------------------------------------------*
  |  << operator for meshfree discretization                        nis Jan12|
  *--------------------------------------------------------------------------*/
 std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::MeshfreeDiscretization& mdis)
@@ -555,12 +654,12 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
 {
   int numglobalelements = 0;
   int numglobalnodes    = 0;
-  int numglobalknots    = 0;
+  int numglobalpoints    = 0;
   if (Filled())
   {
     numglobalelements = NumGlobalElements();
     numglobalnodes    = NumGlobalNodes();
-    numglobalknots    = NumGlobalKnots();
+    numglobalpoints   = NumGlobalPoints();
   }
   else
   {
@@ -574,14 +673,14 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
     for (ncurr=node_.begin(); ncurr != node_.end(); ++ncurr)
       if (ncurr->second->Owner() == Comm().MyPID()) nummynodes++;
 
-    int nummyknots = 0;
-    std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::const_iterator kcurr;
-    for (kcurr=knot_.begin(); kcurr != knot_.end(); ++kcurr)
-      if (kcurr->second->Owner() == Comm().MyPID()) nummyknots++;
+    int nummypoints = 0;
+    std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::const_iterator pcurr;
+    for (pcurr=point_.begin(); pcurr != point_.end(); ++pcurr)
+      if (pcurr->second->Owner() == Comm().MyPID()) nummypoints++;
 
     Comm().SumAll(&nummyele,&numglobalelements,1);
     Comm().SumAll(&nummynodes,&numglobalnodes,1);
-    Comm().SumAll(&nummyknots,&numglobalknots,1);
+    Comm().SumAll(&nummypoints,&numglobalpoints,1);
   }
 
   // print head
@@ -590,7 +689,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
     os << "--------------------------------------------------\n";
     os << "Discretization: " << Name() << std::endl;
     os << "--------------------------------------------------\n";
-    os << numglobalelements << " Elements " << numglobalnodes << " Nodes (global) " << numglobalknots << " Knots (global)\n";
+    os << numglobalelements << " Elements " << numglobalnodes << " Nodes (global) " << numglobalpoints << " Points (global)\n";
     os << "--------------------------------------------------\n";
     if (Filled())
     os << "Filled() = true\n";
@@ -650,15 +749,15 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(std::ostream& os) const
     }
     Comm().Barrier();
   }
-  // print knots
+  // print points
   for (int proc=0; proc < Comm().NumProc(); ++proc)
   {
     if (proc == Comm().MyPID())
     {
-      if ((int)knot_.size())
+      if ((int)point_.size())
         os << "-------------------------- Proc " << proc << " :\n";
       std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >:: const_iterator curr;
-      for (curr = knot_.begin(); curr != knot_.end(); ++curr)
+      for (curr = point_.begin(); curr != point_.end(); ++curr)
       {
         os << *(curr->second);
         if (Filled())

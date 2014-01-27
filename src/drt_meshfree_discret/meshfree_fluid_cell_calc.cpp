@@ -19,7 +19,7 @@ Maintainer: Keijo Nissen
 #include "drt_meshfree_node.H"                    //
 #include "drt_meshfree_cell.H"                    //
 #include "drt_meshfree_cell_utils.H"              // to get Gauss points in real space
-#include "drt_meshfree_discret.H"                 // for cast to get knots
+#include "drt_meshfree_discret.H"                 // for cast to get points
 #include "../drt_fluid_ele/fluid_ele_parameter.H"
 #include "../drt_mat/newtonianfluid.H"
 
@@ -124,10 +124,10 @@ int DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Evaluate(
     }
   }
 
-  // get global knot coordinates
+  // get global point coordinates
   double const * ckxyz;
   for (int j=0; j<nek_; j++){
-    ckxyz =  cell->Knots()[j]->X();
+    ckxyz =  cell->Points()[j]->X();
     for (int k=0; k<nsd_; k++){
       kxyz_(k,j) = ckxyz[k];
     }
@@ -293,7 +293,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
   LINALG::SerialDenseMatrix lin_resM_Du(nsd_*nsd_,nen_,false);
   LINALG::Matrix<nsd_,1>    resM_Du(false);
 
-  // add displacement when fluid nodes and knots move in the ALE case
+  // add displacement when fluid nodes and points move in the ALE case
   if (isale)
   {
     kxyz_ += edispnp;
@@ -1031,6 +1031,27 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::ViscousGalPart(
       } // ui
     } // end for (idim)
   } // vi
+
+//  for (int vi=0; vi<nen_; ++vi)
+//  {
+//    const int fvi = nsd_*vi;
+//
+//    for (int ui=0; ui<nen_; ++ui)
+//    {
+//      const int fui = nsd_*ui;
+//
+//      for (int jdim=0; jdim<nsd_;++jdim)
+//      {
+//
+//        for (int idim=0; idim <nsd_; ++idim)
+//        {
+//
+//          estif_u(fvi+jdim,fui+jdim) += visc_timefacfac*deriv_(idim,vi)*deriv_(idim, ui);
+//
+//        } // end for (idim)
+//      } // ui
+//    } // end for (idim)
+//  } // vi
 
   for (int jdim=0; jdim<nsd_; ++jdim)
   {

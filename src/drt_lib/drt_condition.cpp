@@ -66,6 +66,7 @@ id_(id),
 buildgeometry_(buildgeometry),
 type_(type),
 gtype_(gtype),
+geometry_(Teuchos::null),
 comm_(Teuchos::null)
 {
   return;
@@ -80,6 +81,7 @@ id_(-1),
 buildgeometry_(false),
 type_(none),
 gtype_(NoGeom),
+geometry_(Teuchos::null),
 comm_(Teuchos::null)
 {
   return;
@@ -94,6 +96,7 @@ id_(old.id_),
 buildgeometry_(old.buildgeometry_),
 type_(old.type_),
 gtype_(old.gtype_),
+geometry_(Teuchos::null), // since it wasn't even initialized before change to Teuchos::RCP
 comm_(old.comm_)
 {
   return;
@@ -248,12 +251,12 @@ void DRT::Condition::Print(std::ostream& os) const
   else dserror("no output std::string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);
-  if ((int)geometry_.size())
+  if ((int)geometry_->size())
   {
     os << std::endl;
     os << "Elements of this condition:\n";
     std::map<int,Teuchos::RCP<DRT::Element> >::const_iterator curr;
-    for (curr=geometry_.begin(); curr!=geometry_.end(); ++curr)
+    for (curr=geometry_->begin(); curr!=geometry_->end(); ++curr)
       os << "      " << *(curr->second) << std::endl;
   }
   return;
@@ -327,13 +330,13 @@ void DRT::Condition::AdjustId(const int shift)
   std::map<int,Teuchos::RCP<DRT::Element> > geometry;
   std::map<int,Teuchos::RCP<DRT::Element> >::iterator iter;
 
-  for (iter=geometry_.begin();iter!=geometry_.end();++iter)
+  for (iter=geometry_->begin();iter!=geometry_->end();++iter)
   {
     iter->second->SetId(iter->first+shift);
-    geometry[iter->first+shift]=geometry_[iter->first];
+    geometry[iter->first+shift]=(*geometry_)[iter->first];
   }
 
-  swap(geometry_, geometry);
+  swap(*geometry_, geometry);
 
   return;
 }

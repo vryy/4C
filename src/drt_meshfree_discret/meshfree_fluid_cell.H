@@ -521,9 +521,9 @@ public:
   MeshfreeFluidBoundary(
     int id,                              //!< A unique global id
     int owner,                           //!< Processor owning this surface
-    int nknot,                           //!< Number of nodes attached to this element
-    const int* knotids,                  //!< global ids of nodes attached to this element
-    DRT::MESHFREE::MeshfreeNode** knots, //!< the discretizations map of knots to build ptrs to knots
+    int npoint,                          //!< Number of nodes attached to this element
+    const int* pointids,                 //!< global ids of nodes attached to this element
+    DRT::Node** points,                  //!< the discretizations map of points to build ptrs to points
     MeshfreeFluid* parent,               //!< The parent fluid element of this surface
     const int lsurface                   //!< the local surface number of this surface w.r.t. the parent element
   );

@@ -75,12 +75,16 @@ class MeshfreeNode : public DRT::Node
 {
 public:
 
+  /*========================================================================*/
   //! @name Enums and Friends
+  /*========================================================================*/
 
+  /*------------------------------------------------------------------------*/
   /*!
-  \brief The Discretization is a friend of the control point
-  */
-  friend class Discretization;
+   * \brief The MeshfreeDiscretization is a friend of the MeshfreeNode
+   *///                                                            nis Jan12
+  /*------------------------------------------------------------------------*/
+  friend class MeshfreeDiscretization;
 
   /*========================================================================*/
   //! @name Constructors and destructors and related methods
@@ -178,6 +182,22 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
+   * \brief Print this meshfree node
+   *///                                                   (public) nis Jan12
+  /*------------------------------------------------------------------------*/
+  virtual void Print(std::ostream& os) const ;
+
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Get dimension of lowest-dimensional face the node is part of
+   *///                                                   (public) nis Jan12
+  /*------------------------------------------------------------------------*/
+  int GetFaceDim() const {return facedim_;}
+
+protected:
+
+  /*------------------------------------------------------------------------*/
+  /*!
    * \brief Add a node to the meshfree node
    *
    * \param nodeptr (in): pointer to DRT::Node to be added
@@ -186,9 +206,11 @@ public:
    *          be any double entries!
    *
    * Adds entry at the end of nodeid_ and node_ pointers
+   *
+   * \note to be used by friend class MeshfreeDiscretization only!
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual void AddNodePtr(DRT::Node*& nodeptr)
+  virtual void AddNodePtr(DRT::Node* nodeptr)
   {
     nodeid_.push_back(nodeptr->Id());
     node_.push_back(nodeptr);
@@ -206,9 +228,11 @@ public:
    *          be any double entries! (This would be disastrous!)
    *
    * Adds entry at the end of nodeid_ and node_ pointers
+   *
+   * \note to be used by friend class MeshfreeDiscretization only!
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual void AddNodePtr(const int& gid, DRT::Node*& nodeptr)
+  virtual void AddNodePtr(const int gid, DRT::Node* nodeptr)
   {
     nodeid_.push_back(gid);
     node_.push_back(nodeptr);
@@ -223,22 +247,38 @@ public:
    *
    * Searches for position of node with specified gid and deletes entry in
    * vectors node_ and nodeid_
+   *
+   * \note to be used by friend class MeshfreeDiscretization only!
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
   virtual void DeleteNodePtr(int gid);
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Print this meshfree node
+   * \brief Set dimension of lowest-dimensional face the node is part of
+   *
+   * \note to be used by friend class MeshfreeDiscretization only!
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual void Print(std::ostream& os) const ;
+  void SetFacedim(const int facedim){facedim_ = facedim; return;}
 
-protected:
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Set vectors of ids and pointers to my nodes
+   *
+   * \note to be used by friend class MeshfreeDiscretization only!
+   *///                                                   (public) nis Jan14
+  /*------------------------------------------------------------------------*/
+  virtual void SetMyNodeTopology(
+    const std::vector<int> &,
+    const std::map<int,DRT::MESHFREE::MeshfreeNode*> &
+    );
 
   /*------------------------------------------------------------------------*/
   /*!
    * \brief Clear vector of pointers to my nodes
+   *
+   * \note to be used by friend class MeshfreeDiscretization only!
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
   virtual void ClearMyNodeTopology()
@@ -248,11 +288,11 @@ protected:
     return;
   }
 
-protected:
   // internal data:
 
   std::vector<int>        nodeid_;  //!< List of gids of my nodes, length NumNode()
   std::vector<DRT::Node*> node_;    //!< pointers to adjacent nodes
+  int facedim_;                     //!< the node's lowest face dimension - initilized with 4!!!
 
 }; // end MeshfreeNode
 

@@ -1902,19 +1902,19 @@ protected:
   \brief Build the geometry of lines for a certain line condition
 
   */
-  virtual void BuildLinesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
+  virtual bool BuildLinesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
 
   /*!
   \brief Build the geometry of surfaces for a certain surface condition
 
   */
-  virtual void BuildSurfacesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
+  virtual bool BuildSurfacesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
 
   /*!
   \brief Build the geometry of volumes for a certain volume condition
 
   */
-  virtual void BuildVolumesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
+  virtual bool BuildVolumesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
 
   /*!
   \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)

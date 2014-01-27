@@ -48,7 +48,7 @@ namespace MESHFREE
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Return coordinates of cell center computed by knot positions
+   * \brief Return coordinates of cell center computed by point positions
    *///                                                   (public) nis Jan14
   /*------------------------------------------------------------------------*/
   void CellCenterAndMaxRadius(

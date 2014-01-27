@@ -1142,6 +1142,7 @@ set(OBJS_DRT_MESHFREE_DISCRET_LIB
   src/drt_meshfree_discret/drt_meshfree_cell.cpp
   src/drt_meshfree_discret/drt_meshfree_cell_utils.cpp
   src/drt_meshfree_discret/drt_meshfree_discret.cpp
+  src/drt_meshfree_discret/drt_meshfree_discret_face.cpp
   src/drt_meshfree_discret/drt_meshfree_discret_conditions.cpp
   src/drt_meshfree_discret/drt_meshfree_discret_evaluate.cpp
   src/drt_meshfree_discret/drt_meshfree_discret_fillcomplete.cpp

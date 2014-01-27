@@ -44,6 +44,7 @@ Maintainer: Michael Gee
 #include "drt_node.H"
 #include "drt_discret.H"
 #include "drt_dserror.H"
+#include "drt_condition.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "drt_linedefinition.H"
 
@@ -729,7 +730,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
   dis.Dof(0,this,lm);
   unsigned aft = lm.size();
   if (aft-bef) lmstride.push_back((int)(aft-bef));
-  lmowner.resize(lm.size(),Owner());  
+  lmowner.resize(lm.size(),Owner());
 
   // fill the vector with face dofs
   if (this->NumDofPerFace(0) > 0)

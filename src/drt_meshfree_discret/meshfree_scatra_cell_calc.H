@@ -255,7 +255,7 @@ protected:
 
   //! number of space dimensions
   static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
-  //! number of element knots (geometric description of integration cell)
+  //! number of element points (geometric description of integration cell)
   static const int nek_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   //! number of Gauss points
   static const int ngp_ = DRT::MESHFREE::DisTypeToNumGaussPoints<distype>::ngp;
@@ -281,7 +281,7 @@ protected:
   int nen_;
   //! reference to discretisation
   DRT::MESHFREE::MeshfreeDiscretization* discret_;
-  //! knot coordinates for boundary cell
+  //! point coordinates for boundary cell
   LINALG::SerialDenseMatrix kxyz_;
   //! Gauss point coordinates for boundary cell
   LINALG::SerialDenseMatrix gxyz_;

@@ -73,6 +73,11 @@ private:
 class Element;
 class Discretization;
 
+namespace MESHFREE
+{
+  class MeshfreeDiscretization;
+}
+
 /*!
 \brief A condition of any kind
 
@@ -101,6 +106,7 @@ public:
 
   */
   friend class DRT::Discretization;
+  friend class DRT::MESHFREE::MeshfreeDiscretization;
 
   /*!
   \brief Type of condition
@@ -410,7 +416,7 @@ public:
   \brief Get a reference to the geometry description of the condition
 
   */
-  virtual std::map<int,Teuchos::RCP<DRT::Element> >& Geometry() { return geometry_; }
+  virtual std::map<int,Teuchos::RCP<DRT::Element> >& Geometry() { return *geometry_; }
 
   /*!
   \brief Adjust IDs of associated elements in order to obtain global
@@ -454,7 +460,7 @@ protected:
                     Do not mess with their RCP!
 
   */
-  virtual void AddGeometry(std::map<int,Teuchos::RCP<DRT::Element> >& geom)
+  virtual void AddGeometry(Teuchos::RCP<std::map<int,Teuchos::RCP<DRT::Element> > > geom)
   { geometry_ = geom; return; }
 
   /*!
@@ -462,7 +468,7 @@ protected:
 
   This method is used by the Discretization only
   */
-  virtual void ClearGeometry() { geometry_.clear(); return; }
+  virtual void ClearGeometry() { geometry_ = Teuchos::null; return; }
 
   //@}
 
@@ -484,7 +490,7 @@ protected:
   GeometryType                        gtype_;
 
   //! Geometry description of this condition
-  std::map<int,Teuchos::RCP<DRT::Element> > geometry_;
+  Teuchos::RCP<std::map<int,Teuchos::RCP<DRT::Element> > > geometry_;
 
   //! A communicator
   Teuchos::RCP<Epetra_Comm>            comm_;     // a communicator

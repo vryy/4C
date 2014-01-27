@@ -14,14 +14,13 @@
 
 #include "drt_meshfree_discret.H"
 #include "drt_meshfree_utils.H"
+#include "drt_meshfree_node.H"
 #include "../drt_fem_general/drt_utils_maxent_basisfunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
-#include "../drt_geometry/searchtree.H"
-#include "../drt_geometry/searchtree_geometry_service.H"
 
 void DRT::MESHFREE::MeshfreeDiscretization::EvaluateDirichlet(
   Teuchos::ParameterList& params,
@@ -93,6 +92,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::EvaluateDirichlet(
     }
     if (numdof!=fool->second->GetInt("numdof"))
       dserror("NUMDOF must be the same for all meshfree Dirichlet BCs! Check dat-file!");
+
     FillDBCMatrix(*(fool->second), 0, numdof, nodegids, isconst, constvalue, dbcmatrix, dbcdofmap);
   }
   // Do LineDirichlet
@@ -100,6 +100,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::EvaluateDirichlet(
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::LineDirichlet) continue;
+    if (numdof==-1)
     {
       numdof = fool->second->GetInt("numdof");
       constvalue = std::vector<const double*>(numdof,NULL);
@@ -113,6 +114,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::EvaluateDirichlet(
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::SurfaceDirichlet) continue;
+    if (numdof==-1)
     {
       numdof = fool->second->GetInt("numdof");
       constvalue = std::vector<const double*>(numdof,NULL);
@@ -126,6 +128,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::EvaluateDirichlet(
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::VolumeDirichlet) continue;
+    if (numdof==-1)
     {
       numdof = fool->second->GetInt("numdof");
       constvalue = std::vector<const double*>(numdof,NULL);
@@ -212,19 +215,10 @@ void DRT::MESHFREE::MeshfreeDiscretization::FillDBCMatrix(
   int nneighbour = -1;
   bool haveneighbourhood = false;
 
-  // node positions
-  Teuchos::RCP<LINALG::SerialDenseMatrix> nxyz = Teuchos::null;
-  // node positions the way a searchtree needs it
-  std::map<int,LINALG::Matrix<3,1> > nxyz_searchtree;
-  // reduced node positions on face
-  LINALG::SerialDenseMatrix nxyz_face;
-
   // prepare vectors of node gids and basis function values for non-constant DBC
-  std::vector<double> distnn;
-  LINALG::SerialDenseMatrix distnn_sdm;
+  LINALG::SerialDenseMatrix distnn;
   std::vector<int> ngids;
   LINALG::SerialDenseVector basisfunct;
-  Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::null;
 
   // prepare vectors for constant (or point) DBC
   std::vector<int> const_ngids(1,-1);
@@ -253,7 +247,8 @@ void DRT::MESHFREE::MeshfreeDiscretization::FillDBCMatrix(
 
     // get active node and list node gid
     // (the latter not done for surfaces/volumes in 2D/3D, respectively)
-    DRT::Node* actnode = this->gNode(ngid);
+    MeshfreeNode* actnode = dynamic_cast<MeshfreeNode*>(this->gNode(ngid));
+    if (actnode==NULL) dserror("Something went wrong!");
     if (facedim!=DRT::Problem::Instance()->NDim()) nodegids.insert(ngid);
 
     // loop over all dofs of this node
@@ -286,102 +281,41 @@ void DRT::MESHFREE::MeshfreeDiscretization::FillDBCMatrix(
           // compute nodal neighbourhood and basis functions if not already done
           if (!haveneighbourhood)
           {
-            distnn.clear();
-            ngids.clear();
-            haveneighbourhood = true;
+            // note: the nodal neighbourhood search is done face-wise in
+            //       subclass method Face::AddNodesToNodes. So here we only
+            //       need to grab the info from readily identified neighbours.
 
-            if (facedim==1)
-            {
-              //----------------------------------------------------------------
-              // Line DBC - non-constant
-              //----------------------------------------------------------------
+            // get number of neighbours
+            nneighbour = actnode->NumNode();
 
-              // create SerialDenseMatrix with all node positions if not already done
-              if (nxyz == Teuchos::null)
-              {
-                nxyz = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,nnode));
-                for (int i=0; i<nnode; ++i)
-                  for (int j=0; j<3; ++j)
-                    (*nxyz)(j,i) = this->gNode((*nodeids)[i])->X()[j];
-
-                // get reduced node positions
-                nxyz_face.LightShape(facedim,nnode);
-                ReduceDimensionOfFaceNodes(*nxyz, nxyz_face);
-              }
-
-              // brute force neighbourhood search
-              const double actnodexyz = nxyz_face(0,inode);
-              for (int i=0; i<nnode; ++i)
-              {
-                const double dist = nxyz_face(0,i)-actnodexyz;
-                if (std::abs(dist)<range)
-                {
-                  distnn.push_back(dist);
-                  ngids.push_back((*nodeids)[i]);
-                }
-              }
-
-              nneighbour = ngids.size();
-              if ((int)(distnn.size())!=nneighbour) dserror("Something went seriously wrong!");
-
-              distnn_sdm.LightShape(1,nneighbour);
-              distnn_sdm = LINALG::SerialDenseMatrix(Copy,distnn.data(),1,1,nneighbour);
-            }
+            // prepare distance-matrix
+            distnn.LightShape(facedim,nneighbour);
+            Teuchos::RCP<LINALG::SerialDenseMatrix> distnn_full;
+            if (facedim!=3)
+              // use new memory in case that distnn is reduced in dimension
+              // (less than three rows)
+              distnn_full = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,nneighbour));
             else
+              // reuse memory for full distnn matrix
+              distnn_full = Teuchos::rcp(&distnn);
+
+            // fill distance matrix and collect gids of neighbours
+            ngids.resize(nneighbour);
+            const double* x_node = actnode->X();
+            for (int i=0; i<nneighbour; ++i)
             {
-              //----------------------------------------------------------------
-              // Surface and Volume DBC - non-constant
-              //----------------------------------------------------------------
-
-              // initialize searchtree if not already done
-              if (searchTree == Teuchos::null)
-              {
-                // get node coordinates searchtree-style
-                nxyz_searchtree.clear();
-                for (int i=0; i<nnode; ++i)
-                  nxyz_searchtree.insert( std::pair<int,LINALG::Matrix<3,1> >((*nodeids)[i],LINALG::Matrix<3,1>(this->gNode((*nodeids)[i])->X())));
-
-                // set up searchtree - always OCTREE although for surfaces a QUADTREE would be optimal
-                searchTree = Teuchos::rcp(new GEO::SearchTree(8));
-                searchTree->initializePointTree(GEO::getXAABBofPositions(nxyz_searchtree), nxyz_searchtree, GEO::TreeType(GEO::OCTTREE));
-              }
-
-              // find neighbours of active node
-              const LINALG::Matrix<3,1> actnodexyz(this->gNode((*nodeids)[inode])->X());
-              ngids = searchTree->searchPointsInRadius(nxyz_searchtree, actnodexyz, range);
-              nneighbour = ngids.size();
-
-              // setup SerialDenseMatrix with positions of neighbours
-              nxyz = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,nneighbour));
-              for (int i=0; i<nneighbour; ++i)
-              {
-                const double* neighbourxyz = this->gNode(ngids[i])->X();
-                for (int j=0; j<3; ++j)
-                  (*nxyz)(j,i) = neighbourxyz[j];
-              }
-
-              std::vector<int> dims(facedim);
-              // get reduced node positions if necessary
-              if (facedim!=3)
-              {
-                nxyz_face.LightShape(facedim,nneighbour);
-                dims = ReduceDimensionOfFaceNodes(*nxyz, nxyz_face);
-              }
-              else
-              {
-                dserror("Meshfree Dirichlet BCs not yet tested for volumes. Should work. Remove dserror at own risk.");
-
-                for (int i=0; i<facedim; ++i)
-                  dims[i] = i;
-                nxyz_face = LINALG::SerialDenseMatrix(View,nxyz->A(),1,facedim,nneighbour);
-              }
-
-              // get distnn-matrix
-              distnn_sdm.LightShape(facedim, nneighbour);
-              for (int i=0; i<nneighbour; ++i)
-                for (int j=0; j<facedim; ++j)
-                  distnn_sdm(j,i) = nxyz_face(j,i) - actnodexyz(dims[j]);
+              const double* x_neighbour = actnode->Nodes()[i]->X();
+              ngids[i] = actnode->Nodes()[i]->Id();
+              for (int j=0; j<3; ++j)
+                (*distnn_full)(j,i) = x_neighbour[j] - x_node[j];
             }
+
+            // get reduced node positions if necessary
+            if (facedim!=3)
+              ReduceDimensionOfFaceNodes(*distnn_full, distnn);
+
+            // we now have a neighbourhood
+            haveneighbourhood = true;
           }
 
           // check whether enough neighbours were found
@@ -392,7 +326,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::FillDBCMatrix(
           // get basis function values of neighbours
           basisfunct.LightSize(nneighbour);
           LINALG::SerialDenseMatrix dummy(0,0);
-          this->GetMeshfreeSolutionApprox()->GetMeshfreeBasisFunction(basisfunct,dummy,distnn_sdm,facedim);
+          this->GetMeshfreeSolutionApprox()->GetMeshfreeBasisFunction(basisfunct,dummy,distnn,facedim);
 
           // use neighbourhood-variables for node gids and basis functions
           temp_ngids = &ngids;

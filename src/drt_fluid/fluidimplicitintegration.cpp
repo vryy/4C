@@ -58,6 +58,8 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
 
+#include "../drt_meshfree_discret/drt_meshfree_discret.H"
+
 // print error file for function EvaluateErrorComparedToAnalyticalSol()
 #include "../drt_io/io_control.H"
 
@@ -102,6 +104,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   msht_(INPAR::FLUID::no_meshtying),
   facediscret_(Teuchos::null),
   fldgrdisp_(Teuchos::null),
+  velatmeshfreenodes_(Teuchos::null),
   locsysman_(Teuchos::null)
 {
   // time measurement: initialization
@@ -199,9 +202,16 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   scaaf_ = LINALG::CreateVector(*dofrowmap,true);
   scaam_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // velocity/pressure at nodes for meshfree non-interpolatory basis functions
+  Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> meshfreediscret
+    = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_);
+  if (meshfreediscret!=Teuchos::null)
+    velatmeshfreenodes_ = LINALG::CreateVector(*dofrowmap,true);
+
   // history vector
   hist_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // displacement vectors for ALE
   if (alefluid_)
   {
     dispnp_ = LINALG::CreateVector(*dofrowmap,true);
@@ -720,6 +730,7 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
     //                    stop criterion for timeloop
     // -------------------------------------------------------------------
   }
+
 } // FluidImplicitTimeInt::TimeLoop
 
 
@@ -2467,38 +2478,40 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   Teuchos::ParameterList *  stabparams;
   stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
-  if(stabparams->get<std::string>("STABTYPE")=="residual_based"){
-  if(stabparams->get<std::string>("TDS") == "time_dependent")
+  if(stabparams->get<std::string>("STABTYPE")=="residual_based")
   {
-    const double tcpu=Teuchos::Time::wallTime();
-
-    if(myrank_==0)
+    if(stabparams->get<std::string>("TDS") == "time_dependent")
     {
-      std::cout << "time update for subscales";
+      const double tcpu=Teuchos::Time::wallTime();
+
+      if(myrank_==0)
+      {
+        std::cout << "time update for subscales";
+      }
+
+      // call elements to calculate system matrix and rhs and assemble
+      // this is required for the time update of the subgrid scales and
+      // makes sure that the current subgrid scales correspond to the
+      // current residual
+      AssembleMatAndRHS();
+
+      // create the parameters for the discretization
+      Teuchos::ParameterList eleparams;
+      // action for elements
+      eleparams.set<int>("action",FLD::calc_fluid_genalpha_update_for_subscales);
+
+      // update time parameters
+      SetGamma(eleparams);
+
+      eleparams.set("dt"     ,dta_    );
+
+      // call loop over elements to update subgrid scales
+      discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+      if(myrank_==0)
+        std::cout << "("<<Teuchos::Time::wallTime()-tcpu<<")\n";
     }
-
-    // call elements to calculate system matrix and rhs and assemble
-    // this is required for the time update of the subgrid scales and
-    // makes sure that the current subgrid scales correspond to the
-    // current residual
-    AssembleMatAndRHS();
-
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-    // action for elements
-    eleparams.set<int>("action",FLD::calc_fluid_genalpha_update_for_subscales);
-
-    // update time parameters
-    SetGamma(eleparams);
-
-    eleparams.set("dt"     ,dta_    );
-
-    // call loop over elements to update subgrid scales
-    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-    if(myrank_==0)
-      std::cout << "("<<Teuchos::Time::wallTime()-tcpu<<")\n";
-  }}
+  }
 
   // compute accelerations
   TimIntCalculateAcceleration();
@@ -2513,6 +2526,14 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   velnm_->Update(1.0,*veln_ ,0.0);
   veln_ ->Update(1.0,*velnp_,0.0);
 
+  // compute values at nodes from nodal values for non-interpolatory basis functions
+  if (velatmeshfreenodes_!=Teuchos::null)
+  {
+    dserror("Meshfree methods have not yet been tested for instationary problems in BACI but should work. Remove dserror ad lib. ");
+    Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_)->ComputeValuesAtNodes(veln_, velatmeshfreenodes_);
+  }
+
+  // displacement vectors for ALE
   if (alefluid_)
   {
     dispnm_->Update(1.0,*dispn_,0.0);
@@ -2799,6 +2820,16 @@ void FLD::FluidImplicitTimeInt::Output()
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
     output_->WriteVector("pressure", pressure);
+
+    // velocity/pressure at nodes for meshfree problems with non-interpolatory basis functions
+    if(velatmeshfreenodes_!=Teuchos::null)
+    {
+      // velocity/pressure values at meshfree nodes
+      output_->WriteVector("velatmeshfreenodes",velatmeshfreenodes_);
+      // (hydrodynamic) pressure values at meshfree nodes
+      Teuchos::RCP<Epetra_Vector> pressureatmeshfreenodes = velpressplitter_.ExtractCondVector(velatmeshfreenodes_);
+      output_->WriteVector("pressureatmeshfreenodes", pressureatmeshfreenodes);
+    }
 
     if (params_->get<bool>("GMSH_OUTPUT"))
       OutputToGmsh(step_, time_,false);

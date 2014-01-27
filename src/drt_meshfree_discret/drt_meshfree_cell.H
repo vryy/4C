@@ -158,97 +158,91 @@ public:
   Teuchos::ParameterList const * const Params() const { return params_.get(); };
 
   /*========================================================================*/
-  //! @name Knot methods
+  //! @name Point methods
   /*========================================================================*/
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Return number of knots to this cell
-   *///                                                   (public) nis Jan12
+   * \brief Return number of points forming the geometry of this cell
+   *///                                                   (public) nis Jan14
   /*------------------------------------------------------------------------*/
-  inline int NumKnot() const
-  {
-    return knotid_.size();
-  }
+  virtual inline int NumPoint() const { return pointid_.size(); }
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Return id's of knots adjacent to this cell
-   *///                                                   (public) nis Jan12
+   * \brief Return id's of points forming the geometry of this element
+   *///                                                   (public) nis Jan14
   /*------------------------------------------------------------------------*/
-  inline const int* KnotIds() const
-  {
-    if (knotid_.size()) return &knotid_[0];
-    else                return NULL;
-  }
+  virtual const int* PointIds() const
+  { if (pointid_.size()) return &pointid_[0]; else                return NULL; }
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get vector of ptrs to knots
+   * \brief Get vector of ptrs to points forming the geometry of this element
    *
-   * \warning The pointers to the knots are build in
-   *          DRT::Discretization::FillComplete. A standalone
-   *          cell that has not been added to a discretization
+   * \warning The pointers to the points are build in
+   *          DRT::MESHFREE::MeshfreeDiscretization::FillComplete. A
+   *          standalone cell that has not been added to a discretization
    *          (or the discretization has not been called FillComplete)
-   *          does not have pointers to knots. In this case, the method
+   *          does not have pointers to points. In this case, the method
    *          returns NULL.
    *
-   * \return Ptr to pointers to knots of the cell in local nodal ordering.
+   * \return Ptr to pointers to points of the cell in local nodal ordering.
    *         Returns NULL if pointers to not exist.
-   *///                                                   (public) nis Jan12
+   *///                                                   (public) nis Jan14
   /*------------------------------------------------------------------------*/
-  virtual inline MeshfreeNode** Knots()
-  {
-    if (knot_.size()) return &knot_[0];
-    else              return NULL;
-  }
+  virtual DRT::Node** Points()
+  { if (point_.size()) return (DRT::Node**)(&(point_[0])); else return NULL; }
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get const vector of ptrs to knots
+   * \brief Get const vector of ptrs to points forming the geometry of this element
    *
-   * \warning The pointers to the knots are build in
-   *          DRT::Discretization::FillComplete. A standalone
-   *          cell that has not been added to a discretization
+   * \warning The pointers to the points are build in
+   *          DRT::MESHFREE::MeshfreeDiscretization::FillComplete. A
+   *          standalone cell that has not been added to a discretization
    *          (or the discretization has not been called FillComplete)
-   *          does not have pointers to knots. In this case, the method
+   *          does not have pointers to points. In this case, the method
    *          returns NULL.
    *
-   * \return Ptr to pointers to knots of the cell in local nodal ordering.
+   * \return Ptr to pointers to points of the cell in local nodal ordering.
    *         Returns NULL if pointers to not exist.
-   *///                                                   (public) nis Jan12
+   *///                                                   (public) nis Jan14
   /*------------------------------------------------------------------------*/
-  virtual const MeshfreeNode*const* Knots() const
-  {
-    if (knot_.size()) return (const MeshfreeNode*const*)(&knot_[0]);
-    else              return NULL;
-  }
+  virtual const DRT::Node*const* Points() const
+  { if (point_.size()) return (const DRT::Node*const*)(&point_[0]); else return NULL; }
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Set a list of knot ids this cell is connected to
+   * \brief Set a list of point ids this cell is connected to
    *
-   * Sets the nodal ids of the knots adjacent to this cell and the number
-   * of knots. This method is used in the construction phase of a
-   * discretization. It allows, that cells and knots are created separately
+   * Sets the nodal ids of the points adjacent to this cell and the number
+   * of points. This method is used in the construction phase of a
+   * discretization. It allows, that cells and points are created separately
    * and be combined later on the way.
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  void SetKnotIds(const int nknot, //!< number of knots to be set
-                  const int* knots //!< list of unique global nodal ids
+  void SetPointIds(
+    const int npoint, //!< number of points to be set
+    const int* point //!< list of unique global nodal ids
     );
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Set a list of knot ids this cell is connected to
+   * \brief Set a list of point ids this cell is connected to
    *
-   * Here the knot ids are directly taken from an input line.
+   * Here the point ids are directly taken from an input line.
    *
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  void SetKnotIds(const std::string& distype,         //!< discretisation type of dat-file defined cell type
-                  DRT::INPUT::LineDefinition* linedef //!< line definition of respective cell type
+  void SetPointIds(
+    const std::string& distype,         //!< discretisation type of dat-file defined cell type
+    DRT::INPUT::LineDefinition* linedef //!< line definition of respective cell type
     );
+
+  /*------------------------------------------------------------------------*/
+  //! @name Others
+  /*------------------------------------------------------------------------*/
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -261,24 +255,31 @@ public:
   virtual void Print(std::ostream& os) const;
 
   /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Coordinates of cell center computed by point position
+   *///                                                   (public) nis Jan14
+  /*------------------------------------------------------------------------*/
+  void CenterAndMaxRadius(LINALG::Matrix<3,1>&  center, double& max_radius);
+
+  /*------------------------------------------------------------------------*/
   //! @name Public methods to be used by DRT::Discretization only
   /*------------------------------------------------------------------------*/
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Build pointer vector from map of knots
+   * \brief Build pointer vector from map of points
    *
    * \warning (public, but to be used by DRT::Discretization ONLY!)
    *
-   * The method is used to build the variable knot_ in this cell. It is
-   * called from DRT::MESHFREE::Discretization in
-   * DRT::MESHFREE::Discretization::FillComplete() to
-   * create the pointers from cells to knots (and knots to cells)
+   * The method is used to build the variable point_ in this cell. It is
+   * called from DRT::MESHFREE::MeshfreeDiscretization in
+   * DRT::MESHFREE::MeshfreeDiscretization::FillComplete() to
+   * create the pointers from cells to points (and points to cells)
    *
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-
-  virtual bool BuildKnotPointers(std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >& knots //!< (in): A map of all knots of a discretization
+  virtual bool BuildPointPointers(
+    std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >& points //!< (in): A map of all points of a discretization
     );
 
   /*------------------------------------------------------------------------*/
@@ -287,16 +288,16 @@ public:
    *
    * \warning (public, but to be used by DRT::Discretization ONLY!)
    *
-   * The method is used to build the variable knot_ in this cell. It can be
+   * The method is used to build the variable point_ in this cell. It can be
    * used to explicitly pass the nodal pointers to the cell.
    *
-   * The array of pointers is implicitly expected to be of length NumKnot()
-   * and contain pointers to knots in the correct cell local ordering scheme.
+   * The array of pointers is implicitly expected to be of length NumPoint()
+   * and contain pointers to points in the correct cell local ordering scheme.
    *
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-
-  virtual bool BuildKnotPointers(MeshfreeNode** knots //!< (in): Pointer to array of pointers to knots.
+  virtual bool BuildPointPointers(
+    MeshfreeNode** points //!< (in): Pointer to array of pointers to points.
     );
 
   /*------------------------------------------------------------------------*/
@@ -306,11 +307,11 @@ public:
 
 private:
 
-  //! \brief List of my nodal ids, length NumKnot()
-  std::vector<int> knotid_;
+  //! \brief List of my point ids, length NumPoint()
+  std::vector<int> pointid_;
 
-  //! \brief Pointers to adjacent knots in cell local ordering
-  std::vector<MeshfreeNode*> knot_;
+  //! \brief Pointers to points adjacent to cell in local ordering
+  std::vector<MeshfreeNode*> point_;
 
   //! meshfree parameter settings
   Teuchos::RCP<Teuchos::ParameterList> params_;

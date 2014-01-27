@@ -60,6 +60,8 @@ private:
   Teuchos::RCP<DRT::Discretization> dis_;
   /// RCP to solution vector
   Teuchos::RCP<Epetra_Vector>       mysol_;
+  /// RCP to solution at nodes (meshfree)
+  Teuchos::RCP<Epetra_Vector>       myvan_;
   /// RCP to mass/heat flux vector
   Teuchos::RCP<Epetra_MultiVector>  myflux_;
   /// RCP to electrode kinetics vector

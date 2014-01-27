@@ -88,7 +88,7 @@ public:
    *///                                                   (public) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual int GetCellGaussPointsAtX(
-    LINALG::SerialDenseMatrix &  Xa_sdm, //!< (in)  position of knots
+    LINALG::SerialDenseMatrix &  Xa_sdm, //!< (in)  position of points
     LINALG::SerialDenseMatrix &  X_sdm,  //!< (out) xyz-values of Gauss points
     LINALG::SerialDenseVector &  w_sdm   //!< (out) weights of Gauss points in xyz-system
     ) const = 0;
@@ -124,7 +124,7 @@ public:
    *///                                                   (public) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual int GetCellGaussPointsAtX(
-    LINALG::SerialDenseMatrix &  Xa_sdm, //!< (in)  position of knots
+    LINALG::SerialDenseMatrix &  Xa_sdm, //!< (in)  position of points
     LINALG::SerialDenseMatrix &  X_sdm,  //!< (out) xyz-values of Gauss points
     LINALG::SerialDenseVector &  w_sdm   //!< (out) weights of Gauss points in xyz-system
     ) const;
@@ -142,7 +142,7 @@ private:
 
   //! number of space dimensions
   static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
-  //! number of element knots = number of shape functions
+  //! number of element points = number of shape functions
   static const int nek_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   //! number of Gauss points
   static const int ngp_ = DisTypeToNumGaussPoints<distype>::ngp;

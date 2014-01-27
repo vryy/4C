@@ -15,6 +15,7 @@
 #include "drt_meshfree_discret.H"
 #include "drt_meshfree_node.H"
 #include "drt_meshfree_cell.H"
+#include "../drt_fem_general/drt_utils_maxent_basisfunctions.H"
 
 /*--------------------------------------------------------------------------*
  | unassigns all node information in all cells           (public) nis Apr12 |
@@ -34,12 +35,11 @@ void DRT::MESHFREE::MeshfreeDiscretization::Reset(bool killdofs)
 {
   assigned_ = false;
 
-  // delete all maps and pointers concerning knots
-  knotrowmap_ = Teuchos::null;
-  knotcolmap_ = Teuchos::null;
-  knotrowptr_.clear();
-  knotcolptr_.clear();
-  knotghoptr_.clear();
+  // delete all maps and pointers concerning points
+  pointrowmap_ = Teuchos::null;
+  pointcolmap_ = Teuchos::null;
+  pointrowptr_.clear();
+  pointcolptr_.clear();
 
   // call Reset() of base class Discretisation
   DRT::Discretization::Reset(killdofs);
@@ -47,33 +47,40 @@ void DRT::MESHFREE::MeshfreeDiscretization::Reset(bool killdofs)
   return;
 }
 
-
 /*--------------------------------------------------------------------------*
  | Finalize construction                                 (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-int DRT::MESHFREE::MeshfreeDiscretization::FillComplete(bool assigndegreesoffreedom,
-                                                        bool initelements,
-                                                        bool doboundaryconditions)
+int DRT::MESHFREE::MeshfreeDiscretization::FillComplete(
+  bool assigndegreesoffreedom,
+  bool initelements,
+  bool doboundaryconditions)
 {
-  // this rather puzzling return style is copied from base class discret
+  // this rather puzzling return style is copied from base class Discretization
   int ret = 0;
 
   if (!Filled())
   {
+    // order of fillcompleting is crucial:
+    // -> vertices -> line(s) -> surface(s) -> volume
+    // (re)assign the nodes' face dimension if boundary conditions are rebuild
+    for(int i=0; i<4; ++i)
+      for(unsigned j=0; j<domaintopology_[i].size(); ++j)
+        domaintopology_[i][j].FillComplete(solutionapprox_->GetRange(), comm_->MyPID(), doboundaryconditions);
+
     // fill parent discretization
     ret = DRT::Discretization::FillComplete(false,false,false);
 
-    // (re)build map of knots knotrowmap_, knotcolmap_, knotrowptr, knotcolptr, and knotghoptr
-    BuildKnotMaps();
+    // (re)build map of points pointrowmap_, pointcolmap_, pointrowptr, and pointcolptr
+    BuildPointMaps();
 
     // (re)construct element -> node pointers
-    BuildElementToKnotPointers();
+    BuildElementToPointPointers();
 
     // (re)construct node -> element pointers
-    BuildKnotToElementPointers();
+    BuildPointToElementPointers();
 
     // assign nodes to geometry
-    AssignNodesToKnotsAndCells();
+    AssignNodesToPointsAndCells();
 
     // Assign degrees of freedom to elements and nodes
     if (assigndegreesoffreedom) AssignDegreesOfFreedom(0);
@@ -89,93 +96,85 @@ int DRT::MESHFREE::MeshfreeDiscretization::FillComplete(bool assigndegreesoffree
 }
 
 /*--------------------------------------------------------------------------*
- | Build knotrowmap_, knotcolmap_, knotghoptr_          (private) nis Jan12 |
+ | Build pointrowmap_ and pointcolmap_                  (private) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::BuildKnotMaps()
+void DRT::MESHFREE::MeshfreeDiscretization::BuildPointMaps()
 {
   const int myrank = Comm().MyPID();
-  int numrowknots     = 0;
+  int numrowpoints     = 0;
   std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator curr;
-  for (curr=knot_.begin(); curr != knot_.end(); ++curr)
+  for (curr=point_.begin(); curr != point_.end(); ++curr)
     if (curr->second->Owner() == myrank)
-      ++numrowknots;
-  std::vector<int> knotrowids(numrowknots);
-  knotrowptr_.resize(numrowknots);
+      ++numrowpoints;
+  std::vector<int> pointrowids(numrowpoints);
+  pointrowptr_.resize(numrowpoints);
 
-  int numcolknots = (int)knot_.size();
-  std::vector<int> knotcolids(numcolknots);
-  knotcolptr_.resize(numcolknots);
-
-  std::vector<int> knotghoids(numcolknots-numrowknots);
-  knotghoptr_.resize(numcolknots-numrowknots);
+  int numcolpoints = (int)point_.size();
+  std::vector<int> pointcolids(numcolpoints);
+  pointcolptr_.resize(numcolpoints);
 
   int countrow=0;
   int countcol=0;
-  int countgho=0;
-  for (curr=knot_.begin(); curr != knot_.end(); ++curr){
+  for (curr=point_.begin(); curr != point_.end(); ++curr){
     if (curr->second->Owner() == myrank)
     {
-      knotrowids[countrow] = curr->second->Id();
-      knotrowptr_[countrow] = curr->second.get();
-      knotcolids[countcol] = knotrowids[countrow];
-      knotcolptr_[countcol] = knotrowptr_[countrow];
+      pointrowids[countrow] = curr->second->Id();
+      pointrowptr_[countrow] = curr->second.get();
+      pointcolids[countcol] = pointrowids[countrow];
+      pointcolptr_[countcol] = pointrowptr_[countrow];
       ++countrow;
     }
     else
     {
-      knotghoids[countgho] = curr->second->Id();
-      knotghoptr_[countgho] = curr->second.get();
-      knotcolids[countcol] = knotghoids[countgho];
-      knotcolptr_[countcol] = knotghoptr_[countgho];
-      ++countgho;
+      pointcolids[countcol] = curr->second->Id();
+      pointcolptr_[countcol] = curr->second.get();
     }
     curr->second->SetLID(countcol);
     ++countcol;
   }
 
-  if (countrow != numrowknots) dserror("Mismatch in no. of rowknots");
-  if (countcol != numcolknots) dserror("Mismatch in no. of colknots");
-  if (countgho != (numcolknots-numrowknots)) dserror("Mismatch in no. of ghoknots");
-  knotcolmap_ = Teuchos::rcp(new Epetra_Map(-1,numcolknots,&knotcolids[0],0,Comm()));
-  knotrowmap_ = Teuchos::rcp(new Epetra_Map(-1,numrowknots,&knotrowids[0],0,Comm()));
+  if (countrow != numrowpoints) dserror("Mismatch in no. of rowpoints");
+  if (countcol != numcolpoints) dserror("Mismatch in no. of colpoints");
+  pointcolmap_ = Teuchos::rcp(new Epetra_Map(-1,numcolpoints,&pointcolids[0],0,Comm()));
+  pointrowmap_ = Teuchos::rcp(new Epetra_Map(-1,numrowpoints,&pointrowids[0],0,Comm()));
   return;
 }
 
 /*--------------------------------------------------------------------------*
- | Build ptrs element -> knot                           (private) nis Jan12 |
+ | Build ptrs element -> point                           (private) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::BuildElementToKnotPointers()
+void DRT::MESHFREE::MeshfreeDiscretization::BuildElementToPointPointers()
 {
   std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
-    bool success = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell>(elecurr->second,true)->BuildKnotPointers(knot_);
+    bool success = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell>(elecurr->second,true)->BuildPointPointers(point_);
     if (!success)
-      dserror("Building element <-> knot topology failed");
+      dserror("Building element <-> point topology failed");
   }
   return;
 }
 
 /*--------------------------------------------------------------------------*
- | Build ptrs knot -> element                           (private) nis Jan12 |
+ | Build ptrs point -> element                           (private) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::BuildKnotToElementPointers()
+void DRT::MESHFREE::MeshfreeDiscretization::BuildPointToElementPointers()
 {
-  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator knotcurr;
-  for (knotcurr=knot_.begin(); knotcurr != knot_.end(); ++knotcurr)
-    knotcurr->second->ClearMyElementTopology();
+  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator pointcurr;
+  for (pointcurr=point_.begin(); pointcurr != point_.end(); ++pointcurr)
+    pointcurr->second->ClearMyElementTopology();
 
   std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     Teuchos::RCP<DRT::MESHFREE::Cell> cell = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell>(elecurr->second,true);
-    const int  nknot = cell->NumKnot();
-    const int* knots = cell->KnotIds();
-    for (int j=0; j<nknot; ++j)
+    const int  npoint = cell->NumPoint();
+    const int* points = cell->PointIds();
+    for (int j=0; j<npoint; ++j)
     {
-      DRT::Node* knot = gKnot(knots[j]);
-      if (!knot) dserror("Knot %d is not on this proc %d",j,Comm().MyPID());
-      else knot->AddElementPtr(elecurr->second.get());
+      DRT::Node* point = gPoint(points[j]);
+      if (!point) dserror("Point %d is not on this proc %d",j,Comm().MyPID());
+      else point->AddElementPtr(elecurr->second.get());
     }
   }
 

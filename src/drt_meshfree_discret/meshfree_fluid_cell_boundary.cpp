@@ -16,7 +16,6 @@ Maintainer: Keijo Nissen
 #include "meshfree_fluid_cell.H"
 #include "drt_meshfree_node.H"
 #include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_node.H"
 
 /*==========================================================================*\
  *                                                                          *
@@ -49,25 +48,30 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MeshfreeFluidBoundaryType::Create( con
  |  ctor                                                 (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeFluidBoundary::MeshfreeFluidBoundary(
-                                    int id,
-                                    int owner,
-                                    int nknot,
-                                    int const * knotids,
-                                    DRT::MESHFREE::MeshfreeNode** knots,
-                                    DRT::ELEMENTS::MeshfreeFluid* parent,
-                                    const int lsurface) :
+  int id,
+  int owner,
+  int npoint,
+  int const * pointids,
+  DRT::Node** points,
+  MeshfreeFluid* parent,
+  const int lsurface) :
   DRT::MESHFREE::Cell(id,owner)
 {
-  SetKnotIds(nknot,knotids);
-  BuildKnotPointers(knots);
+  SetPointIds(npoint,pointids);
+  // this can be done since MeshfreeFluidBoundary is derived from MeshfreeFluid which has MeshfreeNodes
+  DRT::MESHFREE::MeshfreeNode* meshfreepoint = dynamic_cast<DRT::MESHFREE::MeshfreeNode*>(points[0]);
+  // check if subsequent reinterpret_cast is REALLY valid
+  if (meshfreepoint==NULL)
+    dserror("Points in of meshfree fluid boundary cell could not be casted to from Node to MeshfreeNode.");
+  // heavily persuade compiler that this is valid
+  DRT::MESHFREE::MeshfreeNode** meshfreepoints = reinterpret_cast<DRT::MESHFREE::MeshfreeNode**>(points);
+  BuildPointPointers(meshfreepoints);
   SetParentMasterElement(parent,lsurface);
 
   // temporary assignement of nodes for call in DRT::Discretization::BuildLinesinCondition)
-  // must and will be redefined in AssignNodesToKnotsAndCells
-  SetNodeIds(nknot,knotids);
-  // this cast can be done since MeshfreeNode is derived from DRT::Node
-  DRT::Node** nodes = (DRT::Node**)(knots);
-  BuildNodalPointers(nodes);
+  // must and will be redefined in Face::AssignNodesToCells
+  SetNodeIds(npoint,pointids);
+  BuildNodalPointers(points);
   return;
 }
 
@@ -102,7 +106,7 @@ DRT::ELEMENTS::MeshfreeFluidBoundary::~MeshfreeFluidBoundary()
  *--------------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::MeshfreeFluidBoundary::Shape() const
 {
-  return DRT::UTILS::getShapeOfBoundaryElement(NumKnot(), ParentElement()->Shape());
+  return DRT::UTILS::getShapeOfBoundaryElement(NumPoint(), ParentElement()->Shape());
 }
 
 /*---------------------------------------------------------------------------*

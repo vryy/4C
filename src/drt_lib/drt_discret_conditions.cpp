@@ -67,7 +67,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
 
   // now we delete all old geometries that are attached to any conditions
   // and set a communicator to the condition
-  std::multimap<std::string,RCP<DRT::Condition> >::iterator fool;
+  std::multimap<std::string,Teuchos::RCP<DRT::Condition> >::iterator fool;
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
   {
     fool->second->ClearGeometry();
@@ -97,38 +97,41 @@ void DRT::Discretization::BoundaryConditionsGeometry()
   // Loop all conditions and build geometry description if desired
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
   {
+    // flag whether new elements have been created for this condition
+    bool havenewelements = false;
+
     // do not build geometry description for this condition
     if (fool->second->GeometryDescription()==false)         continue;
     // do not build geometry description for this condition
     else if (fool->second->GType()==DRT::Condition::NoGeom) continue;
     // do not build anything for point wise conditions
     else if (fool->second->GType()==DRT::Condition::Point)  continue;
-    // build element geometry description without creating new elements if no
-    // boundary condition; this would be:
+    // build element geometry description without creating new elements if the
+    // condition is not a boundary condition; this would be:
     //  - line conditions in 1D
     //  - surface conditions in 2D
     //  - volume conditions in 3D
     else if ((int)(fool->second->GType())==DRT::Problem::Instance()->NDim())
-      BuildVolumesinCondition(fool->first,fool->second);
+      havenewelements = BuildVolumesinCondition(fool->first,fool->second);
     // dimension of condition must not larger than the one of the problem itself
     else if ((int)(fool->second->GType())>DRT::Problem::Instance()->NDim())
       dserror("Dimension of condition is larger than the problem dimension.");
     // build a line element geometry description
     else if (fool->second->GType()==DRT::Condition::Line)
-      BuildLinesinCondition(fool->first,fool->second);
+      havenewelements = BuildLinesinCondition(fool->first,fool->second);
     // build a surface element geometry description
     else if (fool->second->GType()==DRT::Condition::Surface)
-      BuildSurfacesinCondition(fool->first,fool->second);
+      havenewelements = BuildSurfacesinCondition(fool->first,fool->second);
     // this should be it. if not: dserror.
     else
       dserror("Somehow the condition geometry does not fit to the problem dimension.");
 
-    if (fool->second->GType()!=DRT::Condition::Volume)
+    if (havenewelements)
     {
       // determine the local number of created elements associated with
       // the active condition
       int localcount=0;
-      for (std::map<int,RCP<DRT::Element> >::iterator iter=fool->second->Geometry().begin();
+      for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator iter=fool->second->Geometry().begin();
            iter!=fool->second->Geometry().end();
            ++iter)
       {
@@ -178,135 +181,11 @@ void DRT::Discretization::BoundaryConditionsGeometry()
  *
  *  h.kue 09/07
  */
-void DRT::Discretization::AssignGlobalIDs( const Epetra_Comm& comm,
-                             const std::map< std::vector<int>, RCP<DRT::Element> >& elementmap,
-                             std::map< int, RCP<DRT::Element> >& finalelements )
+void DRT::Discretization::AssignGlobalIDs(
+  const Epetra_Comm& comm,
+  const std::map< std::vector<int>, Teuchos::RCP<DRT::Element> >& elementmap,
+  std::map< int, Teuchos::RCP<DRT::Element> >& finalelements )
 {
-#if 0
-  // First, give own elements a local id and find out
-  // which ids we need to get from other processes.
-
-  std::vector< RCP<DRT::Element> > ownelements;
-
-  // ghostelementnodes, the vector we are going to communicate.
-  // Layout:
-  //  [
-  //    // nodes of elements to ask process 0, separated by -1:
-  //    [ node011,node012,node013, ... , -1, node021, ... , -1, ... ],
-  //    // nodes of elements to ask process 1, separated by -1:
-  //    [ node111,node112,node113, ... , -1, node121, ... , -1, ... ],
-  //    ... // etc.
-  //  ]
-  std::vector< std::vector<int> > ghostelementnodes( comm.NumProc() );
-  // corresponding elements objects
-  std::vector< std::vector< RCP<DRT::Element> > > ghostelements( comm.NumProc() );
-
-  std::map< std::vector<int>, RCP<DRT::Element> >::const_iterator elemsiter;
-  for( elemsiter = elementmap.begin(); elemsiter != elementmap.end(); ++elemsiter )
-  {
-      const RCP<DRT::Element> element = elemsiter->second;
-      if ( element->Owner() == comm.MyPID() )
-      {
-          ownelements.push_back( element );
-      }
-      else // This is not our element, but we know it. We'll ask its owner for the id, later.
-      {
-          copy( elemsiter->first.begin(), elemsiter->first.end(),
-                back_inserter( ghostelementnodes[element->Owner()] ) );
-          ghostelementnodes[element->Owner()].push_back( -1 );
-
-          ghostelements[element->Owner()].push_back( element );
-      }
-  }
-
-  // Find out which ids our own elements are supposed to get.
-  std::vector<int> snelements( comm.NumProc() );
-  std::vector<int> rnelements( comm.NumProc() );
-  fill( snelements.begin(), snelements.end(), 0 );
-  snelements[ comm.MyPID() ] = ownelements.size();
-  comm.SumAll( &snelements[0], &rnelements[0], comm.NumProc() );
-  int sum = accumulate( &rnelements[0], &rnelements[comm.MyPID()], 0 );
-
-  // Add own elements to finalelements (with right id).
-  for ( unsigned i = 0; i < ownelements.size(); ++i )
-  {
-      ownelements[i]->SetId( i + sum );
-      finalelements[i + sum] = ownelements[i];
-  }
-  ownelements.clear();
-
-  // Last step: Get missing ids.
-  std::vector< std::vector<int> > requests;
-  LINALG::AllToAllCommunication( comm, ghostelementnodes, requests );
-
-  std::vector< std::vector<int> > sendids( comm.NumProc() );
-
-  std::vector<int>::iterator keybegin;
-  for ( int proc = 0; proc < comm.NumProc(); ++proc )
-  {
-      keybegin = requests[proc].begin();
-      for ( ;; ) {
-          std::vector<int>::iterator keyend = find( keybegin, requests[proc].end(), -1 );
-          if ( keyend == requests[proc].end() )
-              break;
-          std::vector<int> nodes = std::vector<int>( keybegin, keyend );
-          elemsiter = elementmap.find( nodes );
-          if ( elemsiter == elementmap.end() )
-              dserror( "Got request for unknown element" );
-          sendids[proc].push_back( elemsiter->second->Id() );
-
-          ++keyend;
-          keybegin = keyend;
-      }
-  }
-  requests.clear();
-
-#if 0 // Debug
-  cout << "This is process " << comm.MyPID() << "." << endl;
-  for ( int proc = 0; proc < comm.NumProc(); ++proc )
-  {
-      cout << "Send to process " << proc << ": ";
-      for ( unsigned i = 0; i < sendids[proc].size(); ++i )
-      {
-          cout << sendids[proc][i] << ", ";
-      }
-      cout << endl;
-  }
-#endif // Debug
-
-  LINALG::AllToAllCommunication( comm, sendids, requests );
-
-#if 0 // Debug
-  cout << "This is process " << comm.MyPID() << "." << endl;
-  for ( int proc = 0; proc < comm.NumProc(); ++proc )
-  {
-      cout << "Got from process " << proc << ": ";
-      for ( unsigned i = 0; i < requests[proc].size(); ++i )
-      {
-          cout << requests[proc][i] << ", ";
-      }
-      cout << endl;
-  }
-#endif // Debug
-
-  for ( int proc = 0; proc < comm.NumProc(); ++proc )
-  {
-      if ( requests[proc].size() != ghostelements[proc].size() )
-          dserror( "Wrong number of element ids from proc %i: expected %i, got %i",
-                   proc, ghostelements[proc].size(), requests[proc].size() );
-
-      for ( unsigned i = 0; i < ghostelements[proc].size(); ++i )
-      {
-          if ( finalelements.find( requests[proc][i] ) != finalelements.end() )
-              dserror( "Received already known id %i", requests[proc][i] );
-
-          ghostelements[proc][i]->SetId( requests[proc][i] );
-          finalelements[ requests[proc][i] ] = ghostelements[proc][i];
-      }
-  }
-
-#else
-
   // The point here is to make sure the element gid are the same on any
   // parallel distribution of the elements. Thus we allreduce thing to
   // processor 0 and sort the element descriptions (vectors of nodal ids)
@@ -405,7 +284,7 @@ void DRT::Discretization::AssignGlobalIDs( const Epetra_Comm& comm,
     index += esize;
 
     // set gid to my elements
-    std::map<std::vector<int>, RCP<DRT::Element> >::const_iterator iter = elementmap.find(element);
+    std::map<std::vector<int>, Teuchos::RCP<DRT::Element> >::const_iterator iter = elementmap.find(element);
     if (iter!=elementmap.end())
     {
       iter->second->SetId(gid);
@@ -414,8 +293,6 @@ void DRT::Discretization::AssignGlobalIDs( const Epetra_Comm& comm,
 
     gid += 1;
   }
-
-#endif
 } // AssignGlobalIDs
 
 
@@ -423,8 +300,8 @@ void DRT::Discretization::AssignGlobalIDs( const Epetra_Comm& comm,
  |  Build line geometry in a condition (public)              mwgee 01/07|
  *----------------------------------------------------------------------*/
 /* Hopefully improved by Heiner (h.kue 09/07) */
-void DRT::Discretization::BuildLinesinCondition( const std::string name,
-                                                 RCP<DRT::Condition> cond )
+bool DRT::Discretization::BuildLinesinCondition( const std::string name,
+                                                 Teuchos::RCP<DRT::Condition> cond )
 {
   /* First: Create the line objects that belong to the condition. */
 
@@ -459,7 +336,7 @@ void DRT::Discretization::BuildLinesinCondition( const std::string name,
   }
 
   // map of lines in our cloud: (node_ids) -> line
-  std::map< std::vector<int>, RCP<DRT::Element> > linemap;
+  std::map< std::vector<int>, Teuchos::RCP<DRT::Element> > linemap;
   // loop these nodes and build all lines attached to them
   std::map<int,DRT::Node*>::iterator fool;
   for( fool = rownodes.begin(); fool != rownodes.end(); ++fool )
@@ -477,7 +354,7 @@ void DRT::Discretization::BuildLinesinCondition( const std::string name,
       if(lines.size()==0) dserror("Element returned no lines");
       for( int j = 0; j < numlines; ++j )
       {
-        RCP<DRT::Element> actline = lines[j];
+        Teuchos::RCP<DRT::Element> actline = lines[j];
         // find lines that are attached to actnode
         const int nnodeperline   = actline->NumNode();
         DRT::Node** nodesperline = actline->Nodes();
@@ -507,7 +384,7 @@ void DRT::Discretization::BuildLinesinCondition( const std::string name,
 
               if ( linemap.find( nodes ) == linemap.end() )
               {
-                  RCP<DRT::Element> line = Teuchos::rcp( actline->Clone() );
+                  Teuchos::RCP<DRT::Element> line = Teuchos::rcp( actline->Clone() );
                   // Set owning process of line to node with smallest gid.
                   line->SetOwner( gNode( nodes[0] )->Owner() );
                   linemap[nodes] = line;
@@ -521,11 +398,19 @@ void DRT::Discretization::BuildLinesinCondition( const std::string name,
 
 
   // Lines be added to the condition: (line_id) -> (line).
-  std::map< int, RCP<DRT::Element> > finallines;
+  Teuchos::RCP<std::map< int, Teuchos::RCP<DRT::Element> > > finallines = Teuchos::rcp(new std::map<int,Teuchos::RCP<DRT::Element> >() );
 
-  AssignGlobalIDs( Comm(), linemap, finallines );
+  AssignGlobalIDs( Comm(), linemap, *finallines );
 
   cond->AddGeometry( finallines );
+
+  // elements where created that need new unique ids
+  bool havenewelements = true;
+  // note: this seems useless since this BuildLinesinCondition always creates
+  //       elements. However, this function is overloaded in
+  //       MeshfreeDiscretization where it does not necessarily build elements.
+  return havenewelements;
+
 } // DRT::Discretization::BuildLinesinCondition
 
 
@@ -533,9 +418,9 @@ void DRT::Discretization::BuildLinesinCondition( const std::string name,
  |  Build surface geometry in a condition (public)           mwgee 01/07|
  *----------------------------------------------------------------------*/
 /* Hopefully improved by Heiner (h.kue 09/07) */
-void DRT::Discretization::BuildSurfacesinCondition(
+bool DRT::Discretization::BuildSurfacesinCondition(
                                         const std::string name,
-                                        RCP<DRT::Condition> cond)
+                                        Teuchos::RCP<DRT::Condition> cond)
 {
   // these conditions are special since associated volume conditions also need
   // to be considered
@@ -579,7 +464,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
   }
 
   // map of surfaces in this cloud: (node_ids) -> (surface)
-  std::map< std::vector<int>, RCP<DRT::Element> > surfmap;
+  std::map< std::vector<int>, Teuchos::RCP<DRT::Element> > surfmap;
 
   // loop these row nodes and build all surfs attached to them
   std::map<int,DRT::Node*>::iterator fool;
@@ -603,7 +488,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
       if (surfs.size()==0) dserror("Element does not return any surfaces");
       for (int j=0; j<numsurfs; ++j)
       {
-        RCP<DRT::Element> actsurf = surfs[j];
+        Teuchos::RCP<DRT::Element> actsurf = surfs[j];
         // find surfs attached to actnode
         const int nnodepersurf = actsurf->NumNode();
         DRT::Node** nodespersurf = actsurf->Nodes();
@@ -634,7 +519,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
 
               if ( surfmap.find( nodes ) == surfmap.end() )
               {
-                RCP<DRT::Element> surf = Teuchos::rcp( actsurf->Clone() );
+                Teuchos::RCP<DRT::Element> surf = Teuchos::rcp( actsurf->Clone() );
                 // Set owning process of surface to node with smallest gid.
                 surf->SetOwner( gNode( nodes[0] )->Owner() );
                 surfmap[nodes] = surf;
@@ -652,19 +537,27 @@ void DRT::Discretization::BuildSurfacesinCondition(
   }
 
   // Surfaces be added to the condition: (line_id) -> (surface).
-  std::map< int, RCP<DRT::Element> > finalsurfs;
+  Teuchos::RCP<std::map< int, Teuchos::RCP<DRT::Element> > > finalsurfs = Teuchos::rcp(new std::map<int,Teuchos::RCP<DRT::Element> >() );
 
-  AssignGlobalIDs( Comm(), surfmap, finalsurfs );
-  cond->AddGeometry( finalsurfs );
+  AssignGlobalIDs( Comm(), surfmap, *finalsurfs );
+  cond->AddGeometry(finalsurfs);
+
+  // elements where created that need new unique ids
+  bool havenewelements = true;
+  // note: this seems useless since this BuildSurfacesinCondition always
+  //       creates elements. However, this function is overloaded in
+  //       MeshfreeDiscretization where it does not necessarily build elements.
+  return havenewelements;
+
 } // DRT::Discretization::BuildSurfacesinCondition
 
 
 /*----------------------------------------------------------------------*
  |  Build volume geometry in a condition (public)            mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::BuildVolumesinCondition(
+bool DRT::Discretization::BuildVolumesinCondition(
                                         const std::string name,
-                                        RCP<DRT::Condition> cond)
+                                        Teuchos::RCP<DRT::Condition> cond)
 {
   // get ptrs to all node ids that have this condition
   const std::vector<int>* nodeids = cond->Nodes();
@@ -679,9 +572,9 @@ void DRT::Discretization::BuildVolumesinCondition(
                       std::not1(DRT::UTILS::MyGID(colmap)));
 
   // this is the map we want to construct
-  std::map<int,RCP<DRT::Element> > geom;
+  Teuchos::RCP<std::map<int,Teuchos::RCP<DRT::Element> > >  geom = Teuchos::rcp(new std::map<int,Teuchos::RCP<DRT::Element> >() );
 
-  for (std::map<int,RCP<DRT::Element> >::iterator actele=element_.begin();
+  for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator actele=element_.begin();
        actele!=element_.end();
        ++actele)
   {
@@ -702,20 +595,21 @@ void DRT::Discretization::BuildVolumesinCondition(
 
     if(allin)
     {
-      geom[actele->first] = actele->second;
+      (*geom)[actele->first] = actele->second;
     }
   }
 
   cond->AddGeometry(geom);
 
-  return;
+  // no elements where created to assign new unique ids to
+  return false;
 } // DRT::Discretization::BuildVolumesinCondition
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::FindAssociatedEleIDs(RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string name)
+void DRT::Discretization::FindAssociatedEleIDs(Teuchos::RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string name)
 {
   // determine constraint number
   int condID = cond->GetInt("coupling id");
@@ -741,7 +635,7 @@ void DRT::Discretization::FindAssociatedEleIDs(RCP<DRT::Condition> cond, std::se
                           std::inserter(mynodes, mynodes.begin()),
                           std::not1(DRT::UTILS::MyGID(colmap)));
 
-      for (std::map<int,RCP<DRT::Element> >::iterator actele=element_.begin();
+      for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator actele=element_.begin();
            actele!=element_.end();
            ++actele)
       {

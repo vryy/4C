@@ -20,6 +20,7 @@ Maintainers: Ursula Rasthofer & Martin Kronbichler
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 #include "../drt_fluid_turbulence/boxfilter.H"
 
+#include "../drt_meshfree_discret/drt_meshfree_discret.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
@@ -98,18 +99,18 @@ void FLD::TimIntStationary::SolveStationaryProblem()
 
   while (step_< stepmax_)
   {
-   // -------------------------------------------------------------------
-   //              set (pseudo-)time-dependent parameters
-   // -------------------------------------------------------------------
-   IncrementTimeAndStep();
+    // -------------------------------------------------------------------
+    //              set (pseudo-)time-dependent parameters
+    // -------------------------------------------------------------------
+    IncrementTimeAndStep();
 
-   // -------------------------------------------------------------------
-   //                         out to screen
-   // -------------------------------------------------------------------
-   if (myrank_==0)
-   {
-    printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
-   }
+    // -------------------------------------------------------------------
+    //                         out to screen
+    // -------------------------------------------------------------------
+    if (myrank_==0)
+    {
+     printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
+    }
 
     SetElementTimeParameter();
 
@@ -151,6 +152,12 @@ void FLD::TimIntStationary::SolveStationaryProblem()
     //                     solve equation system
     // -------------------------------------------------------------------
     Solve();
+
+    // -------------------------------------------------------------------
+    //   compute values at nodes from nodal values for non-interpolatory basis functions
+    // -------------------------------------------------------------------
+    if (velatmeshfreenodes_!=Teuchos::null)
+      Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_)->ComputeValuesAtNodes(velnp_, velatmeshfreenodes_);
 
     // -------------------------------------------------------------------
     //         calculate lift'n'drag forces from the residual

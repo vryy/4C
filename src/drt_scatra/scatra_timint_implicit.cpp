@@ -37,6 +37,8 @@ Maintainer: Andreas Ehrl
 
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 
+#include "../drt_meshfree_discret/drt_meshfree_discret.H"
+
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 
@@ -110,6 +112,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // Initialization of degrees of freedom variables
   phin_(Teuchos::null),
   phinp_(Teuchos::null),
+  phiatmeshfreenodes_(Teuchos::null),
   phidtn_(Teuchos::null),
   phidtnp_(Teuchos::null),
   hist_(Teuchos::null),
@@ -302,6 +305,12 @@ void SCATRA::ScaTraTimIntImpl::Init()
   phinp_ = LINALG::CreateVector(*dofrowmap,true);
   phin_  = LINALG::CreateVector(*dofrowmap,true);
 
+  // phi at nodes for meshfree non-interpolatory basis functions
+  Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> meshfreediscret
+    = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_);
+  if (meshfreediscret!=Teuchos::null)
+    phiatmeshfreenodes_ = LINALG::CreateVector(*dofrowmap,true);
+
   // temporal solution derivative at time n+1
   phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
   // temporal solution derivative at time n
@@ -379,8 +388,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // -------------------------------------------------------------------
   // set parameters associated to potential statistical flux evaluations
   // -------------------------------------------------------------------
-  if (myrank_ == 0)
-    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
+
   // initialize vector for statistics (assume a maximum of 10 conditions)
   sumnormfluxintegral_ = Teuchos::rcp(new Epetra_SerialDenseVector(10));
 
@@ -418,14 +426,12 @@ void SCATRA::ScaTraTimIntImpl::Init()
       IO::cout << IO::endl;
     }
   }
-  if (myrank_ == 0)
-    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
+
   // -------------------------------------------------------------------
   // preparations for turbulence models
   // -------------------------------------------------------------------
   InitTurbulenceModel(dofrowmap, noderowmap);
-  if (myrank_ == 0)
-    std::cout << __FILE__ << "  " << __LINE__ << std::endl;
+
   // -------------------------------------------------------------------
   // set initial field
   // -------------------------------------------------------------------
@@ -2785,6 +2791,10 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
     }
     output_->WriteVector("activation_time_np", activation_time_np_);
   }
+
+  // solution at nodes for meshfree problems with non-interpolatory basis functions
+  if(phiatmeshfreenodes_!=Teuchos::null)
+    output_->WriteVector("phiatmeshfreenodes",phiatmeshfreenodes_);
 
   // Recover internal state of the material (for electrophysiology)
   if (material_internal_state_np_ != Teuchos::null and nb_max_mat_int_state_vars_)

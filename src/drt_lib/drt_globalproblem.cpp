@@ -544,6 +544,21 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
   std::vector<std::vector<int> > dparticle(ndparticle);
   reader.ReadDesign("DPARTICLE",dparticle);
 
+  // check for meshfree discretisation to add node set topologies
+  std::vector<std::vector<std::vector<int> >* > nodeset(4);
+  nodeset[0] = &dnode_fenode;
+  nodeset[1] = &dline_fenode;
+  nodeset[2] = &dsurf_fenode;
+  nodeset[3] = &dvol_fenode;
+  std::map<std::string,Teuchos::RCP<Discretization> >::iterator iter;
+  for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
+  {
+    Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> actdis =
+      Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(iter->second);
+    if (actdis!=Teuchos::null)
+      actdis->AddNodeSetTopology(nodeset);
+  }
+
   // create list of known conditions
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > vc = DRT::INPUT::ValidConditions();
   std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist = *vc;
@@ -610,7 +625,7 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
       // Iterate through all discretizations and sort the appropriate condition
       // into the correct discretization it applies to
 
-      std::map<std::string,RCP<Discretization> >::iterator iter;
+      std::map<std::string,Teuchos::RCP<Discretization> >::iterator iter;
       for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
       {
         Teuchos::RCP<DRT::Discretization> actdis = iter->second;
@@ -621,8 +636,8 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
           const std::vector<int>* nodes = curr->second->Nodes();
           if (nodes->size()==0)
             dserror("%s condition %d has no nodal cloud",
-                condlist[c]->Description().c_str(),
-                curr->second->Id());
+                     condlist[c]->Description().c_str(),
+                     curr->second->Id());
 
           int foundit = 0;
           for (unsigned i=0; i<nodes->size(); ++i)
@@ -692,7 +707,7 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
   // Iterate through all discretizations and sort the appropriate condition
   // into the correct discretization it applies to
 
-  std::map<std::string,RCP<Discretization> >::iterator iter;
+  std::map<std::string,Teuchos::RCP<Discretization> >::iterator iter;
   for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
   {
       Teuchos::RCP<DRT::Discretization> actdis = iter->second;
@@ -1913,7 +1928,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::Problem::getValidParameters() co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::AddDis(const std::string name, RCP<Discretization> dis)
+void DRT::Problem::AddDis(const std::string name, Teuchos::RCP<Discretization> dis)
 {
   // safety checks
   if (dis == Teuchos::null) dserror ("Received Teuchos::null.");
@@ -1927,7 +1942,7 @@ void DRT::Problem::AddDis(const std::string name, RCP<Discretization> dis)
   }
   // For debug: what's currently in the map:
   /*
-  std::map<std::string,RCP<Discretization> >::iterator iter;
+  std::map<std::string,Teuchos::RCP<Discretization> >::iterator iter;
   for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
   {
     cout<<"key : "<<iter->first<<"    "<<"discret.name = "<<iter->second->Name()<<endl<<endl;
@@ -1938,9 +1953,9 @@ void DRT::Problem::AddDis(const std::string name, RCP<Discretization> dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-RCP<DRT::Discretization> DRT::Problem::GetDis(const std::string name) const
+Teuchos::RCP<DRT::Discretization> DRT::Problem::GetDis(const std::string name) const
 {
-  std::map<std::string,RCP<Discretization> >::const_iterator iter = discretizationmap_.find(name);
+  std::map<std::string,Teuchos::RCP<Discretization> >::const_iterator iter = discretizationmap_.find(name);
 
   if (iter != discretizationmap_.end())
   {
@@ -1962,7 +1977,7 @@ std::vector<std::string> DRT::Problem::GetDisNames() const {
   std::vector<std::string> vec;
   vec.reserve(mysize);
 
-  std::map<std::string,RCP<Discretization> >::const_iterator iter;
+  std::map<std::string,Teuchos::RCP<Discretization> >::const_iterator iter;
   for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
   {
     vec.push_back(iter->first);
@@ -1976,7 +1991,7 @@ std::vector<std::string> DRT::Problem::GetDisNames() const {
 /*----------------------------------------------------------------------*/
 bool DRT::Problem::DoesExistDis(const std::string name) const {
 
-  std::map<std::string,RCP<Discretization> >::const_iterator iter = discretizationmap_.find(name);
+  std::map<std::string,Teuchos::RCP<Discretization> >::const_iterator iter = discretizationmap_.find(name);
   if (iter != discretizationmap_.end())
   {
     return true;

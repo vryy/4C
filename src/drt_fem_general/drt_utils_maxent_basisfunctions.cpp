@@ -144,7 +144,11 @@ int DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::maxent_basisfunction(
   const bool der = (deriv.M()!=0);
 
   // check some dimensions
-  if (diffx.M()!=dim) dserror("Number of rows of diffx is %i but must be  %i (dim)!",diffx.M(),dim);
+  if (diffx.M()!=dim)
+  {
+    std::cout << "diffx:" << std::endl << diffx << std::endl;
+    dserror("Number of rows of diffx is %i but must be %i (equal to dim)!",diffx.M(),dim);
+  }
   if (funct.Length()!=na) funct.LightSize(na);
   if (der and (deriv.M()!=dim or deriv.N()!=na)) deriv.LightShape(dim,na);
 

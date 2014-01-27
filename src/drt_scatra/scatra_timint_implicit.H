@@ -349,6 +349,9 @@ public:
   //! return scalar field phi at time step n+1
   Teuchos::RCP<Epetra_Vector> Phinp() { return phinp_; }
 
+  //! return values of scalar field phi at nodes (meshfree)
+  Teuchos::RCP<Epetra_Vector> Phiatmeshfreenodes() { return phiatmeshfreenodes_; }
+
   //! return time derivative of scalar field phi at time step n
   Teuchos::RCP<Epetra_Vector> Phidtn() { return phidtn_; }
 
@@ -718,7 +721,7 @@ protected:
 
   //! dynamic Smagorinsk model
   virtual void DynamicComputationOfCs()=0;
-  
+
   //! dynamic Vreman model
   virtual void DynamicComputationOfCv()=0;
 
@@ -852,6 +855,8 @@ protected:
   Teuchos::RCP<Epetra_Vector> phin_;
   //! phi at times n+1
   Teuchos::RCP<Epetra_Vector> phinp_;
+  //! phi at meshfree nodes (for non-interpolatory meshfree basis functions)
+  Teuchos::RCP<Epetra_Vector> phiatmeshfreenodes_;
 
   //! time derivative of phi at times n
   Teuchos::RCP<Epetra_Vector> phidtn_;
