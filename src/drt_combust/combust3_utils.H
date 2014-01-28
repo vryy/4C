@@ -299,10 +299,12 @@ namespace COMBUST
     }
     else
     {
-      curvature = -1.0/pow(grad_phi_norm,3.0)*(  grad_phi(0)*grad_phi(0)*grad_phi2(0)
+      double val = grad_phi_norm*grad_phi_norm*grad_phi_norm;
+      double invval = 1.0 / val;
+      curvature = -invval*(  grad_phi(0)*grad_phi(0)*grad_phi2(0)
           + grad_phi(1)*grad_phi(1)*grad_phi2(1)
           + grad_phi(2)*grad_phi(2)*grad_phi2(2)  )
-          -1.0/pow(grad_phi_norm,3.0)*(  grad_phi(0)*grad_phi(1)*( grad_phi2(3) + grad_phi2(6) )
+          -invval*(  grad_phi(0)*grad_phi(1)*( grad_phi2(3) + grad_phi2(6) )
               + grad_phi(0)*grad_phi(2)*( grad_phi2(4) + grad_phi2(7) )
               + grad_phi(1)*grad_phi(2)*( grad_phi2(5) + grad_phi2(8)) )
               +1.0/grad_phi_norm * ( grad_phi2(0) + grad_phi2(1) + grad_phi2(2) );

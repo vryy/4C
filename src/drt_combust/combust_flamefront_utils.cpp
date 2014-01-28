@@ -873,22 +873,36 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
         grad2_phi.Clear();
         for(size_t inode = 0; inode < numnode; inode++)
         {
-          grad2_phi(0) += egrad2phi(0,inode)*funct_gp(inode); // ,xx
-          grad2_phi(1) += egrad2phi(1,inode)*funct_gp(inode);  // ,yy
-          grad2_phi(2) += egrad2phi(2,inode)*funct_gp(inode);  // ,zz
-          grad2_phi(3) += egrad2phi(3,inode)*funct_gp(inode);  // ,xy
-          grad2_phi(4) += egrad2phi(4,inode)*funct_gp(inode);  // ,xz
-          grad2_phi(5) += egrad2phi(5,inode)*funct_gp(inode);  // ,yz
-          grad2_phi(6) += egrad2phi(6,inode)*funct_gp(inode);  // ,yx
-          grad2_phi(7) += egrad2phi(7,inode)*funct_gp(inode);  // ,zx
-          grad2_phi(8) += egrad2phi(8,inode)*funct_gp(inode);  // ,zy
+          if (L2ProjSecDerivatives)
+          {
+            grad2_phi(0) += egrad2phi(0,inode)*funct_gp(inode); // ,xx
+            grad2_phi(1) += egrad2phi(1,inode)*funct_gp(inode);  // ,yy
+            grad2_phi(2) += egrad2phi(2,inode)*funct_gp(inode);  // ,zz
+            grad2_phi(3) += egrad2phi(3,inode)*funct_gp(inode);  // ,xy
+            grad2_phi(4) += egrad2phi(4,inode)*funct_gp(inode);  // ,xz
+            grad2_phi(5) += egrad2phi(5,inode)*funct_gp(inode);  // ,yz
+            grad2_phi(6) += egrad2phi(6,inode)*funct_gp(inode);  // ,yx
+            grad2_phi(7) += egrad2phi(7,inode)*funct_gp(inode);  // ,zx
+            grad2_phi(8) += egrad2phi(8,inode)*funct_gp(inode);  // ,zy
+          }
+          else
+          {
+            grad2_phi(0) += deriv_gp_xyz(0,inode)*egradephi(0,inode); // ,xx
+            grad2_phi(1) += deriv_gp_xyz(1,inode)*egradephi(1,inode); // ,yy
+            grad2_phi(2) += deriv_gp_xyz(2,inode)*egradephi(2,inode); // ,zz
+            grad2_phi(3) += deriv_gp_xyz(1,inode)*egradephi(0,inode); // ,xy
+            grad2_phi(4) += deriv_gp_xyz(2,inode)*egradephi(0,inode); // ,xz
+            grad2_phi(5) += deriv_gp_xyz(2,inode)*egradephi(1,inode); // ,yz
+            grad2_phi(6) += deriv_gp_xyz(0,inode)*egradephi(1,inode); // ,yx
+            grad2_phi(7) += deriv_gp_xyz(0,inode)*egradephi(2,inode); // ,zx
+            grad2_phi(8) += deriv_gp_xyz(1,inode)*egradephi(2,inode); // ,zy
+          }
         }
 
         // get curvature at Gauss point
         double curvature_gp = 0.0;
         // norm of gradphi
         double grad_phi_norm = grad_phi.Norm2();
-        if (L2ProjSecDerivatives)
         {
           // check norm of normal gradient
           if (fabs(grad_phi_norm < 1.0E-9))
@@ -901,12 +915,14 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
           }
           else
           {
-            curvature_gp = -1.0/pow(grad_phi_norm,3.0) * ( grad_phi(0)*grad_phi(0)*grad2_phi(0)
-                                                         + grad_phi(1)*grad_phi(1)*grad2_phi(1)
-                                                         + grad_phi(2)*grad_phi(2)*grad2_phi(2) )
-                           -1.0/pow(grad_phi_norm,3.0) * ( grad_phi(0)*grad_phi(1)*( grad2_phi(3) + grad2_phi(6) )
-                                                         + grad_phi(0)*grad_phi(2)*( grad2_phi(4) + grad2_phi(7) )
-                                                         + grad_phi(1)*grad_phi(2)*( grad2_phi(5) + grad2_phi(8)) )
+            double val = grad_phi_norm*grad_phi_norm*grad_phi_norm;
+            double invval = 1.0 / val;
+            curvature_gp = -invval * ( grad_phi(0)*grad_phi(0)*grad2_phi(0)
+                                      + grad_phi(1)*grad_phi(1)*grad2_phi(1)
+                                      + grad_phi(2)*grad_phi(2)*grad2_phi(2) )
+                           -invval * ( grad_phi(0)*grad_phi(1)*( grad2_phi(3) + grad2_phi(6) )
+                                      + grad_phi(0)*grad_phi(2)*( grad2_phi(4) + grad2_phi(7) )
+                                      + grad_phi(1)*grad_phi(2)*( grad2_phi(5) + grad2_phi(8)) )
                            +1.0/grad_phi_norm * ( grad2_phi(0) + grad2_phi(1) + grad2_phi(2) );
 
             // *-1.0 because of direction of gradient phi vector, which is minus the normal on the interface pointing from + to -
@@ -933,12 +949,7 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
            elemat(vi,ui)+=tmp;
          }
 
-         if (L2ProjSecDerivatives)
            elerhs(vi) += fac*funct_gp(vi)*curvature_gp;
-         else // use a partially integrated version of the L2 projection for the curvature, if second derivatives are not available
-           elerhs(vi) += fac*(deriv_gp_xyz(0,vi)*grad_phi(0)
-                            + deriv_gp_xyz(1,vi)*grad_phi(1)
-                            + deriv_gp_xyz(2,vi)*grad_phi(2)) / grad_phi_norm;
        }
      }//end Gauss loop
 
