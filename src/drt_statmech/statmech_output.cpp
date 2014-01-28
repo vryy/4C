@@ -24,11 +24,12 @@ Maintainer: Kei Müller
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_beamcontact/beam3contact_octtree.H"
-
+ 
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_truss3/truss3.H"
+#include "../drt_truss3cl/truss3cl.H"
 #include "../drt_beam3cl/beam3cl.H"
 
 #include "../drt_torsion3/torsion3.H"
@@ -1174,6 +1175,52 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
               }
           }
         }
+        // interpolated truss-beam element
+        else if(eot==DRT::ELEMENTS::Truss3CLType::Instance())
+        {
+          DRT::ELEMENTS::Truss3CL* currele = NULL;
+          currele = dynamic_cast<DRT::ELEMENTS::Truss3CL*> (discret_->gElement(discret_->ElementColMap()->GID(i)));
+          // Alternative way to get nodal positions
+          DRT::Element* filelement = discret_->gElement(discret_->ElementColMap()->GID(i));
+          DRT::Node* node0 = NULL;
+          DRT::Node* node1 = NULL;
+          std::vector<double> position(6);
+          std::vector<int> dofnode0;
+          std::vector<int> dofnode1;
+
+          std::vector<LINALG::Matrix<1,4> > Ibp(2);
+          for(int filament=0; filament<2; filament++)
+             DRT::UTILS::shape_function_1D(Ibp[filament],currele->MyBindingPosition()[filament],currele->Shape());
+
+          // determine positions of the interpolated nodes
+          for(int ifil=0; ifil<coord.N(); ifil++)
+          {
+            node0 = discret_->gNode(filelement->NodeIds()[0+2*ifil]);
+            node1 = discret_->gNode(filelement->NodeIds()[1+2*ifil]);
+
+            dofnode0 = discret_->Dof(node0);
+            dofnode1 = discret_->Dof(node1);
+            position[0] = node0->X()[0] + discol[discret_->DofColMap()->LID(dofnode0[0])];
+            position[1] = node0->X()[1] + discol[discret_->DofColMap()->LID(dofnode0[1])];
+            position[2] = node0->X()[2] + discol[discret_->DofColMap()->LID(dofnode0[2])];
+            position[3] = node1->X()[0] + discol[discret_->DofColMap()->LID(dofnode1[0])];
+            position[4] = node1->X()[1] + discol[discret_->DofColMap()->LID(dofnode1[1])];
+            position[5] = node1->X()[2] + discol[discret_->DofColMap()->LID(dofnode1[2])];
+
+            //shift nodes back in case they have been shifted due to PBC
+            UnshiftPositions(position);
+            for(int id=0;id<3;id++)
+             coord(id, ifil) = Ibp[ifil](0)*position[id]+Ibp[ifil](1)*position[id+3];
+            //shift Crosslinker intperpolated nodal positions into Periodic Boundary Domain
+            for(int fil=0;fil<2;fil++)
+              for(int j=0;j<3;j++)
+              {  if(coord(j,fil) > periodlength_->at(j))
+                  coord(j,fil) -= periodlength_->at(j)*floor(coord(j,fil)/periodlength_->at(j));
+                 if(coord(j,fil) < 0.0)
+                   coord(j,fil) -= periodlength_->at(j)*floor(coord(j,fil)/periodlength_->at(j));
+              }
+          }
+        }
         else  // standard beam or truss element
         {
           for (int id=0; id<3; id++)
@@ -1191,7 +1238,10 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
         if (element->Id() >= basisnodes_)
         {
           if(eot != DRT::ELEMENTS::BeamCLType::Instance() && element->NumNode()!=2)
-            dserror("Crosslinker element has more than 2 nodes! No visualization has been implemented for such linkers!");
+          {
+            if(eot != DRT::ELEMENTS::Truss3CLType::Instance() && element->NumNode()!=2)
+              dserror("Crosslinker element has more than 2 nodes! No visualization has been implemented for such linkers!");
+          }
           //apply different colors for different crosslinkers
           if(crosslinkertype_!=Teuchos::null)
           {
@@ -1225,12 +1275,13 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
           if (eot == DRT::ELEMENTS::Beam3Type::Instance() ||
               eot==DRT::ELEMENTS::Beam3iiType::Instance() ||
               eot==DRT::ELEMENTS::BeamCLType::Instance() ||
-              eot==DRT::ELEMENTS::Beam3ebType::Instance())
+              eot==DRT::ELEMENTS::Beam3ebType::Instance()||
+              eot==DRT::ELEMENTS::Truss3CLType::Instance())
           {
             if (!kinked)
             {
               int numnode = element->NumNode();
-              if(eot==DRT::ELEMENTS::BeamCLType::Instance())
+              if(eot==DRT::ELEMENTS::BeamCLType::Instance() || eot==DRT::ELEMENTS::Truss3CLType::Instance())
                 numnode = 2;
               for (int j=0; j<numnode - 1; j++)
               {
@@ -1371,6 +1422,8 @@ void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialD
       dotline = eot==DRT::ELEMENTS::BeamCLType::Instance();
     else if(element->ElementType().Name()=="Beam3ebType")
       dotline = eot==DRT::ELEMENTS::Beam3ebType::Instance();
+    else if(element->ElementType().Name()=="Truss3CLType")
+      dotline = dotline or eot==DRT::ELEMENTS::Truss3CLType::Instance();
     else if (element->ElementType().Name() == "Truss3Type")
       dotline = dotline or eot == DRT::ELEMENTS::Truss3Type::Instance();
     // draw spheres at node positions ("beads" of the bead spring model)
@@ -2109,6 +2162,8 @@ void STATMECH::StatMechManager::GmshWedge(const int& n,
       radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::BeamCL*>(thisele))->Izz()) / M_PI));
     else if(eot == DRT::ELEMENTS::Beam3ebType::Instance())
       radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3eb*>(thisele))->Izz()) / M_PI));
+    else if(eot == DRT::ELEMENTS::Truss3CLType::Instance())
+      radius = sqrt((dynamic_cast<DRT::ELEMENTS::Truss3CL*>(thisele))->CSec() / M_PI);
     else if(eot == DRT::ELEMENTS::Truss3Type::Instance())
       radius = sqrt((dynamic_cast<DRT::ELEMENTS::Truss3*>(thisele))->CSec() / M_PI);
     else

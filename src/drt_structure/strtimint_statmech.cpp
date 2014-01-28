@@ -37,6 +37,7 @@ Maintainer: Kei Müller
 #include "../drt_beam2/beam2.H"
 #include "../drt_beam2r/beam2r.H"
 #include "../drt_truss3/truss3.H"
+#include "../drt_truss3cl/truss3cl.H"
 #include "../drt_truss2/truss2.H"
 
 
@@ -217,6 +218,15 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
       randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Truss3*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
 
       //in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
+      if((statmechman_->GetPeriodLength())->at(0) > 0.0)
+        statmechman_->PeriodicBoundaryTruss3Init(discret_->lColElement(i));
+    }
+    else if ( eot == DRT::ELEMENTS::Truss3CLType::Instance() )
+    {
+      //see whether current element needs more random numbers per time step than any other before
+      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Truss3CL*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+
+      //in case of periodic boundary conditions Truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
       if((statmechman_->GetPeriodLength())->at(0) > 0.0)
         statmechman_->PeriodicBoundaryTruss3Init(discret_->lColElement(i));
     }
@@ -1347,7 +1357,7 @@ void STR::TimIntStatMech::PTCStatMechUpdate(double& ctransptc, double& crotptc, 
   int maxptciter = statmechparams.get<int>("MAXITERPTC",5);
   double resfrac = statmechparams.get<double>("RESLOWPTC",0.001);
 
-  // modification: turn of ptc once residual is small enough
+  // modification: turn off ptc once residual is small enough
   if(np < resfrac*resinit || iter_ > maxptciter)
   {
     ctransptc = 0.0;

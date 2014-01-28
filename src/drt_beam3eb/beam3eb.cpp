@@ -388,7 +388,7 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 	  //setting up geometric variables for beam3eb elements
 	  for (int num=0; num<  dis.NumMyColElements(); ++num)
 	  {
-	    //in case that current element is not a beam3eb element there is nothing to do and we go back
+	    //in case that current element is not a Truss3CL element there is nothing to do and we go back
 	    //to the head of the loop
 	    if (dis.lColElement(num)->ElementType() != *this) continue;
 

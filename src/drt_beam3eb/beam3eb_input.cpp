@@ -43,3 +43,40 @@ bool DRT::ELEMENTS::Beam3eb::ReadElement(const std::string& eletype,
 
   return true;
 }
+/*------------------------------------------------------------------------*
+ | Set moment of inertia                          (public) mukherjee 11/13|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3eb::SetIyy(const double& Iyy)
+{
+  Iyy_ = Iyy;
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Set moment of inertia                          (public) mukherjee 11/13|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3eb::SetIzz(const double& Izz)
+{
+  Izz_ = Izz;
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Set moment of inertia                          (public) mukherjee 11/13|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3eb::SetIrr(const double& Irr)
+{
+  Irr_ = Irr;
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Set cross section area                         (public) mukherjee 11/13|
+ *------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3eb::SetCrossSec(const double& crosssec)
+{
+  crosssec_ = crosssec;
+  return;
+}
+
+

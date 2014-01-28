@@ -173,12 +173,12 @@ public:
                                Teuchos::RCP<Epetra_MultiVector> bspotpositions,
                                Teuchos::RCP<Epetra_MultiVector> bspotrotations);
 
-  //! \brief retrieve standard binding spot positions (node positions) from global displacement vector
+  //! \brief retrieve standard binding spot positions (node positions) from global displacement vector for beam3 elements
   void GetNodalBindingSpotPositionsFromDisVec(const Epetra_Vector&              dis,
                                               Teuchos::RCP<Epetra_MultiVector>  bspotpositions,
                                               Teuchos::RCP<Epetra_MultiVector>  bspotrotations);
 
-  //! \brief Retrieve interpolated binding spot positions
+  //! \brief Retrieve interpolated binding spot positions for beam3ii elements
   void GetInterpolatedBindingSpotPositions(const Epetra_Vector&              dis,
                                            Teuchos::RCP<Epetra_MultiVector>  bspotpositions,
                                            Teuchos::RCP<Epetra_MultiVector>  bspotrotations);
@@ -250,6 +250,9 @@ public:
 
   //! \brief Initializes truss3 elements in case of periodic boundary conditions
   void PeriodicBoundaryTruss3Init(DRT::Element* element);
+
+  //! \brief Initializes Truss3cl elements in case of periodic boundary conditions
+  void PeriodicBoundaryTruss3clInit(DRT::Element* element);
 
   /*! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
    * \param disrow  (in)  row map displacement vector
@@ -887,7 +890,9 @@ protected:
   {
     statmech_linker_none,
     statmech_linker_std,
+    statmech_linker_truss3,
     statmech_linker_stdintpol,
+    statmech_linker_truss3intpol,
     statmech_linker_bellseq,
     statmech_linker_bellseqintpol,
     statmech_linker_active,

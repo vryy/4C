@@ -72,7 +72,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
     case Beam3eb::calc_struct_ptcstiff:
     {
-      dserror("no ptc implemented for Beam3eb element");
+      EvaluatePTC<2>(params, elemat1);
     }
     break;
 
@@ -1498,6 +1498,35 @@ CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force);
 
 } // DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass.
 
+/*-----------------------------------------------------------------------------------------------------------*
+ | Evaluate PTC damping (public)                                                              mukherjee 12/13|
+ *----------------------------------------------------------------------------------------------------------*/
+template<int nnode>
+void DRT::ELEMENTS::Beam3eb::EvaluatePTC(Teuchos::ParameterList& params,
+                                      Epetra_SerialDenseMatrix& elemat1)
+{
+  if(nnode > 2)
+    dserror("PTC implemented for 2-noded elements only");
+  for (int node=0; node<nnode; node++)
+  {
+    //PTC for tangential degrees of freedom; the Lobatto integration weight is 0.5 for 2-noded elements
+    for(int k=0; k<3; k++)
+    {
+      elemat1(node*6+3+k,node*6+3+k) += params.get<double>("crotptc",0.0)*0.5*jacobi_;
+    }
+
+
+    //PTC for translational degrees of freedom; the Lobatto integration weight is 0.5 for 2-noded elements
+    for(int k=0; k<3; k++)
+    {
+      elemat1(node*6+k,node*6+k) += params.get<double>("ctransptc",0.0)*0.5*jacobi_;
+    }
+  }
+
+
+  return;
+} //DRT::ELEMENTS::Beam3ii::EvaluatePTC
+
 /*------------------------------------------------------------------------------------------------------------*
  | lump mass matrix            (private)                                                   meier 05/12|
  *------------------------------------------------------------------------------------------------------------*/
@@ -1619,7 +1648,7 @@ void DRT::ELEMENTS::Beam3eb::MyBackgroundVelocity(Teuchos::ParameterList& params
 template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
 inline void DRT::ELEMENTS::Beam3eb::MyTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
                                                   const std::vector<double>& vel,  //!< vector containing first order time derivative of nodal positions and nodal tangents of an element
-                                                  const std::vector<double>& disp, //!< vector containing nodal positions and nodal tangents of an element
+                                                  const std::vector<double>& disp, //!< vector containing change in nodal positions and nodal tangents of an element w.r.t. inital config.
                                                   Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                                   Epetra_SerialDenseVector* force)//!< element internal force vector
 {
@@ -1782,7 +1811,6 @@ inline void DRT::ELEMENTS::Beam3eb::MyStochasticForces(Teuchos::ParameterList& p
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
   RCP<Epetra_MultiVector> randomnumbers = params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
- // cout<<"randomnumbers"<<*randomnumbers<<endl;
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {
@@ -1876,11 +1904,10 @@ inline void DRT::ELEMENTS::Beam3eb::CalcBrownian(Teuchos::ParameterList& params,
 
   //add stiffness and forces due to translational damping effects
   MyTranslationalDamping<nnode,ndim,dof>(params,vel,disp,stiffmatrix,force);
- //cout<<"Force="<<*force<<endl;
 
   //add stochastic forces and (if required) resulting stiffness
   MyStochasticForces<nnode,ndim,dof,randompergauss>(params,vel,disp,stiffmatrix,force);
-  //cout<<"Stocastic Force="<<*force<<endl;
+
 return;
 
 }//DRT::ELEMENTS::Beam3eb::CalcBrownian(.)

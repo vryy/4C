@@ -269,10 +269,27 @@ public:
   */
   double Iyy();
 
-  //@}
 
   //! @name Construction
+  /*!
+  \brief Set moment of inertia of area Iyy_ of this element
+  */
+  void SetIyy(const double& Iyy);
 
+  /*!
+  \brief Set moment of inertia of area Iyy_ of this element
+  */
+  void SetIzz(const double& Izz);
+
+  /*!
+  \brief Set moment of inertia of area Iyy_ of this element
+  */
+  void SetIrr(const double& Irr);
+
+  /*!
+  \brief Set cross section area of this element
+  */
+  void SetCrossSec(const double& crosssec);
 
   /*!
   \brief Read input for this element
@@ -288,8 +305,8 @@ public:
   \brief Read input for this element
   */
   bool ReadElement(const std::string& eletype,
-                   const std::string& distype,
-                   DRT::INPUT::LineDefinition* linedef);
+                                         const std::string& distype,
+                                         DRT::INPUT::LineDefinition* linedef);
 
   //@}
 
@@ -356,6 +373,25 @@ public:
                               std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
+
+  /*!
+  \brief Evaluate PTC addition to stiffness for free Brownian motion
+
+  An element derived from this class uses the Evaluate method to receive commands
+  and parameters from some control routine in params and evaluates a  statistical Neumann boundary condition
+  as used in the problem type STATISTICAL MECHANICS
+
+  \param params (in/out)       : ParameterList for communication between control routine and elements
+  \param vector<double> mydisp : current nodal displacement
+  \param elemat1 (out)         : artificial damping matrix to be filled by element
+
+  \return 0 if successful, negative otherwise
+  */
+  template<int nnode>
+  void EvaluatePTC(Teuchos::ParameterList&   params,
+                   Epetra_SerialDenseMatrix& elemat1);
+
+  //@}
 
 
   //@}

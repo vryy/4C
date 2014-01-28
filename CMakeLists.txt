@@ -1519,6 +1519,11 @@ set(OBJS_DRT_T3_LIB
   src/drt_truss3/truss3_evaluate.cpp
   src/drt_truss3/truss3_input.cpp
 )
+set(OBJS_DRT_T3CL_LIB
+  src/drt_truss3cl/truss3cl.cpp
+  src/drt_truss3cl/truss3cl_evaluate.cpp
+  src/drt_truss3cl/truss3cl_input.cpp
+)
 set(OBJS_DRT_ALEALG
   src/drt_ale/ale.cpp
   src/drt_ale/ale_dyn.cpp
@@ -1796,6 +1801,7 @@ add_library(ele_meshfree_scatra ${OBJS_DRT_MESHFREE_SCATRA_LIB})
 add_library(ele_so ${OBJS_SOH8_LIB})
 add_library(ele_t2 ${OBJS_DRT_T2_LIB})
 add_library(ele_t3 ${OBJS_DRT_T3_LIB})
+add_library(ele_t3cl ${OBJS_DRT_T3CL_LIB})
 add_library(ele_thermo ${OBJS_DRT_THERMO_LIB})
 add_library(ele_to2 ${OBJS_DRT_TO2_LIB})
 add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
@@ -1808,7 +1814,7 @@ set(ELEMENT_LIBRARIES
   ele_b2r
   ele_b3
   ele_b3ii
-  ele_b3eb
+  ele_b3eb  
   ele_b3ebtor
   ele_b3ebanisotrop
   ele_b3cl
@@ -1823,6 +1829,7 @@ set(ELEMENT_LIBRARIES
   ele_so
   ele_t2
   ele_t3
+  ele_t3cl
   ele_thermo
   ele_to2
   ele_to3
