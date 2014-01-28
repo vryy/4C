@@ -2457,6 +2457,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // default: "No", i.e. use block matrix
   BoolParameter("MERGE_TSI_BLOCK_MATRIX","No","Merge TSI block matrix",&tsidyn);
 
+  BoolParameter("MATCHINGGRID","Yes","is matching grid",&tsidyn);
+
   // Coupling strategy for BACI-INCA coupling (TFSI)
   setStringToIntegralParameter<int>("TFSI_COUPALGO","tfsi_mortar_mortar_dual",
     "Coupling strategies for BACI-INCA coupling (TFSI)",

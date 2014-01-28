@@ -410,6 +410,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_dofset.cpp
   src/drt_lib/drt_dofset_base.cpp
   src/drt_lib/drt_dofset_proxy.cpp
+  src/drt_lib/drt_dofset_aux_proxy.cpp
   src/drt_lib/drt_dofset_subproxy.cpp
   src/drt_lib/drt_dofset_transparent.cpp
   src/drt_lib/drt_dofset_transparent_independent.cpp
@@ -549,6 +550,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_algorithmbase.cpp
   src/drt_adapter/adapter_coupling.cpp
   src/drt_adapter/adapter_coupling_mortar.cpp
+  src/drt_adapter/adapter_coupling_volmortar.cpp
   src/drt_adapter/ad_fld_fluid.cpp
   src/drt_adapter/ad_fld_fluid_ale.cpp
   src/drt_adapter/ad_fld_base_algorithm.cpp
@@ -1277,6 +1279,11 @@ set(OBJS_DRT_MORTAR_LIB
   src/drt_mortar/mortar_element_shapefct.cpp
   src/drt_mortar/mortar_node.cpp
 )
+set(OBJS_DRT_VOLMORTAR
+src/drt_volmortar/volmortar_cell.cpp
+src/drt_volmortar/volmortar_coupling.cpp
+src/drt_volmortar/volmortar_integrator.cpp
+)
 set(OBJS_DRT_STRUCTURE
   src/drt_structure/strtimada.cpp
   src/drt_structure/strtimada_create.cpp
@@ -1542,6 +1549,8 @@ set(OBJS_DRT_W1_LIB
   src/drt_w1/wall1_poro_p2.cpp
   src/drt_w1/wall1_poro_p2_eletypes.cpp
   src/drt_w1/wall1_poro_p2_evaluate.cpp
+  src/drt_w1/wall1_scatra.cpp
+  src/drt_w1/wall1_scatra_evaluate.cpp
 )
 set(OBJS_DRT_CONTACT
   src/drt_contact/contact_abstract_strategy.cpp
@@ -1903,6 +1912,7 @@ add_library(drt_nurbs ${OBJS_DRT_NURBS_DISCRET})
 add_library(drt_constraint ${OBJS_DRT_CONSTRAINT})
 #add_library(drt_mortar SHARED ${OBJS_DRT_MORTAR})
 add_library(drt_mortar ${OBJS_DRT_MORTAR})
+add_library(drt_volmortar ${OBJS_DRT_VOLMORTAR})
 
 # material definitions
 add_library(drt_mat ${OBJS_DRT_MAT_LIB})
@@ -1983,6 +1993,7 @@ target_link_libraries (${baciname}
   ${SINGLEFIELD_LIBRARIES}
   drt_nurbs
   drt_mortar 
+  drt_volmortar 
   drt_constraint
   drt_lib_register
   ${ELEMENT_LIBRARIES}

@@ -73,7 +73,7 @@ public:
 
   explicit DofSetProxy(DofSet* dofset);
 
-  ~DofSetProxy();
+  virtual ~DofSetProxy();
 
   /// create a copy of this object
   virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new DofSetProxy(*this)); }

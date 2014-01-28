@@ -166,8 +166,9 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   if (!dis.ElementRowMap()->UniqueGIDs()) dserror("Element row map is not unique");
 
   // A definite offset is currently not supported.
-  if (start!=0)
-    dserror("right now user specified dof offsets are not supported");
+  // TODO (kronbichler) find a better solution for this
+  //if (start!=0)
+  //  dserror("right now user specified dof offsets are not supported");
 
   dspos_ = dspos;
 
@@ -281,7 +282,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       mygids.push_back(dis.NodeRowMap()->GID(i));
     for (int i=0; i<elerowgids->Map().NumMyElements(); ++i)
     {
-      if (dis.lRowElement(i)->NumDofPerElement() != 0)
+      if (NumDofPerElement(*dis.lColElement(i),dspos) != 0)
         mygids.push_back((*elerowgids)[i]);
     }
     
@@ -304,7 +305,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       // check whether this element is actually a row element
       //if (dis.ElementRowMap()->MyGID(dis.lColElement(i)->Id()) == false) continue;
       // check whether this element has elemental dofs
-      if (dis.lColElement(i)->NumDofPerElement() == 0) continue;
+      if (NumDofPerElement(*dis.lColElement(i),dspos) == 0) continue;
       // get the pseudo gid of this element
       int lid = dis.ElementColMap()->LID(dis.lColElement(i)->Id());
       if (lid==-1) dserror("Cannot find lid");

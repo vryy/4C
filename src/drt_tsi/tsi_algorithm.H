@@ -49,6 +49,7 @@ namespace ADAPTER
 {
   class Thermo;
   class Structure;
+  class MortarVolCoupl;
 }
 
 
@@ -132,6 +133,11 @@ namespace TSI
 
     //@}
 
+    void ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp);
+
+    void ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> disp,
+                                  Teuchos::RCP<const Epetra_Vector> vel);
+
 
     //! @name Access methods
 
@@ -156,7 +162,11 @@ namespace TSI
 
     //@}
 
-  private:
+  //private:
+
+    const bool matchinggrid_;
+
+    Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volcoupl_;
 
   };  // Algorithm
 }  // namespace TSI

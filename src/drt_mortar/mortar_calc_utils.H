@@ -47,7 +47,7 @@ Maintainer: Philipp Farah
  *----------------------------------------------------------------------*/
 #include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-
+#include "mortar_node.H"
 
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |
@@ -156,6 +156,269 @@ bool LocalToGlobal(MORTAR::MortarElement& ele,
 
   return true;
 };
+
+
+/*----------------------------------------------------------------------*
+ |  Get global coords for given local coords (ref pos)       farah 01/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+bool LocalToGlobal(DRT::Element& ele,
+                   const double* xi,
+                   double* globcoord)
+{
+  // check input
+  if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
+  if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
+
+  static const int n    = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim + 1;
+
+  DRT::Node** mynodes = ele.Nodes();
+  if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
+
+  for (int i=0;i<ndim;++i)
+    globcoord[i]=0.0;
+
+  LINALG::Matrix<ndim,n>   coord;
+
+  LINALG::Matrix<n,1>      val;
+  if(ndim==2)      DRT::UTILS::shape_function_1D(val,xi[0],distype);
+  else if(ndim==3) DRT::UTILS::shape_function_2D(val,xi[0],xi[1],distype);
+  else dserror("Wrong Dimension");
+
+  for (int i=0;i<n;++i)
+  {
+    for(int j=0;j<ndim;++j)
+    {
+      coord(j,i)   = mynodes[i]->X()[j];
+
+      // use shape function values for interpolation
+      globcoord[j] += val(i)*coord(j,i);
+    }
+  }
+
+
+  return true;
+};
+/*----------------------------------------------------------------------*
+ |  Get local coords for given global coords (ref position)  farah 01/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void GlobalToLocal(
+    DRT::Element& ele,   // element (input)
+    double* xgl,         // global position (input)
+    double* xi)          // local position  (output)
+{
+   static const int numnod = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+   static const int ndim   = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+   LINALG::Matrix<numnod,1>    funct;
+   LINALG::Matrix<ndim,numnod> xref;
+   LINALG::Matrix<ndim,ndim>   xjm;
+   LINALG::Matrix<ndim,numnod> deriv;
+
+   // spatial configuration of this element!
+   for (int k=0; k<numnod; ++k)
+     for (int j=0;j<ndim;++j)
+       xref(j,k) = ele.Nodes()[k]->X()[j];
+
+   // first estimation for parameter space coordinates
+   for(int p=0;p<3;++p)
+     xi[p] = 0.0;
+
+   double rhs[ndim];
+
+   // converged
+   bool converged = false;
+   int j = 0;
+
+   //************************************************
+   //loop
+   while (!converged and j<10)
+   {
+     //reset matriced
+     xjm.Clear();
+     deriv.Clear();
+
+     if(ndim==2)
+     {
+       DRT::UTILS::shape_function_2D       (funct,xi[0],xi[1],distype);
+       DRT::UTILS::shape_function_2D_deriv1(deriv,xi[0],xi[1],distype);
+     }
+     else if (ndim==3)
+     {
+       DRT::UTILS::shape_function_3D       (funct,xi[0],xi[1],xi[2],distype);
+       DRT::UTILS::shape_function_3D_deriv1(deriv,xi[0],xi[1],xi[2],distype);
+     }
+     else
+       dserror("ERROR");
+
+     for (int k=0; k<numnod; ++k)
+       for(int p=0;p<ndim;++p)
+         for(int l=0;l<ndim;++l)
+           xjm(p,l) += deriv(l,k) * xref(p,k);
+
+     // rhs of (linearized equation)
+     for(int p=0;p<ndim;++p)
+       rhs[p]=0.0;
+
+     for(int p=0;p<ndim;++p)
+       rhs[p] = -xgl[p];
+
+     for (int k=0; k<numnod; ++k)
+       for(int p=0;p<ndim;++p)
+         rhs[p]+=funct(k)*xref(p,k);
+
+     double norm = 0.0;
+     for(int p=0;p<ndim;++p)
+       norm += rhs[p]*rhs[p];
+
+     if (sqrt(norm)<1e-12)
+     {
+       converged = true;
+     }
+//     else
+//     {
+//       std::cout << "NORM= " << sqrt(norm) << std::endl;
+//       std::cout << "XI= " << xi[0] << "  " << xi[1] << "  " << xi[2] << std::endl;
+//     }
+
+
+     // solve equation
+     if (abs(xjm.Determinant())<1e-12)
+       dserror("*** WARNING: jacobi singular ***");
+
+     double xjm_invert = xjm.Invert();
+     if (abs(xjm_invert)<1e-12)
+       dserror("ERROR: Singular Jacobian for advection map");
+
+     double deltaxi[3];
+     for(int p=0;p<ndim;++p)
+       deltaxi[p] = 0.0;
+
+     for(int z=0;z<ndim;++z)
+       for(int p=0;p<ndim;++p)
+         deltaxi[z]-=xjm(z,p)*rhs[p];
+
+     // incremental update
+     for(int p=0;p<ndim;++p)
+       xi[p] += deltaxi[p];
+
+     j=j+1;
+   } // end loop
+   //************************************************
+
+   if(!converged)
+     dserror("Evaluation of element coordinates not converged!");
+
+   return;
+};
+
+/*----------------------------------------------------------------------*
+ |  Get local coords for given global coords (ref position)  farah 01/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void GlobalToLocal(
+    DRT::Element& ele,   // element (input)
+    double* xgl,         // global position (input)
+    double* xi,
+    bool& converged)     // converged solution ?
+{
+   static const int numnod = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+   static const int ndim   = DRT::UTILS::DisTypeToDim<distype>::dim;
+
+   // converged
+   converged = false;
+
+   LINALG::Matrix<numnod,1>    funct;
+   LINALG::Matrix<ndim,numnod> xref;
+   LINALG::Matrix<ndim,ndim>   xjm;
+   LINALG::Matrix<ndim,numnod> deriv;
+
+   // spatial configuration of this element!
+   for (int k=0; k<numnod; ++k)
+     for (int j=0;j<ndim;++j)
+       xref(j,k) = ele.Nodes()[k]->X()[j];
+
+   // first estimation for parameter space coordinates
+   for(int p=0;p<3;++p)
+     xi[p] = 0.0;
+
+   double rhs[ndim];
+
+   int j = 0;
+
+   //************************************************
+   //loop
+   while (!converged and j<10)
+   {
+     //reset matriced
+     xjm.Clear();
+     deriv.Clear();
+
+     if(ndim==2)
+     {
+       DRT::UTILS::shape_function_2D       (funct,xi[0],xi[1],distype);
+       DRT::UTILS::shape_function_2D_deriv1(deriv,xi[0],xi[1],distype);
+     }
+     else if (ndim==3)
+     {
+       DRT::UTILS::shape_function_3D       (funct,xi[0],xi[1],xi[2],distype);
+       DRT::UTILS::shape_function_3D_deriv1(deriv,xi[0],xi[1],xi[2],distype);
+     }
+     else
+       dserror("ERROR");
+
+     for (int k=0; k<numnod; ++k)
+       for(int p=0;p<ndim;++p)
+         for(int l=0;l<ndim;++l)
+           xjm(p,l) += deriv(l,k) * xref(p,k);
+
+     // rhs of (linearized equation)
+     for(int p=0;p<ndim;++p)
+       rhs[p]=0.0;
+
+     for(int p=0;p<ndim;++p)
+       rhs[p] = -xgl[p];
+
+     for (int k=0; k<numnod; ++k)
+       for(int p=0;p<ndim;++p)
+         rhs[p]+=funct(k)*xref(p,k);
+
+     double norm = 0.0;
+     for(int p=0;p<ndim;++p)
+       norm += rhs[p]*rhs[p];
+
+     if (sqrt(norm)<1e-12)
+       converged = true;
+
+     // solve equation
+     if (abs(xjm.Determinant())<1e-12)
+       dserror("*** WARNING: jacobi singular ***");
+
+     double xjm_invert = xjm.Invert();
+     if (abs(xjm_invert)<1e-12)
+       dserror("ERROR: Singular Jacobian for advection map");
+
+     double deltaxi[3];
+     for(int p=0;p<ndim;++p)
+       deltaxi[p] = 0.0;
+
+     for(int z=0;z<ndim;++z)
+       for(int p=0;p<ndim;++p)
+         deltaxi[z]-=xjm(z,p)*rhs[p];
+
+     // incremental update
+     for(int p=0;p<ndim;++p)
+       xi[p] += deltaxi[p];
+
+     j=j+1;
+   } // end loop
+   //************************************************
+
+   return;
+};
+
 
 }//namespace UTILS
 }//namespace MORTAR

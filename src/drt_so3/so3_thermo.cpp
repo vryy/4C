@@ -154,6 +154,7 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Print(std::ostream& os) const
 {
   os << "So3_Thermo ";
+  Element::Print(os);
   return;
 }
 

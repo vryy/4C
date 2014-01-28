@@ -390,7 +390,7 @@ namespace ELEMENTS
     //! kinematic type
     GenKinematicType kintype_;
 
-    int KinType() const
+    const GenKinematicType KinType() const
     {
       return kintype_;
     }

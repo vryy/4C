@@ -283,8 +283,8 @@ namespace ADAPTER
   public:
 
     /// constructor
-    explicit ThermoBaseAlgorithm(const Teuchos::ParameterList& prbdyn);
-
+    explicit ThermoBaseAlgorithm(const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis);
+    
     /// virtual destructor to support polymorph destruction
     virtual ~ThermoBaseAlgorithm();
 
@@ -298,12 +298,13 @@ namespace ADAPTER
   private:
 
     /// setup thermo algorithm
-    void SetupThermo(const Teuchos::ParameterList& prbdyn);
+    void SetupThermo(const Teuchos::ParameterList& prbdyn,Teuchos::RCP<DRT::Discretization> actdis);
 
     /// setup thermo algorithm of THR::TimIntImpl type
     void SetupTimInt(
       const Teuchos::ParameterList& prbdyn,
-      INPAR::THR::DynamicType timinttype
+      INPAR::THR::DynamicType timinttype,
+      Teuchos::RCP<DRT::Discretization> actdis
       );
 
     /// thermal field solver

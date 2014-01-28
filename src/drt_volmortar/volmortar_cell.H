@@ -1,0 +1,72 @@
+/*!---------------------------------------------------------------------
+\file volmortar_cell.H
+
+<pre>
+Maintainer: Philipp Farah
+            farah@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15257
+</pre>
+
+*---------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------*
+ | definitions                                             farah 01/14 |
+ *---------------------------------------------------------------------*/
+#ifndef VOLMORTAR_CELL_H_
+#define VOLMORTAR_CELL_H_
+
+/*---------------------------------------------------------------------*
+ | headers                                                 farah 01/14 |
+ *---------------------------------------------------------------------*/
+#include "../drt_lib/drt_element.H"
+
+/*---------------------------------------------------------------------*
+ | forward declarations                                    farah 01/14 |
+ *---------------------------------------------------------------------*/
+namespace LINALG
+{
+  class SerialDenseVector;
+  class SerialDenseMatrix;
+}
+
+namespace VOLMORTAR
+{
+
+class Cell
+{
+public:
+
+  // constructor
+  Cell(int id,
+       int nvertices,
+       const Epetra_SerialDenseMatrix& coords,
+       const DRT::Element::DiscretizationType& shape);
+
+  // destructor
+  virtual ~Cell() {};
+
+  // mapping between para space and global space
+  void LocalToGlobal(double* local, double* global);
+
+  // get shape
+  virtual DRT::Element::DiscretizationType Shape() const { return shape_;}
+
+  // get cell id
+  int Id() const { return id_; }
+
+  // get cell volume
+  virtual double& Vol() { return vol_; }
+
+protected:
+
+  int                                  id_;        // local ID of this cell
+  Epetra_SerialDenseMatrix             coords_;    // coords of cell vertices (dim,vertices)
+  DRT::Element::DiscretizationType     shape_;     // shape of this element (always tet4)
+  double                               vol_;       // integration cell volume
+
+};
+
+}
+
+#endif /* VOLMORTAR_CELL_H_ */

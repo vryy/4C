@@ -29,6 +29,9 @@ Maintainer: Caroline Danowski
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_discret.H"
 
+//for coupling of nonmatching meshes
+#include "../drt_adapter/adapter_coupling_volmortar.H"
+
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
 //! define the order in which the filters handle the Discretizations, which in
@@ -37,10 +40,14 @@ Maintainer: Caroline Danowski
  | constructor (public)                                      dano 12/09 |
  *----------------------------------------------------------------------*/
 TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
-  : AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams())
+  : AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams()),
+    matchinggrid_(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->TSIDynamicParams(),"MATCHINGGRID")),
+    volcoupl_(Teuchos::null)
 {
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+  // access the thermo discretization
+  Teuchos::RCP<DRT::Discretization> thermodis = DRT::Problem::Instance()->GetDis("thermo");
   // access structural dynamic params list which will be possibly modified while creating the time integrator
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure
@@ -48,11 +55,12 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   structure_ = structure->StructureFieldrcp();
 
   Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermo
-    = Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()));
+    = Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams(),thermodis));
   thermo_ = thermo->ThermoFieldrcp();
 
   // initialise displacement field needed for Output()
   // (get noderowmap of discretisation for creating this multivector)
+  // TODO: why nds 0 and not 1????
   dispnp_ = Teuchos::rcp(new Epetra_MultiVector(*(ThermoField()->Discretization()->NodeRowMap()),3,true));
 
   return;
@@ -109,12 +117,60 @@ void TSI::Algorithm::Output(bool forced_writerestart)
     or ( (uprestart != 0) and (Step()%uprestart == 0) )
     or forced_writerestart == true )
     {
-      OutputDeformationInThr(
-          StructureField()->Dispn(),
-          StructureField()->Discretization()
-          );
+      if(matchinggrid_)
+      {
+        OutputDeformationInThr(
+            StructureField()->Dispn(),
+            StructureField()->Discretization()
+            );
 
-      ThermoField()->DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
+        ThermoField()->DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
+      }
+      else
+      {
+        Teuchos::RCP<const Epetra_Vector> dummy = volcoupl_->ApplyVectorMappingBA(StructureField()->Dispnp());
+
+        // determine number of space dimensions
+        const int numdim = DRT::Problem::Instance()->NDim();
+
+        int err(0);
+
+        // loop over all local nodes of thermal discretisation
+        for (int lnodeid=0; lnodeid<(ThermoField()->Discretization()->NumMyRowNodes()); lnodeid++)
+        {
+          DRT::Node* thermnode = ThermoField()->Discretization()->lRowNode(lnodeid);
+          std::vector<int> thermnodedofs_1 = ThermoField()->Discretization()->Dof(1,thermnode);
+
+          // now we transfer displacment dofs only
+          for(int index=0; index<numdim; ++index)
+          {
+            // global and processor's local fluid dof ID
+            const int sgid = thermnodedofs_1[index];
+            const int slid = ThermoField()->Discretization()->DofRowMap(1)->LID(sgid);
+
+
+            // get value of corresponding displacement component
+            double disp = (*dummy)[slid];
+            // insert velocity value into node-based vector
+            err = dispnp_->ReplaceMyValue(lnodeid, index, disp);
+            if (err!= 0) dserror("error while inserting a value into dispnp_");
+          }
+
+          // for security reasons in 1D or 2D problems:
+          // set zeros for all unused velocity components
+          for (int index=numdim; index < 3; ++index)
+          {
+            err = dispnp_->ReplaceMyValue(lnodeid, index, 0.0);
+            if (err!= 0) dserror("error while inserting a value into dispnp_");
+          }
+
+        } // for lnodid
+
+
+
+
+        ThermoField()->DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
+      }
     }
 
 }  // Output()
@@ -199,5 +255,28 @@ Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
   return vel;
 }  // CalcVelocity()
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void TSI::Algorithm::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp)
+{
+  if(matchinggrid_)
+    StructureField()->ApplyCouplingState(temp,"temperature");
+  else
+    StructureField()->ApplyCouplingState(volcoupl_->ApplyVectorMappingAB(temp),"temperature");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void TSI::Algorithm::ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> disp,
+                                              Teuchos::RCP<const Epetra_Vector> velnp)
+{
+  if(matchinggrid_)
+    ThermoField()->ApplyStructVariables(disp,velnp);
+  else
+    ThermoField()->ApplyStructVariables(
+        volcoupl_->ApplyVectorMappingBA(disp),
+        volcoupl_->ApplyVectorMappingBA(velnp));
+}
 
 /*----------------------------------------------------------------------*/

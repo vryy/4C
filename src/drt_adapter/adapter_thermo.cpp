@@ -42,11 +42,11 @@ ADAPTER::Thermo::~Thermo()
 /*----------------------------------------------------------------------*
  |                                                          bborn 08/09 |
  *----------------------------------------------------------------------*/
-ADAPTER::ThermoBaseAlgorithm::ThermoBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
+ADAPTER::ThermoBaseAlgorithm::ThermoBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
+                                                Teuchos::RCP<DRT::Discretization> actdis)
 {
-  SetupThermo(prbdyn);
+  SetupThermo(prbdyn,actdis);
 }
-
 
 /*----------------------------------------------------------------------*
  |                                                          bborn 08/09 |
@@ -59,7 +59,7 @@ ADAPTER::ThermoBaseAlgorithm::~ThermoBaseAlgorithm()
 /*----------------------------------------------------------------------*
  |                                                          bborn 08/09 |
  *----------------------------------------------------------------------*/
-void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prbdyn)
+void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prbdyn,Teuchos::RCP<DRT::Discretization> actdis)
 {
   const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
 
@@ -71,7 +71,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prb
   case INPAR::THR::dyna_onesteptheta :
   case INPAR::THR::dyna_genalpha :
   case INPAR::THR::dyna_expleuler :
-    SetupTimInt(prbdyn, timinttype);   // <-- here is the show
+    SetupTimInt(prbdyn, timinttype,actdis);   // <-- here is the show
     break;
   default :
     dserror("unknown time integration scheme '%s'", tdyn.get<std::string>("DYNAMICTYP").c_str());
@@ -86,17 +86,14 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prb
  *----------------------------------------------------------------------*/
 void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(
   const Teuchos::ParameterList& prbdyn,
-  INPAR::THR::DynamicType timinttype
+  INPAR::THR::DynamicType timinttype,
+  Teuchos::RCP<DRT::Discretization> actdis
   )
 {
   // this is not exactly a one hundred meter race, but we need timing
   Teuchos::RCP<Teuchos::Time> t
     = Teuchos::TimeMonitor::getNewTimer("ADAPTER::ThermoBaseAlgorithm::SetupThermo");
   Teuchos::TimeMonitor monitor(*t);
-
-  // access the discretization
-  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->GetDis("thermo");
 
   // set degrees of freedom in the discretization
   if (not actdis->Filled()) actdis->FillComplete();

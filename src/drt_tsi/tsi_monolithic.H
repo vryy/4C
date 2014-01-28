@@ -62,6 +62,11 @@ namespace MORTAR
   class ManagerBase;
 }
 
+namespace ADAPTER
+{
+ class MortarVolCoupl;
+}
+
 namespace FS3I
 {
   class AeroTFSI;

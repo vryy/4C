@@ -50,6 +50,7 @@ Maintainer: Michael Gee
 #include "../linalg/linalg_utils.H"
 #include "drt_dofset_proxy.H"
 #include "drt_dofset_subproxy.H"
+#include "drt_dofset_aux_proxy.H"
 
 
 /*----------------------------------------------------------------------*
@@ -582,6 +583,15 @@ int DRT::Discretization::AddDofSet(Teuchos::RCP<DofSet> newdofset)
 Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy()
 {
   return Teuchos::rcp(new DofSetProxy(&*dofsets_[0]));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int DRT::Discretization::BuildDofSetAuxProxy(int numdofpernode, int numdofperelement)
+{
+  Teuchos::RCP<DofSetAuxProxy> dofsetauxproxy = Teuchos::rcp(new DofSetAuxProxy(&*dofsets_[0],numdofpernode,numdofperelement));
+
+  return AddDofSet(dofsetauxproxy);
 }
 
 /*----------------------------------------------------------------------*

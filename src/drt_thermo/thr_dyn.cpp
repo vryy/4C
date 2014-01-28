@@ -49,7 +49,7 @@ void thr_dyn_drt()
 
   // create instance of thermo basis algorithm (no structure discretization)
   Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermoonly
-    = Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(tdyn));
+    = Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(tdyn,thermodis));
 
   // do restart if demanded from input file
   const int restart = DRT::Problem::Instance()->Restart();

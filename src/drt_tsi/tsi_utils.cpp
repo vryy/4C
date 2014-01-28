@@ -148,13 +148,20 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
    // we use the structure discretization as layout for the temperature discretization
   if (structdis->NumGlobalNodes()==0) dserror("Structure discretization is empty!");
 
+  //todo: bool for matching grid from parameter list
+
   // create thermo elements if the temperature discretization is empty
   if (thermdis->NumGlobalNodes()==0)
   {
     DRT::UTILS::CloneDiscretization<TSI::UTILS::ThermoStructureCloneStrategy>(structdis,thermdis);
   }
   else
-      dserror("Structure AND Thermo discretization present. This is not supported.");
+  {
+    //first call FillComplete for single discretizations.
+    //This way the physical dofs are numbered successively
+    structdis->FillComplete();
+    thermdis->FillComplete();
+  }
 }  // SetupTSI()
 
 

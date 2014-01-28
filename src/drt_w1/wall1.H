@@ -231,7 +231,7 @@ public:
   //@{
 
   /// Read input for this element
-  bool ReadElement(const std::string& eletype,
+  virtual bool ReadElement(const std::string& eletype,
                    const std::string& distype,
                    DRT::INPUT::LineDefinition* linedef);
 
@@ -245,7 +245,7 @@ public:
   /// Evaluate Wall1 element stiffness, mass, internal forces etc
   ///
   /// \return 0 if successful, negative otherwise
-  int Evaluate(
+  virtual int Evaluate(
     Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication between control routine
                             ///< and elements
     DRT::Discretization& discretization,  ///< A reference to the underlying discretization
@@ -289,7 +289,7 @@ public:
 
   //@}
 
-private:
+protected:
 
   /// action parameters recognized by wall1
   enum ActionType

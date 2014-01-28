@@ -89,7 +89,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch")            act = So_hex8::inversedesign_switch;
   else if (action=="calc_global_gpstresses_map")                  act = So_hex8::calc_global_gpstresses_map;
-  else dserror("Unknown type of action for So_hex8");
+  else dserror("Unknown type of action for So_hex8: %s", action.c_str());
 
   // check for patient specific data
   PATSPEC::GetILTDistance(Id(),params,discretization);

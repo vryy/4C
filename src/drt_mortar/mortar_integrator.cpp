@@ -47,6 +47,7 @@ Maintainer: Alexander Popp
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
 
 #include "mortar_calc_utils.H"
 #include "mortar_shape_utils.H"

@@ -50,6 +50,7 @@ Maintainer: Alexander Popp
 namespace LINALG
 {
 class SerialDenseVector;
+class SparseMatrix;
 }
 
 /*!
@@ -189,7 +190,6 @@ public:
 
   //@}
   //! @name 2D and 3D integration methods
-
   /*!
   \brief Perform mortar-integration without previous segmentation -- 2D
 

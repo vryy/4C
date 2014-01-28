@@ -42,6 +42,9 @@ Maintainer: Caroline Danowski
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_thermo/thr_contact.H"
 
+//for coupling of nonmatching meshes
+#include "../drt_adapter/adapter_coupling_volmortar.H"
+
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
 //! define the order in which the filters handle the Discretizations, which in
@@ -80,19 +83,61 @@ TSI::Monolithic::Monolithic(
   sdyn_(sdynparams),
   veln_(Teuchos::null)
 {
-  // monolithic TSI must know the other discretization
-  // build a proxy of the structure discretization for the temperature field
-  Teuchos::RCP<DRT::DofSet> structdofset
-    = StructureField()->Discretization()->GetDofSetProxy();
-  // build a proxy of the temperature discretization for the structure field
-  Teuchos::RCP<DRT::DofSet> thermodofset
-    = ThermoField()->Discretization()->GetDofSetProxy();
 
-  // check if ThermoField has 2 discretizations, so that coupling is possible
-  if (ThermoField()->Discretization()->AddDofSet(structdofset)!=1)
-    dserror("unexpected dof sets in thermo field");
-  if (StructureField()->Discretization()->AddDofSet(thermodofset)!=1)
-    dserror("unexpected dof sets in structure field");
+  // access the structural discretization
+  Teuchos::RCP<DRT::Discretization> structdis = StructureField()->Discretization();
+  // access the thermo discretization
+  Teuchos::RCP<DRT::Discretization> thermodis = ThermoField()->Discretization();
+
+  //*************************************
+  // std. matching grid                 *
+  //*************************************
+  if(matchinggrid_)
+  {
+    // monolithic TSI must know the other discretization
+    // build a proxy of the structure discretization for the temperature field
+    Teuchos::RCP<DRT::DofSet> structdofset
+      = structdis->GetDofSetProxy();
+    // build a proxy of the temperature discretization for the structure field
+    Teuchos::RCP<DRT::DofSet> thermodofset
+      = thermodis->GetDofSetProxy();
+
+    // check if ThermoField has 2 discretizations, so that coupling is possible
+    if (thermodis->AddDofSet(structdofset)!=1)
+      dserror("unexpected dof sets in thermo field");
+    if (structdis->AddDofSet(thermodofset)!=1)
+      dserror("unexpected dof sets in structure field");
+  }
+  //*************************************
+  // volumetric mortar coupling         *
+  //*************************************
+  else
+  {
+    //build auxiliary dofsets, i.e. pseudo dofs on each discretization
+    const int ndofpernode_thermo = 1;
+    const int ndofperelement_thermo  = 0;
+    const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
+    const int ndofperelement_struct = 0;
+    if (structdis->BuildDofSetAuxProxy(ndofpernode_thermo ,ndofperelement_thermo ) != 1)
+      dserror("unexpected dof sets in structure field");
+    if (thermodis->BuildDofSetAuxProxy(ndofpernode_struct,ndofperelement_struct) != 1)
+      dserror("unexpected dof sets in thermo field");
+
+    //call AssignDegreesOfFreedom also for auxiliary dofsets
+    //note: the order of FillComplete() calls determines the gid numbering!
+    // 1. structure dofs
+    // 2. scatra dofs
+    // 3. structure auxiliary dofs
+    // 4. scatra auxiliary dofs
+    structdis->FillComplete(true, false,false);
+    thermodis->FillComplete(true, false,false);
+
+    // Scheme: non matching meshes --> volumetric mortar coupling...
+    volcoupl_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
+
+    //setup projection matrices
+    volcoupl_->Setup(structdis, thermodis,comm);
+  }
 
   // access the thermal parameter lists
   const Teuchos::ParameterList& tdyn
@@ -197,14 +242,9 @@ void TSI::Monolithic::ReadRestart(int step)
   ThermoField()->ReadRestart(step);
   StructureField()->ReadRestart(step);
 
-  // pass the current coupling varibles to the respective field
-  ThermoField()->ApplyStructVariables(
-                   StructureField()->Dispnp(),
-                   StructureField()->WriteAccessVelnp()
-                   );
-  StructureField()->ApplyCouplingState(
-                      ThermoField()->Tempnp(),"temperature"
-                      );
+  // pass the current coupling variables to the respective field
+  ApplyStructCouplingState(StructureField()->Dispnp(),StructureField()->Velnp());
+  ApplyThermoCouplingState(ThermoField()->Tempnp());
 
   // second ReadRestart needed due to the coupling variables
   ThermoField()->ReadRestart(step);
@@ -582,7 +622,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 
 #ifndef MonTSIwithoutTHR
   // apply current temperature to structure
-  StructureField()->ApplyCouplingState(ThermoField()->Tempnp(),"temperature");
+  ApplyThermoCouplingState(ThermoField()->Tempnp());
 #endif
 
 #ifdef TSIPARALLEL
@@ -637,7 +677,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   }
 #ifndef MonTSIwithoutSTR
   // pass the structural values to the thermo field
-  ThermoField()->ApplyStructVariables(StructureField()->Dispnp(),veln_);
+  ApplyStructCouplingState(StructureField()->Dispnp(),veln_);
 #endif
 
 #ifdef TSIMONOLITHASOUTPUT
@@ -827,10 +867,19 @@ void TSI::Monolithic::SetupSystemMatrix()
   //              --> blank the row, which has a DBC
   //
   // to apply Multiply in LocSys, k_st has to be FillCompleted
-  k_st->Complete(
-          *(ThermoField()->Discretization()->DofColMap(0)),
-          *(StructureField()->Discretization()->DofRowMap(0))
-          );
+  if(matchinggrid_)
+    k_st->Complete(
+            *(ThermoField()->Discretization()->DofColMap(0)),
+            *(StructureField()->Discretization()->DofRowMap(0))
+            );
+  else
+  {
+    k_st->Complete(
+            *(StructureField()->Discretization()->DofRowMap(1)),
+            *(StructureField()->Discretization()->DofRowMap(0))
+            );
+    k_st=volcoupl_->ApplyMatrixMappingAB(k_st);
+  }
 
   if (locsysman_ != Teuchos::null)
   {
@@ -903,16 +952,26 @@ void TSI::Monolithic::SetupSystemMatrix()
   // here k_ts
   // k_ts is an off-diagonal block --> pass the bool diagonal==false
   // ApplyDirichlet() expect filled matrix
-  k_ts->Complete(
-          *(StructureField()->Discretization()->DofColMap(0)),
-          *(ThermoField()->Discretization()->DofRowMap(0))
-          );
-  k_ts->ApplyDirichlet(*ThermoField()->GetDBCMapExtractor()->CondMap(),false);
-  k_ts->UnComplete();
+  if(matchinggrid_)
+  {
+    k_ts->Complete(
+            *(StructureField()->Discretization()->DofColMap(0)),
+            *(ThermoField()->Discretization()->DofRowMap(0))
+            );
+  }
+  else
+  {
+    k_ts->Complete(
+            *(ThermoField()->Discretization()->DofColMap(1)),
+            *(ThermoField()->Discretization()->DofRowMap(0))
+            );
+    k_ts=volcoupl_->ApplyMatrixMappingBA(k_ts);
+  }
 
   // assign thermo part to the TSI matrix
-  systemmatrix_->Assign(1,0,View,*(k_ts));
-
+  k_ts->ApplyDirichlet(*ThermoField()->GetDBCMapExtractor()->CondMap(),false);
+  k_ts->UnComplete();
+  systemmatrix_->Assign(1,0,View,*k_ts);
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
   systemmatrix_->Complete();
@@ -1536,7 +1595,11 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
 
   // in case of temperature-dependent material parameters, here E(T), T_{n+1} is required in STR
   sparams.set<int>("young_temp", (DRT::INPUT::IntegralValue<int>(sdyn_,"YOUNG_IS_TEMP_DEPENDENT")));
-  StructureField()->Discretization()->SetState(1,"temperature",ThermoField()->Tempnp());
+  if(matchinggrid_)
+    StructureField()->Discretization()->SetState(1,"temperature",ThermoField()->Tempnp());
+  else
+  	dserror("off diagonal term evaluation not yet implemented for non matching grid!");
+    //ApplyThermoCouplingState(ThermoField()->Tempnp());
 
   // build specific assemble strategy for mechanical-thermal system matrix
   // from the point of view of StructureField:
@@ -1664,8 +1727,15 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   ThermoField()->Discretization()->ClearState();
   // set the variables that are needed by the elements
   ThermoField()->Discretization()->SetState(0,"temperature",ThermoField()->Tempnp());
-  ThermoField()->Discretization()->SetState(1,"displacement",StructureField()->Dispnp());
-  ThermoField()->Discretization()->SetState(1,"velocity",veln_);
+
+  if(matchinggrid_)
+  {
+    ThermoField()->Discretization()->SetState(1,"displacement",StructureField()->Dispnp());
+    ThermoField()->Discretization()->SetState(1,"velocity",veln_);
+  }
+  else
+    dserror("off diagonal term evaluation not yet implemented for non matching grid!");
+    //ApplyStructCouplingState(StructureField()->Dispnp(),veln_);
 
   // build specific assemble strategy for the thermal-mechanical system matrix
   // from the point of view of ThermoField:
