@@ -1293,7 +1293,7 @@ void mortar_dualshape_function_2D(
     int nnodes = ele.NumNode();
     // get solution matrix with dual parameters
     LINALG::SerialDenseMatrix ae(nnodes,nnodes);
-    LINALG::Matrix<3,1>      stdval;
+    LINALG::Matrix<4,1>      stdval;
 
     // no pre-computed dual shape functions
     if (ele.MoData().DualShape()==Teuchos::null)
