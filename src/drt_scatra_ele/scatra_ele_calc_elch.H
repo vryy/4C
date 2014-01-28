@@ -152,6 +152,18 @@ private:
     const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
 
+  void MatIon(
+    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+    const int                               k,        //!< id of current scalar
+    double&                                 densn,    //!< density at t_(n)
+    double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+    double&                                 densam,   //!< density at t_(n+alpha_M)
+    Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
+    Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
+    double&                                 visc,     //!< fluid viscosity
+    const int                               iquad     //!< id of current gauss point
+  );
+
   /*========================================================================*/
   //! @name methods for evaluation of individual terms
   /*========================================================================*/
@@ -338,6 +350,9 @@ class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
     void OutputTransportParams(const int numscal)
     {
       for(int k=0;k<numscal;++k)
+        std::cout << "valence " << k << ":   " << valence_[k] << std::endl;
+
+      for(int k=0;k<numscal;++k)
         std::cout << "diffusion coefficient " << k << ":   " << diff_[k] << std::endl;
 
       for(int k=0;k<numscal;++k)
@@ -372,6 +387,20 @@ class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
       for(int k=0;k<numscal;++k)
         std::cout << "derivation of thermodynamic factor " << k << ":   " << derivthermfac_[k] << std::endl;
       std::cout << std::endl;
+
+      return;
+    };
+
+    // return
+    unsigned int LengthVector(){return diff_.size();};
+
+    void IncreaseLengthVector(const int k, const int numscal)
+    {
+      if(diff_.size()== (unsigned) numscal)
+      {
+        valence_.push_back(0.0);
+        diff_.push_back(0.0);
+      }
 
       return;
     };

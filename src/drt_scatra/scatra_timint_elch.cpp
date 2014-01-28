@@ -79,31 +79,6 @@ void SCATRA::ScaTraTimIntElch::Init()
   // Output to screen and file is suppressed
   OutputElectrodeInfo(false,false);
 
-  if (numscal_ > 1) // we have at least two ion species + el. potential
-  {
-    // number of concentrations transported is numdof-1
-    numscal_ -= 1;
-
-    Teuchos::ParameterList& diffcondparams = elchparams_->sublist("DIFFCOND");
-
-    // currrent is a solution variable
-    if(DRT::INPUT::IntegralValue<int>(diffcondparams,"CURRENT_SOLUTION_VAR"))
-    {
-      // shape of local row element(0) -> number of space dimensions
-      //int dim = DRT::Problem::Instance()->NDim();
-      int dim = DRT::UTILS::getDimension(discret_->lRowElement(0)->Shape());
-      // number of concentrations transported is numdof-1-nsd
-      numscal_ -= dim;
-    }
-
-    //TODO: SCATRA_ELE_CLEANING: Verbindung zwischen Elchtype, DiffCond Liste und Material
-    if(DRT::INPUT::IntegralValue<int>(diffcondparams,"DIFFCOND_FORMULATION"))
-      ValidParameterDiffCond();
-  }
-  // set up the concentration-el.potential splitter
-  splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
-  FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
-
   // initializes variables for natural convection (ELCH) if necessary
   SetupElchNatConv();
 
@@ -152,6 +127,31 @@ void SCATRA::ScaTraTimIntElch::Init()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::InitSystemMatrix()
 {
+  if (numscal_ > 1) // we have at least two ion species + el. potential
+  {
+    // number of concentrations transported is numdof-1
+    numscal_ -= 1;
+
+    Teuchos::ParameterList& diffcondparams = elchparams_->sublist("DIFFCOND");
+
+    // currrent is a solution variable
+    if(DRT::INPUT::IntegralValue<int>(diffcondparams,"CURRENT_SOLUTION_VAR"))
+    {
+      // shape of local row element(0) -> number of space dimensions
+      //int dim = DRT::Problem::Instance()->NDim();
+      int dim = DRT::UTILS::getDimension(discret_->lRowElement(0)->Shape());
+      // number of concentrations transported is numdof-1-nsd
+      numscal_ -= dim;
+    }
+
+    //TODO: SCATRA_ELE_CLEANING: Verbindung zwischen Elchtype, DiffCond Liste und Material
+    if(DRT::INPUT::IntegralValue<int>(diffcondparams,"DIFFCOND_FORMULATION"))
+      ValidParameterDiffCond();
+  }
+  // set up the concentration-el.potential splitter
+  splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
+  FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
+
   if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND")
       and msht_ == INPAR::FLUID::no_meshtying)
   {
@@ -165,6 +165,7 @@ void SCATRA::ScaTraTimIntElch::InitSystemMatrix()
     // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
     Teuchos::RCP<LINALG::BlockSparseMatrix<SCATRA::SplitStrategy> > blocksysmat =
       Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(*splitter_,*splitter_,27,false,true));
+
     blocksysmat->SetNumScal(numscal_);
 
     sysmat_ = blocksysmat;

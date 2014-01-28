@@ -770,7 +770,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
       // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
       if(elchtype==INPAR::ELCH::elchtype_enc_pde_elim)
       {
-        sigma_all += factor*dme_->GetIsotropicDiff(k)*dme_->GetValence(k)*dme_->GetValence(k)*(-conint[k]);
+        sigma_all += factor*dme_->GetIsotropicDiff(my::numscal_)*dme_->GetValence(my::numscal_)*dme_->GetValence(k)*(-conint[k]);
       }
     }
   }

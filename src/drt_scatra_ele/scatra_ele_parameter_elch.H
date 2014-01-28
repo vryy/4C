@@ -76,7 +76,7 @@ public:
 
   bool CurSolVar(){return cursolvar_;};
 
-  bool ConstParams(){return constparams_;};
+  bool DiffusionCoeffBased(){return diffusioncoefbased_;};
 
   INPAR::ELCH::EquPot EquPot(){return equpot_;};
 
@@ -102,7 +102,7 @@ protected:
 
   bool cursolvar_;
 
-  bool constparams_;
+  bool diffusioncoefbased_;
 
   enum INPAR::ELCH::EquPot equpot_;
 

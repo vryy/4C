@@ -58,8 +58,11 @@ DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch()
   nernstplanck_(true),
   frt_(0.0),
   cursolvar_(false),
-  constparams_(false),
-  equpot_(INPAR::ELCH::equpot_undefined)
+  diffusioncoefbased_(true),
+  equpot_(INPAR::ELCH::equpot_undefined),
+  newmanconsta_(0.0),
+  newmanconstb_(0.0),
+  newmanconstc_(1.0)
 {
   return;
 }
@@ -101,41 +104,47 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetElementElchDiffCondScaTraParamete
   Teuchos::ParameterList& params,
   int myrank )
 {
-  Teuchos::ParameterList& diffcondparams = params.sublist("DIFFCOND");
-  cursolvar_ = DRT::INPUT::IntegralValue<int>(diffcondparams,"CURRENT_SOLUTION_VAR");
+  if(nernstplanck_ == false)
+  {
+    Teuchos::ParameterList& diffcondparams = params.sublist("DIFFCOND");
+    cursolvar_ = DRT::INPUT::IntegralValue<int>(diffcondparams,"CURRENT_SOLUTION_VAR");
 
-  constparams_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams,"CONSTPARAMS");
+    diffusioncoefbased_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams,"DIFFBASED");
 
-  equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams,"EQUPOT");
+    if(DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams,"CONSTPARAMS") == true)
+      dserror("This option is not supported anymore!!");
+
+    equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams,"EQUPOT");
 
 
-  /// dilute solution theory (diffusion potential in current equation):
-  ///    A          B
-  ///   |--|  |----------|
-  ///   z_1 + (z_2 - z_1) t_1
-  /// ------------------------ (RT/F kappa 1/c_k grad c_k)
-  ///      z_1 z_2
-  ///     |________|
-  ///         C
-  newmanconsta_ = diffcondparams.get<double>("NEWMAN_CONST_A");
-  newmanconstb_ = diffcondparams.get<double>("NEWMAN_CONST_B");
-  newmanconstc_ = diffcondparams.get<double>("NEWMAN_CONST_C");
+    /// dilute solution theory (diffusion potential in current equation):
+    ///    A          B
+    ///   |--|  |----------|
+    ///   z_1 + (z_2 - z_1) t_1
+    /// ------------------------ (RT/F kappa 1/c_k grad c_k)
+    ///      z_1 z_2
+    ///     |________|
+    ///         C
+    newmanconsta_ = diffcondparams.get<double>("NEWMAN_CONST_A");
+    newmanconstb_ = diffcondparams.get<double>("NEWMAN_CONST_B");
+    newmanconstc_ = diffcondparams.get<double>("NEWMAN_CONST_C");
 
-  if(nernstplanck_ != false)
-    dserror("Somehow you are not in the Nernst-Planck framework! How did you come here?");
+    //if(nernstplanck_ != false)
+    //  dserror("Somehow you are not in the Nernst-Planck framework! How did you come here?");
 
-  // safety checks - no stabilization for diffusion-conduction formulation
-  if(stabtype_ !=INPAR::SCATRA::stabtype_no_stabilization)
-    dserror("No stabilization available for the diffusion-conduction formulation \n"
-            "since we had no problems so far.");
+    // safety checks - no stabilization for diffusion-conduction formulation
+    if(stabtype_ !=INPAR::SCATRA::stabtype_no_stabilization)
+      dserror("No stabilization available for the diffusion-conduction formulation \n"
+              "since we had no problems so far.");
 
-  if(whichtau_ != INPAR::SCATRA::tau_zero)
-    dserror("No stabilization available for the diffusion-conduction formulation \n"
-            "since we had no problems so far.");
+    if(whichtau_ != INPAR::SCATRA::tau_zero)
+      dserror("No stabilization available for the diffusion-conduction formulation \n"
+              "since we had no problems so far.");
 
-  if (mat_gp_ == false and tau_gp_==false)
-    dserror("Since most of the materials of the Diffusion-conduction formulation depend on the concentration,\n"
-            "an evaluation of the material (and the potential stabilization parameter) at the element center is disabled.");
+    if (mat_gp_ == false and tau_gp_==false)
+      dserror("Since most of the materials of the Diffusion-conduction formulation depend on the concentration,\n"
+              "an evaluation of the material (and the potential stabilization parameter) at the element center is disabled.");
+  }
 
 
   return;
