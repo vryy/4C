@@ -896,7 +896,8 @@ protected:
     statmech_linker_bellseq,
     statmech_linker_bellseqintpol,
     statmech_linker_active,
-    statmech_linker_activeintpol
+    statmech_linker_activeintpol,
+    statmech_linker_myosinthick
   };
 
 

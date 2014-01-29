@@ -2055,7 +2055,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "bellseq",
                                                     "bellseqintpol",
                                                     "active",
-                                                    "activeintpol"),
+                                                    "activeintpol",
+                                                    "myosinthick"),
                                  //translating input std::strings into BACI input parameters
                                  tuple<int>(INPAR::STATMECH::linkermodel_none,
                                             INPAR::STATMECH::linkermodel_std,
@@ -2063,7 +2064,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::linkermodel_bellseq,
                                             INPAR::STATMECH::linkermodel_bellseqintpol,
                                             INPAR::STATMECH::linkermodel_active,
-                                            INPAR::STATMECH::linkermodel_activeintpol),
+                                            INPAR::STATMECH::linkermodel_activeintpol,
+                                            INPAR::STATMECH::linkermodel_myosinthick),
                                             &statmech);
   setStringToIntegralParameter<int>("PLANELINKERMOTION","No",
                                  "Plane Brownian Motion of linkers",

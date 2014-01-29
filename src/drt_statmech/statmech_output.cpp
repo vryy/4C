@@ -1237,7 +1237,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
         double color = 1.0;
         if (element->Id() >= basisnodes_)
         {
-          if(eot != DRT::ELEMENTS::BeamCLType::Instance() && element->NumNode()!=2)
+          if(eot != DRT::ELEMENTS::BeamCLType::Instance() && eot != DRT::ELEMENTS::Torsion3Type::Instance() && element->NumNode()!=2)
           {
             if(eot != DRT::ELEMENTS::Truss3CLType::Instance() && element->NumNode()!=2)
               dserror("Crosslinker element has more than 2 nodes! No visualization has been implemented for such linkers!");
