@@ -606,16 +606,17 @@ void STATMECH::StatMechManager::Update(const int&                               
 
     //column maps cointaining binding spot positions and their spatial orientation
     Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
-    Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
+    Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::null;
+    // allocate memory to binding spot rotations only if linkers are not Truss3, Truss3CL elements
+    if(linkermodel_ != statmech_linker_truss3 || linkermodel_ != statmech_linker_truss3intpol)
+     bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));;
 
     /* note: access by ExtractMyValues requires column map vector, whereas displacements on level of time integration are
      * handled as row map vector*/
     Epetra_Vector discol(*discret_->DofColMap(), true);
     LINALG::Export(disrow, discol);
-    if (linkermodel_ == statmech_linker_truss3 || linkermodel_ == statmech_linker_truss3intpol)
-      GetBindingSpotPositions(discol, bspotpositions, Teuchos::null);
-    else
-      GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
+
+    GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
 
 #ifdef MEASURETIME
     const double t2 = Teuchos::Time::wallTime();
@@ -641,9 +642,6 @@ void STATMECH::StatMechManager::Update(const int&                               
         GetNodePositionsFromDisVec(discol, currentpositions, currentrotations, true);
         beamcmanager->OcTree()->OctTreeSearch(currentpositions);
       }
-      if (linkermodel_ == statmech_linker_truss3 || linkermodel_ == statmech_linker_truss3intpol)
-        SearchAndSetCrosslinkers(istep, timen, dt, bspotpositions, Teuchos::null, discol, beamcmanager, printscreen);
-      else
         SearchAndSetCrosslinkers(istep, timen, dt, bspotpositions, bspotrotations, discol, beamcmanager, printscreen);
 
 #ifdef DEBUGCOUT
@@ -676,10 +674,7 @@ void STATMECH::StatMechManager::Update(const int&                               
       if(beamcmanager!=Teuchos::null && rebuildoctree)
         beamcmanager->ResetPairs();
       
-      if (linkermodel_ == statmech_linker_truss3 || linkermodel_ == statmech_linker_truss3intpol)
-        SearchAndDeleteCrosslinkers(istep, timen, dt, bspotpositions, Teuchos::null, discol, beamcmanager, printscreen);
-      else
-        SearchAndDeleteCrosslinkers(istep, timen, dt, bspotpositions, bspotrotations, discol,beamcmanager,printscreen);
+      SearchAndDeleteCrosslinkers(istep, timen, dt, bspotpositions, bspotrotations, discol,beamcmanager,printscreen);
 
 #ifdef MEASURETIME
       t5 = Teuchos::Time::wallTime();
@@ -837,14 +832,10 @@ void STATMECH::StatMechManager::GetBindingSpotPositions(Epetra_Vector& discol,
    * analogously in a map currentrotations for later use in setting up reference geometry of crosslinkers; the maps
    * currentpositions and currentrotations relate positions and rotations to a local column map node Id, respectively*/
 
-  // in case the four-noded crosslinker beam element is used, currentpositions and currentrotations have to be set up another way
-  if(linkermodel_ == statmech_linker_stdintpol || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol)
+  // in case the four-noded crosslinker beam or Truss element is used, currentpositions and currentrotations have to be set up another way
+  if(linkermodel_ == statmech_linker_stdintpol || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol || linkermodel_ == statmech_linker_truss3intpol)
     GetInterpolatedBindingSpotPositions(discol, bspotpositions, bspotrotations);
-  else if(linkermodel_ == statmech_linker_truss3intpol)
-    GetInterpolatedBindingSpotPositions(discol, bspotpositions, Teuchos::null);
-  else  if(linkermodel_ == statmech_linker_truss3)  // conventional crosslinker beam3eb element, i.e. binding spots coincide with nodes
-    GetNodalBindingSpotPositionsFromDisVec(discol, bspotpositions, Teuchos::null);
-  else  // conventional crosslinker beam3ii element, i.e. binding spots coincide with nodes
+  else  // conventional crosslinker beam3ii, Truss 3 element, i.e. binding spots coincide with nodes
     GetNodalBindingSpotPositionsFromDisVec(discol, bspotpositions, bspotrotations);
   return;
 }
