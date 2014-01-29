@@ -141,7 +141,7 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
         nsValues2[j] = 1.0;
       }
 
-      std::cout << params_ << std::endl;
+      //std::cout << params_ << std::endl;
 
       // use parameters from user-provided XML file
 
@@ -152,6 +152,7 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
       // use xml file for generating hierarchy
       std::string xmlFileName = params_.get<std::string>("xml file");
       Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+      fos->setOutputToRootOnly(0);
       *fos << "Use XML file " << xmlFileName << " for generating MueLu multigrid hierarchy" << std::endl;
 
       //////////////////////////////////////// prepare setup
