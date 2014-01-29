@@ -131,7 +131,7 @@ if [[ ! "$CONFIGURATION_FILE" ]]; then
 	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q32013.config
 	    TRILINOSDEV=ON
       else
-	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q12013.config
+	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q32013.config
 	    TRILINOSDEV=ON
       fi
       echo $CONFIGURATION_FILE
