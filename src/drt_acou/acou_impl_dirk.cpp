@@ -192,6 +192,7 @@ void ACOU::TimIntImplDIRK::UpdateInteriorVariables(int stage)
   eleparams.set<double>("dt",dtp_*dirk_a_[0][0]);
 
   eleparams.set<bool>("adjoint",adjoint_);
+  eleparams.set<bool>("errormaps",false);
 
   eleparams.set<int>("action",ACOU::update_secondary_solution);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);

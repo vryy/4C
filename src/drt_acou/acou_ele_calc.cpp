@@ -98,6 +98,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
 {
 
   const ACOU::Action action = DRT::INPUT::get<ACOU::Action>(params,"action");
+  bool updateonly = false;
 
   switch(action)
   {
@@ -115,43 +116,6 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
   {
     ReadGlobalVectors(*ele,discretization,lm);
     NodeBasedValues(ele,discretization,lm,elevec1);
-    break;
-  }
-  case ACOU::update_secondary_solution:
-  {
-    bool adjoint = params.get<bool>("adjoint");
-    double dt = params.get<double>("dt");
-
-    ReadGlobalVectors(*ele,discretization,lm);
-    shapes_.Evaluate(*ele);
-
-    dyna_ = params.get<INPAR::ACOU::DynamicType>("dynamic type");
-
-    zeroMatrix(elemat1);
-    zeroMatrix(localSolver_.Cmat);
-    zeroMatrix(localSolver_.Emat);
-    zeroMatrix(localSolver_.Gmat);
-    localSolver_.ComputeInteriorMatrices(mat,dt);
-    for (unsigned int face=0; face<nfaces_; ++face)
-    {
-      shapes_.EvaluateFace(*ele, face);
-      localSolver_.ComputeFaceMatrices(face,mat,dt);
-    }
-
-    if(!adjoint)
-    {
-      if (dyna_ == INPAR::ACOU::acou_trapezoidal)
-        UpdateInteriorVariablesTrap(discretization,*ele);
-      else
-        UpdateInteriorVariables(discretization,*ele);
-    } // if(!adjoint)
-    else
-    {
-      if (dyna_ == INPAR::ACOU::acou_trapezoidal)
-        UpdateInteriorVariablesTrapAdjoint(discretization,*ele);
-      else
-        UpdateInteriorVariablesAdjoint(discretization,*ele);
-    }
     break;
   }
   case ACOU::calc_abc:
@@ -202,36 +166,22 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     if(!adjoint)
     {
       if(!resonly)
-      {
-        if (dyna_ == INPAR::ACOU::acou_trapezoidal)
-          localSolver_.CondenseLocalPartTrap(elemat1,mat,dt);
-        else
-          localSolver_.CondenseLocalPart(elemat1,mat);
-      }
+        localSolver_.CondenseLocalPart(elemat1,mat,dyna_);
 
-      if (dyna_ == INPAR::ACOU::acou_trapezoidal)
-        localSolver_.ComputeResidualTrap(elevec1,mat,interiorGradnp_,interiorVelnp_,traceVal_,dt);
-      else
-        localSolver_.ComputeResidual(elevec1,mat,interiorGradnp_,interiorVelnp_);
+      localSolver_.ComputeResidual(elevec1,mat,interiorGradnp_,interiorVelnp_,traceVal_,dyna_);
 
     } // if(!adjoint)
     else
     {
       if(!resonly)
-      {
-        if (dyna_ == INPAR::ACOU::acou_trapezoidal)
-          localSolver_.CondenseLocalPartTrapAdjoint(elemat1,mat);
-        else
-          localSolver_.CondenseLocalPartAdjoint(elemat1,mat);
-      }
+        localSolver_.CondenseLocalPartAdjoint(elemat1,mat,dyna_);
 
-      if (dyna_ == INPAR::ACOU::acou_trapezoidal)
-        localSolver_.ComputeResidualTrapAdjoint(elevec1,mat,interiorGradnp_,interiorVelnp_,traceVal_,dt);
-      else
-        localSolver_.ComputeResidualAdjoint(elevec1,mat,interiorGradnp_,interiorVelnp_);
+      localSolver_.ComputeResidualAdjoint(elevec1,mat,interiorGradnp_,interiorVelnp_,traceVal_,dyna_);
     }
     break;
   }
+  case ACOU::update_secondary_solution:
+    updateonly = true; // no break here!!!
   case ACOU::update_secondary_solution_and_calc_residual:
   {
     bool adjoint = params.get<bool>("adjoint");
@@ -253,20 +203,9 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
       localSolver_.ComputeFaceMatrices(face,mat,dt);
     }
 
-    if(!adjoint)
-    {
-      if (dyna_ == INPAR::ACOU::acou_trapezoidal)
-        UpdateInteriorVariablesAndComputeResidualTrap(discretization,params,*ele,dt,elevec1,mat,errormaps);
-      else
-        UpdateInteriorVariablesAndComputeResidual(discretization,params,*ele,elevec1,mat,dt,errormaps); // the standard case
-    } // if(!adjoint)
-    else
-    {
-      if (dyna_ == INPAR::ACOU::acou_trapezoidal)
-        UpdateInteriorVariablesAndComputeResidualTrapAdjoint(discretization,*ele,elevec1,mat); // the standard case
-      else
-        UpdateInteriorVariablesAndComputeResidualAdjoint(discretization,*ele,elevec1,mat); // the standard case
-    } // else ** if(!adjoint)
+    if(!adjoint) UpdateInteriorVariablesAndComputeResidual(discretization,params,*ele,elevec1,mat,dt,errormaps,updateonly);
+    else         UpdateInteriorVariablesAndComputeResidualAdjoint(discretization,*ele,elevec1,mat,updateonly);
+
     break;
   }
   default:
@@ -1154,358 +1093,14 @@ shapes_(shapeValues)
   Amat.Shape(nsd_*ndofs_,nsd_*ndofs_);
   invAmat.Shape(nsd_*ndofs_,nsd_*ndofs_);
   Bmat.Shape(ndofs_,nsd_*ndofs_);
-  Hmat.Shape(nsd_*ndofs_,ndofs_);
   Dmat.Shape(ndofs_,ndofs_);
   Mmat.Shape(ndofs_,ndofs_);
   DmMmat.Shape(ndofs_,ndofs_);
 
   Cmat.Shape(nsd_*ndofs_,nfaces_*nfdofs_);
-  Imat.Shape(nfaces_*nfdofs_,nsd_*ndofs_);
   Emat.Shape(ndofs_,nfaces_*nfdofs_);
-  Jmat.Shape(nfaces_*nfdofs_,ndofs_);
   Gmat.Shape(nfaces_*nfdofs_,nfaces_*nfdofs_);
 }
-
-/*----------------------------------------------------------------------*
- * UpdateInteriorVariables
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouEleCalc<distype>::
-UpdateInteriorVariables(DRT::Discretization &                discretization,
-                        DRT::ELEMENTS::Acou &                ele)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::UpdateInteriorVariables");
-
-  interiorGradn_ = interiorGradnp_;
-  interiorVeln_ = interiorVelnp_;
-
-  Epetra_SerialDenseVector traceVal_SDV(nfaces_*nfdofs_);
-  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
-    traceVal_SDV(i) = traceVal_[i];
-
-  Teuchos::RCP<MAT::Material> mat = ele.Material();
-  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density();
-
-  Epetra_SerialDenseVector tempVec1(nsd_*ndofs_);
-  tempVec1.Multiply('N','N',1.0,localSolver_.Amat,interiorGradn_,0.0);
-  tempVec1.Multiply('N','N',1.0,localSolver_.Cmat,traceVal_SDV,1.0);
-
-  Epetra_SerialDenseVector tempVec2;
-  tempVec2.Shape(ndofs_,1);
-  tempVec2.Multiply('N','N',1.0,localSolver_.Mmat,interiorVeln_,0.0);
-  tempVec2.Multiply('N','N',-1.0,localSolver_.Emat,traceVal_SDV,1.0);
-
-  Epetra_SerialDenseMatrix tempMat1;
-  tempMat1.Shape(ndofs_,nsd_*ndofs_);
-  tempMat1.Multiply('N','N',1.0/rho,localSolver_.Bmat,localSolver_.invAmat,0.0);
-  tempVec2.Multiply('N','N',-1.0,tempMat1,tempVec1,1.0);
-
-  Epetra_SerialDenseMatrix tempMat2;
-  tempMat2.Shape(ndofs_,ndofs_);
-  tempMat2.Multiply('N','T',1.0,tempMat1,localSolver_.Bmat,0.0);
-  tempMat2 += localSolver_.Dmat;
-
-  {
-    LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseDmat;
-    LINALG::Matrix<ndofs_,ndofs_> D(tempMat2,true);
-    inverseDmat.SetMatrix(D);
-    inverseDmat.Invert();
-  }
-
-  interiorVelnp_.Multiply('N','N',1.0,tempMat2,tempVec2,0.0);
-
-  tempVec1.Multiply('T','N',1.0,localSolver_.Bmat,interiorVelnp_,1.0);
-  interiorGradnp_.Multiply('N','N',1.0,localSolver_.invAmat,tempVec1,0.0);
-
-  for(unsigned int i=0; i<interiorValnp_.size(); ++i)
-  {
-    if ((i+1)%(nsd_+1) == 0)
-    {
-      interiorValnp_[i] = interiorVelnp_((i+1)/(nsd_+1)-1);
-    }
-    else
-    {
-      int xyz = i % (nsd_+1); // 0 for x, 1 for y and 2 for z (for 3D)
-      interiorValnp_[i] = interiorGradnp_(xyz*ndofs_+i/(nsd_+1));
-    }
-  }
-
-  // tell this change in the interior variables the discretization
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvel");
-  std::vector<int> localDofs = discretization.Dof(1, &ele);
-  Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
-
-  const Epetra_Map* intdofcolmap = discretization.DofColMap(1);
-  for (unsigned int i=0; i<localDofs.size(); ++i)
-  {
-    const int lid = intdofcolmap->LID(localDofs[i]);
-    secondary[lid] = interiorValnp_[i];
-  }
-
-  return;
-} // UpdateInteriorVariables
-
-
-/*----------------------------------------------------------------------*
- * UpdateInteriorVariablesTrap
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouEleCalc<distype>::
-UpdateInteriorVariablesTrap(DRT::Discretization &                discretization,
-                            DRT::ELEMENTS::Acou &                ele)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::UpdateInteriorVariablesTrap");
-
-  interiorGradn_ = interiorGradnp_;
-  interiorVeln_ = interiorVelnp_;
-
-  Epetra_SerialDenseVector traceVal_SDV(nfaces_*nfdofs_);
-  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
-    traceVal_SDV(i) = traceVal_[i];
-
-  Epetra_SerialDenseVector traceVal_SDV_m(nfaces_*nfdofs_);
-  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
-    traceVal_SDV_m(i) = traceValm_[i];
-
-  double theta = 0.66;
-
-  Teuchos::RCP<MAT::Material> mat = ele.Material();
-  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density();
-
-  Epetra_SerialDenseVector tempVec1(ndofs_*nsd_);
-  tempVec1.Multiply('N','N',1.0,localSolver_.Amat,interiorGradnp_,0.0);
-  tempVec1.Multiply('T','N',1.0-theta,localSolver_.Bmat,interiorVelnp_,1.0);
-  tempVec1.Multiply('N','N',1.0-theta,localSolver_.Cmat,traceVal_SDV_m,1.0);
-  tempVec1.Multiply('N','N',theta,localSolver_.Cmat,traceVal_SDV,1.0);
-
-  Epetra_SerialDenseVector tempVec2(ndofs_);
-  tempVec2.Multiply('N','N',1.0,localSolver_.Mmat,interiorVelnp_,0.0);
-  tempVec2.Multiply('N','N',-(1.0-theta)/rho,localSolver_.Bmat,interiorGradnp_,1.0);
-  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_.DmMmat,interiorVelnp_,1.0);
-  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_.Emat,traceVal_SDV_m,1.0);
-  tempVec2.Multiply('N','N',-(theta),localSolver_.Emat,traceVal_SDV,1.0);
-
-  Epetra_SerialDenseMatrix tempMat1;
-  tempMat1.Shape(ndofs_,nsd_*ndofs_);
-  tempMat1.Multiply('N','N',theta/rho,localSolver_.Bmat,localSolver_.invAmat,0.0);
-  tempVec2.Multiply('N','N',-1.0,tempMat1,tempVec1,1.0);
-
-  Epetra_SerialDenseMatrix tempMat2;
-  tempMat2.Shape(ndofs_,ndofs_);
-  tempMat2 += localSolver_.DmMmat;
-  tempMat2.Scale(theta);
-  tempMat2.Multiply('N','T',theta,tempMat1,localSolver_.Bmat,1.0);
-  tempMat2 += localSolver_.Mmat;
-
-  {
-    LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseDmat;
-    LINALG::Matrix<ndofs_,ndofs_> D(tempMat2,true);
-    inverseDmat.SetMatrix(D);
-    inverseDmat.Invert();
-  }
-
-  interiorVelnp_.Multiply('N','N',1.0,tempMat2,tempVec2,0.0);
-
-  tempVec1.Multiply('T','N',theta,localSolver_.Bmat,interiorVelnp_,1.0);
-  interiorGradnp_.Multiply('N','N',1.0,localSolver_.invAmat,tempVec1,0.0);
-
-  for(unsigned int i=0; i<interiorValnp_.size(); ++i)
-  {
-    if ((i+1)%(nsd_+1) == 0)
-    {
-      interiorValnp_[i] = interiorVelnp_((i+1)/(nsd_+1)-1);
-    }
-    else
-    {
-      int xyz = i % (nsd_+1); // 0 for x, 1 for y and 2 for z (for 3D)
-      interiorValnp_[i] = interiorGradnp_(xyz*ndofs_+i/(nsd_+1));
-    }
-  }
-
-  // tell this change in the interior variables the discretization
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvel");
-  std::vector<int> localDofs = discretization.Dof(1, &ele);
-  Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
-
-  const Epetra_Map* intdofcolmap = discretization.DofColMap(1);
-  for (unsigned int i=0; i<localDofs.size(); ++i)
-  {
-    const int lid = intdofcolmap->LID(localDofs[i]);
-    secondary[lid] = interiorValnp_[i];
-  }
-
-  return;
-} // UpdateInteriorVariablesTrap
-
-/*----------------------------------------------------------------------*
- * UpdateInteriorVariablesAdjoint
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouEleCalc<distype>::
-UpdateInteriorVariablesAdjoint(DRT::Discretization &                discretization,
-                               DRT::ELEMENTS::Acou &                ele)
-{
-  interiorGradn_ = interiorGradnp_;
-  interiorVeln_ = interiorVelnp_;
-
-  Epetra_SerialDenseVector traceVal_SDV(nfaces_*nfdofs_);
-  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
-    traceVal_SDV(i) = traceVal_[i];
-
-  Teuchos::RCP<MAT::Material> mat = ele.Material();
-  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density();
-
-  Epetra_SerialDenseVector tempVec1(nsd_*ndofs_);
-  tempVec1.Multiply('N','N',1.0,localSolver_.Amat,interiorGradn_,0.0);
-  tempVec1.Multiply('N','N',-1.0/rho,localSolver_.Cmat,traceVal_SDV,1.0);
-
-  Epetra_SerialDenseVector tempVec2;
-  tempVec2.Shape(ndofs_,1);
-  tempVec2.Multiply('N','N',1.0,localSolver_.Mmat,interiorVeln_,0.0);
-  tempVec2.Multiply('N','N',-1.0,localSolver_.Emat,traceVal_SDV,1.0);
-
-  Epetra_SerialDenseMatrix tempMat1;
-  tempMat1.Shape(ndofs_,nsd_*ndofs_);
-  tempMat1.Multiply('N','N',-1.0,localSolver_.Bmat,localSolver_.invAmat,0.0);
-  tempVec2.Multiply('N','N',-1.0,tempMat1,tempVec1,1.0);
-
-  Epetra_SerialDenseMatrix tempMat2;
-  tempMat2.Shape(ndofs_,ndofs_);
-  tempMat2.Multiply('N','T',-1.0/rho,tempMat1,localSolver_.Bmat,0.0);
-  tempMat2 += localSolver_.Dmat;
-
-  {
-    LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseDmat;
-    LINALG::Matrix<ndofs_,ndofs_> D(tempMat2,true);
-    inverseDmat.SetMatrix(D);
-    inverseDmat.Invert();
-  }
-
-  interiorVelnp_.Multiply('N','N',1.0,tempMat2,tempVec2,0.0);
-
-  tempVec1.Multiply('T','N',-1.0/rho,localSolver_.Bmat,interiorVelnp_,1.0);
-  interiorGradnp_.Multiply('N','N',1.0,localSolver_.invAmat,tempVec1,0.0);
-
-  for(unsigned int i=0; i<interiorValnp_.size(); ++i)
-  {
-    if ((i+1)%(nsd_+1) == 0)
-    {
-      interiorValnp_[i] = interiorVelnp_((i+1)/(nsd_+1)-1);
-    }
-    else
-    {
-      int xyz = i % (nsd_+1); // 0 for x, 1 for y and 2 for z (for 3D)
-      interiorValnp_[i] = interiorGradnp_(xyz*ndofs_+i/(nsd_+1));
-    }
-  }
-
-  // tell this change in the interior variables the discretization
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvel");
-  std::vector<int> localDofs = discretization.Dof(1, &ele);
-  Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
-
-  const Epetra_Map* intdofcolmap = discretization.DofColMap(1);
-  for (unsigned int i=0; i<localDofs.size(); ++i)
-  {
-    const int lid = intdofcolmap->LID(localDofs[i]);
-    secondary[lid] = interiorValnp_[i];
-  }
-
-  return;
-} // UpdateInteriorVariablesAdjoint
-
-/*----------------------------------------------------------------------*
- * UpdateInteriorVariablesTrapAdjoint
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouEleCalc<distype>::
-UpdateInteriorVariablesTrapAdjoint(DRT::Discretization &            discretization,
-                                   DRT::ELEMENTS::Acou &            ele)
-{
-  interiorGradn_ = interiorGradnp_;
-  interiorVeln_ = interiorVelnp_;
-
-  Epetra_SerialDenseVector traceVal_SDV(nfaces_*nfdofs_);
-  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
-    traceVal_SDV(i) = traceVal_[i];
-
-  Epetra_SerialDenseVector traceVal_SDV_m(nfaces_*nfdofs_);
-  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
-    traceVal_SDV_m(i) = traceValm_[i];
-
-  double theta = 0.66;
-
-  Teuchos::RCP<MAT::Material> mat = ele.Material();
-  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density();
-
-  Epetra_SerialDenseVector tempVec1(ndofs_*nsd_);
-  tempVec1.Multiply('N','N',1.0,localSolver_.Amat,interiorGradnp_,0.0);
-  tempVec1.Multiply('T','N',-(1.0-theta)/rho,localSolver_.Bmat,interiorVelnp_,1.0);
-  tempVec1.Multiply('N','N',-(1.0-theta)/rho,localSolver_.Cmat,traceVal_SDV_m,1.0);
-  tempVec1.Multiply('N','N',-theta/rho,localSolver_.Cmat,traceVal_SDV,1.0);
-
-  Epetra_SerialDenseVector tempVec2(ndofs_);
-  tempVec2.Multiply('N','N',1.0,localSolver_.Mmat,interiorVelnp_,0.0);
-  tempVec2.Multiply('N','N',(1.0-theta),localSolver_.Bmat,interiorGradnp_,1.0);
-  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_.DmMmat,interiorVelnp_,1.0);
-  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_.Emat,traceVal_SDV_m,1.0);
-  tempVec2.Multiply('N','N',-(theta),localSolver_.Emat,traceVal_SDV,1.0);
-
-  Epetra_SerialDenseMatrix tempMat1;
-  tempMat1.Shape(ndofs_,nsd_*ndofs_);
-  tempMat1.Multiply('N','N',-theta,localSolver_.Bmat,localSolver_.invAmat,0.0);
-  tempVec2.Multiply('N','N',-1.0,tempMat1,tempVec1,1.0);
-
-  Epetra_SerialDenseMatrix tempMat2;
-  tempMat2.Shape(ndofs_,ndofs_);
-  tempMat2 += localSolver_.DmMmat;
-  tempMat2.Scale(theta);
-  tempMat2.Multiply('N','T',-theta/rho,tempMat1,localSolver_.Bmat,1.0);
-  tempMat2 += localSolver_.Mmat;
-
-  {
-    LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseDmat;
-    LINALG::Matrix<ndofs_,ndofs_> D(tempMat2,true);
-    inverseDmat.SetMatrix(D);
-    inverseDmat.Invert();
-  }
-
-  interiorVelnp_.Multiply('N','N',1.0,tempMat2,tempVec2,0.0);
-
-  tempVec1.Multiply('T','N',-theta/rho,localSolver_.Bmat,interiorVelnp_,1.0);
-  interiorGradnp_.Multiply('N','N',1.0,localSolver_.invAmat,tempVec1,0.0);
-
-  for(unsigned int i=0; i<interiorValnp_.size(); ++i)
-  {
-    if ((i+1)%(nsd_+1) == 0)
-    {
-      interiorValnp_[i] = interiorVelnp_((i+1)/(nsd_+1)-1);
-    }
-    else
-    {
-      int xyz = i % (nsd_+1); // 0 for x, 1 for y and 2 for z (for 3D)
-      interiorValnp_[i] = interiorGradnp_(xyz*ndofs_+i/(nsd_+1));
-    }
-  }
-
-  // tell this change in the interior variables the discretization
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvel");
-  std::vector<int> localDofs = discretization.Dof(1, &ele);
-  Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
-
-  const Epetra_Map* intdofcolmap = discretization.DofColMap(1);
-  for (unsigned int i=0; i<localDofs.size(); ++i)
-  {
-    const int lid = intdofcolmap->LID(localDofs[i]);
-    secondary[lid] = interiorValnp_[i];
-  }
-
-  return;
-} // UpdateInteriorVariablesTrapAdjoint
 
 /*----------------------------------------------------------------------*
  * UpdateInteriorVariablesAndComputeResidual
@@ -1518,9 +1113,13 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
                                           Epetra_SerialDenseVector          & elevec,
                                           const Teuchos::RCP<MAT::Material> &mat,
                                           double dt,
-                                          bool errormaps)
+                                          bool errormaps,
+                                          bool updateonly)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::UpdateInteriorVariablesAndComputeResidual");
+
+  double theta = 1.0;
+  if(dyna_==INPAR::ACOU::acou_trapezoidal) theta = 0.66;
 
   Epetra_SerialDenseVector tempGradnp;
   Epetra_SerialDenseVector tempVelnp;
@@ -1559,6 +1158,12 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
   Epetra_SerialDenseVector traceVal_SDV(nfaces_*nfdofs_);
   for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
     traceVal_SDV(i) = traceVal_[i];
+  Epetra_SerialDenseVector traceVal_SDV_m(nfaces_*nfdofs_);
+  if(dyna_ == INPAR::ACOU::acou_trapezoidal)
+  {
+    for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
+      traceVal_SDV_m(i) = traceValm_[i];
+  }
 
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
   double rho = actmat->Density();
@@ -1567,24 +1172,33 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
   // update interior variables first
   // *****************************************************
 
-  Epetra_SerialDenseVector tempVec1(nsd_*ndofs_);
+  Epetra_SerialDenseVector tempVec1(ndofs_*nsd_);
   tempVec1.Multiply('N','N',1.0,localSolver_.Amat,interiorGradn_,0.0);
-  tempVec1.Multiply('N','N',1.0,localSolver_.Cmat,traceVal_SDV,1.0);
+  tempVec1.Multiply('T','N',1.0-theta,localSolver_.Bmat,interiorVelnp_,1.0);
+  tempVec1.Multiply('N','N',1.0-theta,localSolver_.Cmat,traceVal_SDV_m,1.0);
+  tempVec1.Multiply('N','N',theta,localSolver_.Cmat,traceVal_SDV,1.0);
 
-  Epetra_SerialDenseVector tempVec2;
-  tempVec2.Shape(ndofs_,1);
+  Epetra_SerialDenseVector tempVec2(ndofs_);
   tempVec2.Multiply('N','N',1.0,localSolver_.Mmat,interiorVeln_,0.0);
-  tempVec2.Multiply('N','N',-1.0,localSolver_.Emat,traceVal_SDV,1.0);
+  tempVec2.Multiply('N','N',-(1.0-theta)/rho,localSolver_.Bmat,interiorGradnp_,1.0);
+  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_.DmMmat,interiorVelnp_,1.0);
+  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_.Emat,traceVal_SDV_m,1.0);
+  tempVec2.Multiply('N','N',-(theta),localSolver_.Emat,traceVal_SDV,1.0);
 
+  // now, we have to do the Schur complement thing, just as in "CondenseLocalPart" but without C and E
   Epetra_SerialDenseMatrix tempMat1;
   tempMat1.Shape(ndofs_,nsd_*ndofs_);
-  tempMat1.Multiply('N','N',1.0/rho,localSolver_.Bmat,localSolver_.invAmat,0.0);
+  tempMat1.Multiply('N','N',theta/rho,localSolver_.Bmat,localSolver_.invAmat,0.0);
   tempVec2.Multiply('N','N',-1.0,tempMat1,tempVec1,1.0);
+
 
   Epetra_SerialDenseMatrix tempMat2;
   tempMat2.Shape(ndofs_,ndofs_);
-  tempMat2.Multiply('N','T',1.0,tempMat1,localSolver_.Bmat,0.0);
-  tempMat2 += localSolver_.Dmat;
+  tempMat2 += localSolver_.DmMmat;
+  tempMat2.Scale(theta);
+  tempMat2.Multiply('N','T',theta,tempMat1,localSolver_.Bmat,1.0);
+  tempMat2 += localSolver_.Mmat;
+
 
   {
     LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseDmat;
@@ -1595,7 +1209,7 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
 
   interiorVelnp_.Multiply('N','N',1.0,tempMat2,tempVec2,0.0);
 
-  tempVec1.Multiply('T','N',1.0,localSolver_.Bmat,interiorVelnp_,1.0);
+  tempVec1.Multiply('T','N',theta,localSolver_.Bmat,interiorVelnp_,1.0);
 
   interiorGradnp_.Multiply('N','N',1.0,localSolver_.invAmat,tempVec1,0.0);
 
@@ -1624,6 +1238,8 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
     const int lid = intdofcolmap->LID(localDofs[i]);
     secondary[lid] = interiorValnp_[i];
   }
+
+  if (updateonly) return;
 
   // *****************************************************
   // local postprocessing to calculate error maps
@@ -1675,155 +1291,7 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
       interiorVelnp_[i]  = 48.0 / 25.0 * interiorVelnp_[i]  - 36.0 / 25.0 * tempVelnp[i]  + 16.0 / 25.0 * interiorVelnm_[i]  - 3.0 / 25.0 * interiorVelnmm_[i];
   }
 
-  tempVec1.Shape(ndofs_,1);
-  tempVec1.Multiply('N','N',1.0,localSolver_.Mmat,interiorVelnp_,0.0);
-  tempVec1.Multiply('N','N',-1.0/rho,localSolver_.Bmat,interiorGradnp_,1.0);
-
-  tempVec2.Shape(ndofs_,1);
-  tempVec2.Multiply('N','N',1.0,tempMat2,tempVec1,0.0);
-
-  elevec.Multiply('T','N',-1.0,localSolver_.Emat,tempVec2,0.0);
-
-  tempVec1.Shape(ndofs_*nsd_,1);
-  tempVec1.Multiply('T','N',1.0,localSolver_.Bmat,tempVec2,0.0);
-
-  tempVec2.Shape(ndofs_*nsd_,1);
-  tempVec2.Multiply('N','N',1.0,localSolver_.invAmat,tempVec1,0.0);
-  tempVec2 += interiorGradnp_;
-
-  elevec.Multiply('T','N',-1.0/rho,localSolver_.Cmat,tempVec2,1.0);
-
-  return;
-} // UpdateInteriorVariablesAndComputeResidual
-
-/*----------------------------------------------------------------------*
- * UpdateInteriorVariablesAndComputeResidualTrap
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouEleCalc<distype>::
-UpdateInteriorVariablesAndComputeResidualTrap(DRT::Discretization &     discretization,
-                                              Teuchos::ParameterList&    params,
-                                              DRT::ELEMENTS::Acou &     ele,
-                                              double                    dt,
-                                              Epetra_SerialDenseVector          & elevec,
-                                              const Teuchos::RCP<MAT::Material> &mat,
-                                              bool errormaps)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::UpdateInteriorVariablesAndComputeResidualTrap");
-
-  interiorGradn_ = interiorGradnp_;
-  interiorVeln_ = interiorVelnp_;
-  Epetra_SerialDenseVector traceVal_SDV(nfaces_*nfdofs_);
-  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
-    traceVal_SDV(i) = traceVal_[i];
-  Epetra_SerialDenseVector traceVal_SDV_m(nfaces_*nfdofs_);
-  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
-    traceVal_SDV_m(i) = traceValm_[i];
-
-  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density();
-
-  double theta = 0.66;
-
-  // *****************************************************
-  // update interior variables first
-  // *****************************************************
-
-  Epetra_SerialDenseVector tempVec1(ndofs_*nsd_);
-  tempVec1.Multiply('N','N',1.0,localSolver_.Amat,interiorGradnp_,0.0);
-  tempVec1.Multiply('T','N',1.0-theta,localSolver_.Bmat,interiorVelnp_,1.0);
-  tempVec1.Multiply('N','N',1.0-theta,localSolver_.Cmat,traceVal_SDV_m,1.0);
-  tempVec1.Multiply('N','N',theta,localSolver_.Cmat,traceVal_SDV,1.0);
-
-  Epetra_SerialDenseVector tempVec2(ndofs_);
-  tempVec2.Multiply('N','N',1.0,localSolver_.Mmat,interiorVelnp_,0.0);
-  tempVec2.Multiply('N','N',-(1.0-theta)/rho,localSolver_.Bmat,interiorGradnp_,1.0);
-  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_.DmMmat,interiorVelnp_,1.0);
-  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_.Emat,traceVal_SDV_m,1.0);
-  tempVec2.Multiply('N','N',-(theta),localSolver_.Emat,traceVal_SDV,1.0);
-
-  // now, we have to do the Schur complement thing, just as in "CondenseLocalPart" but without C and E
-  Epetra_SerialDenseMatrix tempMat1;
-  tempMat1.Shape(ndofs_,nsd_*ndofs_);
-  tempMat1.Multiply('N','N',theta/rho,localSolver_.Bmat,localSolver_.invAmat,0.0);
-  tempVec2.Multiply('N','N',-1.0,tempMat1,tempVec1,1.0);
-
-
-  Epetra_SerialDenseMatrix tempMat2;
-  tempMat2.Shape(ndofs_,ndofs_);
-  tempMat2 += localSolver_.DmMmat;
-  tempMat2.Scale(theta);
-  tempMat2.Multiply('N','T',theta,tempMat1,localSolver_.Bmat,1.0);
-  tempMat2 += localSolver_.Mmat;
-
-
-  {
-    LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseDmat;
-    LINALG::Matrix<ndofs_,ndofs_> D(tempMat2,true);
-    inverseDmat.SetMatrix(D);
-    inverseDmat.Invert();
-  }
-
-  interiorVelnp_.Multiply('N','N',1.0,tempMat2,tempVec2,0.0);
-
-  tempVec1.Multiply('T','N',theta,localSolver_.Bmat,interiorVelnp_,1.0);
-
-  interiorGradnp_.Multiply('N','N',1.0,localSolver_.invAmat,tempVec1,0.0);
-
-  // sort this back to the interior values vector
-  for(unsigned int i=0; i<interiorValnp_.size(); ++i)
-  {
-    if ((i+1)%(nsd_+1) == 0)
-    {
-      interiorValnp_[i] = interiorVelnp_((i+1)/(nsd_+1)-1);
-    }
-    else
-    {
-      int xyz = i % (nsd_+1); // 0 for x, 1 for y and 2 for z (for 3D)
-      interiorValnp_[i] = interiorGradnp_(xyz*ndofs_+i/(nsd_+1));
-    }
-  }
-
-  // tell this change in the interior variables the discretization
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvel");
-  std::vector<int> localDofs = discretization.Dof(1, &ele);
-  Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
-
-  const Epetra_Map* intdofcolmap = discretization.DofColMap(1);
-  for (unsigned int i=0; i<localDofs.size(); ++i)
-  {
-    const int lid = intdofcolmap->LID(localDofs[i]);
-    secondary[lid] = interiorValnp_[i];
-  }
-
-  // *****************************************************
-  // local postprocessing to calculate error maps
-  // *****************************************************
-
-  if (errormaps)
-  {
-    // first step: calculate the gradient we need (bold p in paper by Nguyen)
-    Epetra_SerialDenseVector temp(ndofs_*nsd_);
-    temp.Multiply('T','N',1.0,localSolver_.Bmat,interiorVelnp_,0.0);
-    temp.Multiply('N','N',1.0,localSolver_.Cmat,traceVal_SDV,1.0);
-    Epetra_SerialDenseVector p(ndofs_*nsd_);
-    p.Multiply('N','N',1.0/dt,localSolver_.invAmat,temp,0.0);
-
-    // second step: postprocess the pressure field: therefore we need some additional matrices!
-    const unsigned int ndofspost = DRT::UTILS::FixedPower<DRT::ELEMENTS::Acou::degree+2,nsd_>::value;
-    Epetra_SerialDenseMatrix H(ndofspost,ndofspost);
-    Epetra_SerialDenseVector R(ndofspost);
-    double err_p = CalculateError(ele,H,R,p);
-
-    Teuchos::RCP<std::vector<double> > values = params.get<Teuchos::RCP<std::vector<double> > >("elevals");
-    (*values)[ele.Id()] = err_p;
-  }
-
-  // *****************************************************
-  // compute residual second (reuse intermediate matrices)
-  // *****************************************************
-
-  tempVec1.Shape(ndofs_,1);
+  tempVec1.Resize(ndofs_);
   tempVec1.Multiply('N','N',1.0,localSolver_.Mmat,interiorVelnp_,0.0);
   tempVec1.Multiply('N','N',-(1.0-theta)/rho,localSolver_.Bmat,interiorGradnp_,1.0);
   tempVec1.Multiply('N','N',-(1.0-theta),localSolver_.DmMmat,interiorVelnp_,1.0);
@@ -1836,12 +1304,12 @@ UpdateInteriorVariablesAndComputeResidualTrap(DRT::Discretization &     discreti
 
   tempVec1.Multiply('N','N',-1.0,tempMat1,f,1.0);
 
-  tempVec2.Shape(ndofs_,1);
+  tempVec2.Resize(ndofs_);
   tempVec2.Multiply('N','N',1.0,tempMat2,tempVec1,0.0);
 
   elevec.Multiply('T','N',-theta,localSolver_.Emat,tempVec2,0.0);
 
-  tempVec1.Shape(ndofs_*nsd_,1);
+  tempVec1.Resize(ndofs_*nsd_);
   tempVec1.Multiply('T','N',theta,localSolver_.Bmat,tempVec2,0.0);
   tempVec1 += f;
   tempVec2.Shape(ndofs_*nsd_,1);
@@ -1849,12 +1317,14 @@ UpdateInteriorVariablesAndComputeResidualTrap(DRT::Discretization &     discreti
 
   elevec.Multiply('T','N',-theta/rho,localSolver_.Cmat,tempVec2,1.0);
 
-  elevec.Multiply('T','N',-(1.0-theta)/rho,localSolver_.Cmat,interiorGradnp_,1.0);
-  elevec.Multiply('T','N',-(1.0-theta),localSolver_.Emat,interiorVelnp_,1.0);
-  elevec.Multiply('N','N',-(1.0-theta),localSolver_.Gmat,traceVal_SDV,1.0);
-
+  if(theta != 1.0)
+  {
+    elevec.Multiply('T','N',-(1.0-theta)/rho,localSolver_.Cmat,interiorGradnp_,1.0);
+    elevec.Multiply('T','N',-(1.0-theta),localSolver_.Emat,interiorVelnp_,1.0);
+    elevec.Multiply('N','N',-(1.0-theta),localSolver_.Gmat,traceVal_SDV,1.0);
+  }
   return;
-} // UpdateInteriorVariablesAndComputeResidualTrap
+} // UpdateInteriorVariablesAndComputeResidual
 
 /*----------------------------------------------------------------------*
  * UpdateInteriorVariablesAndComputeResidualAdjoint
@@ -1864,7 +1334,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::
 UpdateInteriorVariablesAndComputeResidualAdjoint(DRT::Discretization &     discretization,
                                 DRT::ELEMENTS::Acou &                ele,
                                 Epetra_SerialDenseVector          & elevec,
-                                const Teuchos::RCP<MAT::Material> &mat)
+                                const Teuchos::RCP<MAT::Material> &mat,
+                                bool updateonly)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::UpdateInteriorVariablesAndComputeResidualAdjoint");
 
@@ -1905,6 +1376,12 @@ UpdateInteriorVariablesAndComputeResidualAdjoint(DRT::Discretization &     discr
   Epetra_SerialDenseVector traceVal_SDV(nfaces_*nfdofs_);
   for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
     traceVal_SDV(i) = traceVal_[i];
+  Epetra_SerialDenseVector traceVal_SDV_m(nfaces_*nfdofs_);
+  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
+    traceVal_SDV_m(i) = traceValm_[i];
+
+  double theta = 1.0;
+  if(dyna_==INPAR::ACOU::acou_trapezoidal) theta = 0.66;
 
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
   double rho = actmat->Density();
@@ -1913,24 +1390,30 @@ UpdateInteriorVariablesAndComputeResidualAdjoint(DRT::Discretization &     discr
   // update interior variables first
   // *****************************************************
 
-  Epetra_SerialDenseVector tempVec1(nsd_*ndofs_);
+  Epetra_SerialDenseVector tempVec1(ndofs_*nsd_);
   tempVec1.Multiply('N','N',1.0,localSolver_.Amat,interiorGradn_,0.0);
-  tempVec1.Multiply('N','N',-1.0/rho,localSolver_.Cmat,traceVal_SDV,1.0);
+  tempVec1.Multiply('T','N',-(1.0-theta)/rho,localSolver_.Bmat,interiorVelnp_,1.0);
+  tempVec1.Multiply('N','N',-(1.0-theta)/rho,localSolver_.Cmat,traceVal_SDV_m,1.0);
+  tempVec1.Multiply('N','N',-theta/rho,localSolver_.Cmat,traceVal_SDV,1.0);
 
-  Epetra_SerialDenseVector tempVec2;
-  tempVec2.Shape(ndofs_,1);
+  Epetra_SerialDenseVector tempVec2(ndofs_);
   tempVec2.Multiply('N','N',1.0,localSolver_.Mmat,interiorVeln_,0.0);
-  tempVec2.Multiply('N','N',-1.0,localSolver_.Emat,traceVal_SDV,1.0);
+  tempVec2.Multiply('N','N',(1.0-theta),localSolver_.Bmat,interiorGradnp_,1.0);
+  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_.DmMmat,interiorVelnp_,1.0);
+  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_.Emat,traceVal_SDV_m,1.0);
+  tempVec2.Multiply('N','N',-(theta),localSolver_.Emat,traceVal_SDV,1.0);
 
-  Epetra_SerialDenseMatrix tempMat1;
-  tempMat1.Shape(ndofs_,nsd_*ndofs_);
-  tempMat1.Multiply('N','N',-1.0,localSolver_.Bmat,localSolver_.invAmat,0.0);
+  // now, we have to do the Schur complement thing, just as in "CondenseLocalPart" but without C and E
+  Epetra_SerialDenseMatrix tempMat1(ndofs_,nsd_*ndofs_);
+  tempMat1.Multiply('N','N',-theta,localSolver_.Bmat,localSolver_.invAmat,0.0);
   tempVec2.Multiply('N','N',-1.0,tempMat1,tempVec1,1.0);
 
-  Epetra_SerialDenseMatrix tempMat2;
-  tempMat2.Shape(ndofs_,ndofs_);
-  tempMat2.Multiply('N','T',-1.0/rho,tempMat1,localSolver_.Bmat,0.0);
-  tempMat2 += localSolver_.Dmat;
+
+  Epetra_SerialDenseMatrix tempMat2(ndofs_,ndofs_);
+  tempMat2 += localSolver_.DmMmat;
+  tempMat2.Scale(theta);
+  tempMat2.Multiply('N','T',-theta/rho,tempMat1,localSolver_.Bmat,1.0);
+  tempMat2 += localSolver_.Mmat;
 
   {
     LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseDmat;
@@ -1941,7 +1424,7 @@ UpdateInteriorVariablesAndComputeResidualAdjoint(DRT::Discretization &     discr
 
   interiorVelnp_.Multiply('N','N',1.0,tempMat2,tempVec2,0.0);
 
-  tempVec1.Multiply('T','N',-1.0/rho,localSolver_.Bmat,interiorVelnp_,1.0);
+  tempVec1.Multiply('T','N',-theta/rho,localSolver_.Bmat,interiorVelnp_,1.0);
 
   interiorGradnp_.Multiply('N','N',1.0,localSolver_.invAmat,tempVec1,0.0);
 
@@ -1971,6 +1454,8 @@ UpdateInteriorVariablesAndComputeResidualAdjoint(DRT::Discretization &     discr
     secondary[lid] = interiorValnp_[i];
   }
 
+  if (updateonly) return;
+
   // *****************************************************
   // compute residual second (reuse intermediate matrices)
   // *****************************************************
@@ -1999,126 +1484,6 @@ UpdateInteriorVariablesAndComputeResidualAdjoint(DRT::Discretization &     discr
 
   tempVec1.Shape(ndofs_,1);
   tempVec1.Multiply('N','N',1.0,localSolver_.Mmat,interiorVelnp_,0.0);
-  tempVec1.Multiply('N','N',1.0,localSolver_.Bmat,interiorGradnp_,1.0);
-
-  tempVec2.Shape(ndofs_,1);
-  tempVec2.Multiply('N','N',1.0,tempMat2,tempVec1,0.0); // = W = ( D + 1/rho B A^{-1} B^T )^{-1} ( M V^{n-1} - 1/rho B Q^{n-1} )
-
-  elevec.Multiply('T','N',-1.0,localSolver_.Emat,tempVec2,0.0);
-
-  tempVec1.Shape(ndofs_*nsd_,1);
-  tempVec1.Multiply('T','N',-1.0/rho,localSolver_.Bmat,tempVec2,0.0);
-
-  tempVec2.Shape(ndofs_*nsd_,1);
-  tempVec2.Multiply('N','N',1.0,localSolver_.invAmat,tempVec1,0.0);
-  tempVec2 += interiorGradnp_;
-
-  elevec.Multiply('T','N',1.0,localSolver_.Cmat,tempVec2,1.0);
-
-  return;
-} // UpdateInteriorVariablesAndComputeResidualAdjoint
-
-/*----------------------------------------------------------------------*
- * UpdateInteriorVariablesAndComputeResidualTrapAdjoint
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouEleCalc<distype>::
-UpdateInteriorVariablesAndComputeResidualTrapAdjoint(DRT::Discretization &     discretization,
-                                                     DRT::ELEMENTS::Acou &                ele,
-                                                     Epetra_SerialDenseVector          & elevec,
-                                                     const Teuchos::RCP<MAT::Material> &mat)
-{
-  interiorGradn_ = interiorGradnp_;
-  interiorVeln_ = interiorVelnp_;
-  Epetra_SerialDenseVector traceVal_SDV(nfaces_*nfdofs_);
-  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
-    traceVal_SDV(i) = traceVal_[i];
-  Epetra_SerialDenseVector traceVal_SDV_m(nfaces_*nfdofs_);
-  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
-    traceVal_SDV_m(i) = traceValm_[i];
-
-  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density();
-
-  double theta = 0.66;
-
-  // *****************************************************
-  // update interior variables first
-  // *****************************************************
-
-  Epetra_SerialDenseVector tempVec1(ndofs_*nsd_);
-  tempVec1.Multiply('N','N',1.0,localSolver_.Amat,interiorGradnp_,0.0);
-  tempVec1.Multiply('T','N',-(1.0-theta)/rho,localSolver_.Bmat,interiorVelnp_,1.0);
-  tempVec1.Multiply('N','N',-(1.0-theta)/rho,localSolver_.Cmat,traceVal_SDV_m,1.0);
-  tempVec1.Multiply('N','N',-theta/rho,localSolver_.Cmat,traceVal_SDV,1.0);
-
-  Epetra_SerialDenseVector tempVec2(ndofs_);
-  tempVec2.Multiply('N','N',1.0,localSolver_.Mmat,interiorVelnp_,0.0);
-  tempVec2.Multiply('N','N',(1.0-theta),localSolver_.Bmat,interiorGradnp_,1.0);
-  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_.DmMmat,interiorVelnp_,1.0);
-  tempVec2.Multiply('N','N',-(1.0-theta),localSolver_.Emat,traceVal_SDV_m,1.0);
-  tempVec2.Multiply('N','N',-(theta),localSolver_.Emat,traceVal_SDV,1.0);
-
-  // now, we have to do the Schur complement thing, just as in "CondenseLocalPart" but without C and E
-  Epetra_SerialDenseMatrix tempMat1;
-  tempMat1.Shape(ndofs_,nsd_*ndofs_);
-  tempMat1.Multiply('N','N',-theta,localSolver_.Bmat,localSolver_.invAmat,0.0);
-  tempVec2.Multiply('N','N',-1.0,tempMat1,tempVec1,1.0);
-
-
-  Epetra_SerialDenseMatrix tempMat2;
-  tempMat2.Shape(ndofs_,ndofs_);
-  tempMat2 += localSolver_.DmMmat;
-  tempMat2.Scale(theta);
-  tempMat2.Multiply('N','T',-theta/rho,tempMat1,localSolver_.Bmat,1.0);
-  tempMat2 += localSolver_.Mmat;
-
-
-  {
-    LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseDmat;
-    LINALG::Matrix<ndofs_,ndofs_> D(tempMat2,true);
-    inverseDmat.SetMatrix(D);
-    inverseDmat.Invert();
-  }
-
-  interiorVelnp_.Multiply('N','N',1.0,tempMat2,tempVec2,0.0);
-
-  tempVec1.Multiply('T','N',-theta/rho,localSolver_.Bmat,interiorVelnp_,1.0);
-
-  interiorGradnp_.Multiply('N','N',1.0,localSolver_.invAmat,tempVec1,0.0);
-
-  // sort this back to the interior values vector
-  for(unsigned int i=0; i<interiorValnp_.size(); ++i)
-  {
-    if ((i+1)%(nsd_+1) == 0)
-    {
-      interiorValnp_[i] = interiorVelnp_((i+1)/(nsd_+1)-1);
-    }
-    else
-    {
-      int xyz = i % (nsd_+1); // 0 for x, 1 for y and 2 for z (for 3D)
-      interiorValnp_[i] = interiorGradnp_(xyz*ndofs_+i/(nsd_+1));
-    }
-  }
-
-  // tell this change in the interior variables the discretization
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvel");
-  std::vector<int> localDofs = discretization.Dof(1, &ele);
-  Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
-
-  const Epetra_Map* intdofcolmap = discretization.DofColMap(1);
-  for (unsigned int i=0; i<localDofs.size(); ++i)
-  {
-    const int lid = intdofcolmap->LID(localDofs[i]);
-    secondary[lid] = interiorValnp_[i];
-  }
-
-  // *****************************************************
-  // compute residual second (reuse intermediate matrices)
-  // *****************************************************
-
-  tempVec1.Shape(ndofs_,1);
-  tempVec1.Multiply('N','N',1.0,localSolver_.Mmat,interiorVelnp_,0.0);
   tempVec1.Multiply('N','N',(1.0-theta),localSolver_.Bmat,interiorGradnp_,1.0);
   tempVec1.Multiply('N','N',-(1.0-theta),localSolver_.DmMmat,interiorVelnp_,1.0);
   tempVec1.Multiply('N','N',-(1.0-theta),localSolver_.Emat,traceVal_SDV,1.0);
@@ -2143,13 +1508,18 @@ UpdateInteriorVariablesAndComputeResidualTrapAdjoint(DRT::Discretization &     d
 
   elevec.Multiply('T','N',theta,localSolver_.Cmat,tempVec2,1.0);
 
-  elevec.Multiply('T','N',1.0-theta,localSolver_.Cmat,interiorGradnp_,1.0);
-  elevec.Multiply('T','N',-(1.0-theta),localSolver_.Emat,interiorVelnp_,1.0);
-  elevec.Multiply('N','N',-(1.0-theta),localSolver_.Gmat,traceVal_SDV,1.0);
-
+  if(theta != 1.0)
+  {
+    elevec.Multiply('T','N',1.0-theta,localSolver_.Cmat,interiorGradnp_,1.0);
+    elevec.Multiply('T','N',-(1.0-theta),localSolver_.Emat,interiorVelnp_,1.0);
+    elevec.Multiply('N','N',-(1.0-theta),localSolver_.Gmat,traceVal_SDV,1.0);
+  }
   return;
-}
+} // UpdateInteriorVariablesAndComputeResidualAdjoint
 
+/*----------------------------------------------------------------------*
+ * CalculateError
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::AcouEleCalc<distype>::
 CalculateError(DRT::ELEMENTS::Acou & ele,Epetra_SerialDenseMatrix & h, Epetra_SerialDenseVector & rhs, Epetra_SerialDenseVector & p)
@@ -2402,7 +1772,7 @@ ComputeObjfIntegral(DRT::ELEMENTS::Acou*        ele,
       double temp = rhsvec->operator ()(t)->operator [](localnodeid);
       values[i] =  temp * temp;
       for(unsigned int d=0; d<nsd_; ++d)
-        fnodexyz[i][d] = ele->Faces()[face]->Nodes()[i]->X()[d];
+        fnodexyz[i][d] = shapes_.xyzeF(i,d);
 
     }// for(int i=0; i<numfnode; ++i)
 
@@ -2561,7 +1931,9 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::
 ComputeResidual(Epetra_SerialDenseVector          & elevec,
                 const Teuchos::RCP<MAT::Material> &mat,
                 Epetra_SerialDenseVector          & interiorGradnp,
-                Epetra_SerialDenseVector          & interiorVelnp)
+                Epetra_SerialDenseVector          & interiorVelnp,
+                std::vector<double>               traceVal,
+                INPAR::ACOU::DynamicType dyna)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::ComputeResidual");
 
@@ -2579,17 +1951,34 @@ ComputeResidual(Epetra_SerialDenseVector          & elevec,
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
   double rho = actmat->Density();
 
+  Epetra_SerialDenseVector traceVal_SDV(nfaces_*nfdofs_);
+  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
+    traceVal_SDV(i) = traceVal[i];
+
+  double theta = 1.0;
+  if(dyna==INPAR::ACOU::acou_trapezoidal) theta = 0.66;
+
   Epetra_SerialDenseVector tempVec1(ndofs_);
   tempVec1.Multiply('N','N',1.0,Mmat,interiorVelnp,0.0);
-  tempVec1.Multiply('N','N',-1.0/rho,Bmat,interiorGradnp,1.0); // = M V^{n-1} - 1/rho B Q^{n-1}
+  tempVec1.Multiply('N','N',-(1.0-theta)/rho,Bmat,interiorGradnp,1.0);
+  tempVec1.Multiply('N','N',-(1.0-theta),DmMmat,interiorVelnp,1.0);
+  tempVec1.Multiply('N','N',-(1.0-theta),Emat,traceVal_SDV,1.0);
 
-  Epetra_SerialDenseMatrix tempMat1;
-  tempMat1.Shape(ndofs_,ndofs_*nsd_);
-  tempMat1.Multiply('N','N',1.0/rho,Bmat,invAmat,0.0); // = 1/rho B A^{-1}
-  Epetra_SerialDenseMatrix tempMat2;
-  tempMat2.Shape(ndofs_,ndofs_);
-  tempMat2 = Dmat;
-  tempMat2.Multiply('N','T',1.0,tempMat1,Bmat,1.0); // = D + 1/rho B A^{-1} B^T
+  Epetra_SerialDenseVector f(ndofs_*nsd_);
+  f.Multiply('N','N',1.0,Amat,interiorGradnp,0.0);
+  f.Multiply('T','N',1.0-theta,Bmat,interiorVelnp,1.0);
+  f.Multiply('N','N',1.0-theta,Cmat,traceVal_SDV,1.0);
+
+  Epetra_SerialDenseMatrix tempMat1(ndofs_,ndofs_*nsd_);
+  tempMat1.Multiply('N','N',theta/rho,Bmat,invAmat,0.0); // = 1/rho B A^{-1}
+
+  tempVec1.Multiply('N','N',-1.0,tempMat1,f,1.0);
+
+  Epetra_SerialDenseMatrix tempMat2(ndofs_,ndofs_);
+  tempMat2 = DmMmat;
+  tempMat2.Scale(theta);
+  tempMat2 += Mmat;
+  tempMat2.Multiply('N','T',theta,tempMat1,Bmat,1.0); // = D + 1/rho B A^{-1} B^T
   {
     LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseinW;
     LINALG::Matrix<ndofs_,ndofs_> inv(tempMat2,true);
@@ -2601,98 +1990,24 @@ ComputeResidual(Epetra_SerialDenseVector          & elevec,
   Epetra_SerialDenseVector tempVec2(ndofs_);
   tempVec2.Multiply('N','N',1.0,tempMat2,tempVec1,0.0); // = W = ( D + 1/rho B A^{-1} B^T )^{-1} ( M V^{n-1} - 1/rho B Q^{n-1} )
 
-  elevec.Multiply('T','N',-1.0,Emat,tempVec2,0.0);
+  elevec.Multiply('T','N',-theta,Emat,tempVec2,0.0);
 
-  tempVec1.Shape(ndofs_*nsd_,1);
-  tempVec1.Multiply('T','N',1.0,Bmat,tempVec2,0.0);
-
+  tempVec1.Resize(ndofs_*nsd_);
+  tempVec1.Multiply('T','N',theta,Bmat,tempVec2,0.0);
+  tempVec1 += f;
   tempVec2.Shape(ndofs_*nsd_,1);
   tempVec2.Multiply('N','N',1.0,invAmat,tempVec1,0.0);
-  tempVec2 += interiorGradnp;
 
-  tempVec1.Multiply('N','N',1.0,Amat,interiorGradnp,0.0);
-
-  elevec.Multiply('T','N',-1.0/rho,Cmat,tempVec2,1.0);
-
-  return;
-} // ComputeResidual
-
-/*----------------------------------------------------------------------*
- * ComputeResidualTrap
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::
-ComputeResidualTrap(Epetra_SerialDenseVector          & elevec,
-                const Teuchos::RCP<MAT::Material> &mat,
-                Epetra_SerialDenseVector          & interiorGradnp,
-                Epetra_SerialDenseVector          & interiorVelnp,
-                std::vector<double>               traceVal,
-                double                            dt)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::ComputeResidualTrap");
-
-  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density();
-
-  Epetra_SerialDenseVector traceVal_SDV(nfaces_*nfdofs_);
-  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
-    traceVal_SDV(i) = traceVal[i];
-
-  double theta = 0.66;
-
+  elevec.Multiply('T','N',-theta/rho,Cmat,tempVec2,1.0);
+  if(theta != 1.0)
   {
-    Epetra_SerialDenseVector tempVec1(ndofs_);
-    tempVec1.Multiply('N','N',1.0,Mmat,interiorVelnp,0.0);
-    tempVec1.Multiply('N','N',-(1.0-theta)/rho,Bmat,interiorGradnp,1.0);
-    tempVec1.Multiply('N','N',-(1.0-theta),DmMmat,interiorVelnp,1.0);
-    tempVec1.Multiply('N','N',-(1.0-theta),Emat,traceVal_SDV,1.0);
-
-    Epetra_SerialDenseVector f(ndofs_*nsd_);
-    f.Multiply('N','N',1.0,Amat,interiorGradnp,0.0);
-    f.Multiply('T','N',1.0-theta,Bmat,interiorVelnp,1.0);
-    f.Multiply('N','N',1.0-theta,Cmat,traceVal_SDV,1.0);
-
-    Epetra_SerialDenseMatrix tempMat1;
-    tempMat1.Shape(ndofs_,ndofs_*nsd_);
-    tempMat1.Multiply('N','N',theta/rho,Bmat,invAmat,0.0); // = 1/rho B A^{-1}
-
-    tempVec1.Multiply('N','N',-1.0,tempMat1,f,1.0); // = M V^{n-1} - 1/rho B Q^{n-1}
-
-    Epetra_SerialDenseMatrix tempMat2;
-    tempMat2.Shape(ndofs_,ndofs_);
-    tempMat2 = DmMmat;
-    tempMat2.Scale(theta);
-    tempMat2 += Mmat;
-    tempMat2.Multiply('N','T',theta,tempMat1,Bmat,1.0); // = D + 1/rho B A^{-1} B^T
-    {
-      LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseinW;
-      LINALG::Matrix<ndofs_,ndofs_> inv(tempMat2,true);
-      inverseinW.SetMatrix(inv);
-      inverseinW.Invert();
-    }
-
-    Epetra_SerialDenseVector tempVec2(ndofs_);
-    tempVec2.Multiply('N','N',1.0,tempMat2,tempVec1,0.0); // = W = ( D + 1/rho B A^{-1} B^T )^{-1} ( M V^{n-1} - 1/rho B Q^{n-1} )
-
-    //Epetra_SerialDenseVector testelevec(nfaces_*nfdofs_);
-
-    elevec.Multiply('T','N',-theta,Emat,tempVec2,0.0);
-
-    tempVec1.Shape(ndofs_*nsd_,1);
-    tempVec1.Multiply('T','N',theta,Bmat,tempVec2,0.0);
-    tempVec1 += f;
-    tempVec2.Shape(ndofs_*nsd_,1);
-    tempVec2.Multiply('N','N',1.0,invAmat,tempVec1,0.0);
-
-    elevec.Multiply('T','N',-theta/rho,Cmat,tempVec2,1.0);
-
     elevec.Multiply('T','N',-(1.0-theta)/rho,Cmat,interiorGradnp,1.0);
     elevec.Multiply('T','N',-(1.0-theta),Emat,interiorVelnp,1.0);
     elevec.Multiply('N','N',-(1.0-theta),Gmat,traceVal_SDV,1.0);
   }
-
   return;
-} // ComputeResidualTrap
+} // ComputeResidual
+
 
 /*----------------------------------------------------------------------*
  * ComputeResidualAdjoint
@@ -2702,22 +2017,42 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::
 ComputeResidualAdjoint(Epetra_SerialDenseVector          & elevec,
                        const Teuchos::RCP<MAT::Material> &mat,
                        Epetra_SerialDenseVector          & interiorGradnp,
-                       Epetra_SerialDenseVector          & interiorVelnp)
+                       Epetra_SerialDenseVector          & interiorVelnp,
+                       std::vector<double>               traceVal,
+                       INPAR::ACOU::DynamicType dyna)
 {
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
   double rho = actmat->Density();
 
+  Epetra_SerialDenseVector traceVal_SDV(nfaces_*nfdofs_);
+  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
+    traceVal_SDV(i) = traceVal[i];
+
+  double theta = 1.0;
+  if(dyna==INPAR::ACOU::acou_trapezoidal) theta = 0.66;
+
+
   Epetra_SerialDenseVector tempVec1(ndofs_);
   tempVec1.Multiply('N','N',1.0,Mmat,interiorVelnp,0.0);
-  tempVec1.Multiply('N','N',1.0,Bmat,interiorGradnp,1.0); // = M V^{n-1} - 1/rho B Q^{n-1}
+  tempVec1.Multiply('N','N',(1.0-theta),Bmat,interiorGradnp,1.0);
+  tempVec1.Multiply('N','N',-(1.0-theta),DmMmat,interiorVelnp,1.0);
+  tempVec1.Multiply('N','N',-(1.0-theta),Emat,traceVal_SDV,1.0);
 
-  Epetra_SerialDenseMatrix tempMat1;
-  tempMat1.Shape(ndofs_,ndofs_*nsd_);
-  tempMat1.Multiply('N','N',-1.0,Bmat,invAmat,0.0); // = 1/rho B A^{-1}
-  Epetra_SerialDenseMatrix tempMat2;
-  tempMat2.Shape(ndofs_,ndofs_);
-  tempMat2 = Dmat;
-  tempMat2.Multiply('N','T',-1.0/rho,tempMat1,Bmat,1.0); // = D + 1/rho B A^{-1} B^T
+  Epetra_SerialDenseVector f(ndofs_*nsd_);
+  f.Multiply('N','N',1.0,Amat,interiorGradnp,0.0);
+  f.Multiply('T','N',-(1.0-theta)/rho,Bmat,interiorVelnp,1.0);
+  f.Multiply('N','N',-(1.0-theta)/rho,Cmat,traceVal_SDV,1.0);
+
+  Epetra_SerialDenseMatrix tempMat1(ndofs_,ndofs_*nsd_);
+  tempMat1.Multiply('N','N',-theta,Bmat,invAmat,0.0); // = 1/rho B A^{-1}
+
+  tempVec1.Multiply('N','N',-1.0,tempMat1,f,1.0); // = M V^{n-1} - 1/rho B Q^{n-1}
+
+  Epetra_SerialDenseMatrix tempMat2(ndofs_,ndofs_);
+  tempMat2 = DmMmat;
+  tempMat2.Scale(theta);
+  tempMat2 += Mmat;
+  tempMat2.Multiply('N','T',-theta/rho,tempMat1,Bmat,1.0); // = D + 1/rho B A^{-1} B^T
   {
     LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseinW;
     LINALG::Matrix<ndofs_,ndofs_> inv(tempMat2,true);
@@ -2728,95 +2063,24 @@ ComputeResidualAdjoint(Epetra_SerialDenseVector          & elevec,
   Epetra_SerialDenseVector tempVec2(ndofs_);
   tempVec2.Multiply('N','N',1.0,tempMat2,tempVec1,0.0); // = W = ( D + 1/rho B A^{-1} B^T )^{-1} ( M V^{n-1} - 1/rho B Q^{n-1} )
 
-  elevec.Multiply('T','N',-1.0,Emat,tempVec2,0.0);
+  elevec.Multiply('T','N',-theta,Emat,tempVec2,0.0);
 
-  tempVec1.Shape(ndofs_*nsd_,1);
-  tempVec1.Multiply('T','N',-1.0/rho,Bmat,tempVec2,0.0);
-
-  tempVec2.Shape(ndofs_*nsd_,1);
+  tempVec1.Resize(ndofs_*nsd_);
+  tempVec1.Multiply('T','N',-theta/rho,Bmat,tempVec2,0.0);
+  tempVec1 += f;
+  tempVec2.Resize(ndofs_*nsd_);
   tempVec2.Multiply('N','N',1.0,invAmat,tempVec1,0.0);
-  tempVec2 += interiorGradnp;
 
-  tempVec1.Multiply('N','N',1.0,Amat,interiorGradnp,0.0);
-
-  elevec.Multiply('T','N',1.0,Cmat,tempVec2,1.0);
-
-  return;
-} // ComputeResidualAdjoint
-
-/*----------------------------------------------------------------------*
- * ComputeResidualTrapAdjoint
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::
-ComputeResidualTrapAdjoint(Epetra_SerialDenseVector          & elevec,
-                           const Teuchos::RCP<MAT::Material> &mat,
-                           Epetra_SerialDenseVector          & interiorGradnp,
-                           Epetra_SerialDenseVector          & interiorVelnp,
-                           std::vector<double>               traceVal,
-                           double                            dt)
-{
-
-  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density();
-
-  Epetra_SerialDenseVector traceVal_SDV(nfaces_*nfdofs_);
-  for(unsigned i=0; i<nfaces_*nfdofs_; ++i)
-    traceVal_SDV(i) = traceVal[i];
-
-  double theta = 0.66;
-
+  elevec.Multiply('T','N',theta,Cmat,tempVec2,1.0);
+  if(theta != 1.0)
   {
-    Epetra_SerialDenseVector tempVec1(ndofs_);
-    tempVec1.Multiply('N','N',1.0,Mmat,interiorVelnp,0.0);
-    tempVec1.Multiply('N','N',(1.0-theta),Bmat,interiorGradnp,1.0);
-    tempVec1.Multiply('N','N',-(1.0-theta),DmMmat,interiorVelnp,1.0);
-    tempVec1.Multiply('N','N',-(1.0-theta),Emat,traceVal_SDV,1.0);
-
-    Epetra_SerialDenseVector f(ndofs_*nsd_);
-    f.Multiply('N','N',1.0,Amat,interiorGradnp,0.0);
-    f.Multiply('T','N',-(1.0-theta)/rho,Bmat,interiorVelnp,1.0);
-    f.Multiply('N','N',-(1.0-theta)/rho,Cmat,traceVal_SDV,1.0);
-
-    Epetra_SerialDenseMatrix tempMat1;
-    tempMat1.Shape(ndofs_,ndofs_*nsd_);
-    tempMat1.Multiply('N','N',-theta,Bmat,invAmat,0.0); // = 1/rho B A^{-1}
-
-    tempVec1.Multiply('N','N',-1.0,tempMat1,f,1.0); // = M V^{n-1} - 1/rho B Q^{n-1}
-
-    Epetra_SerialDenseMatrix tempMat2;
-    tempMat2.Shape(ndofs_,ndofs_);
-    tempMat2 = DmMmat;
-    tempMat2.Scale(theta);
-    tempMat2 += Mmat;
-    tempMat2.Multiply('N','T',-theta/rho,tempMat1,Bmat,1.0); // = D + 1/rho B A^{-1} B^T
-    {
-      LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseinW;
-      LINALG::Matrix<ndofs_,ndofs_> inv(tempMat2,true);
-      inverseinW.SetMatrix(inv);
-      inverseinW.Invert();
-    }
-
-    Epetra_SerialDenseVector tempVec2(ndofs_);
-    tempVec2.Multiply('N','N',1.0,tempMat2,tempVec1,0.0); // = W = ( D + 1/rho B A^{-1} B^T )^{-1} ( M V^{n-1} - 1/rho B Q^{n-1} )
-
-    elevec.Multiply('T','N',-theta,Emat,tempVec2,0.0);
-
-    tempVec1.Shape(ndofs_*nsd_,1);
-    tempVec1.Multiply('T','N',-theta/rho,Bmat,tempVec2,0.0);
-    tempVec1 += f;
-    tempVec2.Shape(ndofs_*nsd_,1);
-    tempVec2.Multiply('N','N',1.0,invAmat,tempVec1,0.0);
-
-    elevec.Multiply('T','N',theta,Cmat,tempVec2,1.0);
-
     elevec.Multiply('T','N',(1.0-theta),Cmat,interiorGradnp,1.0);
     elevec.Multiply('T','N',-(1.0-theta),Emat,interiorVelnp,1.0);
     elevec.Multiply('N','N',-(1.0-theta),Gmat,traceVal_SDV,1.0);
   }
 
   return;
-} // ComputeResidualTrapAdjoint
+} // ComputeResidualAdjoint
 
 /*----------------------------------------------------------------------*
  * ComputeFaceMatrices
@@ -2899,7 +2163,7 @@ ComputeFaceMatrices(const int                          face,
   }
 
   return;
-}
+} // ComputeFaceMatrices
 
 /*----------------------------------------------------------------------*
  * CondenseLocalPart
@@ -2907,7 +2171,8 @@ ComputeFaceMatrices(const int                          face,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::
 CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
-                  const Teuchos::RCP<MAT::Material>& mat)
+                  const Teuchos::RCP<MAT::Material>& mat,
+                  INPAR::ACOU::DynamicType dyna)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::CondenseLocalPart");
 
@@ -2932,60 +2197,8 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
   double rho = actmat->Density();
 
-
-  Epetra_SerialDenseMatrix tempMat1;
-  tempMat1.Shape(ndofs_,ndofs_*nsd_);
-  tempMat1.Multiply('N','N',1.0/rho,Bmat,invAmat,0.0); // = 1/rho B A^{-1}
-
-  Epetra_SerialDenseMatrix tempMat2;
-  tempMat2.Shape(ndofs_,ndofs_);
-  tempMat2 = Dmat;
-  tempMat2.Multiply('N','T',1.0,tempMat1,Bmat,1.0); // = D + 1/rho B A^{-1} B^T
-  Epetra_SerialDenseMatrix tempMat3;
-  tempMat3.Shape(ndofs_,nfaces_*nfdofs_);
-  tempMat3 = Emat;
-  tempMat3.Multiply('N','N',1.0,tempMat1,Cmat,1.0); // = E + 1/rho B A^{-1} C^T
-
-  {
-    LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseinW;
-    LINALG::Matrix<ndofs_,ndofs_> inv(tempMat2,true);
-    inverseinW.SetMatrix(inv);
-    inverseinW.Invert();
-  }
-  // tempMat2 = ( D + 1/rho B A^{-1} B^T )^{-1}
-
-  eleMat = Gmat; // = G
-  tempMat1.Shape(ndofs_,nfaces_*nfdofs_);
-  tempMat1.Multiply('N','N',1.0,tempMat2,tempMat3,0.0); // = W
-  eleMat.Multiply('T','N',-1.0,Emat,tempMat1,1.0); // = - E W + G
-
-  tempMat2.Shape(ndofs_*nsd_,nfaces_*nfdofs_);
-  tempMat2 = Cmat;
-  tempMat2.Multiply('T','N',1.0,Bmat,tempMat1,-1.0); // = - C^T + B^T W
-
-  tempMat3.Shape(ndofs_*nsd_,nfaces_*nfdofs_);
-  tempMat3.Multiply('N','N',1.0,invAmat,tempMat2,0.0); // = V = A^{-1} ( - C^T + B^T W )
-
-  eleMat.Multiply('T','N',-1.0/rho,Cmat,tempMat3,1.0); // = K = - C V - E W + G
-
-  return;
-} // CondenseLocalPart
-
-/*----------------------------------------------------------------------*
- * CondenseLocalPartTrap
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::
-CondenseLocalPartTrap(Epetra_SerialDenseMatrix &eleMat,
-                  const Teuchos::RCP<MAT::Material>& mat,
-                  double dt)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::CondenseLocalPartTrap");
-
-  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density();
-
-  double theta = 0.66;
+  double theta = 1.0;
+  if(dyna==INPAR::ACOU::acou_trapezoidal) theta = 0.66;
 
   Epetra_SerialDenseMatrix tempMat1;
   tempMat1.Shape(ndofs_,ndofs_*nsd_);
@@ -3028,7 +2241,7 @@ CondenseLocalPartTrap(Epetra_SerialDenseMatrix &eleMat,
   eleMat.Multiply('T','N',-theta/rho,Cmat,tempMat3,1.0); // = K = - C V - E W + G
 
   return;
-}
+} // CondenseLocalPart
 
 /*----------------------------------------------------------------------*
  * CondenseLocalPartAdjoint
@@ -3036,63 +2249,15 @@ CondenseLocalPartTrap(Epetra_SerialDenseMatrix &eleMat,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::
 CondenseLocalPartAdjoint(Epetra_SerialDenseMatrix &eleMat,
-                         const Teuchos::RCP<MAT::Material>& mat)
+                         const Teuchos::RCP<MAT::Material>& mat,
+                         INPAR::ACOU::DynamicType dyna)
 {
 
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
   double rho = actmat->Density();
 
-
-  Epetra_SerialDenseMatrix tempMat1;
-  tempMat1.Shape(ndofs_,ndofs_*nsd_);
-  tempMat1.Multiply('N','N',-1.0,Bmat,invAmat,0.0); // = 1/rho B A^{-1}
-
-  Epetra_SerialDenseMatrix tempMat2;
-  tempMat2.Shape(ndofs_,ndofs_);
-  tempMat2 = Dmat;
-  tempMat2.Multiply('N','T',-1.0/rho,tempMat1,Bmat,1.0); // = D + 1/rho B A^{-1} B^T
-  Epetra_SerialDenseMatrix tempMat3;
-  tempMat3.Shape(ndofs_,nfaces_*nfdofs_);
-  tempMat3 = Emat;
-  tempMat3.Multiply('N','N',-1.0/rho,tempMat1,Cmat,1.0); // = E + 1/rho B A^{-1} C^T
-
-  {
-    LINALG::FixedSizeSerialDenseSolver<ndofs_,ndofs_> inverseinW;
-    LINALG::Matrix<ndofs_,ndofs_> inv(tempMat2,true);
-    inverseinW.SetMatrix(inv);
-    inverseinW.Invert();
-  }
-  // tempMat2 = ( D + 1/rho B A^{-1} B^T )^{-1}
-
-  eleMat = Gmat; // = G
-  tempMat1.Shape(ndofs_,nfaces_*nfdofs_);
-  tempMat1.Multiply('N','N',1.0,tempMat2,tempMat3,0.0); // = W
-  eleMat.Multiply('T','N',-1.0,Emat,tempMat1,1.0); // = - E W + G
-
-  tempMat2.Shape(ndofs_*nsd_,nfaces_*nfdofs_);
-  tempMat2 = Cmat;
-  tempMat2.Multiply('T','N',-1.0/rho,Bmat,tempMat1,1.0/rho); // = - C^T + B^T W
-
-  tempMat3.Shape(ndofs_*nsd_,nfaces_*nfdofs_);
-  tempMat3.Multiply('N','N',1.0,invAmat,tempMat2,0.0); // = V = A^{-1} ( - C^T + B^T W )
-
-  eleMat.Multiply('T','N',1.0,Cmat,tempMat3,1.0); // = K = - C V - E W + G
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- * CondenseLocalPartTrapAdjoint
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::
-CondenseLocalPartTrapAdjoint(Epetra_SerialDenseMatrix &eleMat,
-                             const Teuchos::RCP<MAT::Material>& mat)
-{
-  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density();
-
-  double theta = 0.66;
+  double theta = 1.0;
+  if(dyna==INPAR::ACOU::acou_trapezoidal) theta = 0.66;
 
   Epetra_SerialDenseMatrix tempMat1;
   tempMat1.Shape(ndofs_,ndofs_*nsd_);

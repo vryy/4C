@@ -192,26 +192,16 @@ namespace ELEMENTS
       void ComputeResidual(Epetra_SerialDenseVector          & eleVec,
                            const Teuchos::RCP<MAT::Material> &mat,
                            Epetra_SerialDenseVector          & interiorGradnp,
-                           Epetra_SerialDenseVector          & interiorVelnp);
-      /// compute the residual for trapezoidal time integration
-      void ComputeResidualTrap(Epetra_SerialDenseVector          & eleVec,
-                               const Teuchos::RCP<MAT::Material> &mat,
-                               Epetra_SerialDenseVector          & interiorGradnp,
-                               Epetra_SerialDenseVector          & interiorVelnp,
-                               std::vector<double>               traceVal,
-                               double                            dt);
+                           Epetra_SerialDenseVector          & interiorVelnp,
+                           std::vector<double>               traceVal,
+                           INPAR::ACOU::DynamicType          dyna);
       /// compute the residual for adjoint time integration
       void ComputeResidualAdjoint(Epetra_SerialDenseVector          & eleVec,
                                   const Teuchos::RCP<MAT::Material> &mat,
                                   Epetra_SerialDenseVector          & interiorGradnp,
-                                  Epetra_SerialDenseVector          & interiorVelnp);
-      /// compute the residual for adjoint trapezoidal time integration
-      void ComputeResidualTrapAdjoint(Epetra_SerialDenseVector         & eleVec,
-                                      const Teuchos::RCP<MAT::Material> &mat,
-                                      Epetra_SerialDenseVector          & interiorGradnp,
-                                      Epetra_SerialDenseVector          & interiorVelnp,
-                                      std::vector<double>               traceVal,
-                                      double                            dt);
+                                  Epetra_SerialDenseVector          & interiorVelnp,
+                                  std::vector<double>               traceVal,
+                                  INPAR::ACOU::DynamicType dyna);
 
       /// add terms corresponding to the absorbing boundary condition
       void ComputeAbsorbingBC(DRT::ELEMENTS::Acou*        ele,
@@ -239,14 +229,11 @@ namespace ELEMENTS
       // condense the local matrix (involving cell velocity gradients, velocities and pressure) into
       // the element matrix for the trace and similarly for the residuals
       void CondenseLocalPart(Epetra_SerialDenseMatrix &elemat,
-                             const Teuchos::RCP<MAT::Material>& mat);
-      void CondenseLocalPartTrap(Epetra_SerialDenseMatrix &elemat,
-                                 const Teuchos::RCP<MAT::Material>& mat,
-                                 double dt);
+                             const Teuchos::RCP<MAT::Material>& mat,
+                             INPAR::ACOU::DynamicType dyna);
       void CondenseLocalPartAdjoint(Epetra_SerialDenseMatrix &elemat,
-                                    const Teuchos::RCP<MAT::Material>& mat);
-      void CondenseLocalPartTrapAdjoint(Epetra_SerialDenseMatrix &elemat,
-                                        const Teuchos::RCP<MAT::Material>& mat);
+                                    const Teuchos::RCP<MAT::Material>& mat,
+                                    INPAR::ACOU::DynamicType dyna);
 
       void EvaluateFaceAdjoint(double fnodexyz[][nsd_],
                                double values[],
@@ -268,26 +255,12 @@ namespace ELEMENTS
       Epetra_SerialDenseMatrix  Dmat;     /// velocity velocity
       Epetra_SerialDenseMatrix  Mmat;     /// velocity velocity
       Epetra_SerialDenseMatrix  DmMmat;   /// velocity velocity
-      Epetra_SerialDenseMatrix  Hmat;     /// auxiliary matrix
-      Epetra_SerialDenseMatrix  Imat;     /// auxiliary matrix
-      Epetra_SerialDenseMatrix  Jmat;     /// auxiliary matrix
 
       Epetra_SerialDenseMatrix  Cmat;     /// gradient trace
       Epetra_SerialDenseMatrix  Emat;     /// velocity trace
       Epetra_SerialDenseMatrix  Gmat;     /// trace trace
 
     };
-
-    /// Updates interior variables
-    void UpdateInteriorVariables(DRT::Discretization &                discretization,
-                                 DRT::ELEMENTS::Acou &                ele);
-    void UpdateInteriorVariablesTrap(DRT::Discretization &            discretization,
-                                 DRT::ELEMENTS::Acou &                ele);
-    void UpdateInteriorVariablesAdjoint(DRT::Discretization &         discretization,
-                                        DRT::ELEMENTS::Acou &         ele);
-    void UpdateInteriorVariablesTrapAdjoint(DRT::Discretization &     discretization,
-                                        DRT::ELEMENTS::Acou &         ele);
-
 
     /// updates interior variables and calculates residual
     void UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &             discretization,
@@ -296,23 +269,13 @@ namespace ELEMENTS
                                                    Epetra_SerialDenseVector          & elevec,
                                                    const Teuchos::RCP<MAT::Material> &mat,
                                                    double                            dt,
-                                                   bool                              errormaps);
-    void UpdateInteriorVariablesAndComputeResidualTrap(DRT::Discretization &             discretization,
-                                                       Teuchos::ParameterList&           params,
-                                                       DRT::ELEMENTS::Acou &             ele,
-                                                       double                            dt,
-                                                       Epetra_SerialDenseVector          & elevec,
-                                                       const Teuchos::RCP<MAT::Material> &mat,
-                                                       bool                              errormaps);
+                                                   bool                              errormaps,
+                                                   bool                              updateonly);
     void UpdateInteriorVariablesAndComputeResidualAdjoint(DRT::Discretization &          discretization,
                                                        DRT::ELEMENTS::Acou &             ele,
                                                        Epetra_SerialDenseVector          & elevec,
-                                                       const Teuchos::RCP<MAT::Material> &mat);
-    void UpdateInteriorVariablesAndComputeResidualTrapAdjoint(DRT::Discretization &             discretization,
-                                                              DRT::ELEMENTS::Acou &             ele,
-                                                              Epetra_SerialDenseVector          & elevec,
-                                                              const Teuchos::RCP<MAT::Material> &mat);
-
+                                                       const Teuchos::RCP<MAT::Material> &mat,
+                                                       bool                              updateonly);
 
     /// reads from global vectors
     void ReadGlobalVectors(const DRT::Element     & ele,
