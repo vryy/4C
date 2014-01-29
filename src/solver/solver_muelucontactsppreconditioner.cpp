@@ -768,16 +768,23 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   Scalar omega = paramList.get<double>(strCoarse + ": damping factor");
   int sweeps   = paramList.get<int>(strCoarse + ": sweeps");
 
+#ifdef HAVE_Trilinos_Q1_2014
   // define SIMPLE smoother
-  Teuchos::RCP<SimpleSmoother> smootherPrototype = Teuchos::rcp(new SimpleSmoother(sweeps,omega,bSimpleC));
+  Teuchos::RCP<SimpleSmoother> smootherPrototype = Teuchos::rcp(new SimpleSmoother());
+  smootherPrototype->SetParameter("Sweeps", Teuchos::ParameterEntry(sweeps));
+  smootherPrototype->SetParameter("Damping factor", Teuchos::ParameterEntry(omega));
+  smootherPrototype->SetParameter("UseSIMPLE", Teuchos::ParameterEntry(bSimpleC));
 
   // define prediction smoother/solver
-#ifdef HAVE_Trilinos_Q1_2014
   Teuchos::RCP<SubBlockAFactory> A00Fact = Teuchos::rcp(new SubBlockAFactory());
   A00Fact->SetFactory("A",MueLu::NoFactory::getRCP());
   A00Fact->SetParameter("block row",Teuchos::ParameterEntry(0));
   A00Fact->SetParameter("block col",Teuchos::ParameterEntry(0));
 #else
+  // define SIMPLE smoother
+  Teuchos::RCP<SimpleSmoother> smootherPrototype = Teuchos::rcp(new SimpleSmoother(sweeps,omega,bSimpleC));
+
+  // define prediction smoother/solver
   Teuchos::RCP<SubBlockAFactory> A00Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 0, 0));
 #endif
 
@@ -886,7 +893,13 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   SFact->SetParameter("omega", Teuchos::ParameterEntry(omega));
   SFact->SetParameter("lumping", Teuchos::ParameterEntry(false));
   SFact->SetFactory("A",MueLu::NoFactory::getRCP()); /* XXX check me */
+#ifdef HAVE_Trilinos_Q1_2014
+  Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother()); // append SC smoother information
+  smootherPrototype->SetParameter("Sweeps", Teuchos::ParameterEntry(sweeps));
+  smootherPrototype->SetParameter("Damping factor", Teuchos::ParameterEntry(omega));
+#else
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
+#endif
 
   // define SchurComplement solver
   const Teuchos::ParameterList& SchurCompList = paramList.sublist(strCoarse + ": SchurComp list");
@@ -917,7 +930,11 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   // share common code
   MB->SetFactory("Smoother", SmooSCFact);  // solver for SchurComplement equation
   MB->SetIgnoreUserData(true);
+#ifdef HAVE_Trilinos_Q1_2014
+  smootherPrototype->AddFactoryManager(MB,0);  // add SC smoother information
+#else
   smootherPrototype->SetFactoryManager(MB);  // add SC smoother information
+#endif
   smootherPrototype->SetFactory("A", MueLu::NoFactory::getRCP()); /* XXX */
 
   // create smoother factory
