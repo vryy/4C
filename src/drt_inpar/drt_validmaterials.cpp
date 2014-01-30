@@ -1435,7 +1435,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"PREELA","prestretch of elastin");
     AddNamedReal(m,"K1","Parameter for linear collagen fiber stiffness");
     AddNamedReal(m,"K2","Parameter for exponential collagen fiber stiffness");
-    AddNamedReal(m,"PRECOLL","prestretch of collagen fibers");
+    AddNamedInt(m,"NUMHOM","Number of homeostatic parameters",1);
+    AddNamedRealVector(m,"PRECOLL","prestretch of collagen fibers","NUMHOM");
     AddNamedReal(m,"DAMAGE","damage stretch of collagen fibers");
     AddNamedReal(m,"K1M","Parameter for linear smooth muscle fiber stiffness");
     AddNamedReal(m,"K2M","Parameter for exponential smooth muscle fiber stiffness");
@@ -1445,7 +1446,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"KAPPA","dilatation modulus");
     AddNamedReal(m,"LIFETIME","lifetime of collagen fibers");
     AddNamedReal(m,"GROWTHFAC","growth factor for stress");
-    AddNamedReal(m,"HOMSTR","homeostatic target value of scalar stress measure");
+    AddNamedRealVector(m,"HOMSTR","homeostatic target value of scalar stress measure","NUMHOM");
     AddNamedReal(m,"SHEARGROWTHFAC","growth factor for shear");
     AddNamedReal(m,"HOMRAD","homeostatic target value of inner radius");
     AddNamedReal(m,"STARTTIME","at this time turnover of collagen starts");
@@ -1457,6 +1458,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedString(m,"INITSTRETCH","how to set stretches in the beginning (None, Homeo, UpdatePrestretch)","None");
     AddNamedInt(m,"CURVE","number of timecurve for increase of prestretch in time",0);
     AddNamedString(m,"DEGOPTION","which degradation function (Lin, Cos, Exp, ExpVar)","Lin");
+    AddNamedReal(m,"MAXMASSPRODFAC","maximal factor of mass production");
 
     AppendMaterialDefinition(matlist,m);
   }

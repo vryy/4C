@@ -69,8 +69,10 @@ namespace MAT
       const double k1_;
       /// parameter for exponential fiber stiffness of collagen
       const double k2_;
+      /// number of homeostatic variables
+      const int numhom_;
       /// prestretch of collagen fibers
-      const double prestretchcollagen_;
+      const std::vector<double> prestretchcollagen_;
       /// stretch at which collagen fibers are damaged
       const double damagestretch_;
       /// parameter for linear fiber stiffness of smooth muscle
@@ -92,7 +94,7 @@ namespace MAT
       /// growth factor for stress
       const double growthfactor_;
       /// homeostatic target value of scalar stress measure
-      const double homstress_;
+      const std::vector<double> homstress_;
       /// growth factor for shear
       const double sheargrowthfactor_;
       /// homeostatic target value of inner radius
@@ -115,6 +117,8 @@ namespace MAT
       const int timecurve_;
       /// which degradation function
       const std::string degoption_;
+      /// maximal factor of mass production
+      const double maxmassprodfac_;
       /// tolerance for degradation
       const double degtol_;
       //@}
@@ -211,13 +215,13 @@ namespace MAT
     Teuchos::RCP<std::vector<double> > massprod3_;
     /// mass production rate of fourth fiber family
     Teuchos::RCP<std::vector<double> > massprod4_;
-    /// mass production rate of first fiber family
+    /// variable degradation of first fiber family
     Teuchos::RCP<std::vector<double> > vardegrad1_;
-    /// mass production rate of second fiber family
+    /// variable degradation of second fiber family
     Teuchos::RCP<std::vector<double> > vardegrad2_;
-    /// mass production rate of third fiber family
+    /// variable degradation of third fiber family
     Teuchos::RCP<std::vector<double> > vardegrad3_;
-    /// mass production rate of fourth fiber family
+    /// variable degradation of fourth fiber family
     Teuchos::RCP<std::vector<double> > vardegrad4_;
 
   };
@@ -558,6 +562,7 @@ namespace MAT
       LINALG::Matrix<3,1> a,  ///< fiber vector
       double J,  ///< determinant of F
       double massstress,  ///< growth stress measure
+      double homstress,  ///< homeostatic stress
       double actcollstretch  ///< actual collagen stretch
     );
 
@@ -571,6 +576,7 @@ namespace MAT
       LINALG::Matrix<3,1> a,  ///< fiber vector
       double J,  ///< determinant of F
       double massstress,  ///< growth stress measure
+      double homstress,  ///< homeostatic stress
       double actcollstretch,  ///< actual collagen stretch
       double dt  ///< delta time
     );
