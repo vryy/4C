@@ -96,7 +96,7 @@ int DRT::ELEMENTS::Wall1_Scatra::Evaluate(Teuchos::ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3_epetra)
 {
   // start with "none"
-  typename Wall1::ActionType act = Wall1::calc_none;
+  Wall1::ActionType act = Wall1::calc_none;
 
   // get the required action
   std::string action = params.get<std::string>("action","none");
