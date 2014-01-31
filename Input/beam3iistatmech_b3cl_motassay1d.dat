@@ -1,8 +1,14 @@
+//
+// Maintainer: Kei W. Mueller
+// mueller@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15276
+//
 ==================================================================
               BACI Statistical Mechanics Input File
 ==================================================================
 -------------------------------------------------------------TITLE
-motassay_b3ii_0_lfil0.5.dat
+Testing of beam3cl active crosslinker
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS          25 //  nfil=2  periodlength=[2 0.2 0.2] um  fiber_division=20  fiber_length=[0.5 2 2]um
 //NODES             27 //  ca=0uM  n=0mol  V=8e-17l  -->elementlength=0.1um
@@ -70,7 +76,7 @@ CHECKORIENT         Yes                   // check orientation betw. two filamen
 FIXEDSEED           Yes                    // (de)activate pesudo-randomness
 INITIALSEED         2                     // manipulate initial seed of pseudo random numbers
 //============== OUTPUT SET UP ==============
-GMSHOUTPUT          No                   // visualization via Gmsh
+GMSHOUTPUT          Yes                   // visualization via Gmsh
 GMSHNETSTRUCT       No                    // visualize structure detection
 PlotFactorThick     0                     // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
 SPECIAL_OUTPUT      none                  // structanaly viscoelasticity

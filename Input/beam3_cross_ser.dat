@@ -1,8 +1,14 @@
+//
+// Maintainer: Kei W. Mueller
+// mueller@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15276
+//
 ==================================================================
 BACI Statistical Mechanics Input File
 ==================================================================
 -----------------------------------------------------------------------TITLE
-loom_20vfil_pl5_lfil5_R1.dat
+Test of beam3 linking/unlinking
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      200                           // nfil=21 periodlength=[5 1 1] um fiber_division=5 fiber_length=[5 1 1]um
 //NODES                         221                           // ca=2.9982uM n=0mol V=5e-15l -->elementlength=0.2um

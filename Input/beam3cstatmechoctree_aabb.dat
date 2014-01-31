@@ -10,7 +10,7 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-first 3D beam contact example with augmented Lagrange approach
+first 3D beam contact example with augmented Lagrange approach, StatMech, octree + axis-aligned bounding boxes
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        38
 NODES                           40

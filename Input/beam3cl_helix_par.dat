@@ -1,8 +1,14 @@
+//
+// Maintainer: Kei W. Mueller
+// mueller@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15276
+//
 ==================================================================
 BACI Statistical Mechanics Input File
 ==================================================================
 -----------------------------------------------------------------------TITLE
-loom_20vfil_pl5_lfil5_R1.dat
+Testing of beam3cl element, parallel; helical binding structure
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      200                           // nfil=21 periodlength=[5 1 1] um fiber_division=5 fiber_length=[5 1 1]um
 //NODES                         221                           // ca=2.9982uM n=0mol V=5e-15l -->elementlength=0.2um
@@ -37,7 +43,7 @@ RESULTSEVRY 0 //100000
 RESTARTEVRY 1000 //100000
 NLNSOL                          ptc                           // fullnewton modnewton nlncg ptc
 TIMESTEP                        0.01 //neuer Timestep        
-NUMSTEP                         25 //1150000 //anpassen //rumpf2.txt end 
+NUMSTEP                         5 //1150000 //anpassen //rumpf2.txt end 
 MAXTIME                         10000
 DAMPING                         No
 M_DAMP                          0
@@ -68,7 +74,7 @@ CHECKORIENT                     Yes                           // check orientati
 FIXEDSEED                       Yes                           // (de)activate pesudo-randomness
 INITIALSEED                     1                             // manipulate initial seed of pseudo random numbers
 //==============                OUTPUT SET UP ============== 
-GMSHOUTPUT                      No                            // visualization via Gmsh
+GMSHOUTPUT                      Yes                            // visualization via Gmsh
 GMSHNETSTRUCT                   No                            // visualize structure detection
 PlotFactorThick                 0                             // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
 SPECIAL_OUTPUT                  none                          // densitydensitycorr viscoelasticity
@@ -90,8 +96,8 @@ KTACT                           0.00404531                    // thermal energy 
 K_ON_start                      90                            // chemical association-rate before ktswitchtime
 K_ON_end                        90                            // chemical dissociation-rate after ktswitchtime // 100.0 1000.0
 K_ON_SELF                       0                             // chemical association-rate in case of linker with both ends on the same filament
-K_OFF_start                     3                             // in analogy to k_on
-K_OFF_end                       3                             // in analogy to k_on
+K_OFF_start                     30                             // in analogy to k_on
+K_OFF_end                       30                             // in analogy to k_on
 DBCDISPDIR                      1                             // direction of oscillation after starttimeact_ (x==0, y==1, z==2)
 CURVENUMBER                     1                             // applied time curve after starttimeact_
 //==============                FILAMENT MODEL ============= 
@@ -105,7 +111,7 @@ BSPOTINTERVAL                   1                             // every n-th bind
 //============                  CROSSLINKER MODEL ============ 
 LINKERMODEL                     stdintpol
 N_crosslink                     1000                          // number of crosslinkers in the simulated volume
-INITOCCUPIEDBSPOTS              150                           // number of crosslinker elements set up before the first time step
+INITOCCUPIEDBSPOTS              400                           // number of crosslinker elements set up before the first time step
 R_LINK                          0.1                           // distance between the two binding domains of a linker
 DeltaR_LINK                     0.02                          // deviation from r_link
 ALINK                           4.751658e-06                  // assuming circular cross section of crosslinker with diameter according to PhD Tharmann
@@ -949,8 +955,8 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09 THEXPAN
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC sin(2*pi*5*(t-10000)) t1 10000 t2 10000
 ----------------------------------------------------------RESULT DESCRIPTION
-//STRUCTURE DIS structure NODE 51 QUANTITY dispx VALUE 2.70941083156913071e-04 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 51 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 51 QUANTITY dispx VALUE 1.42923915253629166e-03 TOLERANCE 1e-6
+//STRUCTURE DIS structure NODE 51 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-10
 //STRUCTURE DIS structure NODE 51 QUANTITY dispz VALUE 3.11115085340053880e-02 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END

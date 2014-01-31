@@ -1,8 +1,14 @@
+//
+// Maintainer: Kei W. Mueller
+// mueller@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15276
+//
 ==================================================================
 BACI Statistical Mechanics Input File
 ==================================================================
 -----------------------------------------------------------------------TITLE
-network_c0.05_pl5_lfil4_R0.1.dat
+Testing of Dirichlet boundary conditions used for stress relaxation
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      32                      // nfil=2 periodlength=[5 5 5] um fiber_division=32 fiber_length=[4 4 4]um
 //NODES                         33                      // ca=0.0383769uM n=4.79711e-21mol V=1.25e-13l -->elementlength=0.125um

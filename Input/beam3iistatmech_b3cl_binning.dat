@@ -1,8 +1,14 @@
+//
+// Maintainer: Kei W. Mueller
+// mueller@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15276
+//
 ==================================================================
               BACI Statistical Mechanics Input File
 ==================================================================
 -------------------------------------------------------------TITLE
-network_b3ii_c2_b3cl_pl5_lfil4_R0.5.dat
+Test binning strategy for binding site search, Beam3cl
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS          832 //  nfil=104  periodlength=[5 5 5] um  fiber_division=8  fiber_length=[4 4 4]um
 //NODES             936 //  ca=1.9956uM  n=2.4945e-19mol  V=1.25e-13l  -->elementlength = 0.5 um
@@ -38,7 +44,7 @@ RESEVRYERGY            0    // output energy evry n-th step
 NLNSOL                 ptc     // fullnewton modnewton nlncg ptc
 DIVERCONT              continue     // Continue even if results are divergent 
 TIMESTEP               0.01    // step size
-NUMSTEP                5 // total number of steps  //rumpf2.txt end
+NUMSTEP                2 // total number of steps  //rumpf2.txt end
 MAXTIME                10000
 DAMPING                No
 M_DAMP                 0
@@ -3001,8 +3007,8 @@ CURVE1 on EXPR FUNC sin(2*pi*5*(t-10000)) t1 10000 t2 10000
 ------------------------------------------------------------CURVE2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000.0 FACTOR 1.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 27 QUANTITY dispx VALUE -8.64024840835021096e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 101 QUANTITY dispy VALUE 9.36825988080687844e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 500 QUANTITY dispz VALUE 1.10669152980600566e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 27 QUANTITY dispx VALUE -1.00568087788190208e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 101 QUANTITY dispy VALUE 1.11709192597383114e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 500 QUANTITY dispz VALUE 1.72125969937418216e-01 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
