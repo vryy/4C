@@ -290,6 +290,12 @@ public:
                                  Epetra_Vector&                   delcrosselement,
                                  std::vector<std::vector<char> >* deletedelements);
 
+  /*! \brief create transverse node pairs for interpolated linker elements (in contrast to node pairs belonging each to the one filament)
+   *  \param globalnodeids (in)  vector of node GIDs whose order is going to be shuffled
+   *  \param nodalpositions (in) holds nodal positions */
+  void CreateTransverseNodePairs(Teuchos::RCP<std::vector<int> > globalnodeids,
+                                 Teuchos::RCP<Epetra_MultiVector> nodalpositions);
+
   /*! \brief adjusted DBC evaluation for StatMech
    *  \param params          (in)     a parameter list
    *  \param dis             (in)     displacement vector
