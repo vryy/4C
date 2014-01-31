@@ -623,6 +623,11 @@ void STATMECH::StatMechManager::Update(const int&                               
 
     GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
 
+//    Teuchos::RCP<std::vector<int> > test = Teuchos::rcp(new std::vector<int>(4,0));
+//    for(int i=0; i<4; i++)
+//      (*test)[i] = i;
+//    CreateTransverseNodePairs(test, bspotpositions);
+
 #ifdef MEASURETIME
     const double t2 = Teuchos::Time::wallTime();
 #endif
@@ -3059,7 +3064,6 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
     {
      case 2:
      {
-       std::cout<<"==============================2 noded"<<std::endl;
        Teuchos::RCP<DRT::ELEMENTS::Truss3> newcrosslinker = Teuchos::rcp(new DRT::ELEMENTS::Truss3(crossgid, (mydiscret.gNode(globalnodeids->at(0)))->Owner() ) );
        DRT::Node* nodes[2] = {mydiscret.gNode( globalnodeids->at(0) ), mydiscret.gNode( globalnodeids->at(1)) };
 
@@ -3534,7 +3538,8 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
    */
 
   // distance from calucated mid positions to cog
-  std::vector<double> distances(2,0.0);
+  std::vector<double> distances;
+  distances.clear();
 
   // COG of the four nodes
   LINALG::Matrix<3,1> cog(true);
@@ -3552,7 +3557,7 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
   // calculate COG
   for(int i=0; i<(int)globalnodeids->size(); i++)
     for(int j=0; j<(int)cog.M(); j++)
-      cog(j) += (*nodalpositions)[i][nodalpositions->Map().LID(globalnodeids->at(i))];
+      cog(j) += (*nodalpositions)[j][nodalpositions->Map().LID(globalnodeids->at(i))];
   cog.Scale(1.0/(double)globalnodeids->size());
 
   // nodal positions
@@ -3567,9 +3572,12 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
   permut.at(0) = 2;
   permut.at(3) = 2;
 
+  int h_par = -1;
+
   // look at both possible permutations 1 3, 2 4 and 1 4, 2 3 in order to determine which
   for(int h=0; h<2; h++)
   {
+    //std::cout<<"Permut: "<<permut[2*h]<<", "<<permut[2*h+1]<<endl;
     // get direction vectors
     for(int i=0; i<(int)v.M(); i++)
     {
@@ -3582,6 +3590,8 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
     n(0) = v(1)*w(2) - v(2)*w(1);
     n(1) = v(2)*w(0) - v(0)*w(2);
     n(2) = v(0)*w(1) - v(1)*w(0);
+
+    //std::cout<<"h = "<<h<<": n.Norm2() = "<<std::setprecision(15)<<n.Norm2()<<endl;
     // non-parallel case
     if(n.Norm2()>1e-10)
     {
@@ -3606,7 +3616,7 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
       // intersection point (g,Eh)
       DeltaN.Scale(-1.0);
       LINALG::Matrix<3,1> Xg(v);
-      Xg.Scale(DeltaN.Dot(nh)/w.Dot(nh));
+      Xg.Scale(DeltaN.Dot(nh)/v.Dot(nh));
       Xg += Ng;
       // mid position between intersection points
       LINALG::Matrix<3,1> Xbar(Xg);
@@ -3616,28 +3626,66 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
       LINALG::Matrix<3,1> disttocog(cog);
       disttocog -= Xbar;
 
+      //std::cout<<"  non-parallel: d = "<<disttocog.Norm2()<<endl;
       distances.push_back(disttocog.Norm2());
     }
     else // parallelity = 2D = correct set
+    {
+      h_par = h;
+      //std::cout<<"  parallel    : d = "<<0.0<<endl;
       distances.push_back(0.0);
+    }
   }
 
   std::vector<int> nodeids(*globalnodeids);
-  // shuffling node order
-  if(distances[0]>distances[1])
+
+  // shuffling node order, non-square case
+  if(h_par<0)
   {
-    // node 3 becomes 2 and vice versa
-    globalnodeids->at(1) = nodeids.at(2);
-    globalnodeids->at(2) = nodeids.at(1);
+    //std::cout<<"   d = ";
+    //for(int i=0; i<(int)distances.size(); i++)
+      //std::cout<<distances[i]<<"  ";
+    //std::cout<<endl;
+
+    if(distances[0]>distances[1])
+    {
+      //std::cout<<"    non-par: case 0"<<endl;
+      // node 3 becomes 2 and vice versa
+      globalnodeids->at(1) = nodeids.at(2);
+      globalnodeids->at(2) = nodeids.at(1);
+    }
+    else if(distances[1]>distances[0])
+    {
+      //std::cout<<"    non-par: case 1"<<endl;
+      globalnodeids->at(1) = nodeids.at(3);
+      globalnodeids->at(2) = nodeids.at(1);
+      globalnodeids->at(3) = nodeids.at(2);
+    }
   }
-  else if(distances[1]>distances[0])
+  else // square case
   {
-    globalnodeids->at(1) = nodeids.at(3);
-    globalnodeids->at(2) = nodeids.at(1);
-    globalnodeids->at(3) = nodeids.at(2);
+    if(h_par==0)
+    {
+      //std::cout<<"    par: case 0"<<endl;
+      // node 3 becomes 2 and vice versa
+      globalnodeids->at(1) = nodeids.at(2);
+      globalnodeids->at(2) = nodeids.at(1);
+    }
+    else
+    {
+      //std::cout<<"    par: case 1"<<endl;
+      globalnodeids->at(1) = nodeids.at(3);
+      globalnodeids->at(2) = nodeids.at(1);
+      globalnodeids->at(3) = nodeids.at(2);
+    }
   }
 
+<<<<<<< .mine
+  //std::cout<<"===Nodes: "<<globalnodeids->at(0)<<", "<<globalnodeids->at(1)<<", "<<globalnodeids->at(2)<<", "<<globalnodeids->at(3)<<"==="<<endl;
+  //dserror("STOP");
+=======
   std::cout<<"Nodes: "<<globalnodeids->at(0)<<", "<<globalnodeids->at(1)<<", "<<globalnodeids->at(2)<<", "<<globalnodeids->at(3)<<std::endl;
+>>>>>>> .r19045
   return;
 }
 
