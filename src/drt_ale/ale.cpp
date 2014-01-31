@@ -387,11 +387,10 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, Teuch
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  // get the solver number used for ALE problems
-    const int linsolvernumber = adyn.get<int>("LINEAR_SOLVER");
-    // check if the TSI solver has a valid solver number
-    if (linsolvernumber == (-1))
-      dserror("no linear solver defined for ALE problems. Please set LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
+  // get the linear solver number
+  const int linsolvernumber = adyn.get<int>("LINEAR_SOLVER");
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for ALE problems. Please set LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
   Teuchos::RCP<LINALG::Solver> solver =
     Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),

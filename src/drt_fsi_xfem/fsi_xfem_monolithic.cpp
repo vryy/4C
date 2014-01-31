@@ -1419,7 +1419,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
 {
   // get the solver number used for linear TSI solver
   const int linsolvernumber = fsidyn_.get<int>("LINEAR_SOLVER");
-  // check if the TSI solver has a valid solver number
+  // check if the linear solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for monolithic TSI. Please set LINEAR_SOLVER in TSI DYNAMIC to a valid number!");
 
@@ -1437,7 +1437,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   // use solver blocks for temperature (thermal field)
   // get the solver number used for thermal solver
   const int tlinsolvernumber = tdyn.get<int>("LINEAR_SOLVER");
-  // check if the TSI solver has a valid solver number
+  // check if the linear solver has a valid solver number
   if (tlinsolvernumber == (-1))
     dserror("no linear solver defined for thermal field. Please set LINEAR_SOLVER in THERMAL DYNAMIC to a valid number!");
 

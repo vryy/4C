@@ -170,8 +170,9 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // get the solver number used for structural ScalarTransport solver
   const int linsolver1number = fs3icontrol.get<int>("LINEAR_SOLVER1");
   // get the solver number used for structural ScalarTransport solver
-    const int linsolver2number = fs3icontrol.get<int>("LINEAR_SOLVER2");
-  // check if the TSI solver has a valid solver number
+  const int linsolver2number = fs3icontrol.get<int>("LINEAR_SOLVER2");
+
+  // check if the linear solver has a valid solver number
   if (linsolver1number == (-1))
     dserror("no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I CONTROL to a valid number!");
   if (linsolver2number == (-1))
@@ -446,8 +447,9 @@ void FS3I::PartFS3I::SetupSystem()
   // get the solver number used for structural ScalarTransport solver
   const int linsolver1number = fs3icontrol.get<int>("LINEAR_SOLVER1");
   // get the solver number used for structural ScalarTransport solver
-    const int linsolver2number = fs3icontrol.get<int>("LINEAR_SOLVER2");
-  // check if the TSI solver has a valid solver number
+  const int linsolver2number = fs3icontrol.get<int>("LINEAR_SOLVER2");
+
+  // check if the linear solver has a valid solver number
   if (linsolver1number == (-1))
     dserror("no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I CONTROL to a valid number!");
   if (linsolver2number == (-1))

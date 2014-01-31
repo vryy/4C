@@ -520,9 +520,9 @@ void POROELAST::Monolithic::CreateLinearSolver()
 {
   // get dynamic section
   const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
-  // get the solver number used for linear TSI solver
+
+  // get the linear solver number
   const int linsolvernumber = porodyn.get<int>("LINEAR_SOLVER");
-  // check if the TSI solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for monolithic Poroelasticity. Please set LINEAR_SOLVER in POROELASTICITY DYNAMIC to a valid number!");
 
