@@ -3059,7 +3059,7 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
     {
      case 2:
      {
-       cout<<"==============================2 noded"<<endl;
+       std::cout<<"==============================2 noded"<<std::endl;
        Teuchos::RCP<DRT::ELEMENTS::Truss3> newcrosslinker = Teuchos::rcp(new DRT::ELEMENTS::Truss3(crossgid, (mydiscret.gNode(globalnodeids->at(0)))->Owner() ) );
        DRT::Node* nodes[2] = {mydiscret.gNode( globalnodeids->at(0) ), mydiscret.gNode( globalnodeids->at(1)) };
 
@@ -3637,7 +3637,7 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
     globalnodeids->at(3) = nodeids.at(2);
   }
 
-  cout<<"Nodes: "<<globalnodeids->at(0)<<", "<<globalnodeids->at(1)<<", "<<globalnodeids->at(2)<<", "<<globalnodeids->at(3)<<endl;
+  std::cout<<"Nodes: "<<globalnodeids->at(0)<<", "<<globalnodeids->at(1)<<", "<<globalnodeids->at(2)<<", "<<globalnodeids->at(3)<<std::endl;
   return;
 }
 

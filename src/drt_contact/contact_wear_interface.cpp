@@ -4122,15 +4122,21 @@ void CONTACT::WearInterface::FillComplete(int maxdof, bool newghosting)
     // tidy up
     gin.clear();
 
+    // free lcomm_ first
+    if(lcomm_ != Teuchos::null)
+    {
+      MPI_Comm oldcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(lcomm_)->GetMpiComm();
+      lcomm_ = Teuchos::null;
+      MPI_Comm_free(&oldcomm);
+    }
+
     // create the local communicator
     MPI_Comm  mpi_global_comm = epetrampicomm->GetMpiComm();
     MPI_Comm  mpi_local_comm;
     MPI_Comm_split(mpi_global_comm,color,key,&mpi_local_comm);
 
-    // create the new Epetra_MpiComm
-    if (mpi_local_comm == MPI_COMM_NULL)
-      lcomm_ = Teuchos::null;
-    else
+    // create the new Epetra_MpiComm only for participating procs
+    if (mpi_local_comm != MPI_COMM_NULL)
       lcomm_ = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
 
 #else  // the easy serial case
