@@ -1639,13 +1639,12 @@ void FSI::MonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::MonolithicFluidSplit::SelectTimeStepSize() const
+double FSI::MonolithicFluidSplit::SelectDtErrorBased() const
 {
   // get time step size suggestions based on some error norms
   const double dtstr = GetAdaStrDt(); 									// based on all structure DOFs
   const double dtstrfsi = GetAdaStrFSIDt(); 						// based on structure FSI DOFs
   const double dtflinner = GetAdaFlInnerDt(); 					// based on inner fluid DOFs
-  const double dtnonlinsolver = GetAdaNonLinSolverDt(); // based on non-convergence of nonlinear solver
 
   double dt = Dt();
 
@@ -1661,36 +1660,7 @@ double FSI::MonolithicFluidSplit::SelectTimeStepSize() const
     // no change in time step size based on structure or fluid field error estimation
   }
 
-  // select time step size based on convergence of nonlinear solver
-  if (IsAdaSolver() and GetErrorAction() == FSI::Monolithic::erroraction_halve_step)
-    dt = std::min(dt, dtnonlinsolver);
-  else if (IsAdaSolver() and (not (IsAdaStructure() and IsAdaFluid())))
-    dt = dtnonlinsolver;
-  else
-  {
-    // no change in time step size based on convergence of nonlinear solver
-  }
-
   return dt;
-
-//  // determine minimum
-//  double dt = std::min(std::min(dtstr, dtstrfsi), dtflinner);
-//
-//	// Time adaptivity not based on fluid: use structural suggestions only
-//	if (not IsAdaFluid()) { dt = std::min(dtstr, dtstrfsi); }
-//
-//	// Time adaptivity not based on structure: use fluid suggestions only
-//	if (not IsAdaStructure()) { dt = dtflinner; }
-//
-//  // compare to time step size of non-converged nonlinear solver
-//	if (IsAdaSolver() && GetErrorAction() == FSI::Monolithic::erroraction_halve_step)
-//	  dt = std::min(dt, dtnonlinsolver);
-//
-//  // Time adaptivity based only on non-convergence of nonlinear solver
-//  if (IsAdaSolver() && (not (IsAdaStructure() and IsAdaFluid())))
-//    dt = dtnonlinsolver;
-//
-//  return dt;
 }
 
 /*----------------------------------------------------------------------*/

@@ -123,6 +123,7 @@ namespace INPAR
       divcont_stop,               ///< abort simulation
       divcont_continue,           ///< continue nevertheless
       divcont_halve_step,         ///< halve time step and carry on with simulation
+      divcont_revert_dt           ///< revert time step size to previous one
     };
 
     //@}

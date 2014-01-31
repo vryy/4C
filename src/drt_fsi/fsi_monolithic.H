@@ -487,12 +487,23 @@ namespace FSI
     const double GetAdaFlFSInorm() const    {return flfsinorm_;}    ///< error norm based on fluid FSI DOFs
     const double GetAdaFlInnerNorm() const  {return flinnernorm_;}  ///< error norm based on inner fluid DOFs
 
-    //! Depending on the chosen method (fluid or structure split), only three of
-    //! the 6 available norms are useful. Each of these three norms delivers a
-    //! new time step size. Select the minimum of these three as the new time step size.
-    virtual double SelectTimeStepSize() const = 0;
+    /*! \brief Select \f$\Delta t_{min}\f$ of all proposed time step sizes based on error estimation
+     *
+     *  Depending on the chosen method (fluid or structure split), only 3 of the
+     *  6 available norms are useful. Each of these three norms delivers a new
+     *  time step size. Select the minimum of these three as the new time step size.
+     *
+     *  \author mayr.mt \date 08/2013
+     */
+    virtual double SelectDtErrorBased() const = 0;
 
-    //! Whether the new time step size is accepted also depends on the chosen method!
+    /*! \brief Check whether time step is accepted or not
+     *
+     *  In case that the local truncation error is small enough, the time step is
+     *  accepted.
+     *
+     *  \author mayr.mt \date 08/2013
+     */
     virtual bool SetAccepted() const = 0;
 
     //! return the error action that should be performed
@@ -511,7 +522,8 @@ namespace FSI
       erroraction_none = 0,       ///< do noting
       erroraction_stop = 1,       ///< stop simulation
       erroraction_continue = 2,   ///< continue (only warning)
-      erroraction_halve_step = 3  ///< halve the time step size
+      erroraction_halve_step = 3, ///< halve the time step size
+      erroraction_revert_dt = 4   ///< revert time step size to previous one
     };
 
     //! @name Parameters for FSI time adaptivity
@@ -675,6 +687,22 @@ namespace FSI
                                  const double estorder  ///< order of accuracy of time integration scheme
                                  ) const;
 
+    /*! \brief Select new time step size \f$\Delta t\f$ from all suggestions
+     *
+     *  Suggestions for the new time step size \f$\Delta t\f$ are possibly made
+     *  based on
+     *  - estimates of the temporal discretization error
+     *  - convergence/non-convergence of the nonlinear solver
+     *
+     *  We need to select one of the suggested time step sizes as the new one.
+     *  First, we select the error based time step size. Afterwards, we check
+     *  whether it has to be overruled by the one based on the convergence of
+     *  the nonlinear solver.
+     *
+     *  \author mayr.mt \date 01/2014
+     */
+    virtual double SelectDt() const;
+
     //@}
 
     //! @name Access to parameters for FSI time adaptivity
@@ -691,8 +719,8 @@ namespace FSI
     // time step sizes
     double dtmax_;      ///< maximum time step size
     double dtmin_;      ///< minimum time step size
-    double dtold_;      ///< time step size of previous run of this time step
-    double dtprevious_; ///< time step size of previous converged time step \f$\Delta t^{n_1}\f$
+    double dtprevious_; ///< time step size \f$\Delta t^{n+1}\f$ of previous run of this time step
+    double dtold_;      ///< time step size \f$\Delta t^{n}\f$ of last converged time step
 
     int adaptstep_; ///< current number of adaption steps, i.e. repetitions of this time step
 
@@ -753,9 +781,6 @@ namespace FSI
 
     /// error action
     FSI::Monolithic::ErrorAction erroraction_;
-
-    /// number of time step halvings in a row
-    int numhalvestep_;
 
     /// output stream for log-file
     Teuchos::RCP<std::ofstream> log_;

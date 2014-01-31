@@ -1970,13 +1970,12 @@ void FSI::MortarMonolithicFluidSplit::CombineFieldVectors(Epetra_Vector& v,
     FSI::Monolithic::CombineFieldVectors(v,sv,fv,av);
 }
 
-double FSI::MortarMonolithicFluidSplit::SelectTimeStepSize() const
+double FSI::MortarMonolithicFluidSplit::SelectDtErrorBased() const
 {
   // get time step size suggestions
   const double dtstr = GetAdaStrDt(); 									// based on all structure DOFs
   const double dtstrfsi = GetAdaStrFSIDt(); 						// based on structure FSI DOFs
   const double dtflinner = GetAdaFlInnerDt(); 					// based on inner fluid DOFs
-  const double dtnonlinsolver = GetAdaNonLinSolverDt(); // based on non-convergence of nonlinear solver
 
   double dt = Dt();
 
@@ -1990,16 +1989,6 @@ double FSI::MortarMonolithicFluidSplit::SelectTimeStepSize() const
   else
   {
     // no change in time step size based on structure or fluid field error estimation
-  }
-
-  // select time step size based on convergence of nonlinear solver
-  if (IsAdaSolver() and GetErrorAction() == FSI::Monolithic::erroraction_halve_step)
-    dt = std::min(dt, dtnonlinsolver);
-  else if (IsAdaSolver() and (not (IsAdaStructure() and IsAdaFluid())))
-    dt = dtnonlinsolver;
-  else
-  {
-    // no change in time step size based on convergence of nonlinear solver
   }
 
   return dt;

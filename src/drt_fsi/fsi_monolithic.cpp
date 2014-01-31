@@ -275,6 +275,7 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
   : MonolithicBase(comm,timeparams),
     firstcall_(true),
     noxiter_(0),
+    erroraction_(erroraction_stop),
     log_(Teuchos::null),
     logada_(Teuchos::null)
 {
@@ -294,9 +295,6 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
 
   // "Initialize" interface solution increments due to structural predictor
   ddgpred_ = Teuchos::null;
-
-  erroraction_ = FSI::Monolithic::erroraction_stop;
-  numhalvestep_ = 0;
 
   //-------------------------------------------------------------------------
   // time step size adaptivity
@@ -578,10 +576,12 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::NonLinErrorCheck()
 {
+  // assume convergence of nonlinear solver
+  erroraction_ = erroraction_none;
+
   // if everything is fine, then return right now
   if (NoxStatus() == NOX::StatusTest::Converged)
   {
-    erroraction_ = FSI::Monolithic::erroraction_none;
     return;
   }
 
@@ -602,7 +602,7 @@ void FSI::Monolithic::NonLinErrorCheck()
       case INPAR::FSI::divcont_stop:
       {
         // set the corresponding error action
-        erroraction_ = FSI::Monolithic::erroraction_stop;
+        erroraction_ = erroraction_stop;
 
         // stop the simulation
         dserror("Nonlinear solver did not converge in %i iterations in time step %i.", noxiter_, Step());
@@ -611,34 +611,58 @@ void FSI::Monolithic::NonLinErrorCheck()
       case INPAR::FSI::divcont_continue:
       {
         // set the corresponding error action
-        erroraction_ = FSI::Monolithic::erroraction_continue;
+        erroraction_ = erroraction_continue;
 
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
         if (Comm().MyPID() == 0)
         {
           IO::cout << "\n*** Nonlinear solver did not converge in " << noxiter_
-                   << " iterationsin time step " << Step()
-                   << ". Continue ...\n";
+                   << " iterations in time step " << Step()
+                   << ". Continue ..." << IO::endl;
         }
         break;
       }
       case INPAR::FSI::divcont_halve_step:
       {
         // set the corresponding error action
-        erroraction_ = FSI::Monolithic::erroraction_halve_step;
-
-        numhalvestep_++;
+        erroraction_ = erroraction_halve_step;
 
         const bool timeadapton = DRT::INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
         if (not timeadapton)
         {
-          dserror("Nonlinear solver wants to halve the time step size. This is not possible in a time integrator with constant Delta t.");
+          dserror("Nonlinear solver wants to halve the time step size. This is "
+                  "not possible in a time integrator with constant Delta t.");
         }
 
         // Notify user about non-converged nonlinear solver, but do not abort the simulation
         if (Comm().MyPID() == 0)
         {
-          IO::cout << "\n*** Nonlinear solver did not converge in " << noxiter_ << " iterations. Halve the time step size.\n";
+          IO::cout << IO::endl
+                   << "*** Nonlinear solver did not converge in " << noxiter_
+                   << " iterations. Halve the time step size."
+                   << IO::endl;
+        }
+        break;
+      }
+      case INPAR::FSI::divcont_revert_dt:
+      {
+        // set the corresponding error action
+        erroraction_ = erroraction_revert_dt;
+
+        const bool timeadapton = DRT::INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
+        if (not timeadapton)
+        {
+          dserror("Nonlinear solver wants to revert the time step size. This is "
+                  "not possible in a time integrator with constant Delta t.");
+        }
+
+        // Notify user about non-converged nonlinear solver, but do not abort the simulation
+        if (Comm().MyPID() == 0)
+        {
+          IO::cout << IO::endl
+                   << "*** Nonlinear solver did not converge in " << noxiter_
+                   << " iterations. Revert the time step size to the previous one."
+                   << IO::endl;
         }
         break;
       }

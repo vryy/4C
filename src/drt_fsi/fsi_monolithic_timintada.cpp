@@ -95,7 +95,9 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   if (not (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"), "AUXINTEGRATORFLUID") == INPAR::FSI::timada_fld_none))
     isadafluid_ = true;
 
-  if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"), "DIVERCONT") == INPAR::FSI::divcont_halve_step)
+  // get error action strategy from input file
+  const int erroractionstrategy = DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"), "DIVERCONT");
+  if (erroractionstrategy != INPAR::FSI::divcont_stop and erroractionstrategy != INPAR::FSI::divcont_continue)
     isadasolver_ = true;
 
   flmethod_ = DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"),"AUXINTEGRATORFLUID");
@@ -204,11 +206,20 @@ void FSI::Monolithic::TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::R
       {
         if (adaptstep_ >= adaptstepmax)
         {
-          if (Comm().MyPID() == 0)
+          if (not IsAdaSolver())
           {
-            IO::cout <<"adaptstep_ = "<< adaptstepmax
-                     << " --> Max. number of adaption iterations is reached: continuing with next time step! "
-                     << "\n";
+            if (Comm().MyPID() == 0)
+            {
+              IO::cout <<"adaptstep_ = "<< adaptstepmax
+                       << " --> Max. number of adaption iterations is reached: continuing with next time step! "
+                       << "\n";
+            }
+          }
+          else if (IsAdaSolver() and not (erroraction_ == FSI::Monolithic::erroraction_none
+                                         or erroraction_ == FSI::Monolithic::erroraction_continue))
+          {
+            dserror("Nonlinear solver did not converge after %i repetitions of "
+                "time step %i.", adaptstepmax, Step());
           }
         }
         else
@@ -249,8 +260,7 @@ void FSI::Monolithic::PrepareAdaptiveTimeStep()
   adaptstep_ = 0;
   accepted_ = false;
 
-  // store time step size of previous time step for multi-step auxiliary time integrators
-  dtprevious_ = Dt();
+  dtold_ = dtprevious_;
 
   if (Comm().MyPID() == 0)
   {
@@ -267,11 +277,12 @@ void FSI::Monolithic::PrintHeaderRepeatedStep() const
 {
   if (adaptstep_ != 0 and Comm().MyPID() == 0)
   {
-    IO::cout << "__________REAPEATING TIME STEP " << Step()
+    IO::cout << IO::endl
+             << "__________REAPEATING TIME STEP " << Step()
              << " WITH DT = " << Dt()
              << " FOR THE " << adaptstep_
              << ". TIME__________"
-             << "\n";
+             << IO::endl;
   }
 }
 
@@ -323,7 +334,7 @@ void FSI::Monolithic::WriteAdaFile() const
   {
     (*logada_)  << std::right << std::setw(9) << Step()
                 << std::right << std::setw(16) << Time()
-                << std::right << std::setw(16) << dtprevious_ //dtold_ //ToDo Which one is the right one???
+                << std::right << std::setw(16) << dtprevious_
                 << std::right << std::setw(16) << adaptstep_ ;
 
     // Who is responsible for the new time step size?
@@ -347,7 +358,7 @@ void FSI::Monolithic::PrintAdaptivitySummary() const
 
   if (Comm().MyPID() == 0)
   {
-    if (Dt() != dtold_) // only if time step size has changed
+    if (Dt() != dtprevious_) // only if time step size has changed
     {
       IO::cout << "\n" << "New time step size " << Dt()
                << " is based on " << adareason_ << ".\n";
@@ -407,7 +418,7 @@ void FSI::Monolithic::AdaptTimeStepSize()
   adaptstep_++;
 
   // Save time step size of previous run of this time step for ResetTime()
-  dtold_ = Dt();
+  dtprevious_ = Dt();
 
   // prepare new time step size by copying the current one
   double dtnew = Dt();
@@ -444,14 +455,28 @@ void FSI::Monolithic::AdaptTimeStepSize()
   // -----------------------------------------------------------------------
   // take care of possibly non-converged nonlinear solver
   // -----------------------------------------------------------------------
-  if (IsAdaSolver() and erroraction_ == FSI::Monolithic::erroraction_halve_step and numhalvestep_ > 0)
+  if (IsAdaSolver())
   {
-    dtnonlinsolver_ = std::max(Dt()/2, dtmin_);
-  }
-  else if (IsAdaSolver() and erroraction_ == FSI::Monolithic::erroraction_none) //and numhalvestep_ > 0 )
-  {
-    dtnonlinsolver_ = std::min(std::max(1.1*Dt(), dtmin_), dtmax_);
-    numhalvestep_ -= 1;
+    switch (erroraction_)
+    {
+      case FSI::Monolithic::erroraction_halve_step:
+      {
+        dtnonlinsolver_ = std::max(0.5*Dt(), dtmin_);
+        break;
+      }
+      case FSI::Monolithic::erroraction_revert_dt:
+      {
+        dtnonlinsolver_ = std::max(std::pow(0.95, (double) adaptstep_ - 1.0) * dtold_, dtmin_);
+        break;
+      }
+      case FSI::Monolithic::erroraction_none:
+      {
+        dtnonlinsolver_ = std::min(std::max(1.1*Dt(), dtmin_), dtmax_);
+        break;
+      }
+      default:
+        break;
+    }
   }
   else
   {
@@ -460,9 +485,9 @@ void FSI::Monolithic::AdaptTimeStepSize()
   // -----------------------------------------------------------------------
 
   // Select new time step size
-  dtnew = SelectTimeStepSize();
+  dtnew = SelectDt();
 
-  if (dtnew <= dtmin_ and dtold_ <= dtmin_)
+  if (dtnew <= dtmin_ and dtprevious_ <= dtmin_)
     dtminused_ = true;
 
   // Who is responsible for changing the time step size?
@@ -472,14 +497,16 @@ void FSI::Monolithic::AdaptTimeStepSize()
   accepted_ = SetAccepted();
 
   // take care of possibly non-converged nonlinear solver
-  if (IsAdaSolver() and erroraction_ == FSI::Monolithic::erroraction_halve_step)
+  if (IsAdaSolver() and (erroraction_ == FSI::Monolithic::erroraction_halve_step
+                         or erroraction_ == FSI::Monolithic::erroraction_revert_dt))
+  {
     accepted_ = false;
+  }
 
   // Finally, distribute new time step size to all participating fields/algorithms
   SetDt(dtnew);
 
   // -----------------------------------------------------------------------
-
   return;
 }
 
@@ -497,7 +524,7 @@ void FSI::Monolithic::DetermineAdaReason(const double dt)
     adareason_ = "Newton";
 
   // no change in time step size
-  if (dt == dtold_)
+  if (dt == dtprevious_)
     adareason_ = oldreason;
 
   return;
@@ -592,11 +619,11 @@ void FSI::Monolithic::ResetStep()
 void FSI::Monolithic::ResetTime()
 {
   // Fluid and ALE
-  FluidField().ResetTime(dtold_);
-  AleField().ResetTime(dtold_);
+  FluidField().ResetTime(dtprevious_);
+  AleField().ResetTime(dtprevious_);
 
   // FSI routine
-  SetTimeStep(Time() - dtold_, Step() - 1);
+  SetTimeStep(Time() - dtprevious_, Step() - 1);
 }
 
 /*----------------------------------------------------------------------*/
@@ -619,6 +646,34 @@ void FSI::Monolithic::SetDt(const double dtnew)
   ADAPTER::AlgorithmBase::SetDt(dtnew);
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FSI::Monolithic::SelectDt() const
+{
+  // First, take the new time step size based on error estimation
+  double dtnew = SelectDtErrorBased();
+
+  // Consider convergence of nonlinear solver if the user wants to.
+  if (IsAdaSolver())
+  {
+    // select time step size based on convergence of nonlinear solver
+    if (erroraction_ != erroraction_none and erroraction_ != erroraction_continue)
+    {
+      dtnew = std::min(dtnew, dtnonlinsolver_);
+    }
+    else if (not (IsAdaStructure() or IsAdaFluid()))
+    {
+      dtnew = dtnonlinsolver_;
+    }
+  }
+  else
+  {
+    // no change in time step size based on convergence of nonlinear solver
+  }
+
+  return dtnew;
 }
 
 /*----------------------------------------------------------------------*/

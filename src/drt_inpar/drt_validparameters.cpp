@@ -5992,11 +5992,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     tuple<std::string>(
                                         "stop",
                                         "continue",
-                                        "halve_step"),
+                                        "halve_step",
+                                        "revert_dt"),
                                     tuple<int>(
                                         INPAR::FSI::divcont_stop,
                                         INPAR::FSI::divcont_continue,
-                                        INPAR::FSI::divcont_halve_step),
+                                        INPAR::FSI::divcont_halve_step,
+                                        INPAR::FSI::divcont_revert_dt),
                                     &fsiadapt);
 
   /*----------------------------------------------------------------------*/
