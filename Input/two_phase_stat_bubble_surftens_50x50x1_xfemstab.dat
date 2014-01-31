@@ -116,7 +116,7 @@ EOS_PRES                        none //std_eos // none, std_eos, xfem_gp
 EOS_CONV_STREAM                 none //std_eos // none, std_eos, xfem_gp
 EOS_CONV_CROSS                  none // none, std_eos, xfem_gp
 EOS_DIV                         none //div_jump_std_eos // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
-EOS_DEFINITION_TAU              Burman_Fernandez
+EOS_DEFINITION_TAU              Burman_Fernandez_Hansbo_wo_dt
 EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf // EOS_he_vol_eq_diameter
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
@@ -14061,9 +14061,9 @@ FLUID DIS fluid NODE 626 QUANTITY pressure VALUE 1.40978396505039791e-05 TOLERAN
 // spurious velocities, pressure at interface
 FLUID DIS fluid NODE 562 QUANTITY velx VALUE 3.91862904706922808e-06 TOLERANCE 1e-8
 FLUID DIS fluid NODE 562 QUANTITY vely VALUE 0.0000000000e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 562 QUANTITY pressure VALUE -1.94615284661020307e-05 TOLERANCE 1e-8
+FLUID DIS fluid NODE 562 QUANTITY pressure VALUE -1.43061592960432564e-05 TOLERANCE 1e-8
 FLUID DIS fluid NODE 1146 QUANTITY velx VALUE -3.00470065037934776e-06 TOLERANCE 1e-8
 FLUID DIS fluid NODE 1146 QUANTITY vely VALUE -3.00467051525205380e-06 TOLERANCE 1e-8
-FLUID DIS fluid NODE 1146 QUANTITY pressure VALUE 1.74999419757845526e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1146 QUANTITY pressure VALUE 1.75001609592775054e-01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

@@ -1021,12 +1021,12 @@ namespace DRT
           double&       tau_u,
           double&       tau_div,
           double&       tau_p,
-          double&       kinvisc,
-          double&       density,
-          double&       normal_vel_lin_space,
-          double&       max_pevelnp,
-          const double&       timefac,
-          const double&       gamma_ghost_penalty);
+          const double  kinvisc,
+          const double  density,
+          const double  normal_vel_lin_space,
+          const double  max_pevelnp,
+          const double  timefac,
+          double&       gamma_ghost_penalty);
 
 
     private:

@@ -66,17 +66,14 @@ EOS_PRES                        std_eos                         // none, std_eos
 EOS_CONV_STREAM                 std_eos                         // none, std_eos, xfem_gp
 EOS_CONV_CROSS                  none                            // none, std_eos, xfem_gp
 EOS_DIV                         none                            // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
-EOS_DEFINITION_TAU              Burman_Fernandez
+EOS_DEFINITION_TAU              Burman
 EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf     // EOS_he_surf_with_max_diameter
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR
 AZOUTPUT                        50
 -------------------------------------------------------------------MATERIALS
-//                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
-//                              MAT_Struct_StVenantKirchhoff
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
@@ -97,20 +94,10 @@ NDPOINT                         4
 NDLINE                          11
 NDSURF 13 //12
 NDVOL                           2
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
-DSURF                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // surface outflow
 E 4 - none 1 1 1 0 0 0 3.0 1.0 0.0 0.0 0.0 0.0 Live Mid 0 2 0 0 0 0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 // top edges side walls

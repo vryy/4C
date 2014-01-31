@@ -2678,12 +2678,12 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
   double&       tau_u,
   double&       tau_div,
   double&       tau_p,
-  double&       kinvisc, // kinematic viscosity (nu = mu/rho ~ m^2/2)
-  double&       density,
-  double&       normal_vel_lin_space,
-  double&       max_vel_L2_norm,
-  const double&       timefac,
-  const double&       gamma_ghost_penalty)
+  const double  kinvisc, // kinematic viscosity (nu = mu/rho ~ m^2/2)
+  const double  density,
+  const double  normal_vel_lin_space,
+  const double  max_vel_L2_norm,
+  const double  timefac,
+  double&       gamma_ghost_penalty)
 {
 
 
@@ -2700,6 +2700,7 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
   switch(tautype)
   {
   case INPAR::FLUID::EOS_tau_burman_fernandez_hansbo:
+  case INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt:
   {
     // E.Burman, M.A.Fernandez and P.Hansbo 2006
     // "Continuous interior penalty method for Oseen's equations"
@@ -2735,8 +2736,8 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     // to compute turbulent flows
     // therefore, we suggest to use the same values as given in Burman 2007
     // note: we integrate each face once; Burman twice -> factor two for gamma compared to Burman
-    gamma_p = 2.0 / 100.0;
-    gamma_u = 2.0 / 100.0;
+    gamma_p = 0.02;
+    gamma_u = 0.02;
     gamma_div = 0.05 * gamma_u;
 
     // original values of E.Burman, M.A.Fernandez and P.Hansbo 2006
@@ -2745,9 +2746,9 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     // gamma_div = 2.0 / 8.0;
 
     // element Reynold's number Re_K
-    double Re_K = max_vel_L2_norm*p_hk_/ kinvisc;
-    double xi = std::min(1.0,Re_K);
-    double xip = std::max(1.0,Re_K);
+    const double Re_K = max_vel_L2_norm*p_hk_/ (kinvisc * 6.0);
+    const double xi = std::min(1.0,Re_K);
+    const double xip = std::max(1.0,Re_K);
 
     //-----------------------------------------------
     // streamline
@@ -2762,13 +2763,53 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     // this does the same, but avoids division by velocity
     // note: this expression is closely related to the definition of
     //       tau_Mp according to Franca_Barrenechea_Valentin_Frey_Wall
-    tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ (kinvisc * density * xip);
+    if (tautype == INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt)
+      tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ (kinvisc * density * xip);
+    else
+    {
+      // respective "switching" parameter for transient / reactive part
+      const double Re_R = 12.0 * kinvisc * timefac / (p_hk_*p_hk_);
+      const double xir = std::max(1.0,Re_R);
+
+      tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ (kinvisc * density * xip + density * p_hk_ * p_hk_ * xir / (timefac * 12.0));
+    }
 
     //-----------------------------------------------
     // divergence
     tau_div= density * gamma_div * xi * max_vel_L2_norm * p_hk_*p_hk_;
   }
   break;
+  case INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino:
+  case INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt:
+  {
+    // this definition is derived form the following papers
+    // E. Burman, P. Hansbo
+    // "Edge stabilization for the generalized Stokes problem: A continuous interior penalty method"
+    // Comput. Methods Appl. Mech. Engrg. 2006
+    // C. D'Angelo, P. Zunino
+    // "Numerical approximation with Nitsche's coupling of transient Stokes'/Darcy's flow problems applied to hemodynamics"
+    // Applied Numerical Mathematics 2012
+
+    // each face has to be evaluated only once
+    gamma_p = 0.05;
+    gamma_u = 0.05;
+    gamma_div = 0.05 * gamma_u;
+
+    //-----------------------------------------------
+    // streamline
+    tau_u = density * gamma_u * p_hk_*p_hk_ * normal_vel_lin_space; // Braack et al. 2006
+
+    //-----------------------------------------------
+    // divergence
+    tau_div= density * gamma_div * max_vel_L2_norm * p_hk_ * p_hk_; // Braack et al. 2006
+
+    //-----------------------------------------------
+    // pressure
+    if (tautype == INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt)
+      tau_p = gamma_p * p_hk_ * p_hk_ / (kinvisc * density / p_hk_ + density * max_vel_L2_norm / 6.0);
+    else
+      tau_p = gamma_p * p_hk_ * p_hk_ / (density* p_hk_ / (timefac * 12.0) + kinvisc * density / p_hk_ + density * max_vel_L2_norm / 6.0);
+  }
   case INPAR::FLUID::EOS_tau_burman_fernandez:
   {
     // E.Burman, M.A.Fernandez 2009
@@ -2830,8 +2871,8 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 //    gamma_p = 0.5 / 100.0;
 //    gamma_p = 1.0 / 100.0;
     // each face has to be evaluated only once -> doubled stabfac, either unstable for multibody test case!
-    gamma_p = 5.0 / 100.0;
-    gamma_u = 5.0 / 100.0;
+    gamma_p = 0.05;
+    gamma_u = 0.05;
 
     //scaling with h^2 (non-viscous case)
     tau_p = gamma_p * p_hk_*p_hk_;
@@ -2883,8 +2924,8 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     //                                                                                        100.0
 
     // we integrate each face once; Burman twice -> factor two for gamma compared to Burman
-    gamma_p = 2.0 / 100.0;
-    gamma_u = 2.0 / 100.0;
+    gamma_p = 0.02;
+    gamma_u = 0.02;
     gamma_div = 0.05 * gamma_u;
 
     //-----------------------------------------------
@@ -2992,8 +3033,8 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
   break;
   case INPAR::FLUID::EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling:
   {
-    gamma_p = 2.0 / 100.0;
-    gamma_u = 2.0 / 100.0;
+    gamma_p = 0.02;
+    gamma_u = 0.02;
     gamma_div = 0.05 * gamma_u;
 
     //-----------------------------------------------

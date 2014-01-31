@@ -280,6 +280,14 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
       EOS_div_          = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Div>(stablist_edgebased,"EOS_DIV");
 
       EOS_whichtau_       = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(stablist_edgebased, "EOS_DEFINITION_TAU");
+      // set correct stationary definition of stabilization parameter automatically
+      if (fldparatimint_->IsStationary())
+      {
+        if (EOS_whichtau_ == INPAR::FLUID::EOS_tau_burman_fernandez_hansbo)
+          EOS_whichtau_ = INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt;
+        if (EOS_whichtau_ == INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino)
+          EOS_whichtau_ = INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt;
+      }
     }
     // setting the EOS element length outside of the if-statement is not very beautiful,
     // but there is an input parameter in the XFEM STABILIZATION section, which requires that

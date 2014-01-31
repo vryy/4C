@@ -3435,34 +3435,43 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   //! this parameter selects the definition of Edge-based stabilization parameter
   setStringToIntegralParameter<int>("EOS_DEFINITION_TAU",
-                                    "Burman_Fernandez",
+                                    "Burman_Hansbo_DAngelo_Zunino",
                                     "Definition of stabilization parameter for edge-based stabilization",
                                     tuple<std::string>(
                                     "Burman_Fernandez_Hansbo",
+                                    "Burman_Fernandez_Hansbo_wo_dt",
                                     "Braack_Burman_John_Lube",
                                     "Braack_Burman_John_Lube_wo_divjump",
                                     "Franca_Barrenechea_Valentin_Wall",
                                     "Burman_Fernandez",
+                                    "Burman_Hansbo_DAngelo_Zunino",
+                                    "Burman_Hansbo_DAngelo_Zunino_wo_dt",
                                     "Burman",
                                     "Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling",
                                     "tau_not_defined"
                                     ),
                                     tuple<std::string>(
                                       "definition of burman_fernandez_hansbo",
+                                      "definition of burman_fernandez_hansbo for stationary problems",
                                       "definition of braack_burman_john_lube",
                                       "definition of braack_burman_john_lube without explicit inclusion of divergence jump",
                                       "definition of tau_franca_barrenechea_valentin_wall",
                                       "definition of EOS_tau_burman_fernandez",
+                                      "definition of EOS_tau_burman_hansbo_dangelo_zunino",
+                                      "definition of EOS_tau_burman_hansbo_dangelo_zunino for stationary problems",
                                       "definition of EOS_tau_burman",
                                       "definition of EOS_tau related to residual-based stabilization",
                                       "no chosen definition"
                                       ),
                                     tuple<int>(
                                       INPAR::FLUID::EOS_tau_burman_fernandez_hansbo,
+                                      INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt,
                                       INPAR::FLUID::EOS_tau_braack_burman_john_lube,
                                       INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump,
                                       INPAR::FLUID::EOS_tau_franca_barrenechea_valentin_wall,
                                       INPAR::FLUID::EOS_tau_burman_fernandez,
+                                      INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino,
+                                      INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt,
                                       INPAR::FLUID::EOS_tau_burman,
                                       INPAR::FLUID::EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling,
                                       INPAR::FLUID::EOS_tau_not_defined) ,
@@ -5166,8 +5175,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
     IntParameter("NUMPARTICLE",64,"number of particles in bins around interface (usually 3D: 64, 2D: 32)",&ls_particle);
     DoubleParameter("PARTICLEBANDWIDTH",3.0,"multiple of maximal element length defining band around interface filled with particles, i.e., alpha*max(dx,dy,dz): here we give alpha, max(dx,dy,dz) is defined by the cut_off radius for the bins!",&ls_particle);
-    DoubleParameter("MIN_RADIUS",-1.0,"minimal radius of particles, usually a multiple of min(dx,dy,dz)",&ls_particle);
-    DoubleParameter("MAX_RADIUS",-1.0,"maximal radius of particles, usually a multiple of min(dx,dy,dz)",&ls_particle);
+    DoubleParameter("MIN_RADIUS",0.1,"minimal radius of particles, usually a multiple of min(dx,dy,dz)",&ls_particle);
+    DoubleParameter("MAX_RADIUS",0.5,"maximal radius of particles, usually a multiple of min(dx,dy,dz)",&ls_particle);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& biofilmcontrol = list->sublist(
