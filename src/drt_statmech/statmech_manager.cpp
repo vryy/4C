@@ -2750,7 +2750,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
       if(linkermodel_==statmech_linker_myosinthick)
         nodalpositions = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),3));
       nodalrotations = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),3));
-      GetNodalBindingSpotPositionsFromDisVec(discol, Teuchos::null, nodalrotations);
+      GetNodalBindingSpotPositionsFromDisVec(discol, nodalpositions, nodalrotations);
       nodalquaternions = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),4));
       GetElementBindingSpotTriads(nodalquaternions);
     }
@@ -2815,26 +2815,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
         }
 
         // calculate element GID
-        int newcrosslinkerGID = (bspotgid[0] + 1)*basisnodes_ + bspotgid[1];
-
-        /* Correction of the crosslinker GID if there happens to be another crosslinker with the same ID. This might occur
-         * if two different crosslink molecules bind to the same two nodes. Then, the calculated crosslinker GID will be the
-         * same in both cases, leading to problems within the discretization.
-         * As long as an unused GID cannot be found, the crosslinker GID keeps getting incremented by 1.*/
-        discret_->Comm().Barrier();
-        while(1)
-        {
-          int gidexists = 1;
-          // query existance of node on this Proc
-          int gidonproc = (int)(discret_->HaveGlobalElement(newcrosslinkerGID));
-          // sum over all processors
-          discret_->Comm().MaxAll(&gidonproc, &gidexists, 1);
-          // calculate new GID if necessary by shifting the initial GID
-          if(gidexists>0)
-            newcrosslinkerGID++;
-          else
-            break;
-        }
+        int newcrosslinkerGID = GenerateNewLinkerGID(bspotgid);
 
         /* Create mapping from crosslink molecule to crosslinker element GID
          * Note: No need for the usual procedure of exporting and reimporting to make things redundant
@@ -2898,11 +2879,11 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
           }
 
         if(hasrownode)
-          AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,*discret_,nodalquaternions);
+          AddNewCrosslinkerElement(i,newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,*discret_,nodalpositions,nodalrotations,nodalquaternions);
 
         // add all new elements to contact discretization on all Procs
         if(beamcmanager!=Teuchos::null)
-          AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->ContactDiscret(),nodalquaternions);
+          AddNewCrosslinkerElement(i,newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->ContactDiscret(),nodalpositions,nodalrotations,nodalquaternions);
 
         // call of FillComplete() necessary after each added crosslinker because different linkers may share the same nodes (only BeamCL)
 //        if(i<addcrosselement.MyLength()-1 && (linkermodel_ == statmech_linker_stdintpol || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol))
@@ -2960,12 +2941,15 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
  | create a new crosslinker element and add it to your discretization of|
  | choice (public)                                       mueller (11/11)|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&                       crossgid,
+void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&                       crosslinkermapid,
+                                                         const int&                       crossgid,
                                                          Teuchos::RCP<std::vector<int> >  globalnodeids,
                                                          const std::vector<int>&          bspotgid,
                                                          const std::vector<double>&       xrefe,
                                                          const std::vector<double>&       rotrefe,
                                                          DRT::Discretization&             mydiscret,
+                                                         Teuchos::RCP<Epetra_MultiVector> nodalpositions,
+                                                         Teuchos::RCP<Epetra_MultiVector> nodalrotations,
                                                          Teuchos::RCP<Epetra_MultiVector> nodalquaternions,
                                                          bool                             addinitlinks)
 { // If "ILINK>0", linker element is a beam, if "ILINK==0" linker element is truss
@@ -3025,7 +3009,8 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
         newcrosslinker->SetIzz(statmechparams_.get<double>("ILINK",0.0));
         newcrosslinker->SetIrr(statmechparams_.get<double>("IPLINK",0.0));
         newcrosslinker->SetMaterial(2);
-        newcrosslinker->SetBindingPosition((double)(*bspotxi_)[bspotgid[0]],(double)(*bspotxi_)[bspotgid[1]]);
+        // set interpolated position to mid positions -> xi = 0.0
+        newcrosslinker->SetBindingPosition(0.0,0.0);
 
         //set up reference configuration of crosslinker
         newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe);
@@ -3038,9 +3023,9 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
         for(int i=0; i<(int)nodequat.size(); i++)
           for(int j=0; j<(int)nodequat[i].M(); j++)
             (nodequat[i])(j) =(*nodalquaternions)[j][nodalquaternions->Map().LID((*globalnodeids)[i])];
-            
+
          newcrosslinker->SetInitialQuaternions(nodequat);
-         
+
          //add element to discretization
         if(!addinitlinks)
         {
@@ -3051,6 +3036,65 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
             addedelements_.push_back(crossgid);
         }
         mydiscret.AddElement(newcrosslinker);
+
+        // add two more beam3 elements for myosin thick filament
+        if(linkermodel_==statmech_linker_myosinthick)
+        {
+          if(nodalpositions==Teuchos::null)
+            dserror("No nodal positions given!");
+          if(nodalrotations==Teuchos::null)
+            dserror("No nodal rotations given!");
+          // element loop
+          for(int i=0; i<2; i++)
+          {
+            std::vector<int> addnodeids(2,-1);
+            addnodeids[0] = globalnodeids->at(2*i);
+            addnodeids[1] = globalnodeids->at(2*i+1);
+            int additionalgid = GenerateNewLinkerGID(addnodeids);
+
+            // globalnodeids[0] is the larger of the two node GIDs
+            Teuchos::RCP<DRT::ELEMENTS::Beam3> newcrosslinker = Teuchos::rcp(new DRT::ELEMENTS::Beam3(additionalgid,(mydiscret.gNode(addnodeids.at(0)))->Owner() ) );
+
+            DRT::Node* nodes[2] = {mydiscret.gNode( addnodeids.at(0) ), mydiscret.gNode( addnodeids.at(1) ) };
+
+            newcrosslinker->SetNodeIds((int)addnodeids.size(),&(addnodeids.at(0)));
+            newcrosslinker->BuildNodalPointers(&nodes[0]);
+
+            //setting up crosslinker element parameters and reference geometry
+            newcrosslinker->SetCrossSec(statmechparams_.get<double>("ALINK",0.0));
+            newcrosslinker->SetCrossSecShear(1.1*statmechparams_.get<double>("ALINK",0.0));
+            newcrosslinker->SetIyy(statmechparams_.get<double>("ILINK",0.0));
+            newcrosslinker->SetIzz(statmechparams_.get<double>("ILINK",0.0));
+            newcrosslinker->SetIrr(statmechparams_.get<double>("IPLINK",0.0));
+            newcrosslinker->SetMaterial(2);
+
+            //set up reference configuration of crosslinker
+            std::vector<double> newxrefe(6,0.0);
+            std::vector<double> newrotrefe(6,0.0);
+            for(int k=0; k<3; k++)
+            {
+              newxrefe[k ] = (*nodalpositions)[k][addnodeids[0]];
+              newxrefe[k+3] = (*nodalpositions)[k][addnodeids[1]];
+              newrotrefe[k]   = rotrefe[6*i+k];
+              newrotrefe[k+3] = rotrefe[6*i+k+3];
+            }
+
+            newcrosslinker->SetUpReferenceGeometry<2>(newxrefe,newrotrefe);
+            //add element to discretization
+            if(!addinitlinks)
+            {
+              // beam contact discretization
+              if(mydiscret.Name()=="beam contact")
+                addedcelements_.push_back(additionalgid);
+              else
+                addedelements_.push_back(additionalgid);
+            }
+
+            mydiscret.AddElement(newcrosslinker);
+            // log additional element IDs for handling later on
+            (*additionalcross2ele_)[i][crosslinkermapid] = additionalgid;
+          }
+        }
       }
       break;
       default:
@@ -3116,6 +3160,32 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
 
   return;
 } //void StatMechManager::AddNewCrosslinkerElement()
+
+int STATMECH::StatMechManager::GenerateNewLinkerGID(std::vector<int>& bspotgid)
+{
+  // calculate element GID
+  int newcrosslinkerGID = (bspotgid[0] + 1)*basisnodes_ + bspotgid[1];
+
+  /* Correction of the crosslinker GID if there happens to be another crosslinker with the same ID. This might occur
+   * if two different crosslink molecules bind to the same two nodes. Then, the calculated crosslinker GID will be the
+   * same in both cases, leading to problems within the discretization.
+   * As long as an unused GID cannot be found, the crosslinker GID keeps getting incremented by 1.*/
+  discret_->Comm().Barrier();
+  while(1)
+  {
+    int gidexists = 1;
+    // query existance of node on this Proc
+    int gidonproc = (int)(discret_->HaveGlobalElement(newcrosslinkerGID));
+    // sum over all processors
+    discret_->Comm().MaxAll(&gidonproc, &gidexists, 1);
+    // calculate new GID if necessary by shifting the initial GID
+    if(gidexists>0)
+      newcrosslinkerGID++;
+    else
+      break;
+  }
+  return newcrosslinkerGID;
+}
 
 /*----------------------------------------------------------------------*
  | setting of crosslinkers for loom network setup                       |
@@ -3298,8 +3368,15 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
     numdetachpolarity = LinkerPolarityCheckDetach(punlink, bspotpositions, bspottriadscol);
 
   // a vector indicating the upcoming deletion of crosslinker elements
-  Teuchos::RCP<Epetra_Vector> delcrosselement = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
+  Teuchos::RCP<Epetra_Vector> delcrosselement = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
   delcrosselement->PutScalar(-1.0);
+  Teuchos::RCP<Epetra_MultiVector> additionaldelele = Teuchos::null;
+  if(linkermodel_==statmech_linker_myosinthick)
+  {
+    additionaldelele = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_,2));
+    additionaldelele->PutScalar(-1.0);
+  }
+
 
   // SEARCH
   // search and setup for the deletion of elements is done by Proc 0
@@ -3384,6 +3461,14 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
 
               // enter the crosslinker element ID into the deletion list
               (*delcrosselement)[irandom] = (*crosslink2element_)[irandom];
+              // delete additional elements for myosin thick filaments
+              if(linkermodel_ == statmech_linker_myosinthick)
+              {
+                (*additionaldelele)[0][irandom] = (*additionalcross2ele_)[0][irandom];
+                (*additionaldelele)[1][irandom] = (*additionalcross2ele_)[1][irandom];
+                (*additionalcross2ele_)[0][irandom] = -1.0;
+                (*additionalcross2ele_)[1][irandom] = -1.0;
+              }
 
               // vector updates
               (*crosslink2element_)[irandom] = -1.0;
@@ -3463,9 +3548,15 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
 
   // DELETION OF ELEMENTS
   RemoveCrosslinkerElements(*discret_,*delcrosselement,&deletedelements_);
+  if(linkermodel_ == statmech_linker_myosinthick)
+    RemoveMultipleCrosslinkerElements(*discret_,*additionaldelele, &deletedelements_);
   // contact elements
   if(beamcmanager!=Teuchos::null)
+  {
     RemoveCrosslinkerElements(beamcmanager->ContactDiscret(),*delcrosselement,&deletedcelements_);
+    if(linkermodel_ == statmech_linker_myosinthick)
+      RemoveMultipleCrosslinkerElements(beamcmanager->ContactDiscret(),*additionaldelele, &deletedelements_);
+  }
 
   // adjust crosslinker-element mapping vector
 
@@ -3487,7 +3578,9 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
 /*----------------------------------------------------------------------*
  | (private) remove crosslinker element                    mueller 1/11 |
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::RemoveCrosslinkerElements(DRT::Discretization& mydiscret, Epetra_Vector& delcrosselement, std::vector<std::vector<char> >* deletedelements)
+void STATMECH::StatMechManager::RemoveCrosslinkerElements(DRT::Discretization&             mydiscret,
+                                                          Epetra_Vector&                   delcrosselement,
+                                                          std::vector<std::vector<char> >* deletedelements)
 {
   unsigned startsize = deletedelements->size();
   std::vector<DRT::PackBuffer> vdata( startsize );
@@ -3516,6 +3609,51 @@ void STATMECH::StatMechManager::RemoveCrosslinkerElements(DRT::Discretization& m
   for ( unsigned i=startsize; i<vdata.size(); ++i )
     swap( (*deletedelements)[i], vdata[i]() );
 
+  /*synchronize
+   *the Filled() state on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
+   *new element maps and call FillComplete();*/
+  mydiscret.CheckFilledGlobally();
+  mydiscret.FillComplete(true, false, false);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | (private) remove crosslinker element (MultiVector)      mueller 1/14 |
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::RemoveMultipleCrosslinkerElements(DRT::Discretization&             mydiscret,
+                                                                  Epetra_MultiVector&              delcrosselement,
+                                                                  std::vector<std::vector<char> >* deletedelements)
+{
+  unsigned startsize = deletedelements->size();
+  std::vector<DRT::PackBuffer> vdata( startsize );
+
+  int delel = 0;
+  for(int h=0; h<delcrosselement.NumVectors(); h++)
+  {
+    for (int i=0; i<delcrosselement.MyLength(); i++)
+    {
+      if (mydiscret.HaveGlobalElement((int)delcrosselement[h][i]))
+      {
+        //save the element by packing before elimination to make it restorable in case that needed
+        vdata.push_back( DRT::PackBuffer() );
+        mydiscret.gElement((int)delcrosselement[h][i])->Pack( vdata.back() );
+      }
+    }
+    for ( unsigned i=startsize; i<vdata.size(); ++i )
+      vdata[i].StartPacking();
+    for (int i=0; i<delcrosselement.MyLength(); i++)
+      if (mydiscret.HaveGlobalElement((int)delcrosselement[h][i]))
+      {
+        //save the element by packing before elimination to make it restorable in case that needed
+        deletedelements->push_back( std::vector<char>() );
+        mydiscret.gElement((int)delcrosselement[h][i])->Pack( vdata[deletedelements->size()-1] );
+        mydiscret.DeleteElement( (int)delcrosselement[h][i] );
+        delel++;
+      }
+  }
+  for ( unsigned i=startsize; i<vdata.size(); ++i )
+    swap( (*deletedelements)[i], vdata[i]() );
   /*synchronize
    *the Filled() state on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
    *new element maps and call FillComplete();*/
@@ -3577,7 +3715,7 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
   // look at both possible permutations 1 3, 2 4 and 1 4, 2 3 in order to determine which
   for(int h=0; h<2; h++)
   {
-    //std::cout<<"Permut: "<<permut[2*h]<<", "<<permut[2*h+1]<<endl;
+//    std::cout<<"Permut: "<<permut[2*h]<<", "<<permut[2*h+1]<<endl;
     // get direction vectors
     for(int i=0; i<(int)v.M(); i++)
     {
@@ -3591,7 +3729,7 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
     n(1) = v(2)*w(0) - v(0)*w(2);
     n(2) = v(0)*w(1) - v(1)*w(0);
 
-    //std::cout<<"h = "<<h<<": n.Norm2() = "<<std::setprecision(15)<<n.Norm2()<<endl;
+//    std::cout<<"h = "<<h<<": n.Norm2() = "<<std::setprecision(15)<<n.Norm2()<<endl;
     // non-parallel case
     if(n.Norm2()>1e-10)
     {
@@ -3626,13 +3764,13 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
       LINALG::Matrix<3,1> disttocog(cog);
       disttocog -= Xbar;
 
-      //std::cout<<"  non-parallel: d = "<<disttocog.Norm2()<<endl;
+//      std::cout<<"  non-parallel: d = "<<disttocog.Norm2()<<endl;
       distances.push_back(disttocog.Norm2());
     }
     else // parallelity = 2D = correct set
     {
       h_par = h;
-      //std::cout<<"  parallel    : d = "<<0.0<<endl;
+//      std::cout<<"  parallel    : d = "<<0.0<<endl;
       distances.push_back(0.0);
     }
   }
@@ -3647,16 +3785,18 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
 //      std::cout<<distances[i]<<"  ";
 //    std::cout<<endl;
 
-    if(distances[0]>distances[1])
+    // included the equality case (occurs in special case of exactly same node pair distances 1 3, 2 4, rotated by pi/2)
+    // In this case, both alternatives are equivalent also mechanically
+    if(distances[0]>=distances[1])
     {
-      //std::cout<<"    non-par: case 0"<<endl;
+//      std::cout<<"    non-par: case 0"<<endl;
       // node 3 becomes 2 and vice versa
       globalnodeids->at(1) = nodeids.at(2);
       globalnodeids->at(2) = nodeids.at(1);
     }
     else if(distances[1]>distances[0])
     {
-      //std::cout<<"    non-par: case 1"<<endl;
+//      std::cout<<"    non-par: case 1"<<endl;
       globalnodeids->at(1) = nodeids.at(3);
       globalnodeids->at(2) = nodeids.at(1);
       globalnodeids->at(3) = nodeids.at(2);
@@ -3666,23 +3806,22 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
   {
     if(h_par==0)
     {
-      //std::cout<<"    par: case 0"<<endl;
+//      std::cout<<"    par: case 0"<<endl;
       // node 3 becomes 2 and vice versa
       globalnodeids->at(1) = nodeids.at(2);
       globalnodeids->at(2) = nodeids.at(1);
     }
     else
     {
-      //std::cout<<"    par: case 1"<<endl;
+//      std::cout<<"    par: case 1"<<endl;
       globalnodeids->at(1) = nodeids.at(3);
       globalnodeids->at(2) = nodeids.at(1);
       globalnodeids->at(3) = nodeids.at(2);
     }
   }
 
-  //std::cout<<"===Nodes: "<<globalnodeids->at(0)<<", "<<globalnodeids->at(1)<<", "<<globalnodeids->at(2)<<", "<<globalnodeids->at(3)<<"==="<<endl;
-  //dserror("STOP");
-  //std::cout<<"Nodes: "<<globalnodeids->at(0)<<", "<<globalnodeids->at(1)<<", "<<globalnodeids->at(2)<<", "<<globalnodeids->at(3)<<std::endl;
+//  std::cout<<"===Nodes: "<<globalnodeids->at(0)<<", "<<globalnodeids->at(1)<<", "<<globalnodeids->at(2)<<", "<<globalnodeids->at(3)<<"==="<<endl;
+//  dserror("STOP");
   return;
 }
 
@@ -4146,6 +4285,8 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
   // check for the correctness of the given input value
   if(numtoreduce>ncrosslink)
     dserror("REDUCECROSSLINKSBY is greater than N_crosslink. Please check your input file!");
+  if(linkermodel_==statmech_linker_myosinthick)
+    dserror("Method not implemented yet for this linker type!");
 
   // a vector indicating the upcoming deletion of crosslinker elements
   Teuchos::RCP<Epetra_Vector> delcrosselement = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
@@ -4310,6 +4451,7 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
   crosslinkerbond_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_, 2));
   numbond_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
   crosslink2element_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
+
   if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
     crosslinkunbindingtimes_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_,3));
 
@@ -4421,6 +4563,8 @@ void STATMECH::StatMechManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWrit
   WriteRestartRedundantMultivector(output,"crosslinkerpositions",crosslinkerpositions_);
   WriteRestartRedundantMultivector(output,"numbond",numbond_);
   WriteRestartRedundantMultivector(output,"crosslink2element",crosslink2element_);
+  if(linkermodel_==statmech_linker_myosinthick)
+    WriteRestartRedundantMultivector(output,"additionalcross2ele",additionalcross2ele_);
   WriteRestartRedundantMultivector(output,"visualizepositions",visualizepositions_);
 
   if(crosslinkunbindingtimes_!=Teuchos::null)
@@ -4492,6 +4636,8 @@ void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader, do
   ReadRestartRedundantMultivector(reader,"crosslinkerpositions",crosslinkerpositions_);
   ReadRestartRedundantMultivector(reader,"numbond",numbond_);
   ReadRestartRedundantMultivector(reader,"crosslink2element",crosslink2element_);
+  if(linkermodel_==statmech_linker_myosinthick)
+    ReadRestartRedundantMultivector(reader,"additionalcross2ele",additionalcross2ele_);
   ReadRestartRedundantMultivector(reader,"visualizepositions",visualizepositions_);
   if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
     ReadRestartRedundantMultivector(reader,"crosslinkunbindingtimes",crosslinkunbindingtimes_);
@@ -4535,6 +4681,8 @@ void STATMECH::StatMechManager::WriteConv(Teuchos::RCP<CONTACT::Beam3cmanager> b
   bspotstatusconv_ = Teuchos::rcp(new Epetra_Vector(*bspotstatus_));
   numbondconv_ = Teuchos::rcp(new Epetra_Vector(*numbond_));
   crosslink2elementconv_ = Teuchos::rcp(new Epetra_Vector(*crosslink2element_));
+  if(linkermodel_==statmech_linker_myosinthick)
+    additionalcross2eleconv_ = Teuchos::rcp(new Epetra_MultiVector(*additionalcross2ele_));
   if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_myosinthick)
     crosslinkeractlengthconv_ = Teuchos::rcp(new Epetra_Vector(*crosslinkeractlength_));
 
@@ -4625,6 +4773,8 @@ void STATMECH::StatMechManager::RestoreConv(Teuchos::RCP<LINALG::SparseOperator>
   bspotstatus_ = Teuchos::rcp(new Epetra_Vector(*bspotstatusconv_));
   numbond_ = Teuchos::rcp(new Epetra_Vector(*numbondconv_));
   crosslink2element_ = Teuchos::rcp(new Epetra_Vector(*crosslink2elementconv_));
+  if(linkermodel_==statmech_linker_myosinthick)
+    additionalcross2ele_ = Teuchos::rcp(new Epetra_MultiVector(*additionalcross2eleconv_));
   if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_myosinthick)
   {
     // reverts reference lengths of elements back to the way they were before... (has to be done prior to restoring actlinklength_. Otherwise, fatal loss of information)
@@ -5718,6 +5868,11 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
   // crosslinker element IDs of the crosslink molecules
   crosslink2element_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
   crosslink2element_->PutScalar(-1.0);
+  if(linkermodel_==statmech_linker_myosinthick)
+  {
+    additionalcross2ele_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_,2));
+    additionalcross2ele_->PutScalar(-1.0);
+  }
 
   // initialize the beautiful visuals vector (aka beevee-vector)
   visualizepositions_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_, 3, false));
@@ -6075,6 +6230,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
 
     if(numsetelementsall>0)
     {
+      Teuchos::RCP<Epetra_MultiVector> nodalpositions = Teuchos::null;
       // rotations from displacement vector
       Teuchos::RCP<Epetra_MultiVector> nodalrotations = Teuchos::null;
       // NODAL quaternions from filament elements
@@ -6084,6 +6240,8 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
           linkermodel_ == statmech_linker_bellseqintpol ||
           linkermodel_ == statmech_linker_myosinthick)
       {
+        if(linkermodel_==statmech_linker_myosinthick)
+          nodalpositions = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),3));
         nodalrotations = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),3));
         GetNodalBindingSpotPositionsFromDisVec(discol, Teuchos::null, nodalrotations);
         nodalquaternions = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),4));
@@ -6138,26 +6296,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
           }
 
           // calculate element GID
-          int newcrosslinkerGID = (bspotgid[0] + 1)*basisnodes_ + bspotgid[1];
-
-          /* Correction of the crosslinker GID if there happens to be another crosslinker with the same ID. This might occur
-           * if two different crosslink molecules bind to the same two nodes. Then, the calculated crosslinker GID will be the
-           * same in both cases, leading to problems within the discretization.
-           * As long as an unused GID cannot be found, the crosslinker GID keeps getting incremented by 1.*/
-          discret_->Comm().Barrier();
-          while(1)
-          {
-            int gidexists = 1;
-            // query existance of node on this Proc
-            int gidonproc = (int)(discret_->HaveGlobalElement(newcrosslinkerGID));
-            // sum over all processors
-            discret_->Comm().MaxAll(&gidonproc, &gidexists, 1);
-            // calculate new GID if necessary by shifting the initial GID
-            if(gidexists>0)
-              newcrosslinkerGID++;
-            else
-              break;
-          }
+          int newcrosslinkerGID = GenerateNewLinkerGID(bspotgid);
           /* Create mapping from crosslink molecule to crosslinker element GID
            * Note: No need for the usual procedure of exporting and reimporting to make things redundant
            * because info IS already redundant by design here.*/
@@ -6209,11 +6348,11 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
             }
 
           if(hasrownode)
-            AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,*discret_,nodalquaternions);
+            AddNewCrosslinkerElement(i,newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,*discret_,nodalpositions,nodalrotations,nodalquaternions);
 
           // add all new elements to contact discretization on all Procs
           if(beamcmanager!=Teuchos::null)
-            AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->ContactDiscret(),nodalquaternions);
+            AddNewCrosslinkerElement(i,newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->ContactDiscret(),nodalpositions,nodalrotations,nodalquaternions);
         }
       }
     }

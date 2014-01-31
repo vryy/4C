@@ -276,12 +276,15 @@ public:
                               const int&           istep);
 
   //! \brief create a new crosslinker element and add it to the discretization
-  void AddNewCrosslinkerElement(const int&                       crossgid,
+  void AddNewCrosslinkerElement(const int&                       crosslinkermapid,
+                                const int&                       crossgid,
                                 Teuchos::RCP<std::vector<int> >  globalnodeids,
                                 const std::vector<int>&          bspotgid,
                                 const std::vector<double>&       xrefe,
                                 const std::vector<double>&       rotrefe,
                                 DRT::Discretization&             mydiscret,
+                                Teuchos::RCP<Epetra_MultiVector> nodalpositions = Teuchos::null,
+                                Teuchos::RCP<Epetra_MultiVector> nodalrotations = Teuchos::null,
                                 Teuchos::RCP<Epetra_MultiVector> nodalquaternions = Teuchos::null,
                                 bool                             addinitlinks=false);
 
@@ -289,6 +292,14 @@ public:
   void RemoveCrosslinkerElements(DRT::Discretization&             mydiscret,
                                  Epetra_Vector&                   delcrosselement,
                                  std::vector<std::vector<char> >* deletedelements);
+
+  //! \brief remove crosslinker element from a chosen discretization (MultiVector)
+  void RemoveMultipleCrosslinkerElements(DRT::Discretization&             mydiscret,
+                                         Epetra_MultiVector&              delcrosselement,
+                                         std::vector<std::vector<char> >* deletedelements);
+
+  //! \brief generate crosslinker element ID on the basis of the nodes it connects
+  int GenerateNewLinkerGID(std::vector<int>& bspotgid);
 
   /*! \brief create transverse node pairs for interpolated linker elements (in contrast to node pairs belonging each to the one filament)
    *  \param globalnodeids (in)  vector of node GIDs whose order is going to be shuffled
@@ -1050,6 +1061,9 @@ protected:
   //! \brief a vector mapping crosslink molecule IDs to crosslinker element IDs
   Teuchos::RCP<Epetra_Vector> crosslink2element_;
 
+  //! \brief a vector mapping crosslink molecule IDs to additional crosslinker element IDs (multi element crosslinker)
+  Teuchos::RCP<Epetra_MultiVector> additionalcross2ele_;
+
   //! \brief a vector mapping crosslinker element IDs to crosslink molecule IDs
   Teuchos::RCP<Epetra_Vector> element2crosslink_;
 
@@ -1093,6 +1107,8 @@ protected:
   Teuchos::RCP<Epetra_MultiVector> crosslinkerbondconv_;
   //! \brief vector holding converged state of crosslinkerpositions_
   Teuchos::RCP<Epetra_MultiVector> crosslinkerpositionsconv_;
+  //! \brief vector holding converged state of crosslink2element_
+  Teuchos::RCP<Epetra_MultiVector> additionalcross2eleconv_;
   //! \brief vector holding converged state of actlinklength__
   Teuchos::RCP<Epetra_Vector> crosslinkeractlengthconv_;
   //! \brief vector holding converged state of crosslinkertype_
