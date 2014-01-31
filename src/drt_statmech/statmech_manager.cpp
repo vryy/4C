@@ -3642,10 +3642,10 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
   // shuffling node order, non-square case
   if(h_par<0)
   {
-    //std::cout<<"   d = ";
-    //for(int i=0; i<(int)distances.size(); i++)
-      //std::cout<<distances[i]<<"  ";
-    //std::cout<<endl;
+//    std::cout<<"   d = ";
+//    for(int i=0; i<(int)distances.size(); i++)
+//      std::cout<<distances[i]<<"  ";
+//    std::cout<<endl;
 
     if(distances[0]>distances[1])
     {
@@ -3680,12 +3680,9 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
     }
   }
 
-<<<<<<< .mine
   //std::cout<<"===Nodes: "<<globalnodeids->at(0)<<", "<<globalnodeids->at(1)<<", "<<globalnodeids->at(2)<<", "<<globalnodeids->at(3)<<"==="<<endl;
   //dserror("STOP");
-=======
-  std::cout<<"Nodes: "<<globalnodeids->at(0)<<", "<<globalnodeids->at(1)<<", "<<globalnodeids->at(2)<<", "<<globalnodeids->at(3)<<std::endl;
->>>>>>> .r19045
+  //std::cout<<"Nodes: "<<globalnodeids->at(0)<<", "<<globalnodeids->at(1)<<", "<<globalnodeids->at(2)<<", "<<globalnodeids->at(3)<<std::endl;
   return;
 }
 
