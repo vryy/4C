@@ -1136,7 +1136,7 @@ protected:
   LINALG::MapExtractor      velpressplitter_;
 
   /// ALE dof map
-  LINALG::MapExtractor                   meshmap_;
+  LINALG::MapExtractor meshmap_;
 
   /// row dof map extractor
   const UTILS::MapExtractor* surfacesplitter_;
@@ -1198,7 +1198,7 @@ protected:
 
 private:
 
-  void SplitMatrixAndVector(Teuchos::RCP<Epetra_Vector>    incvel_);
+  void SplitMatrixAndVector(Teuchos::RCP<Epetra_Vector> incvel_);
 
   //@}
 
@@ -1211,6 +1211,9 @@ private:
 
   */
   void RecomputeMeanCsgsB();
+
+  ///< Print stabilization details to screen
+  virtual void PrintStabilizationDetails() const;
 
 
 }; // class FluidImplicitTimeInt

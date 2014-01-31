@@ -590,64 +590,9 @@ void FLD::FluidImplicitTimeInt::Initialize()
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::Integrate()
 {
+  PrintStabilizationDetails();
 
-  // output of stabilization details
-  Teuchos::ParameterList *  stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-  if (myrank_==0)
-  {
-    std::cout << "Stabilization type         : " << stabparams->get<std::string>("STABTYPE") << "\n";
-    std::cout << "                             " << "Evaluation Tau  = " << stabparams->get<std::string>("EVALUATION_TAU") <<"\n";
-    std::cout << "                             " << "Evaluation Mat  = " << stabparams->get<std::string>("EVALUATION_MAT") <<"\n";
-    std::cout << "\n";
-
-    if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_residualbased)
-    {
-
-      std::cout << "                             " << stabparams->get<std::string>("TDS")<< "\n";
-      std::cout << "\n";
-      std::cout << "                             " << "Tau Type        = " << stabparams->get<std::string>("DEFINITION_TAU") <<"\n";
-
-      if(stabparams->get<std::string>("TDS") == "quasistatic")
-      {
-        if(stabparams->get<std::string>("TRANSIENT")=="yes_transient")
-        {
-          dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
-        }
-      }
-
-      std::cout <<  "                             " << "SUPG            = " << stabparams->get<std::string>("SUPG")           <<"\n";
-      std::cout <<  "                             " << "PSPG            = " << stabparams->get<std::string>("PSPG")           <<"\n";
-      std::cout <<  "                             " << "GRAD_DIV        = " << stabparams->get<std::string>("GRAD_DIV")          <<"\n";
-      std::cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<std::string>("CROSS-STRESS")   <<"\n";
-      std::cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<std::string>("REYNOLDS-STRESS")<<"\n";
-      std::cout <<  "                             " << "VSTAB           = " << stabparams->get<std::string>("VSTAB")          <<"\n";
-      std::cout <<  "                             " << "RSTAB           = " << stabparams->get<std::string>("RSTAB")          <<"\n";
-      std::cout <<  "                             " << "TRANSIENT       = " << stabparams->get<std::string>("TRANSIENT")      <<"\n";
-      std::cout << "\n";
-      std::cout << std::endl;
-    }
-    else if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
-    {
-      Teuchos::ParameterList *  stabparams_edgebased      =&(params_->sublist("EDGE-BASED STABILIZATION"));
-
-      std::cout << "\n\nEDGE-BASED (EOS) fluid stabilizations " << "\n";
-
-      std::cout << "+---------------------------------------------------------------------------------+\n";
-      std::cout << "|  WARNING: edge-based stabilization requires face discretization                 |\n";
-      std::cout << "|           face discretization currently only available for pure fluid problems  |\n";
-      std::cout << "+---------------------------------------------------------------------------------+\n";
-
-      std::cout <<  "                    " << "EOS_PRES             = " << stabparams_edgebased->get<string>("EOS_PRES")      <<"\n";
-      std::cout <<  "                    " << "EOS_CONV_STREAM      = " << stabparams_edgebased->get<string>("EOS_CONV_STREAM")      <<"\n";
-      std::cout <<  "                    " << "EOS_CONV_CROSS       = " << stabparams_edgebased->get<string>("EOS_CONV_CROSS")      <<"\n";
-      std::cout <<  "                    " << "EOS_DIV              = " << stabparams_edgebased->get<string>("EOS_DIV")      <<"\n";
-      std::cout <<  "                    " << "EOS_DEFINITION_TAU   = " << stabparams_edgebased->get<string>("EOS_DEFINITION_TAU")      <<"\n";
-      std::cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<string>("EOS_H_DEFINITION")      <<"\n";
-      std::cout << "+---------------------------------------------------------------------------------+\n" << std::endl;
-    }
-
-  }
-
+  Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
   if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
   {
     // if the definition of internal faces would be included
@@ -661,8 +606,7 @@ void FLD::FluidImplicitTimeInt::Integrate()
     facediscret_->CreateInternalFacesExtension(col_pbcmapmastertoslave_,true);
   }
 
-  // distinguish stationary and instationary case:
-  //TimeLoop() calls SolveStationaryProblem() in stationary case
+  // TimeLoop() calls SolveStationaryProblem() in stationary case
   TimeLoop();
 
   // print the results of time measurements
@@ -4940,6 +4884,67 @@ void FLD::FluidImplicitTimeInt::UpdateIterIncrementally(
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::PrintStabilizationDetails() const
+{
+  // output of stabilization details
+  Teuchos::ParameterList* stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
+  if (myrank_ == 0)
+  {
+    std::cout << "Stabilization type         : " << stabparams->get<std::string>("STABTYPE") << "\n";
+    std::cout << "                             " << "Evaluation Tau  = " << stabparams->get<std::string>("EVALUATION_TAU") <<"\n";
+    std::cout << "                             " << "Evaluation Mat  = " << stabparams->get<std::string>("EVALUATION_MAT") <<"\n";
+    std::cout << "\n";
+
+    if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_residualbased)
+    {
+
+      std::cout << "                             " << stabparams->get<std::string>("TDS")<< "\n";
+      std::cout << "\n";
+      std::cout << "                             " << "Tau Type        = " << stabparams->get<std::string>("DEFINITION_TAU") <<"\n";
+
+      if(stabparams->get<std::string>("TDS") == "quasistatic")
+      {
+        if(stabparams->get<std::string>("TRANSIENT")=="yes_transient")
+        {
+          dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
+        }
+      }
+
+      std::cout <<  "                             " << "SUPG            = " << stabparams->get<std::string>("SUPG")           <<"\n";
+      std::cout <<  "                             " << "PSPG            = " << stabparams->get<std::string>("PSPG")           <<"\n";
+      std::cout <<  "                             " << "GRAD_DIV        = " << stabparams->get<std::string>("GRAD_DIV")          <<"\n";
+      std::cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<std::string>("CROSS-STRESS")   <<"\n";
+      std::cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<std::string>("REYNOLDS-STRESS")<<"\n";
+      std::cout <<  "                             " << "VSTAB           = " << stabparams->get<std::string>("VSTAB")          <<"\n";
+      std::cout <<  "                             " << "RSTAB           = " << stabparams->get<std::string>("RSTAB")          <<"\n";
+      std::cout <<  "                             " << "TRANSIENT       = " << stabparams->get<std::string>("TRANSIENT")      <<"\n";
+      std::cout << "\n";
+      std::cout << std::endl;
+    }
+    else if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
+    {
+      Teuchos::ParameterList *  stabparams_edgebased      =&(params_->sublist("EDGE-BASED STABILIZATION"));
+
+      std::cout << "\n\nEDGE-BASED (EOS) fluid stabilizations " << "\n";
+
+      std::cout << "+---------------------------------------------------------------------------------+\n";
+      std::cout << "|  WARNING: edge-based stabilization requires face discretization                 |\n";
+      std::cout << "|           face discretization currently only available for pure fluid problems  |\n";
+      std::cout << "+---------------------------------------------------------------------------------+\n";
+
+      std::cout <<  "                    " << "EOS_PRES             = " << stabparams_edgebased->get<string>("EOS_PRES")      <<"\n";
+      std::cout <<  "                    " << "EOS_CONV_STREAM      = " << stabparams_edgebased->get<string>("EOS_CONV_STREAM")      <<"\n";
+      std::cout <<  "                    " << "EOS_CONV_CROSS       = " << stabparams_edgebased->get<string>("EOS_CONV_CROSS")      <<"\n";
+      std::cout <<  "                    " << "EOS_DIV              = " << stabparams_edgebased->get<string>("EOS_DIV")      <<"\n";
+      std::cout <<  "                    " << "EOS_DEFINITION_TAU   = " << stabparams_edgebased->get<string>("EOS_DEFINITION_TAU")      <<"\n";
+      std::cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<string>("EOS_H_DEFINITION")      <<"\n";
+      std::cout << "+---------------------------------------------------------------------------------+\n" << std::endl;
+    }
+  }
 }
 
 // -------------------------------------------------------------------
