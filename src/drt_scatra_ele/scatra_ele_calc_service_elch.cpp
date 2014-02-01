@@ -96,7 +96,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
     /*----------------------------------------------------------------------*/
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
-      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+      const double fac = this->EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
       // loop starts at k=numscal_ !!
       for (int vi=0; vi<my::nen_; ++vi)
@@ -623,7 +623,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
     // start loop over integration points
     for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
     {
-      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+      const double fac = this->EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
       // get values of all transported scalars at integration point
       for (int k=0; k<my::numscal_; ++k)
@@ -671,7 +671,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
     // start loop over integration points
     for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
     {
-      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+      const double fac = this->EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
       // get values of transported scalars at integration point
       // and compute electroneutrality

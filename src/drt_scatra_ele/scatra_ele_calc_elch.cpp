@@ -474,7 +474,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
     // velocity divergence required for conservative form
     double vdiv(0.0);
     if (my::scatrapara_->IsConservative())
-      GetDivergence(vdiv,my::evelnp_);
+      this->GetDivergence(vdiv,my::evelnp_);
 
     LINALG::Matrix<my::nen_,1> migconv;
     if(elchpara_->NernstPlanck())
@@ -1307,7 +1307,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
                   for(int iscal2=0; iscal2<my::numscal_; ++iscal2)
                   {
                     double laplawfrhs_gradphi=0.0;
-                    GetLaplacianWeakFormRHS(laplawfrhs_gradphi,gradphi[iscal2],vi);
+                    this->GetLaplacianWeakFormRHS(laplawfrhs_gradphi,gradphi[iscal2],vi);
 
                     emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+iscal)
                       += -timefacfac*epstort_[0]*(dme_->GetDerivTransNum(k,iscal))*my::funct_(ui)*dme_->GetValence(iscal2)/dme_->GetValence(k)*dme_->GetIsotropicDiff(iscal2)*laplawfrhs_gradphi;
@@ -1346,7 +1346,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
 
           // diffusive term
           double laplawfrhs_gradphi(0.0);
-          GetLaplacianWeakFormRHS(laplawfrhs_gradphi,gradphi[k],vi);
+          this->GetLaplacianWeakFormRHS(laplawfrhs_gradphi,gradphi[k],vi);
           erhs[fvi] -= rhsfac*epstort_[0]*dme_->GetIsotropicDiff(k)*laplawfrhs_gradphi;
 
           if(not cursolvar_)
@@ -1362,7 +1362,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
               {
                 // diffusive term second
                 double laplawfrhs_gradphi(0.0);
-                GetLaplacianWeakFormRHS(laplawfrhs_gradphi,gradphi[iscal],vi); // compute once, reuse below!
+                this->GetLaplacianWeakFormRHS(laplawfrhs_gradphi,gradphi[iscal],vi); // compute once, reuse below!
 
                 // formulation a): plain ionic diffusion coefficients without using ENC
                 //
@@ -1390,7 +1390,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
               {
                 // diffusive term second
                 double laplawfrhs_gradphi(0.0);
-                GetLaplacianWeakFormRHS(laplawfrhs_gradphi,gradphi[iscal],vi); // compute once, reuse below!
+                this->GetLaplacianWeakFormRHS(laplawfrhs_gradphi,gradphi[iscal],vi); // compute once, reuse below!
 
                 // formulation a:  plain ionic diffusion coefficients: sum (z_i D_i nabla c_i)
                 erhs[fvi] -= - rhsfac*epstort_[0]*dme_->GetTransNum(k)*dme_->GetValence(iscal)/dme_->GetValence(k)*dme_->GetIsotropicDiff(iscal)*laplawfrhs_gradphi;
@@ -1703,7 +1703,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
           for (int vi=0; vi<my::nen_; ++vi)
           {
             double laplawfrhs_gradpot(0.0);
-            GetLaplacianWeakFormRHS(laplawfrhs_gradpot,gradpot,vi); // compute once, reuse below!
+            this->GetLaplacianWeakFormRHS(laplawfrhs_gradpot,gradpot,vi); // compute once, reuse below!
 
             erhs[vi*my::numdofpernode_+my::numscal_] -= rhsfac*epstort_[0]*invf*dme_->GetCond()*laplawfrhs_gradpot;
 
@@ -1713,7 +1713,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
               {
                 // diffusive term second
                 double laplawf2(0.0);
-                GetLaplacianWeakFormRHS(laplawf2,gradphi[iscal],vi); // compute once, reuse below!
+                this->GetLaplacianWeakFormRHS(laplawf2,gradphi[iscal],vi); // compute once, reuse below!
 
                 if(diffbased_==true)
                   erhs[vi*my::numdofpernode_+my::numscal_] -= rhsfac*epstort_[0]*dme_->GetValence(iscal)*dme_->GetIsotropicDiff(iscal)*laplawf2;
@@ -1725,7 +1725,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
               {
                 // diffusive term second
                 double laplawf2(0.0);
-                GetLaplacianWeakFormRHS(laplawf2,gradphi[iscal],vi); // compute once, reuse below!
+                this->GetLaplacianWeakFormRHS(laplawf2,gradphi[iscal],vi); // compute once, reuse below!
 
                 erhs[vi*my::numdofpernode_+my::numscal_]
                   -= rhsfac*epstort_[0]*rtffc*dme_->GetCond()*dme_->GetThermFac()*(newman_const_a+(newman_const_b*dme_->GetTransNum(iscal)))*conintinv[iscal]*laplawf2;
