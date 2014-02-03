@@ -558,7 +558,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_fld_moving_boundary.cpp
   src/drt_adapter/ad_fld_poro.cpp
   src/drt_adapter/ad_fld_fluid_fsi.cpp
-    src/drt_adapter/ad_fld_fluid_fpsi.cpp
+  src/drt_adapter/ad_fld_fluid_fpsi.cpp
   src/drt_adapter/ad_fld_fluid_fluid_fsi.cpp
   src/drt_adapter/ad_fld_fluid_xfem.cpp
   src/drt_adapter/ad_fld_xfluid_fsi.cpp
@@ -811,6 +811,7 @@ set(OBJS_DRT_UTILS
   src/drt_fem_general/drt_utils_local_connectivity_matrices.cpp
   src/drt_fem_general/largerotations.cpp
   src/drt_fluid/fluid_rotsym_periodicbc_utils.cpp
+  src/drt_combust/combust_functions.cpp
   src/drt_geometry/integrationcell.cpp
   src/drt_geometry/intersection_interfacepoint.cpp
   src/drt_geometry/intersection_math.cpp
