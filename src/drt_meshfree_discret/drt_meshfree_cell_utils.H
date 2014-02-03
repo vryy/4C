@@ -42,7 +42,7 @@ template<DRT::Element::DiscretizationType distype>
 struct DisTypeToOptGaussRule {};
 template<> struct DisTypeToOptGaussRule<DRT::Element::hex8 > {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_64point; };
 template<> struct DisTypeToOptGaussRule<DRT::Element::tet4 > {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_tet_4point;  };
-template<> struct DisTypeToOptGaussRule<DRT::Element::quad4> {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point;}; // std::cout
+template<> struct DisTypeToOptGaussRule<DRT::Element::quad4> {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_quad_9point;};
 template<> struct DisTypeToOptGaussRule<DRT::Element::tri3 > {static const DRT::UTILS::GaussRule2D rule =  DRT::UTILS::intrule_tri_7point;  };
 template<> struct DisTypeToOptGaussRule<DRT::Element::line2> {static const DRT::UTILS::GaussRule1D rule =  DRT::UTILS::intrule_line_4point; };
 
@@ -57,7 +57,7 @@ template<DRT::Element::DiscretizationType distype>
 struct DisTypeToNumGaussPoints {};
 template<> struct DisTypeToNumGaussPoints<DRT::Element::hex8 > {static const int ngp = 64;};
 template<> struct DisTypeToNumGaussPoints<DRT::Element::tet4 > {static const int ngp =  4;};
-template<> struct DisTypeToNumGaussPoints<DRT::Element::quad4> {static const int ngp =  9;}; // std::cout
+template<> struct DisTypeToNumGaussPoints<DRT::Element::quad4> {static const int ngp =  9;};
 template<> struct DisTypeToNumGaussPoints<DRT::Element::tri3 > {static const int ngp =  7;};
 template<> struct DisTypeToNumGaussPoints<DRT::Element::line2> {static const int ngp =  4;};
 
