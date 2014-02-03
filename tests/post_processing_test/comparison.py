@@ -11,15 +11,15 @@ sm.Connect()
 
 # read in of parallel calculatet case file
 ens_reader1 = sm.sources.ensight()
-p1 = ['displacement', '1']
-p2 = ['nodal_EA_strains_xyz', '1']
-p3 = ['nodal_cauchy_stresses_xyz', '1']
+#p1 = ['displacement', '1']
+#p2 = ['nodal_EA_strains_xyz', '1']
+#p3 = ['nodal_cauchy_stresses_xyz', '1']
 
 c1 = ['element_EA_strains_xyz', '0'] 
 c2 = ['element_cauchy_stresses_xyz', '0']
 
-ens_reader1.CaseFileName = './xxx_PAR_structure.case'
-ens_reader1.PointArrayStatus = p1+p2+p3
+ens_reader1.CaseFileName = sys.argv[1]
+#ens_reader1.PointArrayStatus = p1+p2+p3
 ens_reader1.CellArrayStatus = c1+c2
 
 ens_reader1.UpdatePipelineInformation()
@@ -39,8 +39,8 @@ index1  = head1.index('Points:0')
 # read in of serial calculatet case file
 ens_reader2 = sm.sources.ensight()
 
-ens_reader2.CaseFileName = './xxx_SER_structure.case'
-ens_reader2.PointArrayStatus = p1+p2+p3
+ens_reader2.CaseFileName = sys.argv[2]
+#ens_reader2.PointArrayStatus = p1+p2+p3
 ens_reader2.CellArrayStatus = c1+c2
 
 ens_reader2.UpdatePipelineInformation()

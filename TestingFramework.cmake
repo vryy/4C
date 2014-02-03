@@ -60,9 +60,10 @@ endmacro (cut_test)
 macro(post_processing arg nproc stresstype straintype startstep)
 
   set (RUNPOSTFILTER_PAR ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx\ --output=xxx_PAR\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
-  set (RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx\ --output=xxx_SER\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
+  set (RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx\ --output=xxx_SER\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep} )
+
   add_test(NAME ${arg}-p${nproc}-pp  
-  COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && pvpython\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py")
+  COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && pvpython\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py xxx_PAR*.case xxx_SER*.case")
 
   set_tests_properties ( ${arg}-p${nproc}-pp PROPERTIES TIMEOUT 1000 )
   set_tests_properties ( ${arg}-p${nproc}-pp PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
@@ -853,6 +854,7 @@ baci_test(red_airway_acinus_inter_acinar 2 449)
 baci_test(scatra_1D_straight_convection 1 "")
 baci_test(scatra_1D_straight_convection 2 "")
 baci_test(scatra_2D_skew_convection_10x10_maxent 1 "" minimal)
+post_processing(scatra_2D_skew_convection_10x10_maxent 1 "" "" 0)
 baci_test(scatra_2D_straight_convection_direct 1 "")
 baci_test(scatra_2D_straight_convection_direct 2 "")
 baci_test(scatra_2D_straight_convection_vm3gls 2 "")
