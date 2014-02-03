@@ -43,27 +43,29 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_fpsi.H"
 #include "../drt_fluid/drt_periodicbc.H"
 
+#include "../drt_io/io_pstream.H"
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ALE::Ale::Ale(RCP<DRT::Discretization> actdis,
+ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
               Teuchos::RCP<LINALG::Solver> solver,
               Teuchos::RCP<Teuchos::ParameterList> params,
               Teuchos::RCP<IO::DiscretizationWriter> output,
               bool dirichletcond)
   : discret_(actdis),
-    solver_ (solver),
-    params_ (params),
-    output_ (output),
+    solver_(solver),
+    params_(params),
+    output_(output),
     step_(0),
+    numstep_(params_->get<int>("NUMSTEP")),
     time_(0.0),
-    uprestart_(params->get("write restart every", -1)),
+    maxtime_(params_->get<double>("MAXTIME")),
+    dt_(params_->get<double>("TIMESTEP")),
+    writerestartevery_(params->get<int>("RESTARTEVRY")),
+    writeresultsevery_(params->get<int>("RESULTSEVRY")),
     sysmat_(Teuchos::null)
 {
-  numstep_ = params_->get<int>("numstep");
-  maxtime_ = params_->get<double>("maxtime");
-  dt_      = params_->get<double>("dt");
-
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   dispn_          = LINALG::CreateVector(*dofrowmap,true);
@@ -75,7 +77,7 @@ ALE::Ale::Ale(RCP<DRT::Discretization> actdis,
 
   SetupDBCMapEx(dirichletcond);
 
-  // ensure that the ALE std::string was removed from conditions
+  // ensure that the ALE string was removed from conditions
   {
     DRT::Condition* cond = discret_->GetCondition("ALEDirichlet");
     if (cond) dserror("Found a ALE Dirichlet condition. Remove ALE string!");
@@ -91,10 +93,9 @@ ALE::Ale::Ale(RCP<DRT::Discretization> actdis,
     {
       // Only 'classic_lin' and 'springs' are supported for use with locsys.
       // If you want to use locsys with another ALE type, just copy from 'classic_lin'
-      const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
-      int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
+      int aletype = DRT::INPUT::IntegralValue<int>(*params_,"ALE_TYPE");
       if (not ((aletype==INPAR::ALE::classic_lin) || (aletype==INPAR::ALE::springs)))
-          dserror("Only ALE types 'classic_lin' and 'springs' are supported for use with locsys conditions.");
+        dserror("Only ALE types 'classic_lin' and 'springs' are supported for use with locsys conditions.");
 
       // Initialize locsys manager
       locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
@@ -131,7 +132,8 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ALE::Ale::BlockSystemMatrix()
  *----------------------------------------------------------------------*/
 void ALE::Ale::Integrate()
 {
-  while (step_ < numstep_-1 and time_ <= maxtime_)
+  const double eps = 1.0e-12; // add eps to prevent stopping one step too early due to memory trash on last digits
+  while (step_ < numstep_ and time_ <= maxtime_ + eps)
   {
     PrepareTimeStep();
     Solve();
@@ -140,6 +142,65 @@ void ALE::Ale::Integrate()
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ALE::Ale::Output()
+{
+  /*  We need ALE output only in case of pure ALE problems. If fluid is present,
+   *  the fluid field writes its own displacement field as output.
+   *
+   *  Though, we might need restart data.
+   */
+
+  // Has any output data been written?
+  bool datawritten = false;
+
+  // write restart data if necessary
+  if (writerestartevery_ != 0 and step_ % writerestartevery_ == 0)
+  {
+    OutputRestart(datawritten);
+  }
+
+  // write output data if necessary
+  if (not datawritten and writeresultsevery_ != 0 and step_ % writeresultsevery_ == 0)
+  {
+    OutputState(datawritten);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ALE::Ale::OutputState(bool& datawritten)
+{
+  // write output data
+  output_->NewStep(step_,time_);
+  output_->WriteVector("dispnp", dispnp_);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ALE::Ale::OutputRestart(bool& datawritten)
+{
+  // write restart data
+  output_->NewStep(step_,time_);
+  output_->WriteVector("dispnp", dispnp_);
+  output_->WriteVector("dispn", dispn_);
+
+  // restart/output data has been written
+  datawritten = true;
+
+  // info dedicated to user's eyes staring at standard out
+  if (discret_->Comm().MyPID() == 0)
+  {
+    IO::cout << "====== Restart written in step " << step_ << IO::endl;
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -161,8 +222,11 @@ void ALE::Ale::PrepareTimeStep()
   step_ += 1;
   time_ += dt_;
 
+  PrintTimeStepHeader();
+
   // Update local coordinate systems (which may be time dependent)
-  if (locsysman_ != Teuchos::null) {
+  if (locsysman_ != Teuchos::null)
+  {
     discret_->ClearState();
     discret_->SetState("dispnp", dispnp_);
     locsysman_->Setup(time_);
@@ -170,6 +234,15 @@ void ALE::Ale::PrepareTimeStep()
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ALE::Ale::PrintTimeStepHeader() const
+{
+  IO::cout << "TIME: " << time_ << "/" << maxtime_
+           << "  DT = " << dt_
+           << "  STEP = " << step_ << "/" << numstep_
+           << IO::endl;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -181,7 +254,7 @@ void ALE::Ale::SetupDBCMapEx(bool dirichletcond)
   eleparams.set("delta time", dt_);
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
 
-  ApplyDirichletBC(eleparams,dispnp_,Teuchos::null,Teuchos::null,true);
+  ApplyDirichletBC(eleparams, dispnp_, Teuchos::null, Teuchos::null, true);
 
   if (dirichletcond)
   {
@@ -252,11 +325,11 @@ void ALE::Ale::ApplyDirichletBC
   if (locsysman_ != Teuchos::null)
   {
     if (systemvector != Teuchos::null)
-        locsysman_->RotateGlobalToLocal(systemvector);
+      locsysman_->RotateGlobalToLocal(systemvector);
     if (systemvectord != Teuchos::null)
-        locsysman_->RotateGlobalToLocal(systemvectord);
+      locsysman_->RotateGlobalToLocal(systemvectord);
     if (systemvectordd != Teuchos::null)
-        locsysman_->RotateGlobalToLocal(systemvectordd);
+      locsysman_->RotateGlobalToLocal(systemvectordd);
   }
 
   // Apply DBCs
@@ -279,11 +352,11 @@ void ALE::Ale::ApplyDirichletBC
   if (locsysman_ != Teuchos::null)
   {
     if (systemvector != Teuchos::null)
-        locsysman_->RotateLocalToGlobal(systemvector);
+      locsysman_->RotateLocalToGlobal(systemvector);
     if (systemvectord != Teuchos::null)
-        locsysman_->RotateLocalToGlobal(systemvectord);
+      locsysman_->RotateLocalToGlobal(systemvectord);
     if (systemvectordd != Teuchos::null)
-        locsysman_->RotateLocalToGlobal(systemvectordd);
+      locsysman_->RotateLocalToGlobal(systemvectordd);
   }
 
   return;
@@ -361,6 +434,9 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, Teuch
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ALE::AleBaseAlgorithm::SetupAle");
   Teuchos::TimeMonitor monitor(*t);
 
+  // what's the current problem type?
+  const PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
@@ -382,13 +458,14 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, Teuch
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
+  Teuchos::RCP<Teuchos::ParameterList> adyn
+    = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->AleDynamicParams()));
 
   // -------------------------------------------------------------------
-  // create a solver
+  // create a linear solver
   // -------------------------------------------------------------------
   // get the linear solver number
-  const int linsolvernumber = adyn.get<int>("LINEAR_SOLVER");
+  const int linsolvernumber = adyn->get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for ALE problems. Please set LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
@@ -398,21 +475,29 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, Teuch
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
-  Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp(new Teuchos::ParameterList());
-  params->set<int>("numstep",    prbdyn.get<int>("NUMSTEP"));
-  params->set<double>("maxtime", prbdyn.get<double>("MAXTIME"));
-  params->set<double>("dt",      prbdyn.get<double>("TIMESTEP"));
+  // ---------------------------------------------------------------------------
+  // overwrite certain parameters when ALE is part of a multi-field problem
+  // ---------------------------------------------------------------------------
+  adyn->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
+  adyn->set<double>("MAXTIME", prbdyn.get<double>("MAXTIME"));
+  adyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
+  adyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
 
-  // ----------------------------------------------- restart and output
-  // restart
-  params->set<int>("write restart every", prbdyn.get<int>("RESTARTEVRY"));
-
-  params->set<int>("ALE_TYPE",DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE"));
+  if (probtype == prb_ale
+      or probtype == prb_struct_ale
+      or probtype == prb_structure
+      or probtype == prb_redairways_tissue
+      or probtype == prb_particle)
+  {
+    adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
+  }
+  else
+  {
+    adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
+  }
 
 
   bool dirichletcond = true;
-  // what's the current problem type?
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
   if (probtype == prb_fsi or
       probtype == prb_fsi_redmodels or
       probtype == prb_fsi_lung or
@@ -473,17 +558,17 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, Teuch
     }
   }
 
-  int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
-  if (aletype==INPAR::ALE::classic_lin)
-    ale_ = Teuchos::rcp(new AleLinear(actdis, solver, params, output, false, dirichletcond));
-  else if (aletype==INPAR::ALE::incr_lin)
-    ale_ = Teuchos::rcp(new AleLinear(actdis, solver, params, output, true , dirichletcond));
-  else if (aletype==INPAR::ALE::laplace)
-    ale_ = Teuchos::rcp(new AleLaplace(actdis, solver, params, output, true, dirichletcond));
-  else if (aletype==INPAR::ALE::springs)
-    ale_ = Teuchos::rcp(new AleSprings(actdis, solver, params, output, dirichletcond));
-  else if (aletype==INPAR::ALE::springs_fixed_ref)
-    ale_ = Teuchos::rcp(new AleSpringsFixedRef(actdis, solver, params, output, true, dirichletcond));
+  int aletype = DRT::INPUT::IntegralValue<int>(*adyn,"ALE_TYPE");
+  if (aletype == INPAR::ALE::classic_lin)
+    ale_ = Teuchos::rcp(new AleLinear(actdis, solver, adyn, output, false, dirichletcond));
+  else if (aletype == INPAR::ALE::incr_lin)
+    ale_ = Teuchos::rcp(new AleLinear(actdis, solver, adyn, output, true, dirichletcond));
+  else if (aletype == INPAR::ALE::laplace)
+    ale_ = Teuchos::rcp(new AleLaplace(actdis, solver, adyn, output, true, dirichletcond));
+  else if (aletype == INPAR::ALE::springs)
+    ale_ = Teuchos::rcp(new AleSprings(actdis, solver, adyn, output, dirichletcond));
+  else if (aletype == INPAR::ALE::springs_fixed_ref)
+    ale_ = Teuchos::rcp(new AleSpringsFixedRef(actdis, solver, adyn, output, true, dirichletcond));
   else
-    dserror("ale type '%s' unsupported",adyn.get<std::string>("ALE_TYPE").c_str());
+    dserror("ale type '%s' unsupported", adyn->get<std::string>("ALE_TYPE").c_str());
 }

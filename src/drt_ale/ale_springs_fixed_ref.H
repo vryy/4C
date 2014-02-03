@@ -57,7 +57,6 @@ public:
   virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp, std::string incrementtype = std::string("step"));
   virtual void Solve();
   virtual void Update();
-  virtual void Output();
   //@}
 
   Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner() { return precond_; }

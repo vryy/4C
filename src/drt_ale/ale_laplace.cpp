@@ -172,25 +172,6 @@ void ALE::AleLaplace::Update()
   dispn_->Update(1.0,*dispnp_,0.0);
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void ALE::AleLaplace::Output()
-{
-  // We do not need any output -- the fluid writes its
-  // displacements itself. But we need restart.
-
-  if (uprestart_ != 0 and step_ % uprestart_ == 0)
-  {
-    output_->NewStep    (step_,time_);
-    output_->WriteVector("dispnp", dispnp_);
-
-    // add restart data
-    output_->WriteVector("dispn", dispn_);
-  }
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ALE::AleLaplace::EvaluateElements()

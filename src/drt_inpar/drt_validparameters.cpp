@@ -4371,7 +4371,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::ALE::springs_fixed_ref),
                                &adyn);
   IntParameter("NUM_INITSTEP",0,"",&adyn);
-  IntParameter("RESULTSEVRY",1,"",&adyn);
+  IntParameter("RESTARTEVRY",1,"write restart data every RESTARTEVRY steps",&adyn);
+  IntParameter("RESULTSEVRY",0,"write results every RESULTSTEVRY steps",&adyn);
 
   // linear solver id used for scalar ale problems
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for ale problems...",&adyn);

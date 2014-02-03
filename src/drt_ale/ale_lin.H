@@ -45,7 +45,7 @@ public:
             bool dirichletcond);
 
   /// build system matrix
-  virtual void BuildSystemMatrix(bool full=true);
+  virtual void BuildSystemMatrix(bool full = true);
 
   //! @name Algorithm core methods
   virtual void Evaluate(
@@ -54,7 +54,6 @@ public:
       );
   virtual void Solve();
   virtual void Update();
-  virtual void Output();
   //@}
 
   //! @name Reading access to displacement

@@ -180,7 +180,8 @@ void ALE::AleSprings::SolveBioGr()
 
   incr_->Update(1.0,*dispnp_,-1.0,*dispn_,0.0);
 
-  if (LocsysManager() != Teuchos::null) {
+  if (LocsysManager() != Teuchos::null)
+  {
     // Transform system matrix and rhs to local coordinate systems
     LocsysManager()->RotateGlobalToLocal(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_), residual_);
 
@@ -189,7 +190,9 @@ void ALE::AleSprings::SolveBioGr()
     LocsysManager()->RotateGlobalToLocal(incr_local);
 
     LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,GetLocSysTrafo(),incr_local,*(dbcmaps_->CondMap()));
-  } else {
+  }
+  else
+  {
     LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,incr_,*(dbcmaps_->CondMap()));
   }
 
@@ -206,25 +209,6 @@ void ALE::AleSprings::Update()
   dispn_-> Update(1.0,*incr_,0.0);
   dispnp_->Update(1.0,*incr_,0.0);
 }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void ALE::AleSprings::Output()
-{
-  // We do not need any output -- the fluid writes its
-  // displacements itself. But we need restart.
-
-  output_->NewStep    (step_,time_);
-  output_->WriteVector("dispnp", dispnp_);
-
-  if (uprestart_ != 0 and step_ % uprestart_ == 0)
-  {
-    // add restart data
-    output_->WriteVector("dispn", dispn_);
-  }
-}
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

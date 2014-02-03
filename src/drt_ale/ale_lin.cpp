@@ -31,12 +31,12 @@ Maintainer: Ulrich Kuettler
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ALE::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
-                              Teuchos::RCP<LINALG::Solver> solver,
-                              Teuchos::RCP<Teuchos::ParameterList> params,
-                              Teuchos::RCP<IO::DiscretizationWriter> output,
-                              bool incremental,
-                              bool dirichletcond)
+ALE::AleLinear::AleLinear(Teuchos::RCP<DRT::Discretization> actdis,
+                          Teuchos::RCP<LINALG::Solver> solver,
+                          Teuchos::RCP<Teuchos::ParameterList> params,
+                          Teuchos::RCP<IO::DiscretizationWriter> output,
+                          bool incremental,
+                          bool dirichletcond)
   : Ale(actdis,solver,params,output,dirichletcond),
     incremental_(incremental)
 {
@@ -198,17 +198,19 @@ void ALE::AleLinear::Solve()
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
 
-  if (incremental_) {
+  if (incremental_)
+  {
     EvaluateElements();
 
-    if (LocsysManager() != Teuchos::null) {
+    if (LocsysManager() != Teuchos::null)
+    {
       // Transform system matrix and rhs to local coordinate systems
       LocsysManager()->RotateGlobalToLocal(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_), residual_);
     }
   }
 
   // Apply Dirichlet boundary conditions on provided state vector
-  ALE::Ale::ApplyDirichletBC(eleparams,dispnp_,Teuchos::null,Teuchos::null,false);
+  ALE::Ale::ApplyDirichletBC(eleparams, dispnp_, Teuchos::null, Teuchos::null, false);
 
   if (LocsysManager() != Teuchos::null)
   {
@@ -217,13 +219,14 @@ void ALE::AleLinear::Solve()
     LocsysManager()->RotateGlobalToLocal(dispnp_local);
 
     LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,GetLocSysTrafo(),dispnp_local,*(dbcmaps_->CondMap()));
-  } else {
+  }
+  else
+  {
     LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
   }
 
-  if (xffinterface_->XFluidFluidCondRelevant()) {
+  if (xffinterface_->XFluidFluidCondRelevant())
     LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,xfftoggle_);
-  }
 
   solver_->Solve(sysmat_->EpetraOperator(),dispnp_,residual_,true);
 }
@@ -256,24 +259,6 @@ void ALE::AleLinear::SolveBioGr()
 void ALE::AleLinear::Update()
 {
   dispn_->Update(1.0,*dispnp_,0.0);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void ALE::AleLinear::Output()
-{
-  // We do not need any output -- the fluid writes its
-  // displacements itself. But we need restart.
-
-  if (uprestart_ != 0 and step_ % uprestart_ == 0)
-  {
-    output_->NewStep    (step_,time_);
-    output_->WriteVector("dispnp", dispnp_);
-
-    // add restart data
-    output_->WriteVector("dispn", dispn_);
-  }
 }
 
 

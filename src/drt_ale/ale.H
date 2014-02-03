@@ -113,7 +113,7 @@ public:
   virtual void Update() = 0;
 
   /// write output
-  virtual void Output() = 0;
+  virtual void Output();
 
   /*!
   \brief Reset time step
@@ -273,30 +273,46 @@ protected:
   //@}
 
   //! @name Algorithm core variables
-  int step_;
-  int numstep_;
-  double time_;
-  double maxtime_;
-  double dt_;
-  int uprestart_;
-  bool incremental_;
+  int step_;              ///< step counter
+  int numstep_;           ///< max number of steps
+  double time_;           ///< simulation time
+  double maxtime_;        ///< max simulation time
+  double dt_;             ///< time step size
+  int writerestartevery_; ///< write restart every n steps
+  int writeresultsevery_; ///< write results every n steps
+  bool incremental_;      ///< incremental ale yes/no?
   //@}
 
-  //! @name matrices, vectors, map extractors
+  //! @name matrices, vectors
+  //@{
 
-  Teuchos::RCP<LINALG::SparseOperator> sysmat_;
-  Teuchos::RCP<Epetra_Vector>    residual_;
+  Teuchos::RCP<LINALG::SparseOperator> sysmat_; ///< stiffness matrix
+  Teuchos::RCP<Epetra_Vector>    residual_;     ///< residual vector
 
-  Teuchos::RCP<Epetra_Vector>    dispnp_;
-  Teuchos::RCP<Epetra_Vector>    dispn_;
-
-  //! maps for extracting Dirichlet and free DOF sets
-  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
-
-  //! the interface map setup for interface <-> full translation
-  Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;
+  Teuchos::RCP<Epetra_Vector>    dispnp_; ///< unknown solution at \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector>    dispn_;  ///< known solution at \f$t_{n}\f$
 
   //@}
+
+  //! @name map extractors
+  //@{
+
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_; ///< map extractor for extracting Dirichlet and free DOF sets
+
+  Teuchos::RCP<ALE::UTILS::MapExtractor> interface_; ///< interface map setup for interface <-> full translation
+
+  //@}
+
+private:
+
+  /// print info about current time step to screen
+  virtual void PrintTimeStepHeader() const;
+
+  /// write restart data
+  virtual void OutputRestart(bool& datawritten);
+
+  /// write output data
+  virtual void OutputState(bool& datawritten);
 
 };
 
