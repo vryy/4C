@@ -2173,7 +2173,7 @@ FLD::XFluidFluid::XFluidFluid(
   // form of convective term
   convform_ = params_->get<string>("form of convective term","convective");
 
-  emboutput_ = Teuchos::rcp(new IO::DiscretizationWriter(embdis_));
+  emboutput_ = embdis_->Writer();
   emboutput_->WriteMesh(0,0.0);
 
   // ensure that degrees of freedom in the discretization have been set
@@ -2234,7 +2234,7 @@ FLD::XFluidFluid::XFluidFluid(
   outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(),true);
 
   // create fluid output object
-  output_ = (Teuchos::rcp(new IO::DiscretizationWriter(bgdis_)));
+  output_ = bgdis_->Writer();
   output_->WriteMesh(0,0.0);
 
 
@@ -2258,7 +2258,7 @@ FLD::XFluidFluid::XFluidFluid(
   //-------------------------------------------------------------------
 
 
-//   output_ = Teuchos::rcp(new IO::DiscretizationWriter(bgdis_));
+//   output_ = bgdis_->Writer();
 //   output_->WriteMesh(0,0.0);
 
   // embedded fluid state vectors

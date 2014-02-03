@@ -64,13 +64,13 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = problem->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> actdis = problem->GetDis("fluid");
 
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
-  RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave = Teuchos::rcp(new std::map<int,std::vector<int> > ());
+  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave = Teuchos::rcp(new std::map<int,std::vector<int> > ());
 
   PeriodicBoundaryConditions pbc(actdis);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
@@ -92,21 +92,21 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // equal to output for fluid equations except for the filename
   // and the - not necessary - input file name
   Teuchos::RCP<IO::OutputControl> adjointoutput =
-      Teuchos::rcp(new IO::OutputControl(
-          actdis->Comm(),
-          problem->ProblemName(),
-          problem->SpatialApproximation(),
-          problem->OutputControlFile()->InputFileName(),
-          filename,
-          problem->NDim(),
-          problem->Restart(),
-          problem->OutputControlFile()->FileSteps(),
-          DRT::INPUT::IntegralValue<int>(problem->IOParams(),"OUTPUT_BIN")
-      )
+    Teuchos::rcp(new IO::OutputControl(
+      actdis->Comm(),
+      problem->ProblemName(),
+      problem->SpatialApproximation(),
+      problem->OutputControlFile()->InputFileName(),
+      filename,
+      problem->NDim(),
+      problem->Restart(),
+      problem->OutputControlFile()->FileSteps(),
+      DRT::INPUT::IntegralValue<int>(problem->IOParams(),"OUTPUT_BIN")
+    )
   );
 
-
-  RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(actdis, adjointoutput));
+  Teuchos::RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
+  output->SetOutput(adjointoutput);
   if (DRT::INPUT::IntegralValue<bool>(prbdyn,"OUTPUT_EVERY_ITER"))
   {
     output->NewResultFile(1);

@@ -60,7 +60,8 @@ void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
       DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_BIN")
       ));
 
-  writer_ = Teuchos::rcp(new IO::DiscretizationWriter(dis_,control_));
+  writer_ = dis_->Writer();
+  writer_->SetOutput(control_);
   itnum_ = 0;
   writer_->WriteMesh(0,0.0);
 }
@@ -117,7 +118,8 @@ void FSI::UTILS::SimpleDebugWriter::NewLinearSystem(int step, std::string name)
       DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_BIN")
       ));
 
-  writer_ = Teuchos::rcp(new IO::DiscretizationWriter(dis_,control_));
+  writer_ = dis_->Writer();
+  writer_->SetOutput(control_);
   itnum_ = 0;
   writer_->WriteMesh(0,0.0);
 }

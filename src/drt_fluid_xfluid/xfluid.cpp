@@ -2228,6 +2228,7 @@ FLD::XFluid::XFluid(
   {
     dserror("Empty boundary discretization detected. No FSI coupling will be performed...");
   }
+  boundarydis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_)));
 
 
 
@@ -2319,7 +2320,7 @@ FLD::XFluid::XFluid(
   // create vector according to the dofset_out row map holding all standard fluid unknowns
   outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(),true);
 
-  boundary_output_ = Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_));
+  boundary_output_ = boundarydis_->Writer();
   boundary_output_->WriteMesh(0,0.0);
 
   // used to write out owner of elements just once

@@ -85,7 +85,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter>  output = Teuchos::rcp( new IO::DiscretizationWriter(actdis),false );
+  Teuchos::RCP<IO::DiscretizationWriter>  output = actdis->Writer();
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------

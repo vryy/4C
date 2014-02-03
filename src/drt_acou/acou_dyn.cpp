@@ -90,8 +90,7 @@ void acoustics_drt()
     dserror("note: you can set AZREUSE to NUMSTEP (ACOUSTIC DYNAMIC) because the system matrix does not change -> save lots of CPU time");
 
   // create output
-  Teuchos::RCP<IO::DiscretizationWriter> output =
-    Teuchos::rcp(new IO::DiscretizationWriter(acoudishdg));
+  Teuchos::RCP<IO::DiscretizationWriter> output = acoudishdg->Writer();
 
   // create acoustical parameter list
   Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp(new Teuchos::ParameterList(acouparams));

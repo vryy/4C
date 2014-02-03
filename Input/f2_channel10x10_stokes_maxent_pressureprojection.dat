@@ -31,17 +31,17 @@ NUMSTRUCDIS                     0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------MESHFREE
 TYPE                            MaxEnt
-BUBNOV                          Yes
 DBC_SOLVER                      1
+PETROVGALERKIN                  No
 PARTITION_OF_UNITY              Yes
 NEGATIVITY                      0.0
+RANGE_TOL                       1e-12
 NEWTON_TOL                      1e-12
-NEWTON_MAX                      1000
-T_PRIOR                         Gauss
-T_SKEW                          None
-T_VARIANCE                      0.01   // = sigma^2 = h^2/gamma - 0.002 for 10x10 resembles true fem quad4 elements!!!
-T_RANGE_TOL                     1e-12    // 1e-2 for 10x10 resembles true fem quad4 elements!!!
-T_COMPLIANCE                    linear
+NEWTON_MAXITER                  10
+VARIANCE                        .01                             // = sigma^2 = gamma/h^2
+PRIOR                           Gauss
+S_COMPLIANCE                    linear
+W_COMPLIANCE                    linear
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      Stationary
@@ -65,13 +65,13 @@ MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION y+0.5
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE  61 QUANTITY velx     VALUE 0.5 TOLERANCE 1e-8
-FLUID DIS fluid NODE  61 QUANTITY vely     VALUE 0.0 TOLERANCE 1e-12
-FLUID DIS fluid NODE  61 QUANTITY pressure VALUE 1.0 TOLERANCE 1e-5 // can't be tighter becuase of integration error at Neumann boundary
-FLUID DIS fluid NODE   1 QUANTITY pressure VALUE 1.0 TOLERANCE 1e-5
-FLUID DIS fluid NODE  21 QUANTITY pressure VALUE 1.0 TOLERANCE 1e-5
-FLUID DIS fluid NODE 112 QUANTITY pressure VALUE 1.0 TOLERANCE 1e-5
-FLUID DIS fluid NODE 121 QUANTITY pressure VALUE 1.0 TOLERANCE 1e-5
+FLUID DIS fluid NODE  61 QUANTITY van_velx     VALUE 5.00000011325164806e-01 TOLERANCE 1e-12 // VALUE 0.5 TOLERANCE 1e-5 // can't be tighter because of integration error at Neumann boundary
+FLUID DIS fluid NODE  61 QUANTITY van_vely     VALUE 0.0 TOLERANCE 1e-12
+FLUID DIS fluid NODE  61 QUANTITY van_pressure VALUE 9.99994556993733852e-01 TOLERANCE 1e-12 // VALUE 1.0 TOLERANCE 1e-5 // can't be tighter because of integration error at Neumann boundary
+FLUID DIS fluid NODE   1 QUANTITY pressure VALUE 9.99964083467861475e-01 TOLERANCE 1e-12 // VALUE 1.0 TOLERANCE 1e-5
+FLUID DIS fluid NODE  21 QUANTITY pressure VALUE 9.99799723116922556e-01 TOLERANCE 1e-12 // VALUE 1.0 TOLERANCE 1e-5
+FLUID DIS fluid NODE 112 QUANTITY pressure VALUE 9.99970756549775630e-01 TOLERANCE 1e-12 // VALUE 1.0 TOLERANCE 1e-5
+FLUID DIS fluid NODE 121 QUANTITY pressure VALUE 1.00014087337776614e+00 TOLERANCE 1e-12 // VALUE 1.0 TOLERANCE 1e-5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4

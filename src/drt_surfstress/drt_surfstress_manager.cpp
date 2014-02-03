@@ -88,8 +88,9 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
                                                                                      1000,                   // we never expect to get 1000 iterations
                                                                                      DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_BIN")
                                                                                      ));
-
-    surfoutput_=Teuchos::rcp(new IO::DiscretizationWriter(surfdiscret_,condcontrol));
+    surfdiscret_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(surfdiscret_)));
+    surfoutput_ = surfdiscret_->Writer();
+    surfoutput_->SetOutput(condcontrol);
     surfoutput_->WriteMesh(0,0.0);
 
   }

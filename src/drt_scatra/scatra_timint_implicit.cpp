@@ -107,6 +107,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   dtele_(0.0),
   dtsolve_(0.0),
   timealgo_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
+  nsd_(DRT::Problem::Instance()->NDim()),
   numscal_(0),
   numdofpernode_(0),
   // Initialization of degrees of freedom variables
@@ -323,18 +324,18 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // velocities (always three velocity components per node)
   // (get noderowmap of discretization for creating this multivector)
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  convel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-  vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  convel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
+  vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
 
   // acceleration and pressure required for computation of subgrid-scale
   // velocity (always four components per node)
-  accpre_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,4,true));
+  accpre_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_+1,true));
 
   if (isale_)
   {
     // displacement field for moving mesh applications using ALE
     // (get noderowmap of discretization for creating this multivector)
-    dispnp_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    dispnp_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
   }
 
   // -------------------------------------------------------------------
@@ -512,7 +513,7 @@ void SCATRA::ScaTraTimIntImpl::InitTurbulenceModel(
     // transferred from the fluid field
     // only Smagorinsky small
     if (fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
-      fsvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+      fsvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
 
     // Output
     if (myrank_ == 0)
@@ -568,7 +569,7 @@ void SCATRA::ScaTraTimIntImpl::InitTurbulenceModel(
 
       // fine-scale velocities (always three velocity components per node)
       // transferred from the fluid field
-      fsvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+      fsvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
 
       Teuchos::ParameterList * mfsparams =&(extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"));
       if (mfsparams->get<std::string>("SCALE_SEPARATION")!= "algebraic_multigrid_operator")
@@ -855,7 +856,6 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
       or (cdvel_ == INPAR::SCATRA::velocity_function_and_curve))
   {
     int err(0);
-    const int numdim = 3; // the velocity field is always 3D
     const int velfuncno = params_->get<int>("VELFUNCNO");
     const int velcurveno = params_->get<int>("VELCURVENO");
     // loop all nodes on the processor
@@ -863,7 +863,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
     {
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
-      for(int index=0;index<numdim;++index)
+      for(int index=0;index<nsd_;++index)
       {
         double value = DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(index,lnode->X(),time_,NULL);
         if (cdvel_ == INPAR::SCATRA::velocity_function_and_curve)
@@ -1067,18 +1067,6 @@ Teuchos::RCP<DRT::Discretization> dis)
       if (err != 0) dserror("Error while inserting value into vector accpre_!");
     }
 
-    //-------------------------------------------------------------------------
-    // to be sure for 1- and 2-D problems:
-    // set all unused velocity components to zero
-    //-------------------------------------------------------------------------
-    for (int index=numdim; index < 3; ++index)
-    {
-      err = convel_->ReplaceMyValue(lnodeid,index,0.0);
-      if (err != 0) dserror("Error while inserting value into vector convel_!");
-
-      err = vel_->ReplaceMyValue(lnodeid,index,0.0);
-      if (err != 0) dserror("Error while inserting value into vector vel_!");
-    }
   }
 
   // confirm that initial velocity field has now been set
@@ -1222,16 +1210,6 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
 
         // insert displacement value into node-based vector
         err = dispnp_->ReplaceMyValue(lnodeid,index,disp);
-        if (err != 0) dserror("Error while inserting value into vector dispnp_!");
-      }
-
-      //-----------------------------------------------------------------------
-      // to be sure for 1- and 2-D problems:
-      // set all unused displacement components to zero
-      //-----------------------------------------------------------------------
-      for (int index=numdim; index < 3; ++index)
-      {
-        err = dispnp_->ReplaceMyValue(lnodeid,index,0.0);
         if (err != 0) dserror("Error while inserting value into vector dispnp_!");
       }
     } // for lnodeid

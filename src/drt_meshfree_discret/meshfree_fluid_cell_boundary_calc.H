@@ -171,9 +171,7 @@ protected:
   //! Gauss point weights for boundary cell
   LINALG::SerialDenseVector gw_;
   //! array for shape functions for boundary element
-  LINALG::SerialDenseVector funct_;
-  //! array for shape function derivatives for boundary element
-  LINALG::SerialDenseMatrix deriv_;
+  Teuchos::RCP<LINALG::SerialDenseVector> funct_;
   //! infinitesimal area element drs
   double drs_;
   //! integration factor

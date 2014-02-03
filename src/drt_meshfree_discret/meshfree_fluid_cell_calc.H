@@ -438,9 +438,9 @@ protected:
   //! Gauss point weights for boundary cell
   LINALG::SerialDenseVector gw_;
   //! array for shape functions
-  LINALG::SerialDenseVector funct_; // size: <nen_,1>
+  Teuchos::RCP<LINALG::SerialDenseVector> funct_; // size: <nen_,1>
   //! array for shape function derivatives w.r.t x,y,z
-  LINALG::SerialDenseMatrix deriv_; // size: <nsd_,nen_>
+  Teuchos::RCP<LINALG::SerialDenseMatrix> deriv_; // size: <nsd_,nen_>
   //! global velocity derivatives in gausspoint w.r.t x,y,z
   LINALG::Matrix<nsd_,nsd_> vderxy_;
   //! bodyforce in gausspoint

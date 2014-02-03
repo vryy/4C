@@ -65,7 +65,7 @@ int DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::EvaluateService(
       break;
     }
     default:
-      dserror("Unknown type of action for Fluid");
+      dserror("Unknown type of action for MeshfreeFluid");
     break;
   } // end of switch(act)
 
@@ -140,8 +140,7 @@ int DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::IntegrateShapeFunction(
   nen_ = cell->NumNode();
 
   // resize matrices and vectors
-  funct_.LightSize(nen_);
-  deriv_.LightShape(0,0);
+  funct_->LightSize(nen_);
 
   // get global node coordinates
   nxyz_.LightShape(nsd_,nen_);
@@ -208,7 +207,7 @@ int DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::IntegrateShapeFunction(
     }
 
     // calculate basis functions and derivatives via max-ent optimization
-    int error = discret_->GetMeshfreeSolutionApprox()->GetMeshfreeBasisFunction(funct_,deriv_,distng,nsd_);
+    int error = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(nsd_,distng,funct_);
 
     if (error)
       dserror("Something went wrong when calculating the meshfree basis functions.");
@@ -216,7 +215,7 @@ int DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::IntegrateShapeFunction(
     for (int ui=0; ui<nen_; ++ui) // loop rows  (test functions)
     {
       // integrated shape function is written into the pressure dof
-      elevec1(numdofpernode_ * ui + nsd_) += fac_ * funct_(ui);
+      elevec1(numdofpernode_ * ui + nsd_) += fac_ * (*funct_)(ui);
     }
   }
 

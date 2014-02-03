@@ -51,9 +51,15 @@ void ntainp_ccadiscret(
   // create error files
   problem->OpenErrorFile(*lcomm,outputfile_kenner);
 
+  // create control file for output and read restart data if required
+  problem->OpenControlFile(*lcomm,
+                           inputfile_name,
+                           outputfile_kenner,
+                           restartfile_kenner);
+
   // input of materials
   problem->ReadMaterials(reader);
-  
+
   // input of time curves, functions and result tests
   problem->ReadTimeFunctionResult(reader);
 
@@ -78,9 +84,9 @@ void ntainp_ccadiscret(
   break;
   case copy_dat_file:
     // group 0 only reads discretization etc
-    if (group==0) 
+    if (group==0)
     {
-      
+
       // input of fields
       problem->ReadFields(reader);
 
@@ -104,15 +110,8 @@ void ntainp_ccadiscret(
     dserror("nptype (nested parallelity type) not recognized");
     break;
   }
-  
+
   // all reading is done at this point!
-
-  // create control file for output and read restart data if required
-  problem->OpenControlFile(*lcomm,
-                           inputfile_name,
-                           outputfile_kenner,
-                           restartfile_kenner);
-
 
   if (lcomm->MyPID()==0 && npType!=copy_dat_file)
     problem->WriteInputParameters();

@@ -19,6 +19,8 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_meshfree_discret/drt_meshfree_discret.H"
+#include "../drt_meshfree_discret/drt_meshfree_cell.H"
 
 #include "../pss_full/pss_cpp.h" // access to legacy parser module
 
@@ -345,35 +347,11 @@ IO::DiscretizationReader::OpenFiles(const char* filestring,
 }
 
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis,
-                                               Teuchos::RCP<OutputControl> output)
-  :
-  dis_(dis),
-  step_(0),
-  time_(0),
-  meshfile_(-1),
-  resultfile_(-1),
-  meshfilename_(),
-  resultfilename_(),
-  meshgroup_(-1),
-  resultgroup_(-1),
-  resultfile_changed_(-1),
-  meshfile_changed_(-1),
-  output_(output),
-  binio_(output->BinIO())
-{
-
-}
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis)
   :
-  dis_(dis),
+  dis_(Teuchos::rcp(dis.get(),false)), // no ownership to break circle discretization<>writer
   step_(0),
   time_(0),
   meshfile_(-1),
@@ -385,11 +363,9 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
   resultfile_changed_(-1),
   meshfile_changed_(-1),
   output_(DRT::Problem::Instance()->OutputControlFile()),
-  binio_(DRT::Problem::Instance()->OutputControlFile()->BinIO())
+  binio_(output_->BinIO())
 {
-
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -479,35 +455,38 @@ void IO::DiscretizationWriter::CreateResultFile(const int step)
 {
   if(binio_)
   {
-  std::ostringstream resultname;
-  resultname << output_->FileName()
-             << ".result."
-             << dis_->Name()
-             << ".s" << step
-    ;
-  resultfilename_ = resultname.str();
-  if (dis_->Comm().NumProc() > 1) {
-    resultname << ".p"
-               << dis_->Comm().MyPID();
-  }
-  if (resultfile_ != -1)
-  {
-    herr_t status = H5Fclose(resultfile_);
-    if (status < 0)
+    std::ostringstream resultname;
+    resultname << output_->FileName()
+               << ".result."
+               << dis_->Name()
+               << ".s" << step;
+
+    resultfilename_ = resultname.str();
+    if (dis_->Comm().NumProc() > 1)
     {
-      dserror("Failed to close HDF file %s", resultfilename_.c_str());
+      resultname << ".p"
+                 << dis_->Comm().MyPID();
     }
-  }
+    if (resultfile_ != -1)
+    {
+      herr_t status = H5Fclose(resultfile_);
+      if (status < 0)
+      {
+        dserror("Failed to close HDF file %s", resultfilename_.c_str());
+      }
+    }
 
-  // we will never refer to maps stored in other files
-  mapcache_.clear();
-  mapstack_.clear();
+    // we will never refer to maps stored in other files
+    mapcache_.clear();
+    mapstack_.clear();
 
-  resultfile_ = H5Fcreate(resultname.str().c_str(),
-                          H5F_ACC_TRUNC,H5P_DEFAULT,H5P_DEFAULT);
-  if (resultfile_ < 0)
-    dserror("Failed to open file %s", resultname.str().c_str());
-  resultfile_changed_ = step;
+    resultfile_ = H5Fcreate(resultname.str().c_str(),
+                            H5F_ACC_TRUNC,
+                            H5P_DEFAULT,
+                            H5P_DEFAULT);
+    if (resultfile_ < 0)
+      dserror("Failed to open file %s", resultname.str().c_str());
+    resultfile_changed_ = step;
   }
 }
 
@@ -572,11 +551,11 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
       }
     }
 
-    if (step_ - resultfile_changed_ >= output_->FileSteps() or
-      resultfile_changed_ == -1)
+    if (step_ - resultfile_changed_ >= output_->FileSteps()
+        or resultfile_changed_ == -1)
     {
-    CreateResultFile(step_);
-    write_file = true;
+      CreateResultFile(step_);
+      write_file = true;
     }
 
     resultgroup_ = H5Gcreate(resultfile_,groupname.str().c_str(),0);
@@ -659,10 +638,8 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
                                            Teuchos::RCP<Epetra_MultiVector> vec,
                                            IO::DiscretizationWriter::VectorType vt)
 {
-
   if(binio_)
   {
-
     std::string valuename = name + ".values";
     double* data = vec->Values();
     const hsize_t size = vec->MyLength() * vec->NumVectors();
@@ -785,7 +762,6 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
 {
   if(binio_)
   {
-
     std::string valuename = name + ".values";
     const hsize_t size = vec.size();
     const char* data = &vec[0];
@@ -905,17 +881,16 @@ void IO::DiscretizationWriter::WriteCondition(const std::string condname) const
     if(!block->empty())
     {
       if (dis_->Comm().MyPID() == 0)
-      {
         output_->ControlFile() << "    condition = \"" << condname << "\"\n";
-      }
 
       hsize_t dim = static_cast<hsize_t>(block->size());
       const herr_t status = H5LTmake_dataset_char(
-              meshgroup_,
-              condname.c_str(),
-              1,
-              &dim,
-              &((*block)[0]));
+        meshgroup_,
+        condname.c_str(),
+        1,
+        &dim,
+        &((*block)[0]));
+
       if (status < 0)
         dserror("Failed to create dataset in HDF-meshfile");
     }
@@ -926,7 +901,6 @@ void IO::DiscretizationWriter::WriteCondition(const std::string condname) const
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 {
-
   if(binio_)
   {
     bool write_file = false;
@@ -1028,6 +1002,55 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::WriteMesh(const int step, const double time, std::string name_base_file )
+{
+  if(binio_)
+  {
+    // ... write other mesh informations
+    if (dis_->Comm().MyPID() == 0)
+    {
+      output_->ControlFile()
+        << "field:\n"
+        << "    field = \"" << dis_->Name() << "\"\n"
+        << "    time = " << time << "\n"
+        << "    step = " << step << "\n\n"
+        << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
+        << "    num_ele = " << dis_->NumGlobalElements() << "\n"
+        << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements() << "\n\n"
+        ;
+
+      //WriteCondition("SurfacePeriodic");
+      //WriteCondition("LinePeriodic");
+
+      // knotvectors for nurbs-discretisation
+      //WriteKnotvector();
+      // create name for meshfile as in createmeshfile which is not called here
+      std::ostringstream meshname;
+
+      meshname << name_base_file << ".mesh." << dis_->Name() << ".s" << step;
+      meshfilename_ = meshname.str();
+
+      if (dis_->Comm().NumProc() > 1)
+      {
+        output_->ControlFile()
+          << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
+      }
+      std::string filename;
+      std::string::size_type pos = meshfilename_.find_last_of('/');
+      if (pos==std::string::npos)
+        filename = meshfilename_;
+      else
+        filename = meshfilename_.substr(pos+1);
+      output_->ControlFile()
+        << "    mesh_file = \"" << filename << "\"\n\n";
+       // << "    mesh_file = \"" << name_base_file << "\"\n\n";
+
+      output_->ControlFile() << std::flush;
+    }
+  }
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1035,11 +1058,10 @@ void IO::DiscretizationWriter::ParticleOutput(const int step,
                                               const double time,
                                               const bool writerestart)
 {
-
   if(binio_)
   {
-    if (step - meshfile_changed_ >= output_->FileSteps() or
-        meshfile_changed_ == -1)
+    if (step - meshfile_changed_ >= output_->FileSteps()
+        or meshfile_changed_ == -1)
     {
       CreateMeshFile(step);
     }
@@ -1119,61 +1141,6 @@ void IO::DiscretizationWriter::ParticleOutput(const int step,
   }
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteMesh(const int step, const double time, std::string name_base_file )
-{
-  if(binio_)
-  {
-    // ... write other mesh informations
-    if (dis_->Comm().MyPID() == 0)
-    {
-      output_->ControlFile()
-        << "field:\n"
-        << "    field = \"" << dis_->Name() << "\"\n"
-        << "    time = " << time << "\n"
-        << "    step = " << step << "\n\n"
-        << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
-        << "    num_ele = " << dis_->NumGlobalElements() << "\n"
-        << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements() << "\n\n"
-        ;
-
-      //WriteCondition("SurfacePeriodic");
-      //WriteCondition("LinePeriodic");
-
-      // knotvectors for nurbs-discretisation
-      //WriteKnotvector();
-      // create name for meshfile as in createmeshfile which is not called here
-      std::ostringstream meshname;
-
-      meshname << name_base_file
-                 << ".mesh."
-                 << dis_->Name()
-                 << ".s" << step
-          ;
-        meshfilename_ = meshname.str();
-
-        if (dis_->Comm().NumProc() > 1)
-        {
-          output_->ControlFile()
-            << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
-        }
-        std::string filename;
-        std::string::size_type pos = meshfilename_.find_last_of('/');
-        if (pos==std::string::npos)
-          filename = meshfilename_;
-        else
-          filename = meshfilename_.substr(pos+1);
-        output_->ControlFile()
-          << "    mesh_file = \"" << filename << "\"\n\n";
-         // << "    mesh_file = \"" << name_base_file << "\"\n\n";
-
-      output_->ControlFile() << std::flush;
-    }
-  }
-
-}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteElementData(bool writeowner)
@@ -1285,8 +1252,9 @@ void IO::DiscretizationWriter::WriteKnotvector() const
 /*----------------------------------------------------------------------*/
 /* write a stl vector of doubles from proc0                             */
 /*----------------------------------------------------------------------*/
-  void IO::DiscretizationWriter::WriteRedundantDoubleVector(const std::string name,
-							    Teuchos::RCP<std::vector<double> > doublevec)
+void IO::DiscretizationWriter::WriteRedundantDoubleVector(
+  const std::string name,
+  Teuchos::RCP<std::vector<double> > doublevec)
 {
   if(binio_)
   {
@@ -1327,14 +1295,22 @@ void IO::DiscretizationWriter::WriteKnotvector() const
 
       const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
       if (flush_status < 0)
-      {
         dserror("Failed to flush HDF file %s", resultfilename_.c_str());
-      }
     } // endif proc0
   }
 
 }
 
+
+/*----------------------------------------------------------------------*
+ |  set output control                               (public) nis Jan14 |
+ *----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::SetOutput(Teuchos::RCP<OutputControl> output)
+{
+  output_ = output;
+  binio_ = output_->BinIO();
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /* clear all stored map data                                            */
@@ -1344,4 +1320,92 @@ void IO::DiscretizationWriter::ClearMapCache()
   mapcache_.clear();
   mapstack_.clear();
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  write mesh for meshfree discretization ;)        (public) nis Jan14 |
+ *----------------------------------------------------------------------*/
+void IO::MeshfreeDiscretizationWriter::WriteMesh(
+  const int step,
+  const double time
+  )
+{
+  if(binio_)
+  {
+    // this is post-filter output
+    if ((step==0) and (time==0.0))
+    {
+      // cast needed to ask dis for its Points and NumState
+      Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> dis
+        = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(dis_);
+      if (dis==Teuchos::null) dserror("Could not cast 'dis_' to MeshfreeDiscretization.");
+
+      //------------------------------------------------------------------------
+      // created temporary discretization for post-filter output
+      //------------------------------------------------------------------------
+      // This const_cast-rcpFromRef business is not nice, I know. But
+      // Epetra_Comm has const-methods only anyhow. (Except for the destructor
+      // which won't be called since 'dis_' still holds an Teuchos::RCP on it)
+      // Do you have a better idea?
+      DRT::Discretization postfilter_discret(
+        dis_->Name(),
+        Teuchos::rcpFromRef(const_cast<Epetra_Comm&>(dis_->Comm()))
+        );
+
+      //------------------------------------------------------------------------
+      // fill temporary discretization with elements from original discretization
+      //------------------------------------------------------------------------
+      const int numrowele = dis_->NumMyRowElements();
+      for (int i=0; i<numrowele; ++i)
+      {
+        // get geometry information of cell
+        DRT::MESHFREE::Cell* oldcell = dynamic_cast<DRT::MESHFREE::Cell*>(dis_->lRowElement(i));
+        if (oldcell==NULL) dserror("Could not cast element to meshfree Cell.");
+        const int numpseudonodes = oldcell->NumPoint();
+        const int* pseudonodeids = oldcell->PointIds();
+
+        // create new element with "standard" finite element geometry information
+        // (i.e. with nodes instead of points)
+        Teuchos::RCP<DRT::Element> newele = Teuchos::rcp((DRT::Element*)(oldcell->Clone()));
+        newele->SetNodeIds(numpseudonodes,pseudonodeids);
+
+        // add this element to temporary discretization
+        postfilter_discret.AddElement(newele);
+      }
+
+      //------------------------------------------------------------------------
+      // add nodes to temporary discretization which are points in the original discretization
+      //------------------------------------------------------------------------
+      const int numrowpoints = dis->NumMyRowPoints();
+      // loop over row-points and add as node to temporary discretization
+      for (int i=0; i<numrowpoints; ++i)
+      {
+        // get geometry information of node
+        DRT::Node* oldnode = (DRT::Node*)(dis->lRowPoint(i));
+
+        // create new node - element topology is handeled by FillComplete()
+        // from element-to-node-information thoroughly handeled in loop before.
+        Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(oldnode->Clone());
+
+        // add this node to temporary discretization
+        postfilter_discret.AddNode(newnode);
+      }
+
+      //------------------------------------------------------------------------
+      // complete fill of temporary discretization
+      //------------------------------------------------------------------------
+      postfilter_discret.FillComplete(true, true, false);
+
+      //------------------------------------------------------------------------
+      // create DiscretizationWriter for temporary discretization and write mesh
+      //------------------------------------------------------------------------
+      IO::DiscretizationWriter writer(Teuchos::rcpFromRef(postfilter_discret));
+      writer.WriteMesh(step, time);
+    }
+    // this is restart-prep output
+    else
+    {
+      dserror("No restart capability of meshfree discretizations, yet. Feel free to implement!!!");
+    }
+  }
 }

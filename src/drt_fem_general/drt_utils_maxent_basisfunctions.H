@@ -16,7 +16,7 @@ Maintainer: Keijo Nissen
 #include <vector>
 #include "../linalg/linalg_fixedsizematrix.H"
 #include <Teuchos_ParameterList.hpp>
-#include "../drt_inpar/inpar_meshfree.H"
+//#include "../drt_inpar/inpar_meshfree.H"
 
 /*==========================================================================*/
 // forward declarations
@@ -44,25 +44,72 @@ namespace MESHFREE
  * \brief abstract meshfree problem class
  *///                                                                nis Mar12
 /*----------------------------------------------------------------------------*/
-class MeshfreeApprox{
+class MeshfreeApprox
+{
+
 public:
-  virtual ~MeshfreeApprox(){};
 
-  virtual double GetRange(){return range_;};
+  /*--------------------------------------------------------------------------*/
+  /*!
+   * \brief Returns flag for Petrov-Galerkin problems
+   *///                                                              nis Mar12
+  /*--------------------------------------------------------------------------*/
+  bool IsPetrovGalerkin(){return petrovgalerkin_;};
 
+  /*--------------------------------------------------------------------------*/
+  /*!
+   * \brief Returns range of prior function
+   *///                                                              nis Mar12
+  /*--------------------------------------------------------------------------*/
+  double GetRange(){return range_;};
+
+  /*--------------------------------------------------------------------------*/
+  /*!
+   * \brief Evaluating meshfree basis functions and derivatives
+   *        Bubnov-Galerkin-wrapper
+   *///                                                           nis Mar12
+  /*--------------------------------------------------------------------------*/
   virtual int GetMeshfreeBasisFunction(
-    LINALG::SerialDenseVector       & funct    , //!< (o) basis functions values
-    LINALG::SerialDenseMatrix       & deriv    , //!< (o) spatial derivatives of basis functions
-    const LINALG::SerialDenseMatrix & diffx    , //!< (i) distance vector between node and integration point
-    const int                         dimension  //!< (i) dimension
+    const int                         dim,                         //!< (i) dimension
+    const LINALG::SerialDenseMatrix & diffx,                       //!< (i) distance vector between node and integration point
+    Teuchos::RCP<LINALG::SerialDenseVector>& funct                 //!< (o) basis functions values
+  ) const
+  {
+    Teuchos::RCP<LINALG::SerialDenseMatrix> deriv = Teuchos::null;
+    return GetMeshfreeBasisFunction(dim,diffx,funct,deriv);
+  };
+
+  /*--------------------------------------------------------------------------*/
+  /*!
+   * \brief Evaluating meshfree basis functions and derivatives for
+   *        Petrov-Galerkin approximations
+   *///                                                           nis Mar12
+  /*--------------------------------------------------------------------------*/
+  virtual int GetMeshfreeBasisFunction(
+    const int                         dim,              //!< (i) dimension
+    const LINALG::SerialDenseMatrix & diffx,            //!< (i) distance vector between node and integration point
+    Teuchos::RCP<LINALG::SerialDenseVector>& funct,     //!< (o) basis functions values
+    Teuchos::RCP<LINALG::SerialDenseMatrix>& deriv,     //!< (o) spatial derivatives of basis functions
+    Teuchos::RCP<const LINALG::SerialDenseMatrix> cconv = Teuchos::null, //!< (i) convection at cell points for inf-flux weighting basis functions
+    Teuchos::RCP<LINALG::SerialDenseVector> sfunct = Teuchos::null,      //!< (i) basis functions values
+    Teuchos::RCP<LINALG::SerialDenseMatrix> sderiv = Teuchos::null       //!< (i) spatial derivatives of basis functions
   ) const = 0;
 
 protected:
 
+  /*--------------------------------------------------------------------------*/
+  /*!
+   * \brief Determines/sets range of prior function for given cut-off tolerance
+   *///                                                              nis Mar12
+  /*--------------------------------------------------------------------------*/
   virtual void SetRange(
     double rangeTol //!< tolerance at which prior function is numerically zero
   ) = 0;
 
+  //! Galerkin type
+  bool petrovgalerkin_;
+
+  //! range of basis functions
   double range_;
 };
 
@@ -71,31 +118,46 @@ protected:
  * \brief Maximum-Entropy approximation class
  *///                                                                nis Mar12
 /*============================================================================*/
-class MaxEntApprox: public MeshfreeApprox {
+class MaxEntApprox: public MeshfreeApprox
+{
 private:
 
   // forward declaration of DualProblem class
   template<int dim> class DualProblem;
 
 public:
+
   //! ctor
   MaxEntApprox(
-    Teuchos::ParameterList const & params //!< (i) parameter list for maxent basis functions
+    Teuchos::ParameterList const & params, //!< (i) parameter list for maxent basis functions
+    int type                               //!< (i) type of basis function: (0) solution or (1) weighting basis functions
   );
 
+  /*--------------------------------------------------------------------------*/
+  /*!
+   * \brief From base class: evaluating meshfree basis functions and derivatives
+   *///                                                           nis Mar12
+  /*--------------------------------------------------------------------------*/
   int GetMeshfreeBasisFunction(
-    LINALG::SerialDenseVector       & funct , //!< (o) basis functions values
-    LINALG::SerialDenseMatrix       & deriv , //!< (o) spatial derivatives of basis functions
-    const LINALG::SerialDenseMatrix & diffx , //!< (i) distance vector between node and integration point
-    const int                         dim     //!< (i) dimension
-  ) const
+    const int                         dim,              //!< (i) dimension
+    const LINALG::SerialDenseMatrix & diffx,            //!< (i) distance vector between node and integration point
+    Teuchos::RCP<LINALG::SerialDenseVector>& funct,     //!< (o) basis functions values
+    Teuchos::RCP<LINALG::SerialDenseMatrix>& deriv,     //!< (o) spatial derivatives of basis functions
+    Teuchos::RCP<const LINALG::SerialDenseMatrix> cconv = Teuchos::null,//!< (i) convection at cell points for inf-flux weighting basis functions
+    Teuchos::RCP<LINALG::SerialDenseVector> sfunct = Teuchos::null,     //!< (i) basis functions values
+    Teuchos::RCP<LINALG::SerialDenseMatrix> sderiv = Teuchos::null      //!< (i) spatial derivatives of basis functions
+    ) const
   {
     switch (dim)
     {
-    case 1: return this->dual1d_->maxent_basisfunction(funct, deriv, diffx);
-    case 2: return this->dual2d_->maxent_basisfunction(funct, deriv, diffx);
-    case 3: return this->dual3d_->maxent_basisfunction(funct, deriv, diffx);
-    default: {dserror("fucked up!"); return -1;}
+    case 1: return this->dual1d_->maxent_basisfunction(diffx, funct, deriv, cconv, sfunct, sderiv);
+    case 2: return this->dual2d_->maxent_basisfunction(diffx, funct, deriv, cconv, sfunct, sderiv);
+    case 3: return this->dual3d_->maxent_basisfunction(diffx, funct, deriv, cconv, sfunct, sderiv);
+    default:
+    {
+      dserror("MaxEnt basis function only built for 1D, 2D, and 3D problems. Code should also work in R^n. Feel free to add!");
+      return -1;
+    }
     };
   };
 
@@ -103,7 +165,7 @@ private:
 
   /*--------------------------------------------------------------------------*/
   /*!
-   * \brief determines range of prior function for given
+   * \brief Determines/sets range of prior function for given cut-off tolerance
    *///                                                              nis Mar12
   /*--------------------------------------------------------------------------*/
   void SetRange(
@@ -132,9 +194,9 @@ private:
   public:
     //! ctor
     DualProblem(
-      bool const     pu,
-      double const   neg,
-      MaxEntApprox* that
+      const bool    pu,
+      const double  neg,
+      MaxEntApprox* maxent
     );
 
     /*--------------------------------------------------------------------------*/
@@ -143,10 +205,13 @@ private:
      *///                                                           nis Mar12
     /*--------------------------------------------------------------------------*/
     int maxent_basisfunction(
-      LINALG::SerialDenseVector       & funct , //!< (o) basis functions values
-      LINALG::SerialDenseMatrix       & deriv , //!< (o) spatial derivatives of basis functions
-      LINALG::SerialDenseMatrix const & diffx    //!< (i) distance vector between node and integration point
-    );
+      LINALG::SerialDenseMatrix const &              diffx,  //!< (i) distance vector between node and integration point
+      Teuchos::RCP<LINALG::SerialDenseVector>&       funct,  //!< (o) basis functions values
+      Teuchos::RCP<LINALG::SerialDenseMatrix>&       deriv,  //!< (o) spatial derivatives of basis functions
+      Teuchos::RCP<const LINALG::SerialDenseMatrix>  cconv,  //!< (i) convection at cell points for inf-flux basis solution functions
+      Teuchos::RCP<LINALG::SerialDenseVector>        sfunct, //!< (o) weighting basis functions values
+      Teuchos::RCP<LINALG::SerialDenseMatrix>        sderiv  //!< (o) spatial derivatives of basis solution functions
+      );
 
   private:
     /*--------------------------------------------------------------------------*/
@@ -158,7 +223,7 @@ private:
       LINALG::SerialDenseVector       & q    , //!< (o) prior functions
       LINALG::SerialDenseMatrix       & dxq  , //!< (o) spatial derivatives of prior functions scaled by 1/q
       LINALG::SerialDenseMatrix const & diffx  //!< (i) NOT TO BE CHANGED distance vector between node and integration point
-    ) const;
+      ) const;
 
     /*--------------------------------------------------------------------------*/
     /*!
@@ -166,9 +231,11 @@ private:
      *///                                                              nis Mar12
     /*--------------------------------------------------------------------------*/
     void SetComplCondFunctDeriv(
-      LINALG::SerialDenseMatrix              & c     , //!< (o) constraints
-      std::vector<LINALG::SerialDenseMatrix> & dxc   , //!< (o) spatial derivatives of constraints
-      LINALG::SerialDenseMatrix        const & diffx   //!< (i) distance vector between node and integration point
+      LINALG::SerialDenseMatrix                   & c    , //!< (o) constraints
+      std::vector<LINALG::SerialDenseMatrix>      & dxc  , //!< (o) spatial derivatives of constraints
+      const LINALG::SerialDenseMatrix             & diffx, //!< (i) distance vector between node and integration point
+      const int                                     type,  //!< (i) type of basis function: 0=solution, 1=weighting
+      Teuchos::RCP<const LINALG::SerialDenseVector> conv  //!< (i) convection at evaluation point for inf-flux weighting basis functions
     ) const;
 
     /*--------------------------------------------------------------------------*/
@@ -186,25 +253,25 @@ private:
     public:
       //! pure virtual function to update dual problem
       virtual void UpdateParams(
-        LINALG::SerialDenseVector       & ,
-        LINALG::Matrix<dim,1>           & ,
-        LINALG::Matrix<dim,dim>         & ,
-        int                       const   ,
-        LINALG::SerialDenseVector const & ,
-        LINALG::SerialDenseMatrix const & ,
-        LINALG::Matrix<dim,1>     const &
+        LINALG::SerialDenseVector       & funct, //!< (o) basis functions values
+        LINALG::Matrix<dim,1>           & r,     //!< (o) gradient of dual function
+        LINALG::Matrix<dim,dim>         & J,     //!< (o) inverted Hessian of dual function
+        int                       const   na,    //!< (i) number of nodes
+        LINALG::SerialDenseVector const & q,     //!< (i) prior functions
+        LINALG::SerialDenseMatrix const & c,     //!< (i) constraints
+        LINALG::Matrix<dim,1>     const & lam    //!< (i) argument of dual problem
       ) = 0;
 
       //! pure virtual function to get spatial derivatives of basis functions
       virtual void GetDerivs(
-        LINALG::SerialDenseVector              const & ,
-        LINALG::SerialDenseMatrix                    & ,
-        LINALG::Matrix<dim,1>                  const & ,
-        LINALG::Matrix<dim,dim>                const & ,
-        LINALG::SerialDenseVector              const & ,
-        LINALG::SerialDenseMatrix              const & , // = q_{a,i}/q_a
-        LINALG::SerialDenseMatrix              const & ,
-        std::vector<LINALG::SerialDenseMatrix> const &
+        LINALG::SerialDenseVector              const & funct, //!< (i) basis functions values
+        LINALG::SerialDenseMatrix                    & deriv, //!< (o) spatial derivatives of basis functions
+        LINALG::Matrix<dim,1>                  const & lam,   //!< (i) argmax of dual problem
+        LINALG::Matrix<dim,dim>                const & Jinv,  //!< (i) inverted Hessian of dual function at maximum
+        LINALG::SerialDenseVector              const & q,     //!< (i) prior functions
+        LINALG::SerialDenseMatrix              const & dxq,   //!< (i) spatial derivatives of prior functions; = q_{a,i}/q_a
+        LINALG::SerialDenseMatrix              const & c,     //!< (i) constraints
+        std::vector<LINALG::SerialDenseMatrix> const & dxc    //!< (i) spatial derivatives of constraints
       ) = 0;
     };
 
@@ -232,7 +299,7 @@ private:
         int                       const   na   , //!< (i) number of nodes
         LINALG::SerialDenseVector const & q    , //!< (i) prior functions
         LINALG::SerialDenseMatrix const & c    , //!< (i) constraints
-        LINALG::Matrix<dim,1>     const & lam    //!< (i) argmax of dual problem
+        LINALG::Matrix<dim,1>     const & lam    //!< (i) argument of dual problem
       );
 
       //! computes spatial derivatives for standard problem
@@ -250,12 +317,12 @@ private:
 
     /*------------------------------------------------------------------------*/
 
-    //! explicite this_-pointer; this_-pointer of MaxEntApprox is thus also known in DualProblem.
-    MaxEntApprox* this_;
-
     //! pointer to DualProblemType to specify routine for updating parameters
     //! and evaluating spatial derivatives
     Teuchos::RCP<DualProblemType> dualprob_;
+
+    //! pointer to outer max-ent approximation that owns this DualProblem
+    MaxEntApprox* maxent_;
 
   }; // end member class DualProblem
 
@@ -265,20 +332,18 @@ private:
   Teuchos::RCP<DualProblem<2> > dual2d_;
   Teuchos::RCP<DualProblem<3> > dual3d_;
 
+  //! type of basis function: (0) solution or (1) weighting basis function
+  int type_;
   //! variance of prior
-  double    var_;
+  double var_;
   //! prior type
-  INPAR::MESHFREE::priortype prior_;
-  //! skewness type of prior
-  INPAR::MESHFREE::priorskew skew_;
+  int prior_;
   //! compliance type
-  INPAR::MESHFREE::compltype cmpl_;
-  //! compliance parameters
-  Teuchos::ParameterList* cmpl_param_;
-    //! tolerance at which Newton is considered to be converged
-  double NewtonTol_;
+  int cmpl_;
+  //! tolerance at which Newton is considered to be converged
+  double newtontol_;
   //! maximum number of Newton steps
-  int NewtonMax_;
+  int newtonmaxiter_;
 }; // end  class MaxEntApprox
 
 } // end MESHFREE

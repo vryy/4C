@@ -42,8 +42,8 @@ DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::MeshfreeFluidCellCalc():
   kxyz_(nsd_,nek_),
   gxyz_(nsd_,ngp_),
   gw_(ngp_),
-  funct_(),
-  deriv_(),
+  funct_(Teuchos::rcp(new LINALG::SerialDenseVector())),
+  deriv_(Teuchos::rcp(new LINALG::SerialDenseMatrix())),
   vderxy_(false),
   bodyforce_(false),
   histmom_(false),
@@ -109,8 +109,8 @@ int DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Evaluate(
   nen_ = cell->NumNode();
 
   // resize matrices and vectors
-  funct_.LightSize(nen_);
-  deriv_.LightShape(nsd_,nen_);
+  funct_->LightSize(nen_);
+  deriv_->LightShape(nsd_,nen_);
   conv_c_.LightSize(nen_);
 
 
@@ -352,7 +352,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
     }
 
     // calculate basis functions and derivatives via max-ent optimization
-    int error = discret_->GetMeshfreeSolutionApprox()->GetMeshfreeBasisFunction(funct_,deriv_,distng,nsd_);
+    int error = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(nsd_,distng,funct_,deriv_);
     if (error) dserror("Something went wrong when calculating the meshfree basis functions.");
 
     //----------------------------------------------------------------------
@@ -367,13 +367,13 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
     LINALG::SerialDenseVector velint_sdm(View, velint_.A(), nsd_);
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    velint_sdm.Multiply('N','N',1.0,evelaf,funct_,0.0);
+    velint_sdm.Multiply('N','N',1.0,evelaf,*funct_,0.0);
 
     // construct SerialDense-view on vderxy_
     LINALG::SerialDenseMatrix vderxy_sdm(View, vderxy_.A(), nsd_, nsd_, nsd_);
     // get velocity derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    vderxy_sdm.Multiply('N','T',1.0,evelaf,deriv_,0.0);
+    vderxy_sdm.Multiply('N','T',1.0,evelaf,*deriv_,0.0);
 
     // get convective velocity at integration point
     // (ALE case handled implicitly here using the (potential
@@ -385,7 +385,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
       dserror("Meshfree fluid not tested for ALE yet. Remove dserror at own risk.");
       // construct SerialDense-view on gridvelint_
       LINALG::SerialDenseVector gridvelint_sdm(View, gridvelint_.A(), nsd_);
-      gridvelint_sdm.Multiply('N','N',1.0,egridv,funct_,0.0);
+      gridvelint_sdm.Multiply('N','N',1.0,egridv,*funct_,0.0);
       convvelint_.Update(-1.0,gridvelint_,1.0);
     }
 
@@ -394,9 +394,9 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
     //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
     double press(true);
     if(fldparatimint_->IsGenalphaNP())
-      press = funct_.Dot(eprenp);
+      press = funct_->Dot(eprenp);
     else
-      press = funct_.Dot(epreaf);
+      press = funct_->Dot(epreaf);
 
     // construct SerialDense-view on gradp_
     LINALG::SerialDenseVector gradp_sdm(View, gradp_.A(), nsd_);
@@ -404,15 +404,15 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
     // (value at n+alpha_F for generalized-alpha scheme,
     //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
     if(fldparatimint_->IsGenalphaNP())
-      gradp_sdm.Multiply('N','N',1.0,deriv_,eprenp,0.0);
+      gradp_sdm.Multiply('N','N',1.0,*deriv_,eprenp,0.0);
     else
-      gradp_sdm.Multiply('N','N',1.0,deriv_,epreaf,0.0);
+      gradp_sdm.Multiply('N','N',1.0,*deriv_,epreaf,0.0);
 
     // construct SerialDense-view on histmom_
     LINALG::SerialDenseVector histmom_sdm(View, histmom_.A(), nsd_);
     // get momentum history data at integration point
     // (only required for one-step-theta and BDF2 time-integration schemes)
-    histmom_sdm.Multiply('N','N',1.0,emhist,funct_,0.0);
+    histmom_sdm.Multiply('N','N',1.0,emhist,*funct_,0.0);
 
     //----------------------------------------------------------------------
     // potential evaluation of material parameters
@@ -443,7 +443,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
       conv_old_.MultiplyNN(1.0,vderxy_,convvelint_);
       // construct SerialDense-view on convvelint_
       LINALG::SerialDenseVector convvelint_sdm(View, convvelint_.A(), nsd_);
-      conv_c_.Multiply('T','N',1.0,deriv_,convvelint_sdm,0.0);
+      conv_c_.Multiply('T','N',1.0,*deriv_,convvelint_sdm,0.0);
     }
 
     // compute divergence of velocity from previous iteration
@@ -461,7 +461,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
       {
         //get vdiv at time n+1 for np_genalpha,
         LINALG::SerialDenseMatrix vderxy(nsd_,nsd_);
-        vderxy.Multiply('N','T',1.0,evelnp,deriv_,0.0); // not vderxy_ because of 'evelnp'
+        vderxy.Multiply('N','T',1.0,evelnp,*deriv_,0.0); // not vderxy_ because of 'evelnp'
         vdiv_ += vderxy(idim, idim);
       }
     }
@@ -489,7 +489,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
       // construct SerialDense-view on accint_
       LINALG::SerialDenseVector accint_sdm(View, accint_.A(), nsd_);
       // get acceleration at time n+alpha_M at integration point
-      accint_sdm.Multiply('N','N',1.0,eaccam,funct_,0.0);
+      accint_sdm.Multiply('N','N',1.0,eaccam,*funct_,0.0);
     }
     else
     {
@@ -823,7 +823,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::LinGalMomResU(
 
     for (int ui=0; ui<nen_; ++ui)
     {
-      const double v=fac_densam*funct_(ui);
+      const double v=fac_densam*(*funct_)(ui);
 
       for (int idim = 0; idim <nsd_; ++idim)
       {
@@ -850,7 +850,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::LinGalMomResU(
   {
     for (int ui=0; ui<nen_; ++ui)
     {
-      const double temp=timefacfac_densaf*funct_(ui);
+      const double temp=timefacfac_densaf*(*funct_)(ui);
 
       for (int idim = 0; idim <nsd_; ++idim)
       {
@@ -872,7 +872,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::LinGalMomResU(
 
     for (int ui=0; ui<nen_; ++ui)
     {
-      const double v=fac_reac*funct_(ui);
+      const double v=fac_reac*(*funct_)(ui);
 
       for (int idim = 0; idim <nsd_; ++idim)
       {
@@ -917,7 +917,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::InertiaConvectionReactionGal
 
           for (int jdim= 0; jdim<nsd_;++jdim)
           {
-            estif_u(fvi_p_idim,fui+jdim) += funct_(vi)*lin_resM_Du(idim_nsd+jdim,ui);
+            estif_u(fvi_p_idim,fui+jdim) += (*funct_)(vi)*lin_resM_Du(idim_nsd+jdim,ui);
           } // end for (jdim)
         } // end for (idim)
       } //vi
@@ -935,7 +935,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::InertiaConvectionReactionGal
 
         for (int idim = 0; idim <nsd_; ++idim)
         {
-          estif_u(fvi+idim,fui+idim) += funct_(vi)*lin_resM_Du(idim*nsd_+idim,ui);
+          estif_u(fvi+idim,fui+idim) += (*funct_)(vi)*lin_resM_Du(idim*nsd_+idim,ui);
         } // end for (idim)
       } //vi
     } // ui
@@ -980,7 +980,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::InertiaConvectionReactionGal
   {
     for(int idim = 0; idim <nsd_; ++idim)
     {
-      velforce(idim,vi)-=resM_Du(idim)*funct_(vi);
+      velforce(idim,vi)-=resM_Du(idim)*(*funct_)(vi);
     }
   }
 
@@ -1019,19 +1019,21 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::ViscousGalPart(
 
       for (int jdim=0; jdim<nsd_;++jdim)
       {
-        const double temp=visc_timefacfac*deriv_(jdim,vi);
+        const double temp=visc_timefacfac*(*deriv_)(jdim,vi);
 
         for (int idim=0; idim <nsd_; ++idim)
         {
           const int fvi_p_idim = fvi+idim;
 
-          estif_u(fvi_p_idim,fui+jdim) += temp*deriv_(idim, ui);
-          estif_u(fvi_p_idim,fui+idim) += temp*deriv_(jdim, ui);
+          estif_u(fvi_p_idim,fui+jdim) += temp*(*deriv_)(idim, ui);
+          estif_u(fvi_p_idim,fui+idim) += temp*(*deriv_)(jdim, ui);
         } // end for (idim)
       } // ui
     } // end for (idim)
   } // vi
 
+
+//  // solving weak form of: - \visc \laplace u + \grad p = f
 //  for (int vi=0; vi<nen_; ++vi)
 //  {
 //    const int fvi = nsd_*vi;
@@ -1046,7 +1048,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::ViscousGalPart(
 //        for (int idim=0; idim <nsd_; ++idim)
 //        {
 //
-//          estif_u(fvi+jdim,fui+jdim) += visc_timefacfac*deriv_(idim,vi)*deriv_(idim, ui);
+//          estif_u(fvi+jdim,fui+jdim) += visc_timefacfac*(*deriv_)(idim,vi)*(*deriv_)(idim, ui);
 //
 //        } // end for (idim)
 //      } // ui
@@ -1070,7 +1072,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::ViscousGalPart(
       for (int jdim=0; jdim<nsd_; ++jdim)
       {
         /* viscosity term on right-hand side */
-        velforce(idim,vi) -= viscstress(idim,jdim)*deriv_(jdim,vi);
+        velforce(idim,vi) -= viscstress(idim,jdim)*(*deriv_)(jdim,vi);
       }
     }
   }
@@ -1093,7 +1095,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::PressureGalPart(
   // pressure term on system matrix
   for (int ui=0; ui<nen_; ++ui)
   {
-    const double v = -timefacfacpre*funct_(ui);
+    const double v = -timefacfacpre*(*funct_)(ui);
 
     for (int vi=0; vi<nen_; ++vi)
     {
@@ -1109,13 +1111,13 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::PressureGalPart(
           |                  |
            \                /
         */
-        estif_p_v(fvi + idim,ui) += v*deriv_(idim, vi);
+        estif_p_v(fvi + idim,ui) += v*(*deriv_)(idim, vi);
       }
     }
   }
 
   // pressure term on right-hand side
-  velforce.Update(press*rhsfac,deriv_,1.0);
+  velforce.Update(press*rhsfac,*deriv_,1.0);
 
   return;
 } // end of MeshfreeFluidCellCalc::PressureGalPart
@@ -1134,7 +1136,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::ContinuityGalPart(
   // continuity term on system matrix
   for (int vi=0; vi<nen_; ++vi)
   {
-    const double v = timefacfacpre*funct_(vi);
+    const double v = timefacfacpre*(*funct_)(vi);
 
     for (int ui=0; ui<nen_; ++ui)
     {
@@ -1150,13 +1152,13 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::ContinuityGalPart(
             |                  |
              \                /
         */
-        estif_q_u(vi,fui+idim) += v*deriv_(idim,ui);
+        estif_q_u(vi,fui+idim) += v*(*deriv_)(idim,ui);
       }
     }
   }  // end for(idim)
 
   // continuity term on right-hand side
-  preforce.Update(-rhsfac * vdiv_,funct_,1.0);
+  preforce.Update(-rhsfac * vdiv_,*funct_,1.0);
 
   return;
 } // end of MeshfreeFluidCellCalc::ContinuityGalPart
@@ -1170,16 +1172,16 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::PressureProjection(
   )
 {
   // mass matrix of pressure basis functions - used as temp for M
-  ppmat.Multiply('N','T',fac_, funct_, funct_, 1.0);
+  ppmat.Multiply('N','T',fac_, *funct_, *funct_, 1.0);
 
   // "mass matrix" of projection modes - here element volume_equivalent_diameter_pc
   D_ += fac_;
 
   // prolongator(?) of projection
-  E_.Update(fac_, funct_, 1.0);
+  E_.Update(fac_, *funct_, 1.0);
 
   // integrated discrete velocity divergence
-  F_.Update(fac_, deriv_, 1.0);
+  F_.Update(fac_, *deriv_, 1.0);
 
 }
 
@@ -1258,7 +1260,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::BodyForceRhsTerm(
 
     for (int vi=0; vi<nen_; ++vi)
     {
-      velforce(idim,vi)+=scaled_rhsmom*funct_(vi);
+      velforce(idim,vi)+=scaled_rhsmom*(*funct_)(vi);
     }
   }  // end for(idim)
 
@@ -1303,12 +1305,12 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::ConservativeFormulation(
     for (int ui=0; ui<nen_; ++ui)
     {
       const int    fui   = nsd_*ui + idim;
-      const double v1 = v*funct_(ui);
+      const double v1 = v*(*funct_)(ui);
 
       for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi   = nsd_*vi + idim;
-        estif_u(fvi  , fui  ) += funct_(vi)*v1;
+        estif_u(fvi  , fui  ) += (*funct_)(vi)*v1;
       }
     }
 
@@ -1328,14 +1330,14 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::ConservativeFormulation(
       for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi   = nsd_*vi + idim;
-        const double v1_idim = v_idim*funct_(vi);
+        const double v1_idim = v_idim*(*funct_)(vi);
 
         for (int ui=0; ui<nen_; ++ui)
         {
           const int fui   = nsd_*ui;
 
           for(int jdim=0; jdim<nsd_;++jdim)
-            estif_u(fvi,  fui+jdim  ) += v1_idim*deriv_(jdim, ui);
+            estif_u(fvi,  fui+jdim  ) += v1_idim*(*deriv_)(jdim, ui);
         }
       }
     }
@@ -1348,7 +1350,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::ConservativeFormulation(
     double temp = -rhsfac*densaf_*velint_(idim)*vdiv_;
 
     for (int vi=0; vi<nen_; ++vi)
-      velforce(idim, vi    ) += temp*funct_(vi);
+      velforce(idim, vi    ) += temp*(*funct_)(vi);
 
   }  // end for(idim)
 

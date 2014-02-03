@@ -170,17 +170,12 @@ public:
     elementvector
   };
 
-  // hack put output control into publeic
-  //Teuchos::RCP<OutputControl> output_;
-  /// Writer constructor always needs a discretization
-  DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis,
-                       Teuchos::RCP<OutputControl> output);
-
-  /// Writer constructor always needs a discretization
   /*!
+    Writer constructor always needs a discretization
     Use default control file from global problem.
    */
-  explicit DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis);
+  DiscretizationWriter(
+    Teuchos::RCP<DRT::Discretization> dis);
 
   /// cleanup, close hdf5 files
   virtual ~DiscretizationWriter();
@@ -298,10 +293,14 @@ public:
 
   //@}
 
-  /// output control
-  Teuchos::RCP<OutputControl> Output(){ return output_;}
+  /// get output control
+  Teuchos::RCP<OutputControl> Output() const { return output_;}
 
-private:
+  /// set output control
+  void SetOutput(Teuchos::RCP<OutputControl> output);
+
+
+protected:
 
   //! open new mesh file
   virtual void CreateMeshFile(const int step);
@@ -339,6 +338,29 @@ private:
   bool binio_;
 
 };
+
+/*!
+  \brief The output context of a meshfree discretization
+
+  \author Keijo Nissen
+  \date Jan14
+*/
+class MeshfreeDiscretizationWriter : public DiscretizationWriter
+{
+public:
+
+  /*!
+    Writer constructor always needs a discretization
+    Use default control file from global problem.
+   */
+  MeshfreeDiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis)
+    : DiscretizationWriter(dis)
+  {};
+
+  //! write new "field" group to control file including node and element chunks
+  virtual void WriteMesh(const int step, const double time);
+};
+
 
 }
 

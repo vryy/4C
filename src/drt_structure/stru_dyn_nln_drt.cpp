@@ -129,7 +129,7 @@ void dyn_nlnstructural_drt()
   else
   {
     //RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("structure");
-    //RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
+    //RCP<IO::DiscretizationWriter> output = actdis->Writer();
     //output->NewStep(0, 0.0);
     //RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*(actdis->DofRowMap())));
     //output->WriteVector("displacement",zeros);

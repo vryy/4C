@@ -79,7 +79,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter>  output = Teuchos::rcp( new IO::DiscretizationWriter(actdis),false);
+  Teuchos::RCP<IO::DiscretizationWriter>  output = actdis->Writer();
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------

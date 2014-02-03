@@ -298,29 +298,24 @@ int DRT::MESHFREE::CellGaussPoints<distype>::GetCellGaussPointsAtX(
   // transpose of Jacobian, not initialized to zero
   LINALG::Matrix<nsd_,nsd_> J(false);
 
-  switch ((int)dN_.size())
+  // guaranteed constant Jacobian - single evaluation
+  if (((int)dN_.size())==1)
   {
+    LINALG::Matrix<nsd_,nek_> dN_fsm(dN_[0],true);
+    J.MultiplyNT(dN_fsm,Xa);
+    w.Scale(J.Determinant());
+  }
   // generally non-constant Jacobian - evaluation at Gauss points
-  case ngp_:
+  else if (((int)dN_.size())==ngp_)
   {
     for (int i=0; i<ngp_; i++){
       LINALG::Matrix<nsd_,nek_> dN_fsm(dN_[i],true);
       J.MultiplyNT(dN_fsm,Xa);
       w(i) *= J.Determinant();
     }
-    break;
   }
-  // guaranteed constant Jacobian - single evaluation
-  case 1:
-  {
-    LINALG::Matrix<nsd_,nek_> dN_fsm(dN_[0],true);
-    J.MultiplyNT(dN_fsm,Xa);
-    w.Scale(J.Determinant());
-    break;
-  }
-  default:
+  else
     dserror("Length of vector of Jacobian must either equal number of Gauss points or one (latter for constant Jacobians).");
-  }; // end switch ((int)dN_.size())
 
   return ngp_;
 };

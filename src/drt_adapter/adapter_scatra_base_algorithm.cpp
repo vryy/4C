@@ -65,7 +65,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
   actdis = DRT::Problem::Instance()->GetDis(disname);
 
   // -------------------------------------------------------------------
@@ -76,8 +76,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter> output =
-    Teuchos::rcp(new IO::DiscretizationWriter(actdis));
+  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
@@ -103,7 +102,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // create a solver
   // -------------------------------------------------------------------
   // TODO: TAW use of solverparams??? change input parameter to solver number instead of parameter list? -> no default paramter possible any more
-  RCP<LINALG::Solver> solver =
+  Teuchos::RCP<LINALG::Solver> solver =
     Teuchos::rcp(new LINALG::Solver(solverparams,
                            actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
@@ -113,7 +112,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
   // make a copy (inside an Teuchos::rcp) containing also all sublists
-  RCP<Teuchos::ParameterList> scatratimeparams= Teuchos::rcp(new Teuchos::ParameterList(scatradyn));
+  Teuchos::RCP<Teuchos::ParameterList> scatratimeparams= Teuchos::rcp(new Teuchos::ParameterList(scatradyn));
 
   // -------------------------------------------------------------------
   // overrule certain parameters for coupled problems

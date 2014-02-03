@@ -39,6 +39,7 @@ DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::MeshfreeFluidBoundaryCalc():
   kxyz_(bdrynsd_,bdrynek_),
   gxyz_(bdrynsd_,ngp_),
   gw_(ngp_),
+  funct_(Teuchos::rcp(new LINALG::SerialDenseVector())),
   drs_(0.0),
   fac_(0.0),
   visc_(0.0),
@@ -116,8 +117,7 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
   bdrynen_ = cell->NumNode();
 
   // resize matrices and vectors
-  funct_.LightSize(bdrynen_);
-  deriv_.LightShape(bdrynsd_,bdrynen_);
+  funct_->LightSize(bdrynen_);
   nxyz_.LightShape(bdrynsd_,bdrynen_);
 
   //------------------------------------------------------------------------
@@ -218,7 +218,7 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
     }
 
     // calculate basis functions and derivatives via max-ent optimization
-    int error = discret_->GetMeshfreeSolutionApprox()->GetMeshfreeBasisFunction(funct_,deriv_,distng,bdrynsd_);
+    int error = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(bdrynsd_,distng,funct_);
     if (error) dserror("Something went wrong when calculating the meshfree basis functions.");
 
     // get the required material information
@@ -263,7 +263,7 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
 
         // loop over all nodes
         for(int inode=0; inode < bdrynen_; ++inode )
-          elevec1_epetra[inode*numdofpernode_+idim] += funct_(inode)*valfac;
+          elevec1_epetra[inode*numdofpernode_+idim] += (*funct_)(inode)*valfac;
 
       }  // if (*onoff)
     } // for idim

@@ -326,7 +326,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   }
 
   // context for output and restart
-  Teuchos::RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
+  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
   if (DRT::INPUT::IntegralValue<int>(*ioflags,"OUTPUT_BIN"))
   {
     output->WriteMesh(0, 0.0);

@@ -29,8 +29,8 @@ FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-WRITE_TO_SCREEN                 no
-STDOUTEVRY                      0
+WRITE_TO_SCREEN                 yes
+STDOUTEVRY                      1
 -------------------------------------------------------STAT INVERSE ANALYSIS
 STAT_INV_ANALYSIS               LBFGS //GradientDescent
 MSTEPS                          yes

@@ -33,18 +33,8 @@ WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              -1
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
-BUBNOV                          Yes
-PARTITION_OF_UNITY              Yes
-NEGATIVITY                      0.0
-NEWTON_TOL                      1e-6
-NEWTON_MAX                      100
-T_PRIOR                         Gauss
-T_SKEW                          None
-T_VARIANCE                      .01                           // = sigma^2 = gamma/h^2
-T_RANGE_TOL                     1e-6
 CUTOFF_RADIUS                   1.0
 BOUNDINGBOX                     -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001 
-T_COMPLIANCE                    linear
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
 RESULTSEVRY                     1   

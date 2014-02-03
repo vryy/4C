@@ -194,42 +194,6 @@ protected:
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief calculate the Laplacian (weak form) - inline
-   *///                                                  (private) nis Mar12
-  /*------------------------------------------------------------------------*/
-  void GetLaplacianWeakForm(
-      double& val,
-      const LINALG::SerialDenseMatrix& deriv, // (nsd_ x nen_)
-      const int vi,
-      const int ui
-    )
-  {
-    val = 0.0;
-    for (int j = 0; j<nsd_; j++)
-      val += deriv(j, vi)*deriv(j, ui);
-    return;
-  };
-
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief calculate the RHS of Laplacian (weak form) - inline
-   *///                                                  (private) nis Mar12
-  /*------------------------------------------------------------------------*/
-  void GetLaplacianWeakFormRHS(
-      double& val,
-      const LINALG::SerialDenseMatrix& deriv, // (nsd_ x nen_)
-      const LINALG::SerialDenseVector& gradphi,
-      const int vi
-    )
-  {
-    val = 0.0;
-    for (int j = 0; j<nsd_; j++)
-      val += deriv(j,vi)*gradphi(j);
-    return;
-  };
-
-  /*------------------------------------------------------------------------*/
-  /*!
    * \brief calculate divergence of vector field (e.g., velocity) - inline
    *
    *///                                                  (private) nis Mar12
@@ -321,10 +285,14 @@ protected:
   //! @name Galerkin approximation and related
   /*========================================================================*/
 
-  //! array for shape functions: (nen_)
-  LINALG::SerialDenseVector funct_;
-  //! global derivatives of shape functions w.r.t x,y,z: (nsd_ x nen_)
-  LINALG::SerialDenseMatrix deriv_;
+  //! array for solution basis functions: (nen_)
+  Teuchos::RCP<LINALG::SerialDenseVector> sfunct_;
+  //! global derivatives of solution basis functions w.r.t x,y,z: (nsd_ x nen_)
+  Teuchos::RCP<LINALG::SerialDenseMatrix> sderiv_;
+  //! array for weighting basis functions: (nen_)
+  Teuchos::RCP<LINALG::SerialDenseVector> wfunct_;
+  //! global derivatives of weighting basis functions w.r.t x,y,z: (nsd_ x nen_)
+  Teuchos::RCP<LINALG::SerialDenseMatrix> wderiv_;
   //! bodyforce of node dofs: (numdofpernode_)
   std::vector<LINALG::SerialDenseVector> bodyforce_;
 

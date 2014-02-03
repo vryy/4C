@@ -231,7 +231,8 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
                             macrocontrol->FileSteps(),
                             adaptname));
 
-    micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(microdis,microcontrol));
+    micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(microdis));
+    micro_output_->SetOutput(microcontrol);
 
     micro_output_->WriteMesh(step_, time_);
   }

@@ -127,7 +127,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Face::AssignNodesToNodes(
   bool setnodefacedim)
 {
   // get range from discret
-  const double range = discret_->GetMeshfreeSolutionApprox()->GetRange();
+  const double range = discret_->GetSolutionApprox()->GetRange();
 
   // if vertex: check of ownership
   if (dim_==0)
@@ -228,7 +228,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Face::AssignNodesToCells()
 {
   // get rank and range from discret
   const int myrank = discret_->Comm().MyPID();
-  const double range = discret_->GetMeshfreeSolutionApprox()->GetRange();
+  const double range = discret_->GetSolutionApprox()->GetRange();
 
   // initialize variables for neighbourhood-check
   LINALG::Matrix<3,1> center(true);

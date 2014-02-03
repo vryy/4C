@@ -29,7 +29,7 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
 )
 {
   DRT::Problem* problem = DRT::Problem::Instance();
-  
+
   // -------------------------------------------------------------------
   // access the fluid and the optimization discretization
   // -------------------------------------------------------------------
@@ -63,8 +63,9 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
           DRT::INPUT::IntegralValue<int>(problem->IOParams(),"OUTPUT_BIN")
       )
   );
-  
-  RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(optidis, optioutput));
+
+  RCP<IO::DiscretizationWriter> output = optidis->Writer();
+  output->SetOutput(optioutput);
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------

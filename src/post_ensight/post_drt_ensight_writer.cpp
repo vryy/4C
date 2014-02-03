@@ -330,8 +330,8 @@ RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
   // communicated to proc 0
   Teuchos::RCP<Epetra_Map> proc0map;
 
-  if(field_->problem()->SpatialApproximation()=="Polynomial" or
-     field_->problem()->SpatialApproximation()=="Meshfree")
+  if(field_->problem()->SpatialApproximation()=="Polynomial"
+     or field_->problem()->SpatialApproximation()=="Meshfree")
   {
     WriteCoordinatesForPolynomialShapefunctions(
       geofile,dis,proc0map);
@@ -343,7 +343,7 @@ RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
   }
   else
   {
-    dserror("spatial approximation neither Nurbs nor Polynomial\n");
+    dserror("Unknown spatial approximation.");
   }
 
   return proc0map;
@@ -2024,4 +2024,3 @@ void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions
 
   return;
 }
-

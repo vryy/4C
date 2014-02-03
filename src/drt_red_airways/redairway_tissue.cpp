@@ -458,7 +458,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   }
 
   //Context for output and restart
-  Teuchos::RCP<IO::DiscretizationWriter>  output = Teuchos::rcp( new IO::DiscretizationWriter(actdis),false);
+  Teuchos::RCP<IO::DiscretizationWriter>  output = actdis->Writer();
   output->WriteMesh(0,0.0);
 
   //Set some pointers and variables

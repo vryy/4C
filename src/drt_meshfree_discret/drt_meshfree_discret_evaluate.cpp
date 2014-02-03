@@ -218,7 +218,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::FillDBCMatrix(
   // prepare vectors of node gids and basis function values for non-constant DBC
   LINALG::SerialDenseMatrix distnn;
   std::vector<int> ngids;
-  LINALG::SerialDenseVector basisfunct;
+  Teuchos::RCP<LINALG::SerialDenseVector> basisfunct = Teuchos::rcp(new LINALG::SerialDenseVector());
 
   // prepare vectors for constant (or point) DBC
   std::vector<int> const_ngids(1,-1);
@@ -246,7 +246,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::FillDBCMatrix(
     if (nodegids.find(ngid)!=nodegids.end()) continue;
 
     // get active node and list node gid
-    // (the latter not done for surfaces/volumes in 2D/3D, respectively)
+    // (the latter not done for surfaces/volumes in 2D/3D, respgectively)
     MeshfreeNode* actnode = dynamic_cast<MeshfreeNode*>(this->gNode(ngid));
     if (actnode==NULL) dserror("Something went wrong!");
     if (facedim!=DRT::Problem::Instance()->NDim()) nodegids.insert(ngid);
@@ -324,13 +324,12 @@ void DRT::MESHFREE::MeshfreeDiscretization::FillDBCMatrix(
             dserror("Only %i node(s) found in neighbourhood (range=%g) of node#%i/dof#%i on %i-dimensional face.",nneighbour,ngid,idof,facedim,range);
 
           // get basis function values of neighbours
-          basisfunct.LightSize(nneighbour);
-          LINALG::SerialDenseMatrix dummy(0,0);
-          this->GetMeshfreeSolutionApprox()->GetMeshfreeBasisFunction(basisfunct,dummy,distnn,facedim);
+          basisfunct->LightSize(nneighbour);
+          this->GetSolutionApprox()->GetMeshfreeBasisFunction(facedim,distnn,basisfunct);
 
           // use neighbourhood-variables for node gids and basis functions
           temp_ngids = &ngids;
-          temp_basisfunct = &basisfunct;
+          temp_basisfunct = basisfunct.get();
         }
         else
         {

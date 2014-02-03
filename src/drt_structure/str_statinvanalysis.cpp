@@ -38,8 +38,7 @@ void STR::statinvanalysis()
   if (!actdis->HaveDofs()) actdis->FillComplete();
 
   // context for output and restart
-  //Teuchos::RCP<IO::DiscretizationWriter> output
-  //  = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
+  //Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
 
   switch(DRT::INPUT::IntegralValue<INPAR::STR::StatInvAnalysisType>(statinvp,"STAT_INV_ANALYSIS"))
   {

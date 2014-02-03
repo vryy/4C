@@ -845,6 +845,9 @@ protected:
   //! @name scalar degrees of freedom variables
   /*========================================================================*/
 
+  //! number of space dimensions
+  int nsd_;
+
   //! number of transported scalars
   int numscal_;
 

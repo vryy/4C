@@ -505,6 +505,13 @@ public:
    *        basis function. Needs correct node-to-node assignment which is
    *        done when constructing faces.
    *        (Filled()==true prerequisite)
+   *
+   * \note This should be called and implemented as 'ComputeValuesAtPoints'
+   *       since for post filtering, element topology is needed which is only
+   *       provided by cells and points. This would require a second dof-set
+   *       based on points. However, up to now nodes lie on points by
+   *       construction, which is why we circumvent this problem by computing
+   *       values at nodes instead of points, using the nodal dof-set.
    *///                                                   (public) nis Jan14
   /*------------------------------------------------------------------------*/
   virtual void ComputeValuesAtNodes(
@@ -518,7 +525,7 @@ public:
    *\note This is a collective call
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual Teuchos::RCP<MeshfreeApprox> GetMeshfreeSolutionApprox(){return solutionapprox_;}
+  virtual Teuchos::RCP<MeshfreeApprox> GetSolutionApprox(){return solutionapprox_;}
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -527,7 +534,7 @@ public:
    *\note This is a collective call
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  virtual Teuchos::RCP<MeshfreeApprox> GetMeshfreeWeightingApprox(){return weightingapprox_;}
+  virtual Teuchos::RCP<MeshfreeApprox> GetWeightingApprox(){return weightingapprox_;}
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -554,7 +561,8 @@ protected:
   /*------------------------------------------------------------------------*/
   //! Empty! No ctor(name,comm) wanted                    (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  MeshfreeDiscretization(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
+  MeshfreeDiscretization(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
+    : DRT::Discretization(name,comm){};
 
   /*------------------------------------------------------------------------*/
   //! Empty! No = operator wanted.                        (public) nis Jan12
@@ -727,7 +735,8 @@ protected:
   std::map<int,Teuchos::RCP<MeshfreeNode> > point_; //!< map from point Gid to point pointers
 
   Teuchos::RCP<MeshfreeApprox> solutionapprox_;    //!< defines the meshfree approximation for the (basis) solution function
-  Teuchos::RCP<MeshfreeApprox> weightingapprox_;   //!< defines the meshfree approximation for the (basis) weighting function
+
+  Teuchos::RCP<MeshfreeApprox> weightingapprox_;    //!< defines the meshfree approximation for the (basis) weighting function
 
   Teuchos::RCP<LINALG::Solver> dbcsolver_;         //!< linear solver to strongly enforce non-constant DirichletBC
 

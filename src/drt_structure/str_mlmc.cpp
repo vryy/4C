@@ -46,8 +46,7 @@ void STR::mlmc()
 
 
   // context for output and restart
-  Teuchos::RCP<IO::DiscretizationWriter> output
-    = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
+  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
 
   // input parameters for structural dynamics
   const Teuchos::ParameterList& sdyn

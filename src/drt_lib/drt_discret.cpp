@@ -61,36 +61,18 @@ DRT::Discretization::Discretization(const std::string name, RCP<Epetra_Comm> com
 name_(name),
 comm_(comm),
 filled_(false),
-havedof_(false)
+havedof_(false),
+writer_(Teuchos::null)
 {
   dofsets_.push_back(Teuchos::rcp(new DofSet()));
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 11/06|
+ |  copy-ctor - not wanted!!!                       (private) nis Jan14 |
  *----------------------------------------------------------------------*/
-DRT::Discretization::Discretization(const DRT::Discretization& old) :
-name_(old.name_),
-state_(old.state_)
+DRT::Discretization::Discretization(const DRT::Discretization& old)
 {
-  comm_ = Teuchos::rcp(old.comm_->Clone());
-  Reset();
-
-  // deep copy elements
-  std::map<int,RCP<DRT::Element> >::const_iterator ecurr;
-  for (ecurr=old.element_.begin(); ecurr!=old.element_.end(); ++ecurr)
-    element_[ecurr->first] = Teuchos::rcp(ecurr->second->Clone());
-
-  // deep copy nodes
-  std::map<int,RCP<DRT::Node> >::const_iterator ncurr;
-  for (ncurr=old.node_.begin(); ncurr!=old.node_.end(); ++ncurr)
-    node_[ncurr->first] = Teuchos::rcp(ncurr->second->Clone());
-
-  for (unsigned i=0; i<old.dofsets_.size(); ++i)
-    dofsets_.push_back(old.dofsets_[i]->Clone());
-
-  // do fillcomplete if old was fillcomplete
-  if (old.Filled()) FillComplete();
+  dserror("No deep-copy of discretizations. Use CloneStrategy!!!");
 
   return;
 }

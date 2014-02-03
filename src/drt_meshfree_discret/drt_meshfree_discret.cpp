@@ -44,8 +44,8 @@ DRT::MESHFREE::MeshfreeDiscretization::MeshfreeDiscretization(
   {
   case INPAR::MESHFREE::maxent:
   {
-    solutionapprox_  = Teuchos::rcp(new MaxEntApprox(params));
-    weightingapprox_ = Teuchos::null;
+    solutionapprox_  = Teuchos::rcp(new MaxEntApprox(params,0));
+    weightingapprox_  = Teuchos::rcp(new MaxEntApprox(params,1));
     break;
   }
   default: dserror("No valid meshfree discretization.");
@@ -608,9 +608,8 @@ void DRT::MESHFREE::MeshfreeDiscretization::ComputeValuesAtNodes(
       //------------------------------------------------------------------------
       // get solution basis functions of neighbourhood
       //------------------------------------------------------------------------
-      LINALG::SerialDenseVector funct(nneighbour,false);
-      LINALG::SerialDenseMatrix dummy(0,0,false);
-      solutionapprox_->GetMeshfreeBasisFunction(funct,dummy,*distnn,facedim);
+      Teuchos::RCP<LINALG::SerialDenseVector> funct = Teuchos::rcp(new LINALG::SerialDenseVector(nneighbour,false));
+      solutionapprox_->GetMeshfreeBasisFunction(facedim, *distnn, funct);
 
       //------------------------------------------------------------------------
       // compute values at current node
@@ -625,7 +624,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::ComputeValuesAtNodes(
         // loop over all neighbours
         for (int n=0; n<nneighbour; ++n)
           // u(x_i) = sum N(x_i) u_i
-          valueatnode += funct[n]*(*nodalvalues)[DofRowMap()->LID(Dof(neighbours[n],idof))];
+          valueatnode += (*funct)[n]*(*nodalvalues)[DofRowMap()->LID(Dof(neighbours[n],idof))];
         valuesatnode[idof] = valueatnode;
       }
 

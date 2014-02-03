@@ -53,8 +53,10 @@ DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::MeshfreeScaTraCellCalc(const int
   eaccnp_(),
   eprenp_(),
   edispnp_(true),
-  funct_(),
-  deriv_(),
+  sfunct_(Teuchos::rcp(new LINALG::SerialDenseVector())),
+  sderiv_(Teuchos::rcp(new LINALG::SerialDenseMatrix())),
+  wfunct_(Teuchos::rcp(new LINALG::SerialDenseVector())),
+  wderiv_(Teuchos::rcp(new LINALG::SerialDenseMatrix())),
   bodyforce_(numdofpernode_), // size of vector
   densn_(numscal_),
   densnp_(numscal_),
@@ -63,7 +65,8 @@ DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::MeshfreeScaTraCellCalc(const int
   is_reactive_(false),
   reacoeff_(numscal_)
 {
-  // get parameter lists
+
+// get parameter lists
   scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
   scatraparatimint_ = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance();
 
@@ -112,11 +115,11 @@ int DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Evaluate(
   }
 
   // set size of all vectors of SerialDense element arrays
-  funct_.LightSize(nen_);
-  deriv_.LightShape(nsd_,nen_);
+  // (basis functions and derivatives are reshaped in MaxEnt-problem itself)
   evelnp_.LightShape(nsd_,nen_);
   econvelnp_.LightShape(nsd_,nen_);
-  for (int k=0;k<numscal_;++k){
+  for (int k=0;k<numscal_;++k)
+  {
     // set size of all vectors of SerialDenseVectors
     ephin_[k].LightSize(nen_); // without initialisation
     ephinp_[k].LightSize(nen_); // without initialisation
@@ -247,18 +250,30 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
     fac = gw_[iquad];     // read: current gauss weight
 
     // coordinates of the current integration point
-    for (int i=0; i<nen_; ++i){
+    for (int i=0; i<nen_; ++i)
+    {
       // get current node xyz-coordinate
       cnxyz = nodes[i]->X();
-      for (int j=0; j<nsd_; ++j){
+      for (int j=0; j<nsd_; ++j)
+      {
         // get distance between
         distng(j,i) = cnxyz[j] - cgxyz[j];
       }
     }
 
-    // calculate basis functions and derivatives via max-ent optimization
-    int error = discret_->GetMeshfreeSolutionApprox()->GetMeshfreeBasisFunction(funct_,deriv_,distng,nsd_);
-    if (error) dserror("Something went wrong when calculating the meshfree basis functions.");
+    // calculate solution basis functions and derivatives via max-ent optimization
+    int error = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(nsd_,distng,sfunct_,sderiv_);
+    if (error) dserror("Something went wrong when calculating the meshfree solution basis functions.");
+
+    // get velocity at integration point
+    LINALG::SerialDenseVector velint(nsd_,false);
+    LINALG::SerialDenseVector convelint(nsd_,false);
+    velint.Multiply('N','N',1.0,evelnp_,*sfunct_,0.0);
+    convelint.Multiply('N','N',1.0,econvelnp_,*sfunct_,0.0);
+
+    // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+    LINALG::SerialDenseVector conv(nen_,false);
+    conv.Multiply('T','N',1.0,*sderiv_,convelint,0.0);
 
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
@@ -267,24 +282,21 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
 
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
-      // get velocity at integration point
-      LINALG::SerialDenseVector velint(nsd_,false);
-      LINALG::SerialDenseVector convelint(nsd_,false);
-      velint.Multiply('N','N',1.0,evelnp_,funct_,0.0);
-      convelint.Multiply('N','N',1.0,econvelnp_,funct_,0.0);
+      LINALG::SerialDenseMatrix eigvec_adj(econvelnp_);
+      eigvec_adj.Scale(-1.0/diffus_[k]);
 
-      // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-      LINALG::SerialDenseVector conv(nen_,false);
-      conv.Multiply('T','N',1.0,deriv_,convelint,0.0);
+      // calculate weighting basis functions and derivatives via max-ent optimization
+      int error = discret_->GetWeightingApprox()->GetMeshfreeBasisFunction(nsd_,distng,wfunct_,wderiv_,Teuchos::rcpFromRef(eigvec_adj),sfunct_,sderiv_);
+      if (error) dserror("Something went wrong when calculating the meshfree weighting basis functions.");
 
       // scalar at integration point at time step n+1
-      const double phinp = funct_.Dot(ephinp_[k]);
+      const double phinp = sfunct_->Dot(ephinp_[k]);
       // scalar at integration point at time step n
-      const double phin = funct_.Dot(ephin_[k]);
+      const double phin = sfunct_->Dot(ephin_[k]);
 
       // gradient of current scalar value
       LINALG::SerialDenseVector gradphi(nsd_,false);
-      gradphi.Multiply('N','N',1.0,deriv_,ephinp_[k],0.0);
+      gradphi.Multiply('N','N',1.0,*sderiv_,ephinp_[k],0.0);
 
       // convective term using current scalar value
       double conv_phi(0.0);
@@ -296,11 +308,11 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
 
       // velocity divergence required for conservative form
       double vdiv(0.0);
-      if (scatrapara_->IsConservative()) GetDivergence(vdiv,evelnp_,deriv_);
+      if (scatrapara_->IsConservative()) GetDivergence(vdiv,evelnp_,*sderiv_);
 
       // get history data (or acceleration)
       double hist(0.0);
-      hist = funct_.Dot(ehist_[k]);
+      hist = sfunct_->Dot(ehist_[k]);
 
       // compute rhs containing bodyforce (divided by specific heat capacity) and,
       // for temperature equation, the time derivative of thermodynamic pressure,
@@ -311,7 +323,7 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
       //       create:         LINALG::SerialDenseVector::Sum()
       //       or even better: LINALG::SerialDenseVector::Sum(double)
       double rhs(0.0);
-      rhs = bodyforce_[k].Dot(funct_); // normal bodyforce
+      rhs = bodyforce_[k].Dot(*sfunct_); // normal bodyforce
 
       //----------------------------------------------------------------
       // 1) element matrix: stationary terms
@@ -329,7 +341,7 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
       const double densfac = timefacfac*densnp_[k];
       for (int vi=0; vi<nen_; ++vi)
       {
-        const double v = densfac*funct_(vi);
+        const double v = densfac*(*wfunct_)(vi);
         const int fvi = vi*numdofpernode_+k;
 
         for (int ui=0; ui<nen_; ++ui)
@@ -346,14 +358,14 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
         const double consfac = timefacfac*densnp_[k]*vdiv;
         for (int vi=0; vi<nen_; ++vi)
         {
-          const double v = consfac*funct_(vi);
+          const double v = consfac*(*wfunct_)(vi);
           const int fvi = vi*numdofpernode_+k;
 
           for (int ui=0; ui<nen_; ++ui)
           {
             const int fui = ui*numdofpernode_+k;
 
-            emat(fvi,fui) += v*funct_(ui);
+            emat(fvi,fui) += v*(*sfunct_)(ui);
           }
         }
       }
@@ -367,7 +379,8 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
         {
           const int fui = ui*numdofpernode_+k;
           double laplawf(0.0);
-          GetLaplacianWeakForm(laplawf, deriv_,ui,vi);
+          for (int j = 0; j<nsd_; j++)
+            laplawf += (*wderiv_)(j, vi)*(*sderiv_)(j, ui);
           emat(fvi,fui) += fac_diffus*laplawf;
         }
       }
@@ -384,14 +397,14 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
         // transient term
         for (int vi=0; vi<nen_; ++vi)
         {
-          const double v = densamfac*funct_(vi);
+          const double v = densamfac*(*wfunct_)(vi);
           const int fvi = vi*numdofpernode_+k;
 
           for (int ui=0; ui<nen_; ++ui)
           {
             const int fui = ui*numdofpernode_+k;
 
-            emat(fvi,fui) += v*funct_(ui);
+            emat(fvi,fui) += v*(*sfunct_)(ui);
           }
         }
 
@@ -405,14 +418,14 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
         const double fac_reac        = timefacfac*densnp_[k]*reacoeff_[k];
         for (int vi=0; vi<nen_; ++vi)
         {
-          const double v = fac_reac*funct_(vi);
+          const double v = fac_reac*(*wfunct_)(vi);
           const int fvi = vi*numdofpernode_+k;
 
           for (int ui=0; ui<nen_; ++ui)
           {
             const int fui = ui*numdofpernode_+k;
 
-            emat(fvi,fui) += v*funct_(ui);
+            emat(fvi,fui) += v*(*sfunct_)(ui);
           }
         }
       }
@@ -489,7 +502,7 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
       {
         const int fvi = vi*numdofpernode_+k;
 
-        erhs[fvi] += vrhs*funct_(vi);
+        erhs[fvi] += vrhs*(*wfunct_)(vi);
       }
 
       //----------------------------------------------------------------
@@ -502,27 +515,22 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
       {
         const int fvi = vi*numdofpernode_+k;
 
-        erhs[fvi] -= vrhs*funct_(vi);
+        erhs[fvi] -= vrhs*(*wfunct_)(vi);
       }
 
-      //----------------------------------------------------------------
       // diffusive term
-      //----------------------------------------------------------------
       vrhs = rhsfac*diffus_[k];
       for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
 
         double laplawf(0.0);
-        GetLaplacianWeakFormRHS(laplawf,deriv_,gradphi,vi);
+        for (int j = 0; j<nsd_; j++)
+          laplawf += (*wderiv_)(j,vi)*gradphi(j);
         erhs[fvi] -= vrhs*laplawf;
       }
 
-      //----------------------------------------------------------------
       // reactive terms (standard Galerkin) on rhs
-      //----------------------------------------------------------------
-
-      // standard Galerkin term
       if (is_reactive_)
       {
         vrhs = rhsfac*rea_phi;
@@ -530,7 +538,7 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
         {
           const int fvi = vi*numdofpernode_+k;
 
-          erhs[fvi] -= vrhs*funct_(vi);
+          erhs[fvi] -= vrhs*(*wfunct_)(vi);
         }
       }
     } // loop over each scalar

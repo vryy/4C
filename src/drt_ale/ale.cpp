@@ -451,8 +451,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, Teuch
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<IO::DiscretizationWriter> output =
-    Teuchos::rcp(new IO::DiscretizationWriter(actdis));
+  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------

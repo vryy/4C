@@ -180,7 +180,8 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
     // Get coarse Grid problem instance
 
     output_control_fine_ = Teuchos::rcp(new IO::OutputControl(actdis_fine_->Comm(), "structure", "Polynomial", filename_, filename_, 3, 0, 20, 1));
-    output_fine_ = Teuchos::rcp(new IO::DiscretizationWriter(actdis_fine_,output_control_fine_));
+    output_fine_ = actdis_fine_->Writer();
+    output_fine_->SetOutput(output_control_fine_);
 
     // init vectors to store mean stresses and displacements
     mean_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));

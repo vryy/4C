@@ -69,7 +69,7 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     J_(0.0),
     normdiffp_(0.0)
 {
-  scatra_output_ = Teuchos::rcp(new IO::DiscretizationWriter(scatra_discret_));
+  scatra_output_ = scatra_discret_->Writer();
 
   // get the output name
   name_ = DRT::Problem::Instance()->OutputControlFile()->FileName();

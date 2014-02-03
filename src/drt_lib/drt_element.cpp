@@ -103,7 +103,8 @@ owner_(owner),
 parent_master_(NULL),
 parent_slave_(NULL),
 lface_master_(-1),
-lface_slave_(-1)
+lface_slave_(-1),
+mat_(Teuchos::null)
 {}
 
 /*----------------------------------------------------------------------*
@@ -130,6 +131,8 @@ lface_slave_(old.lface_slave_)
 
   if ( old.mat_!=Teuchos::null )
     mat_ = old.mat_->Clone();
+  else
+    mat_ = Teuchos::null;
 
   return;
 }

@@ -711,32 +711,38 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     tuple<int>(INPAR::MESHFREE::procwise,
                                                INPAR::MESHFREE::blockwise),
                                     &meshfree);
-  BoolParameter("BUBNOV","No","Bubnov-Galerkin approx, i.e. weight=test function",&meshfree);
-  BoolParameter("PARTITION_OF_UNITY","Yes","Enforcement of partition of unity constraint",&meshfree);
-  IntParameter("DBC_SOLVER",-1,"Solver number for solving non-constant Dirichlet BC if necessary.",&meshfree);
-  DoubleParameter("NEGATIVITY",0.0,"Decides if and to which degree negativity is allowed",&meshfree);
-  DoubleParameter("T_VARIANCE",1,"Variance of the basis solution function prior.",&meshfree);
+  setStringToIntegralParameter<int>("PETROVGALERKIN","No",
+                                     "Type of Galerkin approximation.",
+                                     yesnotuple,yesnovalue,&meshfree);
   DoubleParameter("NEWTON_TOL",1e-6,"Tolerance at which Newton is considered to be converged.",&meshfree);
-  DoubleParameter("NEWTON_MAX",100,"Maximum number of Newton steps.",&meshfree);
-  DoubleParameter("T_RANGE_TOL",1,"Threshhold at which basis solution function prior is considered nmuerically zero.",&meshfree);
+  DoubleParameter("NEWTON_MAXITER",10,"Maximum number of Newton steps.",&meshfree);
+  IntParameter("DBC_SOLVER",-1,"Solver number for solving non-constant Dirichlet BC if necessary.",&meshfree);
+  BoolParameter("PARTITION_OF_UNITY","Yes","Enforcement of partition of unity constraint",&meshfree);
+  DoubleParameter("NEGATIVITY",0.0,"Decides if and to which degree negativity is allowed",&meshfree);
+  DoubleParameter("VARIANCE",1,"Variance of the basis solution function prior.",&meshfree);
+  DoubleParameter("RANGE_TOL",1,"Threshhold at which basis solution function prior is considered nmuerically zero.",&meshfree);
   DoubleParameter("CUTOFF_RADIUS",1e30,"Cutoff radius for influence of meshfree points on each other.",&meshfree);
   setNumericStringParameter("BOUNDINGBOX","-1e12 -1e12 -1e12 1e12 1e12 1e12",
                             "Bounding box for binning strategy in particle simulations.",
                             &meshfree);
-  setStringToIntegralParameter<int>("T_PRIOR","Gauss","Defines the prior type of the basis solution function.",
+  setStringToIntegralParameter<int>("PRIOR","Gauss","Defines the prior type of the basis solution function.",
                                     tuple<std::string>("Gauss"),
                                     tuple<int>(INPAR::MESHFREE::p_gauss),
                                     &meshfree);
-  setStringToIntegralParameter<int>("T_SKEW","None","Defines the skewness type of the basis solution function prior.",
-                                    tuple<std::string>("None","0815"),
-                                    tuple<int>(INPAR::MESHFREE::p_sym,
-                                               INPAR::MESHFREE::p_0815),
-                                    &meshfree);
-  setStringToIntegralParameter<int>("T_COMPLIANCE","linear","Defines the compliance type enforced for max-ent scheme of the basis solution functions.",
+  setStringToIntegralParameter<int>("S_COMPLIANCE","linear","Defines the compliance type enforced for max-ent scheme of the basis solution functions.",
                                     tuple<std::string>("linear","stream","freespace"),
-                                    tuple<int>(INPAR::MESHFREE::c_linear,
-                                               INPAR::MESHFREE::c_stream,
-                                               INPAR::MESHFREE::c_freesp),
+                                    tuple<int>(
+                                      INPAR::MESHFREE::c_linear,
+                                      INPAR::MESHFREE::c_stream,
+                                      INPAR::MESHFREE::c_freesp),
+                                    &meshfree);
+
+  setStringToIntegralParameter<int>("W_COMPLIANCE","linear","Defines the compliance type enforced for max-ent scheme of the basis solution functions.",
+                                    tuple<std::string>("linear","stream","freespace"),
+                                    tuple<int>(
+                                      INPAR::MESHFREE::c_linear,
+                                      INPAR::MESHFREE::c_stream,
+                                      INPAR::MESHFREE::c_freesp),
                                     &meshfree);
 
 

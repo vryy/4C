@@ -110,19 +110,17 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-    actdis = DRT::Problem::Instance()->GetDis(disname);
+  Teuchos::RCP<DRT::Discretization> actdis
+    = DRT::Problem::Instance()->GetDis(disname);
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
-  RCP<std::map<int,std::vector<int> > > row_pbcmapmastertoslave
-    =
-    Teuchos::rcp(new std::map<int,std::vector<int> > ());
+  Teuchos::RCP<std::map<int,std::vector<int> > > row_pbcmapmastertoslave
+    = Teuchos::rcp(new std::map<int,std::vector<int> > ());
 
-  RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave
-    =
-    Teuchos::rcp(new std::map<int,std::vector<int> > ());
+  Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave
+    = Teuchos::rcp(new std::map<int,std::vector<int> > ());
 
   if((probtype != prb_fsi) and
      (probtype != prb_combust))
@@ -160,8 +158,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter> output =
-    Teuchos::rcp(new IO::DiscretizationWriter(actdis));
+  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
   if (probtype != prb_combust and
       probtype != prb_fluid_fluid and
       probtype != prb_fluid_fluid_ale and
@@ -689,13 +686,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     break;
     case prb_loma:
     {
-      if(timeint == INPAR::FLUID::timeint_afgenalpha or
-          timeint == INPAR::FLUID::timeint_npgenalpha)
+      if(timeint == INPAR::FLUID::timeint_afgenalpha
+         or timeint == INPAR::FLUID::timeint_npgenalpha)
         fluid_ = Teuchos::rcp(new FLD::TimIntLomaGenAlpha(actdis, solver, fluidtimeparams, output, isale));
       else if(timeint == INPAR::FLUID::timeint_one_step_theta)
-              fluid_ = Teuchos::rcp(new FLD::TimIntLomaOst(actdis, solver, fluidtimeparams, output, isale));
-            else if(timeint == INPAR::FLUID::timeint_bdf2)
-              fluid_ = Teuchos::rcp(new FLD::TimIntLomaBDF2(actdis, solver, fluidtimeparams, output, isale));
+        fluid_ = Teuchos::rcp(new FLD::TimIntLomaOst(actdis, solver, fluidtimeparams, output, isale));
+      else if(timeint == INPAR::FLUID::timeint_bdf2)
+        fluid_ = Teuchos::rcp(new FLD::TimIntLomaBDF2(actdis, solver, fluidtimeparams, output, isale));
       else
         dserror("Unknown time integration for this fluid problem type\n");
     }
@@ -708,8 +705,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         fluid_ = Teuchos::rcp(new FLD::TimIntTopOptOst(actdis, solver, fluidtimeparams, output, isale));
       else if(timeint == INPAR::FLUID::timeint_bdf2)
         fluid_ = Teuchos::rcp(new FLD::TimIntTopOptBDF2(actdis, solver, fluidtimeparams, output, isale));
-      else if(timeint == INPAR::FLUID::timeint_afgenalpha or
-          timeint == INPAR::FLUID::timeint_npgenalpha)
+      else if(timeint == INPAR::FLUID::timeint_afgenalpha
+              or timeint == INPAR::FLUID::timeint_npgenalpha)
         fluid_ = Teuchos::rcp(new FLD::TimIntTopOptGenAlpha(actdis, solver, fluidtimeparams, output, isale));
       else
         dserror("Unknown time integration for this fluid problem type\n");
@@ -719,9 +716,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     case prb_fluid_xfem:
     case prb_fsi_crack:
     {
-      RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
+      Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
       Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
-      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid,actdis, soliddis, solver, fluidtimeparams, output));
+      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, solver, fluidtimeparams, output));
     }
     break;
     case prb_combust:
@@ -732,7 +729,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     case prb_fluid_fluid_ale:
     case prb_fluid_fluid:
     {
-      RCP<DRT::Discretization> embfluiddis  =  DRT::Problem::Instance()->GetDis("xfluid");
+      Teuchos::RCP<DRT::Discretization> embfluiddis  =  DRT::Problem::Instance()->GetDis("xfluid");
       bool monolithicfluidfluidfsi = false;
       Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(actdis,embfluiddis,solver,fluidtimeparams,output,isale,monolithicfluidfluidfsi));
       fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid,embfluiddis,actdis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
@@ -740,13 +737,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     break;
     case prb_fluid_fluid_fsi:
     {
-      RCP<DRT::Discretization> bgfluiddis  =  DRT::Problem::Instance()->GetDis("fluid");
+      Teuchos::RCP<DRT::Discretization> bgfluiddis  =  DRT::Problem::Instance()->GetDis("fluid");
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
       bool monolithicfluidfluidfsi;
       if(coupling == fsi_iter_fluidfluid_monolithicstructuresplit
-    	  	  or coupling == fsi_iter_fluidfluid_monolithicfluidsplit
-    	  	  or coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox)
+         or coupling == fsi_iter_fluidfluid_monolithicfluidsplit
+         or coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox)
         monolithicfluidfluidfsi = true;
       else
         monolithicfluidfluidfsi = false;
@@ -946,7 +943,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(discret));
+  Teuchos::RCP<IO::DiscretizationWriter> output = discret->Writer();
 
   // -------------------------------------------------------------------
   // set some pointers and variables

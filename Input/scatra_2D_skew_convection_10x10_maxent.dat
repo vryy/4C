@@ -26,34 +26,16 @@ NUMSTRUCDIS                     0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------MESHFREE
 TYPE                            MaxEnt
-BUBNOV                          Yes
+PETROVGALERKIN                  Yes
 PARTITION_OF_UNITY              Yes
 NEGATIVITY                      0.0
-NEWTON_TOL                      1e-6
-NEWTON_MAX                      100
-T_PRIOR                         Gauss
-T_SKEW                          None
-T_VARIANCE                      .01                             // = sigma^2 = gamma/h^2
-T_RANGE_TOL                     1e-6
-T_COMPLIANCE                    linear
---------------------------------------------------------------------------IO
-FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
-OUTPUT_BIN                      Yes
-OUTPUT_GID                      No
-STDOUTEVRY                      1
-STRUCT_DISP                     No
-STRUCT_PLASTIC_STRAIN           No
-STRUCT_SE                       No
-STRUCT_STRAIN                   No
-STRUCT_STRESS                   No
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
+RANGE_TOL                       1e-12
+NEWTON_TOL                      1e-12
+NEWTON_MAXITER                  20
+VARIANCE                        .01     // gamma = 1.0; sigma^2 = h^2/gamma
+PRIOR                           Gauss
+S_COMPLIANCE                    linear
+W_COMPLIANCE                    stream
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      linear_full
@@ -73,21 +55,20 @@ SCATRATYPE                      ConvectionDiffusion
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_scatra DIFFUSIVITY 0.005 // Pe = 200; Pe_e = 10
+MAT 1 MAT_scatra DIFFUSIVITY 0.04 // Pe_e = 1.25;  diff = conv*h/2/Pe_e
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION cos(pi/3.0)
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION sin(pi/3.0)
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION cos(pi/6.0) // skew unit convection
+FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION sin(pi/6.0) // skew unit convection
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 3 QUANTITY phi VALUE 1.00805543207588872e+01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 3 QUANTITY van_phi VALUE 2.64229461880377814e+00 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 25 QUANTITY phi     VALUE 6.87480885992577839e-01 TOLERANCE 1e-12
+SCATRA DIS scatra NODE 25 QUANTITY van_phi VALUE 8.09248361779806080e-01 TOLERANCE 1e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4
@@ -99,23 +80,15 @@ DSURF                           1
 E 1 - none 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
-//                              Line_top
-E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
-//                              Line_left
-E 2 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
-//                              Line_bottom
-E 3 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
-//                              Line_right
-E 4 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0 // Line_top
+E 2 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0 // Line_left
+E 3 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0 // Line_bottom
+E 4 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0 // Line_right
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
-//                              Node_topright
-NODE 1 DNODE 1
-//                              Node_topleft
-NODE 21 DNODE 2
-//                              Node_bottomright
-NODE 112 DNODE 3
-//                              Node_bottomleft
-NODE 121 DNODE 4
+NODE 1 DNODE 1 // Node_topright
+NODE 21 DNODE 2 // Node_topleft
+NODE 112 DNODE 3 // Node_bottomright
+NODE 121 DNODE 4 // Node_bottomleft
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 2 DLINE 1
@@ -283,7 +256,6 @@ NODE 118 DSURFACE 1
 NODE 119 DSURFACE 1
 NODE 120 DSURFACE 1
 NODE 121 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 POINT 1 COORD 0.5 0.5 0.0
 POINT 2 COORD 0.4 0.5 0.0
@@ -508,4 +480,3 @@ POINT 121 COORD -0.5 -0.5 0.0
 99 METRANSP QUAD4 108 109 120 119 MAT 1 NA Euler GP 2 2
 100 METRANSP QUAD4 109 110 121 120 MAT 1 NA Euler GP 2 2
 -------------------------------------------------------------------------END
-//                              END

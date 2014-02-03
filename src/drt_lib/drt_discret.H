@@ -68,6 +68,11 @@ namespace LINALG
 }
 class PostProblem;
 
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
 /*!
 \brief DRT: namespace of the baci discretization module
 
@@ -81,7 +86,7 @@ namespace DRT
 \brief A class to manage a discretization in parallel
 
 A discretization describes a discretized physical domain including any
-boundary conditions. This is a huge concept that includes four different parts
+boundary conditions. This is a huge concept that includes four different partsmy
 
 - a mesh consisting of elements and nodes
 - a number of sets of degrees of freedom (dofsets)
@@ -171,6 +176,11 @@ public:
   \brief Get communicator associated with this class
   */
   virtual inline const Epetra_Comm& Comm() const {return *comm_;}
+
+  /*!
+  \brief Get communicator associated with this class
+  */
+  virtual inline Teuchos::RCP<IO::DiscretizationWriter> Writer() const {return writer_;}
 
   /*!
   \brief Get flag indicating whether FillComplete() has been called
@@ -753,6 +763,12 @@ public:
   */
   virtual void SetComm(Teuchos::RCP<Epetra_Comm> comm)
   { filled_=false; comm_ = comm; return; }
+
+  /*!
+  \brief Set a DiscretizationWriter
+  */
+  virtual void SetWriter(Teuchos::RCP<IO::DiscretizationWriter> writer)
+  { writer_ = writer; return; }
 
   /*!
   \brief Add an element to the discretization (Filled()==true NOT prerequisite)
@@ -2023,6 +2039,7 @@ protected:
   // internal data
   std::string                            name_;              // name of this discretization
   Teuchos::RCP<Epetra_Comm>              comm_;              // an Epetra_comm
+  Teuchos::RCP<IO::DiscretizationWriter> writer_;            // a DiscretizationWriter
   bool                                   filled_;            // flag indicating whether getOrganized has been called
   bool                                   havedof_;           // flag indicating whether degrees of freedom where assigned
 
