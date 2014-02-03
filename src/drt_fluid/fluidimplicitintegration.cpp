@@ -1144,17 +1144,14 @@ void FLD::FluidImplicitTimeInt::TreatTurbulenceModels(Teuchos::ParameterList& el
   //----------------------------------------------------------------------
    if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky
     or turbmodel_ == INPAR::FLUID::scale_similarity
-    or turbmodel_ == INPAR::FLUID::scale_similarity_basic)
+    or turbmodel_ == INPAR::FLUID::scale_similarity_basic
+    or turbmodel_ == INPAR::FLUID::dynamic_vreman)
   {
     //compute filtered velocity
     // time measurement
     const double tcpufilter=Teuchos::Time::wallTime();
     this->ApplyScaleSeparationForLES();
     dtfilter_=Teuchos::Time::wallTime()-tcpufilter;
-  }
-  else if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
-  {
-    this->ApplyScaleSeparationForLES();
   }
 
    // set action type

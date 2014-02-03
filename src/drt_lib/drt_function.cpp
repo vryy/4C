@@ -50,6 +50,7 @@ Maintainer: Ulrich Kuettler
 #include "standardtypes_cpp.H"
 #include "drt_timecurve.H"
 #include "drt_linedefinition.H"
+#include "../drt_combust/combust_functions.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_io/io.H"
@@ -611,114 +612,6 @@ public:
 };
 
 
-/// special implementation for a level set test function
-class ZalesaksDiskFunction : public Function
-{
-public:
-
-  /// ctor
-  ZalesaksDiskFunction();
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-};
-
-/// special implementation for a combustion test function
-class CircularFlame2Function : public Function
-{
-public:
-
-  /// ctor
-  CircularFlame2Function();
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-};
-
-/// special implementation for a combustion test function
-class CircularFlame3Function : public Function
-{
-public:
-
-  /// ctor
-  CircularFlame3Function();
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-};
-
-/// special implementation for a combustion test function
-class CircularFlame4Function : public Function
-{
-public:
-
-  /// ctor
-  CircularFlame4Function();
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-};
-
-/// special implementation two-phase flow test case
-class CollapsingWaterColumnFunction : public Function
-{
-public:
-
-  /// ctor
-  CollapsingWaterColumnFunction();
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-};
-
-/// special implementation two-phase flow test case
-class CollapsingWaterColumnFunctionCoarse : public Function
-{
-public:
-
-  /// ctor
-  CollapsingWaterColumnFunctionCoarse();
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-};
-
-/// special implementation for the G-function in the ORACLES problem
-class ORACLESGFunction : public Function
-{
-public:
-
-  /// ctor
-  ORACLESGFunction();
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-};
-
-/// special implementation for a level set test function
-class RotatingConeFunction : public Function
-{
-public:
-
-  /// ctor
-  RotatingConeFunction();
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-};
-
-/// special implementation for a xfem test function
-class LevelSetCutTestFunction : public Function
-{
-public:
-
-  /// ctor
-  LevelSetCutTestFunction();
-
-  /// evaluate function at given position in space
-  double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
-};
-
 /// special implementation for controlled rotations
 class ControlledRotationFunction : public Function
 {
@@ -1021,6 +914,12 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("CIRCULARFLAME4")
     ;
 
+  DRT::INPUT::LineDefinition dambreakobstacle;
+  dambreakobstacle
+    .AddNamedInt("FUNCT")
+    .AddTag("DAMBREAKOBSTACLE")
+    ;
+
   DRT::INPUT::LineDefinition collapsingwatercolumn;
   collapsingwatercolumn
     .AddNamedInt("FUNCT")
@@ -1031,6 +930,12 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   collapsingwatercolumncoarse
     .AddNamedInt("FUNCT")
     .AddTag("COLLAPSINGWATERCOLUMNCOARSE")
+    ;
+
+  DRT::INPUT::LineDefinition bubbles;
+  bubbles
+    .AddNamedInt("FUNCT")
+    .AddTag("BUBBLES")
     ;
 
   DRT::INPUT::LineDefinition oraclesgfunc;
@@ -1122,8 +1027,10 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(circularflame2);
   lines->Add(circularflame3);
   lines->Add(circularflame4);
+  lines->Add(dambreakobstacle);
   lines->Add(collapsingwatercolumn);
   lines->Add(collapsingwatercolumncoarse);
+  lines->Add(bubbles);
   lines->Add(oraclesgfunc);
   lines->Add(rotatingcone);
   lines->Add(levelsetcuttest);
@@ -1432,6 +1339,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       {
         functions_.push_back(Teuchos::rcp(new CircularFlame4Function()));
       }
+      else if (function->HaveNamed("DAMBREAKOBSTACLE"))
+      {
+        functions_.push_back(Teuchos::rcp(new DamBreakObstacle()));
+      }
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
       {
         functions_.push_back(Teuchos::rcp(new CollapsingWaterColumnFunction()));
@@ -1439,6 +1350,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMNCOARSE"))
       {
         functions_.push_back(Teuchos::rcp(new CollapsingWaterColumnFunctionCoarse()));
+      }
+      else if (function->HaveNamed("BUBBLES"))
+      {
+        functions_.push_back(Teuchos::rcp(new BubbleFunction()));
       }
       else if (function->HaveNamed("ORACLESGFUNC"))
       {
@@ -3307,464 +3222,7 @@ void DRT::UTILS::WomersleyFunction::DFT(std::vector<double> *data, std::vector< 
   }
   return;
 }
-/*----------------------------------------------------------------------*
- | constructor                                              henke 05/09 |
- *----------------------------------------------------------------------*/
-DRT::UTILS::ZalesaksDiskFunction::ZalesaksDiskFunction() :
-Function()
-{
-}
 
-/*----------------------------------------------------------------------*
- | evaluation of level set test function "Zalesak's disk"  schott 06/11 |
- *----------------------------------------------------------------------*/
-double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
-{
-  // the disk consists of 3 lines and a part of a circle and four points
-  // decide if the orthogonal projection of the current point lies on the lines and the circle (four different distances possible)
-  // additionally the smallest distance can be between the current point and one of the four corners
-
-  double distance = 99999.0;
-
-  //=====================================
-  // distances to the four corners
-  //=====================================
-  // upper points
-  double y_upper = sqrt(DSQR(0.15)-DSQR(0.025)) + 0.25;
-  // warning: sign must be positive
-  double dist_lu = sqrt(DSQR(xp[0]+0.025)+DSQR(xp[1]-y_upper));
-  if(abs(dist_lu) < abs(distance)) distance = dist_lu;
-
-  // warning: sign must be positive
-  double dist_ru = sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-y_upper));
-  if(abs(dist_ru) < abs(distance)) distance = dist_ru;
-
-  // under points
-  double y_down = 0.15;
-  // warning: sign must be negative
-  double dist_ld = sqrt(DSQR(xp[0]+0.025)+DSQR(xp[1]-y_down));
-  if(abs(dist_ld) < abs(distance)) distance = -dist_ld;
-
-  // warning: sign must be negative
-  double dist_rd = sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-y_down));
-  if(abs(dist_rd) < abs(distance)) distance = -dist_rd;
-
-  //=====================================
-  // projection on the 3 lines
-  //=====================================
-  // decide for vertical lines
-  if(xp[1]>= 0.15 && xp[1]<= y_upper)
-  {
-    // leftVertLine
-    if(abs(xp[0]+0.025) < abs(distance)) distance = xp[0]+0.025;
-
-    // rightVertLine
-    if(abs(0.025-xp[0]) < abs(distance)) distance = 0.025-xp[0];
-  }
-  // decide for horizontal line
-  if(xp[0]>= -0.025 && xp[0]<=0.025)
-  {
-    // horizontalLine
-    if(abs(xp[1]-0.15) < abs(distance)) distance = xp[1]-0.15;
-  }
-
-  //======================================
-  // distance to the circle
-  //======================================
-  // decide for part of circle
-  // get radius of sphere for current point
-  double s = sqrt(DSQR(xp[0]-0.0)+DSQR(xp[1]-0.25));
-  // get angle between line form midpoint of circle to current point and vector (0,1,0)
-  double y_tmp= sqrt(DSQR(0.15)-DSQR(0.025))*s/0.15;
-  if((xp[1]-0.25) <= y_tmp)
-  {
-    if(abs(s-0.15) < abs(distance)) distance = s-0.15;
-  }
-
-  return distance;
-}
-
-/*----------------------------------------------------------------------*
- | constructor                                              henke 01/12 |
- *----------------------------------------------------------------------*/
-DRT::UTILS::CircularFlame2Function::CircularFlame2Function() :
-Function()
-{
-}
-
-/*----------------------------------------------------------------------*
- | evaluation of circular flame test function henke               01/12 |
- *----------------------------------------------------------------------*/
-double DRT::UTILS::CircularFlame2Function::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
-{
-  const double visc_minus = 0.001;
-  const double dens_minus = 1.0;
-  const double radius_0 = 0.025;
-  const double u = 1.0;
-  const double sl = 1.0;
-  double radius = radius_0 + t*(u+sl);
-
-  // -pres + dynvisc*2*du_x/dx
-  double flux = 0.5*dens_minus*radius*radius*u*u/(xp[0]*xp[0]+xp[1]*xp[1])
-              + 2.0*dens_minus*sl*u*log(sqrt(xp[0]*xp[0]+xp[1]*xp[1]))
-              + visc_minus*2.0*radius*u/(xp[0]*xp[0]+xp[1]*xp[1])*(1.0-2.0*xp[0]*xp[0]/(xp[0]*xp[0]+xp[1]*xp[1]));
-
-  return flux;
-}
-
-/*----------------------------------------------------------------------*
- | constructor                                              henke 01/12 |
- *----------------------------------------------------------------------*/
-DRT::UTILS::CircularFlame3Function::CircularFlame3Function() :
-Function()
-{
-}
-
-/*----------------------------------------------------------------------*
- | evaluation of circular flame test function henke               01/12 |
- *----------------------------------------------------------------------*/
-double DRT::UTILS::CircularFlame3Function::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
-{
-  const double visc_minus = 0.001;
-  const double dens_minus = 1.0;
-  const double radius_0 = 0.025;
-  const double u = 1.0;
-  const double sl = 1.0;
-  double radius = radius_0 + t*(u+sl);
-
-  // -pres + dynvisc*2*du_y/dy
-  double flux = 0.5*dens_minus*radius*radius*u*u/(xp[0]*xp[0]+xp[1]*xp[1])
-              + 2.0*dens_minus*sl*u*log(sqrt(xp[0]*xp[0]+xp[1]*xp[1]))
-              + visc_minus*2.0*radius*u/(xp[0]*xp[0]+xp[1]*xp[1])*(1.0-2.0*xp[1]*xp[1]/(xp[0]*xp[0]+xp[1]*xp[1]));
-
-  return flux;
-}
-
-/*----------------------------------------------------------------------*
- | constructor                                              henke 01/12 |
- *----------------------------------------------------------------------*/
-DRT::UTILS::CircularFlame4Function::CircularFlame4Function() :
-Function()
-{
-}
-
-/*----------------------------------------------------------------------*
- | evaluation of circular flame test function henke               01/12 |
- *----------------------------------------------------------------------*/
-double DRT::UTILS::CircularFlame4Function::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
-{
-  const double visc_minus = 0.001;
-  const double radius_0 = 0.025;
-  const double u = 1.0;
-  const double sl = 1.0;
-  double radius = radius_0 + t*(u+sl);
-
-  // dynvisc*2*du_x/dy
-  double flux = -2.0*visc_minus*radius*u*2.0*xp[0]*xp[1]/((xp[0]*xp[0]+xp[1]*xp[1])*(xp[0]*xp[0]+xp[1]*xp[1]));
-
-  return flux;
-}
-
-/*----------------------------------------------------------------------*
- | constructor                                          rasthofer 04/10 |
- *----------------------------------------------------------------------*/
-DRT::UTILS::CollapsingWaterColumnFunction::CollapsingWaterColumnFunction() :
-Function()
-{
-}
-
-/*----------------------------------------------------------------------*
- | evaluation of two-phase flow test case               rasthofer 04/10 |
- *----------------------------------------------------------------------*/
-double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
-{
-  //here calculation of distance (sign is already taken in consideration)
-  double distance = 0.0;
-
-//  if (xp[0] > -0.146 and xp[1] > 0.067)
-//  {
-//     distance = + sqrt(DSQR(-0.146 - xp[0])+DSQR(0.067 - xp[1]));
-//  }
-//  else if (xp[0] >= -0.146 and xp[1] <= 0.067)
-//  {
-//     distance = + fabs(-0.146 - xp[0]);
-//     //std::cout << distance << std::endl;
-//  }
-//  else if (xp[0] <= -0.146 and xp[1] >= 0.067)
-//  {
-//     distance = + fabs(0.067 - xp[1]);
-//  }
-//  else if (xp[0] < -0.146 and xp[1] < 0.067 and xp[1] <= (xp[0] + 0.213))
-//  {
-//     //distance = - fabs(0.067 - xp[1]);
-//     distance = - fabs(-0.146 - xp[0]);
-//  }
-//  else
-//  {
-//     //distance = - fabs(-0.146 - xp[0]);
-//     distance = - fabs(0.067 - xp[1]);
-//     //std::cout << distance << std::endl;
-//  }
-
-  double xp_corner[2];
-  double xp_center[2];
-  double radius=0.03;
-
-  xp_corner[0]=0.146;
-  xp_corner[1]=0.292;
-  xp_center[0]=xp_corner[0]-radius;
-  xp_center[1]=xp_corner[1]-radius;
-
-
-  if (xp[0] <=xp_center[0] and xp[1] >= xp_center[1])
-  {
-     distance = xp[1]-xp_corner[1] ;
-  }
-  else if (xp[0] >=xp_center[0] and xp[1] <= xp_center[1] and !(xp[0]==xp_center[0] and xp[1]==xp_center[1]))
-  {
-      distance= xp[0]-xp_corner[0];
-  }
-  else if (xp[0] <xp_center[0] and xp[1] < xp_center[1])
-  {
-      if(xp[1]>(xp_corner[1]+(xp[0]-xp_corner[0])))
-      {
-          distance = - fabs(xp_corner[1] - xp[1]);
-      }
-      else
-      {
-          distance = - fabs(xp_corner[0] - xp[0]);
-      }
-  }
-  else
-  {
-      distance = sqrt(DSQR(xp[0]-xp_center[0])+DSQR(xp[1]-xp_center[1]))-radius;
-  }
-
-  return distance;
-}
-
-
-/*----------------------------------------------------------------------*
- | constructor                                          rasthofer 04/10 |
- *----------------------------------------------------------------------*/
-DRT::UTILS::CollapsingWaterColumnFunctionCoarse::CollapsingWaterColumnFunctionCoarse() :
-Function()
-{
-}
-
-/*----------------------------------------------------------------------*
- | evaluation of two-phase flow test case               rasthofer 04/10 |
- *----------------------------------------------------------------------*/
-double DRT::UTILS::CollapsingWaterColumnFunctionCoarse::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
-{
-  double xp_corner[2];
-  double xp_center[2];
-    double distance = 0.0;
-  double radius=0.03;
-
-  //xp_corner[0]=0.146;//0.06
-  xp_corner[0]=0.06;//0.06
-  //xp_corner[1]=0.292;//0.06
-  xp_corner[1]=0.06;//0.06
-
-  xp_center[0]=xp_corner[0]-radius;
-  xp_center[1]=xp_corner[1]-radius;
-
-
-  if (xp[0] <=xp_center[0] and xp[1] >= xp_center[1])
-  {
-     distance = xp[1]-xp_corner[1] ;
-  }
-  else if (xp[0] >=xp_center[0] and xp[1] <= xp_center[1] and !(xp[0]==xp_center[0] and xp[1]==xp_center[1]))
-  {
-      distance= xp[0]-xp_corner[0];
-  }
-  else if (xp[0] <xp_center[0] and xp[1] < xp_center[1])
-  {
-      if(xp[1]>(xp_corner[1]+(xp[0]-xp_corner[0])))
-      {
-          distance = - fabs(xp_corner[1] - xp[1]);
-      }
-      else
-      {
-          distance = - fabs(xp_corner[0] - xp[0]);
-      }
-  }
-  else
-  {
-      distance = sqrt(DSQR(xp[0]-xp_center[0])+DSQR(xp[1]-xp_center[1]))-radius;
-  }
-
-  return distance;
-}
-
-
-/*----------------------------------------------------------------------*
- | constructor                                              henke 10/11 |
- *----------------------------------------------------------------------*/
-DRT::UTILS::ORACLESGFunction::ORACLESGFunction() :
-Function()
-{
-}
-
-/*----------------------------------------------------------------------*
- | evaluation of level set test function "Zalesak's disk"   henke 05/09 |
- *----------------------------------------------------------------------*/
-double DRT::UTILS::ORACLESGFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
-{
-
-  if (xp[0] > 0.0)
-    dserror("invalid coordinate for ORACLES G-function function!");
-
-  const double eps = 0.00152;
-  //const double zsing = 0.7525-0.05;//0.0354;
-
-  double gfuncvalue = 0.0;
-
-  // implementation for periodic spanwise boundary
-  if (xp[1] >= 0.0)
-    gfuncvalue = (xp[1]-0.0354) - eps;
-  else
-    gfuncvalue = (-0.0354-xp[1]) - eps;
-
-#if 0
-  // implementation for spanwise walls
-  if ( xp[2] <= -zsing and abs(xp[1]) <= abs(xp[2]+zsing) )
-  {
-    gfuncvalue = (-0.7525-xp[2]) - eps;
-  }
-  else if ( xp[2] >= zsing and abs(xp[1]) <= (xp[2]-zsing) )
-  {
-    gfuncvalue = (xp[2]-0.7525) - eps;
-  }
-  else if ( xp[1] >= 0.0 and ( xp[1] > abs(xp[2]+zsing) or xp[1] > (xp[2]-zsing) ))
-  {
-    gfuncvalue = (xp[1]-0.0354) - eps;
-  }
-  else if ( xp[1] < 0.0 and (-xp[1] > abs(xp[2]+zsing) or -xp[1] > (xp[2]-zsing) ))
-  {
-    gfuncvalue = (-0.0354-xp[1]) - eps;
-  }
-  else
-    dserror("coordinate out of range of ORACLES G-function function");
-#endif
-
-  return gfuncvalue;
-}
-
-/*----------------------------------------------------------------------*
- | constructor                                             schott 05/11 |
- *----------------------------------------------------------------------*/
-DRT::UTILS::RotatingConeFunction::RotatingConeFunction() :
-Function()
-{
-}
-
-/*----------------------------------------------------------------------*
- | evaluation of level set test function "Rotating Cone "  schott 05/11 |
- *----------------------------------------------------------------------*/
-double DRT::UTILS::RotatingConeFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
-{
-  //here calculation of distance (sign is already taken in consideration)
-  double distance = 0;
-
-
-  double x0c = 1.0/6.0;
-  double x1c = 1.0/6.0;
-
-  double sigma = 0.2;
-
-  double X0 = (xp[0]-x0c)/sigma;
-  double X1 = (xp[1]-x1c)/sigma;
-
-  double radius = sqrt(DSQR(X0)+DSQR(X1));
-
-  if(radius <= 1.0) distance = 0.25*(1.0+cos(PI*X0))*(1.0+cos(PI*X1));
-  else distance = 0.0;
-
-
-  return (distance-1.0);
-}
-
-
-/*----------------------------------------------------------------------*
- | constructor                                              henke 05/11 |
- *----------------------------------------------------------------------*/
-DRT::UTILS::LevelSetCutTestFunction::LevelSetCutTestFunction() :
-Function()
-{
-}
-
-/*----------------------------------------------------------------------*
- | evaluation of level set test function "Zalesak's disk"   henke 05/11 |
- *----------------------------------------------------------------------*/
-double DRT::UTILS::LevelSetCutTestFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
-{
-  //here calculation of phi (sign is already taken in consideration)
-  double phi = 0;
-
-  // column of nodes (x < -0.7)
-  if (xp[0] < -0.75)
-    phi = xp[0]+0.6;
-  // column of nodes (x = -0.7)
-  else if ((xp[0] > -0.75) and (xp[0] < -0.65))
-    phi = -0.1;
-  // column of nodes (x = -0.6)
-  else if ((xp[0] > -0.65) and (xp[0] < -0.55))
-    phi = 0.0 +1.0E-4;
-  // column of nodes (x = -0.5)
-  else if ((xp[0] > -0.55) and (xp[0] < -0.45))
-    phi = 0.1;
-  // column of nodes (x = -0.4)
-  else if ((xp[0] > -0.45) and (xp[0] < -0.35))
-    phi = 0.0 +1.0E-5;
-  // column of nodes (x = -0.3)
-  else if ((xp[0] > -0.35) and (xp[0] < -0.25))
-    phi = -0.1;
-  // column of nodes (x = -0.2)
-  else if ((xp[0] > -0.25) and (xp[0] < -0.15))
-    phi = 0.0 +1.0E-12;
-  // column of nodes (x = -0.1)
-  else if ((xp[0] > -0.15) and (xp[0] < -0.05))
-    phi = 0.1;
-  // column of nodes (x = 0.0)
-  else if ((xp[0] > -0.05) and (xp[0] < 0.05))
-    phi = 0.0;
-  // column of nodes (x = 0.1)
-  else if ((xp[0] > 0.05) and (xp[0] < 0.15))
-    phi = -0.1;
-  // column of nodes (x = 0.2)
-  else if ((xp[0] > 0.15) and (xp[0] < 0.25))
-    phi = 0.0 -1.0E-12;
-  // column of nodes (x = 0.3)
-  else if ((xp[0] > 0.25) and (xp[0] < 0.35))
-    phi = 0.1;
-  // column of nodes (x = 0.4)
-  else if ((xp[0] > 0.35) and (xp[0] < 0.45))
-    phi = 0.0 -1.0E-5;
-  // column of nodes (x = 0.5)
-  else if ((xp[0] > 0.45) and (xp[0] < 0.55))
-    phi = -0.1;
-  // column of nodes (x = 0.6)
-  else if ((xp[0] > 0.55) and (xp[0] < 0.65))
-    phi = 0.0 +xp[1]*0.0001;
-  // column of nodes (x = 0.7)
-  else if ((xp[0] > 0.65) and (xp[0] < 0.75))
-    phi = 0.1;
-  // column of nodes (x = 0.8)
-  else if ((xp[0] > 0.75) and (xp[0] < 0.85))
-    phi = 0.0 -(xp[1]-0.001)*0.0001;
-  // column of nodes (x = 0.9)
-  else if ((xp[0] > 0.85) and (xp[0] < 0.95))
-    phi = -0.1;
-  // column of nodes (x = 1.0)
-  else if (xp[0] > 0.95)
-    phi = -0.2;
-  // something went wrong
-  else
-   dserror("this node does not exist");
-  return phi;
-}
 
 /*----------------------------------------------------------------------*
  | Constructor of ControlledRotation                         hahn 04/13 |
