@@ -1,0 +1,225 @@
+//
+// Maintainer: Sudhakar
+// sudhakar@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15257
+//
+// ----------------------------------------------
+// This is one of the basic tests for LEFM based crack propagation
+// In this test, crack propagates 3 increments
+// Used to check node addition, initializing dof corresponds to new nodes
+// ----------------------------------------------
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus 
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    10
+//NODES       38
+DIM           3
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+DYNAMICTYP                      GenAlpha
+RESULTSEVRY                     1
+RESTARTEVRY                     1
+NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
+TIMESTEP                        0.0025
+NUMSTEP                         4
+MAXTIME                         0.75
+DAMPING                         No
+M_DAMP                          0.0
+K_DAMP                          0.0
+PREDICT                         ConstDisVelAcc
+NORM_DISP                       Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFDISP              And
+TOLDISP                         1.0E-05
+TOLRES                          1.0E-05
+TOLCONSTR                       1.0E-05
+MAXITER                         50
+UZAWAPARAM                      1.0
+UZAWAMAXITER                    20
+UZAWAALGO                       direct
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          TrLike
+ALPHA_F                         0.459
+ALPHA_M                         0.378
+BETA                            0.291
+GAMMA                           0.581
+-------------------------------------------------------------CONTACT DYNAMIC
+
+-----------------------------------------------------------------ALE DYNAMIC
+TIMESTEP                        0.1
+NUMSTEP                         200
+MAXTIME                         5.0
+ALE_TYPE                        classic_lin
+RESULTSEVRY                     1
+----------------------------------------------------------------CRACK
+CRACK_MODEL			lefm
+CRITICAL_K1			5000
+CRITICAL_K2			5000
+THICKNESS_ASSUMPTION		plane_strain
+GMSH_OUT			no
+-----------------------------------------------------------------TSI DYNAMIC
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.1
+MAT 2 ELAST_CoupNeoHooke YOUNG 2e8 NUE 0.30
+-----------------------------------------------CURVE1
+CURVE1 on EXPR FUNC 1.0 t1 0.0 t2 20000000
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 1
+NDLINE  3
+NDSURF  2
+NDVOL   1
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+DLINE  2
+// pos_force
+E 1 - 1 0 1 0 0 0 0  0.0 800.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
+// neg_force
+E 2 - 1 0 1 0 0 0 0  0.0 -800.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  1
+// zero_disp
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
+DVOL   1
+// zero_z-disp
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+---------------------------------------DESIGN CRACK MASTER SURFACE
+DSURF  1
+// master_crack
+E 1 - 1
+----------------------------------------DESIGN CRACK SLAVE SURFACE
+DSURF  1
+// slave_crack
+E 2 - 1
+------------------------------------DESIGN CRACK INITIATION POINTS
+DPOINT 1
+// crack_tip
+E 1 - 1
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    3 DNODE 1
+NODE    7 DNODE 1
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    27 DLINE 1
+NODE    30 DLINE 1
+NODE    1 DLINE 2
+NODE    5 DLINE 2
+NODE    22 DLINE 3
+NODE    24 DLINE 3
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    3 DSURFACE 1
+NODE    4 DSURFACE 1
+NODE    7 DSURFACE 1
+NODE    8 DSURFACE 1
+NODE    3 DSURFACE 2
+NODE    7 DSURFACE 2
+NODE    25 DSURFACE 2
+NODE    28 DSURFACE 2
+------------------------------------------------DVOL-NODE TOPOLOGY
+NODE    1 DVOL 1
+NODE    2 DVOL 1
+NODE    3 DVOL 1
+NODE    4 DVOL 1
+NODE    5 DVOL 1
+NODE    6 DVOL 1
+NODE    7 DVOL 1
+NODE    8 DVOL 1
+NODE    9 DVOL 1
+NODE    10 DVOL 1
+NODE    11 DVOL 1
+NODE    12 DVOL 1
+NODE    13 DVOL 1
+NODE    14 DVOL 1
+NODE    15 DVOL 1
+NODE    16 DVOL 1
+NODE    17 DVOL 1
+NODE    18 DVOL 1
+NODE    19 DVOL 1
+NODE    20 DVOL 1
+NODE    21 DVOL 1
+NODE    22 DVOL 1
+NODE    23 DVOL 1
+NODE    24 DVOL 1
+NODE    25 DVOL 1
+NODE    26 DVOL 1
+NODE    27 DVOL 1
+NODE    28 DVOL 1
+NODE    29 DVOL 1
+NODE    30 DVOL 1
+NODE    31 DVOL 1
+NODE    32 DVOL 1
+NODE    33 DVOL 1
+NODE    34 DVOL 1
+NODE    35 DVOL 1
+NODE    36 DVOL 1
+NODE    37 DVOL 1
+NODE    38 DVOL 1
+-------------------------------------------------------NODE COORDS
+NODE 1  	COORD	0.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 2  	COORD	1.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 3  	COORD	1.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
+NODE 4  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
+NODE 5  	COORD	0.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000001e-01	
+NODE 6  	COORD	1.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000001e-01	
+NODE 7  	COORD	1.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
+NODE 8  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
+NODE 9  	COORD	2.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 10  	COORD	2.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
+NODE 11  	COORD	2.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000001e-01	
+NODE 12  	COORD	2.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
+NODE 13  	COORD	3.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 14  	COORD	3.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
+NODE 15  	COORD	3.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000001e-01	
+NODE 16  	COORD	3.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
+NODE 17  	COORD	4.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 18  	COORD	4.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
+NODE 19  	COORD	4.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000001e-01	
+NODE 20  	COORD	4.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
+NODE 21  	COORD	5.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 22  	COORD	5.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
+NODE 23  	COORD	5.0000000000000000e+00	0.0000000000000000e+00	1.0000000000000001e-01	
+NODE 24  	COORD	5.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
+NODE 25  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	0.0000000000000000e+00	
+NODE 26  	COORD	1.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
+NODE 27  	COORD	0.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
+NODE 28  	COORD	0.0000000000000000e+00	1.0000000000000000e+00	1.0000000000000001e-01	
+NODE 29  	COORD	1.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001e-01	
+NODE 30  	COORD	0.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001e-01	
+NODE 31  	COORD	2.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
+NODE 32  	COORD	2.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001e-01	
+NODE 33  	COORD	3.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
+NODE 34  	COORD	3.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001e-01	
+NODE 35  	COORD	4.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
+NODE 36  	COORD	4.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001e-01	
+NODE 37  	COORD	5.0000000000000000e+00	2.0000000000000000e+00	0.0000000000000000e+00	
+NODE 38  	COORD	5.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001e-01	
+------------------------------------------------STRUCTURE ELEMENTS
+   1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 KINEM nonlinear EAS none
+   2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 1 KINEM nonlinear EAS none
+   3 SOLIDH8 HEX8  9 13 14 10 11 15 16 12    MAT 1 KINEM nonlinear EAS none
+   4 SOLIDH8 HEX8  13 17 18 14 15 19 20 16    MAT 1 KINEM nonlinear EAS none
+   5 SOLIDH8 HEX8  17 21 22 18 19 23 24 20    MAT 1 KINEM nonlinear EAS none
+   6 SOLIDH8 HEX8  25 3 26 27 28 7 29 30    MAT 1 KINEM nonlinear EAS none
+   7 SOLIDH8 HEX8  3 10 31 26 7 12 32 29    MAT 1 KINEM nonlinear EAS none
+   8 SOLIDH8 HEX8  10 14 33 31 12 16 34 32    MAT 1 KINEM nonlinear EAS none
+   9 SOLIDH8 HEX8  14 18 35 33 16 20 36 34    MAT 1 KINEM nonlinear EAS none
+   10 SOLIDH8 HEX8  18 22 37 35 20 24 38 36    MAT 1 KINEM nonlinear EAS none
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE 9.05742160587590632e-05 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 17 QUANTITY dispy VALUE -3.23371831737618765e-05 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 17 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-12
+---------------------------------------------------------------END
+// END
