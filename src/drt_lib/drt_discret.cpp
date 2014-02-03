@@ -60,9 +60,9 @@ Maintainer: Michael Gee
 DRT::Discretization::Discretization(const std::string name, RCP<Epetra_Comm> comm) :
 name_(name),
 comm_(comm),
+writer_(Teuchos::null),
 filled_(false),
-havedof_(false),
-writer_(Teuchos::null)
+havedof_(false)
 {
   dofsets_.push_back(Teuchos::rcp(new DofSet()));
 }

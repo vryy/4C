@@ -176,6 +176,8 @@ void STR::INVANA::StatInvAnalysis::MStepDToStdVecD(Teuchos::RCP<TimIntMStep<doub
 /*----------------------------------------------------------------------*/
 void STR::INVANA::StatInvAnalysis::SolveForwardProblem()
 {
+  // resultfiles are overwritten every run since usually only the final results are of interest
+  discret_->Writer()->OverwriteResultFile();
 
   // get input lists
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -195,10 +197,8 @@ void STR::INVANA::StatInvAnalysis::SolveForwardProblem()
         structadaptor.ReadRestart(restart);
       }
       structadaptor.Integrate();
-      //output_ = structadaptor.DiscWriter();
 
       // get displacement and time
-      //IO::cout << "test before mstep" <<IO::endl;
       MStepEpetraToEpetraMulti(structadaptor.DispMStep(), dis_);
       MStepDToStdVecD(structadaptor.TimeMStep(), time_);
 
