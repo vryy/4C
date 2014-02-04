@@ -1275,13 +1275,13 @@ void STR::TimIntStatMech::PTC()
     std::ostringstream filename;
     if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"GMSHOUTPUT") && HaveBeamContact())
     {
-      filename << statmechman_->StatMechRootPath() <<"/GmshOutput/network"<< time_ <<"_u"<<std::setw(2) << std::setfill('0')<<beamcman_->GetUzawaIter()<<"_n"<<std::setw(2) << std::setfill('0')<<numiter<<".pos";
-      statmechman_->GmshOutput(*disn_,filename,istep,beamcman_);
+      filename << statmechman_->StatMechRootPath() <<"/GmshOutput/network"<< (*time_)[0] <<"_u"<<std::setw(2) << std::setfill('0')<<beamcman_->GetUzawaIter()<<"_n"<<std::setw(2) << std::setfill('0')<<iter_<<".pos";
+      statmechman_->GmshOutput(*disn_,filename,stepn_,beamcman_);
     }
     else
     {
-      filename << statmechman_->StatMechRootPath()<< "/GmshOutput/network"<< time_ <<"_n"<<std::setw(2) << std::setfill('0')<<numiter<<".pos";
-      statmechman_->GmshOutput(*disn_,filename,istep);
+      filename << statmechman_->StatMechRootPath()<< "/GmshOutput/network"<< (*time_)[0] <<"_n"<<std::setw(2) << std::setfill('0')<<iter_<<".pos";
+      statmechman_->GmshOutput(*disn_,filename,stepn_);
     }
 #endif
     //--------------------------------- increment equilibrium loop index

@@ -275,18 +275,28 @@ public:
   void OrientationCorrelation(const Epetra_Vector& disrow,
                               const int&           istep);
 
+  //! \brief checks if one of the node ids given is a row node
+  bool CheckIfRowNode(const Epetra_Map& noderowmap,  Teuchos::RCP<std::vector<int> > nodeids);
+
   //! \brief create a new crosslinker element and add it to the discretization
-  void AddNewCrosslinkerElement(const int&                       crosslinkermapid,
-                                const int&                       crossgid,
+  void AddNewCrosslinkerElement(const int&                       crossgid,
                                 Teuchos::RCP<std::vector<int> >  globalnodeids,
                                 const std::vector<int>&          bspotgid,
                                 const std::vector<double>&       xrefe,
                                 const std::vector<double>&       rotrefe,
                                 DRT::Discretization&             mydiscret,
-                                Teuchos::RCP<Epetra_MultiVector> nodalpositions = Teuchos::null,
-                                Teuchos::RCP<Epetra_MultiVector> nodalrotations = Teuchos::null,
                                 Teuchos::RCP<Epetra_MultiVector> nodalquaternions = Teuchos::null,
                                 bool                             addinitlinks=false);
+
+  //! \brief add supporting crosslinker elements to an already existing one (myosin thick filament)
+  void AddSupportElements(const Epetra_Map&                    noderowmap,
+                          const int&                           crosslid,
+                          Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager,
+                          Teuchos::RCP<Epetra_MultiVector>     nodalpositions,
+                          Teuchos::RCP<std::vector<int> >      globalnodeids,
+                          const std::vector<int>&              bspotgid,
+                          const std::vector<double>&           xrefe,
+                          const std::vector<double>&           rotrefe);
 
   //! \brief remove crosslinker element from a chosen discretization
   void RemoveCrosslinkerElements(DRT::Discretization&             mydiscret,
@@ -295,7 +305,7 @@ public:
 
   //! \brief remove crosslinker element from a chosen discretization (MultiVector)
   void RemoveMultipleCrosslinkerElements(DRT::Discretization&             mydiscret,
-                                         Epetra_MultiVector&              delcrosselement,
+                                         const Epetra_MultiVector&        delcrosselement,
                                          std::vector<std::vector<char> >* deletedelements);
 
   //! \brief generate crosslinker element ID on the basis of the nodes it connects
