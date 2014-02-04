@@ -362,9 +362,13 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
   resultgroup_(-1),
   resultfile_changed_(-1),
   meshfile_changed_(-1),
-  output_(DRT::Problem::Instance()->OutputControlFile()),
-  binio_(output_->BinIO())
+  output_(DRT::Problem::Instance()->OutputControlFile())
 {
+  if (output_!=Teuchos::null)
+    binio_ = output_->BinIO();
+  // not nice, but needed in order to let pre_exodus read fields without output control file
+  else
+    binio_ = false;
 }
 
 /*----------------------------------------------------------------------*/

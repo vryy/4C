@@ -22,6 +22,7 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_io/io.H"
 
 #include <vector>
 #include <sstream>
@@ -333,13 +334,13 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
   Teuchos::RCP<COMM_UTILS::NestedParGroup> group = problem->GetNPGroup();
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
-  
+
   int sbcaster = -1;
   int bcaster = -1;
   int numfield = 0;
   std::vector<int> numdis;
   // only proc 0 of group bgroup
-  if (group->GroupId()==bgroup && lcomm->MyPID()==0) 
+  if (group->GroupId()==bgroup && lcomm->MyPID()==0)
   {
     sbcaster = group->GPID(0);
     numfield = problem->NumFields();
@@ -362,7 +363,7 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
       std::string name;
       std::string distype;
       std::vector<char> data;
-      if (gcomm->MyPID()==bcaster) 
+      if (gcomm->MyPID()==bcaster)
       {
         DRT::Container cont;
         dis = problem->GetDis(disnames[i]);
@@ -400,7 +401,7 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
       const std::string* rdistype = cont.Get<std::string>("distype");
       distype = *rdistype;
       // allocate or get the discretization
-      if (group->GroupId()==bgroup) 
+      if (group->GroupId()==bgroup)
       {
         dis = problem->GetDis(disnames[i]);
       }
@@ -421,8 +422,8 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
         Epetra_MpiComm* mpicomm = dynamic_cast<Epetra_MpiComm*>(gcomm.get());
         if (!mpicomm) dserror("dyncast failed");
         MPI_Comm_split(mpicomm->Comm(),color,gcomm->MyPID(),&intercomm);
-        
-        
+
+
         if (group->GroupId()==k || bgroup==group->GroupId())
         {
           Teuchos::RCP<Epetra_MpiComm> icomm = Teuchos::rcp(new Epetra_MpiComm(intercomm));
@@ -589,7 +590,7 @@ void COMM_UTILS::BroadcastDiscretizations()
  | distribute a discretization from one group to one other    gee 03/12 |
  *----------------------------------------------------------------------*/
 void COMM_UTILS::NPDuplicateDiscretization(
-                                 const int sgroup, 
+                                 const int sgroup,
                                  const int rgroup,
                                  Teuchos::RCP<NestedParGroup> group,
                                  Teuchos::RCP<DRT::Discretization> dis,
@@ -636,9 +637,9 @@ void COMM_UTILS::NPDuplicateDiscretization(
   if (group->GroupId()==sgroup)
   {
     if (!dis->Filled()) dis->FillComplete(false,false,false);
-    
+
     myrowelements.resize(dis->ElementRowMap()->NumMyElements(),-1);
-    
+
     // loop all my elements
     for (int i=0; i<dis->ElementRowMap()->NumMyElements(); ++i)
     {
@@ -665,7 +666,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
       std::vector<DRT::Condition*> conds;
       dis->GetCondition(condnames[i],conds);
       Teuchos::RCP<std::vector<char> > data = dis->PackCondition(condnames[i]);
-      if (lcomm->MyPID()==0) 
+      if (lcomm->MyPID()==0)
       {
         condmap[i] = *data;
         condnamemap[i] = Teuchos::rcp(new DRT::Container());
@@ -674,7 +675,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
       commondis->UnPackCondition(data,condnames[i]);
     }
   } // if (group->GroupId()==sgroup)
-  
+
   // --------------------------------------
   // conditions have to be fully redundant, need to copy to all procs in intercomm
   {
@@ -683,7 +684,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
     for (int i=0; i<nummyelements; ++i) myelements[i] = i;
     Epetra_Map smap(-1,nummyelements,&myelements[0],0,*icomm);
     nummyelements = smap.NumGlobalElements();
-    myelements.resize(nummyelements);  
+    myelements.resize(nummyelements);
     for (int i=0; i<nummyelements; ++i) myelements[i] = i;
     Epetra_Map rmap(-1,nummyelements,&myelements[0],0,*icomm);
     DRT::Exporter exporter(smap,rmap,*icomm);
@@ -704,7 +705,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
       ++fool2;
     }
   }
-  
+
   //-------------------------------------- finalize the commondis
   {
     Teuchos::RCP<Epetra_Map> roweles = Teuchos::rcp(new Epetra_Map(-1,(int)myrowelements.size(),&myrowelements[0],-1,*icomm));
@@ -719,7 +720,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
     commondis->ExportColumnElements(*coleles);
     commondis->FillComplete(false,false,false);
   }
-  
+
   //-------------------------------------- build a target rowmap for elements
   std::vector<int> targetgids;
   {
@@ -745,7 +746,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
       if (icomm->MyPID()==proc && group->GroupId()==sgroup) willsend=1;
       icomm->Broadcast(&willsend,1,proc);
       if (!willsend) continue; // proc is not a sender, goto next proc
-      
+
       // proc send his nummyelements
       int nrecv = nummyelements;
       icomm->Broadcast(&nrecv,1,proc);
@@ -796,7 +797,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
       if (icomm->MyPID()==proc && group->GroupId()==sgroup) willsend=1;
       icomm->Broadcast(&willsend,1,proc);
       if (!willsend) continue; // proc is not a sender, goto next proc
-      
+
       // proc send his nummyelements
       int nrecv = nummyelements;
       icomm->Broadcast(&nrecv,1,proc);
@@ -820,8 +821,8 @@ void COMM_UTILS::NPDuplicateDiscretization(
         //printf("sendproc %d proc %d have %d gids\n",proc,icomm->MyPID(),(int)targetgids.size()); fflush(stdout);
       }
     } // for (int proc=0; proc<icomm->NumProc(); ++proc)
-  }  
-  Epetra_Map targetrownode(-1,(int)targetgids.size(),&targetgids[0],0,*icomm);    
+  }
+  Epetra_Map targetrownode(-1,(int)targetgids.size(),&targetgids[0],0,*icomm);
 
   // -------------- perform export of elements and nodes
   commondis->ExportRowElements(targetrowele);
@@ -860,6 +861,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
     dis->ExportColumnNodes(*colnodes);
     dis->ExportColumnElements(*coleles);
     dis->FillComplete(true,true,true);
+    dis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(dis)));
   }
   icomm->Barrier();
   return;
