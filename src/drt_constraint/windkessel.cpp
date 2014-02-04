@@ -9,15 +9,21 @@ Monolithic coupling of a three-element Windkessel governed by
 either the standard linear version in p
 (1) c dp/dt - c r2 dq/dt + p/r1 - (1 + r2/r1) q(d) = 0
 
-or a special nonlinear heart version to mimic opened and closed valves
+or a special nonlinear heart version to mimic ejec and iso valves
 (2) c(p) dp/dt - c(p) r2(p) dq/dt + p/r1(p) - (1 + r2(p)/r1(p)) q(d) = 0
 
 with
-c(p) = (c_closed - c_opened)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + c_opened
-r1(p) = (r1_closed - r1_opened)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r1_opened
-r2(p) = (r2_closed - r2_opened)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r2_opened
+c(p) = (c_iso - c_ejec)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + c_ejec + (c_fill - c_iso)*(1.0 - tanh[(p-p_close)/k_p] )
+r1(p) = (r1_iso - r1_ejec)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r1_ejec + (r1_fill - r1_iso)*(1.0 - tanh[(p-p_close)/k_p] )
+r2(p) = (r2_iso - r2_ejec)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r2_ejec + (r2_fill - r2_iso)*(1.0 - tanh[(p-p_close)/k_p] )
 
 [c: compliance, r1: first resistance, r2: second resistance, q = -dV/dt: flux, p: pressure variable]
+
+_iso: values during isovolumic phases
+_ejec: values during ejection phases
+_fill: values during filling phases
+p_open: valve opening pressure
+p_close: valve closing pressure
 
 and the standard structural dynamics governing equation
 
@@ -28,7 +34,7 @@ with q being a function of the displacement vector d and f_ext additionally bein
 
 <pre>
 Maintainer: Marc Hirschvogel
-            hirschvogel@lnm.mw.tum.de
+            hirschvogel@mhpc.mw.tum.de
             http://www.mhpc.mw.tum.de
             089 - 289-10363
 </pre>
@@ -492,12 +498,16 @@ void UTILS::Windkessel::EvaluateNonlinHeartRCRWindkessel(
   double beta = params.get("scale_beta",1.0);
   double ts_size = params.get("time_step_size",1.0);
 
-	std::vector<double> r1_closed;
-	std::vector<double> r1_opened;
-	std::vector<double> r2_closed;
-	std::vector<double> r2_opened;
-	std::vector<double> c_closed;
-	std::vector<double> c_opened;
+	std::vector<double> r1_iso;
+	std::vector<double> r1_ejec;
+	std::vector<double> r1_fill;
+	std::vector<double> r2_iso;
+	std::vector<double> r2_ejec;
+	std::vector<double> r2_fill;
+	std::vector<double> c_iso;
+	std::vector<double> c_ejec;
+	std::vector<double> c_fill;
+	std::vector<double> p_close;
 	std::vector<double> p_open;
 	std::vector<double> k_p;
 
@@ -547,14 +557,18 @@ void UTILS::Windkessel::EvaluateNonlinHeartRCRWindkessel(
 
 		if (assvec1 or assvec2 or assvec3 or assvec4 or assvec6 or assvec7 or assvec8 or assvec9)
 		{
-			r1_closed.push_back(windkesselcond_[i]->GetDouble("r1_closed"));
-			r1_opened.push_back(windkesselcond_[i]->GetDouble("r1_opened"));
-			r2_closed.push_back(windkesselcond_[i]->GetDouble("r2_closed"));
-			r2_opened.push_back(windkesselcond_[i]->GetDouble("r2_opened"));
-			c_closed.push_back(windkesselcond_[i]->GetDouble("c_closed"));
-			c_opened.push_back(windkesselcond_[i]->GetDouble("c_opened"));
+			r1_iso.push_back(windkesselcond_[i]->GetDouble("r1_iso"));
+			r1_ejec.push_back(windkesselcond_[i]->GetDouble("r1_ejec"));
+			r1_fill.push_back(windkesselcond_[i]->GetDouble("r1_fill"));
+			c_iso.push_back(windkesselcond_[i]->GetDouble("c_iso"));
+			c_ejec.push_back(windkesselcond_[i]->GetDouble("c_ejec"));
+			c_fill.push_back(windkesselcond_[i]->GetDouble("c_fill"));
+			r2_iso.push_back(windkesselcond_[i]->GetDouble("r2_iso"));
+			r2_ejec.push_back(windkesselcond_[i]->GetDouble("r2_ejec"));
+			r2_fill.push_back(windkesselcond_[i]->GetDouble("r2_fill"));
 
 			p_open.push_back(windkesselcond_[i]->GetDouble("p_open"));
+			p_close.push_back(windkesselcond_[i]->GetDouble("p_close"));
 			k_p.push_back(windkesselcond_[i]->GetDouble("k_p"));
 
 			dpdtmid.push_back((*sysvec6)[i]);
@@ -562,13 +576,13 @@ void UTILS::Windkessel::EvaluateNonlinHeartRCRWindkessel(
 			dqdtmid.push_back((*sysvec8)[i]);
 			qmid.push_back((*sysvec9)[i]);
 
-			c.push_back((c_closed[i]-c_opened[i])*0.5*(1.-tanh((pmid[i]-p_open[i])/k_p[i])) + c_opened[i]);
-			r1.push_back((r1_closed[i]-r1_opened[i])*0.5*(1.-tanh((pmid[i]-p_open[i])/k_p[i])) + r1_opened[i]);
-			r2.push_back((r2_closed[i]-r2_opened[i])*0.5*(1.-tanh((pmid[i]-p_open[i])/k_p[i])) + r2_opened[i]);
+			c.push_back((c_iso[i]-c_ejec[i])*0.5*(1.-tanh((pmid[i]-p_open[i])/k_p[i])) + c_ejec[i] + (c_fill[i]-c_iso[i])*0.5*(1.-tanh((pmid[i]-p_close[i])/k_p[i])));
+			r1.push_back((r1_iso[i]-r1_ejec[i])*0.5*(1.-tanh((pmid[i]-p_open[i])/k_p[i])) + r1_ejec[i] + (r1_fill[i]-r1_iso[i])*0.5*(1.-tanh((pmid[i]-p_close[i])/k_p[i])));
+			r2.push_back((r2_iso[i]-r2_ejec[i])*0.5*(1.-tanh((pmid[i]-p_open[i])/k_p[i])) + r2_ejec[i] + (r2_fill[i]-r2_iso[i])*0.5*(1.-tanh((pmid[i]-p_close[i])/k_p[i])));
 
-			dcdp.push_back((c_closed[i]-c_opened[i])*0.5*(tanh((pmid[i]-p_open[i])/k_p[i])*tanh((pmid[i]-p_open[i])/k_p[i]) - 1.) / k_p[i]);
-			dr1dp.push_back((r1_closed[i]-r1_opened[i])*0.5*(tanh((pmid[i]-p_open[i])/k_p[i])*tanh((pmid[i]-p_open[i])/k_p[i]) - 1.) / k_p[i]);
-			dr2dp.push_back((r2_closed[i]-r2_opened[i])*0.5*(tanh((pmid[i]-p_open[i])/k_p[i])*tanh((pmid[i]-p_open[i])/k_p[i]) - 1.) / k_p[i]);
+			dcdp.push_back((c_iso[i]-c_ejec[i])*0.5*(tanh((pmid[i]-p_open[i])/k_p[i])*tanh((pmid[i]-p_open[i])/k_p[i]) - 1.) / k_p[i] + (c_fill[i]-c_iso[i])*0.5*(tanh((pmid[i]-p_close[i])/k_p[i])*tanh((pmid[i]-p_close[i])/k_p[i]) - 1.) / k_p[i]);
+			dr1dp.push_back((r1_iso[i]-r1_ejec[i])*0.5*(tanh((pmid[i]-p_open[i])/k_p[i])*tanh((pmid[i]-p_open[i])/k_p[i]) - 1.) / k_p[i] + (r1_fill[i]-r1_iso[i])*0.5*(tanh((pmid[i]-p_close[i])/k_p[i])*tanh((pmid[i]-p_close[i])/k_p[i]) - 1.) / k_p[i]);
+			dr2dp.push_back((r2_iso[i]-r2_ejec[i])*0.5*(tanh((pmid[i]-p_open[i])/k_p[i])*tanh((pmid[i]-p_open[i])/k_p[i]) - 1.) / k_p[i] + (r2_fill[i]-r2_iso[i])*0.5*(tanh((pmid[i]-p_close[i])/k_p[i])*tanh((pmid[i]-p_close[i])/k_p[i]) - 1.) / k_p[i]);
 
 			factor_p.push_back(1./r1[i]);
 			factor_dpdt.push_back(c[i]);

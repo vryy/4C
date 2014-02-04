@@ -3210,12 +3210,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Surface));
 
   AddNamedInt(nlnheartwindkesselcondition,"id");
-  AddNamedReal(nlnheartwindkesselcondition,"r1_closed");
-  AddNamedReal(nlnheartwindkesselcondition,"r1_opened");
-  AddNamedReal(nlnheartwindkesselcondition,"c_closed");
-  AddNamedReal(nlnheartwindkesselcondition,"c_opened");
-  AddNamedReal(nlnheartwindkesselcondition,"r2_closed");
-  AddNamedReal(nlnheartwindkesselcondition,"r2_opened");
+  AddNamedReal(nlnheartwindkesselcondition,"r1_iso");
+  AddNamedReal(nlnheartwindkesselcondition,"r1_ejec");
+  AddNamedReal(nlnheartwindkesselcondition,"r1_fill");
+  AddNamedReal(nlnheartwindkesselcondition,"c_iso");
+  AddNamedReal(nlnheartwindkesselcondition,"c_ejec");
+  AddNamedReal(nlnheartwindkesselcondition,"c_fill");
+  AddNamedReal(nlnheartwindkesselcondition,"r2_iso");
+  AddNamedReal(nlnheartwindkesselcondition,"r2_ejec");
+  AddNamedReal(nlnheartwindkesselcondition,"r2_fill");
+  AddNamedReal(nlnheartwindkesselcondition,"p_close");
   AddNamedReal(nlnheartwindkesselcondition,"p_open");
   AddNamedReal(nlnheartwindkesselcondition,"k_p");
   AddNamedReal(nlnheartwindkesselcondition,"p_init");

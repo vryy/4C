@@ -13,11 +13,17 @@ or a special nonlinear heart version to mimic opened and closed valves
 (2) c(p) dp/dt - c(p) r2(p) dq/dt + p/r1(p) - (1 + r2(p)/r1(p)) q(d) = 0
 
 with
-c(p) = (c_closed - c_opened)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + c_opened
-r1(p) = (r1_closed - r1_opened)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r1_opened
-r2(p) = (r2_closed - r2_opened)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r2_opened
+c(p) = (c_iso - c_ejec)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + c_ejec + (c_fill - c_iso)*(1.0 - tanh[(p-p_close)/k_p] )
+r1(p) = (r1_iso - r1_ejec)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r1_ejec + (r1_fill - r1_iso)*(1.0 - tanh[(p-p_close)/k_p] )
+r2(p) = (r2_iso - r2_ejec)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r2_ejec + (r2_fill - r2_iso)*(1.0 - tanh[(p-p_close)/k_p] )
 
 [c: compliance, r1: first resistance, r2: second resistance, q = -dV/dt: flux, p: pressure variable]
+
+_iso: values during isovolumic phases
+_ejec: values during ejection phases
+_fill: values during filling phases
+p_open: valve opening pressure
+p_close: valve closing pressure
 
 and the standard structural dynamics governing equation
 
@@ -28,7 +34,7 @@ with q being a function of the displacement vector d and f_ext additionally bein
 
 <pre>
 Maintainer: Marc Hirschvogel
-            hirschvogel@lnm.mw.tum.de
+            hirschvogel@mhpc.mw.tum.de
             http://www.mhpc.mw.tum.de
             089 - 289-10363
 </pre>
