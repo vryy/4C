@@ -39,23 +39,57 @@ namespace MAT
       /// destructor
       virtual ~ElchPhase() { ; }
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      /// provide ids of the individual mat
+      const std::vector<int>* MatIds() const {return matids_;}
+
+      /// provide access to phases by its ID
+      Teuchos::RCP<MAT::Material> MatById(const int id) const
+      {
+        if (not local_)
+        {
+          std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
+
+          if (m == mat_.end())
+          {
+            dserror("Material %d could not be found", id);
+            return Teuchos::null;
+          }
+          else
+            return m->second;
+        }
+        else
+          dserror("This is not allowed");
+
+        return Teuchos::null;
+      }
+
       /// @name material parameters
       //@{
 
-      /// valence (= charge number)
+      /// porosity
       const double epsilon_;
+
+      /// tortuosity
       const double tortuosity_;
-      /// diffusivity coefficient
-      const double conductivity_;
 
-      const double condcurvenr_;
+      /// number of materials
+      const int nummat_;
 
-      const int curvetherm_;
+      /// the list of material IDs
+      const std::vector<int>* matids_;
+
+      /// flag for individual materials or only one at global scope
+      bool local_;
 
       //@}
 
-      /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+    private:
+
+      /// map to materials (only used for local_==true)
+      std::map<int,Teuchos::RCP<MAT::Material> > mat_;
 
     };  // class ElchPhase
 
@@ -132,29 +166,61 @@ private:
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ElchPhase( *this ) ); }
 
-    /// valence (= charge number)
+    /// return constant porosity
     double Epsilon() const { return params_->epsilon_; }
+    /// return constant tortuosity
     double Tortuosity() const { return params_->tortuosity_; }
-    double Conductivity() const { return params_->conductivity_; }
-    /// valence (= charge number)
-    double CondCurveNr() const { return params_->condcurvenr_; }
 
-    /// curve representing the transference number
-    int CurveTherm() const { return params_->curvetherm_; }
+    int NumMat() const { return params_->nummat_; }
 
-    double ComputeConductivity (const double cint) const ;
-    double ComputeFirstDerivCond(const double cint) const;
+    /// material ID by Index
+    int MatID(
+      const unsigned index
+    ) const
+    {
+      if ((int)index < params_->nummat_)
+        return params_->matids_->at(index);
+      else
+      {
+        dserror("Index too large");
+        return -1;
+      }
+    }
 
-    double ComputeThermodynamicFactor (const double cint) const ;
-    double ComputeFirstDerivThermodynamicFactor(const double cint) const;
+    /// provide access to material by its ID
+    Teuchos::RCP<MAT::Material> MatById(const int id) const
+    {
+      if (params_->local_)
+      {
+        std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
+        if (m == mat_.end())
+        {
+          dserror("Material %d could not be found", id);
+          return Teuchos::null;
+        }
+        else
+          return m->second;
+      }
+      else // material is global (stored in material parameters)
+        return params_->MatById(id);
+    }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
   private:
 
+    /// setup of material map
+    void SetupMatMap();
+
+    /// clear everything
+    void Clear();
+
     /// my material parameters
     MAT::PAR::ElchPhase* params_;
+
+    /// map to materials
+    std::map<int,Teuchos::RCP<MAT::Material> > mat_;
   };
 
 }

@@ -223,7 +223,7 @@ MAT 3 MAT_scatra DIFFUSIVITY 0.0//000000000001
 MAT 4 MAT_scatra DIFFUSIVITY 0.0//000000000001
 MAT 5 MAT_scatra DIFFUSIVITY 0.0//000000000001
 MAT 6 MAT_scatra DIFFUSIVITY 0.0//000000000001
-MAT 7 MAT_matlist LOCAL No NUMMAT 6 MATIDS 1 2 3 4 5 6 //collect Concentrations
+MAT 7 MAT_matlist LOCAL No NUMMAT 6 MATIDS 1 2 3 4 5 6  END //collect Concentrations
 -------------------------------------------------------------CURVE1
 -------------------------------------------------------------CURVE2
 -------------------------------------------------------------CURVE3

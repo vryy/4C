@@ -100,14 +100,16 @@ protected:
   //! factor frt
   double frt_;
 
+  //! flag if current is used as a solution variable
   bool cursolvar_;
 
-  bool diffusioncoefbased_;
-
+  //! equation used for closing of the elch-system
   enum INPAR::ELCH::EquPot equpot_;
 
+  // mat_diffcond: flag if diffusion potential is based on diffusion coefficients or transference number
+  bool diffusioncoefbased_;
 
-  /// dilute solution theory (diffusion potential in current equation):
+  /// switch for dilute and concentrated solution theory (diffusion potential in current equation):
   ///    A          B
   ///   |--|  |----------|
   ///   z_1 + (z_2 - z_1) t_1
@@ -116,9 +118,7 @@ protected:
   ///     |________|
   ///         C
   double newmanconsta_;
-
   double newmanconstb_;
-
   double newmanconstc_;
 
 private:

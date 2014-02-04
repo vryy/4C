@@ -91,15 +91,12 @@ MAXTIME 			1.0 //hill reaches point of departure (x0=2/15) for 100 steps
 TIMESTEP                        0.01                            // Cr = 1.5
 -------------------------------------------------------ELCH CONTROL/DIFFCOND
 DIFFCOND_FORMULATION            Yes
-CHEMICALDIFF_COUPLING_TRANSP    No
-CHEMICALDIFF_COUPLING_CURR      Yes
-DIFFBASED                       No
 CURRENT_SOLUTION_VAR            No
 EQUPOT                          divi
-CONSTPARAMS                     No
-NEWMAN_CONST_A                  1.0
-NEWMAN_CONST_B                  -2.0
-NEWMAN_CONST_C                  -1.0
+MAT_NEWMAN_CONST_A              1.0
+MAT_NEWMAN_CONST_B              -2.0
+MAT_NEWMAN_CONST_C              -1.0
+MAT_DIFFCOND_DIFFBASED          No
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC
@@ -138,9 +135,9 @@ ML_DAMPFINE                     0.67                            // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_elchmat CURRENT No NUMSPEC 1 SPECIDS 2 NUMPHASE 1 PHASEIDS 3
-MAT 2 MAT_newman VALENCE 1.0 CURVE_DIFF 1 CURVE_TRANS 2
-MAT 3 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 CONDUCTIVITY 1.0 NR 3
+MAT 1 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
+MAT 2 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 3 END
+MAT 3 MAT_newman VALENCE 1.0 DIFFCOEF 1 TRANSNR 2 THERMFAC 0 COND 3
 ----------------------------------------------------------------------CURVE1
 // diffusion coefficient
 CURVE1 on EXPR FUNC (1.0*0.0005*0.001-(-1.0)*0.0005*0.001)/(1.0*0.0005-(-1.0)*0.001) t1 0.0 t2 1000

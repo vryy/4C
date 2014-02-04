@@ -306,46 +306,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
   {
     const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
 
-    const int numspec = actmat->NumSpec();
-    const int numphase = actmat->NumPhase();
-    const bool current = actmat->Current();
-
-    // check if valid materials are assigned to elchmat
-    for(int ispec=0;ispec<numspec;++ispec)
-    {
-      switch (actmat->SpecById(actmat->SpecID(ispec))->MaterialType())
-      {
-      case INPAR::MAT::m_diffcond:
-      case INPAR::MAT::m_newman:
-        break;
-      default:
-        dserror("Materials Mat_diffcond and Mat_newman are the only electrolyte materials \n"
-                      "which can be used within the material list Mat_elchmat!");
-        break;
-      }
-    }
-
-    for(int iphase=0;iphase<numphase;++iphase)
-    {
-      switch (actmat->PhaseById(actmat->PhaseID(iphase))->MaterialType())
-      {
-        case INPAR::MAT::m_elchphase:
-          break;
-        default:
-          dserror("Material Mat_elchphase is so far the only phase material \n"
-                "which can be used within the material list Mat_elchmat!");
-          break;
-      }
-    }
-
-    if (current==true)
-        numdofpernode_ = numspec+DRT::Problem::Instance()->NDim()+numphase;
-    else
-        numdofpernode_ = numspec+numphase;
-
-    if(numphase !=1 )
-      dserror("So far only a single phase is allowed");
-
+    numdofpernode_ = actmat->NumDOF();
   }
   else
     dserror("Transport element got unsupported material type %d", mat->MaterialType());

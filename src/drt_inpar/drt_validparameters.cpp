@@ -4926,15 +4926,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     BoolParameter("DIFFCOND_FORMULATION","No",
           "Activation of diffusion-conduction formulation",&elchdiffcondcontrol);
 
-    BoolParameter("CHEMICALDIFF_COUPLING_TRANSP","Yes",
-        "Include coupling terms of chemical diffusion for tranport equation",&elchdiffcondcontrol);
-    BoolParameter("CHEMICALDIFF_COUPLING_CURR","Yes",
-        "Include coupling terms of chemical diffusion for current equation",&elchdiffcondcontrol);
-    BoolParameter("DIFFBASED","Yes",
-        "Coupling terms of chemical diffusion for current equation are based on t and kappa",&elchdiffcondcontrol);
-
     BoolParameter("CURRENT_SOLUTION_VAR","No","Current as a solution variable",&elchdiffcondcontrol);
-    BoolParameter("CONSTPARAMS","Yes","Constant physical parameters",&elchdiffcondcontrol);
 
     setStringToIntegralParameter<int>("EQUPOT",
                                  "ENC",
@@ -4942,13 +4934,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                   tuple<std::string>(
                                     "ENC",
                                     "divi"),
-                                  tuple<std::string>(
-                                    "ENC",
-                                    "divi"),
                                    tuple<int>(
                                      INPAR::ELCH::equpot_enc,
                                      INPAR::ELCH::equpot_divi),
                                     &elchdiffcondcontrol);
+
+    BoolParameter("MAT_DIFFCOND_DIFFBASED","Yes",
+        "Coupling terms of chemical diffusion for current equation are based on t and kappa",&elchdiffcondcontrol);
 
     /// dilute solution theory (diffusion potential in current equation):
     ///    A          B
@@ -4959,9 +4951,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     ///     |________|
     ///         C
     //
-    DoubleParameter("NEWMAN_CONST_A",1.0,"Constant A for the Newman model(term for the concentration overpotential)",&elchdiffcondcontrol);
-    DoubleParameter("NEWMAN_CONST_B",1.0,"Constant B for the Newman model(term for the concentration overpotential)",&elchdiffcondcontrol);
-    DoubleParameter("NEWMAN_CONST_C",1.0,"Constant C for the Newman model(term for the concentration overpotential)",&elchdiffcondcontrol);
+    // default: concentrated solution theory according to Newman
+    DoubleParameter("MAT_NEWMAN_CONST_A",2.0,"Constant A for the Newman model(term for the concentration overpotential)",&elchdiffcondcontrol);
+    DoubleParameter("MAT_NEWMAN_CONST_B",-2.0,"Constant B for the Newman model(term for the concentration overpotential)",&elchdiffcondcontrol);
+    DoubleParameter("MAT_NEWMAN_CONST_C",-1.0,"Constant C for the Newman model(term for the concentration overpotential)",&elchdiffcondcontrol);
 
     /*----------------------------------------------------------------------*/
     Teuchos::ParameterList& levelsetcontrol = list->sublist(

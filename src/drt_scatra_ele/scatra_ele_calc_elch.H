@@ -83,6 +83,13 @@ private:
     Epetra_SerialDenseVector&             subgrdiff  //!< subgrid-diff.-scaling vector
   );
 
+  void CorrectionForFluxAccrosDC(
+    DRT::Discretization&        discretization,
+    const std::vector<int>&     lm,
+    Epetra_SerialDenseMatrix&   emat,
+    Epetra_SerialDenseVector&   erhs
+  );
+
   /*========================================================================*/
   //! @name material and related and related functions
   /*========================================================================*/
@@ -114,39 +121,26 @@ private:
   );
 
   //! material ScaTra
-  virtual void MatNewman(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-    const int                               k,        //!< id of current scalar
-    double&                                 densn,    //!< density at t_(n)
-    double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-    double&                                 densam,   //!< density at t_(n+alpha_M)
-    Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-    Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
-    double&                                 visc,      //!< fluid viscosity
-    const int                               iquad=-1   //!< id of current gauss point (default = -1)
-  );
-
-  //! material ScaTra
-  virtual void MatDiffCond(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-    const int                               k,        //!< id of current scalar
-    double&                                 densn,    //!< density at t_(n)
-    double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-    double&                                 densam,   //!< density at t_(n+alpha_M)
-    Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-    Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
-    double&                                 visc,      //!< fluid viscosity
-    const int                               iquad=-1   //!< id of current gauss point (default = -1)
-  );
-
-  //! material ScaTra
   virtual void MatPhase(
     const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
     const int                               iphase,        //!< id of current scalar
     double&                                 densn,    //!< density at t_(n)
     double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
     double&                                 densam,   //!< density at t_(n+alpha_M)
-    Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
+    Teuchos::RCP<ScaTraEleDiffManagerElch>  diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
+    Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
+    double&                                 visc,      //!< fluid viscosity
+    const int                               iquad=-1   //!< id of current gauss point (default = -1)
+  );
+
+  //! material ScaTra
+  virtual void MatNewman(
+    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+    const int                               k,        //!< id of current scalar
+    double&                                 densn,    //!< density at t_(n)
+    double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+    double&                                 densam,   //!< density at t_(n+alpha_M)
+    Teuchos::RCP<ScaTraEleDiffManagerElch>  diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
     Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
     double&                                 visc,      //!< fluid viscosity
     const int                               iquad=-1   //!< id of current gauss point (default = -1)
@@ -158,7 +152,7 @@ private:
     double&                                 densn,    //!< density at t_(n)
     double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
     double&                                 densam,   //!< density at t_(n+alpha_M)
-    Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
+    Teuchos::RCP<ScaTraEleDiffManagerElch>  diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
     Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
     double&                                 visc,     //!< fluid viscosity
     const int                               iquad     //!< id of current gauss point
@@ -173,13 +167,17 @@ private:
   //! @name additional service routines
   /*========================================================================*/
 
+  void CheckElchElementParameter(
+    DRT::ELEMENTS::Transport*  ele
+    );
+
   void CalculateFlux(
-  LINALG::Matrix<3,my::nen_>&         flux,
-  const DRT::Element*             ele,
-  INPAR::ELCH::ElchType           elchtype,
-  const INPAR::SCATRA::FluxType   fluxtype,
-  const int                       k
-  );
+    LINALG::Matrix<3,my::nen_>&     flux,
+    const DRT::Element*             ele,
+    INPAR::ELCH::ElchType           elchtype,
+    const INPAR::SCATRA::FluxType   fluxtype,
+    const int                       k
+    );
 
   void CalErrorComparedToAnalytSolution(
     const DRT::Element*                   ele,
@@ -202,6 +200,22 @@ private:
   );
 
   /*========================================================================*/
+  //! @name flags and enums
+  /*========================================================================*/
+
+  //! pointer to parameter class elch
+  DRT::ELEMENTS::ScaTraEleParameterElch* elchpara_;
+
+  //! flag for used element formulation (material based)
+  INPAR::ELCH::DiffCondMat diffcondmat_;
+
+  //! flag if current is used as a solution variable
+  bool cursolvar_;
+
+  // flag if elch system is closed by ENC or div i
+  bool equpot_;
+
+  /*========================================================================*/
   //! @name scalar degrees of freedom and related
   /*========================================================================*/
 
@@ -211,31 +225,17 @@ private:
   //! nodal current density values at t_(n+1) or t_(n+alpha_F)
   LINALG::Matrix<my::nsd_,my::nen_> ecurnp_;
 
-  DRT::ELEMENTS::ScaTraEleParameterElch* elchpara_;
-
-  Teuchos::RCP<ScaTraEleDiffManagerElch> dme_;
-
-  INPAR::ELCH::DiffCondMat diffcondmat_;
-
-  bool cursolvar_;
-
-  enum INPAR::ELCH::EquPot equpot_;
-
+  //TODO: ELCH: cleaning
   //! flag for migration velocity in the stabilization operator (ELCH)
   bool migrationstab_;
   //! flag for migration velocity in formula for stabilization parameter (ELCH)
   bool migrationintau_;
   //! flag for migration velocity in residual of strong form (ELCH)
   bool migrationinresidual_;
-
-  //TODO: BACI_ELE_CLEANING
-
   //! transference numbers
   double transelim_;
-
   std::vector<double> diffuselimderiv_;
   double diffuselim_;
-
   std::vector<double> eps_;
   std::vector<double> tort_;
   std::vector<double> epstort_;
@@ -345,6 +345,47 @@ class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
 
     //! Access routine for derivative of thermodynamic factor with respect to concentrations
     const double GetDerivThermFac(const int k){return derivthermfac_[k];};
+
+    void CalcConductivity(const int numscal, const double ffrt, const std::vector<double>& conint)
+    {
+      double cond = 0.0;
+      for(int ispec = 0;ispec<numscal;++ispec)
+      {
+        // conductivity
+        cond += ffrt*valence_[ispec]*valence_[ispec]*diff_[ispec]*conint[ispec];
+        // derivation of conductivity wrt concentrations
+        derivcond_[ispec]=ffrt*valence_[ispec]*valence_[ispec]*diff_[ispec];
+      }
+
+      cond_=cond;
+
+      return;
+    };
+
+    void CalcTransNum(const int numscal, const std::vector<double>& conint)
+    {
+      // conductivity without ffrt
+      double sum=0.0;
+      for(int k=0; k<numscal;++k)
+      {
+        sum += valence_[k]*valence_[k]*diff_[k]*conint[k];
+      }
+      double denomin = sum*sum;
+
+      for(int k = 0;k<numscal;++k)
+      {
+        transnum_[k]=valence_[k]*valence_[k]*diff_[k]*conint[k]/sum;
+
+        for(int iscal=0; iscal<numscal;++iscal)
+        {
+          if(k==iscal)
+            (derivtransnum_[k])[iscal]=(valence_[k]*valence_[k]*diff_[k]*(sum-valence_[k]*valence_[k]*diff_[k]*conint[k]))/denomin;
+          else
+            (derivtransnum_[k])[iscal]=(-valence_[k]*valence_[k]*diff_[k]*conint[k]*valence_[iscal]*valence_[iscal]*diff_[iscal])/denomin;
+        }
+      }
+      return;
+    };
 
     //! Output of transport parameter (to screen)
     void OutputTransportParams(const int numscal)

@@ -46,16 +46,16 @@ namespace INPAR
   /// type of scalar transport problem
   enum EquPot
   {
-    equpot_undefined,
+    equpot_divi,
     equpot_enc,
-    equpot_divi
+    equpot_undefined
   };
 
   enum DiffCondMat
   {
-    diffcondmat_undefined,
-    diffcondmat_diffcond,
-    diffcondmat_newman
+    diffcondmat_newman,
+    diffcondmat_ion,
+    diffcondmat_undefined
   };
 
   // faraday constant (general definition)

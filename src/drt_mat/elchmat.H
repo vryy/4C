@@ -44,30 +44,6 @@ namespace MAT
       /// @name material parameters
       //@{
 
-      /// provide ids of the individual species
-      const std::vector<int>* SpecIds() const {return specids_;}
-
-      /// provide access to species by its ID
-      Teuchos::RCP<MAT::Material> SpecById(const int id) const
-      {
-        if (not local_)
-        {
-          std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
-
-          if (m == mat_.end())
-          {
-            dserror("Material %d could not be found", id);
-            return Teuchos::null;
-          }
-          else
-            return m->second;
-        }
-        else
-          dserror("This is not allowed");
-
-        return Teuchos::null;
-      }
-
       /// provide ids of the individual phase
       const std::vector<int>* PhaseIds() const {return phaseids_;}
 
@@ -92,13 +68,11 @@ namespace MAT
         return Teuchos::null;
       }
 
-      const bool current_;
+      /// number of degrees of freedom
+      const int numdof_;
 
-      /// length of species list
-      const int numspec_;
-
-      /// the list of species IDs
-      const std::vector<int>* specids_;
+      /// number of scalar
+      const int numscal_;
 
       /// length of phase list
       const int numphase_;
@@ -191,42 +165,11 @@ private:
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ElchMat( *this ) ); }
 
-    bool Current() const {return params_->current_;}
+    // return number of Dof used for this problem type
+    int NumDOF() const {return params_->numdof_;}
 
-    /// number of materials
-    int NumSpec() const { return params_->numspec_; }
-
-    /// material ID by Index
-    int SpecID(
-      const unsigned index
-    ) const
-    {
-      if ((int)index < params_->numspec_)
-        return params_->specids_->at(index);
-      else
-      {
-        dserror("Index too large");
-        return -1;
-      }
-    }
-
-    /// provide access to material by its ID
-    Teuchos::RCP<MAT::Material> SpecById(const int id) const
-    {
-      if (params_->local_)
-      {
-      std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
-      if (m == mat_.end())
-      {
-        dserror("Material %d could not be found", id);
-        return Teuchos::null;
-      }
-      else
-        return m->second;
-      }
-      else // material is global (stored in material parameters)
-        return params_->SpecById(id);
-     }
+    // return number of scalars used for this problem type
+    int NumScal() const {return params_->numscal_;}
 
     /// number of materials
     int NumPhase() const { return params_->numphase_; }

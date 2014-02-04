@@ -58,11 +58,11 @@ DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch()
   nernstplanck_(true),
   frt_(0.0),
   cursolvar_(false),
-  diffusioncoefbased_(true),
   equpot_(INPAR::ELCH::equpot_undefined),
-  newmanconsta_(0.0),
-  newmanconstb_(0.0),
-  newmanconstc_(1.0)
+  diffusioncoefbased_(true),
+  newmanconsta_(2.0),
+  newmanconstb_(-2.0),
+  newmanconstc_(-1.0)
 {
   return;
 }
@@ -107,30 +107,27 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetElementElchDiffCondScaTraParamete
   if(nernstplanck_ == false)
   {
     Teuchos::ParameterList& diffcondparams = params.sublist("DIFFCOND");
+
+    // flag if current is used as a solution variable
     cursolvar_ = DRT::INPUT::IntegralValue<int>(diffcondparams,"CURRENT_SOLUTION_VAR");
 
-    diffusioncoefbased_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams,"DIFFBASED");
-
-    if(DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams,"CONSTPARAMS") == true)
-      dserror("This option is not supported anymore!!");
-
+    //! equation used for closing of the elch-system
     equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams,"EQUPOT");
 
+    // mat_diffcond: flag if diffusion potential is based on diffusion coefficients or transference number
+    diffusioncoefbased_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams,"MAT_DIFFCOND_DIFFBASED");
 
-    /// dilute solution theory (diffusion potential in current equation):
-    ///    A          B
-    ///   |--|  |----------|
-    ///   z_1 + (z_2 - z_1) t_1
-    /// ------------------------ (RT/F kappa 1/c_k grad c_k)
-    ///      z_1 z_2
-    ///     |________|
-    ///         C
-    newmanconsta_ = diffcondparams.get<double>("NEWMAN_CONST_A");
-    newmanconstb_ = diffcondparams.get<double>("NEWMAN_CONST_B");
-    newmanconstc_ = diffcondparams.get<double>("NEWMAN_CONST_C");
-
-    //if(nernstplanck_ != false)
-    //  dserror("Somehow you are not in the Nernst-Planck framework! How did you come here?");
+    // switch for dilute and concentrated solution theory (diffusion potential in current equation):
+    //    A          B
+    //   |--|  |----------|
+    //   z_1 + (z_2 - z_1) t_1
+    // ------------------------ (RT/F kappa 1/c_k grad c_k)
+    //      z_1 z_2
+    //     |________|
+    //         C
+    newmanconsta_ = diffcondparams.get<double>("MAT_NEWMAN_CONST_A");
+    newmanconstb_ = diffcondparams.get<double>("MAT_NEWMAN_CONST_B");
+    newmanconstc_ = diffcondparams.get<double>("MAT_NEWMAN_CONST_C");
 
     // safety checks - no stabilization for diffusion-conduction formulation
     if(stabtype_ !=INPAR::SCATRA::stabtype_no_stabilization)

@@ -371,29 +371,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // material parameters for ion species in electrolyte solution (ehrl 07/12)
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_diffcond",
-                                            "material parameters for ion species in electrolyte solution",
-                                            INPAR::MAT::m_diffcond));
-
-    AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
-    AddNamedReal(m,"VALENCE","valence (= charge number)");
-    AddNamedReal(m,"TRANSFERENCE","transference number");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // material parameters for ion species in electrolyte solution (ehrl 07/12)
-  {
-    Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_newman",
                                             "material parameters for ion species in electrolyte solution",
                                             INPAR::MAT::m_newman));
 
     AddNamedReal(m,"VALENCE","valence (= charge number)");
-    AddNamedInt(m,"CURVE_DIFF","curve number for kinematic diffusivity");
-    AddNamedInt(m,"CURVE_TRANS","curve number for transference number");
-    AddNamedBool(m,"CURSOLVAR","bool defining if current is a solution variable",false,true);
+    AddNamedInt(m,"DIFFCOEF","curve number for diffusion coefficient");
+    AddNamedInt(m,"TRANSNR","curve number for transference number");
+    AddNamedInt(m,"THERMFAC","curve number for thermodynamic factor");
+    AddNamedInt(m,"COND","curve number for conductivity");
+    // optional parameter for implemented concentration depending function
+    AddNamedInt(m,"DIFF_PARA_NUM","number of parameter diffusion coefficient",0,true);
+    AddNamedRealVector(m,"DIFF_PARA","parameter for diffusion coefficient","DIFF_PARA_NUM",0.0,true);
+    AddNamedInt(m,"TRANS_PARA_NUM","number of parameter for the diffusion coefficient",0,true);
+    AddNamedRealVector(m,"TRANS_PARA","parameter transference number","TRANS_PARA_NUM",0.0,true);
+    AddNamedInt(m,"THERM_PARA_NUM","number of parameter thermdoynamic factor",0,true);
+    AddNamedRealVector(m,"THERM_PARA","parameter for thermodynamic factor","THERM_PARA_NUM",0.0,true);
+    AddNamedInt(m,"COND_PARA_NUM","number of parameter conductivity",0,true);
+    AddNamedRealVector(m,"COND_PARA","parameter for conductivity","COND_PARA_NUM",0.0,true);
+    AddNamedSeparator(m,"END","indicating end of line",true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -410,6 +406,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     //AddNamedInt(m,"LOCAL","individual materials allocated per element or only at global scope");
     AddNamedInt(m,"NUMMAT","number of materials in list");
     AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
+    AddNamedSeparator(m,"END","indicating end of line");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -422,11 +419,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "specific list/collection of species and phases for elch applications",
                                             INPAR::MAT::m_elchmat));
 
-    AddNamedBool(m,"CURRENT","current flow as a solution variable");
-    AddNamedInt(m,"NUMSPEC","number of ionic species in electrolyte");
-    AddNamedIntVector(m,"SPECIDS","the list material IDs","NUMSPEC");
+    AddNamedInt(m,"NUMDOF","number of dof's per node");
+    AddNamedInt(m,"NUMSCAL","number of transported scalars per node");
     AddNamedInt(m,"NUMPHASE","number of phases in electrolyte");
     AddNamedIntVector(m,"PHASEIDS","the list phasel IDs","NUMPHASE");
+    AddNamedSeparator(m,"END","indicating end of line");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -441,9 +438,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"EPSILON","porousity of the phase");
     AddNamedReal(m,"TORTUOSITY","porousity of the phase");
-    AddNamedReal(m,"CONDUCTIVITY","conductivity");
-    AddNamedInt(m,"NR","conductivity depending on concentration: number of curve",0,true);
-    AddNamedInt(m,"CURVE_THERM","thermodynamic factor depending on concentration: number of curve",0,true);
+    AddNamedInt(m,"NUMMAT","number of materials in electrolyte");
+    AddNamedIntVector(m,"MATIDS","the list phasel IDs","NUMMAT");
+    AddNamedSeparator(m,"END","indicating end of line");
 
     AppendMaterialDefinition(matlist,m);
   }

@@ -138,8 +138,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     {
       const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(material.get());
 
-      if (actmat->Current())
-        numscal -= DRT::UTILS::getDimension(this->Shape());
+      numscal = actmat->NumScal();
     }
   }
 
@@ -186,6 +185,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
               );
     }
     break;
+    case SCATRA::check_scatra_element_parameter:
     case SCATRA::calc_initial_time_deriv:
     case SCATRA::integrate_shape_functions:
     case SCATRA::calc_flux_domain:

@@ -27,10 +27,106 @@ MAT::PAR::Newman::Newman(
   )
 : Parameter(matdata),
   valence_(matdata->GetDouble("VALENCE")),
-  curvediff_(matdata->GetInt("CURVE_DIFF")),
-  curvetrans_(matdata->GetInt("CURVE_TRANS")),
-  cursolvar_((matdata->GetInt("CURSOLVAR")))
+  diffcoefcurve_(matdata->GetInt("DIFFCOEF")),
+  transnrcurve_(matdata->GetInt("TRANSNR")),
+  thermfaccurve_(matdata->GetInt("THERMFAC")),
+  condcurve_(matdata->GetInt("COND")),
+  diffcoefparanum_(matdata->GetInt("DIFF_PARA_NUM")),
+  diffcoefpara_(matdata->Get<std::vector<double> >("DIFF_PARA")),
+  transnrparanum_(matdata->GetInt("TRANS_PARA_NUM")),
+  transnrpara_(matdata->Get<std::vector<double> >("TRANS_PARA")),
+  thermfacparanum_(matdata->GetInt("THERM_PARA_NUM")),
+  thermfacpara_(matdata->Get<std::vector<double> >("THERM_PARA")),
+  condparanum_(matdata->GetInt("COND_PARA_NUM")),
+  condpara_(matdata->Get<std::vector<double> >("COND_PARA"))
 {
+  if (diffcoefparanum_ != (int)diffcoefpara_->size())
+     dserror("number of materials %d does not fit to size of material vector %d", diffcoefparanum_, diffcoefpara_->size());
+  if (transnrparanum_ != (int)transnrpara_->size())
+     dserror("number of materials %d does not fit to size of material vector %d", transnrparanum_, transnrpara_->size());
+  if (thermfacparanum_ != (int)thermfacpara_->size())
+     dserror("number of materials %d does not fit to size of material vector %d", thermfacparanum_, thermfacpara_->size());
+  if (condparanum_ != (int)condpara_->size())
+     dserror("number of materials %d does not fit to size of material vector %d", condparanum_, condpara_->size());
+
+  //check if number of provided parameter is valid for a the chosen predefined function
+  CheckProvidedParams(diffcoefcurve_,diffcoefpara_->size());
+  CheckProvidedParams(transnrcurve_,transnrpara_->size());
+  CheckProvidedParams(thermfaccurve_,thermfacpara_->size());
+  CheckProvidedParams(condcurve_,condpara_->size());
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::PAR::Newman::CheckProvidedParams(
+  const int           functnr,
+  const unsigned int  numfunctparams
+)
+{
+  bool error = false;
+  std::string functionname;
+  // needed parameter or a the predefined function
+  unsigned int paraforfunction = 0;
+  if(functnr<0)
+  {
+    switch (functnr)
+    {
+      case -1:
+      {
+        //constant value: functval=(*functparams)[0];
+        functionname = "'constant value'";
+        paraforfunction=1;
+        if(numfunctparams != paraforfunction)
+          error=true;
+        break;
+      }
+      case -2:
+      {
+        // linear function: functval=(*functparams)[0]+(*functparams)[1]*cint;
+        functionname = "'linear function'";
+        paraforfunction=2;
+        if(numfunctparams != paraforfunction)
+          error=true;
+        break;
+      }
+      case -3:
+      {
+        // quadratic function: functval=(*functparams)[0]+(*functparams)[1]*cint+(*functparams)[2]*cint*cint;
+        functionname = "'quadratic function'";
+        paraforfunction=3;
+        if(numfunctparams != paraforfunction)
+          error=true;
+        break;
+      }
+      case -4:
+      {
+        // power function: functval=(*functparams)[0]*pow(cint,(*functparams)[1]);
+        functionname = "'power function'";
+        paraforfunction=2;
+        if(numfunctparams != paraforfunction)
+          error=true;
+        break;
+      }
+      case -5:
+      {
+        // function 1 for conductivity;
+        // const double nenner=(1.0+(*functparams)[2]*cint*cint-(*functparams)[3]*cint*cint*cint*cint);
+        // functval=(*functparams)[0]*((*functparams)[1]*cint/nenner)+0.01;
+        functionname = "'function 1 for conductivity'";
+        paraforfunction=4;
+        if(numfunctparams != paraforfunction)
+          error=true;
+        break;
+      }
+      default: dserror("Curve number %i is not implemented",functnr); break;
+    }
+
+    if(error==true)
+      dserror("number of %i provided parameter does not match the number of %i parameter "
+              "which are needed for the predefined function with the number %i (%s)!!",numfunctparams,paraforfunction,functnr,functionname.c_str());
+  }
+
+  return;
 }
 
 
@@ -117,7 +213,14 @@ void MAT::Newman::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 double MAT::Newman::ComputeDiffusionCoefficient(const double cint) const
 {
-  const double diff = DRT::Problem::Instance()->Curve(CurveDiff()-1).f(cint);
+  double diff=0.0;
+
+  if(DiffCoefCurve()<0)
+    diff = EvalFunctValue(DiffCoefCurve(),cint,DiffCoefParams());
+  else if(DiffCoefCurve()==0)
+    diff = EvalFunctValue(-1,cint,DiffCoefParams());
+  else
+    diff = DRT::Problem::Instance()->Curve(DiffCoefCurve()-1).f(cint);
 
   return diff;
 }
@@ -126,7 +229,14 @@ double MAT::Newman::ComputeDiffusionCoefficient(const double cint) const
 /*----------------------------------------------------------------------*/
 double MAT::Newman::ComputeFirstDerivDiffCoeff(const double cint) const
 {
-  double firstderiv = (DRT::Problem::Instance()->Curve(CurveDiff()-1).FctDer(cint,1))[1];
+  double firstderiv=0.0;
+
+  if(DiffCoefCurve()<0)
+    firstderiv = EvalFirstDerivFunctValue(DiffCoefCurve(),cint,DiffCoefParams());
+  else if(DiffCoefCurve()==0)
+    firstderiv = EvalFirstDerivFunctValue(-1,cint,DiffCoefParams());
+  else
+    firstderiv = (DRT::Problem::Instance()->Curve(DiffCoefCurve()-1).FctDer(cint,1))[1];
 
   return firstderiv;
 }
@@ -135,7 +245,13 @@ double MAT::Newman::ComputeFirstDerivDiffCoeff(const double cint) const
 /*----------------------------------------------------------------------*/
 double MAT::Newman::ComputeTransferenceNumber(const double cint) const
 {
-  const double trans = DRT::Problem::Instance()->Curve(CurveTrans()-1).f(cint);
+  double trans=0.0;
+
+  if(TransNrCurve()<0)
+    trans = EvalFunctValue(TransNrCurve(),cint,TransNrParams());
+  else if(TransNrCurve()==0)
+    trans = EvalFunctValue(-1,cint,TransNrParams());
+  else trans = DRT::Problem::Instance()->Curve(TransNrCurve()-1).f(cint);
 
   return trans;
 }
@@ -144,8 +260,137 @@ double MAT::Newman::ComputeTransferenceNumber(const double cint) const
 /*----------------------------------------------------------------------*/
 double MAT::Newman::ComputeFirstDerivTrans(const double cint) const
 {
-  double firstderiv = (DRT::Problem::Instance()->Curve(CurveTrans()-1).FctDer(cint,1))[1];
+  double firstderiv=0.0;
+
+  if(TransNrCurve()<0)
+    firstderiv = EvalFirstDerivFunctValue(TransNrCurve(),cint,TransNrParams());
+  else if(TransNrCurve()==0)
+    firstderiv = EvalFirstDerivFunctValue(-1,cint,TransNrParams());
+  else firstderiv=(DRT::Problem::Instance()->Curve(TransNrCurve()-1).FctDer(cint,1))[1];
 
   return firstderiv;
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::Newman::ComputeThermFac(const double cint) const
+{
+  double therm=0.0;
+
+  if(ThermFacCurve()<0)
+    therm = EvalFunctValue(ThermFacCurve(),cint,ThermFacParams());
+  else if(ThermFacCurve()==0)
+    // thermodynamic factor has to be one if not defined
+    therm = 1.0;
+  else therm = DRT::Problem::Instance()->Curve(ThermFacCurve()-1).f(cint);
+
+  return therm;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::Newman::ComputeFirstDerivThermFac(const double cint) const
+{
+  double firstderiv=0.0;
+
+  if(ThermFacCurve()<0)
+    firstderiv = EvalFirstDerivFunctValue(ThermFacCurve(),cint,ThermFacParams());
+  else if(ThermFacCurve()==0)
+    // thermodynamic factor has to be one if not defined
+    // -> first derivative = 0.0
+    firstderiv = 0.0;
+  else  firstderiv = (DRT::Problem::Instance()->Curve(ThermFacCurve()-1).FctDer(cint,1))[1];
+
+  return firstderiv;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::Newman::ComputeConductivity(const double cint) const
+{
+  double cond = 0.0;
+
+  if(CondCurve()<0)
+    cond = EvalFunctValue(CondCurve(),cint,CondParams());
+  else if(CondCurve()==0)
+    cond = EvalFunctValue(-1,cint,CondParams());
+  else cond = DRT::Problem::Instance()->Curve(CondCurve()-1).f(cint);
+
+
+  return cond;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::Newman::ComputeFirstDerivCond(const double cint) const
+{
+  double firstderiv=0.0;
+
+  if(CondCurve()<0)
+    firstderiv = EvalFirstDerivFunctValue(CondCurve(),cint,CondParams());
+  else if(CondCurve()==0)
+    firstderiv = EvalFirstDerivFunctValue(-1,cint,CondParams());
+  else firstderiv = (DRT::Problem::Instance()->Curve(CondCurve()-1).FctDer(cint,1))[1];
+
+  return firstderiv;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::Newman::EvalFunctValue(
+  const int             functnr,
+  const double          cint,
+  const std::vector<double>*   functparams) const
+{
+  double functval=0.0;
+
+  switch (functnr)
+  {
+    case -1: functval=(*functparams)[0]; break;
+    case -2: functval=(*functparams)[0]+(*functparams)[1]*cint; break;
+    case -3: functval=(*functparams)[0]+(*functparams)[1]*cint+(*functparams)[2]*cint*cint; break;
+    case -4: functval=(*functparams)[0]*pow(cint,(*functparams)[1]); break;
+    case -5:
+    {
+      const double nenner=(1.0+(*functparams)[2]*cint*cint-(*functparams)[3]*cint*cint*cint*cint);
+      functval=(*functparams)[0]*((*functparams)[1]*cint/nenner)+0.01;
+      break;
+    }
+    default: dserror("Curve number %i is not implemented",functnr); break;
+  }
+
+  return functval;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::Newman::EvalFirstDerivFunctValue(
+    const int                   functnr,
+    const double                cint,
+    const std::vector<double>*  functparams) const
+{
+  double firstderivfunctval=0.0;
+
+  switch (functnr)
+  {
+    case -1: firstderivfunctval=0.0; break;
+    case -2: firstderivfunctval=(*functparams)[1]; break;
+    case -3: firstderivfunctval=(*functparams)[1]+2*(*functparams)[2]*cint; break;
+    case -4: firstderivfunctval=(*functparams)[0]*(*functparams)[1]*pow(cint,(*functparams)[1]-1.0); break;
+    case -5:
+    {
+      const double nenner=(1.0+(*functparams)[2]*cint*cint-(*functparams)[3]*cint*cint*cint*cint);
+      const double nennernenner = nenner*nenner;
+      firstderivfunctval=(*functparams)[0]*(((*functparams)[1]*nenner-(*functparams)[1]*cint*(2*(*functparams)[2]*cint-4*(*functparams)[3]*cint*cint*cint))/nennernenner);
+      break;
+    }
+    default: dserror("Curve number %i is not implemented",functnr); break;
+  }
+
+  return firstderivfunctval;
+}
+
+
 

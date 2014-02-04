@@ -110,7 +110,7 @@ MAT 3 MAT_ion DIFFUSIVITY 7.99e-4 VALENCE -3.0 // Fe(CN)_6^-3
 MAT 4 MAT_ion DIFFUSIVITY 7.33e-4 VALENCE -4.0 // Fe(CN)_6^-4
 MAT 5 MAT_ion DIFFUSIVITY 5e-3 VALENCE 1.0 //H+
 MAT 6 MAT_ion DIFFUSIVITY 1e-3 VALENCE -1.0 //HSO4-
-MAT 7 MAT_matlist LOCAL No NUMMAT 6 MATIDS 1 2 3 4 5 6
+MAT 7 MAT_matlist LOCAL No NUMMAT 6 MATIDS 1 2 3 4 5 6 END
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC -1*(1.1-t) t1 0.0 t2 1.6 //start potential=1.0; end potential=-0.5
 ----------------------------------------------------------------------CURVE2

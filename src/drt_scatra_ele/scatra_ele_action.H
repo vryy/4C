@@ -40,6 +40,7 @@ enum Action {
   get_material_ionic_currents,     // get material ionic currents (for postprocessing for example),
   integrate_shape_functions,       // integrate_shape_functions,
   time_update_material,            // time update for materials
+  check_scatra_element_parameter,  // set parameter defined in every single element
   calc_initial_time_deriv,         // calc_initial_time_deriv,
   calc_flux_domain,                // calc_condif_flux,
   calc_mean_scalars,               // calc_mean_scalars,

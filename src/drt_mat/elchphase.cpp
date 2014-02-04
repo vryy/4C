@@ -26,10 +26,25 @@ MAT::PAR::ElchPhase::ElchPhase(
 : Parameter(matdata),
   epsilon_(matdata->GetDouble("EPSILON")),
   tortuosity_(matdata->GetDouble("TORTUOSITY")),
-  conductivity_(matdata->GetDouble("CONDUCTIVITY")),
-  condcurvenr_(matdata->GetInt("NR")),
-  curvetherm_(matdata->GetInt("CURVE_THERM"))
+  nummat_(matdata->GetInt("NUMMAT")),
+  matids_(matdata->Get<std::vector<int> >("MATIDS")),
+  local_(false)
 {
+  if (nummat_ != (int)matids_->size())
+      dserror("number of phases %d does not fit to size of phase vector %d", nummat_, matids_->size());
+
+  if (not local_)
+  {
+    // make sure the referenced materials in material list have quick access parameters
+    std::vector<int>::const_iterator n;
+    // phase
+    for (n=matids_->begin(); n!=matids_->end(); ++n)
+    {
+      const int matid = *n;
+      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
+      mat_.insert(std::pair<int,Teuchos::RCP<MAT::Material> >(matid,mat));
+    }
+  }
 }
 
 
@@ -61,8 +76,45 @@ MAT::ElchPhase::ElchPhase()
 MAT::ElchPhase::ElchPhase(MAT::PAR::ElchPhase* params)
   : params_(params)
 {
+  // setup of material map
+  if (params_->local_)
+  {
+    SetupMatMap();
+  }
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ElchPhase::SetupMatMap()
+{
+  // safety first
+  mat_.clear();
+  if (not mat_.empty()) dserror("What's going wrong here?");
+
+  // make sure the referenced materials in material list have quick access parameters
+
+  // here's the recursive creation of materials
+  std::vector<int>::const_iterator n;
+  for (n=params_->MatIds()->begin(); n!=params_->MatIds()->end(); ++n)
+  {
+    const int matid = *n;
+    Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
+    if (mat == Teuchos::null) dserror("Failed to allocate this material");
+    mat_.insert(std::pair<int,Teuchos::RCP<MAT::Material> >(matid,mat));
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ElchPhase::Clear()
+{
+  params_ = NULL;
+  mat_.clear();
+  return;
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -80,6 +132,20 @@ void MAT::ElchPhase::Pack(DRT::PackBuffer& data) const
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
+
+  if (params_->local_)
+  {
+    // loop map of associated local materials
+    if (params_ != NULL)
+    {
+      //std::map<int, Teuchos::RCP<MAT::Material> >::const_iterator m;
+      std::vector<int>::const_iterator n;
+      for (n=params_->MatIds()->begin(); n!=params_->MatIds()->end(); n++)
+      {
+        (mat_.find(*n))->second->Pack(data);
+      }
+    }
+  }
 }
 
 
@@ -108,79 +174,33 @@ void MAT::ElchPhase::Unpack(const std::vector<char>& data)
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
     }
 
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+  if (params_ != NULL) // params_ are not accessible in postprocessing mode
+  {
+    std::vector<int>::const_iterator n;
+    for (n=params_->MatIds()->begin(); n!=params_->MatIds()->end(); n++)
+    {
+      const int actmatid = *n;
+      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(actmatid);
+      if (mat == Teuchos::null) dserror("Failed to allocate this material");
+      mat_.insert(std::pair<int,Teuchos::RCP<MAT::Material> >(actmatid,mat));
+    }
+
+    if (params_->local_)
+    {
+      // loop map of associated local materials
+      for (n=params_->MatIds()->begin(); n!=params_->MatIds()->end(); n++)
+      {
+        std::vector<char> pbtest;
+        ExtractfromPack(position,data,pbtest);
+        (mat_.find(*n))->second->Unpack(pbtest);
+      }
+    }
+    // in the postprocessing mode, we do not unpack everything we have packed
+    // -> position check cannot be done in this case
+    if (position != data.size())
+      dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+  } // if (params_ != NULL)
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-double MAT::ElchPhase::ComputeConductivity(const double cint) const
-{
-  double cond = 0.0;
 
-  if(CondCurveNr()==0)
-  {
-    cond = Conductivity();
-  }
-  else
-  {
-    cond = DRT::Problem::Instance()->Curve(CondCurveNr()-1).f(cint);
-  }
-
-  return cond;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-double MAT::ElchPhase::ComputeFirstDerivCond(const double cint) const
-{
-  double firstderiv=0.0;
-
-  if(CondCurveNr()==0)
-  {
-    firstderiv = 0.0;
-  }
-  else
-  {
-    firstderiv = (DRT::Problem::Instance()->Curve(CondCurveNr()-1).FctDer(cint,1))[1];
-  }
-
-  return firstderiv;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-double MAT::ElchPhase::ComputeThermodynamicFactor(const double cint) const
-{
-  double therm=1.0;
-
-  if(CurveTherm()==0)
-  {
-    therm = 1.0;
-  }
-  else
-  {
-    therm = DRT::Problem::Instance()->Curve(CurveTherm()-1).f(cint);
-  }
-
-  return therm;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-double MAT::ElchPhase::ComputeFirstDerivThermodynamicFactor(const double cint) const
-{
-  double firstderiv=0.0;
-
-  if(CurveTherm()==0)
-  {
-    firstderiv = 0.0;
-  }
-  else
-  {
-    firstderiv = (DRT::Problem::Instance()->Curve(CurveTherm()-1).FctDer(cint,1))[1];
-  }
-
-  return firstderiv;
-}
 

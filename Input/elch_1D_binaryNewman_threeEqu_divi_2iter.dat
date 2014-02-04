@@ -61,15 +61,12 @@ UPRES                           1
 TEMPERATURE                     298.15                          // F/RT = 38.942
 -------------------------------------------------------ELCH CONTROL/DIFFCOND
 DIFFCOND_FORMULATION            Yes
-CHEMICALDIFF_COUPLING_TRANSP    No
-CHEMICALDIFF_COUPLING_CURR      Yes
-DIFFBASED                       No
 CURRENT_SOLUTION_VAR            Yes
 EQUPOT                          divi
-CONSTPARAMS                     No
-NEWMAN_CONST_A                  1.0
-NEWMAN_CONST_B                  -3.0
-NEWMAN_CONST_C                  -2.0
+MAT_NEWMAN_CONST_A              1.0
+MAT_NEWMAN_CONST_B              -3.0
+MAT_NEWMAN_CONST_C              -2.0
+MAT_DIFFCOND_DIFFBASED          No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -77,9 +74,9 @@ SOLVER                          UMFPACK                         // Aztec_MSR vm3
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_elchmat CURRENT Yes NUMSPEC 1 SPECIDS 2 NUMPHASE 1 PHASEIDS 3
-MAT 2 MAT_newman VALENCE 1.0 CURVE_DIFF 2 CURVE_TRANS 3 CURSOLVAR Yes
-MAT 3 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 CONDUCTIVITY 1.0 NR 4
+MAT 1 MAT_elchmat NUMDOF 4 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
+MAT 2 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 3 END
+MAT 3 MAT_newman VALENCE 1.0 DIFFCOEF 2 TRANSNR 3 THERMFAC 0 COND 4
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/1.0)-(pi/2)))+0.5 t1 0.0 t2 1.0
 ----------------------------------------------------------------------CURVE2

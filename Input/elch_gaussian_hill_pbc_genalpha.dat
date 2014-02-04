@@ -116,7 +116,7 @@ MAT 1 MAT_ion DIFFUSIVITY 0.0006666666666 VALENCE +0.0 // Pe_e = 5
 MAT 2 MAT_ion DIFFUSIVITY 0.0005 VALENCE +1.0 DENSIFICATION 0.0 ELIM_DIFFUSIVITY 0.001 ELIM_VALENCE -1.0 // reproduces D_binary=0.0006666666666
 // Krylov space projection works only with one CrsMatrix -> Elch_ENC_PDE_ELIM
 //MAT 3 MAT_ion DIFFUSIVITY 0.001 VALENCE -1.0 // reproduces D_binary=0.0006666666666
-MAT 4 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2
+MAT 4 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2 END
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3

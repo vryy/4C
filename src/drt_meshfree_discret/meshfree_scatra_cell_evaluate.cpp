@@ -90,8 +90,7 @@ int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
     {
       const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(material.get());
 
-      if (actmat->Current())
-        numscal -= DRT::UTILS::getDimension(this->Shape());
+      numscal -= actmat->NumScal();
     }
   }
 

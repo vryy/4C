@@ -136,7 +136,7 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! calculation fo initial phidt
   void AddProblemSpecificParametersAndVectorsForCalcInitialPhiDt(
     Teuchos::ParameterList& params //!< parameter list
-  ){return;};
+  );
 
   /*========================================================================*/
   //! @name general framework
@@ -151,6 +151,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
       double& potnorm_L2,
       double& potresnorm,
       double& conresnorminf);
+
+  //! call evaluate routine
+  void Evaluate(Teuchos::ParameterList eleparams);
 
   /*========================================================================*/
   //! @name ELCH methods
@@ -236,8 +239,12 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   bool dlcapexists_;
 
   //! electro-kinetics toggle
-  // Toggle defining the dof's with Nernst-BC
+  //! Toggle which defines dof's with Nernst-BC or Dirichlet condition
   Teuchos::RCP<Epetra_Vector> ektoggle_;
+
+  //! dirichlet toggle
+  //! Toggle which defines dof's with a Dirichlet condition
+  Teuchos::RCP<Epetra_Vector> dctoggle_;
 };
 
 };

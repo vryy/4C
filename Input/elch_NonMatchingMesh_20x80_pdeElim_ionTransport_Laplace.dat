@@ -59,7 +59,7 @@ SOLVER         UMFPACK //Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Supe
 ----------------------------------------------------------MATERIALS
 MAT       1 MAT_ion DIFFUSIVITY 0.01 VALENCE 1.0 DENSIFICATION 0.0 ELIM_DIFFUSIVITY 0.02 ELIM_VALENCE -1.0
 //MAT       2 MAT_ion DIFFUSIVITY 0.02 VALENCE -1.0
-MAT       2 MAT_matlist LOCAL No NUMMAT 1 MATIDS 1
+MAT       2 MAT_matlist LOCAL No NUMMAT 1 MATIDS 1 END
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/0.5)-(pi/2)))+0.5  t1 0.0 t2 0.5
 ------------------------------------------------------------CURVE2

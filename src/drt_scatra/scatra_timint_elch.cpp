@@ -57,7 +57,8 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     sigma_          (Teuchos::null),
     densific_       (numscal_),
     dlcapexists_    (false),
-    ektoggle_       (Teuchos::null)
+    ektoggle_       (Teuchos::null),
+    dctoggle_       (Teuchos::null)
 {
   return;
 }
@@ -82,11 +83,29 @@ void SCATRA::ScaTraTimIntElch::Init()
   // initializes variables for natural convection (ELCH) if necessary
   SetupElchNatConv();
 
-  // screen output (has to come after SetInitialField)
+  // initialize dirichlet toggle:
+  // for certain ELCH problem formulations we have to provide
+  // additional flux terms / currents across Dirichlet boundaries for the standard element call
+  Teuchos::RCP<Epetra_Vector> dirichones = LINALG::CreateVector(*(dbcmaps_->CondMap()),false);
+  dirichones->PutScalar(1.0);
+  dctoggle_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+  dbcmaps_->InsertCondVector(dirichones, dctoggle_);
 
+  // screen output (has to come after SetInitialField)
   // a safety check for the solver type
   if ((numscal_ > 1) && (solvtype_!=INPAR::SCATRA::solvertype_nonlinear))
     dserror("Solver type has to be set to >>nonlinear<< for ion transport.");
+
+  // check validity of material and element formulation
+  // important for porous Diffusion-Conduction formulation using material ElchMat
+  {
+    Teuchos::ParameterList eleparams;
+    eleparams.set<int>("action",SCATRA::check_scatra_element_parameter);
+    eleparams.set<int>("scatratype",scatratype_);
+
+    // call standard loop over elements
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  }
 
   frt_ = INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const * elchparams_->get<double>("TEMPERATURE"));
 
@@ -256,6 +275,20 @@ void SCATRA::ScaTraTimIntElch::AddProblemSpecificParametersAndVectors(
 
   // parameters for Elch/DiffCond formulation
   params.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
+
+  discret_->SetState("dctoggle",dctoggle_);
+
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ | add parameters depending on the problem for inital phidt rasthofer 12/13 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::AddProblemSpecificParametersAndVectorsForCalcInitialPhiDt(
+  Teuchos::ParameterList& params //!< parameter list
+)
+{
+  discret_->SetState("dctoggle",dctoggle_);
 
   return;
 }
@@ -1073,6 +1106,11 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
       }
     }
   }
+
+  // At element level the Nernst condition has to be handled like a DC
+  if(ektoggle_!=Teuchos::null)
+    dctoggle_->Update(1.0,*ektoggle_,1.0);
+
   return;
 } //SCATRA::ScaTraTimIntImpl::InitNernstBC
 
@@ -1245,10 +1283,6 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::ComputeConducti
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::calc_elch_conductivity);
   eleparams.set<int>("scatratype",scatratype_);
-  eleparams.set("frt",frt_);
-
-  // parameters for Elch/DiffCond formulation
-  eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);

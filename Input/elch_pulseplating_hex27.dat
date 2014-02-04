@@ -171,7 +171,7 @@ ML_DAMPFINE                     0.67                          // damping fine gr
 ML_DAMPMED                      1.0                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist LOCAL No NUMMAT 3 MATIDS 2 3 4
+MAT 1 MAT_matlist LOCAL No NUMMAT 3 MATIDS 2 3 4 END
 MAT 2 MAT_ion DIFFUSIVITY 0.000423 VALENCE 2.0
 MAT 3 MAT_ion DIFFUSIVITY 0.001065 VALENCE -2.0
 MAT 4 MAT_ion DIFFUSIVITY 0.009312 VALENCE 1.0

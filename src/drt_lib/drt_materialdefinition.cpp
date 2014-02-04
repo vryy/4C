@@ -19,6 +19,10 @@ Maintainer: Burkhard Bornemann
 #include <algorithm>
 #include <iterator>
 
+#include <string>
+#include <vector>
+#include <iostream>
+
 #include "drt_materialdefinition.H"
 #include "drt_colors.H"
 #include "drt_globalproblem.H"
@@ -513,7 +517,9 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
   )
 {
   if (lengthname_ != "*UNDEFINED*")
+  {
     length_ = material->GetInt(lengthname_);
+  }
   else
     dserror("Trouble to get length of real vector material component.");
 
@@ -521,9 +527,26 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
 
   for (int i=0; i<length_; ++i)
   {
-    double number = 0;
+    std::string number;
     (*condline) >> number;
-    numbers[i] = number;
+    char* ptr;
+    double n = 0.0;
+    n = strtod(number.c_str(),&ptr);
+    if (ptr==number.c_str())
+    {
+      if (optional_ and i==0)
+      {
+        // failed to read the numbers, fall back to default values
+        condline = PushBack(number,condline);
+        break;
+      }
+      dserror("Expected %i input parameters for variable '%s' in '%s'\n"
+              "or \n"
+              "Failed to read number '%s' while reading variable '%s' in '%s'",
+              length_,material->Name().c_str(),def->Name().c_str(),
+              number.c_str(),material->Name().c_str(),def->Name().c_str());
+    }
+    numbers[i] = n;
   }
   material->Add(Name(),numbers);
   return condline;

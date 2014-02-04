@@ -109,7 +109,7 @@ MAT 1 MAT_ion DIFFUSIVITY 1e-3 VALENCE 2.0 //DENSIFICATION 0.7 // A++ diffusivit
 MAT 2 MAT_ion DIFFUSIVITY 1e-3 VALENCE 1.0 //DENSIFICATION 0.7 //B+
 MAT 3 MAT_ion DIFFUSIVITY 5e-3 VALENCE 1.0 //DENSIFICATION 0.7 //H+
 MAT 4 MAT_ion DIFFUSIVITY 1e-3 VALENCE -1.0 //DENSIFICATION 0.7 //HSO4-
-MAT 5 MAT_matlist LOCAL No NUMMAT 4 MATIDS 1 2 3 4
+MAT 5 MAT_matlist LOCAL No NUMMAT 4 MATIDS 1 2 3 4 END
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC -50*1e-6*(0.5*(sin((t*pi/0.1)-(pi/2)))+0.5) t1 0.0 t2 0.1
 ----------------------------------------------------------------------CURVE2

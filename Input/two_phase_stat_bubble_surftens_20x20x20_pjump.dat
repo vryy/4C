@@ -151,7 +151,7 @@ SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4
+MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4 END
 MAT 2 MAT_scatra DIFFUSIVITY 0.000000001 // 1*10E-9
 MAT 3 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // plus side
 MAT 4 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // minus side

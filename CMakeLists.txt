@@ -457,7 +457,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/scatra_growth_scd.cpp
   src/drt_mat/herschelbulkley.cpp
   src/drt_mat/ion.cpp
-  src/drt_mat/diffcond.cpp
   src/drt_mat/elchmat.cpp
   src/drt_mat/elchphase.cpp
   src/drt_mat/newman.cpp

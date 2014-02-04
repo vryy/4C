@@ -14,7 +14,6 @@ Maintainer: Andreas Ehrl
 
 #include <vector>
 #include "elchmat.H"
-#include "diffcond.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 
@@ -24,31 +23,17 @@ MAT::PAR::ElchMat::ElchMat(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  current_((matdata->GetInt("CURRENT"))),
-  numspec_(matdata->GetInt("NUMSPEC")),
-  specids_(matdata->Get<std::vector<int> >("SPECIDS")),
+  numdof_((matdata->GetInt("NUMDOF"))),
+  numscal_((matdata->GetInt("NUMSCAL"))),
   numphase_(matdata->GetInt("NUMPHASE")),
   phaseids_(matdata->Get<std::vector<int> >("PHASEIDS")),
   local_(false)
 {
-  // check if sizes fit
-  if (numspec_ != (int)specids_->size())
-    dserror("number of species %d does not fit to size of species vector %d", numspec_, specids_->size());
-
   if (numphase_ != (int)phaseids_->size())
     dserror("number of phases %d does not fit to size of phase vector %d", numphase_, phaseids_->size());
 
   if (not local_)
   {
-    // make sure the referenced materials in material list have quick access parameters
-    std::vector<int>::const_iterator m;
-    // species
-    for (m=specids_->begin(); m!=specids_->end(); ++m)
-    {
-      const int specid = *m;
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(specid);
-      mat_.insert(std::pair<int,Teuchos::RCP<MAT::Material> >(specid,mat));
-    }
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator n;
     // phase
@@ -111,16 +96,6 @@ void MAT::ElchMat::SetupMatMap()
   // make sure the referenced materials in material list have quick access parameters
 
   // here's the recursive creation of materials
-  std::vector<int>::const_iterator m;
-  for (m=params_->SpecIds()->begin(); m!=params_->SpecIds()->end(); ++m)
-  {
-    const int specid = *m;
-    Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(specid);
-    if (mat == Teuchos::null) dserror("Failed to allocate this material");
-    mat_.insert(std::pair<int,Teuchos::RCP<MAT::Material> >(specid,mat));
-  }
-
-  // here's the recursive creation of materials
   std::vector<int>::const_iterator n;
   for (n=params_->PhaseIds()->begin(); n!=params_->PhaseIds()->end(); ++n)
   {
@@ -163,13 +138,6 @@ void MAT::ElchMat::Pack(DRT::PackBuffer& data) const
     if (params_ != NULL)
     {
       //std::map<int, Teuchos::RCP<MAT::Material> >::const_iterator m;
-      std::vector<int>::const_iterator m;
-      for (m=params_->SpecIds()->begin(); m!=params_->SpecIds()->end(); m++)
-      {
-        (mat_.find(*m))->second->Pack(data);
-      }
-
-      //std::map<int, Teuchos::RCP<MAT::Material> >::const_iterator m;
       std::vector<int>::const_iterator n;
       for (n=params_->PhaseIds()->begin(); n!=params_->PhaseIds()->end(); n++)
       {
@@ -211,15 +179,6 @@ void MAT::ElchMat::Unpack(const std::vector<char>& data)
   if (params_ != NULL) // params_ are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
-    std::vector<int>::const_iterator m;
-    for (m=params_->SpecIds()->begin(); m!=params_->SpecIds()->end(); m++)
-    {
-      const int actspecid = *m;
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(actspecid);
-      if (mat == Teuchos::null) dserror("Failed to allocate this material");
-      mat_.insert(std::pair<int,Teuchos::RCP<MAT::Material> >(actspecid,mat));
-    }
-
     std::vector<int>::const_iterator n;
     for (n=params_->PhaseIds()->begin(); n!=params_->PhaseIds()->end(); n++)
     {
@@ -232,19 +191,11 @@ void MAT::ElchMat::Unpack(const std::vector<char>& data)
     if (params_->local_)
     {
       // loop map of associated local materials
-      for (m=params_->SpecIds()->begin(); m!=params_->SpecIds()->end(); m++)
-      {
-        std::vector<char> pbtest;
-        ExtractfromPack(position,data,pbtest);
-        (mat_.find(*m))->second->Unpack(pbtest);
-      }
-
-      // loop map of associated local materials
       for (n=params_->PhaseIds()->begin(); n!=params_->PhaseIds()->end(); n++)
       {
         std::vector<char> pbtest;
         ExtractfromPack(position,data,pbtest);
-        (mat_.find(*m))->second->Unpack(pbtest);
+        (mat_.find(*n))->second->Unpack(pbtest);
       }
     }
     // in the postprocessing mode, we do not unpack everything we have packed

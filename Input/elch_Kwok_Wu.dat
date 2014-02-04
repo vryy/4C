@@ -228,7 +228,7 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ion DIFFUSIVITY 0.008 VALENCE 1.0
 MAT 2 MAT_ion DIFFUSIVITY 0.005 VALENCE -2.0
-MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2
+MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2 END
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3

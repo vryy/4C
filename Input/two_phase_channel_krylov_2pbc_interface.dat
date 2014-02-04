@@ -169,7 +169,7 @@ ML_DAMPFINE                     0.67                            // damping fine 
 ML_DAMPMED                      0.67                            // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4
+MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4 END
 MAT 2 MAT_scatra DIFFUSIVITY 0.0000000001
 MAT 3 MAT_fluid DYNVISCOSITY 3.6574e-4 DENSITY 1.0 GAMMA 0.033602574 //+
 //MAT 4 MAT_fluid DYNVISCOSITY 3.6574e-4 DENSITY 1.0 GAMMA 0.033602574

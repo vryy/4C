@@ -140,7 +140,7 @@ SOLVER                          UMFPACK
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4
+MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4 END
 MAT 2 MAT_scatra DIFFUSIVITY 1e-13 // 1*10E-9
 MAT 3 MAT_fluid DYNVISCOSITY 2.0 DENSITY 2.0 // plus side (right)
 MAT 4 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 // minus side (left)

@@ -71,12 +71,9 @@ GSTATCONDID_CATHODE             0
 GSTATCONDID_ANODE               1
 -------------------------------------------------------ELCH CONTROL/DIFFCOND
 DIFFCOND_FORMULATION            Yes
-CHEMICALDIFF_COUPLING_TRANSP    Yes
-CHEMICALDIFF_COUPLING_CURR      Yes
-DIFFBASED                       No
 CURRENT_SOLUTION_VAR            No
 EQUPOT                          divi
-CONSTPARAMS                     No
+MAT_DIFFCOND_DIFFBASED          No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -84,11 +81,11 @@ SOLVER                          UMFPACK                         // Aztec_MSR vm3
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_elchmat CURRENT No NUMSPEC 3 SPECIDS 2 3 4 NUMPHASE 1 PHASEIDS 5
-MAT 2 MAT_diffcond DIFFUSIVITY 1.0e-4 VALENCE 1.0 TRANSFERENCE 0.0196
-MAT 3 MAT_diffcond DIFFUSIVITY 5.0e-4 VALENCE -2.0 TRANSFERENCE 0.5882
-MAT 4 MAT_diffcond DIFFUSIVITY 1.0e-3 VALENCE 1.0 TRANSFERENCE 0.3922
-MAT 5 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 CONDUCTIVITY 1915.24
+MAT 1 MAT_elchmat NUMDOF 4 NUMSCAL 3 NUMPHASE 1 PHASEIDS 2 END
+MAT 2 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 3 MATIDS 3 4 5 END
+MAT 3 MAT_ion DIFFUSIVITY 1.0e-4 VALENCE  1.0
+MAT 4 MAT_ion DIFFUSIVITY 5.0e-4 VALENCE -2.0
+MAT 5 MAT_ion DIFFUSIVITY 1.0e-3 VALENCE  1.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/0.1)-(pi/2)))+0.5 t1 0.0 t2 0.1
 ----------------------------------------------------------------------CURVE2

@@ -59,7 +59,7 @@ SOLVER                          UMFPACK                         // Aztec_MSR vm3
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ion DIFFUSIVITY 0.01 VALENCE 1.0
 MAT 2 MAT_ion DIFFUSIVITY 0.02 VALENCE -1.0
-MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2
+MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2 END
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 3
 ----------------------------------------------------------------------CURVE1

@@ -56,7 +56,7 @@ SOLVER                          UMFPACK
 MAT 1 MAT_scatra DIFFUSIVITY 0.0006666666666 REACOEFF 0.42 // Pe_e = 5
 MAT 2 MAT_scatra DIFFUSIVITY 0.0000333333333 REACOEFF 1.32 // Pe_e = 100
 MAT 3 MAT_scatra DIFFUSIVITY 0.0033333333333 // Pe_e = 1
-MAT 4 MAT_matlist LOCAL No NUMMAT 3 MATIDS 1 2 3
+MAT 4 MAT_matlist LOCAL No NUMMAT 3 MATIDS 1 2 3 END
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3

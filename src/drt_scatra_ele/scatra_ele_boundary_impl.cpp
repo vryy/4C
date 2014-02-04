@@ -53,7 +53,6 @@ Maintainer: Andreas Ehrl
 #include "../drt_mat/matlist.H"
 
 #include "../drt_mat/elchmat.H"
-#include "../drt_mat/diffcond.H"
 #include "../drt_mat/newman.H"
 #include "../drt_mat/elchphase.H"
 
@@ -84,8 +83,7 @@ DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInt
     {
       const MAT::ElchMat* actmat = dynamic_cast<const MAT::ElchMat*>(material.get());
 
-      if (actmat->Current())
-        numscal -= DRT::UTILS::getDimension(transele->ParentElement()->Shape());
+      numscal = actmat->NumScal();
     }
   }
 
@@ -1255,24 +1253,62 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
       double valence_k(0.0);
       if (mat->MaterialType() == INPAR::MAT::m_elchmat)
       {
-        const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
+        const Teuchos::RCP<const MAT::ElchMat>& actmat
+        = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(mat);
 
-        const int specid = actmat->SpecID(k);
-        Teuchos::RCP<const MAT::Material> singlemat = actmat->SpecById(specid);
-        if (singlemat->MaterialType() == INPAR::MAT::m_diffcond)
+        // access ionic species
+        if (actmat->NumPhase() != 1) dserror("In the moment a single phase is only allowed.");
+
+        // 1) loop over single phases
+        for (int iphase=0; iphase < actmat->NumPhase();++iphase)
         {
-          const MAT::DiffCond* actsinglemat = static_cast<const MAT::DiffCond*>(singlemat.get());
-          valence_k = actsinglemat->Valence();
-          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+          const int phaseid = actmat->PhaseID(iphase);
+          Teuchos::RCP<const MAT::Material> singlephase = actmat->PhaseById(phaseid);
+
+          const Teuchos::RCP<const MAT::ElchPhase>& actphase
+                    = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(singlephase);
+
+          // 2) loop over materials of the single phase
+          for (int imat=0; imat < actphase->NumMat();++imat)
+          {
+            const int matid = actphase->MatID(imat);
+            Teuchos::RCP<const MAT::Material> singlemat = actphase->MatById(matid);
+
+            if  (singlemat->MaterialType() == INPAR::MAT::m_newman)
+            {
+              const MAT::Newman* actsinglemat = static_cast<const MAT::Newman*>(singlemat.get());
+              valence_k = actsinglemat->Valence();
+              if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+            }
+            else if (singlemat->MaterialType() == INPAR::MAT::m_ion)
+            {
+              const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
+              valence_k = actsinglemat->Valence();
+              if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+            }
+            else
+              dserror("");
+          }
         }
-        else if  (singlemat->MaterialType() == INPAR::MAT::m_newman)
-        {
-          const MAT::Newman* actsinglemat = static_cast<const MAT::Newman*>(singlemat.get());
-          valence_k = actsinglemat->Valence();
-          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
-        }
-        else
-          dserror("");
+
+//        const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
+//
+//        const int specid = actmat->SpecID(k);
+//        Teuchos::RCP<const MAT::Material> singlemat = actmat->SpecById(specid);
+//        if (singlemat->MaterialType() == INPAR::MAT::m_diffcond)
+//        {
+//          const MAT::DiffCond* actsinglemat = static_cast<const MAT::DiffCond*>(singlemat.get());
+//          valence_k = actsinglemat->Valence();
+//          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+//        }
+//        else if  (singlemat->MaterialType() == INPAR::MAT::m_newman)
+//        {
+//          const MAT::Newman* actsinglemat = static_cast<const MAT::Newman*>(singlemat.get());
+//          valence_k = actsinglemat->Valence();
+//          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+//        }
+//        else
+//          dserror("");
       }
       else
         dserror("material type is not a 'matlist' material");
@@ -1782,24 +1818,60 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
       }
       else if (material->MaterialType() == INPAR::MAT::m_elchmat)
       {
-        const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(material.get());
+        const Teuchos::RCP<const MAT::ElchMat>& actmat
+           = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(material);
 
-        const int specid = actmat->SpecID(k);
-        Teuchos::RCP<const MAT::Material> singlemat = actmat->SpecById(specid);
-        if (singlemat->MaterialType() == INPAR::MAT::m_diffcond)
+        // access ionic species
+        if (actmat->NumPhase() != 1) dserror("In the moment a single phase is only allowed.");
+
+        // 1) loop over single phases
+        for (int iphase=0; iphase < actmat->NumPhase();++iphase)
         {
-          const MAT::DiffCond* actsinglemat = static_cast<const MAT::DiffCond*>(singlemat.get());
-          valence_k = actsinglemat->Valence();
-          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+          const int phaseid = actmat->PhaseID(iphase);
+          Teuchos::RCP<const MAT::Material> singlephase = actmat->PhaseById(phaseid);
+
+          const Teuchos::RCP<const MAT::ElchPhase>& actphase
+                    = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(singlephase);
+
+          // 2) loop over materials of the single phase
+          for (int imat=0; imat < actphase->NumMat();++imat)
+          {
+            const int matid = actphase->MatID(imat);
+            Teuchos::RCP<const MAT::Material> singlemat = actphase->MatById(matid);
+
+            if  (singlemat->MaterialType() == INPAR::MAT::m_newman)
+            {
+              const MAT::Newman* actsinglemat = static_cast<const MAT::Newman*>(singlemat.get());
+              valence_k = actsinglemat->Valence();
+              if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+            }
+            else if (singlemat->MaterialType() == INPAR::MAT::m_ion)
+            {
+              const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
+              valence_k = actsinglemat->Valence();
+              if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+            }
+            else
+              dserror("");
+          }
         }
-        else if  (singlemat->MaterialType() == INPAR::MAT::m_newman)
-        {
-          const MAT::Newman* actsinglemat = static_cast<const MAT::Newman*>(singlemat.get());
-          valence_k = actsinglemat->Valence();
-          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
-        }
-        else
-          dserror("");
+
+//        const int specid = actmat->SpecID(k);
+//        Teuchos::RCP<const MAT::Material> singlemat = actmat->SpecById(specid);
+//        if (singlemat->MaterialType() == INPAR::MAT::m_diffcond)
+//        {
+//          const MAT::DiffCond* actsinglemat = static_cast<const MAT::DiffCond*>(singlemat.get());
+//          valence_k = actsinglemat->Valence();
+//          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+//        }
+//        else if  (singlemat->MaterialType() == INPAR::MAT::m_newman)
+//        {
+//          const MAT::Newman* actsinglemat = static_cast<const MAT::Newman*>(singlemat.get());
+//          valence_k = actsinglemat->Valence();
+//          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+//        }
+//        else
+//          dserror("");
       }
       else
         dserror("material type is not a 'matlist' material");

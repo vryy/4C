@@ -593,11 +593,12 @@ namespace DRT
       const std::string name,  ///< name of integer to add
       const std::string description,  ///< description about value
       const int size,  ///< number vector components
+      const double defaultvalue=0, ///< optional default value for initialization
       const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
-      matdef->AddComponent(Teuchos::rcp(new IntVectorMaterialComponent(name,size,optional)));
+      matdef->AddComponent(Teuchos::rcp(new IntVectorMaterialComponent(name,size,defaultvalue,optional)));
     }
 
     /// add a separator followed by a number integer values
@@ -607,12 +608,13 @@ namespace DRT
       Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named integer is added
       const std::string name,  ///< name of integer to add
       const std::string description,  ///< description about value
-      const std::string sizename,  ///< named entry which holds number of vector components; named entry _must_ be added _prior_ to this vector compo
+      const std::string sizename,  ///< named entry which holds number of vector components; named entry _must_ be added _prior_ to this vector component
+      const double defaultvalue=0, ///< optional default value for initialization
       const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
-      matdef->AddComponent(Teuchos::rcp(new IntVectorMaterialComponent(name,sizename,optional)));
+      matdef->AddComponent(Teuchos::rcp(new IntVectorMaterialComponent(name,sizename,defaultvalue,optional)));
     }
 
     /// add a separator followed by a single real value
@@ -637,11 +639,12 @@ namespace DRT
       const std::string name, ///< name of vector of reals to add
       const std::string description,  ///< description about values
       const int size,  ///< number vector components
+      const double defaultvalue=0.0, ///< optional default value for initialization
       const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
-      matdef->AddComponent(Teuchos::rcp(new RealVectorMaterialComponent(name,size,optional)));
+      matdef->AddComponent(Teuchos::rcp(new RealVectorMaterialComponent(name,size,defaultvalue,optional)));
     }
 
     /// add a separator followed by a number of real values
@@ -652,11 +655,12 @@ namespace DRT
       const std::string name, ///< name of vector of reals to add
       const std::string description,  ///< description about values
       const std::string sizename,  ///< named entry which holds number of vector components; named entry _must_ be added _prior_ to this vector component
+      const double defaultvalue=0.0, ///< optional default value for initialization
       const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
-      matdef->AddComponent(Teuchos::rcp(new RealVectorMaterialComponent(name,sizename,optional)));
+      matdef->AddComponent(Teuchos::rcp(new RealVectorMaterialComponent(name,sizename,defaultvalue,optional)));
     }
 
     /// add a separator followed by a single string value
@@ -688,6 +692,21 @@ namespace DRT
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
       matdef->AddComponent(Teuchos::rcp(new BoolMaterialComponent(name,defaultvalue,optional)));
+    }
+
+
+    /// add a separator
+    /// add additional separator to indicate end of line which is important, e.g., for the validity check of the std::vector<>
+    ///
+    /// The name on the input line becomes the name used to put the bool value into MAT::PAR::Material.
+    inline void AddNamedSeparator(
+      Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named Boolean is added
+      const std::string name,  ///< name of Boolean to add
+      const std::string description,  ///< description about value
+      const bool optional=false  ///< optional parameter if true
+      )
+    {
+      matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
     }
 
     /// add material definition to list of defined materials
