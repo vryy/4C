@@ -85,6 +85,9 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   // use deterministic value yes/no
   use_det_value_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"USEDETVALUE");
 
+  // value for stochmat blending in parameter continuation case
+  cont_blend_value_ = mlmcp.get<double>("CONTBLENDVALUE");
+
    // get det value if needed
   det_value_ =mlmcp.get<double>("DETVALUE");
 
@@ -126,7 +129,7 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   numruns_pergroup_= int(ceil(numruns/NNestedGroups));
   start_run_  += (i)*numruns_pergroup_;
 
-  numb_run_ =  start_run_;//+numruns_pergroup_;     // counter of how many runs were made monte carlo
+  numb_run_ =  start_run_;    // counter of how many runs were made monte carlo
 
   // init number of wall elements
   tot_num_wall_elements_ = 0;
@@ -506,7 +509,7 @@ void STR::MLMC::IntegrateNoReset()
         {
 
           // for first run do normal integration
-          SetupStochMatDet(3.8);
+          SetupStochMatDet(cont_blend_value_);
           structadaptor.Integrate();
           // get all information
           structadaptor.GetRestartData(cont_step_,cont_time_,cont_disn_init_,cont_veln_,cont_accn_,cont_elementdata_init_);
@@ -642,14 +645,14 @@ int STR::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int r
        if(!re_use_rf)
        {
          t2_ = Teuchos::Time::wallTime();
-         BlendStochMat((random_seed+(unsigned int)numb_run_), false , 1.5 ,gamma);
+         BlendStochMat((random_seed+(unsigned int)numb_run_), false , cont_blend_value_ ,gamma);
          t3_ = Teuchos::Time::wallTime();
          // we only want to setupt once hence
          re_use_rf=true;
        }
        else if(re_use_rf)
        {
-         BlendStochMat((random_seed+(unsigned int)numb_run_), true , 1.5 ,gamma);
+         BlendStochMat((random_seed+(unsigned int)numb_run_), true , cont_blend_value_ ,gamma);
        }
        error=structadaptor.Integrate();
        if(error)
@@ -670,7 +673,7 @@ int STR::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int r
        // reset old maxtime
        structadaptor.SetTimeEnd(endtime);
        //BlendStochMat((random_seed+(unsigned int)numb_run_),(bool)(k+1),4.61,gamma);
-       BlendStochMat((random_seed+(unsigned int)numb_run_),true,1.5,gamma);
+       BlendStochMat((random_seed+(unsigned int)numb_run_),true,cont_blend_value_,gamma);
        error = structadaptor.Integrate();
        if(error)
          return error;
@@ -683,7 +686,7 @@ int STR::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int r
        //measure time only if we really compute the random field (k=0)
        if(!k)
          t2_ = Teuchos::Time::wallTime();
-       BlendStochMat((random_seed+(unsigned int)numb_run_), (bool)k , 4.61,gamma);
+       BlendStochMat((random_seed+(unsigned int)numb_run_), (bool)k , cont_blend_value_ ,gamma);
        if(!k)
          t3_ = Teuchos::Time::wallTime();
        error = structadaptor.Integrate();
@@ -1402,12 +1405,6 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
         stoch_mat_par=det_value_;
         IO::cout << "WARNING NOT USING RANDOM FIELD BUT A DET_VALUE OF " << det_value_<<"  INSTEAD" << IO::endl;
       }
-      //if(numb_run_-start_run_== 0)
-      //if(use_det_value_)
-      //{
-       // stoch_mat_par=4.61;
-       // IO::cout << "WARNING NOT USING RANDOM FIELD BUT 4.61 INSTEAD" << IO::endl;
-     // }
       else
       {
         // get dim of field

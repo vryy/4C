@@ -127,6 +127,9 @@ private:
   //! brief global deterministic value that is used instead of random field
   double det_value_;
 
+  //! brief global deterministic value that is used instead of random field for parameter continuation
+  double cont_blend_value_;
+
   //! brief flag to reduce output to files as well as stdout
   bool reduced_output_;
 
