@@ -222,7 +222,10 @@ void ALE::Ale::PrepareTimeStep()
   step_ += 1;
   time_ += dt_;
 
-  PrintTimeStepHeader();
+  // Print time step header only in case of pure ALE problem. Coupled problems
+  // print their own time step header.
+  if (DRT::Problem::Instance()->ProblemType() == prb_ale)
+    PrintTimeStepHeader();
 
   // Update local coordinate systems (which may be time dependent)
   if (locsysman_ != Teuchos::null)
