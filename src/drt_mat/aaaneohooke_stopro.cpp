@@ -460,6 +460,8 @@ void MAT::AAAneohooke_stopro::VisNames(std::map<std::string,int>& names)
   names[fiber] = 1; // scalar
   fiber = "youngs";
   names[fiber] = 1; // scalar
+  fiber = "BaciEleId";
+  names[fiber] = 1; // scalar
 }
 
 
@@ -474,6 +476,11 @@ bool MAT::AAAneohooke_stopro::VisData(const std::string& name, std::vector<doubl
   {
     if ((int)data.size()!=1) dserror("size mismatch");
     data[0] = Youngs();
+  }
+  else if (name=="BaciEleId")
+  {
+    if ((int)data.size()!=1) dserror("size mismatch");
+    data[0] = eleID;
   }
   else
   {
