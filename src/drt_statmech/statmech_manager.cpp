@@ -1868,7 +1868,7 @@ void STATMECH::StatMechManager::DetectBindingSpots(const Teuchos::RCP<Epetra_Mul
                                     bspot1=true;
                                   if((int)(*numbondtrans)[part]<0.1)
                                     bspot2=true;
-                                  else //check wether first Bspot lies fullfills orientation criterium
+                                  else //check wether first Bspot fullfills orientation criterion
                                   {       //id of bindingspot that was bound ealier
                                     int bspotID=0;
                                     if((int)(*crosslinkerbondtrans)[0][part] < -0.9)
@@ -3010,7 +3010,10 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
         newcrosslinker->SetIrr(statmechparams_.get<double>("IPLINK",0.0));
         newcrosslinker->SetMaterial(2);
         // set interpolated position to mid positions -> xi = 0.0
-        newcrosslinker->SetBindingPosition(0.0,0.0);
+        if(linkermodel_==statmech_linker_myosinthick)
+        	newcrosslinker->SetBindingPosition(0.0,0.0);
+        else
+        	newcrosslinker->SetBindingPosition((double)(*bspotxi_)[bspotgid[0]],(double)(*bspotxi_)[bspotgid[1]]);
 
         //set up reference configuration of crosslinker
         newcrosslinker->SetUpReferenceGeometry<2>(xrefe,rotrefe);
@@ -6116,13 +6119,14 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
           // if second binding binding spot exists and spot is unoccupied
           if((*neighbourslid)[currneighbour][currlink]>-0.1 && (*bspotstatus_)[secondbspot] < -0.9)// && bspotcolmap_->GID(secondbspot)%bspotinterval==0)
           {
+            int free = -1;
             Epetra_SerialDenseMatrix LID(2,1);
             for(int k=0; k<crosslinkerbond_->NumVectors(); k++)
             {
               if((*crosslinkerbond_)[k][currlink]<-0.9)
               {
+                free = k;
                 LID(k,0) = secondbspot;
-                (*crosslinkerbond_)[k][currlink] = bspotcolmap_->GID(secondbspot);
               }
               else
                 LID(k,0) = (*crosslinkerbond_)[k][currlink];
@@ -6191,6 +6195,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
               // establish double bond to the first given neighbour
               // attach it to the second binding spot
               (*bspotstatus_)[secondbspot] = currlink;
+              (*crosslinkerbond_)[free][currlink] = bspotcolmap_->GID(secondbspot);
               (*numbond_)[currlink] = 2.0;
 
               if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
