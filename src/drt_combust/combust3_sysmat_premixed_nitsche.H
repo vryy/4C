@@ -1642,6 +1642,7 @@ void Nitsche_SysmatBoundaryCell(
     const double                   flamespeed,
     const double                   marksteinlength,
     const double                   timefac,
+    const bool                     instationary,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
 #ifndef COMBUST_SXFEM
     const XFEM::ElementEnrichmentValues&       enrvals_plus,
@@ -1659,6 +1660,7 @@ void Nitsche_SysmatBoundaryCell(
     const double                               alphau,              ///< Nitsche's stabilization parameter
     const double                               wallfac,             ///< wall factor to fade jump at walls (for ORACLES)
     const double                               hk_ele,              ///< element length
+    const double                               nitschevel,          ///< Nitsche's velocity
     const size_t                               numparamvelx,
     const size_t                               numparampres,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox,      ///<
@@ -2250,17 +2252,46 @@ void Nitsche_SysmatBoundaryCell(
 
     const double halftimefacfacplus   = dens_plus*0.5*timefacfac;
     const double halftimefacfacminus  = dens_minus*0.5*timefacfac;
-    const double alphatimefacfac = alphau*timefacfac; //(alphau + 0.05/hk_ele * 0.5 * (visc_plus+visc_minus)+ 0.05 * 0.5 * (dens_plus*vel_plus.Norm2()+dens_minus*vel_minus.Norm2()) )*timefacfac;
-//    std::cout << alphau << "   " << 0.05/hk_ele * 0.5 * (visc_plus+visc_minus) << "   " << hk_ele << std::endl;
+
+    double alphatimefacfac = 0.0;
+    if (not nitsche_mass)
+      alphatimefacfac = alphau*timefacfac;
+    else
+    {
+      // max norm of velocity for plus and minus domain at Gauss point
+      double vel_max_norm_plus = 0.0;
+      for (std::size_t idim=0; idim<3; idim++)
+      {
+        if (std::abs(vel_plus(idim,0)) > vel_max_norm_plus)
+          vel_max_norm_plus = std::abs(vel_plus(idim,0));
+      }
+      double vel_max_norm_minus = 0.0;
+      for (std::size_t idim=0; idim<3; idim++)
+      {
+        if (std::abs(vel_minus(idim,0)) > vel_max_norm_minus)
+          vel_max_norm_minus = std::abs(vel_minus(idim,0));
+      }
+
+      if (instationary)
+        alphatimefacfac = nitschevel * (kappa_minus* (visc_minus / hk_ele + dens_minus*vel_max_norm_minus / 6.0 + dens_minus * hk_ele / (timefac * 12.0))
+                                       +kappa_plus* (visc_plus / hk_ele + dens_plus*vel_max_norm_plus / 6.0 + dens_plus * hk_ele / (timefac * 12.0))) *timefacfac;
+      else
+        alphatimefacfac = nitschevel * (kappa_minus* (visc_minus / hk_ele + dens_minus*vel_max_norm_minus / 6.0)
+                                       +kappa_plus* (visc_plus / hk_ele + dens_plus*vel_max_norm_plus / 6.0)) *timefacfac;
+    }
+
     // TODO: convstabtimefacfac = alpha_c * timefacfac
     //       alpha_c = 0.5 * rho_max * absvelproj or rho_inflow_domain?
+    // due to the convection-dependence of the penalty parameter, this term should not be required for the time being
     double rho_max = std::max(dens_plus,dens_minus);
     const double convstabtimefacfac = 0.5*absvelproj*rho_max*timefacfac;
-    // TODO:
+    // TODO: currently, a mass penalty term acting merely in normal direction is not used
+#if 0
     const double B1 = 0.05;
     const double B2 = 0.05;
     const double massstabtimefacfac = (B1/hk_ele * 0.5 * (visc_plus+visc_minus)
                                     + B2 * 0.5 * (dens_plus*vel_plus.Norm2()+dens_minus*vel_minus.Norm2())) * timefacfac;
+#endif
 
 
 #ifdef COMBUST_NITSCHE_VISCCONSISTMEAN
@@ -2817,6 +2848,7 @@ if(nitsche_convflux)
 #endif
 }
 
+#if 0
   //COMBUST_NITSCHE_CONTINUITY
 if(nitsche_mass)
 {
@@ -2864,6 +2896,7 @@ if(nitsche_mass)
                                                                                              +ju(1,0)*normal(1)
                                                                                              +ju(2,0)*normal(2)));
 }
+#endif
 
 //#endif
 } // loop Gaussian points
@@ -2932,6 +2965,11 @@ void SysmatBoundaryNitsche(
 
   // number of nodes of this element
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+  // flag for instationary problems
+  bool instationary = false;
+  if (timealgo != INPAR::FLUID::timeint_stationary)
+    instationary = true;
 
   // time integration constant
   const double timefac = COMBUST::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
@@ -3136,14 +3174,14 @@ void SysmatBoundaryNitsche(
           *cell, DRT::UTILS::intrule_tri_37point, xyze, ele, higher_order_ele,
           evelnp, eprenp, egradphi, egradphi2, ecurv,
           flamespeed, marksteinlength,
-          timefac, assembler,
+          timefac, instationary, assembler,
 #ifndef COMBUST_SXFEM
           enrvals_plus, enrvals_minus,
 #else
           dofman, ephi,
 #endif
           kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus, dens_plus, dens_minus,
-          alphau, wallfac, hk_eleDiam,
+          alphau, wallfac, hk_eleDiam, nitschevel,
           numparamvelx, numparampres, surftensapprox, variablesurftens, second_deriv, surftenscoeff, connected_interface,
           veljumptype, fluxjumptype,
           smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass
@@ -3154,14 +3192,14 @@ void SysmatBoundaryNitsche(
           *cell, DRT::UTILS::intrule_quad_25point , xyze, ele, higher_order_ele,
           evelnp, eprenp, egradphi, egradphi2, ecurv,
           flamespeed, marksteinlength,
-          timefac, assembler,
+          timefac, instationary, assembler,
 #ifndef COMBUST_SXFEM
           enrvals_plus, enrvals_minus,
 #else
           dofman, ephi,
 #endif
           kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus, dens_plus, dens_minus,
-          alphau, wallfac, hk_eleDiam,
+          alphau, wallfac, hk_eleDiam, nitschevel,
           numparamvelx, numparampres, surftensapprox, variablesurftens, second_deriv, surftenscoeff, connected_interface,
           veljumptype, fluxjumptype,
           smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass

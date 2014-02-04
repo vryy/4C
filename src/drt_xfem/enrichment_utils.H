@@ -746,6 +746,52 @@ namespace XFEM
       dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
     }
 
+
+    /*!
+     * \brief get nodal enrichments values
+     *
+     * remarks:
+     * function for face-based stabilization to extend solution field to opposite nodes
+     */
+     template<class V>
+     inline void GetNodalEnrichmentsFunctionValues(
+         const XFEM::PHYSICS::Field field,
+         std::vector<int>& num_field_enr_per_node,
+         V& nodal_enr
+     ) const
+     {
+       const int* nodeids = ele_.NodeIds();
+       const std::size_t numnode = ele_.NumNode();
+       num_field_enr_per_node.resize(numnode);
+
+       std::size_t dofcounter = 0;
+       for (std::size_t inode=0; inode < numnode; ++inode)
+       {
+         // set value to zero
+         num_field_enr_per_node[inode] = 0;
+
+         const int gid = nodeids[inode];
+         const std::set<XFEM::FieldEnr>& enrfieldset = dofman_.FieldEnrSetPerNode(gid);
+         const std::map<XFEM::Enrichment, double> enrvalues = enrvalnodes_.find(inode)->second;
+
+         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+           enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+         {
+           if (enrfield->getField() == field)
+           {
+             const double enrval = enrvalues.find(enrfield->getEnrichment())->second;
+
+             nodal_enr(dofcounter) = enrval;
+             num_field_enr_per_node[inode] += 1;
+
+             dofcounter += 1;
+           }
+         }
+       }
+       dsassert(dofcounter == dofman_.NumDofPerField(field), "mismatch in information from eledofmanager!");
+     }
+
+
     template<class V, class M1, size_t numdof>
     void ComputeNormalShapeFunction(
         const V& funct,

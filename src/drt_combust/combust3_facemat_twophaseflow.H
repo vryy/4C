@@ -357,21 +357,103 @@ void FaceMatTwoPhase(
   // get characteristic velocity
   double vel_norm = 0.0;
   // get the L_inf-norm of the parent's element velocity for stabilization
-  // -> maximum value of all nodal values of the patch
-  for(std::size_t idim=0; idim<nsd; idim++)
+  // -> maximum value of all nodal values of the patch (including extensions for ghost penalties)
+
+  if (M_ASSTYPE == XFEM::xfem_assembly)
   {
+    const size_t m_shpVecSize_init = COMBUST::SizeFac<M_ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<M_DISTYPE>::numNodePerElement;
+    static LINALG::Matrix<m_shpVecSize_init,1> m_nodal_enr_funct(true);
+    // shape function or enrichemnt function at node (either 1 (std dof), -2 or 2 (enr dof influencing current domain) or 0 (enr dof not influencing current domain)
+    m_nodal_enr_funct.Clear();
+    // number of field (i.e., velx) dofs per node (e.g., std + enr)
+    std::vector<int> m_num_field_enr_per_node(ms_numnode);
+    master_enrvals.GetNodalEnrichmentsFunctionValues(XFEM::PHYSICS::Velx,m_num_field_enr_per_node,m_nodal_enr_funct);
+
+    // vector for nodal velocity
+    // nodal velocity = std dof + enrcihment funct * enr dof
+    LINALG::Matrix<nsd,ms_numnode> m_node_vel(true);
+
+    std::size_t position = 0;
     for(std::size_t inode=0; inode<ms_numnode; inode++)
     {
-      if (fabs(evelnp_m(idim,inode)) > vel_norm)
-        vel_norm = fabs(evelnp_m(idim,inode));
+      for (int rr=0; rr<m_num_field_enr_per_node[inode]; rr++)
+      {
+        for (std::size_t idim=0; idim<nsd; idim++)
+        {
+          m_node_vel(idim,inode) += m_nodal_enr_funct(position,0) * evelnp_m(idim,position);
+          //std::cout << "inode  " << inode << "  pos  " << position << " m_nodal_enr_funct(position,0) " << m_nodal_enr_funct(position,0) << " evelnp_m(idim,position) " << evelnp_m(idim,position) << std::endl;
+        }
+
+        position++;
+      }
+    }
+    if (position != m_numparamvelx) dserror("Unexpected number of nodal values");
+
+    for(std::size_t idim=0; idim<nsd; idim++)
+    {
+      for(std::size_t inode=0; inode<ms_numnode; inode++)
+      {
+        if (fabs(m_node_vel(idim,inode)) > vel_norm)
+          vel_norm = fabs(m_node_vel(idim,inode));
+      }
     }
   }
-  for(std::size_t idim=0; idim<nsd; idim++)
+  else
   {
+    for(std::size_t idim=0; idim<nsd; idim++)
+    {
+      for(std::size_t inode=0; inode<ms_numnode; inode++)
+      {
+        if (fabs(evelnp_m(idim,inode)) > vel_norm)
+          vel_norm = fabs(evelnp_m(idim,inode));
+      }
+    }
+  }
+
+  if (S_ASSTYPE == XFEM::xfem_assembly)
+  {
+    const size_t s_shpVecSize_init = COMBUST::SizeFac<S_ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<S_DISTYPE>::numNodePerElement;
+
+    static LINALG::Matrix<s_shpVecSize_init,1> s_nodal_enr_funct(true);
+    s_nodal_enr_funct.Clear();
+   // number of field (i.e., velx) dofs per node (e.g., std + enr)
+    std::vector<int> s_num_field_enr_per_node(ms_numnode);
+    slave_enrvals.GetNodalEnrichmentsFunctionValues(XFEM::PHYSICS::Velx,s_num_field_enr_per_node,s_nodal_enr_funct);
+
+    // vector for nodal velocity
+    LINALG::Matrix<nsd,ms_numnode> s_node_vel(true);
+
+    std::size_t position = 0;
     for(std::size_t inode=0; inode<ms_numnode; inode++)
     {
-      if (fabs(evelnp_s(idim,inode)) > vel_norm)
-        vel_norm = fabs(evelnp_s(idim,inode));
+      for (int rr=0; rr<s_num_field_enr_per_node[inode]; rr++)
+      {
+        for (std::size_t idim=0; idim<nsd; idim++)
+          s_node_vel(idim,inode) += s_nodal_enr_funct(position,0) * evelnp_s(idim,position);
+
+        position++;
+      }
+    }
+    if (position != s_numparamvelx) dserror("Unexpected number of nodal values");
+
+    for(std::size_t idim=0; idim<nsd; idim++)
+    {
+      for(std::size_t inode=0; inode<ms_numnode; inode++)
+      {
+        if (fabs(s_node_vel(idim,inode)) > vel_norm)
+          vel_norm = fabs(s_node_vel(idim,inode));
+      }
+    }
+  }
+  else
+  {
+    for(std::size_t idim=0; idim<nsd; idim++)
+    {
+      for(std::size_t inode=0; inode<ms_numnode; inode++)
+      {
+        if (fabs(evelnp_s(idim,inode)) > vel_norm)
+          vel_norm = fabs(evelnp_s(idim,inode));
+      }
     }
   }
 
