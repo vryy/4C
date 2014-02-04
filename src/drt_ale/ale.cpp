@@ -194,9 +194,12 @@ void ALE::Ale::OutputRestart(bool& datawritten)
   datawritten = true;
 
   // info dedicated to user's eyes staring at standard out
-  if (discret_->Comm().MyPID() == 0)
+  // Print restart info only in case of pure ALE problem. Coupled problems
+  // print their own restart info.
+  if (DRT::Problem::Instance()->ProblemType() == prb_ale)
   {
-    IO::cout << "====== Restart written in step " << step_ << IO::endl;
+    if (discret_->Comm().MyPID() == 0)
+      IO::cout << "====== Restart written in step " << step_ << IO::endl;
   }
 
   return;
