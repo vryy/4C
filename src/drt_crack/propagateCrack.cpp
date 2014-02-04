@@ -14,10 +14,6 @@ Maintainer: Sudhakar
 */
 /*----------------------------------------------------------------------*/
 
-/*------------------------------------------------------------------------------------*
- * Constructor                                                                     sudhakar 12/13
- * Read crack tip nodes and nodes falling on the crack surface from input data
- *------------------------------------------------------------------------------------*/
 #include "propagateCrack.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -31,6 +27,10 @@ Maintainer: Sudhakar
 
 #include "../linalg/linalg_utils.H"
 
+/*------------------------------------------------------------------------------------*
+ * Constructor                                                                     sudhakar 12/13
+ * Read crack tip nodes and nodes falling on the crack surface from input data
+ *------------------------------------------------------------------------------------*/
 DRT::CRACK::PropagateCrack::PropagateCrack( Teuchos::RCP<DRT::Discretization>& discret )
 :discret_(discret),
  comm_( discret_->Comm() ),
@@ -110,11 +110,6 @@ DRT::CRACK::PropagateCrack::PropagateCrack( Teuchos::RCP<DRT::Discretization>& d
       dserror("material type  not supported for crack simulations");
       break;
   }
-
-  //TODO: remove this initialization
-  young_ = 2e8;
-  poisson_ = 0.3;
-
 
   const Teuchos::ParameterList& crackparam = DRT::Problem::Instance()->CrackParams();
 
@@ -688,12 +683,12 @@ void DRT::CRACK::PropagateCrack::decidePropagationAngle()
 
   // atan2() returns values in the range (-pi,pi)
   // in order to make meaningful comparisons we need it in range (0,2*pi)
-  if( fabs(propAngle_) < 1e-12 )
+  if( fabs(propAngle_) < 1e-10 )
     propAngle_ = 0.0;
   else if( propAngle_ < 0.0 )
     propAngle_ = 2 * PI_ + propAngle_;
 
-  std::cout<<"propagation angle = "<<propAngle_<<"\n";
+  std::cout<<"propagation angle = "<<propAngle_ * 180.0 / PI_ <<"deg\n";
 }
 
 /*------------------------------------------------------------------------------------*
@@ -736,13 +731,9 @@ void DRT::CRACK::PropagateCrack::updateCrack( std::vector<int>& newTip )
   // The procedure is same in 3D, except that there are 8 elements, and 4 gets new duplicate node
   //
 
-
-
   int totalNodes = discret_->NumGlobalNodes(); // to decide the ids of new nodes
 
   std::vector<double> lmtAngle = getLimitAngles();
-
-
 
   // map of element ids to be modified with the new node
   // "key" contains the element id, and "value" is dummy here
