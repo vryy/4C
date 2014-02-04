@@ -953,7 +953,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
             }
           }
           //---------------------------------------
-          // cell is trisected (multi-sected)
+          // cell is trisected
           //---------------------------------------
           else if (numvolcells==3)
           {
@@ -976,6 +976,37 @@ void COMBUST::FlameFront::CaptureFlameFront(
               cutstat = COMBUST::InterfaceHandleCombust::uncut;
               // we cannot simply distinguish between not touched, touched and double touched here
               // moreover, everything we are doing here is currently wrong since multiple enrichments are not
+              // available in the current implementation
+              // therefore, we simply take the easiest way
+            }
+            else
+            {
+              FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
+              dserror("flame front for bisected element %d could not be captured",rootcell->Ele()->Id());
+            }
+          }
+          //---------------------------------------
+          // cell is multi-sected
+          //---------------------------------------
+          else if (numvolcells>3 and numvolcells<6)
+          {
+            // store domain integration cells
+            const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
+            // store also boundary integration cells
+            /* const size_t numstoredbound = */ StoreBoundaryIntegrationCells(cutele,listBoundaryIntCellsperEle,xyze);
+
+            if (numstoredvol > 1)
+            {
+              // treat element as bisected
+              cutstat = COMBUST::InterfaceHandleCombust::bisected;
+            }
+            // element is multisected, but several volume cells do not contain any domain integration cell
+            // thus element is considered uncut
+            else if (numstoredvol == 1)
+            {
+              // update cut status of root cell (element)
+              cutstat = COMBUST::InterfaceHandleCombust::uncut;
+              // note, everything we are doing here is currently wrong since multiple enrichments are not
               // available in the current implementation
               // therefore, we simply take the easiest way
             }
