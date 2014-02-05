@@ -25,6 +25,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_dofset_pbc.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_comm/comm_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -138,7 +139,8 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
     if(verbose_)
     {
-      Teuchos::TimeMonitor::summarize();
+      Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(discret_->Comm());
+      Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
     }
 
     if(discret_->Comm().MyPID()==0 && verbose_)

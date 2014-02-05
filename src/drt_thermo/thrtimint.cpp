@@ -26,6 +26,7 @@ Maintainer: Caroline Danowski
 #include "thr_resulttest.H"
 
 #include "../drt_io/io_control.H"
+#include "../drt_fluid/drt_periodicbc.H"
 
 
 /*----------------------------------------------------------------------*
@@ -96,6 +97,20 @@ THR::TimInt::TimInt(
   if ( (printlogo_) and (myrank_ == 0) )
   {
     Logo();
+  }
+
+  // connect degrees of freedom for periodic boundary conditions
+  {
+    PeriodicBoundaryConditions pbc(discret_);
+
+    if (pbc.HasPBC())
+    {
+      pbc.UpdateDofsForPeriodicBoundaryConditions();
+
+      discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
+
+      dofrowmap_ = discret_->DofRowMap();
+    }
   }
 
   // check wether discretisation has been completed

@@ -1,0 +1,457 @@
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus 
+
+simple 3D example. consists of 12 hex8 elements and is loaded with a
+surface thermal Neumann boundary condition. Heatflux increasing in time leads to
+a extension of the body, one-step-theta time integration.
+
+periodic boundary conditions are tested in xy plane which lead to a 2D problem 
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    12
+//NODES       42
+DIM           3
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Thermo_Structure_Interaction
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMAIRWAYSDIS                   0
+NUMALEDIS                       0
+NUMARTNETDIS                    0
+NUMFLUIDDIS                     0
+NUMSTRUCDIS                     1
+NUMTHERMDIS                     1
+--------------------------------------------------------------------------IO
+FILESTEPS                       1000
+FLUID_SOL                       Yes
+FLUID_STRESS                    No
+FLUID_VIS                       No
+OUTPUT_BIN                      Yes
+OUTPUT_GID                      No
+STDOUTEVRY                      1
+STRUCT_DISP                     Yes                             // Yes,No,yes,no,YES,NO
+STRUCT_STRAIN                   no //GL // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
+STRUCT_STRESS                   Cauchy // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_SURFACTANT               No
+THERM_HEATFLUX                  Current                         // None,No,NO,no,Current,Initial
+THERM_TEMPERATURE               Yes                             // Yes,No,yes,no,YES,NO
+THERM_TEMPGRAD                  no //Current // None,No,NO,no,Current,Initial
+WRITE_TO_SCREEN                 Yes
+WRITE_TO_FILE                   No
+LIMIT_OUTP_TO_PROC              -1
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   2
+ADAPTCONV                       Yes
+ADAPTCONV_BETTER                0.001
+CONTROLNODE                     -1 -1 -1
+CONTROLTYPE                     load
+DAMPING                         No
+DIVERCONT                       stop                              // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
+DYNAMICTYP                      OneStepTheta                    // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
+ITERNORM                        L2
+K_DAMP                          0.5
+LOADLIN                         yes
+MAXITER                         50
+MAXTIME                         1
+MINITER                         0
+M_DAMP                          0.5
+NLNSOL                          fullnewton                      // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
+NORMCOMBI_DISPPRES              And
+NORMCOMBI_RESFDISP              And
+NORMCOMBI_RESFINCO              And
+NORM_DISP                       Abs
+NORM_INCO                       Abs
+NORM_PRES                       Abs
+NORM_RESF                       Abs
+NUMSTEP                         200
+PREDICT                         ConstDis                        // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
+RESULTSEVRY                     1
+RESEVRYERGY                     0
+RESTARTEVRY                     1
+STC_LAYER                       1
+STC_SCALING                     no
+TIMESTEP                        0.01
+TOLCONSTR                       1e-06
+TOLDISP                         1e-08
+TOLINCO                         1e-06
+TOLPRE                          1e-06
+TOLRES                          1e-06
+UZAWAALGO                       direct
+UZAWAMAXITER                    50
+UZAWAPARAM                      1
+UZAWATOL                        1e-08
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           0.66
+--------------------------------------------------------------------SOLVER 2
+AMGBS_BS_DAMPING                1.3 1.3 1.3
+AMGBS_BS_PCCOARSE               Umfpack
+AMGBS_BS_PCDAMPING              1.0 1.0 1.0
+AMGBS_BS_PCFINE                 Umfpack
+AMGBS_BS_PCMEDIUM               Umfpack
+AMGBS_BS_PCSWEEPS               2 2 2
+AMGBS_PSMOOTHER_PRE             PA-AMG
+AMGBS_PSMOOTHER_VEL             PA-AMG
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          200
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPOLY                          3
+AZPREC                          MLFLUID2
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           75
+AZTOL                           1e-08
+DWINDTAU                        1.5
+IFPACKCOMBINE                   Add
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                2000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  SGS
+ML_SMOTIMES                     4 4 4 1 1
+SOLVER                          Aztec_MSR                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+-------------------------------------------------------------THERMAL DYNAMIC
+LINEAR_SOLVER                   3
+ADAPTCONV                       No
+ADAPTCONV_BETTER                0.1
+DIVERCONT                       stop
+DYNAMICTYP                      OneStepTheta                    // Statics,OneStepTheta
+INITFUNCNO                      1
+INITIALFIELD                    field_by_function               // zero_field,field_by_function,field_by_condition
+ITERNORM                        L2
+MAXITER                         50
+MAXTIME                         1
+MINITER                         0
+NLNSOL                          fullnewton                      // vague,fullnewton
+NORMCOMBI_RESFTEMP              And
+NORM_RESF                       Abs
+NORM_TEMP                       Abs
+NUMSTEP                         200                             // for the outer iteration this NUMSTEP is used!
+PREDICT                         ConstTemp                       // Vague,ConstTemp,ConstTempRate,TangTemp
+RESEVRYERGY                     0
+RESEVRYGLOB                     1
+RESTARTEVRY                     1
+TIMESTEP                        0.01
+TOLRES                          1e-06
+TOLTEMP                         1e-08
+----------------------------------------------------THERMAL DYNAMIC/GENALPHA
+------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
+THETA                           0.66
+--------------------------------------------------------------------SOLVER 3
+AMGBS_BS_DAMPING                1.3 1.3 1.3
+AMGBS_BS_PCCOARSE               Umfpack
+AMGBS_BS_PCDAMPING              1.0 1.0 1.0
+AMGBS_BS_PCFINE                 Umfpack
+AMGBS_BS_PCMEDIUM               Umfpack
+AMGBS_BS_PCSWEEPS               2 2 2
+AMGBS_PSMOOTHER_PRE             PA-AMG
+AMGBS_PSMOOTHER_VEL             PA-AMG
+AZBDIAG                         0
+AZCONV                          AZ_r0                           // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          200
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPOLY                          3
+AZPREC                          MLFLUID2
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           75
+AZTOL                           1e-08
+DWINDTAU                        1.5
+IFPACKCOMBINE                   Add
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                2000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  SGS
+ML_SMOTIMES                     4 4 4 1 1
+SOLVER                          Aztec_MSR                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+-----------------------------------------------------------------TSI DYNAMIC
+LINEAR_SOLVER                   1
+CONVTOL                         1e-06
+TOLINC                          2e-08
+ITEMAX                          15
+MAXTIME                         10
+NUMSTEP                         20
+RESTARTEVRY                     15
+TIMESTEP                        0.01
+UPRES                           10
+COUPALGO                        tsi_monolithic
+TFSI_COUPALGO                   tfsi_mortar_mortar_dual
+TFSI_length_unit                cm
+TFSI_time_unit                  ms
+COUPVARIABLE                    Displacement
+ITEMIN                          1
+NORMCOMBI_RESFINC               And
+NORM_INC                        Abs
+NORM_RESF                       Abs
+--------------------------------------------------------------------SOLVER 1
+NAME                            Thermo_Structur_Interaction_Solver
+AMGBS_BS_DAMPING                1.3 1.3 1.3
+AMGBS_BS_PCCOARSE               Umfpack
+AMGBS_BS_PCDAMPING              1.0 1.0 1.0
+AMGBS_BS_PCFINE                 Umfpack
+AMGBS_BS_PCMEDIUM               Umfpack
+AMGBS_BS_PCSWEEPS               2 2 2
+AMGBS_PSMOOTHER_PRE             PA-AMG
+AMGBS_PSMOOTHER_VEL             PA-AMG
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          150
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPOLY                          3
+AZPREC                          BGS2x2                          // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           75
+AZTOL                           1e-08
+BGS2X2_FLIPORDER                block1_block0_order
+DWINDTAU                        1.5
+IFPACKCOMBINE                   Add
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                2000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 SGS
+ML_SMOOTHERMED                  SGS
+ML_SMOTIMES                     4 4 4 1 1
+SOLVER                          Aztec_MSR //UMFPACK //Belos // Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.2e3 NUE 0.0 DENS 7.6e-3 THEXPANS 1.0e-4 CAPA 3.4715e-2 CONDUCT 48.9e-04 INITTEMP 273.0
+MAT 2 THERM_FourierIso CAPA 3.4715e-2 CONDUCT 48.9e-04
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
+----------------------------------------------------------------------CURVE1
+CURVE1 on EXPR FUNC 1.0 t1 0.0 t2 5000.0
+----------------------------------------------------------------------CURVE2
+----------------------------------------------------------------------CURVE3
+----------------------------------------------------------------------CURVE4
+----------------------------------------------------------------------FUNCT1
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 273.0
+----------------------------------------------------------------------FUNCT2
+FUNCT2 EXPR 0 0.0 0 FUNCTION (2.0)*z+4 // some linear function in z-direction
+----------------------------------------------------------------------FUNCT3
+----------------------------------------------------------------------FUNCT4
+
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 0
+NDLINE  1
+NDSURF  4
+NDVOL   0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  1
+// inner_volume_nodes
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF  1
+// clamping_surface_base
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+--------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
+DSURF  2
+// pbc_slave_side_neg_z
+E 3 - 1 Slave PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+// pbc_master_side_pos_z
+E 4 - 1 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
+---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
+DSURF  1    
+// THR heatflux
+E 1 - none 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 2 0 0 0 0 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    15 DLINE 1
+NODE    16 DLINE 1
+NODE    20 DLINE 1
+NODE    22 DLINE 1
+NODE    24 DLINE 1
+NODE    26 DLINE 1
+NODE    28 DLINE 1
+NODE    30 DLINE 1
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    13 DSURFACE 1
+NODE    14 DSURFACE 1
+NODE    17 DSURFACE 1
+NODE    18 DSURFACE 1
+NODE    19 DSURFACE 1
+NODE    21 DSURFACE 1
+NODE    23 DSURFACE 1
+NODE    25 DSURFACE 1
+NODE    27 DSURFACE 1
+NODE    29 DSURFACE 1
+NODE    31 DSURFACE 1
+NODE    32 DSURFACE 1
+NODE    33 DSURFACE 1
+NODE    34 DSURFACE 1
+NODE    35 DSURFACE 1
+NODE    36 DSURFACE 1
+NODE    37 DSURFACE 1
+NODE    38 DSURFACE 1
+NODE    39 DSURFACE 1
+NODE    40 DSURFACE 1
+NODE    41 DSURFACE 1
+NODE    42 DSURFACE 1
+NODE    1 DSURFACE 2
+NODE    2 DSURFACE 2
+NODE    3 DSURFACE 2
+NODE    4 DSURFACE 2
+NODE    5 DSURFACE 2
+NODE    6 DSURFACE 2
+NODE    7 DSURFACE 2
+NODE    8 DSURFACE 2
+NODE    9 DSURFACE 2
+NODE    10 DSURFACE 2
+NODE    11 DSURFACE 2
+NODE    12 DSURFACE 2
+NODE    13 DSURFACE 2
+NODE    14 DSURFACE 2
+NODE    15 DSURFACE 2
+NODE    16 DSURFACE 2
+NODE    17 DSURFACE 2
+NODE    18 DSURFACE 2
+NODE    13 DSURFACE 3
+NODE    16 DSURFACE 3
+NODE    18 DSURFACE 3
+NODE    21 DSURFACE 3
+NODE    22 DSURFACE 3
+NODE    25 DSURFACE 3
+NODE    26 DSURFACE 3
+NODE    29 DSURFACE 3
+NODE    30 DSURFACE 3
+NODE    33 DSURFACE 3
+NODE    34 DSURFACE 3
+NODE    36 DSURFACE 3
+NODE    38 DSURFACE 3
+NODE    40 DSURFACE 3
+NODE    42 DSURFACE 3
+NODE    14 DSURFACE 4
+NODE    15 DSURFACE 4
+NODE    17 DSURFACE 4
+NODE    19 DSURFACE 4
+NODE    20 DSURFACE 4
+NODE    23 DSURFACE 4
+NODE    24 DSURFACE 4
+NODE    27 DSURFACE 4
+NODE    28 DSURFACE 4
+NODE    31 DSURFACE 4
+NODE    32 DSURFACE 4
+NODE    35 DSURFACE 4
+NODE    37 DSURFACE 4
+NODE    39 DSURFACE 4
+NODE    41 DSURFACE 4
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE 1  	COORD	1.4500000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 2  	COORD	1.4500000000000000e+00	0.0000000000000000e+00	8.0000000000000000e+00	
+NODE 3  	COORD	1.5000000000000000e+00	0.0000000000000000e+00	8.0000000000000000e+00	
+NODE 4  	COORD	1.5000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 5  	COORD	1.4500000000000000e+00	7.5000000000000000e-01	0.0000000000000000e+00	
+NODE 6  	COORD	1.4500000000000000e+00	7.5000000000000000e-01	8.0000000000000000e+00	
+NODE 7  	COORD	1.5000000000000000e+00	7.5000000000000000e-01	8.0000000000000000e+00	
+NODE 8  	COORD	1.5000000000000000e+00	7.5000000000000000e-01	0.0000000000000000e+00	
+NODE 9  	COORD	1.5500000000000000e+00	0.0000000000000000e+00	8.0000000000000000e+00	
+NODE 10  	COORD	1.5500000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 11  	COORD	1.5500000000000000e+00	7.5000000000000000e-01	8.0000000000000000e+00	
+NODE 12  	COORD	1.5500000000000000e+00	7.5000000000000000e-01	0.0000000000000000e+00	
+NODE 13  	COORD	1.4500000000000000e+00	1.5000000000000000e+00	0.0000000000000000e+00	
+NODE 14  	COORD	1.4500000000000000e+00	1.5000000000000000e+00	8.0000000000000000e+00	
+NODE 15  	COORD	1.5000000000000000e+00	1.5000000000000000e+00	8.0000000000000000e+00	
+NODE 16  	COORD	1.5000000000000000e+00	1.5000000000000000e+00	0.0000000000000000e+00	
+NODE 17  	COORD	1.5500000000000000e+00	1.5000000000000000e+00	8.0000000000000000e+00	
+NODE 18  	COORD	1.5500000000000000e+00	1.5000000000000000e+00	0.0000000000000000e+00	
+NODE 19  	COORD	1.4500000000000000e+00	2.5000000000000000e+00	8.0000000000000000e+00	
+NODE 20  	COORD	1.5000000000000000e+00	2.5000000000000000e+00	8.0000000000000000e+00	
+NODE 21  	COORD	1.4500000000000000e+00	2.5000000000000000e+00	0.0000000000000000e+00	
+NODE 22  	COORD	1.5000000000000000e+00	2.5000000000000000e+00	0.0000000000000000e+00	
+NODE 23  	COORD	1.4500000000000000e+00	3.5000000000000000e+00	8.0000000000000000e+00	
+NODE 24  	COORD	1.5000000000000000e+00	3.5000000000000000e+00	8.0000000000000000e+00	
+NODE 25  	COORD	1.4500000000000000e+00	3.5000000000000000e+00	0.0000000000000000e+00	
+NODE 26  	COORD	1.5000000000000000e+00	3.5000000000000000e+00	0.0000000000000000e+00	
+NODE 27  	COORD	1.4500000000000000e+00	4.5000000000000000e+00	8.0000000000000000e+00	
+NODE 28  	COORD	1.5000000000000000e+00	4.5000000000000000e+00	8.0000000000000000e+00	
+NODE 29  	COORD	1.4500000000000000e+00	4.5000000000000000e+00	0.0000000000000000e+00	
+NODE 30  	COORD	1.5000000000000000e+00	4.5000000000000000e+00	0.0000000000000000e+00	
+NODE 31  	COORD	1.4500000000000000e+00	5.5000000000000000e+00	8.0000000000000000e+00	
+NODE 32  	COORD	1.5000000000000000e+00	5.5000000000000000e+00	8.0000000000000000e+00	
+NODE 33  	COORD	1.4500000000000000e+00	5.5000000000000000e+00	0.0000000000000000e+00	
+NODE 34  	COORD	1.5000000000000000e+00	5.5000000000000000e+00	0.0000000000000000e+00	
+NODE 35  	COORD	1.5500000000000000e+00	2.5000000000000000e+00	8.0000000000000000e+00	
+NODE 36  	COORD	1.5500000000000000e+00	2.5000000000000000e+00	0.0000000000000000e+00	
+NODE 37  	COORD	1.5500000000000000e+00	3.5000000000000000e+00	8.0000000000000000e+00	
+NODE 38  	COORD	1.5500000000000000e+00	3.5000000000000000e+00	0.0000000000000000e+00	
+NODE 39  	COORD	1.5500000000000000e+00	4.5000000000000000e+00	8.0000000000000000e+00	
+NODE 40  	COORD	1.5500000000000000e+00	4.5000000000000000e+00	0.0000000000000000e+00	
+NODE 41  	COORD	1.5500000000000000e+00	5.5000000000000000e+00	8.0000000000000000e+00	
+NODE 42  	COORD	1.5500000000000000e+00	5.5000000000000000e+00	0.0000000000000000e+00	
+------------------------------------------------STRUCTURE ELEMENTS
+   1 SOLIDH8THERMO HEX8  1 2 3 4 5 6 7 8    MAT 1 KINEM nonlinear EAS full
+   2 SOLIDH8THERMO HEX8  4 3 9 10 8 7 11 12    MAT 1 KINEM nonlinear EAS full
+   3 SOLIDH8THERMO HEX8  5 6 7 8 13 14 15 16    MAT 1 KINEM nonlinear EAS full
+   4 SOLIDH8THERMO HEX8  8 7 11 12 16 15 17 18    MAT 1 KINEM nonlinear EAS full
+   5 SOLIDH8THERMO HEX8  14 19 20 15 13 21 22 16    MAT 1 KINEM nonlinear EAS full
+   6 SOLIDH8THERMO HEX8  19 23 24 20 21 25 26 22    MAT 1 KINEM nonlinear EAS full
+   7 SOLIDH8THERMO HEX8  23 27 28 24 25 29 30 26    MAT 1 KINEM nonlinear EAS full
+   8 SOLIDH8THERMO HEX8  27 31 32 28 29 33 34 30    MAT 1 KINEM nonlinear EAS full
+   9 SOLIDH8THERMO HEX8  15 20 35 17 16 22 36 18    MAT 1 KINEM nonlinear EAS full
+   10 SOLIDH8THERMO HEX8  20 24 37 35 22 26 38 36    MAT 1 KINEM nonlinear EAS full
+   11 SOLIDH8THERMO HEX8  24 28 39 37 26 30 40 38    MAT 1 KINEM nonlinear EAS full
+   12 SOLIDH8THERMO HEX8  28 32 41 39 30 34 42 40    MAT 1 KINEM nonlinear EAS full
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+----------------------------------------------------------RESULT DESCRIPTION
+THERMAL DIS thermo NODE 32 QUANTITY temp VALUE 6.07486003083843116e+02 TOLERANCE 1.0e-11
+THERMAL DIS thermo NODE 34 QUANTITY temp VALUE 6.07486003083843116e+02 TOLERANCE 1.0e-11
+STRUCTURE DIS structure NODE 32 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 32 QUANTITY dispy VALUE 1.17133387453709284e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 32 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 34 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 34 QUANTITY dispy VALUE 1.17133387453709284e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 34 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-12
+---------------------------------------------------------------END
+// END

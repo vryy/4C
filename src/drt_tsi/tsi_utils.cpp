@@ -53,6 +53,10 @@ std::map<std::string,std::string> TSI::UTILS::ThermoStructureCloneStrategy::Cond
   // transfer)
   conditions_to_copy.insert(std::pair<std::string,std::string>("ThermoConvections","ThermoConvections"));
 
+  // conditions for periodic boundary conditions
+  conditions_to_copy.insert(std::pair<std::string,std::string>("LinePeriodic","LinePeriodic"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("SurfacePeriodic","SurfacePeriodic"));
+
   return conditions_to_copy;
 }  // ConditionsToCopy()
 

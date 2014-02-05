@@ -251,7 +251,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else dserror("no output std::string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);
-  if ((int)geometry_->size())
+  if (geometry_!=Teuchos::null and (int)geometry_->size())
   {
     os << std::endl;
     os << "Elements of this condition:\n";

@@ -184,6 +184,18 @@ STR::TimInt::TimInt
     dserror("Discretisation is not complete or has no dofs!");
   }
 
+  // connect degrees of freedom for periodic boundary conditions
+  {
+    PeriodicBoundaryConditions pbc(discret_);
+
+    if (pbc.HasPBC())
+    {
+      pbc.UpdateDofsForPeriodicBoundaryConditions();
+
+      discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
+    }
+  }
+
   // time state
   time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
   dt_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
@@ -391,19 +403,6 @@ STR::TimInt::TimInt
 
 void STR::TimInt::createFields( Teuchos::RCP<LINALG::Solver>& solver )
 {
-  // connect degrees of freedom for periodic boundary conditions
-  // (i.e. for multi-patch nurbs computations)
-  {
-    PeriodicBoundaryConditions pbc(discret_);
-
-    if (pbc.HasPBC())
-    {
-      pbc.UpdateDofsForPeriodicBoundaryConditions();
-
-      discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
-    }
-  }
-
   // a zero vector of full length
   zeros_ = LINALG::CreateVector(*DofRowMapView(), true);
 
