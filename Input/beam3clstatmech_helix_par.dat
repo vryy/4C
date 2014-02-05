@@ -74,7 +74,7 @@ CHECKORIENT                     Yes                           // check orientati
 FIXEDSEED                       Yes                           // (de)activate pesudo-randomness
 INITIALSEED                     1                             // manipulate initial seed of pseudo random numbers
 //==============                OUTPUT SET UP ============== 
-GMSHOUTPUT                      Yes                            // visualization via Gmsh
+GMSHOUTPUT                      No                            // visualization via Gmsh
 GMSHNETSTRUCT                   No                            // visualize structure detection
 PlotFactorThick                 0                             // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
 SPECIAL_OUTPUT                  none                          // densitydensitycorr viscoelasticity
