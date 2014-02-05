@@ -354,18 +354,6 @@ void UTILS::WindkesselManager::UpdateTimeStep()
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-/*void UTILS::WindkesselManager::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-    Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
-{
-  // (re)allocate system matrix
-  coupoffdiag_vol_d_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*domainmaps,*rangemaps,81,false,true));
-  coupoffdiag_fext_p_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*domainmaps,*rangemaps,81,false,true));
-
-  return;
-}*/
-
 
 /*----------------------------------------------------------------------*/
 /* iterative iteration update of state */
@@ -520,6 +508,7 @@ void UTILS::WindkesselManager::Solve
   // define MapExtractor
   LINALG::MapExtractor mapext(*mergedmap,standrowmap,windkrowmap);
 
+
   // initialize large SparseMatrix and Epetra_Vectors
   RCP<LINALG::SparseMatrix> mergedmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap,81));
   RCP<Epetra_Vector> mergedrhs = Teuchos::rcp(new Epetra_Vector(*mergedmap));
@@ -529,7 +518,15 @@ void UTILS::WindkesselManager::Solve
   if (dirichtoggle_ != Teuchos::null)
     dbcmaps_ = LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
 
-  // fill merged matrix using Add
+  // use BlockMatrix
+  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > blockmat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(mapext,mapext,81,false,false));
+  blockmat->Assign(0,0,View,*stiff);
+  blockmat->Assign(0,1,View,*coupoffdiag_vol_d->Transpose());
+  blockmat->Assign(1,0,View,*coupoffdiag_fext_p);
+  blockmat->Assign(1,1,View,*windkstiff);
+  blockmat->Complete();
+
+  // merge into one, fill merged matrix using Add
   mergedmatrix -> Add(*stiff,false,1.0,1.0);
   mergedmatrix -> Add(*coupoffdiag_vol_d,true,1.0,1.0);
   mergedmatrix -> Add(*coupoffdiag_fext_p,false,1.0,1.0);
@@ -551,9 +548,12 @@ void UTILS::WindkesselManager::Solve
       std::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits<<std::endl;
 #endif
 
-  // solve
-  solver_->Solve(mergedmatrix->EpetraMatrix(),mergedsol,mergedrhs,true,counter_==0);
+  // solve with merged matrix
+  //solver_->Solve(mergedmatrix->EpetraMatrix(),mergedsol,mergedrhs,true,counter_==0);
+  // solve with Block matrix
+  solver_->Solve(blockmat,mergedsol,mergedrhs,true,counter_==0);
   solver_->ResetTolerance();
+
   // store results in smaller vectors
   mapext.ExtractCondVector(mergedsol,dispinc);
   mapext.ExtractOtherVector(mergedsol,presincr);
