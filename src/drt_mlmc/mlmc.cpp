@@ -45,11 +45,8 @@ Maintainer: Jonas Biehler
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
-STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
-                Teuchos::RCP<IO::DiscretizationWriter> output)
-  : discret_(dis),
-    output_(output)
-    //sti_(Teuchos::null)
+STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
+  : discret_(dis)
 {
 
   // get coarse and fine discretizations
@@ -288,22 +285,15 @@ void STR::MLMC::Integrate()
     const double t2 = Teuchos::Time::wallTime();
     discret_->Comm().Barrier();
 
+    discret_->Writer()->NewResultFile(filename_,(numb_run_));
+    discret_->Writer()->WriteMesh(1, 0.01);
 
-    if(!reduced_output_)
-    {
-      output_->NewResultFile(filename_,(numb_run_));
-      output_->WriteMesh(1, 0.01);
-    }
 
-    else
-    {
-      IO::cout << "ATTENTION NO NEW RESULTFILE CREATED" << IO::endl;
-    }
     // get input lists
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
     //store time
-    double t3 = 0;
+    double t3 =0;
     double t4 =0;
     // major switch to different time integrators
     switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
@@ -470,11 +460,9 @@ void STR::MLMC::IntegrateNoReset()
     ResetPrestress();
     discret_->Comm().Barrier();
 
-    if(!reduced_output_)
-    {
-        output_->NewResultFile(filename_,(numb_run_));
-        output_->WriteMesh(1, 0.01);
-    }
+    discret_->Writer()->NewResultFile(filename_,(numb_run_));
+    discret_->Writer()->WriteMesh(1, 0.01);
+
 
     // major switch to different time integrators
     switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
@@ -619,11 +607,30 @@ int STR::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int r
   // for loop to encapsulate parameter continuation scheme
   for(unsigned int k =0 ; k<num_cont_steps ; k++)
   {
-     double gamma=1.0/num_cont_steps+(k*(1.0/num_cont_steps));
-     IO::cout << "Gamma is  " << gamma << IO::endl;
-     // if we have prestress we need possibly a two step process
-     // get prestress type
-     INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+    double gamma=1.0/num_cont_steps+(k*(1.0/num_cont_steps));
+    // set new outputfile
+    std::stringstream filename_helper1;
+    std::string filename_helper2;
+    std::string filename_paracont;
+    filename_helper1 << filename_ << "_gamma_" << gamma ;
+    filename_helper2 = filename_helper1.str();
+    // strip path from name
+    std::string::size_type pos = filename_helper2.find_last_of('/');
+    if (pos==std::string::npos)
+      filename_paracont = filename_helper2;
+    else
+      filename_paracont = filename_helper2.substr(pos+1);
+
+    IO::cout << "filename_paracont " << filename_paracont << IO::endl;
+    IO::cout << "filename_ " << filename_ << IO::endl;
+
+    discret_->Writer()->NewResultFile(filename_paracont,(numb_run_));
+
+
+    IO::cout << "Gamma is  " << gamma << IO::endl;
+    // if we have prestress we need possibly a two step process
+    // get prestress type
+    INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
 
      if(pstype==INPAR::STR::prestress_mulf)
      {

@@ -349,9 +349,7 @@ public:
   // #########################################################################
 
   //! \brief standard constructor
-  MLMC( Teuchos::RCP<DRT::Discretization> dis,  ///< the discretisation
-    Teuchos::RCP<IO::DiscretizationWriter> output  ///< outputer
-    );
+  MLMC( Teuchos::RCP<DRT::Discretization> dis );  ///< the discretisation
 
   //! \brief perform time integration and eval (production version)
   void Integrate();

@@ -43,11 +43,6 @@ void STR::mlmc()
   // set degrees of freedom in the discretization
   if (not actdis->Filled() || not actdis->HaveDofs()) actdis->FillComplete();
 
-
-
-  // context for output and restart
-  Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
-
   // input parameters for structural dynamics
   const Teuchos::ParameterList& sdyn
     = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -73,7 +68,7 @@ void STR::mlmc()
   bool param_cont =Teuchos::getIntegralValue<int>(mlmcp,"PARAMETERCONTINUATION");
   if (perform_mlmc==true)
   {
-    STR::MLMC mc(actdis,output);
+    STR::MLMC mc(actdis);
     // Use another integrate function if we do not reset the prestress
     if(!param_cont)
     {
