@@ -286,7 +286,7 @@ void STR::MLMC::Integrate()
     discret_->Comm().Barrier();
 
     discret_->Writer()->NewResultFile(filename_,(numb_run_));
-    discret_->Writer()->WriteMesh(1, 0.01);
+    //discret_->Writer()->WriteMesh(0, 0.01);
 
 
     // get input lists
@@ -461,7 +461,7 @@ void STR::MLMC::IntegrateNoReset()
     discret_->Comm().Barrier();
 
     discret_->Writer()->NewResultFile(filename_,(numb_run_));
-    discret_->Writer()->WriteMesh(1, 0.01);
+    //discret_->Writer()->WriteMesh(0, 0.0);
 
 
     // major switch to different time integrators
@@ -900,10 +900,10 @@ void STR::MLMC::ProlongateResults()
   output_fine_->NewResultFile(filename_helper_prolong ,(numb_run_));
 
 
-  output_fine_->WriteMesh(1, 0.01, meshfilename_);
+  output_fine_->WriteMesh(0, 0.01, meshfilename_);
   // exception for first run
   if(numb_run_==start_run_)
-    output_fine_->WriteMesh(1, 0.01);
+    output_fine_->WriteMesh(0, 0.01);
 
   output_fine_->NewStep( 1, 0.01);
 
@@ -1613,7 +1613,7 @@ void STR::MLMC::WriteStatOutput()
   std::stringstream name_helper;
   name_helper << filename_ << "_statistics";
   output_fine_->NewResultFile(name_helper.str(),numb_run_);
-  output_fine_->WriteMesh(1, 0.01);
+  output_fine_->WriteMesh(0, 0.01);
   output_fine_->NewStep( 1, 0.01);
   output_fine_->WriteVector("mean_displacements", mean_disp_, output_fine_->dofvector);
   output_fine_->WriteVector("variance_displacements", var_disp_, output_fine_->dofvector);

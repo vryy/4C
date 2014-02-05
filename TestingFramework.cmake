@@ -28,6 +28,18 @@ macro (baci_test_Nested_Par arg1 arg2 restart)
   set_tests_properties ( ${arg1}-nestedPar PROPERTIES TIMEOUT 200 )
 endmacro (baci_test_Nested_Par)
 
+# Run test case for nested parallelism with copydatfile and test mlmc framework in npar setting
+# arg1 is the inputfile
+# arg2 is the number of procs
+# arg3 is the number of groups
+macro (baci_test_Nested_Par_MC arg1 arg2 arg3)
+  add_test(NAME ${arg1}-nestedPar_MC-p${arg2}
+    COMMAND ${MPI_DIR}/bin/mpirun -np ${arg2} $<TARGET_FILE:${baciname}> -ngroup=${arg3} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx )
+
+  set_tests_properties ( ${arg1}-nestedPar_MC-p${arg2} PROPERTIES TIMEOUT 200 )
+endmacro (baci_test_Nested_Par_MC)
+
+
 # FRAMEWORK TESTS
 macro (baci_framework_test arg nproc)
   set (RUNCUBIT ${CUBIT_DIR}/cubit\ -batch\ -nographics\ -nojournal\ ${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.jou)
@@ -1098,8 +1110,6 @@ baci_test(tsi_heatconvection_thrplastic_genalpha_monolithic 2 "")
 baci_test(tsi_heatflux_iterstagg 1 "")
 baci_test(tsi_heatflux_iterstaggaitken 1 "")
 baci_test(tsi_heatflux_monolithic 1 "")
-baci_test(tsi_heatflux_monolithic_pbc 1 15)
-baci_test(tsi_heatflux_monolithic_pbc 2 15)
 baci_test(tsi_heatflux_flexoutsurf_monolithic 1 "")
 baci_test(tsi_heatflux_flexoutsurf_monolithic 2 "")
 baci_test(tsi_plexichannel_varyE_monolithic 1 "")
@@ -1421,6 +1431,11 @@ baci_test(art_aorta_3D_lognorm_field_FFT 1 "")
 baci_test_Nested_Par(tsi_heatconvection_monolithic tsi_heatconvection_monolithic "")
 baci_test_Nested_Par(sohex8_multiscale_macro sohex8_multiscale_npsupport "1")
 baci_test_Nested_Par(sohex8_multiscale_macro_2micro sohex8_multiscale_npsupport "1")
+baci_test_Nested_Par_MC(nestedpar_copydatfile 2 2)
+baci_test_Nested_Par_MC(mlmc_framework 2 2)
+baci_test_Nested_Par_MC(mlmc_framework 4 2)
+baci_test_Nested_Par_MC(mlmc_framework_paracont 2 2)
+baci_test_Nested_Par_MC(mlmc_framework_paracont 4 2)
 baci_test(fpsi_bending_struct 2 3)
 
 
