@@ -35,8 +35,11 @@ endmacro (baci_test_Nested_Par)
 macro (baci_test_Nested_Par_MC arg1 arg2 arg3)
   add_test(NAME ${arg1}-nestedPar_MC-p${arg2}
     COMMAND ${MPI_DIR}/bin/mpirun -np ${arg2} $<TARGET_FILE:${baciname}> -ngroup=${arg3} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx )
-
-  set_tests_properties ( ${arg1}-nestedPar_MC-p${arg2} PROPERTIES TIMEOUT 200 )
+    if( "${ARGN}" STREQUAL "minimal")
+      set_tests_properties ( ${arg1}-nestedPar_MC-p${arg2} PROPERTIES TIMEOUT 200 LABELS minimal)
+    else ()
+      set_tests_properties ( ${arg1}-nestedPar_MC-p${arg2} PROPERTIES TIMEOUT 200)
+    endif ()
 endmacro (baci_test_Nested_Par_MC)
 
 
@@ -1437,7 +1440,7 @@ baci_test(art_aorta_3D_lognorm_field_FFT 1 "")
 baci_test_Nested_Par(tsi_heatconvection_monolithic tsi_heatconvection_monolithic "")
 baci_test_Nested_Par(sohex8_multiscale_macro sohex8_multiscale_npsupport "1")
 baci_test_Nested_Par(sohex8_multiscale_macro_2micro sohex8_multiscale_npsupport "1")
-baci_test_Nested_Par_MC(nestedpar_copydatfile 2 2)
+baci_test_Nested_Par_MC(nestedpar_copydatfile 2 2 minimal)
 baci_test_Nested_Par_MC(mlmc_framework 2 2)
 baci_test_Nested_Par_MC(mlmc_framework 4 2)
 baci_test_Nested_Par_MC(mlmc_framework_paracont 2 2)
