@@ -74,10 +74,10 @@ macro(post_processing arg nproc stresstype straintype startstep)
   set (RUNPOSTFILTER_PAR ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx\ --output=xxx_PAR_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
   set (RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx\ --output=xxx_SER_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep} )
 
-  set (CLEANUPPOSTFILTER /bin/rm\ -vf\ xxx_PAR_${arg}*\ xxx_SER_${arg}* )
+#  set (CLEANUPPOSTFILTER /bin/rm\ -vf\ xxx_PAR_${arg}*\ xxx_SER_${arg}* )
 
   add_test(NAME ${arg}-p${nproc}-pp  
-  COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && pvpython\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py xxx_PAR_${arg}*.case xxx_SER_${arg}*.case && ${CLEANUPPOSTFILTER}")
+  COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && pvpython\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py xxx_PAR_${arg}*.case xxx_SER_${arg}*.case")# && ${CLEANUPPOSTFILTER}")
 
   set_tests_properties ( ${arg}-p${nproc}-pp PROPERTIES TIMEOUT 1000 )
   set_tests_properties ( ${arg}-p${nproc}-pp PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
