@@ -70,7 +70,7 @@ void DRT::MESHFREE::CellGaussPoints<distype>::Done()
 }
 
 /*--------------------------------------------------------------------------*
- | ctor to called by Instance() only and only once      (private) nis Feb12 |
+ | ctor to called by Instance() once and only once      (private) nis Feb12 |
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
@@ -95,38 +95,38 @@ DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
       // assign shape function values in loop over Gauss points
       for (int i=0; i<ngp_; i++){
         w_(i) = intpoints_.IP().qwgt[i];
-        N_(i,0) = (1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8;
-        N_(i,1) = (1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8;
-        N_(i,2) = (1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8;
-        N_(i,3) = (1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8;
-        N_(i,4) = (1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8;
-        N_(i,5) = (1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8;
-        N_(i,6) = (1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8;
-        N_(i,7) = (1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8;
-        dN_[i](0,0) = -(1-intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8;
-        dN_[i](0,1) = +(1-intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8;
-        dN_[i](0,2) = +(1+intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8;
-        dN_[i](0,3) = -(1+intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8;
-        dN_[i](0,4) = -(1-intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8;
-        dN_[i](0,5) = +(1-intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8;
-        dN_[i](0,6) = +(1+intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8;
-        dN_[i](0,7) = -(1+intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8;
-        dN_[i](1,0) = -(1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][2])/8;
-        dN_[i](1,1) = -(1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][2])/8;
-        dN_[i](1,2) = +(1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][2])/8;
-        dN_[i](1,3) = +(1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][2])/8;
-        dN_[i](1,4) = -(1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][2])/8;
-        dN_[i](1,5) = -(1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][2])/8;
-        dN_[i](1,6) = +(1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][2])/8;
-        dN_[i](1,7) = +(1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][2])/8;
-        dN_[i](2,0) = -(1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])/8;
-        dN_[i](2,1) = -(1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])/8;
-        dN_[i](2,2) = -(1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])/8;
-        dN_[i](2,3) = -(1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])/8;
-        dN_[i](2,4) = +(1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])/8;
-        dN_[i](2,5) = +(1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])/8;
-        dN_[i](2,6) = +(1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])/8;
-        dN_[i](2,7) = +(1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])/8;
+        N_(i,0) = (1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8.0;
+        N_(i,1) = (1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8.0;
+        N_(i,2) = (1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8.0;
+        N_(i,3) = (1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8.0;
+        N_(i,4) = (1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8.0;
+        N_(i,5) = (1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8.0;
+        N_(i,6) = (1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8.0;
+        N_(i,7) = (1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](0,0) = -(1-intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](0,1) = +(1-intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](0,2) = +(1+intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](0,3) = -(1+intpoints_.IP().qxg[i][1])*(1-intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](0,4) = -(1-intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](0,5) = +(1-intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](0,6) = +(1+intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](0,7) = -(1+intpoints_.IP().qxg[i][1])*(1+intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](1,0) = -(1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](1,1) = -(1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](1,2) = +(1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](1,3) = +(1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](1,4) = -(1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](1,5) = -(1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](1,6) = +(1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](1,7) = +(1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][2])/8.0;
+        dN_[i](2,0) = -(1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])/8.0;
+        dN_[i](2,1) = -(1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])/8.0;
+        dN_[i](2,2) = -(1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])/8.0;
+        dN_[i](2,3) = -(1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])/8.0;
+        dN_[i](2,4) = +(1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])/8.0;
+        dN_[i](2,5) = +(1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])/8.0;
+        dN_[i](2,6) = +(1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])/8.0;
+        dN_[i](2,7) = +(1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])/8.0;
       } // case DRT::Element::hex8
     } // if is_instantiated_
     return;
@@ -153,18 +153,18 @@ DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
         N_(i,2) = intpoints_.IP().qxg[i][1];
         N_(i,3) = intpoints_.IP().qxg[i][2];
       }
-      dN_[0](0,0) = -1;
-      dN_[0](0,1) = 1;
-      dN_[0](0,2) = 0;
-      dN_[0](0,3) = 0;
-      dN_[0](1,0) = -1;
-      dN_[0](1,1) = 0;
-      dN_[0](1,2) = 1;
-      dN_[0](1,3) = 0;
-      dN_[0](2,0) = -1;
-      dN_[0](2,1) = 0;
-      dN_[0](2,2) = 0;
-      dN_[0](2,3) = 1;
+      dN_[0](0,0) = -1.0;
+      dN_[0](0,1) =  1.0;
+      dN_[0](0,2) =  0.0;
+      dN_[0](0,3) =  0.0;
+      dN_[0](1,0) = -1.0;
+      dN_[0](1,1) =  0.0;
+      dN_[0](1,2) =  1.0;
+      dN_[0](1,3) =  0.0;
+      dN_[0](2,0) = -1.0;
+      dN_[0](2,1) =  0.0;
+      dN_[0](2,2) =  0.0;
+      dN_[0](2,3) =  1.0;
     } // if is_instantiated_
     return;
   } // case DRT::Element::tet4
@@ -186,20 +186,21 @@ DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
       // assign shape function values in loop over Gauss points
       for (int i=0; i<ngp_; i++){
         w_(i) = intpoints_.IP().qwgt[i];
-        N_(i,0) = (1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])/4;
-        N_(i,1) = (1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])/4;
-        N_(i,2) = (1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])/4;
-        N_(i,3) = (1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])/4;
-        dN_[i](0,0) = -(1-intpoints_.IP().qxg[i][1])/4;
-        dN_[i](0,1) = +(1-intpoints_.IP().qxg[i][1])/4;
-        dN_[i](0,2) = +(1+intpoints_.IP().qxg[i][1])/4;
-        dN_[i](0,3) = -(1+intpoints_.IP().qxg[i][1])/4;
-        dN_[i](1,0) = -(1-intpoints_.IP().qxg[i][0])/4;
-        dN_[i](1,1) = -(1+intpoints_.IP().qxg[i][0])/4;
-        dN_[i](1,2) = +(1+intpoints_.IP().qxg[i][0])/4;
-        dN_[i](1,3) = +(1-intpoints_.IP().qxg[i][0])/4;
+        N_(i,0) = (1-intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])/4.0;
+        N_(i,1) = (1+intpoints_.IP().qxg[i][0])*(1-intpoints_.IP().qxg[i][1])/4.0;
+        N_(i,2) = (1+intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])/4.0;
+        N_(i,3) = (1-intpoints_.IP().qxg[i][0])*(1+intpoints_.IP().qxg[i][1])/4.0;
+        dN_[i](0,0) = -(1-intpoints_.IP().qxg[i][1])/4.0;
+        dN_[i](0,1) = +(1-intpoints_.IP().qxg[i][1])/4.0;
+        dN_[i](0,2) = +(1+intpoints_.IP().qxg[i][1])/4.0;
+        dN_[i](0,3) = -(1+intpoints_.IP().qxg[i][1])/4.0;
+        dN_[i](1,0) = -(1-intpoints_.IP().qxg[i][0])/4.0;
+        dN_[i](1,1) = -(1+intpoints_.IP().qxg[i][0])/4.0;
+        dN_[i](1,2) = +(1+intpoints_.IP().qxg[i][0])/4.0;
+        dN_[i](1,3) = +(1-intpoints_.IP().qxg[i][0])/4.0;
       } // for ngp
     } // if is_instantiated_
+
     return;
   } // case DRT::Element::quad
   case DRT::Element::tri3:
@@ -223,12 +224,12 @@ DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
         N_(i,1) = intpoints_.IP().qxg[i][0];
         N_(i,2) = intpoints_.IP().qxg[i][1];
       }
-      dN_[0](0,0) = -1;
-      dN_[0](0,1) = 1;
-      dN_[0](0,2) = 0;
-      dN_[0](1,0) = -1;
-      dN_[0](1,1) = 0;
-      dN_[0](1,2) = 1;
+      dN_[0](0,0) = -1.0;
+      dN_[0](0,1) =  1.0;
+      dN_[0](0,2) =  0.0;
+      dN_[0](1,0) = -1.0;
+      dN_[0](1,1) =  0.0;
+      dN_[0](1,2) =  1.0;
     } // if is_instantiated_
     return;
   } // case DRT::Element::tri3
@@ -237,7 +238,7 @@ DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
     // if not already instantiated
     if (!is_instantiated_)
     {
-//      is_instantiated_ = true;
+      is_instantiated_ = true;
 
       // get integration point information
       DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_(DisTypeToOptGaussRule<distype>::rule);
@@ -249,8 +250,8 @@ DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
       // assign shape function values in loop over Gauss points
       for (int i=0; i<ngp_; i++){
         w_(i) = intpoints_.IP().qwgt[i];
-        N_(i,0) = (1-intpoints_.IP().qxg[i][0])/2;
-        N_(i,1) = (1+intpoints_.IP().qxg[i][0])/2;
+        N_(i,0) = (1-intpoints_.IP().qxg[i][0])/2.0;
+        N_(i,1) = (1+intpoints_.IP().qxg[i][0])/2.0;
       }
       dN_[0](0,0) = -0.5;
       dN_[0](0,1) =  0.5;
@@ -271,14 +272,14 @@ DRT::MESHFREE::CellGaussPoints<distype>::CellGaussPoints()
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::MESHFREE::CellGaussPoints<distype>::GetCellGaussPointsAtX(
-  LINALG::SerialDenseMatrix &  Xa_sdm,
+  const LINALG::SerialDenseMatrix &  Xa_sdm,
   LINALG::SerialDenseMatrix &  X_sdm,
   LINALG::SerialDenseVector &  w) const
 {
   //------------------------------------------------------------------------
   // create LINALG::Matrix-views on in
   //------------------------------------------------------------------------
-  LINALG::Matrix<nsd_,nek_> Xa(Xa_sdm,true);
+  const LINALG::Matrix<nsd_,nek_> Xa(const_cast<LINALG::SerialDenseMatrix&>(Xa_sdm),true);
   LINALG::Matrix<nsd_,ngp_> X(X_sdm,true);
   LINALG::Matrix<ngp_,nek_> N_fsm(N_,true);
 
@@ -303,7 +304,10 @@ int DRT::MESHFREE::CellGaussPoints<distype>::GetCellGaussPointsAtX(
   {
     LINALG::Matrix<nsd_,nek_> dN_fsm(dN_[0],true);
     J.MultiplyNT(dN_fsm,Xa);
-    w.Scale(J.Determinant());
+    const double det = J.Determinant();
+    if (det<0)
+      dserror("Jacobi determinant is negative! Check elements in input file!");
+    w.Scale(det);
   }
   // generally non-constant Jacobian - evaluation at Gauss points
   else if (((int)dN_.size())==ngp_)
@@ -311,7 +315,10 @@ int DRT::MESHFREE::CellGaussPoints<distype>::GetCellGaussPointsAtX(
     for (int i=0; i<ngp_; i++){
       LINALG::Matrix<nsd_,nek_> dN_fsm(dN_[i],true);
       J.MultiplyNT(dN_fsm,Xa);
-      w(i) *= J.Determinant();
+      const double det = J.Determinant();
+      if (det<0)
+        dserror("Jacobi determinant is negative! Check elements in input file!");
+      w(i) *= det;
     }
   }
   else

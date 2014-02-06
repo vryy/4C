@@ -88,14 +88,24 @@ std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::Cell& cell)
  *--------------------------------------------------------------------------*/
 void DRT::MESHFREE::Cell::Print(std::ostream& os) const
 {
-  DRT::Element::Print(os);
+  os << std::setw(6) << Id() << " Owner " << std::setw(3) << Owner() << " ";
+
   const int npoint = NumPoint();
   const int* pointids = PointIds();
   if (npoint > 0)
   {
     os << " Points ";
-    for (int i=0; i<npoint; ++i) os << std::setw(10) << pointids[i] << " ";
+    for (int i=0; i<npoint; ++i) os << std::setw(6) << pointids[i] << " ";
   }
+
+  const int nnode = NumNode();
+  const int* nodeids = NodeIds();
+  if (nnode > 0)
+  {
+    os << " Nodes ";
+    for (int i=0; i<nnode; ++i) os << std::setw(6) << nodeids[i] << " ";
+  }
+
   return;
 }
 

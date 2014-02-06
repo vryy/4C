@@ -88,7 +88,7 @@ public:
    *///                                                   (public) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual int GetCellGaussPointsAtX(
-    LINALG::SerialDenseMatrix &  Xa_sdm, //!< (in)  position of points
+    const LINALG::SerialDenseMatrix &  Xa_sdm, //!< (in)  position of points
     LINALG::SerialDenseMatrix &  X_sdm,  //!< (out) xyz-values of Gauss points
     LINALG::SerialDenseVector &  w_sdm   //!< (out) weights of Gauss points in xyz-system
     ) const = 0;
@@ -124,7 +124,7 @@ public:
    *///                                                   (public) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual int GetCellGaussPointsAtX(
-    LINALG::SerialDenseMatrix &  Xa_sdm, //!< (in)  position of points
+    const LINALG::SerialDenseMatrix &  Xa_sdm, //!< (in)  position of points
     LINALG::SerialDenseMatrix &  X_sdm,  //!< (out) xyz-values of Gauss points
     LINALG::SerialDenseVector &  w_sdm   //!< (out) weights of Gauss points in xyz-system
     ) const;
