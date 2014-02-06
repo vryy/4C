@@ -212,8 +212,8 @@ public:
                     unsigned nodaldofset   ///< number of nodal dof set of the node (currently !=0 only for XFEM)
                     ) const
     {
-      if(nodaldofset!=0) dserror("only one nodal dofset supported!");
-      else dof = Dof(node);
+      dsassert(nodaldofset>0,"only one nodal dofset supported!");
+      dof = Dof(node);
     }
 
   /// Get the gid of all dofs of a element
@@ -282,7 +282,9 @@ public:
     if (lid==-1)
       return;
     const int idx = (*idxcolnodes_)[lid];
-    const int size = NumDofPerNode(*element,*node,0);
+    // this method is used to setup the vector of number of dofs, so we cannot ask numdfcolelements_ here as above.
+    // Instead we have to ask the node itself
+    const int size = NumDofPerNode(*element,*node);
     for (int i=0; i<size; ++i)
       lm.push_back(idx+i);
   }
@@ -322,26 +324,26 @@ private:
 protected:
 
   /// get number of nodal dofs
-  virtual int NumDofPerNode( const Node & node, unsigned dspos ) const
+  virtual int NumDofPerNode( const Node & node) const
   {
     const int numele = node.NumElement();
     const DRT::Element* const * myele = node.Elements();
     int numdf=0;
     for (int j=0; j<numele; ++j)
-      numdf = std::max(numdf,NumDofPerNode(*myele[j],node,dspos));
+      numdf = std::max(numdf,NumDofPerNode(*myele[j],node));
     return numdf;
   }
 
   /// get number of nodal dofs for this element at this node
-  virtual int NumDofPerNode( const Element & element, const Node & node, unsigned dspos ) const
+  virtual int NumDofPerNode( const Element & element, const Node & node) const
   {
-    return element.NumDofPerNode( dspos, node, "" );
+    return element.NumDofPerNode( node);
   }
 
   /// get number of element dofs for this element
-  virtual int NumDofPerElement( const Element & element, unsigned dspos ) const
+  virtual int NumDofPerElement( const Element & element) const
   {
-    return element.NumDofPerElement( dspos );
+    return element.NumDofPerElement( );
   }
 
   //! @name Proxy management

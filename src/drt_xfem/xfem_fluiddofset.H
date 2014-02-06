@@ -47,7 +47,7 @@ namespace XFEM
   protected:
 
     /// get number of nodal dofs for this element at this node
-    virtual int NumDofPerNode( const DRT::Node & node, unsigned dspos ) const;
+    virtual int NumDofPerNode( const DRT::Node & node ) const;
 
   private:
 

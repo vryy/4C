@@ -219,33 +219,6 @@ public:
   virtual int NumDofPerNode(const DRT::Node&) const { return 0; }
 
   /*!
-  \brief Get number of degrees of freedom per node
-
-  HDG element: No dofs are associated with nodes
-  */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const { return 0; }
-
-  /*!
-  \brief Get number of degrees of freedom per node
-
-  HDG element: No dofs are associated with nodes
-  */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const { return 0; }
-
-  /*!
-  \brief Get number of degrees of freedom per face
-  */
-  virtual int NumDofPerFace(const unsigned face,
-                            const unsigned nds) const
-  {
-    if (nds==0)
-      return NumDofPerFace(face);
-    else if (nds!=1)
-      dserror("only two dof set supported");
-    return 0;
-  }
-
-  /*!
   \brief Get number of degrees of freedom per face
   */
   virtual int NumDofPerFace(const unsigned /* face */) const
@@ -253,25 +226,7 @@ public:
     return fixedPower(this->degree+1,DRT::UTILS::getDimension(this->Shape())-1); // tensor product assumed
   }
 
-  /*!
-  \brief Get number of degrees of freedom per element, zero for the primary dof set
-  and equal to the given number for the secondary dof set
-  */
-  virtual int NumDofPerElement(const unsigned nds) const
-  {
-    if (nds==0)
-      return 0;
-    else if (nds==1) {
-      const int dim = DRT::UTILS::getDimension(this->Shape());
-      const int nscalardofs = fixedPower(this->degree+1,dim);
-      return dim * nscalardofs       // velocity DoFs
-             +
-             nscalardofs;            // pressure DoFs
-    }
-    else
-    dserror("only two dof set supported");
-    return -1;
-  }
+  virtual int NumDofPerElement() const { return 0;}
 
   /*!
   \brief Print this element
@@ -536,34 +491,7 @@ public:
     return ParentElement()->NumDofPerNode(node);
   }
 
-  /*!
-  \brief Get number of degrees of freedom of a certain node in case of multiple
-         dofsets, i.e. monolithic solution approaches! (implements pure virtual DRT::Element)
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-
-  */
-//  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
-//  {
-//    return ParentElement()->NumDofPerNode(nds,node);
-//  }
-
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
-  {
-    return ParentElement()->NumDofPerNode(nds,node,disname);
-  }
-
-  /*!
-  \brief Get number of degrees of freedom per element, zero for the primary dof set
-  and equal to the given number for the secondary dof set
-  */
-  virtual int NumDofPerElement(const unsigned nds) const
-  {
-    return ParentElement()->NumDofPerElement(nds);
-  }
+  virtual int NumDofPerElement() const { return 0; }
 
   /*!
   \brief Print this element
@@ -847,28 +775,6 @@ public:
   {
     return std::max(ParentMasterElement()->NumDofPerNode(node),
                     ParentSlaveElement()->NumDofPerNode(node));
-  }
-
-  /*!
-  \brief Get number of degrees of freedom of a certain node in case of multiple
-         dofsets, i.e. monolithic solution approaches! (implements pure virtual DRT::Element)
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-
-  */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
-  {
-    return std::max(ParentMasterElement()->NumDofPerNode(nds,node),
-                    ParentSlaveElement()->NumDofPerNode(nds,node));
-  }
-
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
-  {
-    return std::max(ParentMasterElement()->NumDofPerNode(nds,node),
-                    ParentSlaveElement()->NumDofPerNode(nds,node));
   }
 
   /*!

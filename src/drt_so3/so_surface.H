@@ -133,15 +133,6 @@ public:
   inline virtual int NumDofPerNode(const DRT::Node& node) const
   {return 3;}
 
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
-  {
-    if(nds == 0)
-      return NumDofPerNode(node);
-    else
-    //ask the parent element for the number of dofs of the other dofset
-      return ParentElement()->NumDofPerNode(nds,node,disname);
-  };
-
   /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)

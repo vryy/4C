@@ -12,7 +12,7 @@ void XFEM::FluidDofSet::Dof( const DRT::Node * node, int nodaldofset, std::vecto
   const int lid = node->LID();
   if (lid==-1)
     return;
-  int numdf = DRT::DofSet::NumDofPerNode( *node, dspos_ );
+  int numdf = DRT::DofSet::NumDofPerNode( *node );
   const int idx = (*idxcolnodes_)[lid] + nodaldofset*numdf;
   dofs.reserve( numdf );
   for ( int i=0; i<numdf; ++i )
@@ -27,15 +27,15 @@ void XFEM::FluidDofSet::Dof(std::vector<int>& dofs, const DRT::Node* node,unsign
   Dof(node,nodaldofset,dofs);
 }
 
-int XFEM::FluidDofSet::NumDofPerNode( const DRT::Node & node, unsigned dspos ) const
+int XFEM::FluidDofSet::NumDofPerNode( const DRT::Node & node ) const
 {
   GEO::CUT::Node * n = wizard_->CutWizard().GetNode( node.Id() );
   if ( n!=NULL )
   {
-    int numdofpernode = DRT::DofSet::NumDofPerNode( node, dspos );
+    int numdofpernode = DRT::DofSet::NumDofPerNode( node );
     return numdofpernode * n->NumDofSets();
   }
-  return DRT::DofSet::NumDofPerNode( node, dspos );
+  return DRT::DofSet::NumDofPerNode( node );
 }
 
 int XFEM::FluidDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start)

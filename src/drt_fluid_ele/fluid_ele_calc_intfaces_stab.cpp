@@ -2810,6 +2810,7 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     else
       tau_p = gamma_p * p_hk_ * p_hk_ / (density* p_hk_ / (timefac * 12.0) + kinvisc * density / p_hk_ + density * max_vel_L2_norm / 6.0);
   }
+  break;
   case INPAR::FLUID::EOS_tau_burman_fernandez:
   {
     // E.Burman, M.A.Fernandez 2009

@@ -137,29 +137,6 @@ namespace ELEMENTS
     //! Pack and \ref Unpack are used to communicate this element
     virtual void Unpack(const std::vector<char>& data);
 
-    //! Get number of degrees of freedom of a certain node in case of multiple
-    //! dofsets (implements pure virtual DRT::Element)
-    //!
-    //! The element decides how many degrees of freedom its nodes must have.
-    //! As this may vary along a simulation, the element can redecide the number
-    //! of degrees of freedom per node along the way for each of it's nodes separately.
-    virtual int NumDofPerNode(
-      const unsigned nds,
-      const DRT::Node& node,
-      const std::string disname
-      ) const
-    {
-      if (nds == 1)
-      {
-        // in case of thermomechanics: nds=1 (second discretisation) temperature:
-        // 1Dof/Node
-        return 1;
-      }
-      // structure, 3D: 3 Dofs per node
-      else
-        return nsd_;
-    };
-
     //@}
 
     //! @name Access methods

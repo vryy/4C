@@ -141,37 +141,6 @@ public:
   virtual int NumDofPerNode(const DRT::Node& node) const {return 4;}
 
   /*!
-  \brief Get number of degrees of freedom of a certain node in case of multiple
-         dofsets (implements pure virtual DRT::Element)
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-  */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node,  const std::string disname) const
-  {
-    /* here we assume the dofset numbers to be assigned as follows
-     *     structure = dofset 0
-     *     fluid     = dofset 1
-     *     scatra    = dofset 2
-     * this is kind of implicit. One might think of a better solution ...
-    */
-
-    if (nds==0)
-      // structure, 3D: 3 + 1 Dofs per node
-      return NumDofPerNode(node);
-    else if (nds==1)
-      // in case of porous media: nds=1 (second discretization) fluid: 4Dof/Node
-      return 4;
-    else if (nds==2)
-      // in case of scalar transport in porous media: nds=2 (third discretization) scatra: 1Dof/Node
-      return 1;
-    dserror("invalid number of dof sets");
-    return -1;
-  };
-
-  /*!
   \brief Print this element
   */
   void Print(std::ostream& os) const  ;

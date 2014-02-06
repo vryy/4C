@@ -174,8 +174,8 @@ void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno, double pulse)
     ele->LocationVector(*discret_,la,false);
     if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
       elevec1.Shape(la[0].lm_.size(), 1);
-    if (elevec2.M() != ele->NumDofPerElement(1))
-      elevec2.Shape(ele->NumDofPerElement(1), 1);
+    if (elevec2.M() != discret_->NumDof(1,ele))
+      elevec2.Shape(discret_->NumDof(1,ele), 1);
 
     ele->Evaluate(initParams,*discret_,la[0].lm_,elemat1,elemat2,elevec1,elevec2,elevec3);
 
@@ -274,8 +274,8 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
         acouele->LocationVector(*discret_,la,false);
         if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
           elevec1.Shape(la[0].lm_.size(), 1);
-        if (elevec2.M() != acouele->NumDofPerElement(1))
-          elevec2.Shape(acouele->NumDofPerElement(1), 1);
+        if (elevec2.M() != discret_->NumDof(1,acouele))
+          elevec2.Shape(discret_->NumDof(1,acouele), 1);
 
         // we need the absorption coefficient of the light element
         double absorptioncoeff = static_cast <MAT::ScatraMat*>((optele->Material()).get())->ReaCoeff();
@@ -376,8 +376,8 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
         acouele->LocationVector(*discret_,la,false);
         if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
           elevec1.Shape(la[0].lm_.size(), 1);
-        if (elevec2.M() != acouele->NumDofPerElement(1))
-          elevec2.Shape(acouele->NumDofPerElement(1), 1);
+        if (elevec2.M() != discret_->NumDof(1,acouele))
+          elevec2.Shape(discret_->NumDof(1,acouele), 1);
 
         initParams.set<double>("absorption",absorptioncoeff);
         initParams.set<Teuchos::RCP<std::vector<double> > >("nodevals",nodevals);

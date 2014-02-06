@@ -282,7 +282,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       mygids.push_back(dis.NodeRowMap()->GID(i));
     for (int i=0; i<elerowgids->Map().NumMyElements(); ++i)
     {
-      if (NumDofPerElement(*dis.lColElement(i),dspos) != 0)
+      if (NumDofPerElement(*dis.lColElement(i)) != 0)
         mygids.push_back((*elerowgids)[i]);
     }
     
@@ -305,7 +305,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       // check whether this element is actually a row element
       //if (dis.ElementRowMap()->MyGID(dis.lColElement(i)->Id()) == false) continue;
       // check whether this element has elemental dofs
-      if (NumDofPerElement(*dis.lColElement(i),dspos) == 0) continue;
+      if (NumDofPerElement(*dis.lColElement(i)) == 0) continue;
       // get the pseudo gid of this element
       int lid = dis.ElementColMap()->LID(dis.lColElement(i)->Id());
       if (lid==-1) dserror("Cannot find lid");
@@ -372,7 +372,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     for (int i=0; i<numrownodes; ++i)
     {
       DRT::Node* actnode = dis.lRowNode(i);
-      numdfrownodes[i] = NumDofPerNode(*actnode,dspos);
+      numdfrownodes[i] = NumDofPerNode(*actnode);
     }
 
 //    int minnodegid = dis.NodeRowMap()->MinAllGID();
@@ -420,7 +420,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   {
     DRT::Element* actele = dis.lRowElement(i);
     //const int gid = actele->Id();
-    int numdf = NumDofPerElement(*actele,dspos);
+    int numdf = NumDofPerElement(*actele);
     numdfrowelements[i] = numdf;
   }
 
@@ -472,7 +472,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     for (int i=0; i<numrownodes; ++i)
     {
       DRT::Node* actnode = dis.lRowNode(i);
-      numdfrownodes[i] = NumDofPerNode(*actnode,dspos);
+     numdfrownodes[i] = NumDofPerNode(*actnode);
     }
 
     int minnodegid = dis.NodeRowMap()->MinAllGID();
@@ -518,7 +518,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
           if (faces[face]->Owner() == mypid) {
             const int mylid = facedis->FaceRowMap()->LID(faces[face]->Id());
             numdfrowfaces[mylid] =
-                dis.lColElement(i)->NumDofPerFace(face,dspos);
+                dis.lColElement(i)->NumDofPerFace(face);
           }
       }
 
@@ -570,7 +570,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     {
       DRT::Element* actele = dis.lRowElement(i);
       //const int gid = actele->Id();
-      int numdf = NumDofPerElement(*actele,dspos);
+      int numdf = NumDofPerElement(*actele);
       numdfrowelements[i] = numdf;
     }
 

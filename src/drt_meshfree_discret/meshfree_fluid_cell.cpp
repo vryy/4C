@@ -373,39 +373,6 @@ int DRT::ELEMENTS::MeshfreeFluid::NumDofPerNode(const DRT::Node& node) const
 
 
 /*--------------------------------------------------------------------------*
- |  Returns number of degrees of freedom at node         (public) nis Jan13 |
- *--------------------------------------------------------------------------*/
-int DRT::ELEMENTS::MeshfreeFluid::NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string) const
-{
-  if (nds==1)
-  {
-    // what's the current problem type?
-    PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
-    switch (probtype)
-    {
-      case prb_poroelast:
-      case prb_poroscatra:
-      {
-        return DRT::Problem::Instance()->NDim();
-        break;
-      }
-      default: // scalar transport
-      {
-        return 1;
-        break;
-      }
-    }
-  }
-  else if(nds==0)
-    return NumDofPerNode(node);
-  else
-  {
-    dserror("invalid number of dof sets");
-    return -1;
-  }
-}
-
-/*--------------------------------------------------------------------------*
  |  Print this cell                                      (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 void DRT::ELEMENTS::MeshfreeFluid::Print(std::ostream& os) const

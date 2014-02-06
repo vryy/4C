@@ -248,16 +248,6 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& sdynparams =
-      problem->StructuralDynamicParams();
-
-  //do some checks
-  {
-    std::string damping = sdynparams.get<std::string>("DAMPING");
-    if(damping != "Material")
-      dserror("Material damping has to be used for porous media! Set DAMPING to 'Material' in the STRUCTURAL DYNAMIC section.");
-  }
-
   const Teuchos::ParameterList& poroelastdyn  = problem->PoroelastDynamicParams();
 
   const INPAR::POROELAST::SolutionSchemeOverFields coupling =

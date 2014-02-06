@@ -99,7 +99,7 @@ int DRT::IndependentDofSet::AssignDegreesOfFreedom(const DRT::Discretization& di
   {
     DRT::Node* actnode = dis.lRowNode(i);
     //const int gid = actnode->Id();
-    numdfrownodes[i] = NumDofPerNode(*actnode,dspos);
+    numdfrownodes[i] = NumDofPerNode(*actnode);
   }
 
   int minnodegid = dis.NodeRowMap()->MinAllGID();
@@ -144,7 +144,8 @@ int DRT::IndependentDofSet::AssignDegreesOfFreedom(const DRT::Discretization& di
   {
     DRT::Element* actele = dis.lRowElement(i);
     //const int gid = actele->Id();
-    int numdf = NumDofPerElement(*actele,dspos);
+    int numdf = NumDofPerElement(*actele);
+    //int numdf = dis.NumDof(dspos,actele);
     numdfrowelements[i] = numdf;
   }
 

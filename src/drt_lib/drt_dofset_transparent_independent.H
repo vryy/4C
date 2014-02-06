@@ -69,7 +69,8 @@ namespace DRT
             const unsigned dspos,
             const int start);
 
-    virtual int NumDofPerNode( const DRT::Node & node, unsigned dspos ) const;
+  protected:
+    virtual int NumDofPerNode( const DRT::Node & node ) const;
 
 
   private:

@@ -154,18 +154,6 @@ public:
   virtual DRT::ElementType & ElementType() const
   { return FluidPoroEleType::Instance(); }
 
-  /*!
-  \brief Get number of degrees of freedom of a certain node in case of multiple
-         dofsets, i.e. monolithic solution approaches! (implements pure virtual DRT::Element)
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-
-  */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const;
-
   //@}
 
   //! @name Evaluation

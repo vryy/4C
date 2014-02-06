@@ -51,18 +51,18 @@ int DRT::TransparentIndependentDofSet::AssignDegreesOfFreedom(const DRT::Discret
   return count;
 }
 
-int DRT::TransparentIndependentDofSet::NumDofPerNode( const DRT::Node & node, unsigned dspos ) const
+int DRT::TransparentIndependentDofSet::NumDofPerNode( const DRT::Node & node ) const
 {
   if (wizard_ != Teuchos::null)
   {
     GEO::CUT::Node *n = wizard_->CutWizard().GetNode( node.Id() );
     if ( n!=NULL )
     {
-      int numdofpernode = DRT::DofSet::NumDofPerNode( node, dspos );
+      int numdofpernode = DRT::DofSet::NumDofPerNode( node );
       return numdofpernode * n->NumDofSets();
     }
   }
-  return DRT::DofSet::NumDofPerNode( node, dspos );
+  return DRT::DofSet::NumDofPerNode( node );
 }
 
 

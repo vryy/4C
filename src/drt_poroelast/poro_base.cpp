@@ -136,6 +136,10 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
       if(theta_struct != theta_fluid)
         dserror("porous media problem is limited in functionality. Only one-step-theta scheme with equal theta for both fields possible");
     }
+
+    std::string damping = sdyn.get<std::string>("DAMPING");
+    if(damping != "Material")
+      dserror("Material damping has to be used for porous media! Set DAMPING to 'Material' in the STRUCTURAL DYNAMIC section.");
   }
 }
 

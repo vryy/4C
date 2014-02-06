@@ -67,9 +67,17 @@ void acoustics_drt()
   if (acoudishdg == Teuchos::null)
     dserror("Failed to cast DRT::Discretization to DRT::DiscretizationHDG.");
 
+  const int dim = DRT::Problem::Instance()->NDim();
+  int nscalardofs = 1;
+  for (int i=0; i<dim; ++i)
+    nscalardofs *= 4;
+  const int elementndof =  dim * nscalardofs       // velocity DoFs
+                           +
+                           nscalardofs;            // pressure DoFs
   // set degrees of freedom in the discretization
-  Teuchos::RCP<DRT::IndependentDofSet> secondary = Teuchos::rcp(new DRT::IndependentDofSet());
-  acoudishdg->AddDofSet(secondary);
+//  Teuchos::RCP<DRT::IndependentDofSet> secondary = Teuchos::rcp(new DRT::IndependentDofSet());
+//  acoudishdg->AddDofSet(secondary);
+  acoudishdg->BuildDofSetAuxProxy(0,elementndof,false);
 
   // call fill complete on acoustical discretization
   if (not acoudishdg->Filled() || not acoudishdg->HaveDofs()) acoudishdg->FillComplete();

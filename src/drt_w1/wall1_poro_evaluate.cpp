@@ -1915,7 +1915,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ExtractValuesFromGlobalVector(
   if(matrix_state == Teuchos::null)
     dserror("Cannot get state vector %s", state.c_str());
 
-  const int numdofpernode = NumDofPerNode(dofset,*(Nodes()[0]),discretization.Name());
+  const int numdofpernode = discretization.NumDof(dofset,Nodes()[0]);
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());

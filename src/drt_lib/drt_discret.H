@@ -520,7 +520,7 @@ public:
   */
   virtual Teuchos::RCP<DofSet> GetDofSetProxy();
 
-  virtual int BuildDofSetAuxProxy(int numdofpernode, int numdofperelement);
+  virtual int BuildDofSetAuxProxy(int numdofpernode, int numdofperelement, bool indenpendentdofnumbers);
 
   /*!
   \brief Get proxy to main dof set for special case of partial dof sets.

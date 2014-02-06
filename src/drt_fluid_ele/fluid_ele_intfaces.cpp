@@ -186,20 +186,17 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   for (int k=0; k<m_numnode; ++k)
   {
     DRT::Node* node = m_nodes[k];
-    std::vector<int> dof = discretization.Dof(dofset,node);
+    std::vector<int> dof;
+    discretization.Dof(dof,node,dofset,nds_master[k]);
 
-    // get maximum of numdof per node with the help of master and/or slave element (returns 4 in 3D case, does not return dofset's numnode)
-    const int size = NumDofPerNode(dofset,*node,discretization.Name());
-    const int offset = size*nds_master[k];
-
-    dsassert ( dof.size() >= static_cast<unsigned>( offset+size ), "illegal physical dofs offset" );
+    const int size = dof.size();
 
     //insert a pair of node-Id and current length of master_lm ( to get the start offset for node's dofs)
     m_node_lm_offset.insert(std::pair<int,int>(node->Id(), master_lm.size()));
 
     for (int j=0; j< size; ++j)
     {
-      int actdof = dof[offset + j];
+      int actdof = dof[j];
 
       // current last index will be the index for next push_back operation
       lm_masterToPatch.push_back( (patchlm.size()) );
@@ -226,16 +223,14 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
     if(m_offset==m_node_lm_offset.end()) // node not included yet
     {
-      std::vector<int> dof = discretization.Dof(dofset,node);
+      std::vector<int> dof;// = discretization.Dof(dofset,node);
+      discretization.Dof(dof,node,dofset,nds_slave[k]);
 
-      // get maximum of numdof per node with the help of master and/or slave element (returns 4 in 3D case, does not return dofset's numnode)
-      const int size = NumDofPerNode(dofset,*node,discretization.Name());
-      const int offset = size*nds_slave[k];
+      const int size = dof.size();
 
-      dsassert ( dof.size() >= static_cast<unsigned>( offset+size ), "illegal physical dofs offset" );
       for (int j=0; j< size; ++j)
       {
-        int actdof = dof[offset + j];
+        int actdof = dof[j];
 
         lm_slaveToPatch.push_back( patchlm.size() );
 
@@ -251,7 +246,8 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
     }
     else // node is also a master's node
     {
-      const int size = NumDofPerNode(dofset,*node,discretization.Name());
+      // get maximum of numdof per node with the help of master and/or slave element (returns 4 in 3D case, does not return dofset's numdof)
+      const int size = NumDofPerNode(*node);
 
       int offset = m_offset->second;
 
@@ -286,7 +282,8 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
     if(m_offset!=m_node_lm_offset.end()) // node not included yet
     {
-      const int size = NumDofPerNode(dofset,*node,discretization.Name());
+      // get maximum of numdof per node with the help of master and/or slave element (returns 4 in 3D case, does not return dofset's numdof)
+      const int size = NumDofPerNode(*node);
 
       int offset = m_offset->second;
 

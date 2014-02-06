@@ -395,9 +395,6 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
     EvaluateCondition(k_ff);
   }
 
-  if(k_ff==Teuchos::null)
-    dserror("fuid system matrix null pointer!");
-
   /*----------------------------------------------------------------------*/
   // fluid part k_fs ( (3n+1)x3n )
   // build fluid-mechanical block

@@ -586,26 +586,6 @@ RCP<DRT::Element> DRT::ELEMENTS::Fluid::CreateFaceElement( DRT::Element* parent_
 }
 
 
-int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
-{
-  if (nds==0)
-  {
-    return NumDofPerNode(node);
-  }
-  else if (nds==1)
-  {
-    // scalar transport/loma
-    return 1;
-  }
-  else
-  {
-    dserror("invalid number of dof sets");
-    return -1;
-  }
-  return -1;
-}
-
-
 /*----------------------------------------------------------------------*
  |  activate time dependent subgrid scales (public)      gamnitzer 05/10|
  *----------------------------------------------------------------------*/

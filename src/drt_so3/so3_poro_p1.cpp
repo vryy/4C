@@ -150,7 +150,7 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::Print(std::ostream& os) const
 {
   os << "So3_Poro_P1 ";
-  os<<" Discretization type: "<<DRT::DistypeToString(distype).c_str();
+  os<<DRT::DistypeToString(distype).c_str()<<" ";
   Element::Print(os);
   return;
 }

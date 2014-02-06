@@ -613,30 +613,6 @@ public:
 
   The element decides how many degrees of freedom its nodes must have.
   As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of its nodes
-  separately.
-
-  This method is used by the DRT::Discretization to determine how many
-  degrees of freedom should be assigned to each node. The discretization will
-  assign a node the max number of dofs the adjacent elements demand by this
-  method.
-
-  TODO: pass disname by reference, not by value
-
-  */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
-  {
-    if (nds==0)
-      return NumDofPerNode(node);
-    dserror("only one dof set supported");
-    return -1;
-  }
-
-  /*!
-  \brief Get number of degrees of freedom of a certain node
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
   number of degrees of freedom per node along the way for each of it's nodes
   separately.<br>
   This method is used by the DRT::Discretization to determine how many
@@ -674,7 +650,7 @@ public:
       return NumDofPerFace(face);
     return 0;
   }
-
+  
   /*!
   \brief Get number of degrees of freedom per face
 
@@ -694,30 +670,6 @@ public:
   virtual int NumDofPerFace(const unsigned /* face */) const
   {
     return 0;
-  }
-
-  /*!
-  \brief Get number of degrees of freedom per element
-
-  The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
-
-  Usually, a standard finite element would not have element degrees of
-  freedom and would therefore return zero here.
-
-  \note Element degrees of freedom mentioned here are dofs that are supposed
-        to be visible at the global system level. Purely internal
-        element dofs that are condensed internally should NOT be considered.
-        The DRT::Discretization will use this method to determine how many degrees
-        of freedom it should include in the degree of freedom row and column map
-        for the global system of equations.
-  */
-  virtual int NumDofPerElement(const unsigned nds) const
-  {
-    if (nds==0)
-      return NumDofPerElement();
-    dserror("only one dof set supported");
-    return -1;
   }
 
   /*!

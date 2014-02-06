@@ -942,24 +942,6 @@ private:
       }
 
       /*!
-      \brief Get number of degrees of freedom of a certain node in case of multiple
-             dofsets, i.e. monolithic solution approaches! (implements pure virtual DRT::Element)
-
-      The element decides how many degrees of freedom its nodes must have.
-      As this may vary along a simulation, the element can redecide the
-      number of degrees of freedom per node along the way for each of it's nodes
-      separately.
-
-      */
-      virtual int NumDofPerNode(const unsigned, const DRT::Node& node, const std::string) const
-      {
-        // TODO: darf ich hier den Dofmanager fragen?
-        //  std::cout << "NumDofPerNode()" << std::endl;
-        //return std::max(parent_master_->NumDofPerNode(nds,node),parent_slave_->NumDofPerNode(nds,node));
-        return NumDofPerNode(node);
-      }
-
-      /*!
       \brief Get number of degrees of freedom per element
              (implements pure virtual DRT::Element)
 

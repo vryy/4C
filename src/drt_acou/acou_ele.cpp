@@ -730,7 +730,7 @@ void DRT::ELEMENTS::AcouIntFace::PatchLocationVector(
     std::vector<int> dof = discretization.Dof(dofset,node);
 
     // get maximum of numdof per node with the help of master and/or slave element (returns 4 in 3D case, does not return dofset's numnode)
-    const int size = NumDofPerNode(dofset,*node,discretization.Name());
+    const int size = discretization.NumDof(dofset,node);
     const int offset = size*nds_master[k];
 
     dsassert ( dof.size() >= static_cast<unsigned>( offset+size ), "illegal physical dofs offset" );
@@ -770,7 +770,7 @@ void DRT::ELEMENTS::AcouIntFace::PatchLocationVector(
       std::vector<int> dof = discretization.Dof(dofset,node);
 
       // get maximum of numdof per node with the help of master and/or slave element (returns 4 in 3D case, does not return dofset's numnode)
-      const int size = NumDofPerNode(dofset,*node,discretization.Name());
+      const int size = discretization.NumDof(dofset,node);
       const int offset = size*nds_slave[k];
 
       dsassert ( dof.size() >= static_cast<unsigned>( offset+size ), "illegal physical dofs offset" );
@@ -792,7 +792,7 @@ void DRT::ELEMENTS::AcouIntFace::PatchLocationVector(
     }
     else // node is also a master's node
     {
-      const int size = NumDofPerNode(dofset,*node,discretization.Name());
+      const int size = discretization.NumDof(dofset,node);
 
       int offset = m_offset->second;
 
@@ -827,7 +827,7 @@ void DRT::ELEMENTS::AcouIntFace::PatchLocationVector(
 
     if(m_offset!=m_node_lm_offset.end()) // node not included yet
     {
-      const int size = NumDofPerNode(dofset,*node,discretization.Name());
+      const int size = discretization.NumDof(dofset,node);
 
       int offset = m_offset->second;
 

@@ -227,23 +227,6 @@ namespace ELEMENTS
     //! separately.
     virtual int NumDofPerNode(const DRT::Node& node) const { return numdofpernode_; }
 
-    //! \brief Get number of degrees of freedom of a certain node
-    //!        (implements pure virtual DRT::Element)
-    //!
-    //! The element decides how many degrees of freedom its nodes must have.
-    //! As this may vary along a simulation, the element can redecide the
-    //! number of degrees of freedom per node along the way for each of it's nodes
-    //! separately.
-    // adapt method for TSI
-    virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
-    {
-      // in a 3D example (TSI only implemented for hex8 element)
-      if (nds == 1)
-        {return 3;}
-      // for the temperature discretization
-      return NumDofPerNode(node);
-    }
-
     //!
     //! \brief Get number of degrees of freedom per element
     //!        (implements pure virtual DRT::Element)
@@ -553,19 +536,6 @@ namespace ELEMENTS
     virtual int NumDofPerNode(const DRT::Node& node) const
     {
       return ParentElement()->NumDofPerNode(node);
-    }
-
-    //! \brief Get number of degrees of freedom of a certain node
-    //!       (implements pure virtual DRT::Element)
-    //!
-    //! The element decides how many degrees of freedom its nodes must have.
-    //! As this may vary along a simulation, the element can redecide the
-    //! number of degrees of freedom per node along the way for each of it's nodes
-    //! separately.
-    //! extendes method for volume coupling (here: TSI)
-    virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
-    {
-      return ParentElement()->NumDofPerNode(nds,node,disname);
     }
 
     /*

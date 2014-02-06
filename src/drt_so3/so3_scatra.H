@@ -158,27 +158,6 @@ public:
   */
   virtual void Unpack(const std::vector<char>& data);
 
-  /*!
-  \brief Get number of degrees of freedom of a certain node in case of multiple
-         dofsets (implements pure virtual DRT::Element)
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-  */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
-  {
-    if (nds==1)
-    {
-      // in case of Scatra coupling: nds=1 (second discretization): 1Dof/Node
-      return 1; // TO CHECK (from Cristobal)
-    }
-    // structure, 3D: 3 Dofs per node
-    //    return 3;
-    return 3;
-  };
-
   //@}
 
   //! @name Access methods
@@ -200,8 +179,9 @@ public:
       // else
       //  return NStet5ScatraType::Instance();
     }
+      break;
     case DRT::Element::tet10:
-    	return So_tet10ScatraType::Instance();
+      return So_tet10ScatraType::Instance();
     case DRT::Element::hex8:
       return So_hex8ScatraType::Instance();
     case DRT::Element::wedge6:

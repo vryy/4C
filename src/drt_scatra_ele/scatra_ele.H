@@ -222,60 +222,6 @@ public:
   }
 
   /*!
-  \brief Get number of degrees of freedom of a certain node
-         (implements pure virtual DRT::Element)
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-
-  This is the version for a coupling to fluid flow with a second dof set.
-  */
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
-  {
-    // number of dofs for fluid (based on similar discretization)
-    if (nds==1)
-    {
-      switch(distype_)
-      {
-      case DRT::Element::hex8:
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
-      case DRT::Element::tet4:
-      case DRT::Element::tet10:
-      case DRT::Element::wedge6:
-      case DRT::Element::wedge15:
-      case DRT::Element::pyramid5:
-      case DRT::Element::nurbs8:
-      case DRT::Element::nurbs27:
-        return 4;
-        break;
-      case DRT::Element::quad4:
-      case DRT::Element::quad8:
-      case DRT::Element::quad9:
-      case DRT::Element::nurbs4:
-      case DRT::Element::nurbs9:
-      case DRT::Element::tri3:
-      case DRT::Element::tri6:
-        return 3;
-        break;
-      case DRT::Element::line2:
-      case DRT::Element::line3:
-        dserror("1D Fluid elements are not supported");
-        break;
-      default:
-        dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype_)).c_str());
-        break;
-      }
-    }
-    if(nds > 1)
-      dserror("Case nsd > 1 not implemented.");
-
-    return NumDofPerNode(node);
-  }
-
-  /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
 
@@ -601,9 +547,6 @@ public:
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
   {return ParentElement()->NumDofPerNode(node);}
-
-  virtual int NumDofPerNode(const unsigned nds,const DRT::Node& node,  const std::string disname) const
-  {return ParentElement()->NumDofPerNode(nds,node,disname);}
 
   //! Return a pointer to the parent element of this boundary element
   virtual DRT::ELEMENTS::Transport* ParentElement() const

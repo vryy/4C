@@ -8,7 +8,7 @@
    Maintainer: Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15264
+               089 - 289-15251
  </pre>
  *----------------------------------------------------------------------*/
 
@@ -170,7 +170,7 @@ namespace DRT
        if (lid==-1)
          return;
        const int idx = (*idxcolnodes_)[lid];
-       const int size = NumDofPerNode(*element,*node,0);
+       const int size = NumDofPerNode(*element,*node);
        for (int i=0; i<size; ++i)
          lm.push_back(idx+i);
      }

@@ -276,26 +276,6 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get number of degrees of freedom of a certain node in case of
-   *        multiple dofsets!
-   *        (implements pure virtual DRT::Element)
-   *
-   * The element decides how many degrees of freedom its nodes must have. As
-   * this may vary along a simulation, the element can redecide the number of
-   * degrees of freedom per node along the way for each of it's nodes
-   * separately.
-   *
-   * This is the version for a coupling to fluid flow with a second dof set.
-   *
-   *///                                                   (public) nis Jan13
-  /*------------------------------------------------------------------------*/
-  virtual int NumDofPerNode(const unsigned nds,
-                            const DRT::Node& node,
-                            const std::string disname
-    ) const;
-
-  /*------------------------------------------------------------------------*/
-  /*!
    * \brief Get number of degrees of freedom per element
    *        (implements pure virtual DRT::Element)
    *
@@ -626,11 +606,6 @@ public:
   virtual int NumDofPerNode(const DRT::Node& node) const
   {
     return ParentElement()->NumDofPerNode(node);
-  }
-
-  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node, const std::string disname) const
-  {
-    return ParentElement()->NumDofPerNode(nds,node,disname);
   }
 
   /*------------------------------------------------------------------------*/

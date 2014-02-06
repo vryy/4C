@@ -49,8 +49,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(Teuchos::ParameterLis
   {
     if(la.Size()>2)
     {
-      //  dofs per node of second dofset
-      const int numdofpernode = NumDofPerNode(1,*(Nodes()[0]),discretization.Name());
+      //ask for the number ofs dofs of second dofset (fluid)
+      const int numdofpernode = discretization.NumDof(1,Nodes()[0]);
 
       if (la[1].Size() != numnod_*numdofpernode)
         dserror("calc_struct_nlnstiff: Location vector length for velocities does not match!");
@@ -1244,12 +1244,12 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePorosityAndLinearizationOD
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ExtractValuesFromGlobalVector(
-                                    const DRT::Discretization&   discretization, ///< discretization
-                                    const int&                   dofset,
-                                    const std::vector<int>&      lm,             ///<
+                                    const DRT::Discretization&         discretization, ///< discretization
+                                    const int&                         dofset,         ///< number of dofset
+                                    const std::vector<int>&            lm,             ///< location vetor
                                     LINALG::Matrix<numdim_,numnod_> *  matrixtofill,   ///< vector field
-                                    LINALG::Matrix<numnod_,1> *     vectortofill,   ///< scalar field
-                                    const std::string            state          ///< state of the global vector
+                                    LINALG::Matrix<numnod_,1> *        vectortofill,   ///< scalar field
+                                    const std::string                  state           ///< state of the global vector
 )
 {
   // get state of the global vector
@@ -1257,7 +1257,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ExtractValuesFromGlobalVector(
   if(matrix_state == Teuchos::null)
     dserror("Cannot get state vector %s", state.c_str());
 
-  const int numdofpernode = NumDofPerNode(dofset,*(Nodes()[0]),discretization.Name());
+  //ask for the number of dofs of dofset
+  const int numdofpernode = discretization.NumDof(dofset,Nodes()[0]);
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
