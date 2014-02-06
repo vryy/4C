@@ -199,8 +199,8 @@ void COMBUST::Algorithm::TimeLoop()
           IO::cout << "Level set deactivated!" << IO::endl;
       }
 
-      //(after Scatra transport but before reinitialization)
       // update interface geometry
+      // note: do not call this function at any other place
       UpdateInterface();
 
       // solve nonlinear Navier-Stokes system
@@ -922,6 +922,10 @@ void COMBUST::Algorithm::UpdateInterface()
     flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField()->Phiaf());
   else
     flamefront_->UpdateFlameFront(combustdyn_, phinpi_, ScaTraField()->Phinp());
+
+  // remark: Except for initialization (contructor), restart and redistribution, flamefront_->UpdateFlameFront()
+  //         must not be called at any other places of the algorithm, that is within the time loop! Otherwise
+  //         the history of the interface is lost and semi-Lagrange time-integration will fail.
 
   return;
 }
