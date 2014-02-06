@@ -212,7 +212,7 @@ public:
                     unsigned nodaldofset   ///< number of nodal dof set of the node (currently !=0 only for XFEM)
                     ) const
     {
-      dsassert(nodaldofset>0,"only one nodal dofset supported!");
+      dsassert(nodaldofset==0,"only one nodal dofset supported!");
       dof = Dof(node);
     }
 
