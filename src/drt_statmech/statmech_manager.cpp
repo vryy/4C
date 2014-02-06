@@ -623,11 +623,6 @@ void STATMECH::StatMechManager::Update(const int&                               
 
     GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
 
-//    Teuchos::RCP<std::vector<int> > test = Teuchos::rcp(new std::vector<int>(4,0));
-//    for(int i=0; i<4; i++)
-//      (*test)[i] = i;
-//    CreateTransverseNodePairs(test, bspotpositions);
-
 #ifdef MEASURETIME
     const double t2 = Teuchos::Time::wallTime();
 #endif
@@ -2429,7 +2424,6 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
     for(int i=0; i<numbond_->MyLength(); i++)
     {
       int irandom = order[i];
-
       // only consider crosslink molecule with less than two nodes or if it is actively searching for bonding partners
       if((*numbond_)[irandom]<1.9)
       {
@@ -2604,9 +2598,19 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                         break;
                     }
 
+                    // casimir-specific handling of crosslinker setting (potentially remove)
                     if(networktype_ == statmech_network_casimir)
                     {
                       if(!SetCrosslinkerLoom(LID, bspotpositions, bspottriadscol))
+                        break;
+                    }
+                    // DBC-specific measures for setting crosslinkers
+                    // interpolated crosslinker elements transport mechanical information across the periodic boundary, which
+                    // is not intended or sometimes unwanted. Hence, no crosslinks are established across the boundary
+                    // Finding such a potential connection results in break -> leaving the current loop step and continuing with next linker
+                    if(timen>=actiontime_->at(dbctimeindex_))
+                    {
+                      if(CheckCrossPeriodicBCLink(LID,discol))
                         break;
                     }
 
@@ -2618,8 +2622,18 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                     // skip binding process, if cycle time is still detached and
                     // skip binding process, if polarity of active linker is not fulfilled
                     bool polaritycriterion = true;
-                    if((linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_myosinthick) && DRT::INPUT::IntegralValue<int>(statmechparams_,"FILAMENTPOLARITY"))
-                      polaritycriterion = LinkerPolarityCheckAttach(bspottriadscol, LID, direction);
+                    if(DRT::INPUT::IntegralValue<int>(statmechparams_,"FILAMENTPOLARITY"))
+                    {
+                      switch(linkermodel_)
+                      {
+                        case statmech_linker_active:
+                        case statmech_linker_activeintpol:
+                        case statmech_linker_myosinthick:
+                          polaritycriterion = LinkerPolarityCheckAttach(bspottriadscol, LID, direction);
+                          break;
+                        default: dserror("Filament polarity not implemented for linkermodel_ %i !", linkermodel_);
+                      }
+                    }
                     else
                       direction.Scale(1.0/direction.Norm2());
 
@@ -2630,6 +2644,11 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                       bool intersection = false;
                       if(beamcmanager!=Teuchos::null)
                       {
+                        if(linkermodel_ == statmech_linker_stdintpol ||
+                           linkermodel_ == statmech_linker_activeintpol ||
+                           linkermodel_ == statmech_linker_bellseqintpol ||
+                           linkermodel_ == statmech_linker_myosinthick)
+                          dserror("Beam contact not implemented for interpolated elements!");
                         Epetra_SerialDenseMatrix nodecoords(3,2);
                         for(int k=0; k<nodecoords.M(); k++)
                         {
@@ -2703,7 +2722,6 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
       std::cout << "\nsearch + linker admin time: " << Teuchos::Time::wallTime() - t0<< " seconds";
 #endif
   }// if(discret_->Comm().MypPID==0)
-
   /* note: searchforneighbours_ is not communicated
    * to the other Procs because their information is of concern to Proc 0 only.*/
   //synchronize information about number of bonded filament nodes by exporting it to row map format and then reimporting it to column map format
@@ -4889,6 +4907,60 @@ bool STATMECH::StatMechManager::CheckForBrokenElement(LINALG::SerialDenseMatrix&
 }// StatMechManager::CheckForBrokenElement
 
 /*----------------------------------------------------------------------*
+ | check for crosslink that reaches across periodic BCs     mueller 1/14|
+ *----------------------------------------------------------------------*/
+bool STATMECH::StatMechManager::CheckCrossPeriodicBCLink(const Epetra_SerialDenseMatrix& LID,
+                                                         const Epetra_Vector&            discol)
+{
+  bool crossboundarylink = false;
+
+  switch(linkermodel_)
+  {
+    case statmech_linker_stdintpol:
+    case statmech_linker_truss3intpol:
+    case statmech_linker_activeintpol:
+    case statmech_linker_bellseqintpol:
+    case statmech_linker_myosinthick:
+    {
+
+      switch(DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(statmechparams_,"DBCTYPE"))
+      {
+        case INPAR::STATMECH::dbctype_shearfixed:
+        case INPAR::STATMECH::dbctype_affineshear:
+        {
+          // binding spot loop
+          for(int k=0; k<LID.M(); k++)
+          {
+            LINALG::SerialDenseMatrix coord(3,2);
+            LINALG::SerialDenseMatrix cut(3,1);
+            std::vector<int> nodegids(coord.N());
+            // node loop
+            for(int l=0; l<coord.N(); l++)
+            {
+              nodegids[l] = (int)(*bspot2nodes_)[l][(int)LID(k,0)];
+              DRT::Node* node = discret_->lColNode(discret_->NodeColMap()->LID(nodegids[l]));
+              for(int m=0; m<coord.M(); m++)
+              {
+                int dofgid = discret_->Dof(0, node)[m];
+                coord(m,l) = node->X()[m]+discol[dofgid];
+              }
+            }
+            // if filament element considered for linking reaches across the z-boundary
+            if(CheckForBrokenElement(coord,cut) && cut(2,0)>0)
+              crossboundarylink = true;
+          }
+        }
+        break;
+        default: { }
+      }
+    }
+    break;
+    default: { }
+  }
+  return crossboundarylink;
+}
+
+/*----------------------------------------------------------------------*
  | get a matrix with node coordinates and their DOF LIDs                |
  |                                                 (public) mueller 3/10|
  *----------------------------------------------------------------------*/
@@ -5086,19 +5158,22 @@ bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> dire
     return true;
 
   // check for linkers with both their binding domains on one filament
-  switch(linkermodel_)
+  if(statmechparams_.get<double>("K_ON_SELF",0.0)>0.0)
   {
-    case statmech_linker_stdintpol:
-    case statmech_linker_truss3intpol:
-    case statmech_linker_activeintpol:
-    case statmech_linker_bellseqintpol:
-    case statmech_linker_myosinthick:
-      if((*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][(int)LID(0,0)])] == (*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][(int)LID(1,0)])])
-        return true;
-      break;
-    default:
-      if((*filamentnumber_)[(int)LID(0,0)]==(*filamentnumber_)[(int)LID(1,0)])
-        return true;
+    switch(linkermodel_)
+    {
+      case statmech_linker_stdintpol:
+      case statmech_linker_truss3intpol:
+      case statmech_linker_activeintpol:
+      case statmech_linker_bellseqintpol:
+      case statmech_linker_myosinthick:
+        if((*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][(int)LID(0,0)])] == (*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][(int)LID(1,0)])])
+          return true;
+        break;
+      default:
+        if((*filamentnumber_)[(int)LID(0,0)]==(*filamentnumber_)[(int)LID(1,0)])
+          return true;
+    }
   }
 
   if(statmechparams_.get<double>("KT") == 0.0)
@@ -5133,7 +5208,10 @@ bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> dire
   //auxiliary variable
   double scalarproduct = T1(0, 0)*T2(0,0) + T1(1,0)*T2(1,0) + T1(2,0)*T2(2,0);
 
+  if(scalarproduct>1.0 && fabs(scalarproduct-1.0)<1e-12)
+    scalarproduct = 1.0;
   Phi = acos(scalarproduct);
+
   //Phi should be the acute angle between 0° and 90° between the filament axes
   if(Phi > M_PI/2.0)
     Phi = M_PI - Phi;
@@ -7506,6 +7584,11 @@ void STATMECH::StatMechManager::DBCCreateMap(Teuchos::RCP<std::set<int> > dbcgid
     // build the map extractor of Dirichlet-conditioned and free DOFs
     *dbcmapextractor = LINALG::MapExtractor(*(discret_->DofRowMap()), dbcmap);
   }
+  return;
+}
+
+void STATMECH::StatMechManager::PreventTransPBCCrosslinks()
+{
   return;
 }
 

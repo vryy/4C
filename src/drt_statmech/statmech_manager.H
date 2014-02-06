@@ -443,6 +443,10 @@ protected:
   bool CheckForBrokenElement(LINALG::SerialDenseMatrix& coord,
                              LINALG::SerialDenseMatrix& cut);
 
+  //! \brief checks whether a crosslink is about to be set across the periodic boundary
+  bool CheckCrossPeriodicBCLink(const Epetra_SerialDenseMatrix& LID,
+                                const Epetra_Vector&            discol);
+
   /*!\brief return the current coordinates and DOF LIDs of all nodes of given element
      \param element (in)      an element
      \param discol  (in)      current displacement vector (col map)
@@ -896,6 +900,8 @@ protected:
    *  \param dbcmapextractor       (in)      vector containing onoff values for free DOFs */
   void DBCCreateMap(Teuchos::RCP<std::set<int> >       dbcgids,
                     Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor);
+
+  void PreventTransPBCCrosslinks();
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
