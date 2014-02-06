@@ -69,6 +69,14 @@ namespace INPAR
       friction_coulomb  ///< Coulomb friction law
     };
 
+    /// Type of contact adhesion law
+    /// (this enum represents the input file parameter ADHESION)
+    enum AdhesionType
+    {
+      adhesion_none,    ///< no adhesion
+      adhesion_bound    ///< fix bounded adhesion
+    };
+
     /// Type of employed solving strategy
     /// (this enum represents the input file parameter STRATEGY)
     enum SolvingStrategy

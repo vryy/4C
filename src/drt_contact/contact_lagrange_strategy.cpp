@@ -2863,6 +2863,12 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         if (Dim()==3) euclidean = sqrt(sum[0]*sum[0]+sum[1]*sum[1]);
        }
 
+      // adhesion
+      double adhbound = 0.0;
+      if(DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(Params(),"ADHESION") ==
+          INPAR::CONTACT::adhesion_bound)
+        adhbound = Params().get<double>("ADHESION_BOUND");
+
       // check nodes of inactive set *************************************
       if (cnode->Active()==false)
       {
@@ -2894,6 +2900,9 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         //if (abs(wgap) > 1e-8)
         //  std::cout << "ERROR: UpdateActiveSet: Exact active node condition violated "
         //       << "for node ID: " << cnode->Id() << std::endl;
+
+        //adhesion modification
+        nz+=adhbound;
 
         // check for tensile contact forces and/or penetration
         if (nz - cn*wgap <= 0) // no averaging of Lagrange multipliers

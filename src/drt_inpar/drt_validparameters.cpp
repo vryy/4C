@@ -1634,6 +1634,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("RESTART_WITH_CONTACT","No","Must be chosen if a non-contact simulation is to be restarted with contact",
                                yesnotuple,yesnovalue,&scontact);
 
+  setStringToIntegralParameter<int>("ADHESION","None","Type of adhesion law",
+      tuple<std::string>("None","none",
+                         "bounded","b"),
+      tuple<int>(
+                 INPAR::CONTACT::adhesion_none,INPAR::CONTACT::adhesion_none,
+                 INPAR::CONTACT::adhesion_bound,INPAR::CONTACT::adhesion_bound),
+      &scontact);
+
+  DoubleParameter("ADHESION_BOUND",0.0,"Critical traction for std. adhesive contact",&scontact);
+
+
   setStringToIntegralParameter<int>("FRICTION","None","Type of friction law",
       tuple<std::string>("None","none",
                          "Stick","stick",

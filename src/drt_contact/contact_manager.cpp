@@ -731,6 +731,21 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     dserror("ERROR: Wear only for Coulomb friction!");
 
   // *********************************************************************
+  // adhesive contact
+  // *********************************************************************
+
+  if(DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(contact,"ADHESION") != INPAR::CONTACT::adhesion_none and
+     DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist,"WEARLAW") != INPAR::CONTACT::wear_none)
+    dserror("Adhesion combined with wear not yet tested!");
+
+  if(contact.get<double>("ADHESION_BOUND") < 0.0)
+    dserror("Adhesion bound must be greater than 0.0!");
+
+  if(DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(contact,"ADHESION") != INPAR::CONTACT::adhesion_none and
+     DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none)
+    dserror("Adhesion combined with friction not yet tested!");
+
+  // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
   if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin ||
