@@ -506,8 +506,12 @@ void UTILS::WindkesselManager::Solve
   // merge maps to one large map
   RCP<Epetra_Map> mergedmap = LINALG::MergeMap(standrowmap,windkrowmap,false);
   // define MapExtractor
-  LINALG::MapExtractor mapext(*mergedmap,standrowmap,windkrowmap);
+  //LINALG::MapExtractor mapext(*mergedmap,standrowmap,windkrowmap);
 
+  std::vector<Teuchos::RCP<const Epetra_Map> > myMaps;
+  myMaps.push_back(standrowmap);
+  myMaps.push_back(windkrowmap);
+  LINALG::MultiMapExtractor mapext(*mergedmap, myMaps);
 
   // initialize large SparseMatrix and Epetra_Vectors
   RCP<LINALG::SparseMatrix> mergedmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap,81));
@@ -521,8 +525,8 @@ void UTILS::WindkesselManager::Solve
   // use BlockMatrix
   Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > blockmat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(mapext,mapext,81,false,false));
   blockmat->Assign(0,0,View,*stiff);
-  blockmat->Assign(0,1,View,*coupoffdiag_vol_d->Transpose());
-  blockmat->Assign(1,0,View,*coupoffdiag_fext_p);
+  blockmat->Assign(1,0,View,*coupoffdiag_vol_d->Transpose());
+  blockmat->Assign(0,1,View,*coupoffdiag_fext_p);
   blockmat->Assign(1,1,View,*windkstiff);
   blockmat->Complete();
 
@@ -555,8 +559,8 @@ void UTILS::WindkesselManager::Solve
   solver_->ResetTolerance();
 
   // store results in smaller vectors
-  mapext.ExtractCondVector(mergedsol,dispinc);
-  mapext.ExtractOtherVector(mergedsol,presincr);
+  mapext.ExtractVector(mergedsol,0,dispinc);
+  mapext.ExtractVector(mergedsol,1,presincr);
 
   counter_++;
 
