@@ -158,8 +158,11 @@ int DRT::ELEMENTS::Transport::Evaluate(
     break;
   }
   case INPAR::SCATRA::scatratype_poro:       impltype = "poro";    break;
-  case INPAR::SCATRA::scatratype_advreac:    impltype = "advreac";
-  //todo: homogeneous reaction coupling condition
+  case INPAR::SCATRA::scatratype_advreac:
+    {
+      impltype = "advreac";
+      //todo: if DEBUG: test if homogeneous reaction coupling condition or Material reaction exists
+    }
   break;
   default: dserror("Unknown scatratype for calc_mat_and_rhs!");    break;
   }

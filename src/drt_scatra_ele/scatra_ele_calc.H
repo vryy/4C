@@ -990,69 +990,88 @@ namespace ELEMENTS
       problem-dependent subclass for element evaluation.
   */
   class ScaTraEleReaManager
-  {
-  public:
-
-    ScaTraEleReaManager(int numscal):
-      reacoeff_(numscal,0.0),
-
-      reacoeffderiv_(numscal,0.0),
-      reaterm_(numscal,0.0),
-
-      include_me_(false)
-      {return;}
-
-    virtual ~ScaTraEleReaManager(){};
-
-    //! @name set routines
-
-    //! Set the reaction coefficient
-    virtual void SetReaCoeff(const double reacoeff, const int k)
     {
-      if (reacoeff < 0.0) dserror("Reaction coefficient is not positive: %f",0,reacoeff);
+    public:
 
-      reacoeff_[k] = reacoeff;
-      if( reacoeff!=0.0 )
-        include_me_=true;
+      ScaTraEleReaManager(int numscal):
+        reacoeff_(numscal,0.0),
+        reacoeffderivmatrix_(numscal,std::vector<double>(numscal,0.0 )), // size of matrix + initialized to zero
+        reabodyforce_(numscal,0.0), // size of vector + initialized to zero
+        reabodyforcederiv_(numscal,std::vector<double>(numscal,0.0 )),
+        include_me_(false)
+        {return;}
 
-      return;
-    }
+      virtual ~ScaTraEleReaManager(){};
 
-    //! Set the derivative of reaction coefficient
-    virtual void SetReaCoeffDeriv(const double reacoeffderiv, const int k)
-    {
+      //! @name set routines
 
-      reacoeffderiv_[k] = reacoeffderiv;
-      return;
-    }
+      //! Set the reaction coefficient
+      virtual void SetReaCoeff(const double reacoeff, const int k)
+      {
+        if (reacoeff < 0.0) dserror("Reaction coefficient is not positive: %f",0,reacoeff);
 
-    //! @name access routines
+        reacoeff_[k] = reacoeff;
+        if( reacoeff!=0.0 )
+          include_me_=true;
 
-    //! Return the reaction coefficient
-    virtual double GetReaCoeff(const int k){return reacoeff_[k];}
+        return;
+      }
 
-    //! Return the reaction coefficient
-    virtual double GetReaCoeffDeriv(const int k){return reacoeffderiv_[k];}
+      virtual void SetReaCoeffDerivMatrix(const double reacoeffderivmatrix, const int k, const int j)
+      {
+        (reacoeffderivmatrix_[k])[j] = reacoeffderivmatrix;
+        return;
+      }
 
-    //! return flag: reaction activated
-    virtual bool Active(){return include_me_;}
+      //! Set the derivative of reaction coefficient
+      virtual void SetReaBodyForce(const double reabodyforce, const int k)
+      {
+        reabodyforce_[k] = reabodyforce;
+        return;
+      }
 
-  private:
+      virtual void SetReaBodyForceDerivMatrix(const double reabodyforcederiv, const int k, const int j)
+      {
+        (reabodyforcederiv_[k])[j] = reabodyforcederiv;
+        return;
+      }
 
-    //! scalar reaction coefficient
-    std::vector<double> reacoeff_;
+      //! @name access routines
 
-    //! scalar reaction coefficient
-    std::vector<double> reacoeffderiv_;
+      //! Return the reaction coefficient
+      virtual double GetReaCoeff(const int k){return reacoeff_[k];}
 
-    //! rhs term for reaction
-    std::vector<double> reaterm_;
+      //! Return the reaction coefficient
+      virtual double GetReaCoeffDerivMatrix(const int k , const int j){return (reacoeffderivmatrix_[k])[j];}
 
-    //! flag for reaction
-    bool include_me_;
-  };
+      //! Return the reaction coefficient
+      virtual double GetReaBodyForce(const int k){return reabodyforce_[k];}
 
-}
+      //! Return the reaction coefficient
+      virtual double GetReaBodyForceDerivMatrix(const int k, const int j){return (reabodyforcederiv_[k])[j];}
+
+      //! return flag: reaction activated
+      virtual bool Active(){return include_me_;}
+
+    private:
+
+      //! scalar reaction coefficient
+      std::vector<double> reacoeff_;
+
+      //! reaction derivative for coupled problems
+      std::vector<std::vector<double> > reacoeffderivmatrix_;
+
+      //! scalar reaction coefficient
+      std::vector<double> reabodyforce_;
+
+      //! scalar reaction coefficient
+      std::vector<std::vector<double> > reabodyforcederiv_;
+
+      //! flag for reaction
+      bool include_me_;
+    };
+
+  }
 }
 
 

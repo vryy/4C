@@ -23,6 +23,11 @@ namespace DRT
 namespace ELEMENTS
 {
 
+enum reaction_coupling
+  {
+    simple_multiplicative
+  };
+
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcAdvReac : public ScaTraEleCalc<distype>
 {
@@ -84,6 +89,59 @@ protected:
       const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
 
+  virtual void GetRhs(
+    double&      rhs,     //!< rhs containing bodyforce
+    const double densnp,  //!< density at t_(n+1)
+    const int    k        //!< index of current scalar
+  );
+
+  //! check if homogenous scatra couplung condition exists and if, read it
+  bool IsCoupledAndRead(
+      const DRT::Discretization&            ScaTraDiscretization //!<discretisation of the ScaTra field
+    );
+
+  double CalcReaCoeff(const int k);
+
+    double CalcReaCoeffFac(
+        const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
+        const DRT::ELEMENTS::reaction_coupling    couplingtype,            //!<type of coupling the stoichometry coefficients
+        const int                                 k                       //!< id of current scalar
+    );
+
+    double CalcReaCoeffDerivMatrix(const int k, const int j);
+
+    double CalcReaCoeffDerivFac(
+        const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
+        const DRT::ELEMENTS::reaction_coupling  couplingtype,            //!<type of coupling the stoichometry coefficients
+        const int                               toderive,                //!<concentration to be derived
+        const int                               k                       //!< id of current scalar
+    );
+
+    double CalcReaBodyForceTerm(const int k);
+
+    double CalcReaBodyForceTermFac(
+        const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
+        const DRT::ELEMENTS::reaction_coupling      couplingtype            //!<type of coupling the stoichometry coefficients
+    );
+
+    double CalcReaBodyForceDerivMatrix(const int k, const int j);
+
+    double CalcReaBodyForceDerivFac(
+        const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
+        const DRT::ELEMENTS::reaction_coupling    couplingtype,            //!<type of coupling the stoichometry coefficients
+        const int                                 toderive                 //!<concentration to be derived
+    );
+
+  virtual int Evaluate(DRT::ELEMENTS::Transport*     ele,
+                         Teuchos::ParameterList&       params,
+                         DRT::Discretization &         discretization,
+                         const std::vector<int> &      lm,
+                         Epetra_SerialDenseMatrix&     elemat1_epetra,
+                         Epetra_SerialDenseMatrix&     elemat2_epetra,
+                         Epetra_SerialDenseVector&     elevec1_epetra,
+                         Epetra_SerialDenseVector&     elevec2_epetra,
+                         Epetra_SerialDenseVector&     elevec3_epetra);
+
   //! calculation of reactive element matrix
   virtual void CalcMatReact(
     Epetra_SerialDenseMatrix&          emat,        //!< element matrix to be filled
@@ -99,8 +157,17 @@ protected:
     const LINALG::Matrix<my::nen_,1>&      diff         //!< laplace term
   );
 
+  bool iscoupled_;                           /// Flag for homogenous scatra coupling volume condition
+  bool isinit_;                              /// Flag if is checked for coupling condition or Material is allready done
+  int numcond_;                              /// number of homogenous scatra coupling conditions
+  std::vector<std::vector<int> > stoich_;    /// vector containing the stoichometrie
+  std::vector<double> reaconst_;             ///constant by which the reaction coefficient is multiplied
+  std::vector<DRT::ELEMENTS::reaction_coupling> couplingtype_;///how to calculate the different couplings
+
 };
+
 }
+
 }
 
 
