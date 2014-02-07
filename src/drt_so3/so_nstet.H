@@ -247,7 +247,8 @@ private:
                       double& density,
                       LINALG::Matrix<6,1>& glstrain,
                       LINALG::Matrix<3,3>& defgrd,
-                      int gp);
+                      int gp,
+                      const int eleGID);
 
    // compute deviatoric stresses and tangent
   static void DevStressTangent(LINALG::Matrix<6,1>& Sdev,

@@ -804,7 +804,9 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   {
     double density; // just a dummy density
     RCP<MAT::Material> mat = adjele[0]->Material();
-    SelectMaterial(mat,stress,cmat,density,glstrain,FnodeL,0);
+    // EleGID is set to -1 errorcheck is performed in
+    // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
+    SelectMaterial(mat,stress,cmat,density,glstrain,FnodeL,0,-1);
   }
   else
   {
@@ -821,7 +823,9 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
       const double V = actele->Vol()/4;
       // def-gradient of the element
       RCP<MAT::Material> mat = actele->Material();
-      SelectMaterial(mat,stressele,cmatele,density,glstrain,FnodeL,0);
+      // EleGID is set to -1 errorcheck is performed in
+      // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
+      SelectMaterial(mat,stressele,cmatele,density,glstrain,FnodeL,0,-1);
       cmat.Update(V,cmatele,1.0);
       stress.Update(V,stressele,1.0);
     } // for (int ele=0; ele<neleinpatch; ++ele)
@@ -1212,7 +1216,9 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   {
     double density; // just a dummy density
     RCP<MAT::Material> mat = adjele[0]->Material();
-    SelectMaterial(mat,stress,cmat,density,glstrain,FnodeL,0);
+    // EleGID is set to -1 errorcheck is performed in
+    // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
+    SelectMaterial(mat,stress,cmat,density,glstrain,FnodeL,0,-1);
   }
   else
   {
@@ -1229,7 +1235,9 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
       const double V = weight[ele] * actele->Vol();
       // def-gradient of the element
       RCP<MAT::Material> mat = actele->Material();
-      SelectMaterial(mat,stressele,cmatele,density,glstrain,FnodeL,0);
+      // EleGID is set to -1 errorcheck is performed in
+      // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
+      SelectMaterial(mat,stressele,cmatele,density,glstrain,FnodeL,0,-1);
       cmat.Update(V,cmatele,1.0);
       stress.Update(V,stressele,1.0);
     } // for (int ele=0; ele<neleinpatch; ++ele)
@@ -1338,7 +1346,8 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(
                       double& density,
                       LINALG::Matrix<6,1>& glstrain,
                       LINALG::Matrix<3,3>& defgrd,
-                      int gp)
+                      int gp,
+                      const int eleGID)
 {
   switch (mat->MaterialType())
   {
@@ -1347,7 +1356,7 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(
       MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
       Teuchos::ParameterList params;
       LINALG::Matrix<3,3> defgrd(true);
-      stvk->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
+      stvk->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,eleGID);
       density = stvk->Density();
     }
     break;
@@ -1362,7 +1371,7 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(
     {
       MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
-      aaa->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
+      aaa->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,eleGID);
       density = aaa->Density();
     }
     break;
@@ -1370,7 +1379,7 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
-      hyper->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
+      hyper->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,eleGID);
       density = hyper->Density();
       return;
       break;

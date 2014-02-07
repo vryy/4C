@@ -170,7 +170,8 @@ void MAT::AAA_mixedeffects::Evaluate(
   const LINALG::Matrix<6,1>* glstrain,
   Teuchos::ParameterList& params,
   LINALG::Matrix<6,1>* stress,
-  LINALG::Matrix<6,6>* cmat)
+  LINALG::Matrix<6,6>* cmat,
+  const int eleGID)
 {
   double elelocalrad = params.get("localrad meanvalue",-999.0);
   if (elelocalrad==-999.0) dserror("Aneurysm local radii not found");

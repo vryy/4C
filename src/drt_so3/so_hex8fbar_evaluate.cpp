@@ -918,9 +918,8 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
     }
 
     params.set<int>("gp",gp);
-    params.set<int>("eleID",Id());
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrd_bar,&glstrain_bar,params,&stress_bar,&cmat);
+    so3mat->Evaluate(&defgrd_bar,&glstrain_bar,params,&stress_bar,&cmat,Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // print plastic strains

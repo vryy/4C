@@ -281,7 +281,8 @@ namespace MAT
                                             //   but used for neo-hooke evaluation; maybe remove
       Teuchos::ParameterList& params,  //!< input paramter list (e.g. Young's, ...)
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  //!< output (mandatory) second Piola-Kirchhoff stress
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat  //!< output (mandatory) material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  //!< output (mandatory) material stiffness matrix
+      const int eleGID
       );
 
     //! evaluate the elasto-plastic tangent

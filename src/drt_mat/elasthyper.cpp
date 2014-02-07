@@ -495,7 +495,8 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
                                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
                                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
                                    LINALG::Matrix<3,3>* rcg_new,
-                                   LINALG::Matrix<3,3>* rcg_old)
+                                   LINALG::Matrix<3,3>* rcg_old,
+                                   int EleID)
 {
   #ifdef DEBUG
   if (!stress) dserror("No stress vector supplied");
@@ -508,7 +509,7 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
   // standard material evaluate call at midpoint t_{n+1/2}
   Teuchos::ParameterList params;
   LINALG::Matrix<3,3> defgrd(true);
-  Evaluate(&defgrd,glstrain_m,params,stress,cmat);
+  Evaluate(&defgrd,glstrain_m,params,stress,cmat,EleID);
   *density = Density();
 
   //**********************************************************************
@@ -575,7 +576,7 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
   // algorithmic material tensor requires stresses at t_{n+1}
   LINALG::Matrix<6,1> stressnew(true);
   LINALG::Matrix<6,6> cmatnew(true);
-  Evaluate(&defgrd,glstrain_new,params,&stressnew,&cmatnew);
+  Evaluate(&defgrd,glstrain_new,params,&stressnew,&cmatnew,EleID);
 
   // initialize algorithmic material tensor
   LINALG::Matrix<6,6> algcmat(true);
@@ -618,7 +619,8 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
                                const LINALG::Matrix<6,1>* glstrain,
                                Teuchos::ParameterList& params,
                                LINALG::Matrix<6,1>* stress,
-                               LINALG::Matrix<6,6>* cmat)
+                               LINALG::Matrix<6,6>* cmat,
+                               const int eleGID)
 {
 
   LINALG::Matrix<6,1> id2(true) ;

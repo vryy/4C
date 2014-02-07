@@ -759,7 +759,7 @@ void DRT::ELEMENTS::NStet::SelectMaterial(
     {
       MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
-      aaa->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
+      aaa->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
       density = aaa->Density();
     }
     break;
@@ -767,7 +767,7 @@ void DRT::ELEMENTS::NStet::SelectMaterial(
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
-      hyper->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
+      hyper->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
       density = hyper->Density();
       return;
       break;

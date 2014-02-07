@@ -320,7 +320,8 @@ void MAT::PlasticLinElast::Evaluate(
   const LINALG::Matrix<NUM_STRESS_3D,1>* linstrain,  // linear strain vector
   Teuchos::ParameterList& params,  // parameter list for communication & HISTORY
   LINALG::Matrix<NUM_STRESS_3D,1>* stress, // 2nd PK-stress
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat // material stiffness matrix
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat, // material stiffness matrix
+  const int eleGID
   )
 {
   const int gp = params.get<int>("gp",-1);

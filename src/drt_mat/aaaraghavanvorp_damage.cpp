@@ -360,7 +360,8 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3,3>* defgrd,
                                            const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain, ///< green lagrange strain
                                            Teuchos::ParameterList& params,      ///< parameter list for communication
                                            LINALG::Matrix<NUM_STRESS_3D,1>* stress,
-                                           LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat)
+                                           LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,
+                                           const int eleGID)
 {
   const int gp = params.get<int>("gp",-1);
   if (gp == -1) dserror("no Gauss point number provided in material");

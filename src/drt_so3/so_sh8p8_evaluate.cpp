@@ -1074,9 +1074,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);  // 2nd PK stress
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     params.set<int>("gp",gp);
-    params.set<int>("eleID",Id());
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrad,&glstrain,params,&stress,&cmat);
+    so3mat->Evaluate(&defgrad,&glstrain,params,&stress,&cmat,Id());
     if (iso_ == iso_enforced) {
       LINALG::Matrix<MAT::NUM_STRESS_3D,1> pk2gen(stress);  // may contain non-isochoric material response
       LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cgen(cmat);  // may contain non-isochoric material response

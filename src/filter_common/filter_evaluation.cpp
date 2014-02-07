@@ -36,7 +36,8 @@ void MAT::MicroMaterial::Evaluate(const LINALG::Matrix<3,3>* defgrd,
                                           const LINALG::Matrix<6,1>* glstrain,
                                           Teuchos::ParameterList& params,
                                           LINALG::Matrix<6,1>* stress,
-                                          LINALG::Matrix<6,6>* cmat)
+                                          LINALG::Matrix<6,6>* cmat,
+                                          const int eleGID)
 {
   dserror("MAT::MicroMaterial::Evaluate not available");
 }

@@ -44,12 +44,12 @@ void MAT::MicroMaterial::Evaluate(const LINALG::Matrix<3,3>* defgrd,
                                   const LINALG::Matrix<6,1>* glstrain,
                                   Teuchos::ParameterList& params,
                                   LINALG::Matrix<6,1>* stress,
-                                  LINALG::Matrix<6,6>* cmat)
+                                  LINALG::Matrix<6,6>* cmat,
+                                  const int eleGID)
 {
   const int gp = params.get<int>("gp",-1);
   if (gp == -1) dserror("no Gauss point number provided in material");
-  const int ele_ID = params.get<int>("eleID",-1);
-  if (ele_ID == -1) dserror("no element ID provided in material");
+  if (eleGID == -1) dserror("no element ID provided in material");
 
   LINALG::Matrix<3,3>* defgrd_enh = const_cast<LINALG::Matrix<3,3>*>(defgrd);
 
@@ -95,13 +95,13 @@ void MAT::MicroMaterial::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   DRT::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
 
   // avoid writing output also for ghosted elements
-  const bool eleowner = DRT::Problem::Instance(0)->GetDis("structure")->ElementRowMap()->MyGID(ele_ID);
+  const bool eleowner = DRT::Problem::Instance(0)->GetDis("structure")->ElementRowMap()->MyGID(eleGID);
 
   // get sub communicator including the supporting procs
   Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
 
   // tell the supporting procs that the micro material will be evaluated
-  int task[2] = {0,ele_ID};
+  int task[2] = {0,eleGID};
   subcomm->Broadcast(task, 2, 0);
 
   // container is filled with data for supporting procs
@@ -126,7 +126,7 @@ void MAT::MicroMaterial::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   // standard evaluation of the micro material
   if (matgp_.find(gp) == matgp_.end())
   {
-    matgp_[gp] = Teuchos::rcp(new MicroMaterialGP(gp, ele_ID, eleowner, microdisnum, V0));
+    matgp_[gp] = Teuchos::rcp(new MicroMaterialGP(gp, eleGID, eleowner, microdisnum, V0));
 
     /// save density of this micromaterial
     /// -> since we can assign only one material per element, all Gauss points have

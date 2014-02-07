@@ -145,7 +145,8 @@ namespace MAT
         const LINALG::Matrix<6,1>* glstrain,
         Teuchos::ParameterList& params,
         LINALG::Matrix<6,1>* stress,
-        LINALG::Matrix<6,6>* cmat
+        LINALG::Matrix<6,6>* cmat,
+        const int eleGID
      );
 
     /// Return density

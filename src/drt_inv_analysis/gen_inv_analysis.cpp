@@ -1088,8 +1088,8 @@ void STR::GenInvAnalysis::ReadInParameters()
           if (!params) dserror("Cannot cast material parameters");
           const int j = p_.Length();
           p_.Resize(j+2);
-          p_(j)   = params->GetYoungs(-1);
-          p_(j+1) = params->GetBeta(-1);
+          p_(j)   = params->GetParameter(params->young,-1);
+          p_(j+1)     = params->GetParameter(params->beta,-1);
           //p_(j+2) = params->nue_; // need also change resize above to invoke
           //nue
         }
@@ -1814,8 +1814,14 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
       {
         MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
         if (!params) dserror("Cannot cast material parameters");
-        params->SetYoungs(p_cur[j]);
-        params->SetBeta(p_cur[j+1]);
+        //Epetra_Map dummy_map(1,1,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm()));
+        Epetra_Map dummy_map(1,1,0,*gcomm);
+
+        Teuchos::RCP <Epetra_Vector> parameter= Teuchos::rcp(new Epetra_Vector(dummy_map,true));
+        parameter->PutScalar(double (p_cur[j]));
+        params->SetParameter(params->young ,parameter);
+        parameter->PutScalar(p_cur[j+1]);
+        params->SetParameter(params->beta,parameter);
         if (lmyrank==0)   printf("NPGroup %3d: ",groupid);
         if (lmyrank == 0) printf("MAT::PAR::AAAneohooke %20.15e %20.15e\n",p_cur[j],p_cur[j+1]);
         j += 2;

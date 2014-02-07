@@ -393,14 +393,14 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
   const LINALG::Matrix<6,1>* glstrain,
   Teuchos::ParameterList& params,
   LINALG::Matrix<6,1>* stress,
-  LINALG::Matrix<6,6>* cmat
+  LINALG::Matrix<6,6>* cmat,
+  const int eleGID
   )
 {
   // extract the gauss points from the parameter list
   const int gp = params.get<int>("gp",-1);
   if (gp == -1) dserror("no Gauss point number provided in material");
-  const int eleID = params.get<int>("eleID",-1);
-  if (eleID == -1) dserror("no element provided in material");
+  if (eleGID == -1) dserror("no element provided in material");
 
   // elastic material data
   // -------------------------------------------------- get material parameters
@@ -596,9 +596,9 @@ void MAT::ThermoPlasticHyperElast::Evaluate(
     // visualisation of whole plastic behaviour via PLASTIC_STRAIN in postprocessing
     if (plastic_step_ == false)
     {
-      plastic_eleID_ = eleID;
+      plastic_eleID_ = eleGID;
 
-      if ( (plastic_step_ == false) and (eleID == plastic_eleID_) and (gp == 0) )
+      if ( (plastic_step_ == false) and (eleGID == plastic_eleID_) and (gp == 0) )
         std::cout << "plasticity starts in element = " << plastic_eleID_ << std::endl;
 
       plastic_step_ = true;

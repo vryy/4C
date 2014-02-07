@@ -142,7 +142,8 @@ private:
       const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
       Teuchos::ParameterList& params,  ///< parameter list for communication
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat  ///< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+      const int eleGID
     );
 
     /// Return density

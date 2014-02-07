@@ -164,8 +164,9 @@ private:
       const LINALG::Matrix<6,1>* glstrain,  //!< Green-Lagrange strain
       Teuchos::ParameterList& params,  //!< parameter list
       LINALG::Matrix<6,1>* stress,  //!< stress
-      LINALG::Matrix<6,6>* cmat  //!< elastic material tangent
-      );
+      LINALG::Matrix<6,6>* cmat,  //!< elastic material tangent
+      const int eleGID                 //!< element GID
+    );
 
     //! main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!

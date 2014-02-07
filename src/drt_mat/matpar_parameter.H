@@ -21,6 +21,7 @@ Maintainer: Burkhard Bornemann
 #include <Teuchos_RCP.hpp>
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_lib/drt_dserror.H"
+#include "Epetra_Vector.h"
 
 /*----------------------------------------------------------------------*/
 /* forward declarations */
@@ -82,7 +83,24 @@ namespace MAT
       /// return number of parameters being optimizable
       virtual void OptParams(std::vector<std::string>* pnames){dserror("This material does not implement OptParams()");};
 
+      //! \brief set element specific or global material parameter using enum parametername which is defined in respective MAT::PAR classes
+      void SetParameter(int parametername,Teuchos::RCP<Epetra_Vector> myparameter);
+
+      //! \brief return element specific or global material parameter using enum parametername which is defined in respective MAT::PAR classes
+      double GetParameter(int parametername ,const int EleId);
+
+    protected:
+
+      /*! \brief
+       * data structure to store all material parameters in.
+       * By default all elements with the same mat share the same material properties, hence the Epetra_Vector has length 1
+       * However for elementwise material properties the Epetra_Vector has EleColMap layout.
+       */
+      std::vector< Teuchos::RCP<Epetra_Vector> > matparams_;
+
+
     private:
+
 
       /// material ID, as defined in input file
       int id_;

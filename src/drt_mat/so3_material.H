@@ -40,7 +40,8 @@ namespace MAT
                           const LINALG::Matrix<6,1>* glstrain,
                           Teuchos::ParameterList& params,
                           LINALG::Matrix<6,1>* stress,
-                          LINALG::Matrix<6,6>* cmat) = 0;
+                          LINALG::Matrix<6,6>* cmat,
+                          const int eleGID) = 0;
 
     /// Evaluate strain energy function (for hyperelastic materials only)
     virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,

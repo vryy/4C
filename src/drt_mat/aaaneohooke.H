@@ -25,6 +25,10 @@ Maintainer: Jonas Biehler
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 
+#include "Epetra_Vector.h"
+#include "Teuchos_RCP.hpp"
+#include <Epetra_Map.h>
+
 
 namespace MAT
 {
@@ -51,44 +55,8 @@ namespace MAT
 
       void OptParams(std::vector<std::string>* pnames);
 
-      // functions to return mat params
-
-      //! brief get youngs modulus fo specific element
-      // or try to get global youngs if eleID=-1
-      double GetYoungs(int EleID);
-
-      double GetNue() {return nue_; } ;
-
-      double GetBeta(int EleID);
-
-      double GetDensity() {return density_;};
-
-      void SetYoungs(double new_youngs);
-
-      void SetYoungs(Teuchos::RCP<Epetra_Vector> new_distributed_youngs);
-
-      void SetBeta(double new_beta);
-
-      void SetBeta(Teuchos::RCP<Epetra_Vector> new_distributed_beta);
-
-
-    private:
-
-      /// @name material parameters
-      //@{
-
-      /// Young's modulus
-      double youngs_;
-      /// Possion's ratio
-      double nue_;
-      /// 2nd parameter
-      double beta_;
-      // mass density
-      double density_;
-
-      //@}
-
-      std::map<std::string,Teuchos::RCP<Epetra_Vector> > elementwisematparams_;
+      // !brief enum for mapping between material parameter and entry in the matparams_ vector
+      enum matparamnames_ {young, nue, beta, density, first=young, last=density};
 
     };  // class AAAneohooke
 
@@ -161,10 +129,12 @@ private:
     //@}
 
     /// material mass density
-    virtual double Density() const { return params_->GetDensity(); }
+    //virtual double Density() const { return params_->GetDensity(); }
+    virtual double Density() const { return params_->GetParameter(params_->density,-1); }
 
     /// shear modulus
-    double ShearMod() const { return 0.5*params_->GetYoungs(-1)/(1.0+params_->GetNue()); }
+    //double ShearMod() const { return 0.5*params_->GetYoungs(-1)/(1.0+params_->GetNue()); }
+    double ShearMod() const { return 0.5*params_->GetParameter(params_->young,-1)/(1.0+params_->GetParameter(params_->nue,-1)); }
 
     // material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaaneohooke; }
@@ -178,7 +148,8 @@ private:
       const LINALG::Matrix<6,1>* glstrain,
       Teuchos::ParameterList& params,
       LINALG::Matrix<6,1>* stress,
-      LINALG::Matrix<6,6>* cmat);
+      LINALG::Matrix<6,6>* cmat,
+      const int eleGID);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

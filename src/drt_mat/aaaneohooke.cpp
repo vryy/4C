@@ -20,20 +20,29 @@ Maintainer: Jonas Biehler
 #include "aaaneohooke.H"
 #include "matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_mat/material_service.H"
+#include "../drt_comm/comm_utils.H"
 
+
+#include "../drt_io/io_pstream.H"
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
 MAT::PAR::AAAneohooke::AAAneohooke(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata),
-  youngs_(matdata->GetDouble("YOUNG")),
-  nue_(matdata->GetDouble("NUE")),
-  beta_(matdata->GetDouble("BETA")),
-  density_(matdata->GetDouble("DENS"))
+: Parameter(matdata)
 {
+  Epetra_Map dummy_map(1,1,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm()));
+  for(int i=first ; i<=last; i++)
+  {
+    matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map,true)));
+  }
+  matparams_.at(young)->PutScalar(matdata->GetDouble("YOUNG"));
+  matparams_.at(nue)->PutScalar(matdata->GetDouble("NUE"));
+  matparams_.at(beta)->PutScalar(matdata->GetDouble("BETA"));
+  matparams_.at(density)->PutScalar(matdata->GetDouble("DENS"));
 }
 
 
@@ -51,84 +60,6 @@ void MAT::PAR::AAAneohooke::OptParams(std::vector<std::string>* pnames)
 {
   pnames->push_back("YOUNG");
   pnames->push_back("BETA");
-}
-
-
-double MAT::PAR::AAAneohooke::GetBeta(int EleId)
-{
-  double beta=0.0;
-  //check if we have an element based value
-
-  std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
-  myit=elementwisematparams_.find("beta");
-  if(EleId<0.0 && myit!=elementwisematparams_.end())
-  {
-    dserror("Cannot get global parameter!");
-  }
-  else if(myit!=elementwisematparams_.end())
-  {
-    beta=(*(elementwisematparams_.at("beta")))[EleId];
-  }
-  else
-    beta=beta_;
-
-  return beta;
-}
-
-double MAT::PAR::AAAneohooke::GetYoungs(int EleId)
-{
-  double youngs=0.0;
-  //check if we have an element based value
-
-  std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
-  myit=elementwisematparams_.find("youngs");
-  // check whether someone tries to get a global value by using eleid =-1
-  if(EleId<0.0 && myit!=elementwisematparams_.end())
-  {
-    dserror("Cannot get global parameter!");
-  }
-  else if(myit!=elementwisematparams_.end())
-  {
-    youngs=(*(elementwisematparams_.at("youngs")))[EleId];
-  }
-  else
-    youngs=youngs_;
-
-  return youngs;
-}
-
-void MAT::PAR::AAAneohooke::SetYoungs(double new_youngs)
-{
-  // check whether we have a spatially varing youngs modulus
-  std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
-  myit=elementwisematparams_.find("youngs");
-  if(myit==elementwisematparams_.end())
-    // set new global value for parameter youngs
-    youngs_=new_youngs;
-  else
-    dserror("Spatially varying youngs detected aborting!");
-}
-
-void MAT::PAR::AAAneohooke::SetYoungs(Teuchos::RCP<Epetra_Vector> new_distributed_youngs)
-{
-  elementwisematparams_.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("youngs",new_distributed_youngs));
-}
-
-void MAT::PAR::AAAneohooke::SetBeta(double new_beta)
-{
-  // check whether we have a spatially varing youngs modulus
-  std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator myit;
-  myit=elementwisematparams_.find("beta");
-  if(myit==elementwisematparams_.end())
-    // set new global value for parameter beta
-    beta_=new_beta;
-  else
-    dserror("Spatially varying beta detected aborting!");
-}
-
-void MAT::PAR::AAAneohooke::SetBeta(Teuchos::RCP<Epetra_Vector> new_distributed_beta)
-{
-  elementwisematparams_.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("beta",new_distributed_beta));
 }
 
 DRT::ParObject* MAT::AAAneohookeType::Create( const std::vector<char> & data )
@@ -255,14 +186,15 @@ void MAT::AAAneohooke::Evaluate(
   const LINALG::Matrix<6,1>* glstrain,
   Teuchos::ParameterList& params,
   LINALG::Matrix<6,1>* stress,
-  LINALG::Matrix<6,6>* cmat)
+  LINALG::Matrix<6,6>* cmat,
+  const int eleGID)
 {
-  // get element ID incase we have element specific material parameters
-  int eleID= params.get<int>("eleID");
+  // get element lID incase we have element specific material parameters
+  int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
   // material parameters for isochoric part
-  const double youngs   = params_->GetYoungs(eleID);    // Young's modulus
-  const double beta     = params_->GetBeta(eleID);      // second parameter
-  const double nue      = params_->GetNue();       // Poisson's ratio
+  const double youngs   = params_->GetParameter(params_->young,eleID);// Young's modulus
+  const double beta     = params_->GetParameter(params_->beta,eleID);      // second parameter
+  const double nue      = params_->GetParameter(params_->nue,eleID);       // Poisson's ratio
   const double alpha    = youngs*0.1666666666666666667;       // E = alpha * 6..
 
   // material parameters for volumetric part
@@ -408,17 +340,17 @@ void MAT::AAAneohooke::VisNames(std::map<std::string,int>& names)
 }
 
 
-bool MAT::AAAneohooke::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID)
+bool MAT::AAAneohooke::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleGID)
 {
   if (name=="beta")
   {
     if ((int)data.size()!=1) dserror("size mismatch");
-    data[0] = params_->GetBeta(eleID);
+    data[0] = params_->GetParameter(params_->beta,eleGID);
   }
   else if (name=="youngs")
   {
-    if ((int)data.size()!=1) dserror("size mismatch");
-    data[0] = params_->GetYoungs(eleID);
+    if ((int)data.size()!=1) dserror("size mismatch");;
+    data[0] = params_->GetParameter(params_->young,eleGID);
   }
   else
   {

@@ -19,7 +19,7 @@ Maintainer: Burkhard Bornemann
 #include "matpar_parameter.H"
 #include "matpar_material.H"
 
-
+#include "../drt_io/io_pstream.H"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::Parameter::Parameter(
@@ -31,4 +31,60 @@ MAT::PAR::Parameter::Parameter(
 {
 }
 
+void MAT::PAR::Parameter::SetParameter(int parametername,Teuchos::RCP<Epetra_Vector> myparameter)
+{
+  // security check
+  int length_old=matparams_.at(parametername)->GlobalLength();
+  int length_new=myparameter->GlobalLength();
+
+  // we had spatially constant matparameter and want elementwise, thats ok
+  if(length_old==1 && (length_old < length_new) )
+  {
+    matparams_.at(parametername) = Teuchos::rcp(new Epetra_Vector (*myparameter));
+  }
+  // we had spatially constant matparameter and want constant, thats ok
+  else if(length_old==1 && (length_old == length_new) )
+  {
+    matparams_.at(parametername) = Teuchos::rcp(new Epetra_Vector (*myparameter));
+  }
+  // we had elementwise matparameter and want elementwise, thats ok
+  else if(length_old > 1 && (length_old == length_new) )
+  {
+    matparams_.at(parametername) = Teuchos::rcp(new Epetra_Vector (*myparameter));
+  }
+  // we had elementwise matparameter and want constant, thats  not ok
+  else if(length_old > 1 && (length_new ==1 ) )
+  {
+    dserror("You cannot go back from elementwise parametrisation to constant parametrisation Size mismatch ");
+  }
+  // we had elementwise matparameter and elementwise but there is  size mismatch, thats  not ok
+  else if(length_old > 1 && (length_old !=length_new ) )
+  {
+    dserror("Problem setting elementwise material parameter: Size mismatch ");
+  }
+  else
+  {
+    dserror("Can not set material parameter: Unknown Problem");
+  }
+
+}
+
+double MAT::PAR::Parameter::GetParameter(int parametername,const int EleId)
+{
+  //check if we have an element based value via size
+  if( matparams_[parametername]->GlobalLength()==1)
+  {
+    // we have a global value hence we directly return the first entry
+    return (*matparams_[parametername])[0];
+  }
+  // If someone calls this functions without a valid EleID and we have element based values throw error
+  else if (EleId < 0 && matparams_[parametername]->GlobalLength()>1)
+  {
+    dserror("Global mat parameter requested but we have elementwise mat params");
+    return 0.0;
+  }
+  // otherwise just return the element specific value
+  else
+    return (*matparams_[parametername])[EleId];
+}
 /*----------------------------------------------------------------------*/

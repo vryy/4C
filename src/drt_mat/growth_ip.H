@@ -169,7 +169,8 @@ namespace MAT
                           const LINALG::Matrix<6,1>* glstrain,  ///<green lagrange strain
                           Teuchos::ParameterList& params,
                           LINALG::Matrix<6,1>* stress,  ///< 2nd PK-stress
-                          LINALG::Matrix<6,6>* cmat);  ///< material stiffness matrix
+                          LINALG::Matrix<6,6>* cmat, ///< material stiffness matrix
+                          const int eleGID );
 
     /// Return density
     virtual double Density() const {return params_->density_;}

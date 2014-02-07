@@ -851,8 +851,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     LINALG::Matrix<6,6> dmdc(true);
     LINALG::Matrix<6,9> dmdfpinv(true);
     params.set<int>("gp",gp);
-    params.set<int>("eleID",Id());
-    plmat->Evaluate(&defgrd,&InvPlasticDefgrd,params,&pk2_stress,&Cmat_ABCD,&dpk2dfpinv,&mandelstress,&dmdc,&dmdfpinv);
+    plmat->Evaluate(&defgrd,&InvPlasticDefgrd,params,&pk2_stress,&Cmat_ABCD,&dpk2dfpinv,&mandelstress,&dmdc,&dmdfpinv,Id());
 
     // return gp stresses
     switch (iostress)
@@ -1546,8 +1545,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
     LINALG::Matrix<6,6> dmdc(true);
     LINALG::Matrix<6,9> dmdfpinv(true);
     params.set<int>("gp",gp);
-    params.set<int>("eleID",Id());
-    plmat->Evaluate(&defgrd,&InvPlasticDefgrd,params,&pk2_stress,&Cmat_ABCD,&dpk2dfpinv,&mandelstress,&dmdc,&dmdfpinv);
+    plmat->Evaluate(&defgrd,&InvPlasticDefgrd,params,&pk2_stress,&Cmat_ABCD,&dpk2dfpinv,&mandelstress,&dmdc,&dmdfpinv,Id());
 
     // return gp stresses
     switch (iostress)
@@ -2753,8 +2751,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
     LINALG::Matrix<6,6> dmdc(true);
     LINALG::Matrix<6,9> dmdfpinv(true);
     params.set<int>("gp",gp);
-    params.set<int>("eleID",Id());
-    plmat->Evaluate(&defgrd_bar,&InvPlasticDefgrd,params,&pk2_stress_bar,&Cmat_ABCD_bar,&dpk2dfpinv,&mandelstress,&dmdc,&dmdfpinv);
+    plmat->Evaluate(&defgrd_bar,&InvPlasticDefgrd,params,&pk2_stress_bar,&Cmat_ABCD_bar,&dpk2dfpinv,&mandelstress,&dmdc,&dmdfpinv,Id());
 
     // return gp stresses
     switch (iostress)
@@ -3524,8 +3521,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
     LINALG::Matrix<6,6> dmdc(true);
     LINALG::Matrix<6,9> dmdfpinv(true);
     params.set<int>("gp",gp);
-    params.set<int>("eleID",Id());
-    plmat->Evaluate(&defgrd_bar,&InvPlasticDefgrd,params,&pk2_stress_bar,&Cmat_ABCD_bar,&dpk2dfpinv,&mandelstress,&dmdc,&dmdfpinv);
+    plmat->Evaluate(&defgrd_bar,&InvPlasticDefgrd,params,&pk2_stress_bar,&Cmat_ABCD_bar,&dpk2dfpinv,&mandelstress,&dmdc,&dmdfpinv,Id());
 
     // return gp stresses
     switch (iostress)

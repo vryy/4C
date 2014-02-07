@@ -225,15 +225,16 @@ private:
                           LINALG::Matrix<6,9>* dPK2dFpinv,   ///< derivative of PK2 w.r.t. F_p^{-1}
                           LINALG::Matrix<3,3>* MandelStress, ///< Mandel stress tensor
                           LINALG::Matrix<6,6>* dMdC,         ///< derivative of Mandel stress w.r.t. C
-                          LINALG::Matrix<6,9>* dMdFpinv      ///< derivative of Mandel stress w.r.t. F_p^{-1}
-                          );
+                          LINALG::Matrix<6,9>* dMdFpinv,      ///< derivative of Mandel stress w.r.t. F_p^{-1}
+                          const int eleGID);                ///< Element GID
 
     /// hyperelastic stress response plus elasticity tensor
     virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,  ///< Deformation gradient
                           const LINALG::Matrix<6,1>* glstrain,///< Green-Lagrange strain
                           Teuchos::ParameterList& params,     ///< Container for additional information
                           LINALG::Matrix<6,1>* stress,        ///< 2nd Piola-Kirchhoff stresses
-                          LINALG::Matrix<6,6>* cmat)          ///< Constitutive matrix
+                          LINALG::Matrix<6,6>* cmat,          ///< Constitutive matrix
+                          const int eleGID)                    ///< Element GID
     {dserror("PlasticHyperElast cannot be called by standard evaluate routine"); return;}
 
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);

@@ -205,7 +205,8 @@ private:
                           const LINALG::Matrix<6,1>* glstrain,///< Green-Lagrange strain
                           Teuchos::ParameterList& params,     ///< Container for additional information
                           LINALG::Matrix<6,1>* stress,        ///< 2nd Piola-Kirchhoff stresses
-                          LINALG::Matrix<6,6>* cmat);         ///< Constitutive matrix
+                          LINALG::Matrix<6,6>* cmat,         ///< Constitutive matrix
+                          const int eleGID);                          ///< Element GID
 
     /// evaluate for GEMM
     virtual void EvaluateGEMM(LINALG::Matrix<6,1>* stress,          ///< 2nd Piola-Kirchhoff stresses
@@ -215,7 +216,8 @@ private:
                               LINALG::Matrix<6,1>* glstrain_new,    ///< Green-Lagrange strain at t_{n+1}
                               LINALG::Matrix<6,1>* glstrain_old,    ///< Green-Lagrange strain at t_{n}
                               LINALG::Matrix<3,3>* rcg_new,         ///< Right Cauchy-Green tensor at t_{n+1}
-                              LINALG::Matrix<3,3>* rcg_old);        ///< Right Cauchy-Green tensor at t_{n}
+                              LINALG::Matrix<3,3>* rcg_old,         ///< Right Cauchy-Green tensor at t_{n}
+                              const int eleGID);                           ///< Element GID
 
     /// setup
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);

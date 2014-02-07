@@ -322,7 +322,8 @@ namespace MAT
       const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
       Teuchos::ParameterList& params,
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,
+      const int eleGID
     );
 
     /// Return density

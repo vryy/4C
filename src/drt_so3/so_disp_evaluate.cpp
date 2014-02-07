@@ -340,9 +340,8 @@ int DRT::ELEMENTS::SoDisp::Evaluate(Teuchos::ParameterList& params,
               LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
               LINALG::Matrix<3,3> defgrd(true);
               params.set<int>("gp",gp);
-              params.set<int>("eleID",Id());
               Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-              so3mat->Evaluate(&defgrd,&strainerror,params,&stress,&cmat);
+              so3mat->Evaluate(&defgrd,&strainerror,params,&stress,&cmat,Id());
 
               // compute GP contribution to energy error norm
               energynorm += fac * stress.Dot(strainerror);
@@ -525,9 +524,8 @@ void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
     // QUICK HACK until so_disp exclusively uses LINALG::Matrix!!!!!
     LINALG::Matrix<NUMDIM_DISP,NUMDIM_DISP> fixed_defgrd(defgrd);
     params.set<int>("gp",gp);
-    params.set<int>("eleID",Id());
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&fixed_defgrd,&glstrain_f,params,&stress_f,&cmat_f);
+    so3mat->Evaluate(&fixed_defgrd,&glstrain_f,params,&stress_f,&cmat_f,Id());
     Epetra_SerialDenseMatrix cmat(View,cmat_f.A(),cmat_f.Rows(),cmat_f.Rows(),cmat_f.Columns());
     Epetra_SerialDenseVector stress(View,stress_f.A(),stress_f.Rows());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc

@@ -571,9 +571,8 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
     Epetra_SerialDenseMatrix cmat(MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D);
     Epetra_SerialDenseVector stress(MAT::NUM_STRESS_3D);
     params.set<int>("gp",gp);
-    params.set<int>("eleID",ele->Id());
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
-    so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat);
+    so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat,ele->Id());
 
     cstress.Multiply('N','N',detf,IF,stress,0.0);
     //std::cout << "unperm cstress\n" << cstress;
@@ -627,9 +626,8 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
       Epetra_SerialDenseMatrix cmat(MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D);
       Epetra_SerialDenseVector stress(MAT::NUM_STRESS_3D);
       params.set<int>("gp",gp);
-      params.set<int>("eleID",ele->Id());
       Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
-      so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat);
+      so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat,ele->Id());
 
       Epetra_SerialDenseVector cstressperm(MAT::NUM_STRESS_3D);
       cstressperm.Multiply('N','N',detf,IF,stress,0.0);
@@ -795,9 +793,8 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
 
     Epetra_SerialDenseMatrix cmat(MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D);
     params.set<int>("gp",gp);
-    params.set<int>("eleID",ele->Id());
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
-    so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat);
+    so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat,ele->Id());
 
     cstress.Multiply('N','N',detf,IF,stress,0.0);
     //std::cout << "unperm cstress\n" << cstress;

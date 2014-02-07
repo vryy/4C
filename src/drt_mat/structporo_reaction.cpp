@@ -224,14 +224,16 @@ void MAT::StructPoroReaction::Evaluate(const LINALG::Matrix<3,3>* defgrd,    ///
                             const LINALG::Matrix<6,1>* glstrain,  ///< (i) green lagrange strain
                             Teuchos::ParameterList& params,       ///< (i) parameter list
                             LINALG::Matrix<6,1>* stress,          ///< (o) second piola kirchhoff stress
-                            LINALG::Matrix<6,6>* cmat)
+                            LINALG::Matrix<6,6>* cmat,
+                            const int eleGID)
 {
   //call base class
   StructPoro::Evaluate( defgrd,
                         glstrain,
                         params,
                         stress,
-                        cmat);
+                        cmat,
+                        eleGID);
 
   //evaluate change of reference porosity due to reaction
   double cnp = params.get<double>("scalar");

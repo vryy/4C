@@ -238,7 +238,8 @@ void MAT::StVenantKirchhoff::Evaluate(const LINALG::Matrix<3,3>* defgrd,
                                       const LINALG::Matrix<6,1>* glstrain,
                                       Teuchos::ParameterList& params,
                                       LINALG::Matrix<6,1>* stress,
-                                      LINALG::Matrix<6,6>* cmat)
+                                      LINALG::Matrix<6,6>* cmat,
+                                      const int eleGID)
 {
   SetupCmat(*cmat);
   // evaluate stresses
@@ -276,7 +277,8 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* 
                                           LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
                                           LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
                                           LINALG::Matrix<3,3>* rcg_new,
-                                          LINALG::Matrix<3,3>* rcg_old)
+                                          LINALG::Matrix<3,3>* rcg_old,
+                                          const int eleGID)
 {
   #ifdef DEBUG
   if (!stress) dserror("No stress vector supplied");
@@ -292,7 +294,7 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* 
 
   Teuchos::ParameterList params;
   LINALG::Matrix<3,3> defgrd(true);
-  Evaluate(&defgrd,glstrain_m,params,stress,cmat);
+  Evaluate(&defgrd,glstrain_m,params,stress,cmat,eleGID);
   *density = Density();
   StrainEnergy(*glstrain_new,psi);
   StrainEnergy(*glstrain_old,psio);

@@ -576,7 +576,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3d(
   if(so3mat == Teuchos::null)
     dserror("cast to So3Material failed!");
 
-  so3mat->Evaluate(NULL,glstrain,params,stress,cmat);
+  so3mat->Evaluate(NULL,glstrain,params,stress,cmat,Id());
 
   return;
 }

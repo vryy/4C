@@ -308,8 +308,9 @@ namespace MAT
                             const LINALG::Matrix<6,1>* glstrain,  ///< (i) green lagrange strain
                             Teuchos::ParameterList& params,       ///< (i) parameter list
                             LINALG::Matrix<6,1>* stress,          ///< (o) second piola kirchhoff stress
-                            LINALG::Matrix<6,6>* cmat)            ///< (o) constitutive matrix
-      {mat_->Evaluate(defgrd,glstrain,params,stress,cmat);};
+                            LINALG::Matrix<6,6>* cmat,            ///< (o) constitutive matrix
+                            int EleID)                            ///< (i) element GID
+      {mat_->Evaluate(defgrd,glstrain,params,stress,cmat,EleID);};
 
       /// Evaluate strain energy function (for hyperelastic materials only)
       virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,  ///< (i) green lagrange strain

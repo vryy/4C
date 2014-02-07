@@ -163,7 +163,8 @@ private:
                           const LINALG::Matrix<6,1>* glstrain,
                           Teuchos::ParameterList& params,
                           LINALG::Matrix<6,1>* stress,
-                          LINALG::Matrix<6,6>* cmat);
+                          LINALG::Matrix<6,6>* cmat,
+                          const int eleGID);
 
     /// evaluate strain energy function
     virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
@@ -177,7 +178,8 @@ private:
                               LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
                               LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
                               LINALG::Matrix<3,3>* rcg_new,
-                              LINALG::Matrix<3,3>* rcg_old);
+                              LINALG::Matrix<3,3>* rcg_old,
+                              const int eleGID);
 
     // computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(LINALG::Matrix<6,6>& cmat);

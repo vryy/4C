@@ -195,7 +195,8 @@ namespace MAT
                             const LINALG::Matrix<6,1>* glstrain,  ///< (i) green lagrange strain
                             Teuchos::ParameterList& params,       ///< (i) parameter list
                             LINALG::Matrix<6,1>* stress,          ///< (o) second piola kirchhoff stress
-                            LINALG::Matrix<6,6>* cmat);            ///< (o) constitutive matrix
+                            LINALG::Matrix<6,6>* cmat,            ///< (o) constitutive matrix
+                            const int eleGID);
 
       //@}
 

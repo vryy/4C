@@ -378,17 +378,18 @@ void MAT::Damage::Evaluate(
   const LINALG::Matrix<NUM_STRESS_3D,1>* linstrain,  // linear strain vector
   Teuchos::ParameterList& params,  // parameter list for communication & HISTORY
   LINALG::Matrix<NUM_STRESS_3D,1>* stress,  // 2nd PK-stress
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat // material stiffness matrix
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat, // material stiffness matrix
+  const int eleGID
   )
 {
   // in case kinematic hardening is ignored, use implementation according to de
   // Souza Neto, Computational Methods for Plasticity
   if ( (params_->kinhard_ == 0.0) and (params_->kinhard_rec_ == 0.0) and (params_->hardexpo_ == 0.0) )
-    EvaluateSimplifiedLemaitre(defgrd,linstrain,params,stress,cmat);
+    EvaluateSimplifiedLemaitre(defgrd,linstrain,params,stress,cmat,eleGID);
   // in case full Lemaitre material model is considered, i.e. including
   // kinematic hardening, use implementation according to Doghri
   else
-    EvaluateFullLemaitre(defgrd,linstrain,params,stress,cmat);
+    EvaluateFullLemaitre(defgrd,linstrain,params,stress,cmat,eleGID);
 }  // Evaluate
 
 
@@ -400,13 +401,12 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(
   const LINALG::Matrix<NUM_STRESS_3D,1>* linstrain,  // linear strain vector
   Teuchos::ParameterList& params,  // parameter list for communication & HISTORY
   LINALG::Matrix<NUM_STRESS_3D,1>* stress,  // 2nd PK-stress
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat // material stiffness matrix
-  )
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat, // material stiffness matrix
+  const int eleGID)
 {
   const int gp = params.get<int>("gp",-1);
   if (gp == -1) dserror("no Gauss point number provided in material");
-  const int eleID = params.get<int>("eleID",-1);
-  if (eleID == -1) dserror("no element provided in material");
+  if (eleGID == -1) dserror("no element provided in material");
   LINALG::Matrix<MAT::NUM_STRESS_3D,1> plstrain(true);
 
   // get material parameters
@@ -462,7 +462,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(
   Rplast = isohardvarlast_->at(gp);
   if (isohardvarlast_->at(gp) < 0.0)
   {
-    std::cout << "Rplast am ele = " << eleID << ": " << Rplast << std::endl;
+    std::cout << "Rplast am ele = " << eleGID << ": " << Rplast << std::endl;
     dserror("damaged isotropic hardening variable has to be equal to or greater than zero!");
   }
 
@@ -890,7 +890,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(
             itnum,
             itermax,
             Res,
-            eleID
+            eleGID
             );
         }
         // else: continue loop m <= m_max
@@ -973,7 +973,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(
         strainbar_p = strainbarpllast_->at(gp) + Dgamma/omega;
         if (strainbar_p < 0.0)
         {
-          std::cout << "in element:" << eleID
+          std::cout << "in element:" << eleGID
             << ": strainbarpllast_->at(gp) = " << strainbarpllast_->at(gp)
             << ", omega = " << omega
             << ", Dgamma = " << Dgamma
@@ -1006,7 +1006,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(
       // sanity check: omega < 1.0e-20
       if (omega < 1.0e-20)
         dserror("INadmissible value of integrity: omega = %-14.8E in ele = %4d!"
-          " \n Omega has to be greater than zero!", omega, eleID);
+          " \n Omega has to be greater than zero!", omega, eleGID);
 
       // update damage variable damage_{n+1}
       damage = 1.0 - omega;
@@ -1155,7 +1155,7 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(
   // ( generally C_ep is nonsymmetric )
   SetupCmatElastoPlastic(
     *cmat,
-    eleID,
+    eleGID,
     Dgamma,
     G,
     bulk,
@@ -1197,8 +1197,8 @@ void MAT::Damage::EvaluateFullLemaitre(
   const LINALG::Matrix<NUM_STRESS_3D,1>* linstrain,  // linear strain vector
   Teuchos::ParameterList& params,  // parameter list for communication & HISTORY
   LINALG::Matrix<NUM_STRESS_3D,1>* stress,  // 2nd PK-stress
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat  // material stiffness matrix
-  )
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  // material stiffness matrix
+  int EleGID)
 {
   // --------- full Lemaitre material model requires solution of five equations
 
@@ -1216,8 +1216,8 @@ void MAT::Damage::EvaluateFullLemaitre(
 
   const int gp = params.get<int>("gp",-1);
   if (gp == -1) dserror("no Gauss point number provided in material");
-  const int eleID = params.get<int>("eleID",-1);
-  if (eleID == -1) dserror("no element provided in material");
+
+  if (EleGID == -1) dserror("no element provided in material");
   LINALG::Matrix<MAT::NUM_STRESS_3D,1> plstrain(true);
 
   // get material parameters
@@ -1281,7 +1281,7 @@ void MAT::Damage::EvaluateFullLemaitre(
   Rplast = isohardvarlast_->at(gp);
   if (isohardvarlast_->at(gp) < 0.0)
   {
-    std::cout << "Rplast am ele = " << eleID << ": " << Rplast << std::endl;
+    std::cout << "Rplast am ele = " << EleGID << ": " << Rplast << std::endl;
     dserror("damaged isotropic hardening variable has to be equal to or greater than zero!");
   }
 
@@ -1509,7 +1509,7 @@ void MAT::Damage::EvaluateFullLemaitre(
     if (plastic_step_ == false)
     {
       if ( (plastic_step_ == false) and (gp == 0) )
-        std::cout << "plasticity starts in element = " << eleID << std::endl;
+        std::cout << "plasticity starts in element = " << EleGID << std::endl;
 
       plastic_step_ = true;
     }
@@ -1534,7 +1534,7 @@ void MAT::Damage::EvaluateFullLemaitre(
     if (plastic_step_ == false)
     {
       if ( (plastic_step_ == false) and (gp == 0) )
-        std::cout << "damage starts to evolve in element = " << eleID << std::endl;
+        std::cout << "damage starts to evolve in element = " << EleGID << std::endl;
 
       plastic_step_ = true;
     }
@@ -2128,7 +2128,7 @@ void MAT::Damage::EvaluateFullLemaitre(
     // sanity check: omega < 1.0e-20
     if (omega < 1.0e-20)
       dserror("INadmissible value of integrity: omega = %-14.8E in ele = %4d!"
-        " \n Omega has to be greater than zero!", omega, eleID);
+        " \n Omega has to be greater than zero!", omega, EleGID);
 
     // update damage variable damage_{n+1}
     damage = 1.0 - omega;

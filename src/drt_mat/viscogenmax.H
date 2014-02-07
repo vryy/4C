@@ -216,8 +216,9 @@ private:
       const LINALG::Matrix<6,1>* glstrain,  ///< Green-Lagrange strain
       Teuchos::ParameterList& params,  ///< parameter list for communication
       LINALG::Matrix<6,1>* stress,  ///< 2nd Piola--Kirchhoff stress
-      LINALG::Matrix<6,6>* cmat  ///< elasticity matrix
-      );
+      LINALG::Matrix<6,6>* cmat,  ///< elasticity matrix
+      const int eleGID ///< element GID
+    );
 
 
     virtual void Setup(int numgp,DRT::INPUT::LineDefinition* linedef);

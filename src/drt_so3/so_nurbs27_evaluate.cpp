@@ -964,9 +964,8 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     LINALG::Matrix<6,6> cmat  (true);
     LINALG::Matrix<6,1> stress(true);
     params.set<int>("gp",gp);
-    params.set<int>("eleID",Id());
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
+    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
     // end of call material law
 
     double detJ_w = detJ*intpoints.qwgt[gp];

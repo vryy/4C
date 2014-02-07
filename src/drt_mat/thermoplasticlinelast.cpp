@@ -369,14 +369,14 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   const LINALG::Matrix<NUM_STRESS_3D,1>* linstrain,
   Teuchos::ParameterList& params,  // parameter list for communication & HISTORY
   LINALG::Matrix<NUM_STRESS_3D,1>* stress, // 2nd PK-stress
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat // material stiffness matrix
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat, // material stiffness matrix
+  const int eleGID
   )
 {
   const int gp = params.get<int>("gp",-1);
   if (gp == -1) dserror("no Gauss point number provided in material");
   LINALG::Matrix<MAT::NUM_STRESS_3D,1> plstrain(true);
-  const int eleID = params.get<int>("eleID",-1);
-  if (eleID == -1) dserror("no element provided in material");
+  if (eleGID == -1) dserror("no element provided in material");
 
   // get material parameters
   // Young's modulus
@@ -554,9 +554,9 @@ void MAT::ThermoPlasticLinElast::Evaluate(
     // visualisation of whole plastic behaviour via PLASTIC_STRAIN in postprocessing
     if (plastic_step_ == false)
     {
-      plastic_eleID_ = eleID;
+      plastic_eleID_ = eleGID;
 
-      if ( (plastic_step_ == false) and (eleID == plastic_eleID_) and (gp == 0) )
+      if ( (plastic_step_ == false) and (eleGID == plastic_eleID_) and (gp == 0) )
         std::cout << "plasticity starts in element = " << plastic_eleID_ << std::endl;
 
       plastic_step_ = true;

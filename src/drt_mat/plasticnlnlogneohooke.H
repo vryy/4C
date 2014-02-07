@@ -214,7 +214,8 @@ namespace MAT
                                             //   but used for neo-hooke evaluation; maybe remove
       Teuchos::ParameterList& params,  //!< input paramter list (e.g. Young's, ...)
       LINALG::Matrix<6,1>* stress,  //!< output (mandatory) second Piola-Kirchhoff stress
-      LINALG::Matrix<6,6>* cmat  //!< output (mandatory) material stiffness matrix
+      LINALG::Matrix<6,6>* cmat,  //!< output (mandatory) material stiffness matrix
+      const int eleGID
       );
 
     //@}

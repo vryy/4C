@@ -142,7 +142,8 @@ private:
                           const LINALG::Matrix<6,1>* glstrain,
                           Teuchos::ParameterList& params,
                           LINALG::Matrix<6,1>* stress,
-                          LINALG::Matrix<6,6>* cmat);
+                          LINALG::Matrix<6,6>* cmat,
+                          const int eleGID);
 
     /// evaluate micro material on a processor which only knows about the micro scale (supporting proc)
     void Evaluate(LINALG::Matrix<3,3>* defgrd,

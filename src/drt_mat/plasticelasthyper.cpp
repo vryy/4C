@@ -675,7 +675,8 @@ void MAT::PlasticElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     LINALG::Matrix<6,9>* dPK2dFpinv,
     LINALG::Matrix<3,3>* MandelStress,
     LINALG::Matrix<6,6>* dMdC,
-    LINALG::Matrix<6,9>* dMdFpinv
+    LINALG::Matrix<6,9>* dMdFpinv,
+    const int eleGID
     )
 {
   LINALG::Matrix<6,1> Cpi;

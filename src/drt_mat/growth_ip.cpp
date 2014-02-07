@@ -275,7 +275,8 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
                            const LINALG::Matrix<6,1>* glstrain,
                            Teuchos::ParameterList& params,
                            LINALG::Matrix<6,1>* stress,
-                           LINALG::Matrix<6,6>* cmat)
+                           LINALG::Matrix<6,6>* cmat,
+                           const int eleGID)
 {
   // get gauss point number
   const int gp = params.get<int>("gp",-1);
@@ -327,7 +328,7 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     glstraindach -= Id;
     glstraindach.Scale(0.5);
     // elastic 2 PK stress and constitutive matrix
-    matelastic_->Evaluate(&defgrddach,&glstraindach,params,&Sdach,&cmatelastic);
+    matelastic_->Evaluate(&defgrddach,&glstraindach,params,&Sdach,&cmatelastic,eleGID);
 
     // trace of elastic Mandel stress Mdach = Cdach Sdach
     double mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
@@ -379,7 +380,7 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
         glstraindach.Scale(0.5);
         cmatelastic.Scale(0.0);
         Sdach.Scale(0.0);
-        matelastic_->Evaluate(&defgrddach,&glstraindach,params,&Sdach,&cmatelastic);
+        matelastic_->Evaluate(&defgrddach,&glstraindach,params,&Sdach,&cmatelastic,eleGID);
 
         // trace of mandel stress
         mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
@@ -461,7 +462,7 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     glstraindach -= Id;
     glstraindach.Scale(0.5);
     // elastic 2 PK stress and constitutive matrix
-    matelastic_->Evaluate(&defgrddach,&glstraindach,params,&Sdach,&cmatelastic);
+    matelastic_->Evaluate(&defgrddach,&glstraindach,params,&Sdach,&cmatelastic,eleGID);
 
     // 2PK stress S = F_g^-1 Sdach F_g^-T
     LINALG::Matrix<NUM_STRESS_3D,1> S(Sdach);
@@ -478,7 +479,7 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     mandel_->at(gp) = mandel;
 
   } else {
-    matelastic_->Evaluate(defgrd,glstrain,params,stress,cmat);
+    matelastic_->Evaluate(defgrd,glstrain,params,stress,cmat,eleGID);
     // build identity tensor I
     LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
     for (int i = 0; i < 3; i++) Id(i) = 1.0;

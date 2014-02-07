@@ -212,7 +212,8 @@ void MAT::GrowthScd::Evaluate
     const LINALG::Matrix<6,1>* glstrain,
     Teuchos::ParameterList& params,
     LINALG::Matrix<6,1>* stress,
-    LINALG::Matrix<6,6>* cmat
+    LINALG::Matrix<6,6>* cmat,
+    const int eleGID
 )
 {
   // get gauss point number
@@ -223,7 +224,7 @@ void MAT::GrowthScd::Evaluate
 
   //if(concentration_==-1.0) dserror("no scalar concentration provided for concentration dependent growth law");
 
-  Growth::Evaluate(defgrd,glstrain,params,stress,cmat);
+  Growth::Evaluate(defgrd,glstrain,params,stress,cmat,eleGID);
 
   // build identity tensor I
   LINALG::Matrix<NUM_STRESS_3D,1> Id(true);

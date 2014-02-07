@@ -177,11 +177,11 @@ private:
 
     // THE material routine
     virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
-    		  const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain, ///< green lagrange strain
-	          Teuchos::ParameterList& params,      ///< parameter list for communication
-		  LINALG::Matrix<NUM_STRESS_3D,1>* stress,          ///< 2nd PK-stress
-                  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat           ///< material stiffness matrix
-                 );
+    		                  const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain, ///< green lagrange strain
+    		                  Teuchos::ParameterList& params,      ///< parameter list for communication
+    		                  LINALG::Matrix<NUM_STRESS_3D,1>* stress,          ///< 2nd PK-stress
+    		                  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,           ///< material stiffness matrix
+    		                  const int eleGID);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

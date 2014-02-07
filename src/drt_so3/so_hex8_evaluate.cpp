@@ -1710,9 +1710,8 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     }
 
     params.set<int>("gp",gp);
-    params.set<int>("eleID",Id());
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
+    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp plastic strains (only in case of plastic strain output)
@@ -2499,9 +2498,8 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
     // --- end temperature-dependent material
     // default: material call in structural function is purely deformation dependent
     params.set<int>("gp",gp);
-    params.set<int>("eleID",Id());
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
+    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
     density = Material()->Density();
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
@@ -2929,9 +2927,8 @@ void DRT::ELEMENTS::So_hex8::soh8_remodel(
       LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
       LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
       params.set<int>("gp",gp);
-      params.set<int>("eleID",Id());
       Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
+      so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
       // Cauchy stress
