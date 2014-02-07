@@ -58,13 +58,13 @@ ACOU::TimIntImplDIRK::TimIntImplDIRK(
 /*----------------------------------------------------------------------*
  |  Time loop (public)                                   schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::TimIntImplDIRK::Integrate()
+void ACOU::TimIntImplDIRK::Integrate(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter)
 {
   // write some information for the curious user
   PrintInformationToScreen();
 
   // output of initial field (given by function for purely acoustic simulation or given by optics for PAT simulation)
-  Output();
+  Output(history,splitter);
 
   // time loop
   while (step_<stepmax_ and time_<maxtime_)
@@ -76,57 +76,19 @@ void ACOU::TimIntImplDIRK::Integrate()
     OutputToScreen();
 
     // assemble, update and solve all stages of DIRK scheme
-    DIRKSolve();
+    Solve();
 
     // update solution, current solution becomes old solution of next timestep
     TimeUpdate();
 
     // output of solution
-    Output();
+    Output(history,splitter);
   }
 
   if (!myrank_) printf("\n");
 
   return;
 } // Integrate
-
-/*----------------------------------------------------------------------*
- | Time loop with fill in of monitored boundary (public) schoeder 01/14 |
- *----------------------------------------------------------------------*/
-void ACOU::TimIntImplDIRK::IntegrateAndFill(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter)
-{
-  // write some information for the curious user
-  PrintInformationToScreen();
-
-  // initialize history vector
-  history->PutScalar(0.0);
-
-  // output of initial field (given by function for purely acoustic simulation or given by optics for PAT simulation)
-  OutputWriteHistory(history,splitter);
-
-  // time loop
-  while (step_<stepmax_ and time_<maxtime_)
-  {
-    // increment time and step
-    IncrementTimeAndStep();
-
-    // output to screen
-    OutputToScreen();
-
-    // assemble, update and solve all stages of DIRK scheme
-    DIRKSolve();
-
-    // update solution, current solution becomes old solution of next timestep
-    TimeUpdate();
-
-    // output of initial field (given by function for purely acoustic simulation or given by optics for PAT simulation)
-    OutputWriteHistory(history,splitter);
-  }
-
-  if (!myrank_) printf("\n");
-
-  return;
-} // IntegrateAndFill
 
 /*----------------------------------------------------------------------*
  |  Calculate system matrix (public)                     schoeder 01/14 |
@@ -219,7 +181,7 @@ void ACOU::TimIntImplDIRK::UpdateInteriorVariables(int stage)
 /*----------------------------------------------------------------------*
  |  Loop all DIRK stages (public)                        schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::TimIntImplDIRK::DIRKSolve()
+void ACOU::TimIntImplDIRK::Solve()
 {
   dtsolve_ = 0.0;
   dtele_   = 0.0;

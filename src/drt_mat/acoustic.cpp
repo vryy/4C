@@ -26,7 +26,8 @@ MAT::PAR::AcousticMat::AcousticMat(
   )
 : Parameter(matdata),
   c_(matdata->GetDouble("C")),
-  density_(matdata->GetDouble("DENSITY"))
+  density_(matdata->GetDouble("DENSITY")),
+  nolipara_(matdata->GetDouble("NOLIPARA"))
 {
 }
 

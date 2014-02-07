@@ -1664,6 +1664,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DENSITY","mass density");
     AddNamedReal(m,"C","speed of sound");
+    AddNamedReal(m,"NOLIPARA","nonlinearity parameter",true);
 
     AppendMaterialDefinition(matlist,m);
   }

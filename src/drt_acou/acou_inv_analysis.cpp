@@ -344,7 +344,7 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     // write this value to vecot
     if( nodelid >= 0 ) // only on owning proc
       node_mu_a_->ReplaceMyValue(nodelid,0,glo_mu_a);
-  }
+  } // for(int nd=0; nd<acou_discret_->NumGlobalNodes(); ++nd)
 
   // cout<<"map"<<endl;
   // abcnodes_map_->Print(cout);
@@ -508,6 +508,9 @@ void ACOU::InvAnalysis::SolveStandardProblem()
 
       scatraalgo_->TimeLoop();
 
+      // output of elemental reaction coefficient
+      scatraalgo_->DiscWriter().WriteVector("rea_coeff",ElementMatVec());
+
       phi_ = scatraalgo_->Phinp();
 
       break;
@@ -561,7 +564,7 @@ void ACOU::InvAnalysis::SolveStandardProblem()
 
   // we have to call a slightly changed routine, which fills our history vector which we need for the adjoint problem
   // acoualgo_->Integrate();
-  acoualgo_->IntegrateAndFill(acou_rhs_,abcnodes_mapex_);
+  acoualgo_->Integrate(acou_rhs_,abcnodes_mapex_);
 
 //  if(iter_==0 && output_count_<3) // do you want this output?
 //  {
@@ -584,7 +587,7 @@ void ACOU::InvAnalysis::CalculateObjectiveFunctionValue()
 {
   //      alpha  ||      ||2      alpha  ||     ||2       1   ||         ||2
   // J = ------- || mu_a ||    + ------- ||  D  ||    + ----- ||  p - p  ||
-  //        2    ||      ||L2O      2    ||     ||L2O    2 T  ||       m ||L2O
+  //        2    ||      ||L2O      2    ||     ||L2O     2   ||       m ||L2O
 
   // first two terms analog to the functions in the calculation of the gradient
   J_ = 0.0;
@@ -633,7 +636,7 @@ void ACOU::InvAnalysis::CalculateObjectiveFunctionValue()
 
     error_ = glo_integr_objf;
 
-    error_ /= 2.0 * t_;
+    error_ /= 2.0 ; //* t_;
     J_ += error_;
   }
 
@@ -674,7 +677,7 @@ void ACOU::InvAnalysis::SolveAdjointAcouProblem()
   }
 */
   acou_rhs_->Update(-1.0,*acou_rhsm_,1.0);
-  acou_rhs_->Scale(1.0/t_);
+  // acou_rhs_->Scale(1.0/t_);
 
   acouparams_->set<Teuchos::RCP<Epetra_MultiVector> >("rhsvec",acou_rhs_);
 
@@ -789,10 +792,9 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
       int lnodeid = node_mu_a_->Map().LID(nd);
       double mu_a = node_mu_a_->operator [](lnodeid);
       double c    = node_c_->operator [](lnodeid);
-      double rho  = node_rho_->operator [](lnodeid);
       int dofgid = scatra_discret_->Dof(opti_node,0);
       int doflid = scatra_discret_->DofRowMap()->LID(dofgid);
-      int err = rhsvec->ReplaceMyValue(doflid,0,-glo_value/c/c/rho*mu_a);
+      int err = rhsvec->ReplaceMyValue(doflid,0,-glo_value/c/c*mu_a);
       if (err) dserror("could not replace local vector entry");
     }
   }
@@ -903,12 +905,10 @@ void ACOU::InvAnalysis::CalculateGradient()
     if(scatra_discret_->Comm().MyPID() == optnodeowner)
     {
       int lnodeid = node_mu_a_->Map().LID(nd);
-      double mu_a = node_mu_a_->operator [](lnodeid);
       double c    = node_c_->operator [](lnodeid);
-      double rho  = node_rho_->operator [](lnodeid);
       int dofgid = scatra_discret_->Dof(opti_node,0);
       int doflid = scatra_discret_->DofRowMap()->LID(dofgid);
-      int err = psi->ReplaceMyValue(doflid,0,-glo_value/c/c/rho*mu_a);
+      int err = psi->ReplaceMyValue(doflid,0,glo_value/c/c);
       if (err) dserror("could not replace local vector entry");
     }
   }
@@ -1098,7 +1098,7 @@ Epetra_SerialDenseVector ACOU::InvAnalysis::LineSearch(Epetra_SerialDenseVector 
 
   double alpha_0 = 1.0;// / d.Norm2();
   double c = 1.0e-4;
-  double rho = 0.5;
+  double rho = 0.2;
 
   // does alpha_0 already satisfy the Armijo (sufficient decrease) condition?
   double alpha = alpha_0;
@@ -1159,6 +1159,19 @@ void ACOU::InvAnalysis::CalculateStatsAndService()
 /*----------------------------------------------------------------------*/
 void ACOU::InvAnalysis::OutputStats()
 {
+  double normB = 0.0;
+  {
+    Epetra_SerialDenseSolver inverseH;
+    Epetra_SerialDenseMatrix B(np_,np_);
+    for(int i=0; i<H_.M(); ++i)
+      for(int j=0; j<H_.M(); ++j)
+        B(i,j) = H_(i,j);
+    inverseH.SetMatrix(B);
+    inverseH.Invert();
+    normB = B.NormInf();
+  }
+  double normH = H_.NormInf();
+
   if (!myrank_)
   {
     std::cout<<std::endl;
@@ -1166,6 +1179,7 @@ void ACOU::InvAnalysis::OutputStats()
     std::cout<<"*** error value:                          "<<error_<<std::endl;
     std::cout<<"*** norm of the gradient:                 "<<G_.Norm2()<<std::endl;
     std::cout<<"*** norm of the difference of parameters: "<<normdiffp_<<std::endl;
+    std::cout<<"*** norm H "<<normH<<" norm B "<<normB<<" cond "<<normH*normB<<std::endl;
     std::cout<<"*** parameters: ";
     for(int i=0; i<np_; ++i)
       std::cout<<p_(i)<<" ";

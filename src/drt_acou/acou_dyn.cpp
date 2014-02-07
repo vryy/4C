@@ -17,11 +17,13 @@ Maintainer: Svenja Schoeder
 #include <Teuchos_Time.hpp>
 
 #include "acou_dyn.H"
+#include "acou_ele.H"
 #include "acou_impl.H"
 #include "acou_impl_euler.H"
 #include "acou_impl_trap.H"
 #include "acou_impl_bdf.H"
 #include "acou_impl_dirk.H"
+#include "acou_impl_noli.H"
 #include "acou_inv_analysis.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_acou.H"
@@ -67,16 +69,19 @@ void acoustics_drt()
   if (acoudishdg == Teuchos::null)
     dserror("Failed to cast DRT::Discretization to DRT::DiscretizationHDG.");
 
+  DRT::ELEMENTS::Acou* ele = dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lRowElement(0));
+
   const int dim = DRT::Problem::Instance()->NDim();
+  int degreep1 = ele->degree+1;
   int nscalardofs = 1;
-  for (int i=0; i<dim; ++i)
-    nscalardofs *= 4;
-  const int elementndof =  dim * nscalardofs       // velocity DoFs
-                           +
-                           nscalardofs;            // pressure DoFs
+  for(int i=0; i<dim; ++i)
+    nscalardofs *= degreep1;
+
+  const int elementndof =  dim * nscalardofs + nscalardofs; // velocity DoFs +  pressure DoFs
+
   // set degrees of freedom in the discretization
-//  Teuchos::RCP<DRT::IndependentDofSet> secondary = Teuchos::rcp(new DRT::IndependentDofSet());
-//  acoudishdg->AddDofSet(secondary);
+  //  Teuchos::RCP<DRT::IndependentDofSet> secondary = Teuchos::rcp(new DRT::IndependentDofSet());
+  //  acoudishdg->AddDofSet(secondary);
   acoudishdg->BuildDofSetAuxProxy(0,elementndof,false);
 
   // call fill complete on acoustical discretization
@@ -94,8 +99,8 @@ void acoustics_drt()
     Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber_acou),
                                     acoudishdg->Comm(),
                                     DRT::Problem::Instance()->ErrorFile()->Handle()));
-  if ( DRT::Problem::Instance()->SolverParams(linsolvernumber_acou).get<int>("AZREUSE") < 10 )
-    dserror("note: you can set AZREUSE to NUMSTEP (ACOUSTIC DYNAMIC) because the system matrix does not change -> save lots of CPU time");
+  // if ( DRT::Problem::Instance()->SolverParams(linsolvernumber_acou).get<int>("AZREUSE") < 10 )
+  //   dserror("note: you can set AZREUSE to NUMSTEP (ACOUSTIC DYNAMIC) because the system matrix does not change -> save lots of CPU time");
 
   // create output
   Teuchos::RCP<IO::DiscretizationWriter> output = acoudishdg->Writer();
@@ -134,6 +139,7 @@ void acoustics_drt()
     Teuchos::RCP<ACOU::AcouImplicitTimeInt> acoualgo;
 
     INPAR::ACOU::DynamicType dyna = DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(acouparams,"TIMEINT");
+
     switch(dyna)
     {
     case INPAR::ACOU::acou_impleuler:
@@ -159,6 +165,11 @@ void acoustics_drt()
     case INPAR::ACOU::acou_dirk54:
     {
       acoualgo = Teuchos::rcp(new ACOU::TimIntImplDIRK(acoudishdg,solver,params,output));
+      break;
+    }
+    case INPAR::ACOU::acou_noli:
+    {
+      acoualgo = Teuchos::rcp(new ACOU::TimIntImplNoli(acoudishdg,solver,params,output));
       break;
     }
     default:

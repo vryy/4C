@@ -50,6 +50,8 @@ public:
   const double c_;
   /// mass density
   const double density_;
+  /// nonlinearity parameter
+  const double nolipara_;
 
   //@}
 
@@ -141,6 +143,9 @@ public:
 
   /// density
   virtual double Density() const { return params_->density_; }
+
+  /// nonlinearity parameter
+  double NoliPara() const { return params_->nolipara_; }
 
   /// Return quick accessible material parameter data
   virtual MAT::PAR::Parameter* Parameter() const { return params_; }

@@ -127,7 +127,7 @@ void ACOU::AcouImplicitTimeInt::ReadRestart(int step)
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
-  reader.ReadVector(velnp_,"velnp");
+  reader.ReadVector(velnp_,"velnps");
   reader.ReadVector(veln_, "veln");
   reader.ReadVector(velnm_,"velnm");
   reader.ReadVector(intvelnp_,"intvelnp");
@@ -445,7 +445,7 @@ void ACOU::AcouImplicitTimeInt::PrintInformationToScreen()
 /*----------------------------------------------------------------------*
  |  Time loop (public)                                   schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::Integrate()
+void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter)
 {
   // time measurement: integration
   TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::Integrate");
@@ -454,7 +454,7 @@ void ACOU::AcouImplicitTimeInt::Integrate()
   PrintInformationToScreen();
 
   // output of initial field (given by function for purely acoustic simulation or given by optics for PAT simulation)
-  Output();
+  Output(history,splitter);
 
   // call elements to calculate system matrix/rhs and assemble
   AssembleMatAndRHS();
@@ -471,22 +471,15 @@ void ACOU::AcouImplicitTimeInt::Integrate()
     // output to screen
     OutputToScreen();
 
-    // solve linear equation and timing
-    const double tcpusolve=Teuchos::Time::wallTime();
-    solver_->Solve(sysmat_->EpetraOperator(),velnp_,residual_,false,false,Teuchos::null);
-    dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
-
-    // update interior variables
-    UpdateInteriorVariablesAndAssemebleRHS();
+    // solve
+    Solve();
 
     // update solution, current solution becomes old solution of next timestep
     TimeUpdate();
 
     // output of solution
-    Output();
+    Output(history,splitter);
   } // while (step_<stepmax_ and time_<maxtime_)
-
-
 
   if (!myrank_) printf("\n");
 
@@ -494,55 +487,20 @@ void ACOU::AcouImplicitTimeInt::Integrate()
 } // Integrate
 
 /*----------------------------------------------------------------------*
- | Time loop with fill in of monitored boundary (public) schoeder 01/14 |
+ |  Solve the system for trace and then interior field   schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::IntegrateAndFill(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter)
+void ACOU::AcouImplicitTimeInt::Solve()
 {
-  // time measurement: integration
-  TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::Integrate");
+  // solve linear equation and timing
+  const double tcpusolve=Teuchos::Time::wallTime();
+  solver_->Solve(sysmat_->EpetraOperator(),velnp_,residual_,false,false,Teuchos::null);
 
-  // initialize history vector
-  history->PutScalar(0.0);
+  // update interior variables
+  UpdateInteriorVariablesAndAssemebleRHS();
 
-  // write some information for the curious user
-  PrintInformationToScreen();
-
-  // output of initial field (given by function for purely acoustic simulation or given by optics for PAT simulation)
-  OutputWriteHistory(history,splitter);
-
-   // call elements to calculate system matrix/rhs and assemble
-  AssembleMatAndRHS();
-
-  // apply Dirichlet boundary conditions to system of equations
-  ApplyDirichletToSystem();
-
-  // time loop
-  while (step_<stepmax_ and time_<maxtime_)
-  {
-    // increment time and step
-    IncrementTimeAndStep();
-
-    // output to screen
-    OutputToScreen();
-
-    // solve linear equation
-    solver_->Solve(sysmat_->EpetraOperator(),velnp_,residual_,false,false,Teuchos::null);
-
-    // update interior variables
-    UpdateInteriorVariablesAndAssemebleRHS();
-
-    // update solution, current solution becomes old solution of next timestep
-    TimeUpdate();
-
-    // output of solution
-    OutputWriteHistory(history,splitter);
-
-  } // while (step_<stepmax_ and time_<maxtime_)
-
-  if (!myrank_) printf("\n");
-
+  dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
   return;
-} // IntegrateAndFill
+} // Solve
 
 /*----------------------------------------------------------------------*
  |  Dummy Dirichlet function (public)                    schoeder 01/14 |
@@ -563,8 +521,9 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
   // create the parameters for the discretization
   Teuchos::ParameterList eleparams;
 
-  // reset residual
+  // reset residual and sysmat
   residual_->Scale(0.0);
+  sysmat_->Zero();
 
   //----------------------------------------------------------------------
   // evaluate elements
@@ -573,11 +532,12 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
   // set general vector values needed by elements
   discret_->ClearState();
 
-  discret_->SetState("trace",veln_);
-  discret_->SetState("trace_m",velnm_);
+  discret_->SetState("trace",velnp_);
+  discret_->SetState("trace_m",veln_);
 
   // set history variable
   discret_->SetState(1,"intvel",intvelnp_);
+  discret_->SetState(1,"intvelm",intveln_);
   eleparams.set<double>("dt",dtp_);
 
   // call standard loop over elements
@@ -787,11 +747,25 @@ namespace
 /*----------------------------------------------------------------------*
  |  Output (public)                                      schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::Output()
+void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter)
 {
   TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::Output");
 
   // output of solution
+
+  Teuchos::RCP<Epetra_Vector> traceVel, cellPres;
+
+  getNodeVectorsHDG(*discret_, intvelnp_, velnp_,numdim_,
+                    interpolatedVelocity_, interpolatedPressure_, traceVel, cellPres);
+
+  if( history != Teuchos::null )
+  {
+    // std::cout<<"======= History written in step "<<step_<<std::endl;
+    Teuchos::RCP<Epetra_Vector> temp = (splitter->ExtractCondVector(traceVel));
+
+    for(int i=0; i<temp->MyLength(); ++i)
+      history->ReplaceMyValue(i,step_,temp->operator [](i));
+  }
 
   if (step_%upres_ == 0)
   {
@@ -801,11 +775,6 @@ void ACOU::AcouImplicitTimeInt::Output()
     output_->NewStep(step_,time_);
     // write element data only once
     if (step_==0) output_->WriteElementData(true);
-
-    Teuchos::RCP<Epetra_Vector> traceVel, cellPres;
-
-    getNodeVectorsHDG(*discret_, intvelnp_, velnp_,numdim_,
-                      interpolatedVelocity_, interpolatedPressure_, traceVel, cellPres);
 
     output_->WriteVector("velnp",interpolatedVelocity_);
     output_->WriteVector("pressure",interpolatedPressure_);
@@ -831,6 +800,7 @@ void ACOU::AcouImplicitTimeInt::WriteRestart()
   if (myrank_ == 0 && !invana_)
     std::cout<<"======= Restart written in step "<<step_<<std::endl;
 
+  output_->WriteVector("velnps", velnp_);
   output_->WriteVector("veln", veln_);
   output_->WriteVector("velnm",velnm_);
   output_->WriteVector("intvelnp", intvelnp_);
@@ -858,54 +828,6 @@ void ACOU::AcouImplicitTimeInt::OutputToScreen()
 } // OutputToScreen
 
 /*----------------------------------------------------------------------*
- |  Enhanced output to write boundary data (public)      schoeder 01/14 |
- *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::OutputWriteHistory(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter)
-{
-
-  // Standard output with two additional steps to perform:
-  // 1. Reduce the nodal trace vector by use of the map extractor
-  // 2. Write the reduced vector to the history container
-
-  TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::Output");
-
-  // output of solution
-
-  Teuchos::RCP<Epetra_Vector> traceVel, cellPres;
-
-  getNodeVectorsHDG(*discret_, intvelnp_, velnp_,numdim_,
-                    interpolatedVelocity_, interpolatedPressure_, traceVel, cellPres);
-
-  Teuchos::RCP<Epetra_Vector> temp = (splitter->ExtractCondVector(traceVel));
-
-  for(int i=0; i<temp->MyLength(); ++i)
-    history->ReplaceMyValue(i,step_,temp->operator [](i));
-
-  if (step_%upres_ == 0)
-  {
-    if (myrank_ == 0 && !invana_)
-      std::cout<<"======= Output written in step "<<step_<<std::endl;
-    // step number and time
-    output_->NewStep(step_,time_);
-    // write element data only once
-    if (step_==0) output_->WriteElementData(true);
-
-    output_->WriteVector("velnp",interpolatedVelocity_);
-    output_->WriteVector("pressure",interpolatedPressure_);
-    output_->WriteVector("par_vel",traceVel);
-    output_->WriteVector("pressure_avg",cellPres);
-
-    // add restart data
-    if (uprestart_ != 0 && step_%uprestart_ == 0)
-    {
-      WriteRestart();
-    }
-  }
-
-  return;
-} // OutputWriteHistory
-
-/*----------------------------------------------------------------------*
  |  Calculate node based values (public)                 schoeder 01/14 |
  *----------------------------------------------------------------------*/
 void ACOU::AcouImplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec)
@@ -916,7 +838,7 @@ void ACOU::AcouImplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> o
                       interpolatedVelocity_, interpolatedPressure_, traceVel, cellPres);
 
   for(int i=0; i<traceVel->MyLength(); ++i)
-    outvec->ReplaceMyValue(i,0,traceVel->operator [](i));
+    outvec->ReplaceMyValue(i,0,interpolatedPressure_->operator [](i));
 
   return;
 } // NodalPressureField

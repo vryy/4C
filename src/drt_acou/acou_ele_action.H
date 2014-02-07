@@ -30,7 +30,8 @@ enum Action {
   update_secondary_solution,
   interpolate_hdg_to_node,
   calc_integr_objf,
-  update_secondary_solution_and_calc_residual
+  update_secondary_solution_and_calc_residual,
+  update_secondary_solution_and_calc_mat_residual_noli
 }; // enum Action
 
 } // namespace ACOU

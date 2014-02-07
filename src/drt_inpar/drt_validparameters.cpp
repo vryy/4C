@@ -6578,12 +6578,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
 	IntParameter("UPRES",1,"Increment for writing solution",&acousticdyn);
 	IntParameter("RESTARTEVRY",1,"Increment for writing restart",&acousticdyn);
-	IntParameter("LINEAR_SOLVER",-1,"Number of linear solver used for acoustical problems",&acousticdyn);
+	IntParameter("LINEAR_SOLVER",-1,"Number of linear solver used for acoustical problem",&acousticdyn);
 	IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&acousticdyn);
 
+	// for nonlinear time integration
+	DoubleParameter("CONVTOL",1.0e-9,"Convergence tolerance for Newton loop",&acousticdyn);
+	IntParameter("ITEMAX",10,"Maximum number of iterations for Newton loop",&acousticdyn);
+
+	// photoacoustics
 	DoubleParameter("PULSEDURATION",15e-9,"Laser pulse duration",&acousticdyn);
 	BoolParameter("PHOTOACOU","No","Coupling with Scatra for Diffusive Light Transport",&acousticdyn);
 	BoolParameter("MESHCONFORM","No","Conformity of scatra and acoustical mesh",&acousticdyn);
+
+	// local postprocessing
 	BoolParameter("ERRORMAPS","No","Output of error maps obtained by local postprocessing",&acousticdyn);
 
 	setStringToIntegralParameter<int>("TIMEINT","impl",
@@ -6597,7 +6604,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                     "dirk54",
 										"bdf2",
 										"bdf3",
-										"bdf4"),
+										"bdf4",
+										"noli"),
 									  tuple<int>(
 										INPAR::ACOU::acou_impleuler,
 										INPAR::ACOU::acou_trapezoidal,
@@ -6607,7 +6615,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                     INPAR::ACOU::acou_dirk54,
 										INPAR::ACOU::acou_bdf2,
 										INPAR::ACOU::acou_bdf3,
-										INPAR::ACOU::acou_bdf4),
+										INPAR::ACOU::acou_bdf4,
+										INPAR::ACOU::acou_noli),
 									  &acousticdyn);
 
 	setStringToIntegralParameter<int>("INV_ANALYSIS","none",
@@ -6624,7 +6633,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
 	StringParameter("MONITORFILE","none.monitor","Filename of file containing measured pressure values",&acou_inv);
 	BoolParameter("FDCHECK","No","Finite difference check",&acou_inv);
-	DoubleParameter("INV_TOL",1e-6,"Tolerance for objective function of inverse pat analysis",&acou_inv);
+	DoubleParameter("INV_TOL",1e-16,"Tolerance for objective function of inverse pat analysis",&acou_inv);
 	BoolParameter("INV_TOL_GRAD_YN","No","Flag to indicate check of the norm of the gradient",&acou_inv);
 	DoubleParameter("INV_TOL_GRAD",0.0,"Tolerance for norm of gradient of inverse pat analysis",&acou_inv);
 	IntParameter("INV_MAX_RUN",10,"Maximal run number for inverse pat analysis",&acou_inv);

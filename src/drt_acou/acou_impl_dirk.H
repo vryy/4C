@@ -32,10 +32,7 @@ public:
       );
 
   /// run a complete simulation - overrides base class, because we need to solve several stages each time step
-  virtual void Integrate();
-
-  /// this is almost the same as Integrate() but also fills the history vector needed for the adjoint problem
-  virtual void IntegrateAndFill(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter);
+  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null);
 
   /// call elements to calculate system matrix
   virtual void AssembleMatAndRHS();
@@ -44,7 +41,7 @@ public:
   void UpdateInteriorVariables(int stage);
 
   /// Routine to loop over all stages in one time step
-  void DIRKSolve();
+  virtual void Solve();
 
   /// return the name of the time integration scheme
   virtual std::string Name();

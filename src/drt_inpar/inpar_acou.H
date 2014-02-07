@@ -32,7 +32,8 @@ namespace INPAR
       acou_dirk54,      // diagonally implicit Runge-Kutta with 2 stages of order 3
       acou_bdf2,        // backward differentiation formula of order 2
       acou_bdf3,        // backward differentiation formula of order 3
-      acou_bdf4         // backward differentiation formula of order 4
+      acou_bdf4,        // backward differentiation formula of order 4
+      acou_noli
     };
 
     /// Type of Inverse Analysis

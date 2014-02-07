@@ -8,11 +8,13 @@
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-Acoustical wave propagation in quasi one dimensional setting. The
-initial pressure distribution is calculated using scatra. 
-
-Mesh consists of 2 linear scatra elements and 10 acoustic elements
-with cubic shape functions (defined via flag in acou_ele.H).
+Test case to check the inverse analysis. The same discretization 
+as the other one dimensional test cases. Here, the trapezoidal 
+rule is chosen as time integration, since it is not tested in a 
+forward calculation. Measured values were created with a forward
+run, to be able to test the implementation of the inverse analysis.
+The result test checks the reaction coefficient of the first 
+transport element, after optimization. 
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    250
 //NODES       264
@@ -26,32 +28,47 @@ OUTPUT_BIN                      Yes
 ------------------------------------------------------------ACOUSTIC DYNAMIC
 LINEAR_SOLVER                   1
 TIMESTEP                        1e-8
-NUMSTEP                         300
-MAXTIME                         1.0
-UPRES                           5
+NUMSTEP                         600000
+MAXTIME                         0.0000059999
+UPRES                           1
 RESTARTEVRY                     0
 STARTFUNCNO                     1
 PULSEDURATION                   15e-9
 PHOTOACOU                       Yes
 MESHCONFORM                     Yes
 ERRORMAPS                       No
-TIMEINT                         impl
-INV_ANALYSIS                    none
+TIMEINT                         trap
+INV_ANALYSIS                    pat
+------------------------------------ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION
+MONITORFILE                     acou_pat_1d_trap_inv.monitor 
+FDCHECK                         No
+INV_TOL                         1e-20
+INV_MAX_RUN                     20
+INV_TOL_GRAD_YN                 No
+INV_LS_MAX_RUN                  3
+ALPHA_MUA                       0.0
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   2
+SOLVERTYPE                      linear_full
 TIMEINTEGR                      Stationary
 UPRES                           1
-RESTARTEVRY                     1
+RESTARTEVRY                     10
 NUMSTEP                         1
-MAXTIME                         1.0
-TIMESTEP                        0.001
+MAXTIME 1.0 //hill reaches point of departure (x0=2/15)
+TIMESTEP                        0.001                            // Cr = 1.5
+THETA                           0.5
 VELOCITYFIELD                   zero
 VELFUNCNO                       1
 INITIALFIELD                    field_by_condition
 INITFUNCNO                      2
+FSSUGRDIFF                      No
+WRITEFLUX                       No
+OUTMEAN                            No
 SCATRATYPE                      ConvectionDiffusion
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Zero
+---------------------------------------------------------------FLUID DYNAMIC
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 --------------------------------------------------------------------SOLVER 1
 NAME                            Acoustic_Solver
 SOLVER                          Aztec_MSR
@@ -108,7 +125,7 @@ AZREUSE                         0                               // how often to 
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      1.0                             // fill-in for ILUT
 IFPACKGFILL                     0                               // graph fill for ILU
-AZTOL                           1.0e-10                          // tolerance in (un)scaled residual
+AZTOL                           1.0E-9                          // tolerance in (un)scaled residual
 AZITER                          1000                            // max iterations
 AZSUB                           40                              // size of krylov space for gmres
 AZOMEGA                         1.0                             // damping factor for Jacobi/GaussSeidel type preconditioners
@@ -133,13 +150,18 @@ ML_DAMPFINE                     0.67                            // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 -------------------------------------------------------------------MATERIALS
+//MAT 1 MAT_Acoustic DENSITY 1.0 C 1.0
+//MAT 2 MAT_Acoustic DENSITY 1.0 C 1.0
 MAT 1 MAT_Acoustic DENSITY 1000.0 C 1500.0
 MAT 2 MAT_scatra DIFFUSIVITY 0.00027 REACOEFF 200
 ----------------------------------------------------------------------CURVE1
+----------------------------------------------------------------------CURVE2
+----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------FUNCT1
+FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION 0.1*exp(4.1*(-x^2.0-y^2.0))
+----------------------------------------------------------------------FUNCT2
 ------------------------------------------------RESULT DESCRIPTION
-ACOUSTIC DIS acou NODE 1 QUANTITY pressure VALUE -7.85745231842775098e+01 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 21 QUANTITY pressure VALUE -7.85745231797770884e+01 TOLERANCE 1e-5
+ACOUSTIC_INVANA DIS scatra ELEMENT 11 QUANTITY absorptioncoeff VALUE 300 TOLERANCE 1e-5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  4
@@ -149,11 +171,13 @@ NDVOL   0
 DLINE  1
 E 1 -
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE  2
+DLINE  3
 E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0.0
 E 3 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0.0
+E 4 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0.0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  0
+-----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 2 DLINE 1
@@ -165,6 +189,8 @@ NODE 13 DLINE 3
 NODE 14 DLINE 3
 NODE 11 DLINE 4
 NODE 12 DLINE 4
+-----------------------------------------------DSURF-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.000000000000000e-02 0.000000000000000e-02 0.000000000000000e-02
 NODE 2 COORD 0.000000000000000e-02 9.999999999999998e-04 0.000000000000000e-02
@@ -188,20 +214,24 @@ NODE 19 COORD 8.999999999999999e-03 0.000000000000000e-02 0.000000000000000e-02
 NODE 20 COORD 9.000000000000004e-03 9.999999999999998e-04 0.000000000000000e-02
 NODE 21 COORD 1.000000000000000e-02 0.000000000000000e-02 0.000000000000000e-02
 NODE 22 COORD 1.000000000000000e-02 9.999999999999998e-04 0.000000000000000e-02
+------------------------------------------------STRUCTURE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
-11 TRANSP    QUAD4 9 11 12 10 MAT 2
-12 TRANSP    QUAD4 11 13 14 12 MAT 2
+11 TRANSP       QUAD4 9 11 12 10 MAT 2
+12 TRANSP       QUAD4 11 13 14 12 MAT 2
 -------------------------------------------------ACOUSTIC ELEMENTS
-1 ACOUSTIC    QUAD4 9 11 12 10 MAT 1 NA Euler
-2 ACOUSTIC    QUAD4 11 13 14 12 MAT 1 NA Euler
-3 ACOUSTIC    QUAD4 1 3 4 2 MAT 1 NA Euler
-4 ACOUSTIC    QUAD4 3 5 6 4 MAT 1 NA Euler
-5 ACOUSTIC    QUAD4 5 7 8 6 MAT 1 NA Euler
-6 ACOUSTIC    QUAD4 7 9 10 8 MAT 1 NA Euler
-7 ACOUSTIC    QUAD4 13 15 16 14 MAT 1 NA Euler
-8 ACOUSTIC    QUAD4 15 17 18 16 MAT 1 NA Euler
-9 ACOUSTIC    QUAD4 17 19 20 18 MAT 1 NA Euler
-10 ACOUSTIC    QUAD4 19 21 22 20 MAT 1 NA Euler
+1 ACOUSTIC       QUAD4 9 11 12 10 MAT 1 NA Euler
+2 ACOUSTIC       QUAD4 11 13 14 12 MAT 1 NA Euler
+3 ACOUSTIC       QUAD4 1 3 4 2 MAT 1 NA Euler
+4 ACOUSTIC       QUAD4 3 5 6 4 MAT 1 NA Euler
+5 ACOUSTIC       QUAD4 5 7 8 6 MAT 1 NA Euler
+6 ACOUSTIC       QUAD4 7 9 10 8 MAT 1 NA Euler
+7 ACOUSTIC       QUAD4 13 15 16 14 MAT 1 NA Euler
+8 ACOUSTIC       QUAD4 15 17 18 16 MAT 1 NA Euler
+9 ACOUSTIC       QUAD4 17 19 20 18 MAT 1 NA Euler
+10 ACOUSTIC       QUAD4 19 21 22 20 MAT 1 NA Euler
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
 ---------------------------------------------------------------END
 // END
 

@@ -1330,6 +1330,7 @@ set(OBJS_DRT_ACOU
   src/drt_acou/acou_impl_bdf.cpp
   src/drt_acou/acou_impl_dirk.cpp
   src/drt_acou/acou_impl_euler.cpp
+  src/drt_acou/acou_impl_noli.cpp
   src/drt_acou/acou_impl.cpp
   src/drt_acou/acou_impl_trap.cpp
   src/drt_acou/acou_inv_analysis.cpp

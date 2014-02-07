@@ -190,18 +190,11 @@ namespace ELEMENTS
 
       /// compute the residual
       void ComputeResidual(Epetra_SerialDenseVector          & eleVec,
-                           const Teuchos::RCP<MAT::Material> &mat,
-                           Epetra_SerialDenseVector          & interiorGradnp,
-                           Epetra_SerialDenseVector          & interiorVelnp,
+                           Epetra_SerialDenseVector          & interiorVeln,
+                           Epetra_SerialDenseVector          & interiorPressn,
                            std::vector<double>               traceVal,
-                           INPAR::ACOU::DynamicType          dyna);
-      /// compute the residual for adjoint time integration
-      void ComputeResidualAdjoint(Epetra_SerialDenseVector          & eleVec,
-                                  const Teuchos::RCP<MAT::Material> &mat,
-                                  Epetra_SerialDenseVector          & interiorGradnp,
-                                  Epetra_SerialDenseVector          & interiorVelnp,
-                                  std::vector<double>               traceVal,
-                                  INPAR::ACOU::DynamicType dyna);
+                           INPAR::ACOU::DynamicType          dyna,
+                           Epetra_SerialDenseVector          & interiorPressni);
 
       /// add terms corresponding to the absorbing boundary condition
       void ComputeAbsorbingBC(DRT::ELEMENTS::Acou*        ele,
@@ -212,14 +205,19 @@ namespace ELEMENTS
                               Epetra_SerialDenseVector    &elevec);
 
       /// integrate the objective function over the given boundary
-      void ComputeObjfIntegral(DRT::ELEMENTS::Acou*        ele,
+      void ComputeObjfIntegral(DRT::ELEMENTS::Acou*       ele,
                               Teuchos::ParameterList&     params,
                               Teuchos::RCP<MAT::Material> & mat,
                               int                         face,
                               double                      dt);
 
       /// set up interior matrices
-      void ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat, double dt);
+      void ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
+                                   double                            dt,
+                                   INPAR::ACOU::DynamicType          dyna,
+                                   Epetra_SerialDenseVector          & interiorPressni,
+                                   Epetra_SerialDenseVector          & interiorPressnm,
+                                   bool                              nolionly);
 
       /// set up face matrices
       void ComputeFaceMatrices(const int                          face,
@@ -229,11 +227,7 @@ namespace ELEMENTS
       // condense the local matrix (involving cell velocity gradients, velocities and pressure) into
       // the element matrix for the trace and similarly for the residuals
       void CondenseLocalPart(Epetra_SerialDenseMatrix &elemat,
-                             const Teuchos::RCP<MAT::Material>& mat,
                              INPAR::ACOU::DynamicType dyna);
-      void CondenseLocalPartAdjoint(Epetra_SerialDenseMatrix &elemat,
-                                    const Teuchos::RCP<MAT::Material>& mat,
-                                    INPAR::ACOU::DynamicType dyna);
 
       void EvaluateFaceAdjoint(double fnodexyz[][nsd_],
                                double values[],
@@ -249,16 +243,24 @@ namespace ELEMENTS
 
       const ShapeValues        &shapes_;  /// evaluated shape values
 
-      Epetra_SerialDenseMatrix  Amat;     /// gradient gradient
+      Epetra_SerialDenseMatrix  Amat;     /// velocity velocity
       Epetra_SerialDenseMatrix  invAmat;  /// inverse of Amat
-      Epetra_SerialDenseMatrix  Bmat;     /// velocity gradient
-      Epetra_SerialDenseMatrix  Dmat;     /// velocity velocity
-      Epetra_SerialDenseMatrix  Mmat;     /// velocity velocity
-      Epetra_SerialDenseMatrix  DmMmat;   /// velocity velocity
+      Epetra_SerialDenseMatrix  Bmat;     /// pressure gradient
+      Epetra_SerialDenseMatrix  Mmat;     /// pressure pressure
+      Epetra_SerialDenseMatrix  Dmat;     /// pressure pressure
 
-      Epetra_SerialDenseMatrix  Cmat;     /// gradient trace
-      Epetra_SerialDenseMatrix  Emat;     /// velocity trace
+      Epetra_SerialDenseMatrix  Cmat;     /// velocity trace
+      Epetra_SerialDenseMatrix  Emat;     /// pressure trace
       Epetra_SerialDenseMatrix  Gmat;     /// trace trace
+
+      Epetra_SerialDenseMatrix  Hmat;     /// velocity pressure
+      Epetra_SerialDenseMatrix  Imat;     /// velocity trace
+      Epetra_SerialDenseMatrix  Jmat;     /// pressure trace
+
+      // additional matrices for nonlinear material behavior
+      Epetra_SerialDenseMatrix  MPnmat;   /// M evaluated at P^n
+      Epetra_SerialDenseMatrix  MPimat;   /// M evaluated at P^i
+      Epetra_SerialDenseMatrix  dMdPPimat;/// derivative of M with respect to P evaluated at P^i
 
     };
 
@@ -266,16 +268,19 @@ namespace ELEMENTS
     void UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &             discretization,
                                                    Teuchos::ParameterList&           params,
                                                    DRT::ELEMENTS::Acou &             ele,
-                                                   Epetra_SerialDenseVector          & elevec,
                                                    const Teuchos::RCP<MAT::Material> &mat,
+                                                   Epetra_SerialDenseVector          & elevec,
                                                    double                            dt,
                                                    bool                              errormaps,
                                                    bool                              updateonly);
-    void UpdateInteriorVariablesAndComputeResidualAdjoint(DRT::Discretization &          discretization,
-                                                       DRT::ELEMENTS::Acou &             ele,
-                                                       Epetra_SerialDenseVector          & elevec,
-                                                       const Teuchos::RCP<MAT::Material> &mat,
-                                                       bool                              updateonly);
+
+    /// calls local solver to compute matrices: internal and face
+    void ComputeMatrices(const Teuchos::RCP<MAT::Material> &mat,
+                         DRT::ELEMENTS::Acou &             ele,
+                         double                            dt,
+                         INPAR::ACOU::DynamicType          dyna,
+                         bool                              adjoint,
+                         bool                              nolionly);
 
     /// reads from global vectors
     void ReadGlobalVectors(const DRT::Element     & ele,
@@ -324,24 +329,24 @@ namespace ELEMENTS
     std::vector<double> interiorValnmmm_;
 
     /// local values from interior solution vector (gradient, velocity) at n+1
-    Epetra_SerialDenseVector interiorGradnp_;
     Epetra_SerialDenseVector interiorVelnp_;
+    Epetra_SerialDenseVector interiorPressnp_;
 
     /// local values from interior solution vector (gradient, velocity) at n
-    Epetra_SerialDenseVector interiorGradn_;
     Epetra_SerialDenseVector interiorVeln_;
+    Epetra_SerialDenseVector interiorPressn_;
 
     /// local values from interior solution vector (gradient, velocity) at n-1
-    Epetra_SerialDenseVector interiorGradnm_;
     Epetra_SerialDenseVector interiorVelnm_;
+    Epetra_SerialDenseVector interiorPressnm_;
 
     /// local values from interior solution vector (gradient, velocity) at n-2
-    Epetra_SerialDenseVector interiorGradnmm_;
     Epetra_SerialDenseVector interiorVelnmm_;
+    Epetra_SerialDenseVector interiorPressnmm_;
 
     /// local values from interior solution vector (gradient, velocity) at n-3
-    Epetra_SerialDenseVector interiorGradnmmm_;
     Epetra_SerialDenseVector interiorVelnmmm_;
+    Epetra_SerialDenseVector interiorPressnmmm_;
 
     /// time integration scheme
     INPAR::ACOU::DynamicType dyna_;
