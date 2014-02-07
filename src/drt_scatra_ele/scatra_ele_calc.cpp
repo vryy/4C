@@ -1004,7 +1004,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   const double det = xij_.Invert(xjm_);
 
   if (det < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eid_, det);
+    dserror("GLOBAL ELEMENT NO. %lf \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
 
   // set integration factor: fac = Gauss weight * det(J)
   const double fac = intpoints.IP().qwgt[iquad]*det;
