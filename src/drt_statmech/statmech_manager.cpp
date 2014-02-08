@@ -3471,6 +3471,15 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
               jrandom = 1;
             if ((*uniformgen_)() < (*punlink)[jrandom][irandom])
             {
+              // after start of DBC application, (in B3CL case, do NOT delete any initial cross boundary elements anymore. Leads to the reverse effect of network softening (don't want that) 
+              if(timen>=actiontime_->at(dbctimeindex_))
+              {
+                LINALG::SerialDenseMatrix LID(2,1);
+                LID(0,0) = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][irandom]);
+                LID(1,0) = bspotcolmap_->LID((int)(*crosslinkerbond_)[1][irandom]);               
+                if(CheckCrossPeriodicBCLink(LID,discol))
+                  break;
+              }
               (*numbond_)[irandom] = 1.0;
 
               // an actual crosslinker element exists

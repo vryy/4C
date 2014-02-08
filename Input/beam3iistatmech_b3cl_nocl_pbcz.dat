@@ -108,7 +108,7 @@ LINKERMODEL         stdintpol             // set linker model: none, std, bellse
 PLANELINKERMOTION   No                    // constrain Brownian motion of linkers to 2D
 ACTIVELINKERFRACTION        0.0                   // fraction of crosslinkers which is active
 N_crosslink         500                  // number of crosslinkers in the simulated volume
-INITOCCUPIEDBSPOTS  0                     // number of crosslinker elements set up before the first time step
+INITOCCUPIEDBSPOTS  50                     // number of crosslinker elements set up before the first time step
 NUMSUBSTRATEFIL     0                     // number of substrate filaments
 R_LINK              0.1                   // distance between the two binding domains of a linker
 DeltaR_LINK         0.02                  // deviation from r_link
@@ -247,7 +247,7 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09 
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC sin(2*pi*0.00001*(t-0)) t1 0 t2 10000
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -1.12367550570409425e-03 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 15 QUANTITY dispy VALUE 8.87503161790597565e-05  TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -5.32458919288609188e-04  TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 15 QUANTITY dispy VALUE -2.72751184122365417e-04  TOLERANCE 1e-7
 ---------------------------------------------------------------END
 // END
