@@ -2154,42 +2154,45 @@ void STATMECH::StatMechManager::DetectBindingSpotsBinning(const Teuchos::RCP<Epe
 
   for(int i=0; i<crosslinkerpositionstrans->MyLength(); i++)
   {
-    std::vector<int> indices(3,-1);
-    for(int j=0; j<crosslinkerpositionstrans->NumVectors(); j++)
+    if((*numbond_)[crosslinkermap_->LID(transfermap_->GID(i))]<1.9)
     {
-      indices[j] = (int)std::floor(((*crosslinkerpositionstrans)[j][i]-rootlimits(2*j))/(rootlimits(2*j+1)-rootlimits(2*j))*(double)(*searchres_)[j]);
-      if(indices[j]>=(*searchres_)[j] || indices[j]<0)
-        dserror("Bin index indices[%i] = %i is outside of the rootlimits! Search resolution: %i", j, indices[j], (*searchres_)[j]);
-    }
-
-    int crosscollid = crosslinkermap_->LID(transfermap_->GID(i));
-    double rmin = (statmechparams_.get<double>("R_LINK", 0.0)-statmechparams_.get<double>("DeltaR_LINK", 0.0)) / 2.0;
-    double rmax = (statmechparams_.get<double>("R_LINK", 0.0)+statmechparams_.get<double>("DeltaR_LINK", 0.0)) / 2.0;
-    if ((*numbond_)[crosscollid]>0.9)
-    {
-      rmin *= 2.0;
-      rmax *= 2.0;
-    }
-
-
-    const std::vector<int> bins = binsearch->GetSurroundingBins(indices);
-
-    for(int bin= 0; bin<(int)bins.size(); bin++)
-    {
-      std::vector<int> bspotsinbin = binsearch->GetBin(bins[bin]).GetBinMembers();
-
-      // loop over binding spots in adjacent bins
-      for(int j=0; j<(int)bspotsinbin.size(); j++)
+      std::vector<int> indices(3,-1);
+      for(int j=0; j<crosslinkerpositionstrans->NumVectors(); j++)
       {
-        int bspotlid = bspotcolmap_->LID(bspotsinbin[j]);
-        LINALG::Matrix<3, 1> distance;
-        for (int k=0; k<(int)distance.M(); k++)
-          distance(k) = (*crosslinkerpositionstrans)[k][i]-(*bspotpositions)[k][bspotlid];
-
-        BindingSpotDistanceCriterion(i,crosscollid,bspotlid,rmin,rmax,distance,neighbourbspotstransstd,crosslinkerpositionstrans,bspotpositions,bspottriadscol);
+        indices[j] = (int)std::floor(((*crosslinkerpositionstrans)[j][i]-rootlimits(2*j))/(rootlimits(2*j+1)-rootlimits(2*j))*(double)(*searchres_)[j]);
+        if(indices[j]>=(*searchres_)[j] || indices[j]<0)
+          dserror("Bin index indices[%i] = %i is outside of the rootlimits! Search resolution: %i", j, indices[j], (*searchres_)[j]);
       }
+
+      int crosscollid = crosslinkermap_->LID(transfermap_->GID(i));
+      double rmin = (statmechparams_.get<double>("R_LINK", 0.0)-statmechparams_.get<double>("DeltaR_LINK", 0.0)) / 2.0;
+      double rmax = (statmechparams_.get<double>("R_LINK", 0.0)+statmechparams_.get<double>("DeltaR_LINK", 0.0)) / 2.0;
+      if ((*numbond_)[crosscollid]>0.9)
+      {
+        rmin *= 2.0;
+        rmax *= 2.0;
+      }
+
+
+      const std::vector<int> bins = binsearch->GetSurroundingBins(indices);
+
+      for(int bin= 0; bin<(int)bins.size(); bin++)
+      {
+        std::vector<int> bspotsinbin = binsearch->GetBin(bins[bin]).GetBinMembers();
+
+        // loop over binding spots in adjacent bins
+        for(int j=0; j<(int)bspotsinbin.size(); j++)
+        {
+          int bspotlid = bspotcolmap_->LID(bspotsinbin[j]);
+          LINALG::Matrix<3, 1> distance;
+          for (int k=0; k<(int)distance.M(); k++)
+            distance(k) = (*crosslinkerpositionstrans)[k][i]-(*bspotpositions)[k][bspotlid];
+
+          BindingSpotDistanceCriterion(i,crosscollid,bspotlid,rmin,rmax,distance,neighbourbspotstransstd,crosslinkerpositionstrans,bspotpositions,bspottriadscol);
+        }
+      }
+      maxneighbourslocal = std::max(maxneighbourslocal, (int)neighbourbspotstransstd[i].size());
     }
-    maxneighbourslocal = std::max(maxneighbourslocal, (int)neighbourbspotstransstd[i].size());
   }
   // communication, gather information into neighbourslid
   int maxneighboursglobal = 0;
@@ -2277,9 +2280,12 @@ void STATMECH::StatMechManager::BindingSpotDistanceCriterion(const int&         
             bspotID=(int)(*crosslinkerbond_)[1][crosscollid];
           else if((int)(*crosslinkerbond_)[1][crosscollid] < -0.9)
             bspotID=(int)(*crosslinkerbond_)[0][crosscollid];
-          else //
+          else
+	  { //
+            cout<<"0: "<<(*crosslinkerbond_)[0][crosscollid]<<", 1:"<<(*crosslinkerbond_)[1][crosscollid]<<endl;
             dserror("Error in crosslinker management and/or search!");
-            //turn difference Vectors direction
+          }  
+          //turn difference Vectors direction
           for(int l=0; l<(int)crossbspotdiff.M(); l++)
            crossbspotdiff(l) = -crossbspotdiff(l);
 
