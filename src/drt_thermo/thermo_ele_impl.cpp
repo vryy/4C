@@ -3583,41 +3583,47 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLinearisationOfJacobian(
   const LINALG::Matrix<nsd_,nsd_>& defgrd_inv
   )
 {
-  // ----------------------------------------- build F^{-1} as vector 9x1
-  // F != F^T, i.e. Voigt notation (6x1) NOT admissible
-  // F (3x3) --> (9x1)
-  LINALG::Matrix<nsd_*nsd_,1> defgrd_inv_vec(false);
-  defgrd_inv_vec(0) = defgrd_inv(0,0);
-  defgrd_inv_vec(1) = defgrd_inv(0,1);
-  defgrd_inv_vec(2) = defgrd_inv(0,2);
-  defgrd_inv_vec(3) = defgrd_inv(1,0);
-  defgrd_inv_vec(4) = defgrd_inv(1,1);
-  defgrd_inv_vec(5) = defgrd_inv(1,2);
-  defgrd_inv_vec(6) = defgrd_inv(2,0);
-  defgrd_inv_vec(7) = defgrd_inv(2,1);
-  defgrd_inv_vec(8) = defgrd_inv(2,2);
-
-  // ------------------------ build N_X operator (w.r.t. material config)
-  LINALG::Matrix<nsd_*nsd_,nsd_*nen_*numdofpernode_> N_X(true); // set to zero
-  for (int i=0; i<nen_; ++i)
+  if (nsd_ != 3)
+    dserror("TSI only implemented for fully three dimensions!");
+  else
   {
-    N_X(0,3*i+0) = N_XYZ(0,i);
-    N_X(1,3*i+1) = N_XYZ(0,i);
-    N_X(2,3*i+2) = N_XYZ(0,i);
+    // ----------------------------------------- build F^{-1} as vector 9x1
+    // F != F^T, i.e. Voigt notation (6x1) NOT admissible
+    // F (3x3) --> (9x1)
+    LINALG::Matrix<nsd_*nsd_,1> defgrd_inv_vec(false);
+    defgrd_inv_vec(0) = defgrd_inv(0,0);
+    defgrd_inv_vec(1) = defgrd_inv(0,1);
+    defgrd_inv_vec(2) = defgrd_inv(0,2);
+    defgrd_inv_vec(3) = defgrd_inv(1,0);
+    defgrd_inv_vec(4) = defgrd_inv(1,1);
+    defgrd_inv_vec(5) = defgrd_inv(1,2);
+    defgrd_inv_vec(6) = defgrd_inv(2,0);
+    defgrd_inv_vec(7) = defgrd_inv(2,1);
+    defgrd_inv_vec(8) = defgrd_inv(2,2);
 
-    N_X(3,3*i+0) = N_XYZ(1,i);
-    N_X(4,3*i+1) = N_XYZ(1,i);
-    N_X(5,3*i+2) = N_XYZ(1,i);
+    // ------------------------ build N_X operator (w.r.t. material config)
+    LINALG::Matrix<nsd_*nsd_,nsd_*nen_*numdofpernode_> N_X(true); // set to zero
+    for (int i=0; i<nen_; ++i)
+    {
+      N_X(0,3*i+0) = N_XYZ(0,i);
+      N_X(1,3*i+1) = N_XYZ(0,i);
+      N_X(2,3*i+2) = N_XYZ(0,i);
 
-    N_X(6,3*i+0) = N_XYZ(2,i);
-    N_X(7,3*i+1) = N_XYZ(2,i);
-    N_X(8,3*i+2) = N_XYZ(2,i);
-  }
+      N_X(3,3*i+0) = N_XYZ(1,i);
+      N_X(4,3*i+1) = N_XYZ(1,i);
+      N_X(5,3*i+2) = N_XYZ(1,i);
 
-  // ------linearisation of Jacobi determinant detF = J w.r.t. displacements
-  // dJ/dd = dJ/dF : dF/dd = J . F^{-T} . N,X  = J . F^{-T} . B_L
-  // (1x24)                                          (9x1)   (9x8)
-  dJ_dd.MultiplyTN(J, defgrd_inv_vec, N_X);
+      N_X(6,3*i+0) = N_XYZ(2,i);
+      N_X(7,3*i+1) = N_XYZ(2,i);
+      N_X(8,3*i+2) = N_XYZ(2,i);
+    }
+
+    // ------linearisation of Jacobi determinant detF = J w.r.t. displacements
+    // dJ/dd = dJ/dF : dF/dd = J . F^{-T} . N,X  = J . F^{-T} . B_L
+    // (1x24)                                          (9x1)   (9x8)
+    dJ_dd.MultiplyTN(J, defgrd_inv_vec, N_X);
+
+  }  // method only implemented for fully three dimensional analysis
 
 }  // CalculateLinearisationOfJacobian()
 
