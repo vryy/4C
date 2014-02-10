@@ -29,7 +29,8 @@
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 #include <MueLu_UseShortNames.hpp>
 
-
+// BACI includes
+#include "../linalg/linalg_blocksparsematrix.H"
 
 /*class HHierarchy;
 class OOperator;
@@ -85,10 +86,13 @@ namespace LINALG
       Teuchos::ParameterList & mllist_;
 
       //! system of equations used for preconditioning used by P_ only
-      Teuchos::RCP<Epetra_CrsMatrix>                 Pmatrix_;
+      Teuchos::RCP<BlockSparseMatrixBase>                 Pmatrix_;
 
       /// preconditioner
       Teuchos::RCP<Epetra_Operator>                  P_;
+
+      /// hierarchy
+      Teuchos::RCP<Hierarchy>                        H_;
 
     };
   }
