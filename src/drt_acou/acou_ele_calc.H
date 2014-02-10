@@ -289,7 +289,6 @@ namespace ELEMENTS
 
     void EvaluateAll(const int start_func,
                      const double (&xyz)[nsd_],
-                     double (&u)[nsd_],
                      double  &p,
                      double rho) const;
 

@@ -344,7 +344,6 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
     Epetra_SerialDenseVector&            elevec1,
     Epetra_SerialDenseVector&            elevec2)
 {
-
   shapes_.Evaluate(*ele);
 
   // reshape elevec2 as matrix
@@ -373,17 +372,14 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
       double xyz[nsd_];
       for (unsigned int d=0; d<nsd_; ++d)
         xyz[d] = shapes_.xyzreal(d,q); // coordinates of quadrature point in real coordinates
-      double u[nsd_];
       double p;
       dsassert(start_func != NULL,"startfuncno not set for initial value");
-      EvaluateAll(*start_func, xyz, u, p, rho/pulse); // u and p at quadrature point
+      EvaluateAll(*start_func, xyz,  p, rho/pulse); // u and p at quadrature point
 
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i=0; i<ndofs_; ++i)
       {
         massPart(i,q) = shapes_.shfunct(i,q) * sqrtfac;
-        for (unsigned int d=0; d<nsd_; ++d)
-          localMat(i,d) += shapes_.shfunct(i,q) * u[d] * fac;
         localMat(i,nsd_) += shapes_.shfunct(i,q) * p * fac;
       }
     }
@@ -425,9 +421,8 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectField(
       double xyz[nsd_];
       for (unsigned int d=0; d<nsd_; ++d)
         xyz[d] = shapes_.xyzFreal(d,q);
-      double u[nsd_];
       double p;
-      EvaluateAll(*start_func, xyz, u, p, rho/pulse);
+      EvaluateAll(*start_func, xyz, p, rho/pulse);
 
       // now fill the components in the mass matrix and the right hand side
       for (unsigned int i=0; i<nfdofs_; ++i)
@@ -593,7 +588,6 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::ProjectOpticalField(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::EvaluateAll(const int start_func,
     const double (&xyz)[nsd_],
-    double (&u)[nsd_],
     double  &p,
     double rho) const
 {
@@ -1854,7 +1848,6 @@ ComputeResidual(Epetra_SerialDenseVector          & elevec,
 
   Epetra_SerialDenseMatrix tempMat1(ndofs_,ndofs_*nsd_);
   tempMat1.Multiply('N','N',theta,Hmat,invAmat,0.0);
-
   tempVec1.Multiply('N','N',-1.0,tempMat1,f,1.0); // right part of w
 
   Epetra_SerialDenseMatrix tempMat2(ndofs_,ndofs_);
