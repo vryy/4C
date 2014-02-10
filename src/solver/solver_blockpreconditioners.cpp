@@ -68,24 +68,23 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
       // adapt nullspace for splitted pure fluid problem
       int nv = 0; // number of velocity dofs
       int np = 0; // number of pressure dofs
-      int dimns = 0; // number of nullspace vectors (for velocity and pressure dofs)
+      //int dimns = 0; // number of nullspace vectors (for velocity and pressure dofs)
       int ndofpernode = 0; // dofs per node
-      int nlnode;
+      //int nlnode;
 
-      const Epetra_Map& fullmap = matrix->OperatorRangeMap();
-      const int length = fullmap.NumMyElements();
+      //const Epetra_Map& fullmap = matrix->OperatorRangeMap();
+      //const int length = fullmap.NumMyElements();
 
       RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
       if (A==Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
 
       // fix null space for ML inverses
-      //Teuchos::ParameterList& inv1 = params_.sublist("Inverse1");
       Teuchos::ParameterList& inv1 = params_.sublist("SubSmoother1");
-      Teuchos::ParameterList& inv2 = params_.sublist("SubSmoother2");
+      //Teuchos::ParameterList& inv2 = params_.sublist("SubSmoother2");
       ndofpernode = inv1.sublist("NodalBlockInformation").get<int>("numdf",0);
       nv = inv1.sublist("NodalBlockInformation").get<int>("nv",0);
       np = inv1.sublist("NodalBlockInformation").get<int>("np",0);
-      dimns = inv1.sublist("NodalBlockInformation").get<int>("dimns",0);
+      //dimns = inv1.sublist("NodalBlockInformation").get<int>("dimns",0);
 
       // build fluid null space in MueLu format
 
