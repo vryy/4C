@@ -773,7 +773,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   Teuchos::RCP<SimpleSmoother> smootherPrototype = Teuchos::rcp(new SimpleSmoother());
   smootherPrototype->SetParameter("Sweeps", Teuchos::ParameterEntry(sweeps));
   smootherPrototype->SetParameter("Damping factor", Teuchos::ParameterEntry(omega));
-  smootherPrototype->SetParameter("UseSIMPLE", Teuchos::ParameterEntry(bSimpleC));
+  smootherPrototype->SetParameter("UseSIMPLEC", Teuchos::ParameterEntry(bSimpleC));
 
   // define prediction smoother/solver
   Teuchos::RCP<SubBlockAFactory> A00Fact = Teuchos::rcp(new SubBlockAFactory());
