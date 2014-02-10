@@ -37,6 +37,7 @@ Maintainer: Caroline Danowski
 
 #include "thermo_element.H" // only for visualization of element data
 #include "thermo_ele_impl.H"
+#include "thermo_ele_action.H"
 
 #include "../drt_tsi/tsi_defines.H"
 
@@ -111,7 +112,8 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
     return TemperImpl<DRT::Element::line3>::Instance();
   }*/
   default:
-    dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
+    dserror("Element shape %i (%d nodes) not activated. Just do it.", DistypeToString(ele->Shape()).c_str(), ele->NumNode());
+    break;
   }
   return NULL;
 
@@ -205,6 +207,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   // (action == "calc_thermo_reset_istep")
   // (action == "calc_thermo_energy")
   // (action == "calc_thermo_coupltang")
+  // action == "calc_thermo_fintcond"
 
   // check length
   if (la[0].Size() != nen_*numdofpernode_)
@@ -227,11 +230,11 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   ecapa_.Clear();
 
   // check for the action parameter
-  const std::string action = params.get<std::string>("action","none");
+  const THR::Action action = DRT::INPUT::get<THR::Action>(params,"action");
 
   double time = 0.0;
 
-  if(action != "calc_thermo_energy")
+  if(action != THR::calc_thermo_energy)
   {
     // extract time
     time = params.get<double>("total time");
@@ -243,23 +246,12 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   //todo: fix for volmortar
   if (la.Size() > 1)
   {
-    // access the structure discretization, needed later for calling the solid
-    // material and getting its tangent
-    Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-    structdis = DRT::Problem::Instance()->GetDis("structure");
-
-    // get GID of the first solid element (by using an homogenous material this
-    // is enough)
-    // ask the partner element about his Id
-    const int structgid = ele->Id();
-
-    // get the pointer to the adequate structure element based on GIDs
-    DRT::Element* structele = structdis->gElement(structgid);
+    // ------------------------------------------------ structural material
+    Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
 
     // call ThermoStVenantKirchhoff material and get the temperature dependent
     // tangent ctemp
     plasticmat_ = false;
-    Teuchos::RCP<MAT::Material> structmat = structele->Material();
     if ( (structmat->MaterialType() == INPAR::MAT::m_thermopllinelast)
          or (structmat->MaterialType() == INPAR::MAT::m_thermoplhyperelast)
        )
@@ -276,7 +268,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   //============================================================================
   // calculate tangent K and internal force F_int = K * Theta
   // --> for static case
-  if (action == "calc_thermo_fintcond")
+  if (action == THR::calc_thermo_fintcond)
   {
     // set views
     LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_> etang(elemat1_epetra.A(),true);  // view only!
@@ -398,7 +390,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
   //============================================================================
   // calculate only the internal force F_int, needed for restart
-  else if (action == "calc_thermo_fint")
+  else if (action == THR::calc_thermo_fint)
   {
     // set views
     LINALG::Matrix<nen_*numdofpernode_,1> efint(elevec1_epetra.A(),true);  // view only!
@@ -512,12 +504,12 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
 #endif // MonTSIwithoutSTR
 
-  }  // action == "calc_thermo_fint"
+  }  // action == THR::calc_thermo_fint
 
   //============================================================================
   // calculate the capacity matrix and the internal force F_int
   // --> for dynamic case, called only once in DetermineCapaConsistTempRate()
-  else if (action == "calc_thermo_fintcapa")
+  else if (action == THR::calc_thermo_fintcapa)
   {
     // set views
     LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_> ecapa(elemat2_epetra.A(),true);  // view only!
@@ -595,11 +587,13 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         );
 
       if (plasticmat_)
+      {
         CalculateCouplDissipation(
           ele,
           &efint,
           params
           );
+      }
     }  // TSI: (kintype_ == geo_linear)
 
     // geometrically nonlinear TSI problem
@@ -657,7 +651,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       }
       }  // end of switch(timint)
     }  // end of lumping
-  }  // action == "calc_thermo_fintcapa"
+  }  // action == THR::calc_thermo_fintcapa
 
   //============================================================================
   // called from overloaded function ApplyForceTangInternal(), exclusively for
@@ -665,7 +659,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   // calculate effective dynamic tangent matrix K_{T, effdyn},
   // i.e. sum consistent capacity matrix C and scaled conductivity matrix
   // --> for dynamic case
-  else if (action == "calc_thermo_finttang")
+  else if (action == THR::calc_thermo_finttang)
   {
     // set views
     LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_> etang(elemat1_epetra.A(),true);  // view only!
@@ -863,12 +857,12 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       break;
     }
     }  // end of switch(timint)
-  }  // action == "calc_thermo_finttang"
+  }  // action == THR::calc_thermo_finttang
 
   //============================================================================
   // Calculate/ evaluate heatflux q and temperature gradients gradtemp at
   // gauss points
-  else if (action == "calc_thermo_heatflux")
+  else if (action == THR::calc_thermo_heatflux)
   {
     // set views
     // efext, efcap not needed for this action, elemat1+2,elevec1-3 are not used anyway
@@ -967,11 +961,11 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     ParObject::AddtoPack(tgdata, etempgrad);
     std::copy(tgdata().begin(),tgdata().end(),std::back_inserter(*tempgraddata));
 
-  }  // action == "calc_thermo_heatflux"
+  }  // action == THR::calc_thermo_heatflux
 
   //============================================================================
   // Calculate heatflux q and temperature gradients gradtemp at gauss points
-  else if (action == "postproc_thermo_heatflux")
+  else if (action == THR::postproc_thermo_heatflux)
   {
     // set views
     LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_> etang(elemat1_epetra.A(),true);  // view only!
@@ -1032,10 +1026,10 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     if (not processed)
       dserror("unknown type of heatflux/temperature gradient output on element level");
 
-  }  // action == "postproc_thermo_heatflux"
+  }  // action == THR::postproc_thermo_heatflux
 
   //============================================================================
-  else if (action == "integrate_shape_functions")
+  else if (action == THR::integrate_shape_functions)
   {
     // calculate integral of shape functions
     const Epetra_IntSerialDenseVector dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
@@ -1043,21 +1037,21 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   }
 
   //============================================================================
-  else if (action == "calc_thermo_update_istep")
+  else if (action == THR::calc_thermo_update_istep)
   {
     // do nothing
   }
 
   //==================================================================================
   // allowing the predictor TangTemp in .dat --> can be decisive in compressible case!
-  else if (action == "calc_thermo_reset_istep")
+  else if (action == THR::calc_thermo_reset_istep)
   {
     // do nothing
   }
 
   //============================================================================
   // evaluation of internal thermal energy
-  else if (action == "calc_thermo_energy")
+  else if (action == THR::calc_thermo_energy)
   {
     // check length of elevec1
     if (elevec1_epetra.Length() < 1)
@@ -1113,7 +1107,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   //============================================================================
   // add linearistion of velocity for dynamic time integration to the stiffness term
   // calculate thermal mechanical tangent matrix K_Td
-  else if (action == "calc_thermo_coupltang")
+  else if (action == THR::calc_thermo_coupltang)
   {
     LINALG::Matrix<nen_*numdofpernode_,nen_*nsd_*numdofpernode_> etangcoupl(elemat1_epetra.A(),true);
 
@@ -1197,7 +1191,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   //============================================================================
   else
   {
-    dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
+    dserror("Unknown type of action for Temperature Implementation: %s",THR::ActionToString(action).c_str());
   }
 
 #ifdef THRASOUTPUT
@@ -1242,12 +1236,12 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
     etemp_.Update(etemp);  // copy
   }
   // check for the action parameter
-  const std::string action = params.get<std::string>("action","none");
+  const THR::Action action = DRT::INPUT::get<THR::Action>(params,"action");
   // extract time
   const double time = params.get<double>("total time");
 
   // perform actions
-  if (action == "calc_thermo_fext")
+  if (action == THR::calc_thermo_fext)
   {
     // so far we assume deformation INdependent external loads, i.e. NO
     // difference between geometrically (non)linear TSI
@@ -1266,7 +1260,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
   }
   else
   {
-    dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
+    dserror("Unknown type of action for Temperature Implementation: %s",THR::ActionToString(action).c_str());
   }
 
   return 0;
@@ -3187,6 +3181,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(
     break;
   default:
     dserror("Illegal number of space dimensions: %d",nsd_);
+    break;
   }
 
   if (myneumcond.size() > 1)
@@ -3683,26 +3678,11 @@ Teuchos::RCP<MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::GetSTRMaterial(
 {
   Teuchos::RCP<MAT::Material> structmat = Teuchos::null;
 
-  if (DRT::Problem::Instance()->DoesExistDis("structure"))
-  {
-    // access the structure discretization, needed later for calling the solid
-    // material and getting its tangent
-    Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-    structdis = DRT::Problem::Instance()->GetDis("structure");
-
-    // get GID of the first solid element (by using an homogenous material this
-    // is enough)
-    // ask the partner element about his Id
-    const int structgid = ele->Id();
-
-    // get the pointer to the adequate structure element based on GIDs
-    DRT::Element* structele = structdis->gElement(structgid);
-
-    // call ThermoStVenantKirchhoff material and get the temperature dependent
-    // tangent ctemp
-    structmat = structele->Material();
-
-  }  // if structural discretisation exists
+  //access second material in thermo element
+  if (ele->NumMaterial() > 1)
+    structmat = ele->Material(1);
+  else
+    dserror("no second material defined for element %i",ele->Id());
 
   return structmat;
 

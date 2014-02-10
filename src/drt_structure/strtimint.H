@@ -898,20 +898,6 @@ namespace STR
 
     //@}
 
-    //! @name volume coupling specific methods
-    //@{
-    //! Set the coupling state (e.g. temperatures for tsi, fluid velocities for poro) onto the structure discretization
-    void SetCouplingState();
-
-    //! Apply the coupling state (e.g. temperatures for tsi, fluid velocities for poro) to the structure time integrator
-    void ApplyCouplingState
-    (
-      Teuchos::RCP<const Epetra_Vector> state,  //!< (i) current state
-      const std::string& name,                       //!< (i) name of state
-      unsigned dofset=1                         //!< (i) number of dofset state is applied to
-    );
-    //@}
-
     //! @name Contact and meshtying specific methods
     //@{
 
@@ -1184,12 +1170,6 @@ namespace STR
     double            dtele_;           //!< element evaluation time
     double            dtcmt_;           //!< contact / meshtying evaluation time
     double            inttime_global_;  //!< global integration time for contact evaluation
-    //@}
-
-    //! @name volume coupling specific stuff
-    //@{
-    // global coupling variable
-    std::vector<std::map<std::string,Teuchos::RCP<const Epetra_Vector> > > couplstate_; // map of references to coupling states
     //@}
 
     //! @name Patient specific stuff

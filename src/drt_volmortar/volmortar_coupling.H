@@ -13,11 +13,16 @@ Maintainer: Philipp Farah
 #ifndef VOLMORTAR_COUPLING_H_
 #define VOLMORTAR_COUPLING_H_
 
+/*---------------------------------------------------------------------*
+ | headers                                                 farah 01/14 |
+ *---------------------------------------------------------------------*/
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 
-// forward declarations
+/*---------------------------------------------------------------------*
+ | forward declarations                                    farah 01/14 |
+ *---------------------------------------------------------------------*/
 namespace DRT
 {
   class Discretization;
@@ -42,6 +47,22 @@ namespace VOLMORTAR
 {
 class Cell;
 
+/// Class for generating projection matrices for 3D mortar
+/*!
+  The idea is to clue to non-matching meshes together using the mortar method.
+  In general, this works for displacement fields, as well as any other field
+  (e.g. temperature field in tsi). 
+  The constructor expects the two discretizations, which are filled properly. 
+  Both discretization are expected to have at least two dofsets of which the first
+  of one discretization is meant to be coupled with the second of the other 
+  discretization. I.e. in TSI the structure must have temperature dofs as second 
+  dof set and the thermo discretization must have displacement dofs as second dof set.
+  When calling Evaluate() this class will identify volume cells (using polygon 
+  clipping in 2D and the cut algorthm in 3D), and build a volmortar integrator class, 
+  which evaluates the two projection matrixes. 
+
+  \author vuong 01/14
+*/
 class VolMortarCoupl
 {
 public:
@@ -50,9 +71,10 @@ public:
   \brief Constructor
 
   */
-  VolMortarCoupl(const int dim,const Epetra_Comm& comm,
-                 Teuchos::RCP<const DRT::Discretization> slavedis,
-                 Teuchos::RCP<const DRT::Discretization> master);
+  VolMortarCoupl(int dim,
+                 const Epetra_Comm& comm,
+                 Teuchos::RCP<DRT::Discretization> slavedis,
+                 Teuchos::RCP<DRT::Discretization> masterdis);
 
   /*!
   \brief Destructor
@@ -140,26 +162,27 @@ protected:
   VolMortarCoupl operator = (const VolMortarCoupl& old);
   VolMortarCoupl(const VolMortarCoupl& old);
 
-  const int                                dim_;      // dimension of problem (2D or 3D)
+  const int                                dim_;      /// dimension of problem (2D or 3D)
 
-  Teuchos::RCP<const DRT::Discretization>  Adiscret_; // the discretization of field A
-  Teuchos::RCP<const DRT::Discretization>  Bdiscret_; // the discretization of field B
+  Teuchos::RCP<const DRT::Discretization>  Adiscret_; /// the discretization of field A
+  Teuchos::RCP<const DRT::Discretization>  Bdiscret_; /// the discretization of field B
 
-  Teuchos::RCP<LINALG::SparseMatrix> dmatrixA_;       // global Mortar matrix D for field A
-  Teuchos::RCP<LINALG::SparseMatrix> dmatrixB_;       // global Mortar matrix D for field B
+  Teuchos::RCP<LINALG::SparseMatrix> dmatrixA_;       /// global Mortar matrix D for field A
+  Teuchos::RCP<LINALG::SparseMatrix> dmatrixB_;       /// global Mortar matrix D for field B
 
-  Teuchos::RCP<LINALG::SparseMatrix> mmatrixA_;       // global Mortar matrix M for field A
-  Teuchos::RCP<LINALG::SparseMatrix> mmatrixB_;       // global Mortar matrix M for field B
+  Teuchos::RCP<LINALG::SparseMatrix> mmatrixA_;       /// global Mortar matrix M for field A
+  Teuchos::RCP<LINALG::SparseMatrix> mmatrixB_;       /// global Mortar matrix M for field B
 
-  Teuchos::RCP<LINALG::SparseMatrix> pmatrixA_;       // global Mortar projection matrix P for field A
-  Teuchos::RCP<LINALG::SparseMatrix> pmatrixB_;       // global Mortar projection matrix P for field B
+  Teuchos::RCP<LINALG::SparseMatrix> pmatrixA_;       /// global Mortar projection matrix P for field A
+  Teuchos::RCP<LINALG::SparseMatrix> pmatrixB_;       /// global Mortar projection matrix P for field B
 
 
-  double                             auxn_[3];        // normal of auxiliary plane
+  double                             auxn_[3];        /// normal of auxiliary plane
   int                                polygoncounter_;
   int                                cellcounter_;
 
-  Teuchos::RCP<Epetra_Comm>          comm_;
+  Teuchos::RCP<Epetra_Comm>          commA_;
+  Teuchos::RCP<Epetra_Comm>          commB_;
 };
 
 }//namespace...

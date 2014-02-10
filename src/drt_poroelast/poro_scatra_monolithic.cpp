@@ -1028,8 +1028,6 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
   PoroField()->StructureField()->Discretization()->SetState(0,"displacement",PoroField()->StructureField()->Dispnp());
   PoroField()->StructureField()->Discretization()->SetState(0,"velocity",PoroField()->StructureField()->Velnp());
 
-  PoroField()->StructureField()->SetCouplingState();
-
   // build specific assemble strategy for mechanical-fluid system matrix
   // from the point of view of StructureField:
   // structdofset = 0, fluiddofset = 1

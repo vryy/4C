@@ -133,11 +133,16 @@ namespace TSI
 
     //@}
 
+    //! @name Transfer methods
+
+    //! apply temperature state on structure discretization
     void ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp);
 
+    //! apply structural displacements and velocities on thermo discretization
     void ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> disp,
                                   Teuchos::RCP<const Epetra_Vector> vel);
 
+    //@}
 
     //! @name Access methods
 
@@ -162,11 +167,13 @@ namespace TSI
 
     //@}
 
-  //private:
+    //! @name Volume Mortar stuff
 
+    //! flag for matchinggrid
     const bool matchinggrid_;
-
+    //! volume coupling (using mortar) adapter
     Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volcoupl_;
+    //@}
 
   };  // Algorithm
 }  // namespace TSI

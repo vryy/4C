@@ -49,7 +49,6 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_crack.H"
-#include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_constraint/windkessel_manager.H"
@@ -168,7 +167,6 @@ STR::TimInt::TimInt
   dtsolve_(0.0),
   dtele_(0.0),
   dtcmt_(0.0),
-  couplstate_(0),
   pslist_(Teuchos::null),
   strgrdisp_(Teuchos::null)
 {
@@ -182,18 +180,6 @@ STR::TimInt::TimInt
   if (not discret_->Filled() || not actdis->HaveDofs())
   {
     dserror("Discretisation is not complete or has no dofs!");
-  }
-
-  // connect degrees of freedom for periodic boundary conditions
-  {
-    PeriodicBoundaryConditions pbc(discret_);
-
-    if (pbc.HasPBC())
-    {
-      pbc.UpdateDofsForPeriodicBoundaryConditions();
-
-      discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
-    }
   }
 
   // time state
@@ -246,12 +232,12 @@ STR::TimInt::TimInt
                                                   sdynparams));
 
 
-	// initialize Windkessel manager
-	windkman_ = Teuchos::rcp(new UTILS::WindkesselManager(discret_,
-																							(*dis_)(0),
-																							sdynparams,
-																							*solver_,
-																							dbcmaps_));
+  // initialize Windkessel manager
+  windkman_ = Teuchos::rcp( new UTILS::WindkesselManager(discret_,
+                                                         (*dis_)(0),
+                                                         sdynparams,
+                                                         *solver_,
+                                                         dbcmaps_));
 
 
   // initialize constraint solver if constraints are defined
@@ -325,14 +311,14 @@ STR::TimInt::TimInt
   }
 
   {
-		// check for presence of spring dashpot bc
-		std::vector<DRT::Condition*> springdashpotcond(0);
-		discret_->GetCondition("SpringDashpot", springdashpotcond);
-		if (springdashpotcond.size())
-		{
-			//initialize spring dashpot conditions
-			SPRINGDASHPOT::SpringDashpot(discret_);
-		}
+    // check for presence of spring dashpot bc
+    std::vector<DRT::Condition*> springdashpotcond(0);
+    discret_->GetCondition("SpringDashpot", springdashpotcond);
+    if (springdashpotcond.size())
+    {
+      //initialize spring dashpot conditions
+      SPRINGDASHPOT::SpringDashpot(discret_);
+    }
   }
 
   // check if we have elements which use a continuous displacement and pressure
@@ -389,6 +375,7 @@ STR::TimInt::TimInt
     }
   }
 
+  //Check for porosity dofs within the structure and build a mapextractor if neccessary
   porositysplitter_ = POROELAST::UTILS::BuildPoroSplitter(discret_);
 
   // stay with us
@@ -831,9 +818,6 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     discret_->SetState(0,"residual displacement", zeros_);
     discret_->SetState(0,"displacement", (*dis_)(0));
     if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", (*vel_)(0));
-
-    //set coupling state for volume coupled problems (e.g. for tsi and poro)
-    SetCouplingState();
 
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
@@ -1671,9 +1655,6 @@ void STR::TimInt::DetermineStressStrain()
     discret_->SetState(0,"residual displacement", zeros_);
     discret_->SetState(0,"displacement", disn_);
 
-    //set coupling state for volume coupled problems (e.g. for tsi and poro)
-    SetCouplingState();
-
     if( (dismatn_!=Teuchos::null) )
       discret_->SetState(0,"material_displacement",dismatn_);
 
@@ -2281,9 +2262,6 @@ void STR::TimInt::ApplyForceStiffInternal
     discret_->SetState(0,"velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
 
-  //set coupling state for volume coupled problems (e.g. for tsi and poro)
-  SetCouplingState();
-
   // Set material displacement state for ale-wear formulation
   if( (dismatn_!=Teuchos::null) )
     discret_->SetState(0,"material_displacement",dismatn_);
@@ -2438,9 +2416,6 @@ void STR::TimInt::ApplyForceInternal
   discret_->ClearState();
   discret_->SetState("residual displacement", disi);  // these are incremental
   discret_->SetState("displacement", dis);
-
-  //set coupling state for volume coupled problems (e.g. for tsi and poro)
-  SetCouplingState();
 
   if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
@@ -2605,55 +2580,6 @@ bool STR::TimInt::UseContactSolver()
     else
       return true;
   }
-}
-
-/*----------------------------------------------------------------------*/
-/* set volume coupling state from other discretization  vuong 01/12*/
-void STR::TimInt::ApplyCouplingState(
-  Teuchos::RCP<const Epetra_Vector> state,
-  const std::string& name,
-  unsigned dofset
-  )
-{
-  //check
-  if(state == Teuchos::null)
-    dserror("coupling state '%s' is Teuchos::null!",name.c_str());
-
-  if(dofset == 0)
-    dserror("dofset number equals zero!");
-
-  //copy state values
-  RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(discret_->DofRowMap(dofset)), true);
-  LINALG::Export(*state,*tmp);
-
-  //resize the coupling state vector, if it is too short
-  if (couplstate_.size()<dofset)
-    couplstate_.resize(dofset);
-
-  //save state
-  couplstate_[dofset-1][name] = tmp;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/* set coupling state for volume coupled problems          */
-void STR::TimInt::SetCouplingState()
-{
-  std::map<std::string,Teuchos::RCP<const Epetra_Vector> >::iterator it;
-
-  //loop over dofsets
-  for (unsigned int iter = 0; iter<couplstate_.size();  ++iter)
-  {
-    //the number of the dof set is iter+1 as couplstate_ does not include the own dof set
-    const int dofset = iter+1;
-
-    //set all saved states onto the respective dofset
-    for(it=couplstate_[iter].begin(); it!=couplstate_[iter].end(); ++it)
-      discret_->SetState(dofset,it->first,it->second);
-  }
-
-  return;
 }
 
 

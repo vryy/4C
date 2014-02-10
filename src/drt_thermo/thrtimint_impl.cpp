@@ -20,6 +20,7 @@ Maintainer: Caroline Danowski
 #include "thrtimint.H"
 #include "thrtimint_impl.H"
 #include "thr_aux.H"
+#include "thermo_ele_action.H"
 
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_contact/meshtying_manager.H"
@@ -348,7 +349,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
   {
     // create the parameters for the discretization
     Teuchos::ParameterList p;
-    p.set("action", "calc_thermo_reset_istep");
+    p.set<int>("action", THR::calc_thermo_reset_istep);
     // set the total time
     p.set("total time",(*time_)[0]);
     // go to elements
@@ -412,6 +413,7 @@ bool THR::TimIntImpl::Converged()
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
+    break;
   }
 
   // residual temperature
@@ -428,6 +430,7 @@ bool THR::TimIntImpl::Converged()
     break;
   default:
     dserror("Cannot check for convergence of residual temperatures!");
+    break;
   }
 
   // combine temperature-like and force-like residuals
@@ -795,7 +798,8 @@ void THR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
     oss << std::setw(18) << "mix-res-norm";
     break;
   default:
-    dserror("You should not turn up here.");
+    dserror("Unknown type of convergence check for residual forces.");
+    break;
   }
 
   switch (normtypetempi_)
@@ -810,7 +814,8 @@ void THR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
     oss << std::setw(18) << "mix-temp-norm";
     break;
   default:
-    dserror("You should not turn up here.");
+    dserror("Unknown type of convergence check for residual temperatures.");
+    break;
   }
 
   // add solution time
@@ -856,7 +861,8 @@ void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
     oss << std::setw(18) << std::setprecision(5) << std::scientific << std::min(normfres_, normfres_/normcharforce_);
     break;
   default:
-    dserror("You should not turn up here.");
+    dserror("Unknown type of convergence check for residual forces.");
+    break;
   }
 
   switch (normtypetempi_)
@@ -871,7 +877,8 @@ void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
     oss << std::setw(18) << std::setprecision(5) << std::scientific << std::min(normtempi_, normtempi_/normchartemp_);
     break;
   default:
-    dserror("You should not turn up here.");
+    dserror("Unknown type of convergence check for residual temperatures.");
+    break;
   }
 
   // add solution time

@@ -22,8 +22,13 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  | header                                                    dano 11/09 |
  *----------------------------------------------------------------------*/
-#include "../drt_lib/drt_discret.H"
+#include <Teuchos_RCP.hpp>
 
+namespace DRT
+{
+  class Element;
+  class Discretization;
+}
 
 /*----------------------------------------------------------------------*
  |                                                           dano 11/09 |
@@ -73,6 +78,11 @@ namespace UTILS
 
   //! setup TSI, clone the structural discretization
   void SetupTSI(const Epetra_Comm& comm);
+
+
+  void SetMaterialPointersMatchingGrid(
+      Teuchos::RCP<const DRT::Discretization> sourcedis,
+      Teuchos::RCP<const DRT::Discretization> targetdis);
 
 } // namespace UTILS
 

@@ -113,7 +113,7 @@ public:
   /*!
   \brief Create integrationcells by performing tessellation over the volumecells of the element. This uses QHULL
    */
-  void CreateIntegrationCells( Mesh & mesh, int count, bool levelset );
+  void CreateIntegrationCells( Mesh & mesh, int count, bool levelset, bool tetcellsonly =false );
 
   /*!
   \brief Construct quadrature rules for the volumecells by solving the moment fitting equations

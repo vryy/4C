@@ -29,6 +29,7 @@ Maintainer: Caroline Danowski
 #include "tsi_utils.H"
 #include "../drt_inpar/inpar_tsi.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_adapter/adapter_thermo.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -83,6 +84,7 @@ void tsi_dyn_drt()
   }
   default:
      dserror("Unknown solutiontype for thermo-structure interaction: %d",coupling);
+     break;
   }  // end switch
 
   const int restart = DRT::Problem::Instance()->Restart();

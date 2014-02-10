@@ -1351,10 +1351,18 @@ public:
   /*!
   \brief Clear solution state references
 
-  The method deletes all references to any solution data
+  The method deletes references to any solution data
   */
-  virtual void ClearState()
-  { state_.clear(); return; }
+  virtual void ClearState(bool clearalldofsets=false)
+  {
+    //clear all states
+    if (clearalldofsets)
+      state_.clear();
+    //clear states that belong to own dofset only
+    else if (!state_.empty())
+      state_[0].clear();
+    return;
+  }
 
   /*!
   \brief Set a reference to a data vector

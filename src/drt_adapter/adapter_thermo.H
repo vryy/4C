@@ -255,15 +255,6 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> ExtractTempnp() = 0;
     //@}
 
-    //! @name Apply current displacements and velocities needed for TSI
-    //@{
-    /// apply current displacements and velocities to thermo field
-    virtual void ApplyStructVariables(
-      Teuchos::RCP<const Epetra_Vector> disp,
-      Teuchos::RCP<const Epetra_Vector> vel
-      ) = 0;
-    //@}
-
     /// Identify residual
     /// This method does not predict the target solution but
     /// evaluates the residual and the stiffness matrix.

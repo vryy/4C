@@ -41,6 +41,7 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams()),
+    dispnp_(Teuchos::null),
     matchinggrid_(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->TSIDynamicParams(),"MATCHINGGRID")),
     volcoupl_(Teuchos::null)
 {
@@ -48,6 +49,16 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
   // access the thermo discretization
   Teuchos::RCP<DRT::Discretization> thermodis = DRT::Problem::Instance()->GetDis("thermo");
+
+  if(!matchinggrid_)
+  {
+    // Scheme: non matching meshes --> volumetric mortar coupling...
+    volcoupl_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
+
+    //setup projection matrices
+    volcoupl_->Setup(structdis, thermodis,comm);
+  }
+
   // access structural dynamic params list which will be possibly modified while creating the time integrator
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure
@@ -261,22 +272,36 @@ Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
 void TSI::Algorithm::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp)
 {
   if(matchinggrid_)
-    StructureField()->ApplyCouplingState(temp,"temperature");
+  {
+    if (temp != Teuchos::null)
+      StructureField()->Discretization()->SetState(1,"temperature",temp);
+  }
   else
-    StructureField()->ApplyCouplingState(volcoupl_->ApplyVectorMappingAB(temp),"temperature");
+  {
+    if (temp != Teuchos::null)
+      StructureField()->Discretization()->SetState(1,"temperature",volcoupl_->ApplyVectorMappingAB(temp));
+  }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> disp,
-                                              Teuchos::RCP<const Epetra_Vector> velnp)
+                                              Teuchos::RCP<const Epetra_Vector> vel)
 {
-  if(matchinggrid_)
-    ThermoField()->ApplyStructVariables(disp,velnp);
+  if (matchinggrid_)
+  {
+    if (disp != Teuchos::null)
+      ThermoField()->Discretization()->SetState(1, "displacement", disp);
+    if (vel != Teuchos::null)
+      ThermoField()->Discretization()->SetState(1, "velocity", vel);
+  }
   else
-    ThermoField()->ApplyStructVariables(
-        volcoupl_->ApplyVectorMappingBA(disp),
-        volcoupl_->ApplyVectorMappingBA(velnp));
+  {
+    if (disp != Teuchos::null)
+      ThermoField()->Discretization()->SetState(1,"displacement",volcoupl_->ApplyVectorMappingBA(disp));
+    if (vel != Teuchos::null)
+      ThermoField()->Discretization()->SetState(1,"velocity",volcoupl_->ApplyVectorMappingBA(vel));
+  }
 }
 
 /*----------------------------------------------------------------------*/

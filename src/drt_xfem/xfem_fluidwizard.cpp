@@ -35,12 +35,14 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
                               std::string BCellgausstype,     //!< Gauss point generation method for Boundarycell
                               bool parallel,                  //!< use parallel cut algorithms
                               bool gmsh_output,               //!< print write gmsh output for cut
-                              bool positions                  //!< set inside and outside point, facet and volumecell positions
+                              bool positions,                 //!< set inside and outside point, facet and volumecell positions
+                              bool tetcellsonly,              //!< generate only tet cells
+                              bool screenoutput               //!< print screen output
                               )
 {
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut" );
 
-  if ( backdis_.Comm().MyPID() == 0 )
+  if ( backdis_.Comm().MyPID() == 0 and screenoutput)
     IO::cout << "\nXFEM::FluidWizard::Cut:" << IO::endl;
 
   const double t_start = Teuchos::Time::wallTime();
@@ -146,7 +148,7 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
   // run the (parallel) Cut
   if(parallel)
   {
-    cw.CutParallel( include_inner, VCellgausstype, BCellgausstype );
+    cw.CutParallel( include_inner, VCellgausstype, BCellgausstype,tetcellsonly,screenoutput );
   }
   else
   {
@@ -157,7 +159,7 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
   // cleanup
 
   const double t_end = Teuchos::Time::wallTime()-t_start;
-  if ( backdis_.Comm().MyPID() == 0 )
+  if ( backdis_.Comm().MyPID() == 0  and screenoutput)
   {
     IO::cout << "\n\t ... Success (" << t_end  <<  " secs)\n" << IO::endl;
   }

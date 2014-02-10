@@ -23,6 +23,7 @@ Maintainer: Caroline Danowski
  | headers                                                   dano 09/09 |
  *----------------------------------------------------------------------*/
 #include "thermo_ele_boundary_impl.H"
+#include "thermo_ele_action.H"
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -96,6 +97,7 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
   }*/
   default:
     dserror("Shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
+    break;
   }
   return NULL;
 }  // Impl()
@@ -141,7 +143,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
   // ( action=="calc_thermo_fextconvection" )
   // ( action=="calc_thermo_fextconvection_coupltang" )
   // ( action=="calc_normal_vectors" )
-  // ( action=="integrate_shape_functions" )
+  // ( action=="ba_integrate_shape_functions" )
 
   // First, do the things that are needed for all actions:
   // get the material (of the parent element)
@@ -152,8 +154,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
   Teuchos::RCP<MAT::Material> mat = parentele->Material();
 
   // Now, check for the action parameter
-  const std::string action = params.get<std::string>("action","none");
-  if (action == "calc_normal_vectors")
+  const THR::BoundaryAction action = DRT::INPUT::get<THR::BoundaryAction>(params,"action");
+  if (action == THR::calc_normal_vectors)
   {
     // access the global vector
     const Teuchos::RCP<Epetra_MultiVector> normals
@@ -186,7 +188,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     }
   }
 
-  else if (action == "integrate_shape_functions")
+  else if (action == THR::ba_integrate_shape_functions)
   {
     // NOTE: add area value only for elements which are NOT ghosted!
     const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
@@ -194,7 +196,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
   }
 
   // surface heat transfer boundary condition q^_c = h (T - T_infty)
-  else if (action == "calc_thermo_fextconvection")
+  else if (action == THR::calc_thermo_fextconvection)
   {
     // get node coordinates ( (nsd_+1): domain, nsd_: boundary )
     GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
@@ -397,7 +399,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
   // evaluate coupling matrix k_Td for surface heat transfer boundary condition
   // q^_c da = h (T - T_infty) da with da(u)
   // --> k_Td: d(da(u))/du
-  else if (action == "calc_thermo_fextconvection_coupltang")
+  else if (action == THR::calc_thermo_fextconvection_coupltang)
   {
     // -------------------------- geometrically nonlinear TSI problem
 
@@ -583,7 +585,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
   }  // calc_thermo_fextconvection_coupltang
 
   else
-    dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
+    dserror("Unknown type of action for Temperature Implementation: %s",THR::BoundaryActionToString(action).c_str());
 
   return 0;
 } // Evaluate()
@@ -1061,6 +1063,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
     break;
     default:
       dserror("Illegal number of space dimensions: %d",nsd_);
+      break;
   } // switch(nsd)
 
   // length of normal to this element
@@ -1186,6 +1189,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
     break;
     default:
       dserror("Illegal number of space dimensions: %d",nsd_);
+      break;
   }  // switch(nsd)
 
   return;

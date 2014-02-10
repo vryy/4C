@@ -75,7 +75,9 @@ public:
               std::string BCellgausstype,     //!< Gauss point generation method for Boundarycell
               bool parallel,                  //!< use parallel cut algorithms
               bool gmsh_output,               //!< print write gmsh output for cut
-              bool positions = true           //!< set inside and outside point, facet and volumecell positions);
+              bool positions = true,          //!< set inside and outside point, facet and volumecell positions);
+              bool tetcellsonly = false,      //!< generate only tet cells
+              bool screenoutput = true        //!< print screen output
   );
 
   //! create a new fluid dofset and reserve a dofs for a maximal number of dofsets

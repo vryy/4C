@@ -25,8 +25,9 @@ Maintainer: Caroline Danowski
 #include "thrtimint.H"
 #include "thr_resulttest.H"
 
+#include "thermo_ele_action.H"
+
 #include "../drt_io/io_control.H"
-#include "../drt_fluid/drt_periodicbc.H"
 
 
 /*----------------------------------------------------------------------*
@@ -88,8 +89,6 @@ THR::TimInt::TimInt(
   rate_(Teuchos::null),
   tempn_(Teuchos::null),
   raten_(Teuchos::null),
-  disn_(Teuchos::null),  // needed for TSI
-  veln_(Teuchos::null),  // needed for TSI
   fifc_(Teuchos::null),
   tang_(Teuchos::null)
 {
@@ -97,20 +96,6 @@ THR::TimInt::TimInt(
   if ( (printlogo_) and (myrank_ == 0) )
   {
     Logo();
-  }
-
-  // connect degrees of freedom for periodic boundary conditions
-  {
-    PeriodicBoundaryConditions pbc(discret_);
-
-    if (pbc.HasPBC())
-    {
-      pbc.UpdateDofsForPeriodicBoundaryConditions();
-
-      discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
-
-      dofrowmap_ = discret_->DofRowMap();
-    }
   }
 
   // check wether discretisation has been completed
@@ -202,7 +187,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     // create the parameters for the discretization
     Teuchos::ParameterList p;
     // action for elements
-    p.set("action", "calc_thermo_fintcapa");
+    p.set<int>("action", THR::calc_thermo_fintcapa);
     // type of calling time integrator
     p.set<int>("time integrator", MethodName());
     p.set<bool>("lump capa matrix", lumpcapa_);
@@ -215,13 +200,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
     // SetState(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->SetState(0, "residual temperature", zeros_);
     discret_->SetState(0, "temperature", (*temp_)(0));
-    
-    // set displacements for the coupled TSI problem
-    if (disn_ != Teuchos::null)
-      discret_->SetState(1,"displacement",disn_);
-    if (veln_ != Teuchos::null)
-      discret_->SetState(1,"velocity",veln_);
-    
+
     // calculate the capacity matrix onto tang_, instead of buildung 2 matrices
     discret_->Evaluate(p, Teuchos::null, tang_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
@@ -340,7 +319,7 @@ void THR::TimInt::ResetStep()
   {
     // create the parameters for the discretization
     Teuchos::ParameterList p;
-    p.set("action", "calc_thermo_reset_istep");
+    p.set<int>("action", THR::calc_thermo_reset_istep);
     // go to elements
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                        Teuchos::null, Teuchos::null, Teuchos::null);
@@ -564,7 +543,7 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
-  p.set("action", "calc_thermo_heatflux");
+  p.set<int>("action", THR::calc_thermo_heatflux);
   // other parameters that might be needed by the elements
   p.set("total time", (*time_)[0]);
   p.set("delta time", (*dt_)[0]);
@@ -585,12 +564,6 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->SetState(0, "residual temperature", zeros_);
   discret_->SetState(0, "temperature", (*temp_)(0));
-  
-  // set displacements and velocities for the coupled TSI problem
-  if (disn_ != Teuchos::null)
-    discret_->SetState(1,"displacement",disn_);
-  if (veln_ != Teuchos::null)
-    discret_->SetState(1,"velocity",veln_);
   
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);
@@ -659,7 +632,7 @@ void THR::TimInt::OutputEnergy()
   {
     Teuchos::ParameterList p;
     // other parameters needed by the elements
-    p.set("action", "calc_thermo_energy");
+    p.set<int>("action", THR::calc_thermo_energy);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -731,8 +704,8 @@ void THR::TimInt::ApplyForceExternal(
 {
   Teuchos::ParameterList p;
   // action for elements
-  const std::string action = "calc_thermo_fext";
-  p.set("action", action);
+  const THR::Action action = THR::calc_thermo_fext;
+  p.set<int>("action", action);
   // type of calling time integrator
   p.set<int>("time integrator", MethodName());
   // other parameters needed by the elements
@@ -774,8 +747,8 @@ void THR::TimInt::ApplyForceExternalConv(
   //   - contribution due to linearisation for k_TT AND k_Td
 
   // action for elements
-  const std::string action = "calc_thermo_fextconvection";
-  p.set("action", action);
+  const THR::BoundaryAction action = THR::calc_thermo_fextconvection;
+  p.set<int>("action", action);
   // type of calling time integrator
   p.set<int>("time integrator", MethodName());
   // other parameters needed by the elements
@@ -785,11 +758,7 @@ void THR::TimInt::ApplyForceExternalConv(
   discret_->ClearState();
   discret_->SetState(0,"old temperature", tempn);  // T_n (*temp_)(0)
   discret_->SetState(0,"temperature", temp);  // T_{n+1} tempn_
-
-  // for geometrically nonlinear analysis the displacements are required
-  if (disn_ != Teuchos::null)
-    discret_->SetState(1,"displacement", disn_);  // d_{n+1}
-
+    
   // get load vector
   // use general version of EvaluateCondition(), following the example set by ScaTra::EvaluateElectrodeKinetics()
   std::string condstring("ThermoConvections");
@@ -818,8 +787,8 @@ void THR::TimInt::ApplyForceTangInternal(
   // type of calling time integrator
   p.set<int>("time integrator", MethodName());
   // action for elements
-  const std::string action = "calc_thermo_fintcond";
-  p.set("action", action);
+  const THR::Action action = THR::calc_thermo_fintcond;
+  p.set<int>("action", action);
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
@@ -829,12 +798,6 @@ void THR::TimInt::ApplyForceTangInternal(
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->SetState(0, "residual temperature", tempi);
   discret_->SetState(0, "temperature", temp);
-
-  // set displacements and velocities for the coupled TSI problem
-  if (disn_ != Teuchos::null)
-    discret_->SetState(1,"displacement",disn_);
-  if (veln_ != Teuchos::null)
-    discret_->SetState(1,"velocity",veln_);
 
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
@@ -863,8 +826,8 @@ void THR::TimInt::ApplyForceTangInternal(
   // type of calling time integrator
   p.set<int>("time integrator", MethodName());
   // action for elements
-  const std::string action = "calc_thermo_finttang";
-  p.set("action", action);
+  const THR::Action action = THR::calc_thermo_finttang;
+  p.set<int>("action", action);
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
@@ -884,12 +847,6 @@ void THR::TimInt::ApplyForceTangInternal(
     if (ratem != Teuchos::null)
       discret_->SetState(0,"mid-temprate", ratem);
   }
-
-  // set displacements and velocities for the coupled TSI problem
-  if (disn_ != Teuchos::null)
-    discret_->SetState(1,"displacement", disn_);
-  if (veln_ != Teuchos::null)
-    discret_->SetState(1,"velocity", veln_);
 
   // call the element Evaluate()
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, fcap);
@@ -916,8 +873,8 @@ void THR::TimInt::ApplyForceInternal(
   // type of calling time integrator
   p.set<int>("time integrator", MethodName());
   // action for elements
-  const std::string action = "calc_thermo_fint";
-  p.set("action", action);
+  THR::Action action = THR::calc_thermo_fint;
+  p.set<int>("action", action);
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
@@ -928,12 +885,6 @@ void THR::TimInt::ApplyForceInternal(
   discret_->SetState(0, "residual temperature", tempi);
   discret_->SetState(0, "temperature", temp);
 
-  // set displacements and velocities for the coupled TSI problem
-  if (disn_ != Teuchos::null)
-    discret_->SetState(1,"displacement", disn_);
-  if (veln_ != Teuchos::null)
-    discret_->SetState(1,"velocity", veln_);
-
   // call the element Evaluate()
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      fint, Teuchos::null, Teuchos::null);
@@ -943,43 +894,6 @@ void THR::TimInt::ApplyForceInternal(
   return;
 
 }  // ApplyForceTangInternal()
-
-
-/*----------------------------------------------------------------------*
- | get current displacements and  velocities from the        dano 05/10 |
- | structure discretization                                             |
- *----------------------------------------------------------------------*/
-void THR::TimInt::ApplyStructVariables(
-  Teuchos::RCP<const Epetra_Vector> disp,  ///< the current displacements
-  Teuchos::RCP<const Epetra_Vector> vel  ///< the current velocities
-  )
-{
-  // displacements
-  if (disn_ == Teuchos::null)
-    disn_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
-
-  if( (disp != Teuchos::null) and (disn_->Map().SameAs(disp->Map())) )
-  {
-    // displacements D at chosen time t dependent on call in coupled algorithm
-    disn_->Update(1.0, *disp, 0.0);
-  }
-  else dserror("no displacements available for TSI or maps not equal");
-
-  // velocities
-  if (veln_ == Teuchos::null)
-    veln_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
-
-  if( (vel != Teuchos::null) and (veln_->Map().SameAs(disp->Map())) )
-  {
-    // velocities V at chosen time t dependent on call in coupled algorithm
-    veln_->Update(1.0, *vel, 0.0);
-  }
-  else dserror("no velocities available for TSI or maps not equal");
-
-  // where the fun starts
-  return;
-
-}  // ApplyStructVariables()
 
 
 /*----------------------------------------------------------------------*
@@ -1087,6 +1001,7 @@ void THR::TimInt::SetInitialField(
 
   default:
     dserror("Unknown option for initial field: %d", init);
+    break;
   } // switch(init)
 
   // and back

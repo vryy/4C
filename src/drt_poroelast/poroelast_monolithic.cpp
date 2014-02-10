@@ -120,7 +120,7 @@ void POROELAST::Monolithic::Solve()
   while (((not Converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
   {
     timer_.ResetStartTime();
-    Epetra_Time timer(Comm());
+    //Epetra_Time timer(Comm());
 
     // compute residual forces #rhs_ and tangent #tang_
     // whose components are globally oriented
@@ -954,8 +954,6 @@ void POROELAST::Monolithic::ApplyStrCouplMatrix(
   StructureField()->Discretization()->ClearState();
   StructureField()->Discretization()->SetState(0,"displacement",StructureField()->Dispnp());
   StructureField()->Discretization()->SetState(0,"velocity",StructureField()->Velnp());
-
-  StructureField()->SetCouplingState();
 
   // build specific assemble strategy for mechanical-fluid system matrix
   // from the point of view of StructureField:

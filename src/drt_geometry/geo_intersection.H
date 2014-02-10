@@ -91,17 +91,21 @@ namespace GEO
     /*!
     \brief Cut routine for parallel framework in XFSI and XFLUIDFLUID
     */
-    void CutParallel( bool include_inner, std::string VCellgausstype, std::string BCellgausstype );
+    void CutParallel( bool include_inner,
+                      std::string VCellgausstype,
+                      std::string BCellgausstype,
+                      bool tetcellsonly =false,
+                      bool screenoutput = true);
 
     /*!
     \brief Routine for finding node positions and computing volumecell dofsets in a parallel way
     */
-    void CutParallel_FindPositionDofSets(bool include_inner, bool communicate);
+    void CutParallel_FindPositionDofSets(bool include_inner, bool communicate, bool screenoutput=true);
 
     /*!
     \brief Cut routine for standard non-parallel framework which is used only for cut_test
     */
-    void Cut( bool include_inner, std::string VCellgausstype, std::string BCellgausstype );
+    void Cut( bool include_inner, std::string VCellgausstype, std::string BCellgausstype, bool screenoutput=true );
 
 //     Teuchos::RCP<Epetra_CrsGraph> MatrixGraph( const CutDofSet & dofset, const Epetra_Map & dbcmap );
 
@@ -136,6 +140,7 @@ namespace GEO
     int myrank_;                                            ///< my processor Id
     Teuchos::RCP<GEO::CUT::MeshIntersection> mesh_;         ///< mesh intersection object
     bool include_inner_;                                    ///< include the inner part
+    bool screenoutput_;
   };
 }
 

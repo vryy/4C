@@ -26,7 +26,12 @@ namespace GEO
                            const plain_side_set & cut_sides,
                            bool levelset );
 
-      void Cut( Mesh & parent_mesh, Element * element, const plain_volumecell_set & parent_cells, int count, bool levelset );
+      void Cut( Mesh & parent_mesh,
+                Element * element,
+                const plain_volumecell_set & parent_cells,
+                int count,
+                bool levelset,
+                bool tetcellsonly = false);
 
       void Status();
 

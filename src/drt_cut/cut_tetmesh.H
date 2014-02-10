@@ -523,7 +523,8 @@ namespace GEO
                               const plain_volumecell_set & cells,
                               const plain_side_set & cut_sides,
                               int count,
-                              bool levelset );
+                              bool levelset,
+                              bool tetcellsonly=false);
 
       void CreateVolumeCellTets();
 

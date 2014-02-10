@@ -128,18 +128,22 @@ GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
  * standard Cut routine for two phase flow and combustion where dofsets and node positions        *
  * have not to be computed, standard cut for cut_est                                 schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string VCellgausstype, std::string BCellgausstype )
+void GEO::CUT::MeshIntersection::Cut( bool include_inner,
+                                      std::string VCellgausstype,
+                                      std::string BCellgausstype,
+                                      bool tetcellsonly,
+                                      bool screenoutput)
 {
   Status();
 
   // cut the mesh and create cutlines, facets, volumecells
-  Cut_Mesh( include_inner );
+  Cut_Mesh( include_inner, screenoutput);
 
   // determine inside-outside position and dofset-data, parallel communication if required
-  Cut_Positions_Dofsets( include_inner );
+  Cut_Positions_Dofsets( include_inner, screenoutput );
 
   // create integration points and/or subtetrahedralization
-  Cut_Finalize( include_inner, VCellgausstype, BCellgausstype);
+  Cut_Finalize( include_inner, VCellgausstype, BCellgausstype,tetcellsonly, screenoutput);
 
   // DumpGmshVolumeCells("CUT_vc", true);
   // DumpGmshIntegrationCells("CUT_intcells");
@@ -155,13 +159,13 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string VCellgauss
  * standard Cut routine for parallel XFSI and XFLUIDFLUID where dofsets and node positions        *
  * have to be parallelized                                                           schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner)
+void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner,bool screenoutput)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh" );
 
 
-  if(myrank_==0) IO::cout << "\n\t * 1/3 Cut_Mesh ...";
+  if(myrank_==0 and screenoutput) IO::cout << "\n\t * 1/3 Cut_Mesh ...";
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -189,7 +193,7 @@ void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner)
   //----------------------------------------------------------
 
   const double t_diff = Teuchos::Time::wallTime()-t_start;
-  if ( myrank_ == 0 )
+  if ( myrank_ == 0  and screenoutput)
   {
     IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
   }
@@ -200,11 +204,11 @@ void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner)
  * Routine for deciding the inside-outside position. This creates the dofset data,                *
  * also in parallel                                                                  schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::MeshIntersection::Cut_Positions_Dofsets( bool include_inner )
+void GEO::CUT::MeshIntersection::Cut_Positions_Dofsets( bool include_inner , bool screenoutput)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets (serial)" );
 
-  if(myrank_==0) IO::cout << "\t * 2/3 Cut_Positions_Dofsets ...";
+  if(myrank_==0 and screenoutput) IO::cout << "\t * 2/3 Cut_Positions_Dofsets ...";
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -231,7 +235,7 @@ void GEO::CUT::MeshIntersection::Cut_Positions_Dofsets( bool include_inner )
   //----------------------------------------------------------
 
    const double t_diff = Teuchos::Time::wallTime()-t_start;
-   if ( myrank_ == 0 )
+   if ( myrank_ == 0 and screenoutput)
    {
      IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
    }
@@ -243,11 +247,15 @@ void GEO::CUT::MeshIntersection::Cut_Positions_Dofsets( bool include_inner )
  * standard Cut routine for parallel XFSI and XFLUIDFLUID where dofsets and node positions        *
  * have to be parallelized                                                           schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner, std::string VCellgausstype, std::string BCellgausstype)
+void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner,
+                                               std::string VCellgausstype,
+                                               std::string BCellgausstype,
+                                               bool tetcellsonly,
+                                               bool screenoutput)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 3/3 --- Cut_Finalize ..." );
 
-  if(myrank_==0) IO::cout << "\t * 3/3 Cut_Finalize";
+  if(myrank_==0 and screenoutput) IO::cout << "\t * 3/3 Cut_Finalize";
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -258,7 +266,7 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner, std::string V
   if(VCellgausstype=="Tessellation")
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::Tessellation" );
-    m.CreateIntegrationCells( 0, false ); // boundary cells will be created within TetMesh.CreateElementTets
+    m.CreateIntegrationCells( 0, false,tetcellsonly ); // boundary cells will be created within TetMesh.CreateElementTets
     //m.RemoveEmptyVolumeCells();
 
 #ifdef DEBUGCUTLIBRARY
@@ -294,7 +302,7 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner, std::string V
   //----------------------------------------------------------
 
   const double t_diff = Teuchos::Time::wallTime()-t_start;
-  if ( myrank_ == 0 )
+  if ( myrank_ == 0 and screenoutput)
   {
     IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
   }

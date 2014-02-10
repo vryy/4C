@@ -19,9 +19,11 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #include "tsi_monolithic.H"
 #include "tsi_defines.H"
+#include "tsi_utils.H"
+
+#include "../drt_thermo/thermo_ele_action.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-#include <Epetra_Time.h>
 
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_discret.H"
@@ -77,67 +79,15 @@ TSI::Monolithic::Monolithic(
   tsidyn_(DRT::Problem::Instance()->TSIDynamicParams()),
   blockrowdofmap_(Teuchos::null),
   systemmatrix_(Teuchos::null),
+  k_st_(Teuchos::null),
+  k_ts_(Teuchos::null),
   merge_tsi_blockmatrix_(DRT::INPUT::IntegralValue<bool>(tsidyn_,"MERGE_TSI_BLOCK_MATRIX")),
   iternorm_(DRT::INPUT::IntegralValue<INPAR::TSI::VectorNorm>(tsidyn_,"ITERNORM")),
   iter_(0),
   sdyn_(sdynparams),
+  timernewton_(comm),
   veln_(Teuchos::null)
 {
-
-  // access the structural discretization
-  Teuchos::RCP<DRT::Discretization> structdis = StructureField()->Discretization();
-  // access the thermo discretization
-  Teuchos::RCP<DRT::Discretization> thermodis = ThermoField()->Discretization();
-
-  //*************************************
-  // std. matching grid                 *
-  //*************************************
-  if(matchinggrid_)
-  {
-    // monolithic TSI must know the other discretization
-    // build a proxy of the structure discretization for the temperature field
-    Teuchos::RCP<DRT::DofSet> structdofset
-      = structdis->GetDofSetProxy();
-    // build a proxy of the temperature discretization for the structure field
-    Teuchos::RCP<DRT::DofSet> thermodofset
-      = thermodis->GetDofSetProxy();
-
-    // check if ThermoField has 2 discretizations, so that coupling is possible
-    if (thermodis->AddDofSet(structdofset)!=1)
-      dserror("unexpected dof sets in thermo field");
-    if (structdis->AddDofSet(thermodofset)!=1)
-      dserror("unexpected dof sets in structure field");
-  }
-  //*************************************
-  // volumetric mortar coupling         *
-  //*************************************
-  else
-  {
-    //build auxiliary dofsets, i.e. pseudo dofs on each discretization
-    const int ndofpernode_thermo = 1;
-    const int ndofperelement_thermo  = 0;
-    const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
-    const int ndofperelement_struct = 0;
-    if (structdis->BuildDofSetAuxProxy(ndofpernode_thermo ,ndofperelement_thermo,true ) != 1)
-      dserror("unexpected dof sets in structure field");
-    if (thermodis->BuildDofSetAuxProxy(ndofpernode_struct,ndofperelement_struct,true) != 1)
-      dserror("unexpected dof sets in thermo field");
-
-    //call AssignDegreesOfFreedom also for auxiliary dofsets
-    //note: the order of FillComplete() calls determines the gid numbering!
-    // 1. structure dofs
-    // 2. scatra dofs
-    // 3. structure auxiliary dofs
-    // 4. scatra auxiliary dofs
-    structdis->FillComplete(true, false,false);
-    thermodis->FillComplete(true, false,false);
-
-    // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
-
-    //setup projection matrices
-    volcoupl_->Setup(structdis, thermodis,comm);
-  }
 
   // access the thermal parameter lists
   const Teuchos::ParameterList& tdyn
@@ -252,6 +202,11 @@ void TSI::Monolithic::ReadRestart(int step)
 
   SetTimeStep(ThermoField()->GetTime(),step);
 
+  // Material pointers to other field were deleted during ReadRestart().
+  // They need to be reset.
+  TSI::UTILS::SetMaterialPointersMatchingGrid(StructureField()->Discretization(),
+                                              ThermoField()->Discretization());
+
   return;
 }  // ReadRestart()
 
@@ -266,10 +221,14 @@ void TSI::Monolithic::PrepareTimeStep()
   IncrementTimeAndStep();
   PrintHeader();
 
+  // pass the current coupling variables to the respective fields
+  ApplyStructCouplingState(StructureField()->Dispnp(),StructureField()->Velnp());
+  ApplyThermoCouplingState(ThermoField()->Tempnp());
+
   // call the predictor
   StructureField()->PrepareTimeStep();
   ThermoField()->PrepareTimeStep();
-  
+
 }  // PrepareTimeStep()
 
 
@@ -444,9 +403,6 @@ void TSI::Monolithic::NewtonFull()
   // initialise equilibrium loop
   iter_ = 1;
 
-  Epetra_Time timerthermo(Comm());
-  timerthermo.ResetStartTime();
-
   // incremental solution vector with length of all TSI dofs
   iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
   iterinc_->PutScalar(0.0);
@@ -459,6 +415,9 @@ void TSI::Monolithic::NewtonFull()
   // equilibrium iteration loop (loop over k)
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
+    // reset timer
+    timernewton_.ResetStartTime();
+
     // compute residual forces #rhs_ and tangent #tang_
     // whose components are globally oriented
     // build linear system stiffness matrix and rhs/force residual for each
@@ -635,8 +594,8 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
     if (ThermoField()->Tempnp() != Teuchos::null)
       tempera->Update(1.0, *ThermoField()->Tempnp(), 0.0);
 
-    StructureField()->ApplyCouplingState(tempera,"temperature");
-    StructureField()->ApplyCouplingState(ThermoField()->Tempn(),"temperature");
+    StructureField()->Discretization()->SetState(1,"temperature",tempera);
+    StructureField()->Discretization()->SetState(1,"temperature",ThermoField()->Tempn());
 #endif // TSIMONOLITHASOUTPUT
 
   // Monolithic TSI accesses the linearised structure problem:
@@ -647,6 +606,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   //     in case of local coordinate systems rotate the residual forth and back
   //     Be AWARE: ApplyDirichlettoSystem has to be called with rotated stiff_!
   StructureField()->Evaluate(sx);
+  StructureField()->Discretization()->ClearState(true);
   
 #ifdef TSI_DEBUG
   #ifndef TFSI
@@ -689,6 +649,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   //   EvaluateRhsTangResidual() and
   //   PrepareSystemForNewtonSolve()
   ThermoField()->Evaluate();
+  ThermoField()->Discretization()->ClearState(true);
 #ifdef TSI_DEBUG
   #ifndef TFSI
   std::cout << "  thermo time for calling Evaluate: " << timerthermo.ElapsedTime() << "\n";
@@ -764,6 +725,39 @@ void TSI::Monolithic::SetupSystem()
 
   SetDofRowMaps(vecSpaces);
 
+  /*----------------------------------------------------------------------*/
+  // initialise TSI-systemmatrix_
+  systemmatrix_
+    = Teuchos::rcp(
+        new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+              *Extractor(),
+              *Extractor(),
+              81,
+              false,
+              true
+              )
+        );
+
+  // create empty matrix
+  k_st_ = Teuchos::rcp(
+           new LINALG::SparseMatrix(
+                 *(StructureField()->Discretization()->DofRowMap(0)),
+                 81,
+                 true,
+                 true
+                 )
+           );
+
+  // create empty matrix
+  k_ts_ = Teuchos::rcp(
+           new LINALG::SparseMatrix(
+                 *(ThermoField()->Discretization()->DofRowMap(0)),
+                 81,
+                 true,
+                 true
+                 )
+           );
+
 }  // SetupSystem()
 
 
@@ -796,19 +790,6 @@ void TSI::Monolithic::SetupSystemMatrix()
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupSystemMatrix");
 
   /*----------------------------------------------------------------------*/
-  // initialise TSI-systemmatrix_
-  systemmatrix_
-    = Teuchos::rcp(
-        new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-              *Extractor(),
-              *Extractor(),
-              81,
-              false,
-              true
-              )
-        );
-
-  /*----------------------------------------------------------------------*/
   // pure structural part k_ss (3nx3n)
 
   // build pure structural block k_ss
@@ -831,24 +812,14 @@ void TSI::Monolithic::SetupSystemMatrix()
   // structural block k_st (3nxn)
   // build mechanical-thermal block
 
-  // create empty matrix
-  Teuchos::RCP<LINALG::SparseMatrix> k_st = Teuchos::null;
-  k_st = Teuchos::rcp(
-           new LINALG::SparseMatrix(
-                 *(StructureField()->Discretization()->DofRowMap(0)),
-                 81,
-                 true,
-                 true
-                 )
-           );
-
+  k_st_->Zero();
   // call the element and calculate the matrix block
 #ifndef MonTSIwithoutTHR
-  ApplyStrCouplMatrix(k_st);
+  ApplyStrCouplMatrix(k_st_);
 #endif // MonTSIwithoutTHR
 
   // modify towards contact
-  ApplyStructContact(k_st);
+  ApplyStructContact(k_st_);
 
   // apply dirichlet boundary conditions properly on matrix k_st, i.e. blank row
   // if dof is a structural DBC
@@ -867,28 +838,23 @@ void TSI::Monolithic::SetupSystemMatrix()
   //              --> blank the row, which has a DBC
   //
   // to apply Multiply in LocSys, k_st has to be FillCompleted
-  if(matchinggrid_)
-    k_st->Complete(
-            *(ThermoField()->Discretization()->DofColMap(0)),
-            *(StructureField()->Discretization()->DofRowMap(0))
-            );
-  else
-  {
-    k_st->Complete(
-            *(StructureField()->Discretization()->DofRowMap(1)),
-            *(StructureField()->Discretization()->DofRowMap(0))
-            );
-    k_st=volcoupl_->ApplyMatrixMappingAB(k_st);
-  }
+
+  k_st_->Complete(
+          *(StructureField()->Discretization()->DofRowMap(1)),
+          *(StructureField()->Discretization()->DofRowMap(0))
+          );
+
+  if(!matchinggrid_)
+    k_st_=volcoupl_->ApplyMatrixMappingAB(k_st_);
 
   if (locsysman_ != Teuchos::null)
   {
     // rotate k_st to local coordinate system --> k_st^{~}
-    locsysman_->RotateGlobalToLocal(k_st);
+    locsysman_->RotateGlobalToLocal(k_st_);
     // apply ApplyDirichletWithTrafo() on rotated block k_st^{~}
     // --> if dof has an inclined DBC: blank the complete row, the '1.0' is set
     //     on diagonal of row, i.e. on diagonal of k_ss
-    k_st->ApplyDirichletWithTrafo(
+    k_st_->ApplyDirichletWithTrafo(
             locsysman_->Trafo(),
             *StructureField()->GetDBCMapExtractor()->CondMap(),
             false
@@ -896,12 +862,12 @@ void TSI::Monolithic::SetupSystemMatrix()
   }  // end locsys
   // default: (locsysman_ == Teuchos::null), i.e. NO inclined Dirichlet BC
   else
-    k_st->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),false);
+    k_st_->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),false);
 
-  k_st->UnComplete();
+  k_st_->UnComplete();
 
   // assign thermo part to the TSI matrix
-  systemmatrix_->Assign(0,1,View,*(k_st));
+  systemmatrix_->Assign(0,1,View,*(k_st_));
 
   /*----------------------------------------------------------------------*/
   // pure thermo part k_tt (nxn)
@@ -924,25 +890,16 @@ void TSI::Monolithic::SetupSystemMatrix()
   // thermo part k_ts (nx3n)
   // build thermal-mechanical block
 
-  // create empty matrix
-  Teuchos::RCP<LINALG::SparseMatrix> k_ts = Teuchos::null;
-  k_ts = Teuchos::rcp(
-           new LINALG::SparseMatrix(
-                 *(ThermoField()->Discretization()->DofRowMap(0)),
-                 81,
-                 true,
-                 true
-                 )
-           );
+  k_ts_->Zero();
 
   // call the element and calculate the matrix block
 #if ( (!defined(MonTSIwithoutSTR)) and (!defined(COUPLEINITTEMPERATURE)) )
-  ApplyThrCouplMatrix(k_ts);
-  ApplyThrCouplMatrix_ConvBC(k_ts);
+  ApplyThrCouplMatrix(k_ts_);
+  ApplyThrCouplMatrix_ConvBC(k_ts_);
 #endif
 
   // modify towards contact
-  ApplyThermContact(k_ts);
+  ApplyThermContact(k_ts_);
 
   // apply dirichlet boundary conditions properly on matrix k_ts, i.e. blank row
   // if dof is a thermal DBC
@@ -952,26 +909,19 @@ void TSI::Monolithic::SetupSystemMatrix()
   // here k_ts
   // k_ts is an off-diagonal block --> pass the bool diagonal==false
   // ApplyDirichlet() expect filled matrix
-  if(matchinggrid_)
-  {
-    k_ts->Complete(
-            *(StructureField()->Discretization()->DofColMap(0)),
-            *(ThermoField()->Discretization()->DofRowMap(0))
-            );
-  }
-  else
-  {
-    k_ts->Complete(
-            *(ThermoField()->Discretization()->DofColMap(1)),
-            *(ThermoField()->Discretization()->DofRowMap(0))
-            );
-    k_ts=volcoupl_->ApplyMatrixMappingBA(k_ts);
-  }
+
+  k_ts_->Complete(
+          *(ThermoField()->Discretization()->DofRowMap(1)),
+          *(ThermoField()->Discretization()->DofRowMap(0))
+          );
+
+  if(!matchinggrid_)
+    k_ts_=volcoupl_->ApplyMatrixMappingBA(k_ts_);
 
   // assign thermo part to the TSI matrix
-  k_ts->ApplyDirichlet(*ThermoField()->GetDBCMapExtractor()->CondMap(),false);
-  k_ts->UnComplete();
-  systemmatrix_->Assign(1,0,View,*k_ts);
+  k_ts_->ApplyDirichlet(*ThermoField()->GetDBCMapExtractor()->CondMap(),false);
+  k_ts_->UnComplete();
+  systemmatrix_->Assign(1,0,View,*k_ts_);
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
   systemmatrix_->Complete();
@@ -1152,6 +1102,7 @@ bool TSI::Monolithic::Converged()
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
+    break;
   }
 
   // residual TSI increments
@@ -1168,6 +1119,7 @@ bool TSI::Monolithic::Converged()
     break;
   default:
     dserror("Cannot check for convergence of increments!");
+    break;
   }  // switch (normtypeinc_)
 
   // -------------------------------------------------- single field test
@@ -1207,6 +1159,7 @@ bool TSI::Monolithic::Converged()
     break;
   default :
     dserror("Cannot check for convergence of displacements!");
+    break;
   }  // switch (normtypedisi_)
 
   // ------------------------------------------------------------- thermo
@@ -1224,6 +1177,7 @@ bool TSI::Monolithic::Converged()
     break;
   default :
     dserror("Cannot check for convergence of residual forces!");
+    break;
   }  // switch (normtypethrrhs_)
 
   // residual temperatures
@@ -1240,6 +1194,7 @@ bool TSI::Monolithic::Converged()
     break;
   default :
     dserror("Cannot check for convergence of temperatures!");
+    break;
   }  // switch (normtypetempi_)
 
   // -------------------------------------------------------- convergence
@@ -1325,6 +1280,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
     break;
   default:
     dserror("You should not turn up here.");
+    break;
   }
 
   switch (normtypeinc_)
@@ -1337,6 +1293,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
     break;
   default:
     dserror("You should not turn up here.");
+    break;
   }
 
   // -------------------------------------------------- single field test
@@ -1387,6 +1344,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
     break;
   default :
     dserror("You should not turn up here.");
+    break;
   }  // switch (normtypethrrhs_)
 
   switch (normtypetempi_)
@@ -1402,6 +1360,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
     break;
   default :
     dserror("You should not turn up here.");
+    break;
   }  // switch (normtypetempi_)
 
   // add solution time
@@ -1452,6 +1411,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
     break;
   default :
     dserror("You should not turn up here.");
+    break;
   }
 
   switch (normtypeinc_)
@@ -1467,6 +1427,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
     break;
   default :
     dserror("You should not turn up here.");
+    break;
   }  // switch (normtypeinc_)
 
   // ------------------------------------------------- test single fields
@@ -1519,6 +1480,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
     break;
   default :
     dserror("You should not turn up here.");
+    break;
   }  // switch (normtypethrrhs_)
 
   switch (normtypetempi_)
@@ -1534,11 +1496,11 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
     break;
   default :
     dserror("You should not turn up here.");
+    break;
   }  // switch (normtypetempi_)
 
   // add solution time of to print to screen
-  Epetra_Time timer(Comm());
-  oss << std::setw(12) << std::setprecision(2) << std::scientific << timer.ElapsedTime();
+  oss << std::setw(12) << std::setprecision(2) << std::scientific << timernewton_.ElapsedTime();
 
   // finish oss
   oss << std::ends;
@@ -1590,17 +1552,14 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
   sparams.set("delta time", Dt());
   sparams.set("total time", Time());
 
-  StructureField()->Discretization()->ClearState();
+  StructureField()->Discretization()->ClearState(true);
   StructureField()->Discretization()->SetState(0,"displacement",StructureField()->Dispnp());
-
-  // in case of temperature-dependent material parameters, here E(T), T_{n+1} is required in STR
+  
+    // in case of temperature-dependent material parameters, here E(T), T_{n+1} is required in STR
   sparams.set<int>("young_temp", (DRT::INPUT::IntegralValue<int>(sdyn_,"YOUNG_IS_TEMP_DEPENDENT")));
-  if(matchinggrid_)
-    StructureField()->Discretization()->SetState(1,"temperature",ThermoField()->Tempnp());
-  else
-  	dserror("off diagonal term evaluation not yet implemented for non matching grid!");
-    //ApplyThermoCouplingState(ThermoField()->Tempnp());
-
+  
+  ApplyThermoCouplingState(ThermoField()->Tempnp());
+  
   // build specific assemble strategy for mechanical-thermal system matrix
   // from the point of view of StructureField:
   // structdofset = 0, thermdofset = 1
@@ -1616,7 +1575,7 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
 
   // evaluate the mechancial-thermal system matrix on the structural element
   StructureField()->Discretization()->Evaluate(sparams,structuralstrategy);
-  StructureField()->Discretization()->ClearState();
+  StructureField()->Discretization()->ClearState(true);
 
   // TODO 2013-11-11 move scaling to the so3_thermo element
   // --> consistent with thermo element and clearer, more consistent
@@ -1670,8 +1629,8 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   // create the parameters for the discretization
   Teuchos::ParameterList tparams;
   // action for elements
-  const std::string action = "calc_thermo_coupltang";
-  tparams.set("action", action);
+  const THR::Action action = THR::calc_thermo_coupltang;
+  tparams.set<int>("action", action);
   // other parameters that might be needed by the elements
   tparams.set("delta time", Dt());
   tparams.set("total time", Time());
@@ -1724,18 +1683,11 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   }
   }  // switch (THR::DynamicType)
 
-  ThermoField()->Discretization()->ClearState();
+  ThermoField()->Discretization()->ClearState(true);
   // set the variables that are needed by the elements
   ThermoField()->Discretization()->SetState(0,"temperature",ThermoField()->Tempnp());
-
-  if(matchinggrid_)
-  {
-    ThermoField()->Discretization()->SetState(1,"displacement",StructureField()->Dispnp());
-    ThermoField()->Discretization()->SetState(1,"velocity",veln_);
-  }
-  else
-    dserror("off diagonal term evaluation not yet implemented for non matching grid!");
-    //ApplyStructCouplingState(StructureField()->Dispnp(),veln_);
+  
+  ApplyStructCouplingState(StructureField()->Dispnp(),veln_);
 
   // build specific assemble strategy for the thermal-mechanical system matrix
   // from the point of view of ThermoField:
@@ -1749,9 +1701,10 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
                           Teuchos::null,
                           Teuchos::null
                           );
+
   // evaluate the thermal-mechancial system matrix on the thermal element
   ThermoField()->Discretization()->Evaluate(tparams,thermostrategy);
-  ThermoField()->Discretization()->ClearState();
+  ThermoField()->Discretization()->ClearState(true);
 
 }  // ApplyThrCouplMatrix()
 
@@ -1778,8 +1731,8 @@ void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
     // create the parameters for the discretization
     Teuchos::ParameterList tparams;
     // action for elements
-    const std::string action = "calc_thermo_fextconvection_coupltang";
-    tparams.set("action", action);
+    const THR::BoundaryAction action = THR::calc_thermo_fextconvection_coupltang;
+    tparams.set<int>("action", action);
     // other parameters that might be needed by the elements
     tparams.set("delta time", Dt());
     tparams.set("total time", Time());
@@ -1829,11 +1782,11 @@ void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
       break;
     }
     }  // end(switch)
-
-    ThermoField()->Discretization()->ClearState();
+    //clear all states set in discretization
+    ThermoField()->Discretization()->ClearState(true);
     // set the variables that are needed by the elements
     ThermoField()->Discretization()->SetState(0,"temperature",ThermoField()->Tempnp());
-    ThermoField()->Discretization()->SetState(1,"displacement",StructureField()->Dispnp());
+    ApplyStructCouplingState(StructureField()->Dispnp(),veln_);
 
     // build specific assemble strategy for the thermal-mechanical system matrix
     // from the point of view of ThermoField:
@@ -1847,11 +1800,12 @@ void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
                             Teuchos::null,
                             Teuchos::null
                             );
+
     // evaluate the thermal-mechancial system matrix on the thermal element
     ThermoField()->Discretization()->EvaluateCondition(tparams,thermostrategy,condstring);
-    ThermoField()->Discretization()->ClearState();
-
-  }  // constring
+    //clear all states set in discretization
+    ThermoField()->Discretization()->ClearState(true);
+  }  // cond.size()>0
 
 }  // ApplyThrCouplMatrix()
 
@@ -1960,7 +1914,7 @@ void TSI::Monolithic::ApplyStructContact(Teuchos::RCP<LINALG::SparseMatrix>& k_s
    err = invd->ReplaceDiagonalValues(*diag);
 
    // store some stuff for condensation of LM
-   kst_ = kst;
+   contact_kst_ = kst;
    invd_ = invd;
 
    // active part of invd
@@ -2152,7 +2106,7 @@ void TSI::Monolithic::ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts
   err = invd->ReplaceDiagonalValues(*diag);
 
   // store some stuff for condensation of LM
-  kts_ = ksstruct;
+  contact_kts_ = ksstruct;
   invdtherm_ = invd;
 
   /**********************************************************************/
@@ -2295,7 +2249,7 @@ void TSI::Monolithic::RecoverStructThermLM()
 
   // multiplication
   Teuchos::RCP<Epetra_Vector> mod = Teuchos::rcp(new Epetra_Vector(*sdofs));
-  kst_->Multiply(false,*tx,*mod);
+  contact_kst_->Multiply(false,*tx,*mod);
 
   // active part of invd
   LINALG::SplitMatrix2x2(invd_,adofs,tempmap,adofs,tempmap,invda,tempmtx1,tempmtx2,tempmtx3);
@@ -2340,7 +2294,7 @@ void TSI::Monolithic::RecoverStructThermLM()
 
   // multiplication
   Teuchos::RCP<Epetra_Vector> modtherm = Teuchos::rcp(new Epetra_Vector(*sdofs));
-  kts_->Multiply(false,*sx,*modtherm);
+  contact_kts_->Multiply(false,*sx,*modtherm);
 
   // active part of invdtherm
   LINALG::SplitMatrix2x2(invdtherm_,adofstherm,tempmaptherm,adofstherm,tempmaptherm,invdatherm,tempmtx4,tempmtx5,tempmtx6);

@@ -285,7 +285,7 @@ void POROELAST::PoroBase::SetStructSolution()
 /*----------------------------------------------------------------------*/
 void POROELAST::PoroBase::SetFluidSolution()
 {
-  StructureField()->ApplyCouplingState(FluidField()->Velnp(),"fluidvel");
+  StructureField()->Discretization()->SetState(1,"fluidvel",FluidField()->Velnp());
 }
 
 /*----------------------------------------------------------------------*/

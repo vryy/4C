@@ -405,11 +405,6 @@ namespace ADAPTER {
 
     //! @name volume coupled specific methods
     //@{
-    /// set volume coupling state (e.g. temperatures for tsi, fluid velocities for poro) in structural discretization
-    virtual void SetCouplingState() = 0;
-
-    /// apply volume coupling state (e.g. temperatures for tsi, fluid velocities for poro) in structural time integrator
-    virtual void ApplyCouplingState(Teuchos::RCP<const Epetra_Vector> velnp, const std::string& name, unsigned dofset=1) = 0;
 
     /// Set forces due to interface with fluid, the force is expected external-force-like
     virtual void SetForceInterface(Teuchos::RCP<Epetra_MultiVector> iforce) = 0;

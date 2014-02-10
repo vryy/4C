@@ -25,6 +25,7 @@
 #include "post_drt_ensight_single_field_writers.H"
 #include "../linalg/linalg_utils.H"
 #include "../pss_full/pss_cpp.h"
+#include "../drt_thermo/thermo_ele_action.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               dano 11/09 |
@@ -210,7 +211,7 @@ void ThermoEnsightWriter::WriteNodalHeatfluxStep(
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // other parameters that might be needed by the elements
-  p.set("action","postproc_thermo_heatflux");
+  p.set<int>("action",THR::postproc_thermo_heatflux);
   p.set("heatfluxtype","ndxyz");
   p.set("gpheatfluxmap", data);
   p.set("total time", -1.0);
@@ -451,7 +452,7 @@ void ThermoEnsightWriter::WriteElementCenterHeatfluxStep(
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // other parameters that might be needed by the elements
-  p.set("action","postproc_thermo_heatflux");
+  p.set("action",THR::postproc_thermo_heatflux);
   p.set("heatfluxtype","cxyz");
   p.set("gpheatfluxmap",data);
   p.set("total time", -1.0);

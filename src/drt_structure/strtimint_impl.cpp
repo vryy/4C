@@ -3176,8 +3176,7 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtracto
     discret_->SetState("residual displacement", zeros_);
     discret_->SetState("displacement", (*dis_)(0));
     if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", (*vel_)(0));
-    //set state for volume coupling (e.g. for tsi and poro)
-    SetCouplingState();
+
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }

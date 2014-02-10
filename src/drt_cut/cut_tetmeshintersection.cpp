@@ -235,7 +235,12 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
   }
 }
 
-void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, const plain_volumecell_set & parent_cells, int count, bool levelset )
+void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh,
+                                         Element * element,
+                                         const plain_volumecell_set & parent_cells,
+                                         int count,
+                                         bool levelset,
+                                         bool tetcellsonly)
 {
   mesh_.Status();
 
@@ -286,7 +291,7 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
   mesh_.DumpGmsh( "mesh.pos" );
 #endif
 
-  mesh_.CreateIntegrationCells( count, levelset );
+  mesh_.CreateIntegrationCells( count, levelset, tetcellsonly );
   //mesh_.RemoveEmptyVolumeCells();
 
 #ifdef DEBUGCUTLIBRARY

@@ -151,19 +151,27 @@ public:
   /*========================================================================*/
 
   /// standard cut routine for non-parallel frameworks and cuttest
-  void Cut( bool include_inner, std::string VCellgausstype="Tessellation", std::string BCellgausstype="Tessellation" );
+  void Cut( bool include_inner,
+            std::string VCellgausstype="Tessellation",
+            std::string BCellgausstype="Tessellation",
+            bool tetcellsonly=true,
+            bool screenoutput=true);
 
   /// Routine for cutting the mesh. This creates lines, facets, volumecells and quadrature rules
-  void Cut_Mesh( bool include_inner );
+  void Cut_Mesh( bool include_inner ,bool screenoutput=true);
 
   /// Routine for deciding the inside-outside position. This creates the dofset data, just serial
-  void Cut_Positions_Dofsets( bool include_inner );
+  void Cut_Positions_Dofsets( bool include_inner ,bool screenoutput=true);
 
   /*!
   \brief The routine which splits the volumecell into integrationcells by tessellation, or create Gaussian
   integration rules by moment fitting equations
    */
-  void Cut_Finalize( bool include_inner, std::string VCellgausstype, std::string BCellgausstype);
+  void Cut_Finalize( bool include_inner,
+                     std::string VCellgausstype,
+                     std::string BCellgausstype,
+                     bool tetcellsonly =false,
+                     bool screenoutput=true);
 
 
   /*========================================================================*/

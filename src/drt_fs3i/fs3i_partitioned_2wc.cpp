@@ -259,7 +259,7 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
                                            Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->ThermPressDtNp(),
                                            Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->ThermPressDtNp(),
                                            Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->Discretization());
-      fsi_->StructureField()->ApplyCouplingState(structurescatra_->ScaTraField()->Phinp(),"temperature");
+      fsi_->StructureField()->Discretization()->SetState(1,"temperature",structurescatra_->ScaTraField()->Phinp());
     //}
 }
 

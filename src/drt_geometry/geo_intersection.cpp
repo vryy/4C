@@ -112,7 +112,11 @@ GEO::CUT::Node * GEO::CutWizard::GetNode( int nid )
 /*------------------------------------------------------------------------------------------------*
  * cut routine for parallel framework in XFSI and XFLUIDFLUID                        schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizard::CutParallel( bool include_inner, std::string VCellgausstype, std::string BCellgausstype )
+void GEO::CutWizard::CutParallel( bool include_inner,
+                                  std::string VCellgausstype,
+                                  std::string BCellgausstype,
+                                  bool tetcellsonly,
+                                  bool screenoutput)
 {
   // for XFSI and XFLUIDFLUID we have communicate node positions and dofset data
   bool communicate = true;
@@ -123,13 +127,13 @@ void GEO::CutWizard::CutParallel( bool include_inner, std::string VCellgausstype
 
 
   // FIRST step (1/3): cut the mesh
-  mesh_->Cut_Mesh( include_inner );
+  mesh_->Cut_Mesh( include_inner,screenoutput );
 
   // SECOND step (2/3): find node positions and create dofset in PARALLEL
-  CutParallel_FindPositionDofSets( include_inner, communicate );
+  CutParallel_FindPositionDofSets( include_inner, communicate,screenoutput );
 
   // THIRD step (3/3): perform tessellation or moment fitting on the mesh
-  mesh_->Cut_Finalize( include_inner, VCellgausstype, BCellgausstype );
+  mesh_->Cut_Finalize( include_inner, VCellgausstype, BCellgausstype,tetcellsonly,screenoutput );
 
 
   mesh_->Status(VCellgausstype);
@@ -139,12 +143,12 @@ void GEO::CutWizard::CutParallel( bool include_inner, std::string VCellgausstype
 /*------------------------------------------------------------------------------------------------*
  * routine for finding node positions and computing vc dofsets in a parallel way     schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool communicate)
+void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool communicate, bool screenoutput)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets (parallel)" );
 
 
-  if(myrank_==0) IO::cout << "\t * 2/3 Cut_Positions_Dofsets (parallel) ...";
+  if(myrank_==0 and screenoutput) IO::cout << "\t * 2/3 Cut_Positions_Dofsets (parallel) ...";
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -189,7 +193,7 @@ void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool co
   //----------------------------------------------------------
 
   const double t_diff = Teuchos::Time::wallTime()-t_start;
-  if ( myrank_ == 0 )
+  if ( myrank_ == 0  and screenoutput)
   {
     IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
   }
@@ -200,9 +204,9 @@ void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool co
 /*------------------------------------------------------------------------------------------------*
  *cut routine for standard non-parallel framework (only for cuttest)                 schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizard::Cut( bool include_inner, std::string VCellgausstype, std::string BCellgausstype )
+void GEO::CutWizard::Cut( bool include_inner, std::string VCellgausstype, std::string BCellgausstype, bool screenoutput )
 {
-  mesh_->Cut( include_inner, VCellgausstype, BCellgausstype );
+  mesh_->Cut( include_inner, VCellgausstype, BCellgausstype,screenoutput );
 }
 
 

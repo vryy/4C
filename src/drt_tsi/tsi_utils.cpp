@@ -34,6 +34,9 @@ Maintainer: Caroline Danowski
 #include "../drt_thermo/thermo_element.H"
 #include "../drt_so3/so3_thermo.H"
 
+#include "../drt_lib/drt_discret.H"
+
+#include "../drt_fluid/drt_periodicbc.H"
 
 /*----------------------------------------------------------------------*
  | remove flag thermo from condition                         dano 12/11 |
@@ -101,8 +104,8 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
 
   // note: SetMaterial() was reimplemented by the thermo element!
 #if defined(D_THERMO)
-  DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(newele.get());
-  if (therm != NULL)
+  Teuchos::RCP<DRT::ELEMENTS::Thermo> therm = Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Thermo>(newele);
+  if (therm != Teuchos::null)
   {
     therm->SetMaterial(matid);
     therm->SetDisType(oldele->Shape());  // set distype as well!
@@ -149,25 +152,113 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
   thermdis = DRT::Problem::Instance()->GetDis("thermo");
   if (!thermdis->Filled()) thermdis->FillComplete();
 
+  // access the problem-specific parameter list
+  const Teuchos::ParameterList& tsidyn
+    = DRT::Problem::Instance()->TSIDynamicParams();
+
+  bool matchinggrid = DRT::INPUT::IntegralValue<bool>(tsidyn,"MATCHINGGRID");
+
    // we use the structure discretization as layout for the temperature discretization
   if (structdis->NumGlobalNodes()==0) dserror("Structure discretization is empty!");
-
-  //todo: bool for matching grid from parameter list
 
   // create thermo elements if the temperature discretization is empty
   if (thermdis->NumGlobalNodes()==0)
   {
+    if(!matchinggrid)
+      dserror("MATCHINGGRID is set to 'no' in TSI DYNAMIC section, but thermo discretization is empty!");
+
     DRT::UTILS::CloneDiscretization<TSI::UTILS::ThermoStructureCloneStrategy>(structdis,thermdis);
+
+    // connect degrees of freedom for periodic boundary conditions
+    {
+      PeriodicBoundaryConditions pbc_struct(structdis);
+
+      if (pbc_struct.HasPBC())
+      {
+        pbc_struct.UpdateDofsForPeriodicBoundaryConditions();
+      }
+    }
+
+    // connect degrees of freedom for periodic boundary conditions
+    {
+      PeriodicBoundaryConditions pbc(thermdis);
+
+      if (pbc.HasPBC())
+      {
+        pbc.UpdateDofsForPeriodicBoundaryConditions();
+      }
+    }
+
+    // TSI must know the other discretization
+    // build a proxy of the structure discretization for the temperature field
+    Teuchos::RCP<DRT::DofSet> structdofset
+      = structdis->GetDofSetProxy();
+    // build a proxy of the temperature discretization for the structure field
+    Teuchos::RCP<DRT::DofSet> thermodofset
+      = thermdis->GetDofSetProxy();
+
+    // check if ThermoField has 2 discretizations, so that coupling is possible
+    if (thermdis->AddDofSet(structdofset)!=1)
+      dserror("unexpected dof sets in thermo field");
+    if (structdis->AddDofSet(thermodofset)!=1)
+      dserror("unexpected dof sets in structure field");
+
+    TSI::UTILS::SetMaterialPointersMatchingGrid(structdis,thermdis);
   }
   else
   {
+    if(matchinggrid)
+      dserror("MATCHINGGRID is set to 'yes' in TSI DYNAMIC section, but thermo discretization is not empty!");
+
     //first call FillComplete for single discretizations.
     //This way the physical dofs are numbered successively
     structdis->FillComplete();
     thermdis->FillComplete();
+
+    //build auxiliary dofsets, i.e. pseudo dofs on each discretization
+    const int ndofpernode_thermo = 1;
+    const int ndofperelement_thermo  = 0;
+    const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
+    const int ndofperelement_struct = 0;
+    if (structdis->BuildDofSetAuxProxy(ndofpernode_thermo ,ndofperelement_thermo,true ) != 1)
+      dserror("unexpected dof sets in structure field");
+    if (thermdis->BuildDofSetAuxProxy(ndofpernode_struct,ndofperelement_struct,true) != 1)
+      dserror("unexpected dof sets in thermo field");
+
+    //call AssignDegreesOfFreedom also for auxiliary dofsets
+    //note: the order of FillComplete() calls determines the gid numbering!
+    // 1. structure dofs
+    // 2. thermo dofs
+    // 3. structure auxiliary dofs
+    // 4. thermo auxiliary dofs
+    structdis->FillComplete(true, false,false);
+    thermdis->FillComplete(true, false,false);
   }
+
 }  // SetupTSI()
 
+
+/*----------------------------------------------------------------------*
+ | print TSI-logo                                            dano 03/10 |
+ *----------------------------------------------------------------------*/
+void TSI::UTILS::SetMaterialPointersMatchingGrid(
+    Teuchos::RCP<const DRT::Discretization> sourcedis,
+    Teuchos::RCP<const DRT::Discretization> targetdis)
+{
+  const int numelements = targetdis->NumMyColElements();
+
+  for (int i=0; i<numelements; ++i)
+  {
+    DRT::Element* targetele = targetdis->lColElement(i);
+    const int gid = targetele->Id();
+
+    DRT::Element* sourceele = sourcedis->gElement(gid);
+
+    //for coupling we add the source material to the target element and vice versa
+    targetele->AddMaterial(sourceele->Material());
+    sourceele->AddMaterial(targetele->Material());
+  }
+}
 
 /*----------------------------------------------------------------------*
  | print TSI-logo                                            dano 03/10 |

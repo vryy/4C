@@ -342,11 +342,6 @@ namespace THR
 
     //! @name Thermo-structure-interaction specific methods
     //@{
-    //! Apply current displacements and velocities to the thermo problem
-    void ApplyStructVariables(
-      Teuchos::RCP<const Epetra_Vector> disp,  //!< current displacements
-      Teuchos::RCP<const Epetra_Vector> vel  //!< current velocities
-      );
 
     //! Set external loads (heat flux) due to tfsi interface
     virtual void SetForceInterface(
@@ -600,14 +595,6 @@ namespace THR
     Teuchos::RCP<Epetra_Vector> raten_;  //!< global temperature rates
                                          //!< \f${R}_{n+1}\f$
                                          //!< at \f$t_{n+1}\f$
-
-    // global coupling variables of the structure field
-    Teuchos::RCP<Epetra_Vector> disn_;  //!< global displacements
-                                              //!< \f${D}_{n+1}\f$
-                                              //!< at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> veln_;  //!< global velocities
-                                              //!< \f${V}_{n+1}\f$
-                                              //!< at \f$t_{n+1}\f$
 
     //@}
 

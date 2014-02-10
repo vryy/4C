@@ -18,6 +18,7 @@ Maintainer: Burkhard Bornemann
  | headers                                                   dano 08/09 |
  *----------------------------------------------------------------------*/
 #include "thrtimint_statics.H"
+#include "thermo_ele_action.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               dano 08/09 |
@@ -257,7 +258,7 @@ void THR::TimIntStatics::UpdateStepElement()
   p.set("total time", timen_);
   p.set("delta time", (*dt_)[0]);
   // action for elements
-  p.set("action", "calc_thermo_update_istep");
+  p.set<int>("action", THR::calc_thermo_update_istep);
   // go to elements
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);

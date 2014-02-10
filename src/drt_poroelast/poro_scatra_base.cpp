@@ -151,8 +151,8 @@ void POROELAST::PORO_SCATRA_Base::SetPoroSolution()
 void POROELAST::PORO_SCATRA_Base::SetScatraSolution()
 {
   //porous structure
-  poro_->StructureField()->ApplyCouplingState(scatra_->ScaTraField()->Phinp(),"scalar",2);
-  poro_->StructureField()->ApplyCouplingState(scatra_->ScaTraField()->Phin(),"scalarn",2);
+  poro_->StructureField()->Discretization()->SetState(2,"scalar",scatra_->ScaTraField()->Phinp());
+  poro_->StructureField()->Discretization()->SetState(2,"scalarn",scatra_->ScaTraField()->Phin());
 
   //porous fluid
   poro_->FluidField()->SetIterLomaFields(scatra_->ScaTraField()->Phinp(),

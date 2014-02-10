@@ -1130,7 +1130,7 @@ void GEO::CUT::Mesh::FindNodalDOFSets( bool include_inner )
 /*-------------------------------------------------------------------------------------*
  * Execute Tessellation with QHULL for each element to generate integrationcells
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset )
+void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset, bool tetcellsonly )
 {
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
@@ -1139,7 +1139,7 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset )
     Element & e = *i->second;
     try
     {
-      e.CreateIntegrationCells( *this, count+1, levelset );
+      e.CreateIntegrationCells( *this, count+1, levelset, tetcellsonly );
     }
     catch ( std::runtime_error & err )
     {
@@ -1154,7 +1154,7 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset )
     Element & e = **i;
     try
     {
-      e.CreateIntegrationCells( *this, count+1, levelset );
+      e.CreateIntegrationCells( *this, count+1, levelset, tetcellsonly );
     }
     catch ( std::runtime_error & err )
     {

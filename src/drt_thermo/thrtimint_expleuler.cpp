@@ -16,6 +16,7 @@ Maintainer: Caroline Danowski
  | headers                                                   dano 01/12 |
  *----------------------------------------------------------------------*/
 #include "thrtimint_expleuler.H"
+#include "thermo_ele_action.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
@@ -172,7 +173,7 @@ void THR::TimIntExplEuler::UpdateStepElement()
   p.set("delta time", (*dt_)[0]);
   // action for elements
   // --> be careful: this action does nothing
-  p.set("action", "calc_thermo_update_istep");
+  p.set<int>("action", THR::calc_thermo_update_istep);
   // go to elements and do nothing
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);

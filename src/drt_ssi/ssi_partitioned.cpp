@@ -45,7 +45,7 @@ void SSI::SSI_Part::SetStructSolution()
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Part::SetScatraSolution()
 {
-  structure_->ApplyCouplingState(scatra_->ScaTraField()->Phinp(),"temperature");
+  structure_->Discretization()->SetState(1,"temperature",scatra_->ScaTraField()->Phinp());
 }
 
 /*----------------------------------------------------------------------*/

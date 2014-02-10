@@ -29,6 +29,7 @@ Maintainer: Caroline Danowski
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_thermo.H"
 
+#include <Epetra_Time.h>
 
 /*----------------------------------------------------------------------*
  |                                                           dano 11/10 |
@@ -373,6 +374,11 @@ namespace TSI
 
     //! block systemmatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+
+    //! off diagonal matrixes
+    Teuchos::RCP<LINALG::SparseMatrix> k_st_;
+    Teuchos::RCP<LINALG::SparseMatrix> k_ts_;
+
     bool merge_tsi_blockmatrix_;  //!< bool whether TSI block matrix is merged
 
     //! @name iterative solution technique
@@ -416,6 +422,8 @@ namespace TSI
 
     const Teuchos::ParameterList& sdyn_;  //!< structural dynamic parameter list
 
+    Epetra_Time timernewton_; //!< timer for measurement of solution time of newton iterations
+
     //@}
 
     //! @name Various global forces
@@ -442,9 +450,9 @@ namespace TSI
 
     Teuchos::RCP<Epetra_Vector> zstruct_ ;
     Teuchos::RCP<Epetra_Vector> ztherm_;
-    Teuchos::RCP<LINALG::SparseMatrix> kst_;  //!< stiffness block K_ss (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> contact_kst_;  //!< stiffness block K_ss (needed for LM)
     Teuchos::RCP<LINALG::SparseMatrix> invd_;  //!< stiffness block K_ss (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> kts_;  //!< stiffness block K_ss (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> contact_kts_;  //!< stiffness block K_ss (needed for LM)
     Teuchos::RCP<LINALG::SparseMatrix> invdtherm_;  //!< stiffness block K_ss (needed for LM)
 
     //@}

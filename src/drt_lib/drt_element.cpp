@@ -104,7 +104,7 @@ parent_master_(NULL),
 parent_slave_(NULL),
 lface_master_(-1),
 lface_slave_(-1),
-mat_(Teuchos::null)
+mat_(1,Teuchos::null)
 {}
 
 /*----------------------------------------------------------------------*
@@ -121,7 +121,8 @@ face_(old.face_),
 parent_master_(old.parent_master_),
 parent_slave_(old.parent_slave_),
 lface_master_(old.lface_master_),
-lface_slave_(old.lface_slave_)
+lface_slave_(old.lface_slave_),
+mat_(1,Teuchos::null)
 {
   // we do NOT want a deep copy of the condition_ as the condition
   // is only a reference in the elements anyway
@@ -129,10 +130,15 @@ lface_slave_(old.lface_slave_)
   for (fool=old.condition_.begin(); fool!=old.condition_.end(); ++fool)
     SetCondition(fool->first,fool->second);
 
-  if ( old.mat_!=Teuchos::null )
-    mat_ = old.mat_->Clone();
+  if(old.mat_.size())
+  {
+    mat_.resize(old.mat_.size());
+    for (unsigned iter=0; iter<old.mat_.size(); ++iter)
+      if ( old.mat_[iter]!=Teuchos::null )
+        mat_[iter]=(old.mat_[iter]->Clone());
+  }
   else
-    mat_ = Teuchos::null;
+    mat_[0] = Teuchos::null;
 
   return;
 }
@@ -226,7 +232,17 @@ void DRT::Element::SetNodeIds(const std::string& distype, DRT::INPUT::LineDefini
  *----------------------------------------------------------------------*/
 void DRT::Element::SetMaterial(int matnum)
 {
-  mat_ = MAT::Material::Factory(matnum);
+  mat_[0] = MAT::Material::Factory(matnum);
+}
+
+/*----------------------------------------------------------------------*
+ |  add material to element (public)                          vuong 02/14|
+ *----------------------------------------------------------------------*/
+int DRT::Element::AddMaterial(Teuchos::RCP<MAT::Material> mat)
+{
+  mat_.push_back(mat);
+
+  return mat_.size();
 }
 
 
@@ -249,9 +265,10 @@ void DRT::Element::Pack(DRT::PackBuffer& data) const
   // add vector nodeid_
   AddtoPack(data,nodeid_);
   // add material
-  if (mat_!=Teuchos::null)
+  if (mat_[0]!=Teuchos::null)
   {
-    mat_->Pack(data);
+    //pack only first material
+    mat_[0]->Pack(data);
   }
   else
   {
@@ -289,11 +306,12 @@ void DRT::Element::Unpack(const std::vector<char>& data)
     MAT::Material* mat = dynamic_cast<MAT::Material*>(o);
     if (mat==NULL)
       dserror("failed to unpack material");
-    mat_ = Teuchos::rcp(mat);
+    //unpack only first material
+    mat_[0] = Teuchos::rcp(mat);
   }
   else
   {
-    mat_ = Teuchos::null;
+    mat_[0] = Teuchos::null;
   }
 
   // node_, face_, parent_master_, parent_slave_ are NOT communicated

@@ -15,7 +15,7 @@ Maintainer: Caroline Danowski
  | headers                                                   dano 10/09 |
  *----------------------------------------------------------------------*/
 #include "thrtimint_genalpha.H"
-
+#include "thermo_ele_action.H"
 
 /*----------------------------------------------------------------------*
  | check if coefficients are in correct regime               dano 10/09 |
@@ -416,7 +416,7 @@ void THR::TimIntGenAlpha::UpdateStepElement()
   p.set("total time", timen_);
   p.set("delta time", (*dt_)[0]);
   // action for elements
-  p.set("action", "calc_thermo_update_istep");
+  p.set<int>("action", THR::calc_thermo_update_istep);
   // go to elements
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);

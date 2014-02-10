@@ -151,6 +151,7 @@ namespace ELEMENTS
         return 0; break;
       default:
         dserror("discretization type not yet implemented");
+        break;
       }
       return 0;
     }
@@ -183,6 +184,7 @@ namespace ELEMENTS
         break;
       default:
         dserror("discretization type not yet implemented");
+        break;
       }
       return 0;
     }
@@ -373,7 +375,7 @@ namespace ELEMENTS
     //! kinematic type
     GenKinematicType kintype_;
 
-    const GenKinematicType KinType() const
+    GenKinematicType KinType() const
     {
       return kintype_;
     }

@@ -21,6 +21,24 @@
 namespace DRT
 {
 
+/// A DofSet that owns auxiliary dofs
+/*!
+
+   We need a DofSet that
+
+  - owns auxiliary dofs that belong to the same nodes as the original dof set, but
+  - are not necessarily build based on element information, but can be chosen arbitrarily
+
+  The Auxiliary DofSet is meant to be used as secondary DofSet in a Discretization
+  if there are two volume coupled Discretizations with non-matching nodes. Think
+  of Structure-Thermo coupling. In this case, the structure discretization gets a
+  auxiliary dof set with one degree of freedom (temperature) per node and the thermo
+  discretization gets an auxiliary dof set with three degrees of freedom (displacement)
+  per node.
+
+  Using the input 'uniqueGIDs' one can decide whether the dofs build by the auxiliary dof set
+  should get unique global IDs.
+ */
 
 class DofSetAuxProxy : public DofSetProxy
 {

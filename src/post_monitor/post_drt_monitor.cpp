@@ -26,6 +26,7 @@ Maintainer: Christiane FÃ¶rster
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../pss_full/pss_cpp.h"
+#include "../drt_thermo/thermo_ele_action.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1709,7 +1710,7 @@ void ThermoMonWriter::WriteThrResult(
   // extrapolate heatfluxes/temperature gradients to nodes
   // and assemble them in two global vectors
   Teuchos::ParameterList p;
-  p.set("action", "postproc_thermo_heatflux");
+  p.set("action", THR::postproc_thermo_heatflux);
   p.set("heatfluxtype", "ndxyz");
   p.set("gpheatfluxmap", data);
   p.set("total time", -1.0);

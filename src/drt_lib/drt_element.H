@@ -704,8 +704,17 @@ public:
   /*!
   \brief Return the material of this element
 
+  Note: The input parameter nummat is not the material number from input file
+        as in SetMaterial(int matnum), but the number of the material within
+        the vector of materials the element holds
+
+  \param nummat (in): number of requested material
   */
-  Teuchos::RCP<MAT::Material> Material() const { return mat_; }
+  Teuchos::RCP<MAT::Material> Material(int nummat=0) const
+  {
+    dsassert(nummat<(int)mat_.size(),"invalid material number");
+    return mat_[nummat];
+  }
 
   /*!
   \brief Query names of element data to be visualized using BINIO
@@ -857,6 +866,27 @@ public:
     \param matnum : material number from input file
    */
   virtual void SetMaterial(int matnum);
+
+  /// Add element material
+  /*!
+    In case of volume coupled problems the element needs information
+    from the material of the other field. Therefore, it is possible to
+    add pointers on other materials from other elements.
+
+    \param mat: material to be added
+    \param nummat (out):  number of materials the element holds
+   */
+  int AddMaterial(Teuchos::RCP<MAT::Material> mat);
+
+  /// Number of materials of the element
+  /*!
+    In case of volume coupled problems the element needs information
+    from the material of the other field. Therefore, it is possible to
+    add pointers on other materials from other elements.
+
+    \param nummat (out):  number of materials the element holds
+   */
+  int NumMaterial() const {return mat_.size();};
 
   //@}
 
@@ -1289,8 +1319,8 @@ private:
   //! \brief Some conditions e.g. BCs
   std::multimap<std::string,Teuchos::RCP<Condition> > condition_;
 
-  //! material object of element
-  Teuchos::RCP<MAT::Material> mat_;
+  //! vector of material objects of element
+  std::vector<Teuchos::RCP<MAT::Material> > mat_;
 
 }; // class Element
 

@@ -18,6 +18,7 @@ Maintainer: Philipp Farah
 #include "volmortar_cell.H"
 
 #include "../drt_lib/drt_discret.H"
+//#include "../drt_lib/drt_dofset_transparent.H"
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
@@ -37,20 +38,27 @@ Maintainer: Philipp Farah
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
-VOLMORTAR::VolMortarCoupl::VolMortarCoupl(const int dim,const Epetra_Comm& comm,
-                                          Teuchos::RCP<const DRT::Discretization> Adis,   // should be structure
-                                          Teuchos::RCP<const DRT::Discretization> Bdis) : // other field...
+VOLMORTAR::VolMortarCoupl::VolMortarCoupl(int dim,
+                                          const Epetra_Comm& comm,
+                                          Teuchos::RCP<DRT::Discretization> Adis,   // should be structure
+                                          Teuchos::RCP<DRT::Discretization> Bdis) : // other field...
 dim_(dim),
 Adiscret_(Adis),
 Bdiscret_(Bdis)
 {
+  if(Adiscret_->Comm().NumProc() != 1)
+     dserror("volume mortar not yet working in parallel!");
+
   //check
   if( not Adiscret_->Filled() or not Bdiscret_->Filled())
     dserror("FillComplete() has to be called on both discretizations before setup of VolMortarCoupl");
+  if( (Adiscret_->NumDofSets()==1) or (Bdiscret_->NumDofSets()==1)  )
+    dserror("Both discretizations need to own at least two dofsets for mortar coupling!");
 
   // not used up to now
   //TODO: communicator from which discretization needed???
-   comm_ = Teuchos::rcp(comm.Clone());
+   commA_ = Teuchos::rcp(Adis->Comm().Clone());
+   commB_ = Teuchos::rcp(Bdis->Comm().Clone());
 
   // init aux normal TODO: no fixed direction!!! ONLY FOR 2D CASE !!!
   auxn_[0]=0.0;
@@ -89,6 +97,11 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
     {
       //get master element
       DRT::Element* mele = Bdiscret_->lColElement(j);
+
+      // exchange material pointers
+      //TODO: make this more general
+      mele->AddMaterial(sele->Material());
+      sele->AddMaterial(mele->Material());
 
       /**************************************************
        *                    2D                          *
@@ -157,44 +170,6 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
          **************************************************/
         else if (integratemele)
         {
-          //find out if we are parallel; needed for TransparentDofSet
-//          bool parallel = false;
-//          if(istructnewdis->Comm().NumProc() != 1)
-//            parallel = true;
-//
-//          //dofs of the original discretizations are used to set same dofs for the new interface discretization
-//          Teuchos::RCP<DRT::DofSet> newdofset1=Teuchos::rcp(new DRT::TransparentDofSet(structdis,parallel));
-//          istructnewdis->ReplaceDofSet(newdofset1);
-//          newdofset1=Teuchos::null;
-
-          // init dis
-          Teuchos::RCP<DRT::Discretization> sauxdis = Teuchos::rcp(new DRT::Discretization((std::string)"slaveauxdis",comm_));
-          Teuchos::RCP<DRT::Discretization> mauxdis = Teuchos::rcp(new DRT::Discretization((std::string)"masterauxdis",comm_));
-
-          std::vector<Teuchos::RCP<DRT::Element> > sele_surfs = sele->Surfaces();
-          for(int q=0; q<(int)sele_surfs.size();++q)
-            sauxdis->AddElement(sele_surfs[q]);
-
-          // add elements
-          mauxdis->AddElement(Teuchos::rcp(mele,false));
-
-          // add nodes to dis
-          for(int node=0;node<sele->NumNode();++node)
-            sauxdis->AddNode(Teuchos::rcp(sele->Nodes()[node]->Clone(),false));
-          for(int node=0;node<mele->NumNode();++node)
-            mauxdis->AddNode(Teuchos::rcp(mele->Nodes()[node]->Clone(),false));
-
-          std::cout << "1 sauxdis= " << *sauxdis << std::endl;
-          std::cout << "1 mauxdis= " << *mauxdis << std::endl;
-          // complete dis
-          sauxdis->FillComplete(true,false,false);
-          mauxdis->FillComplete(true,false,false);
-
-          std::cout << "2 sauxdis= " << *sauxdis << std::endl;
-          std::cout << "2 mauxdis= " << *mauxdis << std::endl;
-
-//          Adiscret_->FillComplete(true,false,false);
-//          Bdiscret_->FillComplete(true,false,false);
           //integrate mele
           Integrate3DMele(*sele, *mele);
         }
@@ -209,21 +184,6 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
           // call cut and create integration cells
           PerformCut(sele, mele,IntCells);
 
-//          std::cout << "1 Adiscret= " << *Adiscret_ << std::endl;
-//          std::cout << "1 Bdiscret= " << *Bdiscret_ << std::endl;
-//          std::cout << "1 A= " << *ADiscret().DofRowMap(1) << std::endl;
-//          std::cout << "1 B= " << *BDiscret().DofRowMap(1) << std::endl;
-
-//          Adiscret_->FillComplete(true,false,false);
-//          Bdiscret_->FillComplete(true,false,false);
-
-//          std::cout << "2 Adiscret= " << *Adiscret_ << std::endl;
-//          std::cout << "2 Bdiscret= " << *Bdiscret_ << std::endl;
-
-//          std::cout << "2 A= " << *ADiscret().DofRowMap(1) << std::endl;
-//          std::cout << "2 B= " << *BDiscret().DofRowMap(1) << std::endl;
-
-          //dserror("HALT STOP");
           //integrate found cells
           Integrate3DCell(*sele, *mele, IntCells);
 
@@ -237,7 +197,6 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
 
     } // end master element loop
   } // end slave element loop
-
 
   /**************************************************
    * complete global matrices                       *
@@ -261,26 +220,39 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
 {
   IntCells.resize(0);
 
-  // init dis
-  Teuchos::RCP<DRT::Discretization> sauxdis = Teuchos::rcp(new DRT::Discretization((std::string)"slaveauxdis",comm_));
-  Teuchos::RCP<DRT::Discretization> mauxdis = Teuchos::rcp(new DRT::Discretization((std::string)"masterauxdis",comm_));
+  // the cut wizard wants discretizations to perform the cut. One is supposed to be the background discretization and the
+  // other the interface discretization.
+  // As we want to cut only two 3D elements, we build two auxiliary discretizations. The first holds only a copy of the master element,
+  // acting as background mesh, and the other one is build of the surface elements of the slave element, being the interface
+  // discretization. We use temporary copies of all elements and nodes, as we only need the geometrie to perform the cut, but 
+  // want to make sure that the gids and dofs of the original elements are kept untouched.
 
+  //TODO: communicator?
+  Teuchos::RCP<DRT::Discretization> sauxdis = Teuchos::rcp(new DRT::Discretization((std::string)"slaveauxdis",commA_));
+  Teuchos::RCP<DRT::Discretization> mauxdis = Teuchos::rcp(new DRT::Discretization((std::string)"masterauxdis",commB_));
+
+  // build surface elements for all surfaces of slave element 
   std::vector<Teuchos::RCP<DRT::Element> > sele_surfs = sele->Surfaces();
-  for(int q=0; q<(int)sele_surfs.size();++q)
-    sauxdis->AddElement(sele_surfs[q]);
+  const int numsurf = sele_surfs.size();
+  for(int isurf=0; isurf<numsurf ;++isurf)
+  {
+    //add all surface elements to auxiliary slave discretization (no need for cloning, as surface elements are
+    // rebuild every time when calling Surfaces(), anyway)
+    sauxdis->AddElement(sele_surfs[isurf]);
+  }
 
-  // add elements
-  mauxdis->AddElement(Teuchos::rcp(mele,false));
+  // add clone of element to auxiliary discretization
+  mauxdis->AddElement(Teuchos::rcp(mele->Clone()));
 
-  // add nodes to dis
+  // add clones of nodes to auxiliary discretizations
   for(int node=0;node<sele->NumNode();++node)
-    sauxdis->AddNode(Teuchos::rcp(sele->Nodes()[node]->Clone(),false));
+    sauxdis->AddNode(Teuchos::rcp(sele->Nodes()[node]->Clone()));
   for(int node=0;node<mele->NumNode();++node)
-    mauxdis->AddNode(Teuchos::rcp(mele->Nodes()[node]->Clone(),false));
+    mauxdis->AddNode(Teuchos::rcp(mele->Nodes()[node]->Clone()));
 
   // complete dis
-  sauxdis->FillComplete();
-  mauxdis->FillComplete();
+  sauxdis->FillComplete(true, false, false);
+  mauxdis->FillComplete(true, false, false);
 
   // create cut wizard
   Teuchos::RCP<XFEM::FluidWizard> wizard = Teuchos::rcp( new XFEM::FluidWizard(*mauxdis, *sauxdis ));
@@ -288,6 +260,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
   //dummy displacement vector --> zero due to coupling in reference configuration
   Teuchos::RCP<Epetra_Vector> idispcol = LINALG::CreateVector(*sauxdis->DofRowMap(0),true);
 
+ //TODO: need to be parallel?
   // do the (parallel!) cut
   wizard->Cut(  true,            // include_inner
                 *idispcol,       // interface displacements
@@ -295,7 +268,9 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
                 "Tessellation",  // how to create boundary cell Gauss points?
                 true,            // parallel cut framework
                 false,           // gmsh output for cut library
-                true             // find point positions
+                true,            // find point positions
+                true,            // create tet cells only
+                false            // suppress screen output
                 );
 
   GEO::CUT::plain_volumecell_set cells_out;
@@ -556,7 +531,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
                                                 DRT::Element& mele,
                                                 std::vector<Teuchos::RCP<Cell> >& cells)
 {
-  std::cout << "START INTEGRATE 3D -- CELLS" << std::endl;
+  //std::cout << "START INTEGRATE 3D -- CELLS" << std::endl;
 
   //--------------------------------------------------------------------
   // loop over cells for A Field
@@ -703,7 +678,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
 void VOLMORTAR::VolMortarCoupl::Integrate3DSele(DRT::Element& sele,
                                                 DRT::Element& mele)
 {
-  std::cout << "START INTEGRATE 3D -- SELE" << std::endl;
+  //std::cout << "START INTEGRATE 3D -- SELE" << std::endl;
 
 
   //--------------------------------------------------------------------
@@ -849,7 +824,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DSele(DRT::Element& sele,
 void VOLMORTAR::VolMortarCoupl::Integrate3DMele(DRT::Element& sele,
                                                DRT::Element& mele)
 {
-  std::cout << "START INTEGRATE 3D -- MELE" << std::endl;
+  //std::cout << "START INTEGRATE 3D -- MELE" << std::endl;
 
   //TODO:: init gp for mele
 
