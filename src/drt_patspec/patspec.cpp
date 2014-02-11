@@ -868,7 +868,9 @@ void PATSPEC::PatspecOutput(Teuchos::RCP<IO::DiscretizationWriter> output_,
     discret_->GetCondition("PatientSpecificData", mypatspeccond);
     IO::DiscretizationWriter::VectorType vt= IO::DiscretizationWriter::elementvector;
 
-    if (mypatspeccond.size())
+    // also check if parameter is initialised. For monte carlo we want to setup patspec only once and do not want output
+    // hence the parameterlist is only initialized in the first run and then kept teuchos:null
+    if (mypatspeccond.size() && params!=Teuchos::null)
     {
 
       RCP<Epetra_Vector> patspecstuff = LINALG::CreateVector(*(discret_->ElementRowMap()),true);

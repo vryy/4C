@@ -363,13 +363,14 @@ STR::TimInt::TimInt
   const Teuchos::ParameterList& patspec  = DRT::Problem::Instance()->PatSpecParams();
   if (DRT::INPUT::IntegralValue<int>(patspec,"PATSPEC"))
   {
-	  pslist_ = Teuchos::rcp(new Teuchos::ParameterList());
     // check if patspeccond are already initialized
     // this is of relevance for Montecarlo Simulation
     std::vector<DRT::Condition*> pscond;
     discret_->GetCondition("PatientSpecificData", pscond);
     if (!pscond.size())
     {
+      std::cout << "do we set up patspec stuff " << std::endl;
+      pslist_ = Teuchos::rcp(new Teuchos::ParameterList());
       //initialize patient specific parameters and conditions
       PATSPEC::PatientSpecificGeometry(discret_, pslist_);
     }
@@ -1423,7 +1424,6 @@ void STR::TimInt::OutputRestart
   {
     // write restart output, please
     output_->WriteMesh(step_, (*time_)[0]);
-
     output_->NewStep(step_, (*time_)[0]);
     output_->WriteVector("displacement", (*dis_)(0));
     if( dism_!=Teuchos::null )
