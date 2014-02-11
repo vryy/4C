@@ -304,11 +304,13 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   }
   case SCATRA::bd_calc_elch_electrode_kinetics:
   {
-    if (mat->MaterialType() == INPAR::MAT::m_elchmat)
-    {
-      Teuchos::ParameterList& diffcondparams_ = params.sublist("DIFFCOND");
-      equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams_,"EQUPOT");
-    }
+//    if (mat->MaterialType() == INPAR::MAT::m_elchmat)
+//    {
+//      Teuchos::ParameterList& diffcondparams_ = params.sublist("DIFFCOND");
+//      equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams_,"EQUPOT");
+//    }
+
+    equpot_ = elchparams_->EquPot();
 
     // the type of elch problem
     const INPAR::ELCH::ElchType elchtype = elchparams_->ElchType();
@@ -1074,8 +1076,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
 
   if (mat->MaterialType() == INPAR::MAT::m_elchmat)
   {
-    Teuchos::ParameterList& diffcondparams_ = params.sublist("DIFFCOND");
-    equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams_,"EQUPOT");
+//    Teuchos::ParameterList& diffcondparams_ = params.sublist("DIFFCOND");
+//    equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams_,"EQUPOT");
+    equpot_ = elchparams_->EquPot();
 
     const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
 
@@ -1245,7 +1248,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   }
 
   // the same procedure is also necessary for the concentrated solution theory based on div i
-  if(equpot_==elchparams_->EquPot())
+  if(equpot_== INPAR::ELCH::equpot_divi)
   {
     for (int k = 0; k < numscal_; k++)
     {

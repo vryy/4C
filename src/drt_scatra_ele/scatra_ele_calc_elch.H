@@ -20,6 +20,9 @@ Maintainer: Andreas Ehrl
 
 #include "../drt_inpar/inpar_elch.H"
 
+// TODO: remove when ScaTraEleInternalVariableManagerElch moved to own file
+#include "scatra_ele_parameter_elch.H"
+
 namespace DRT
 {
 namespace ELEMENTS
@@ -27,6 +30,8 @@ namespace ELEMENTS
   // forward declarations
   class ScaTraEleParameterElch;
   class ScaTraEleDiffManagerElch;
+  template<int NSD, int NEN>
+  class ScaTraEleInternalVariableManagerElch;
 
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcElch : public ScaTraEleCalc<distype>
@@ -81,6 +86,35 @@ private:
     Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
     Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
     Epetra_SerialDenseVector&             subgrdiff  //!< subgrid-diff.-scaling vector
+  );
+
+  void CalMatAndRhsNP(
+    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
+    Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
+    Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
+    const int&                             k
+  );
+
+  void CalMatAndRhsDiffCond(
+    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
+    Epetra_SerialDenseMatrix&               emat,         //!< element matrix to calculate
+    Epetra_SerialDenseVector&               erhs,         //!< element rhs to calculate+
+    const int&                               k,            //!< index of current scalar
+    const double&                            fac,          //!< domain-integration factor
+    const double&                            timefacfac,   //!< domain-integration factor times time-integration factor
+    const double&                            rhsfac,       //!< time-integration factor for rhs times domain-integration factor
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,           //!< diffusion manager
+    const double&                            rhsint        //!< rhs at Gauss point
+  );
+
+  void CalMatAndRhsOutsideScalarLoop(
+    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
+    Epetra_SerialDenseMatrix&               emat,         //!< element matrix to calculate
+    Epetra_SerialDenseVector&               erhs,         //!< element rhs to calculate
+    const double&                            fac,          //!< domain-integration factor
+    const double&                            timefacfac,   //!< domain-integration factor times time-integration factor
+    const double&                            rhsfac,       //!< time-integration factor for rhs times domain-integration factor
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme          //!< diffusion manager
   );
 
   void CorrectionForFluxAccrosDC(
@@ -162,6 +196,242 @@ private:
   //! @name methods for evaluation of individual terms
   /*========================================================================*/
 
+  //! CalcMat: Linearization of diffusion coefficient in diffusion term
+  void CalcMatDiffCoeffLin(
+    Epetra_SerialDenseMatrix&               emat,         //!< element matrix to be filled
+    const int&                               k,            //!< index of current scalar
+    const double&                            timefacfac,   //!< domain-integration factor times time-integration factor
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,          //!< diffusion manager
+    const LINALG::Matrix<my::nsd_,1>&        gradphi       //!< gradient of concentration at GP
+  );
+
+  //! CalcMat: Conduction term with inserted current - ohmic overpotential
+  void CalcMatCondOhm(
+    Epetra_SerialDenseMatrix&               emat,         //!< element matrix to be filled
+    const int&                               k,            //!< index of current scalar
+    const double&                            timefacfac,   //!< domain-integration factor times time-integration factor
+    const double&                            invfval,      //!< 1/(F z_k)
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,          //!< diffusion manager
+    const LINALG::Matrix<my::nsd_,1>&        gradpot       //!< gradient of potenial at GP
+  );
+
+  //! CalcMat: Conduction term with inserted current - conc. overpotential
+  void CalcMatCondConc(
+    Epetra_SerialDenseMatrix&               emat,           //!< element matrix to be filled
+    const int&                               k,              //!< index of current scalar
+    const double&                            timefacfac,     //!< domain-integration factor times time-integration factor
+    const double&                            rtffcval,       //!< RT/F^2/Newman_const_c/z_k
+    const double&                            newman_const_a, //!< Newman constant a
+    const double&                            newman_const_b, //!< Newman constant b
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,            //!< diffusion manager
+    const LINALG::Matrix<my::nsd_,1>&        gradphi,        //!< gradient of concentration at GP
+    const std::vector<double>&               conintinv       //!< inverted concentration at GP
+  );
+
+  //! CalcMat: Conduction term without inserted current
+  void CalcMatCond(
+    Epetra_SerialDenseMatrix&               emat,         //!< element matrix to be filled
+    const int&                               k,            //!< index of current scalar
+    const double&                            timefacfac,   //!< domain-integration factor times time-integration factor
+    const double&                            invfval,      //!< 1/(F z_k)
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,          //!< diffusion manager
+    const LINALG::Matrix<my::nsd_,1>&        curint        //!< current at GP
+  );
+
+  //! CalcMat: Additional diffusion term without inserted current
+  void CalcMatCondDiff(
+    Epetra_SerialDenseMatrix&               emat,         //!< element matrix to be filled
+    const int&                               k,            //!< index of current scalar
+    const double&                            timefacfac,   //!< domain-integration factor times time-integration factor
+    const double&                            invfval,      //!< 1/(F z_k)
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,          //!< diffusion manager
+    const std::vector<LINALG::Matrix<my::nsd_,1> >&  gradphi       //!< gradient of concentration at GP
+  );
+
+  //! CalcMat: Potential equation div i inserted current - ohmic overpotential
+  void CalcMatPotEquDiviOhm(
+    Epetra_SerialDenseMatrix&               emat,         //!< element matrix to be filled
+    const double&                            timefacfac,   //!< domain-integration factor times time-integration factor
+    const double&                            invf,         //!< 1/F
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,          //!< diffusion manager
+    const LINALG::Matrix<my::nsd_,1>&        gradpot       //!< gradient of potenial at GP
+  );
+
+  //! Potential equation div i inserted current - concentration overpotential
+  void CalcMatPotEquDiviConc(
+    Epetra_SerialDenseMatrix&               emat,           //!< element matrix to be filled
+    const int&                               k,              //!< index of current scalar
+    const double&                            timefacfac,     //!< domain-integration factor times time-integration factor
+    const double&                            rtffc,          //!< RT/(F^2 Newman_const_c)
+    const double&                            rtf,            //!< RT/F
+    const double&                            invf,           //!< 1/F
+    const double&                            newman_const_a, //!< Newman constant a
+    const double&                            newman_const_b, //!< Newman constant b
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,            //!< diffusion manager
+    const LINALG::Matrix<my::nsd_,1>&        gradphi,        //!< gradient of concentration at GP
+    const double&                            conintinv       //!< inverted concentration at GP
+  );
+
+  //! Potential equation ENC
+  void CalcMatPotEquENC(
+    Epetra_SerialDenseMatrix&               emat,   //!< element matrix to be filled
+    const int&                               k,      //!< index of current scalar
+    const double&                            fac,    //!< domain-integration factor
+    const double&                            alphaf, //!< time factor for ENC
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme     //!< diffusion manager
+  );
+
+  //! Potential equation div i without inserted current
+  void CalcMatPotEquDivi(
+    Epetra_SerialDenseMatrix&   emat,       //!< element matrix to be filled
+    const double&                timefacfac, //!< domain-integration factor times time-integration factor
+    const double&                invf        //!< 1/F
+  );
+
+  //! CalcMat: Current equation current
+  void CalcMatCurEquCur(
+    Epetra_SerialDenseMatrix&   emat,       //!< element matrix to be filled
+    const double&                timefacfac, //!< domain-integration factor times time-integration factor
+    const double&                invf        //!< 1/F
+  );
+
+  //! CalcMat: Current equation ohmic overpotential
+  void CalcMatCurEquOhm(
+      Epetra_SerialDenseMatrix&               emat,       //!< element matrix to be filled
+      const double&                            timefacfac, //!< domain-integration factor times time-integration factor
+      const double&                            invf,       //!< 1/F
+      Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,        //!< diffusion manager
+      const LINALG::Matrix<my::nsd_,1>&              gradpot     //!< gradient of potenial at GP
+  );
+
+  //! CalcMat: Current equation concentration overpotential
+  void CalcMatCurEquConc(
+    Epetra_SerialDenseMatrix&               emat,             //!< element matrix to be filled
+    const double&                            timefacfac,       //!< domain-integration factor times time-integration factor
+    const double&                            rtf,              //!< RT/F
+    const double&                            rtffc,            //!< RT/(F^2 Newman_const_c)
+    const std::vector <double>&              invfval,          //!< 1/(F z_k)
+    const double&                            newman_const_a,   //!< Newman constant a
+    const double&                            newman_const_b,   //!< Newman constant b
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,              //!< diffusion manager
+    const std::vector< LINALG::Matrix<my::nsd_,1> >& gradphi,  //!< gradient of concentration at GP
+    const std::vector<double>&                     conintinv   //!< inverted concentration at GP
+  );
+
+  //! CalcRhs: Conduction term with inserted current - ohmic overpotential
+  void CalcRhsCondOhm(
+    Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
+    const int&                               k,        //!< index of current scalar
+    const double&                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
+    const double&                            invfval,  //!< 1/(F z_k)
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,      //!< diffusion manager
+    const LINALG::Matrix<my::nsd_,1>&        gradpot   //!< gradient of potenial at GP
+  );
+
+  //! CalcRhs: Conduction term with inserted current - conc. overpotential
+  void CalcRhsCondConc(
+    Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
+    const int&                               k,        //!< index of current scalar
+    const double&                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
+    const double&                            rtffcval, //!< RT/(F^2 Newman_const_c z_k)
+    const double&                            newman_const_a, //!< Newman constant a
+    const double&                            newman_const_b, //!< Newman constant b
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,      //!< diffusion manager
+    const LINALG::Matrix<my::nsd_,1>&        gradphi,  //!< gradient of concentration at GP
+    const std::vector<double>&               conintinv //!< inverted concentration at GP
+  );
+
+  //! CalcRhs: Conduction term without inserted current
+  void CalcRhsCond(
+    Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
+    const int&                               k,        //!< index of current scalar
+    const double&                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
+    const double&                            invfval,      //!< 1/(F z_k)
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,          //!< diffusion manager
+    const LINALG::Matrix<my::nsd_,1>&       curint        //!< current at GP
+  );
+
+  //! CalcRhs: Additional diffusion term without inserted current
+  void CalcRhsCondDiff(
+    Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
+    const int&                               k,        //!< index of current scalar
+    const double&                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,          //!< diffusion manager
+    const std::vector< LINALG::Matrix<my::nsd_,1> >&  gradphi   //!< gradient of concentration at GP
+  );
+
+  //! CalcRhs: Potential equation div i inserted current - ohmic overpotential
+  void CalcRhsPotEquDiviOhm(
+    Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
+    const double&                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
+    const double&                            invf,     //!< 1/F
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,      //!< diffusion manager
+    const LINALG::Matrix<my::nsd_,1>&              gradpot   //!< gradient of potenial at GP
+  );
+
+  //! CalcRhs: Potential equation div i inserted current - conc. overpotential
+  void CalcRhsPotEquDiviConc(
+    Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
+    const int&                               k,        //!< index of current scalar
+    const double&                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
+    const double&                            rtf,      //!< RT/F
+    const std::vector<double>&               invfval,  //!< 1/(F z_k)
+    const double&                            rtffc, //!< RT/(F^2 Newman_const_c)
+    const double&                            newman_const_a, //!< Newman constant a
+    const double&                            newman_const_b, //!< Newman constant b
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,      //!< diffusion manager
+    const LINALG::Matrix<my::nsd_,1>&        gradphi,  //!< gradient of concentration at GP
+    const double&                            conintinv //!< inverted concentration at GP
+  );
+
+  //! CalcRhs: Potential equation ENC
+  void CalcRhsPotEquENC(
+    Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
+    const int&                               k,        //!< index of current scalar
+    const double&                            fac,      //!< domain-integration factor
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,      //!< diffusion manager
+    const double&                            conint    //!< concentration at GP
+  );
+
+  //! CalcRhs: Potential equation divi without inserted current
+  void CalcRhsPotEquDivi(
+    Epetra_SerialDenseVector&   erhs,     //!< element vector to be filled
+    const double&                rhsfac,   //!< time-integration factor for rhs times domain-integration factor
+    const double&                invf,     //!< 1/F
+    const LINALG::Matrix<my::nsd_,1> &  curint    //!< current at GP
+  );
+
+  //! CalcRhs: Current equation - current
+  void CalcRhsCurEquCur(
+    Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
+    const double&                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
+    const double&                            invf,     //!< 1/F
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,      //!< diffusion manager
+    const LINALG::Matrix<my::nsd_,1> &             curint    //!< current at GP
+  );
+
+  //! CalcRhs: Current equation - ohmic overpotential
+  void CalcRhsCurEquOhm(
+    Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
+    const double&                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
+    const double&                            invf,     //!< 1/F
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,      //!< diffusion manager
+    const LINALG::Matrix<my::nsd_,1>&              gradpot   //!< gradient of potenial at GP
+  );
+
+  //! Current equation - concentration overpotential
+  void CalcRhsCurEquConc(
+    Epetra_SerialDenseVector&                 erhs,     //!< element vector to be filled
+    const double&                              rhsfac,   //!< time-integration factor for rhs times domain-integration factor
+    const double&                              rtf,      //!< RT/F
+    const std::vector<double>&                 invfval,  //!< 1/(F z_k)
+    const double&                              rtffc,    //!< RT/(F^2 Newman_const_c)
+    const double&                              newman_const_a, //!< Newman constant a
+    const double&                              newman_const_b, //!< Newman constant b
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&    dme,      //!< diffusion manager
+    const std::vector<LINALG::Matrix<my::nsd_,1> >&  gradphi,  //!< vector of gradient of concentration at GP
+    const std::vector<double>&                       conintinv //!< inverted concentration at GP
+   );
 
   /*========================================================================*/
   //! @name additional service routines
@@ -473,6 +743,227 @@ class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
 
     //! derivative of thermodynamic factor with respect to concentrations
     std::vector<double> derivthermfac_;
+
+};
+
+/// ScaTraEleInternalVariableManagerElch implementation
+/*!
+  This class keeps all internal variables needed for the evaluation of an element.
+*/
+template<int NSD, int NEN>
+class ScaTraEleInternalVariableManagerElch
+{
+  public:
+
+    ScaTraEleInternalVariableManagerElch(int numscal, int nsd,DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
+      numscal_(numscal),
+      nsd_(nsd),
+      // constant internal variables
+      faraday_(INPAR::ELCH::faraday_const),
+      epsilon_(INPAR::ELCH::epsilon),
+      frt_(elchpara->FRT()),
+      // TODO: diffcond variables
+      invf_(1/faraday_),
+      rtf_(1/frt_),
+      rtffc_(rtf_*invf_/elchpara->NewmanConstC()),
+      invval_(numscal_),
+      invfval_(numscal_),
+      rtffcval_(numscal_),
+      //internal variables evaluated at the Gauss point
+      gradphi_(numscal_),
+      conint_(numscal_),
+      conintinv_(numscal_),
+      gradpot_(true),
+      //velint_(true),
+      convelint_(true),
+      conv_(true),
+      convphi_(numscal),
+      sgconv_(true),
+      // TODO: diffcond variables
+      curint_(true),
+      curdiv_(0.0)
+    {return;}
+
+    ~ScaTraEleInternalVariableManagerElch(){};
+
+    void SetInternalVariables(
+      Teuchos::RCP<ScaTraEleDiffManagerElch>  dme,      //!< diffusion manager
+      LINALG::Matrix<NEN,1>                 funct,      //!< array for shape functions
+      LINALG::Matrix<NSD,NEN>               derxy,      //!< global derivatives of shape functions w.r.t x,y,z
+      std::vector<LINALG::Matrix<NEN,1> >   ephinp,     //!< nodal concentration values at time n+1
+      LINALG::Matrix<NEN,1>                 epotnp,     //!< nodal electric potential values at time n+1
+      LINALG::Matrix<NSD,NEN>               ecurnp,     //!< nodal current density values at t_(n+1) or t_(n+alpha_F)
+      LINALG::Matrix<NSD,NEN>               econvelnp   //!< nodal velocity values at t_(n+1) or t_(n+alpha_F)
+    )
+    {
+      // constant material-depending variables
+      for(int k=0; k<numscal_; ++k)
+      {
+        invval_[k]=1.0/dme->GetValence(k);
+        invfval_[k]=invf_/dme->GetValence(k);
+        rtffcval_[k]=rtffc_/dme->GetValence(k);
+      }
+
+      // loop over all transported scalars
+      // get concentration of transported scalar k at integration point
+      // evaluation of all concentrations is necessary at this point since
+      // -> homogeneous reactions of scalar k may depend on all concentrations
+      // -> concentration depending material parameters for the diffusion-confection formulation
+      // -> avoiding of possible errors (concentration was always defined as a vector where only on
+      //    entry was filled)
+      for (int k = 0; k < numscal_;++k)
+      {
+        // calculate concentration at GP
+        conint_[k] = funct.Dot(ephinp[k]);
+        // calculate 1/concentration at GP
+        conintinv_[k] = 1/conint_[k];
+        // calculatd gradient of concentration at GP
+        gradphi_[k].Multiply(derxy,ephinp[k]);
+      }
+      // calculate gradient of electric potential at GP
+      gradpot_.Multiply(derxy,epotnp);
+
+      // calculate velocity at GP
+      //velint_.Multiply(evelnp,funct);
+      // calculate convective velocity at GP
+      convelint_.Multiply(econvelnp,funct);
+      // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+      conv_.MultiplyTN(derxy,convelint_);
+
+      // TODO: Elch variables
+      // convective term using current scalar value
+      for (int k = 0; k < numscal_;++k)
+      {
+        //convphi_[k] = convelint_.Dot(gradphi_[k]);
+        convphi_[k] = conv_.Dot(ephinp[k]);
+      }
+
+      // TODO: diffcond variables
+      curint_.Multiply(ecurnp,funct);
+      // Calculate divergence of current desity
+      // since it is a summation it is important to set curdiv to zero
+      curdiv_=0.0;
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        LINALG::Matrix<NSD,NSD> curderxy(true);
+        curderxy.MultiplyNT(ecurnp,derxy);
+        curdiv_ += curderxy(idim, idim);
+      }
+
+      return;
+    };
+
+  /*========================================================================*/
+  //! @name return constant internal variables
+  /*========================================================================*/
+
+    const double Faraday(){return faraday_;};
+    const double Epsilon(){return epsilon_;};
+    const double FRT(){return frt_;};
+    // TODO: diffcond variables
+    const double InvF(){return invf_;};
+    const double RTF(){return rtf_;};
+    const double RTFFC(){return rtffc_;};
+    const std::vector <double> InvVal(){return invval_;};
+    const double InvFVal(const int k){return invfval_[k];};
+    const std::vector <double> InvFVal(){return invfval_;};
+    const double RTFFCVal(const int k){return rtffcval_[k];};
+    const std::vector <double> RTFFCVal(){return rtffcval_;};
+
+  /*========================================================================*/
+  //! @name return methods for GP values
+  /*========================================================================*/
+    // TODO: general variables
+    //! return gradient of phi for species k at GP
+    const LINALG::Matrix<NSD,1> GradPhi(const int k){return gradphi_[k];};
+    //! return gradient of phi for all species in a vector at GP
+    const std::vector<LINALG::Matrix<NSD,1> > GradPhi(){return gradphi_;};
+    //! return concentration of species k at GP
+    const double ConInt(const int k){return conint_[k];};
+    //! return 1/concentration of species k at GP
+    const double ConIntInv(const int k){return conintinv_[k];};
+    //! return 1/concentration of all species in a vector at GP
+    const std::vector<double> ConIntInv(){return conintinv_;};
+    //! return gradient of electric potential at GP
+    const LINALG::Matrix<NSD,1> GradPot(){return gradpot_;};
+    //! return convective part in convective form
+    const LINALG::Matrix<NEN,1> Conv(){return conv_;};
+    //! return convective contribution
+    const double ConvPhi(const int k ){return convphi_[k];};
+    //! return subgrid velocity
+    const LINALG::Matrix<NEN,1> SGConv(){return sgconv_;};
+
+    // TODO: diffcond variables
+    //! return current density at GP
+    const LINALG::Matrix<NSD,1> CurInt(){return curint_;};
+    //! return divergence of current density
+    const double CurDiv(){return curdiv_;};
+
+  private:
+
+    //! number of scalars
+    int numscal_;
+    //! number of space dimensions
+    int nsd_;
+
+  /*========================================================================*/
+  //! @name constant internal variables
+  /*========================================================================*/
+
+    // TODO: diffcond variables
+    //! Faraday constant
+    double faraday_;
+    //! di
+    double epsilon_;
+    //! pre-calculation of divisions which are regularly used in following
+    //! (a division is much more expensive than a multiplication)
+    //! constant parameter 1/F
+    double frt_;
+    //! constant parameter F/RT
+    double invf_;
+    //! constant parameter RT/F
+    double rtf_;
+    //! constant parameter RT/(F^2*Newman_const_C)
+    //! attention: this is a newman specific parameter
+    double rtffc_;
+    //! constant parameter 1/(z_k)
+    std::vector <double> invval_;
+    //! constant parameter 1/(F z_k)
+    std::vector <double> invfval_;
+    //! constant parameter RT/(F^2*Newman_const_C*z_k)
+    //! attention: this is a newman specific parameter
+    std::vector <double> rtffcval_;
+
+  /*========================================================================*/
+  //! @name internal variables evaluated at the Gauss point
+  /*========================================================================*/
+
+    // TODO: general variables
+    //! gradient of concentration at GP
+    std::vector<LINALG::Matrix<NSD,1> > gradphi_;
+    //! concentration at GP
+    std::vector<double> conint_;
+    //! 1/concentration at GP
+    std::vector<double> conintinv_;
+    //! gradient of electric potential at integration point
+    LINALG::Matrix<NSD,1> gradpot_;
+    //! velocity at GP
+    //LINALG::Matrix<NSD,1> velint_;
+    //! convective velocity at GP
+    LINALG::Matrix<NSD,1> convelint_;
+    //! convective part in convective form: u_x*N,x+ u_y*N,y
+    LINALG::Matrix<NEN,1> conv_;
+    //! convective contribution
+    std::vector<double> convphi_;
+    // subgrind velocity
+    LINALG::Matrix<NEN,1> sgconv_;
+
+
+    // TODO: diffcond variables
+    //! current density at Gauss point
+    LINALG::Matrix<NSD,1> curint_;
+    //! divergence of current density at GP
+    double curdiv_;
 
 };
 

@@ -80,11 +80,11 @@ public:
 
   INPAR::ELCH::EquPot EquPot(){return equpot_;};
 
-  double NewmanConstA(){return newmanconsta_;};
+  const double NewmanConstA(){return newmanconsta_;};
 
-  double NewmanConstB(){return newmanconstb_;};
+  const double NewmanConstB(){return newmanconstb_;};
 
-  double NewmanConstC(){return newmanconstc_;};
+  const double NewmanConstC(){return newmanconstc_;};
 
 protected:
 

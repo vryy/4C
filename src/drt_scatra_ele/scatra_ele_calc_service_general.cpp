@@ -634,9 +634,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
   )
 {
   // dummy matrix + vectors required for Evaluate() call (zero size)
-  Epetra_SerialDenseMatrix  elemat2_epetra;
-  Epetra_SerialDenseVector  elevec2_epetra;
-  Epetra_SerialDenseVector  elevec3_epetra;
+  Epetra_SerialDenseMatrix  elemat2_epetra=Teuchos::null;
+  Epetra_SerialDenseVector  elevec2_epetra=Teuchos::null;
+  Epetra_SerialDenseVector  elevec3_epetra=Teuchos::null;
 
   Evaluate(
       ele,
@@ -757,7 +757,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
       // element matrix: transient term
       //----------------------------------------------------------------
       // transient term
-      CalcMatMass(emat,k,fac,densam,densnp);
+      CalcMatMass(emat,k,fac,densam);
 
       //----------------------------------------------------------------
       // element matrix: stabilization of transient term

@@ -742,7 +742,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     // 1) element matrix: instationary terms
     //----------------------------------------------------------------
 
-    my::CalcMatMass(emat,0,fac,1.0,1.0);
+    my::CalcMatMass(emat,0,fac,1.0);
 
     // subgrid-scale velocity (dummy)
     LINALG::Matrix<my::nen_,1> sgconv(true);

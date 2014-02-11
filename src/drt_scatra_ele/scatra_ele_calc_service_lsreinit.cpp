@@ -218,7 +218,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatCorrection(
     // element matrix
     //------------------------------------------------
 
-    my::CalcMatMass(emat,0,fac,1.0,1.0);
+    my::CalcMatMass(emat,0,fac,1.0);
 
     //------------------------------------------------
     // element rhs
@@ -430,7 +430,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
     // element matrix
     //------------------------------------------------
 
-    my::CalcMatMass(emat,0,fac,1.0,1.0);
+    my::CalcMatMass(emat,0,fac,1.0);
     // TODO: use lumped mass matrix
 
     //------------------------------------------------

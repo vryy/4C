@@ -668,8 +668,7 @@ namespace ELEMENTS
       Epetra_SerialDenseMatrix&     emat,        //!< element matrix to be filled
       const int                     k,           //!< index of current scalar
       const double                  fac,         //!< domain-integration factor
-      const double                  densam,      //!< density at time_(n+am)
-      const double                  densnp       //!< density at time_(n+1)
+      const double                  densam       //!< density at time_(n+am)
     );
 
     //! calculation of stabilization mass element matrix
