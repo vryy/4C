@@ -230,6 +230,7 @@ void MAT::StructPoro::ComputePorosity( const double& refporosity,
   const double c = b * b  + 4.0 * penalty * a;
   double d = sqrt(c);
 
+
   double test = 1 / (2.0 * a) * (-b + d);
   double sign = 1.0;
   if (test >= 1.0 or test < 0.0)
@@ -238,31 +239,35 @@ void MAT::StructPoro::ComputePorosity( const double& refporosity,
     d = sign * d;
   }
 
+  const double a_inv = 1.0/a;
+  const double d_inv = 1.0/d;
+  const double J_inv = 1.0/J;
+
   const double phi = 1 / (2 * a) * (-b + d);
 
   if (phi >= 1.0 or phi < 0.0)
     dserror("invalid porosity: %f", porosity);
 
-  const double d_p = J * (-b+2.0*penalty)/d;
-  const double d_p_p = ( d * J + d_p * (b - 2.0*penalty) ) / (d * d) * J;
-  const double d_J = a/J * ( -b + 2.0*penalty ) / d;
-  const double d_J_p = (d_p / J + ( 1-d_p*d_p/(J*J) ) / d *a);
-  const double d_J_J = ( a*a/(J*J)-d_J*d_J )/ d;
+  const double d_p = J * (-b+2.0*penalty) * d_inv;
+  const double d_p_p = ( d * J + d_p * (b - 2.0*penalty) ) * d_inv * d_inv * J;
+  const double d_J = a * J_inv * ( -b + 2.0*penalty ) * d_inv;
+  const double d_J_p = (d_p * J_inv + ( 1-d_p*d_p*J_inv*J_inv ) *d_inv *a);
+  const double d_J_J = ( a*a*J_inv*J_inv-d_J*d_J )* d_inv;
 
   //d(porosity) / d(p)
-  if(dphi_dp) *dphi_dp = - J * phi/a + (J+d_p)/(2.0*a);
+  if(dphi_dp) *dphi_dp = (- J * phi + 0.5*(J+d_p))*a_inv;
 
   //d(porosity) / d(J)
-  if(dphi_dJ) *dphi_dJ= -phi/J+ 1/(2*J) + d_J / (2.0*a);
+  if(dphi_dJ) *dphi_dJ= (-phi+ 0.5) * J_inv + 0.5*d_J * a_inv;
 
   //d(porosity) / d(J)d(pressure)
-  if(dphi_dJdp) *dphi_dJdp= -1/J* (*dphi_dp)+ d_J_p/(2*a) - d_J*J/(2.0*a*a);
+  if(dphi_dJdp) *dphi_dJdp= -J_inv* (*dphi_dp)+ 0.5 * d_J_p * a_inv - 0.5 * d_J*J* a_inv* a_inv ;
 
   //d^2(porosity) / d(J)^2
-  if(dphi_dJJ) *dphi_dJJ= phi/(J*J) - (*dphi_dJ)/J - 1/(2.0*J*J) - d_J/(2.0*a*J) + d_J_J/(2.0*a);
+  if(dphi_dJJ) *dphi_dJJ= phi*J_inv*J_inv - (*dphi_dJ)*J_inv - 0.5*J_inv*J_inv - 0.5*d_J*J_inv*a_inv + 0.5*d_J_J*a_inv;
 
   //d^2(porosity) / d(pressure)^2
-  if(dphi_dpp) *dphi_dpp= -J/a* (*dphi_dp) + phi*J*J/(a*a) - J/(2.0*a*a)*(J+d_p) + d_p_p/(2.0*a);
+  if(dphi_dpp) *dphi_dpp= -J*a_inv* (*dphi_dp) + phi*J*J*a_inv*a_inv - 0.5*J*a_inv*a_inv*(J+d_p) + 0.5*d_p_p*a_inv;
 
   porosity= phi;
 
@@ -273,10 +278,10 @@ void MAT::StructPoro::ComputePorosity( const double& refporosity,
   if(dphi_dphiref)
   {
     const double dadphiref = J*(bulkmodulus / ((1 - refporosity)*(1 - refporosity)) + penalty / (refporosity*refporosity));
-    const double tmp = 2*dadphiref/a * (-b*(a+b)/a - 2*penalty);
-    const double dddphiref = sign*(dadphiref * sqrt(c)/a + tmp);
+    const double tmp = 2*dadphiref*a_inv * (-b*(a+b)*a_inv - 2*penalty);
+    const double dddphiref = sign*(dadphiref * sqrt(c)*a_inv + tmp);
 
-    *dphi_dphiref = ( a * (dadphiref+dddphiref) - dadphiref * (-b + d) )/(2*a*a);
+    *dphi_dphiref = ( a * (dadphiref+dddphiref) - dadphiref * (-b + d) )*0.5*a_inv*a_inv;
   }
 
   return;

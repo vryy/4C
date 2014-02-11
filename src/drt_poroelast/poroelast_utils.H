@@ -69,11 +69,16 @@ namespace POROELAST
     protected:
 
       /// determine element type string and whether element is copied or not
-      bool DetermineEleType(DRT::Element* actele, const bool ismyele,
+      bool DetermineEleType(
+          DRT::Element*             actele,
+          const bool                ismyele,
           std::vector<std::string>& eletype);
       /// set element-specific data (material etc.)
-      void SetElementData(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele,
-          const int matid, const bool isnurbs);
+      void SetElementData(
+          Teuchos::RCP<DRT::Element> newele,
+          DRT::Element*              oldele,
+          const int                  matid,
+          const bool                 isnurbs);
 
       /// returns conditions names to be copied (source and target name)
       std::map<std::string, std::string> ConditionsToCopy();
@@ -96,9 +101,11 @@ namespace POROELAST
     protected:
 
       /// determine element type string and whether element is copied or not
-      virtual bool DetermineEleType(DRT::Element* actele, const bool ismyele,
+      virtual bool DetermineEleType(
+          DRT::Element* actele,
+          const bool ismyele,
           std::vector<std::string>& eletype);
-    }; // class PoroelastCloneStrategy
+    }; // class PoroScatraCloneStrategy
 
     /// setup poro discretization,i.e. clone the structural discretization
     void SetupPoro();

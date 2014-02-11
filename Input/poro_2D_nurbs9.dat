@@ -8,7 +8,7 @@
 General Data File C_CARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-dRIVEN_cAVITY_iNPUT_tESTING
+Test nurbs 9 with poroelasticity
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        100
 NODES                           144

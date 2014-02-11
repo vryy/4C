@@ -836,6 +836,9 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
       if(actmat->VaryingPermeablity())
         dserror("varying material permeablity not yet supported!");
 
+      const double porosity_inv = 1.0/my::porosity_;
+      const double J_inv = 1.0/my::J_;
+
       my::reatensorlinODvel_.Clear();
       my::reatensorlinODgridvel_.Clear();
       for (int n =0; n<my::nen_; ++n)
@@ -844,10 +847,10 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
           const int gid = my::nsd_ * n +d;
           for (int i=0; i<my::nsd_; ++i)
           {
-            my::reatensorlinODvel_(i, gid)     += dJ_dus(gid)/my::J_ * my::reavel_(i);
-            my::reatensorlinODgridvel_(i, gid) += dJ_dus(gid)/my::J_ * my::reagridvel_(i);
-            my::reatensorlinODvel_(i, gid)     += dphi_dus(gid)/my::porosity_ * my::reavel_(i);
-            my::reatensorlinODgridvel_(i, gid) += dphi_dus(gid)/my::porosity_ * my::reagridvel_(i);
+            my::reatensorlinODvel_(i, gid)     += dJ_dus(gid)*J_inv * my::reavel_(i);
+            my::reatensorlinODgridvel_(i, gid) += dJ_dus(gid)*J_inv * my::reagridvel_(i);
+            my::reatensorlinODvel_(i, gid)     += dphi_dus(gid)*porosity_inv * my::reavel_(i);
+            my::reatensorlinODgridvel_(i, gid) += dphi_dus(gid)*porosity_inv * my::reagridvel_(i);
             for (int j=0; j<my::nsd_; ++j)
             {
               for (int k=0; k<my::nsd_; ++k)
@@ -951,12 +954,13 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
       \                           /     \                           /
      */
     {
+      const double porosity_inv = 1.0/my::porosity_;
       for (int ui=0; ui<my::nen_; ++ui)
       {
         for (int vi=0; vi<my::nen_; ++vi)
         {
           const int fvi = my::nsd_*vi;
-          const double tmp = my::funct_(vi)/my::porosity_;
+          const double tmp = my::funct_(vi)*porosity_inv;
           for (int idim = 0; idim <my::nsd_; ++idim)
           {
             ecouplp1_u(fvi+idim,ui) += timefacfac * tmp * (-my::reagridvel_(idim)) * my::funct_(ui);

@@ -42,6 +42,9 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 
+//periodic boundary conditions
+#include "../drt_fluid/drt_periodicbc.H"
+
 #ifdef HAVE_FFTW
 #include "str_mlmc.H"
 #endif
@@ -114,6 +117,17 @@ void dyn_nlnstructural_drt()
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+
+  // connect degrees of freedom for periodic boundary conditions
+  {
+    PeriodicBoundaryConditions pbc_struct(structdis);
+
+    if (pbc_struct.HasPBC())
+    {
+      pbc_struct.UpdateDofsForPeriodicBoundaryConditions();
+    }
+  }
+
   // create an adapterbase and adapter
   ADAPTER::StructureBaseAlgorithm adapterbase(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
   ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());

@@ -89,51 +89,38 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::Con
 void POROELAST::UTILS::PoroelastCloneStrategy::CheckMaterialType(
     const int matid)
 {
-  //  //// We take the material with the ID specified by the user
-  //  //// Here we check first, whether this material is of admissible type
-  //  INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
-  //  if ((mtype != INPAR::MAT::m_fluidporo))
-  //  dserror("Material with ID %d is not admissible for fluid poroelasticity elements",matid);
+  // We take the material with the ID specified by the user
+  // Here we check first, whether this material is of admissible type
+  INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
+  if ((mtype != INPAR::MAT::m_fluidporo))
+    dserror("Material with ID %d is not admissible for fluid poroelasticity elements",matid);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(Teuchos::RCP<
-    DRT::Element> newele, DRT::Element* oldele, const int matid,
-    const bool isnurbs)
+void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
+    Teuchos::RCP<DRT::Element> newele,
+    DRT::Element*              oldele,
+    const int                  matid,
+    const bool                 isnurbs)
 {
-  // We must not add a new material type here because that might move
-  // the internal material vector. And each element material might
-  // have a pointer to that vector. Too bad.
-  // So we search for a FLuid material and take the first one we find.
-  // => matid from outside remains unused!
-  const int matnr = DRT::Problem::Instance()->Materials()->FirstIdByType(
-      INPAR::MAT::m_fluidporo);
-  if (matnr == -1)
-    dserror("Only fluid-poro material type allowed for deformable porous media. Cannot generate fluid mesh.");
+  // We need to set material and possibly other things to complete element setup.
+  // This is again really ugly as we have to extract the actual
+  // element type in order to access the material property
 
-    // We need to set material and possibly other things to complete element setup.
-    // This is again really ugly as we have to extract the actual
-    // element type in order to access the material property
-
-    //RCP<MAT::Material > mat = oldele->Material();
-    //const int matnr = (mat->Parameter()->Id())+1;
-
-#ifdef D_FLUID3 
-        DRT::ELEMENTS::Fluid* fluid = dynamic_cast<DRT::ELEMENTS::Fluid*>(newele.get());
-        if (fluid!=NULL)
-        {
-          fluid->SetMaterial(matnr);
-          fluid->SetDisType(oldele->Shape()); // set distype as well!
-          fluid->SetIsAle(true);
-        }
-        else
-#endif
-        {
-          dserror("unsupported element type '%s'", typeid(*newele).name());
-        }
-        return;
-      }
+  DRT::ELEMENTS::Fluid* fluid = dynamic_cast<DRT::ELEMENTS::Fluid*>(newele.get());
+  if (fluid!=NULL)
+  {
+    fluid->SetMaterial(matid);
+    fluid->SetDisType(oldele->Shape()); // set distype as well!
+    fluid->SetIsAle(true);
+  }
+  else
+  {
+    dserror("unsupported element type '%s'", typeid(*newele).name());
+  }
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
