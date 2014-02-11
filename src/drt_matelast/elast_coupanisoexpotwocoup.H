@@ -30,7 +30,7 @@ namespace ELASTIC
     /// material parameters for isochoric contribution of a passive cardiac material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_CoupAnisoExpoTwoCoup A4 18472 B4 16.026 A6 2.481 B6 11.120 A8 216 B8 11.436 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
+    /// MAT 1 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436 GAMMA 0.0 INIT 0 ADAPT_ANGLE No
     class CoupAnisoExpoTwoCoup : public MAT::PAR::Parameter
     {
       public:
