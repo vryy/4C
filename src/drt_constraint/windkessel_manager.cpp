@@ -530,12 +530,12 @@ void UTILS::WindkesselManager::Solve
   blockmat->Assign(1,1,View,*windkstiff);
   blockmat->Complete();
 
-  // merge into one, fill merged matrix using Add
-  mergedmatrix -> Add(*stiff,false,1.0,1.0);
-  mergedmatrix -> Add(*coupoffdiag_vol_d,true,1.0,1.0);
-  mergedmatrix -> Add(*coupoffdiag_fext_p,false,1.0,1.0);
-  mergedmatrix -> Add(*windkstiff,false,1.0,1.0);
-  mergedmatrix -> Complete(*mergedmap,*mergedmap);
+  // merge into one, fill merged matrix using Add - do not do anymore since BlockMatrix is used!
+  //mergedmatrix -> Add(*stiff,false,1.0,1.0);
+  //mergedmatrix -> Add(*coupoffdiag_vol_d,true,1.0,1.0);
+  //mergedmatrix -> Add(*coupoffdiag_fext_p,false,1.0,1.0);
+  //mergedmatrix -> Add(*windkstiff,false,1.0,1.0);
+  //mergedmatrix -> Complete(*mergedmap,*mergedmap);
 
   // fill merged vectors using Export
   LINALG::Export(*rhswindk,*mergedrhs);
@@ -554,7 +554,7 @@ void UTILS::WindkesselManager::Solve
 
   // solve with merged matrix
   //solver_->Solve(mergedmatrix->EpetraMatrix(),mergedsol,mergedrhs,true,counter_==0);
-  // solve with Block matrix
+  // solve with BlockMatrix
   solver_->Solve(blockmat,mergedsol,mergedrhs,true,counter_==0);
   solver_->ResetTolerance();
 

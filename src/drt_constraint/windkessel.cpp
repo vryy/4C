@@ -9,7 +9,7 @@ Monolithic coupling of a three-element Windkessel governed by
 either the standard linear version in p
 (1) c dp/dt - c r2 dq/dt + p/r1 - (1 + r2/r1) q(d) = 0
 
-or a special nonlinear heart version to mimic ejec and iso valves
+or a special nonlinear heart version to mimic opened and closed valves
 (2) c(p) dp/dt - c(p) r2(p) dq/dt + p/r1(p) - (1 + r2(p)/r1(p)) q(d) = 0
 
 with
