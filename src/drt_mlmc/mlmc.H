@@ -187,6 +187,8 @@ private:
   // we need to of those because we need to store and keep eleementdata of initial run with constant beta
   Teuchos::RCP<std::vector<char> > cont_elementdata_init_;
   Teuchos::RCP<std::vector<char> > cont_elementdata_ ;
+  Teuchos::RCP<std::vector<char> > cont_nodedata_init_;
+  Teuchos::RCP<std::vector<char> > cont_nodedata_ ;
 
   // #########################################################################
   // ##     variables needed for Multilevel Monte Carlo only                ##
@@ -362,6 +364,9 @@ public:
 
   //! \brief routine to assign material parameters to each element based on random field
   void SetupStochMat(unsigned int random_seed);
+
+  //! \brief routine to assign material parameters to each element based on random field
+  void SetupStochMat2(unsigned int random_seed);
 
   // Setup Material Parameters in each element based on deterministic value
   void SetupStochMatDet(double value);

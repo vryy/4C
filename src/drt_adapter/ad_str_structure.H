@@ -321,7 +321,8 @@ namespace ADAPTER {
       Teuchos::RCP<Epetra_Vector> disn,
       Teuchos::RCP<Epetra_Vector> veln,
       Teuchos::RCP<Epetra_Vector> accn,
-      Teuchos::RCP<std::vector<char> > elementdata
+      Teuchos::RCP<std::vector<char> > elementdata,
+      Teuchos::RCP<std::vector<char> > nodedata
     ) = 0;
 
     /// output results
@@ -350,7 +351,8 @@ namespace ADAPTER {
       Teuchos::RCP<Epetra_Vector> disn,
       Teuchos::RCP<Epetra_Vector> veln,
       Teuchos::RCP<Epetra_Vector> accn,
-      Teuchos::RCP<std::vector<char> > elementdata
+      Teuchos::RCP<std::vector<char> > elementdata,
+      Teuchos::RCP<std::vector<char> > nodedata
     ) = 0;
 
     /// evaluate reference state (for frictional contact)

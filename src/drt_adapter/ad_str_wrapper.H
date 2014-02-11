@@ -280,9 +280,10 @@ namespace ADAPTER
       Teuchos::RCP<Epetra_Vector> disn,
       Teuchos::RCP<Epetra_Vector> veln,
       Teuchos::RCP<Epetra_Vector> accn,
-      Teuchos::RCP<std::vector<char> > elementdata
+      Teuchos::RCP<std::vector<char> > elementdata,
+      Teuchos::RCP<std::vector<char> > nodedata
     )
-    {return structure_->GetRestartData(step,time, disn,veln,accn,elementdata );}
+    {return structure_->GetRestartData(step,time, disn,veln,accn,elementdata,nodedata );}
 
     /// output results
     virtual void Output(bool forced_writerestart = false)
@@ -300,9 +301,10 @@ namespace ADAPTER
       Teuchos::RCP<Epetra_Vector> disn,
       Teuchos::RCP<Epetra_Vector> veln,
       Teuchos::RCP<Epetra_Vector> accn,
-      Teuchos::RCP<std::vector<char> > elementdata
+      Teuchos::RCP<std::vector<char> > elementdata,
+      Teuchos::RCP<std::vector<char> > nodedata
     )
-    {return structure_->SetRestart(step,time,disn,veln,accn,elementdata);}
+    {return structure_->SetRestart(step,time,disn,veln,accn,elementdata,nodedata);}
 
     /// evaluate reference state (for frictional contact)
     virtual void EvaluateReferenceState()

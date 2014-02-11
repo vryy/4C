@@ -23,7 +23,9 @@ Maintainer: Jonas Biehler
 #include "../global_full/global_inp_control.H"
 #include "../drt_io/io_hdf.H"
 #include "../drt_mat/material.H"
+#include "../drt_mat/matpar_parameter.H"
 #include "../drt_mat/aaaneohooke_stopro.H"
+#include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "gen_randomfield.H"
 #include "../drt_io/io.H"
@@ -166,6 +168,8 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
   // we need to of those because we need to store and keep eleementdata of initial run with constant beta
   cont_elementdata_init_ = Teuchos::rcp(new std::vector<char>);
   cont_elementdata_ = Teuchos::rcp(new std::vector<char>);
+  cont_nodedata_init_ = Teuchos::rcp(new std::vector<char>);
+  cont_nodedata_ = Teuchos::rcp(new std::vector<char>);
 
 
   //init stuff that is only needed when we want to prolongate the results to a finer mesh,
@@ -495,12 +499,12 @@ void STR::MLMC::IntegrateNoReset()
         /// Try some nasty stuff
         if (numb_run_-start_run_== 0)
         {
-
+        
           // for first run do normal integration
           SetupStochMatDet(cont_blend_value_);
           structadaptor.Integrate();
           // get all information
-          structadaptor.GetRestartData(cont_step_,cont_time_,cont_disn_init_,cont_veln_,cont_accn_,cont_elementdata_init_);
+          structadaptor.GetRestartData(cont_step_,cont_time_,cont_disn_init_,cont_veln_,cont_accn_,cont_elementdata_init_,cont_nodedata_init_);
           // Get timestep size
           //time_step_size=structadaptor.Dt();
         }
@@ -510,7 +514,7 @@ void STR::MLMC::IntegrateNoReset()
           int error = ParameterContinuation( num_cont_steps, random_seed,false, structadaptor);
           // if not converged
           int num_trials = 1;
-          int max_trials = 4;
+          int max_trials = 16;
           int num_cont_steps_new = num_cont_steps;
           while( error && num_trials < max_trials)
           {
@@ -599,6 +603,7 @@ int STR::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int r
   // init some variables
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   *cont_elementdata_=*cont_elementdata_init_;
+  *cont_nodedata_=*cont_nodedata_init_;
   *cont_disn_=*cont_disn_init_;
 
   // Get timestep size
@@ -645,7 +650,7 @@ int STR::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int r
        // alter timemax to compute only one timestep
        structadaptor.SetTimeEnd(pstime);
        // set restart without displacement (use acc instead which are zero in statics)
-       structadaptor.SetRestart(num_prestress_steps-1,(num_prestress_steps-1)*time_step_size,cont_accn_,cont_veln_,cont_accn_,cont_elementdata_);
+       structadaptor.SetRestart(num_prestress_steps-1,(num_prestress_steps-1)*time_step_size,cont_accn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
        // set new material parameters
        // Setup Material Parameters in each element based on deterministic value
        //measure time only if we really compute the random field (k=0)
@@ -674,9 +679,9 @@ int STR::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int r
        Teuchos::RCP<double> garbage2  = Teuchos::rcp(new double);
        // get the newly computed prestress deformation gradient
        // use acc for disp again which will be overritten by the accc directly after
-       structadaptor.GetRestartData(garbage1,garbage2,cont_accn_,cont_veln_,cont_accn_,cont_elementdata_);
+       structadaptor.GetRestartData(garbage1,garbage2,cont_accn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
        // write new prestress data together with old displament data to discretization
-       structadaptor.SetRestart((*(cont_step_)-1),(*cont_time_)-time_step_size,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_);
+       structadaptor.SetRestart((*(cont_step_)-1),(*cont_time_)-time_step_size,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
        // reset old maxtime
        structadaptor.SetTimeEnd(endtime);
        //BlendStochMat((random_seed+(unsigned int)numb_run_),(bool)(k+1),4.61,gamma);
@@ -684,12 +689,12 @@ int STR::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int r
        error = structadaptor.Integrate();
        if(error)
          return error;
-       structadaptor.GetRestartData(garbage1,garbage2,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_);
+       structadaptor.GetRestartData(garbage1,garbage2,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
      }
      else // no prestress
      {
        // set prestress state and time, disp acc vel are al set to zero
-       structadaptor.SetRestart((*(cont_step_)-1),(*cont_time_)-time_step_size,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_);
+       structadaptor.SetRestart((*(cont_step_)-1),(*cont_time_)-time_step_size,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
        //measure time only if we really compute the random field (k=0)
        if(!k)
          t2_ = Teuchos::Time::wallTime();
@@ -699,7 +704,7 @@ int STR::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int r
        error = structadaptor.Integrate();
        if(error)
          return error;
-       structadaptor.GetRestartData(cont_step_,cont_time_,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_);
+       structadaptor.GetRestartData(cont_step_,cont_time_,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
      }
 
   }// eof parameter continuation scheme
@@ -1341,8 +1346,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
             //IO::cout << "Mat Type   " << actmat->Type() << IO::endl;
             dserror("No stochastic material supplied");
           }
-  // get elements on proc use col map to init ghost elements as well
-  Teuchos::RCP<Epetra_Vector> my_ele = Teuchos::rcp(new Epetra_Vector(*discret_->ElementColMap(),true));
+
   // for doing quick deterministic computations instead of using a field use det_value instead
   // we do this so we can use our custom element output while doing deterministic simulation
 
@@ -1399,6 +1403,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
       random_field_->CreateNewSample(random_seed);
     }
   }
+
   // loop over all elements
   for (int i=0; i< (discret_->NumMyColElements()); i++)
   {
@@ -1437,6 +1442,141 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
   } // EOF loop elements
 
 }
+
+
+// Setup Material Parameters in each element based on Random Field
+void STR::MLMC::SetupStochMat2(unsigned int random_seed)
+{
+  // Variables for Random field
+  //double stoch_mat_par;
+  // element center
+  std::vector<double> ele_c_location;
+
+  // flag have init stochmat??
+  int stochmat_flag=0;
+  // Get parameters from stochastic matlaw
+  const int myrank = discret_->Comm().MyPID();
+
+  // loop all materials in problem
+  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+  if (myrank == 0)
+    IO::cout << "No. material laws considered: " << (int)mats.size() << IO::endl;
+  std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+  for (curr=mats.begin(); curr != mats.end(); curr++)
+  {
+    const RCP<MAT::PAR::Material> actmat = curr->second;
+    switch(actmat->Type())
+    {
+       case INPAR::MAT::m_aaaneohooke_stopro:
+       {
+         stochmat_flag=1;
+         MAT::PAR::AAAneohooke_stopro* params = dynamic_cast<MAT::PAR::AAAneohooke_stopro*>(actmat->Parameter());
+         if (!params) dserror("Cannot cast material parameters");
+       }
+       break;
+      default:
+      {
+       IO::cout << "MAT CURR " << actmat->Type() << "not stochastic" << IO::endl;
+       break;
+      }
+
+    }
+  } // EOF loop over mats
+  if (!stochmat_flag)// ignore unknown materials ?
+          {
+            //IO::cout << "Mat Type   " << actmat->Type() << IO::endl;
+            dserror("No stochastic material supplied");
+          }
+
+  // for doing quick deterministic computations instead of using a field use det_value instead
+  // we do this so we can use our custom element output while doing deterministic simulation
+
+  if (!use_det_value_)
+  {
+    if (numb_run_-start_run_== 0 )
+    {
+      random_field_ = Teuchos::rcp(new GenRandomField(random_seed,discret_));
+    }
+    else
+    {
+      random_field_->CreateNewSample(random_seed);
+    }
+  }
+
+  // get epetra vector in elecol layout
+  Teuchos::RCP<Epetra_Vector> my_param = Teuchos::rcp(new Epetra_Vector(*discret_->ElementColMap(),true));
+   // loop over all elements
+  for (int i=0; i< (discret_->NumMyColElements()); i++)
+  {
+    if(discret_->lColElement(i)->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke)
+    {
+      std::vector<double> ele_center;
+      ele_center = discret_->lColElement(i)->ElementCenterRefeCoords();
+      if(use_det_value_)
+      {
+        (*my_param)[i]=det_value_;
+        IO::cout << "WARNING NOT USING RANDOM FIELD BUT A DET_VALUE OF " << det_value_<<"  INSTEAD" << IO::endl;
+      }
+      else
+      {
+        // get dim of field
+        if(random_field_->Dimension()==2)
+        {
+          //special hack here assuming circular geometry with r=25 mm
+          double phi= acos(ele_center[0]/25);
+          //compute x coord
+          ele_center[0]=phi*25;
+          ele_center[1]=ele_center[2];
+
+          //IO::cout << "No Spherical Field" << IO::endl;
+          //ele_center[1]=ele_center[2];
+        }
+        if (i==0)
+          (*my_param)[i] = random_field_->EvalFieldAtLocation(ele_center,false,true);
+        else
+          (*my_param)[i] = random_field_->EvalFieldAtLocation(ele_center,false,false);
+      }
+        //aaa_stopro->Init(stoch_mat_par,"BETA");
+
+    }
+    else
+    {
+      (*my_param)[i]= 0.0;
+    }
+  } // EOF loop elements
+  // now we have filled the vector and we can set it
+
+  // loop all materials in problem
+    //const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+
+    std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr2;
+    for (curr2=mats.begin(); curr2 != mats.end(); curr2++)
+    {
+      const RCP<MAT::PAR::Material> actmat = curr2->second;
+      switch(actmat->Type())
+      {
+         case INPAR::MAT::m_aaaneohooke:
+         {
+           MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
+           if (!params) dserror("Cannot cast material parameters");
+           params->SetParameter(params->beta ,my_param);
+           //MAT::PAR::AAAneohooke_stopro* params = dynamic_cast<MAT::PAR::AAAneohooke_stopro*>(actmat->Parameter());
+           //if (!params) dserror("Cannot cast material parameters");
+         }
+         break;
+        default:
+        {
+         IO::cout << "MAT CURR " << actmat->Type() << "not stochastic" << IO::endl;
+         break;
+        }
+
+      }
+    } // EOF loop over mats
+
+
+
+}
+
 // Compute Stochmat parameter as linear combination
 // beta= (1-gamma)beta_old+ gamma* beta_new, where beta_old is used for all elements
 void STR::MLMC::BlendStochMat(unsigned int random_seed, bool reuse_rf_values, double beta_old, double gamma)
@@ -2167,20 +2307,16 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp,
     }
     my_output_elements_c_disp->push_back(my_c_disp);
 
-    std::vector<double> mat_params ;
+    std::vector<double> mat_params (2, 0.0);
     // get the mat parameters
     if(actdis_coarse_->gElement(output_elements->at(i))->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
     {
       MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->gElement(output_elements->at(i))->Material().get());
 
-      mat_params.push_back(aaa_stopro->Youngs());
-      mat_params.push_back(aaa_stopro->Beta());
+      mat_params[0]=(aaa_stopro->Youngs());
+      mat_params[1]=(aaa_stopro->Beta());
     }
-    else
-    {
-      mat_params.push_back(0.0);
-      mat_params.push_back(0.0);
-    }
+    // else ,no need initialized
     my_output_elements_mat_params->push_back(mat_params);
   }
   // Now we need to get ele stresses and strains
@@ -2388,7 +2524,7 @@ void STR::MLMC::ExportEleDataAndWriteToFile(Teuchos::RCP<const Epetra_Map> Outpu
     {
       File <<  " " << (*strains)[i];
     }
-    for(int i=0;i<2;i++)
+    for(unsigned int i=0;i<mat_params->size();i++)
     {
        File << " " << (*mat_params)[i];
     }
@@ -2523,6 +2659,7 @@ void STR::MLMC::Evaluate2(
 
   return;
 }
+
 
 #endif // FFTW
 

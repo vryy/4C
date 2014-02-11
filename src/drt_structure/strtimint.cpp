@@ -107,8 +107,8 @@ STR::TimInt::TimInt
   dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
   divcontype_(DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams,"DIVERCONT")),
   output_(output),
-  printlogo_(true),  // DON'T EVEN DARE TO SET THIS TO FALSE
   printscreen_(ioparams.get<int>("STDOUTEVRY")),
+  printlogo_(bool (printscreen_)),  // no std out no logo
   errfile_(xparams.get<FILE*>("err file")),
   printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
   printiter_(true),  // ADD INPUT PARAMETER
@@ -1065,7 +1065,8 @@ void STR::TimInt::SetRestart
   Teuchos::RCP<Epetra_Vector> disn,
   Teuchos::RCP<Epetra_Vector> veln,
   Teuchos::RCP<Epetra_Vector> accn,
-  Teuchos::RCP<std::vector<char> > elementdata
+  Teuchos::RCP<std::vector<char> > elementdata,
+  Teuchos::RCP<std::vector<char> > nodedata
 )
 {
   step_ = step;
@@ -1073,7 +1074,7 @@ void STR::TimInt::SetRestart
   time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, time));
   timen_ = (*time_)[0] + (*dt_)[0];
 
-  SetRestartState(disn,veln,accn,elementdata);
+  SetRestartState(disn,veln,accn,elementdata,nodedata);
 
   // set restart is only for simple structure problems
   // hence we put some security measures in place
@@ -1128,7 +1129,9 @@ void STR::TimInt::SetRestartState
     Teuchos::RCP<Epetra_Vector> disn,
     Teuchos::RCP<Epetra_Vector> veln,
     Teuchos::RCP<Epetra_Vector> accn,
-    Teuchos::RCP<std::vector<char> > elementdata
+    Teuchos::RCP<std::vector<char> > elementdata,
+    Teuchos::RCP<std::vector<char> > nodedata
+
     )
 {
   dis_->UpdateSteps(*disn);
@@ -1141,9 +1144,10 @@ void STR::TimInt::SetRestartState
   Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(*discret_->NodeColMap()));
 
   // unpack nodes and elements
+  // so everything should be OK
+  discret_->UnPackMyNodes(nodedata);
   discret_->UnPackMyElements(elementdata);
-  int err =  discret_->FillComplete(true,true,true);
-  if (err) dserror("FillComplete() returned err=%d",err);
+  discret_->Redistribute(*noderowmap,*nodecolmap);
   return;
 }
 /*----------------------------------------------------------------------*/
@@ -1364,7 +1368,8 @@ void STR::TimInt::GetRestartData
   Teuchos::RCP<Epetra_Vector> disn,
   Teuchos::RCP<Epetra_Vector> veln,
   Teuchos::RCP<Epetra_Vector> accn,
-  Teuchos::RCP<std::vector<char> > elementdata
+  Teuchos::RCP<std::vector<char> > elementdata,
+  Teuchos::RCP<std::vector<char> > nodedata
 )
 {
   // at some point we have to create a copy
@@ -1374,6 +1379,7 @@ void STR::TimInt::GetRestartData
   *veln = *veln_;
   *accn = *accn_;
   *elementdata = *(discret_->PackMyElements());
+  *nodedata = *(discret_->PackMyNodes());
 
   // get restart data is only for simple structure problems
   // hence
@@ -1417,6 +1423,7 @@ void STR::TimInt::OutputRestart
   {
     // write restart output, please
     output_->WriteMesh(step_, (*time_)[0]);
+
     output_->NewStep(step_, (*time_)[0]);
     output_->WriteVector("displacement", (*dis_)(0));
     if( dism_!=Teuchos::null )

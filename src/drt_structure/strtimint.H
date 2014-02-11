@@ -388,7 +388,8 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> disn, //!< new displacement state
       Teuchos::RCP<Epetra_Vector> veln, //!< new velocity state
       Teuchos::RCP<Epetra_Vector> accn, //!< new acceleration state
-      Teuchos::RCP<std::vector<char> > elementdata //!< internal element/history variables e.g. F_prestress
+      Teuchos::RCP<std::vector<char> > elementdata, //!< internal element/history variables e.g. F_prestress
+      Teuchos::RCP<std::vector<char> > nodedata //
     );
 
     //! Output displacements, velocities and accelerations
@@ -634,7 +635,8 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> disn, //!< restart displacements
       Teuchos::RCP<Epetra_Vector> veln, //!< restart velocities
       Teuchos::RCP<Epetra_Vector> accn, //!< restart accelerations
-      Teuchos::RCP<std::vector<char> > elementdata  //!< restart element data
+      Teuchos::RCP<std::vector<char> > elementdata,  //!< restart element data
+      Teuchos::RCP<std::vector<char> > nodedata  //!< restart element data
     );
 
     //! Read and set restart state
@@ -646,7 +648,8 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> disn, //!< restart displacements
       Teuchos::RCP<Epetra_Vector> veln, //!< restart velocities
       Teuchos::RCP<Epetra_Vector> accn, //!< restart accelerations
-      Teuchos::RCP<std::vector<char> > elementdata  //!< restart element data
+      Teuchos::RCP<std::vector<char> > elementdata,  //!< restart element data
+      Teuchos::RCP<std::vector<char> > nodedata  //!< restart element data
     );
 
     //! Read and set restart forces
@@ -1023,8 +1026,8 @@ namespace STR
     //! @name Printing and output
     //@{
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
-    bool printlogo_;  //!< true: enjoy your cuppa
     int printscreen_;  //!< print infos to standard out every n steps
+    bool printlogo_;  //!< true: enjoy your cuppa
     FILE* errfile_;  //!< error file handle
     bool printerrfile_;  //!< print infos to error file #errfile_
     bool printiter_;  //!< print intermediate iterations during solution

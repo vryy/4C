@@ -56,7 +56,7 @@ STR::TimIntStatics::TimIntStatics
   }
 
   // info to user
-  if (myrank_ == 0)
+  if (myrank_ == 0 && bool (printscreen_))
   {
     // check if we are in prestressin mode
     if (pstype == INPAR::STR::prestress_mulf) IO::cout << "with static MULF prestress" << IO::endl;
