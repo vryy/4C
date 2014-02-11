@@ -1069,6 +1069,7 @@ void SysmatNeumannInflow(
   switch(combusttype)
   {
   case INPAR::COMBUST::combusttype_premixedcombustion:
+  case INPAR::COMBUST::combusttype_twophaseflowjump:
   {
     // time integration constant
     const double timefac = COMBUST::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
@@ -1125,7 +1126,6 @@ void SysmatNeumannInflow(
   break;
   case INPAR::COMBUST::combusttype_twophaseflow:
   case INPAR::COMBUST::combusttype_twophaseflow_surf:
-  case INPAR::COMBUST::combusttype_twophaseflowjump:
   {
     dserror("Neumann inflow term only implemented for premixed combustion problems (jump enrichments)");
   }
