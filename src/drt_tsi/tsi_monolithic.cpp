@@ -316,33 +316,106 @@ void TSI::Monolithic::CreateLinearSolver()
 #endif
     break;
   }
+  case INPAR::SOLVER::azprec_MueLuAMG_sym:
+  {
+    // no plausibility checks here
+    // if you forget to declare an xml file you will get an error message anyway
+  }
+  break;
+  default:
+    dserror("Block Gauss-Seidel BGS2x2 preconditioner expected. Alternatively you can define your own AMG block preconditioner (using an xml file). This is experimental.");
+    break;
+  }
+
+
+  // prepare linear solvers and preconditioners
+  switch (azprectype)
+  {
+  case INPAR::SOLVER::azprec_BGS2x2:
+  case INPAR::SOLVER::azprec_BGSnxn:
+  case INPAR::SOLVER::azprec_TekoSIMPLE:
+  {
+    // This should be the default case (well-tested and used)
+    solver_ = Teuchos::rcp(new LINALG::Solver(
+                                 tsisolverparams,
+                                 // ggfs. explizit Comm von STR wie lungscatra
+                                 Comm(),
+                                 DRT::Problem::Instance()->ErrorFile()->Handle()
+                                 )
+                );
+
+    // use solver blocks for structure and temperature (thermal field)
+    const Teuchos::ParameterList& ssolverparams = DRT::Problem::Instance()->SolverParams(slinsolvernumber);
+    const Teuchos::ParameterList& tsolverparams = DRT::Problem::Instance()->SolverParams(tlinsolvernumber);
+
+    solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
+    solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);
+
+    // prescribe rigid body modes
+    StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
+                                          solver_->Params().sublist("Inverse1")
+                                          );
+    ThermoField()->Discretization()->ComputeNullSpaceIfNecessary(
+                                       solver_->Params().sublist("Inverse2")
+                                       );
+    break;
+  }
+  case INPAR::SOLVER::azprec_MueLuAMG_sym:
+  {
+    solver_ = Teuchos::rcp(new LINALG::Solver(
+                                 tsisolverparams,
+                                 // ggfs. explizit Comm von STR wie lungscatra
+                                 Comm(),
+                                 DRT::Problem::Instance()->ErrorFile()->Handle()
+                                 )
+                );
+
+    // use solver blocks for structure and temperature (thermal field)
+    const Teuchos::ParameterList& ssolverparams = DRT::Problem::Instance()->SolverParams(slinsolvernumber);
+    const Teuchos::ParameterList& tsolverparams = DRT::Problem::Instance()->SolverParams(tlinsolvernumber);
+
+    // This is not very elegant:
+    // first read in solver parameters. These have to contain ML parameters such that...
+    solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
+    solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);
+
+    // ... BACI calculates the null space vectors. These are then stored in the sublists
+    //     Inverse1 and Inverse2 from where they...
+    StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
+                                          solver_->Params().sublist("Inverse1")
+                                          );
+    ThermoField()->Discretization()->ComputeNullSpaceIfNecessary(
+                                       solver_->Params().sublist("Inverse2")
+                                       );
+
+    // ... are copied from here to ...
+    const Teuchos::ParameterList& inv1source = solver_->Params().sublist("Inverse1").sublist("ML Parameters");
+    const Teuchos::ParameterList& inv2source = solver_->Params().sublist("Inverse2").sublist("ML Parameters");
+
+    // ... here. The "MueLu Parameters" sublists "Inverse1" and "Inverse2" only contain the basic
+    //     information about the corresponding null space vectors, which are actually copied ...
+    Teuchos::ParameterList& inv1 = solver_->Params().sublist("MueLu Parameters").sublist("Inverse1");
+    Teuchos::ParameterList& inv2 = solver_->Params().sublist("MueLu Parameters").sublist("Inverse2");
+
+    // ... here.
+    inv1.set<int>("PDE equations", inv1source.get<int>("PDE equations"));
+    inv2.set<int>("PDE equations", inv2source.get<int>("PDE equations"));
+    inv1.set<int>("null space: dimension", inv1source.get<int>("null space: dimension"));
+    inv2.set<int>("null space: dimension", inv2source.get<int>("null space: dimension"));
+    inv1.set<double*>("null space: vectors", inv1source.get<double*>("null space: vectors"));
+    inv2.set<double*>("null space: vectors", inv2source.get<double*>("null space: vectors"));
+    inv1.set<Teuchos::RCP<std::vector<double> > >("nullspace", inv1source.get<Teuchos::RCP<std::vector<double> > >("nullspace"));
+    inv2.set<Teuchos::RCP<std::vector<double> > >("nullspace", inv2source.get<Teuchos::RCP<std::vector<double> > >("nullspace"));
+
+    solver_->Params().sublist("MueLu Parameters").set("TSI",true);
+
+  }
+  break;
   default:
     dserror("Block Gauss-Seidel BGS2x2 preconditioner expected");
     break;
   }
 
-  solver_ = Teuchos::rcp(new LINALG::Solver(
-                               tsisolverparams,
-                               // ggfs. explizit Comm von STR wie lungscatra
-                               Comm(),
-                               DRT::Problem::Instance()->ErrorFile()->Handle()
-                               )
-              );
-
-  // use solver blocks for structure and temperature (thermal field)
-  const Teuchos::ParameterList& ssolverparams = DRT::Problem::Instance()->SolverParams(slinsolvernumber);
-  const Teuchos::ParameterList& tsolverparams = DRT::Problem::Instance()->SolverParams(tlinsolvernumber);
-
-  solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
-  solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);
-
-  // prescribe rigid body modes
-  StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
-                                        solver_->Params().sublist("Inverse1")
-                                        );
-  ThermoField()->Discretization()->ComputeNullSpaceIfNecessary(
-                                     solver_->Params().sublist("Inverse2")
-                                     );
 }  // CreateLinearSolver()
 
 
