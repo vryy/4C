@@ -100,6 +100,12 @@ public:
   void StoreElementValues(int step);
 
   /*!
+  \brief Get current velnp for meshtying, since it may have changed
+
+  */
+  void GetCurrentVelnp(Teuchos::RCP<Epetra_Vector>);
+
+  /*!
   \brief Store values computed during the element call
 
   (including subfilter stresses for a scale

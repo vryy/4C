@@ -177,19 +177,13 @@ public:
 
 
   */
-  virtual void SetOldPartOfRighthandside() {dserror("you are in the base class");return;}
-
-  /*!
-  \brief Do some poro-specific stuff in AssembleMatAndRHS
-
-  */
-  virtual void PoroIntUpdate(){dserror("not implemented in the base class");return;}
+  virtual void SetOldPartOfRighthandside()=0;
 
   /*!
   \brief Set gamma to a value
 
   */
-  virtual void SetGamma(Teuchos::ParameterList& eleparams){dserror("you are in the base class");return;}
+  virtual void SetGamma(Teuchos::ParameterList& eleparams)=0;
 
   /*!
   \brief Initialize function which is called after that the constructor of the time integrator has been called
@@ -201,7 +195,7 @@ public:
   \brief Set states in the time integration schemes: differs between GenAlpha and the others
 
   */
-  virtual void   SetStateTimInt() {dserror("you are in the base class"); return;}
+  virtual void   SetStateTimInt()=0;
 
   /*!
   \brief Set time factor in GenAlpha
@@ -213,7 +207,7 @@ public:
   \brief Scale separation
 
   */
-  virtual void Sep_Multiply() {dserror("you are in the base class");return;}
+  virtual void Sep_Multiply()=0;
 
   /*!
   \brief Update velaf_ for GenAlpha
@@ -276,7 +270,7 @@ public:
   \brief Additional function for RedModels in LinearRelaxationSolve
 
   */
-  virtual void RedALinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax){return;}
+  virtual void CustomSolve(Teuchos::RCP<Epetra_Vector> relax){return;}
 
   /*!
   \brief Call statistics manager (special case in TimIntLoma)
@@ -301,7 +295,7 @@ public:
       const Teuchos::RCP<const Epetra_Vector>    velnm,    ///< velocity at     n-1
       const Teuchos::RCP<const Epetra_Vector>    accn ,    ///< acceleration at n-1
       const Teuchos::RCP<Epetra_Vector>          accnp     ///< acceleration at n+1
-  ) {dserror("you are in the base class"); return;}
+  )=0;
 
   //! @name Set general parameter in class f3Parameter
   /*!
@@ -661,16 +655,13 @@ public:
    *  \sa trueresidual_
    *  \sa TrueResidual()
    */
-  virtual double ResidualScaling() const
-  {dserror("not implemented in base class");
-  return 0.0;
-  }
+  virtual double ResidualScaling() const=0;
 
   /*!
   \brief return scheme-specific time integration parameter
 
   */
-  virtual const double TimIntParam() const {dserror("not implemented in base class"); return 0.0;}
+  virtual const double TimIntParam() const=0;
 
   /// update velocity increment after Newton step
   virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel);
@@ -769,11 +760,10 @@ public:
 
   //! @name methods for turbulence models
 
-  virtual void ApplyScaleSeparationForLES() {dserror("you are in the base class");return;}
+  virtual void ApplyScaleSeparationForLES()=0;
 
   virtual void OutputofFilteredVel(Teuchos::RCP<Epetra_Vector> outvec,
-                           Teuchos::RCP<Epetra_Vector> fsoutvec)
-  {dserror("not implemented in base class");}
+                           Teuchos::RCP<Epetra_Vector> fsoutvec)=0;
 
   virtual void PrintTurbulenceModel();
   //@}
@@ -837,7 +827,7 @@ public:
 protected:
 
   // don't want = operator and cctor
-  FluidImplicitTimeInt operator = (const FluidImplicitTimeInt& old);
+  //FluidImplicitTimeInt operator = (const FluidImplicitTimeInt& old);
   FluidImplicitTimeInt (const FluidImplicitTimeInt& old);
 
   /*!
@@ -1193,8 +1183,7 @@ protected:
          and in the fluid boundary element
 
   */
-  virtual void SetElementTimeParameter()
-  {dserror("not implemented in base class");}
+  virtual void SetElementTimeParameter()=0;
 
 private:
 

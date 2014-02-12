@@ -141,9 +141,6 @@ public:
 
 protected:
 
-  /// don't want = operator and cctor
-  TimIntOneStepTheta operator = (const TimIntOneStepTheta& old);
-
   /// copy constructor
   TimIntOneStepTheta (const TimIntOneStepTheta& old);
 

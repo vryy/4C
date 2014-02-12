@@ -127,7 +127,7 @@ public:
   \brief Additional function for RedModels in LinearRelaxationSolve
 
   */
-  void RedALinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
+  void CustomSolve(Teuchos::RCP<Epetra_Vector> relax);
 
   /*!
   \brief Set custom parameters in the respective time integration class (Loma, RedModels...)

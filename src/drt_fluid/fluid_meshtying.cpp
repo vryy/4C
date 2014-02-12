@@ -16,6 +16,7 @@ Maintainer: Andreas Ehrl
 *----------------------------------------------------------------------*/
 
 #define DIRECTMANIPULATION
+#define ZEROSYSMAT
 
 #include "fluid_meshtying.H"
 #include "fluid_utils.H"
@@ -250,13 +251,17 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coupleddof)
 
     if(myrank_==0)
     {
-#ifdef DIRECTMANIPULATION
-      if(myrank_==0)
-        std::cout << "Condensation operation takes place in the original sysmat -> graph is saved" << std::endl << std::endl;
+#ifdef ZEROSYSMAT
+      std::cout << "Condensation operation takes place in the original sysmat -> graph is saved" << std::endl;
+      std::cout << "The sysmat is set to zero and all parts are added -> exact" << std::endl << std::endl;
 #else
 
-      if(myrank_==0)
-        std::cout << "Condensation operation is carried out in a new allocated sparse matrix -> graph is not saved" << std::endl << std::endl;
+#ifdef DIRECTMANIPULATION
+      std::cout << "Condensation operation takes place in the original sysmat -> graph is saved" << std::endl << std::endl;
+#else
+
+      std::cout << "Condensation operation is carried out in a new allocated sparse matrix -> graph is not saved" << std::endl << std::endl;
+#endif
 #endif
     }
 
@@ -491,6 +496,7 @@ void FLD::Meshtying::ApplyPTToResidual(
 /*-------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FLD::Meshtying::AdaptKrylovProjector(Teuchos::RCP<Epetra_Vector> vec)
 {
+
   if(pcoupled_)
   {
     // Remove slave nodes from vec
@@ -867,6 +873,71 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
 
   // the sysmat is manipulated directly with out changing the graph
   // (subtract blocks to get zeros in the slave blocks)
+
+#ifdef ZEROSYSMAT
+  sysmat->UnComplete();
+
+  // Part nn
+  sysmat->Add(*(splitmatrix[0]),false,1.0,0.0);
+
+  // Part nm
+  {
+    // knm: add kns*mbar
+    Teuchos::RCP<LINALG::SparseMatrix> knm_mod = Teuchos::rcp(new LINALG::SparseMatrix(*gndofrowmap_,100));
+    knm_mod->Add(*(splitmatrix[1]),false,1.0,1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> knm_add = MLMultiply(*(splitmatrix[2]),false,*P,false,false,false,true);
+    knm_mod->Add(*knm_add,false,1.0,1.0);
+    knm_mod->Complete((splitmatrix[1])->DomainMap(),(splitmatrix[1])->RowMap());
+
+    sysmat->Add(*knm_mod,false,1.0,1.0);
+  }
+
+  //Part mn
+  {
+    // kmn: add T(mbar)*ksn
+    Teuchos::RCP<LINALG::SparseMatrix> kmn_mod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+    kmn_mod->Add(*(splitmatrix[3]),false,1.0,1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> kmn_add = MLMultiply(*P,true,*(splitmatrix[6]),false,false,false,true);
+    kmn_mod->Add(*kmn_add,false,1.0,1.0);
+    kmn_mod->Complete((splitmatrix[3])->DomainMap(),(splitmatrix[3])->RowMap());
+
+    sysmat->Add(*kmn_mod,false,1.0,1.0);
+  }
+
+  // Part mm
+  {
+    // kms: add T(mbar)*kss
+    Teuchos::RCP<LINALG::SparseMatrix> kms_mod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+    kms_mod->Add(*(splitmatrix[5]),false,1.0,1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> kms_add = MLMultiply(*P,true,*(splitmatrix[8]),false,false,false,true);
+    kms_mod->Add(*kms_add,false,1.0,1.0);
+    kms_mod->Complete((splitmatrix[5])->DomainMap(),(splitmatrix[5])->RowMap());
+
+   // kmm: add T(mbar)*ksm + kmsmod*mbar
+    Teuchos::RCP<LINALG::SparseMatrix> kmm_mod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+    kmm_mod->Add(*(splitmatrix[4]),false,1.0,1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> kmm_add = MLMultiply(*P,true,*(splitmatrix[7]),false,false,false,true);
+    kmm_mod->Add(*kmm_add,false,1.0,1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> kmm_add2 = MLMultiply(*kms_mod,false,*P,false,false,false,true);
+    kmm_mod->Add(*kmm_add2,false,1.0,1.0);
+    kmm_mod->Complete((splitmatrix[4])->DomainMap(),(splitmatrix[4])->RowMap());
+
+    sysmat->Add(*kmm_mod,false,1.0,1.0);
+  }
+
+  {
+   Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+   Teuchos::RCP<LINALG::SparseMatrix> onesdiag;
+   ones->PutScalar(1.0);
+   onesdiag = Teuchos::rcp(new LINALG::SparseMatrix(*ones));
+   onesdiag->Complete();
+
+   sysmat->Add(*onesdiag,false,1.0,1.0);
+  }
+
+  sysmat->Complete();
+
+#else
 #ifdef DIRECTMANIPULATION
   sysmat->UnComplete();
 
@@ -923,6 +994,8 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
 
     sysmat->Add(*onesdiag,false,1.0,1.0);
   }
+
+  // the sysmat is manipulated indirectly via a second sparse matrix
 
   sysmat->Complete();
 
@@ -994,6 +1067,7 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   sysmatnew->Complete();
 
   sysmat = sysmatnew;
+#endif
 #endif
 
   //*************************************************

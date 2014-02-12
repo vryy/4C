@@ -554,7 +554,13 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   return;
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
-
+/*----------------------------------------------------------------------*
+ | Initialize                                                           |
+ |                                                                      |
+ |  o is called at the end of the constructor of the time integrators   |
+ |  o used for init functions that require the time integrators to exist|
+ |                                                              bk 01/14|
+ *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::Initialize()
 {
   // -------------------------------------------------------------------
@@ -2672,6 +2678,9 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
   // -------------------------------------------------------------------
+  if (meshtying_ !=Teuchos::null)
+    statisticsmanager_->GetCurrentVelnp(velnp_);
+
   CallStatisticsManager();
 
   // -------------------------------------------------------------------
@@ -3899,6 +3908,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
 
 /*----------------------------------------------------------------------*
+ | set fields for scatra - fluid coupling, esp.                         |
  | set fields for low-Mach-number flow within iteration loop   vg 09/09 |
  | overloaded in TimIntLoma                                    bk 12/13 |
  *----------------------------------------------------------------------*/
@@ -3988,6 +3998,7 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
 } // FluidImplicitTimeInt::SetIterLomaFields
 
 /*----------------------------------------------------------------------*
+ | set fields for scatra - fluid coupling, esp.                         |
  | set fields for low-Mach-number flow at end of time step     vg 09/09 |
  | overloaded in TimIntLoma                                    bk 12/13 |
  *----------------------------------------------------------------------*/
@@ -4583,7 +4594,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
 
   LINALG::ApplyDirichlettoSystem(incvel_,residual_,relax,*(dbcmaps_->CondMap()));
 
-  RedALinearRelaxationSolve(relax);
+  CustomSolve(relax);
   //-------solve for residual displacements to correct incremental displacements
   solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,not inrelaxation_,not inrelaxation_);
 

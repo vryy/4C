@@ -155,9 +155,6 @@ public:
 
 protected:
 
-  /// don't want = operator and cctor
-  TimIntGenAlpha operator = (const TimIntGenAlpha& old);
-
   /// copy constructor
   TimIntGenAlpha (const TimIntGenAlpha& old);
 

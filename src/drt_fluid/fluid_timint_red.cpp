@@ -600,7 +600,7 @@ void FLD::TimIntRedModels::AVM3Preparation()
 /*----------------------------------------------------------------------*
  | RedModels - specific BC in LinearRelaxationSolve            bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::RedALinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
+void FLD::TimIntRedModels::CustomSolve(Teuchos::RCP<Epetra_Vector> relax)
 {
   // apply Womersley as a Dirichlet BC
   LINALG::ApplyDirichlettoSystem(incvel_,residual_,relax,*(vol_surf_flow_bcmaps_));

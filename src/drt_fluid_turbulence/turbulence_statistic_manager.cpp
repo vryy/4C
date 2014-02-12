@@ -1200,6 +1200,18 @@ namespace FLD
     return;
   }
 
+
+  /*----------------------------------------------------------------------
+
+    get current velnp pointer from fluid
+    necessary for meshtying                                    bk 02/14
+  ----------------------------------------------------------------------*/
+  void TurbulenceStatisticManager::GetCurrentVelnp(Teuchos::RCP<Epetra_Vector> velnp)
+  {
+    myvelnp_=velnp;
+    return ;
+  }
+
   /*----------------------------------------------------------------------
 
     Write (dump) the statistics to a file
@@ -1525,7 +1537,10 @@ namespace FLD
 
     if (discret_->Comm().MyPID()==0 and  turbmodel_ == INPAR::FLUID::dynamic_vreman)
     {
-      const std::string fnamevreman = "Vremanconstant.txt";
+
+      std::string fnamevreman = params_->sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+
+      fnamevreman.append(".vremanconstant");
       double Cv;
       double Cv_theo;
       double Dt=0.0;
