@@ -148,7 +148,8 @@ int DRT::ELEMENTS::Transport::Evaluate(
   {
   case INPAR::SCATRA::scatratype_condif:     impltype = "std";     break;
   case INPAR::SCATRA::scatratype_loma:       impltype = "loma";    break;
-  case INPAR::SCATRA::scatratype_elch:       impltype = "elch";    break;
+  //TODO: ELCH: Wie soll man die beiden unterschiedlichen ELCH anwaehlen?
+  case INPAR::SCATRA::scatratype_elch:       impltype = "elch_diffcond";    break;
   case INPAR::SCATRA::scatratype_levelset:
   {
     if (not params.get<bool>("solve reinit eq",false))

@@ -17,7 +17,8 @@ Maintainer: Andreas Ehrl
 
 #include "scatra_ele_calc_std.H"
 #include "scatra_ele_calc_lsreinit.H"
-#include "scatra_ele_calc_elch.H"
+#include "scatra_ele_calc_elch_NP.H"
+#include "scatra_ele_calc_elch_diffcond.H"
 #include "scatra_ele_calc_loma.H"
 #include "scatra_ele_calc_poro.H"
 #include "scatra_ele_calc_advanced_reaction.H"
@@ -174,8 +175,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     return DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Instance(numdofpernode,numscal);
   else if (problem == "loma")
     return DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(numdofpernode,numscal);
-  else if (problem == "elch")
-    return DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Instance(numdofpernode,numscal);
+  else if (problem == "elch_NP")
+    return DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Instance(numdofpernode,numscal);
+  else if (problem == "elch_diffcond")
+    return DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Instance(numdofpernode,numscal);
   else if (problem == "poro")
     return DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(numdofpernode,numscal);
   else if (problem == "advreac")
