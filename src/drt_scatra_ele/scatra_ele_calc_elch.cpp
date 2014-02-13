@@ -24,9 +24,6 @@ Maintainer: Andreas Ehrl
 
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
-#include "../drt_mat/elchmat.H"
-#include "../drt_mat/newman.H"
-#include "../drt_mat/elchphase.H"
 #include "../drt_inpar/inpar_elch.H"
 
 /*----------------------------------------------------------------------*

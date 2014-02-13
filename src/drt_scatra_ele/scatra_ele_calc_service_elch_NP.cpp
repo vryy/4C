@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_service_elch.cpp
+\file scatra_ele_calc_service_elch_NP.cpp
 
 \brief evaluation of scatra elements for elch
 
@@ -14,29 +14,7 @@ Maintainer: Andreas Ehrl
 /*--------------------------------------------------------------------------*/
 
 #include "scatra_ele_calc_elch_NP.H"
-
-#include "scatra_ele.H"
-#include "scatra_ele_action.H"
 #include "scatra_ele_parameter_elch.H"
-
-#include "../drt_geometry/position_array.H"
-//TODO: SCATRA_ELE_CLEANING: Wie bekommen wir das sonst?
-#include "../drt_lib/drt_discret.H"  // for time curve in body force
-#include "../drt_lib/drt_utils.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
-#include "../drt_lib/drt_globalproblem.H"  // consistency check of formulation and material
-
-#include "../drt_inpar/inpar_elch.H"
-#include "../drt_mat/elchmat.H"
-#include "../drt_mat/newman.H"
-#include "../drt_mat/elchphase.H"
-
-//#include "scatra_ele_parameter_timint.H"
-//
-//#include "../drt_lib/drt_utils.H"
-
-//#include "../drt_lib/drt_discret.H"
 
 
 /*----------------------------------------------------------------------*

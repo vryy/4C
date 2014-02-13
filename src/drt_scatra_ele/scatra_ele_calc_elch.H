@@ -17,11 +17,10 @@ Maintainer: Andreas Ehrl
 #define SCATRA_ELE_CALC_ELCH_H
 
 #include "scatra_ele_calc.H"
+// due to class ScaTraEleInternalVariableManagerElch()
+#include "scatra_ele_parameter_elch.H"
 
 #include "../drt_inpar/inpar_elch.H"
-
-// TODO: remove when ScaTraEleInternalVariableManagerElch moved to own file
-#include "scatra_ele_parameter_elch.H"
 
 namespace DRT
 {
@@ -162,53 +161,59 @@ protected:
     DRT::ELEMENTS::Transport*  ele  //!< the element we are dealing with
     );
 
-
+  //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
   void CalculateFlux(
-    LINALG::Matrix<3,my::nen_>&     flux,
-    const DRT::Element*             ele,
-    INPAR::ELCH::ElchType           elchtype,
-    const INPAR::SCATRA::FluxType   fluxtype,
-    const int                       k
+    LINALG::Matrix<3,my::nen_>&     flux,       //!< flux to be computed
+    const DRT::Element*             ele,        //!< the element we are dealing with
+    INPAR::ELCH::ElchType           elchtype,   //!< type of elch problem
+    const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
+    const int                       k           //!< index of current scalar
     );
 
+  //! calculate error of numerical solution with respect to analytical solution
   void CalErrorComparedToAnalytSolution(
-    const DRT::Element*                   ele,
-    const enum INPAR::ELCH::ElchType      elchtype,
-    Teuchos::ParameterList&               params,
-    Epetra_SerialDenseVector&             errors
+    const DRT::Element*                   ele,        //!< the element we are dealing with
+    const enum INPAR::ELCH::ElchType      elchtype,   //!< type of elch problem
+    Teuchos::ParameterList&               params,     //!< parameter list
+    Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm
   );
 
+  //! calculate conductivity of electrolyte solution
   void CalculateConductivity(
-    const DRT::Element*               ele,
-    const enum INPAR::ELCH::ElchType  elchtype,
-    Epetra_SerialDenseVector&         sigma
+    const DRT::Element*               ele,        //!< the element we are dealing with
+    const enum INPAR::ELCH::ElchType  elchtype,   //!< type of elch problem
+    Epetra_SerialDenseVector&         sigma       //!< conductivity of all single ions + overall electrolyte solution
   );
 
+  //! Solving for electrical potenial field: Evaluate system matrix and rhs
   void CalculateElectricPotentialField(
-    const DRT::Element*               ele,
-    const enum INPAR::ELCH::ElchType  elchtype,
-    Epetra_SerialDenseMatrix&         emat,
-    Epetra_SerialDenseVector&         erhs
+    const DRT::Element*               ele,        //!< the element we are dealing with
+    const enum INPAR::ELCH::ElchType  elchtype,   //!< type of elch problem
+    Epetra_SerialDenseMatrix&         emat,       //!< element matrix
+    Epetra_SerialDenseVector&         erhs        //!< element rhs
   );
 
+  //! Solving for intial time derivative: finish preparation of matrix and rhs
   virtual void PrepMatAndRhsInitialTimeDerivative(
-    Epetra_SerialDenseMatrix&  elemat1_epetra,
-    Epetra_SerialDenseVector&  elevec1_epetra
+    Epetra_SerialDenseMatrix&  elemat1_epetra,  //!< element matrix
+    Epetra_SerialDenseVector&  elevec1_epetra   //!< element rhs
   ){return;};
 
+  // Get conductivity from material
   virtual void GetConductivity(
-    const enum INPAR::ELCH::ElchType  elchtype,
-    double&                           sigma_all,
-    Epetra_SerialDenseVector&         sigma
+    const enum INPAR::ELCH::ElchType  elchtype,   //!< type of elch problem
+    double&                           sigma_all,  //!< conductivity of electrolyte solution
+    Epetra_SerialDenseVector&         sigma       //!< conductivity of all single ions + overall electrolyte solution
   ){return;};
 
+  // Solving for electric potential field : Calculate Matrix and Rhs
   virtual void CalMatAndRhsElectricPotentialField(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
-    const enum INPAR::ELCH::ElchType  elchtype,
-    Epetra_SerialDenseMatrix&         emat,
-    Epetra_SerialDenseVector&         erhs,
-    const double                      fac,
-    Teuchos::RCP<ScaTraEleDiffManagerElch>& dme          //!< diffusion manager
+    const enum INPAR::ELCH::ElchType  elchtype,   //!< type of elch problem
+    Epetra_SerialDenseMatrix&         emat,       //!< element matrix
+    Epetra_SerialDenseVector&         erhs,       //!< element rhs
+    const double                      fac,        //!< integration factor
+    Teuchos::RCP<ScaTraEleDiffManagerElch>& dme   //!< diffusion manager
   ){return;};
 
   /*========================================================================*/
@@ -234,7 +239,6 @@ protected:
 /*!
   This class keeps all elch-specific transport parameter needed for the evaluation of an element. The
   ScaTraEleDiffManagerElch is derived from the standard ScaTraEleDiffManager.
-  for
 */
 class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
 {
@@ -257,6 +261,7 @@ class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
     //! Access routine for valence of the single ionic species
     const double GetValence(const int k){return valence_[k];};
 
+    // TODO: ELCH: Has to be moved to scatra_ele_calc_elch_NP.cpp
     unsigned int LengthVector(){return diff_.size();};
 
     void IncreaseLengthVector(const int k, const int numscal)
@@ -278,7 +283,11 @@ class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
 
 /// ScaTraEleInternalVariableManagerElch implementation
 /*!
-  This class keeps all internal variables needed for the evaluation of an element.
+  This class manages all internal variables needed for the evaluation of an element.
+  The internal variables stored in this class are used by the Nernst-Planck formulation
+  as well as the diffusion-conduction formulation.
+  All formulation-specific internal variables are stored and managed by a class derived from this class
+  (e.g. class ScaTraEleInternalVariableManagerElchDiffCond).
 */
 template<int NSD, int NEN>
 class ScaTraEleInternalVariableManagerElch
@@ -297,17 +306,15 @@ class ScaTraEleInternalVariableManagerElch
       conint_(numscal),
       conintinv_(numscal),
       gradpot_(true),
-      //velint_(true),
       convelint_(true),
       conv_(true),
       convphi_(numscal),
       sgconv_(true)
-//      curint_(true),
-//      curdiv_(0.0)
     {return;}
 
     virtual ~ScaTraEleInternalVariableManagerElch(){};
 
+    // compute and set internal variables used by Nerst-Planck formulation and the Diffusion-Conduction formulation
     void SetInternalVariablesElch(
       LINALG::Matrix<NEN,1>&                   funct,      //!< array for shape functions
       LINALG::Matrix<NSD,NEN>&                 derxy,      //!< global derivatives of shape functions w.r.t x,y,z
@@ -342,7 +349,6 @@ class ScaTraEleInternalVariableManagerElch
       // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
       conv_.MultiplyTN(derxy,convelint_);
 
-      // TODO: Elch variables
       // convective term using current scalar value
       for (int k = 0; k < numscal_;++k)
       {
@@ -386,6 +392,10 @@ class ScaTraEleInternalVariableManagerElch
 
   protected:
 
+  /*========================================================================*/
+  //! @name number of scalars and number of dof's
+  /*========================================================================*/
+
     //! number of scalars
     int numscal_;
     //! number of space dimensions
@@ -395,7 +405,6 @@ class ScaTraEleInternalVariableManagerElch
   //! @name constant internal variables
   /*========================================================================*/
 
-    // TODO: diffcond variables
     //! Faraday constant
     double faraday_;
     //! dielectric constant

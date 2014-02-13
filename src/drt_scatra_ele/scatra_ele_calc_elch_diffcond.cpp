@@ -18,17 +18,12 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_parameter_elch.H"
 
 #include "../drt_geometry/position_array.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 #include "../drt_lib/drt_utils.H"
 
-#include "../drt_mat/ion.H"
-#include "../drt_mat/matlist.H"
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/newman.H"
 #include "../drt_mat/elchphase.H"
-#include "../drt_inpar/inpar_elch.H"
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -143,7 +138,6 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Evaluate(
   for (int ien=0;ien<my::nen_;++ien)
     myelch::epotnp_(ien) = myphinp[ien*my::numdofpernode_+my::numscal_];
 
-  //TODO:SCATRA_ELE_CLEANING: Generalized-alpha time integration scheme: Auswertung von strom richtig?
   if(cursolvar_)
   {
     // get values for current at element nodes
@@ -440,23 +434,36 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhsOutsideScala
   // equation for current is solved independently
   else
   {
+  //-----------------------------------------------------------------------
+  // 5) equation for the current incl. rhs-terms
+  //-----------------------------------------------------------------------
+
+  //   | cur  | ohmic overpot.   |         concentration overpotential           |
+  //          |                  |                                               |
+  //      i = - kappa nabla phi  + RT/F kappa (thermfactor) f(t_k) nabla ln c_k
+
+    // matrix terms
     // (xsi_i,Di)
     CalcMatCurEquCur(emat, timefacfac,vmdc->InvF());
 
-    // (nabla xsi, -D(kappa phi))
+    // (xsi, -D(kappa phi))
     CalcMatCurEquOhm(emat,timefacfac,vmdc->InvF(),dmedc,vmdc->GradPot());
 
-    //
+    // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
     CalcMatCurEquConc(emat,timefacfac,vmdc->RTF(),vmdc->RTFFC(),vmdc->InvFVal(),myelch::elchpara_->NewmanConstA(),myelch::elchpara_->NewmanConstB(),dmedc,vmdc->GradPhi(),vmdc->ConIntInv());
 
-    //
+    // (xsi_i,Di)
     CalcRhsCurEquCur(erhs,rhsfac,vmdc->InvF(),dmedc,vmdc->CurInt());
 
-    //
+    // (xsi, -D(kappa phi))
     CalcRhsCurEquOhm(erhs,rhsfac,vmdc->InvF(),dmedc,vmdc->GradPot());
 
-    //
+    // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
     CalcRhsCurEquConc(erhs,rhsfac,vmdc->RTF(),vmdc->InvFVal(),vmdc->RTFFC(),myelch::elchpara_->NewmanConstA(),myelch::elchpara_->NewmanConstB(),dmedc,vmdc->GradPhi(),vmdc->ConIntInv());
+
+  //------------------------------------------------------------------------------------------
+  // 3)   governing equation for the electric potential field and current (incl. rhs-terms)
+  //------------------------------------------------------------------------------------------
 
     if(equpot_==INPAR::ELCH::equpot_divi)
     {
@@ -583,6 +590,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondConc(
   const std::vector<double>&               conintinv       //!< inverted concentration at GP
 )
 {
+  // additional safety check in the beginning for Newman materials
+  if(k!=0)
+    dserror("Material Newman is only valid for one scalar (binary electrolyte utilizing the ENC)");
+
   for (int vi=0; vi<my::nen_; ++vi)
   {
     for (int ui=0; ui<my::nen_; ++ui)
@@ -590,43 +601,46 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondConc(
       double laplawf(0.0);
       my::GetLaplacianWeakForm(laplawf,ui,vi);
 
-      for(int iscal=0;iscal<my::numscal_;++iscal)
-      {
-        // TODO: check linearization: iscal in machen Linearisierungen kommt mir komisch vor
+      // Material Newman is only valid for binary electrolyte utilizing the ENC:
+      // -> the equations are solved only for one species (k=0)
+      // -> all transport parameter only depend on a single species
+      // -> all derivations of the transport parameters wrt this species
+      //
+      // additional safety check in the beginning of this material: k != 0
+      // original safety check by method CheckElchElementParameter() in scatra_ele_calc_service_elch.cpp
 
-        // linearization of conduction term depending on the concentration
-        //
-        // (grad w, RT/(z_k F^2) kappa thermfac f(t_+) D(grad ln c_k))
-        //
-        emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+iscal)
-          += timefacfac*epstort_[0]*rtffcval*dmedc->GetTransNum(k)*dmedc->GetCond()*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(iscal)))*conintinv[iscal]*laplawf;
+      // linearization of conduction term depending on the concentration
+      //
+      // (grad w, RT/(z_k F^2) kappa thermfac f(t_+) D(grad ln c_k))
+      //
+      emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k)
+        += timefacfac*epstort_[0]*rtffcval*dmedc->GetTransNum(k)*dmedc->GetCond()*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv[k]*laplawf;
 
-        // linearization of conduction term depending on the concentration is implemented
-        // only for one species
-        // otherwise you would need a second loop over the all scalars
-        double laplawfrhs_gradc(0.0);
-        my::GetLaplacianWeakFormRHS(laplawfrhs_gradc,gradphi,vi);
+      // linearization of conduction term depending on the concentration is implemented
+      // only for one species
+      // otherwise you would need a second loop over the all scalars
+      double laplawfrhs_gradc(0.0);
+      my::GetLaplacianWeakFormRHS(laplawfrhs_gradc,gradphi,vi);
 
-        // Linearization wrt ln c
-        emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+iscal)
-          += -timefacfac*epstort_[0]*rtffcval*dmedc->GetTransNum(k)*dmedc->GetCond()*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(iscal)))*conintinv[iscal]*conintinv[iscal]*laplawfrhs_gradc*my::funct_(ui);
+      // Linearization wrt ln c
+      emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k)
+        += -timefacfac*epstort_[0]*rtffcval*dmedc->GetTransNum(k)*dmedc->GetCond()*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv[k]*conintinv[k]*laplawfrhs_gradc*my::funct_(ui);
 
-        // Linearization wrt kappa
-        emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+iscal)
-          += timefacfac*epstort_[0]*rtffcval*dmedc->GetTransNum(k)*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(iscal)))*conintinv[iscal]*laplawfrhs_gradc*dmedc->GetDerivCond(iscal)*my::funct_(ui);
+      // Linearization wrt kappa
+      emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k)
+        += timefacfac*epstort_[0]*rtffcval*dmedc->GetTransNum(k)*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv[k]*laplawfrhs_gradc*dmedc->GetDerivCond(k)*my::funct_(ui);
 
-        // Linearization wrt transference number 1
-        emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+iscal)
-          += timefacfac*epstort_[0]*rtffcval*dmedc->GetCond()*conintinv[iscal]*laplawfrhs_gradc*dmedc->GetThermFac()*(newman_const_a+newman_const_b*dmedc->GetTransNum(iscal))*dmedc->GetDerivTransNum(iscal,iscal)*my::funct_(ui);
+      // Linearization wrt transference number 1
+      emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k)
+        += timefacfac*epstort_[0]*rtffcval*dmedc->GetCond()*conintinv[k]*laplawfrhs_gradc*dmedc->GetThermFac()*(newman_const_a+newman_const_b*dmedc->GetTransNum(k))*dmedc->GetDerivTransNum(k,k)*my::funct_(ui);
 
-        // Linearization wrt transference number 2
-        emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+iscal)
-          += timefacfac*epstort_[0]*rtffcval*dmedc->GetCond()*dmedc->GetThermFac()*conintinv[iscal]*laplawfrhs_gradc*dmedc->GetTransNum(iscal)*newman_const_b*dmedc->GetDerivTransNum(iscal,iscal)*my::funct_(ui);
+      // Linearization wrt transference number 2
+      emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k)
+        += timefacfac*epstort_[0]*rtffcval*dmedc->GetCond()*dmedc->GetThermFac()*conintinv[k]*laplawfrhs_gradc*dmedc->GetTransNum(k)*newman_const_b*dmedc->GetDerivTransNum(k,k)*my::funct_(ui);
 
-        // Linearization wrt thermodynamic factor
-        emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+iscal)
-          += timefacfac*epstort_[0]*rtffcval*dmedc->GetTransNum(k)*dmedc->GetCond()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(iscal)))*conintinv[iscal]*laplawfrhs_gradc*dmedc->GetDerivThermFac(iscal)*my::funct_(ui);
-      }
+      // Linearization wrt thermodynamic factor
+      emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k)
+        += timefacfac*epstort_[0]*rtffcval*dmedc->GetTransNum(k)*dmedc->GetCond()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv[k]*laplawfrhs_gradc*dmedc->GetDerivThermFac(k)*my::funct_(ui);
     } // for ui
   } // for vi
 
@@ -849,7 +863,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDiviConc(
             += timefacfac*epstort_[0]*dmedc->GetValence(k)*dmedc->GetIsotropicDiff(k)*laplawf;
         else
         {
-          // TODO: Linearization of transference number, conductivity, ... is still missing
+          // Attention:
+          // Full linearization of transference number, conductivity, ... is still missing
           emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)
             += timefacfac*epstort_[0]*rtf*invf/dmedc->GetValence(k)*dmedc->GetCond()*dmedc->GetTransNum(k)*conintinv*laplawf;
         }
@@ -1039,7 +1054,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquConc(
             emat(vi*my::numdofpernode_+(my::numscal_+1)+idim,ui*my::numdofpernode_+k)
               += timefacfac*rtffc*epstort_[0]*my::funct_(vi)*dmedc->GetCond()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv[k]*my::derxy_(idim,ui);
 
-            // TODO: Linearization of coupling terms is still missing
+            // Attention: Newman with current as solution variable
+            // full linearization of transference number, conductivity, ... is still missing
 
             //  //linearization of coupling term in the current equation is still missing
             //  emat(vi*numdofpernode_+(numscal_+1)+idim,ui*numdofpernode_+k)
@@ -1564,13 +1580,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(
 
   if (material->MaterialType() == INPAR::MAT::m_elchmat)
   {
-    //TODO: ELCH: dynamic cast ist relative teuer
     const Teuchos::RCP<const MAT::ElchMat>& actmat
           = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(material);
-
-    // TODO: ELCH add to check validy
-    // access mat_elchmat: container material for porous structures in elch
-    //if (actmat->NumPhase() != 1) dserror("In the moment a single phase is only allowed.");
 
     // 1) loop over single phases
     for (int iphase=0; iphase < actmat->NumPhase();++iphase)
@@ -1584,10 +1595,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(
       // dynmic cast: get access to mat_phase
       const Teuchos::RCP<const MAT::ElchPhase>& actphase
          = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(singlephase);
-
-      // TODO: ELCH add to check validy
-      // enough materials defined
-      //if (actphase->NumMat() < my::numscal_) dserror("Not enough materials in MatList.");
 
       // 2) loop over materials of the single phase
       for (int imat=0; imat < actphase->NumMat();++imat)
@@ -1705,12 +1712,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::MatNewman(
 {
   //materialNewman = true;
   const MAT::Newman* actmat = static_cast<const MAT::Newman*>(material.get());
-
-  // TODO: ELCH add to check validy
-  // Material Newman is derived for a binary electrolyte utilizing the ENC to condense the non-reacting species
-  // -> k=0
-  //if(my::numscal_>1)
-  //  dserror("Material Newman is only valid for one scalar (binary electrolyte utilizing the ENC)");
 
   // concentration of species k at the integration point
   const double conint = my::funct_.Dot(my::ephinp_[k]);

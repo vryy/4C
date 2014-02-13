@@ -17,18 +17,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele.H"
 #include "scatra_ele_parameter_elch.H"
 
-#include "../drt_geometry/position_array.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
-#include "../drt_lib/drt_utils.H"
-
-#include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
-#include "../drt_mat/elchmat.H"
-#include "../drt_mat/newman.H"
-#include "../drt_mat/elchphase.H"
-#include "../drt_inpar/inpar_elch.H"
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

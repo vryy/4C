@@ -16,7 +16,6 @@ Maintainer: Andreas Ehrl
 #ifndef SCATRA_ELE_CALC_ELCH_NP_H
 #define SCATRA_ELE_CALC_ELCH_NP_H
 
-//#include "scatra_ele_calc.H"
 #include "scatra_ele_calc_elch.H"
 
 #include "../drt_inpar/inpar_elch.H"
@@ -59,6 +58,7 @@ private:
   //! @name general framework
   /*========================================================================*/
 
+  //! calculate contributions to matrix and rhs (inside of loop over all scalars)
   virtual void CalMatAndRhs(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
     Epetra_SerialDenseMatrix&               emat,         //!< element matrix to calculate
@@ -72,11 +72,12 @@ private:
     const double                            hist          //!< history
   );
 
-  void CorrectionForFluxAccrosDC(
-    DRT::Discretization&        discretization,
-    const std::vector<int>&     lm,
-    Epetra_SerialDenseMatrix&   emat,
-    Epetra_SerialDenseVector&   erhs
+  //! Correction for additional flux terms / currents across Dirichlet boundaries
+  virtual void CorrectionForFluxAccrosDC(
+    DRT::Discretization&        discretization,   //!< discretization
+    const std::vector<int>&     lm,               //!< location vector
+    Epetra_SerialDenseMatrix&   emat,             //!< element matrix to calculate
+    Epetra_SerialDenseVector&   erhs              //!< element rhs to calculate
   );
 
   /*========================================================================*/
@@ -118,24 +119,27 @@ private:
   //! @name additional service routines
   /*========================================================================*/
 
+  //! Solving for intial time derivative: finish preparation of matrix and rhs
   virtual void PrepMatAndRhsInitialTimeDerivative(
-    Epetra_SerialDenseMatrix&  elemat1_epetra,
-    Epetra_SerialDenseVector&  elevec1_epetra
+    Epetra_SerialDenseMatrix&  elemat1_epetra,  //!< element matrix
+    Epetra_SerialDenseVector&  elevec1_epetra   //!< element rhs
   );
 
+  // Get conductivity from material
   virtual void GetConductivity(
-    const enum INPAR::ELCH::ElchType  elchtype,
-    double&                           sigma_all,
-    Epetra_SerialDenseVector&         sigma
+    const enum INPAR::ELCH::ElchType  elchtype,   //!< type of elch problem
+    double&                           sigma_all,  //!< conductivity of electrolyte solution
+    Epetra_SerialDenseVector&         sigma       //!< conductivity or a single ion + overall electrolyte solution
   );
 
+  // Solving for electric potential field : Calculate Matrix and Rhs
   virtual void CalMatAndRhsElectricPotentialField(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
-    const enum INPAR::ELCH::ElchType  elchtype,
-    Epetra_SerialDenseMatrix&         emat,
-    Epetra_SerialDenseVector&         erhs,
-    const double                      fac,
-    Teuchos::RCP<ScaTraEleDiffManagerElch>& dme          //!< diffusion manager
+    const enum INPAR::ELCH::ElchType  elchtype,   //!< type of elch problem
+    Epetra_SerialDenseMatrix&         emat,       //!< element matrix
+    Epetra_SerialDenseVector&         erhs,       //!< element rhs
+    const double                      fac,        //!< integration factor
+    Teuchos::RCP<ScaTraEleDiffManagerElch>& dme   //!< diffusion manager
   );
 
   /*========================================================================*/

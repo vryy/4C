@@ -20,23 +20,15 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_parameter_elch.H"
 
 #include "../drt_geometry/position_array.H"
-//TODO: SCATRA_ELE_CLEANING: Wie bekommen wir das sonst?
 #include "../drt_lib/drt_discret.H"  // for time curve in body force
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
 #include "../drt_lib/drt_globalproblem.H"  // consistency check of formulation and material
 
-#include "../drt_inpar/inpar_elch.H"
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/newman.H"
 #include "../drt_mat/elchphase.H"
-
-//#include "scatra_ele_parameter_timint.H"
-//
-//#include "../drt_lib/drt_utils.H"
-
-//#include "../drt_lib/drt_discret.H"
 
 
 /*----------------------------------------------------------------------*
@@ -161,11 +153,6 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
     // check if length suffices
     if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
 
-    //TODO: SCATRA_ELE_CLEANING: DiffCondParameter zu Parameterliste hinzufügen
-    // set specific parameter used in diffusion conduction formulation
-    // this method need to be located inside ELCH
-    //DiffCondParams(ele, params);
-
     // need current solution
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
@@ -196,11 +183,6 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
   }
   case SCATRA::calc_elch_conductivity:
   {
-    //TODO: SCATRA_ELE_CLEANING: DiffCondParameter zu Parameterliste hinzufügen
-    // set specific parameter used in diffusion conduction formulation
-    // this method need to be located inside ELCH
-    //DiffCondParams(ele, params);
-
     // extract local values from the global vector
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     std::vector<double> myphinp(lm.size());
@@ -225,11 +207,6 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
   }
   case SCATRA::calc_elch_initial_potential:
   {
-    //TODO: SCATRA_ELE_CLEANING: DiffCondParameter zu Parameterliste hinzufügen
-    // set specific parameter used in diffusion conduction formulation
-    // this method need to be located inside ELCH
-    //DiffCondParams(ele, params);
-
     // need initial field -> extract local values from the global vector
     Teuchos::RCP<const Epetra_Vector> phi0 = discretization.GetState("phi0");
     if (phi0==Teuchos::null) dserror("Cannot get state vector 'phi0'");
@@ -326,6 +303,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CheckElchElementParameter(
       if(numdofpernode != my::numdofpernode_)
         dserror("The chosen element formulation (e.g. current as solution variable) "
                 "does not correspond with the number of dof's defined in your material");
+
+      // 2) loop over materials of the single phase
+      for (int imat=0; imat < actphase->NumMat();++imat)
+      {
+        const int matid = actphase->MatID(imat);
+        Teuchos::RCP<const MAT::Material> singlemat = actphase->MatById(matid);
+
+        if(singlemat->MaterialType() == INPAR::MAT::m_newman)
+        {
+          // Material Newman is derived for a binary electrolyte utilizing the ENC to condense the non-reacting species
+          if(my::numscal_>1)
+            dserror("Material Newman is only valid for one scalar (binary electrolyte utilizing the ENC)");
+        }
+      }
     }
   }
 
@@ -499,7 +490,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
   // get material parameter (constants values)
   GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
 
-  //TODO: SCATRA_ELE_CLEANING: DiffCondParameter zu Parameterliste hinzufügen
 //  if(diffcond_==true)
 //  {
 //    dserror("Analytical solution for Kwok and Wu is only valid for dilute electrolyte solutions!!\n"
