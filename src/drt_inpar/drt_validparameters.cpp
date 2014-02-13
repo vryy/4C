@@ -1761,6 +1761,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "tolerance in the LM norm for the newton iteration (saddlepoint formulation only)",
                   &scontact);
 
+  setStringToIntegralParameter<int>("MESH_ADAPTIVE_CN","no",
+                                     "use a scaling of cn with the local mesh size",
+                                     yesnotuple,yesnovalue,&scontact);
+
+  setStringToIntegralParameter<int>("MESH_ADAPTIVE_CT","no",
+                                     "use 2D integration for pseudo 3D",
+                                     yesnotuple,yesnovalue,&scontact);
+
   /*----------------------------------------------------------------------*/
   /* parameters for wear */
   Teuchos::ParameterList& wear = list->sublist("WEAR",false,"");

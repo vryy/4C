@@ -5024,38 +5024,40 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformationHill_nln
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformation_lin()
 {
-  // loop over all Gauss points
-  for (int gp=0; gp<numgpt_; gp++)
-  {
-    if ((*activity_state_)[gp]==true)
-    {
-      LINALG::Matrix<3,3> Dalphak;
-      Dalphak(0,0) = (*DalphaK_last_iter_)[gp](0);
-      Dalphak(1,1) = (*DalphaK_last_iter_)[gp](1);
-      Dalphak(2,2) = -1.0*((*DalphaK_last_iter_)[gp](0)+(*DalphaK_last_iter_)[gp](1));
-      Dalphak(0,1) = (*DalphaK_last_iter_)[gp](2);
-      Dalphak(1,0) = (*DalphaK_last_iter_)[gp](2);
-      Dalphak(1,2) = (*DalphaK_last_iter_)[gp](3);
-      Dalphak(2,1) = (*DalphaK_last_iter_)[gp](3);
-      Dalphak(0,2) = (*DalphaK_last_iter_)[gp](4);
-      Dalphak(2,0) = (*DalphaK_last_iter_)[gp](4);
-
-      double absDalphak=0.;
-      for (int i=0; i<3; i++)
-        for (int j=0; j<3; j++)
-          absDalphak += Dalphak(i,j) * Dalphak(i,j);
-      absDalphak = sqrt(absDalphak);
-
-      // evolution equation for isotropic hardening variable
-      // alpha^i,n+1 = alpha^i,n + || delta alpha^k ||
-      (*last_alpha_isotropic_)[gp](0) = (*last_alpha_isotropic_)[gp](0) + absDalphak;
-
-      // evolution equation for kinematic hardening variable
-      // alpha^k,n+1 = alpha^k,n + delta alpha^k
-      (*last_alpha_kinematic_)[gp].Update(1.,Dalphak,1.);
-    }
-    (*DalphaK_last_iter_)[gp].Clear();
-  }// gauss point loop
+  // small strain plasticity using semi-smooth Newton is no longer supported
+  dserror("linear kinematics for plasticity using semi-smooth Newton is no longer supported");
+//  // loop over all Gauss points
+//  for (int gp=0; gp<numgpt_; gp++)
+//  {
+//    if ((*activity_state_)[gp]==true)
+//    {
+//      LINALG::Matrix<3,3> Dalphak;
+//      Dalphak(0,0) = (*DalphaK_last_iter_)[gp](0);
+//      Dalphak(1,1) = (*DalphaK_last_iter_)[gp](1);
+//      Dalphak(2,2) = -1.0*((*DalphaK_last_iter_)[gp](0)+(*DalphaK_last_iter_)[gp](1));
+//      Dalphak(0,1) = (*DalphaK_last_iter_)[gp](2);
+//      Dalphak(1,0) = (*DalphaK_last_iter_)[gp](2);
+//      Dalphak(1,2) = (*DalphaK_last_iter_)[gp](3);
+//      Dalphak(2,1) = (*DalphaK_last_iter_)[gp](3);
+//      Dalphak(0,2) = (*DalphaK_last_iter_)[gp](4);
+//      Dalphak(2,0) = (*DalphaK_last_iter_)[gp](4);
+//
+//      double absDalphak=0.;
+//      for (int i=0; i<3; i++)
+//        for (int j=0; j<3; j++)
+//          absDalphak += Dalphak(i,j) * Dalphak(i,j);
+//      absDalphak = sqrt(absDalphak);
+//
+//      // evolution equation for isotropic hardening variable
+//      // alpha^i,n+1 = alpha^i,n + || delta alpha^k ||
+//      (*last_alpha_isotropic_)[gp](0) = (*last_alpha_isotropic_)[gp](0) + absDalphak;
+//
+//      // evolution equation for kinematic hardening variable
+//      // alpha^k,n+1 = alpha^k,n + delta alpha^k
+//      (*last_alpha_kinematic_)[gp].Update(1.,Dalphak,1.);
+//    }
+//    (*DalphaK_last_iter_)[gp].Clear();
+//  }// gauss point loop
   return;
 }
 

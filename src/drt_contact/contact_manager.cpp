@@ -623,6 +623,16 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_elements)
    dserror("ERROR: Nodal scaling of Lagrange multipliers not for purely element-based integration.");
 
+  if ((DRT::INPUT::IntegralValue<int>(contact,"MESH_ADAPTIVE_CN")==true
+      || DRT::INPUT::IntegralValue<int>(contact,"MESH_ADAPTIVE_CT")==true )
+    && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
+    dserror("ERROR: Mesh adaptive cn and ct only for LM contact");
+
+  if ((DRT::INPUT::IntegralValue<int>(contact,"MESH_ADAPTIVE_CN")==true
+      || DRT::INPUT::IntegralValue<int>(contact,"MESH_ADAPTIVE_CT")==true )
+    && DRT::INPUT::IntegralValue<int>(contact,"SEMI_SMOOTH_NEWTON") != 1)
+    dserror("ERROR: Mesh adaptive cn and ct only for semi-smooth Newton strategy");
+
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
@@ -673,6 +683,20 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       DRT::INPUT::IntegralValue<int>(contact,"FRLESS_FIRST")==true)
     dserror("Frictionless first contact step with wear not yet implemented");
 
+  if ((DRT::INPUT::IntegralValue<int>(contact,"MESH_ADAPTIVE_CN")==true
+      || DRT::INPUT::IntegralValue<int>(contact,"MESH_ADAPTIVE_CT")==true )
+    && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LAGMULT_QUAD") != INPAR::MORTAR::lagmult_undefined)
+    dserror("ERROR: Mesh adaptive cn and ct only for first order elements");
+
+  if ((DRT::INPUT::IntegralValue<int>(contact,"MESH_ADAPTIVE_CN")==true
+      || DRT::INPUT::IntegralValue<int>(contact,"MESH_ADAPTIVE_CT")==true )
+    && DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_tresca)
+    dserror("ERROR: Mesh adaptive cn and ct only for frictionless contact and Coulomb friction");
+
+  if ((DRT::INPUT::IntegralValue<int>(contact,"MESH_ADAPTIVE_CN")==true
+      || DRT::INPUT::IntegralValue<int>(contact,"MESH_ADAPTIVE_CT")==true )
+    && DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist,"WEARLAW") != INPAR::CONTACT::wear_none)
+    dserror("ERROR: Mesh adaptive cn and ct not yet implemented for wear");
 
   // *********************************************************************
   // thermal-structure-interaction contact

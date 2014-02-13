@@ -626,9 +626,6 @@ protected:
   Teuchos::RCP<Epetra_Map>      nextendedghosting_;
   Teuchos::RCP<Epetra_Map>      eextendedghosting_;
 
-
-  Teuchos::ParameterList        icontact_;       // containing contact input parameters of interface
-
   Teuchos::RCP<SelfBinaryTree>  binarytreeself_; // binary tree for self contact search
 
   int                           smpairs_;        // proc local number of slave/master pairs

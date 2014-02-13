@@ -8058,6 +8058,10 @@ void inline CONTACT::CoIntegrator::GP_3D_Scaling_Lin(
   std::map<int,double>& dscmap = myconode->CoData().GetDerivScale();
 
   double fac = 0.0;
+
+
+
+
   // (1) Lin slave GP coordiantes
   fac = wgt * sderiv(iter,0) * jac / jacsele;
   fac /= sele.Nodes()[iter]->NumElement();

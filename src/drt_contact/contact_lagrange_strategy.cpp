@@ -2788,7 +2788,20 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   // the active / inactive status in advance and we can have a state in
   // which both the condition znormal = 0 and wgap = 0 are violated. Here
   // we have to weigh the two violations via cn!
-  double cn = Params().get<double>("SEMI_SMOOTH_CN");
+  double cn_input = Params().get<double>("SEMI_SMOOTH_CN");
+  double ct_input = Params().get<double>("SEMI_SMOOTH_CT");
+
+  // this is the complementarity parameter we use for the decision.
+  // it might be scaled with a mesh-size dependent factor
+  double cn = 0.;
+  double ct = 0.;
+
+  // do we use a mesh-size scaling for cn and ct?
+  bool adaptive_cn = DRT::INPUT::IntegralValue<int>(Params(),"MESH_ADAPTIVE_CN");
+  bool adaptive_ct = DRT::INPUT::IntegralValue<int>(Params(),"MESH_ADAPTIVE_CT");
+
+  // do we apply a nodal scaling for better matrix condition
+  bool scale = DRT::INPUT::IntegralValue<int>(scontact_,"LM_NODAL_SCALE");
 
   // assume that active set has converged and check for opposite
   activesetconv_=true;
@@ -2809,8 +2822,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
 
       // get scaling factor
       double scalefac=1.;
-      if (DRT::INPUT::IntegralValue<int>(scontact_,"LM_NODAL_SCALE")==true &&
-                cnode->MoData().GetScale() != 0.)
+      if (scale==true && cnode->MoData().GetScale() != 0.)
         scalefac = cnode->MoData().GetScale();
 
       // compute weighted gap
@@ -2825,8 +2837,25 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
         nzold += cnode->MoData().n()[k] * cnode->MoData().lmold()[k];
       }
 
+      // calculate mesh-size scaled version of cn
+      cn = cn_input;
+      ct = ct_input;
+      if (adaptive_cn || adaptive_ct)
+        if (cnode->MoData().GetD().size()!=0) // only do that if there is a D matrix
+        {
+          // row sum of D matrix
+          double sumd = 0.;
+          std::map<int,double>::const_iterator p;
+          for (p=cnode->MoData().GetD()[0].begin(); p!=cnode->MoData().GetD()[0].end(); p++)
+            sumd += p->second;
+          double mesh_h = pow(sumd,1./((double)Dim()-1.));
+          if (adaptive_cn && mesh_h != 0.)
+            cn /= mesh_h;
+          if (adaptive_ct && mesh_h != 0.)
+            ct /= mesh_h;
+        }
+
       // friction
-      double ct = Params().get<double>("SEMI_SMOOTH_CT");
       std::vector<double> tz (Dim()-1,0);
       std::vector<double> tjump (Dim()-1,0);
       double euclidean = 0.0;
