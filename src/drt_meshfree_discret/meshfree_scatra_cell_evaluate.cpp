@@ -95,11 +95,11 @@ int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
   }
 
   // switch between different physical types as used below
-  std::string impltype = "std_meshfree";
+  INPAR::SCATRA::ImplType impltype = INPAR::SCATRA::impltype_std_meshfree;
   switch(scatratype)
   {
   case INPAR::SCATRA::scatratype_condif:
-    impltype = "std_meshfree";
+    impltype = INPAR::SCATRA::impltype_std_meshfree;
     break;
   default:
     dserror("Unknown meshfree scatratype for calc_mat_and_rhs!");
