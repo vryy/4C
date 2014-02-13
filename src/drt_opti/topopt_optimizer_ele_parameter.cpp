@@ -50,6 +50,8 @@ DRT::ELEMENTS::TopOptParam::TopOptParam()
   pressure_drop_fac_(0.0),
   is_stationary_(false),
   timealgo_(INPAR::FLUID::timeint_one_step_theta),
+  supg_(false),
+  pspg_(false),
   whichtau_(INPAR::FLUID::tau_not_defined),
   dt_(-1.0),
   max_timesteps_(-1),
@@ -76,9 +78,9 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
   visc_ = params.get<double>("viscosity");
 
   // optimization material parameter
-  min_poro_ = params.get<double>("min_poro");
-  max_poro_ = params.get<double>("max_poro");
-  smear_fac_ = params.get<double>("smear_fac");
+  min_poro_ = params.get<double>("MIN_PORO");
+  max_poro_ = params.get<double>("MAX_PORO");
+  smear_fac_ = params.get<double>("SMEAR_FAC");
 
   // check whether there is zero or negative (physical) viscosity
   // (expect for permeable fluid)
@@ -93,6 +95,9 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
     is_stationary_ = true;
   else
     is_stationary_ = false;
+
+  supg_ = DRT::INPUT::IntegralValue<int>(params.sublist("RESIDUAL-BASED STABILIZATION"),"SUPG");
+  pspg_ = DRT::INPUT::IntegralValue<int>(params.sublist("RESIDUAL-BASED STABILIZATION"),"PSPG");
 
   //-------------------------------
   // get tau definition

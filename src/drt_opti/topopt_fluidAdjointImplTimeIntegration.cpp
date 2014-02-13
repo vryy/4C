@@ -597,15 +597,6 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
     }
 
-
-
-//    ostd::stringstream filename;
-//    filename << "tests/adjointsysmat_step_" << itnum << ".mtl";
-//    Teuchos::RCP<LINALG::SparseMatrix> A = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-//    LINALG::PrintMatrixInMatlabFormat(filename.str(),*A->EpetraMatrix());
-
-
-
     //-------solve for residual displacements to correct incremental displacements
     {
       // time measurement: solver
@@ -1065,7 +1056,26 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
 
           eleparams.set("MIN_PORO",mat->poro_bd_down_);
           eleparams.set("MAX_PORO",mat->poro_bd_up_);
-          eleparams.set("SMEAR_FAC",mat->smear_fac_);
+
+          const INPAR::TOPOPT::OptiCase testcase = (INPAR::TOPOPT::OptiCase)(params_->get<int>("opti testcase"));
+          switch (testcase)
+          {
+          case INPAR::TOPOPT::optitest_channel:
+          case INPAR::TOPOPT::optitest_channel_with_step:
+          case INPAR::TOPOPT::optitest_lin_poro:
+          case INPAR::TOPOPT::optitest_quad_poro:
+          case INPAR::TOPOPT::optitest_cub_poro:
+          {
+            eleparams.set("SMEAR_FAC",(double)(-(int)testcase));
+            break;
+          }
+          default:
+          {
+            eleparams.set("SMEAR_FAC",mat->smear_fac_);
+            break;
+          }
+          }
+
           break;
         }
         default:

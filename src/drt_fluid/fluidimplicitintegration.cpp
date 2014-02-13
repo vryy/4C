@@ -79,6 +79,10 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include <Teuchos_StrUtils.hpp>
 
 
+#include "../drt_geometry/element_coordtrafo.H"
+#include "../drt_geometry/position_array.H"
+
+
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     gammi 04/07|
  *----------------------------------------------------------------------*/
@@ -4102,6 +4106,7 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
   }
   case INPAR::FLUID::beltrami_flow:
   case INPAR::FLUID::channel2D:
+  case INPAR::FLUID::topoptchannel:
   case INPAR::FLUID::gravitation:
   case INPAR::FLUID::shear_flow:
   case INPAR::FLUID::fsi_fluid_pusher:

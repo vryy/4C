@@ -905,13 +905,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     // get reaction coefficient due to porosity for topology optimization
     // !do this only at gauss point since this is nonlinear!
-    if (fldpara_->ReactionTopopt())
-    {
-      // the eporo actually has density values here
-      double densint = funct_.Dot(eporo);
-      const double* params = fldpara_->TopoptParams();
-      reacoeff_ = params[1] + (params[0]-params[1])*densint*(1+params[2])/(densint+params[2]);
-    }
+    if (fldpara_->ReactionTopopt()) GetPorosityAtGP(eporo);
 
     // calculate stabilization parameter at integration point
     if (fldpara_->TauGp() and fldpara_->StabType()==INPAR::FLUID::stabtype_residualbased)
@@ -4695,27 +4689,27 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
                     \                                /
    */
 
-     LINALG::Matrix<nsd_,1> temp;
+  LINALG::Matrix<nsd_,1> temp;
 
-     double supgfac;
-     if(fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
-       supgfac=densaf_*tau_(0);
-     else
-       supgfac=densaf_*fldparatimint_->AlphaF()*fac3;
+  double supgfac;
+  if(fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
+    supgfac=densaf_*tau_(0);
+  else
+    supgfac=densaf_*fldparatimint_->AlphaF()*fac3;
 
-     LINALG::Matrix<nen_,1> supg_test;
-     for (int vi=0; vi<nen_; ++vi)
-     {
-       supg_test(vi)=supgfac*conv_c_(vi);
-     }
+  LINALG::Matrix<nen_,1> supg_test;
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    supg_test(vi)=supgfac*conv_c_(vi);
+  }
 
-     if(fldpara_->Reynolds() == INPAR::FLUID::reynolds_stress_stab)
-     {
-       for (int vi=0; vi<nen_; ++vi)
-       {
-         supg_test(vi)+=supgfac*sgconv_c_(vi);
-       }
-     }
+  if(fldpara_->Reynolds() == INPAR::FLUID::reynolds_stress_stab)
+  {
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      supg_test(vi)+=supgfac*sgconv_c_(vi);
+    }
+  }
 
      /* supg stabilisation: inertia if not stationary */
      /*

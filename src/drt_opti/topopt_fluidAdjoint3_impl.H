@@ -146,6 +146,10 @@ public:
       const LINALG::Matrix<nen_,1>&                  eprenp,
       const LINALG::Matrix<nsd_,nen_> &              efluidveln,
       const LINALG::Matrix<nsd_,nen_> &              efluidvelnp,
+      const LINALG::Matrix<nen_,1>&                  efluidpren,
+      const LINALG::Matrix<nen_,1>&                  efluidprenp,
+      const LINALG::Matrix<nsd_,nen_>&               efluidbofon,
+      const LINALG::Matrix<nsd_,nen_>&               efluidbofonp,
       LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   estif,
       LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
       const LINALG::Matrix<nen_,1> &                 edens,
@@ -191,6 +195,13 @@ private:
       const LINALG::Matrix<nsd_,nen_>&           efluidvelnp
   );
 
+  /// calculate body force from nodal conditions
+  void FluidBodyForce(
+      DRT::ELEMENTS::Fluid*               ele,
+      LINALG::Matrix<nsd_,nen_>&          efluidbofonp,
+      LINALG::Matrix<nsd_,nen_>&          efluidbofon
+  );
+
   /// compute force term of continuity equation
   void ContForce();
 
@@ -223,9 +234,7 @@ private:
       LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,        ///< block (test-vel x shp-vel)
       LINALG::Matrix<nsd_,nen_> &               velforce,         ///< rhs forces velocity
       const double &                            timefacfacpre,    ///< = timefacpre x fac
-      const double &                            timefacfacrhspre, ///< = timefacrhspre x fac
-      const double &                            press,            ///< pressure at integration point
-      const double &                            press_old         ///< old pressure at integration point
+      const double &                            timefacfacrhspre  ///< = timefacrhspre x fac
   ) const;
 
   //! Compute element matrix entries: continuity terms of the Garlerkin part and rhs
@@ -256,11 +265,7 @@ private:
       const double &                      timefacfac,
       const double &                      timefacfacrhs,
       const double &                      timefacfacpre,
-      const double &                      timefacfacprerhs,
-      const LINALG::Matrix<nsd_,nen_>&    eveln,
-      const LINALG::Matrix<nsd_,nen_>&    evelnp,
-      const LINALG::Matrix<nsd_,nen_>&    efluidveln,
-      const LINALG::Matrix<nsd_,nen_>&    efluidvelnp
+      const double &                      timefacfacprerhs
   ) const;
 
   /// compute momentum residuum
@@ -270,21 +275,16 @@ private:
       const double &                          timefacfac,     ///< = timefac x fac
       const double &                          timefacfacrhs,
       const double &                          timefacfacpre,
-      const double &                          timefacfacprerhs,
-      const LINALG::Matrix<nsd_,nen_>&        eveln,
-      const LINALG::Matrix<nsd_,nen_>&        evelnp,
-      const LINALG::Matrix<nsd_,nen_>&        efluidveln,
-      const LINALG::Matrix<nsd_,nen_>&        efluidvelnp
+      const double &                          timefacfacprerhs
   ) const;
 
   //! Compute element matrix and rhs entries: inertia and reactive terms of the Galerkin part
   void CalcDivEps(
       const LINALG::Matrix<nsd_,nen_>&      eveln,
       const LINALG::Matrix<nsd_,nen_>&      evelnp,
-      LINALG::Matrix<nsd_,1>&               viscs,
-      LINALG::Matrix<nsd_,1>&               viscs_old,
-      LINALG::Matrix<nsd_*nsd_,nen_>&       visc_shp
-  ) const;
+      const LINALG::Matrix<nsd_,nen_>&      efluidveln,
+      const LINALG::Matrix<nsd_,nen_>&      efluidvelnp
+  );
 
   //! Compute element matrix entries: PSPG
   void DiscretePSPG(
@@ -302,7 +302,7 @@ private:
   //! Compute element matrix entries: SUPG
   void DiscreteSUPG(
       LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_w_v,      ///< block (weighting function v x u)
-      LINALG::Matrix<nen_*nsd_,nen_> &          estif_r_v,      ///< block (weighting function v x p)
+      LINALG::Matrix<nen_,nen_*nsd_> &          estif_r_v,      ///< block (weighting function v x p)
       LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
       LINALG::Matrix<nen_,1> &                  preforce,
       const LINALG::Matrix<nsd_*nsd_,nen_> &    GalMomTestStat,    ///< linearisation of the stabilization residual
@@ -310,6 +310,13 @@ private:
       const double &                            timefacfacrhs,  ///< = timefacrhs x fac
       const double &                            timefacfacpre,  ///< = timefacpre x fac
       const double &                            timefacfacprerhs///< = timefacprerhs x fac
+  ) const;
+
+  void DiscreteContStab(
+      LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_w_v,
+      LINALG::Matrix<nsd_,nen_> &               velforce,
+      const double &                            timefacfacdiv,
+      const double &                            timefacfacdivrhs
   ) const;
 
   //! Compute element matrix entries: PSPG
@@ -388,6 +395,8 @@ private:
   LINALG::Matrix<nsd_,nen_> derxy_;
   //! global second derivatives of shape functions w.r.t x,y,z
   LINALG::Matrix<numderiv2_,nen_> derxy2_;
+  //! shape function for viscous term
+  LINALG::Matrix<nsd_*nsd_,nen_> visc_shp_;
   //@}
 
 
@@ -397,12 +406,24 @@ private:
   LINALG::Matrix<nsd_,1> velint_;
   //! global velocity derivatives in gausspoint w.r.t x,y,z
   LINALG::Matrix<nsd_,nsd_> vderxy_;
+  //! pressure in gausspoint
+  double pres_;
   //! pressure gradient in gausspoint
   LINALG::Matrix<nsd_,1> gradp_;
+  //! viscous velocity in gausspoint
+  LINALG::Matrix<nsd_,1> visc_;
   //! fluid velocity vector in gausspoint
   LINALG::Matrix<nsd_,1> fluidvelint_;
   //! global fluid derivative of velocity w.r.t x,y,z
   LINALG::Matrix<nsd_,nsd_> fluidvelxy_;
+  //! fluid pressure in gausspoint
+  double fluidpres_;
+  //! fluid pressure gradient in gausspoint
+  LINALG::Matrix<nsd_,1> fluidgradp_;
+  //! viscous fluid velocity in gausspoint
+  LINALG::Matrix<nsd_,1> fluidvisc_;
+  //! body force of momentum equation
+  LINALG::Matrix<nsd_,1> fluidbodyforce_;
   //! body force of adjoint momentum equation
   LINALG::Matrix<nsd_,1> bodyforce_;
   //! body force of adjoint continuity equation
@@ -413,6 +434,7 @@ private:
   LINALG::Matrix<nsd_,1> conv1_;
   //! u_j,i * v_j
   LINALG::Matrix<nsd_,1> conv2_;
+
   //@}
 
   //! @name variable values at last time step (= t^n+1)
@@ -421,12 +443,24 @@ private:
   LINALG::Matrix<nsd_,1> velint_old_;
   //! global velocity derivatives in gausspoint w.r.t x,y,z
   LINALG::Matrix<nsd_,nsd_> vderxy_old_;
+  //! pressure in gausspoint
+  double pres_old_;
   //! pressure gradient in gausspoint
   LINALG::Matrix<nsd_,1> gradp_old_;
+  //! viscous velocity in gausspoint
+  LINALG::Matrix<nsd_,1> visc_old_;
   //! fluid velocity vector in gausspoint
   LINALG::Matrix<nsd_,1> fluidvelint_old_;
   //! global fluid derivative of velocity w.r.t x,y,z
   LINALG::Matrix<nsd_,nsd_> fluidvelxy_old_;
+  //! fluid pressure in gausspoint
+  double fluidpres_old_;
+  //! fluid pressure gradient in gausspoint
+  LINALG::Matrix<nsd_,1> fluidgradp_old_;
+  //! viscous fluid velocity in gausspoint
+  LINALG::Matrix<nsd_,1> fluidvisc_old_;
+  //! body force of momentum equation
+  LINALG::Matrix<nsd_,1> fluidbodyforce_old_;
   //! body force of adjoint momentum equation
   LINALG::Matrix<nsd_,1> bodyforce_old_;
   //! body force of adjoint continuity equation
@@ -463,6 +497,8 @@ private:
   double reacoeff_;
   //@}
 
+  //! element id
+  int eid_;
   //! Flag to (de)activate higher order elements
   //! elements with only mixed second order derivatives are not counted as higher order elements
   //! (see definition of higher order elements in fluid3_ele_impl_utils.cpp)

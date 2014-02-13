@@ -259,7 +259,7 @@ void TOPOPT::Algorithm::FDGradient(const int numFDPoints)
 
   if (density->GlobalLength()>5000) dserror("really that much fluid solutions for gradient computation???");
 
-  double c = 5.0e-8; /// good step size for gradient approximation (low discretization and round-off error)
+  double c = 1.0e-5; /// good step size for gradient approximation (low discretization and round-off error)
   for (int i=0;i<density->GlobalLength();i++)
   {
     if (Optimizer()->OptiDis()->Comm().MyPID() == 0)

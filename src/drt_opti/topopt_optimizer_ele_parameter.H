@@ -47,26 +47,28 @@ public:
   //! print parameter to screen
   void PrintAdjointParameter() const;
 
-  double Density() {return dens_;}
-  double Viscosity() {return visc_;}
+  const double Density() {return dens_;}
+  const double Viscosity() {return visc_;}
 
-  double MinPoro() {return min_poro_;}
-  double MaxPoro() {return max_poro_;}
-  double SmearFac() {return smear_fac_;}
+  const double MinPoro() {return min_poro_;}
+  const double MaxPoro() {return max_poro_;}
+  const double SmearFac() {return smear_fac_;}
 
-  bool ObjDissipationTerm() {return dissipation_;}
-  bool ObjPresDropTerm() {return pressure_drop_;}
-  double ObjDissipationFac() {return dissipation_fac_;}
-  double ObjPresDropFac() {return pressure_drop_fac_;}
-//
-  bool IsStationary() {return is_stationary_;}
-  INPAR::FLUID::TimeIntegrationScheme TimeIntScheme() {return timealgo_;}
-  INPAR::FLUID::TauType TauType() {return whichtau_;}
-  double Dt() {return dt_;}
-  int NumTimesteps() {return max_timesteps_;}
-  double Theta() {return theta_;}
-  double ThetaPre() {return theta_pre_;}
-  double ThetaDiv() {return theta_div_;}
+  const bool ObjDissipationTerm() {return dissipation_;}
+  const bool ObjPresDropTerm() {return pressure_drop_;}
+  const double ObjDissipationFac() {return dissipation_fac_;}
+  const double ObjPresDropFac() {return pressure_drop_fac_;}
+
+  const bool IsStationary() {return is_stationary_;}
+  const INPAR::FLUID::TimeIntegrationScheme TimeIntScheme() {return timealgo_;}
+  const bool SUPG() {return supg_;}
+  const bool PSPG() {return pspg_;}
+  const INPAR::FLUID::TauType TauType() {return whichtau_;}
+  const double Dt() {return dt_;}
+  const int NumTimesteps() {return max_timesteps_;}
+  const double Theta() {return theta_;}
+  const double ThetaPre() {return theta_pre_;}
+  const double ThetaDiv() {return theta_div_;}
 
   double VolBd() {return vol_bd_;}
 
@@ -112,6 +114,10 @@ private:
   bool is_stationary_;
   //! time algorithm
   INPAR::FLUID::TimeIntegrationScheme timealgo_;
+  //! flag to (de-)active supg-stabilization
+  bool supg_;
+  //! flag to (de-)active pspg-stabilization
+  bool pspg_;
   //! Flag to define tau
   INPAR::FLUID::TauType whichtau_;
   //! time-step length

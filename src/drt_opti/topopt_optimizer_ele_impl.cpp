@@ -130,11 +130,13 @@ eadjointvel_(true),
 eadjointpres_(true),
 fluidvelint_(true),
 adjointvelint_(true),
-adjointpresxy_(true),
 fluidvelxy_(true),
+adjointvelxy_(true),
+adjointpresxy_(true),
+adjointconvvel_(true),
 tau_(true),
 poroint_(0.0),
-intpoints_( distype ,10),
+intpoints_( distype ),
 xsi_(true),
 xjm_(true),
 xji_(true),
@@ -217,7 +219,6 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
-
   Values(
       ele->Id(),
       efluidvels,
@@ -295,14 +296,12 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
           else // standard case
           {
             value += timefac*poroint_*fluidvelint_.Dot(fluidvelint_);
-            if (is_higher_order_ele_)
+
+            for (int idim=0;idim<nsd_;idim++)
             {
-              for (int idim=0;idim<nsd_;idim++)
+              for (int jdim=0;jdim<nsd_;jdim++)
               {
-                for (int jdim=0;jdim<nsd_;jdim++)
-                {
-                  value += timefac*optiparams_->Viscosity()*fluidvelxy_(idim,jdim)*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
-                }
+                value += timefac*optiparams_->Viscosity()*fluidvelxy_(idim,jdim)*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
               }
             }
           }
@@ -484,11 +483,11 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
 
         efluidvel_ = efluidvels.find(timestep)->second;
         eadjointvel_ = eadjointvels.find(timestep)->second;
-        eadjointpres_ = eadjointpress.find(timestep)->second;
 
         fluidvelint_.Multiply(efluidvel_,funct_);
         adjointvelint_.Multiply(eadjointvel_,funct_);
-        adjointpresxy_.Multiply(derxy_,eadjointpres_);
+
+        CalcStabParameter(fac_);
 
         double timefac = 0.0;
         if (timestep==0)                                timefac = 1.0 - optiparams_->Theta();
@@ -500,9 +499,21 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
         else // standard case
         {
           value += timefac*(
-              dissipation_fac*fluidvelint_.Dot(fluidvelint_) // dissipation part, zero if not used
-              -fluidvelint_.Dot(adjointvelint_)
-              -tau_(1)*fluidvelint_.Dot(adjointpresxy_)); // adjoint part
+              dissipation_fac*fluidvelint_.Dot(fluidvelint_)+fluidvelint_.Dot(adjointvelint_));
+
+          if (optiparams_->PSPG())
+          {
+            eadjointpres_ = eadjointpress.find(timestep)->second;
+            adjointpresxy_.Multiply(derxy_,eadjointpres_);
+            value+=timefac*(tau_(1)*fluidvelint_.Dot(adjointpresxy_)); // adjoint part
+          }
+
+          if (optiparams_->SUPG())
+          {
+            adjointvelxy_.MultiplyNT(eadjointvel_,derxy_);
+            adjointconvvel_.Multiply(adjointvelxy_,fluidvelint_);
+            value+=timefac*(optiparams_->Density()*tau_(0)*fluidvelint_.Dot(adjointconvvel_)); // adjoint part
+          }
         }
       }
     }
@@ -595,13 +606,68 @@ void DRT::ELEMENTS::TopOptImpl<distype>::EvalPorosityAtIntPoint(
 {
   // poro = poro_max + (poro_min - poro_max) * rho * (1+fac) / (rho+fac)
   double densint = edens.Dot(funct_);
-  poroint_ = optiparams_->MaxPoro() + (optiparams_->MinPoro()-optiparams_->MaxPoro())*densint
-                                      *(1+optiparams_->SmearFac())/(densint+optiparams_->SmearFac());
 
-  // dporo/ddens = (poro_min - poro_max) * (fac+fac*fac) / (rho+fac)
-  poroderdens_ = (optiparams_->MinPoro()-optiparams_->MaxPoro())
-                *(optiparams_->SmearFac()+optiparams_->SmearFac()*optiparams_->SmearFac())
-                /pow(densint+optiparams_->SmearFac(),2);
+  if (optiparams_->SmearFac()>-1.0e-15) // >=0 as it should be -> standard case
+  {
+    poroint_ = optiparams_->MaxPoro() + (optiparams_->MinPoro()-optiparams_->MaxPoro())*densint
+                                        *(1+optiparams_->SmearFac())/(densint+optiparams_->SmearFac());
+
+    // dporo/ddens = (poro_min - poro_max) * (fac+fac*fac) / (rho+fac)
+    poroderdens_ = (optiparams_->MinPoro()-optiparams_->MaxPoro())
+                  *(optiparams_->SmearFac()+optiparams_->SmearFac()*optiparams_->SmearFac())
+                  /pow(densint+optiparams_->SmearFac(),2);
+  }
+  else // special cases
+  {
+    INPAR::TOPOPT::OptiCase testcase = (INPAR::TOPOPT::OptiCase)round(-optiparams_->SmearFac());
+
+    switch (testcase)
+    {
+    case INPAR::TOPOPT::optitest_channel:
+    case INPAR::TOPOPT::optitest_channel_with_step:
+    {
+      dserror("Discontinuous setting here! Algorithm should stop earlier!");
+      break;
+    }
+    case INPAR::TOPOPT::optitest_lin_poro:
+    {
+      double diff = optiparams_->MaxPoro()-optiparams_->MinPoro();
+      double pmax = optiparams_->MaxPoro();
+
+      poroint_ = -diff*densint + pmax;
+      poroderdens_ = -diff;
+      break;
+    }
+    case INPAR::TOPOPT::optitest_quad_poro:
+    {
+      double diff = optiparams_->MaxPoro()-optiparams_->MinPoro();
+      double pmax = optiparams_->MaxPoro();
+
+      double k = 0.1;
+
+      poroint_ = (diff-k*pmax)*densint*densint + (-2*diff+k*pmax)*densint + pmax;
+      poroderdens_ = 2*(diff-k*pmax)*densint + (-2*diff+k*pmax);
+      break;
+    }
+    case INPAR::TOPOPT::optitest_cub_poro:
+    {
+      double diff = optiparams_->MaxPoro()-optiparams_->MinPoro();
+      double pmax = optiparams_->MaxPoro();
+
+      double k1 = -50000.0;
+      double k2 = 0.1;
+
+      poroint_  = (2*diff+k1-k2*pmax)*densint*densint*densint +(-3*diff-2*k1+k2*pmax)*densint*densint + k1*densint + pmax;
+      poroderdens_ = 3*(2*diff+k1-k2*pmax)*densint*densint + 2*(-3*diff-2*k1+k2*pmax)*densint + k1;
+      break;
+    }
+    default:
+    {
+      dserror("you should not be here with a testcase not handled above");
+      break;
+    }
+    }
+  }
 }
 
 

@@ -225,8 +225,11 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // ----------- initial field for test cases
   INPAR::TOPOPT::InitialAdjointField initfield = DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialAdjointField>(adjointfdyn,"INITIALFIELD");
 
-  // ------------------------------------ special test case
+  // ------------------------------------ special test case for adjoints
   fluidadjointtimeparams->set<INPAR::TOPOPT::AdjointCase>("special test case",DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(adjointfdyn,"TESTCASE"));
+
+  // ------------------------------------ test case for optimization routine
+  fluidadjointtimeparams->set<int>("opti testcase",DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(prbdyn.sublist("TOPOLOGY OPTIMIZER"),"TESTCASE"));
 
   // -------------------------- potential nonlinear boundary conditions
   fluidadjointtimeparams->set<string> ("Nonlinear boundary conditions",fdyn.get<std::string>("NONLINEARBC"));

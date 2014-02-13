@@ -1484,6 +1484,7 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_calc_intfaces_stab.cpp
   src/drt_fluid_ele/fluid_ele_intfaces_calc.cpp
   src/drt_fluid_ele/fluid_ele_calc_loma_service.cpp
+  src/drt_fluid_ele/fluid_ele_calc_topopt_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro_p1.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro_p2.cpp

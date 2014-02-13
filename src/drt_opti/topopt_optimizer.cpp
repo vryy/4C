@@ -55,10 +55,14 @@ gradienttype_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::GradientType>(params_,"GR
   obj_ = 0.0;
   // gradient of the objective function
   obj_der_ = Teuchos::rcp(new Epetra_Vector(*optidis_->NodeRowMap()));
-
   /// number of constraints
   switch (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(optimizer_params,"TESTCASE"))
   {
+  case INPAR::TOPOPT::optitest_channel:
+  case INPAR::TOPOPT::optitest_channel_with_step:
+  case INPAR::TOPOPT::optitest_lin_poro:
+  case INPAR::TOPOPT::optitest_quad_poro:
+  case INPAR::TOPOPT::optitest_cub_poro:
   case INPAR::TOPOPT::optitest_no:
   case INPAR::TOPOPT::optitest_workflow_without_fluiddata:
   case INPAR::TOPOPT::optitest_snake_one_constr:
@@ -71,12 +75,6 @@ gradienttype_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::GradientType>(params_,"GR
     num_constr_ = 5;
     break;
   }
-  case INPAR::TOPOPT::optitest_channel:
-  case INPAR::TOPOPT::optitest_channel_with_step:
-  case INPAR::TOPOPT::optitest_lin_poro:
-  case INPAR::TOPOPT::optitest_quad_poro:
-  case INPAR::TOPOPT::optitest_cub_poro:
-    break;
   default:
   {
     dserror("unknown optimization case");
@@ -367,9 +365,28 @@ void TOPOPT::Optimizer::ImportFlowParams(
           const MAT::PAR::Parameter* matparam = imat->Parameter();
           const MAT::PAR::TopOptDens* mat = static_cast<const MAT::PAR::TopOptDens* >(matparam);
 
-          opti_ele_params.set("min_poro",mat->poro_bd_down_);
-          opti_ele_params.set("max_poro",mat->poro_bd_up_);
-          opti_ele_params.set("smear_fac",mat->smear_fac_);
+          opti_ele_params.set("MIN_PORO",mat->poro_bd_down_);
+          opti_ele_params.set("MAX_PORO",mat->poro_bd_up_);
+
+          const INPAR::TOPOPT::OptiCase testcase = (INPAR::TOPOPT::OptiCase)(DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_.sublist("TOPOLOGY OPTIMIZER"),"TESTCASE"));
+          switch (testcase)
+          {
+          case INPAR::TOPOPT::optitest_channel:
+          case INPAR::TOPOPT::optitest_channel_with_step:
+          case INPAR::TOPOPT::optitest_lin_poro:
+          case INPAR::TOPOPT::optitest_quad_poro:
+          case INPAR::TOPOPT::optitest_cub_poro:
+          {
+            opti_ele_params.set("SMEAR_FAC",(double)(-(int)testcase));
+            break;
+          }
+          default:
+          {
+            opti_ele_params.set("SMEAR_FAC",mat->smear_fac_);
+            break;
+          }
+          }
+
           break;
         }
         default:
@@ -644,7 +661,6 @@ void TOPOPT::Optimizer::ReadRestart(const int step)
 
   return;
 }
-
 
 
 

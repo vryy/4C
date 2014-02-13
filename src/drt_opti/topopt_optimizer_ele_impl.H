@@ -269,10 +269,14 @@ private:
   /// adjoint velocity of one time step at gauss point
   LINALG::Matrix<nsd_,1> adjointvelint_;
 
-  /// first derivative of fluid pressure of one time step at gauss point w.r.t. x,y,z
-  LINALG::Matrix<nsd_,1> adjointpresxy_;
   /// first derivative of fluid velocity of one time step at gauss point w.r.t. x,y,z
   LINALG::Matrix<nsd_,nsd_> fluidvelxy_;
+  /// first derivative of adjoint velocity of one time step at gauss point w.r.t. x,y,z
+  LINALG::Matrix<nsd_,nsd_> adjointvelxy_;
+  /// first derivative of adjoint pressure of one time step at gauss point w.r.t. x,y,z
+  LINALG::Matrix<nsd_,1> adjointpresxy_;
+  /// convective adjoint velocity of one time step
+  LINALG::Matrix<nsd_,1> adjointconvvel_;
 
   //! the stabilisation parameters -> it is a (3,1) vector for 2D and 3D
   LINALG::Matrix<3,1> tau_;  //@}

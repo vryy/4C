@@ -27,6 +27,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_mat/yoghurt.H"
 
 
+
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeGalRHSContEq(
     const LINALG::Matrix<nsd_,nen_>&  eveln,
@@ -129,7 +130,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeGalRHSContEqArtComp(
             /                      \
            |           1      dp   |
        -   |    q ,   --- *  ----  |
-           |           c²    dt    |
+           |           cï¿½    dt    |
             \                     /
             +----------------------+
             Galerkin part of rhscon_
@@ -743,7 +744,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ArtCompPressureInertiaGalPartandContS
             /             \
            |   1           |
            |  ---  Dp , q  |
-           | beta²         |
+           | betaï¿½         |
             \             /
   */
   double prefac = scadtfac_*fac_;
@@ -762,7 +763,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ArtCompPressureInertiaGalPartandContS
                 /                      \
                |   1                   |
           tauC |  --- Dp  , nabla o v  |
-               |   c²                  |
+               |   cï¿½                  |
                 \                     /
     */
 

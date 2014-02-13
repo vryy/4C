@@ -911,6 +911,9 @@ namespace ELEMENTS
         const double &                                timefacfac    ///< = timefac x fac
         );
 
+    void GetPorosityAtGP(
+        const LINALG::Matrix<nen_,1> &                eporo
+    );
     /*!
       \brief calculate rate of strain of (fine-scale) velocity
 
