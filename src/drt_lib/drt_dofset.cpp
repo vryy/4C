@@ -518,7 +518,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
           if (faces[face]->Owner() == mypid) {
             const int mylid = facedis->FaceRowMap()->LID(faces[face]->Id());
             numdfrowfaces[mylid] =
-                dis.lColElement(i)->NumDofPerFace(face);
+                dis.lColElement(i)->NumDofPerFace(face,dspos_);
           }
       }
 
