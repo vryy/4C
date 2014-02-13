@@ -43,6 +43,7 @@ DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter()
   tau_gp_(false),
   mat_gp_(false),
   turbmodel_(INPAR::FLUID::no_model),
+  scalarforcing_(INPAR::FLUID::scalarforcing_no),
   fssgd_(false),
   whichfssgd_(INPAR::SCATRA::fssugrdiff_no),
   Cs_(0.0),
@@ -65,69 +66,6 @@ DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter()
   meanCai_(0.0),
   adapt_Csgs_phi_(false),
   turbinflow_(false)
-//    is_elch_((numdofpernode_ - numscal_) >= 1),  // bool set implicitely
-//    is_reactive_(false),      // bool set
-//    is_coupled_(false),            //bool set
-//    diffreastafac_(0.0),       // set double (SUPG)
-//    is_anisotropic_(false),   // bool set
-
-//    sgvel_(false),            // bool set
-//    betterconsistency_(false), // bool set
-//    migrationintau_(true),     // bool set
-//    migrationstab_(true),      // bool set
-//    migrationinresidual_(true),// bool set
-//    update_mat_(false),        // bool set
-//    // whichtau_ not initialized
-//    turbmodel_(INPAR::FLUID::no_model), // enum initialized
-//    mfs_conservative_(false), // set false
-//    HSTCConds_(0,NULL),   //vector containing homogeneous coupling conditions
-//    epotnp_(true),      // initialized to zero
-//    emagnetnp_(true),   // initialized to zero
-//    gradpot_(true),     // initialized to zero
-//    evelnp_(true),      // initialized to zero
-//    econvelnp_(true),   // initialized to zero
-//    efsvel_(true),      // initialized to zero
-//    eaccnp_(true),      // initialized to zero
-//    velint_(true),      // initialized to zero
-//    convelint_(true),   // initialized to zero
-//    sgvelint_(true),    // initialized to zero
-//    fsvelint_(true),    // initialized to zero
-//    mfsgvelint_(true),  // initialized to zero
-//    migvelint_(true),   // initialized to zero
-//    conv_(true),        // initialized to zero
-//    sgconv_(true),      // initialized to zero
-//    vdiv_(0.0),         // set double
-//    mfsvdiv_(0.0),      // set double
-//    eprenp_(true),      // initialized to zero
-//    shc_(0.0),      // set double
-//    visc_(0.0),     // set double
-//    diffcond_(false),
-//    cursolvar_(false),
-//    chemdiffcoupltransp_(true),
-//    chemdiffcouplcurr_(true),
-//    constparams_(true),
-//    newman_(false),
-//    diffbased_(true),
-//    gradphicoupling_(numscal_),
-//    curdiv_(0.0),
-//    trans_(numscal_,0.0),
-//    transelim_(0.0),
-//    transderiv_(numscal_,std::vector<double>(numscal_,0.0 )),
-//    cond_(1,0.0),
-//    condderiv_(numscal_,0.0),
-//    diffusderiv_(numscal_,0.0),
-//    diffuselimderiv_(numscal_,0.0),
-//    diffuselim_(0.0),
-//    eps_(1,1.0),
-//    tort_(1,1.0),
-//    epstort_(1,1.0),
-//    a_(0.0),
-//    b_(0.0),
-//    c_(0.0),
-//    ecurnp_(true),
-//    curint_(true),
-//    equpot_(INPAR::ELCH::equpot_enc),
-//    frt_(0.0)
 {
   // we have to know the time parameters here to check for illegal combinations
   scatraparatimint_ = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance();
@@ -271,6 +209,14 @@ void DRT::ELEMENTS::ScaTraEleParameter::SetElementTurbulenceParameter( Teuchos::
   else if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Dynamic_Vreman")
     turbmodel_ = INPAR::FLUID::dynamic_vreman;
   else dserror("Unknown turbulence model for scatra!");
+
+  // define forcing for scalar field
+  if (turbulencelist.get<std::string>("SCALAR_FORCING","no")=="isotropic")
+    scalarforcing_ = INPAR::FLUID::scalarforcing_isotropic;
+  else if(turbulencelist.get<std::string>("SCALAR_FORCING","no")=="mean_scalar_gradient")
+    scalarforcing_ = INPAR::FLUID::scalarforcing_mean_scalar_gradient;
+  else
+    scalarforcing_ = INPAR::FLUID::scalarforcing_no;
 
   // set flag for fine-scale subgrid diffusivity and perform some checks
   whichfssgd_ = DRT::INPUT::get<INPAR::SCATRA::FSSUGRDIFF>(params, "fs subgrid diffusivity");

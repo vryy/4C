@@ -27,18 +27,19 @@ namespace ELEMENTS
 {
   // forward declarations
   class ScaTraEleParameterElch;
-//  class ScaTraEleDiffManagerElch;
 
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcElchNP : public ScaTraEleCalcElch<distype>
 {
-public:
+private:
 
   /// private constructor, since we are a Singleton.
   ScaTraEleCalcElchNP(const int numdofpernode,const int numscal);
 
   typedef ScaTraEleCalc<distype> my;
   typedef ScaTraEleCalcElch<distype> myelch;
+
+public:
 
   virtual ~ScaTraEleCalcElchNP() {}
 

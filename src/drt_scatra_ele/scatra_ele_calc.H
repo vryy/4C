@@ -68,8 +68,6 @@ namespace ELEMENTS
   template<DRT::Element::DiscretizationType distype>
   class ScaTraEleCalc : public ScaTraEleInterface
   {
-    friend class ScaTraEleParameter;
-    friend class ScaTraEleParameterTimInt;
 
   public:
 
@@ -120,7 +118,9 @@ namespace ELEMENTS
 
   protected:
 
-    /// private Constructor since we are a Singleton.
+    /// (private) protected constructor, since we are a Singleton.
+    /// this constructor is called from a derived class
+    /// -> therefore, it has to be protected instead of private
     ScaTraEleCalc(const int numdofpernode,const int numscal);
 
     /*========================================================================*/

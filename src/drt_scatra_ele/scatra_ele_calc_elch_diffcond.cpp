@@ -233,11 +233,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhs(
   )
 {
   // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
+  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
 
   // dynamic cast to elch-specific diffusion manager
   Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> > vmdc
-    = Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
+    = Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
 
   //----------------------------------------------------------------
   // 1) element matrix: instationary terms
@@ -410,11 +410,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhsOutsideScala
   )
 {
   // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
+  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
 
   // dynamic cast to elch-specific diffusion manager
   Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> > vmdc
-    = Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
+    = Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
 
   //----------------------------------------------------------------
   // 3)   governing equation for the electric potential field
@@ -1492,7 +1492,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAccrosD
   DRT::UTILS::ExtractMyValues(*dctoggle,mydctoggle,lm);
 
   // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCond>(my::diffmanager_);
+  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(my::diffmanager_);
 
   double val=0.0;
   for (int vi=0; vi<my::nen_; ++vi)
@@ -1681,11 +1681,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::SetFormulationSpecificIn
 )
 {
   // dynamic cast to elch diffusion-conduction-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
+  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
 
   // dynamic cast to elch diffusion conduction-specific diffusion manager
   Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> > vmdc =
-      Teuchos::rcp_static_cast< ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
+      Teuchos::rcp_dynamic_cast< ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
 
   vmdc->SetInternalVariablesElchDiffCond(dmedc,my::funct_,my::derxy_,ecurnp_);
 
@@ -1732,7 +1732,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(
 
       // dynmic cast: get access to mat_phase
       const Teuchos::RCP<const MAT::ElchPhase>& actphase
-                = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(singlephase);
+         = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(singlephase);
 
       // TODO: ELCH add to check validy
       // enough materials defined
@@ -1771,7 +1771,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Materials(
   const int                               iquad         //!< id of current gauss point
   )
 {
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCond>(diffmanager);
+  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(diffmanager);
 
   if(material->MaterialType() == INPAR::MAT::m_elchphase)
     MatPhase(material,k,densn,densnp,densam,dmedc,reamanager,visc,iquad);

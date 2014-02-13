@@ -165,7 +165,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
   )
 {
   // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_static_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
+  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
 
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.

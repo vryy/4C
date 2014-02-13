@@ -346,7 +346,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateFlux(
   )
 {
   // dynamic cast of elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_static_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
+  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
 
   // set constants
   const double frt = elchpara_->FRT();
@@ -472,7 +472,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
   )
 {
   // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_static_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
+  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
 
   //at the moment, there is only one analytical test problem available!
   if (DRT::INPUT::get<SCATRA::Action>(params,"action") != SCATRA::calc_error)
@@ -761,7 +761,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
   )
 {
   // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_static_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
+  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);

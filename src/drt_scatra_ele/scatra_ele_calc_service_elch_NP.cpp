@@ -95,7 +95,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
 )
 {
   // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_static_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
+  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
 
   // calculate conductivity of electrolyte solution
   const double frt = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(my::scatrapara_)->FRT();

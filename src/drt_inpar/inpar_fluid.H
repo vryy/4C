@@ -278,6 +278,14 @@ namespace INPAR
       dynamic_vreman
     };
 
+    /// Define forcing for scalar field
+    enum ScalarForcing
+    {
+      scalarforcing_no,
+      scalarforcing_isotropic,
+      scalarforcing_mean_scalar_gradient
+    };
+
     //! options for fine-scale subgrid viscosity
     enum FineSubgridVisc
     {

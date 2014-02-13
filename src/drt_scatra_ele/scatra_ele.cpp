@@ -325,7 +325,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum,DRT::Element* oldele)
 
   if(mat->MaterialType() == INPAR::MAT::m_myocard)
   {
-    Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_static_cast<MAT::Myocard>(mat);
+    Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(mat);
 
     Teuchos::RCP<MAT::ElastHyper> somat = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(oldele->Material());
     if(somat==Teuchos::null)

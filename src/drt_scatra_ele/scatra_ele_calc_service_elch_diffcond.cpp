@@ -128,7 +128,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetConductivity(
   )
 {
   // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dme = Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCond>(my::diffmanager_);
+  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(my::diffmanager_);
 
   // pre-computed conductivity is used:
   // Conductivity is computed by
@@ -152,11 +152,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhsElectricPote
 )
 {
   // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
+  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
 
   // dynamic cast to elch-specific diffusion manager
   Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> > vmdc
-    = Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
+    = Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
 
   // specific constants for the Newman-material:
   // switch between a dilute solution theory like formulation and the classical concentrated solution theory

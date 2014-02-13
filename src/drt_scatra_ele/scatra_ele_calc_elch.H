@@ -36,12 +36,16 @@ namespace ELEMENTS
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcElch : public ScaTraEleCalc<distype>
 {
-public:
+protected:
 
-  /// private constructor, since we are a Singleton.
+  /// (private) protected constructor, since we are a Singleton.
+  /// this constructor is called from a derived class
+  /// -> therefore, it has to be protected instead of private
   ScaTraEleCalcElch(const int numdofpernode,const int numscal);
 
   typedef ScaTraEleCalc<distype> my;
+
+public:
 
   virtual ~ScaTraEleCalcElch() {}
 
@@ -56,6 +60,7 @@ public:
                Epetra_SerialDenseVector&     elevec2_epetra,
                Epetra_SerialDenseVector&     elevec3_epetra);
 
+  //! evaluate service routines
   int EvaluateService(DRT::ELEMENTS::Transport*     ele,
                       Teuchos::ParameterList&       params,
                       DRT::Discretization &         discretization,
@@ -72,7 +77,7 @@ protected:
   //! @name general framework
   /*========================================================================*/
 
-  //! calculate matrix and rhs. Here the whole thing is hidden.
+  //! Prepare everything what is needed in CallMatAndRhs() to calculate the sysmat and the rhs
   void Sysmat(
     DRT::Element*                         ele,       //!< the element we are dealing with
     Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
@@ -80,19 +85,21 @@ protected:
     Epetra_SerialDenseVector&             subgrdiff  //!< subgrid-diff.-scaling vector
   );
 
+  //! calculate contributions to matrix and rhs (inside of loop over all scalars)
   virtual void CalMatAndRhs(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
-    Epetra_SerialDenseMatrix&                emat,          //!< element matrix to calculate
-    Epetra_SerialDenseVector&                erhs,          //!< element rhs to calculate+
-    const int                               k,             //!< index of current scalar
-    const double                            fac,           //!< domain-integration factor
-    const double                            timefacfac,    //!< domain-integration factor times time-integration factor
-    const double                            rhsfac,        //!< time-integration factor for rhs times domain-integration factor
-    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,           //!< diffusion manager
-    double&                                  rhsint,        //!< rhs at Gauss point
+    Epetra_SerialDenseMatrix&                emat,         //!< element matrix to calculate
+    Epetra_SerialDenseVector&                erhs,         //!< element rhs to calculate+
+    const int                                k,            //!< index of current scalar
+    const double                             fac,          //!< domain-integration factor
+    const double                             timefacfac,   //!< domain-integration factor times time-integration factor
+    const double                             rhsfac,       //!< time-integration factor for rhs times domain-integration factor
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme,          //!< diffusion manager
+    double&                                  rhsint,       //!< rhs at Gauss point
     const double                             hist          //!< history
   ){return;};
 
+  //! calculate contributions to matrix and rhs (outside of loop over all scalars)
   virtual void CalMatAndRhsOutsideScalarLoop(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
     Epetra_SerialDenseMatrix&                emat,         //!< element matrix to calculate
@@ -100,35 +107,38 @@ protected:
     const double                             fac,          //!< domain-integration factor
     const double                             timefacfac,   //!< domain-integration factor times time-integration factor
     const double                             rhsfac,       //!< time-integration factor for rhs times domain-integration factor
-    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme          //!< diffusion manager
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&  dme           //!< diffusion manager
   ){return;};
 
+  //! Correction for additional flux terms / currents across Dirichlet boundaries
   virtual void CorrectionForFluxAccrosDC(
-    DRT::Discretization&        discretization,
-    const std::vector<int>&     lm,
-    Epetra_SerialDenseMatrix&   emat,
-    Epetra_SerialDenseVector&   erhs
+    DRT::Discretization&        discretization,   //!< discretization
+    const std::vector<int>&     lm,               //!< location vector
+    Epetra_SerialDenseMatrix&   emat,             //!< element matrix to calculate
+    Epetra_SerialDenseVector&   erhs              //!< element rhs to calculate
   ){return;};
 
+  //! Formulation-specific internal variables are set in the variable manager
   virtual void SetFormulationSpecificInternalVariables(
-    Teuchos::RCP<ScaTraEleDiffManagerElch>&                                   dme,
-    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >&  vm
+    Teuchos::RCP<ScaTraEleDiffManagerElch>&                                   dme,  //!< rcp to diffusion manager Elch
+    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >&  vm    //!< rcp to variable manager Elch
   ){return;};
 
   /*========================================================================*/
   //! @name material and related and related functions
   /*========================================================================*/
 
+  //! material ion
   void MatIon(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-    const int                               k,        //!< id of current scalar
-    double&                                 densn,    //!< density at t_(n)
-    double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-    double&                                 densam,   //!< density at t_(n+alpha_M)
+    const Teuchos::RCP<const MAT::Material> material,     //!< pointer to current material
+    const int                               k,            //!< id of current scalar
+    double&                                 densn,        //!< density at t_(n)
+    double&                                 densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
+    double&                                 densam,       //!< density at t_(n+alpha_M)
     Teuchos::RCP<ScaTraEleDiffManagerElch>  diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
     Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
-    double&                                 visc,     //!< fluid viscosity
-    const int                               iquad     //!< id of current gauss point
+    double&                                 visc,         //!< fluid viscosity
+    const int                               iquad         //!< id of current gauss point
   );
 
   /*========================================================================*/
@@ -140,9 +150,12 @@ protected:
   //! @name additional service routines
   /*========================================================================*/
 
+  //! validity check for all elements with respect to
+  //! formulation-specific parameter, degree's of freedom, number of scalars, ...
   void CheckElchElementParameter(
-    DRT::ELEMENTS::Transport*  ele
+    DRT::ELEMENTS::Transport*  ele  //!< the element we are dealing with
     );
+
 
   void CalculateFlux(
     LINALG::Matrix<3,my::nen_>&     flux,

@@ -33,13 +33,15 @@ namespace ELEMENTS
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcElchDiffCond : public ScaTraEleCalcElch<distype>
 {
-public:
+private:
 
   /// private constructor, since we are a Singleton.
   ScaTraEleCalcElchDiffCond(const int numdofpernode,const int numscal);
 
   typedef ScaTraEleCalc<distype> my;
   typedef ScaTraEleCalcElch<distype> myelch;
+
+public:
 
   virtual ~ScaTraEleCalcElchDiffCond() {}
 
@@ -660,7 +662,7 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElch
 
 /// ScaTraEleInternalVariableManagerElch implementation
 /*!
-  This class keeps all internal variables needed for the evaluation of an element.
+  This class keeps all internal (diffusion-conduction-specific) variables needed for the evaluation of an element.
 */
 template<int NSD, int NEN>
 class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVariableManagerElch<NSD,NEN>

@@ -192,24 +192,32 @@ std::vector<double>  DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractElementAndNod
   const std::vector<int>&    lm
 )
 {
+  // set element id
+  eid_ = ele->Id();
+
+  // get convective (velocity - mesh displacement) velocity at nodes
+  const Teuchos::RCP<Epetra_MultiVector> convelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field");
+  DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
+
   if (scatrapara_->IsAle())
   {
+    // get velocity at nodes
+    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field");
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
+
     const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp");
     if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_);
     // add nodal displacements to point coordinates
     xyze_ += edispnp_;
   }
-  else edispnp_.Clear();
+  else
+  {
+    edispnp_.Clear();
 
-  // set element id
-  eid_ = ele->Id();
-
-  // get velocity at nodes
-  const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field");
-  DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
-  const Teuchos::RCP<Epetra_MultiVector> convelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field");
-  DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
+    // velocity = convective velocity for the non-ale case
+    evelnp_ = econvelnp_;
+  }
 
   // get data required for subgrid-scale velocity: acceleration and pressure
   if (scatrapara_->RBSubGrVel())
@@ -876,7 +884,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::OtherNodeBasedSourceTerms(
 {
   // set externally calculated source term instead of body force by volume
   // Neumann boundary condition of input file
-  if (params.sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING","no")=="isotropic")
+  if (scatrapara_->ScalarForcing()==INPAR::FLUID::scalarforcing_isotropic)
   {
     // extract additional local values from global vector
     Teuchos::RCP<const Epetra_Vector> source = discretization.GetState("forcing");
@@ -894,7 +902,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::OtherNodeBasedSourceTerms(
     } // for i
   }
   // special forcing mean scalar gradient
-  else if (params.sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING","no")=="mean_scalar_gradient")
+  else if (scatrapara_->ScalarForcing()==INPAR::FLUID::scalarforcing_mean_scalar_gradient)
   {
     // get mean-scalar gradient
     const double grad_phi = params.sublist("TURBULENCE MODEL").get<double>("MEAN_SCALAR_GRADIENT");

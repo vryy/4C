@@ -43,7 +43,6 @@ class ScaTraEleParameterElch;
  */
 class ScaTraBoundaryImplInterface : public DRT::SingletonDestruction
 {
-  friend class ScaTraEleParameterElch;
 
 public:
   /// Empty constructor

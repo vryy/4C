@@ -87,6 +87,7 @@ public:
   /*--------------------------*/
 
   INPAR::FLUID::TurbModelAction TurbModel(){return turbmodel_;};
+  INPAR::FLUID::ScalarForcing ScalarForcing(){return scalarforcing_;};
   INPAR::SCATRA::FSSUGRDIFF WhichFssgd(){return whichfssgd_;};
   bool FSSGD(){return fssgd_;};
   double Cs(){return Cs_;};
@@ -157,6 +158,8 @@ protected:
 
   //! definition of turbulence model
   INPAR::FLUID::TurbModelAction turbmodel_;
+  //! define forcing for scalar field
+  INPAR::FLUID::ScalarForcing scalarforcing_;
   //! flag to activate AVM3
   bool fssgd_;
   INPAR::SCATRA::FSSUGRDIFF whichfssgd_;

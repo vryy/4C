@@ -104,6 +104,7 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetElementElchDiffCondScaTraParamete
   Teuchos::ParameterList& params,
   int myrank )
 {
+  // set diffusion-conduction sepecific parameter only when diffusion-conduction formulation is used
   if(nernstplanck_ == false)
   {
     Teuchos::ParameterList& diffcondparams = params.sublist("DIFFCOND");
