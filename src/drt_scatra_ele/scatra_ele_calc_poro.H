@@ -26,7 +26,8 @@ namespace ELEMENTS
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcPoro : public ScaTraEleCalc<distype>
 {
-    /// private constructor, since we are a Singleton.
+private:
+  /// private constructor, since we are a Singleton.
   ScaTraEleCalcPoro(const int numdofpernode,const int numscal);
 
   typedef ScaTraEleCalcPoro<distype> my;

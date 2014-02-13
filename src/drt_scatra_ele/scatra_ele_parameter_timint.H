@@ -31,6 +31,11 @@ namespace ELEMENTS
 /// Evaluation of general parameters (constant over time)
 class ScaTraEleParameterTimInt : public DRT::SingletonDestruction
 {
+private:
+
+  // private constructor
+  ScaTraEleParameterTimInt();
+
 public:
 
   //! Singleton access method
@@ -78,10 +83,6 @@ private:
 //  afgdt_(1.0),
 //  timefacrhs_(1.0),
 //  timefacpre_(1.0)
-
-
-  // private constructor
-  ScaTraEleParameterTimInt();
 
 
 }; // class ScaTraEleParameterTimInt

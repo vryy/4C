@@ -37,6 +37,12 @@ namespace ELEMENTS
 
 class ScaTraEleParameter : public DRT::SingletonDestruction
 {
+protected:
+
+  /// (private) protected constructor, since we are a Singleton.
+  /// this constructor is called from a derived class
+  /// -> therefore, it has to be protected instead of private
+  ScaTraEleParameter();
 
 public:
 
@@ -44,6 +50,9 @@ public:
 
   /// called upon destruction
   virtual void Done() = 0;
+
+  /// In this class we do not define a static ScaTraEle...* Instance
+  /// since only derived child classes are free to be allocated!!
 
   /*========================================================================*/
   //! @name set-routines
@@ -112,9 +121,6 @@ public:
   bool TurbInflow(){return turbinflow_;};
 
 protected:
-
-  /// private Constructor since we are a Singleton.
-  ScaTraEleParameter();
 
   bool set_general_scatra_parameter_;
 

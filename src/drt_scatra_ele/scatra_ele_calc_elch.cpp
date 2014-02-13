@@ -210,8 +210,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
 
     SetFormulationSpecificInternalVariables(dme,varmanager_);
 
-    // TODO: check ELCH: time integration
-    // stabilization parameter and integration factors
     const double timefacfac = my::scatraparatimint_->TimeFac()*fac;
     const double rhsfac    = my::scatraparatimint_->TimeFacRhs()*fac;
 
@@ -219,7 +217,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
     // deal with a system of transported scalars
     for (int k=0;k<my::numscal_;++k)
     {
-      //TODO: SCATRA_ELE_CLEANING: generalized alpha scheme and history vector??
       // get history data (or acceleration)
       double hist(0.0);
       hist = my::funct_.Dot(my::ehist_[k]);
@@ -228,56 +225,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
       // for temperature equation, the time derivative of thermodynamic pressure,
       // if not constant, and for temperature equation of a reactive
       // equation system, the reaction-rate term
-      double rhs(0.0);
-      my::GetRhs(rhs,densnp,k);
-
-      //----------------------------------------------------------------
-      // computation of bodyforce (and potentially history) term,
-      // residual, integration factors and standard Galerkin transient
-      // term (if required) on right hand side depending on respective
-      // (non-)incremental stationary or time-integration scheme
-      //----------------------------------------------------------------
-      double rhsint = rhs;
-
-      // TODO: ELCH: Check implementation of time integration schemes carefully
-      // perform time-integration specific actions
-//      if (not my::scatraparatimint_->IsStationary())
-//      {
-//        //TODO: ELCH: Zeitintegration genalpha Konzentrationsabhängige Parameter alter Zeitschritt
-//        if (my::scatraparatimint_->IsGenAlpha())
-//        {
-//          // note: in hist_ we receive the time derivative phidtam at time t_{n+alpha_M} !!
-//          //residual  = hist_[k] + conv_ephinp_k - diff_ephinp_k - rhsint;
-//
-//          rhsint   *= my::scatraparatimint_->TimeFacRhs(); //(timefac/alphaF);  // not nice, but necessary !
-//
-//          // rhs contribution due to incremental formulation (phidtam)
-//          // Standard Galerkin term
-//          const double vtrans = rhsfac*eps_[0]*hist;
-//          for (int vi=0; vi<my::nen_; ++vi)
-//          {
-//            const int fvi = vi*my::numdofpernode_+k;
-//
-//            erhs[fvi] -= vtrans*my::funct_(vi);
-//          }
-//        }
-//        else
-//        {
-//          // TODO: do I need this term
-//          rhsint = eps_[0]*hist + (rhs*my::scatraparatimint_->TimeFac()); // contributions from t_n and \theta*dt*bodyforce(t_{n+1})
-//          //residual  = conint_[k] + timefac*(conv_ephinp_k - diff_ephinp_k) - rhsint;
-//
-//          // rhs contribution due to incremental formulation (phinp)
-//          // Standard Galerkin term
-//          const double vtrans = fac*eps_[0]*varmanager->ConInt(k);
-//          for (int vi=0; vi<my::nen_; ++vi)
-//          {
-//            const int fvi = vi*my::numdofpernode_+k;
-//
-//            erhs[fvi] -= vtrans*my::funct_(vi);
-//          }
-//        } // if(is_genalpha_)
-//      } // if (is_stationary_)
+      double rhsint(0.0);
+      my::GetRhsInt(rhsint,densnp,k);
 
       // Comute element matrix and rhs
       CalMatAndRhs(varmanager_,emat,erhs,k,fac,timefacfac,rhsfac,dme,rhsint,hist);

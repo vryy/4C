@@ -653,8 +653,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatYoghurt(
  | compute rhs containing bodyforce                                 ehrl 11/13 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetRhs(
-  double&      rhs,   //!< rhs containing bodyforce
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetRhsInt(
+  double&      rhsint, //!< rhs containing bodyforce at Gauss point
   const double densnp, //!< density at t_(n+1)
   const int    k      //!< index of current scalar
   )
@@ -666,12 +666,12 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetRhs(
   // for temperature equation, the time derivative of thermodynamic pressure,
   // if not constant, and for temperature equation of a reactive
   // equation system, the reaction-rate term
-  rhs = my::bodyforce_[k].Dot(my::funct_)/shc_;
-  rhs += thermpressdt_/shc_;
-  rhs += densnp*reatemprhs;
+  rhsint = my::bodyforce_[k].Dot(my::funct_)/shc_;
+  rhsint += thermpressdt_/shc_;
+  rhsint += densnp*reatemprhs;
 
   return;
-} // GetRhs
+} // GetRhsInt
 
 
 /*------------------------------------------------------------------------------------------*

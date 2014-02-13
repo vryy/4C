@@ -26,6 +26,7 @@ namespace ELEMENTS
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcLsReinit : public ScaTraEleCalc<distype>
 {
+private:
     //! private constructor, since we are a Singleton.
     ScaTraEleCalcLsReinit(const int numdofpernode,const int numscal);
 

@@ -143,28 +143,31 @@ int DRT::ELEMENTS::Transport::Evaluate(
   }
 
   // switch between different physical types as used below
-  std::string impltype = "std";
+  INPAR::SCATRA::ImplType impltype = INPAR::SCATRA::impltype_undefined;
   switch(scatratype)
   {
-  case INPAR::SCATRA::scatratype_condif:     impltype = "std";     break;
-  case INPAR::SCATRA::scatratype_loma:       impltype = "loma";    break;
-  //TODO: ELCH: Wie soll man die beiden unterschiedlichen ELCH anwaehlen?
-  case INPAR::SCATRA::scatratype_elch:       impltype = "elch_diffcond";    break;
+  case INPAR::SCATRA::scatratype_condif:    impltype = INPAR::SCATRA::impltype_std;     break;
+  case INPAR::SCATRA::scatratype_loma:      impltype = INPAR::SCATRA::impltype_loma;    break;
+  case INPAR::SCATRA::scatratype_poro:      impltype = INPAR::SCATRA::impltype_poro;    break;
+  case INPAR::SCATRA::scatratype_advreac:   impltype = INPAR::SCATRA::impltype_advreac; break;
+  case INPAR::SCATRA::scatratype_elch:
+  {
+    // At this point, we know that we have a parameter class from type ScaTraEleParameterElch
+    DRT::ELEMENTS::ScaTraEleParameterElch* elchpara = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
+
+    if(elchpara->ElchType()==INPAR::ELCH::elchtype_diffcond)
+      impltype = INPAR::SCATRA::impltype_elch_diffcond;
+    else impltype = INPAR::SCATRA::impltype_elch_NP;
+    break;
+  }
   case INPAR::SCATRA::scatratype_levelset:
   {
     if (not params.get<bool>("solve reinit eq",false))
-      impltype = "std";
+      impltype = INPAR::SCATRA::impltype_std;
     else
-      impltype = "lsreinit";
+      impltype = INPAR::SCATRA::impltype_lsreinit;
     break;
   }
-  case INPAR::SCATRA::scatratype_poro:       impltype = "poro";    break;
-  case INPAR::SCATRA::scatratype_advreac:
-    {
-      impltype = "advreac";
-      //todo: if DEBUG: test if homogeneous reaction coupling condition or Material reaction exists
-    }
-  break;
   default: dserror("Unknown scatratype for calc_mat_and_rhs!");    break;
   }
 

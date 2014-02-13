@@ -39,6 +39,7 @@ namespace ELEMENTS
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcLoma : public ScaTraEleCalc<distype>
 {
+private:
     /// private constructor, since we are a Singleton.
     ScaTraEleCalcLoma(const int numdofpernode,const int numscal);
 
@@ -186,8 +187,8 @@ private:
     /*========================================================================*/
 
     //! compute rhs containing bodyforce
-    void GetRhs(
-      double&      rhs,     //!< rhs containing bodyforce
+    void GetRhsInt(
+      double&      rhsint,  //!< rhs containing bodyforce at Gauss point
       const double densnp,  //!< density at t_(n+1)
       const int    k        //!< index of current scalar
     );

@@ -49,6 +49,12 @@ public:
 
   virtual ~ScaTraEleCalcElch() {}
 
+  /// called upon destruction
+  virtual void Done() = 0;
+
+  /// In this class we do not define a static ScaTraEle...* Instance
+  /// since only derived child classes are free to be allocated!!
+
   //! evaluate the element
   int Evaluate(DRT::ELEMENTS::Transport*     ele,
                Teuchos::ParameterList&       params,

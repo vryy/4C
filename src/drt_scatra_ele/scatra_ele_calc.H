@@ -68,10 +68,22 @@ namespace ELEMENTS
   template<DRT::Element::DiscretizationType distype>
   class ScaTraEleCalc : public ScaTraEleInterface
   {
+  protected:
+
+    /// (private) protected constructor, since we are a Singleton.
+    /// this constructor is called from a derived class
+    /// -> therefore, it has to be protected instead of private
+    ScaTraEleCalc(const int numdofpernode,const int numscal);
 
   public:
 
     virtual ~ScaTraEleCalc() {}
+
+    /// called upon destruction
+    virtual void Done() = 0;
+
+    /// In this class we do not define a static ScaTraEle...* Instance
+    /// since only derived child classes are free to be allocated!!
 
     /// Evaluate the element
      /*!
@@ -117,11 +129,6 @@ namespace ELEMENTS
      static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
   protected:
-
-    /// (private) protected constructor, since we are a Singleton.
-    /// this constructor is called from a derived class
-    /// -> therefore, it has to be protected instead of private
-    ScaTraEleCalc(const int numdofpernode,const int numscal);
 
     /*========================================================================*/
     //! @name general framework
@@ -354,7 +361,7 @@ namespace ELEMENTS
       const double   conv_phi,   //!< convective contribution
       const double   diff_phi,   //!< diffusive contribution
       const double   rea_phi,    //!< reactive contribution
-      const double   rhs,        //!< rhs
+      const double   rhsint,     //!< rhs at integration point
       const double   tau         //!< the stabilisation parameter
     );
 
@@ -616,8 +623,8 @@ namespace ELEMENTS
     };
 
     //! compute rhs containing bodyforce
-    virtual void GetRhs(
-      double&      rhs,     //!< rhs containing bodyforce
+    virtual void GetRhsInt(
+      double&      rhsint,  //!< rhs containing bodyforce at integration point
       const double densnp,  //!< density at t_(n+1)
       const int    k        //!< index of current scalar
     );

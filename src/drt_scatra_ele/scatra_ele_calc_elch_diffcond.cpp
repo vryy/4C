@@ -309,46 +309,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhs(
   //-----------------------------------------------------------------------
 
   //adaption of rhs with respect to time integration
-  //my::ComputeRhsInt(rhsint,eps_[0],eps_[0],hist);
+  my::ComputeRhsInt(rhsint,eps_[0],eps_[0],hist);
 
-  double rhs(0.0);
-  if (not my::scatraparatimint_->IsStationary())
-  {
-    //TODO: ELCH: Zeitintegration genalpha Konzentrationsabhängige Parameter alter Zeitschritt
-    if (my::scatraparatimint_->IsGenAlpha())
-    {
-      // note: in hist_ we receive the time derivative phidtam at time t_{n+alpha_M} !!
-      //residual  = hist_[k] + conv_ephinp_k - diff_ephinp_k - rhsint;
-
-      rhsint   *= my::scatraparatimint_->TimeFacRhs(); //(timefac/alphaF);  // not nice, but necessary !
-
-      // rhs contribution due to incremental formulation (phidtam)
-      // Standard Galerkin term
-      const double vtrans = rhsfac*eps_[0]*hist;
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        const int fvi = vi*my::numdofpernode_+k;
-
-        erhs[fvi] -= vtrans*my::funct_(vi);
-      }
-    }
-    else
-    {
-      // TODO: do I need this term
-      rhsint = eps_[0]*hist + (rhs*my::scatraparatimint_->TimeFac()); // contributions from t_n and \theta*dt*bodyforce(t_{n+1})
-      //residual  = conint_[k] + timefac*(conv_ephinp_k - diff_ephinp_k) - rhsint;
-
-      // rhs contribution due to incremental formulation (phinp)
-      // Standard Galerkin term
-      const double vtrans = fac*eps_[0]*vmdc->ConInt(k);
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        const int fvi = vi*my::numdofpernode_+k;
-
-        erhs[fvi] -= vtrans*my::funct_(vi);
-      }
-    } // if(is_genalpha_)
-  } // if (is_stationary_)
+  if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
+    CalcRHSLinMass(erhs,k,rhsfac,fac,eps_[0],eps_[0],vmdc->ConInt(k),hist);
 
   // add RHS and history contribution
   my::CalcRHSHistAndSource(erhs,k,fac*eps_[0],rhsint);
@@ -1553,119 +1517,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAccrosD
       }
     }  // for k
   }
-
-//   // for concentrated solution theory (using div i as closing term for the potential)
-//   // additional flux terms / currents across Dirichlet boundaries
-//   if(myelch::elchpara_->ElchType()==INPAR::ELCH::elchtype_diffcond and
-//       diffcondmat_==INPAR::ELCH::diffcondmat_newman and
-//       equpot_==INPAR::ELCH::equpot_divi)
-//   {
-//     //const double faraday = INPAR::SCATRA::faraday_const;
-//     double val(0.0);
-//     const DRT::Node* const* nodes = ele->Nodes();
-//     std::string condname = "Dirichlet";
-//
-//     for (int vi=0; vi<my::nen_; ++vi)
-//     {
-//       std::vector<DRT::Condition*> dirichcond0;
-//       nodes[vi]->GetCondition(condname,dirichcond0);
-//
-//       // there is at least one Dirichlet condition on this node
-//       if (dirichcond0.size() > 0)
-//       {
-//         //std::cout<<"Ele Id = "<<ele->Id()<<"  Found one Dirichlet node for vi="<<vi<<std::endl;
-//         const std::vector<int>*    onoff = dirichcond0[0]->Get<std::vector<int> >   ("onoff");
-//         for (int k=0; k<my::numscal_; ++k)
-//         {
-//           if ((*onoff)[k])
-//           {
-//             //std::cout<<"Dirichlet is on for k="<<k<<std::endl;
-//             //std::cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<std::endl;
-//             const int fvi = vi*my::numdofpernode_+k;
-//             // We use the fact, that the rhs vector value for boundary nodes
-//             // is equivalent to the integrated negative normal flux
-//             // due to diffusion and migration
-//
-//             // scaling of div i results in a matrix with better condition number
-//             val = elevec1_epetra[fvi];
-//             elevec1_epetra[vi*my::numdofpernode_+my::numscal_] += dmedc_->GetValence(k)*(-val);
-//             // corresponding linearization
-//             for (int ui=0; ui<my::nen_; ++ui)
-//             {
-//               val = elemat1_epetra(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
-//               elemat1_epetra(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)+=dmedc_->GetValence(k)*(-val);
-//               val = elemat1_epetra(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
-//               elemat1_epetra(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_)+=dmedc_->GetValence(k)*(-val);
-//             }
-//           }
-//         } // for k
-//         // dirichlet condition for potential
-//         if ((*onoff)[my::numscal_])
-//         {
-//           //reacting species 0
-//           int k =0;
-//
-//           //std::cout<<"Dirichlet is on for k="<<k<<std::endl;
-//           //std::cout<<"k="<<k<<"  val="<<val<<" valence_k="<<dmedc_->GetValence(k)<<std::endl;
-//           const int fvi = vi*my::numdofpernode_+my::numscal_;
-//           // We use the fact, that the rhs vector value for boundary nodes
-//           // is equivalent to the integrated negative normal flux
-//           // due to diffusion and migration
-//
-//           // scaling of div i results in a matrix with better condition number
-//           val = elevec1_epetra[fvi];
-//           elevec1_epetra[vi*my::numdofpernode_+k] += 1.0/dmedc_->GetValence(k)*(-val);
-//           // corresponding linearization
-//           for (int ui=0; ui<my::nen_; ++ui)
-//           {
-//             val = elemat1_epetra(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k);
-//             elemat1_epetra(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k) += 1.0/dmedc_->GetValence(k)*(-val);
-//             val = elemat1_epetra(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_);
-//             elemat1_epetra(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) +=1.0/dmedc_->GetValence(k)*(-val);
-//           }
-//         }
-//       } // if Dirichlet at node vi
-//     } // for vi
-//
-//     // Nernst boundary conditions have to be handled like Dirichlet conditions!!!
-//     std::string condname2 = "ElectrodeKinetics";
-//     for (int vi=0; vi<my::nen_; ++vi)
-//     {
-//       std::vector<DRT::Condition*> elctrodeKinetics;
-//       nodes[vi]->GetCondition(condname2,elctrodeKinetics);
-//
-//       // there is at least one Dirichlet condition on this node
-//       if (elctrodeKinetics.size() == 1)
-//       {
-//         const int  kinetics = elctrodeKinetics[0]->GetInt("kinetic model");
-//
-//         if (kinetics==INPAR::SCATRA::nernst)
-//         {
-//           //reacting species 0
-//           int k = 0;
-//
-//           //std::cout<<"Dirichlet is on for k="<<k<<std::endl;
-//           //std::cout<<"k="<<k<<"  val="<<val<<" valence_k="<<dmedc_->GetValence(k)<<std::endl;
-//           const int fvi = vi*my::numdofpernode_+my::numscal_;
-//           // We use the fact, that the rhs vector value for boundary nodes
-//           // is equivalent to the integrated negative normal flux
-//           // due to diffusion and migration
-//
-//           // scaling of div i results in a matrix with better condition number
-//           val = elevec1_epetra[fvi];
-//           elevec1_epetra[vi*my::numdofpernode_+k] += 1.0/dmedc_->GetValence(k)*(-val);
-//           // corresponding linearization
-//           for (int ui=0; ui<my::nen_; ++ui)
-//           {
-//             val = elemat1_epetra(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k);
-//             elemat1_epetra(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k) += 1.0/dmedc_->GetValence(k)*(-val);
-//             val = elemat1_epetra(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_);
-//             elemat1_epetra(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) +=1.0/dmedc_->GetValence(k)*(-val);
-//           }
-//         }
-//       } // if Dirichlet at node vi
-//     } // for vi
-//   }
 
   return;
 }

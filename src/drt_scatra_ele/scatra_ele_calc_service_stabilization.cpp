@@ -870,7 +870,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcResidualAndSubgrScalar(
   const double   conv_phi,   //!< convective contribution
   const double   diff_phi,   //!< diffusive contribution
   const double   rea_phi,    //!< reactive contribution
-  const double   rhs,        //!< rhs
+  const double   rhsint,     //!< rhs at gauss point
   const double   tau         //!< the stabilisation parameter
   )
 {
@@ -878,12 +878,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcResidualAndSubgrScalar(
   {
     // time derivative stored on history variable
     scatrares  = densam*hist + densnp*conv_phi
-                     - diff_phi + rea_phi - rhs;
+                     - diff_phi + rea_phi - rhsint;
   }
   else
   {
     // stationary residual
-    scatrares = densnp*conv_phi - diff_phi + rea_phi - rhs;
+    scatrares = densnp*conv_phi - diff_phi + rea_phi - rhsint;
 
     if (not scatraparatimint_->IsStationary())
     {

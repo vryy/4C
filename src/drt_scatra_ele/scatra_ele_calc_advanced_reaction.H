@@ -31,6 +31,7 @@ enum reaction_coupling
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcAdvReac : public ScaTraEleCalc<distype>
 {
+private:
     /// private constructor, since we are a Singleton.
   ScaTraEleCalcAdvReac(const int numdofpernode,const int numscal);
 
@@ -89,8 +90,8 @@ protected:
       const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
 
-  virtual void GetRhs(
-    double&      rhs,     //!< rhs containing bodyforce
+  virtual void GetRhsInt(
+    double&      rhsint,  //!< rhs containing bodyforce at Gauss point
     const double densnp,  //!< density at t_(n+1)
     const int    k        //!< index of current scalar
   );

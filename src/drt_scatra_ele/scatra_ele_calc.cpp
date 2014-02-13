@@ -539,8 +539,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
       // for temperature equation, the time derivative of thermodynamic pressure,
       // if not constant, and for temperature equation of a reactive
       // equation system, the reaction-rate term
-      double rhs(0.0);
-      GetRhs(rhs,densnp,k);
+      double rhsint(0.0);
+      GetRhsInt(rhsint,densnp,k);
 
       //--------------------------------------------------------------------
       // calculation of (fine-scale) subgrid diffusivity, subgrid-scale
@@ -564,7 +564,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
 
           // compute residual of scalar transport equation
           // (subgrid-scale part of scalar, which is also computed, not required)
-          CalcResidualAndSubgrScalar(k,scatrares,sgphi,densam,densnp,phinp,hist,conv_phi,diff_phi,rea_phi,rhs,tau[k]);
+          CalcResidualAndSubgrScalar(k,scatrares,sgphi,densam,densnp,phinp,hist,conv_phi,diff_phi,rea_phi,rhsint,tau[k]);
 
           // pre-calculation of stabilization parameter at integration point need for some forms of artificial diffusion
           CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol,k);
@@ -631,7 +631,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
 
       // compute residual of scalar transport equation and
       // subgrid-scale part of scalar
-      CalcResidualAndSubgrScalar(k,scatrares,sgphi,densam,densnp,phinp,hist,conv_phi,diff_phi,rea_phi,rhs,tau[k]);
+      CalcResidualAndSubgrScalar(k,scatrares,sgphi,densam,densnp,phinp,hist,conv_phi,diff_phi,rea_phi,rhsint,tau[k]);
 
       // prepare multifractal subgrid-scale modeling
       // calculation of model coefficients B (velocity) and D (scalar)
@@ -727,7 +727,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
       // term (if required) on right hand side depending on respective
       // (non-)incremental stationary or time-integration scheme
       //----------------------------------------------------------------
-      double rhsint    = rhs;
       double rhsfac    = scatraparatimint_->TimeFacRhs() * fac;
       double rhstaufac = scatraparatimint_->TimeFacRhsTau() * taufac;
 
@@ -1263,8 +1262,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetDivergence(
  | compute rhs containing bodyforce                                 ehrl 11/13 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetRhs(
-  double&      rhs,     //!< rhs containing bodyforce
+void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetRhsInt(
+  double&      rhsint,  //!< rhs containing bodyforce at Gauss point
   const double densnp,  //!< density at t_(n+1)
   const int    k        //!< index of current scalar
   )
@@ -1273,10 +1272,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetRhs(
   // for temperature equation, the time derivative of thermodynamic pressure,
   // if not constant, and for temperature equation of a reactive
   // equation system, the reaction-rate term
-  rhs = bodyforce_[k].Dot(funct_);
+  rhsint = bodyforce_[k].Dot(funct_);
 
   return;
-} // GetRhs
+} // GetRhsInt
 
 /*-----------------------------------------------------------------------------*
  |  calculation of convective element matrix in convective form     ehrl 11/13 |

@@ -33,7 +33,7 @@ Maintainer: Andreas Ehrl
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
   DRT::Element::DiscretizationType distype,
-  std::string problem,
+  INPAR::SCATRA::ImplType problem,
   const int numdofpernode,
   const int numscal)
 {
@@ -127,7 +127,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeScaTraCellInterface* DRT::ELEMENTS::ScaTraFactory::ProvideMeshfreeImpl(
   DRT::Element::DiscretizationType distype,
-  std::string problem,
+  INPAR::SCATRA::ImplType problem,
   const int numdofpernode,
   const int numscal)
 {
@@ -165,23 +165,23 @@ DRT::ELEMENTS::MeshfreeScaTraCellInterface* DRT::ELEMENTS::ScaTraFactory::Provid
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemType(
-  std::string problem,
+  INPAR::SCATRA::ImplType problem,
   const int numdofpernode,
   const int numscal)
 {
-  if (problem == "std")
+  if (problem == INPAR::SCATRA::impltype_std)
     return DRT::ELEMENTS::ScaTraEleCalcStd<distype>::Instance(numdofpernode,numscal);
-  else if (problem == "lsreinit")
+  else if (problem == INPAR::SCATRA::impltype_lsreinit)
     return DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Instance(numdofpernode,numscal);
-  else if (problem == "loma")
+  else if (problem == INPAR::SCATRA::impltype_loma)
     return DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(numdofpernode,numscal);
-  else if (problem == "elch_NP")
+  else if (problem == INPAR::SCATRA::impltype_elch_NP)
     return DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Instance(numdofpernode,numscal);
-  else if (problem == "elch_diffcond")
+  else if (problem == INPAR::SCATRA::impltype_elch_diffcond)
     return DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Instance(numdofpernode,numscal);
-  else if (problem == "poro")
+  else if (problem == INPAR::SCATRA::impltype_poro)
     return DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(numdofpernode,numscal);
-  else if (problem == "advreac")
+  else if (problem == INPAR::SCATRA::impltype_advreac)
     return DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Instance(numdofpernode,numscal);
   else
     dserror("Defined problem type does not exist!!");
@@ -194,11 +194,11 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::MeshfreeScaTraCellInterface* DRT::ELEMENTS::ScaTraFactory::DefineMeshfreeProblemType(
-  std::string problem,
+    INPAR::SCATRA::ImplType problem,
   const int numdofpernode,
   const int numscal)
 {
-  if (problem == "std_meshfree")
+  if (problem == INPAR::SCATRA::impltype_std_meshfree)
     return DRT::ELEMENTS::MeshfreeScaTraCellCalcStd<distype>::Instance(numdofpernode,numscal);
   else
     dserror("Defined problem type does not exist!!");

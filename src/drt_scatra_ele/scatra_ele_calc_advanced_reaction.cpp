@@ -226,8 +226,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatGrowthScd(
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetRhs(
-  double&      rhs,     //!< rhs containing bodyforce
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetRhsInt(
+  double&      rhsint,   //!< rhs containing bodyforce at Gauss point
   const double densnp,  //!< density at t_(n+1)
   const int    k        //!< index of current scalar
   )
@@ -238,7 +238,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetRhs(
   // equation system, the reaction-rate term
 
                                     //... + reaction terms not depending on phi(k) -> source term
-  rhs = my::bodyforce_[k].Dot(my::funct_) + my::reamanager_->GetReaBodyForce(k);
+  rhsint = my::bodyforce_[k].Dot(my::funct_) + my::reamanager_->GetReaBodyForce(k);
 
   return;
 } // GetRhs

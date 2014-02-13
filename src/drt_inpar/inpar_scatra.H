@@ -176,6 +176,20 @@ namespace INPAR
       scatratype_cardio_monodomain
     };
 
+    //! this parameter is closely connected to ScaTraType
+    enum ImplType
+    {
+      impltype_undefined,
+      impltype_std,
+      impltype_loma,
+      impltype_elch_NP,
+      impltype_elch_diffcond,
+      impltype_lsreinit,
+      impltype_poro,
+      impltype_advreac,
+      impltype_std_meshfree
+    };
+
     /// type of method for improving consistency of stabilized methods
     enum Consistency
     {

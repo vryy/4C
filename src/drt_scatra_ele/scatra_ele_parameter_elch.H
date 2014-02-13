@@ -28,6 +28,12 @@ namespace ELEMENTS
 
 class ScaTraEleParameterElch : public ScaTraEleParameter
 {
+protected:
+
+  /// (private) protected constructor, since we are a Singleton.
+  /// this constructor is called from a derived class
+  /// -> therefore, it has to be protected instead of private
+  ScaTraEleParameterElch();
 
 public:
 
@@ -86,10 +92,7 @@ public:
 
   const double NewmanConstC(){return newmanconstc_;};
 
-protected:
-
-  /// protected Constructor since we are a Singleton.
-  ScaTraEleParameterElch();
+private:
 
   //! type of elch problem
   INPAR::ELCH::ElchType elchtype_;

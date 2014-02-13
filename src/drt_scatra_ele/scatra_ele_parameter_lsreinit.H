@@ -28,6 +28,12 @@ namespace ELEMENTS
 
 class ScaTraEleParameterLsReinit : public ScaTraEleParameter
 {
+protected:
+
+  /// (private) protected constructor, since we are a Singleton.
+  /// this constructor is called from a derived class
+  /// -> therefore, it has to be protected instead of private
+  ScaTraEleParameterLsReinit();
 
 public:
 
@@ -71,11 +77,6 @@ private:
   INPAR::SCATRA::LinReinit linform_;
   // form of artificial diffusion
   INPAR::SCATRA::ArtDiff artdiff_;
-
-protected:
-
-  /// protected Constructor since we are a Singleton.
-  ScaTraEleParameterLsReinit();
 
 };
 

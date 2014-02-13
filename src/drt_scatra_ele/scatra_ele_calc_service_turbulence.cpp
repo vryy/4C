@@ -1714,8 +1714,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
     double hist(0.0);
     hist = funct_.Dot(ehist_[0]);
 
-    double rhs(0.0);
-    GetRhs(rhs,densnp,0);
+    double rhsint(0.0);
+    GetRhsInt(rhsint,densnp,0);
 
     //--------------------------------------------------------------------
     // calculation of (fine-scale) subgrid diffusivity, subgrid-scale
@@ -1817,7 +1817,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
 
     // compute residual of scalar transport equation and
     // subgrid-scale part of scalar
-    CalcResidualAndSubgrScalar(0,scatrares,sgphi,densam,densnp,phinp,hist,conv_phi,diff_phi,rea_phi,rhs,tau[0]);
+    CalcResidualAndSubgrScalar(0,scatrares,sgphi,densam,densnp,phinp,hist,conv_phi,diff_phi,rea_phi,rhsint,tau[0]);
 
     // not supported anymore
     // update material parameters based on inclusion of subgrid-scale
