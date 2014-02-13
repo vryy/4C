@@ -5385,13 +5385,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       std::vector<std::map<int,double> > dtetamap = cnode->CoData().GetDerivTeta();
       double scalefac=1.;
       std::map<int,double> dscmap = cnode->CoData().GetDerivScale();
-      bool scderiv=false;
-      if (scale==true && cnode->MoData().GetScale() != 0.)
-      {
-        scderiv=true;
-        scalefac=cnode->MoData().GetScale();
-
-      }
 
       // mesh size scaling of complementarity parameters
       double mesh_h = 0.; // mesh size scaling parameter
@@ -6609,7 +6602,6 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
   {
     // complementarity parameters
     // no adaptive complementarity parameters for tresca friction
-    double cn = cn_input;
     double ct = ct_input;
 
     // loop over all slip nodes of the interface
