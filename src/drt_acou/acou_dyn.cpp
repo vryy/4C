@@ -69,10 +69,9 @@ void acoustics_drt()
   if (acoudishdg == Teuchos::null)
     dserror("Failed to cast DRT::Discretization to DRT::DiscretizationHDG.");
 
-  DRT::ELEMENTS::Acou* ele = dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lRowElement(0));
 
   const int dim = DRT::Problem::Instance()->NDim();
-  int degreep1 = ele->degree+1;
+  int degreep1 = 3 + 1;
   int nscalardofs = 1;
   for(int i=0; i<dim; ++i)
     nscalardofs *= degreep1;
