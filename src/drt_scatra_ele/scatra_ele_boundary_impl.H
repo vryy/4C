@@ -17,7 +17,7 @@ Maintainer: Andreas Ehrl
 #define SCATRA_ELE_BOUNDARY_IMPL_H
 
 #include "../drt_lib/drt_singletondestruction.H"
-#include "scatra_ele_impl_utils.H"
+#include "scatra_ele_calc_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_elch.H"

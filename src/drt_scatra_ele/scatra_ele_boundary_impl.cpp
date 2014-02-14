@@ -20,7 +20,7 @@ Maintainer: Andreas Ehrl
 
 #include <cstdlib>
 #include "scatra_ele_boundary_impl.H"
-#include "scatra_ele_impl_utils.H"
+#include "scatra_ele_calc_utils.H"
 #include "scatra_ele_action.H"
 #include "scatra_ele.H"
 

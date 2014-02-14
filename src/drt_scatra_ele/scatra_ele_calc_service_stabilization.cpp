@@ -19,7 +19,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "scatra_ele_impl_utils.H"
+#include "scatra_ele_calc_utils.H"
 
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
 #include "../drt_lib/drt_condition_utils.H"

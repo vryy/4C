@@ -968,9 +968,6 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_boundary_impl.cpp
   src/drt_scatra_ele/scatra_ele_boundary_evaluate.cpp
   src/drt_scatra_ele/scatra_ele_factory.cpp
-  #src/drt_scatra_ele/scatra_ele_impl.cpp
-  #src/drt_scatra_ele/scatra_ele_impl_diffcond_service.cpp
-  src/drt_scatra_ele/scatra_ele_impl_utils.cpp
   src/drt_scatra_ele/scatra_ele.cpp
   src/drt_scatra_ele/scatra_ele_evaluate.cpp
   src/drt_scatra_ele/scatra_ele_input.cpp
@@ -983,6 +980,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_lsreinit.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro.cpp
   src/drt_scatra_ele/scatra_ele_calc_advanced_reaction.cpp
+  src/drt_scatra_ele/scatra_ele_calc_utils.cpp
   src/drt_scatra_ele/scatra_ele_parameter.cpp
   src/drt_scatra_ele/scatra_ele_parameter_std.cpp
   src/drt_scatra_ele/scatra_ele_parameter_lsreinit.cpp

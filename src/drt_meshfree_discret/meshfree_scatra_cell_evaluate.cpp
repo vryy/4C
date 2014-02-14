@@ -19,7 +19,7 @@
 #include "../drt_scatra_ele/scatra_ele_parameter.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_std.H"
 #include "../drt_scatra_ele/scatra_ele_factory.H"
-#include "../drt_scatra_ele/scatra_ele_impl_utils.H"
+#include "../drt_scatra_ele/scatra_ele_calc_utils.H"
 
 #include "../drt_inpar/inpar_scatra.H"
 

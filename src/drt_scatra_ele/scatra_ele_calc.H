@@ -17,7 +17,7 @@ Maintainer: Andreas Ehrl
 
 #include "scatra_ele_interface.H"
 
-#include "scatra_ele_impl_utils.H"
+#include "scatra_ele_calc_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include <Epetra_IntSerialDenseVector.h>
 

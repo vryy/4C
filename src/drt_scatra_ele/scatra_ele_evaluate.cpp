@@ -23,7 +23,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_parameter_lsreinit.H"
 #include "scatra_ele_parameter_elch.H"
 
-#include "scatra_ele_impl_utils.H"
+#include "scatra_ele_calc_utils.H"
 
 #include "../drt_inpar/inpar_scatra.H"
 
