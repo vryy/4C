@@ -101,7 +101,7 @@ THETA                           0.5
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrPlasticLinElast YOUNG 2.1e8 NUE 0.3 DENS 0.0 THEXPANS 0.0 INITTEMP 273.15 YIELD 2.4e5 ISOHARD 0.0 KINHARD 0.0 TOL 1.0e-6
+MAT 1 MAT_Struct_ThrPlasticLinElast YOUNG 2.1e8 NUE 0.3 DENS 0.0 THEXPANS 0.0 INITTEMP 273.15 YIELD 2.4e5 ISOHARD 0.0 KINHARD 0.0 SAMPLENUM 0 SIGMA_Y EPSBAR_P TOL 1.0e-6
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5 t1 0.0 t2 5.0 // Tmax=5
 ----------------------------------------------------------------------CURVE2

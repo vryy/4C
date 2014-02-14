@@ -66,6 +66,10 @@ MAT::PAR::Damage::Damage(
   hardexpo_(matdata->GetDouble("HARDEXPO")),
   abstol_(matdata->GetDouble("TOL"))
 {
+  if (hardexpo_ < 0.0)
+    dserror("Nonlinear hardening exponent must be non-negative!");
+  if (damden_ == 0.0)
+    dserror("Denominator has to be unequal to zero, otherwise floating point exception!");
 }
 
 
@@ -1130,10 +1134,18 @@ void MAT::Damage::EvaluateSimplifiedLemaitre(
     for (int i=3; i<6; ++i) strain_p(i) *= 2.0;
     plstrain.Update(strain_p);
 
+    // --------------------------------------------------------- update history
     // constant values for
     //  - plastic strains
     //  - accumulated (un)damaged plastic strains
     //  - stress
+
+    // as current history vectors are set to zero in Update(), the old values
+    // need to be set instead, otherwise no constant plastic values are possible
+    strainplcurr_->at(gp) = strainpllast_->at(gp);
+    strainbarplcurr_->at(gp) = strainbarpllast_->at(gp);
+    isohardvarcurr_->at(gp) = isohardvarlast_->at(gp);
+    damagecurr_->at(gp) = damagelast_->at(gp);
 
   }  // elastic step
 
@@ -1393,6 +1405,25 @@ void MAT::Damage::EvaluateFullLemaitre(
   double qbar_tilde = 0.0;
   qbar_tilde = sqrt( 3.0 * J2bar );
 
+#ifdef DEBUGMATERIAL
+  if(gp==0)
+  {
+    std::cout << ": devstress_tilde\n " << devstress_tilde << std::endl;
+    std::cout << ": devstrain\n " << devstrain << std::endl;
+    std::cout << ": beta\n " << beta << std::endl;
+    std::cout << ": eta_tilde\n " << eta_tilde << std::endl;
+    std::cout << "plastic load: strainbarplcurr_->at(gp)\n " << strainbarplcurr_->at(gp) << std::endl;
+    std::cout << "plastic load: strainbarpllast_->at(gp)\n " << strainbarpllast_->at(gp) << std::endl;
+    std::cout << "plastic load: strain_p\n " << strain_p << std::endl;
+    std::cout << "plastic load: strainplcurr_->at(gp)\n " << strainplcurr_->at(gp) << std::endl;
+    std::cout << "plastic load: strainpllast\n " << strainpllast_->at(gp) << std::endl;
+    std::cout << "elastic load: backstresscurr_->at(gp)\n " << backstresscurr_->at(gp) << std::endl;
+    std::cout << "elastic load: backstresslast_->at(gp)\n " << backstresslast_->at(gp) << std::endl;
+    std::cout << ": q_tilde\n " << q_tilde << std::endl;
+    std::cout << ": qbar_tilde\n " << qbar_tilde << std::endl;
+  }
+#endif  // DEBUGMATERIAL
+
   // initialise final (damaged) deviatoric stresses
   LINALG::Matrix<NUM_STRESS_3D,1> devstress(true);
 
@@ -1482,6 +1513,17 @@ void MAT::Damage::EvaluateFullLemaitre(
   // with trial values: Phi_trial = qbar{~,trial} - sigma_y and Dgamma == 0
   double Phi_trial = 0.0;
   Phi_trial = qbar_tilde - sigma_y;
+
+#ifdef DEBUGMATERIAL
+  if(gp==0)
+  {
+    std::cout << ": Phi_trial  " << Phi_trial << std::endl;
+    std::cout << ": qbar_tilde  " << qbar_tilde << std::endl;
+    std::cout << ": sigma_y  " << sigma_y << std::endl;
+    std::cout << ": kappa " << kappa << std::endl;
+    std::cout << ": dkappa_dR " << dkappa_dR << std::endl;
+  }
+#endif  // DEBUGMATERIAL
 
   // --------------------------------------------------------- initialise
 
@@ -1626,6 +1668,17 @@ void MAT::Damage::EvaluateFullLemaitre(
     // c_D = (Y^trial_{n+1} / r)^s . c_astrain
     double c_D = 0.0;
     c_D = y * c_strainbar;
+
+#ifdef DEBUGMATERIAL
+    if(gp==0)
+    {
+      std::cout << ": Phi_trial  " << Phi_trial << std::endl;
+      std::cout << ": qbar_tilde  " << qbar_tilde << std::endl;
+      std::cout << ": Y  " << Y << std::endl;
+      std::cout << ": y " << y << std::endl;
+      std::cout << ": c_D " << c_D << std::endl;
+    }
+#endif  // DEBUGMATERIAL
 
     // ------------------------------------------------- return-mapping
 
@@ -1857,6 +1910,9 @@ void MAT::Damage::EvaluateFullLemaitre(
         {
           dserror("Damage variable has converged to unacceptable value");
         }
+        break;
+      }
+      else
 #ifdef DEBUGMATERIAL
         if (gp == 0)
           printf(
@@ -1872,8 +1928,7 @@ void MAT::Damage::EvaluateFullLemaitre(
             norm_k_D
             );
 #endif  // #ifdef DEBUGMATERIAL
-        break;
-      }
+
       // --------------- else: load step NOT converged, calculate corrections
 
       // the sequence of corrections is decisive due to the dependency of single
@@ -1904,8 +1959,13 @@ void MAT::Damage::EvaluateFullLemaitre(
       // calculate the factor g included in third term of num (47)
       // g = [ 2 G . Delta_astrain + Hkin . Dgamma / (1 + Hkin_rec . Dgamma) ] / qbar_tilde
       //   = [ 2 G .( Dgamma / omega) + Hkin . Dgamma / (1 + Hkin_rec . Dgamma) ] / qbar_tilde
-      g = ( 2.0 * G * Dgamma / omega + Hkin * Dgamma / (1.0 + Hkin_rec * Dgamma)
+      if (qbar_tilde != 0.0)
+      {
+        g = ( 2.0 * G * Dgamma / omega + Hkin * Dgamma / (1.0 + Hkin_rec * Dgamma)
           ) / qbar_tilde;
+      }
+      else
+        dserror("do not divide by zero!");
 
       if (g <= 0.0)
         dserror("factor g has to be greater zero! g =  %-14.8E", g);
@@ -2223,11 +2283,20 @@ void MAT::Damage::EvaluateFullLemaitre(
     for (int i=3; i<6; ++i) strain_p(i) *= 2.0;
     plstrain.Update(strain_p);
 
+    // --------------------------------------------------------- update history
     // constant values for
     //  - plastic strains
     //  - accumulated (un)damaged plastic strains
-    //  - back stress and relative stress
+    //  - back stress
+    //    (--> relative stress)
     //  - stress
+    // as current history vectors are set to zero in Update(), the old values
+    // need to be set instead, otherwise no constant plastic values are possible
+    strainplcurr_->at(gp) = strainpllast_->at(gp);
+    strainbarplcurr_->at(gp) = strainbarpllast_->at(gp);
+    backstresscurr_->at(gp) = backstresslast_->at(gp);
+    isohardvarcurr_->at(gp) = isohardvarlast_->at(gp);
+    damagecurr_->at(gp) = damagelast_->at(gp);
 
   }  // elastic step
 

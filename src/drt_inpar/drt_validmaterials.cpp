@@ -497,6 +497,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"YIELD","yield stress");
     AddNamedReal(m,"ISOHARD","isotropic hardening modulus");
     AddNamedReal(m,"KINHARD","kinematic hardening modulus");
+    AddNamedInt(m,"SAMPLENUM","number of stress-strain pairs in list");
+    AddNamedRealVector(m,"SIGMA_Y","yield stress", "SAMPLENUM");
+    AddNamedRealVector(m,"EPSBAR_P","accumulated plastic strain corresponding to SIGMA_Y", "SAMPLENUM");
     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
 
     AppendMaterialDefinition(matlist,m);

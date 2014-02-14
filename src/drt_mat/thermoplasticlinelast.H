@@ -90,6 +90,10 @@ namespace MAT
       const double isohard_;
       //! kinematic hardening modulus \f$ H_k \f$
       const double kinhard_;
+      //! isotropic hardening curve
+      const std::vector<double> sigma_y_;
+      //! accumulated plastic strain
+      const std::vector<double> strainbar_p_ref_;
       //! tolerance for local Newton iteration
       const double abstol_;
 
@@ -243,6 +247,20 @@ private:
       double Dgamma,
       double q,
       LINALG::Matrix<NUM_STRESS_3D,1> unitflow
+      );
+
+    //! calculates the derivative of GetSigmaYAtStrainbarnp() w.r.t. astrain_{n+1}
+    //! and returns the isotropic hardening modulus
+    double GetIsoHardAtStrainbarnp(
+      const double strainbar_p //!< current accumulated strain
+                               //!< or if damage!=0: isotropic hardening internal variable
+      );
+
+    //! calculates current yield stress from (sigma_y-astrain)-samples which
+    //! describe a piecewise constant function
+    double GetSigmaYAtStrainbarnp(
+      const double strainbar_p  //!< current accumulated strain, in case of dependent hardening
+                                //!< or if damage!=0: isotropic hardening internal variable
       );
 
     //! return density

@@ -429,13 +429,11 @@ void MAT::Robinson::Evaluate(
   // use the newest plastic strains here, i.e., from latest Newton iteration
   // (strainplcurr_), not necessarily equal to newest temporal strains (last_)
   // CCARAT: stnvscn
-  LINALG::Matrix<MAT::NUM_STRESS_3D,1> strain_pn(true);
-  for (int i=0; i<6; i++)
-    strain_pn(i,0) = strainplcurr_->at(gp)(i,0);
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1> strain_pn(false);
+  strain_pn.Update(strainplcurr_->at(gp));
   // get history vector of old visco-plastic strain at t_n
-  LINALG::Matrix<MAT::NUM_STRESS_3D,1> strain_p(true);
-  for (int i=0; i<6; i++)
-    strain_p(i,0) = strainpllast_->at(gp)(i,0);
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1> strain_p(false);
+  strain_p.Update(strainpllast_->at(gp));
 
   // ------------------------------------------------- elastic strain
   // elastic strain at t_{n+1}
@@ -444,8 +442,7 @@ void MAT::Robinson::Evaluate(
 
   // strain^e_{n+1} = strain_n+1 - strain^p_n - strain^t
   strain_e.Update(*strain);
-  strain_e.Update( (-1.0), strain_pn, 1.0 );
-  strain_e.Update( (-1.0), strain_t, 1.0 );
+  strain_e.Update( (-1.0), strain_pn, (-1.0), strain_t, 1.0 );
 
   // ---------------------------------------------- elasticity tensor
   // cmat = kee = pd(sig)/pd(eps)
@@ -502,13 +499,10 @@ void MAT::Robinson::Evaluate(
   // new back stress at t_{n+1} backstress_{n+1}^i
   // CCARAT: actso3->miv_rob->bacstsn.a.da[ip]
   LINALG::Matrix<MAT::NUM_STRESS_3D,1> backstress_n(false);
-  for (int i=0; i<MAT::NUM_STRESS_3D; i++)
-    backstress_n(i,0) = backstresscurr_->at(gp)(i,0);
-
+  backstress_n.Update(backstresscurr_->at(gp));
   // old back stress at t_{n} backstress_{n}
   LINALG::Matrix<MAT::NUM_STRESS_3D,1> backstress(false);
-  for (int i=0; i<MAT::NUM_STRESS_3D; i++)
-    backstress(i,0) = backstresslast_->at(gp)(i,0);
+  backstress.Update(backstresslast_->at(gp));
 
   // ------------------------------------------ over/relativestress
   // overstress Sig_{n+1}^i = s_{n+1}^i - al_{n+1}^i
@@ -616,8 +610,7 @@ void MAT::Robinson::Evaluate(
 
   // pass the current plastic strains to the element (for visualisation)
   LINALG::Matrix<MAT::NUM_STRESS_3D,1> plstrain(false);
-  plstrain.Update(strain_pn);
-
+  plstrain.Update(strainplcurr_->at(gp));
   // set in parameter list
   params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain",plstrain);
 
