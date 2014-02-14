@@ -473,14 +473,13 @@ void FLD::Meshtying::ApplyPTToResidual(
   case INPAR::FLUID::condensed_bmat:
   case INPAR::FLUID::condensed_bmat_merged:
      res      = LINALG::CreateVector(*mergedmap_,true);
-    CondensationBlockMatrix(sysmat, residual);
     SplitVectorBasedOn3x3(residual, res);
     if(projector!=Teuchos::null)
       projector->ApplyPT(*res);
     LINALG::Export(*res,*residual);
     break;
   case INPAR::FLUID::condensed_smat:
-    CondensationSparseMatrix(sysmat, residual);
+    projector->ApplyPT(*residual);
     break;
   default:
     dserror("");

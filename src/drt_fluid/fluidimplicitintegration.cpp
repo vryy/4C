@@ -978,7 +978,6 @@ void FLD::FluidImplicitTimeInt::Solve()
     if(msht_ != INPAR::FLUID::no_meshtying)
     {
       meshtying_->PrepareMeshtyingSystem(sysmat_, residual_);
-      meshtying_->ApplyPTToResidual(sysmat_,residual_,projector_);
     }
     // print to screen
     ConvergenceCheck(0,itmax,ittol);
@@ -2087,7 +2086,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
   // remove contributions of pressure mode
   // that would not vanish due to the projection
   // In meshtying, the projector has another length than the residual. The projector is applied there locally
-  if (projector_ != Teuchos::null&&msht_!=INPAR::FLUID::condensed_bmat_merged&&msht_!=INPAR::FLUID::condensed_bmat)
+  if (projector_ != Teuchos::null)
   {
     if (msht_==INPAR::FLUID::condensed_bmat_merged||msht_==INPAR::FLUID::condensed_bmat)
       meshtying_->ApplyPTToResidual(sysmat_,residual_,projector_);
