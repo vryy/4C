@@ -102,7 +102,7 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
           dserror("Cannot test result for velz in 2D case.");
         result = (*myvan_)[velnpmap.LID(fluiddis_->Dof(0,actnode,2))];
       }
-      else if (position=="van_pressure")
+      else if (position=="van_pres")
       {
         if (fluiddis_->NumDof(0,actnode)<(numdim+1))
           dserror("too few dofs at node %d for pressure testing",actnode->Id());

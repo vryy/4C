@@ -199,7 +199,7 @@ HomIsoTurbInitialField::HomIsoTurbInitialField(
   //-------------------------------------------------
   // non-dimensionalize and store experimental data
 
-  if (type_ == INPAR::FLUID::initialfield_hit_comte_bellot_corrsin)
+  if (type_ == INPAR::FLUID::initfield_hit_comte_bellot_corrsin)
     // of Comte-Bellot-Corrsin experiment
     PrepareExparimentalData();
 
@@ -373,7 +373,7 @@ void HomIsoTurbInitialField::CalculateInitialField()
 
             // estimate energy at wave number from energy spectrum
             double energy = 0.0;
-            if (type_ == INPAR::FLUID::initialfield_hit_comte_bellot_corrsin)
+            if (type_ == INPAR::FLUID::initfield_hit_comte_bellot_corrsin)
               energy = InterpolateEnergyFromSpectrum(k);
             else
               energy = CalculateEnergyFromSpectrum(k);
@@ -742,19 +742,19 @@ double HomIsoTurbInitialField::CalculateEnergyFromSpectrum(double k)
 
   double energy = 0.0;
 
-  if (type_ == INPAR::FLUID::initialfield_forced_hit_simple_algebraic_spectrum)
+  if (type_ == INPAR::FLUID::initfield_forced_hit_simple_algebraic_spectrum)
   {
     // initial spectrum as used in Hickel et al. 2006
     energy = 0.5 * pow(k,-5.0/3.0);
   }
-  else if (type_ == INPAR::FLUID::initialfield_passive_hit_const_input)
+  else if (type_ == INPAR::FLUID::initfield_passive_hit_const_input)
   {
     if (k <=2)
       energy = 0.1 * 1.0;
     else
       energy = 0.1 * pow(2.0,5.0/3.0) * pow(k,-5.0/3.0);
   }
-  else if (type_ == INPAR::FLUID::initialfield_forced_hit_numeric_spectrum)
+  else if (type_ == INPAR::FLUID::initfield_forced_hit_numeric_spectrum)
   {
     // initial spectrum as used in Bazilevs et al. 2007 (from Langford & Moser 1999)
     std::vector<double> k_vec(48);

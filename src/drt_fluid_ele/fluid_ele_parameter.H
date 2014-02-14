@@ -63,148 +63,149 @@ public:
   //! @name access-routines
   /*========================================================================*/
 
-  /*--------------------------*/
+  /*----------------------------------------------------*/
   //! @name general parameters
-  /*--------------------------*/
+  /*----------------------------------------------------*/
 
   //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq, poro)
-  INPAR::FLUID::PhysicalType PhysicalType(){return physicaltype_;};
+  INPAR::FLUID::PhysicalType PhysicalType() const {return physicaltype_;};
   //! flag to (de)activate conservative formulation
-  bool IsConservative(){return is_conservative_;};
+  bool IsConservative() const {return is_conservative_;};
   //! flag to (de)activate Newton linearization
-  bool IsNewton(){return is_newton_;};
+  bool IsNewton() const {return is_newton_;};
   //! flag to (de)activate second derivatives
-  bool IsInconsistent(){return is_inconsistent_;};
+  bool IsInconsistent() const {return is_inconsistent_;};
   //! flag to (de)activate potential reactive terms
-  bool Reaction(){return reaction_;};
-  //! flag to (de)aktivate porous darcy flow
-  bool Darcy(){return darcy_;};
+  bool Reaction() const {return reaction_;};
+  //! Return function number of Oseen advective field
+  int OseenFieldFuncNo() const {return oseenfieldfuncno_;};
 
-  /*--------------------------*/
+  /*----------------------------------------------------*/
   //! @name stabilization parameters
-  /*--------------------------*/
+  /*----------------------------------------------------*/
 
   //! get the stabtype
-  INPAR::FLUID::StabType StabType(){return stabtype_;};
+  INPAR::FLUID::StabType StabType() const {return stabtype_;};
   /// parameter for residual stabilization
   //! Flag to (de)activate time-dependent subgrid stabilization
-  INPAR::FLUID::SubscalesTD Tds(){return tds_;};
+  INPAR::FLUID::SubscalesTD Tds() const {return tds_;};
   //! Flag to (de)activate time-dependent term in large-scale momentum equation
-  INPAR::FLUID::Transient Transient(){return transient_;};
+  INPAR::FLUID::Transient Transient() const {return transient_;};
   //! Flag to (de)activate PSPG stabilization
-  bool PSPG(){return pspg_;};
-  //! Flag to (de)activate PSPG stabilization
-  bool PPP(){return ppp_;};
+  bool PSPG() const {return pspg_;};
   //! Flag to (de)activate SUPG stabilization
-  bool SUPG(){return supg_;};
+  bool SUPG() const {return supg_;};
   //! Flag to (de)activate viscous term in residual-based stabilization
-  INPAR::FLUID::VStab VStab(){return vstab_;};
+  INPAR::FLUID::VStab VStab() const {return vstab_;};
   //! Flag to (de)activate reactive term in residual-based stabilization
-  INPAR::FLUID::RStab RStab(){return rstab_;};
+  INPAR::FLUID::RStab RStab() const {return rstab_;};
   //! Flag to (de)activate least-squares stabilization of continuity equation
-  bool CStab(){return graddiv_;};
+  bool CStab() const {return graddiv_;};
   //! Flag to (de)activate cross-stress term -> residual-based VMM
-  INPAR::FLUID::CrossStress Cross(){return cross_;};
+  INPAR::FLUID::CrossStress Cross() const {return cross_;};
   //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
-  INPAR::FLUID::ReynoldsStress Reynolds(){return reynolds_;};
+  INPAR::FLUID::ReynoldsStress Reynolds() const {return reynolds_;};
   //! Flag to define tau
-  INPAR::FLUID::TauType WhichTau(){return whichtau_;};
+  INPAR::FLUID::TauType WhichTau() const {return whichtau_;};
   //! Flag to define characteristic element length for tau_Mu
-  INPAR::FLUID::CharEleLengthU CharEleLengthU(){return charelelengthu_;};
+  INPAR::FLUID::CharEleLengthU CharEleLengthU() const {return charelelengthu_;};
   //! Flag to define characteristic element length for tau_Mp and tau_C
-  INPAR::FLUID::CharEleLengthPC CharEleLengthPC(){return charelelengthpc_;};
+  INPAR::FLUID::CharEleLengthPC CharEleLengthPC() const {return charelelengthpc_;};
   //! (sign) factor for viscous and reactive stabilization terms
-  double ViscReaStabFac(){return viscreastabfac_;};
+  double ViscReaStabFac() const {return viscreastabfac_;};
 
 
   /// parameter for edge-based stabilizations
   //! Flag to (de)activate pressure stabilization
-  INPAR::FLUID::EOS_Pres EOS_Pres(){return EOS_pres_;};
+  INPAR::FLUID::EOS_Pres EOS_Pres() const {return EOS_pres_;};
   //! Flag to (de)activate convective streamline stabilization
-  INPAR::FLUID::EOS_Conv_Stream EOS_Conv_Stream(){return EOS_conv_stream_;};
+  INPAR::FLUID::EOS_Conv_Stream EOS_Conv_Stream() const {return EOS_conv_stream_;};
   //! Flag to (de)activate convective crosswind stabilization
-  INPAR::FLUID::EOS_Conv_Cross EOS_Conv_Cross(){return EOS_conv_cross_;};
+  INPAR::FLUID::EOS_Conv_Cross EOS_Conv_Cross() const {return EOS_conv_cross_;};
   //! Flag to (de)activate divergence stabilization
-  INPAR::FLUID::EOS_Div EOS_Div(){return EOS_div_;};
+  INPAR::FLUID::EOS_Div EOS_Div() const {return EOS_div_;};
   //! Flag to define element length
-  INPAR::FLUID::EOS_ElementLength EOS_element_length(){return EOS_element_lenght_;};
+  INPAR::FLUID::EOS_ElementLength EOS_element_length() const {return EOS_element_lenght_;};
   //! Flag to define tau for edge-based stabilization
-  INPAR::FLUID::EOS_TauType EOS_WhichTau(){return EOS_whichtau_;};
+  INPAR::FLUID::EOS_TauType EOS_WhichTau() const {return EOS_whichtau_;};
+
+  //! Flag to (de)activate polynomial pressure projection stabilization
+  bool PPP() const {return ppp_;};
 
   //! flag for material evaluation at Gaussian integration points
-  bool MatGp(){return mat_gp_;};
+  bool MatGp() const {return mat_gp_;};
   //! flag for stabilization parameter evaluation at Gaussian integration points
-  bool TauGp(){return tau_gp_;};
+  bool TauGp() const {return tau_gp_;};
 
-  /*--------------------------*/
+  /*----------------------------------------------------*/
   //! @name turbulence model
-  /*--------------------------*/
+  /*----------------------------------------------------*/
 
   /// constant parameters for the turbulence formulation
   /// subgrid viscosity models
   //! flag to define turbulence model
-  INPAR::FLUID::TurbModelAction TurbModAction(){return turb_mod_action_;};
-  double Cs(){return Cs_;};
-  bool CsAveraged(){return Cs_averaged_;};
-  double Ci(){return Ci_;};
+  INPAR::FLUID::TurbModelAction TurbModAction() const {return turb_mod_action_;};
+  double Cs() const {return Cs_;};
+  bool CsAveraged() const {return Cs_averaged_;};
+  double Ci() const {return Ci_;};
   void SetvanDriestdamping(double damping){van_Driest_damping_=damping; return;};
-  double VanDriestdamping(){return van_Driest_damping_;};
-  bool IncludeCi(){return include_Ci_;};
-  double ltau(){return l_tau_;};
+  double VanDriestdamping() const {return van_Driest_damping_;};
+  bool IncludeCi() const {return include_Ci_;};
+  double ltau() const {return l_tau_;};
   //! flag to (de)activate fine-scale subgrid viscosity
-  INPAR::FLUID::FineSubgridVisc Fssgv(){return fssgv_;};
+  INPAR::FLUID::FineSubgridVisc Fssgv() const {return fssgv_;};
   // Flag to Vreman filter method
-  INPAR::FLUID::VremanFiMethod Vrfi(){return vrfi_;};
+  INPAR::FLUID::VremanFiMethod Vrfi() const {return vrfi_;};
   //! scale similarity constant
-  double Cl(){return Cl_;};
+  double Cl() const {return Cl_;};
   /// multifractal subgrid-scales
-  double Csgs(){return Csgs_;};
-  double CsgsPhi(){double tmp = 0.0; if(not adapt_Csgs_phi_) tmp = Csgs_phi_; else tmp = Csgs_phi_*meanCai_; return tmp;};
-  double Alpha(){return alpha_;};
-  bool CalcN(){return CalcN_;};
-  double N(){return N_;};
-  enum INPAR::FLUID::RefVelocity RefVel(){return refvel_;};
-  enum INPAR::FLUID::RefLength RefLength(){return reflength_;};
-  double CNu(){return c_nu_;};
-  double CDiff(){return c_diff_;};
-  bool NearWallLimit(){return near_wall_limit_;};
-  bool NearWallLimitScatra(){return near_wall_limit_scatra_;};
-  bool BGp(){return B_gp_;};
-  double Beta(){return beta_;};
-  double MfsIsConservative(){return mfs_is_conservative_;};
-  double AdaptCsgsPhi(){return adapt_Csgs_phi_;};
+  double Csgs() const {return Csgs_;};
+  double CsgsPhi() const {double tmp = 0.0; if(not adapt_Csgs_phi_) tmp = Csgs_phi_; else tmp = Csgs_phi_*meanCai_; return tmp;};
+  double Alpha() const {return alpha_;};
+  bool CalcN() const {return CalcN_;};
+  double N() const {return N_;};
+  enum INPAR::FLUID::RefVelocity RefVel() const {return refvel_;};
+  enum INPAR::FLUID::RefLength RefLength() const {return reflength_;};
+  double CNu() const {return c_nu_;};
+  double CDiff() const {return c_diff_;};
+  bool NearWallLimit() const {return near_wall_limit_;};
+  bool NearWallLimitScatra() const {return near_wall_limit_scatra_;};
+  bool BGp() const {return B_gp_;};
+  double Beta() const {return beta_;};
+  double MfsIsConservative() const {return mfs_is_conservative_;};
+  double AdaptCsgsPhi() const {return adapt_Csgs_phi_;};
   void SetCsgsPhi(double meanCai){meanCai_ = meanCai; return;};
 
-  /*--------------------------*/
+  /*----------------------------------------------------*/
   //! @name loma parameters
-  /*--------------------------*/
+  /*----------------------------------------------------*/
 
   //! flag for material update
-  virtual bool UpdateMat(){return update_mat_;};
+  virtual bool UpdateMat() const {return update_mat_;};
   //! flag to (de)activate continuity SUPG term
-  virtual bool ContiSUPG(){return conti_supg_;};
+  virtual bool ContiSUPG() const {return conti_supg_;};
   //! flag to (de)activate continuity cross-stress term -> residual-based VMM
-  virtual INPAR::FLUID::CrossStress ContiCross(){return conti_cross_;};
+  virtual INPAR::FLUID::CrossStress ContiCross() const {return conti_cross_;};
   //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
-  virtual INPAR::FLUID::ReynoldsStress ContiReynolds(){return conti_reynolds_;};
+  virtual INPAR::FLUID::ReynoldsStress ContiReynolds() const {return conti_reynolds_;};
   //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
-  virtual bool MultiFracLomaConti(){return multifrac_loma_conti_;};
+  virtual bool MultiFracLomaConti() const {return multifrac_loma_conti_;};
 
-  /*--------------------------*/
+  /*----------------------------------------------------*/
   //! @name topopt parameters
-  /*--------------------------*/
+  /*----------------------------------------------------*/
 
   //! flag to (de)aktivate reaction due to topology optimization
-  bool ReactionTopopt(){return reaction_topopt_;};
+  bool ReactionTopopt() const {return reaction_topopt_;};
   //! flag to (de)aktivate reaction due to topology optimization
-  const double* TopoptParams(){return (double*)topopt_params_;};
+  const double* TopoptParams() const {return (double*)topopt_params_;};
 
 
 protected:
 
-  /*--------------------------*/
+  /*----------------------------------------------------*/
   //! @name general parameters
-  /*--------------------------*/
+  /*----------------------------------------------------*/
 
   //! Flag SetGeneralParameter was called
   bool set_general_fluid_parameter_;
@@ -222,12 +223,12 @@ protected:
   bool is_inconsistent_;
   //! flag to (de)activate potential reactive terms
   bool reaction_;
-  //! flag to (de)aktivate porous darcy flow
-  bool darcy_;
+  //! function number of Oseen advective field
+  int oseenfieldfuncno_;
 
-  /*--------------------------*/
+  /*----------------------------------------------------*/
   //! @name stabilization parameters
-  /*--------------------------*/
+  /*----------------------------------------------------*/
 
   /// parameter for residual based stabilizations
   //! Flag to (de)activate time-dependent subgrid stabilization
@@ -236,8 +237,6 @@ protected:
   INPAR::FLUID::Transient transient_;
   //! Flag to (de)activate PSPG stabilization
   bool pspg_;
-  //! Flag to (de)activate PPP (polynomial pressure projection) stabilization
-  bool ppp_;
   //! Flag to (de)activate SUPG stabilization
   bool supg_;
   //! Flag to (de)activate viscous term in residual-based stabilization
@@ -273,15 +272,18 @@ protected:
   //! element length definition for edge-base stabilization
   INPAR::FLUID::EOS_ElementLength EOS_element_lenght_;
 
+  //! Flag to (de)activate PPP (polynomial pressure projection) stabilization
+  bool ppp_;
+
   /// parameter for evaluation of material and stabilization parameter
   //! flag for material evaluation at Gaussian integration points
   bool mat_gp_;
   //! flag for stabilization parameter evaluation at Gaussian integration points
   bool tau_gp_;
 
-  /*--------------------------*/
+  /*----------------------------------------------------*/
   //! @name turbulence model
-  /*--------------------------*/
+  /*----------------------------------------------------*/
 
   /// constant parameters for the turbulence formulation
   /// subgrid viscosity models
@@ -321,9 +323,9 @@ protected:
   bool adapt_Csgs_phi_;
   double meanCai_;
 
-  /*--------------------------*/
+  /*----------------------------------------------------*/
   //! @name loma parameters
-  /*--------------------------*/
+  /*----------------------------------------------------*/
 
   //! flag for material update
   bool update_mat_;
@@ -336,9 +338,9 @@ protected:
   //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
   bool multifrac_loma_conti_;
 
-  /*--------------------------*/
+  /*----------------------------------------------------*/
   //! @name topopt parameters
-  /*--------------------------*/
+  /*----------------------------------------------------*/
 
   //! flag to (de)activate reaction due to topology optimization
   bool reaction_topopt_;

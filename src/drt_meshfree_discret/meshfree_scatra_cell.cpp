@@ -275,8 +275,8 @@ int DRT::ELEMENTS::MeshfreeTransport::NumVolume() const
  *--------------------------------------------------------------------------*/
 void DRT::ELEMENTS::MeshfreeTransport::Print(std::ostream& os) const
 {
-  os << "MeshfreeTransportCell ";
-  Cell::Print(os);
+  os << "MeshfreeTransport ";
+  Print(os);
   std::cout << "DisType "<< DRT::DistypeToString(distype_) << " ";
   std::cout << "NumDofPerNode " << numdofpernode_ << " ";
   std::cout << data_;
@@ -659,10 +659,8 @@ inline int DRT::ELEMENTS::MeshfreeTransportBoundary::UniqueParObjectId() const
  *---------------------------------------------------------------------------*/
 void DRT::ELEMENTS::MeshfreeTransportBoundary::Print(std::ostream& os) const
 {
-  os << "MeshfreeTransportBoundary element";
-  Element::Print(os);
-  std::cout << std::endl;
-  std::cout << "DiscretizationType:  "<<Shape()<<std::endl;
-  std::cout << std::endl;
+  os << "MeshfreeTransportBoundary";
+  Print(os);
+  std::cout << "DiscretizationType:  "<< Shape() <<std::endl;
   return;
 }

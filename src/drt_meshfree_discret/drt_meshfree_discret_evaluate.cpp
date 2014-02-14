@@ -289,16 +289,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::FillDBCMatrix(
             nneighbour = actnode->NumNode();
 
             // prepare distance-matrix
-            distnn.LightShape(facedim,nneighbour);
-            Teuchos::RCP<LINALG::SerialDenseMatrix> distnn_full;
-            if (facedim!=3)
-              // use new memory in case that distnn is reduced in dimension
-              // (less than three rows)
-              distnn_full = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,nneighbour));
-            else
-              // reuse memory for full distnn matrix
-              distnn_full = Teuchos::rcp(&distnn);
-
+            distnn.LightShape(3,nneighbour);
             // fill distance matrix and collect gids of neighbours
             ngids.resize(nneighbour);
             const double* x_node = actnode->X();
@@ -307,12 +298,8 @@ void DRT::MESHFREE::MeshfreeDiscretization::FillDBCMatrix(
               const double* x_neighbour = actnode->Nodes()[i]->X();
               ngids[i] = actnode->Nodes()[i]->Id();
               for (int j=0; j<3; ++j)
-                (*distnn_full)(j,i) = x_neighbour[j] - x_node[j];
+                distnn(j,i) = x_neighbour[j] - x_node[j];
             }
-
-            // get reduced node positions if necessary
-            if (facedim!=3)
-              ReduceDimensionOfFaceNodes(*distnn_full, distnn);
 
             // we now have a neighbourhood
             haveneighbourhood = true;
@@ -325,7 +312,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::FillDBCMatrix(
 
           // get basis function values of neighbours
           basisfunct->LightSize(nneighbour);
-          this->GetSolutionApprox()->GetMeshfreeBasisFunction(facedim,distnn,basisfunct);
+          this->GetSolutionApprox()->GetMeshfreeBasisFunction(facedim,Teuchos::rcpFromRef(distnn),basisfunct);
 
           // use neighbourhood-variables for node gids and basis functions
           temp_ngids = &ngids;

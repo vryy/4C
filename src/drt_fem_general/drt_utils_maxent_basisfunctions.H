@@ -51,13 +51,6 @@ public:
 
   /*--------------------------------------------------------------------------*/
   /*!
-   * \brief Returns flag for Petrov-Galerkin problems
-   *///                                                              nis Mar12
-  /*--------------------------------------------------------------------------*/
-  bool IsPetrovGalerkin(){return petrovgalerkin_;};
-
-  /*--------------------------------------------------------------------------*/
-  /*!
    * \brief Returns range of prior function
    *///                                                              nis Mar12
   /*--------------------------------------------------------------------------*/
@@ -71,7 +64,7 @@ public:
   /*--------------------------------------------------------------------------*/
   virtual int GetMeshfreeBasisFunction(
     const int                         dim,                         //!< (i) dimension
-    const LINALG::SerialDenseMatrix & diffx,                       //!< (i) distance vector between node and integration point
+    Teuchos::RCP<LINALG::SerialDenseMatrix>  diffx,                //!< (i) distance vector between node and integration point
     Teuchos::RCP<LINALG::SerialDenseVector>& funct                 //!< (o) basis functions values
   ) const
   {
@@ -81,16 +74,15 @@ public:
 
   /*--------------------------------------------------------------------------*/
   /*!
-   * \brief Evaluating meshfree basis functions and derivatives for
-   *        Petrov-Galerkin approximations
+   * \brief Evaluating meshfree basis functions and derivatives
    *///                                                           nis Mar12
   /*--------------------------------------------------------------------------*/
   virtual int GetMeshfreeBasisFunction(
     const int                         dim,              //!< (i) dimension
-    const LINALG::SerialDenseMatrix & diffx,            //!< (i) distance vector between node and integration point
+    Teuchos::RCP<LINALG::SerialDenseMatrix>  diffx,     //!< (i) distance vector between node and integration point
     Teuchos::RCP<LINALG::SerialDenseVector>& funct,     //!< (o) basis functions values
     Teuchos::RCP<LINALG::SerialDenseMatrix>& deriv,     //!< (o) spatial derivatives of basis functions
-    Teuchos::RCP<const LINALG::SerialDenseMatrix> cconv = Teuchos::null, //!< (i) convection at cell points for inf-flux weighting basis functions
+    Teuchos::RCP<const LINALG::SerialDenseVector> cconv = Teuchos::null, //!< (i) convection at cell points for inf-flux weighting basis functions
     Teuchos::RCP<LINALG::SerialDenseVector> sfunct = Teuchos::null,      //!< (i) basis functions values
     Teuchos::RCP<LINALG::SerialDenseMatrix> sderiv = Teuchos::null       //!< (i) spatial derivatives of basis functions
   ) const = 0;
@@ -105,9 +97,6 @@ protected:
   virtual void SetRange(
     double rangeTol //!< tolerance at which prior function is numerically zero
   ) = 0;
-
-  //! Galerkin type
-  bool petrovgalerkin_;
 
   //! range of basis functions
   double range_;
@@ -140,10 +129,10 @@ public:
   /*--------------------------------------------------------------------------*/
   int GetMeshfreeBasisFunction(
     const int                         dim,              //!< (i) dimension
-    const LINALG::SerialDenseMatrix & diffx,            //!< (i) distance vector between node and integration point
+    Teuchos::RCP<LINALG::SerialDenseMatrix>  diffx,     //!< (i) distance vector between node and integration point
     Teuchos::RCP<LINALG::SerialDenseVector>& funct,     //!< (o) basis functions values
     Teuchos::RCP<LINALG::SerialDenseMatrix>& deriv,     //!< (o) spatial derivatives of basis functions
-    Teuchos::RCP<const LINALG::SerialDenseMatrix> cconv = Teuchos::null,//!< (i) convection at cell points for inf-flux weighting basis functions
+    Teuchos::RCP<const LINALG::SerialDenseVector> cconv = Teuchos::null,//!< (i) convection at cell points for inf-flux weighting basis functions
     Teuchos::RCP<LINALG::SerialDenseVector> sfunct = Teuchos::null,     //!< (i) basis functions values
     Teuchos::RCP<LINALG::SerialDenseMatrix> sderiv = Teuchos::null      //!< (i) spatial derivatives of basis functions
     ) const
@@ -205,10 +194,10 @@ private:
      *///                                                           nis Mar12
     /*--------------------------------------------------------------------------*/
     int maxent_basisfunction(
-      LINALG::SerialDenseMatrix const &              diffx,  //!< (i) distance vector between node and integration point
+      Teuchos::RCP<LINALG::SerialDenseMatrix>        diffx,  //!< (i) distance vector between node and integration point
       Teuchos::RCP<LINALG::SerialDenseVector>&       funct,  //!< (o) basis functions values
       Teuchos::RCP<LINALG::SerialDenseMatrix>&       deriv,  //!< (o) spatial derivatives of basis functions
-      Teuchos::RCP<const LINALG::SerialDenseMatrix>  cconv,  //!< (i) convection at cell points for inf-flux basis solution functions
+      Teuchos::RCP<const LINALG::SerialDenseVector>  cconv,  //!< (i) convection at cell points for inf-flux basis solution functions
       Teuchos::RCP<LINALG::SerialDenseVector>        sfunct, //!< (o) weighting basis functions values
       Teuchos::RCP<LINALG::SerialDenseMatrix>        sderiv  //!< (o) spatial derivatives of basis solution functions
       );

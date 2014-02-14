@@ -2480,7 +2480,6 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   // compute values at nodes from nodal values for non-interpolatory basis functions
   if (velatmeshfreenodes_!=Teuchos::null)
   {
-    dserror("Meshfree methods have not yet been tested for instationary problems in BACI but should work. Remove dserror ad lib. ");
     Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_)->ComputeValuesAtNodes(veln_, velatmeshfreenodes_);
   }
 
@@ -3886,10 +3885,10 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
     if (err!=0) dserror("dof not on proc");
   }
-  else if (initfield == INPAR::FLUID::initialfield_hit_comte_bellot_corrsin
-          or initfield == INPAR::FLUID::initialfield_forced_hit_simple_algebraic_spectrum
-          or initfield == INPAR::FLUID::initialfield_forced_hit_numeric_spectrum
-          or initfield == INPAR::FLUID::initialfield_passive_hit_const_input)
+  else if (initfield == INPAR::FLUID::initfield_hit_comte_bellot_corrsin
+           or initfield == INPAR::FLUID::initfield_forced_hit_simple_algebraic_spectrum
+           or initfield == INPAR::FLUID::initfield_forced_hit_numeric_spectrum
+           or initfield == INPAR::FLUID::initfield_passive_hit_const_input)
   {
     // initialize calculation of initial field based on fast Fourier transformation
     Teuchos::RCP<HomIsoTurbInitialField> HitInitialField = Teuchos::rcp(new FLD::HomIsoTurbInitialField(*this,initfield));
@@ -4814,6 +4813,10 @@ void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
   // parameter for stabilization
   eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
   eleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
+
+  // get function number of given Oseen advective field if necessary
+  if (physicaltype_==INPAR::FLUID::oseen)
+    eleparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);

@@ -35,7 +35,8 @@ namespace INPAR
       poro_p1,
       poro_p2,
       topopt,
-      stokes
+      stokes,
+      oseen
     };
 
     //! flag to switch the stabilization type
@@ -208,7 +209,7 @@ namespace INPAR
       timeint_bdf2,
     };
 
-    /// initial field
+    /// initial and Oseen advective field
     enum InitialField
     {
       initfield_zero_field,
@@ -218,10 +219,10 @@ namespace INPAR
       initfield_beltrami_flow,
       initfield_kim_moin_flow,
       initfield_bochev_test,
-      initialfield_hit_comte_bellot_corrsin,
-      initialfield_forced_hit_simple_algebraic_spectrum,
-      initialfield_forced_hit_numeric_spectrum,
-      initialfield_passive_hit_const_input
+      initfield_hit_comte_bellot_corrsin,
+      initfield_forced_hit_simple_algebraic_spectrum,
+      initfield_forced_hit_numeric_spectrum,
+      initfield_passive_hit_const_input
     };
 
     /// initial field

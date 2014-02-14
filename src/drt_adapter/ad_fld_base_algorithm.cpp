@@ -1150,8 +1150,11 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   // flag for writing fluid field to gmsh
   fluidtimeparams->set<bool>("COMPUTE_DIVU", DRT::INPUT::IntegralValue<bool>(fdyn,"COMPUTE_DIVU"));
 
-  // ---------------------------------------------------- lift and
-  // drag
+  // -------------------------------------------------- Oseen advection
+  // set function number of given Oseen advective field
+  fluidtimeparams->set<int>("OSEENFIELDFUNCNO", fdyn.get<int>("OSEENFIELDFUNCNO"));
+
+  // ---------------------------------------------------- lift and drag
   fluidtimeparams->set<int>("liftdrag",DRT::INPUT::IntegralValue<int>(fdyn,"LIFTDRAG"));
 
   // -----------evaluate error for test flows with analytical solutions
@@ -1167,7 +1170,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   // ------------------------------------ potential reduced_D 3D coupling method
   fluidtimeparams->set<string> ("Strong 3D_redD coupling",fdyn.get<std::string>("STRONG_REDD_3D_COUPLING_TYPE"));
 
-  //--------------------------------------mesh tying for fluid
+  //--------------------------------------  mesh tying for fluid
   fluidtimeparams->set<int>("MESHTYING",
       DRT::INPUT::IntegralValue<INPAR::FLUID::MeshTying>(fdyn,"MESHTYING"));
 

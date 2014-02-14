@@ -218,7 +218,7 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
     }
 
     // calculate basis functions and derivatives via max-ent optimization
-    int error = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(bdrynsd_,distng,funct_);
+    int error = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(bdrynsd_,Teuchos::rcpFromRef(distng),funct_);
     if (error) dserror("Something went wrong when calculating the meshfree basis functions.");
 
     // get the required material information

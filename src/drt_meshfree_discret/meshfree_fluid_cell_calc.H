@@ -148,7 +148,7 @@ public:
 
 
   /*========================================================================*/
-  //! @name Query method
+  //! @name Query methods (inherited form base class)
   /*========================================================================*/
 
   /*------------------------------------------------------------------------*/
@@ -437,10 +437,14 @@ protected:
   LINALG::SerialDenseMatrix gxyz_;
   //! Gauss point weights for boundary cell
   LINALG::SerialDenseVector gw_;
-  //! array for shape functions
-  Teuchos::RCP<LINALG::SerialDenseVector> funct_; // size: <nen_,1>
-  //! array for shape function derivatives w.r.t x,y,z
-  Teuchos::RCP<LINALG::SerialDenseMatrix> deriv_; // size: <nsd_,nen_>
+  //! array for solution basis functions: (nen_)
+  Teuchos::RCP<LINALG::SerialDenseVector> sfunct_;
+  //! global derivatives of solution basis functions w.r.t x,y,z: (nsd_ x nen_)
+  Teuchos::RCP<LINALG::SerialDenseMatrix> sderiv_;
+  //! array for weighting basis functions: (nen_)
+  Teuchos::RCP<LINALG::SerialDenseVector> wfunct_;
+  //! global derivatives of weighting basis functions w.r.t x,y,z: (nsd_ x nen_)
+  Teuchos::RCP<LINALG::SerialDenseMatrix> wderiv_;
   //! global velocity derivatives in gausspoint w.r.t x,y,z
   LINALG::Matrix<nsd_,nsd_> vderxy_;
   //! bodyforce in gausspoint
@@ -480,10 +484,15 @@ protected:
 
   //! "mass matrix" of projection modes - here element volume
   double D_;
-  //! prolongator(?) of projection - here only vector
-  LINALG::SerialDenseVector E_;
-  //!
-  LINALG::SerialDenseMatrix F_;
+  //! prolongator(?) of projection with solution basis functions
+  LINALG::SerialDenseVector Eu_;
+  //! integrated discrete velocity divergence with solution basis functions
+  LINALG::SerialDenseMatrix Fu_;
+
+  //! prolongator(?) of projection with weighting basis functions
+  LINALG::SerialDenseVector Ev_;
+  //! integrated discrete velocity divergence with weighting basis functions
+  LINALG::SerialDenseMatrix Fv_;
 
   /*========================================================================*/
   //! @name LOMA-specific variables (for preparation)

@@ -33,11 +33,10 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     is_newton_(false),
     is_inconsistent_(false),
     reaction_(false),
-    darcy_(false),
+    oseenfieldfuncno_(-1),
     tds_(INPAR::FLUID::subscales_quasistatic),
     transient_(INPAR::FLUID::inertia_stab_drop),
     pspg_(true),
-    ppp_(false),
     supg_(true),
     vstab_(INPAR::FLUID::viscous_stab_none),
     graddiv_(true),
@@ -53,6 +52,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     EOS_div_(INPAR::FLUID::EOS_DIV_none),
     EOS_whichtau_(INPAR::FLUID::EOS_tau_burman_fernandez),
     EOS_element_lenght_(INPAR::FLUID::EOS_he_max_dist_to_opp_surf),
+    ppp_(false),
     mat_gp_(false),     // standard evaluation of the material at the element center
     tau_gp_(false),      // standard evaluation of tau at the element center
     turb_mod_action_(INPAR::FLUID::no_model), // turbulence parameters
@@ -114,13 +114,15 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
       << std::endl << std::endl;
   }
 
-  // disable polynomial pressure projection in general
-  ppp_ = false;
-
   // set flag for type of linearization (fixed-point-like or Newton)
-  //std::string newtonstr   = params.get<std::string>("Linearisation");
+  //  fix-point like for Oseen or Stokes problems
   if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params, "Linearisation")==INPAR::FLUID::Newton)
-    is_newton_       = true;
+  {
+    if ((DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type")==INPAR::FLUID::oseen)
+        or (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type")==INPAR::FLUID::stokes))
+      dserror("Full Newton-linearization does not make sense for Oseen or Stokes problems.\nThey are already linear problems. Fix input file!");
+    is_newton_ = true;
+  }
 
   // set flags for formulation of the convective velocity term (conservative or convective)
   std::string convformstr = params.get<std::string>("form of convective term");
@@ -155,6 +157,10 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     if (myrank == 0)
       std::cout << std::endl << "Warning: missing time derivative terms in conservative formulation for variable density flows!" << std::endl;
   }
+
+  // get function number of given Oseen advective field if necessary
+  if (physicaltype_==INPAR::FLUID::oseen)
+    oseenfieldfuncno_ = DRT::INPUT::get<int>(params,"OSEENFIELDFUNCNO");
 
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements
@@ -331,8 +337,8 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
   }
   else if (stabtype_ == INPAR::FLUID::stabtype_pressureprojection)
   {
-    if ( not (fldparatimint_->IsStationary() and (physicaltype_ == INPAR::FLUID::stokes)))
-      dserror("Polynomial pressure projection has only been tested for stationary Stokes problems. \n"
+    if (not (fldparatimint_->IsStationary() and ((physicaltype_ == INPAR::FLUID::stokes) or (physicaltype_ == INPAR::FLUID::oseen))))
+      dserror("Polynomial pressure projection has only been tested for stationary Stokes/Oseen problems. \n"
               "But it should work for other problems as well but only to circumvent inf-sup-instabilities! \n"
               "Convection instabilities have to be accounted for. \n"
               "Note that for now all residual-based stabilizations are switched off. \n"
@@ -346,15 +352,17 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     }
     //---------------------------------
     // if polynomial pressure projection stabilization is selected, all
-    // residual-based stabilization terms are switched off
-    pspg_ = false;
-    supg_ = false;
-    vstab_ = INPAR::FLUID::viscous_stab_none;
-    rstab_ = INPAR::FLUID::reactive_stab_none;
-    graddiv_ = false;
-    cross_ = INPAR::FLUID::cross_stress_stab_none;
+    // residual-based stabilization terms except for SUGP are switched off
+
+
+    pspg_     = false;
+    supg_     = false;
+    graddiv_  = false;
+    vstab_    = INPAR::FLUID::viscous_stab_none;
+    rstab_    = INPAR::FLUID::reactive_stab_none;
+    cross_    = INPAR::FLUID::cross_stress_stab_none;
     reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
-    tds_ = INPAR::FLUID::subscales_quasistatic;
+    tds_       = INPAR::FLUID::subscales_quasistatic;
     transient_ = INPAR::FLUID::inertia_stab_drop;
     is_inconsistent_ = false;
 
@@ -452,7 +460,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTopoptParameter( Teuchos::Param
   topopt_params_[2] = params.get<double>("SMEAR_FAC");
   reaction_= true;
   reaction_topopt_= true;
-  darcy_= false;
 
   return;
 }

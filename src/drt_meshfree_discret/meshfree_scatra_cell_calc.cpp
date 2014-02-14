@@ -262,7 +262,7 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
     }
 
     // calculate solution basis functions and derivatives via max-ent optimization
-    int error = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(nsd_,distng,sfunct_,sderiv_);
+    int error = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(nsd_,Teuchos::rcpFromRef(distng),sfunct_,sderiv_);
     if (error) dserror("Something went wrong when calculating the meshfree solution basis functions.");
 
     // get velocity at integration point
@@ -282,11 +282,10 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
 
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
-      LINALG::SerialDenseMatrix eigvec_adj(econvelnp_);
-      eigvec_adj.Scale(-1.0/diffus_[k]);
-
       // calculate weighting basis functions and derivatives via max-ent optimization
-      int error = discret_->GetWeightingApprox()->GetMeshfreeBasisFunction(nsd_,distng,wfunct_,wderiv_,Teuchos::rcpFromRef(eigvec_adj),sfunct_,sderiv_);
+      Teuchos::RCP<LINALG::SerialDenseVector> upsilon = Teuchos::rcp(new LINALG::SerialDenseVector(convelint));
+      upsilon->Scale(-1.0/diffus_[k]);
+      int error = discret_->GetWeightingApprox()->GetMeshfreeBasisFunction(nsd_,Teuchos::rcpFromRef(distng),wfunct_,wderiv_,upsilon,sfunct_,sderiv_);
       if (error) dserror("Something went wrong when calculating the meshfree weighting basis functions.");
 
       // scalar at integration point at time step n+1

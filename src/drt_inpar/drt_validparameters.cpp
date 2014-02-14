@@ -711,16 +711,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     tuple<int>(INPAR::MESHFREE::procwise,
                                                INPAR::MESHFREE::blockwise),
                                     &meshfree);
-  setStringToIntegralParameter<int>("PETROVGALERKIN","No",
-                                     "Type of Galerkin approximation.",
-                                     yesnotuple,yesnovalue,&meshfree);
   DoubleParameter("NEWTON_TOL",1e-6,"Tolerance at which Newton is considered to be converged.",&meshfree);
   DoubleParameter("NEWTON_MAXITER",10,"Maximum number of Newton steps.",&meshfree);
   IntParameter("DBC_SOLVER",-1,"Solver number for solving non-constant Dirichlet BC if necessary.",&meshfree);
   BoolParameter("PARTITION_OF_UNITY","Yes","Enforcement of partition of unity constraint",&meshfree);
   DoubleParameter("NEGATIVITY",0.0,"Decides if and to which degree negativity is allowed",&meshfree);
   DoubleParameter("VARIANCE",1,"Variance of the basis solution function prior.",&meshfree);
-  DoubleParameter("RANGE_TOL",1,"Threshhold at which basis solution function prior is considered nmuerically zero.",&meshfree);
+  DoubleParameter("RANGE_TOL",1e-6,"Threshhold at which basis solution function prior is considered nmuerically zero.",&meshfree);
   DoubleParameter("CUTOFF_RADIUS",1e30,"Cutoff radius for influence of meshfree points on each other.",&meshfree);
   setNumericStringParameter("BOUNDINGBOX","-1e12 -1e12 -1e12 1e12 1e12 1e12",
                             "Bounding box for binning strategy in particle simulations.",
@@ -2812,31 +2809,33 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation)
   setStringToIntegralParameter<int>("PHYSICAL_TYPE","Incompressible",
-                               "Physical Type",
-                               tuple<std::string>(
-                                 "Incompressible",
-                                 "Artificial_compressibility",
-                                 "Varying_density",
-                                 "Loma",
-                                 "Boussinesq",
-                                 "Poro",
-                                 "Poro_P1",
-                                 "Poro_P2",
-                                 "Topology_optimization",
-                                 "Stokes"
-                                 ),
-                               tuple<int>(
-                                     INPAR::FLUID::incompressible,
-                                     INPAR::FLUID::artcomp,
-                                     INPAR::FLUID::varying_density,
-                                     INPAR::FLUID::loma,
-                                     INPAR::FLUID::boussinesq,
-                                     INPAR::FLUID::poro,
-                                     INPAR::FLUID::poro_p1,
-                                     INPAR::FLUID::poro_p2,
-                                     INPAR::FLUID::topopt,
-                                     INPAR::FLUID::stokes),
-                               &fdyn);
+                                    "Physical Type",
+                                    tuple<std::string>(
+                                      "Incompressible",
+                                      "Artificial_compressibility",
+                                      "Varying_density",
+                                      "Loma",
+                                      "Boussinesq",
+                                      "Poro",
+                                      "Poro_P1",
+                                      "Poro_P2",
+                                      "Topology_optimization",
+                                      "Stokes",
+                                      "Oseen"
+                                      ),
+                                    tuple<int>(
+                                      INPAR::FLUID::incompressible,
+                                      INPAR::FLUID::artcomp,
+                                      INPAR::FLUID::varying_density,
+                                      INPAR::FLUID::loma,
+                                      INPAR::FLUID::boussinesq,
+                                      INPAR::FLUID::poro,
+                                      INPAR::FLUID::poro_p1,
+                                      INPAR::FLUID::poro_p2,
+                                      INPAR::FLUID::topopt,
+                                      INPAR::FLUID::stokes,
+                                      INPAR::FLUID::oseen),
+                                    &fdyn);
 
   // number of linear solver used for fluid problem
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for fluid dynamics",&fdyn);
@@ -2844,32 +2843,34 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // number of linear solver used for fluid problem (former fluid pressure solver for SIMPLER preconditioning with fluid)
   IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for fluid dynamics (ONLY NECESSARY FOR BlockGaussSeidel solver block within fluid mehstying case any more!!!!)",&fdyn);
 
-  setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
-      "Time Integration Scheme",
-      tuple<std::string>(
-          "Stationary",
-          "Np_Gen_Alpha",
-          "Af_Gen_Alpha",
-          "One_Step_Theta",
-          "BDF2"),
-      tuple<int>(
-          INPAR::FLUID::timeint_stationary,
-          INPAR::FLUID::timeint_npgenalpha,
-          INPAR::FLUID::timeint_afgenalpha,
-          INPAR::FLUID::timeint_one_step_theta,
-          INPAR::FLUID::timeint_bdf2),
-          &fdyn);
+  setStringToIntegralParameter<int>(
+    "TIMEINTEGR","One_Step_Theta",
+    "Time Integration Scheme",
+    tuple<std::string>(
+      "Stationary",
+      "Np_Gen_Alpha",
+      "Af_Gen_Alpha",
+      "One_Step_Theta",
+      "BDF2"),
+    tuple<int>(
+      INPAR::FLUID::timeint_stationary,
+      INPAR::FLUID::timeint_npgenalpha,
+      INPAR::FLUID::timeint_afgenalpha,
+      INPAR::FLUID::timeint_one_step_theta,
+      INPAR::FLUID::timeint_bdf2),
+    &fdyn);
 
-  setStringToIntegralParameter<int>("NONLINITER","fixed_point_like",
-                               "Nonlinear iteration scheme",
-                               tuple<std::string>(
-                                 "fixed_point_like",
-                                 "Newton"
-                                 ),
-                               tuple<int>(
-                                     INPAR::FLUID::fixed_point_like,
-                                     INPAR::FLUID::Newton),
-                               &fdyn);
+  setStringToIntegralParameter<int>(
+    "NONLINITER","fixed_point_like",
+    "Nonlinear iteration scheme",
+    tuple<std::string>(
+      "fixed_point_like",
+      "Newton"
+      ),
+    tuple<int>(
+      INPAR::FLUID::fixed_point_like,
+      INPAR::FLUID::Newton),
+    &fdyn);
 
   setStringToIntegralParameter<int>("PREDICTOR","steady_state",
                                     "Predictor for first guess in nonlinear iteration",
@@ -2919,10 +2920,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name[ 4] = "BELTRAMI-FLOW";                          label[ 4] = INPAR::FLUID::initfield_beltrami_flow;
     name[ 5] = "KIM-MOIN-FLOW";                          label[ 5] = INPAR::FLUID::initfield_kim_moin_flow;
     name[ 6] = "BOCHEV-TEST";                            label[ 6] = INPAR::FLUID::initfield_bochev_test;
-    name[ 7] = "hit_comte_bellot_corrsin_initial_field"; label[ 7] = INPAR::FLUID::initialfield_hit_comte_bellot_corrsin;
-    name[ 8] = "forced_hit_simple_algebraic_spectrum";   label[ 8] = INPAR::FLUID::initialfield_forced_hit_simple_algebraic_spectrum;
-    name[ 9] = "forced_hit_numeric_spectrum";            label[ 9] = INPAR::FLUID::initialfield_forced_hit_numeric_spectrum;
-    name[10] = "forced_hit_passive";                     label[10] = INPAR::FLUID::initialfield_passive_hit_const_input;
+    name[ 7] = "hit_comte_bellot_corrsin_initial_field"; label[ 7] = INPAR::FLUID::initfield_hit_comte_bellot_corrsin;
+    name[ 8] = "forced_hit_simple_algebraic_spectrum";   label[ 8] = INPAR::FLUID::initfield_forced_hit_simple_algebraic_spectrum;
+    name[ 9] = "forced_hit_numeric_spectrum";            label[ 9] = INPAR::FLUID::initfield_forced_hit_numeric_spectrum;
+    name[10] = "forced_hit_passive";                     label[10] = INPAR::FLUID::initfield_passive_hit_const_input;
 
     setStringToIntegralParameter<int>(
         "INITIALFIELD",
@@ -2932,6 +2933,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
         label,
         &fdyn);
   }
+
+  IntParameter("OSEENFIELDFUNCNO",-1,"function number of Oseen advective field",&fdyn);
 
   setStringToIntegralParameter<int>("LIFTDRAG","No",
                                "Calculate lift and drag forces along specified boundary",

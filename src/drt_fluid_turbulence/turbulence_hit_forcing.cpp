@@ -254,7 +254,7 @@ void HomIsoTurbForcing::SetInitialSpectrum(INPAR::FLUID::InitialField init_field
   if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
   {
 #ifdef USE_TRAGET_SPECTRUM
-    if (init_field_type == INPAR::FLUID::initialfield_forced_hit_simple_algebraic_spectrum)
+    if (init_field_type == INPAR::FLUID::initfield_forced_hit_simple_algebraic_spectrum)
     {
       for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
       {
@@ -264,7 +264,7 @@ void HomIsoTurbForcing::SetInitialSpectrum(INPAR::FLUID::InitialField init_field
           (*energyspectrum_n_)[rr] = 0.0;
       }
     }
-    else if (init_field_type == INPAR::FLUID::initialfield_passive_hit_const_input)
+    else if (init_field_type == INPAR::FLUID::initfield_passive_hit_const_input)
     {
       (*energyspectrum_n_)[0] = 0.0;
       for (std::size_t rr = 1; rr < wavenumbers_->size(); rr++)
@@ -275,7 +275,7 @@ void HomIsoTurbForcing::SetInitialSpectrum(INPAR::FLUID::InitialField init_field
          (*energyspectrum_n_)[rr] = 0.1 * pow(2.0,5.0/3.0) * pow((*wavenumbers_)[rr],-5.0/3.0);
       }
     }
-    else if (init_field_type == INPAR::FLUID::initialfield_hit_comte_bellot_corrsin)
+    else if (init_field_type == INPAR::FLUID::initfield_hit_comte_bellot_corrsin)
     {
       //----------------------------------------
       // set-up wave numbers

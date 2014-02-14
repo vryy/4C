@@ -265,8 +265,6 @@ void DRT::MESHFREE::MeshfreeDiscretization::AddNodeSetTopology(
       dserror("Can't assign %i-D face in %i-D problem.",i,dim);
   if (nodeset[dim]->size()!=1)
     dserror("There has to be one and only one %i-D face in a %i-D problem.",dim,dim);
-  if ((int)((*(nodeset[dim]))[0].size())!=NumGlobalNodes())
-    return; // this was a dummy-dis - like for for pure scatra problems
 
   for (int i=0; i<4; ++i)
   {
@@ -582,7 +580,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::ComputeValuesAtNodes(
       //------------------------------------------------------------------------
       // construct matrix with distance to neighbours for basis function evaluation
       //------------------------------------------------------------------------
-      LINALG::SerialDenseMatrix distnn_full(3,nneighbour,false);
+      LINALG::SerialDenseMatrix distnn(3,nneighbour,false);
       const double * cx = cnode->X();
       // loop over all neighbours
       for (int n=0; n<nneighbour; ++n)
@@ -590,26 +588,16 @@ void DRT::MESHFREE::MeshfreeDiscretization::ComputeValuesAtNodes(
         // get position of current neighbour
         const double * xn = neighbours[n]->X();
         // compute distance and write in respective matrix column
-        double * ccol = distnn_full[n];
+        double * ccol = distnn[n];
         for (int k=0; k<3; ++k)
           ccol[k] = cx[k] - xn[k];
       }
-
-      // reduce matrix dimension if necessary
-      Teuchos::RCP<LINALG::SerialDenseMatrix> distnn = Teuchos::null;
-      if (facedim<3)
-      {
-        distnn = Teuchos::rcp(new LINALG::SerialDenseMatrix(facedim,nneighbour,false));
-        ReduceDimensionOfFaceNodes(distnn_full,*distnn);
-      }
-      else
-        distnn = Teuchos::rcp(&distnn_full);
 
       //------------------------------------------------------------------------
       // get solution basis functions of neighbourhood
       //------------------------------------------------------------------------
       Teuchos::RCP<LINALG::SerialDenseVector> funct = Teuchos::rcp(new LINALG::SerialDenseVector(nneighbour,false));
-      solutionapprox_->GetMeshfreeBasisFunction(facedim, *distnn, funct);
+      solutionapprox_->GetMeshfreeBasisFunction(facedim, Teuchos::rcpFromRef(distnn), funct);
 
       //------------------------------------------------------------------------
       // compute values at current node

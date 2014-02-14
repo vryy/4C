@@ -77,6 +77,7 @@ DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
     sgvelint_(true),
     gridvelint_(true),
     convvelint_(true),
+    advevelint_(true),
     accint_(true),
     gradp_(true),
     tau_(true),
@@ -268,12 +269,25 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
   }
   else eaccam.Clear();
 
+  // set element advective field for Oseen problems
+  if (fldpara_->PhysicalType()==INPAR::FLUID::oseen)
+  {
+    const int funcnum = fldpara_->OseenFieldFuncNo();
+    const double time = fldparatimint_->Time();
+    for ( int jnode=0; jnode<nen_; ++jnode )
+    {
+      const double * jx = ele->Nodes()[jnode]->X();
+      for(int idim=0;idim<nsd_;++idim)
+        advevelint_(idim,jnode) = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(idim,jx,time,NULL);
+    }
+  }
+
   LINALG::Matrix<nen_,1> eporo(true);
   if ((params.getEntryPtr("topopt_density") != NULL) and // parameter exists and ...
-      (params.get<RCP<const Epetra_Vector> >("topopt_density") !=Teuchos::null)) // ... according vector is filled
+      (params.get<Teuchos::RCP<const Epetra_Vector> >("topopt_density") !=Teuchos::null)) // ... according vector is filled
   {
     // read nodal values from global vector
-    RCP<const Epetra_Vector> topopt_density = params.get<RCP<const Epetra_Vector> >("topopt_density");
+    Teuchos::RCP<const Epetra_Vector> topopt_density = params.get<Teuchos::RCP<const Epetra_Vector> >("topopt_density");
     for (int nn=0;nn<nen_;++nn)
     {
       int lid = (ele->Nodes()[nn])->LID();
@@ -289,8 +303,20 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
 
   if (ele->IsAle())
   {
-    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
-    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &egridv, NULL,"gridv");
+    switch (fldpara_->PhysicalType())
+    {
+    case INPAR::FLUID::oseen:
+    case INPAR::FLUID::stokes:
+    {
+      dserror("ALE with Oseen or Stokes seems to be a tricky combination. Think deep before removing dserror!");
+      break;
+    }
+    default:
+    {
+      ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+      ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &egridv, NULL,"gridv");
+    }
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -320,9 +346,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
   if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity
       or fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
   {
-    RCP<Epetra_MultiVector> filtered_vel = params.get<RCP<Epetra_MultiVector> >("Filtered velocity");
-    RCP<Epetra_MultiVector> fs_vel = params.get<RCP<Epetra_MultiVector> >("Fine scale velocity");
-    RCP<Epetra_MultiVector> filtered_reystre = params.get<RCP<Epetra_MultiVector> >("Filtered reynoldsstress");
+    Teuchos::RCP<Epetra_MultiVector> filtered_vel = params.get<Teuchos::RCP<Epetra_MultiVector> >("Filtered velocity");
+    Teuchos::RCP<Epetra_MultiVector> fs_vel = params.get<Teuchos::RCP<Epetra_MultiVector> >("Fine scale velocity");
+    Teuchos::RCP<Epetra_MultiVector> filtered_reystre = params.get<Teuchos::RCP<Epetra_MultiVector> >("Filtered reynoldsstress");
 
     for (int nn=0;nn<nen_;++nn)
     {
@@ -364,8 +390,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
   double CiDeltaSq = 0.0;
   if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
   {
-    RCP<Epetra_Vector> ele_CsDeltaSq = params.sublist("TURBULENCE MODEL").get<RCP<Epetra_Vector> >("col_Cs_delta_sq");
-    RCP<Epetra_Vector> ele_CiDeltaSq = params.sublist("TURBULENCE MODEL").get<RCP<Epetra_Vector> >("col_Ci_delta_sq");
+    Teuchos::RCP<Epetra_Vector> ele_CsDeltaSq = params.sublist("TURBULENCE MODEL").get<Teuchos::RCP<Epetra_Vector> >("col_Cs_delta_sq");
+    Teuchos::RCP<Epetra_Vector> ele_CiDeltaSq = params.sublist("TURBULENCE MODEL").get<Teuchos::RCP<Epetra_Vector> >("col_Ci_delta_sq");
     const int id = ele->LID();
     CsDeltaSq = (*ele_CsDeltaSq)[id];
     CiDeltaSq = (*ele_CiDeltaSq)[id];
@@ -694,10 +720,35 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
   // calculate stabilization parameter at element center
   if (not fldpara_->TauGp() and fldpara_->StabType()==INPAR::FLUID::stabtype_residualbased)
   {
-    // get convective velocity at element center for evaluation of
-    // stabilization parameter
+    // get convective velocity at element center
+    // for evaluation of stabilization parameter
     velint_.Multiply(evelaf,funct_);
-    convvelint_.Update(velint_);
+    switch (fldpara_->PhysicalType())
+    {
+    case INPAR::FLUID::incompressible:
+    case INPAR::FLUID::artcomp:
+    case INPAR::FLUID::varying_density:
+    case INPAR::FLUID::loma:
+    case INPAR::FLUID::boussinesq:
+    case INPAR::FLUID::topopt:
+    {
+      convvelint_.Multiply(evelaf,funct_);
+      break;
+    }
+    case INPAR::FLUID::oseen:
+    {
+      convvelint_.Multiply(advevelint_,funct_);
+      break;
+    }
+    case INPAR::FLUID::stokes:
+    {
+      convvelint_.Clear();
+      break;
+    }
+    default:
+      dserror("Physical type not implemented here. For Poro-problems see derived class FluidEleCalcPoro.");
+    }
+
     if (isale) convvelint_.Multiply(-1.0,egridv,funct_,1.0);
 
     if (fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent)
@@ -766,10 +817,35 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     }
 
     // get convective velocity at integration point
+    switch (fldpara_->PhysicalType())
+    {
+    case INPAR::FLUID::incompressible:
+    case INPAR::FLUID::artcomp:
+    case INPAR::FLUID::varying_density:
+    case INPAR::FLUID::loma:
+    case INPAR::FLUID::boussinesq:
+    case INPAR::FLUID::topopt:
+    {
+      convvelint_.Update(velint_);
+      break;
+    }
+    case INPAR::FLUID::oseen:
+    {
+      convvelint_.Multiply(advevelint_,funct_);
+      break;
+    }
+    case INPAR::FLUID::stokes:
+    {
+      convvelint_.Clear();
+      break;
+    }
+    default:
+      dserror("Physical type not implemented here. For Poro-problems see derived class FluidEleCalcPoro.");
+    }
+
     // (ALE case handled implicitly here using the (potential
     //  mesh-movement-dependent) convective velocity, avoiding
     //  various ALE terms used to be calculated before)
-    convvelint_.Update(velint_);
     if (isale)
     {
       gridvelint_.Multiply(egridv,funct_);
@@ -811,63 +887,63 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity
      or fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
     {
-        velinthat_.Clear();
-        velhatderxy_.Clear();
+      velinthat_.Clear();
+      velhatderxy_.Clear();
 
-        // get filtered velocity at integration point
-        velinthat_.Multiply(evel_hat,funct_);
-        // get filtered velocity derivatives at integration point
-        velhatderxy_.MultiplyNT(evel_hat,derxy_);
+      // get filtered velocity at integration point
+      velinthat_.Multiply(evel_hat,funct_);
+      // get filtered velocity derivatives at integration point
+      velhatderxy_.MultiplyNT(evel_hat,derxy_);
 
-        reystressinthat_.Clear();
-        // get filtered reynoldsstress at integration point
-        for (int dimi=0;dimi<nsd_;dimi++)
+      reystressinthat_.Clear();
+      // get filtered reynoldsstress at integration point
+      for (int dimi=0;dimi<nsd_;dimi++)
+      {
+        for (int dimj=0;dimj<nsd_;dimj++)
         {
-          for (int dimj=0;dimj<nsd_;dimj++)
+          for (int inode=0;inode<nen_;inode++)
           {
-            for (int inode=0;inode<nen_;inode++)
-            {
-              reystressinthat_(dimi,dimj) += funct_(inode) * ereynoldsstress_hat(3*dimi+dimj,inode);
-            }
+            reystressinthat_(dimi,dimj) += funct_(inode) * ereynoldsstress_hat(3*dimi+dimj,inode);
           }
         }
+      }
 
-        // filtered velocity divergence from previous iteration
-        velhatdiv_ = 0.0;
-        for (int idim = 0; idim <nsd_; ++idim)
-        {
-          velhatdiv_ += velhatderxy_(idim, idim);
-        }
+      // filtered velocity divergence from previous iteration
+      velhatdiv_ = 0.0;
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        velhatdiv_ += velhatderxy_(idim, idim);
+      }
 
-        LINALG::Matrix<nsd_*nsd_,nen_> evelhativelhatj;
-        velhativelhatjdiv_.Clear();
-        for (int nn=0;nn<nsd_;++nn)
+      LINALG::Matrix<nsd_*nsd_,nen_> evelhativelhatj;
+      velhativelhatjdiv_.Clear();
+      for (int nn=0;nn<nsd_;++nn)
+      {
+        for (int rr=0;rr<nsd_;++rr)
         {
-          for (int rr=0;rr<nsd_;++rr)
+          for (int mm=0;mm<nen_;++mm)
           {
+            velhativelhatjdiv_(nn,0) += derxy_(rr,mm)*evel_hat(nn,mm)*evel_hat(rr,mm);
+          }
+        }
+      }
+
+      // get divergence of filtered reynoldsstress at integration point
+      reystresshatdiv_.Clear();
+      for (int nn=0;nn<nsd_;++nn)
+      {
+        for (int rr=0;rr<nsd_;++rr)
+        {
+            int index = 3*nn+rr;
             for (int mm=0;mm<nen_;++mm)
             {
-              velhativelhatjdiv_(nn,0) += derxy_(rr,mm)*evel_hat(nn,mm)*evel_hat(rr,mm);
+              reystresshatdiv_(nn,0) += derxy_(rr,mm)*ereynoldsstress_hat(index,mm);
             }
-          }
         }
+      }
 
-        // get divergence of filtered reynoldsstress at integration point
-        reystresshatdiv_.Clear();
-        for (int nn=0;nn<nsd_;++nn)
-        {
-          for (int rr=0;rr<nsd_;++rr)
-          {
-              int index = 3*nn+rr;
-              for (int mm=0;mm<nen_;++mm)
-              {
-                reystresshatdiv_(nn,0) += derxy_(rr,mm)*ereynoldsstress_hat(index,mm);
-              }
-          }
-        }
-
-        // get fine scale velocity at integration point
-        fsvelint_.Multiply(fsevelaf,funct_);
+      // get fine scale velocity at integration point
+      fsvelint_.Multiply(fsevelaf,funct_);
     }
     else
     {
@@ -971,19 +1047,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     //  2) viscous term from previous iteration and viscous operator
     //  3) divergence of velocity from previous iteration
     //----------------------------------------------------------------------
+
     // compute convective term from previous iteration and convective operator
-    // (both zero for reactive problems, for the time being)
-    // winklmaier: zero only for previous reactive (= darcy???) problems
-    if (fldpara_->Darcy() or (fldpara_->PhysicalType() == INPAR::FLUID::stokes))
-    {
-      conv_old_.Clear();
-      conv_c_.Clear();
-    }
-    else
-    {
-      conv_old_.Multiply(vderxy_,convvelint_);
-      conv_c_.MultiplyTN(derxy_,convvelint_);
-    }
+    conv_old_.Multiply(vderxy_,convvelint_);
+    conv_c_.MultiplyTN(derxy_,convvelint_);
 
     // compute viscous term from previous iteration and viscous operator
     if (is_higher_order_ele_) CalcDivEps(evelaf);
@@ -1471,10 +1538,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
-           DRT::ELEMENTS::Fluid*               ele,
-           LINALG::Matrix<nsd_,nen_>&          ebofoaf,
-           LINALG::Matrix<nsd_,nen_> &         eprescpgaf,
-           LINALG::Matrix<nen_,1>&             escabofoaf)
+  DRT::ELEMENTS::Fluid*               ele,
+  LINALG::Matrix<nsd_,nen_>&          ebofoaf,
+  LINALG::Matrix<nsd_,nen_> &         eprescpgaf,
+  LINALG::Matrix<nen_,1>&             escabofoaf)
 {
   std::vector<DRT::Condition*> myneumcond;
 
@@ -3743,7 +3810,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU(
   }
 
   // convection, convective (only for Newton)
-  if(fldpara_->IsNewton() and (fldpara_->PhysicalType()!=INPAR::FLUID::stokes))
+  if(fldpara_->IsNewton())
   {
     for (int ui=0; ui<nen_; ++ui)
     {

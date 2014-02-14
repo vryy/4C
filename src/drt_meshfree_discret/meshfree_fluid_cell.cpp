@@ -378,7 +378,7 @@ int DRT::ELEMENTS::MeshfreeFluid::NumDofPerNode(const DRT::Node& node) const
 void DRT::ELEMENTS::MeshfreeFluid::Print(std::ostream& os) const
 {
   os << "MeshfreeFluid ";
-  DRT::MESHFREE::Cell::Print(os);
+  Print(os);
   return;
 }
 

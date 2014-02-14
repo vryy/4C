@@ -73,7 +73,6 @@ void DRT::ELEMENTS::FluidEleParameterPoro::SetElementPoroParameter( Teuchos::Par
   poro_conti_partint_ = params.get<bool>("conti partial integration",false);
   reaction_= true;
   reaction_topopt_= false;
-  darcy_= true;
   graddiv_=false;
 
   if (DRT::Problem::Instance()->ProblemType()==prb_fpsi)

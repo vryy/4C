@@ -13,6 +13,7 @@ Maintainer: Keijo Nissen
 #include <iomanip>
 #include <string>
 #include "drt_utils_maxent_basisfunctions.H"
+#include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_inpar/inpar_meshfree.H"
@@ -61,9 +62,6 @@ DRT::MESHFREE::MaxEntApprox::MaxEntApprox(Teuchos::ParameterList const & params,
 
   // set range at which prior considered numerically zero
   SetRange(params.get<double>("RANGE_TOL"));
-
-  // set range at which prior considered numerically zero
-  petrovgalerkin_ = Teuchos::getIntegralValue<int>(params,"PETROVGALERKIN");
 
   //----------------------------------------------------------------------
   // get further input variables
@@ -146,34 +144,54 @@ DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualProblem(
 
 template<int dim>
 int DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::maxent_basisfunction(
-  const LINALG::SerialDenseMatrix &       diffx,  // distance vector between node and integration point
+  Teuchos::RCP<LINALG::SerialDenseMatrix>  diffx, // distance vector between node and integration point
   Teuchos::RCP<LINALG::SerialDenseVector>& funct, // basis functions values
   Teuchos::RCP<LINALG::SerialDenseMatrix>& deriv, // spatial derivatives of basis functions
-  Teuchos::RCP<const LINALG::SerialDenseMatrix> cconv, //!< convection at cell points for inf-flux basis weighting functions
+  Teuchos::RCP<const LINALG::SerialDenseVector> upsilon, //!< eigen value at cell points for inf-flux basis weighting functions
   Teuchos::RCP<LINALG::SerialDenseVector> sfunct, // basis solution functions values in case of Bubnov Galerkin
   Teuchos::RCP<LINALG::SerialDenseMatrix> sderiv // spatial derivatives of basis solution functions in case of Bubnov Galerkin
   )
 {
   // get number of nodes
-  const int  na  = diffx.N();
+  const int  na  = diffx->N();
 
-  // check some dimensions
-  if (diffx.M()!=dim)
+  // check and if necessary adapt dimension of diffx
+  if (diffx->M()!=dim)
   {
-    std::cout << "diffx:" << std::endl << diffx << std::endl;
-    dserror("Number of rows of diffx is %i but must be %i (equal to dim)!",diffx.M(),dim);
+    // compute covariance matrix
+    const int havedim = diffx->M();
+    LINALG::SerialDenseMatrix C(havedim,havedim);
+    C.Multiply('N','T',1.0,*diffx,*diffx,0.0);
+
+    // get eigenvlaues and eigenvectors of covariance matrix
+    LINALG::SerialDenseVector E(havedim);
+    LINALG::SymmetricEigenProblem(C,E,true);
+
+    // check for zero and negative eigenvalues
+    for (int i=0; i<(havedim-dim); ++i)
+      if (E(i)>1e-14)
+        dserror("Covariance matrix has only %i zero eigenvalues but needs %i for dimension reduction.\n So far, boundaries have to be plane/straight",i,(havedim-dim));
+      else if (E(i)<-1e-14)
+        dserror("Covariance matrix has negative eigenvalues.");
+
+    // reduce dimension of diffx
+    LINALG::SerialDenseMatrix C_reduced(View,C[(havedim-dim)],havedim,havedim,dim);
+    Teuchos::RCP<LINALG::SerialDenseMatrix> diffx_reduced = Teuchos::rcp(new LINALG::SerialDenseMatrix(dim,na));
+    diffx_reduced->Multiply('T','N',1.0,C_reduced,*diffx,0.0);
+    diffx = diffx_reduced;
   }
 
   // check if we actually need to compute basis functions
-  if (maxent_->type_==1 and (not maxent_->IsPetrovGalerkin()))
+  if ((maxent_->type_==0) and (maxent_->cmpl_!=INPAR::MESHFREE::c_linear))
+    dserror("Solution basis function should have linear consistency!\nIf you REALLY want to change this, remove implicite Petrov-Galerkin check in 'else' case.");
+  else if ((maxent_->type_==1 and (maxent_->cmpl_==INPAR::MESHFREE::c_linear))
+           and (sfunct!=Teuchos::null))
   {
-    if (sfunct!=Teuchos::null)
-    {
-      funct = sfunct;
-      deriv = sderiv;
-      return 0;
-    }
+    funct = sfunct;
+    deriv = sderiv;
+    return 0;
   }
+
   // check and if necessary adapt sizes of funct and deriv
   bool der = (deriv!=Teuchos::null);
   if (funct->Length()!=na) funct->LightSize(na);
@@ -186,20 +204,7 @@ int DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::maxent_basisfunction(
     dxq.Reshape(dim,na);
   }
   // get prior functions and spatial derivatives
-  SetPriorFunctDeriv(q,dxq,diffx);
-
-  // start with computation of solution basis functions
-  Teuchos::RCP<LINALG::SerialDenseVector> conv  = Teuchos::null;
-  if (maxent_->cmpl_!=0)
-  {
-    if (cconv==Teuchos::null)
-      dserror("Teuchos::RCP to convection must be set for other than linear consistency.");
-    if (sfunct==Teuchos::null)
-      dserror("Solution basis function have to be given to compute convection at evaluation point.");
-    // compute velocity at evaluation point from solution basis functions
-    conv = Teuchos::rcp( new LINALG::SerialDenseVector(dim,false));
-    conv->Multiply('N','N',1.0,*cconv,*sfunct,0.0);
-  }
+  SetPriorFunctDeriv(q,dxq,*diffx);
 
   // initilize matrices for consistency/compliance conditions
   LINALG::SerialDenseMatrix c(dim,na);
@@ -211,7 +216,7 @@ int DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::maxent_basisfunction(
     }
   }
   // get consistency/compliance conditions and spatial derivatives
-  SetComplCondFunctDeriv(c,dxc,diffx,maxent_->type_,conv);
+  SetComplCondFunctDeriv(c,dxc,*diffx,maxent_->type_,upsilon);
 
   // perform Newton-Raphson optimisation
   LINALG::Matrix<dim,1>   lam(true);   // initialisation needed
@@ -293,7 +298,7 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::SetComplCondFunctDeriv(
   std::vector<LINALG::SerialDenseMatrix>      & dxc  , // dim-vector of (dim x numnodes)-matrix
   const LINALG::SerialDenseMatrix             & diffx, // (dim x numnodes)-matrix
   const int                                     type,
-  Teuchos::RCP<const LINALG::SerialDenseVector> eupsilon   // eigenvector at evaluation point for inf-flux weighting basis functions
+  Teuchos::RCP<const LINALG::SerialDenseVector> upsilon   // eigenvector at evaluation point for inf-flux weighting basis functions
   ) const
 {
   int na = c.N();
@@ -311,7 +316,7 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::SetComplCondFunctDeriv(
   else if (maxent_->cmpl_==INPAR::MESHFREE::c_stream)
   {
     // check whether eigenvector at evaluation point has already been evaluated
-    if (eupsilon==Teuchos::null) dserror("First compute eigenvectors at evaluation point by means of solution basis function before evaluation inf-flux weighting basis functions!");
+    if (upsilon==Teuchos::null) dserror("First compute eigenvectors at evaluation point by means of solution basis function before evaluation inf-flux weighting basis functions!");
     // rotate to streamline space
     //
     // first (only if 2D or 3D):
@@ -321,9 +326,8 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::SetComplCondFunctDeriv(
     //   - rotation around y-axis to be at upsilon in xyz-space
     //   - this determines the z-component of the compliance matrix
     c.Zero();
-    LINALG::Matrix<dim,1> upsilon(eupsilon->A());
     LINALG::SerialDenseVector temp(na,false);
-    temp.Multiply('T','N', 1.0, diffx, *eupsilon, 0.0);
+    temp.Multiply('T','N', 1.0, diffx, *upsilon, 0.0);
     for (int j=0; j<na; ++j)
       c(0,j) = (exp(temp(j))-1);///(exp(upsilon.Norm2()*10.0/2.0 - 1));
 
@@ -332,7 +336,7 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::SetComplCondFunctDeriv(
       LINALG::SerialDenseMatrix& dxc0 = dxc[0];
       for (int j=0; j<na; ++j)
         for (int k=0; k<dim; ++k)
-          dxc0(k,j) = - exp(temp(j)) * upsilon(k,0);///(exp(upsilon.Norm2()*10.0/2.0 - 1));
+          dxc0(k,j) = - exp(temp(j)) * (*upsilon)(k);///(exp(upsilon.Norm2()*10.0/2.0 - 1));
     }
     // second component (if at least 2D:
     //   - rotation around z-axis to get projection of upsilon into xy-plane
@@ -342,7 +346,7 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::SetComplCondFunctDeriv(
     //   - this determines the z-component of the compliance matrix
     for(int i=2; i>3-dim; --i)
     {
-      double alpha = atan2(upsilon(0,0),upsilon(3-i,0));
+      double alpha = atan2((*upsilon)(0),(*upsilon)(3-i));
       double rot[dim];
       rot[0] = cos(alpha);
       rot[3-i] = -sin(alpha);
@@ -350,9 +354,9 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::SetComplCondFunctDeriv(
       for (int k=0; k<dim; ++k)
         for (int j=0; j<na; ++j)
           c(3-i,j) += rot[k]*diffx(k,j);
-      upsilon(0,0) = rot[0] * upsilon(0,0);
-      upsilon(0,0) += rot[3-i] * upsilon(3-i,0);
-      upsilon(3-i) = 0.0;
+//      eupsilon(0,0) = rot[0] * eupsilon(0,0);
+//      eupsilon(0,0) += rot[3-i] * eupsilon(3-i,0);
+//      eupsilon(3-i) = 0.0;
       if (dxc.size())
       {
         for (int j=0; j<na; ++j)
