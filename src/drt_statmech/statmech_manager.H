@@ -266,10 +266,10 @@ public:
                              const double&  dt);
 
   //! \brief checks orientation of crosslinker relative to linked filaments
-  bool CheckOrientation(const LINALG::Matrix<3,1>       direction,
-                        const Epetra_MultiVector&       bspottriadscol,
-                        const Epetra_SerialDenseMatrix& LID,
-                        Teuchos::RCP<double>            phifil = Teuchos::null);
+  bool CheckOrientation(const LINALG::Matrix<3,1>        direction,
+                        Teuchos::RCP<Epetra_MultiVector> bspottriadscol,
+                        const Epetra_SerialDenseMatrix&  LID,
+                        Teuchos::RCP<double>             phifil = Teuchos::null);
 
   //! \brief counts the number of possible crosslinking spots and does an Orientation Check
   void OrientationCorrelation(const Epetra_Vector& disrow,
@@ -923,9 +923,7 @@ protected:
   {
     statmech_linker_none,
     statmech_linker_std,
-    statmech_linker_truss3,
     statmech_linker_stdintpol,
-    statmech_linker_truss3intpol,
     statmech_linker_bellseq,
     statmech_linker_bellseqintpol,
     statmech_linker_active,

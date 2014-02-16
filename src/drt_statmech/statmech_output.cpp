@@ -5167,7 +5167,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
                 LINALG::Matrix<3,1> direction(distance);
                 direction.Scale(1.0/direction.Norm2());
                 Teuchos::RCP<double> phifil = Teuchos::rcp(new double(0.0));
-                bool orientation = CheckOrientation(direction,*bspottriadscol,LID,phifil);
+                bool orientation = CheckOrientation(direction,bspottriadscol,LID,phifil);
 
                 // increment count for that bin
                 (*orderparameterbinsincrow)[0][currdistbin] += 1.0;

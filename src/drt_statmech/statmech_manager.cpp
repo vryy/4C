@@ -212,9 +212,9 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
       break;
     case INPAR::STATMECH::linkermodel_std:
     {
+      linkermodel_ = statmech_linker_std;
       if(statmechparams_.get<double>("ILINK",0.0) == 0.0)
       {
-        linkermodel_ = statmech_linker_truss3;
         if(!discret_->Comm().MyPID())
           std::cout<<"  -- standard Truss3 linkers"<<std::endl;
       }
@@ -228,9 +228,9 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
       break;
     case INPAR::STATMECH::linkermodel_stdintpol:
     {
+      linkermodel_ = statmech_linker_stdintpol;
       if(statmechparams_.get<double>("ILINK",0.0) == 0.0)
       {
-        linkermodel_ = statmech_linker_truss3intpol;
         if(!discret_->Comm().MyPID())
           std::cout<<"  -- standard Truss3 linkers with interpolated binding site positions for BEAM3EB elements"<<std::endl;
       }
@@ -278,9 +278,9 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     dserror("The parameter LINKERMODEL has to be set to active or activeintpol in order to work with ACTIVELINKERFRACTION>0.0!");
   if((linkermodel_==statmech_linker_active || linkermodel_==statmech_linker_activeintpol || linkermodel_==statmech_linker_myosinthick) && statmechparams_.get<double>("DELTABELLSEQ",0.0)==0.0)
     dserror("Active linkers need a non-zero value DELTABELLSEQ for a force-dependent off-rate");
-  if((linkermodel_==statmech_linker_std || linkermodel_==statmech_linker_stdintpol || linkermodel_==statmech_linker_truss3intpol) && statmechparams_.get<double>("DELTABELLSEQ",0.0)!=0.0)
+  if((linkermodel_==statmech_linker_std || linkermodel_==statmech_linker_stdintpol) && statmechparams_.get<double>("DELTABELLSEQ",0.0)!=0.0)
     dserror("This linker model does not work with DELTABELLSEQ!=0.0! Check your input file!");
-  if((linkermodel_==statmech_linker_stdintpol || linkermodel_==statmech_linker_truss3intpol ||linkermodel_ == statmech_linker_bellseqintpol || linkermodel_ == statmech_linker_activeintpol) && statmechparams_.get<double>("RISEPERBSPOT",0.0)<=0.0)
+  if((linkermodel_==statmech_linker_stdintpol || linkermodel_ == statmech_linker_bellseqintpol || linkermodel_ == statmech_linker_activeintpol) && statmechparams_.get<double>("RISEPERBSPOT",0.0)<=0.0)
     dserror("The input parameter RISEPERBSPOT has an invalid value %f", statmechparams_.get<double>("RISEPERBSPOT",0.0));
 
   switch(DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(statmechparams_, "FRICTION_MODEL"))
@@ -603,18 +603,18 @@ void STATMECH::StatMechManager::Update(const int&                               
    * periodic boundary conditions, i.e. no node lies outside a cube of edge length periodlength_*/
 
   //if dynamic crosslinkers are used update comprises adding and deleting crosslinkers
+  //
   if (linkermodel_ != statmech_linker_none && statmechparams_.get<int>("N_crosslink",0)>0)
   {
 #ifdef MEASURETIME
     const double t1 = Teuchos::Time::wallTime();
 #endif
-
     //column maps cointaining binding spot positions and their spatial orientation
     Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
     Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::null;
     // allocate memory to binding spot rotations only if linkers are not Truss3, Truss3CL elements
-    if(linkermodel_ != statmech_linker_truss3 || linkermodel_ != statmech_linker_truss3intpol)
-     bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));;
+    if(statmechparams_.get<double>("ILINK",0.0)>0.0)
+      bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
 
     /* note: access by ExtractMyValues requires column map vector, whereas displacements on level of time integration are
      * handled as row map vector*/
@@ -842,7 +842,6 @@ void STATMECH::StatMechManager::GetBindingSpotPositions(Epetra_Vector& discol,
   if(linkermodel_ == statmech_linker_stdintpol ||
      linkermodel_ == statmech_linker_activeintpol ||
      linkermodel_ == statmech_linker_bellseqintpol ||
-     linkermodel_ == statmech_linker_truss3intpol ||
      linkermodel_ == statmech_linker_myosinthick)
     GetInterpolatedBindingSpotPositions(discol, bspotpositions, bspotrotations);
   else  // conventional crosslinker beam3ii, Truss 3 element, i.e. binding spots coincide with nodes
@@ -1023,13 +1022,12 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
         // NodeShift
         UnshiftPositions(position);
 
-        // To interpolate rotations we need to get the two nodal Triads (Quaternions) of the Element
-        // If linker element is not interpolated Truss3
-        if(linkermodel_ != statmech_linker_truss3intpol)
+        // To interpolate rotations we need to get the two nodal Triads (Quaternions) of the Element, if no truss element
+        if(statmechparams_.get<double>("ILINK",0.0)>0.0)
         {
           for(int j=0;j<2;j++)
-                    for(int k=0;k<4;k++)
-                      nQ[j](k) = (filele->Quaternion()[j])(k);
+            for(int k=0;k<4;k++)
+              nQ[j](k) = (filele->Quaternion()[j])(k);
         }
 
         prevelegid = elegid;
@@ -1053,7 +1051,7 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
       }
 
       //Interpolation of Rotations
-      if(linkermodel_ != statmech_linker_truss3intpol)
+      if(statmechparams_.get<double>("ILINK",0.0)>0.0)
       {
         currrot.PutScalar(0.0);
         InterpolateTriadonBindingSpot(Ibp,nQ,currrot,bQ);
@@ -1107,17 +1105,19 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
 void STATMECH::StatMechManager::GetBindingSpotTriads(const Teuchos::RCP<Epetra_MultiVector> bspotrotations,
                                                      Teuchos::RCP<Epetra_MultiVector>       bspottriads)
 {
-  if (DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT") ||
-      filamentmodel_ == statmech_filament_helical ||
-      linkermodel_ == statmech_linker_stdintpol ||
-      linkermodel_ == statmech_linker_activeintpol ||
-      linkermodel_ == statmech_linker_bellseqintpol ||
-      linkermodel_ == statmech_linker_myosinthick)
+  if(bspottriads!=Teuchos::null)
   {
-    if (linkermodel_ == statmech_linker_stdintpol || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol || linkermodel_ == statmech_linker_myosinthick)
-      GetInterpolatedBindingSpotTriads(bspotrotations, bspottriads);
-    else
-      GetElementBindingSpotTriads(bspottriads);
+    if (DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT") ||
+        filamentmodel_ == statmech_filament_helical ||
+        linkermodel_ == statmech_linker_activeintpol ||
+        linkermodel_ == statmech_linker_bellseqintpol ||
+        linkermodel_ == statmech_linker_myosinthick)
+    {
+      if (linkermodel_ == statmech_linker_stdintpol || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol || linkermodel_ ==  statmech_linker_myosinthick)
+        GetInterpolatedBindingSpotTriads(bspotrotations, bspottriads);
+      else
+        GetElementBindingSpotTriads(bspottriads);
+    }
   }
   return;
 }
@@ -1185,27 +1185,29 @@ void STATMECH::StatMechManager::GetElementBindingSpotTriads(Teuchos::RCP<Epetra_
 void STATMECH::StatMechManager::GetInterpolatedBindingSpotTriads(const Teuchos::RCP<Epetra_MultiVector> bspotrotations,
                                                                  Teuchos::RCP<Epetra_MultiVector>       bspottriads)
 {
-  Teuchos::RCP<Epetra_MultiVector>  bspottriadsrow = Teuchos::rcp(new Epetra_MultiVector(*bspotrowmap_, 4, true));
-  Teuchos::RCP<Epetra_MultiVector>  bspotrotationsrow = Teuchos::rcp(new Epetra_MultiVector(*bspotrowmap_,3));
-  //Get my bspotrotations in row format
-  CommunicateMultiVector(bspotrotationsrow, bspotrotations,true,false,false,true);
-
-  LINALG::Matrix<4,1> tempQ;
-  LINALG::Matrix<3,1> tempM;
-  for(int i=0; i<bspotrowmap_->NumMyElements(); i++)
+  if(bspottriads!=Teuchos::null)
   {
-    for(int k=0;k<3;k++)
-      tempM(k)=(*bspotrotationsrow)[k][i];
-    LARGEROTATIONS::angletoquaternion(tempM,tempQ);
-    for(int j=0;j<4;j++)
-      (*bspottriadsrow)[j][i]=tempQ(j);
-  }
-  //export nodaltriadsrow to col map
-  if(bspottriads->MyLength()==bspotcolmap_->NumMyElements())
-    CommunicateMultiVector(bspottriadsrow, bspottriads, false, true);
-  else
-    bspottriads = Teuchos::rcp(new Epetra_MultiVector(*bspottriadsrow));
+    Teuchos::RCP<Epetra_MultiVector>  bspottriadsrow = Teuchos::rcp(new Epetra_MultiVector(*bspotrowmap_, 4, true));
+    Teuchos::RCP<Epetra_MultiVector>  bspotrotationsrow = Teuchos::rcp(new Epetra_MultiVector(*bspotrowmap_,3));
+    //Get my bspotrotations in row format
+    CommunicateMultiVector(bspotrotationsrow, bspotrotations,true,false,false,true);
 
+    LINALG::Matrix<4,1> tempQ;
+    LINALG::Matrix<3,1> tempM;
+    for(int i=0; i<bspotrowmap_->NumMyElements(); i++)
+    {
+      for(int k=0;k<3;k++)
+        tempM(k)=(*bspotrotationsrow)[k][i];
+      LARGEROTATIONS::angletoquaternion(tempM,tempQ);
+      for(int j=0;j<4;j++)
+        (*bspottriadsrow)[j][i]=tempQ(j);
+    }
+    //export nodaltriadsrow to col map
+    if(bspottriads->MyLength()==bspotcolmap_->NumMyElements())
+      CommunicateMultiVector(bspottriadsrow, bspottriads, false, true);
+    else
+      bspottriads = Teuchos::rcp(new Epetra_MultiVector(*bspottriadsrow));
+  }
   return;
 }
 
@@ -2360,11 +2362,17 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                                                          Teuchos::RCP<CONTACT::Beam3cmanager>             beamcmanager,
                                                          bool                                             printscreen)
 {
+
   double t0 = Teuchos::Time::wallTime();
   /*preliminaries*/
   // BINDING SPOT TRIAD UPDATE
-  Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
-  GetBindingSpotTriads(bspotrotations, bspottriadscol);
+  Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::null;
+  // beam elements only
+  if(statmechparams_.get<double>("ILINK",0.0)>0.0)
+  {
+    bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
+    GetBindingSpotTriads(bspotrotations, bspottriadscol);
+  }
 
   //get current on-rate for crosslinkers
   double kon = 0;
@@ -2497,7 +2505,6 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                   switch(linkermodel_)
                   {
                     case statmech_linker_stdintpol:
-                    case statmech_linker_truss3intpol:
                     case statmech_linker_bellseqintpol:
                     case statmech_linker_activeintpol:
                     case statmech_linker_myosinthick:
@@ -2588,7 +2595,6 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                       switch(linkermodel_)
                       {
                         case statmech_linker_stdintpol:
-                        case statmech_linker_truss3intpol:
                         case statmech_linker_activeintpol:
                         case statmech_linker_bellseqintpol:
                         case statmech_linker_myosinthick:
@@ -2673,7 +2679,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                        * orientation, a marker, indicating an element to be added, will be set
                        * In addition to that, if beam contact is enabled, a linker is only set if
                        * it does not intersect with other existing elements*/
-                      if(CheckOrientation(direction,*bspottriadscol,LID) && !intersection)
+                      if(CheckOrientation(direction,bspottriadscol,LID) && !intersection)
                       {
                         numsetelements++;
 
@@ -2765,10 +2771,10 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
     // NODAL quaternions from filament elements
     Teuchos::RCP<Epetra_MultiVector> nodalquaternions = Teuchos::null;
 
-    if(linkermodel_ == statmech_linker_stdintpol ||
+    if((linkermodel_ == statmech_linker_stdintpol ||
        linkermodel_ == statmech_linker_activeintpol ||
        linkermodel_ == statmech_linker_bellseqintpol ||
-       linkermodel_ == statmech_linker_myosinthick)
+       linkermodel_ == statmech_linker_myosinthick) && statmechparams_.get<double>("ILINK",0.0)>0.0)
     {
 
       if(linkermodel_==statmech_linker_myosinthick)
@@ -2810,7 +2816,6 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
         switch(linkermodel_)
         {
           case statmech_linker_stdintpol:
-          case statmech_linker_truss3intpol:
           case statmech_linker_activeintpol:
           case statmech_linker_bellseqintpol:
           case statmech_linker_myosinthick:
@@ -2826,7 +2831,6 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
           }
           break;
           case statmech_linker_std:
-          case statmech_linker_truss3:
           case statmech_linker_bellseq:
           case statmech_linker_active:
           {
@@ -2851,8 +2855,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
         std::vector<double> xrefe(6);
         /* resize in case of interpolated crosslinker element. No need for interpolated Beam3eb element, because rotational
            d.o.f. does not exist */
-        if (linkermodel_ == statmech_linker_truss3intpol ||
-            linkermodel_ == statmech_linker_stdintpol ||
+        if (linkermodel_ == statmech_linker_stdintpol ||
             linkermodel_ == statmech_linker_activeintpol ||
             linkermodel_ == statmech_linker_bellseqintpol ||
             linkermodel_ == statmech_linker_myosinthick)
@@ -2864,30 +2867,31 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
           xrefe[k+3] = (*bspotpositions)[k][bspotcolmap.LID(bspotgid.at(1))];
 
           //set nodal rotations (not true ones, only those given in the displacement vector)
-          switch(linkermodel_)
+          if(statmechparams_.get<double>("ILINK",0.0)>0.0)
           {
-            case statmech_linker_stdintpol:
-            case statmech_linker_activeintpol:
-            case statmech_linker_bellseqintpol:
-            case statmech_linker_myosinthick:
+            switch(linkermodel_)
             {
-              rotrefe[k]   = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[0])];
-              rotrefe[k+3] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[1])];
-              rotrefe[k+6] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[2])];
-              rotrefe[k+9] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[3])];
+              case statmech_linker_stdintpol:
+              case statmech_linker_activeintpol:
+              case statmech_linker_bellseqintpol:
+              case statmech_linker_myosinthick:
+              {
+                rotrefe[k]   = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[0])];
+                rotrefe[k+3] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[1])];
+                rotrefe[k+6] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[2])];
+                rotrefe[k+9] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[3])];
+              }
+              break;
+              case statmech_linker_std:
+              case statmech_linker_bellseq:
+              case statmech_linker_active:
+              {
+                rotrefe[k] = (*bspotrotations)[k][bspotcolmap.LID((*globalnodeids)[0])];
+                rotrefe[k+3] = (*bspotrotations)[k][bspotcolmap.LID((*globalnodeids)[1])];
+              }
+              break;
+              default: dserror("Unknown linkertype_");
             }
-            break;
-            case statmech_linker_std:
-            case statmech_linker_active:
-            {
-              rotrefe[k] = (*bspotrotations)[k][bspotcolmap.LID((*globalnodeids)[0])];
-              rotrefe[k+3] = (*bspotrotations)[k][bspotcolmap.LID((*globalnodeids)[1])];
-            }
-            break;
-            case statmech_linker_truss3:
-            case statmech_linker_truss3intpol:
-            break;
-            default: dserror("Unknown linkertype_");
           }
         }
 
@@ -3388,9 +3392,12 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
   punlink->PutScalar(p);
 
   // binding spot triads
-  Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4));
-  bspottriadscol->PutScalar(0.0);
-  GetBindingSpotTriads(bspotrotations, bspottriadscol);
+  Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::null;
+  if(statmechparams_.get<double>("ILINK",0.0)>0.0)
+  {
+    bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
+    GetBindingSpotTriads(bspotrotations, bspottriadscol);
+  }
 
   // if off-rate is also dependent on the forces acting within the crosslinker
   if (statmechparams_.get<double>("DELTABELLSEQ", 0.0) != 0.0)// ||
@@ -3764,7 +3771,6 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
   // look at both possible permutations 1 3, 2 4 and 1 4, 2 3 in order to determine which
   for(int h=0; h<2; h++)
   {
-//    std::cout<<"Permut: "<<permut[2*h]<<", "<<permut[2*h+1]<<endl;
     // get direction vectors
     for(int i=0; i<(int)v.M(); i++)
     {
@@ -3778,7 +3784,6 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
     n(1) = v(2)*w(0) - v(0)*w(2);
     n(2) = v(0)*w(1) - v(1)*w(0);
 
-//    std::cout<<"h = "<<h<<": n.Norm2() = "<<std::setprecision(15)<<n.Norm2()<<endl;
     // non-parallel case
     if(n.Norm2()>1e-10)
     {
@@ -3813,13 +3818,11 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
       LINALG::Matrix<3,1> disttocog(cog);
       disttocog -= Xbar;
 
-//      std::cout<<"  non-parallel: d = "<<disttocog.Norm2()<<endl;
       distances.push_back(disttocog.Norm2());
     }
     else // parallelity = 2D = correct set
     {
       h_par = h;
-//      std::cout<<"  parallel    : d = "<<0.0<<endl;
       distances.push_back(0.0);
     }
   }
@@ -3829,23 +3832,16 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
   // shuffling node order, non-square case
   if(h_par<0)
   {
-//    std::cout<<"   d = ";
-//    for(int i=0; i<(int)distances.size(); i++)
-//      std::cout<<distances[i]<<"  ";
-//    std::cout<<endl;
-
     // included the equality case (occurs in special case of exactly same node pair distances 1 3, 2 4, rotated by pi/2)
     // In this case, both alternatives are equivalent also mechanically
     if(distances[0]>=distances[1])
     {
-//      std::cout<<"    non-par: case 0"<<endl;
       // node 3 becomes 2 and vice versa
       globalnodeids->at(1) = nodeids.at(2);
       globalnodeids->at(2) = nodeids.at(1);
     }
     else if(distances[1]>distances[0])
     {
-//      std::cout<<"    non-par: case 1"<<endl;
       globalnodeids->at(1) = nodeids.at(3);
       globalnodeids->at(2) = nodeids.at(1);
       globalnodeids->at(3) = nodeids.at(2);
@@ -3855,22 +3851,18 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
   {
     if(h_par==0)
     {
-//      std::cout<<"    par: case 0"<<endl;
       // node 3 becomes 2 and vice versa
       globalnodeids->at(1) = nodeids.at(2);
       globalnodeids->at(2) = nodeids.at(1);
     }
     else
     {
-//      std::cout<<"    par: case 1"<<endl;
       globalnodeids->at(1) = nodeids.at(3);
       globalnodeids->at(2) = nodeids.at(1);
       globalnodeids->at(3) = nodeids.at(2);
     }
   }
 
-//  std::cout<<"===Nodes: "<<globalnodeids->at(0)<<", "<<globalnodeids->at(1)<<", "<<globalnodeids->at(2)<<", "<<globalnodeids->at(3)<<"==="<<endl;
-//  dserror("STOP");
   return;
 }
 
@@ -4932,7 +4924,6 @@ bool STATMECH::StatMechManager::CheckCrossPeriodicBCLink(const Epetra_SerialDens
   switch(linkermodel_)
   {
     case statmech_linker_stdintpol:
-    case statmech_linker_truss3intpol:
     case statmech_linker_activeintpol:
     case statmech_linker_bellseqintpol:
     case statmech_linker_myosinthick:
@@ -5166,10 +5157,10 @@ void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_
  | checks orientation of crosslinker relative to linked filaments       |
  |                                                  (public) cyron 06/10|
  *----------------------------------------------------------------------*/
-bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, const Epetra_MultiVector& bspottriadscol, const Epetra_SerialDenseMatrix& LID, Teuchos::RCP<double> phifil)
+bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, Teuchos::RCP<Epetra_MultiVector> bspottriadscol, const Epetra_SerialDenseMatrix& LID, Teuchos::RCP<double> phifil)
 {
   //if orientation is not to be checked explicitly, this function always returns true
-  if (!DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT"))
+  if (!DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT") || bspottriadscol==Teuchos::null)
     return true;
 
   // check for linkers with both their binding domains on one filament
@@ -5178,7 +5169,6 @@ bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> dire
     switch(linkermodel_)
     {
       case statmech_linker_stdintpol:
-      case statmech_linker_truss3intpol:
       case statmech_linker_activeintpol:
       case statmech_linker_bellseqintpol:
       case statmech_linker_myosinthick:
@@ -5212,12 +5202,12 @@ bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> dire
 
   //triad of binding site on first filament which is affected by the new crosslinker
   for (int j=0; j<4; j++)
-    qnode(j) = bspottriadscol[j][(int) LID(0,0)];
+    qnode(j) = (*bspottriadscol)[j][(int) LID(0,0)];
   LARGEROTATIONS::quaterniontotriad(qnode, T1);
 
   //triad of binding site on second filament which is affected by the new crosslinker
   for (int j=0; j<4; j++)
-    qnode(j) = bspottriadscol[j][(int) LID(1,0)];
+    qnode(j) = (*bspottriadscol)[j][(int) LID(1,0)];
   LARGEROTATIONS::quaterniontotriad(qnode, T2);
 
   //auxiliary variable
@@ -5675,7 +5665,6 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
   else // without helical orientation
   {
     if(linkermodel_ == statmech_linker_stdintpol ||
-        linkermodel_ == statmech_linker_truss3intpol ||
         linkermodel_ == statmech_linker_activeintpol ||
         linkermodel_ == statmech_linker_bellseqintpol ||
         linkermodel_ == statmech_linker_myosinthick)
@@ -6049,7 +6038,6 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
   if(linkermodel_ != statmech_linker_none)
   {
     if(beamcmanager!=Teuchos::null && (linkermodel_ == statmech_linker_stdintpol ||
-                                       linkermodel_ == statmech_linker_truss3intpol ||
                                        linkermodel_ == statmech_linker_activeintpol ||
                                        linkermodel_ == statmech_linker_bellseqintpol ||
                                        linkermodel_ == statmech_linker_myosinthick))
@@ -6066,8 +6054,12 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
     Epetra_Vector discol(*discret_->DofColMap(), true);
     GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
 
-    Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
-    GetBindingSpotTriads(bspotrotations, bspottriadscol);
+    Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::null;
+    if(statmechparams_.get<double>("ILINK",0.0)>0.0)
+    {
+      bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
+      GetBindingSpotTriads(bspotrotations, bspottriadscol);
+    }
 //==ENDNEW
 //==OLD
     //node positions and rotations (binding spot positions and rotations when applying 4-noded beam element)
@@ -6112,7 +6104,6 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
           // depending on whether binding spots are real nodes or virtual binding sites along a filament, we have to map the binding spot LID to its corresponding node LID
           int nodelid = i;
           if(linkermodel_ == statmech_linker_stdintpol ||
-              linkermodel_ == statmech_linker_truss3intpol ||
               linkermodel_ == statmech_linker_activeintpol ||
               linkermodel_ == statmech_linker_bellseqintpol ||
               linkermodel_ == statmech_linker_myosinthick)
@@ -6247,7 +6238,6 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
               switch(linkermodel_)
               {
                 case statmech_linker_stdintpol:
-                case statmech_linker_truss3intpol:
                 case statmech_linker_activeintpol:
                 case statmech_linker_bellseqintpol:
                 case statmech_linker_myosinthick:
@@ -6294,7 +6284,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
               direction(j) = (*bspotpositions)[j][(int)LID(0,0)]-(*bspotpositions)[j][(int)LID(1,0)];
             direction.Scale(1.0/direction.Norm2());
 
-            if(CheckOrientation(direction, *bspottriadscol,LID) && !intersection)
+            if(CheckOrientation(direction, bspottriadscol,LID) && !intersection)
             {
               numsetelements++;
               (*addcrosselement)[currlink] = 1.0;
@@ -6346,10 +6336,10 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
       Teuchos::RCP<Epetra_MultiVector> nodalrotations = Teuchos::null;
       // NODAL quaternions from filament elements
       Teuchos::RCP<Epetra_MultiVector> nodalquaternions = Teuchos::null;
-      if(linkermodel_ == statmech_linker_stdintpol  ||
+      if((linkermodel_ == statmech_linker_stdintpol  ||
           linkermodel_ == statmech_linker_activeintpol ||
           linkermodel_ == statmech_linker_bellseqintpol ||
-          linkermodel_ == statmech_linker_myosinthick)
+          linkermodel_ == statmech_linker_myosinthick) && statmechparams_.get<double>("ILINK",0.0)>0.0)
       {
         if(linkermodel_==statmech_linker_myosinthick)
           nodalpositions = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),3));
@@ -6387,7 +6377,6 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
           // different sizes due to different linker elements
           Teuchos::RCP<std::vector<int> > globalnodeids;
           if(linkermodel_ == statmech_linker_stdintpol ||
-             linkermodel_ == statmech_linker_truss3intpol ||
              linkermodel_ == statmech_linker_activeintpol ||
              linkermodel_ == statmech_linker_bellseqintpol ||
              linkermodel_ == statmech_linker_myosinthick)
@@ -6418,7 +6407,6 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
           std::vector<double> xrefe(6);
           // resize in case of interpolated crosslinker element
           if (linkermodel_ == statmech_linker_stdintpol ||
-              linkermodel_ == statmech_linker_truss3intpol ||
               linkermodel_ == statmech_linker_activeintpol ||
               linkermodel_ == statmech_linker_bellseqintpol ||
               linkermodel_ == statmech_linker_myosinthick)
@@ -6430,20 +6418,23 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
             xrefe[k+3] = (*bspotpositions)[k][bspotcolmap.LID(bspotgid.at(1))];
 
             //set nodal rotations (not true ones, only those given in the displacement vector)
-            if (linkermodel_ == statmech_linker_stdintpol  ||
-                linkermodel_ == statmech_linker_activeintpol ||
-                linkermodel_ == statmech_linker_bellseqintpol ||
-                linkermodel_ == statmech_linker_myosinthick)
+            if(statmechparams_.get<double>("ILINK",0.0)>0.0)
             {
-              rotrefe[k]   = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[0])];
-              rotrefe[k+3] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[1])];
-              rotrefe[k+6] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[2])];
-              rotrefe[k+9] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[3])];
-            }
-            else
-            {
-              rotrefe[k] = (*bspotrotations)[k][bspotcolmap.LID((*globalnodeids)[0])];
-              rotrefe[k+3] = (*bspotrotations)[k][bspotcolmap.LID((*globalnodeids)[1])];
+              if (linkermodel_ == statmech_linker_stdintpol  ||
+                  linkermodel_ == statmech_linker_activeintpol ||
+                  linkermodel_ == statmech_linker_bellseqintpol ||
+                  linkermodel_ == statmech_linker_myosinthick)
+              {
+                rotrefe[k]   = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[0])];
+                rotrefe[k+3] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[1])];
+                rotrefe[k+6] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[2])];
+                rotrefe[k+9] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[3])];
+              }
+              else
+              {
+                rotrefe[k] = (*bspotrotations)[k][bspotcolmap.LID((*globalnodeids)[0])];
+                rotrefe[k+3] = (*bspotrotations)[k][bspotcolmap.LID((*globalnodeids)[1])];
+              }
             }
           }
 

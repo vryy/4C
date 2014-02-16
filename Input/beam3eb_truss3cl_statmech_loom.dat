@@ -38,7 +38,7 @@ RESEVRYERGY            0    // output energy evry n-th step
 NLNSOL                 fullnewton     // fullnewton modnewton nlncg ptc
 DIVERCONT              continue     // Continue even if results are divergent 
 TIMESTEP               0.01    // step size
-NUMSTEP                50 // total number of steps  //rumpf2.txt end
+NUMSTEP                5 // total number of steps  //rumpf2.txt end
 MAXTIME                5
 DAMPING                Material
 M_DAMP                 0
@@ -59,10 +59,10 @@ FRICTION_MODEL      anisotropicconsistent // isotropicconsistent isotropiclumped
 DBCTYPE             std                    // none shearfixed sheartrans pinnodes affineshear movablesupport1d,  choose DBC type
 NBCTYPE             std                   // constcreep, choose NBC type
 NETWORKTYPE         std                  // specify network / simulation type 
-BINDINGSITESEARCH   volpart                    // search routine: volpart, binning, octree
+BINDINGSITESEARCH   binning //volpart                    // search routine: volpart, binning, octree
 SEARCHRES           25                    // resolution for search routine linkers x binding spots
 CHECKORIENT         No                    // check orientation betw. two filaments before linking them
-FIXEDSEED           Yes                    // (de)activate pesudo-randomness
+FIXEDSEED           Yes                   // (de)activate pesudo-randomness
 INITIALSEED         1                     // manipulate initial seed of pseudo random numbers
 //============== OUTPUT SET UP ==============
 GMSHOUTPUT          No                   // visualization via Gmsh
@@ -97,14 +97,14 @@ NBCCREEPFORCE       0.0                   // absolute value of applied constant 
 FILAMENTMODEL         std                  // select filament model: std, helical
 FILAMENTPOLARITY     No                   // toggles filament polarity
 NUM_EVAL_ELEMENTS   110                  // number of (initial) beam elements
-RISEPERBSPOT        0.00277               // rise per monomer in the actin helix
+RISEPERBSPOT        0.01562499               // rise per monomer in the actin helix
 ROTPERBSPOT         -2.8999               // rotation per monomer in the actin helix
 BSPOTOFFSET         -1.5707963            // angular offset of binding spots per filament with respect to the nodes' material triads
 PHIBSPOT            0.5234                // angle betw. binding spot orientation of dist. vector bindinspot->crosslinker
 BSPOTINTERVAL       1                     // every n-th binding spot is available for binding
 //============ CROSSLINKER MODEL ============
 LINKERMODEL         stdintpol       // set linker model: none, std, bellseq, active, stdintpol
-N_crosslink         55                  // number of crosslinkers in the simulated volume
+N_crosslink         1000                  // number of crosslinkers in the simulated volume
 INITOCCUPIEDBSPOTS  0                     // number of crosslinker elements set up before the first time step
 NUMSUBSTRATEFIL     0                     // number of substrate filaments
 R_LINK              0.4                   // distance between the two binding domains of a linker
@@ -606,6 +606,6 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09 
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC sin(2*pi*5*(t-10000)) t1 10000 t2 10000
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 101 QUANTITY dispx VALUE -1.08170400936602289e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 101 QUANTITY dispx VALUE 9.13207832179172424e-02 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
