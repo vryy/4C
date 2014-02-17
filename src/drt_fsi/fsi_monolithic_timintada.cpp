@@ -140,10 +140,10 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   //---------------------------------------------------------------------------
   const double safetyfac = fsidyn.sublist("TIMEADAPTIVITY").get<double>("SAFETYFACTOR");
   if (safetyfac > 1.0)
-    dserror("SAFETYFACTOR in FSI DYNAMIC/TIMEADAPTIVITY is %f > 1.0 and, thus, to large.", safetyfac);
+    dserror("SAFETYFACTOR in FSI DYNAMIC/TIMEADAPTIVITY is %f > 1.0 and, thus, too large.", safetyfac);
 
-  if (dtmax_ <= dtmin_)
-    dserror("DTMAX = %f has to be larger than DMIN = %f.", dtmax_, dtmin_);
+  if (dtmax_ < dtmin_)
+    dserror("DTMAX = %f is not allowed to be smaller than DMIN = %f.", dtmax_, dtmin_);
 
   return;
 }
