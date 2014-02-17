@@ -169,6 +169,9 @@ void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralScaTraParameter(
   // set flags for potential evaluation of tau and material law at int. point
   const INPAR::SCATRA::EvalTau tauloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalTau>(stablist,"EVALUATION_TAU");
   tau_gp_ = (tauloc == INPAR::SCATRA::evaltau_integration_point); // set true/false
+  if ((scatratype_== INPAR::SCATRA::scatratype_advreac) and (not tau_gp_) )
+    dserror("If scatratype is Advances_Reaction, tau needs to be evaluated by integration-point evaluations");
+
   const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
   mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
 

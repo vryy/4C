@@ -63,6 +63,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Done()
 
 
 /*----------------------------------------------------------------------*
+ *  constructor---------------------------                   thon 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(const int numdofpernode,const int numscal)
@@ -78,7 +79,7 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(const int num
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate single material  (protected)                    ehrl 11/13 |
+ |  evaluate single material  (protected)                    thon 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Materials(
@@ -93,34 +94,31 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Materials(
   const int                               iquad         //!< id of current gauss point
   )
 {
-  if (iscoupled_)
+  switch(material->MaterialType())
   {
+  case INPAR::MAT::m_scatra:
     my::MatScaTra(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
-    reamanager->SetReaBodyForce( CalcReaBodyForceTerm(k) ,k);
-    reamanager->SetReaCoeff( CalcReaCoeff(k) ,k);
-    for (int j=0; j<my::numscal_ ;j++)
+    if (iscoupled_)
     {
-      reamanager->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j) ,k,j );
-      reamanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j),k,j );
-    }
-  }
-  else
-  {
-    switch(material->MaterialType())
-    {
-    case INPAR::MAT::m_scatra:
       my::MatScaTra(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
-      break;
-    case INPAR::MAT::m_biofilm:
-      MatBioFilm(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
-      break;
-    case INPAR::MAT::m_scatra_growth_scd:
-      MatGrowthScd(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
-      break;
-    default:
-      dserror("Material type %i is not supported",material->MaterialType());
-     break;
+      reamanager->SetReaBodyForce( CalcReaBodyForceTerm(k) ,k);
+      reamanager->SetReaCoeff( CalcReaCoeff(k) ,k);
+      for (int j=0; j<my::numscal_ ;j++)
+      {
+        reamanager->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j) ,k,j );
+        reamanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j),k,j );
+      }
     }
+    break;
+  case INPAR::MAT::m_biofilm:
+    MatBioFilm(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+    break;
+  case INPAR::MAT::m_scatra_growth_scd:
+    MatGrowthScd(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+    break;
+  default:
+    dserror("Material type %i is not supported",material->MaterialType());
+   break;
   }
 
   return;
@@ -225,6 +223,9 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatGrowthScd(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Get right hand side including reaction bodyforce term    thon 02/14 |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetRhsInt(
   double&      rhsint,   //!< rhs containing bodyforce at Gauss point
@@ -241,10 +242,10 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetRhsInt(
   rhsint = my::bodyforce_[k].Dot(my::funct_) + my::reamanager_->GetReaBodyForce(k);
 
   return;
-} // GetRhs
-
-
-
+}
+/*----------------------------------------------------------------------*
+ |  check if is coupled and if, read inputs--------------    thon 02/14 |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::IsCoupledAndRead(
   const DRT::Discretization&            ScaTraDiscretization //discretisation of the ScaTra field
@@ -303,14 +304,16 @@ bool DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::IsCoupledAndRead(
   }
 }
 
-//Calculate K(c)
+/*----------------------------------------------------------------------*
+ |  Calculate K(c)                                         thon 02/14 |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeff(const int k)
 {
   double reactermK=0;
   //double reactermK=0;
   //std::cout <<"---------------IsCoupled-Loop!\n";
-  for (int condnum = 0; (unsigned)condnum < numcond_ /*HSTCConds_.size()*/; condnum++)
+  for (int condnum = 0; condnum < numcond_ /*HSTCConds_.size()*/; condnum++)
   {
     const std::vector<int>& stoich = stoich_[condnum]; //get stoichometrie
     const DRT::ELEMENTS::reaction_coupling couplingtype = couplingtype_[condnum]; //get coupling type
@@ -325,6 +328,9 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeff(const int k)
   return reactermK;
 }
 
+/*----------------------------------------------------------------------*
+ |  helper for calculating K(c)                                 thon 02/14 |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffFac(
           const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
@@ -334,7 +340,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffFac(
 {
   double rcfac=1;
   bool allpositive = true;
-  for (int ii=0; (unsigned)ii < my::numscal_; ii++)
+  for (int ii=0; ii < my::numscal_; ii++)
   {
     if (stoich[ii]<0)
     {
@@ -357,13 +363,15 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffFac(
   return rcfac;
 }
 
-//calculate \frac{partial}{\partial c} K(c)
+/*----------------------------------------------------------------------*
+ |  calculate \frac{partial}{\partial c} K(c)                thon 02/14 |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivMatrix(const int k, const int j)
 {
   double reacoeffderivmatrixKJ=0;
 
-  for (int condnum = 0; (unsigned)condnum < numcond_; condnum++)
+  for (int condnum = 0; condnum < numcond_; condnum++)
   {
     const std::vector<int>& stoich = stoich_[condnum]; //get stoichometrie
     const DRT::ELEMENTS::reaction_coupling& couplingtype = couplingtype_[condnum]; //get coupling type
@@ -378,6 +386,9 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivMatrix(con
   return reacoeffderivmatrixKJ;
 }
 
+/*----------------------------------------------------------------------*
+ |  helper for calculating \frac{partial}{\partial c} K(c)                thon 02/14 |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivFac(
           const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
@@ -390,7 +401,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivFac(
 
   if (stoich[toderive]<0 and toderive!=k)
   {
-    for (int ii=0; (unsigned)ii < my::numscal_; ii++)
+    for (int ii=0; ii < my::numscal_; ii++)
     {
       if (stoich[ii]<0)
       {
@@ -410,14 +421,15 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivFac(
   return rcdmfac;
 }
 
-
-//calculate f(c)
+/*----------------------------------------------------------------------*
+ |  calculate f(c)                                           thon 02/14 |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTerm(const int k)
 {
   double bodyforcetermK=0;
 
-  for (int condnum = 0; (unsigned)condnum < numcond_; condnum++)
+  for (int condnum = 0; condnum < numcond_; condnum++)
   {
     const std::vector<int>& stoich = stoich_[condnum]; //get stoichometrie
     const DRT::ELEMENTS::reaction_coupling couplingtype = couplingtype_[condnum]; //get coupling type
@@ -432,6 +444,9 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTerm(const 
   return bodyforcetermK;
 }
 
+/*----------------------------------------------------------------------*
+ |  helper for calculating                                   thon 02/14 |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTermFac(
           const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
@@ -440,7 +455,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTermFac(
 {
   double bftfac=1;
   bool allpositive = true;
-  for (int ii=0; (unsigned)ii < my::numscal_; ii++)
+  for (int ii=0; ii < my::numscal_; ii++)
   {
     if (stoich[ii]<0)
     {
@@ -460,11 +475,14 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTermFac(
   return bftfac;
 }
 
+/*----------------------------------------------------------------------*
+ |  calculate calculate \frac{partial}{\partial c} f(c)      thon 02/14 |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivMatrix(const int k, const int j)
 {
   double reabodyforcederivmatrixKJ=0;
-  for (int condnum = 0; (unsigned)condnum < numcond_; condnum++)
+  for (int condnum = 0; condnum < numcond_; condnum++)
   {
     //reading of conditions here, because of future implemantion of nonhomogeneous couplings
     const std::vector<int>& stoich = stoich_[condnum]; //get stoichometrie
@@ -480,7 +498,9 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivMatrix
   return reabodyforcederivmatrixKJ;
 }
 
-//calculate \frac{partial}{\partial c} f(c)
+/*-------------------------------------------------------------------------------*
+ |  helper for calculating calculate \frac{partial}{\partial c} f(c)  thon 02/14 |
+ *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivFac(
         const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
@@ -491,7 +511,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivFac(
   double bfdmfac=1;
   if (stoich[toderive]<0)
   {
-    for (int ii=0; (unsigned)ii < my::numscal_; ii++)
+    for (int ii=0; ii < my::numscal_; ii++)
     {
       if (stoich[ii]<0)
       {
@@ -511,6 +531,10 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivFac(
   return bfdmfac;
 }
 
+
+/*-------------------------------------------------------------------------------*
+ |  Evaluate including check for homogeneous ScaTra coupling          thon 02/14 |
+ *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Evaluate(
   DRT::ELEMENTS::Transport*  ele,
@@ -543,9 +567,9 @@ int DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Evaluate(
       );
 }
 
-/*------------------------------------------------------------------- *
- |  calculation of reactive element matrix                ehrl 11/13  |
- *--------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------- *
+ |  calculation of reactive element matrix for coupled reactions  thon 02/14  |
+ *----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
   Epetra_SerialDenseMatrix&          emat,
