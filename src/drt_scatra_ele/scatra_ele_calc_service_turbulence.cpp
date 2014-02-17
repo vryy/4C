@@ -136,53 +136,57 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_apply_box_filter(
   //calculate vreman part
   if (scatrapara_->TurbModel() == INPAR::FLUID::dynamic_vreman)
   {
-    double beta00;
-    double beta11;
-    double beta22;
-    double beta01;
-    double beta02;
-    double beta12;
-    double bbeta;
-    double hk2=pow(volume,(2.0/3.0));
-
-
-    for (int nn=0;nn<nsd_;++nn)
+    if(nsd_==3)
     {
-      for (int rr=0;rr<nsd_;++rr)
+      double beta00;
+      double beta11;
+      double beta22;
+      double beta01;
+      double beta02;
+      double beta12;
+      double bbeta;
+      double hk2=pow(volume,(2.0/3.0));
+
+
+      for (int nn=0;nn<nsd_;++nn)
       {
-        vderxy(nn,rr)=derxy_(rr,0)*evelnp_(nn,0);
-        for (int mm=1;mm<nen_;++mm)
+        for (int rr=0;rr<nsd_;++rr)
         {
-          vderxy(nn,rr)+=derxy_(rr,mm)*evelnp_(nn,mm);
+          vderxy(nn,rr)=derxy_(rr,0)*evelnp_(nn,0);
+          for (int mm=1;mm<nen_;++mm)
+          {
+            vderxy(nn,rr)+=derxy_(rr,mm)*evelnp_(nn,mm);
+          }
+          (*alphaijsc_hat)[rr][nn]=vderxy(nn,rr); //change indices to make compatible to paper
+          alpha2 += vderxy(nn,rr)*vderxy(nn,rr);
         }
-        (*alphaijsc_hat)[rr][nn]=vderxy(nn,rr); //change indices to make compatible to paper
-        alpha2 += vderxy(nn,rr)*vderxy(nn,rr);
       }
-    }
 
-    beta00=hk2 * (*alphaijsc_hat)[0][0] * (*alphaijsc_hat)[0][0] + hk2 * (*alphaijsc_hat)[1][0] * (*alphaijsc_hat)[1][0] + hk2 * (*alphaijsc_hat)[2][0] * (*alphaijsc_hat)[2][0];
-    beta11=hk2 * (*alphaijsc_hat)[0][1] * (*alphaijsc_hat)[0][1] + hk2 * (*alphaijsc_hat)[1][1] * (*alphaijsc_hat)[1][1] + hk2 * (*alphaijsc_hat)[2][1] * (*alphaijsc_hat)[2][1];
-    beta22=hk2 * (*alphaijsc_hat)[0][2] * (*alphaijsc_hat)[0][2] + hk2 * (*alphaijsc_hat)[1][2] * (*alphaijsc_hat)[1][2] + hk2 * (*alphaijsc_hat)[2][2] * (*alphaijsc_hat)[2][2];
-    beta01=hk2 * (*alphaijsc_hat)[0][0] * (*alphaijsc_hat)[0][1] + hk2 * (*alphaijsc_hat)[1][0] * (*alphaijsc_hat)[1][1] + hk2 * (*alphaijsc_hat)[2][0] * (*alphaijsc_hat)[2][1];
-    beta02=hk2 * (*alphaijsc_hat)[0][0] * (*alphaijsc_hat)[0][2] + hk2 * (*alphaijsc_hat)[1][0] * (*alphaijsc_hat)[1][2] + hk2 * (*alphaijsc_hat)[2][0] * (*alphaijsc_hat)[2][2];
-    beta12=hk2 * (*alphaijsc_hat)[0][1] * (*alphaijsc_hat)[0][2] + hk2 * (*alphaijsc_hat)[1][1] * (*alphaijsc_hat)[1][2] + hk2 * (*alphaijsc_hat)[2][1] * (*alphaijsc_hat)[2][2];
+      beta00=hk2 * (*alphaijsc_hat)[0][0] * (*alphaijsc_hat)[0][0] + hk2 * (*alphaijsc_hat)[1][0] * (*alphaijsc_hat)[1][0] + hk2 * (*alphaijsc_hat)[2][0] * (*alphaijsc_hat)[2][0];
+      beta11=hk2 * (*alphaijsc_hat)[0][1] * (*alphaijsc_hat)[0][1] + hk2 * (*alphaijsc_hat)[1][1] * (*alphaijsc_hat)[1][1] + hk2 * (*alphaijsc_hat)[2][1] * (*alphaijsc_hat)[2][1];
+      beta22=hk2 * (*alphaijsc_hat)[0][2] * (*alphaijsc_hat)[0][2] + hk2 * (*alphaijsc_hat)[1][2] * (*alphaijsc_hat)[1][2] + hk2 * (*alphaijsc_hat)[2][2] * (*alphaijsc_hat)[2][2];
+      beta01=hk2 * (*alphaijsc_hat)[0][0] * (*alphaijsc_hat)[0][1] + hk2 * (*alphaijsc_hat)[1][0] * (*alphaijsc_hat)[1][1] + hk2 * (*alphaijsc_hat)[2][0] * (*alphaijsc_hat)[2][1];
+      beta02=hk2 * (*alphaijsc_hat)[0][0] * (*alphaijsc_hat)[0][2] + hk2 * (*alphaijsc_hat)[1][0] * (*alphaijsc_hat)[1][2] + hk2 * (*alphaijsc_hat)[2][0] * (*alphaijsc_hat)[2][2];
+      beta12=hk2 * (*alphaijsc_hat)[0][1] * (*alphaijsc_hat)[0][2] + hk2 * (*alphaijsc_hat)[1][1] * (*alphaijsc_hat)[1][2] + hk2 * (*alphaijsc_hat)[2][1] * (*alphaijsc_hat)[2][2];
 
-    bbeta = beta00 * beta11 - beta01 * beta01
-          + beta00 * beta22 - beta02 * beta02
-          + beta11 * beta22 - beta12 * beta12;
-    if (alpha2 < 1.0e-12)
-      (phiexpression_hat)=0.0;
-    else
-      (phiexpression_hat) = (phi2_hat) * sqrt(bbeta/alpha2);
+      bbeta = beta00 * beta11 - beta01 * beta01
+            + beta00 * beta22 - beta02 * beta02
+            + beta11 * beta22 - beta12 * beta12;
+      if (alpha2 < 1.0e-12)
+        (phiexpression_hat)=0.0;
+      else
+        (phiexpression_hat) = (phi2_hat) * sqrt(bbeta/alpha2);
 
-    for (int nn=0;nn<nsd_;++nn)
-    {
-      for (int rr=0;rr<nsd_;++rr)
+      for (int nn=0;nn<nsd_;++nn)
       {
-        (*alphaijsc_hat)[rr][nn]*=volume;
+        for (int rr=0;rr<nsd_;++rr)
+        {
+          (*alphaijsc_hat)[rr][nn]*=volume;
+        }
       }
     }
-
+    else
+      dserror("Vreman model only for nsd_==3");
   }
   // add additional scalar quantities
   // i.e., filtered density, filtered density times scalar (i.e., temperature) and scalar

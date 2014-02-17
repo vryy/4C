@@ -310,163 +310,167 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
   //"An eddy-viscosity subgrid-scale model for turbulent shear flow: Algebraic theory and applications", 2004
   else if (fldpara_->TurbModAction() == INPAR::FLUID::vreman or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_vreman)
   {
-    const double cs = fldpara_->Cs();
-    double beta00;
-    double beta11;
-    double beta22;
-    double beta01;
-    double beta02;
-    double beta12;
-    double bbeta;
-    double alphavreman;
-    double hkxpow2;
-    double hkypow2;
-    double hkzpow2;
-
-    LINALG::Matrix<nsd_,nsd_> velderxy;
-
-    velderxy.MultiplyNT(evelaf,derxy_);
-
-    //calculate grid filter width: 3 options:
-    //- direction dependent using the element length in x, y and z
-    //- cube root of element volume
-    //- minimum element length (of x, y, z)
-    if (fldpara_->Vrfi()==INPAR::FLUID::dir_dep)
+    if(nsd_==3)
     {
-      double xmin = 0.0;
-      double ymin = 0.0;
-      double zmin = 0.0;
-      double xmax = 0.0;
-      double ymax = 0.0;
-      double zmax = 0.0;
-      for (int inen=0; inen<nen_; inen++)
+      const double cs = fldpara_->Cs();
+      double beta00;
+      double beta11;
+      double beta22;
+      double beta01;
+      double beta02;
+      double beta12;
+      double bbeta;
+      double alphavreman;
+      double hkxpow2;
+      double hkypow2;
+      double hkzpow2;
+
+      LINALG::Matrix<nsd_,nsd_> velderxy;
+
+      velderxy.MultiplyNT(evelaf,derxy_);
+
+      //calculate grid filter width: 3 options:
+      //- direction dependent using the element length in x, y and z
+      //- cube root of element volume
+      //- minimum element length (of x, y, z)
+      if (fldpara_->Vrfi()==INPAR::FLUID::dir_dep)
       {
-        if (inen == 0)
+        double xmin = 0.0;
+        double ymin = 0.0;
+        double zmin = 0.0;
+        double xmax = 0.0;
+        double ymax = 0.0;
+        double zmax = 0.0;
+        for (int inen=0; inen<nen_; inen++)
         {
-          xmin = xyze_(0,inen);
-          xmax = xyze_(0,inen);
-          ymin = xyze_(1,inen);
-          ymax = xyze_(1,inen);
-          zmin = xyze_(2,inen);
-          zmax = xyze_(2,inen);
+          if (inen == 0)
+          {
+            xmin = xyze_(0,inen);
+            xmax = xyze_(0,inen);
+            ymin = xyze_(1,inen);
+            ymax = xyze_(1,inen);
+            zmin = xyze_(2,inen);
+            zmax = xyze_(2,inen);
+          }
+          else
+          {
+            if(xyze_(0,inen)<xmin)
+              xmin = xyze_(0,inen);
+            if(xyze_(0,inen)>xmax)
+              xmax = xyze_(0,inen);
+            if(xyze_(1,inen)<ymin)
+              ymin = xyze_(1,inen);
+            if(xyze_(1,inen)>ymax)
+              ymax = xyze_(1,inen);
+            if(xyze_(2,inen)<zmin)
+              zmin = xyze_(2,inen);
+            if(xyze_(2,inen)>zmax)
+              zmax = xyze_(2,inen);
+          }
+        }
+        hkxpow2 =  (xmax - xmin) * (xmax - xmin); //filter width = 2 grid spacing?
+        hkypow2 =  (ymax - ymin) * (ymax - ymin);
+        hkzpow2 =  (zmax - zmin) * (zmax - zmin);
+      }
+      else if (fldpara_->Vrfi()==INPAR::FLUID::cuberootvol)
+      {
+        hkxpow2=pow(vol,(2.0/3.0));
+        hkypow2=hkxpow2;
+        hkzpow2=hkxpow2;
+      }
+      else //minimum element length
+      {
+        double hk=0.0;
+        double xmin = 0.0;
+        double ymin = 0.0;
+        double zmin = 0.0;
+        double xmax = 0.0;
+        double ymax = 0.0;
+        double zmax = 0.0;
+        for (int inen=0; inen<nen_; inen++)
+        {
+          if (inen == 0)
+          {
+            xmin = xyze_(0,inen);
+            xmax = xyze_(0,inen);
+            ymin = xyze_(1,inen);
+            ymax = xyze_(1,inen);
+            zmin = xyze_(2,inen);
+            zmax = xyze_(2,inen);
+          }
+          else
+          {
+            if(xyze_(0,inen)<xmin)
+              xmin = xyze_(0,inen);
+            if(xyze_(0,inen)>xmax)
+              xmax = xyze_(0,inen);
+            if(xyze_(1,inen)<ymin)
+              ymin = xyze_(1,inen);
+            if(xyze_(1,inen)>ymax)
+              ymax = xyze_(1,inen);
+            if(xyze_(2,inen)<zmin)
+              zmin = xyze_(2,inen);
+            if(xyze_(2,inen)>zmax)
+              zmax = xyze_(2,inen);
+          }
+        }
+        if ((xmax-xmin) < (ymax-ymin))
+        {
+          if ((xmax-xmin) < (zmax-zmin))
+             hk = xmax-xmin;
         }
         else
         {
-          if(xyze_(0,inen)<xmin)
-            xmin = xyze_(0,inen);
-          if(xyze_(0,inen)>xmax)
-            xmax = xyze_(0,inen);
-          if(xyze_(1,inen)<ymin)
-            ymin = xyze_(1,inen);
-          if(xyze_(1,inen)>ymax)
-            ymax = xyze_(1,inen);
-          if(xyze_(2,inen)<zmin)
-            zmin = xyze_(2,inen);
-          if(xyze_(2,inen)>zmax)
-            zmax = xyze_(2,inen);
+          if ((ymax-ymin) < (zmax-zmin))
+             hk = ymax-ymin;
+          else
+             hk = zmax-zmin;
         }
+        hkxpow2=hk*hk;
+        hkypow2=hkxpow2;
+        hkzpow2=hkxpow2;
       }
-      hkxpow2 =  (xmax - xmin) * (xmax - xmin); //filter width = 2 grid spacing?
-      hkypow2 =  (ymax - ymin) * (ymax - ymin);
-      hkzpow2 =  (zmax - zmin) * (zmax - zmin);
-    }
-    else if (fldpara_->Vrfi()==INPAR::FLUID::cuberootvol)
-    {
-      hkxpow2=pow(vol,(2.0/3.0));
-      hkypow2=hkxpow2;
-      hkzpow2=hkxpow2;
-    }
-    else //minimum element length
-    {
-      double hk=0.0;
-      double xmin = 0.0;
-      double ymin = 0.0;
-      double zmin = 0.0;
-      double xmax = 0.0;
-      double ymax = 0.0;
-      double zmax = 0.0;
-      for (int inen=0; inen<nen_; inen++)
-      {
-        if (inen == 0)
-        {
-          xmin = xyze_(0,inen);
-          xmax = xyze_(0,inen);
-          ymin = xyze_(1,inen);
-          ymax = xyze_(1,inen);
-          zmin = xyze_(2,inen);
-          zmax = xyze_(2,inen);
-        }
-        else
-        {
-          if(xyze_(0,inen)<xmin)
-            xmin = xyze_(0,inen);
-          if(xyze_(0,inen)>xmax)
-            xmax = xyze_(0,inen);
-          if(xyze_(1,inen)<ymin)
-            ymin = xyze_(1,inen);
-          if(xyze_(1,inen)>ymax)
-            ymax = xyze_(1,inen);
-          if(xyze_(2,inen)<zmin)
-            zmin = xyze_(2,inen);
-          if(xyze_(2,inen)>zmax)
-            zmax = xyze_(2,inen);
-        }
-      }
-      if ((xmax-xmin) < (ymax-ymin))
-      {
-        if ((xmax-xmin) < (zmax-zmin))
-           hk = xmax-xmin;
-      }
+
+
+      beta00=hkxpow2 * velderxy(0,0) * velderxy(0,0) + hkypow2 * velderxy(0,1) * velderxy(0,1) + hkzpow2 * velderxy(0,2) * velderxy(0,2);
+      beta11=hkxpow2 * velderxy(1,0) * velderxy(1,0) + hkypow2 * velderxy(1,1) * velderxy(1,1) + hkzpow2 * velderxy(1,2) * velderxy(1,2);
+      beta22=hkxpow2 * velderxy(2,0) * velderxy(2,0) + hkypow2 * velderxy(2,1) * velderxy(2,1) + hkzpow2 * velderxy(2,2) * velderxy(2,2);
+      beta01=hkxpow2 * velderxy(0,0) * velderxy(1,0) + hkypow2 * velderxy(0,1) * velderxy(1,1) + hkzpow2 * velderxy(0,2) * velderxy(1,2);
+      beta02=hkxpow2 * velderxy(0,0) * velderxy(2,0) + hkypow2 * velderxy(0,1) * velderxy(2,1) + hkzpow2 * velderxy(0,2) * velderxy(2,2);
+      beta12=hkxpow2 * velderxy(1,0) * velderxy(2,0) + hkypow2 * velderxy(1,1) * velderxy(2,1) + hkzpow2 * velderxy(1,2) * velderxy(2,2);
+
+      bbeta = beta00 * beta11 - beta01 * beta01
+            + beta00 * beta22 - beta02 * beta02
+            + beta11 * beta22 - beta12 * beta12;
+
+      alphavreman = velderxy(0,0) * velderxy(0,0)
+            + velderxy(0,1) * velderxy(0,1)
+            + velderxy(0,2) * velderxy(0,2)
+            + velderxy(1,0) * velderxy(1,0)
+            + velderxy(1,1) * velderxy(1,1)
+            + velderxy(1,2) * velderxy(1,2)
+            + velderxy(2,0) * velderxy(2,0)
+            + velderxy(2,1) * velderxy(2,1)
+            + velderxy(2,2) * velderxy(2,2);
+
+      if(alphavreman<1.0E-12)
+        sgvisc_=0.0;
       else
       {
-        if ((ymax-ymin) < (zmax-zmin))
-           hk = ymax-ymin;
+        if (fldpara_->TurbModAction() == INPAR::FLUID::vreman)
+          sgvisc_= densaf_ * cs * sqrt(bbeta / alphavreman); // c_vreman=2.5*(c_smagorinsky*c_smagorinsky)
         else
-           hk = zmax-zmin;
+        {
+          double Cv=Cs_delta_sq; //the variable of Cs_delta_sq has only been used to get the Vreman constant here.
+          //std::cout << Cv << std::endl;
+          sgvisc_= densaf_ * Cv * sqrt(bbeta / alphavreman);
+        }
       }
-      hkxpow2=hk*hk;
-      hkypow2=hkxpow2;
-      hkzpow2=hkxpow2;
+
+      //std::cout << hkypow2 << "," << sgvisc_ << "," << pow(vol,(1.0/3.0)) * cs * pow(vol,(1.0/3.0)) * cs * rateofstrain << std::endl;
     }
-
-
-    beta00=hkxpow2 * velderxy(0,0) * velderxy(0,0) + hkypow2 * velderxy(0,1) * velderxy(0,1) + hkzpow2 * velderxy(0,2) * velderxy(0,2);
-    beta11=hkxpow2 * velderxy(1,0) * velderxy(1,0) + hkypow2 * velderxy(1,1) * velderxy(1,1) + hkzpow2 * velderxy(1,2) * velderxy(1,2);
-    beta22=hkxpow2 * velderxy(2,0) * velderxy(2,0) + hkypow2 * velderxy(2,1) * velderxy(2,1) + hkzpow2 * velderxy(2,2) * velderxy(2,2);
-    beta01=hkxpow2 * velderxy(0,0) * velderxy(1,0) + hkypow2 * velderxy(0,1) * velderxy(1,1) + hkzpow2 * velderxy(0,2) * velderxy(1,2);
-    beta02=hkxpow2 * velderxy(0,0) * velderxy(2,0) + hkypow2 * velderxy(0,1) * velderxy(2,1) + hkzpow2 * velderxy(0,2) * velderxy(2,2);
-    beta12=hkxpow2 * velderxy(1,0) * velderxy(2,0) + hkypow2 * velderxy(1,1) * velderxy(2,1) + hkzpow2 * velderxy(1,2) * velderxy(2,2);
-
-    bbeta = beta00 * beta11 - beta01 * beta01
-          + beta00 * beta22 - beta02 * beta02
-          + beta11 * beta22 - beta12 * beta12;
-
-    alphavreman = velderxy(0,0) * velderxy(0,0)
-          + velderxy(0,1) * velderxy(0,1)
-          + velderxy(0,2) * velderxy(0,2)
-          + velderxy(1,0) * velderxy(1,0)
-          + velderxy(1,1) * velderxy(1,1)
-          + velderxy(1,2) * velderxy(1,2)
-          + velderxy(2,0) * velderxy(2,0)
-          + velderxy(2,1) * velderxy(2,1)
-          + velderxy(2,2) * velderxy(2,2);
-
-    if(alphavreman<1.0E-12)
-      sgvisc_=0.0;
     else
-    {
-      if (fldpara_->TurbModAction() == INPAR::FLUID::vreman)
-        sgvisc_= densaf_ * cs * sqrt(bbeta / alphavreman); // c_vreman=2.5*(c_smagorinsky*c_smagorinsky)
-      else
-      {
-        double Cv=Cs_delta_sq; //the variable of Cs_delta_sq has only been used to get the Vreman constant here.
-        //std::cout << Cv << std::endl;
-        sgvisc_= densaf_ * Cv * sqrt(bbeta / alphavreman);
-      }
-    }
-
-    //std::cout << hkypow2 << "," << sgvisc_ << "," << pow(vol,(1.0/3.0)) * cs * pow(vol,(1.0/3.0)) * cs * rateofstrain << std::endl;
-
+      dserror("Vreman model only for nsd_==3");
   }
   else
   {
