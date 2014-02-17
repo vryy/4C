@@ -1536,6 +1536,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DENSITY","density");
     AddNamedReal(m,"PERMEABILITY","permeability of medium");
     AddNamedString(m,"TYPE","Problem type: Darcy or Darcy-Brinkman","Darcy");
+    //optional parameter
+    AddNamedString(m,"PERMEABILITYFUNCTION","Permeability function: Const(Default) or Kozeny_Carman","Const",true);
   //  AddNamedReal(m,"BULKMODULUS","bulk modulus of medium");
 
     AppendMaterialDefinition(matlist,m);

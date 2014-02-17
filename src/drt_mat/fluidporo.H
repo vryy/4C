@@ -28,6 +28,13 @@ namespace MAT
       darcy_brinkman
     };
 
+    enum PoroFlowPermeabilityFunction
+    {
+      pf_undefined,
+      const_,
+      kozeny_karman
+    };
+
     /*----------------------------------------------------------------------*/
     /// material parameters for Permeable fluid
     ///
@@ -45,6 +52,9 @@ namespace MAT
           ;
         }
 
+        /// set inital porosity from structural material and calculate permeabilitycorrectionfactor_
+        void SetInitialPorosity(double initialporosity);
+
         /// @name material parameters
         //@{
 
@@ -58,6 +68,12 @@ namespace MAT
         PoroFlowType type_;
         /// flag indicating varying permeablity
         const bool varyingpermeability_;
+        /// permeability function type: Const or Kozeny_Carman
+        PoroFlowPermeabilityFunction permeabilityfunc_;
+        /// a correction factor to ensure the permeability set in the input file
+        double permeabilitycorrectionfactor_;
+        /// initial porosity
+        double initialporosity_;
         
         /// create material instance of matching type with my parameters
         virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -158,10 +174,17 @@ namespace MAT
       double ComputeReactionCoeff() const;
 
       /// compute reaction coefficient
-      void ComputeReactionTensor(LINALG::Matrix<2,2>& reactiontensor) const;
+      void ComputeReactionTensor(LINALG::Matrix<2,2>& reactiontensor, double J, double porosity) const;
 
       /// compute reaction coefficient
-      void ComputeReactionTensor(LINALG::Matrix<3,3>& reactiontensor) const;
+      void ComputeReactionTensor(LINALG::Matrix<3,3>& reactiontensor, double J, double porosity) const;
+
+      void ComputeLinMatReactionTensor(LINALG::Matrix<2,2>& linreac_dphi,LINALG::Matrix<2,2>& linreac_dJ,double J, double porosity) const;
+
+      void ComputeLinMatReactionTensor(LINALG::Matrix<3,3>& linreac_dphi,LINALG::Matrix<3,3>& linreac_dJ,double J, double porosity) const;
+
+      /// correction factor to ensure the permeability set in the input file
+      double PermeabilityCorrectionFactor() const {return params_->permeabilitycorrectionfactor_;}
 
       /// effective viscosity (zero for Darcy and greater than zero for Darcy-Brinkman)
       double EffectiveViscosity() const;
@@ -186,6 +209,9 @@ namespace MAT
       {
         return params_->permeability_;
       }
+
+      /// return permeabilityfunction
+      PAR::PoroFlowPermeabilityFunction PermeabilityFunction() const {return params_->permeabilityfunc_;}
 
       /// evaluate material law
       void EvaluateViscStress(LINALG::Matrix<6,1>* stress,

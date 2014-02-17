@@ -23,7 +23,10 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
   density_(matdata->GetDouble("DENSITY")),
   permeability_(matdata->GetDouble("PERMEABILITY")),
   type_(undefined),
-  varyingpermeability_(false)
+  varyingpermeability_(false),
+  permeabilityfunc_(MAT::PAR::pf_undefined),
+  permeabilitycorrectionfactor_(1.0),
+  initialporosity_(1.0)
 {
   const std::string *typestring = matdata->Get<std::string>("TYPE");
 
@@ -31,6 +34,15 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
     type_ = darcy;
   else if(*typestring == "Darcy-Brinkman")
     type_ = darcy_brinkman;
+
+  const std::string *pfuncstring = matdata->Get<std::string>("PERMEABILITYFUNCTION");
+
+  if(*pfuncstring == "Const")
+    permeabilityfunc_ = MAT::PAR::const_;
+  else if(*pfuncstring == "Kozeny_Carman")
+    permeabilityfunc_ = MAT::PAR::kozeny_karman;
+  else
+    dserror("Unknown Permeabilityfunction: %s", pfuncstring->c_str());
 }
 
 /*----------------------------------------------------------------------*/
@@ -38,6 +50,17 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
 Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoro::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::FluidPoro(this));
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::PAR::FluidPoro::SetInitialPorosity(double initialporosity)
+{
+  initialporosity_ = initialporosity;
+
+  // c = (phi0^3 / (1 - phi0^2))
+  permeabilitycorrectionfactor_ = initialporosity_ * initialporosity_ * initialporosity_ / ( 1 - initialporosity_ * initialporosity_);
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -135,31 +158,99 @@ double MAT::FluidPoro::ComputeReactionCoeff() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::FluidPoro::ComputeReactionTensor(LINALG::Matrix<2,2>& reactiontensor) const
+void MAT::FluidPoro::ComputeReactionTensor(LINALG::Matrix<2,2>& reactiontensor,double J,double porosity) const
 {
   // viscosity divided by permeability
-  double reacoeff = ComputeReactionCoeff();
+  double reacoeff = ComputeReactionCoeff(); //ReactionCoeff for const PermeabilityFunction
 
   reactiontensor.Clear();
 
+  if (PermeabilityFunction() == MAT::PAR::kozeny_karman)
+  {
+    reacoeff *= (1 - porosity*porosity*J*J) / (porosity*porosity*porosity*J*J*J) * PermeabilityCorrectionFactor();
+  }
+
   for(int i =0; i<2;i++)
     reactiontensor(i,i)=reacoeff;
-
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::FluidPoro::ComputeReactionTensor(LINALG::Matrix<3,3>& reactiontensor) const
+void MAT::FluidPoro::ComputeReactionTensor(LINALG::Matrix<3,3>& reactiontensor,double J, double porosity) const
+{
+  // viscosity divided by permeability
+  double reacoeff = ComputeReactionCoeff(); //ReactionCoeff for const PermeabilityFunction
+
+  reactiontensor.Clear();
+
+  if (PermeabilityFunction() == MAT::PAR::kozeny_karman)
+  {
+    reacoeff *= (1 - porosity*porosity*J*J) / (porosity*porosity*porosity*J*J*J) * PermeabilityCorrectionFactor();
+  }
+
+  for(int i =0; i<3;i++)
+    reactiontensor(i,i)=reacoeff;
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::FluidPoro::ComputeLinMatReactionTensor(LINALG::Matrix<2,2>& linreac_dphi,LINALG::Matrix<2,2>& linreac_dJ,double J, double porosity) const
 {
   // viscosity divided by permeability
   double reacoeff = ComputeReactionCoeff();
 
-  reactiontensor.Clear();
+  linreac_dphi.Clear();
+  linreac_dJ.Clear();
 
-  for(int i =0; i<3;i++)
-    reactiontensor(i,i)=reacoeff;
+  if (PermeabilityFunction() == MAT::PAR::const_)
+    return; //Permeability is not a function of porosity or J
+  else if (PermeabilityFunction() == MAT::PAR::kozeny_karman)
+  {
+    // d(isotropic_mat_reactiontensor)/d(phi) = reacoeff * [(J * phi)^2 - 3] / ( J^3 * phi^4 )
+    // d(isotropic_mat_reactiontensor)/d(J) = reacoeff * [(J * phi)^2 - 3] / ( J^4 * phi^3 )
 
+    double linreac_tmp = reacoeff * (( J * J * porosity * porosity ) - 3.0)/(J * J * J * porosity * porosity * porosity) * PermeabilityCorrectionFactor();
+    linreac_dphi(0,0) = linreac_tmp / porosity;
+    linreac_dJ(0,0) = linreac_tmp / J;
+
+    for(int i =1; i<2;i++)
+    {
+      linreac_dphi(i,i)= linreac_dphi(0,0);
+      linreac_dJ(i,i) = linreac_dJ(0,0);
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::FluidPoro::ComputeLinMatReactionTensor(LINALG::Matrix<3,3>& linreac_dphi,LINALG::Matrix<3,3>& linreac_dJ,double J,  double porosity) const
+{
+  // viscosity divided by permeability
+  double reacoeff = ComputeReactionCoeff();
+
+  linreac_dphi.Clear();
+  linreac_dJ.Clear();
+
+  if (PermeabilityFunction() == MAT::PAR::const_)
+    return; //Permeability is not a function of porosity or J
+  else if (PermeabilityFunction() == MAT::PAR::kozeny_karman)
+  {
+    // d(isotropic_mat_reactiontensor)/d(phi) = reacoeff * [(J * phi)^2 - 3] / ( J^3 * phi^4 )
+    // d(isotropic_mat_reactiontensor)/d(J) = reacoeff * [(J * phi)^2 - 3] / ( J^4 * phi^3 )
+
+    double linreac_tmp = reacoeff * (( J * J * porosity * porosity ) - 3.0)/(J * J * J * porosity * porosity * porosity) * PermeabilityCorrectionFactor();
+    linreac_dphi(0,0) = linreac_tmp / porosity;
+    linreac_dJ(0,0) = linreac_tmp / J;
+
+    for(int i =1; i<3;i++)
+    {
+      linreac_dphi(i,i)= linreac_dphi(0,0);
+      linreac_dJ(i,i) = linreac_dJ(0,0);
+    }
+  }
   return;
 }
 

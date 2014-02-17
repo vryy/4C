@@ -953,6 +953,12 @@ protected:
   //! material reactive tensor
   LINALG::Matrix<my::nsd_,my::nsd_>             matreatensor_;
 
+  //! linearisation of material reactive tensor w.r.t. porosity
+  LINALG::Matrix<my::nsd_,my::nsd_>             matreatensorlinporosity_;
+
+  //! linearisation of material reactive tensor w.r.t. J
+  LINALG::Matrix<my::nsd_,my::nsd_>             matreatensorlinJ_;
+
   //! spatial reactive tensor
   LINALG::Matrix<my::nsd_,my::nsd_>             reatensor_;
 
@@ -970,6 +976,12 @@ protected:
 
   //! reactive tensor x convective velocity
   LINALG::Matrix<my::nsd_,1>             reaconvel_;
+
+  //! linearisation of reaction tensor w.r.t. porosity * fluid velocity
+  LINALG::Matrix<my::nsd_,1> lin_p_vel_;
+
+  //! linearisation of reaction tensor w.r.t. porosity * grid velocity
+  LINALG::Matrix<my::nsd_,1> lin_p_vel_grid_;
 
   //! linearization of stabilisation parameters w.r.t. porosity -> it is a (3,1) vector for 2D and 3D
   LINALG::Matrix<3,1> dtaudphi_;

@@ -49,6 +49,9 @@
 
 #include "../drt_fluid/fluid_utils.H"
 
+#include "../drt_mat/fluidporo.H"
+#include "../drt_mat/structporo.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::ConditionsToCopy()
@@ -112,6 +115,8 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
   if (fluid!=NULL)
   {
     fluid->SetMaterial(matid);
+    static_cast<MAT::PAR::FluidPoro*>(fluid->Material()->Parameter())->SetInitialPorosity(
+              Teuchos::rcp_static_cast<MAT::StructPoro>(oldele->Material())->Initporosity()); //Copy Initial Porosity from StructPoro Material to FluidPoro Material
     fluid->SetDisType(oldele->Shape()); // set distype as well!
     fluid->SetIsAle(true);
   }

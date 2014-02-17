@@ -752,11 +752,14 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
 
   LINALG::Matrix<numdim_,numdim_> matreatensor(true);
   LINALG::Matrix<numdim_,numdim_> reatensor(true);
+  LINALG::Matrix<numdim_,numdim_> linreac_dphi(true);
+  LINALG::Matrix<numdim_,numdim_> linreac_dJ(true);
   LINALG::Matrix<numdim_,1> reafvel(true);
   LINALG::Matrix<numdim_,1> reavel(true);
   {
     LINALG::Matrix<numdim_,numdim_> temp(true);
-    fluidmat_->ComputeReactionTensor(matreatensor);
+    fluidmat_->ComputeReactionTensor(matreatensor,J,porosity);
+    fluidmat_->ComputeLinMatReactionTensor(linreac_dphi,linreac_dJ,J,porosity);
     temp.Multiply(1.0,matreatensor,defgrd_inv);
     reatensor.MultiplyTN(defgrd_inv,temp);
     reavel.Multiply(reatensor,velint);
@@ -825,6 +828,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
                   (*stiffmatrix)(fk+j,fi+l) += v * ( velint(p) - fvelint(p) ) * (
                                                   dFinvTdus(j*numdim_+m,fi+l) * matreatensor(m,n) * defgrd_inv(n,p)
                                                 + defgrd_inv(m,j) * matreatensor(m,n) * dFinvTdus(p*numdim_+n,fi+l)
+                                                + defgrd_inv(m,j) * (
+                                                linreac_dphi(m,n) * dphi_dus(fi+l) + linreac_dJ(m,n) * dJ_dus(fi+l)
+                                                ) * defgrd_inv(n,p)
                                                 )
                                               ;
           }
@@ -1197,11 +1203,14 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsOD(
 {
   LINALG::Matrix<numdim_,numdim_> matreatensor(true);
   LINALG::Matrix<numdim_,numdim_> reatensor(true);
+  LINALG::Matrix<numdim_,numdim_> linreac_dphi(true);
+  LINALG::Matrix<numdim_,numdim_> linreac_dJ(true);
   LINALG::Matrix<numdim_,1> reafvel(true);
   LINALG::Matrix<numdim_,1> reavel(true);
   {
     LINALG::Matrix<numdim_,numdim_> temp(true);
-    fluidmat_->ComputeReactionTensor(matreatensor);
+    fluidmat_->ComputeReactionTensor(matreatensor,J,porosity);
+    fluidmat_->ComputeLinMatReactionTensor(linreac_dphi,linreac_dJ,J,porosity);
     temp.Multiply(1.0,matreatensor,defgrd_inv);
     reatensor.MultiplyTN(defgrd_inv,temp);
     reavel.Multiply(reatensor,velint);
@@ -1254,11 +1263,25 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsOD(
           /*-------structure- fluid pressure coupling:  "dracy-terms" + "reactive darcy-terms"
            - 2 * reacoeff * J * v^f * phi * d(phi)/dp  Dp
            + 2 * reacoeff * J * v^s * phi * d(phi)/dp  Dp
+           + J * J * phi * phi * defgrd_^-T * d(mat_reacoeff)/d(phi) * defgrd_^-1 * (v^s-v^f) * d(phi)/dp Dp
            */
           const double tmp = fac * J * J * 2 * porosity * dphi_dp * shapefct(k);
           ecoupl(fi+j, fk_press ) += -tmp * reafvel(j);
 
           ecoupl(fi+j, fk_press ) += tmp * reavel(j);
+
+          const double tmp2 = 0.5 * tmp * porosity;
+          for (int m=0; m<numdim_; ++m)
+          {
+            for (int n=0; n<numdim_; ++n)
+            {
+              for (int p=0; p<numdim_; ++p)
+              {
+                ecoupl(fi+j, fk_press ) +=  tmp2 * defgrd_inv(m,j) * linreac_dphi(m,n) * defgrd_inv(n,p) *
+                                            ( velint(p) - fvelint(p) );
+              }
+            }
+          }
 
           /*-------structure- fluid velocity coupling:  "darcy-terms"
            -reacoeff * J * J *  phi^2 *  Dv^f

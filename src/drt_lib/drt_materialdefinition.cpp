@@ -110,8 +110,8 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringMaterialComponent::Read(
 {
   std::string value;
   (*condline) >> value;
-
-  if ( (value=="") or (optional_) )
+  
+  if ( (value=="") and (optional_) )
     value = defaultvalue_;
 
   material->Add(Name(),value);

@@ -1389,6 +1389,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
      // get material parameters at integration point
      GetMaterialParamters(material);
 
+     //get reaction tensor and linearisations of material reaction tensor
      ComputeSpatialReactionTerms(material,defgrd_inv);
 
      // get stabilization parameters at integration point
@@ -4623,7 +4624,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
   Teuchos::RCP<const MAT::FluidPoro> actmat = Teuchos::rcp_static_cast<const MAT::FluidPoro>(material);
 
   //material reaction tensor = inverse material permeability
-  actmat->ComputeReactionTensor(matreatensor_);
+  actmat->ComputeReactionTensor(matreatensor_,J_,porosity_);
 
   //spatial reaction tensor = J * F^-T * material reaction tensor * F^-1
   LINALG::Matrix<my::nsd_,my::nsd_> temp(true);
@@ -4635,6 +4636,18 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
   reavel_.Multiply(reatensor_,my::velint_);
   reagridvel_.Multiply(reatensor_,gridvelint_);
   reaconvel_.Multiply(reatensor_,convel_);
+
+  //linearisations of material reaction tensor
+  actmat->ComputeLinMatReactionTensor(matreatensorlinporosity_,matreatensorlinJ_,J_,porosity_);
+
+  LINALG::Matrix<my::nsd_,my::nsd_> lin_p_tmp_1;
+  LINALG::Matrix<my::nsd_,my::nsd_> lin_p_tmp_2;
+
+  lin_p_tmp_1.MultiplyTN(J_,invdefgrd,matreatensorlinporosity_);
+  lin_p_tmp_2.Multiply(lin_p_tmp_1,invdefgrd);
+
+  lin_p_vel_.Multiply(lin_p_tmp_2,my::velint_);
+  lin_p_vel_grid_.Multiply(lin_p_tmp_2,gridvelint_);
 }
 
 /*----------------------------------------------------------------------*
@@ -4890,10 +4903,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDp(
   for (int ui=0; ui<my::nen_; ++ui)
    {
      //const double w = my::funct_(ui)*timefacfacpre*my::reacoeff_/porosity_*dphi_dp;
-    const double w = my::funct_(ui)*timefacfacpre/porosity_*dphi_dp;
+    const double w = my::funct_(ui)*timefacfacpre*dphi_dp/porosity_;
+    const double w1 = my::funct_(ui)*timefacfacpre*dphi_dp*porosity_;
        for (int idim = 0; idim <my::nsd_; ++idim)
        {
-         lin_resM_Dp(idim,ui) +=   w * reavel_(idim);
+         lin_resM_Dp(idim,ui) +=   w * reavel_(idim) + w1 * lin_p_vel_(idim);
        }
    }
 
@@ -4902,8 +4916,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDp(
     for (int ui=0; ui<my::nen_; ++ui)
      {
        const double w = my::funct_(ui)*timefacfacpre/porosity_*dphi_dp;
+       const double w1 = my::funct_(ui)*timefacfacpre*dphi_dp*porosity_;
        for (int idim = 0; idim <my::nsd_; ++idim)
-         lin_resM_Dp(idim,ui) +=  w * (- reagridvel_(idim) );
+         lin_resM_Dp(idim,ui) +=  w * (- reagridvel_(idim) ) - w1 * lin_p_vel_grid_(idim);
      }
   }
 
