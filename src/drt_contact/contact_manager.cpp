@@ -361,8 +361,8 @@ discret_(discret)
         {
            Teuchos::RCP<CONTACT::FriNode> cnode = Teuchos::rcp(new CONTACT::FriNode(node->Id(),node->X(),
                                                              node->Owner(),
-                                                             Discret().NumDof(node),
-                                                             Discret().Dof(node),
+                                                             Discret().NumDof(0,node),
+                                                             Discret().Dof(0,node),
                                                              isslave[j],isactive[j]+foundinitialactive,
                                                              friplus));
 
@@ -397,8 +397,8 @@ discret_(discret)
         {
           Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::CoNode(node->Id(),node->X(),
                                                            node->Owner(),
-                                                           Discret().NumDof(node),
-                                                           Discret().Dof(node),
+                                                           Discret().NumDof(0,node),
+                                                           Discret().Dof(0,node),
                                                            isslave[j],isactive[j]+foundinitialactive));
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
