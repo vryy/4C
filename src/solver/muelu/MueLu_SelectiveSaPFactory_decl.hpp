@@ -56,7 +56,7 @@ namespace MueLu {
     //! Destructor.
     virtual ~SelectiveSaPFactory() { }
 
-    RCP<const ParameterList> GetValidParameterList(const ParameterList& paramList = ParameterList()) const;
+    Teuchos::RCP<const ParameterList> GetValidParameterList(const ParameterList& paramList = ParameterList()) const;
 
     //@}
 

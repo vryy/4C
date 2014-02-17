@@ -202,7 +202,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
   // ghosted nodes, which are only contained in the col format
   const Epetra_Map* nodecolmap = discret_->NodeColMap();
   int numcol = convel_->NumVectors();
-  RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+  Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
   LINALG::Export(*convel_,*tmp);
 
   // loop all conditions

@@ -35,8 +35,8 @@
 namespace MueLu {
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  RCP<const ParameterList> SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const ParameterList& paramList) const {
-    RCP<ParameterList> validParamList = rcp(new ParameterList());
+  Teuchos::RCP<const ParameterList> SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const ParameterList& paramList) const {
+    Teuchos::RCP<ParameterList> validParamList = rcp(new ParameterList());
 
     validParamList->set< Scalar >                         ("Damping factor",          4./3, "Smoothed-Aggregation damping factor");
     validParamList->set< const std::string >              ("Damping strategy", "Standard", "Damping strategy. Can be either \'Standard\' or \'User\'. (default: \'Standard\')");
@@ -59,7 +59,7 @@ namespace MueLu {
 
     // Get default tentative prolongator factory
     // Getting it that way ensure that the same factory instance will be used for both SaPFactory and NullspaceFactory.
-    RCP<const FactoryBase> initialPFact = GetFactory("P");
+    Teuchos::RCP<const FactoryBase> initialPFact = GetFactory("P");
     if (initialPFact == Teuchos::null) { initialPFact = coarseLevel.GetFactoryManager()->GetFactory("Ptent"); }
     coarseLevel.DeclareInput("P", initialPFact.get(), this); // --
   }
@@ -78,15 +78,15 @@ namespace MueLu {
     // Get default tentative prolongator factory
     // Getting it that way ensure that the same factory instance will be used for both SaPFactory and NullspaceFactory.
     // -- Warning: Do not use directly initialPFact_. Use initialPFact instead everywhere!
-    RCP<const FactoryBase> initialPFact = GetFactory("P");
+    Teuchos::RCP<const FactoryBase> initialPFact = GetFactory("P");
     if (initialPFact == Teuchos::null) { initialPFact = coarseLevel.GetFactoryManager()->GetFactory("Ptent"); }
 
     // Level Get
 
-    RCP<Matrix> Ptent = coarseLevel.Get< RCP<Matrix> >("P", initialPFact.get());
+    Teuchos::RCP<Matrix> Ptent = coarseLevel.Get< Teuchos::RCP<Matrix> >("P", initialPFact.get());
 
     //Build final prolongator
-    RCP<Matrix> finalP; // output
+    Teuchos::RCP<Matrix> finalP; // output
 
     // decide whether transfer operator basis functions shall be smoothed on current level
     bool bPerformSmoothing = true;
@@ -112,14 +112,14 @@ namespace MueLu {
     if ( bPerformSmoothing && dampingFactor != Teuchos::ScalarTraits<Scalar>::zero() ) {
 
       // extract matrix A from level (that shall be used for transfer operator smoothing)
-      RCP<Matrix> A     = Get< RCP<Matrix> >(fineLevel, "A");
+      Teuchos::RCP<Matrix> A     = Get< Teuchos::RCP<Matrix> >(fineLevel, "A");
       if(restrictionMode_) {
         SubFactoryMonitor m2(*this, "Transpose A", coarseLevel);
         //A = Utils2::Transpose(A, true); // build transpose of A explicitely
         A = MyTranspose(A, true);
       }
 
-      RCP<Matrix> AP;
+      Teuchos::RCP<Matrix> AP;
       {
         SubFactoryMonitor m2(*this, "MxM: A x Ptentative", coarseLevel);
         //JJH -- If I switch doFillComplete to false, the resulting matrix seems weird when printed with describe.
@@ -131,10 +131,10 @@ namespace MueLu {
         //FIXME but once fixed, reenable the next line.
         if (A->getRowMap()->lib() == Xpetra::UseTpetra) optimizeStorage=false;
 #if HAVE_Trilinos_Q3_2013 //HAVE_Trilinos_Q1_2014
-        RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
+        Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
         AP = Utils::Multiply(*A, false, *Ptent, false,*fos, doFillComplete, optimizeStorage);
 //#elif defined(HAVE_Trilinos_Q3_2013)
-//        RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
+//        Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
 //        AP = Utils::Multiply(*A, false, *Ptent, false,*fos, doFillComplete, optimizeStorage,false /* use Xpetra matrix-matrix multiply */);
 #else
         AP = Utils::Multiply(*A, false, *Ptent, false, doFillComplete, optimizeStorage);
@@ -245,11 +245,11 @@ namespace MueLu {
       {
         // prolongation factory is in restriction mode
 #ifdef HAVE_Trilinos_Q3_2013
-        RCP<Matrix> R = Utils2::Transpose(*finalP, true); // use Utils2 -> specialization for double
+        Teuchos::RCP<Matrix> R = Utils2::Transpose(*finalP, true); // use Utils2 -> specialization for double
 #else
-        RCP<Matrix> R = Utils2::Transpose(finalP, true); // use Utils2 -> specialization for double
+        Teuchos::RCP<Matrix> R = Utils2::Transpose(finalP, true); // use Utils2 -> specialization for double
 #endif
-        //RCP<Matrix> R = MyTranspose(finalP, true);
+        //Teuchos::RCP<Matrix> R = MyTranspose(finalP, true);
         Set(coarseLevel, "R", R);
 
         ///////////////////////// EXPERIMENTAL
@@ -278,11 +278,11 @@ namespace MueLu {
     // Get default tentative prolongator factory
     // Getting it that way ensure that the same factory instance will be used for both SaPFactory and NullspaceFactory.
     // -- Warning: Do not use directly initialPFact_. Use initialPFact instead everywhere!
-    RCP<const FactoryBase> initialPFact = GetFactory("P");
+    Teuchos::RCP<const FactoryBase> initialPFact = GetFactory("P");
     if (initialPFact == Teuchos::null) { initialPFact = coarseLevel.GetFactoryManager()->GetFactory("Ptent"); }
 
     // Level Get
-    RCP<Matrix> Ptent = coarseLevel.Get< RCP<Matrix> >("P", initialPFact.get());
+    Teuchos::RCP<Matrix> Ptent = coarseLevel.Get< Teuchos::RCP<Matrix> >("P", initialPFact.get());
 
     Teuchos::RCP<Vector> gPtentColVec = VectorFactory::Build(Ptent->getColMap());
     Teuchos::RCP<Vector> gPtentDomVec = VectorFactory::Build(Ptent->getDomainMap());
@@ -394,7 +394,7 @@ namespace MueLu {
     return DinvAP;
 #else
      // create new empty Operator
-     RCP<CrsMatrixWrap> Aout = Teuchos::rcp(new CrsMatrixWrap(DinvAP->getRowMap(),DinvAP->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile));
+     Teuchos::RCP<CrsMatrixWrap> Aout = Teuchos::rcp(new CrsMatrixWrap(DinvAP->getRowMap(),DinvAP->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile));
 
      //GetOStream(Statistics1, 0) << "avoid transfer operator smoothing for " << coarseNonSmoothedMap->getGlobalNumElements() << "/" << DinvAP->getDomainMap()->getGlobalNumElements() << " transfer operator basis functions" << std::endl;
 
@@ -463,10 +463,10 @@ namespace MueLu {
       std::cout << msg << std::endl;
     }
 
-    RCP<Epetra_CrsMatrix> rcpA(A);
-    RCP<EpetraCrsMatrix> AA = rcp(new EpetraCrsMatrix(rcpA) );
-    RCP<Xpetra::CrsMatrix<SC> > AAA = rcp_implicit_cast<Xpetra::CrsMatrix<SC> >(AA);
-    RCP<Xpetra::CrsMatrixWrap<SC> > AAAA = rcp( new Xpetra::CrsMatrixWrap<SC>(AAA) );
+    Teuchos::RCP<Epetra_CrsMatrix> rcpA(A);
+    Teuchos::RCP<EpetraCrsMatrix> AA = rcp(new EpetraCrsMatrix(rcpA) );
+    Teuchos::RCP<Xpetra::CrsMatrix<SC> > AAA = rcp_implicit_cast<Xpetra::CrsMatrix<SC> >(AA);
+    Teuchos::RCP<Xpetra::CrsMatrixWrap<SC> > AAAA = rcp( new Xpetra::CrsMatrixWrap<SC>(AAA) );
     AAAA->fillComplete(Op->getRangeMap(),Op->getDomainMap());
     return AAAA;
 
@@ -491,11 +491,11 @@ namespace MueLu {
     // Get default tentative prolongator factory
     // Getting it that way ensure that the same factory instance will be used for both SaPFactory and NullspaceFactory.
     // -- Warning: Do not use directly initialPFact_. Use initialPFact instead everywhere!
-    RCP<const FactoryBase> initialPFact = GetFactory("P");
+    Teuchos::RCP<const FactoryBase> initialPFact = GetFactory("P");
     if (initialPFact == Teuchos::null) { initialPFact = coarseLevel.GetFactoryManager()->GetFactory("Ptent"); }
 
     // Level Get
-    RCP<Matrix> Ptent = coarseLevel.Get< RCP<Matrix> >("P", initialPFact.get());
+    Teuchos::RCP<Matrix> Ptent = coarseLevel.Get< Teuchos::RCP<Matrix> >("P", initialPFact.get());
 
     std::vector<GlobalOrdinal > coarseMapGids;
 
@@ -534,10 +534,10 @@ namespace MueLu {
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
   Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::RemoveColumnEntries(Teuchos::RCP<Matrix> & matrix, Teuchos::RCP<const Map> coarseNonSmoothedMap) const {
     // extract the original matrix A
-    RCP<Matrix> Ain = matrix;
+    Teuchos::RCP<Matrix> Ain = matrix;
 
     // create new empty Operator
-    RCP<CrsMatrixWrap> Aout = Teuchos::rcp(new CrsMatrixWrap(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile));
+    Teuchos::RCP<CrsMatrixWrap> Aout = Teuchos::rcp(new CrsMatrixWrap(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile));
 
     GetOStream(Statistics1, 0) << "avoid transfer operator smoothing for " << coarseNonSmoothedMap->getGlobalNumElements() << "/" << Ain->getDomainMap()->getGlobalNumElements() << " transfer operator basis functions" << std::endl;
 

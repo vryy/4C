@@ -198,8 +198,8 @@ std::string XFEM::XFluidTimeInt::MapMethodEnumToString
 void XFEM::XFluidTimeInt::TransferDofsToNewMap(
     const Epetra_Map&                       olddofrowmap,                     /// dof row map w.r.t old interface position
     const Epetra_Map&                       olddofcolmap,                     /// dof col map w.r.t old interface position
-    std::vector<RCP<const Epetra_Vector> >& oldRowStateVectors,               /// row map based vectors w.r.t old interface position
-    std::vector<RCP<Epetra_Vector> >&       newRowStateVectors,               /// row map based vectors w.r.t new interface position
+    std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,               /// row map based vectors w.r.t old interface position
+    std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,               /// row map based vectors w.r.t new interface position
     std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method, /// reconstruction map for nodes and its dofsets
     Teuchos::RCP<std::set<int> >            dbcgids                           /// set of dof gids that must not be changed by ghost penalty reconstruction
     )
@@ -826,8 +826,8 @@ void XFEM::XFluidTimeInt::CopyDofs(DRT::Node*                              node,
                                    const int                               nds_new,            /// nodal dofset at w.r.t new interface
                                    const int                               nds_old,            /// the corresponding nodal dofset at w.r.t old interface
                                    INPAR::XFEM::XFluidTimeInt              method,               /// reconstruction method
-                                   std::vector<RCP<Epetra_Vector> >&       newRowStateVectors, /// row map based state vectors at new interface
-                                   std::vector<RCP<const Epetra_Vector> >& oldRowStateVectors, /// row map based state vectors at old interface
+                                   std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors, /// row map based state vectors at new interface
+                                   std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors, /// row map based state vectors at old interface
                                    Teuchos::RCP<std::set<int> >            dbcgids             /// set of DBC global ids
 )
 {
@@ -857,11 +857,11 @@ void XFEM::XFluidTimeInt::CopyDofs(DRT::Node*                              node,
   int vec_count = 0;
 
   // copy values for all vectors
-  for(std::vector<RCP<const Epetra_Vector> >::iterator it=oldRowStateVectors.begin(); it!=oldRowStateVectors.end(); it++)
+  for(std::vector<Teuchos::RCP<const Epetra_Vector> >::iterator it=oldRowStateVectors.begin(); it!=oldRowStateVectors.end(); it++)
   {
 
-    RCP<Epetra_Vector>       vec_new = newRowStateVectors[vec_count];
-    RCP<const Epetra_Vector> vec_old = oldRowStateVectors[vec_count];
+    Teuchos::RCP<Epetra_Vector>       vec_new = newRowStateVectors[vec_count];
+    Teuchos::RCP<const Epetra_Vector> vec_old = oldRowStateVectors[vec_count];
 
     // copy values from old vector to new vector
     for(size_t i=0; i<dofs_new.size(); i++)
@@ -895,7 +895,7 @@ void XFEM::XFluidTimeInt::CopyDofs(DRT::Node*                              node,
 void XFEM::XFluidTimeInt::MarkDofs(
     DRT::Node*                          node,                 /// drt node
     const int                           nds_new,              /// nodal dofset at t^(n+1)
-    std::vector<RCP<Epetra_Vector> >&   newRowStateVectors,   /// row map based state vectors at t^(n+1)
+    std::vector<Teuchos::RCP<Epetra_Vector> >&   newRowStateVectors,   /// row map based state vectors at t^(n+1)
     INPAR::XFEM::XFluidTimeInt          method,               /// reconstruction method
     Teuchos::RCP<std::set<int> >        dbcgids               /// set of dof gids that must not be changed by ghost penalty reconstruction
 )
@@ -949,10 +949,10 @@ void XFEM::XFluidTimeInt::MarkDofs(
   dofset_new_->Dof(node, nds_new, dofs_new );
 
   // loop vectors
-  for(std::vector<RCP<Epetra_Vector> >::iterator it=newRowStateVectors.begin(); it!=newRowStateVectors.end(); it++)
+  for(std::vector<Teuchos::RCP<Epetra_Vector> >::iterator it=newRowStateVectors.begin(); it!=newRowStateVectors.end(); it++)
   {
 
-    RCP<Epetra_Vector> vec_new = *it;
+    Teuchos::RCP<Epetra_Vector> vec_new = *it;
 
     // set a dummy value for dofs in the vector
     for(size_t i=0; i<dofs_new.size(); i++)
@@ -1650,7 +1650,7 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume( LINALG::Matrix<3,numnode_space_time
  * export data about reconstruction method to neighbor proc and receive data from previous proc schott 04/13 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFluidTimeInt::ExportMethods(
-    std::vector<RCP<Epetra_Vector> >&       newRowStateVectors,               /// row map based vectors w.r.t new interface position
+    std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,               /// row map based vectors w.r.t new interface position
     Teuchos::RCP<std::set<int> >            dbcgids                           /// set of dof gids that must not be changed by ghost penalty reconstruction
 )
 {

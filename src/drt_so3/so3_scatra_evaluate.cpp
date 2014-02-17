@@ -67,7 +67,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
 
     }
    // Get pointer for scatra material in the same element
-    RCP<DRT::Discretization> scatradis = Teuchos::null;
+    Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
     scatradis = DRT::Problem::Instance()->GetDis("scatra");
     DRT::Element* scatraele = scatradis->gElement(Id());
     Teuchos::RCP<MAT::Material> scatramat = Teuchos::rcp_dynamic_cast<MAT::Material>(scatraele->Material());

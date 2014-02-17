@@ -211,12 +211,12 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
       double phi2_hat=0.0;
       double phiexpression_hat=0.0;
       // get pointers for vector quantities
-      Teuchos::RCP<std::vector<double> > vel_hat = params.get<RCP<std::vector<double> > >("vel_hat");
-      Teuchos::RCP<std::vector<double> > densvel_hat = params.get<RCP<std::vector<double> > >("densvel_hat");
-      Teuchos::RCP<std::vector<double> > densveltemp_hat = params.get<RCP<std::vector<double> > >("densveltemp_hat");
-      Teuchos::RCP<std::vector<double> > densstraintemp_hat = params.get<RCP<std::vector<double> > >("densstraintemp_hat");
-      Teuchos::RCP<std::vector<double> > phi_hat = params.get<RCP<std::vector<double> > >("phi_hat");
-      RCP<std::vector<std::vector<double> > > alphaijsc_hat = params.get<RCP<std::vector<std::vector<double> > > >("alphaijsc_hat");
+      Teuchos::RCP<std::vector<double> > vel_hat = params.get<Teuchos::RCP<std::vector<double> > >("vel_hat");
+      Teuchos::RCP<std::vector<double> > densvel_hat = params.get<Teuchos::RCP<std::vector<double> > >("densvel_hat");
+      Teuchos::RCP<std::vector<double> > densveltemp_hat = params.get<Teuchos::RCP<std::vector<double> > >("densveltemp_hat");
+      Teuchos::RCP<std::vector<double> > densstraintemp_hat = params.get<Teuchos::RCP<std::vector<double> > >("densstraintemp_hat");
+      Teuchos::RCP<std::vector<double> > phi_hat = params.get<Teuchos::RCP<std::vector<double> > >("phi_hat");
+      Teuchos::RCP<std::vector<std::vector<double> > > alphaijsc_hat = params.get<Teuchos::RCP<std::vector<std::vector<double> > > >("alphaijsc_hat");
       // integrate the convolution with the box filter function for this element
       // the results are assembled onto the *_hat arrays
       switch (distype)
@@ -267,19 +267,19 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
     {
       // get required quantities, set in dynamic Smagorinsky class
       Teuchos::RCP<Epetra_MultiVector> col_filtered_vel =
-        params.get<RCP<Epetra_MultiVector> >("col_filtered_vel");
+        params.get<Teuchos::RCP<Epetra_MultiVector> >("col_filtered_vel");
       Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel =
-        params.get<RCP<Epetra_MultiVector> >("col_filtered_dens_vel");
+        params.get<Teuchos::RCP<Epetra_MultiVector> >("col_filtered_dens_vel");
       Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel_temp =
-        params.get<RCP<Epetra_MultiVector> >("col_filtered_dens_vel_temp");
+        params.get<Teuchos::RCP<Epetra_MultiVector> >("col_filtered_dens_vel_temp");
       Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_rateofstrain_temp =
-        params.get<RCP<Epetra_MultiVector> >("col_filtered_dens_rateofstrain_temp");
+        params.get<Teuchos::RCP<Epetra_MultiVector> >("col_filtered_dens_rateofstrain_temp");
       Teuchos::RCP<Epetra_Vector> col_filtered_temp =
-        params.get<RCP<Epetra_Vector> >("col_filtered_temp");
+        params.get<Teuchos::RCP<Epetra_Vector> >("col_filtered_temp");
       Teuchos::RCP<Epetra_Vector> col_filtered_dens =
-        params.get<RCP<Epetra_Vector> >("col_filtered_dens");
+        params.get<Teuchos::RCP<Epetra_Vector> >("col_filtered_dens");
       Teuchos::RCP<Epetra_Vector> col_filtered_dens_temp =
-        params.get<RCP<Epetra_Vector> >("col_filtered_dens_temp");
+        params.get<Teuchos::RCP<Epetra_Vector> >("col_filtered_dens_temp");
 
       // initialize variables to calculate
       double LkMk   = 0.0;
@@ -345,13 +345,13 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
     {
 
       Teuchos::RCP<Epetra_MultiVector> col_filtered_phi =
-        params.get<RCP<Epetra_MultiVector> >("col_filtered_phi");
+        params.get<Teuchos::RCP<Epetra_MultiVector> >("col_filtered_phi");
       Teuchos::RCP<Epetra_Vector> col_filtered_phi2 =
-        params.get<RCP<Epetra_Vector> >("col_filtered_phi2");
+        params.get<Teuchos::RCP<Epetra_Vector> >("col_filtered_phi2");
       Teuchos::RCP<Epetra_Vector> col_filtered_phiexpression =
-        params.get<RCP<Epetra_Vector> >("col_filtered_phiexpression");
+        params.get<Teuchos::RCP<Epetra_Vector> >("col_filtered_phiexpression");
       Teuchos::RCP<Epetra_MultiVector> col_filtered_alphaijsc =
-        params.get<RCP<Epetra_MultiVector> >("col_filtered_alphaijsc");
+        params.get<Teuchos::RCP<Epetra_MultiVector> >("col_filtered_alphaijsc");
 
       // initialize variables to calculate
       double dt_numerator=0.0;

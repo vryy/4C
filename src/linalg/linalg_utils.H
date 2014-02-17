@@ -74,7 +74,7 @@ namespace LINALG
   \param npr (in): estimated number of entries per row.
                    (need not be exact, better should be too big rather then too small)
   */
-  RCP<Epetra_CrsMatrix> CreateMatrix(const Epetra_Map& rowmap, const int npr);
+  Teuchos::RCP<Epetra_CrsMatrix> CreateMatrix(const Epetra_Map& rowmap, const int npr);
 
   /*!
   \brief Create a new Epetra_Vector and return RefcountPtr to it
@@ -82,7 +82,7 @@ namespace LINALG
   \param rowmap (in): row map of vector
   \param init (in): initializa vector to zero upon construction
   */
-  RCP<Epetra_Vector> CreateVector(const Epetra_Map& rowmap, const bool init = true);
+  Teuchos::RCP<Epetra_Vector> CreateVector(const Epetra_Map& rowmap, const bool init = true);
 
   /*!
   \brief Export a vector to a different map
@@ -150,8 +150,8 @@ namespace LINALG
 #if 0
   void SymmetricEigenProblem(IO::DiscretizationWriter& output,
                              LINALG::Solver& solver,
-                             RCP<LINALG::SparseMatrix> A,
-                             RCP<LINALG::SparseMatrix> M,
+                             Teuchos::RCP<LINALG::SparseMatrix> A,
+                             Teuchos::RCP<LINALG::SparseMatrix> M,
                              Epetra_Vector& invtoggle,
                              int nev,
                              int step=0,
@@ -468,9 +468,9 @@ namespace LINALG
   /*!
   \brief Call FillComplete on a Epetra_CrsMatrix (for square matrices only!)
 
-  This is the RCP wrapper of the above method.
+  This is the Teuchos::RCP wrapper of the above method.
   */
-  inline void Complete(RCP<Epetra_CrsMatrix> A)
+  inline void Complete(Teuchos::RCP<Epetra_CrsMatrix> A)
   { LINALG::Complete(*A); return; }
 
   /*!
@@ -481,9 +481,9 @@ namespace LINALG
   /*!
   \brief Call FillComplete on a Epetra_CrsMatrix (for rectangular and square matrices)
 
-  This is the RCP wrapper of the above method.
+  This is the Teuchos::RCP wrapper of the above method.
   */
-  inline void Complete(RCP<Epetra_CrsMatrix> A, const Epetra_Map& domainmap, const Epetra_Map& rangemap)
+  inline void Complete(Teuchos::RCP<Epetra_CrsMatrix> A, const Epetra_Map& domainmap, const Epetra_Map& rangemap)
   { LINALG::Complete(*A,domainmap,rangemap); return; }
 
   /*!
@@ -516,7 +516,7 @@ namespace LINALG
 
 
   Note that this is a true parallel add, even in the transposed case!
-  This is the RCP wrapper of the above method.
+  This is the Teuchos::RCP wrapper of the above method.
 
   \param A          (in)     : Matrix to add to B (must have Filled()==true)
   \param transposeA (in)     : flag indicating whether transposed of A should be used
@@ -524,33 +524,33 @@ namespace LINALG
   \param B          (in/out) : Matrix to be added to (must have Filled()==false)
   \param scalarB    (in)     : scaling factor for B
   */
-  inline void Add(const RCP<Epetra_CrsMatrix> A,
+  inline void Add(const Teuchos::RCP<Epetra_CrsMatrix> A,
                   const bool transposeA,
                   const double scalarA,
-                  RCP<Epetra_CrsMatrix> B,
+                  Teuchos::RCP<Epetra_CrsMatrix> B,
                   const double scalarB)
   { LINALG::Add(*A,transposeA,scalarA,*B,scalarB); return; }
 
   /*!
   \brief Compute transposed matrix of an Epetra_CrsMatrix explicitly
 
-  Returns RCP to the transposed matrix of the input matrix A.
+  Returns Teuchos::RCP to the transposed matrix of the input matrix A.
 
   \param A          (in)     : Matrix to transpose (must have Filled()==true)
 
   */
-  RCP<Epetra_CrsMatrix> Transpose(const Epetra_CrsMatrix& A);
+  Teuchos::RCP<Epetra_CrsMatrix> Transpose(const Epetra_CrsMatrix& A);
 
   /*!
   \brief Compute transposed matrix of an Epetra_CrsMatrix explicitly
 
-  Returns RCP to the transposed matrix of the input matrix A.
-  This is the RCP wrapper of the above method.
+  Returns Teuchos::RCP to the transposed matrix of the input matrix A.
+  This is the Teuchos::RCP wrapper of the above method.
 
   \param A          (in)     : Matrix to transpose (must have Filled()==true)
 
   */
-  inline RCP<Epetra_CrsMatrix> Transpose(const RCP<Epetra_CrsMatrix> A)
+  inline Teuchos::RCP<Epetra_CrsMatrix> Transpose(const Teuchos::RCP<Epetra_CrsMatrix> A)
   { return LINALG::Transpose(*A); }
 
   /*!
@@ -569,7 +569,7 @@ namespace LINALG
                                (defaults to true)
   \return Matrix product A(^T)*B(^T)
   */
-  RCP<Epetra_CrsMatrix> Multiply(const Epetra_CrsMatrix& A, bool transA,
+  Teuchos::RCP<Epetra_CrsMatrix> Multiply(const Epetra_CrsMatrix& A, bool transA,
                                  const Epetra_CrsMatrix& B, bool transB,
                                  bool complete = true);
 
@@ -580,7 +580,7 @@ namespace LINALG
   Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
 
   Note that this is a true parallel multiplication, even in the transposed case!
-  This is the RCP wrapper of the above method.
+  This is the Teuchos::RCP wrapper of the above method.
 
   \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
   \param transA     (in)     : flag indicating whether transposed of A should be used
@@ -590,8 +590,8 @@ namespace LINALG
                                (defaults to true)
   \return Matrix product A(^T)*B(^T)
   */
-  inline RCP<Epetra_CrsMatrix> Multiply(const RCP<Epetra_CrsMatrix>& A, bool transA,
-                                        const RCP<Epetra_CrsMatrix>& B, bool transB,
+  inline Teuchos::RCP<Epetra_CrsMatrix> Multiply(const Teuchos::RCP<Epetra_CrsMatrix>& A, bool transA,
+                                        const Teuchos::RCP<Epetra_CrsMatrix>& B, bool transB,
                                         bool complete = true)
   { return Multiply(*A,transA,*B,transB,complete); }
 
@@ -613,7 +613,7 @@ namespace LINALG
                                (defaults to true)
   \return Matrix product A(^T)*B(^T)*C(^T)
   */
-  RCP<Epetra_CrsMatrix> Multiply(const Epetra_CrsMatrix& A, bool transA,
+  Teuchos::RCP<Epetra_CrsMatrix> Multiply(const Epetra_CrsMatrix& A, bool transA,
                                  const Epetra_CrsMatrix& B, bool transB,
                                  const Epetra_CrsMatrix& C, bool transC,
                                  bool complete = true);
@@ -625,7 +625,7 @@ namespace LINALG
   Respective Range, Row and Domain maps of A(^T) and B(^T) C(^T) have to match.
 
   Note that this is a true parallel multiplication, even in the transposed case!
-  This is the RCP wrapper of the above method.
+  This is the Teuchos::RCP wrapper of the above method.
 
   \param A          (in)     : Matrix to multiply with B (must have Filled()==true)
   \param transA     (in)     : flag indicating whether transposed of A should be used
@@ -637,9 +637,9 @@ namespace LINALG
                                (defaults to true)
   \return Matrix product A(^T)*B(^T)*C(^T)
   */
-  inline RCP<Epetra_CrsMatrix> Multiply(const RCP<Epetra_CrsMatrix>& A, bool transA,
-                                        const RCP<Epetra_CrsMatrix>& B, bool transB,
-                                        const RCP<Epetra_CrsMatrix>& C, bool transC,
+  inline Teuchos::RCP<Epetra_CrsMatrix> Multiply(const Teuchos::RCP<Epetra_CrsMatrix>& A, bool transA,
+                                        const Teuchos::RCP<Epetra_CrsMatrix>& B, bool transB,
+                                        const Teuchos::RCP<Epetra_CrsMatrix>& C, bool transC,
                                         bool complete = true)
   { return Multiply(*A,transA,*B,transB,*C,transC,complete); }
 
@@ -683,11 +683,11 @@ namespace LINALG
   \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
                               and 0.0 everywhere else
   */
-  void ApplyDirichlettoSystem(RCP<SparseOperator>            A,
-                              RCP<Epetra_Vector>&            x,
-                              RCP<Epetra_Vector>&            b,
-                              const RCP<const Epetra_Vector> dbcval,
-                              const RCP<const Epetra_Vector> dbctoggle);
+  void ApplyDirichlettoSystem(Teuchos::RCP<SparseOperator>            A,
+                              Teuchos::RCP<Epetra_Vector>&            x,
+                              Teuchos::RCP<Epetra_Vector>&            b,
+                              const Teuchos::RCP<const Epetra_Vector> dbcval,
+                              const Teuchos::RCP<const Epetra_Vector> dbctoggle);
 
   /*!
   \brief Apply dirichlet boundary condition to a linear system of equations
@@ -706,10 +706,10 @@ namespace LINALG
 
   \pre The map dbcmap must be subset of the maps of the vectors.
   */
-  void ApplyDirichlettoSystem(RCP<LINALG::SparseOperator>       A,
-                              RCP<Epetra_Vector>&               x,
-                              RCP<Epetra_Vector>&               b,
-                              const RCP<const Epetra_Vector>&   dbcval,
+  void ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator>       A,
+                              Teuchos::RCP<Epetra_Vector>&               x,
+                              Teuchos::RCP<Epetra_Vector>&               b,
+                              const Teuchos::RCP<const Epetra_Vector>&   dbcval,
                               const Epetra_Map&                 dbcmap);
 
   /*!
@@ -735,11 +735,11 @@ namespace LINALG
 
   \pre The map dbcmap must be subset of the maps of the vectors.
   */
-  void ApplyDirichlettoSystem(RCP<LINALG::SparseOperator>     A,
-                              RCP<Epetra_Vector>&             x,
-                              RCP<Epetra_Vector>&             b,
-                              RCP<const LINALG::SparseMatrix> trafo,
-                              const RCP<const Epetra_Vector>& dbcval,
+  void ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator>     A,
+                              Teuchos::RCP<Epetra_Vector>&             x,
+                              Teuchos::RCP<Epetra_Vector>&             b,
+                              Teuchos::RCP<const LINALG::SparseMatrix> trafo,
+                              const Teuchos::RCP<const Epetra_Vector>& dbcval,
                               const Epetra_Map&               dbcmap);
 
   /*!
@@ -752,10 +752,10 @@ namespace LINALG
   \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
                               and 0.0 everywhere else
   */
-  void ApplyDirichlettoSystem(RCP<Epetra_Vector>&            x,
-                              RCP<Epetra_Vector>&            b,
-                              const RCP<const Epetra_Vector> dbcval,
-                              const RCP<const Epetra_Vector> dbctoggle);
+  void ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>&            x,
+                              Teuchos::RCP<Epetra_Vector>&            b,
+                              const Teuchos::RCP<const Epetra_Vector> dbcval,
+                              const Teuchos::RCP<const Epetra_Vector> dbctoggle);
 
 
   /*!
@@ -775,9 +775,9 @@ namespace LINALG
 
   \pre The map dbcmap must be subset of the maps of the vectors.
   */
-  void ApplyDirichlettoSystem(RCP<Epetra_Vector>&      x,
-                              RCP<Epetra_Vector>&      b,
-                              RCP<const Epetra_Vector> dbcval,
+  void ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>&      x,
+                              Teuchos::RCP<Epetra_Vector>&      b,
+                              Teuchos::RCP<const Epetra_Vector> dbcval,
                               const Epetra_Map&        dbcmap);
 
   /*!
@@ -797,8 +797,8 @@ namespace LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichlettoSystem(RCP<Epetra_Vector>&            b,
-                              const RCP<const Epetra_Vector> dbcval,
+  void ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>&            b,
+                              const Teuchos::RCP<const Epetra_Vector> dbcval,
                               const Epetra_Map&              dbcmap);
  
 
@@ -838,13 +838,13 @@ namespace LINALG
   \param A21       : on exit matrix block A21
   \param A22       : on exit matrix block A22
   */
-  bool SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
-                      RCP<Epetra_Map>& A11rowmap,
-                      RCP<Epetra_Map>& A22rowmap,
-                      RCP<Epetra_CrsMatrix>& A11,
-                      RCP<Epetra_CrsMatrix>& A12,
-                      RCP<Epetra_CrsMatrix>& A21,
-                      RCP<Epetra_CrsMatrix>& A22);
+  bool SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
+                      Teuchos::RCP<Epetra_Map>& A11rowmap,
+                      Teuchos::RCP<Epetra_Map>& A22rowmap,
+                      Teuchos::RCP<Epetra_CrsMatrix>& A11,
+                      Teuchos::RCP<Epetra_CrsMatrix>& A12,
+                      Teuchos::RCP<Epetra_CrsMatrix>& A21,
+                      Teuchos::RCP<Epetra_CrsMatrix>& A22);
 
   /*!
   \brief split a matrix into a 2x2 block system
@@ -867,15 +867,15 @@ namespace LINALG
   \param A21          : on exit matrix block A21
   \param A22          : on exit matrix block A22
   */
-  bool SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
-                      RCP<Epetra_Map>& A11rowmap,
-                      RCP<Epetra_Map>& A22rowmap,
-                      RCP<Epetra_Map>& A11domainmap,
-                      RCP<Epetra_Map>& A22domainmap,
-                      RCP<LINALG::SparseMatrix>& A11,
-                      RCP<LINALG::SparseMatrix>& A12,
-                      RCP<LINALG::SparseMatrix>& A21,
-                      RCP<LINALG::SparseMatrix>& A22);
+  bool SplitMatrix2x2(Teuchos::RCP<LINALG::SparseMatrix> A,
+                      Teuchos::RCP<Epetra_Map>& A11rowmap,
+                      Teuchos::RCP<Epetra_Map>& A22rowmap,
+                      Teuchos::RCP<Epetra_Map>& A11domainmap,
+                      Teuchos::RCP<Epetra_Map>& A22domainmap,
+                      Teuchos::RCP<LINALG::SparseMatrix>& A11,
+                      Teuchos::RCP<LINALG::SparseMatrix>& A12,
+                      Teuchos::RCP<LINALG::SparseMatrix>& A21,
+                      Teuchos::RCP<LINALG::SparseMatrix>& A22);
 
   /*!
   \brief split a rowmap of matrix A
@@ -894,7 +894,7 @@ namespace LINALG
   \brief merges two given Epetra_Maps
 
   merges input map1 and input map2, both of which have to be unique,
-  but may be overlapping, to a new map and returns RCP to it.
+  but may be overlapping, to a new map and returns Teuchos::RCP to it.
 
   \param map1         : one map to be merged
   \param map2         : the other map to be merged
@@ -902,16 +902,16 @@ namespace LINALG
                         map is overlapping (default = true, overlap allowed)
   \return the (sorted) merged map of input maps map1 and map2
   */
-  RCP<Epetra_Map> MergeMap(const Epetra_Map& map1,
+  Teuchos::RCP<Epetra_Map> MergeMap(const Epetra_Map& map1,
                            const Epetra_Map& map2,
                            bool overlap = true);
 
   /*!
   \brief merges two given Epetra_Maps
 
-  merges input map1 and input map2 (given as RCP), both of which
+  merges input map1 and input map2 (given as Teuchos::RCP), both of which
   have to be unique, but may be overlapping, to a new map and returns
-  RCP to it. The case that one or both input RCPs are null is
+  Teuchos::RCP to it. The case that one or both input Teuchos::RCPs are null is
   detected and handled appropriately.
 
   \param map1         : one map to be merged
@@ -920,8 +920,8 @@ namespace LINALG
                         map is overlapping (default = true, overlap allowed)
   \return the (sorted) merged map of input maps map1 and map2
   */
-  RCP<Epetra_Map> MergeMap(const RCP<const Epetra_Map>& map1,
-                           const RCP<const Epetra_Map>& map2,
+  Teuchos::RCP<Epetra_Map> MergeMap(const Teuchos::RCP<const Epetra_Map>& map1,
+                           const Teuchos::RCP<const Epetra_Map>& map2,
                            bool overlap = true);
 
   /// create an Epetra_Map from a set of gids
@@ -931,10 +931,10 @@ namespace LINALG
     \param gids The local gids of this map
     \param comm The map's communicator
    */
-  RCP<Epetra_Map> CreateMap(const std::set<int>& gids, const Epetra_Comm& comm);
+  Teuchos::RCP<Epetra_Map> CreateMap(const std::set<int>& gids, const Epetra_Comm& comm);
 
   /*!
-  \brief split a vector into 2 non-overlapping pieces (RCP version)
+  \brief split a vector into 2 non-overlapping pieces (Teuchos::RCP version)
 
   \param xmap    : map of vector to be split
   \param x       : vector to be split
@@ -946,10 +946,10 @@ namespace LINALG
   */
   bool SplitVector(const Epetra_Map& xmap,
                    const Epetra_Vector& x,
-                   RCP<Epetra_Map>& x1map,
-                   RCP<Epetra_Vector>& x1,
-                   RCP<Epetra_Map>& x2map,
-                   RCP<Epetra_Vector>& x2);
+                   Teuchos::RCP<Epetra_Map>& x1map,
+                   Teuchos::RCP<Epetra_Vector>& x1,
+                   Teuchos::RCP<Epetra_Map>& x2map,
+                   Teuchos::RCP<Epetra_Vector>& x2);
 
   /*!
   \brief Print sparsity pattern of a matrix to postscript file
@@ -1445,7 +1445,7 @@ namespace LINALG
     \author gjb
     \date 11/07
    */
-  RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap, const int pid);
+  Teuchos::RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap, const int pid);
 
   /// Create an allreduced Epetra_Map from the given Epetra_Map
   /// and give it to all processors.
@@ -1464,7 +1464,7 @@ namespace LINALG
     \author tk
     \date 04/08
    */
-  RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap);
+  Teuchos::RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap);
 
   /// Create an allreduced Epetra_Map from the given Epetra_Map
   /// and give it to all processors.
@@ -1475,7 +1475,7 @@ namespace LINALG
     \author u.kue
     \date 08/09
    */
-  RCP<Epetra_Map> AllreduceOverlappingEMap(const Epetra_Map& emap);
+  Teuchos::RCP<Epetra_Map> AllreduceOverlappingEMap(const Epetra_Map& emap);
 
   /// find position of my map elements in a consecutive vector
   /*!
@@ -1590,7 +1590,7 @@ namespace LINALG
   /// mem_fun version from gcc adapted to Teuchos::RCP
   /*!
     This is needed if you want to use std containers (vector, set, list, ...)
-    that contain RCPed objects with std algorithms. Use it in place of the
+    that contain Teuchos::RCPed objects with std algorithms. Use it in place of the
     usual std::mem_fun method.
    */
   template <class _Ret, class _Tp>
@@ -1599,7 +1599,7 @@ namespace LINALG
   /// mem_fun version from gcc adapted to Teuchos::RCP
   /*!
     This is needed if you want to use std containers (vector, set, list, ...)
-    that contain RCPed objects with std algorithms. Use it in place of the
+    that contain Teuchos::RCPed objects with std algorithms. Use it in place of the
     usual std::mem_fun method.
    */
   template <class _Ret, class _Tp>

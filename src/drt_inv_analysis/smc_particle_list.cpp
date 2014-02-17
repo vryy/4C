@@ -468,7 +468,7 @@ void STR::INVANA::SMCParticleList::Resampling()
       {
         k++;
       }
-      // we need to create a new particle other wise multiple RCP might end up on the same data
+      // we need to create a new particle other wise multiple Teuchos::RCP might end up on the same data
       Teuchos::RCP<STR::INVANA::SMCParticle> my_particle = global_plist_map_.at(k)->Clone();
       temp_plist_map.insert( std::pair <int,Teuchos::RCP<SMCParticle> >(i,my_particle));
     }

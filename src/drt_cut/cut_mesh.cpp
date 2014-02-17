@@ -1877,7 +1877,7 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
   file << "};\n";
 
 #if(0)
-  RCP<PointPool> points = Points();
+  Teuchos::RCP<PointPool> points = Points();
 
   file << "View \"Points\" {\n";
   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();

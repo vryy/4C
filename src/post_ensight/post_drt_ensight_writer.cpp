@@ -313,7 +313,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
+Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
   std::ofstream& geofile,
   const Teuchos::RCP<DRT::Discretization> dis
   )

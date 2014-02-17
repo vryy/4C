@@ -121,7 +121,7 @@ change. To achieve this we keep a list of dof sets internally.
 Please note that even though Michael does not like it this class
 contains neither copy constructor nor assignment operator. This is
 intended. It is legal to copy this objects of class. The internal
-variables (all RCPs) know how to copy themselves. So the
+variables (all Teuchos::RCPs) know how to copy themselves. So the
 default versions will do just fine. (Far better than buggy hand
 written versions.) And due to the two possible states there is no
 reason to deep copy any of the local map and vector variables.

@@ -30,8 +30,8 @@ Maintainer: Ursula Rasthofer
  |  Constructor (public)                                     gammi 09/08|
  *----------------------------------------------------------------------*/
 FLD::DynSmagFilter::DynSmagFilter(
-  RCP<DRT::Discretization>     actdis             ,
-  RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
+  Teuchos::RCP<DRT::Discretization>     actdis             ,
+  Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
   Teuchos::ParameterList&      params)
   :
   // call constructor for "nontrivial" objects
@@ -153,9 +153,9 @@ FLD::DynSmagFilter::~DynSmagFilter()
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
 void FLD::DynSmagFilter::AddScatra(
-  RCP<DRT::Discretization>     scatradis,
+  Teuchos::RCP<DRT::Discretization>     scatradis,
   INPAR::SCATRA::ScaTraType    scatratype,
-  RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
+  Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
 {
   scatradiscret_ = scatradis;
   scatratype_ = scatratype;
@@ -226,14 +226,14 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
       or modelparams->get<std::string>("CANONICAL_FLOW","no")=="loma_channel_flow_of_height_2"
       or modelparams->get<std::string>("CANONICAL_FLOW","no")=="scatra_channel_flow_of_height_2")
   {
-    size_t nlayer = (*modelparams->get<RCP<std::vector<double> > >("local_Cs_sum")).size();
+    size_t nlayer = (*modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Cs_sum")).size();
     for (size_t rr=0; rr<nlayer; rr++)
     {
-      (*modelparams->get<RCP<std::vector<double> > >("local_Cs_sum"))[rr] = 0.0;
-      (*modelparams->get<RCP<std::vector<double> > >("local_Cs_delta_sq_sum"))[rr] = 0.0;
-      (*modelparams->get<RCP<std::vector<double> > >("local_visceff_sum"))[rr] = 0.0;
-      (*modelparams->get<RCP<std::vector<double> > >("local_Ci_sum"))[rr] = 0.0;
-      (*modelparams->get<RCP<std::vector<double> > >("local_Ci_delta_sq_sum"))[rr] = 0.0;
+      (*modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Cs_sum"))[rr] = 0.0;
+      (*modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Cs_delta_sq_sum"))[rr] = 0.0;
+      (*modelparams->get<Teuchos::RCP<std::vector<double> > >("local_visceff_sum"))[rr] = 0.0;
+      (*modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Ci_sum"))[rr] = 0.0;
+      (*modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Ci_delta_sq_sum"))[rr] = 0.0;
     }
   }
 
@@ -290,29 +290,29 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
       or modelparams->get<std::string>("CANONICAL_FLOW","no")=="loma_channel_flow_of_height_2"
       or modelparams->get<std::string>("CANONICAL_FLOW","no")=="scatra_channel_flow_of_height_2")
   {
-    size_t nlayer = (*modelparams->get<RCP<std::vector<double> > >("local_Prt_sum")).size();
+    size_t nlayer = (*modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Prt_sum")).size();
     for (size_t rr=0; rr<nlayer; rr++)
     {
-      (*modelparams->get<RCP<std::vector<double> > >("local_Prt_sum"))[rr] = 0.0;
-      (*modelparams->get<RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum"))[rr] = 0.0;
-      (*modelparams->get<RCP<std::vector<double> > >("local_diffeff_sum"))[rr] = 0.0;
+      (*modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Prt_sum"))[rr] = 0.0;
+      (*modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum"))[rr] = 0.0;
+      (*modelparams->get<Teuchos::RCP<std::vector<double> > >("local_diffeff_sum"))[rr] = 0.0;
     }
-    extramodelparams->set<RCP<std::vector<double> > >("local_Prt_sum",
-                    modelparams->get<RCP<std::vector<double> > >("local_Prt_sum"));
-    extramodelparams->set<RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum",
-                    modelparams->get<RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum"));
-    extramodelparams->set<RCP<std::vector<double> > >("local_diffeff_sum",
-                    modelparams->get<RCP<std::vector<double> > >("local_diffeff_sum"));
+    extramodelparams->set<Teuchos::RCP<std::vector<double> > >("local_Prt_sum",
+                    modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Prt_sum"));
+    extramodelparams->set<Teuchos::RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum",
+                    modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum"));
+    extramodelparams->set<Teuchos::RCP<std::vector<double> > >("local_diffeff_sum",
+                    modelparams->get<Teuchos::RCP<std::vector<double> > >("local_diffeff_sum"));
     // add (Cs*h)^2 to calculate Prt
     // therefore, it is assumed that finally the scatra field is solved after the fluid fields
     // be careful since this vector has not yet been commuicated
-    RCP<std::vector<double> > local_Cs_delta_sq_sum = modelparams->get<RCP<std::vector<double> > >("local_Cs_delta_sq_sum");
-    RCP<std::vector<double> > global_Cs_delta_sq_sum;
+    Teuchos::RCP<std::vector<double> > local_Cs_delta_sq_sum = modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Cs_delta_sq_sum");
+    Teuchos::RCP<std::vector<double> > global_Cs_delta_sq_sum;
     global_Cs_delta_sq_sum = Teuchos::rcp(new std::vector<double> (nlayer,0.0));
     discret_->Comm().SumAll(&((*local_Cs_delta_sq_sum )[0]),
                             &((*global_Cs_delta_sq_sum)[0]),
                             local_Cs_delta_sq_sum->size());
-    extramodelparams->set<RCP<std::vector<double> > >("global_Cs_delta_sq_sum",global_Cs_delta_sq_sum);
+    extramodelparams->set<Teuchos::RCP<std::vector<double> > >("global_Cs_delta_sq_sum",global_Cs_delta_sq_sum);
     extramodelparams->set<int>("numele_layer",numele_layer);
   }
 
@@ -333,13 +333,13 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
   // hom. direction
   int numlayers = 0;
 
-  RCP<std::vector<double> > averaged_LijMij        = Teuchos::rcp(new std::vector<double>);
-  RCP<std::vector<double> > averaged_MijMij        = Teuchos::rcp(new std::vector<double>);
+  Teuchos::RCP<std::vector<double> > averaged_LijMij        = Teuchos::rcp(new std::vector<double>);
+  Teuchos::RCP<std::vector<double> > averaged_MijMij        = Teuchos::rcp(new std::vector<double>);
 
   // additional averaged quantities for extension to variable-density flow at low-Mach number
   // quantities to estimate CI
-  RCP<std::vector<double> > averaged_CI_numerator   = Teuchos::rcp(new std::vector<double>);
-  RCP<std::vector<double> > averaged_CI_denominator = Teuchos::rcp(new std::vector<double>);
+  Teuchos::RCP<std::vector<double> > averaged_CI_numerator   = Teuchos::rcp(new std::vector<double>);
+  Teuchos::RCP<std::vector<double> > averaged_CI_denominator = Teuchos::rcp(new std::vector<double>);
 
   std::vector<int>          count_for_average      ;
   std::vector<int>          local_count_for_average;
@@ -351,8 +351,8 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
 
   // final constants (Cs*delta)^2 and (Ci*delta)^2 (loma only)
   const Epetra_Map* elerowmap = discret_->ElementRowMap();
-  RCP<Epetra_Vector> Cs_delta_sq = Teuchos::rcp(new Epetra_Vector(*elerowmap,true));
-  RCP<Epetra_Vector> Ci_delta_sq = Teuchos::rcp(new Epetra_Vector(*elerowmap,true));
+  Teuchos::RCP<Epetra_Vector> Cs_delta_sq = Teuchos::rcp(new Epetra_Vector(*elerowmap,true));
+  Teuchos::RCP<Epetra_Vector> Ci_delta_sq = Teuchos::rcp(new Epetra_Vector(*elerowmap,true));
 
   if(homdir_)
   {
@@ -364,7 +364,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     {
       // get planecoordinates
       Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_=modelparams->get<RCP<std::vector<double> > >("planecoords_",Teuchos::null);
+      dir1coords_=modelparams->get<Teuchos::RCP<std::vector<double> > >("planecoords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
       {
@@ -381,8 +381,8 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     {
       // get coordinates
       Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_=modelparams->get<RCP<std::vector<double> > >("dir1coords_",Teuchos::null);
-      dir2coords_=modelparams->get<RCP<std::vector<double> > >("dir2coords_",Teuchos::null);
+      dir1coords_=modelparams->get<Teuchos::RCP<std::vector<double> > >("dir1coords_",Teuchos::null);
+      dir2coords_=modelparams->get<Teuchos::RCP<std::vector<double> > >("dir2coords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
       {
@@ -615,19 +615,19 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
 
   // export from row to column map
   const Epetra_Map* elecolmap = discret_->ElementColMap();
-  RCP<Epetra_Vector> col_Cs_delta_sq = Teuchos::rcp(new Epetra_Vector(*elecolmap,true));
+  Teuchos::RCP<Epetra_Vector> col_Cs_delta_sq = Teuchos::rcp(new Epetra_Vector(*elecolmap,true));
   col_Cs_delta_sq->PutScalar(0.0);
 
   LINALG::Export(*Cs_delta_sq,*col_Cs_delta_sq);
-  RCP<Epetra_Vector> col_Ci_delta_sq = Teuchos::rcp(new Epetra_Vector(*elecolmap,true));
+  Teuchos::RCP<Epetra_Vector> col_Ci_delta_sq = Teuchos::rcp(new Epetra_Vector(*elecolmap,true));
   col_Ci_delta_sq->PutScalar(0.0);
 
   LINALG::Export(*Ci_delta_sq,*col_Ci_delta_sq);
 
   // store in parameters
   Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-  modelparams->set<RCP<Epetra_Vector> >("col_Cs_delta_sq",col_Cs_delta_sq);
-  modelparams->set<RCP<Epetra_Vector> >("col_Ci_delta_sq",col_Ci_delta_sq);
+  modelparams->set<Teuchos::RCP<Epetra_Vector> >("col_Cs_delta_sq",col_Cs_delta_sq);
+  modelparams->set<Teuchos::RCP<Epetra_Vector> >("col_Ci_delta_sq",col_Ci_delta_sq);
 
   // ----------------------------------------------------
   // global in plane averaging of quantities for
@@ -679,12 +679,12 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     }
     // provide necessary information for the elements
     {
-      modelparams->set<RCP<std::vector<double> > >("averaged_LijMij_",averaged_LijMij);
-      modelparams->set<RCP<std::vector<double> > >("averaged_MijMij_",averaged_MijMij);
+      modelparams->set<Teuchos::RCP<std::vector<double> > >("averaged_LijMij_",averaged_LijMij);
+      modelparams->set<Teuchos::RCP<std::vector<double> > >("averaged_MijMij_",averaged_MijMij);
       if (physicaltype_ == INPAR::FLUID::loma)
       {
-        modelparams->set<RCP<std::vector<double> > >("averaged_CI_numerator_",averaged_CI_numerator);
-        modelparams->set<RCP<std::vector<double> > >("averaged_CI_denominator_",averaged_CI_denominator);
+        modelparams->set<Teuchos::RCP<std::vector<double> > >("averaged_CI_numerator_",averaged_CI_numerator);
+        modelparams->set<Teuchos::RCP<std::vector<double> > >("averaged_CI_denominator_",averaged_CI_denominator);
       }
       if (special_flow_homdir_ == "xyz")
       {
@@ -692,12 +692,12 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
       }
       else if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
       {
-        modelparams->set<RCP<std::vector<double> > >("planecoords_"    ,dir1coords_   );
+        modelparams->set<Teuchos::RCP<std::vector<double> > >("planecoords_"    ,dir1coords_   );
       }
       else if (special_flow_homdir_ == "x" or special_flow_homdir_ == "y" or special_flow_homdir_ == "z")
       {
-        modelparams->set<RCP<std::vector<double> > >("dir1coords_"    ,dir1coords_   );
-        modelparams->set<RCP<std::vector<double> > >("dir2coords_"    ,dir2coords_   );
+        modelparams->set<Teuchos::RCP<std::vector<double> > >("dir1coords_"    ,dir1coords_   );
+        modelparams->set<Teuchos::RCP<std::vector<double> > >("dir2coords_"    ,dir2coords_   );
       }
       else
         dserror("More than two homogeneous directions not supported!");
@@ -721,14 +721,14 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
   TEUCHOS_FUNC_TIME_MONITOR("ComputePrt");
 
   const Epetra_Map* elerowmap = scatradiscret_->ElementRowMap();
-  RCP<Epetra_Vector> Prt = Teuchos::rcp(new Epetra_Vector(*elerowmap,true));
+  Teuchos::RCP<Epetra_Vector> Prt = Teuchos::rcp(new Epetra_Vector(*elerowmap,true));
 
   // for special flows, LijMij and MijMij averaged in each
   // hom. direction
   int numlayers = 0;
 
-  RCP<std::vector<double> > averaged_LkMk        = Teuchos::rcp(new std::vector<double>);
-  RCP<std::vector<double> > averaged_MkMk        = Teuchos::rcp(new std::vector<double>);
+  Teuchos::RCP<std::vector<double> > averaged_LkMk        = Teuchos::rcp(new std::vector<double>);
+  Teuchos::RCP<std::vector<double> > averaged_MkMk        = Teuchos::rcp(new std::vector<double>);
 
   std::vector<int>          count_for_average      ;
   std::vector<int>          local_count_for_average;
@@ -746,7 +746,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
     {
       // get planecoordinates
       Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_=modelparams->get<RCP<std::vector<double> > >("planecoords_",Teuchos::null);
+      dir1coords_=modelparams->get<Teuchos::RCP<std::vector<double> > >("planecoords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
       {
@@ -763,8 +763,8 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
     {
       // get coordinates
       Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_=modelparams->get<RCP<std::vector<double> > >("dir1coords_",Teuchos::null);
-      dir2coords_=modelparams->get<RCP<std::vector<double> > >("dir2coords_",Teuchos::null);
+      dir1coords_=modelparams->get<Teuchos::RCP<std::vector<double> > >("dir1coords_",Teuchos::null);
+      dir2coords_=modelparams->get<Teuchos::RCP<std::vector<double> > >("dir2coords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
       {
@@ -973,12 +973,12 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
 
   // export from row to column map
   const Epetra_Map* elecolmap = scatradiscret_->ElementColMap();
-  RCP<Epetra_Vector> col_Prt = Teuchos::rcp(new Epetra_Vector(*elecolmap,true));
+  Teuchos::RCP<Epetra_Vector> col_Prt = Teuchos::rcp(new Epetra_Vector(*elecolmap,true));
   col_Prt->PutScalar(0.0);
   LINALG::Export(*Prt,*col_Prt);
   // store in parameters
   Teuchos::ParameterList *  modelparams =&(extraparams.sublist("TURBULENCE MODEL"));
-  modelparams->set<RCP<Epetra_Vector> >("col_ele_Prt",col_Prt);
+  modelparams->set<Teuchos::RCP<Epetra_Vector> >("col_ele_Prt",col_Prt);
 
   // ----------------------------------------------------
   // global in plane averaging of quantities for
@@ -1015,15 +1015,15 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
 
     // provide necessary information for the elements
     {
-      modelparams->set<RCP<std::vector<double> > >("averaged_LkMk_",averaged_LkMk);
-      modelparams->set<RCP<std::vector<double> > >("averaged_MkMk_",averaged_MkMk);
+      modelparams->set<Teuchos::RCP<std::vector<double> > >("averaged_LkMk_",averaged_LkMk);
+      modelparams->set<Teuchos::RCP<std::vector<double> > >("averaged_MkMk_",averaged_MkMk);
       if (special_flow_homdir_ == "xyz")
       {
         // nothing to do
       }
       else if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
       {
-        modelparams->set<RCP<std::vector<double> > >("planecoords_"    ,dir1coords_   );
+        modelparams->set<Teuchos::RCP<std::vector<double> > >("planecoords_"    ,dir1coords_   );
         // channel flow only
         // return number of elements per layer
         // equal number of elements in each layer assumed
@@ -1031,8 +1031,8 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
       }
       else if (special_flow_homdir_ == "x" or special_flow_homdir_ == "y" or special_flow_homdir_ == "z")
       {
-        modelparams->set<RCP<std::vector<double> > >("dir1coords_"    ,dir1coords_   );
-        modelparams->set<RCP<std::vector<double> > >("dir2coords_"    ,dir2coords_   );
+        modelparams->set<Teuchos::RCP<std::vector<double> > >("dir1coords_"    ,dir1coords_   );
+        modelparams->set<Teuchos::RCP<std::vector<double> > >("dir2coords_"    ,dir2coords_   );
       }
       else
         dserror("More than two homogeneous directions not supported!");

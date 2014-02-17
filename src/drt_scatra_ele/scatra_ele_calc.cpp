@@ -324,7 +324,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractTurbulenceApproach(
   {
     Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
     // remark: for dynamic estimation, this returns (Cs*h)^2 / Pr_t
-    Teuchos::RCP<Epetra_Vector> ele_prt = turbulencelist.get<RCP<Epetra_Vector> >("col_ele_Prt");
+    Teuchos::RCP<Epetra_Vector> ele_prt = turbulencelist.get<Teuchos::RCP<Epetra_Vector> >("col_ele_Prt");
     const int id = ele->LID();
     tpn_ = (*ele_prt)[id];
 

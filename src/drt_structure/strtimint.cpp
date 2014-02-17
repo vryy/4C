@@ -351,7 +351,7 @@ STR::TimInt::TimInt
   for (int i=0; i<discret_->NumMyColElements(); i++)
   {
     DRT::Element* actele = discret_->lColElement(i);
-    RCP<MAT::Material> mat = actele->Material();
+    Teuchos::RCP<MAT::Material> mat = actele->Material();
     if (mat != Teuchos::null && mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
     {
       havemicromat_ = true;
@@ -528,7 +528,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
     // create old style dirichtoggle vector (supposed to go away)
     dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
-    RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
+    Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
     temp->PutScalar(1.0);
     LINALG::Export(*temp,*dirichtoggle_);
 
@@ -602,19 +602,19 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       if (contactsolver_->Params().isSublist("MueLu (Contact) Parameters"))
       {
         Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact) Parameters");
-        RCP<Epetra_Map> masterDofMap;
-        RCP<Epetra_Map> slaveDofMap;
-        RCP<Epetra_Map> innerDofMap;
-        RCP<Epetra_Map> activeDofMap;
+        Teuchos::RCP<Epetra_Map> masterDofMap;
+        Teuchos::RCP<Epetra_Map> slaveDofMap;
+        Teuchos::RCP<Epetra_Map> innerDofMap;
+        Teuchos::RCP<Epetra_Map> activeDofMap;
         // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
         Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
         //Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
         //if(cstrat != Teuchos::null) { // dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
         strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
-        mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
-        mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
-        mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
-        mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
+        mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
+        mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
+        mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
+        mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
         //} else std::cout << "STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem? strtimint.cpp line 550" << std::endl;
 
         //std::cout << contactsolver_->Params() << std::endl;
@@ -624,19 +624,19 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       if (contactsolver_->Params().isSublist("MueLu (Contact2) Parameters"))
       {
         Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact2) Parameters");
-        RCP<Epetra_Map> masterDofMap;
-        RCP<Epetra_Map> slaveDofMap;
-        RCP<Epetra_Map> innerDofMap;
-        RCP<Epetra_Map> activeDofMap;
+        Teuchos::RCP<Epetra_Map> masterDofMap;
+        Teuchos::RCP<Epetra_Map> slaveDofMap;
+        Teuchos::RCP<Epetra_Map> innerDofMap;
+        Teuchos::RCP<Epetra_Map> activeDofMap;
         // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
         Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
         //Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
         //if(cstrat != Teuchos::null) { //dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
           strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
-          mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
-          mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
-          mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
-          mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
+          mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
+          mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
+          mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
+          mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
         //} else std::cout << "STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem? strtimint.cpp line 550" << std::endl;
         //std::cout << contactsolver_->Params() << std::endl;
       }
@@ -737,7 +737,7 @@ void STR::TimInt::PrepareStatMech()
     statmechman_ = Teuchos::rcp(new STATMECH::StatMechManager(discret_));
 
     dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
-    RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
+    Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
     temp->PutScalar(1.0);
     LINALG::Export(*temp,*dirichtoggle_);
 
@@ -1882,7 +1882,7 @@ void STR::TimInt::OutputContact()
     int dim      = cmtman_->GetStrategy().Dim();
 
     // global linear momentum (M*v)
-    RCP<Epetra_Vector> mv = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+    Teuchos::RCP<Epetra_Vector> mv = LINALG::CreateVector(*(discret_->DofRowMap()), true);
     mass_->Multiply(false, (*vel_)[0], *mv);
 
     // linear / angular momentum
@@ -1946,7 +1946,7 @@ void STR::TimInt::OutputContact()
     p.set("action", "calc_struct_energy");
     discret_->ClearState();
     discret_->SetState("displacement", (*dis_)(0));
-    RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    Teuchos::RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));
     energies->Scale(0.0);
     discret_->EvaluateScalars(p, energies);
     discret_->ClearState();
@@ -2044,7 +2044,7 @@ void STR::TimInt::OutputErrorNorms()
   if (entype==INPAR::CONTACT::errornorms_none) return;
 
   // initialize variables
-  RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+  Teuchos::RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
   norms->Scale(0.0);
 
   // call discretization to evaluate error norms
@@ -2077,7 +2077,7 @@ void STR::TimInt::OutputMicro()
   for (int i=0; i<discret_->NumMyRowElements(); i++)
   {
     DRT::Element* actele = discret_->lRowElement(i);
-    RCP<MAT::Material> mat = actele->Material();
+    Teuchos::RCP<MAT::Material> mat = actele->Material();
     if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
@@ -2094,7 +2094,7 @@ void STR::TimInt::PrepareOutputMicro()
   {
     DRT::Element* actele = discret_->lRowElement(i);
 
-    RCP<MAT::Material> mat = actele->Material();
+    Teuchos::RCP<MAT::Material> mat = actele->Material();
     if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
@@ -2120,8 +2120,8 @@ void STR::TimInt::OutputNodalPositions()
   // does discret_ exist here?
   //std::cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << std::endl;
 
-  //RCP<Epetra_Vector> mynoderowmap = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
-  //RCP<Epetra_Vector> noderowmap_ = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
+  //Teuchos::RCP<Epetra_Vector> mynoderowmap = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
+  //Teuchos::RCP<Epetra_Vector> noderowmap_ = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
   //DofRowMapView()  = Teuchos::rcp(new discret_->DofRowMap());
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   const Epetra_Map* dofrowmap = discret_->DofRowMap();

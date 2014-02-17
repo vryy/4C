@@ -835,7 +835,7 @@ void FSI::UTILS::SlideAleUtils::Rotation
   mtrdis.SetState("displacementnp",idispnpcol);
   mtrdis.SetState("displacementincr",idispstepcol);
 
-  std::map<int, std::map<int,RCP<DRT::Element> > >::iterator melit;
+  std::map<int, std::map<int,Teuchos::RCP<DRT::Element> > >::iterator melit;
   for (int i = 0; i<= maxid_; ++i)
   {
     //prepare variables for length (2D) or area (3D) of the interface

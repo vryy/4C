@@ -407,11 +407,11 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
         if(activecons_.find(condID)->second==false)
         {
           const std::string action = params.get<std::string>("action");
-          Teuchos::RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
+          Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
           SetConstrState("displacement",displast);
           // last converged step is used reference
           Initialize(params);
-          Teuchos::RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
+          Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
           SetConstrState("displacement",disp);
           params.set("action",action);
         }

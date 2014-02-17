@@ -56,19 +56,19 @@ public:
 
 private:
 
-  /// RCP to scalar transport discretization
+  /// Teuchos::RCP to scalar transport discretization
   Teuchos::RCP<DRT::Discretization> dis_;
-  /// RCP to solution vector
+  /// Teuchos::RCP to solution vector
   Teuchos::RCP<Epetra_Vector>       mysol_;
-  /// RCP to solution at nodes (meshfree)
+  /// Teuchos::RCP to solution at nodes (meshfree)
   Teuchos::RCP<Epetra_Vector>       myvan_;
-  /// RCP to mass/heat flux vector
+  /// Teuchos::RCP to mass/heat flux vector
   Teuchos::RCP<Epetra_MultiVector>  myflux_;
-  /// RCP to electrode kinetics vector
+  /// Teuchos::RCP to electrode kinetics vector
   Teuchos::RCP<std::vector<double> >  myelectkin_;
-  /// RCP to scatra structure biofilm growth vector
+  /// Teuchos::RCP to scatra structure biofilm growth vector
   Teuchos::RCP<Epetra_MultiVector>  mystrgrowth_;
-  /// RCP to scatra fluid biofilm growth vector
+  /// Teuchos::RCP to scatra fluid biofilm growth vector
   Teuchos::RCP<Epetra_MultiVector>  myfldgrowth_;
 };
 

@@ -48,7 +48,7 @@ void DRT::ELEMENTS::NStet::nstet_read_restart_multi()
 {
   const int gp = 0; // there is only one Gauss point
 
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
   {

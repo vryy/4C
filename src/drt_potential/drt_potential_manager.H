@@ -50,13 +50,13 @@ public:
    */
   ~PotentialManager() {};
 
-  
+
   /*!
     \brief Read parameter
    */
   void ReadParameter();
-  
-  
+
+
   /*!
     \brief Call discretization to calculate additional contributions
     due to interfacial energy
@@ -67,11 +67,11 @@ public:
    */
   void EvaluatePotential(
       Teuchos::ParameterList&                      p,
-      RCP<Epetra_Vector>          disp,
-      RCP<Epetra_Vector>          fint,
-      RCP<LINALG::SparseMatrix>   stiff);
+      Teuchos::RCP<Epetra_Vector>          disp,
+      Teuchos::RCP<Epetra_Vector>          fint,
+      Teuchos::RCP<LINALG::SparseMatrix>   stiff);
 
-  
+
   /*!
     \brief TEST Call discretization to calculate additional contributions
     due to interfacial energy
@@ -80,16 +80,16 @@ public:
     \param fint (out): internal forces
     \param stiff (out): stiffness matrix
    */
-  void TestEvaluatePotential( 
+  void TestEvaluatePotential(
       Teuchos::ParameterList&                    p,
-      RCP<Epetra_Vector>        disp,
-      RCP<Epetra_Vector>        fint,
-      RCP<LINALG::SparseMatrix> stiff,
+      Teuchos::RCP<Epetra_Vector>        disp,
+      Teuchos::RCP<Epetra_Vector>        fint,
+      Teuchos::RCP<LINALG::SparseMatrix> stiff,
       const double                      time,
       const int                         step
       );
-  
-  
+
+
   void StiffnessAndInternalForcesPotential(
       const DRT::Element*             element,
       const DRT::UTILS::GaussRule3D&  gaussrule,
@@ -97,8 +97,8 @@ public:
       std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       K_stiff,
       Epetra_SerialDenseVector&       F_int);
-  
-  
+
+
 
   /*!
     \brief Routine to calculate additional internal forces and
@@ -138,7 +138,7 @@ public:
       Epetra_SerialDenseMatrix&         K_stiff,
       Epetra_SerialDenseVector&         fint
       );
-  
+
   bool ComputeAnalyticalSolution();
 
 private:
@@ -150,7 +150,7 @@ private:
   //! name@ Private Attributes
 
   //!  current discretization
-  RCP<DRT::Discretization>                      discretRCP_;
+  Teuchos::RCP<DRT::Discretization>                      discretRCP_;
 
   //!  current discretization
   DRT::Discretization&                          discret_;
@@ -169,8 +169,8 @@ private:
 
   //! volume
   bool                                          volume_;
-  
-  
+
+
   GEO::TreeType                                 treetype_;
 
 }; //class

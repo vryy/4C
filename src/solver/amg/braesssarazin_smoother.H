@@ -17,7 +17,6 @@
 #include "../../linalg/linalg_solver.H"
 #include "../../linalg/linalg_utils.H"
 
-using Teuchos::RCP;
 using Teuchos::ParameterList;
 
 namespace LINALG

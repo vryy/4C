@@ -23,9 +23,9 @@ Maintainer: Martin Winklmaier
 XFEM::ExtrapolationOld::ExtrapolationOld(
     XFEM::TIMEINT& timeInt,
     INPAR::COMBUST::XFEMTimeIntegration timeIntType,
-    const RCP<Epetra_Vector> veln,
+    const Teuchos::RCP<Epetra_Vector> veln,
     const double& dt,
-    const RCP<COMBUST::FlameFront> flamefront,
+    const Teuchos::RCP<COMBUST::FlameFront> flamefront,
     const double& veljump,
     bool initialize
 ) : STD(timeInt,timeIntType,veln,dt,flamefront,initialize),
@@ -40,8 +40,8 @@ veljump_(veljump)
  * call the computation based on an extrapolation                                winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::ExtrapolationOld::compute(
-    std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-    std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   if (FGIType_==FRSNot1_)
@@ -80,7 +80,7 @@ void XFEM::ExtrapolationOld::compute(
 /*------------------------------------------------------------------------------------------------*
  * call the computation based on an extrapolation                                winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::ExtrapolationOld::compute(std::vector<RCP<Epetra_Vector> > newRowVectors)
+void XFEM::ExtrapolationOld::compute(std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectors)
 {
   if (oldVectors_.size() != newRowVectors.size())
   {
@@ -763,9 +763,9 @@ void XFEM::ExtrapolationOld::interpolation(
 XFEM::ExtrapolationNew::ExtrapolationNew(
     XFEM::TIMEINT& timeInt,
     INPAR::COMBUST::XFEMTimeIntegration timeIntType,
-    const RCP<Epetra_Vector> veln,
+    const Teuchos::RCP<Epetra_Vector> veln,
     const double& dt,
-    const RCP<COMBUST::FlameFront> flamefront,
+    const Teuchos::RCP<COMBUST::FlameFront> flamefront,
     bool initialize
 ) : STD(timeInt,timeIntType,veln,dt,flamefront,initialize)
 {
@@ -778,8 +778,8 @@ XFEM::ExtrapolationNew::ExtrapolationNew(
  * call the computation based on an Extrapol                                winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::ExtrapolationNew::compute(
-    std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-    std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   if (FGIType_==FRSNot1_)
@@ -816,7 +816,7 @@ void XFEM::ExtrapolationNew::compute(
 /*------------------------------------------------------------------------------------------------*
  * call the computation based on an Extrapol                                winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::ExtrapolationNew::compute(std::vector<RCP<Epetra_Vector> > newRowVectors)
+void XFEM::ExtrapolationNew::compute(std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectors)
 {
   exportDataToNodeProc(); // export data of failed nodes
 

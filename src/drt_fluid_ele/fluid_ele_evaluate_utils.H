@@ -140,23 +140,23 @@ void f3_calc_means(DRT::ELEMENTS::Fluid* ele,
 
   // the vector planes contains the coordinates of the homogeneous planes (in
   // wall normal direction)
-  RCP<std::vector<double> > planes = params.get<RCP<std::vector<double> > >("coordinate vector for hom. planes");
+  Teuchos::RCP<std::vector<double> > planes = params.get<Teuchos::RCP<std::vector<double> > >("coordinate vector for hom. planes");
 
   // get the pointers to the solution vectors
-  RCP<std::vector<double> > sumarea= params.get<RCP<std::vector<double> > >("element layer area");
+  Teuchos::RCP<std::vector<double> > sumarea= params.get<Teuchos::RCP<std::vector<double> > >("element layer area");
 
-  RCP<std::vector<double> > sumu   = params.get<RCP<std::vector<double> > >("mean velocity u");
-  RCP<std::vector<double> > sumv   = params.get<RCP<std::vector<double> > >("mean velocity v");
-  RCP<std::vector<double> > sumw   = params.get<RCP<std::vector<double> > >("mean velocity w");
-  RCP<std::vector<double> > sump   = params.get<RCP<std::vector<double> > >("mean pressure p");
+  Teuchos::RCP<std::vector<double> > sumu   = params.get<Teuchos::RCP<std::vector<double> > >("mean velocity u");
+  Teuchos::RCP<std::vector<double> > sumv   = params.get<Teuchos::RCP<std::vector<double> > >("mean velocity v");
+  Teuchos::RCP<std::vector<double> > sumw   = params.get<Teuchos::RCP<std::vector<double> > >("mean velocity w");
+  Teuchos::RCP<std::vector<double> > sump   = params.get<Teuchos::RCP<std::vector<double> > >("mean pressure p");
 
-  RCP<std::vector<double> > sumsqu = params.get<RCP<std::vector<double> > >("mean value u^2");
-  RCP<std::vector<double> > sumsqv = params.get<RCP<std::vector<double> > >("mean value v^2");
-  RCP<std::vector<double> > sumsqw = params.get<RCP<std::vector<double> > >("mean value w^2");
-  RCP<std::vector<double> > sumuv  = params.get<RCP<std::vector<double> > >("mean value uv");
-  RCP<std::vector<double> > sumuw  = params.get<RCP<std::vector<double> > >("mean value uw");
-  RCP<std::vector<double> > sumvw  = params.get<RCP<std::vector<double> > >("mean value vw");
-  RCP<std::vector<double> > sumsqp = params.get<RCP<std::vector<double> > >("mean value p^2");
+  Teuchos::RCP<std::vector<double> > sumsqu = params.get<Teuchos::RCP<std::vector<double> > >("mean value u^2");
+  Teuchos::RCP<std::vector<double> > sumsqv = params.get<Teuchos::RCP<std::vector<double> > >("mean value v^2");
+  Teuchos::RCP<std::vector<double> > sumsqw = params.get<Teuchos::RCP<std::vector<double> > >("mean value w^2");
+  Teuchos::RCP<std::vector<double> > sumuv  = params.get<Teuchos::RCP<std::vector<double> > >("mean value uv");
+  Teuchos::RCP<std::vector<double> > sumuw  = params.get<Teuchos::RCP<std::vector<double> > >("mean value uw");
+  Teuchos::RCP<std::vector<double> > sumvw  = params.get<Teuchos::RCP<std::vector<double> > >("mean value vw");
+  Teuchos::RCP<std::vector<double> > sumsqp = params.get<Teuchos::RCP<std::vector<double> > >("mean value p^2");
 
   // get node coordinates of element
   LINALG::Matrix<3,iel>  xyze;
@@ -537,7 +537,7 @@ void f3_calc_means(DRT::ELEMENTS::Fluid* ele,
     int numsublayers=(size-1)/nele_x_mele_x_lele[1];
 
     // get the knotvector itself
-    RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+    Teuchos::RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
     DRT::Node**   nodes = ele->Nodes();
 
@@ -793,33 +793,33 @@ void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele,
 
   // the vector planes contains the coordinates of the homogeneous planes (in
   // wall normal direction)
-  RCP<std::vector<double> > planes = params.get<RCP<std::vector<double> > >("coordinate vector for hom. planes");
+  Teuchos::RCP<std::vector<double> > planes = params.get<Teuchos::RCP<std::vector<double> > >("coordinate vector for hom. planes");
 
   // get the pointers to the solution vectors
-  RCP<std::vector<double> > sumarea= params.get<RCP<std::vector<double> > >("element layer area");
+  Teuchos::RCP<std::vector<double> > sumarea= params.get<Teuchos::RCP<std::vector<double> > >("element layer area");
 
-  RCP<std::vector<double> > sumu   = params.get<RCP<std::vector<double> > >("mean velocity u");
-  RCP<std::vector<double> > sumv   = params.get<RCP<std::vector<double> > >("mean velocity v");
-  RCP<std::vector<double> > sumw   = params.get<RCP<std::vector<double> > >("mean velocity w");
-  RCP<std::vector<double> > sump   = params.get<RCP<std::vector<double> > >("mean pressure p");
-  RCP<std::vector<double> > sumrho = params.get<RCP<std::vector<double> > >("mean density rho");
-  RCP<std::vector<double> > sumT   = params.get<RCP<std::vector<double> > >("mean temperature T");
-  RCP<std::vector<double> > sumrhou  = params.get<RCP<std::vector<double> > >("mean momentum rho*u");
-  RCP<std::vector<double> > sumrhouT = params.get<RCP<std::vector<double> > >("mean rho*u*T");
+  Teuchos::RCP<std::vector<double> > sumu   = params.get<Teuchos::RCP<std::vector<double> > >("mean velocity u");
+  Teuchos::RCP<std::vector<double> > sumv   = params.get<Teuchos::RCP<std::vector<double> > >("mean velocity v");
+  Teuchos::RCP<std::vector<double> > sumw   = params.get<Teuchos::RCP<std::vector<double> > >("mean velocity w");
+  Teuchos::RCP<std::vector<double> > sump   = params.get<Teuchos::RCP<std::vector<double> > >("mean pressure p");
+  Teuchos::RCP<std::vector<double> > sumrho = params.get<Teuchos::RCP<std::vector<double> > >("mean density rho");
+  Teuchos::RCP<std::vector<double> > sumT   = params.get<Teuchos::RCP<std::vector<double> > >("mean temperature T");
+  Teuchos::RCP<std::vector<double> > sumrhou  = params.get<Teuchos::RCP<std::vector<double> > >("mean momentum rho*u");
+  Teuchos::RCP<std::vector<double> > sumrhouT = params.get<Teuchos::RCP<std::vector<double> > >("mean rho*u*T");
 
-  RCP<std::vector<double> > sumsqu = params.get<RCP<std::vector<double> > >("mean value u^2");
-  RCP<std::vector<double> > sumsqv = params.get<RCP<std::vector<double> > >("mean value v^2");
-  RCP<std::vector<double> > sumsqw = params.get<RCP<std::vector<double> > >("mean value w^2");
-  RCP<std::vector<double> > sumsqp = params.get<RCP<std::vector<double> > >("mean value p^2");
-  RCP<std::vector<double> > sumsqrho = params.get<RCP<std::vector<double> > >("mean value rho^2");
-  RCP<std::vector<double> > sumsqT = params.get<RCP<std::vector<double> > >("mean value T^2");
+  Teuchos::RCP<std::vector<double> > sumsqu = params.get<Teuchos::RCP<std::vector<double> > >("mean value u^2");
+  Teuchos::RCP<std::vector<double> > sumsqv = params.get<Teuchos::RCP<std::vector<double> > >("mean value v^2");
+  Teuchos::RCP<std::vector<double> > sumsqw = params.get<Teuchos::RCP<std::vector<double> > >("mean value w^2");
+  Teuchos::RCP<std::vector<double> > sumsqp = params.get<Teuchos::RCP<std::vector<double> > >("mean value p^2");
+  Teuchos::RCP<std::vector<double> > sumsqrho = params.get<Teuchos::RCP<std::vector<double> > >("mean value rho^2");
+  Teuchos::RCP<std::vector<double> > sumsqT = params.get<Teuchos::RCP<std::vector<double> > >("mean value T^2");
 
-  RCP<std::vector<double> > sumuv  = params.get<RCP<std::vector<double> > >("mean value uv");
-  RCP<std::vector<double> > sumuw  = params.get<RCP<std::vector<double> > >("mean value uw");
-  RCP<std::vector<double> > sumvw  = params.get<RCP<std::vector<double> > >("mean value vw");
-  RCP<std::vector<double> > sumuT  = params.get<RCP<std::vector<double> > >("mean value uT");
-  RCP<std::vector<double> > sumvT  = params.get<RCP<std::vector<double> > >("mean value vT");
-  RCP<std::vector<double> > sumwT  = params.get<RCP<std::vector<double> > >("mean value wT");
+  Teuchos::RCP<std::vector<double> > sumuv  = params.get<Teuchos::RCP<std::vector<double> > >("mean value uv");
+  Teuchos::RCP<std::vector<double> > sumuw  = params.get<Teuchos::RCP<std::vector<double> > >("mean value uw");
+  Teuchos::RCP<std::vector<double> > sumvw  = params.get<Teuchos::RCP<std::vector<double> > >("mean value vw");
+  Teuchos::RCP<std::vector<double> > sumuT  = params.get<Teuchos::RCP<std::vector<double> > >("mean value uT");
+  Teuchos::RCP<std::vector<double> > sumvT  = params.get<Teuchos::RCP<std::vector<double> > >("mean value vT");
+  Teuchos::RCP<std::vector<double> > sumwT  = params.get<Teuchos::RCP<std::vector<double> > >("mean value wT");
 
   // get node coordinates of element
   LINALG::Matrix<3,iel>  xyze;
@@ -1190,29 +1190,29 @@ void f3_calc_scatra_means(DRT::ELEMENTS::Fluid* ele,
 
   // the vector planes contains the coordinates of the homogeneous planes (in
   // wall normal direction)
-  RCP<std::vector<double> > planes = params.get<RCP<std::vector<double> > >("coordinate vector for hom. planes");
+  Teuchos::RCP<std::vector<double> > planes = params.get<Teuchos::RCP<std::vector<double> > >("coordinate vector for hom. planes");
 
   // get the pointers to the solution vectors
-  RCP<std::vector<double> > sumarea= params.get<RCP<std::vector<double> > >("element layer area");
+  Teuchos::RCP<std::vector<double> > sumarea= params.get<Teuchos::RCP<std::vector<double> > >("element layer area");
 
-  RCP<std::vector<double> > sumu   = params.get<RCP<std::vector<double> > >("mean velocity u");
-  RCP<std::vector<double> > sumv   = params.get<RCP<std::vector<double> > >("mean velocity v");
-  RCP<std::vector<double> > sumw   = params.get<RCP<std::vector<double> > >("mean velocity w");
-  RCP<std::vector<double> > sump   = params.get<RCP<std::vector<double> > >("mean pressure p");
-  RCP<std::vector<double> > sumphi   = params.get<RCP<std::vector<double> > >("mean scalar phi");
+  Teuchos::RCP<std::vector<double> > sumu   = params.get<Teuchos::RCP<std::vector<double> > >("mean velocity u");
+  Teuchos::RCP<std::vector<double> > sumv   = params.get<Teuchos::RCP<std::vector<double> > >("mean velocity v");
+  Teuchos::RCP<std::vector<double> > sumw   = params.get<Teuchos::RCP<std::vector<double> > >("mean velocity w");
+  Teuchos::RCP<std::vector<double> > sump   = params.get<Teuchos::RCP<std::vector<double> > >("mean pressure p");
+  Teuchos::RCP<std::vector<double> > sumphi   = params.get<Teuchos::RCP<std::vector<double> > >("mean scalar phi");
 
-  RCP<std::vector<double> > sumsqu = params.get<RCP<std::vector<double> > >("mean value u^2");
-  RCP<std::vector<double> > sumsqv = params.get<RCP<std::vector<double> > >("mean value v^2");
-  RCP<std::vector<double> > sumsqw = params.get<RCP<std::vector<double> > >("mean value w^2");
-  RCP<std::vector<double> > sumsqp = params.get<RCP<std::vector<double> > >("mean value p^2");
-  RCP<std::vector<double> > sumsqphi = params.get<RCP<std::vector<double> > >("mean value phi^2");
+  Teuchos::RCP<std::vector<double> > sumsqu = params.get<Teuchos::RCP<std::vector<double> > >("mean value u^2");
+  Teuchos::RCP<std::vector<double> > sumsqv = params.get<Teuchos::RCP<std::vector<double> > >("mean value v^2");
+  Teuchos::RCP<std::vector<double> > sumsqw = params.get<Teuchos::RCP<std::vector<double> > >("mean value w^2");
+  Teuchos::RCP<std::vector<double> > sumsqp = params.get<Teuchos::RCP<std::vector<double> > >("mean value p^2");
+  Teuchos::RCP<std::vector<double> > sumsqphi = params.get<Teuchos::RCP<std::vector<double> > >("mean value phi^2");
 
-  RCP<std::vector<double> > sumuv  = params.get<RCP<std::vector<double> > >("mean value uv");
-  RCP<std::vector<double> > sumuw  = params.get<RCP<std::vector<double> > >("mean value uw");
-  RCP<std::vector<double> > sumvw  = params.get<RCP<std::vector<double> > >("mean value vw");
-  RCP<std::vector<double> > sumuphi  = params.get<RCP<std::vector<double> > >("mean value uphi");
-  RCP<std::vector<double> > sumvphi  = params.get<RCP<std::vector<double> > >("mean value vphi");
-  RCP<std::vector<double> > sumwphi  = params.get<RCP<std::vector<double> > >("mean value wphi");
+  Teuchos::RCP<std::vector<double> > sumuv  = params.get<Teuchos::RCP<std::vector<double> > >("mean value uv");
+  Teuchos::RCP<std::vector<double> > sumuw  = params.get<Teuchos::RCP<std::vector<double> > >("mean value uw");
+  Teuchos::RCP<std::vector<double> > sumvw  = params.get<Teuchos::RCP<std::vector<double> > >("mean value vw");
+  Teuchos::RCP<std::vector<double> > sumuphi  = params.get<Teuchos::RCP<std::vector<double> > >("mean value uphi");
+  Teuchos::RCP<std::vector<double> > sumvphi  = params.get<Teuchos::RCP<std::vector<double> > >("mean value vphi");
+  Teuchos::RCP<std::vector<double> > sumwphi  = params.get<Teuchos::RCP<std::vector<double> > >("mean value wphi");
 
   // get node coordinates of element
   LINALG::Matrix<3,iel>  xyze;
@@ -1575,17 +1575,17 @@ void f3_apply_box_filter(DRT::ELEMENTS::Fluid*         ele,
                          std::vector<double>&          myvel,
                          std::vector<double>&          mytemp,
                          const double                  thermpress,
-                         RCP<std::vector<double> >          vel_hat,
-                         RCP<std::vector<double> >          densvel_hat,
-                         RCP<std::vector<std::vector<double> > > reynoldsstress_hat,
-                         RCP<std::vector<std::vector<double> > > modeled_subgrid_stress,
+                         Teuchos::RCP<std::vector<double> >          vel_hat,
+                         Teuchos::RCP<std::vector<double> >          densvel_hat,
+                         Teuchos::RCP<std::vector<std::vector<double> > > reynoldsstress_hat,
+                         Teuchos::RCP<std::vector<std::vector<double> > > modeled_subgrid_stress,
                          double&                       volume,
                          double&                       dens_hat,
                          double&                       dens_strainrate_hat,
                          double&                       expression_hat,
                          double&                       alpha2_hat,
-                         RCP<std::vector<std::vector<double> > > strainrate_hat,
-                         RCP<std::vector<std::vector<double> > > alphaij_hat)
+                         Teuchos::RCP<std::vector<std::vector<double> > > strainrate_hat,
+                         Teuchos::RCP<std::vector<std::vector<double> > > alphaij_hat)
 {
   // number of spatial dimensions is always 3
   const int NSD = 3;
@@ -1733,7 +1733,7 @@ void f3_apply_box_filter(DRT::ELEMENTS::Fluid*         ele,
 
   // get material at gauss point
   double dens = 0.0;
-  RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<MAT::Material> material = ele->Material();
   if (material->MaterialType() == INPAR::MAT::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
@@ -2046,12 +2046,12 @@ void f3_apply_box_filter(DRT::ELEMENTS::Fluid*         ele,
 template<int iel>
 void f3_calc_smag_const_LijMij_and_MijMij(DRT::ELEMENTS::Fluid*  ele,
                                         DRT::ELEMENTS::FluidEleParameterStd* fldpara,
-                                        RCP<Epetra_MultiVector>& col_filtered_vel,
-                                        RCP<Epetra_MultiVector>& col_filtered_reynoldsstress,
-                                        RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
-                                        RCP<Epetra_MultiVector>& col_filtered_dens_vel,
-                                        RCP<Epetra_Vector>&      col_filtered_dens,
-                                        RCP<Epetra_Vector>&      col_filtered_dens_strainrate,
+                                        Teuchos::RCP<Epetra_MultiVector>& col_filtered_vel,
+                                        Teuchos::RCP<Epetra_MultiVector>& col_filtered_reynoldsstress,
+                                        Teuchos::RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
+                                        Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_vel,
+                                        Teuchos::RCP<Epetra_Vector>&      col_filtered_dens,
+                                        Teuchos::RCP<Epetra_Vector>&      col_filtered_dens_strainrate,
                                         double&                  LijMij,
                                         double&                  MijMij,
                                         double&                  CI_numerator,
@@ -2395,7 +2395,7 @@ void f3_calc_smag_const_LijMij_and_MijMij(DRT::ELEMENTS::Fluid*  ele,
   else
   {
     // get density from material
-    RCP<MAT::Material> material = ele->Material();
+    Teuchos::RCP<MAT::Material> material = ele->Material();
     if (material->MaterialType() == INPAR::MAT::m_fluid)
     {
       const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
@@ -2516,10 +2516,10 @@ void f3_calc_smag_const_LijMij_and_MijMij(DRT::ELEMENTS::Fluid*  ele,
 
 template<int iel>
 void f3_calc_vreman_const(DRT::ELEMENTS::Fluid*  ele,
-                                        RCP<Epetra_MultiVector>& col_filtered_strainrate,
-                                        RCP<Epetra_MultiVector>& col_filtered_alphaij,
-                                        RCP<Epetra_Vector>&      col_filtered_expression,
-                                        RCP<Epetra_Vector>&      col_filtered_alpha2,
+                                        Teuchos::RCP<Epetra_MultiVector>& col_filtered_strainrate,
+                                        Teuchos::RCP<Epetra_MultiVector>& col_filtered_alphaij,
+                                        Teuchos::RCP<Epetra_Vector>&      col_filtered_expression,
+                                        Teuchos::RCP<Epetra_Vector>&      col_filtered_alpha2,
                                         double&                  cv_numerator,
                                         double&                  cv_denominator,
                                         double&                  volume)
@@ -3438,27 +3438,27 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
 
   // set parameter in sublist turbulence
   Teuchos::ParameterList * modelparams =&(params.sublist("TURBULENCE MODEL"));
-  RCP<std::vector<double> > sum_N_stream      = modelparams->get<RCP<std::vector<double> > >("local_N_stream_sum");
-  RCP<std::vector<double> > sum_N_normal      = modelparams->get<RCP<std::vector<double> > >("local_N_normal_sum");
-  RCP<std::vector<double> > sum_N_span        = modelparams->get<RCP<std::vector<double> > >("local_N_span_sum");
-  RCP<std::vector<double> > sum_B_stream      = modelparams->get<RCP<std::vector<double> > >("local_B_stream_sum");
-  RCP<std::vector<double> > sum_B_normal      = modelparams->get<RCP<std::vector<double> > >("local_B_normal_sum");
-  RCP<std::vector<double> > sum_B_span        = modelparams->get<RCP<std::vector<double> > >("local_B_span_sum");
-  RCP<std::vector<double> > sum_Csgs          = modelparams->get<RCP<std::vector<double> > >("local_Csgs_sum");
-  RCP<std::vector<double> > sum_Nphi;
-  RCP<std::vector<double> > sum_Dphi;
-  RCP<std::vector<double> > sum_Csgs_phi;
+  Teuchos::RCP<std::vector<double> > sum_N_stream      = modelparams->get<Teuchos::RCP<std::vector<double> > >("local_N_stream_sum");
+  Teuchos::RCP<std::vector<double> > sum_N_normal      = modelparams->get<Teuchos::RCP<std::vector<double> > >("local_N_normal_sum");
+  Teuchos::RCP<std::vector<double> > sum_N_span        = modelparams->get<Teuchos::RCP<std::vector<double> > >("local_N_span_sum");
+  Teuchos::RCP<std::vector<double> > sum_B_stream      = modelparams->get<Teuchos::RCP<std::vector<double> > >("local_B_stream_sum");
+  Teuchos::RCP<std::vector<double> > sum_B_normal      = modelparams->get<Teuchos::RCP<std::vector<double> > >("local_B_normal_sum");
+  Teuchos::RCP<std::vector<double> > sum_B_span        = modelparams->get<Teuchos::RCP<std::vector<double> > >("local_B_span_sum");
+  Teuchos::RCP<std::vector<double> > sum_Csgs          = modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Csgs_sum");
+  Teuchos::RCP<std::vector<double> > sum_Nphi;
+  Teuchos::RCP<std::vector<double> > sum_Dphi;
+  Teuchos::RCP<std::vector<double> > sum_Csgs_phi;
   if (withscatra)
   {
-    sum_Nphi          = modelparams->get<RCP<std::vector<double> > >("local_Nphi_sum");
-    sum_Dphi          = modelparams->get<RCP<std::vector<double> > >("local_Dphi_sum");
-    sum_Csgs_phi      = modelparams->get<RCP<std::vector<double> > >("local_Csgs_phi_sum");
+    sum_Nphi          = modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Nphi_sum");
+    sum_Dphi          = modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Dphi_sum");
+    sum_Csgs_phi      = modelparams->get<Teuchos::RCP<std::vector<double> > >("local_Csgs_phi_sum");
   }
-  RCP<std::vector<double> > sum_sgvisc        = modelparams->get<RCP<std::vector<double> > >("local_sgvisc_sum");
+  Teuchos::RCP<std::vector<double> > sum_sgvisc        = modelparams->get<Teuchos::RCP<std::vector<double> > >("local_sgvisc_sum");
 
   // the coordinates of the element layers in the channel
   // planecoords are named nodeplanes in turbulence_statistics_channel!
-  RCP<std::vector<double> > planecoords  = modelparams->get<RCP<std::vector<double> > >("planecoords",Teuchos::null);
+  Teuchos::RCP<std::vector<double> > planecoords  = modelparams->get<Teuchos::RCP<std::vector<double> > >("planecoords",Teuchos::null);
   if(planecoords==Teuchos::null)
     dserror("planecoords is null, but need channel_flow_of_height_2\n");
 
@@ -3611,7 +3611,7 @@ void f3_get_mf_nwc(DRT::ELEMENTS::Fluid* ele,
       // get material
       double dens = 0.0;
       double visc = 0.0;
-      RCP<MAT::Material> material = ele->Material();
+      Teuchos::RCP<MAT::Material> material = ele->Material();
       if (material->MaterialType() == INPAR::MAT::m_sutherland)
       {
         const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
@@ -3844,7 +3844,7 @@ void ElementNodeNormal(DRT::ELEMENTS::Fluid*  ele,
   if (is_ale_)
   {
     // get most recent displacements
-    RCP<const Epetra_Vector> dispnp
+    Teuchos::RCP<const Epetra_Vector> dispnp
       =
       discretization.GetState("dispnp");
 
@@ -3900,7 +3900,7 @@ void ElementNodeNormal(DRT::ELEMENTS::Fluid*  ele,
     LINALG::Matrix<nsd,iel>       edispnp(true);
 
     // get most recent displacements
-    RCP<const Epetra_Vector> dispnp
+    Teuchos::RCP<const Epetra_Vector> dispnp
       =
       discretization.GetState("dispnp");
 

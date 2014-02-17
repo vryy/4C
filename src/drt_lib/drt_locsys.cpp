@@ -127,7 +127,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
         dserror("For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global z-axis!");
 
       // Check, if the updated node positions shall be used for evaluation of the functions 'funct'
-      RCP<const Epetra_Vector> dispnp;
+      Teuchos::RCP<const Epetra_Vector> dispnp;
       if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0)){
         dispnp = Discret().GetState("dispnp");
         if (dispnp == Teuchos::null)
@@ -233,7 +233,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
         dserror("For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global z-axis!");
 
       // Check, if the updated node positions shall be used for evaluation of the functions 'funct'
-      RCP<const Epetra_Vector> dispnp;
+      Teuchos::RCP<const Epetra_Vector> dispnp;
       if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0)){
         dispnp = Discret().GetState("dispnp");
         if (dispnp == Teuchos::null)
@@ -340,7 +340,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
         dserror("For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global z-axis!");
 
       // Check, if the updated node positions shall be used for evaluation of the functions 'funct'
-      RCP<const Epetra_Vector> dispnp;
+      Teuchos::RCP<const Epetra_Vector> dispnp;
       if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0)){
         dispnp = Discret().GetState("dispnp");
         if (dispnp == Teuchos::null)
@@ -447,7 +447,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
         dserror("For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global z-axis!");
 
       // Check, if the updated node positions shall be used for evaluation of the functions 'funct'
-      RCP<const Epetra_Vector> dispnp;
+      Teuchos::RCP<const Epetra_Vector> dispnp;
       if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0)){
         dispnp = Discret().GetState("dispnp");
         if (dispnp == Teuchos::null)

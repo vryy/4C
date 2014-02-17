@@ -680,7 +680,7 @@ namespace FLD
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::StoreNodalValues(
        int                        step,
-       const RCP<Epetra_Vector>   stress12)
+       const Teuchos::RCP<Epetra_Vector>   stress12)
   {
     // sampling takes place only in the sampling period
     if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
@@ -888,7 +888,7 @@ namespace FLD
 
         // computation of Lift&Drag statistics
         {
-          RCP<std::map<int,std::vector<double> > > liftdragvals;
+          Teuchos::RCP<std::map<int,std::vector<double> > > liftdragvals;
 
           FLD::UTILS::LiftDrag(*discret_,*myforce_,*params_,liftdragvals);
 
@@ -954,20 +954,20 @@ namespace FLD
           //dserror("no subgrid dissipation");
 
           // set vector values needed by elements
-          std::map<std::string,RCP<Epetra_Vector> > statevecs;
-          std::map<std::string,RCP<Epetra_MultiVector> > statetenss;
-          std::map<std::string,RCP<Epetra_Vector> > scatrastatevecs;
-          std::map<std::string,RCP<Epetra_MultiVector> > scatrafieldvecs;
+          std::map<std::string,Teuchos::RCP<Epetra_Vector> > statevecs;
+          std::map<std::string,Teuchos::RCP<Epetra_MultiVector> > statetenss;
+          std::map<std::string,Teuchos::RCP<Epetra_Vector> > scatrastatevecs;
+          std::map<std::string,Teuchos::RCP<Epetra_MultiVector> > scatrafieldvecs;
 
-          statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("hist",myhist_));
-          statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("accam",myaccam_));
-          statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("scaaf",myscaaf_));
-          statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("scaam",myscaam_));
+          statevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("hist",myhist_));
+          statevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("accam",myaccam_));
+          statevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("scaaf",myscaaf_));
+          statevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("scaam",myscaam_));
 
           if (alefluid_)
           {
-            statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("dispnp", mydispnp_   ));
-            statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("gridv" , mygridvelaf_));
+            statevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("dispnp", mydispnp_   ));
+            statevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("gridv" , mygridvelaf_));
             if (scatradis_!=Teuchos::null)
               dserror("Not supported!");
           }
@@ -975,40 +975,40 @@ namespace FLD
           if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha
             or DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
           {
-            statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("velaf",myvelaf_));
+            statevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("velaf",myvelaf_));
             if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
-              statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("velnp",myvelnp_));
+              statevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("velnp",myvelnp_));
 
             // additional scatra vectors
-            scatrastatevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("phinp",myphiaf_));
-            scatrastatevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("phiam",myphiam_));
-            scatrastatevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("hist",myphidtam_));
+            scatrastatevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("phinp",myphiaf_));
+            scatrastatevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("phiam",myphiam_));
+            scatrastatevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("hist",myphidtam_));
           }
           else
           {
-            statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("velaf",myvelnp_));
-            statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("velaf",myvelnp_));
+            statevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("velaf",myvelnp_));
+            statevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("velaf",myvelnp_));
 
             // additional scatra vectors
-            scatrastatevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("phinp",myphinp_));
-            scatrastatevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("hist",myscatrahist_));
+            scatrastatevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("phinp",myphinp_));
+            scatrastatevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("hist",myscatrahist_));
           }
 
           // further scatra fields
-          scatrafieldvecs.insert(std::pair<std::string,RCP<Epetra_MultiVector> >("convective velocity field",myscatraconvel_));
-          scatrafieldvecs.insert(std::pair<std::string,RCP<Epetra_MultiVector> >("acceleration/pressure field",myscatraaccpre_));
+          scatrafieldvecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",myscatraconvel_));
+          scatrafieldvecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("acceleration/pressure field",myscatraaccpre_));
 
           if (params_->sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC")!= "No"
               or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
           {
-            statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("fsvelaf",myfsvelaf_));
+            statevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("fsvelaf",myfsvelaf_));
             if (myfsvelaf_==Teuchos::null)
               dserror ("Have not got fsvel!");
 
             if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") == INPAR::FLUID::loma and
                 turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
             {
-              statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("fsscaaf",myfsscaaf_));
+              statevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("fsscaaf",myfsscaaf_));
               if (myfsscaaf_==Teuchos::null)
                 dserror ("Have not got fssca!");
             }
@@ -1016,16 +1016,16 @@ namespace FLD
             // additional scatra vectors
             if (withscatra_)
             {
-              scatrastatevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("fsphinp",myfsphi_));
+              scatrastatevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("fsphinp",myfsphi_));
               if (myfsphi_==Teuchos::null)
                 dserror ("Have not got fsphi!");
-              scatrafieldvecs.insert(std::pair<std::string,RCP<Epetra_MultiVector> >("fine-scale velocity field",myscatrafsvel_));
+              scatrafieldvecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("fine-scale velocity field",myscatrafsvel_));
             }
           }
           if (turbmodel_ == INPAR::FLUID::scale_similarity_basic)
           {
-            statetenss.insert(std::pair<std::string,RCP<Epetra_MultiVector> >("filtered vel",myfilteredvel_));
-            statetenss.insert(std::pair<std::string,RCP<Epetra_MultiVector> >("filtered reystr",myfilteredreystr_));
+            statetenss.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("filtered vel",myfilteredvel_));
+            statetenss.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("filtered reystr",myfilteredreystr_));
           }
 
           statistics_channel_->EvaluateResiduals(statevecs,statetenss,

@@ -40,7 +40,7 @@ namespace DRT
     \brief Standard Constructor
 
     */
-    explicit TransparentDofSet(RCP<DRT::Discretization> sourcedis,bool parallel=false);
+    explicit TransparentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis,bool parallel=false);
 
     /*!
     \brief Destructor
@@ -112,7 +112,7 @@ namespace DRT
 
   protected:
 
-    RCP<DRT::Discretization> sourcedis_; ///< source discretization
+    Teuchos::RCP<DRT::Discretization> sourcedis_; ///< source discretization
 
     bool parallel_; ///< call ParallelTransferDegreesOfFreedom instead of TransferDegreesOfFreedom
 

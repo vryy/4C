@@ -35,7 +35,7 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretization>  actdis,
+AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Discretization>  actdis,
                                                            LINALG::Solver  &         solver,
                                                            Teuchos::ParameterList&   params,
                                                            IO::DiscretizationWriter& output)
@@ -242,8 +242,8 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
 
   eleparams.set("action","get_initial_state");
 
-  RCP <Epetra_Vector> radii_in = LINALG::CreateVector(*dofrowmap,true);
-  RCP <Epetra_Vector> radii_out = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP <Epetra_Vector> radii_in = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP <Epetra_Vector> radii_out = LINALG::CreateVector(*dofrowmap,true);
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,radii_in,radii_out,Teuchos::null);
 
   for(int i=0;i<radii_->MyLength();i++)
@@ -505,7 +505,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(RCP<Teuchos::ParameterList> CouplingTo3DParams)
+void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // -------------------------------------------------------------------
   //                       output to screen
@@ -1163,7 +1163,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
 
     discret_->SetState("junctionVolumeInMix",junctionVolumeInMix_);
     const Epetra_Map* dofrowmap  = discret_->DofRowMap();
-    RCP <Epetra_Vector> dummy    = LINALG::CreateVector(*dofrowmap,true);
+    Teuchos::RCP <Epetra_Vector> dummy    = LINALG::CreateVector(*dofrowmap,true);
     discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,scatraO2np_,dummy,Teuchos::null);
     discret_->ClearState();
 
@@ -1221,11 +1221,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
   // define an empty capillary flowrate vector
   const Epetra_Map* dofrowmap      = discret_->DofRowMap();
   // Diffusion surface (from the acinar side)
-  RCP <Epetra_Vector> nodal_surfaces = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP <Epetra_Vector> nodal_surfaces = LINALG::CreateVector(*dofrowmap,true);
   // Fluid volume
-  RCP <Epetra_Vector> nodal_volumes  = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP <Epetra_Vector> nodal_volumes  = LINALG::CreateVector(*dofrowmap,true);
   // Average concentration in Acini and in Capillar
-  RCP <Epetra_Vector> nodal_avg_conc = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP <Epetra_Vector> nodal_avg_conc = LINALG::CreateVector(*dofrowmap,true);
 
   {
     // get the diffusion surfaces at the acini
@@ -1457,7 +1457,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
         eleparams.set("action","eval_PO2_from_concentration");
 
         const Epetra_Map* dofrowmap      = discret_->DofRowMap();
-        RCP <Epetra_Vector> po2 = LINALG::CreateVector(*dofrowmap,true);
+        Teuchos::RCP <Epetra_Vector> po2 = LINALG::CreateVector(*dofrowmap,true);
         discret_->ClearState();
 
         eleparams.set("PO2" ,po2 );
@@ -1476,7 +1476,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
         eleparams.set("action","eval_PO2_from_concentration");
 
         const Epetra_Map* dofrowmap      = discret_->DofRowMap();
-        RCP <Epetra_Vector> po2 = LINALG::CreateVector(*dofrowmap,true);
+        Teuchos::RCP <Epetra_Vector> po2 = LINALG::CreateVector(*dofrowmap,true);
         discret_->ClearState();
 
         eleparams.set("PO2" ,po2 );

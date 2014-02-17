@@ -24,7 +24,7 @@
 namespace MueLu {
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  ContactASlaveDofFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::ContactASlaveDofFilterFactory(RCP<const FactoryBase> AFact)
+  ContactASlaveDofFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::ContactASlaveDofFilterFactory(Teuchos::RCP<const FactoryBase> AFact)
     : AFact_(AFact)
   {
 
@@ -51,13 +51,13 @@ namespace MueLu {
     // extract slave dof map from Level class
     // the slave dof map contains all global DOF ids that shall be handled as Dirichlet boundaries
     // i.e. zero out the corresponding lines in matrix A and put a 1.0 on the diagonal
-    RCP<const MapClass> slavedofmap = currentLevel.Get<RCP<const MapClass> >("SlaveDofMap", MueLu::NoFactory::get());
+    Teuchos::RCP<const MapClass> slavedofmap = currentLevel.Get<Teuchos::RCP<const MapClass> >("SlaveDofMap", MueLu::NoFactory::get());
 
     // extract the original matrix A
-    RCP<OOperator> Ain = currentLevel.Get< RCP<OOperator> >("A", AFact_.get());
+    Teuchos::RCP<OOperator> Ain = currentLevel.Get< Teuchos::RCP<OOperator> >("A", AFact_.get());
 
     // create new empty Operator
-    RCP<CrsOOperator> Aout = Teuchos::rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME
+    Teuchos::RCP<CrsOOperator> Aout = Teuchos::rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME
 
     // loop over local rows
     for(size_t row=0; row<Ain->getNodeNumRows(); row++) {

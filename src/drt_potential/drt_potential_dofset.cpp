@@ -17,7 +17,7 @@ Maintainer: Ursula Mayer
 
 
 /// constructor
-POTENTIAL::PotentialDofSet::PotentialDofSet (RCP<DRT::Discretization> sourcedis) :
+POTENTIAL::PotentialDofSet::PotentialDofSet (Teuchos::RCP<DRT::Discretization> sourcedis) :
 DRT::DofSet(),
 sourcedis_(sourcedis)
 {

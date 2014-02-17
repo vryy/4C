@@ -107,14 +107,14 @@ void GEO::SearchTree::initializePointTree(
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::initializeTreeSlideALE(
     const LINALG::Matrix<3,2>&          nodeBox,
-    std::map<int, RCP<DRT::Element> >&  elements,
+    std::map<int, Teuchos::RCP<DRT::Element> >&  elements,
     const TreeType                      treetype)
 {
 
   treeRoot_ = Teuchos::null;
   treeRoot_ = Teuchos::rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype));
 
-  std::map<int, RCP<DRT::Element> >::const_iterator elemiter;
+  std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
     treeRoot_->insertElement(-1,elemiter->first);
@@ -782,7 +782,7 @@ void GEO::SearchTree::TreeNode::createChildren(
  | of masterelements (Ids)						                                  |
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::createChildren(
-    std::map<int, RCP<DRT::Element> >&		masterelements,
+    std::map<int, Teuchos::RCP<DRT::Element> >&		masterelements,
     	const std::map<int,LINALG::Matrix<3,1> >&	currentpositions)
 {
   // create empty children
@@ -1652,7 +1652,7 @@ std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
  | classifiy element in tree node			                     u.may   07/08|
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::SearchTree::TreeNode::classifyElement(
-    const RCP<DRT::Element>                     element,
+    const Teuchos::RCP<DRT::Element>                     element,
     const std::map<int,LINALG::Matrix<3,1> >&   currentpositions
 ) const
 {

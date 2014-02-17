@@ -4356,7 +4356,7 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs_Master(Epetra_FEVector& ina
     }
   }
 
-  RCP<Epetra_Export> exp = Teuchos::rcp(new Epetra_Export(*allredi,*inactivedofs));
+  Teuchos::RCP<Epetra_Export> exp = Teuchos::rcp(new Epetra_Export(*allredi,*inactivedofs));
   inactiverhs.Export(*rhs,*exp,Add);
 
 
@@ -4547,7 +4547,7 @@ void CONTACT::WearInterface::AssembleWearCondRhs_Master(Epetra_FEVector& RHS)
     }
   }
 
-  RCP<Epetra_Export> exp = Teuchos::rcp(new Epetra_Export(*slmastern,*slipmn_));
+  Teuchos::RCP<Epetra_Export> exp = Teuchos::rcp(new Epetra_Export(*slmastern,*slipmn_));
   RHS.Export(*rhs,*exp,Add);
 
   return;

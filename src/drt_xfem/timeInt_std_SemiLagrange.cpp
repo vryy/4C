@@ -23,10 +23,10 @@ Maintainer: Martin Winklmaier
 XFEM::SemiLagrange::SemiLagrange(
     XFEM::TIMEINT& timeInt,
     INPAR::COMBUST::XFEMTimeIntegration& timeIntType,
-    const RCP<Epetra_Vector> veln,
+    const Teuchos::RCP<Epetra_Vector> veln,
     const double& dt,
     const double& theta,
-    const RCP<COMBUST::FlameFront> flamefront,
+    const Teuchos::RCP<COMBUST::FlameFront> flamefront,
     const double& veljump,
     bool initialize
 ) :
@@ -43,8 +43,8 @@ veljump_(veljump)
  * Semi-Lagrangian Back-Tracking main algorithm                                  winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::SemiLagrange::compute(
-    std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-    std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   const int nsd = 3; // 3 dimensions for a 3d fluid element
@@ -419,7 +419,7 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
   case INPAR::COMBUST::xfemtimeint_mixedSLExtrapol:
   case INPAR::COMBUST::xfemtimeint_mixedSLExtrapolNew:
   {
-    RCP<XFEM::TIMEINT> timeIntData = Teuchos::rcp(new XFEM::TIMEINT(
+    Teuchos::RCP<XFEM::TIMEINT> timeIntData = Teuchos::rcp(new XFEM::TIMEINT(
         discret_,
         olddofman_,
         newdofman_,
@@ -431,7 +431,7 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
         newNodalDofRowDistrib_,
         pbcmap_));
 
-    RCP<XFEM::STD> extrapol = Teuchos::null;
+    Teuchos::RCP<XFEM::STD> extrapol = Teuchos::null;
 
     if (timeIntType_==INPAR::COMBUST::xfemtimeint_mixedSLExtrapol)
     {
@@ -843,7 +843,7 @@ void XFEM::SemiLagrange::backTracking(
  * rewrite data for new computation                                              winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::SemiLagrange::newIteration_prepare(
-    std::vector<RCP<Epetra_Vector> > newRowVectors
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectors
 )
 {
   for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
@@ -865,7 +865,7 @@ void XFEM::SemiLagrange::newIteration_prepare(
  * compute Gradients at side-changing nodes                                      winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::SemiLagrange::newIteration_nodalData(
-    std::vector<RCP<Epetra_Vector> > newRowVectors
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectors
 )
 {
   const int nsd = 3;
@@ -875,11 +875,11 @@ void XFEM::SemiLagrange::newIteration_nodalData(
   std::map<XFEM::DofKey,XFEM::DofGID> newNodalDofColDistrib;
   newdofman_->fillNodalDofColDistributionMap(newNodalDofColDistrib);
 
-  std::vector<RCP<Epetra_Vector> > newColVectors;
+  std::vector<Teuchos::RCP<Epetra_Vector> > newColVectors;
 
   for (size_t index=0;index<newRowVectors.size();index++)
   {
-    RCP<Epetra_Vector> tmpColVector = Teuchos::rcp(new Epetra_Vector(newdofcolmap,true));
+    Teuchos::RCP<Epetra_Vector> tmpColVector = Teuchos::rcp(new Epetra_Vector(newdofcolmap,true));
     newColVectors.push_back(tmpColVector);
     LINALG::Export(*newRowVectors[index],*newColVectors[index]);
   }
@@ -1080,7 +1080,7 @@ void XFEM::SemiLagrange::reinitializeData()
  *------------------------------------------------------------------------------------------------*/
 template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
 void XFEM::SemiLagrange::computeNodalGradient(
-    std::vector<RCP<Epetra_Vector> >& newColVectors,
+    std::vector<Teuchos::RCP<Epetra_Vector> >& newColVectors,
     const Epetra_Map& newdofcolmap,
     std::map<XFEM::DofKey,XFEM::DofGID>& newNodalDofColDistrib,
     const DRT::Element* ele,

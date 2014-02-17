@@ -65,18 +65,18 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_apply_box_filter(
   double densnp(0.0);
 
   // get material
-  RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<MAT::Material> material = ele->Material();
   if (material->MaterialType() == INPAR::MAT::m_scatra)
   {
     //access fluid discretization
-    RCP<DRT::Discretization> fluiddis = Teuchos::null;
+    Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
     fluiddis = DRT::Problem::Instance()->GetDis("fluid");
     //get corresponding fluid element (it has the same global ID as the scatra element)
     DRT::Element* fluidele = fluiddis->gElement(ele->Id());
     if (fluidele == NULL)
       dserror("Fluid element %i not on local processor", ele->Id());
     // get fluid material
-    RCP<MAT::Material> fluidmat = fluidele->Material();
+    Teuchos::RCP<MAT::Material> fluidmat = fluidele->Material();
     if(fluidmat->MaterialType() != INPAR::MAT::m_fluid)
       dserror("Invalid fluid material for passive scalar transport in turbulent flow!");
 
@@ -199,13 +199,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_apply_box_filter(
  *----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_calc_smag_const_LkMk_and_MkMk(
-        RCP<Epetra_MultiVector>&  col_filtered_vel,
-        RCP<Epetra_MultiVector>&  col_filtered_dens_vel,
-        RCP<Epetra_MultiVector>&  col_filtered_dens_vel_temp,
-        RCP<Epetra_MultiVector>&  col_filtered_dens_rateofstrain_temp,
-        RCP<Epetra_Vector>&       col_filtered_temp,
-        RCP<Epetra_Vector>&       col_filtered_dens,
-        RCP<Epetra_Vector>&       col_filtered_dens_temp,
+        Teuchos::RCP<Epetra_MultiVector>&  col_filtered_vel,
+        Teuchos::RCP<Epetra_MultiVector>&  col_filtered_dens_vel,
+        Teuchos::RCP<Epetra_MultiVector>&  col_filtered_dens_vel_temp,
+        Teuchos::RCP<Epetra_MultiVector>&  col_filtered_dens_rateofstrain_temp,
+        Teuchos::RCP<Epetra_Vector>&       col_filtered_temp,
+        Teuchos::RCP<Epetra_Vector>&       col_filtered_dens,
+        Teuchos::RCP<Epetra_Vector>&       col_filtered_dens_temp,
         double&                   LkMk,
         double&                   MkMk,
         double&                   xcenter,
@@ -354,10 +354,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_calc_smag_const_LkMk_and_MkMk
  *----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_calc_vreman_dt(
-  RCP<Epetra_MultiVector>& col_filtered_phi,
-  RCP<Epetra_Vector>& col_filtered_phi2              ,
-  RCP<Epetra_Vector>&   col_filtered_phiexpression         ,
-  RCP<Epetra_MultiVector>& col_filtered_alphaijsc,
+  Teuchos::RCP<Epetra_MultiVector>& col_filtered_phi,
+  Teuchos::RCP<Epetra_Vector>& col_filtered_phi2              ,
+  Teuchos::RCP<Epetra_Vector>&   col_filtered_phiexpression         ,
+  Teuchos::RCP<Epetra_MultiVector>& col_filtered_alphaijsc,
   double& dt_numerator,
   double& dt_denominator,
   const DRT::Element*       ele
@@ -470,8 +470,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetMeanPrtOfHomogenousDirection(
 
   if (turbmodelparams.get<std::string>("HOMDIR","not_specified") !=  "not_specified")
   {
-    RCP<std::vector<double> > averaged_LkMk = turbmodelparams.get<RCP<std::vector<double> > >("averaged_LkMk_");
-    RCP<std::vector<double> > averaged_MkMk = turbmodelparams.get<RCP<std::vector<double> > >("averaged_MkMk_");
+    Teuchos::RCP<std::vector<double> > averaged_LkMk = turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("averaged_LkMk_");
+    Teuchos::RCP<std::vector<double> > averaged_MkMk = turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("averaged_MkMk_");
 
     // get homogeneous direction
     std::string homdir = turbmodelparams.get<std::string>("HOMDIR","not_specified");
@@ -498,7 +498,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetMeanPrtOfHomogenousDirection(
     }
     else if (homdir == "xy" or homdir == "xz" or homdir == "yz")
     {
-      RCP<std::vector<double> > planecoords = turbmodelparams.get<RCP<std::vector<double> > >("planecoords_");
+      Teuchos::RCP<std::vector<double> > planecoords = turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("planecoords_");
       // get center
       double center = 0.0;
       if (homdir == "xy")
@@ -525,8 +525,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetMeanPrtOfHomogenousDirection(
     }
     else if (homdir == "x" or homdir == "y" or homdir == "z")
     {
-      RCP<std::vector<double> > dir1coords = turbmodelparams.get<RCP<std::vector<double> > >("dir1coords_");
-      RCP<std::vector<double> > dir2coords = turbmodelparams.get<RCP<std::vector<double> > >("dir2coords_");
+      Teuchos::RCP<std::vector<double> > dir1coords = turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("dir1coords_");
+      Teuchos::RCP<std::vector<double> > dir2coords = turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("dir2coords_");
       // get center
       double dim1_center = 0.0;
       double dim2_center = 0.0;
@@ -1346,18 +1346,18 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::StoreModelParametersForOutput(
           if (tpn_>1.0E-16)
           {
             // get dynamically estimated Smagorinsky constant from fluid element, i.e., (Cs*h)^2
-            double Cs_delta_sq = (*(turbulencelist.get<RCP<std::vector<double> > >("global_Cs_delta_sq_sum")))[nlayer];
+            double Cs_delta_sq = (*(turbulencelist.get<Teuchos::RCP<std::vector<double> > >("global_Cs_delta_sq_sum")))[nlayer];
             // since Cs_delta_sq contains the sum over all elements of this layer,
             // we have to divide by the number of elements of this layer
             int numele_layer = turbulencelist.get<int>("numele_layer");
-            (*(turbulencelist.get<RCP<std::vector<double> > >("local_Prt_sum")))[nlayer]+=(Cs_delta_sq/numele_layer)/tpn_;
+            (*(turbulencelist.get<Teuchos::RCP<std::vector<double> > >("local_Prt_sum")))[nlayer]+=(Cs_delta_sq/numele_layer)/tpn_;
 
           }
           else
-            (*(turbulencelist.get<RCP<std::vector<double> > >("local_Prt_sum")))         [nlayer]+=0.0;
+            (*(turbulencelist.get<Teuchos::RCP<std::vector<double> > >("local_Prt_sum")))         [nlayer]+=0.0;
 
           // set (Cs*h)^2/Prt and diffeff for output
-          (*(turbulencelist.get<RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum")))[nlayer]+=tpn_;
+          (*(turbulencelist.get<Teuchos::RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum")))[nlayer]+=tpn_;
           if (numscal_>1) dserror("One scalar assumed for dynamic Smagorinsky model!");
 
           // calculation of effective diffusion coefficient
@@ -1378,7 +1378,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::StoreModelParametersForOutput(
 
           CalcSubgrDiff(diffmanager_,visc,vol,0,densnp);
 
-          (*(turbulencelist.get<RCP<std::vector<double> > >("local_diffeff_sum")))    [nlayer]+=diffmanager_->GetIsotropicDiff(0);
+          (*(turbulencelist.get<Teuchos::RCP<std::vector<double> > >("local_diffeff_sum")))    [nlayer]+=diffmanager_->GetIsotropicDiff(0);
         }
       }
     }
@@ -1427,7 +1427,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
   {
     Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
     // remark: for dynamic estimation, this returns (Cs*h)^2 / Pr_t
-    Teuchos::RCP<Epetra_Vector> ele_prt = turbulencelist.get<RCP<Epetra_Vector> >("col_ele_Prt");
+    Teuchos::RCP<Epetra_Vector> ele_prt = turbulencelist.get<Teuchos::RCP<Epetra_Vector> >("col_ele_Prt");
     const int id = ele->LID();
     tpn_ = (*ele_prt)[id];
 
@@ -1442,7 +1442,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
   // ---------------------------------------------------------------------
 
   // get velocity at nodes
-  const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field");
+  const Teuchos::RCP<Epetra_MultiVector> convelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field");
   // set econvelnp_ equal to evelnp_ since ale is not supported
   DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
   DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,convelocity,nsd_);
@@ -1450,7 +1450,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
   // get data required for subgrid-scale velocity: acceleration and pressure
   if (scatrapara_->RBSubGrVel())
   {
-    const RCP<Epetra_MultiVector> accpre = params.get< RCP<Epetra_MultiVector> >("acceleration/pressure field");
+    const Teuchos::RCP<Epetra_MultiVector> accpre = params.get< Teuchos::RCP<Epetra_MultiVector> >("acceleration/pressure field");
     LINALG::Matrix<nsd_+1,nen_> eaccprenp;
     DRT::UTILS::ExtractMyNodeBasedValues(ele,eaccprenp,accpre,nsd_+1);
 

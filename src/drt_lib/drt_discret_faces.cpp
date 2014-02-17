@@ -36,7 +36,7 @@ Maintainer: Benedikt Schott, Martin Kronbichler
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    schott 03/12|
  *----------------------------------------------------------------------*/
-DRT::DiscretizationFaces::DiscretizationFaces(const std::string name, RCP<Epetra_Comm> comm)
+DRT::DiscretizationFaces::DiscretizationFaces(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
   :
   Discretization(name, comm), // use base class constructor
   extension_filled_(false),
@@ -346,7 +346,7 @@ void DRT::DiscretizationFaces::BuildFaces(Teuchos::RCP<std::map<int,std::vector<
   //    -> the owner of this node will be the owner for the face
   //       (this criterion is working in the same way on all procs holding this face)
 
-  std::map< std::vector<int>, RCP<DRT::Element> >  faces;
+  std::map< std::vector<int>, Teuchos::RCP<DRT::Element> >  faces;
 
   std::map<std::vector<int>, InternalFacesData >::iterator face_it;
   for (face_it=surfmapdata.begin(); face_it != surfmapdata.end(); ++face_it)
@@ -989,8 +989,8 @@ void DRT::DiscretizationFaces::BuildFaces(Teuchos::RCP<std::map<int,std::vector<
       );
       dsassert(surf != Teuchos::null, "Creating a face element failed. Check overloading of CreateFaceElement");
 
-      // create a clone (the internally created element does not exist anymore when all RCP's finished)
-      RCP<DRT::Element> surf_clone = Teuchos::rcp( surf->Clone() );
+      // create a clone (the internally created element does not exist anymore when all Teuchos::RCP's finished)
+      Teuchos::RCP<DRT::Element> surf_clone = Teuchos::rcp( surf->Clone() );
 
       // Set owning process of surface to node with smallest gid
       // REMARK: see below
@@ -1035,7 +1035,7 @@ void DRT::DiscretizationFaces::BuildFaceRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
-  std::map<int,RCP<DRT::Element> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
   for (curr=faces_.begin(); curr != faces_.end(); ++curr)
     if (curr->second->Owner()==myrank)
       nummyeles++;
@@ -1063,7 +1063,7 @@ void DRT::DiscretizationFaces::BuildFaceColMap()
   int nummyeles = (int)faces_.size();
   std::vector<int> eleids(nummyeles);
   facecolptr_.resize(nummyeles);
-  std::map<int,RCP<DRT::Element> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
   int count=0;
   for (curr=faces_.begin(); curr != faces_.end(); ++curr)
   {
@@ -1132,7 +1132,7 @@ int DRT::DiscretizationFaces::NumMyColFaces() const
  *----------------------------------------------------------------------*/
 bool DRT::DiscretizationFaces::HaveGlobalFace(int gid) const
 {
-  std::map<int,RCP<DRT::Element> >:: const_iterator curr = faces_.find(gid);
+  std::map<int,Teuchos::RCP<DRT::Element> >:: const_iterator curr = faces_.find(gid);
   if (curr == faces_.end()) return false;
   else                      return true;
 }
@@ -1142,7 +1142,7 @@ bool DRT::DiscretizationFaces::HaveGlobalFace(int gid) const
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::DiscretizationFaces::gFace(int gid) const
 {
-  std::map<int,RCP<DRT::Element> >:: const_iterator curr = faces_.find(gid);
+  std::map<int,Teuchos::RCP<DRT::Element> >:: const_iterator curr = faces_.find(gid);
 #ifdef DEBUG
   if (curr == faces_.end())
     dserror("Face with gobal id gid=%d not stored on this proc", gid);
@@ -1178,7 +1178,7 @@ void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
   else
   {
     int nummyfaces   = 0;
-    std::map<int,RCP<DRT::Element> >::const_iterator ecurr;
+    std::map<int,Teuchos::RCP<DRT::Element> >::const_iterator ecurr;
     for (ecurr=faces_.begin(); ecurr != faces_.end(); ++ecurr)
       if (ecurr->second->Owner() == Comm().MyPID()) nummyfaces++;
 
@@ -1206,7 +1206,7 @@ void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
     {
       if ((int)faces_.size())
         os << "-------------------------- Proc " << proc << " :\n";
-      std::map<int,RCP<DRT::Element> >:: const_iterator curr;
+      std::map<int,Teuchos::RCP<DRT::Element> >:: const_iterator curr;
       for (curr = faces_.begin(); curr != faces_.end(); ++curr)
       {
         os << *(curr->second);

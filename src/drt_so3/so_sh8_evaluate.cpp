@@ -96,7 +96,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
         std::vector<double> mydispmat(lm.size());
         if (structale_)
         {
-          RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+          Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
 
@@ -109,8 +109,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff: {
       // need current displacement and residual forces
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -125,7 +125,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
         std::vector<double> mydispmat(lm.size());
         if (structale_)
         {
-          RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+          Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
 
@@ -138,8 +138,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
     // internal force vector only
     case calc_struct_internalforce: {
       // need current displacement and residual forces
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -156,7 +156,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
         std::vector<double> mydispmat(lm.size());
         if (structale_)
         {
-          RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+          Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
 
@@ -175,8 +175,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
     case calc_struct_nlnstiffmass:
     case calc_struct_nlnstifflmass: {
       // need current displacement and residual forces
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -191,7 +191,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
         std::vector<double> mydispmat(lm.size());
         if (structale_)
         {
-          RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+          Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
 
@@ -209,11 +209,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
       {
-        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        RCP<std::vector<char> > stressdata = params.get<RCP<std::vector<char> > >("stress",Teuchos::null);
-        RCP<std::vector<char> > straindata = params.get<RCP<std::vector<char> > >("strain",Teuchos::null);
-        RCP<std::vector<char> > plstraindata = params.get<RCP<std::vector<char> > >("plstrain",Teuchos::null);
+        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+        Teuchos::RCP<std::vector<char> > stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress",Teuchos::null);
+        Teuchos::RCP<std::vector<char> > straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos::null);
+        Teuchos::RCP<std::vector<char> > plstraindata = params.get<Teuchos::RCP<std::vector<char> > >("plstrain",Teuchos::null);
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==Teuchos::null) dserror("Cannot get stress 'data'");
         if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");
@@ -238,7 +238,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
           std::vector<double> mydispmat(lm.size());
           if (structale_)
           {
-            RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+            Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
             DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
           }
 
@@ -276,8 +276,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
-      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+      const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
       if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
       std::string stresstype = params.get<std::string>("stresstype","ndxyz");
@@ -380,7 +380,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
     // read restart of microscale
     case multi_readrestart:
     {
-      RCP<MAT::Material> mat = Material();
+      Teuchos::RCP<MAT::Material> mat = Material();
 
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
         soh8_read_restart_multi();
@@ -412,12 +412,12 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
     // compute additional stresses due to intermolecular potential forces
     case calc_potential_stiff:
     {
-      RCP<POTENTIAL::PotentialManager> potentialmanager =
-        params.get<RCP<POTENTIAL::PotentialManager> >("pot_man",Teuchos::null);
+      Teuchos::RCP<POTENTIAL::PotentialManager> potentialmanager =
+        params.get<Teuchos::RCP<POTENTIAL::PotentialManager> >("pot_man",Teuchos::null);
       if (potentialmanager==Teuchos::null)
         dserror("No PotentialManager in Solid SH8 available");
 
-      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
+      Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition",Teuchos::null);
       if (cond==Teuchos::null)
         dserror("Condition not available in Solid SH8 available");
 
@@ -1448,7 +1448,7 @@ void DRT::ELEMENTS::So_sh8::CalcSTCMatrix
 #if 0
     else if(stc_scaling==INPAR::STR::stc_para or stc_scaling==INPAR::STR::stc_parasym)
     {
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -1513,7 +1513,7 @@ void DRT::ELEMENTS::So_sh8::CalcSTCMatrix
 
       LINALG::Matrix<NUMDOF_SOH8,1> adjele(true);
       DRT::Node** nodes = Nodes();
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);

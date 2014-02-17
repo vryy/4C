@@ -325,7 +325,7 @@ void FLD::TimIntGenAlpha::OutputofFilteredVel(
      Teuchos::RCP<Epetra_Vector> fsoutvec)
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  RCP<Epetra_Vector> row_finescaleveltmp;
+  Teuchos::RCP<Epetra_Vector> row_finescaleveltmp;
   row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
 
   // get fine scale velocity
@@ -428,23 +428,23 @@ void FLD::TimIntGenAlpha::ApplyScaleSeparationForLES()
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
       const Epetra_Map* dofcolmap = discret_->DofColMap();
 
-      RCP<Epetra_Vector> row_filteredveltmp;
+      Teuchos::RCP<Epetra_Vector> row_filteredveltmp;
       row_filteredveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
-      RCP<Epetra_Vector> col_filteredveltmp;
+      Teuchos::RCP<Epetra_Vector> col_filteredveltmp;
       col_filteredveltmp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
 
-      RCP<Epetra_Vector> row_finescaleveltmp;
+      Teuchos::RCP<Epetra_Vector> row_finescaleveltmp;
       row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
-      RCP<Epetra_Vector> col_finescaleveltmp;
+      Teuchos::RCP<Epetra_Vector> col_finescaleveltmp;
       col_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
 
-      RCP<Epetra_MultiVector> row_filteredreystretmp;
+      Teuchos::RCP<Epetra_MultiVector> row_filteredreystretmp;
       row_filteredreystretmp = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
-      RCP<Epetra_MultiVector> col_filteredreystretmp;
+      Teuchos::RCP<Epetra_MultiVector> col_filteredreystretmp;
       col_filteredreystretmp = Teuchos::rcp(new Epetra_MultiVector(*dofcolmap,3,true));
-      RCP<Epetra_MultiVector> row_reystretmp;
+      Teuchos::RCP<Epetra_MultiVector> row_reystretmp;
       row_reystretmp = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
-      RCP<Epetra_MultiVector> row_finescalereystretmp;
+      Teuchos::RCP<Epetra_MultiVector> row_finescalereystretmp;
       row_finescalereystretmp = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
 
 

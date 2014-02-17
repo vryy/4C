@@ -356,11 +356,11 @@ void WEAR::Partitioned::UpdateDispnp()
 {
   // mesh displacement from solution of ALE field in structural dofs
   // first perform transformation from ale to structure dofs
-  RCP<Epetra_Vector> disale   = AleToStructure(AleField().Dispnp());
-  RCP<Epetra_Vector> disalen  = AleToStructure(AleField().Dispn());
+  Teuchos::RCP<Epetra_Vector> disale   = AleToStructure(AleField().Dispnp());
+  Teuchos::RCP<Epetra_Vector> disalen  = AleToStructure(AleField().Dispn());
 
   // get structure dispnp vector
-  RCP<Epetra_Vector> dispnp = StructureField()->WriteAccessDispnp();  // change to ExtractDispn() for overlap
+  Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->WriteAccessDispnp();  // change to ExtractDispn() for overlap
 
   int aletype = DRT::INPUT::IntegralValue<int>(ParamsAle(),"ALE_TYPE");
 
@@ -429,7 +429,7 @@ void WEAR::Partitioned::MergeWear(Teuchos::RCP<Epetra_Vector>& disinterface_s ,
 {
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
-  std::vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+  std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
   Teuchos::RCP<CONTACT::WearInterface> winterface = Teuchos::rcp_dynamic_cast<CONTACT::WearInterface>(interface[0]);
   if (winterface==Teuchos::null) dserror("Casting to WearInterface returned null!");
 
@@ -464,7 +464,7 @@ void WEAR::Partitioned::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterface_
 
 
   // get vector of contact interfaces TODO: wear interfaces!!!!
-  std::vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+  std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
 
   //***********************************************************************
   // we compute the real non-weighted wear vector here
@@ -555,11 +555,11 @@ void WEAR::Partitioned::ApplyMeshDisplacement(bool iterated)
 
   // mesh displacement from solution of ALE field in structural dofs
   // first perform transformation from ale to structure dofs
-  RCP<Epetra_Vector> disale   = AleToStructure(AleField().Dispnp());
-  RCP<Epetra_Vector> disalen  = AleToStructure(AleField().Dispn());
+  Teuchos::RCP<Epetra_Vector> disale   = AleToStructure(AleField().Dispnp());
+  Teuchos::RCP<Epetra_Vector> disalen  = AleToStructure(AleField().Dispn());
 
   // vector of current spatial displacements
-  RCP<const Epetra_Vector> dispnp = StructureField()->Dispnp();  // change to ExtractDispn() for overlap
+  Teuchos::RCP<const Epetra_Vector> dispnp = StructureField()->Dispnp();  // change to ExtractDispn() for overlap
 
   int aletype = DRT::INPUT::IntegralValue<int>(ParamsAle(),"ALE_TYPE");
 
@@ -575,7 +575,7 @@ void WEAR::Partitioned::ApplyMeshDisplacement(bool iterated)
   }
 
   // material displacements
-  RCP<Epetra_Vector> dismat = Teuchos::rcp(new Epetra_Vector(dispnp->Map()),true);
+  Teuchos::RCP<Epetra_Vector> dismat = Teuchos::rcp(new Epetra_Vector(dispnp->Map()),true);
 
   // set state
   (StructureField()->Discretization())->SetState(0,"displacement",dispnp);
@@ -679,8 +679,8 @@ void WEAR::Partitioned::AdvectionMap(double* XMat,
     actele->LocationVector(*(StructureField()->Discretization()),la,false);
 
     // get state
-    RCP<const Epetra_Vector> disp = (StructureField()->Discretization())->GetState("displacement");
-    RCP<const Epetra_Vector> dispmat = (StructureField()->Discretization())->GetState("material_displacement");
+    Teuchos::RCP<const Epetra_Vector> disp = (StructureField()->Discretization())->GetState("displacement");
+    Teuchos::RCP<const Epetra_Vector> dispmat = (StructureField()->Discretization())->GetState("material_displacement");
 
     if (ndim == 2)
     {
@@ -767,8 +767,8 @@ void WEAR::Partitioned::AdvectionMap(double* XMat,
   actele->LocationVector(*(StructureField()->Discretization()),la,false);
 
   // get state
-  RCP<const Epetra_Vector> disp = (StructureField()->Discretization())->GetState("displacement");
-  RCP<const Epetra_Vector> dispmat = (StructureField()->Discretization())->GetState("material_displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = (StructureField()->Discretization())->GetState("displacement");
+  Teuchos::RCP<const Epetra_Vector> dispmat = (StructureField()->Discretization())->GetState("material_displacement");
 
   if (ndim == 2)
   {
@@ -819,7 +819,7 @@ void WEAR::Partitioned::AleStep(Teuchos::RCP<Epetra_Vector> idisale_global)
     // system of equation
     AleField().BuildSystemMatrix();
 
-    RCP<Epetra_Vector> dispnpstru = StructureToAle(StructureField()->Dispnp());
+    Teuchos::RCP<Epetra_Vector> dispnpstru = StructureToAle(StructureField()->Dispnp());
     AleField().WriteAccessDispnp()->Update(1.0,*(dispnpstru),0.0);
 
     // application of interface displacements as dirichlet conditions

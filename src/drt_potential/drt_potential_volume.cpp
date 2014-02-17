@@ -121,7 +121,7 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
    int num_local_ele = 0;
    for(std::vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++ condIter)
    {
-     std::map<int,RCP<DRT::Element> >& geom = (*condIter)->Geometry();
+     std::map<int,Teuchos::RCP<DRT::Element> >& geom = (*condIter)->Geometry();
      num_local_ele += (int) geom.size();
    }
 
@@ -134,12 +134,12 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
   //----------------------------------------------------------------------
    for(std::vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++ condIter)
    {
-     std::map<int,RCP<DRT::Element> >& geom = (*condIter)->Geometry();
+     std::map<int,Teuchos::RCP<DRT::Element> >& geom = (*condIter)->Geometry();
      // if (geom.empty()) dserror("evaluation of condition with empty geometry");
      // no check for empty geometry here since in parallel computations
      // can exist processors which do not own a portion of the elements belonging
      // to the condition geometry
-     std::map<int,RCP<DRT::Element> >::iterator curr;
+     std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
 
      // Evaluate Loadcurve if defined. Put current load factor in parameterlist
      const std::vector<int>*    curve  = (*condIter)->Get<std::vector<int> >("curve");
@@ -151,7 +151,7 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
 
      params.set("LoadCurveFactor",curvefac);
 
-     params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(*condIter,false));
+     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(*condIter,false));
 
      // define element matrices and vectors
      Epetra_SerialDenseMatrix elematrix1;
@@ -238,7 +238,7 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
     Epetra_SerialDenseVector&       F_int)
 {
   // initialize Lennard Jones potential constant variables
-  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
+  Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition",Teuchos::null);
 
   // initialize time variables
   double curvefac = GetTimeCurveFactor(params);
@@ -268,7 +268,7 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
     Epetra_SerialDenseVector&       F_int)
 {
   // initialize potential condition variables
-  RCP<DRT::Condition> cond      = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
+  Teuchos::RCP<DRT::Condition> cond      = params.get<Teuchos::RCP<DRT::Condition> >("condition",Teuchos::null);
 
   // initialize time variables
   double curvefac = GetTimeCurveFactor(params);
@@ -473,7 +473,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
     if(label_recv != -1)
       searchTree_->queryPotentialElements(elemXAABBList_, eleXAABB_LG, potEleGids, label_recv);
 
-    std::vector<RCP<PotentialElementContainer> > vpec;
+    std::vector<Teuchos::RCP<PotentialElementContainer> > vpec;
 
     // loop over labelIter->first
     for(std::map<int, std::set<int> >::const_iterator labelIter = potEleGids.begin(); labelIter != potEleGids.end(); labelIter++)
@@ -486,7 +486,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
         element->LocationVector(*discretRCP_,lm,lmowner,lmstride);
         const double beta = GetAtomicDensity(element->Id(), "Potential", labelByElement_);
 
-        RCP<PotentialElementContainer> pec = Teuchos::rcp( new PotentialElementContainer(
+        Teuchos::RCP<PotentialElementContainer> pec = Teuchos::rcp( new PotentialElementContainer(
             element->Id(),
             element->Shape(),
             labelIter->first,
@@ -501,15 +501,15 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
       }
 
     DRT::PackBuffer data;
-    for ( std::vector<RCP<PotentialElementContainer> >::iterator i=vpec.begin(); i!=vpec.end(); ++i )
+    for ( std::vector<Teuchos::RCP<PotentialElementContainer> >::iterator i=vpec.begin(); i!=vpec.end(); ++i )
     {
-      RCP<PotentialElementContainer> pec = *i;
+      Teuchos::RCP<PotentialElementContainer> pec = *i;
       pec->Pack( data );
     }
     data.StartPacking();
-    for ( std::vector<RCP<PotentialElementContainer> >::iterator i=vpec.begin(); i!=vpec.end(); ++i )
+    for ( std::vector<Teuchos::RCP<PotentialElementContainer> >::iterator i=vpec.begin(); i!=vpec.end(); ++i )
     {
-      RCP<PotentialElementContainer> pec = *i;
+      Teuchos::RCP<PotentialElementContainer> pec = *i;
       pec->Pack( data );
     }
     swap( data_send, data() );
@@ -547,7 +547,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
   std::vector<char>::size_type position = 0;
   for(int i_ele = 0; i_ele < numEle_send; ++i_ele)
   {
-    RCP<PotentialElementContainer> pec = Teuchos::rcp( new PotentialElementContainer());
+    Teuchos::RCP<PotentialElementContainer> pec = Teuchos::rcp( new PotentialElementContainer());
     pec->Unpack(data_send, position);
     // std::map<int, std::set<PotentialElementContainer>  set because some of the
     // elements are sends a few times since loop over col elements
@@ -585,7 +585,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
    std::vector<int>&                                      lm,
    Epetra_SerialDenseMatrix&                              K_stiff,
    Epetra_SerialDenseVector&                              F_int,
-   RCP<DRT::Condition>                            cond,
+   Teuchos::RCP<DRT::Condition>                            cond,
    const double                                           curvefac)
 {
 
@@ -769,7 +769,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
     std::vector<int>&                                           lm,
     Epetra_SerialDenseMatrix&                                   K_stiff,
     Epetra_SerialDenseVector&                                   F_int,
-    RCP<DRT::Condition>                                 cond,
+    Teuchos::RCP<DRT::Condition>                                 cond,
     const double                                                curvefac)
 {
   // determine global row indices (lmrow) and global colum indices (lm)
@@ -1180,9 +1180,9 @@ void POTENTIAL::VolumePotential::GetGaussRule2D(
 *--------------------------------------------------------------------*/
 void POTENTIAL::VolumePotential::TestEvaluatePotential(
   Teuchos::ParameterList&                      p,
-  RCP<Epetra_Vector>          disp,
-  RCP<Epetra_Vector>          fint,
-  RCP<LINALG::SparseMatrix>   stiff,
+  Teuchos::RCP<Epetra_Vector>          disp,
+  Teuchos::RCP<Epetra_Vector>          fint,
+  Teuchos::RCP<LINALG::SparseMatrix>   stiff,
   const double                        time,
   const int                           step)
 {
@@ -1194,7 +1194,7 @@ void POTENTIAL::VolumePotential::TestEvaluatePotential(
 
   EvaluateVolumePotentialCondition(p,stiff,Teuchos::null,fint,Teuchos::null,Teuchos::null,"Potential");
 
-  RCP<const Epetra_Vector>        disp_col = discret_.GetState("displacement");
+  Teuchos::RCP<const Epetra_Vector>        disp_col = discret_.GetState("displacement");
   // compute test results
   std::map<int, std::set<int> > empty_set;
 

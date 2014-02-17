@@ -236,7 +236,7 @@ void FLD::TimIntStationary::OutputofFilteredVel(
      Teuchos::RCP<Epetra_Vector> fsoutvec)
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  RCP<Epetra_Vector> row_finescaleveltmp;
+  Teuchos::RCP<Epetra_Vector> row_finescaleveltmp;
   row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
 
   // get fine scale velocity

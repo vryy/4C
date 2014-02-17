@@ -98,9 +98,9 @@ public:
   </pre>
 
   */
-  TurbulenceStatisticsCha(RCP<DRT::Discretization> actdis             ,
+  TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discretization> actdis             ,
                           bool                             alefluid           ,
-                          RCP<Epetra_Vector>       dispnp             ,
+                          Teuchos::RCP<Epetra_Vector>       dispnp             ,
                           Teuchos::ParameterList&                   params             ,
                           bool                             subgrid_dissipation);
 
@@ -118,10 +118,10 @@ public:
   to caculate mean values of multifractal subgrid-scales modeling
   parameters
   */
-  void StoreScatraDiscretAndParams(RCP<DRT::Discretization> scatradis,
-                                   RCP<Teuchos::ParameterList> scatraparams,
-                                   RCP<Teuchos::ParameterList> scatraextraparams,
-                                   RCP<Teuchos::ParameterList> scatratimeparams);
+  void StoreScatraDiscretAndParams(Teuchos::RCP<DRT::Discretization> scatradis,
+                                   Teuchos::RCP<Teuchos::ParameterList> scatraparams,
+                                   Teuchos::RCP<Teuchos::ParameterList> scatraextraparams,
+                                   Teuchos::RCP<Teuchos::ParameterList> scatratimeparams);
 
 
   /*!
@@ -222,7 +222,7 @@ public:
            similarity model
   */
 
-  void AddSubfilterStresses(const RCP<const Epetra_Vector>   stress12);
+  void AddSubfilterStresses(const Teuchos::RCP<const Epetra_Vector>   stress12);
 
   /*!
     \brief Add parameters of multifractal
@@ -239,14 +239,14 @@ public:
 
   */
 
-  void EvaluateResiduals(std::map<std::string,RCP<Epetra_Vector> >      statevecs,
-                         std::map<std::string,RCP<Epetra_MultiVector> > statetenss,
+  void EvaluateResiduals(std::map<std::string,Teuchos::RCP<Epetra_Vector> >      statevecs,
+                         std::map<std::string,Teuchos::RCP<Epetra_MultiVector> > statetenss,
                          const double                                   thermpressaf,
                          const double                                   thermpressam,
                          const double                                   thermpressdtaf,
                          const double                                   thermpressdtam,
-                         std::map<std::string,RCP<Epetra_Vector> >      scatrastatevecs,
-                         std::map<std::string,RCP<Epetra_MultiVector> > scatrafieldvecs);
+                         std::map<std::string,Teuchos::RCP<Epetra_Vector> >      scatrastatevecs,
+                         std::map<std::string,Teuchos::RCP<Epetra_MultiVector> > scatrafieldvecs);
 
   //@}
 
@@ -356,16 +356,16 @@ private:
   INPAR::FLUID::PhysicalType       physicaltype_;
 
   //! The discretization (required for nodes, dofs etc;)
-  RCP<DRT::Discretization> discret_;
+  Teuchos::RCP<DRT::Discretization> discret_;
 
   //! scatra discretization (required for additional multifractal subgrid-scale output in case on passive scalar transport)
-  RCP<DRT::Discretization> scatradiscret_;
+  Teuchos::RCP<DRT::Discretization> scatradiscret_;
 
   //! flag for ale discretization
   bool                             alefluid_;
 
   //! node displacements due to mesh motion
-  RCP<Epetra_Vector>       dispnp_;
+  Teuchos::RCP<Epetra_Vector>       dispnp_;
 
   //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
@@ -409,28 +409,28 @@ private:
   Teuchos::ParameterList                    scatraeleparams_;
 
   //! pointer to mean vel/pres and scalar field
-  RCP<Epetra_Vector>       meanvelnp_;
-  RCP<Epetra_Vector>       meanscanp_;
+  Teuchos::RCP<Epetra_Vector>       meanvelnp_;
+  Teuchos::RCP<Epetra_Vector>       meanscanp_;
 
    //! pointer to vel/pres^2 field (space allocated in constructor)
-  RCP<Epetra_Vector>       squaredvelnp_;
+  Teuchos::RCP<Epetra_Vector>       squaredvelnp_;
 
   //! toogle vectors --- sums are computed by scalarproducts
   //  with these toggle vectors
-  RCP<Epetra_Vector>       toggleu_;
-  RCP<Epetra_Vector>       togglev_;
-  RCP<Epetra_Vector>       togglew_;
-  RCP<Epetra_Vector>       togglep_;
+  Teuchos::RCP<Epetra_Vector>       toggleu_;
+  Teuchos::RCP<Epetra_Vector>       togglev_;
+  Teuchos::RCP<Epetra_Vector>       togglew_;
+  Teuchos::RCP<Epetra_Vector>       togglep_;
 
   //! the dim_-coordinates of the homogeneous planes containing nodes
-  RCP<std::vector<double> >     nodeplanes_;
+  Teuchos::RCP<std::vector<double> >     nodeplanes_;
 
   //! the dim_-coordinates of the homogeneous planes --- including
   //additional sampling planes
-  RCP<std::vector<double> >     planecoordinates_;
+  Teuchos::RCP<std::vector<double> >     planecoordinates_;
 
   //! a bounding box for the channel
-  RCP<Epetra_SerialDenseMatrix> boundingbox_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix> boundingbox_;
 
   //! viscosity to calculate l_tau, y+ etc.
   double dens_;
@@ -445,76 +445,76 @@ private:
   //!--------------------------------------------------
   //
   //! sum over u (over one plane in each component)
-  RCP<std::vector<double> >     sumu_;
+  Teuchos::RCP<std::vector<double> >     sumu_;
   //! sum over v (over one plane in each component)
-  RCP<std::vector<double> >     sumv_;
+  Teuchos::RCP<std::vector<double> >     sumv_;
   //! sum over w (over one plane in each component)
-  RCP<std::vector<double> >     sumw_;
+  Teuchos::RCP<std::vector<double> >     sumw_;
   //! sum over p (over one plane in each component)
-  RCP<std::vector<double> >     sump_;
+  Teuchos::RCP<std::vector<double> >     sump_;
   //! sum over density (over one plane in each component)
-  RCP<std::vector<double> >     sumrho_;
+  Teuchos::RCP<std::vector<double> >     sumrho_;
   //! sum over T (over one plane in each component)
-  RCP<std::vector<double> >     sumT_;
+  Teuchos::RCP<std::vector<double> >     sumT_;
   //! sum over density*u (over one plane in each component)
-  RCP<std::vector<double> >     sumrhou_;
+  Teuchos::RCP<std::vector<double> >     sumrhou_;
   //! sum over density*u*T (over one plane in each component)
-  RCP<std::vector<double> >     sumrhouT_;
+  Teuchos::RCP<std::vector<double> >     sumrhouT_;
 
   //! sum over u^2 (over one plane in each component)
-  RCP<std::vector<double> >     sumsqu_;
+  Teuchos::RCP<std::vector<double> >     sumsqu_;
   //! sum over v^2 (over one plane in each component)
-  RCP<std::vector<double> >     sumsqv_;
+  Teuchos::RCP<std::vector<double> >     sumsqv_;
   //! sum over w^2 (over one plane in each component)
-  RCP<std::vector<double> >     sumsqw_;
+  Teuchos::RCP<std::vector<double> >     sumsqw_;
   //! sum over p^2 (over one plane in each component)
-  RCP<std::vector<double> >     sumsqp_;
+  Teuchos::RCP<std::vector<double> >     sumsqp_;
   //! sum over density^2 (over one plane in each component)
-  RCP<std::vector<double> >     sumsqrho_;
+  Teuchos::RCP<std::vector<double> >     sumsqrho_;
   //! sum over T^2 (over one plane in each component)
-  RCP<std::vector<double> >     sumsqT_;
+  Teuchos::RCP<std::vector<double> >     sumsqT_;
 
   //! sum over uv (over one plane in each component)
-  RCP<std::vector<double> >     sumuv_;
+  Teuchos::RCP<std::vector<double> >     sumuv_;
   //! sum over uw (over one plane in each component)
-  RCP<std::vector<double> >     sumuw_;
+  Teuchos::RCP<std::vector<double> >     sumuw_;
   //! sum over vw (over one plane in each component)
-  RCP<std::vector<double> >     sumvw_;
+  Teuchos::RCP<std::vector<double> >     sumvw_;
   //! sum over uv (over one plane in each component)
-  RCP<std::vector<double> >     sumuT_;
+  Teuchos::RCP<std::vector<double> >     sumuT_;
   //! sum over uw (over one plane in each component)
-  RCP<std::vector<double> >     sumvT_;
+  Teuchos::RCP<std::vector<double> >     sumvT_;
   //! sum over vw (over one plane in each component)
-  RCP<std::vector<double> >     sumwT_;
+  Teuchos::RCP<std::vector<double> >     sumwT_;
 
   //!--------------------------------------------------
   //!       the pointwise averaged stuff
   //!--------------------------------------------------
   //
   //! vector of squared velocities and pressures
-  RCP<Epetra_Vector>       pointsquaredvelnp_;
+  Teuchos::RCP<Epetra_Vector>       pointsquaredvelnp_;
 
   //! sum over u (over one plane in each component)
-  RCP<std::vector<double> >     pointsumu_;
+  Teuchos::RCP<std::vector<double> >     pointsumu_;
   //! sum over v (over one plane in each component)
-  RCP<std::vector<double> >     pointsumv_;
+  Teuchos::RCP<std::vector<double> >     pointsumv_;
   //! sum over w (over one plane in each component)
-  RCP<std::vector<double> >     pointsumw_;
+  Teuchos::RCP<std::vector<double> >     pointsumw_;
   //! sum over p (over one plane in each component)
-  RCP<std::vector<double> >     pointsump_;
+  Teuchos::RCP<std::vector<double> >     pointsump_;
   //! sum over T (over one plane in each component)
-  RCP<std::vector<double> >     pointsumT_;
+  Teuchos::RCP<std::vector<double> >     pointsumT_;
 
   //! sum over u^2 (over one plane in each component)
-  RCP<std::vector<double> >     pointsumsqu_;
+  Teuchos::RCP<std::vector<double> >     pointsumsqu_;
   //! sum over v^2 (over one plane in each component)
-  RCP<std::vector<double> >     pointsumsqv_;
+  Teuchos::RCP<std::vector<double> >     pointsumsqv_;
   //! sum over w^2 (over one plane in each component)
-  RCP<std::vector<double> >     pointsumsqw_;
+  Teuchos::RCP<std::vector<double> >     pointsumsqw_;
   //! sum over p^2 (over one plane in each component)
-  RCP<std::vector<double> >     pointsumsqp_;
+  Teuchos::RCP<std::vector<double> >     pointsumsqp_;
   //! sum over T^2 (over one plane in each component)
-  RCP<std::vector<double> >     pointsumsqT_;
+  Teuchos::RCP<std::vector<double> >     pointsumsqT_;
 
   //!--------------------------------------------------
   //!   averaged forces (mean, bottom and top)
@@ -550,193 +550,193 @@ private:
   //!--------------------------------------------------
 
   //! sum over Cs --- used only for dynamic Smagorinsky model
-  RCP<std::vector<double> >     sumCs_;
+  Teuchos::RCP<std::vector<double> >     sumCs_;
   //! sum over (Cs*delta)^2 --- used only for dynamic Smagorinsky model
-  RCP<std::vector<double> >     sumCs_delta_sq_;
+  Teuchos::RCP<std::vector<double> >     sumCs_delta_sq_;
   //! sum over effective viscosity --- used only for dynamic Smagorinsky model
-  RCP<std::vector<double> >     sumvisceff_;
+  Teuchos::RCP<std::vector<double> >     sumvisceff_;
   //! increment of sumCs over in one timestep
-  RCP<std::vector<double> >     incrsumCs_;
+  Teuchos::RCP<std::vector<double> >     incrsumCs_;
   //! increment of sumCs_delta_sq over in one timestep
-  RCP<std::vector<double> >     incrsumCs_delta_sq_;
+  Teuchos::RCP<std::vector<double> >     incrsumCs_delta_sq_;
   //! increment of sumvisceff over in one timestep
-  RCP<std::vector<double> >     incrsumvisceff_;
+  Teuchos::RCP<std::vector<double> >     incrsumvisceff_;
   //! sum over Prt --- used only for dynamic Smagorinsky model
-  RCP<std::vector<double> >     sumPrt_;
+  Teuchos::RCP<std::vector<double> >     sumPrt_;
   //! sum over (Cs*delta)^2/Prt --- used only for dynamic Smagorinsky model
-  RCP<std::vector<double> >     sumCs_delta_sq_Prt_;
+  Teuchos::RCP<std::vector<double> >     sumCs_delta_sq_Prt_;
   //! sum over effective diffusivity --- used only for dynamic Smagorinsky model
-  RCP<std::vector<double> >     sumdiffeff_;
+  Teuchos::RCP<std::vector<double> >     sumdiffeff_;
   //! increment of sumCs_delta_sq_Prt over in one timestep
-  RCP<std::vector<double> >     incrsumCs_delta_sq_Prt_;
+  Teuchos::RCP<std::vector<double> >     incrsumCs_delta_sq_Prt_;
   //! increment of sumPrt over in one timestep
-  RCP<std::vector<double> >     incrsumPrt_;
+  Teuchos::RCP<std::vector<double> >     incrsumPrt_;
   //! increment of sumdiffeff over in one timestep
-  RCP<std::vector<double> >     incrsumdiffeff_;
+  Teuchos::RCP<std::vector<double> >     incrsumdiffeff_;
   //! sum over Ci --- used only for dynamic Smagorinsky model for loma
-  RCP<std::vector<double> >     sumCi_;
+  Teuchos::RCP<std::vector<double> >     sumCi_;
   //! sum over (Ci*delta)^2 --- used only for dynamic Smagorinsky model for loma
-  RCP<std::vector<double> >     sumCi_delta_sq_;
+  Teuchos::RCP<std::vector<double> >     sumCi_delta_sq_;
   //! increment of sumCi over in one timestep
-  RCP<std::vector<double> >     incrsumCi_;
+  Teuchos::RCP<std::vector<double> >     incrsumCi_;
   //! increment of sumCi_delta_sq over in one timestep
-  RCP<std::vector<double> >     incrsumCi_delta_sq_;
+  Teuchos::RCP<std::vector<double> >     incrsumCi_delta_sq_;
 
   //!--------------------------------------------------
   //!  averaged quantities from scale similarity model
   //!--------------------------------------------------
 
   //! sum over subfilter stress 12 --- used only for scale similarity model
-  RCP<std::vector<double> >     sumstress12_;
+  Teuchos::RCP<std::vector<double> >     sumstress12_;
   //! increment of sumstress12 over in one time step
-  RCP<std::vector<double> >     incrsumstress12_;
+  Teuchos::RCP<std::vector<double> >     incrsumstress12_;
 
   //!--------------------------------------------------
   //!  averaged quantities from multifractal subgid-scales
   //!--------------------------------------------------
 
   //! sum over parameter N --- used only for multifractal subgid-scale model
-  RCP<std::vector<double> >     sumN_stream_;
-  RCP<std::vector<double> >     sumN_normal_;
-  RCP<std::vector<double> >     sumN_span_;
+  Teuchos::RCP<std::vector<double> >     sumN_stream_;
+  Teuchos::RCP<std::vector<double> >     sumN_normal_;
+  Teuchos::RCP<std::vector<double> >     sumN_span_;
   //! increment of parameter N over in one time step
-  RCP<std::vector<double> >     incrsumN_stream_;
-  RCP<std::vector<double> >     incrsumN_normal_;
-  RCP<std::vector<double> >     incrsumN_span_;
+  Teuchos::RCP<std::vector<double> >     incrsumN_stream_;
+  Teuchos::RCP<std::vector<double> >     incrsumN_normal_;
+  Teuchos::RCP<std::vector<double> >     incrsumN_span_;
   //! sum over parameter B --- used only for multifractal subgid-scale model
-  RCP<std::vector<double> >     sumB_stream_;
-  RCP<std::vector<double> >     sumB_normal_;
-  RCP<std::vector<double> >     sumB_span_;
+  Teuchos::RCP<std::vector<double> >     sumB_stream_;
+  Teuchos::RCP<std::vector<double> >     sumB_normal_;
+  Teuchos::RCP<std::vector<double> >     sumB_span_;
   //! increment of parameter B over in one time step
-  RCP<std::vector<double> >     incrsumB_stream_;
-  RCP<std::vector<double> >     incrsumB_normal_;
-  RCP<std::vector<double> >     incrsumB_span_;
+  Teuchos::RCP<std::vector<double> >     incrsumB_stream_;
+  Teuchos::RCP<std::vector<double> >     incrsumB_normal_;
+  Teuchos::RCP<std::vector<double> >     incrsumB_span_;
   //! sum over parameter Csgs --- used only for multifractal subgid-scale model
-  RCP<std::vector<double> >     sumCsgs_;
+  Teuchos::RCP<std::vector<double> >     sumCsgs_;
   //! increment of Csgs over in one time step
-  RCP<std::vector<double> >     incrsumCsgs_;
+  Teuchos::RCP<std::vector<double> >     incrsumCsgs_;
   //! sum over subgrid viscosity --- used only for multifractal subgid-scale model in combination with eddy viscosity model
-  RCP<std::vector<double> >     sumsgvisc_;
+  Teuchos::RCP<std::vector<double> >     sumsgvisc_;
   //! increment of subgrid viscosity over in one time step
-  RCP<std::vector<double> >     incrsumsgvisc_;
+  Teuchos::RCP<std::vector<double> >     incrsumsgvisc_;
   //! sum over parameter Nphi --- used only for multifractal subgid-scale model
-  RCP<std::vector<double> >     sumNphi_;
+  Teuchos::RCP<std::vector<double> >     sumNphi_;
   //! increment of parameter Nphi over in one time step
-  RCP<std::vector<double> >     incrsumNphi_;
+  Teuchos::RCP<std::vector<double> >     incrsumNphi_;
   //! sum over parameter Dphi --- used only for multifractal subgid-scale model
-  RCP<std::vector<double> >     sumDphi_;
+  Teuchos::RCP<std::vector<double> >     sumDphi_;
   //! increment of parameter Dphi over in one time step
-  RCP<std::vector<double> >     incrsumDphi_;
+  Teuchos::RCP<std::vector<double> >     incrsumDphi_;
   //! sum over parameter Csgs_phi --- used only for multifractal subgid-scale model
-  RCP<std::vector<double> >     sumCsgs_phi_;
+  Teuchos::RCP<std::vector<double> >     sumCsgs_phi_;
   //! increment of Csgs_phi over in one time step
-  RCP<std::vector<double> >     incrsumCsgs_phi_;
+  Teuchos::RCP<std::vector<double> >     incrsumCsgs_phi_;
 
   //!--------------------------------------------------
   //!  averaged resudiuals and subscale quantities
   //!--------------------------------------------------
 
   //! sum over all in plane element sizes
-  RCP<std::vector<double> >     sumhk_;
+  Teuchos::RCP<std::vector<double> >     sumhk_;
   //! sum over all in plane element sizes for the Bazilevs
   //! parameter in the viscous regime
-  RCP<std::vector<double> >     sumhbazilevs_;
+  Teuchos::RCP<std::vector<double> >     sumhbazilevs_;
   //! sum over all in plane stream lengths
-  RCP<std::vector<double> >     sumstrle_;
+  Teuchos::RCP<std::vector<double> >     sumstrle_;
   //! sum over all in plane stream lengths
-  RCP<std::vector<double> >     sumgradle_;
+  Teuchos::RCP<std::vector<double> >     sumgradle_;
 
   //! sum over all in plane residuals
-  RCP<std::vector<double> >     sumtauM_;
+  Teuchos::RCP<std::vector<double> >     sumtauM_;
   //! sum over all in plane squared residuals
-  RCP<std::vector<double> >     sumtauC_;
+  Teuchos::RCP<std::vector<double> >     sumtauC_;
 
   //! sum over all in plane residuals
-  RCP<std::vector<double> >     sumres_;
+  Teuchos::RCP<std::vector<double> >     sumres_;
   //! sum over all in plane squared residuals
-  RCP<std::vector<double> >     sumres_sq_;
+  Teuchos::RCP<std::vector<double> >     sumres_sq_;
   //! sum over all in plane residuals norms
-  RCP<std::vector<double> >     sumabsres_;
+  Teuchos::RCP<std::vector<double> >     sumabsres_;
   //! sum over all in plane values of svel/tau
-  RCP<std::vector<double> >     sumtauinvsvel_;
+  Teuchos::RCP<std::vector<double> >     sumtauinvsvel_;
   //! sum over all in plane subscale velocities
-  RCP<std::vector<double> >     sumsvelaf_;
+  Teuchos::RCP<std::vector<double> >     sumsvelaf_;
   //! sum over all in plane squared subscale velocities
-  RCP<std::vector<double> >     sumsvelaf_sq_;
+  Teuchos::RCP<std::vector<double> >     sumsvelaf_sq_;
   //! sum over all in plane subscale velocities norms
-  RCP<std::vector<double> >     sumabssvelaf_;
+  Teuchos::RCP<std::vector<double> >     sumabssvelaf_;
 
   //! sum over all in plane residuals of the continuity equation
-  RCP<std::vector<double> >     sumresC_;
+  Teuchos::RCP<std::vector<double> >     sumresC_;
   //! sum over all in plane squared residuals of the continuity equation
-  RCP<std::vector<double> >     sumresC_sq_;
+  Teuchos::RCP<std::vector<double> >     sumresC_sq_;
   //! sum over all in plane subscale pressure values at current timestep
-  RCP<std::vector<double> >     sumspressnp_   ;
+  Teuchos::RCP<std::vector<double> >     sumspressnp_   ;
   //! sum over all in plane squared subscale pressure values at current timestep
-  RCP<std::vector<double> >     sumspressnp_sq_;
+  Teuchos::RCP<std::vector<double> >     sumspressnp_sq_;
 
   //! sum over all in plane averaged dissipation rates from pspg stabilisation
-  RCP<std::vector<double> >     sum_eps_pspg_;
+  Teuchos::RCP<std::vector<double> >     sum_eps_pspg_;
   //! sum over all in plane averaged dissipation rates from supg stabilisation
-  RCP<std::vector<double> >     sum_eps_supg_;
+  Teuchos::RCP<std::vector<double> >     sum_eps_supg_;
   //! sum over all in plane averaged dissipation rates from cross term
-  RCP<std::vector<double> >     sum_eps_cross_;
+  Teuchos::RCP<std::vector<double> >     sum_eps_cross_;
   //! sum over all in plane averaged dissipation rates from reynolds term
-  RCP<std::vector<double> >     sum_eps_rey_;
+  Teuchos::RCP<std::vector<double> >     sum_eps_rey_;
   //! sum over all in plane averaged dissipation rates from least squares continuity term
-  RCP<std::vector<double> >     sum_eps_graddiv_;
+  Teuchos::RCP<std::vector<double> >     sum_eps_graddiv_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (Smagorinsky)
-  RCP<std::vector<double> >     sum_eps_eddyvisc_;
+  Teuchos::RCP<std::vector<double> >     sum_eps_eddyvisc_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)
-  RCP<std::vector<double> >     sum_eps_avm3_;
+  Teuchos::RCP<std::vector<double> >     sum_eps_avm3_;
   //! sum over all in plane averaged dissipation rates from scale similarity model
-  RCP<std::vector<double> >     sum_eps_mfs_;
+  Teuchos::RCP<std::vector<double> >     sum_eps_mfs_;
   //! sum over all in plane averaged dissipation rates from scale similarity model (forwardscatter)
-  RCP<std::vector<double> >     sum_eps_mfscross_;
+  Teuchos::RCP<std::vector<double> >     sum_eps_mfscross_;
   //! sum over all in plane averaged dissipation rates from scale similarity model (backscatter)
-  RCP<std::vector<double> >     sum_eps_mfsrey_;
+  Teuchos::RCP<std::vector<double> >     sum_eps_mfsrey_;
   //! sum over all in plane averaged dissipation rates from Galerkin viscous term
-  RCP<std::vector<double> >     sum_eps_visc_;
+  Teuchos::RCP<std::vector<double> >     sum_eps_visc_;
   //! sum over all in plane averaged dissipation rates from Galerkin convective term
-  RCP<std::vector<double> >     sum_eps_conv_;
+  Teuchos::RCP<std::vector<double> >     sum_eps_conv_;
 
   //! sum over all in plane averaged supg+cross stress
-  RCP<std::vector<double> >     sum_crossstress_;
+  Teuchos::RCP<std::vector<double> >     sum_crossstress_;
   //! sum over all in plane averaged reynolds stress
-  RCP<std::vector<double> >     sum_reystress_;
+  Teuchos::RCP<std::vector<double> >     sum_reystress_;
 
   //!--------------------------------------------------
   //!  averaged resudiuals and subscale quantities of scalar field
   //!--------------------------------------------------
 
   //! sum over all in plane stabilization parameters
-  RCP<std::vector<double> >     sumtauS_;
+  Teuchos::RCP<std::vector<double> >     sumtauS_;
 
   //! sum over all in plane residuals of the convection-diffusion equation
-  RCP<std::vector<double> >     sumresS_;
+  Teuchos::RCP<std::vector<double> >     sumresS_;
   //! sum over all in plane squared residuals of the convection-diffusion equation
-  RCP<std::vector<double> >     sumresS_sq_;
+  Teuchos::RCP<std::vector<double> >     sumresS_sq_;
 
   //! sum over all in plane averaged dissipation rates from supg stabilisation
-  RCP<std::vector<double> >     sum_scatra_eps_supg_;
+  Teuchos::RCP<std::vector<double> >     sum_scatra_eps_supg_;
   //! sum over all in plane averaged dissipation rates from cross term
-  RCP<std::vector<double> >     sum_scatra_eps_cross_;
+  Teuchos::RCP<std::vector<double> >     sum_scatra_eps_cross_;
   //! sum over all in plane averaged dissipation rates from reynolds term
-  RCP<std::vector<double> >     sum_scatra_eps_rey_;
+  Teuchos::RCP<std::vector<double> >     sum_scatra_eps_rey_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (Smagorinsky)
-  RCP<std::vector<double> >     sum_scatra_eps_eddyvisc_;
+  Teuchos::RCP<std::vector<double> >     sum_scatra_eps_eddyvisc_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)
-  RCP<std::vector<double> >     sum_scatra_eps_avm3_;
+  Teuchos::RCP<std::vector<double> >     sum_scatra_eps_avm3_;
   //! sum over all in plane averaged dissipation rates from scale similarity model
-  RCP<std::vector<double> >     sum_scatra_eps_mfs_;
+  Teuchos::RCP<std::vector<double> >     sum_scatra_eps_mfs_;
   //! sum over all in plane averaged dissipation rates from scale similarity model (forwardscatter)
-  RCP<std::vector<double> >     sum_scatra_eps_mfscross_;
+  Teuchos::RCP<std::vector<double> >     sum_scatra_eps_mfscross_;
   //! sum over all in plane averaged dissipation rates from scale similarity model (backscatter)
-  RCP<std::vector<double> >     sum_scatra_eps_mfsrey_;
+  Teuchos::RCP<std::vector<double> >     sum_scatra_eps_mfsrey_;
   //! sum over all in plane averaged dissipation rates from Galerkin viscous term
-  RCP<std::vector<double> >     sum_scatra_eps_visc_;
+  Teuchos::RCP<std::vector<double> >     sum_scatra_eps_visc_;
   //! sum over all in plane averaged dissipation rates from Galerkin convective term
-  RCP<std::vector<double> >     sum_scatra_eps_conv_;
+  Teuchos::RCP<std::vector<double> >     sum_scatra_eps_conv_;
 
 };
 

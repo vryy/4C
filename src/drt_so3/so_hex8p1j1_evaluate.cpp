@@ -82,8 +82,8 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
     case calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -100,8 +100,8 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
     case calc_struct_internalforce:
     {
       // need current displacement and residual forces
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -120,8 +120,8 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
     case calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);

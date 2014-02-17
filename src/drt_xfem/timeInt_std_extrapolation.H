@@ -34,9 +34,9 @@ public:
   explicit ExtrapolationOld(
       XFEM::TIMEINT& timeInt,
       INPAR::COMBUST::XFEMTimeIntegration timeIntType,
-      const RCP<Epetra_Vector> veln,
+      const Teuchos::RCP<Epetra_Vector> veln,
       const double& dt,
-      const RCP<COMBUST::FlameFront> flamefront,
+      const Teuchos::RCP<COMBUST::FlameFront> flamefront,
       const double& veljump,
       bool initialize
   );
@@ -49,12 +49,12 @@ public:
 
   //! call the computation
   void compute(
-      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
   );
 
   //! call the computation
-  void compute(std::vector<RCP<Epetra_Vector> > newRowVectors);
+  void compute(std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectors);
 
   friend class SemiLagrange; // extrapolation can be called by SemiLagrange class
 
@@ -131,9 +131,9 @@ public:
   explicit ExtrapolationNew(
       XFEM::TIMEINT& timeInt,
       INPAR::COMBUST::XFEMTimeIntegration timeIntType,
-      const RCP<Epetra_Vector> veln,
+      const Teuchos::RCP<Epetra_Vector> veln,
       const double& dt,
-      const RCP<COMBUST::FlameFront> flamefront,
+      const Teuchos::RCP<COMBUST::FlameFront> flamefront,
       bool initialize
   );
 
@@ -145,12 +145,12 @@ public:
 
   //! call the computation
   void compute(
-      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
   );
 
   //! call the computation
-  void compute(std::vector<RCP<Epetra_Vector> > newRowVectors);
+  void compute(std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectors);
 
   friend class SemiLagrange; // Extrapol can be called by SemiLagrange class
 

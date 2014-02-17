@@ -57,8 +57,8 @@ public:
   /*!
   \brief Standard Constructor
   */
-  Fluid_couplingWrapperBase( RCP<DRT::Discretization>  dis_3D,
-                         RCP<DRT::Discretization>  dis_redD,
+  Fluid_couplingWrapperBase( Teuchos::RCP<DRT::Discretization>  dis_3D,
+                         Teuchos::RCP<DRT::Discretization>  dis_redD,
 			 IO::DiscretizationWriter& output,
                          double                    dt_3d,
                          double                    dt_rm);
@@ -86,11 +86,11 @@ public:
   /*!
   \brief Wrapper for Fluid_couplingWrapper::UpdateResidual
   */
-  void UpdateResidual(RCP<Epetra_Vector>  residual );
+  void UpdateResidual(Teuchos::RCP<Epetra_Vector>  residual );
 
 
 
-  void EvaluateDirichlet( RCP<Epetra_Vector>  velnp,
+  void EvaluateDirichlet( Teuchos::RCP<Epetra_Vector>  velnp,
                           const Epetra_Map &  condmap,
                           double              time);
 
@@ -118,28 +118,28 @@ private:
   /*!
   \brief all single coupling conditions
   */
-  std::map<const int, RCP<Fluid_couplingBc> > coup_map3D_;
+  std::map<const int, Teuchos::RCP<Fluid_couplingBc> > coup_map3D_;
 
   //! map of coupling variables returned by the reduced-D model at time step n+1
-  RCP<map<std::string, double > >                   mapRed_Dnp_;
+  Teuchos::RCP<map<std::string, double > >                   mapRed_Dnp_;
 
   //! map of coupling variables returned by the reduced-D model at time step n
-  RCP<map<std::string, double > >                   mapRed_Dn_;
+  Teuchos::RCP<map<std::string, double > >                   mapRed_Dn_;
 
   //! map of coupling variables returned by the 3-D model at time step n+1
-  RCP<map<std::string, double > >                   map3_Dnp_;
+  Teuchos::RCP<map<std::string, double > >                   map3_Dnp_;
 
   //! map of coupling variables returned by the 3-D model at time step n
-  RCP<map<std::string, double > >                   map3_Dn_;
+  Teuchos::RCP<map<std::string, double > >                   map3_Dn_;
 
   //! 3D fluid discretization
-  RCP<DRT::Discretization>                     discret3D_;
+  Teuchos::RCP<DRT::Discretization>                     discret3D_;
 
   //! Reduced-D artery network discretization
-  RCP<DRT::Discretization>                     discret_redD_;
+  Teuchos::RCP<DRT::Discretization>                     discret_redD_;
 
   //! Reduced-D artery network time integration
-  //  RCP<ART::ArtNetExplicitTimeInt>              ArtExpTime_integ_;
+  //  Teuchos::RCP<ART::ArtNetExplicitTimeInt>              ArtExpTime_integ_;
 
 
   //! the output writer
@@ -158,9 +158,9 @@ template <class red_D_time_int>
 class Fluid_couplingWrapper : public Fluid_couplingWrapperBase
 {
 public:
-  Fluid_couplingWrapper ( RCP<DRT::Discretization>  dis_3D,
-                          RCP<DRT::Discretization>  dis_redD,
-                          RCP<red_D_time_int>       time_intg,
+  Fluid_couplingWrapper ( Teuchos::RCP<DRT::Discretization>  dis_3D,
+                          Teuchos::RCP<DRT::Discretization>  dis_redD,
+                          Teuchos::RCP<red_D_time_int>       time_intg,
                           IO::DiscretizationWriter& output,
                           double                    dt_3d,
                           double                    dt_rm):
@@ -181,7 +181,7 @@ public:
   ~Fluid_couplingWrapper (){};
 private:
   //! Reduced-D artery network time integration
-  RCP<red_D_time_int>                          reduced_D_time_integ_;
+  Teuchos::RCP<red_D_time_int>                          reduced_D_time_integ_;
 };
 
 //--------------------------------------------------------------------
@@ -202,8 +202,8 @@ public:
   /*!
   \brief Standard Constructor
   */
-  Fluid_couplingBc( RCP<DRT::Discretization>  dis3D,
-                    RCP<DRT::Discretization>  dis_reD,
+  Fluid_couplingBc( Teuchos::RCP<DRT::Discretization>  dis3D,
+                    Teuchos::RCP<DRT::Discretization>  dis_reD,
 		    IO::DiscretizationWriter& output,
                     double dt_3d,
                     double dt_rm,
@@ -269,11 +269,11 @@ protected:
                       double theta,
                       int condid );
 
-  void UpdateResidual ( RCP<Epetra_Vector> residual );
+  void UpdateResidual ( Teuchos::RCP<Epetra_Vector> residual );
 
 
 
-  void EvaluateDirichlet( RCP<Epetra_Vector>  velnp,
+  void EvaluateDirichlet( Teuchos::RCP<Epetra_Vector>  velnp,
                           const Epetra_Map &  condmap,
                           double              time);
 
@@ -295,7 +295,7 @@ private:
 protected:
 
   // coupled neumann BC
-  RCP<Epetra_Vector> couplingbc_;
+  Teuchos::RCP<Epetra_Vector> couplingbc_;
 
 private:
 
@@ -321,10 +321,10 @@ private:
   int                           myrank_;
 
   //! 3D fluid discretization
-  RCP<DRT::Discretization>      discret_3D_;
+  Teuchos::RCP<DRT::Discretization>      discret_3D_;
 
   //! fluid discretization
-  RCP<DRT::Discretization>      discret_redD_;
+  Teuchos::RCP<DRT::Discretization>      discret_redD_;
 
   //! the output writer
   IO::DiscretizationWriter&     output_;

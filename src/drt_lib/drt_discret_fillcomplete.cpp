@@ -75,7 +75,7 @@ void DRT::Discretization::Reset(bool killdofs, bool killcond)
   // as early as possible
   if (killcond)
   {
-    std::multimap<std::string,RCP<DRT::Condition> >::iterator fool;
+    std::multimap<std::string,Teuchos::RCP<DRT::Condition> >::iterator fool;
     for (fool=condition_.begin(); fool != condition_.end(); ++fool)
     {
       fool->second->ClearGeometry();
@@ -155,7 +155,7 @@ void DRT::Discretization::BuildNodeRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummynodes     = 0;
-  std::map<int,RCP<DRT::Node> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::Node> >::iterator curr;
   for (curr=node_.begin(); curr != node_.end(); ++curr)
     if (curr->second->Owner() == myrank)
       ++nummynodes;
@@ -185,7 +185,7 @@ void DRT::Discretization::BuildNodeColMap()
   nodecolptr_.resize(nummynodes);
 
   int count=0;
-  std::map<int,RCP<DRT::Node> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::Node> >::iterator curr;
   for (curr=node_.begin(); curr != node_.end(); ++curr)
   {
     nodeids[count] = curr->second->Id();
@@ -206,7 +206,7 @@ void DRT::Discretization::BuildElementRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
-  std::map<int,RCP<DRT::Element> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
   for (curr=element_.begin(); curr != element_.end(); ++curr)
     if (curr->second->Owner()==myrank)
       nummyeles++;
@@ -233,7 +233,7 @@ void DRT::Discretization::BuildElementColMap()
   int nummyeles = (int)element_.size();
   std::vector<int> eleids(nummyeles);
   elecolptr_.resize(nummyeles);
-  std::map<int,RCP<DRT::Element> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
   int count=0;
   for (curr=element_.begin(); curr != element_.end(); ++curr)
   {
@@ -252,7 +252,7 @@ void DRT::Discretization::BuildElementColMap()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildElementToNodePointers()
 {
-  std::map<int,RCP<DRT::Element> >::iterator elecurr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = elecurr->second->BuildNodalPointers(node_);
@@ -267,7 +267,7 @@ void DRT::Discretization::BuildElementToNodePointers()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildElementToElementPointers()
 {
-  std::map<int,RCP<DRT::Element> >::iterator elecurr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = elecurr->second->BuildElementPointers(element_);
@@ -282,11 +282,11 @@ void DRT::Discretization::BuildElementToElementPointers()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildNodeToElementPointers()
 {
-  std::map<int,RCP<DRT::Node> >::iterator nodecurr;
+  std::map<int,Teuchos::RCP<DRT::Node> >::iterator nodecurr;
   for (nodecurr=node_.begin(); nodecurr != node_.end(); ++nodecurr)
     nodecurr->second->ClearMyElementTopology();
 
-  std::map<int,RCP<DRT::Element> >::iterator elecurr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     const int  nnode = elecurr->second->NumNode();

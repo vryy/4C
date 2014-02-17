@@ -454,7 +454,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
     Teuchos::RCP<std::vector<double> > pnewns = Teuchos::rcp(new std::vector<double>(plength,1.0));
     solver->Params().sublist("ML Parameters").set("null space: vectors",&((*pnewns)[0]));
     solver->Params().sublist("ML Parameters").remove("nullspace",false); // necessary?
-    solver->Params().sublist("Michael's secret vault").set<RCP<std::vector<double> > >("pressure nullspace",pnewns);
+    solver->Params().sublist("Michael's secret vault").set<Teuchos::RCP<std::vector<double> > >("pressure nullspace",pnewns);
   }
 
   solver->Solve(BTB->EpetraOperator(),x,BTvR,true,true);

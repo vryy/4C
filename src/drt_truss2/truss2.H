@@ -153,7 +153,7 @@ public:
 
 
   /*!
-  \brief Get vector of RCPs to the lines of this element
+  \brief Get vector of Teuchos::RCPs to the lines of this element
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 

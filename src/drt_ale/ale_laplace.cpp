@@ -28,7 +28,7 @@ Maintainer: Ulrich Kuettler
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ALE::AleLaplace::AleLaplace(RCP<DRT::Discretization> actdis,
+ALE::AleLaplace::AleLaplace(Teuchos::RCP<DRT::Discretization> actdis,
                               Teuchos::RCP<LINALG::Solver> solver,
                               Teuchos::RCP<Teuchos::ParameterList> params,
                               Teuchos::RCP<IO::DiscretizationWriter> output,

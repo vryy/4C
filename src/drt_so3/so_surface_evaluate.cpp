@@ -162,7 +162,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
       loadlin = false;
 
       // evaluate last converged configuration
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -191,7 +191,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
     {
       if (!loadlin) dserror("No linearization provided for orthopressure load (add 'LOADLIN yes' to input file)");
 
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
       if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -229,7 +229,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
   {
     // --------------------------------------------------
     // get knotvector
-    RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+    Teuchos::RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
     bool zero_size=knots->GetBoundaryEleAndParentKnots(mypknots     ,
                                                        myknots      ,
                                                        normalfac    ,
@@ -901,12 +901,12 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     SpatialConfiguration(xscurr,mydisp);
     double volumeele;
     // first partial derivatives
-    RCP<Epetra_SerialDenseVector> Vdiff1 = Teuchos::rcp(new Epetra_SerialDenseVector);
+    Teuchos::RCP<Epetra_SerialDenseVector> Vdiff1 = Teuchos::rcp(new Epetra_SerialDenseVector);
     // second partial derivatives
-    RCP<Epetra_SerialDenseMatrix> Vdiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+    Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
 
     //get projection method
-    RCP<DRT::Condition> condition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+    Teuchos::RCP<DRT::Condition> condition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
     const std::string* projtype = condition->Get<std::string>("projection");
 
     if (projtype != NULL)
@@ -1052,9 +1052,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     int ndof = 3*numnode;                                     // overall number of surface dofs
     double A;                                                 // interfacial area
     // first partial derivatives
-    RCP<Epetra_SerialDenseVector> Adiff = Teuchos::rcp(new Epetra_SerialDenseVector);
+    Teuchos::RCP<Epetra_SerialDenseVector> Adiff = Teuchos::rcp(new Epetra_SerialDenseVector);
     // second partial derivatives
-    RCP<Epetra_SerialDenseMatrix> Adiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+    Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
 
     ComputeAreaDeriv(x, numnode, ndof, A, Adiff, Adiff2);
 
@@ -1142,7 +1142,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
       SpatialConfiguration(xscurr,mydisp);
 
-      RCP<DRT::Condition> condition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+      Teuchos::RCP<DRT::Condition> condition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
       const std::string* projtype = condition->Get<std::string>("projection");
 
       // To compute monitored area consider required projection method
@@ -1210,9 +1210,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     // initialize variables
     double elearea;
     // first partial derivatives
-    RCP<Epetra_SerialDenseVector> Adiff = Teuchos::rcp(new Epetra_SerialDenseVector);
+    Teuchos::RCP<Epetra_SerialDenseVector> Adiff = Teuchos::rcp(new Epetra_SerialDenseVector);
     // second partial derivatives
-    RCP<Epetra_SerialDenseMatrix> Adiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+    Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
 
     //call submethod
     ComputeAreaDeriv(xscurr, NumNode(),numdim*NumNode(), elearea, Adiff, Adiff2);
@@ -1234,9 +1234,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     // initialize variables
     double elearea;
     // first partial derivatives
-    RCP<Epetra_SerialDenseVector> Adiff = Teuchos::rcp(new Epetra_SerialDenseVector);
+    Teuchos::RCP<Epetra_SerialDenseVector> Adiff = Teuchos::rcp(new Epetra_SerialDenseVector);
     // second partial derivatives
-    RCP<Epetra_SerialDenseMatrix> Adiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+    Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
 
     //call submethod
     ComputeAreaDeriv(xscurr, NumNode(),numdim*NumNode(), elearea, Adiff, Adiff2);
@@ -1423,8 +1423,8 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
   const int numnode,
   const int ndof,
   double& V,
-  RCP<Epetra_SerialDenseVector> Vdiff1,
-  RCP<Epetra_SerialDenseMatrix> Vdiff2,
+  Teuchos::RCP<Epetra_SerialDenseVector> Vdiff1,
+  Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2,
   const int minindex,
   const int maxindex
 )
@@ -1530,8 +1530,8 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
                                                         const int numnode,
                                                         const int ndof,
                                                         double& A,
-                                                        RCP<Epetra_SerialDenseVector> Adiff,
-                                                        RCP<Epetra_SerialDenseMatrix> Adiff2)
+                                                        Teuchos::RCP<Epetra_SerialDenseVector> Adiff,
+                                                        Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2)
 {
   // initialization
   A = 0.;

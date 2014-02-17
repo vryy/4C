@@ -58,7 +58,7 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap, bool killdofs
 
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
-  std::map<int,RCP<DRT::Node> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::Node> >::iterator curr;
   for (curr=node_.begin(); curr!=node_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -94,7 +94,7 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap, bool killd
 {
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
-  std::map<int,RCP<DRT::Node> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::Node> >::iterator curr;
   for (curr=node_.begin(); curr!=node_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -226,7 +226,7 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(Epetra_Map& target,
       DRT::Element* ele = dynamic_cast<DRT::Element*>(object);
       if (!ele) dserror("Received object is not an element");
       ele->SetOwner(myrank);
-      RCP<DRT::Element> rcpele = Teuchos::rcp(ele);
+      Teuchos::RCP<DRT::Element> rcpele = Teuchos::rcp(ele);
       AddElement(rcpele);
       //printf("proc %d index %d\n",myrank,index); fflush(stdout);
     }
@@ -373,7 +373,7 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
       DRT::Node* node = dynamic_cast<DRT::Node*>(object);
       if (!node) dserror("Received object is not a node");
       node->SetOwner(myrank);
-      RCP<DRT::Node> rcpnode = Teuchos::rcp(node);
+      Teuchos::RCP<DRT::Node> rcpnode = Teuchos::rcp(node);
       AddNode(rcpnode);
     }
   }
@@ -407,7 +407,7 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap, bool killd
 {
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
-  std::map<int,RCP<DRT::Element> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
   for (curr=element_.begin(); curr!=element_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -446,7 +446,7 @@ void DRT::Discretization::ExportColumnElements(const Epetra_Map& newmap, bool ki
 {
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
-  std::map<int,RCP<DRT::Element> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
   for (curr=element_.begin(); curr!=element_.end();)
   {
     if (curr->second->Owner() != myrank)
@@ -484,7 +484,7 @@ void DRT::Discretization::ExportColumnElements(const Epetra_Map& newmap, bool ki
 /*----------------------------------------------------------------------*
  |  build nodal graph from discretization (public)           mwgee 11/06|
  *----------------------------------------------------------------------*/
-RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
+Teuchos::RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
 {
   if (!Filled()) dserror("FillComplete() was not called on this discretization");
 
@@ -492,7 +492,7 @@ RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
   const Epetra_Map* noderowmap = NodeRowMap();
 
   // allocate graph
-  RCP<Epetra_CrsGraph> graph =
+  Teuchos::RCP<Epetra_CrsGraph> graph =
                      Teuchos::rcp( new Epetra_CrsGraph(Copy,*noderowmap,108,false));
 
   // iterate all elements on this proc including ghosted ones
@@ -500,7 +500,7 @@ RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
   // if a proc stores the appropiate ghosted elements, the resulting
   // graph will be the correct and complete graph of the distributed
   // discretization even if nodes are not ghosted.
-  std::map<int,RCP<DRT::Element> >::const_iterator curr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::const_iterator curr;
   for (curr=element_.begin(); curr!=element_.end(); ++curr)
   {
     const int  nnode   = curr->second->NumNode();
@@ -531,8 +531,8 @@ RCP<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
 void DRT::Discretization::BuildElementRowColumn(
                                     const Epetra_Map& noderowmap,
                                     const Epetra_Map& nodecolmap,
-                                    RCP<Epetra_Map>& elerowmap,
-                                    RCP<Epetra_Map>& elecolmap
+                                    Teuchos::RCP<Epetra_Map>& elerowmap,
+                                    Teuchos::RCP<Epetra_Map>& elecolmap
                                     ) const
 {
   const int myrank = Comm().MyPID();
@@ -557,7 +557,7 @@ void DRT::Discretization::BuildElementRowColumn(
   int stoposize = 2000;
   int count     = 0;
   std::vector<int> stopo(stoposize);
-  std::map<int,RCP<DRT::Element> >::const_iterator ecurr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::const_iterator ecurr;
   for (ecurr=element_.begin(); ecurr!=element_.end(); ++ecurr)
   {
     const DRT::Element& actele = *(ecurr->second);
@@ -702,8 +702,8 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
                                        bool killcond)
 {
   // build the overlapping and non-overlapping element maps
-  RCP<Epetra_Map> elerowmap;
-  RCP<Epetra_Map> elecolmap;
+  Teuchos::RCP<Epetra_Map> elerowmap;
+  Teuchos::RCP<Epetra_Map> elecolmap;
   BuildElementRowColumn(noderowmap,nodecolmap,elerowmap,elecolmap);
 
   // export nodes and elements to the new maps
@@ -790,7 +790,7 @@ void DRT::Discretization::SetupGhostingWrongNameDoNotUse(
 
   // build the graph ourselves
   std::map<int,std::set<int> > localgraph;
-  for (std::map<int,RCP<DRT::Element> >::iterator i=element_.begin();
+  for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator i=element_.begin();
        i!=element_.end();
        ++i)
   {
@@ -816,7 +816,7 @@ void DRT::Discretization::SetupGhostingWrongNameDoNotUse(
   gids.reserve(localgraph.size());
   entriesperrow.reserve(localgraph.size());
 
-  for (std::map<int,RCP<DRT::Node> >::iterator i=node_.begin();
+  for (std::map<int,Teuchos::RCP<DRT::Node> >::iterator i=node_.begin();
        i!=node_.end();
        ++i)
   {
@@ -868,12 +868,12 @@ void DRT::Discretization::SetupGhostingWrongNameDoNotUse(
   // do stupid conversion from Epetra_BlockMap to Epetra_Map
   const Epetra_BlockMap& brow = gr->RowMap();
   const Epetra_BlockMap& bcol = gr->ColMap();
-  RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(brow.NumGlobalElements(),
+  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(brow.NumGlobalElements(),
                                                   brow.NumMyElements(),
                                                   brow.MyGlobalElements(),
                                                   0,
                                                   *comm_));
-  RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(bcol.NumGlobalElements(),
+  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(bcol.NumGlobalElements(),
                                                   bcol.NumMyElements(),
                                                   bcol.MyGlobalElements(),
                                                   0,

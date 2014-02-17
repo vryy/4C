@@ -307,7 +307,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
   microstatic->StaticHomogenization(stress, cmat, defgrd, mod_newton_, build_stiff_);
 
   // note that it is not necessary to save displacements and EAS data
-  // explicitly since we dealt with RCP's -> any update in class
+  // explicitly since we dealt with Teuchos::RCP's -> any update in class
   // microstatic and the elements, respectively, inherently updates the
   // micromaterialgp_static data!
 

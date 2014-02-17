@@ -100,14 +100,14 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       #endif
 
       // get element displacements
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
 
       // get residual displacements
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (res==Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
@@ -115,7 +115,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
       //TODO: Only in the dynamic case the velocities are needed.
       // get element velocities
-      RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
+      Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
       if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
@@ -124,7 +124,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
       if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP")!=INPAR::STR::dyna_statics)
       {
-        RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
+        Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
         if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       }
@@ -179,7 +179,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
                                             Epetra_SerialDenseMatrix* elemat1)
 {
   // get element displacements
-  RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -194,7 +194,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 
 
   // get element velocities (UNCOMMENT IF NEEDED)
-  RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
+  Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
   if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
   std::vector<double> myvel(lm.size());
   DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
@@ -1810,7 +1810,7 @@ inline void DRT::ELEMENTS::Beam3eb::MyStochasticForces(Teuchos::ParameterList& p
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
-  RCP<Epetra_MultiVector> randomnumbers = params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
+  Teuchos::RCP<Epetra_MultiVector> randomnumbers = params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
 
   for(int gp=0; gp < gausspoints.nquad; gp++)
   {
@@ -1897,7 +1897,7 @@ inline void DRT::ELEMENTS::Beam3eb::CalcBrownian(Teuchos::ParameterList& params,
                                               Epetra_SerialDenseVector* force)        //!< element internal force vector
 {
   //if no random numbers for generation of stochastic forces are passed to the element no Brownian dynamics calculations are conducted
-  if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
+  if( params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
     return;
 
   //Evaluation of force vectors and stiffness matrices
@@ -2648,7 +2648,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
   }
 
   //get element displacements
-  RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);

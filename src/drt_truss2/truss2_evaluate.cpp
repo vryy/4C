@@ -84,19 +84,19 @@ int DRT::ELEMENTS::Truss2::Evaluate(Teuchos::ParameterList& params,
       // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
       //
       // get element displcements
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       // get residual displacements
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (res==Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
            
       // get element velocities (UNCOMMENT IF NEEDED)
       /*
-      RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
+      Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
       if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
@@ -159,7 +159,7 @@ int DRT::ELEMENTS::Truss2::EvaluateNeumann(Teuchos::ParameterList& params,
     Epetra_SerialDenseMatrix* elemat1)
 {
   // get element displacements
-    RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
     if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
     std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);

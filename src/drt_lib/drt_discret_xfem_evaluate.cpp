@@ -154,8 +154,8 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
         DRT::ELEMENTS::Combust3IntFace*      ele,             ///< internal face element
         Teuchos::ParameterList&              params,          ///< parameter list
         DRT::DiscretizationXFEM&             discretization,  ///< XFEM discretization
-        RCP<LINALG::SparseMatrix>            systemmatrix,    ///< systemmatrix
-        RCP<Epetra_Vector>                   systemvector     ///< systemvector
+        Teuchos::RCP<LINALG::SparseMatrix>            systemmatrix,    ///< systemmatrix
+        Teuchos::RCP<Epetra_Vector>                   systemvector     ///< systemvector
 )
 {
     if (!discretization.Filled()) dserror("FillComplete() was not called");

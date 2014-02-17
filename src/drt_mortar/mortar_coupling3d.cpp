@@ -4095,7 +4095,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
      // loop over all integration cells
      for (int c=0;c<(int)Coupling()[m]->Cells().size();++c)
      {
-       RCP<MORTAR::IntCell> currcell = Coupling()[m]->Cells()[c];
+       Teuchos::RCP<MORTAR::IntCell> currcell = Coupling()[m]->Cells()[c];
 
        // create an integrator for this cell
        for (int gp=0;gp<MORTAR::MortarIntegrator::Impl(SlaveElement(),MasterElement(m),imortar_)->nGP(); ++gp)

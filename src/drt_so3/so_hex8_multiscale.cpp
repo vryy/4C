@@ -58,14 +58,14 @@ void DRT::ELEMENTS::So_hex8::soh8_set_eas_multi(Teuchos::ParameterList&  params)
 {
   if (eastype_ != soh8_easnone)
   {
-    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldalpha =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldalpha",Teuchos::null);
-    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldfeas =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldfeas",Teuchos::null);
-    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldKaainv =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKaainv",Teuchos::null);
-    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldKda =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKda",Teuchos::null);
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldalpha =
+      params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("oldalpha",Teuchos::null);
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldfeas =
+      params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("oldfeas",Teuchos::null);
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKaainv =
+      params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("oldKaainv",Teuchos::null);
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKda =
+      params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("oldKda",Teuchos::null);
 
     if (oldalpha==Teuchos::null || oldfeas==Teuchos::null || oldKaainv==Teuchos::null || oldKda==Teuchos::null)
       dserror("Cannot get EAS internal data from parameter list for multi-scale problems");
@@ -86,16 +86,16 @@ void DRT::ELEMENTS::So_hex8::soh8_eas_init_multi(Teuchos::ParameterList&  params
 {
   if (eastype_ != soh8_easnone)
   {
-    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("lastalpha",Teuchos::null);
-    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldalpha =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldalpha",Teuchos::null);
-    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldfeas =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldfeas",Teuchos::null);
-    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldKaainv =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKaainv",Teuchos::null);
-    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldKda =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKda",Teuchos::null);
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > lastalpha =
+      params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("lastalpha",Teuchos::null);
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldalpha =
+      params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("oldalpha",Teuchos::null);
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldfeas =
+      params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("oldfeas",Teuchos::null);
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKaainv =
+      params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("oldKaainv",Teuchos::null);
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKda =
+      params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("oldKda",Teuchos::null);
 
     (*lastalpha)[Id()] = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, 1));
     (*oldalpha)[Id()]  = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, 1));
@@ -112,7 +112,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eas_init_multi(Teuchos::ParameterList&  params
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_read_restart_multi()
 {
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
   {

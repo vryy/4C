@@ -68,8 +68,8 @@ public:
 
   */
   Boxfilter(
-    RCP<DRT::Discretization>     actdis             ,
-    RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
+    Teuchos::RCP<DRT::Discretization>     actdis             ,
+    Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
     Teuchos::ParameterList&      params             );
 
   /*!
@@ -79,14 +79,14 @@ public:
   virtual ~Boxfilter();
 
   void AddScatra(
-    RCP<DRT::Discretization>     scatradis,
+    Teuchos::RCP<DRT::Discretization>     scatradis,
     INPAR::SCATRA::ScaTraType    scatratype,
-    RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
+    Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
 
   void InitializeVremanScatra(
-    RCP<DRT::Discretization>     scatradis,
+    Teuchos::RCP<DRT::Discretization>     scatradis,
     INPAR::SCATRA::ScaTraType    scatratype,
-    RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
+    Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
 
   /*!
   \brief Perform box filter operation, compare filtered quantities
@@ -724,9 +724,9 @@ private:
   //! @name input arguments of the constructor
   //
   //! the discretization
-  RCP<DRT::Discretization>     discret_;
+  Teuchos::RCP<DRT::Discretization>     discret_;
   //! connection between master and slave nodes on this proc
-  RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave_;
   //! parameterlist including time params, stabilization params and turbulence sublist
   Teuchos::ParameterList&      params_ ;
   //! flag for physical type of fluid flow
@@ -761,102 +761,102 @@ private:
 
   //! @name special scatra variables
   //! the discretization
-  RCP<DRT::Discretization>     scatradiscret_;
+  Teuchos::RCP<DRT::Discretization>     scatradiscret_;
   INPAR::SCATRA::ScaTraType    scatratype_;
-  RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave_;
   //@}
 
   //! @name vectors used for filtering (for dynamic Smagorinsky model)
   //        --------------------------
 
   //! the box filtered velocities in nodes (3 vectors)
-  RCP<Epetra_MultiVector>      filtered_vel_;
+  Teuchos::RCP<Epetra_MultiVector>      filtered_vel_;
   //! the box filtered reynoldsstresses in nodes (9 vectors)
-  RCP<Epetra_MultiVector>      filtered_reynoldsstress_;
+  Teuchos::RCP<Epetra_MultiVector>      filtered_reynoldsstress_;
   //! the modeled subgrid stress in nodes (9 vectors)
-  RCP<Epetra_MultiVector>      filtered_modeled_subgrid_stress_;
+  Teuchos::RCP<Epetra_MultiVector>      filtered_modeled_subgrid_stress_;
   //! the filtered velocities times rho (3 vectors)
-  RCP<Epetra_MultiVector>      filtered_dens_vel_;
+  Teuchos::RCP<Epetra_MultiVector>      filtered_dens_vel_;
   //! the filtered density (vector)
-  RCP<Epetra_Vector>           filtered_dens_;
+  Teuchos::RCP<Epetra_Vector>           filtered_dens_;
   //! the filtered strainrate times rho (vector)
-  RCP<Epetra_Vector>           filtered_dens_strainrate_;
+  Teuchos::RCP<Epetra_Vector>           filtered_dens_strainrate_;
   //! the modeled fine scale velocities in nodes (3 vectors)
-  RCP<Epetra_MultiVector>      fs_vel_;
+  Teuchos::RCP<Epetra_MultiVector>      fs_vel_;
   //! Vreman model: strain rate in nodes (9 vectors)
-  RCP<Epetra_MultiVector>      filtered_strainrate_;
+  Teuchos::RCP<Epetra_MultiVector>      filtered_strainrate_;
   //! Vreman model: expression (Vector)
-  RCP<Epetra_Vector>      filtered_expression_;
+  Teuchos::RCP<Epetra_Vector>      filtered_expression_;
   //! Vreman model: alphaij in nodes (9 vectors)
-  RCP<Epetra_MultiVector>      filtered_alphaij_;
+  Teuchos::RCP<Epetra_MultiVector>      filtered_alphaij_;
   //! Vreman model: alpha2 (Vector)
-  RCP<Epetra_Vector>      filtered_alpha2_;
+  Teuchos::RCP<Epetra_Vector>      filtered_alpha2_;
   //! the filtered density times temperature times velocity (scalar)
-  RCP<Epetra_MultiVector>      filtered_dens_vel_temp_;
+  Teuchos::RCP<Epetra_MultiVector>      filtered_dens_vel_temp_;
   //! the filtered density times temperature gradient times rate of strain (scalar)
-  RCP<Epetra_MultiVector>      filtered_dens_rateofstrain_temp_;
+  Teuchos::RCP<Epetra_MultiVector>      filtered_dens_rateofstrain_temp_;
 //  //! the filtered temperature gradient (scalar)
-//  RCP<Epetra_MultiVector>      filtered_gradtemp_;
+//  Teuchos::RCP<Epetra_MultiVector>      filtered_gradtemp_;
   //! the filtered temperature (scalar)
-  RCP<Epetra_Vector>           filtered_temp_;
+  Teuchos::RCP<Epetra_Vector>           filtered_temp_;
   //! the filtered density times temperature (scalar)
-  RCP<Epetra_Vector>           filtered_dens_temp_;
+  Teuchos::RCP<Epetra_Vector>           filtered_dens_temp_;
   //! filtered phi: gradient
-  RCP<Epetra_MultiVector>           filtered_phi_;
+  Teuchos::RCP<Epetra_MultiVector>           filtered_phi_;
   //! filtered grad(phi_j)*grad(phi_j)
-  RCP<Epetra_Vector>           filtered_phi2_;
+  Teuchos::RCP<Epetra_Vector>           filtered_phi2_;
   //! filtered visc*grad(phi_j)*grad(phi_j)
-  RCP<Epetra_Vector>           filtered_phiexpression_;
+  Teuchos::RCP<Epetra_Vector>           filtered_phiexpression_;
   //! alphaij tensor for scatra
-  RCP<Epetra_MultiVector>      filtered_alphaijsc_;
+  Teuchos::RCP<Epetra_MultiVector>      filtered_alphaijsc_;
   //! the filtered vel exported to column map
-  RCP<Epetra_MultiVector>      col_filtered_vel_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_vel_;
   //! the filtered reystress exported to column map
-  RCP<Epetra_MultiVector>      col_filtered_reynoldsstress_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_reynoldsstress_;
   //! the modeled subgrid stresses exported to column map
-  RCP<Epetra_MultiVector>      col_filtered_modeled_subgrid_stress_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_modeled_subgrid_stress_;
   //! the filtered velocities times rho exported to column map
-  RCP<Epetra_MultiVector>      col_filtered_dens_vel_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_dens_vel_;
   //! the filtered density exported to column map
-  RCP<Epetra_Vector>           col_filtered_dens_;
+  Teuchos::RCP<Epetra_Vector>           col_filtered_dens_;
   //! the filtered strainrate times rho exported to column map
-  RCP<Epetra_Vector>           col_filtered_dens_strainrate_;
+  Teuchos::RCP<Epetra_Vector>           col_filtered_dens_strainrate_;
   //! the modeled fine scale velocities exported to column map
-  RCP<Epetra_MultiVector>      col_fs_vel_;
+  Teuchos::RCP<Epetra_MultiVector>      col_fs_vel_;
   //! Vreman model: strain rate exported to column map
-  RCP<Epetra_MultiVector>      col_filtered_strainrate_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_strainrate_;
   //! Vreman model: expression (Vector) exported to column map
-  RCP<Epetra_Vector>      col_filtered_expression_;
+  Teuchos::RCP<Epetra_Vector>      col_filtered_expression_;
   //! Vreman model: alphaij in nodes (9 vectors) exported to column map
-  RCP<Epetra_MultiVector>      col_filtered_alphaij_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_alphaij_;
   //! Vreman model: alpha2 (Vector) exported to column map
-  RCP<Epetra_Vector>      col_filtered_alpha2_;
+  Teuchos::RCP<Epetra_Vector>      col_filtered_alpha2_;
   //! the filtered density times temperature times velocity exported to column map (scalar)
-  RCP<Epetra_MultiVector>      col_filtered_dens_vel_temp_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_dens_vel_temp_;
   //! the filtered density times temperature gradient times rate of strain exported to column map (scalar)
-  RCP<Epetra_MultiVector>      col_filtered_dens_rateofstrain_temp_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_dens_rateofstrain_temp_;
 //  //! the filtered temperature gradient exported to column map (scalar)
-//  RCP<Epetra_MultiVector>      col_filtered_gradtemp_;
+//  Teuchos::RCP<Epetra_MultiVector>      col_filtered_gradtemp_;
   //! the filtered temperature exported to column map (scalar)
-  RCP<Epetra_Vector>           col_filtered_temp_;
+  Teuchos::RCP<Epetra_Vector>           col_filtered_temp_;
   //! the filtered density times temperature exported to column map (scalar)
-  RCP<Epetra_Vector>           col_filtered_dens_temp_;
+  Teuchos::RCP<Epetra_Vector>           col_filtered_dens_temp_;
   //! filtered phi: gradient
-  RCP<Epetra_MultiVector>           col_filtered_phi_;
+  Teuchos::RCP<Epetra_MultiVector>           col_filtered_phi_;
   //! filtered grad(phi_j)*grad(phi_j)
-  RCP<Epetra_Vector>           col_filtered_phi2_;
+  Teuchos::RCP<Epetra_Vector>           col_filtered_phi2_;
   //! filtered visc*grad(phi_j)*grad(phi_j)
-  RCP<Epetra_Vector>           col_filtered_phiexpression_;
+  Teuchos::RCP<Epetra_Vector>           col_filtered_phiexpression_;
   //! alphaij tensor for scatra
-  RCP<Epetra_MultiVector>      col_filtered_alphaijsc_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_alphaijsc_;
   //@}
 
   //! @name homogeneous flow specials
   //        -------------------------------
 
   //! the direction coordinates for the above mentioned averaging procedure
-  RCP<std::vector<double> >         dir1coords_;
-  RCP<std::vector<double> >         dir2coords_;
+  Teuchos::RCP<std::vector<double> >         dir1coords_;
+  Teuchos::RCP<std::vector<double> >         dir2coords_;
   //@}
 
 }; // end class Boxfilter

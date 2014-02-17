@@ -451,7 +451,7 @@ void WriteLiftDragToFile(
  */
 //std::map<int,double> ComputeSurfaceFlowRates(
 //    DRT::Discretization&       dis  ,      ///< the discretisation (node distribution, conditions)
-//    const RCP<Epetra_Vector>   velnp       ///< solution vector with velocities and pressure
+//    const Teuchos::RCP<Epetra_Vector>   velnp       ///< solution vector with velocities and pressure
                                            ///< (only velocities are used)
 //    );
 
@@ -469,23 +469,23 @@ void WriteLiftDragToFile(
  */
 std::map<int,double> ComputeFlowRates(
     DRT::Discretization&           dis  ,         ///< the discretisation (node distribution, conditions)
-    const RCP<Epetra_Vector>       velnp,         ///< solution vector with velocities (and pressure)
+    const Teuchos::RCP<Epetra_Vector>       velnp,         ///< solution vector with velocities (and pressure)
     const std::string                         condstring     ///< name of the condition (LineFlowRate or SurfaceFlowRate)
     );
 
 std::map<int,double> ComputeFlowRates(
     DRT::Discretization&           dis  ,         ///< the discretisation (node distribution, conditions)
-    const RCP<Epetra_Vector>       velnp,         ///< solution vector with velocities (and pressure)
-    const RCP<Epetra_Vector>       gridvel,         ///< solution vector with velocities (and pressure)
-    const RCP<Epetra_Vector>       dispnp,         ///< solution vector with velocities (and pressure)
+    const Teuchos::RCP<Epetra_Vector>       velnp,         ///< solution vector with velocities (and pressure)
+    const Teuchos::RCP<Epetra_Vector>       gridvel,         ///< solution vector with velocities (and pressure)
+    const Teuchos::RCP<Epetra_Vector>       dispnp,         ///< solution vector with velocities (and pressure)
     const std::string                         condstring     ///< name of the condition (LineFlowRate or SurfaceFlowRate)
     );
 
 std::map<int,double> ComputeVolume(
     DRT::Discretization&           dis  ,         ///< the discretisation (node distribution, conditions)
-    const RCP<Epetra_Vector>       velnp,         ///< solution vector with velocities (and pressure)
-    const RCP<Epetra_Vector>       gridvel,         ///< solution vector with velocities (and pressure)
-    const RCP<Epetra_Vector>       dispnp         ///< solution vector with velocities (and pressure)
+    const Teuchos::RCP<Epetra_Vector>       velnp,         ///< solution vector with velocities (and pressure)
+    const Teuchos::RCP<Epetra_Vector>       gridvel,         ///< solution vector with velocities (and pressure)
+    const Teuchos::RCP<Epetra_Vector>       dispnp         ///< solution vector with velocities (and pressure)
     );
 
 /*!
@@ -524,7 +524,7 @@ void WriteVolumeToFile(
  */
 std::map<int,LINALG::Matrix<3,1> > ComputeSurfaceImpulsRates(
     DRT::Discretization&       dis  ,      ///< the discretisation (node distribution, conditions)
-    const RCP<Epetra_Vector>   velnp       ///< solution vector with velocities and pressure
+    const Teuchos::RCP<Epetra_Vector>   velnp       ///< solution vector with velocities and pressure
                                            ///< (only velocities are used)
     );
 

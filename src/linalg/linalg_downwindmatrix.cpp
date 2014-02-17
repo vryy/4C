@@ -21,7 +21,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/08|
  *----------------------------------------------------------------------*/
-LINALG::DownwindMatrix::DownwindMatrix(RCP<Epetra_CrsMatrix> A, const int nv,
+LINALG::DownwindMatrix::DownwindMatrix(Teuchos::RCP<Epetra_CrsMatrix> A, const int nv,
                                        const int np, const double tau,
                                        const int outlevel) :
 outlevel_(outlevel),
@@ -49,7 +49,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   const int numnoderows = numdofrows / bsize;
 
   // compute a nodal row map
-  RCP<Epetra_Map> onoderowmap;
+  Teuchos::RCP<Epetra_Map> onoderowmap;
   {
     std::vector<int> gnodeids(numnoderows);
     int count=0;
@@ -70,10 +70,10 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
 
 
   // compute a nodal block weighted graph
-  RCP<Epetra_CrsMatrix> onodegraph;
+  Teuchos::RCP<Epetra_CrsMatrix> onodegraph;
   {
     const int maxnumentries = A.MaxNumEntries();
-    RCP<SparseMatrix> tmp = Teuchos::rcp(new SparseMatrix(*onoderowmap,maxnumentries));
+    Teuchos::RCP<SparseMatrix> tmp = Teuchos::rcp(new SparseMatrix(*onoderowmap,maxnumentries));
     std::vector<int> indices(maxnumentries);
     std::vector<double> values(maxnumentries);
     for (int i=0; i<numdofrows; ++i)
@@ -148,12 +148,12 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   }
 
   // create directed graph
-  RCP<Epetra_CrsMatrix> nnodegraph;
+  Teuchos::RCP<Epetra_CrsMatrix> nnodegraph;
   {
     // create a transposed of the full graph
-    RCP<Epetra_CrsMatrix> onodegrapht = LINALG::Transpose(onodegraph);
+    Teuchos::RCP<Epetra_CrsMatrix> onodegrapht = LINALG::Transpose(onodegraph);
     // create a new graph that will store the directed graph
-    RCP<SparseMatrix> tmp = Teuchos::rcp(new SparseMatrix(*onoderowmap,(int)(onodegraph->MaxNumEntries())));
+    Teuchos::RCP<SparseMatrix> tmp = Teuchos::rcp(new SparseMatrix(*onoderowmap,(int)(onodegraph->MaxNumEntries())));
     const Epetra_Map& rowmap = onodegraph->RowMap();
     const Epetra_Map& colmap = onodegraph->ColMap();
     const Epetra_Map& colmapt = onodegrapht->ColMap();
@@ -198,7 +198,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   // coarsen directed graph
   {
     // create a new graph that will store the directed graph
-    RCP<SparseMatrix> tmp = Teuchos::rcp(new SparseMatrix(nnodegraph->RowMap(),(int)(nnodegraph->MaxNumEntries())));
+    Teuchos::RCP<SparseMatrix> tmp = Teuchos::rcp(new SparseMatrix(nnodegraph->RowMap(),(int)(nnodegraph->MaxNumEntries())));
     const Epetra_Map& rowmap = nnodegraph->RowMap();
     const Epetra_Map& colmap = onodegraph->ColMap();
     for (int i=0; i<rowmap.NumMyElements(); ++i)
@@ -230,7 +230,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   //DownwindHackbusch(*nnodegraph,index,oninflow);
 
   // index now specifies the local order in which the rows should be processed
-  RCP<Epetra_Map> nnoderowmap;
+  Teuchos::RCP<Epetra_Map> nnoderowmap;
   {
     Epetra_IntVector gindices(nnodegraph->RowMap(),false);
     const int length = index.MyLength();

@@ -1623,7 +1623,7 @@ Teuchos::RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegratorCalc<distypeS,dis
   if ((mxia<-1.0) || (mxib>1.0))
       dserror("ERROR: IntegrateMmod2D called with infeasible master limits!");
 
-  // create empty mmodseg object and wrap it with RCP
+  // create empty mmodseg object and wrap it with Teuchos::RCP
   int nrow  = sele.NumNode();
   int nrowdof = ndim_;
   int ncol  = mele.NumNode();

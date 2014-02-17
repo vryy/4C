@@ -61,7 +61,7 @@ namespace MueLu {
     virtual ~ContactSPRepartitionInterface() { }
     //@}
 
-    RCP<const ParameterList> GetValidParameterList(const ParameterList& paramList = ParameterList()) const;
+    Teuchos::RCP<const ParameterList> GetValidParameterList(const ParameterList& paramList = ParameterList()) const;
 
     //! @name Input
     //@{

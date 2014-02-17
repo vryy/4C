@@ -91,8 +91,8 @@ public:
   void TransferDofsToNewMap(
       const Epetra_Map&                       olddofrowmap,                     /// dof row map w.r.t old interface position
       const Epetra_Map&                       olddofcolmap,                     /// dof col map w.r.t old interface position
-      std::vector<RCP<const Epetra_Vector> >& oldRowStateVectors,               /// row map based vectors w.r.t old interface position
-      std::vector<RCP<Epetra_Vector> >&       newRowStateVectors,               /// row map based vectors w.r.t new interface position
+      std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,               /// row map based vectors w.r.t old interface position
+      std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,               /// row map based vectors w.r.t new interface position
       std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method, /// reconstruction map for nodes and its dofsets
       Teuchos::RCP<std::set<int> >            dbcgids                           /// set of dof gids that must not be changed by ghost penalty reconstruction
       );
@@ -128,8 +128,8 @@ public:
       const int                                  nds_new,            /// nodal dofset at t^(n+1)
       const int                                  nds_old,            /// nodal dofset at t^n
       INPAR::XFEM::XFluidTimeInt                 method,               /// reconstruction method
-      std::vector<RCP<Epetra_Vector> >&          newRowStateVectors, /// row map based state vectors at t^(n+1)
-      std::vector<RCP<const Epetra_Vector> >&    oldRowStateVectors, /// row map based state vectors at t^n
+      std::vector<Teuchos::RCP<Epetra_Vector> >&          newRowStateVectors, /// row map based state vectors at t^(n+1)
+      std::vector<Teuchos::RCP<const Epetra_Vector> >&    oldRowStateVectors, /// row map based state vectors at t^n
       Teuchos::RCP<std::set<int> >               dbcgids             /// set of DBC global ids
   );
 
@@ -137,7 +137,7 @@ public:
   void MarkDofs(
       DRT::Node*                          node,                 /// drt node
       const int                           nds_new,              /// nodal dofset at t^(n+1)
-      std::vector<RCP<Epetra_Vector> >&   newRowStateVectors,   /// row map based state vectors at t^(n+1)
+      std::vector<Teuchos::RCP<Epetra_Vector> >&   newRowStateVectors,   /// row map based state vectors at t^(n+1)
       INPAR::XFEM::XFluidTimeInt          method,               /// reconstruction method
       Teuchos::RCP<std::set<int> >        dbcgids               /// set of dof gids that must not be changed by ghost penalty reconstruction
   );
@@ -201,7 +201,7 @@ public:
 
   /// export data about reconstruction method to neighbor proc and receive data from previous proc
   void ExportMethods(
-      std::vector<RCP<Epetra_Vector> >&       newRowStateVectors,               /// row map based vectors w.r.t new interface position
+      std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,               /// row map based vectors w.r.t new interface position
       Teuchos::RCP<std::set<int> >            dbcgids                           /// set of dof gids that must not be changed by ghost penalty reconstruction
   );
 

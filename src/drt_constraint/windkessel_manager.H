@@ -347,8 +347,8 @@ namespace UTILS
     Teuchos::RCP<LINALG::SparseOperator> coupoffdiag_fext_p_;  ///< additional rectangular matrix
     Teuchos::RCP<LINALG::SparseMatrix> windkesselstiffness_;  ///< additional rectangular matrix
     bool havewindkessel_;  ///< are there Windkessel bcs at all?
-    RCP<Windkessel> rcr_;
-    RCP<Windkessel> rcr_nlnheart_;
+    Teuchos::RCP<Windkessel> rcr_;
+    Teuchos::RCP<Windkessel> rcr_nlnheart_;
     int myrank_;
     Teuchos::RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counts how often #Solve is called

@@ -609,11 +609,11 @@ bool COMBUST::Algorithm::NotConvergedFGI()
     double fggfuncnormL2 = 1.0;
 
     // compute increment and L2-norm of increment
-    RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(velnpip->Map()),true);
+    Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(velnpip->Map()),true);
     incvel->Update(1.0,*velnpip,-1.0,*velnpi_,0.0);
     incvel->Norm2(&fgvelnormL2);
 
-    RCP<Epetra_Vector> incgfunc = Teuchos::rcp(new Epetra_Vector(phinpip->Map(),true));//*ScaTraField()->Discretization()->DofRowMap()),true);
+    Teuchos::RCP<Epetra_Vector> incgfunc = Teuchos::rcp(new Epetra_Vector(phinpip->Map(),true));//*ScaTraField()->Discretization()->DofRowMap()),true);
     incgfunc->Update(1.0,*phinpip,-1.0,*phinpi_,0.0);
     incgfunc->Norm2(&fggfuncnormL2);
 
@@ -1369,7 +1369,7 @@ void COMBUST::Algorithm::Redistribute()
 
 
       // allocate graph
-      RCP<Epetra_CrsGraph> nodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*noderowmap,108,false));
+      Teuchos::RCP<Epetra_CrsGraph> nodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*noderowmap,108,false));
 
       // -------------------------------------------------------------
       // iterate all elements on this proc including ghosted ones
@@ -1793,7 +1793,7 @@ void COMBUST::Algorithm::Redistribute()
       Epetra_Map newmap(size,count,&part[0],0,nodegraph->Comm());
 
       // create the new graph and export to it
-      RCP<Epetra_CrsGraph> newnodegraph;
+      Teuchos::RCP<Epetra_CrsGraph> newnodegraph;
 
       newnodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
       Epetra_Export exporter2(nodegraph->RowMap(),newmap);

@@ -63,7 +63,7 @@ LINALG::KrylovProjector::~KrylovProjector()
 } // LINALG::KrylovProjector::~KrylovProjector
 
 /* --------------------------------------------------------------------
-                  Give out RCP to c_ for change
+                  Give out Teuchos::RCP to c_ for change
    -------------------------------------------------------------------- */
 Teuchos::RCP<Epetra_MultiVector> LINALG::KrylovProjector::GetNonConstKernel()
 {
@@ -78,7 +78,7 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::KrylovProjector::GetNonConstKernel()
 }
 
 /* --------------------------------------------------------------------
-                  Give out RCP to w_ for change
+                  Give out Teuchos::RCP to w_ for change
    -------------------------------------------------------------------- */
 Teuchos::RCP<Epetra_MultiVector> LINALG::KrylovProjector::GetNonConstWeights()
 {

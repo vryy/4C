@@ -67,7 +67,7 @@ namespace INPUT
     Reading a LineDefinition means filling the components with those values
     found at the input line.
 
-    \note This is a low level class. Therefore, we do not use RCP much but
+    \note This is a low level class. Therefore, we do not use Teuchos::RCP much but
     instead deallocate the internal objects by hand. For this reason there are
     also proper (not exception save) copy operators provided.
 

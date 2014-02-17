@@ -36,7 +36,7 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
-  RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);

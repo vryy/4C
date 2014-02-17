@@ -146,7 +146,7 @@ void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
   if (has_familyhist) spatialconst -= 213000;
   if (!is_male) spatialconst -= 193000;
 
-  RCP<Epetra_Vector> elestrength = LINALG::CreateVector(*(dis->ElementRowMap()),true);
+  Teuchos::RCP<Epetra_Vector> elestrength = LINALG::CreateVector(*(dis->ElementRowMap()),true);
 
   std::vector<DRT::Condition*> mypatspeccond;
   dis->GetCondition("PatientSpecificData", mypatspeccond);
@@ -185,7 +185,7 @@ void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
     }
   }
 
-  RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->ElementColMap()),true);
+  Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->ElementColMap()),true);
   LINALG::Export(*elestrength,*tmp);
   elestrength = tmp;
 
@@ -276,7 +276,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
   // create vector for nodal values of ilt thickness
   // WARNING: This is a brute force expensive minimum distance search!
   const Epetra_Map* nrowmap = dis->NodeRowMap();
-  RCP<Epetra_Vector> iltthick = LINALG::CreateVector(*nrowmap,true);
+  Teuchos::RCP<Epetra_Vector> iltthick = LINALG::CreateVector(*nrowmap,true);
   for (int i=0; i<nrowmap->NumMyElements(); ++i)
   {
     const double* x = dis->gNode(nrowmap->GID(i))->X();
@@ -303,12 +303,12 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
   params->set("max ilt thick",maxiltthick);
 
   // export nodal distances to column map
-  RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->NodeColMap()),true);
+  Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->NodeColMap()),true);
   LINALG::Export(*iltthick,*tmp);
   iltthick = tmp;
 
   // compute element-wise mean distance from nodal distance
-  RCP<Epetra_Vector> iltele = LINALG::CreateVector(*(dis->ElementRowMap()),true);
+  Teuchos::RCP<Epetra_Vector> iltele = LINALG::CreateVector(*(dis->ElementRowMap()),true);
   for (int i=0; i<dis->ElementRowMap()->NumMyElements(); ++i)
   {
     DRT::Element* actele = dis->gElement(dis->ElementRowMap()->GID(i));
@@ -354,8 +354,8 @@ void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
     if (!dis->Comm().MyPID())
       IO::cout << "No centerline file provided" << IO::endl;
     // set element-wise mean distance to zero
-    RCP<Epetra_Vector> locradele = LINALG::CreateVector(*(dis->ElementRowMap()),true);
-    RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->ElementColMap()),true);
+    Teuchos::RCP<Epetra_Vector> locradele = LINALG::CreateVector(*(dis->ElementRowMap()),true);
+    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->ElementColMap()),true);
     LINALG::Export(*locradele,*tmp);
     locradele = tmp;
 
@@ -381,7 +381,7 @@ void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
   // create vector for nodal values of ilt thickness
   // WARNING: This is a brute force expensive minimum distance search!
   const Epetra_Map* nrowmap = dis->NodeRowMap();
-  RCP<Epetra_Vector> localrad = LINALG::CreateVector(*nrowmap,true);
+  Teuchos::RCP<Epetra_Vector> localrad = LINALG::CreateVector(*nrowmap,true);
   for (int i=0; i<nrowmap->NumMyElements(); ++i)
   {
     const double* x = dis->gNode(nrowmap->GID(i))->X();
@@ -405,12 +405,12 @@ void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
     IO::cout << "Max local radius:  " << maxlocalrad << IO::endl ;
 
   // export nodal distances to column map
-  RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->NodeColMap()),true);
+  Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->NodeColMap()),true);
   LINALG::Export(*localrad,*tmp);
   localrad = tmp;
 
   // compute element-wise mean distance from nodal distance
-  RCP<Epetra_Vector> locradele = LINALG::CreateVector(*(dis->ElementRowMap()),true);
+  Teuchos::RCP<Epetra_Vector> locradele = LINALG::CreateVector(*(dis->ElementRowMap()),true);
   for (int i=0; i<dis->ElementRowMap()->NumMyElements(); ++i)
   {
     DRT::Element* actele = dis->gElement(dis->ElementRowMap()->GID(i));
@@ -505,7 +505,7 @@ void PATSPEC::InitializeMappingInnerSurface(Teuchos::RCP<DRT::Discretization> di
 
   // compute distance of all of my elements to these nodes
   // WARNING: This is a brute force expensive minimum distance search!
-  RCP<Epetra_Vector> innerid = LINALG::CreateVector(*(dis->NodeRowMap()),true);
+  Teuchos::RCP<Epetra_Vector> innerid = LINALG::CreateVector(*(dis->NodeRowMap()),true);
   for (int i=0; i<dis->NodeRowMap()->NumMyElements(); ++i)
   {
     const double* x = dis->gNode(dis->NodeRowMap()->GID(i))->X();
@@ -529,7 +529,7 @@ void PATSPEC::InitializeMappingInnerSurface(Teuchos::RCP<DRT::Discretization> di
   gcoords.clear();
 
   // export nodal distances to column map
-  RCP<Epetra_Vector> tmpnode = LINALG::CreateVector(*(dis->NodeColMap()),true);
+  Teuchos::RCP<Epetra_Vector> tmpnode = LINALG::CreateVector(*(dis->NodeColMap()),true);
   LINALG::Export(*innerid,*tmpnode);
   innerid = tmpnode;
 
@@ -630,7 +630,7 @@ void PATSPEC::ComputeEleInnerRadius(Teuchos::RCP<DRT::Discretization> dis)
   }
 
   // compute current coordinates and inner radius for all these nodes
-  RCP<const Epetra_Vector> disp = dis->GetState("displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = dis->GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
   // compute inner radius for all these nodes
   const int nnodes = (int)allnodes.size();
@@ -694,7 +694,7 @@ void PATSPEC::ComputeEleInnerRadius(Teuchos::RCP<DRT::Discretization> dis)
     const Epetra_Vector* foolnode = mypatspeccond[j]->Get<Epetra_Vector>("inner surface node id");
     if (foolnode)
     {
-      RCP<Epetra_Vector> innerradius = LINALG::CreateVector(*(dis->NodeRowMap()),true);
+      Teuchos::RCP<Epetra_Vector> innerradius = LINALG::CreateVector(*(dis->NodeRowMap()),true);
       for (int i=0; i<dis->NodeRowMap()->NumMyElements(); ++i)
       {
         if (!foolnode->Map().MyGID(dis->NodeRowMap()->GID(i))) dserror("I do not have this node");
@@ -702,12 +702,12 @@ void PATSPEC::ComputeEleInnerRadius(Teuchos::RCP<DRT::Discretization> dis)
         int innerid = (*foolnode)[foolnode->Map().LID(dis->NodeRowMap()->GID(i))];
         (*innerradius)[i] = ginnerradius[innerid];
       }
-      RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->NodeColMap()),true);
+      Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis->NodeColMap()),true);
       LINALG::Export(*innerradius,*tmp);
       innerradius = tmp;
 
       // compute element-wise mean distance from nodal distance
-      RCP<Epetra_Vector> innerradiusele = LINALG::CreateVector(*(dis->ElementRowMap()),true);
+      Teuchos::RCP<Epetra_Vector> innerradiusele = LINALG::CreateVector(*(dis->ElementRowMap()),true);
       for (int i=0; i<dis->ElementRowMap()->NumMyElements(); ++i)
       {
         DRT::Element* actele = dis->gElement(dis->ElementRowMap()->GID(i));
@@ -873,7 +873,7 @@ void PATSPEC::PatspecOutput(Teuchos::RCP<IO::DiscretizationWriter> output_,
     if (mypatspeccond.size() && params!=Teuchos::null)
     {
 
-      RCP<Epetra_Vector> patspecstuff = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
+      Teuchos::RCP<Epetra_Vector> patspecstuff = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
       for(unsigned int i=0; i<mypatspeccond.size(); ++i)
       {
         const Epetra_Vector* actcond = mypatspeccond[i]->Get<Epetra_Vector>("normalized ilt thickness");
@@ -910,7 +910,7 @@ void PATSPEC::PatspecOutput(Teuchos::RCP<IO::DiscretizationWriter> output_,
           output_->WriteVector("inner_radius", patspecstuff, vt);
         }
       }
-      RCP<Epetra_Vector> eleID = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
+      Teuchos::RCP<Epetra_Vector> eleID = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
       for (int i=0; i<eleID->MyLength(); ++i)
         (*eleID)[i] = (discret_->ElementRowMap()->GID(i))+1;
       output_->WriteVector("eleID", eleID, vt);

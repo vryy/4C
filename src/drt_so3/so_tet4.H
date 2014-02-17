@@ -132,19 +132,19 @@ public:
   virtual int NumLine() const {return 6;}
 
   /*!
-  \brief Get vector of RCPs to the lines of this element
+  \brief Get vector of Teuchos::RCPs to the lines of this element
 
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of RCPs to the surfaces of this element
+  \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
-  \brief Get vector of RCPs to the volumes of this element
+  \brief Get vector of Teuchos::RCPs to the volumes of this element
 
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
@@ -398,7 +398,7 @@ protected:
   //! container containing all kind of solid3 thisandthat
   //DRT::Container                                                           data_;
   //! vector of history variables for each Gauss point
-  //vector<RCP<MAT::Material> >                                              mat_;
+  //vector<Teuchos::RCP<MAT::Material> >                                              mat_;
   //! volume of the element
   double                                                                   V_;
   //! vector of partial derivatives in material frame

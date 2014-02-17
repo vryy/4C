@@ -106,12 +106,12 @@ protected:
     const double                                radius,
     const int                                   label
     );
-  
-  
+
+
   /*!
   \brief  set history variables after reading restart. The row map
           based vectors written in case of restart are exported to column
-          based ones needed for calculations again. 
+          based ones needed for calculations again.
    */
   void treeSearchElementsInCutOffRadius(
     const Teuchos::RCP<DRT::Discretization>   potentialdis,
@@ -127,42 +127,42 @@ protected:
   \brief  select correct potential out of condition
    */
   void EvaluatePotentialfromCondition(
-      RCP<DRT::Condition>   cond,
+      Teuchos::RCP<DRT::Condition>   cond,
       const LINALG::Matrix<3,1>&    x,
       const LINALG::Matrix<3,1>&    y,
       LINALG::Matrix<3,1>&          potderiv1,
       LINALG::Matrix<3,3>&          potderiv2
       );
-  
-  
+
+
   /*!
    \brief  select correct potential out of condition
    */
   void EvaluatePotentialfromCondition(
-      RCP<DRT::Condition>   cond,
+      Teuchos::RCP<DRT::Condition>   cond,
       const LINALG::Matrix<2,1>&    x,
       const LINALG::Matrix<2,1>&    y,
       LINALG::Matrix<2,1>&          potderiv1,
       LINALG::Matrix<2,2>&          potderiv2
       );
-  
-  
+
+
   /*!
     \brief  select correct potential out of condition
      */
   void EvaluatePotentialfromCondition_Approx1(
-      RCP<DRT::Condition>   cond,
+      Teuchos::RCP<DRT::Condition>   cond,
       const LINALG::Matrix<3,1>&    x,
       const LINALG::Matrix<3,1>&    y,
       LINALG::Matrix<3,1>&          potderiv1,
       LINALG::Matrix<3,3>&          potderiv2
       );
-  
+
   /*!
       \brief  select correct potential out of condition
        */
     void EvaluatePotentialfromCondition_Approx2(
-        RCP<DRT::Condition>   cond,
+        Teuchos::RCP<DRT::Condition>   cond,
         const LINALG::Matrix<3,1>&    x,
         const LINALG::Matrix<3,1>&    y,
         LINALG::Matrix<3,1>&          Fs,
@@ -171,7 +171,7 @@ protected:
 
 
   /*!
-  \brief  compute first and second derivative of the Lennard-Jones potential 
+  \brief  compute first and second derivative of the Lennard-Jones potential
           for 3D problems
    */
   void EvaluateLennardJonesPotential(
@@ -182,10 +182,10 @@ protected:
       LINALG::Matrix<3,1>&        potderiv1,
       LINALG::Matrix<3,3>&        potderiv2
       );
-  
-  
+
+
   /*!
-    \brief  compute first and second derivative of the Lennard-Jones potential 
+    \brief  compute first and second derivative of the Lennard-Jones potential
             for 2D problems
    */
   void EvaluateLennardJonesPotential(
@@ -196,8 +196,8 @@ protected:
       LINALG::Matrix<2,1>&          potderiv1,
       LINALG::Matrix<2,2>&          potderiv2
       );
-  
-  
+
+
   /*!
      \brief  compute first and second derivative of the approximated Lennard-Jones  potential
      */
@@ -209,7 +209,7 @@ protected:
       LINALG::Matrix<3,1>&          potderiv1,
       LINALG::Matrix<3,3>&          potderiv2
       );
-  
+
   /*!
        \brief  compute first and second derivative of the approximated Lennard-Jones  potential
        */
@@ -235,8 +235,8 @@ protected:
     LINALG::Matrix<3,1>&          potderiv1,
     LINALG::Matrix<3,3>&          potderiv2
     );
-  
-  
+
+
   /*!
     \brief  compute first and second derivative of the Zeta potential
             for 2D problems
@@ -262,8 +262,8 @@ protected:
       LINALG::Matrix<3,1>&          potderiv1,
       LINALG::Matrix<3,3>&          potderiv2
       );
-  
-  
+
+
   /*!
     \brief  compute first and second derivative of the Van-Der-Waals potential
             for 2D problems (plane strain approximation)
@@ -275,8 +275,8 @@ protected:
       LINALG::Matrix<2,1>&          potderiv1,
       LINALG::Matrix<2,2>&          potderiv2
       );
-  
-  
+
+
   /*!
     \brief  compute first and second derivative of the Van-Der-Waals potential
             for 3D problems (volume approximation)
@@ -288,7 +288,7 @@ protected:
       LINALG::Matrix<3,1>&          potderiv1,
       LINALG::Matrix<3,3>&          potderiv2
   );
-  
+
   /*!
       \brief  compute first and second derivative of the Van-Der-Waals potential
               for 3D problems (volume approximation)
@@ -300,8 +300,8 @@ protected:
         LINALG::Matrix<3,1>&          Fs,
         LINALG::Matrix<3,3>&          Fsderiv
     );
-  
-  
+
+
   /*!
   \brief  computes distance related structures 3D
    */
@@ -313,8 +313,8 @@ protected:
       LINALG::Matrix<3,1>&        dist_unit,
       double&                     distance
       );
-  
-  
+
+
   /*!
     \brief  computes distance related structures 2D
      */
@@ -336,8 +336,8 @@ protected:
       std::map<int,std::set<int> >&               potentialElementIds,
       std::vector<int>&                           lmcol
       );
-  
-  
+
+
   /*!
     \brief  collect global column indices for stiffness matrices with loacl and non-local entries
      */
@@ -347,16 +347,16 @@ protected:
       std::map<int,std::vector<PotentialElementContainer> >&        nonlocalPecs,
       std::vector<int>&                                             lmcol
       );
-  
-  
+
+
   void CollectLmcol(
       const Teuchos::RCP<DRT::Discretization>                       potentialdis,
       const std::map< int, std::map<int, GEO::NearestObject> >&     potentialObjectsAtGP,
       std::vector<int> &                                            lmcol
       );
-  
-  
-  int GetElementId( 
+
+
+  int GetElementId(
       const Teuchos::RCP<DRT::Discretization>         potentialdis,
       const GEO::NearestObject&                       potObject
       );
@@ -367,8 +367,8 @@ protected:
       std::vector<int>& lmcol,
       int               value
       );
-  
-  
+
+
   //! compute element nodes in reference configuration
   void ReferenceConfiguration(
       const DRT::Element*         element,
@@ -382,8 +382,8 @@ protected:
     const DRT::Element*                         element,
     const int                                   numdim
     ) const;
-  
-  
+
+
   //! compute element nodes in spatial configuration
   void SpatialConfiguration(
       const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
@@ -400,88 +400,88 @@ protected:
     const int                                   numdim
     ) const;
 
-   
+
   //! get time curve factor
   double GetTimeCurveFactor(
     Teuchos::ParameterList&                        		params
 	);
-  
-  
+
+
   //! invert elements by label
   void InvertElementsPerLabel(
       std::map<int,std::set<int> >&	elementsByLabel,
       std::map<int,int >&				labelByElements
   	  );
-  
-  
+
+
   ///////////////////////  Test methods ///////////////////////
-  
+
   void computeTestVanDerWaalsSpheres(
     const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
     const std::map<int,std::set<int> >&     elementsByLabel_Vol,
     const std::map<int,std::set<int> >&     elementsByLabel_Surf,
-    const RCP<const Epetra_Vector>  disp,
-    const RCP<Epetra_Vector>        fint,
+    const Teuchos::RCP<const Epetra_Vector>  disp,
+    const Teuchos::RCP<Epetra_Vector>        fint,
     const double                            time,
     const int                               step,
     const double                            vdw_radius,
     const double                            n_offset
     );
-  
-  
+
+
   void computeTestVanDerWaalsMembranes(
     const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
     const std::map<int,std::set<int> >&     elementsByLabel_Vol,
     const std::map<int,std::set<int> >&     elementsByLabel_Surf,
-    const RCP<const Epetra_Vector>  disp,
-    const RCP<Epetra_Vector>        fint,
+    const Teuchos::RCP<const Epetra_Vector>  disp,
+    const Teuchos::RCP<Epetra_Vector>        fint,
     const double                            time,
     const int                               step,
     const double                            vdw_radius,
     const double                            n_offset,
     const double                            thickness
     );
-  
-  
+
+
   // compute local forces and center of gravity
-  double computeLocalForceAndCOG(  
+  double computeLocalForceAndCOG(
     const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
     LINALG::Matrix<3,1>&        fpot_sphere,
     LINALG::Matrix<3,1>&        cog_sphere,
-    const RCP<Epetra_Vector>    fint,
-    const RCP<const Epetra_Vector>    disp,
+    const Teuchos::RCP<Epetra_Vector>    fint,
+    const Teuchos::RCP<const Epetra_Vector>    disp,
     const std::set<int>&        elementIds,
     const std::set<int>&        surfElementIds
     );
-  
-  
+
+
   // compute global forces and center of gravity
   double computeGlobalForceAndCOG(
-    double                vol_sphere_local, 
+    double                vol_sphere_local,
     LINALG::Matrix<3,1>&  fpot_sphere_local,
     LINALG::Matrix<3,1>&  cog_sphere_local,
     LINALG::Matrix<3,1>&  fpot_sphere_global,
     LINALG::Matrix<3,1>&  cog_sphere_global
     );
-  
-  
+
+
   //! get atomic density
   double GetAtomicDensity(
       const int                       elementId,
       const std::string&                   conditionName,
       const std::map<int,int >&       labelByElements
       );
-  
-  
+
+
   //! get physical eleCoords
   void getPhysicalEleCoords(
-      Teuchos::RCP<DRT::Discretization>     dis,  
+      Teuchos::RCP<DRT::Discretization>     dis,
       Teuchos::RCP<const Epetra_Vector>     idisp_solid,
       const DRT::Element*                   element,
       LINALG::SerialDenseMatrix&            xyze
       );
-  
-  
+
+
   //! write output
   void WriteTestOutput(
     const double        distance,
@@ -492,15 +492,15 @@ protected:
     const int           step,
     const std::string   name
     );
-  
-  
+
+
   ///////////////////////  Test methods ///////////////////////
 
 
   //! name@ Protected Attributes
 
   //!  current discretization
-  RCP<DRT::Discretization>                    discretRCP_;
+  Teuchos::RCP<DRT::Discretization>                    discretRCP_;
 
   //!  current discretization
   DRT::Discretization&                        discret_;

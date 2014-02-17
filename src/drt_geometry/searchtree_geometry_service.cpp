@@ -70,7 +70,7 @@ LINALG::Matrix<3,2> GEO::getXAABBofDis(
  | given elements with their current postions for sliding ALE           |
  *----------------------------------------------------------------------*/
 LINALG::Matrix<3,2> GEO::getXAABBofEles(
-    std::map<int, RCP<DRT::Element> >& 							elements,
+    std::map<int, Teuchos::RCP<DRT::Element> >& 							elements,
     const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions)
 {
   LINALG::Matrix<3,2> XAABB(true);
@@ -86,10 +86,10 @@ LINALG::Matrix<3,2> GEO::getXAABBofEles(
     XAABB(dim, 1) = pos(dim) + GEO::TOL7;
   }
 
-  std::map<int, RCP<DRT::Element> >::const_iterator elemiter;
+  std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
-    RCP<DRT::Element> currelement = elemiter->second;
+    Teuchos::RCP<DRT::Element> currelement = elemiter->second;
     const LINALG::SerialDenseMatrix xyze_element(GEO::getCurrentNodalPositions(currelement,currentpositions));
     GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
     GEO::checkRoughGeoType(currelement, xyze_element, eleGeoType);
@@ -739,8 +739,8 @@ int GEO::nearestObjectInNode(
  | tree node; object is either a node or a line                         |
  *----------------------------------------------------------------------*/
 void GEO::nearest2DObjectInNode(
-    const RCP<DRT::Discretization>              dis,
-    std::map<int, RCP<DRT::Element> >&          elements,
+    const Teuchos::RCP<DRT::Discretization>              dis,
+    std::map<int, Teuchos::RCP<DRT::Element> >&          elements,
     const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
     const std::map<int, std::set<int> >&        elementList,
     const LINALG::Matrix<3,1>&                  point,
@@ -803,8 +803,8 @@ void GEO::nearest2DObjectInNode(
  | line or node, a random adjacent surface id is returned               |
  *----------------------------------------------------------------------*/
 int GEO::nearest3DObjectInNode(
-		const RCP<DRT::Discretization>              dis,
-		std::map<int, RCP<DRT::Element> >&          elements,
+		const Teuchos::RCP<DRT::Discretization>              dis,
+		std::map<int, Teuchos::RCP<DRT::Element> >&          elements,
 		const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
 		const std::map<int, std::set<int> >&        elementList,
 		const LINALG::Matrix<3,1>&                  point,
@@ -944,8 +944,8 @@ GEO::ObjectType GEO::nearest3DObjectOnElement(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double GEO::nearestNodeInNode(
-    const RCP<DRT::Discretization>              dis,
-    std::map<int, RCP<DRT::Element> >&          elements,
+    const Teuchos::RCP<DRT::Discretization>              dis,
+    std::map<int, Teuchos::RCP<DRT::Element> >&          elements,
     const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
     const LINALG::Matrix<3,1>&                  point,
     DRT::Node&                                  nearnode)
@@ -956,7 +956,7 @@ double GEO::nearestNodeInNode(
   std::set<int> nodeList;
 
   // run over all surface elements to collect nodes
-  std::map<int,RCP<DRT::Element> >::const_iterator eleIter;
+  std::map<int,Teuchos::RCP<DRT::Element> >::const_iterator eleIter;
   for(eleIter = elements.begin(); eleIter != elements.end(); eleIter++)
   {
     // not const because otherwise no lines can be obtained
@@ -1816,10 +1816,10 @@ void GEO::checkRoughGeoType(
 
 /*----------------------------------------------------------------------*
  | determines the geometry type of an element          	     u.may 09/09|
- |  -->needed for RCP on element					                              | 
+ |  -->needed for Teuchos::RCP on element					                              | 
  *----------------------------------------------------------------------*/
 void GEO::checkRoughGeoType(
-    const RCP<DRT::Element>           element,
+    const Teuchos::RCP<DRT::Element>           element,
     const LINALG::SerialDenseMatrix   xyze_element,
     GEO::EleGeoType&                  eleGeoType)
 {

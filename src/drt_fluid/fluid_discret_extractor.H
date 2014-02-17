@@ -27,7 +27,7 @@ public:
 
   */
   FluidDiscretExtractor(
-    RCP<DRT::Discretization> actdis,         //! parent discretization
+    Teuchos::RCP<DRT::Discretization> actdis,         //! parent discretization
     const std::string&            condition,      //! condition for separation of domain
     bool                     yescondition);  //! (unused) bool to distinguish between all nodes having the condition and all nodes not having it
 
@@ -38,18 +38,18 @@ public:
   virtual ~FluidDiscretExtractor();
 
   //! get child discretization
-  const RCP<DRT::Discretization> GetChildDiscretization(){return childdiscret_;}
+  const Teuchos::RCP<DRT::Discretization> GetChildDiscretization(){return childdiscret_;}
   //! get node to node coupling in case of periodic boundary conditions (column and row version)
-  RCP<std::map<int,std::vector<int> > > GetCoupledColNodesChildDiscretization(){return col_pbcmapmastertoslave_;}
-  RCP<std::map<int,std::vector<int> > > GetCoupledRowNodesChildDiscretization(){return row_pbcmapmastertoslave_;}
+  Teuchos::RCP<std::map<int,std::vector<int> > > GetCoupledColNodesChildDiscretization(){return col_pbcmapmastertoslave_;}
+  Teuchos::RCP<std::map<int,std::vector<int> > > GetCoupledRowNodesChildDiscretization(){return row_pbcmapmastertoslave_;}
 private:
   //! the parent discretization
-  RCP<DRT::Discretization>    parentdiscret_;
+  Teuchos::RCP<DRT::Discretization>    parentdiscret_;
   //! the child discretization
-  RCP<DRT::Discretization>    childdiscret_;
+  Teuchos::RCP<DRT::Discretization>    childdiscret_;
   //! periodic boundary condition: node to node coupling (column and row version)
-  RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave_;
-  RCP<std::map<int,std::vector<int> > > row_pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > > row_pbcmapmastertoslave_;
 };
 
 }

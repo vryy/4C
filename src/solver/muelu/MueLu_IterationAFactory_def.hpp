@@ -24,7 +24,7 @@
 namespace MueLu {
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  IterationAFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::IterationAFactory(const std::string mapName,const RCP<const FactoryBase> & mapFact)
+  IterationAFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::IterationAFactory(const std::string mapName,const Teuchos::RCP<const FactoryBase> & mapFact)
       : mapName_(mapName), mapFact_(mapFact)
   {
 
@@ -48,13 +48,13 @@ namespace MueLu {
     // extract dof map from Level class
     // the dof map contains all global DOF ids that shall be handled as Dirichlet boundaries
     // i.e. zero out the corresponding lines in matrix A and put a 1.0 on the diagonal
-    RCP<const Map> fixeddofmap = currentLevel.Get<RCP<const Map> >(mapName_, mapFact_.get());
+    Teuchos::RCP<const Map> fixeddofmap = currentLevel.Get<Teuchos::RCP<const Map> >(mapName_, mapFact_.get());
 
     // extract the original matrix A
-    RCP<Matrix> Ain = Get< RCP<Matrix> >(currentLevel, "A");  // corresponding Get call to Input
+    Teuchos::RCP<Matrix> Ain = Get< Teuchos::RCP<Matrix> >(currentLevel, "A");  // corresponding Get call to Input
 
     // create new empty Operator
-    RCP<CrsMatrixWrap> Aout = Teuchos::rcp(new CrsMatrixWrap(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile));
+    Teuchos::RCP<CrsMatrixWrap> Aout = Teuchos::rcp(new CrsMatrixWrap(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile));
 
     // loop over local rows
     for(size_t row=0; row<Ain->getNodeNumRows(); row++) {

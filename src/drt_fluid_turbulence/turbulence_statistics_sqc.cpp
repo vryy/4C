@@ -40,7 +40,7 @@ Maintainer: Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
-  RCP<DRT::Discretization> actdis,
+  Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::ParameterList&                   params)
   :
   discret_(actdis),
@@ -993,8 +993,8 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
     if (homdir_ == "z")
     {
       // store them in parameterlist for access on the element
-      modelparams->set<RCP<std::vector<double> > >("dir1coords_",x1coordinates_);
-      modelparams->set<RCP<std::vector<double> > >("dir2coords_",x2coordinates_);
+      modelparams->set<Teuchos::RCP<std::vector<double> > >("dir1coords_",x1coordinates_);
+      modelparams->set<Teuchos::RCP<std::vector<double> > >("dir2coords_",x2coordinates_);
     }
   }
 

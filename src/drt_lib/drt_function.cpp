@@ -2868,7 +2868,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     std::vector<double> znode;
     std::vector<DRT::Condition*> dirichlet;
     // get current displacement vector from discretization
-    RCP<const Epetra_Vector> disp;
+    Teuchos::RCP<const Epetra_Vector> disp;
 
     //disp = dis->GetState("displacement");
 

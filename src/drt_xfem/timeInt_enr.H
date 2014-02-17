@@ -47,8 +47,8 @@ public:
 
   //! main function computing the new enrichment values
   void compute(
-      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
   );
 
   std::map<int,std::vector<LINALG::Matrix<2,4> > >* oldJumpAndKinkValues(){return &eleJumpsAndKinks_;}

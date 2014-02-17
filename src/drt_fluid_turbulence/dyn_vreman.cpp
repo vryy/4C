@@ -30,8 +30,8 @@ Maintainer: Benjamin Krank
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     krank 09/13|
  *----------------------------------------------------------------------*/
-FLD::Vreman::Vreman(RCP<DRT::Discretization>     actdis             ,
-    RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
+FLD::Vreman::Vreman(Teuchos::RCP<DRT::Discretization>     actdis             ,
+    Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
     Teuchos::ParameterList&      params)
     :
     // call constructor for "nontrivial" objects
@@ -63,9 +63,9 @@ FLD::Vreman::~Vreman()
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
 void FLD::Vreman::AddScatra(
-  RCP<DRT::Discretization>     scatradis,
+  Teuchos::RCP<DRT::Discretization>     scatradis,
   INPAR::SCATRA::ScaTraType    scatratype,
-  RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
+  Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
 {
   scatradiscret_ = scatradis;
   scatratype_ = scatratype;

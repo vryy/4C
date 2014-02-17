@@ -26,7 +26,7 @@ namespace LINALG
   class SAAMGTransferOperator : public TentativeTransferOperator
   {
     public:
-      SAAMGTransferOperator(const RCP<SparseMatrix>& A, FILE* outfile);
+      SAAMGTransferOperator(const Teuchos::RCP<SparseMatrix>& A, FILE* outfile);
       virtual ~SAAMGTransferOperator() {}
 
       virtual const char* Label() const { return "SAAMGTransferOperator"; }
@@ -49,7 +49,7 @@ namespace LINALG
 
       \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
       */
-      RCP<Epetra_MultiVector> buildTransferOperators(const RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const RCP<Epetra_MultiVector>& ThisNS, const int domainoffset = 0);
+      Teuchos::RCP<Epetra_MultiVector> buildTransferOperators(const Teuchos::RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_MultiVector>& ThisNS, const int domainoffset = 0);
     protected:
 
      /*!

@@ -124,7 +124,7 @@ private:
   Teuchos::RCP<Epetra_MultiVector> crosslinkerinoctants_;
   //! \brief vector holding the dimensions of the periodic box
   Teuchos::RCP<std::vector<double> > periodlength_;
-  //! \brief rootnode of the tree of RCP pointers that allow to reconstruct thedimensions of the octree. This is crucial in order to determine the Octant that belongs to a position (e.g. a crosslinker position)
+  //! \brief rootnode of the tree of Teuchos::RCP pointers that allow to reconstruct thedimensions of the octree. This is crucial in order to determine the Octant that belongs to a position (e.g. a crosslinker position)
   Octree::OctreeNode* RootNode_;
 };
 

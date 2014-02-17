@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_potential_volume.H
 
-\brief  Class controlling volume stresses due to 
+\brief  Class controlling volume stresses due to
         intermolecular interaction forces
         between mesoscopic structures
 
@@ -24,7 +24,7 @@ Maintainer: Ursula Mayer
 namespace POTENTIAL
 {
 /*!
-\brief  Class controlling volume stresses due to 
+\brief  Class controlling volume stresses due to
         intermolecular interaction forces
         between mesoscopic structures
 
@@ -47,13 +47,13 @@ public:
       const GEO::TreeType&                  treetype
       );
 
-  
+
   /*!
     \brief Destructor
    */
   ~VolumePotential(){};
 
-  
+
   /*!
     \brief Call discretization to calculate additional contributions
     due to interfacial energy
@@ -63,14 +63,14 @@ public:
     \param fint (out): internal forces
     \param stiff (out): stiffness matrix
    */
-  void EvaluatePotential( 
+  void EvaluatePotential(
 		  Teuchos::ParameterList& p,
-		  RCP<Epetra_Vector> 			disp,
-		  RCP<Epetra_Vector> 			fint,
-		  RCP<LINALG::SparseMatrix> 	stiff
+		  Teuchos::RCP<Epetra_Vector> 			disp,
+		  Teuchos::RCP<Epetra_Vector> 			fint,
+		  Teuchos::RCP<LINALG::SparseMatrix> 	stiff
 		  );
-  
-  
+
+
   /*!
     \brief calculates internal forces and
     stiffnesses due to interfacial phenomena for volume elements
@@ -90,8 +90,8 @@ public:
       Epetra_SerialDenseMatrix&       K_stiff,
       Epetra_SerialDenseVector&       F_int
       );
-  
-  
+
+
   /*!
     \brief calculates internal forces and
     stiffnesses due to interfacial phenomena for surface elements
@@ -111,20 +111,20 @@ public:
       Epetra_SerialDenseMatrix&         K_stiff,
       Epetra_SerialDenseVector&         fint
       );
-  
-  
+
+
   // TEST Van Der Waals potential
   void TestEvaluatePotential(
     Teuchos::ParameterList&                      p,
-    RCP<Epetra_Vector>          disp,
-    RCP<Epetra_Vector>          fint,
-    RCP<LINALG::SparseMatrix>   stiff,
+    Teuchos::RCP<Epetra_Vector>          disp,
+    Teuchos::RCP<Epetra_Vector>          fint,
+    Teuchos::RCP<LINALG::SparseMatrix>   stiff,
     const double                        time,
     const int                           step
     );
 
 
-  
+
 private:
 
   //don't want = operator and cctor
@@ -138,18 +138,18 @@ private:
   void UpdateDisplacementsOfPotentialDiscretization(
     Teuchos::RCP<const Epetra_Vector>   idisp_solid
     );
-  
-  
+
+
   void EvaluateVolumePotentialCondition(
       Teuchos::ParameterList&                          params,
-      RCP<LINALG::SparseMatrix>       systemmatrix1,
-      RCP<LINALG::SparseMatrix>       systemmatrix2,
-      RCP<Epetra_Vector>              systemvector1,
+      Teuchos::RCP<LINALG::SparseMatrix>       systemmatrix1,
+      Teuchos::RCP<LINALG::SparseMatrix>       systemmatrix2,
+      Teuchos::RCP<Epetra_Vector>              systemvector1,
       Teuchos::RCP<Epetra_Vector>             systemvector2,
       Teuchos::RCP<Epetra_Vector>             systemvector3,
       const std::string&                           condstring
       );
-  
+
 
   /*!
     \brief parallel volume tree search
@@ -159,14 +159,14 @@ private:
       const double             radius,
       const int                label
       );
-  
-  
+
+
   /*!
     \brief parallel volume dummy tree search
      */
   void TreeSearchDummy();
-  
-  
+
+
   /*!
   \brief volume tree search
    */
@@ -176,7 +176,7 @@ private:
       const bool                                              dummy
       );
 
-  
+
   /*!
     \brief  compute internal force and stiffness matrix
             for local volume elements and nonlocal volume pecs
@@ -187,7 +187,7 @@ private:
       std::vector<int>&                                               lm,
       Epetra_SerialDenseMatrix&                                       K_stiff,
       Epetra_SerialDenseVector&                                       F_int,
-      RCP<DRT::Condition>                                     cond,
+      Teuchos::RCP<DRT::Condition>                                     cond,
       const double                                                    curvefac);
 
 
@@ -201,11 +201,11 @@ private:
       std::vector<int>&                                           lm,
       Epetra_SerialDenseMatrix&                                   K_stiff,
       Epetra_SerialDenseVector&                                   F_int,
-      RCP<DRT::Condition>                                 cond,
+      Teuchos::RCP<DRT::Condition>                                 cond,
       const double                                                curvefac
   );
 
-  
+
   //! compute integration factors for volume elements
   double ComputeFactor(
       const DRT::Element*                     element,
@@ -216,8 +216,8 @@ private:
       LINALG::Matrix<3,1>&                    x_gp,
       const double                            curve_fac
       );
-  
-  
+
+
   //! compute integration factors for volume pecs
   double ComputeFactor(
       PotentialElementContainer&              pec,
@@ -230,7 +230,7 @@ private:
       );
 
 
-  //! compute integration factors for surface elements 
+  //! compute integration factors for surface elements
   double ComputeFactor(
       const DRT::Element*                     element,
       Epetra_SerialDenseVector&               funct,
@@ -240,8 +240,8 @@ private:
       LINALG::Matrix<2,1>&                    x_gp,
       const double                            curve_fac
       );
-  
-  
+
+
   //! compute integration factors for surface pecs
   double ComputeFactor(
       PotentialElementContainer&              pec,
@@ -259,41 +259,41 @@ private:
       const DRT::Element::DiscretizationType& distype,
       DRT::UTILS::GaussRule3D&                rule_pot
       );
-  
-  
+
+
   //! returns gauss rule for given distype
   void GetGaussRule2D(
       const DRT::Element::DiscretizationType& distype,
       DRT::UTILS::GaussRule2D&                rule_pot
       );
- 
+
 
 
   //! name@ Private Attributes
   //! search tree type
   GEO::TreeType                                           treetype_;
-  
+
   //! for each potential condition label there is a set of elements
   std::map<int,std::set<int> >                            elementsByLabel_;
-  
-  //! for each element there is a potential condition 
+
+  //! for each element there is a potential condition
   std::map<int,int >                                      labelByElement_;
-  
-  //! column vector of displacements 
+
+  //! column vector of displacements
   Teuchos::RCP<const Epetra_Vector>                       disp_col_;
 
   //! current position of boundary elements
   std::map<int,LINALG::Matrix<3,1> >                      currentpositions_;
 
-  //! list of current XAABBs 
+  //! list of current XAABBs
   std::map<int,LINALG::Matrix<3,2> >                      elemXAABBList_;
-  
+
   //! local potential element ids
   std::map<int,std::set<int> >                            localEleIds_;
-  
+
   //! nonlocal potential element containers
   std::map<int,std::vector<PotentialElementContainer> >   nonlocalPecs_;
-             
+
 
 }; //class
 

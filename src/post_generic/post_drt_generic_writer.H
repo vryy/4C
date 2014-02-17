@@ -190,9 +190,9 @@ protected:
             std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
             const std::string name);
 
-    RCP<Epetra_Map> WriteCoordinates(
+    Teuchos::RCP<Epetra_Map> WriteCoordinates(
             std::ofstream& geofile,                         ///< filestream for the geometry
-            const RCP<DRT::Discretization> dis ///< discretization where the nodal positions are take from
+            const Teuchos::RCP<DRT::Discretization> dis ///< discretization where the nodal positions are take from
             ) ;
 
   /*! \brief Write the coordinates for a Polynomial discretization
@@ -202,8 +202,8 @@ protected:
   */
     void WriteCoordinatesForPolynomialShapefunctions(
       std::ofstream&                              geofile ,
-      const RCP<DRT::Discretization> dis     ,
-      RCP<Epetra_Map>&               proc0map
+      const Teuchos::RCP<DRT::Discretization> dis     ,
+      Teuchos::RCP<Epetra_Map>&               proc0map
       );
 
   /*! \brief Write the coordinates for a Nurbs discretization
@@ -214,15 +214,15 @@ protected:
   */
     void WriteCoordinatesForNurbsShapefunctions(
       std::ofstream&                              geofile ,
-      const RCP<DRT::Discretization> dis     ,
-      RCP<Epetra_Map>&               proc0map
+      const Teuchos::RCP<DRT::Discretization> dis     ,
+      Teuchos::RCP<Epetra_Map>&               proc0map
       );
 
 
     void WriteCells(
             std::ofstream& geofile,///< filestream for the geometry
-            const RCP<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
-            const RCP<Epetra_Map>& proc0map ///< current proc0 node map, created by WriteCoordinatesPar
+            const Teuchos::RCP<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
+            const Teuchos::RCP<Epetra_Map>& proc0map ///< current proc0 node map, created by WriteCoordinatesPar
             ) const;
 
 
@@ -237,16 +237,16 @@ protected:
     \param int                              (i)          global element id
     \param std::ofstream                         (used for o) direct print to file
     \param std::vector<int>                      (o)          remember node values for parallel IO
-    \param RCP<DRT::Discretization> (i)          the discretisation holding knots etc
-    \param RCP<Epetra_Map>          (i)          an allreduced nodemap
+    \param Teuchos::RCP<DRT::Discretization> (i)          the discretisation holding knots etc
+    \param Teuchos::RCP<Epetra_Map>          (i)          an allreduced nodemap
 
   */
     void WriteNurbsCell(const DRT::Element::DiscretizationType distype   ,
                         const int                              gid       ,
                         std::ofstream&                              geofile   ,
                         std::vector<int>&                      nodevector,
-                        const RCP<DRT::Discretization> dis       ,
-                        const RCP<Epetra_Map>&         proc0map  ) const;
+                        const Teuchos::RCP<DRT::Discretization> dis       ,
+                        const Teuchos::RCP<Epetra_Map>&         proc0map  ) const;
 
   /*! \brief Quadratic nurbs split one nurbs27 element
     in knot space into eight(3d) cells. The global
@@ -300,9 +300,9 @@ protected:
 
     void WriteNodeConnectivityPar(
             std::ofstream& geofile,
-            const RCP<DRT::Discretization> dis,
+            const Teuchos::RCP<DRT::Discretization> dis,
             const std::vector<int>& nodevector,
-            const RCP<Epetra_Map> proc0map
+            const Teuchos::RCP<Epetra_Map> proc0map
             ) const;
     void WriteDofResultStep(
             std::ofstream& file,
@@ -337,7 +337,7 @@ protected:
 
     \param std::ofstream                         (used for o) direct print to file
     \param int                              (i)          number of degrees of freedom
-    \param RCP<Epetra_Vector>       (i)          the result data read from the baci output
+    \param Teuchos::RCP<Epetra_Vector>       (i)          the result data read from the baci output
     \param std::string                           (i)          name of the thing we are writing
                                                          (velocity, pressure etc.)
     \param int                              (i)          potential offset in dof numbering
@@ -346,7 +346,7 @@ protected:
   void WriteDofResultStepForNurbs(
     std::ofstream&                        file ,
     const int                        numdf,
-    const RCP<Epetra_Vector> data ,
+    const Teuchos::RCP<Epetra_Vector> data ,
     const std::string                     name ,
     const int                      offset
     ) const;
@@ -369,7 +369,7 @@ protected:
   void WriteNodalResultStepForNurbs(
     std::ofstream&                        file ,
     const int                        numdf,
-    const RCP<Epetra_MultiVector> data ,
+    const Teuchos::RCP<Epetra_MultiVector> data ,
     const std::string                     name ,
     const int                      offset
     ) const;
@@ -428,7 +428,7 @@ protected:
      * \return map between distype and number of elements to be written
      */
     NumElePerDisType GetNumElePerDisType(
-            const RCP<DRT::Discretization> dis) const;
+            const Teuchos::RCP<DRT::Discretization> dis) const;
 
     std::string GetEnsightString(
             const DRT::Element::DiscretizationType distype) const;
@@ -458,7 +458,7 @@ protected:
      * \return map between distype and vector containing the global ids of th corresponding elements
      */
     EleGidPerDisType GetEleGidPerDisType(
-            const RCP<DRT::Discretization> dis,
+            const Teuchos::RCP<DRT::Discretization> dis,
             NumElePerDisType numeleperdistype
             ) const;
 
@@ -486,7 +486,7 @@ protected:
     NumElePerDisType numElePerDisType_; ///< number of elements per element discretization type
     EleGidPerDisType eleGidPerDisType_; ///< global ids of corresponding elements per element discretization type
 
-    RCP<Epetra_Map> proc0map_; ///< allreduced node row map for proc 0, empty on other procs
+    Teuchos::RCP<Epetra_Map> proc0map_; ///< allreduced node row map for proc 0, empty on other procs
 
     Teuchos::RCP<Epetra_Map> vispointmap_; ///< map for all visualisation points
 

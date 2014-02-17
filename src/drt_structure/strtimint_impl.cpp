@@ -627,7 +627,7 @@ void STR::TimIntImpl::UpdateKrylovSpaceProjection()
     dserror("option integration not implemented");
   }
 
-  // get RCP to kernel vector of projector
+  // get Teuchos::RCP to kernel vector of projector
   // since we are in 'pointvalue' mode, weights are changed implicitely
   Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
   c->PutScalar(0.0);
@@ -641,7 +641,7 @@ void STR::TimIntImpl::UpdateKrylovSpaceProjection()
   // get number of modes and their ids
   std::vector<int> modeids = projector_->Modes();
 
-  // RCP on vector of size 0 holding the nullspace data - resized within ComputeNullspace
+  // Teuchos::RCP on vector of size 0 holding the nullspace data - resized within ComputeNullspace
   Teuchos::RCP<std::vector<double> > nullspace = Teuchos::rcp(new std::vector<double>(0));
   discret_->ComputeNullSpace(nullspace);
 
@@ -2086,10 +2086,10 @@ void STR::TimIntImpl::CmtLinearSolve()
     if (contactsolver_->Params().isSublist("Aztec Parameters"))
     {
       Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Aztec Parameters");
-      RCP<Epetra_Map> masterDofMap;
-      RCP<Epetra_Map> slaveDofMap;
-      RCP<Epetra_Map> innerDofMap;
-      RCP<Epetra_Map> activeDofMap;
+      Teuchos::RCP<Epetra_Map> masterDofMap;
+      Teuchos::RCP<Epetra_Map> slaveDofMap;
+      Teuchos::RCP<Epetra_Map> innerDofMap;
+      Teuchos::RCP<Epetra_Map> activeDofMap;
       Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
       strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
       Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
@@ -2107,10 +2107,10 @@ void STR::TimIntImpl::CmtLinearSolve()
     if (contactsolver_->Params().isSublist("Belos Parameters"))
     {
       Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Belos Parameters");
-      RCP<Epetra_Map> masterDofMap;
-      RCP<Epetra_Map> slaveDofMap;
-      RCP<Epetra_Map> innerDofMap;
-      RCP<Epetra_Map> activeDofMap;
+      Teuchos::RCP<Epetra_Map> masterDofMap;
+      Teuchos::RCP<Epetra_Map> slaveDofMap;
+      Teuchos::RCP<Epetra_Map> innerDofMap;
+      Teuchos::RCP<Epetra_Map> activeDofMap;
       Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
       strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
       Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
@@ -2318,9 +2318,9 @@ int STR::TimIntImpl::PTC()
 
     // modify stiffness matrix with dti
     {
-      RCP<Epetra_Vector> tmp = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
+      Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
       tmp->PutScalar(dti);
-      RCP<Epetra_Vector> diag = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
+      Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(SystemMatrix()->RowMap(),false);
       SystemMatrix()->ExtractDiagonalCopy(*diag);
       diag->Update(1.0,*tmp,1.0);
       SystemMatrix()->ReplaceDiagonalValues(*diag);
@@ -3498,10 +3498,10 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
     if (contactsolver_->Params().isSublist("Aztec Parameters"))
     {
       Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Aztec Parameters");
-      RCP<Epetra_Map> masterDofMap;
-      RCP<Epetra_Map> slaveDofMap;
-      RCP<Epetra_Map> innerDofMap;
-      RCP<Epetra_Map> activeDofMap;
+      Teuchos::RCP<Epetra_Map> masterDofMap;
+      Teuchos::RCP<Epetra_Map> slaveDofMap;
+      Teuchos::RCP<Epetra_Map> innerDofMap;
+      Teuchos::RCP<Epetra_Map> activeDofMap;
       Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
       strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
       Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
@@ -3519,10 +3519,10 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
     if (contactsolver_->Params().isSublist("Belos Parameters"))
     {
       Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Belos Parameters");
-      RCP<Epetra_Map> masterDofMap;
-      RCP<Epetra_Map> slaveDofMap;
-      RCP<Epetra_Map> innerDofMap;
-      RCP<Epetra_Map> activeDofMap;
+      Teuchos::RCP<Epetra_Map> masterDofMap;
+      Teuchos::RCP<Epetra_Map> slaveDofMap;
+      Teuchos::RCP<Epetra_Map> innerDofMap;
+      Teuchos::RCP<Epetra_Map> activeDofMap;
       Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
       strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
       Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");

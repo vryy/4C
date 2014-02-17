@@ -44,9 +44,9 @@ Maintainer: Shadan Shahmiri
 #include <iostream>
 
 XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
-  const RCP<DRT::Discretization> bgdis,
-  const RCP<DRT::Discretization> embdis,
-  RCP<XFEM::FluidWizard>         wizard,
+  const Teuchos::RCP<DRT::Discretization> bgdis,
+  const Teuchos::RCP<DRT::Discretization> embdis,
+  Teuchos::RCP<XFEM::FluidWizard>         wizard,
   int                            step,
   enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach,
   const Teuchos::ParameterList&              params
@@ -77,8 +77,8 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
 // -------------------------------------------------------------------
 // map of standard node ids and their dof-gids in for this time step
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretization> bgdis,
-                                                        RCP<XFEM::FluidWizard>         wizard)
+void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const Teuchos::RCP<DRT::Discretization> bgdis,
+                                                        Teuchos::RCP<XFEM::FluidWizard>         wizard)
 {
   const Epetra_Map* noderowmap = bgdis->NodeRowMap();
 
@@ -178,7 +178,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
 
 #ifdef PARALLEL
   // build a reduced map of all noderowmaps of all processors
-  RCP<Epetra_Map> allnoderowmap = LINALG::AllreduceEMap(*noderowmap);
+  Teuchos::RCP<Epetra_Map> allnoderowmap = LINALG::AllreduceEMap(*noderowmap);
   // gather the informations of all processors
   DRT::Exporter ex(*noderowmap,*allnoderowmap,bgdis->Comm());
   ex.Export(stdnodenp_);
@@ -242,8 +242,8 @@ void XFEM::XFluidFluidTimeIntegration::SaveBgNodeMaps()
 // - Create new map of bg nodes
 // - Gmsh-output
 // -------------------------------------------------------------------
-int XFEM::XFluidFluidTimeIntegration::SaveAndCreateNewBgNodeMaps(RCP<DRT::Discretization> bgdis,
-                                                                 RCP<XFEM::FluidWizard>   wizard)
+int XFEM::XFluidFluidTimeIntegration::SaveAndCreateNewBgNodeMaps(Teuchos::RCP<DRT::Discretization> bgdis,
+                                                                 Teuchos::RCP<XFEM::FluidWizard>   wizard)
 {
 
   // save the old maps and clear the maps for the new cut
@@ -270,8 +270,8 @@ int XFEM::XFluidFluidTimeIntegration::SaveAndCreateNewBgNodeMaps(RCP<DRT::Discre
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
-void  XFEM::XFluidFluidTimeIntegration::CreateBgNodeMapsForRestart(RCP<DRT::Discretization> bgdis,
-                                                                   RCP<XFEM::FluidWizard>   wizard)
+void  XFEM::XFluidFluidTimeIntegration::CreateBgNodeMapsForRestart(Teuchos::RCP<DRT::Discretization> bgdis,
+                                                                   Teuchos::RCP<XFEM::FluidWizard>   wizard)
 {
 
   // Create new maps
@@ -284,7 +284,7 @@ void  XFEM::XFluidFluidTimeIntegration::CreateBgNodeMapsForRestart(RCP<DRT::Disc
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(const RCP<DRT::Discretization>        bgdis,
+void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(const Teuchos::RCP<DRT::Discretization>        bgdis,
                                                                             Teuchos::RCP<Epetra_Vector>           bgstatevn1,
                                                                             Teuchos::RCP<Epetra_Vector>           bgstatevnp1,
                                                                             Teuchos::RCP<Epetra_Vector>           embstatevn1,
@@ -328,7 +328,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorAndProjectEmbToBg(cons
 // Always do the projection from embedded fluid. Also for the enriched
 // nodes.
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const RCP<DRT::Discretization>       bgdis,
+void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const Teuchos::RCP<DRT::Discretization>       bgdis,
 									 Teuchos::RCP<Epetra_Vector>          bgstatevn1,
 		                                                         Teuchos::RCP<Epetra_Vector>          bgstatevnp1,
 		                                                         Teuchos::RCP<Epetra_Vector>          embstatevn1,
@@ -465,7 +465,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const R
 // bgstatevn(in):                epetra state vector needed to transfer
 //                               enriched values if no embedded element is found
 //------------------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const RCP<DRT::Discretization>        bgdis,
+void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const Teuchos::RCP<DRT::Discretization>        bgdis,
                                                         std::vector<LINALG::Matrix<3,1> >   & bgnodes_coords,
                                                         std::vector<LINALG::Matrix<20,1> >  & interpolated_vecs,
                                                         std::vector<int>                    & bgnodeidwithnohistory,
@@ -820,7 +820,7 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbeleAndInterpolatevalues(std::vecto
 // If enriched values are available keep them (no projection from
 // embedded fluid)
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const RCP<DRT::Discretization>        bgdis,
+void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const Teuchos::RCP<DRT::Discretization>        bgdis,
                                                                           Teuchos::RCP<Epetra_Vector>           bgstatevn1,
                                                                           Teuchos::RCP<Epetra_Vector>           bgstatevnp1,
                                                                           Teuchos::RCP<Epetra_Vector>           embstatevn1,
@@ -965,7 +965,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
 //-------------------------------------------------------------------
 // Write the values of node from bgstatevn to bgstatevnp
 //--------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::WriteValuestoBgStateVector(const RCP<DRT::Discretization>   bgdis,
+void XFEM::XFluidFluidTimeIntegration::WriteValuestoBgStateVector(const Teuchos::RCP<DRT::Discretization>   bgdis,
                                                                   DRT::Node*                       bgnode,
                                                                   std::vector<int>                 gdofs_n,
                                                                   Teuchos::RCP<Epetra_Vector>      bgstatevnp,
@@ -1308,7 +1308,7 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpacialToElementCoordAndProject2(D
 //               interpolation)
 //
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const RCP<DRT::Discretization> bgdis,
+void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const Teuchos::RCP<DRT::Discretization> bgdis,
                                                             Teuchos::RCP<Epetra_Vector>    statevbg_n,
                                                             Teuchos::RCP<Epetra_Vector>    statevemb_n,
                                                             Teuchos::RCP<Epetra_Vector>    statevembnew_n,
@@ -1461,7 +1461,7 @@ void XFEM::XFluidFluidTimeIntegration::SearchRadius()
 // -------------------------------------------------------------------
 // Gmsh Output
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::GmshOutput(const RCP<DRT::Discretization>    bgdis)
+void XFEM::XFluidFluidTimeIntegration::GmshOutput(const Teuchos::RCP<DRT::Discretization>    bgdis)
 {
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("std_enriched_map", step_, 30, 0, bgdis->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
@@ -1499,7 +1499,7 @@ void XFEM::XFluidFluidTimeIntegration::GmshOutput(const RCP<DRT::Discretization>
 // -------------------------------------------------------------------
 // Gmsh Output for interpolated-Ale FSI-Approach
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::GmshOutputForInterpolateFSI(const RCP<DRT::Discretization>    bgdis,
+void XFEM::XFluidFluidTimeIntegration::GmshOutputForInterpolateFSI(const Teuchos::RCP<DRT::Discretization>    bgdis,
 		                                                           Teuchos::RCP<Epetra_Vector>    aledispnp,
                                                                    Teuchos::RCP<Epetra_Vector>    aledispnpoldstate)
 {
@@ -1608,9 +1608,9 @@ void XFEM::XFluidFluidTimeIntegration::GmshOutputForInterpolateFSI(const RCP<DRT
 // incompressibility patch we add them afterwards. These added Elements should
 // have the full dofs again.
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RCP<DRT::Discretization>     bgdis,
-                                                                        RCP<XFEM::FluidWizard>             wizard_n,
-                                                                        RCP<XFEM::FluidWizard>             wizard_np,
+void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const Teuchos::RCP<DRT::Discretization>     bgdis,
+                                                                        Teuchos::RCP<XFEM::FluidWizard>             wizard_n,
+                                                                        Teuchos::RCP<XFEM::FluidWizard>             wizard_np,
                                                                         Teuchos::RCP<LINALG::MapExtractor> dbcmaps )
 {
   //---------------------------------------------
@@ -1776,8 +1776,8 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
 // -------------------------------------------------------------------
 // build an incompressibility discretization
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discretization>     bgdis,
-                                                            RCP<XFEM::FluidWizard>             wizard_np)
+void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const Teuchos::RCP<DRT::Discretization>     bgdis,
+                                                            Teuchos::RCP<XFEM::FluidWizard>             wizard_np)
 {
 
   // generate an empty boundary discretisation
@@ -1842,7 +1842,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
   {
     DRT::Node* actnode=bgdis->gNode(*id);
 
-    RCP<DRT::Node> incompnode =Teuchos::rcp(actnode->Clone());
+    Teuchos::RCP<DRT::Node> incompnode =Teuchos::rcp(actnode->Clone());
 
     incompdis_->AddNode(incompnode);
   }
@@ -1862,15 +1862,15 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
     // yes, we have a MHD condition
     if(found==true)
     {
-      RCP<DRT::Element> incompele =Teuchos::rcp(actele->Clone());
+      Teuchos::RCP<DRT::Element> incompele =Teuchos::rcp(actele->Clone());
 
       incompdis_->AddElement(incompele);
     }
   }
 
   //incompelementids_set_ needs a full NodeRowMap and a NodeColMap
-  RCP<Epetra_Map> newrownodemap;
-  RCP<Epetra_Map> newcolnodemap;
+  Teuchos::RCP<Epetra_Map> newrownodemap;
+  Teuchos::RCP<Epetra_Map> newcolnodemap;
 
   std::vector<int> rownodes;
 
@@ -1906,7 +1906,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
                                      incompdis_->Comm()));
 
   incompdis_->Redistribute(*newrownodemap,*newcolnodemap,false,false,false);
-  RCP<DRT::DofSet> newdofset=Teuchos::rcp(new DRT::TransparentIndependentDofSet(bgdis,true,wizard_np));
+  Teuchos::RCP<DRT::DofSet> newdofset=Teuchos::rcp(new DRT::TransparentIndependentDofSet(bgdis,true,wizard_np));
   incompdis_->ReplaceDofSet(newdofset); // do not call this with true!!
   incompdis_->FillComplete();
 }
@@ -1914,8 +1914,8 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::EvaluateIncompressibility(const RCP<DRT::Discretization>  bgdis,
-                                                                 RCP<XFEM::FluidWizard>          wizard)
+void XFEM::XFluidFluidTimeIntegration::EvaluateIncompressibility(const Teuchos::RCP<DRT::Discretization>  bgdis,
+                                                                 Teuchos::RCP<XFEM::FluidWizard>          wizard)
 {
 
   C_ = LINALG::CreateVector(*incompdis_->DofRowMap(),true);
@@ -2057,7 +2057,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
   }
 
   // build dofrowmap for velocity dofs
-  RCP<Epetra_Map> veldofrowmap = Teuchos::rcp(new Epetra_Map(-1,
+  Teuchos::RCP<Epetra_Map> veldofrowmap = Teuchos::rcp(new Epetra_Map(-1,
                                                             C_vel_dofids.size(),
                                                             &C_vel_dofids[0],
                                                             0,
@@ -2203,7 +2203,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
                       &allproc[0],incompdis_->Comm());
 
   // build dofrowmap of last entries
-  RCP<Epetra_Map> lastdofrowmap = Teuchos::rcp(new Epetra_Map(-1,
+  Teuchos::RCP<Epetra_Map> lastdofrowmap = Teuchos::rcp(new Epetra_Map(-1,
                                                              C_vellast_All.size(),
                                                              &C_vellast_All[0],
                                                              0,

@@ -942,7 +942,7 @@ void SCATRA::ScaTraTimIntElch::SetupElchNatConv()
 
     //initialization of the densification coefficient vector
     DRT::Element*   element = discret_->lRowElement(0);
-    RCP<MAT::Material>  mat = element->Material();
+    Teuchos::RCP<MAT::Material>  mat = element->Material();
 
     if (mat->MaterialType() == INPAR::MAT::m_matlist)
     {
@@ -1547,8 +1547,8 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
  | evaluate contribution of electrode kinetics to eq. system  gjb 02/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingBC(
-    RCP<LINALG::SparseOperator> matrix,
-    RCP<Epetra_Vector>          rhs
+    Teuchos::RCP<LINALG::SparseOperator> matrix,
+    Teuchos::RCP<Epetra_Vector>          rhs
 )
 {
   // time measurement: evaluate condition 'ElectrodeKinetics'
@@ -1632,7 +1632,7 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
 /*----------------------------------------------------------------------*
  | check for zero/negative concentration values               gjb 01/10 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(RCP<Epetra_Vector> vec)
+void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vector> vec)
 {
   // action only for ELCH applications
 

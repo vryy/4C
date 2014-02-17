@@ -56,7 +56,7 @@ public:
   \param name (in): name of this nurbs discretization
   \param comm (in): An epetra comm object associated with this discretization
   */
-  NurbsDiscretization(const std::string name, RCP<Epetra_Comm> comm);
+  NurbsDiscretization(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
   /*!
   \brief Destructor
@@ -79,7 +79,7 @@ public:
   \author gammi
 
   */
-  virtual void SetKnotVector(RCP<DRT::NURBS::Knotvector> knots);
+  virtual void SetKnotVector(Teuchos::RCP<DRT::NURBS::Knotvector> knots);
 
   /*!
   \brief get a pointer to the knotvector from the discretization
@@ -89,7 +89,7 @@ public:
   \author gammi
 
   */
-  RCP<DRT::NURBS::Knotvector> GetKnotVector();
+  Teuchos::RCP<DRT::NURBS::Knotvector> GetKnotVector();
 
   /*!
   \brief return number of knots in each direction
@@ -166,7 +166,7 @@ private:
   //! dimension  u     : nurbs curve   (n)
   //! dimensions u,v   : nurbs surface (n x m)
   //! dimensions u,v,w : nurbs volume  (n x m x l)
-  RCP<DRT::NURBS::Knotvector>    knots_;
+  Teuchos::RCP<DRT::NURBS::Knotvector>    knots_;
 
 }; // class NurbsDiscretization
 

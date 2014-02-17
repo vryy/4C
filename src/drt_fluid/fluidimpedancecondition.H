@@ -51,7 +51,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  FluidImpedanceWrapper( RCP<DRT::Discretization>  actdis,
+  FluidImpedanceWrapper( Teuchos::RCP<DRT::Discretization>  actdis,
 			 IO::DiscretizationWriter& output,
 			 double dta);
 
@@ -79,7 +79,7 @@ public:
   /*!
   \brief Wrapper for FluidImpedacnceBc::UpdateResidual
   */
-  void UpdateResidual(RCP<Epetra_Vector>  residual );
+  void UpdateResidual(Teuchos::RCP<Epetra_Vector>  residual );
 
   /*!
   \brief Wrapper for FluidImpedacnceBc::WriteRestart
@@ -94,7 +94,7 @@ public:
   /*!
   \brief return pressures of one cycle
   */
-  RCP<std::vector<double> > getPressures(int condid);
+  Teuchos::RCP<std::vector<double> > getPressures(int condid);
 
   /*!
   \brief Wrapper for FluidImpedacnceBc::SetWindkesselParams
@@ -115,10 +115,10 @@ private:
   /*!
   \brief all single impedance conditions
   */
-  std::map<const int, RCP<class FluidImpedanceBc> > impmap_;
+  std::map<const int, Teuchos::RCP<class FluidImpedanceBc> > impmap_;
 
   //! fluid discretization
-  RCP<DRT::Discretization>      discret_;
+  Teuchos::RCP<DRT::Discretization>      discret_;
 
   //! the output writer
   IO::DiscretizationWriter&     output_;
@@ -144,7 +144,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  FluidImpedanceBc( RCP<DRT::Discretization>  actdis,
+  FluidImpedanceBc( Teuchos::RCP<DRT::Discretization>  actdis,
 		    IO::DiscretizationWriter& output,
 		    double dta,
 		    int condid,
@@ -204,7 +204,7 @@ protected:
   void getResultsOfAPeriod(Teuchos::ParameterList & params,
                            int             condid);
 
-  void UpdateResidual( RCP<Epetra_Vector> residual );
+  void UpdateResidual( Teuchos::RCP<Epetra_Vector> residual );
 
 private:
   /*!
@@ -268,14 +268,14 @@ private:
   /*!
   \brief return pressures of one cycle
   */
-  RCP<std::vector<double> > getPressures(){return pressures_;}
+  Teuchos::RCP<std::vector<double> > getPressures(){return pressures_;}
 
 
   /*!
   \brief interpolate Vector1 to get Vector2
   */
-  void interpolate(RCP<std::vector<double> > V1,
-                   RCP<std::vector<double> > V2,
+  void interpolate(Teuchos::RCP<std::vector<double> > V1,
+                   Teuchos::RCP<std::vector<double> > V2,
                    int  index1,
                    int & index2,
                    double time);
@@ -283,7 +283,7 @@ private:
 
 protected:
 
-  RCP<Epetra_Vector> impedancetbc_;
+  Teuchos::RCP<Epetra_Vector> impedancetbc_;
 
 private:
 
@@ -307,16 +307,16 @@ private:
   int                           myrank_;
 
   //! fluid discretization
-  RCP<DRT::Discretization>      discret_;
+  Teuchos::RCP<DRT::Discretization>      discret_;
 
   //! the output writer
   IO::DiscretizationWriter&     output_;
 
   //! Flowrate array for impedance conditions
-  RCP<std::vector<double> > flowrates_;
+  Teuchos::RCP<std::vector<double> > flowrates_;
 
   //! pressures array for impedance conditions
-  RCP<std::vector<double> > pressures_;
+  Teuchos::RCP<std::vector<double> > pressures_;
 
   //! Position at which the next element should be replaced
   //! initialised to zero as the first element will be replaced first

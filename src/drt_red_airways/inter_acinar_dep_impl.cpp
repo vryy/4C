@@ -104,7 +104,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(
   Teuchos::RCP<const MAT::Material>      material)
 {
 
-  Teuchos::RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
+  Teuchos::RCP<Epetra_Vector> generations   = params.get<Teuchos::RCP<Epetra_Vector> >("generations");
 
   //--------------------------------------------------------------------
   // get the generation numbers
@@ -250,8 +250,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
 
         if (Bc == "pressure" || Bc == "ExponentialPleuralPressure")
         {
-          Teuchos::RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-          Teuchos::RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+          Teuchos::RCP<Epetra_Vector> bcval  = params.get<Teuchos::RCP<Epetra_Vector> >("bcval");
+          Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector> >("dbctog");
 
           if (bcval==Teuchos::null||dbctog==Teuchos::null)
           {
@@ -316,8 +316,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
             exit(1);
           }
 
-          Teuchos::RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
-          Teuchos::RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
+          Teuchos::RCP<Epetra_Vector> bcval  = params.get<Teuchos::RCP<Epetra_Vector> >("bcval");
+          Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector> >("dbctog");
 
           if (bcval==Teuchos::null||dbctog==Teuchos::null)
           {

@@ -31,7 +31,7 @@
 namespace MueLu {
 
 template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::ContactSPAggregationFactory(RCP<const FactoryBase> aggregatesFact, RCP<const FactoryBase> amalgFact)
+ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::ContactSPAggregationFactory(Teuchos::RCP<const FactoryBase> aggregatesFact, Teuchos::RCP<const FactoryBase> amalgFact)
 : aggregatesFact_(aggregatesFact), amalgFact_(amalgFact), AFact_(MueLu::NoFactory::getRCP())
   {
 
@@ -41,7 +41,7 @@ template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, cla
 ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::~ContactSPAggregationFactory() {}
 
 template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-RCP<const Teuchos::ParameterList> ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const Teuchos::ParameterList& paramList) const {
+Teuchos::RCP<const Teuchos::ParameterList> ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const Teuchos::ParameterList& paramList) const {
   Teuchos::RCP<Teuchos::ParameterList> validParamList = Teuchos::rcp(new Teuchos::ParameterList());
 
   // TODO remove aggregatesFact_, amalgFact_
@@ -83,8 +83,8 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
 
 #if 1
   // extract block matrix (must be a 2x2 block matrix)
-  RCP<Matrix> Ain = currentLevel.Get< RCP<Matrix> >("A", AFact_.get());
-  RCP<BlockedCrsMatrix> bOp = Teuchos::rcp_dynamic_cast<BlockedCrsMatrix>(Ain);
+  Teuchos::RCP<Matrix> Ain = currentLevel.Get< Teuchos::RCP<Matrix> >("A", AFact_.get());
+  Teuchos::RCP<BlockedCrsMatrix> bOp = Teuchos::rcp_dynamic_cast<BlockedCrsMatrix>(Ain);
   TEUCHOS_TEST_FOR_EXCEPTION(bOp==Teuchos::null, Exceptions::BadCast, "MueLu::ContactSPAggregationFactory::Build: input matrix A is not of type BlockedCrsMatrix! error.");
 
   // determine rank of current processor
@@ -92,8 +92,8 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   const int myRank = comm->getRank();//bOp->getRangeMap()->getComm()->getRank();
 
   // pick out subblocks of block matrix
-  RCP<CrsMatrix> A00 = bOp->getMatrix(0,0);
-  RCP<CrsMatrix> A01 = bOp->getMatrix(0,1);
+  Teuchos::RCP<CrsMatrix> A00 = bOp->getMatrix(0,0);
+  Teuchos::RCP<CrsMatrix> A01 = bOp->getMatrix(0,1);
 
   // determine block information for displacement blocks
   // disp_offset usually is zero (default),
@@ -102,7 +102,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   LocalOrdinal  disp_blockdim = 1;         // block dim for fixed size blocks
   GlobalOrdinal disp_offset   = 0;         // global offset of dof gids
   if(Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(0)) != Teuchos::null) {
-    RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(0));
+    Teuchos::RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(0));
     TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): cast to strided row map failed.");
     disp_blockdim = strMap->getFixedBlockSize(); disp_offset   = strMap->getOffset();
     //GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found disp_blockdim=" << disp_blockdim << " from strided maps. disp_offset=" << disp_offset << std::endl;
@@ -115,7 +115,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   LocalOrdinal  lagr_blockdim = disp_blockdim;         // block dim for fixed size blocks
   GlobalOrdinal lagr_offset   = 1000;         // global offset of dof gids (TODO fix this)
   if(Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1)) != Teuchos::null) {
-    RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1));
+    Teuchos::RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1));
     TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): cast to strided row map failed.");
     lagr_blockdim = strMap->getFixedBlockSize(); lagr_offset   = strMap->getOffset();
     //GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found lagr_blockdim=" << lagr_blockdim << " from strided maps. lagr_offset=" << lagr_offset << std::endl;
@@ -124,18 +124,18 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   }
 
   // extract aggregates built using the displacement DOFs (from matrix block A00)
-  RCP<Aggregates> dispAggs = currentLevel.Get<RCP<Aggregates> >("Aggregates", aggregatesFact_.get());
-  RCP<LOVector> dispAggsVec = dispAggs->GetVertex2AggId();
-  ArrayRCP< const LocalOrdinal > dispAggsData = dispAggsVec->getData(0);
+  Teuchos::RCP<Aggregates> dispAggs = currentLevel.Get<Teuchos::RCP<Aggregates> >("Aggregates", aggregatesFact_.get());
+  Teuchos::RCP<LOVector> dispAggsVec = dispAggs->GetVertex2AggId();
+  Teuchos::ArrayRCP< const LocalOrdinal > dispAggsData = dispAggsVec->getData(0);
 
   //dispAggsVec->describe(*fos,Teuchos::VERB_EXTREME);
 
   // fetch map with slave Dofs from Level
   // slaveDofMap contains all global slave displacement DOF ids on the current level
-  RCP<const Map> slaveDofMap = currentLevel.Get< RCP<const Map> >("SlaveDofMap",MueLu::NoFactory::get());
+  Teuchos::RCP<const Map> slaveDofMap = currentLevel.Get< Teuchos::RCP<const Map> >("SlaveDofMap",MueLu::NoFactory::get());
 
   // generate global replicated mapping "lagrNodeId -> dispNodeId"
-  RCP<const Map> lagrDofMap = A01->getDomainMap();
+  Teuchos::RCP<const Map> lagrDofMap = A01->getDomainMap();
   GlobalOrdinal gMaxLagrNodeId = AmalgamationFactory::DOFGid2NodeId(
       lagrDofMap->getMaxAllGlobalIndex(),
 #if defined(HAVE_Trilinos_Q3_2013)
@@ -275,7 +275,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   // generate new aggregegate ids if necessary (independent on each processor)
 
   // Build aggregates using the lagrange multiplier node map
-  RCP<Aggregates> aggregates = Teuchos::rcp(new Aggregates(lagr_NodeMap));
+  Teuchos::RCP<Aggregates> aggregates = Teuchos::rcp(new Aggregates(lagr_NodeMap));
   aggregates->setObjectLabel("UC (slave)");
   //aggregates->SetNumAggregates(Teuchos::as<LocalOrdinal>(dispAggId2lagAggId.size())); // dont forget to set number of new aggregates
 
@@ -308,8 +308,8 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
 
 #else // outdated
   // extract block matrix (must be a 2x2 block matrix)
-  RCP<Matrix> Ain = currentLevel.Get< RCP<Matrix> >("A", AFact_.get());
-  RCP<BlockedCrsMatrix> bOp = Teuchos::rcp_dynamic_cast<BlockedCrsMatrix>(Ain);
+  Teuchos::RCP<Matrix> Ain = currentLevel.Get< Teuchos::RCP<Matrix> >("A", AFact_.get());
+  Teuchos::RCP<BlockedCrsMatrix> bOp = Teuchos::rcp_dynamic_cast<BlockedCrsMatrix>(Ain);
   TEUCHOS_TEST_FOR_EXCEPTION(bOp==Teuchos::null, Exceptions::BadCast, "MueLu::ContactSPAggregationFactory::Build: input matrix A is not of type BlockedCrsMatrix! error.");
 
   // determine rank of current processor
@@ -318,8 +318,8 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   std::cout << "PROC " << myRank << " ContactSPAggregationFactory::Build 1" << std::endl;
 
   // pick out subblocks of block matrix
-  RCP<CrsMatrix> A00 = bOp->getMatrix(0,0);
-  RCP<CrsMatrix> A01 = bOp->getMatrix(0,1);
+  Teuchos::RCP<CrsMatrix> A00 = bOp->getMatrix(0,0);
+  Teuchos::RCP<CrsMatrix> A01 = bOp->getMatrix(0,1);
 
   // determine block information for displacement blocks
   // disp_offset usually is zero (default),
@@ -328,7 +328,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   LocalOrdinal  disp_blockdim = 1;         // block dim for fixed size blocks
   GlobalOrdinal disp_offset   = 0;         // global offset of dof gids
   if(Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(0)) != Teuchos::null) {
-    RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(0));
+    Teuchos::RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(0));
     TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): cast to strided row map failed.");
     disp_blockdim = strMap->getFixedBlockSize(); disp_offset   = strMap->getOffset();
     GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found disp_blockdim=" << disp_blockdim << " from strided maps. disp_offset=" << disp_offset << std::endl;
@@ -341,7 +341,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   LocalOrdinal  lagr_blockdim = disp_blockdim;         // block dim for fixed size blocks
   GlobalOrdinal lagr_offset   = 1000;         // global offset of dof gids (TODO fix this)
   if(Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1)) != Teuchos::null) {
-    RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1));
+    Teuchos::RCP<const StridedMap> strMap = Teuchos::rcp_dynamic_cast<const StridedMap>(bOp->getRangeMap(1));
     TEUCHOS_TEST_FOR_EXCEPTION(strMap == Teuchos::null,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): cast to strided row map failed.");
     lagr_blockdim = strMap->getFixedBlockSize(); lagr_offset   = strMap->getOffset();
     GetOStream(Debug, 0) << "ContactSPAggregationFactory::Build():" << " found lagr_blockdim=" << lagr_blockdim << " from strided maps. lagr_offset=" << lagr_offset << std::endl;
@@ -352,8 +352,8 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   std::cout << "PROC " << myRank << " ContactSPAggregationFactory::Build 2" << std::endl;
 
   // extract aggregates built using the displacement DOFs (from matrix block A00)
-  RCP<Aggregates> dispAggs = currentLevel.Get<RCP<Aggregates> >("Aggregates", aggregatesFact_.get());
-  RCP<LOVector> dispAggsVec = dispAggs->GetVertex2AggId();
+  Teuchos::RCP<Aggregates> dispAggs = currentLevel.Get<Teuchos::RCP<Aggregates> >("Aggregates", aggregatesFact_.get());
+  Teuchos::RCP<LOVector> dispAggsVec = dispAggs->GetVertex2AggId();
   ArrayRCP< const LocalOrdinal > dispAggsData = dispAggsVec->getData(0);
 
   dispAggsVec->describe(*fos,Teuchos::VERB_EXTREME);
@@ -361,7 +361,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   // fetch map with slave Dofs from Level
   // slaveDofMap contains all global slave displacement DOF ids on the current level
   // we extract the corresponding aggregate ids of the slave nodes
-  RCP<const Map> slaveDofMap = currentLevel.Get< RCP<const Map> >("SlaveDofMap",MueLu::NoFactory::get());
+  Teuchos::RCP<const Map> slaveDofMap = currentLevel.Get< Teuchos::RCP<const Map> >("SlaveDofMap",MueLu::NoFactory::get());
 
   // generate map displacement aggregate id -> new Lagrange multiplier aggregate id
   // count number of new aggregates for Lagrange multipliers that are to be built on the current proc
@@ -464,7 +464,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   std::cout << "PROC " << myRank << " ContactSPAggregationFactory::Build 6" << std::endl;
 
   // Build aggregates using the lagrange multiplier node map
-  RCP<Aggregates> aggregates = Teuchos::rcp(new Aggregates(lagr_NodeMap));
+  Teuchos::RCP<Aggregates> aggregates = Teuchos::rcp(new Aggregates(lagr_NodeMap));
   aggregates->setObjectLabel("UC (slave)");
   aggregates->SetNumAggregates(Teuchos::as<LocalOrdinal>(dispAggId2lagAggId.size())); // dont forget to set number of new aggregates
 

@@ -55,7 +55,7 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
 {
   public:
     /*! constructor */
-    SaddlePointPreconditioner(RCP<Epetra_Operator> A, const Teuchos::ParameterList& params, FILE* outfile = NULL);
+    SaddlePointPreconditioner(Teuchos::RCP<Epetra_Operator> A, const Teuchos::ParameterList& params, FILE* outfile = NULL);
     virtual ~SaddlePointPreconditioner();
 
     virtual const char* Label() const { return &label_[0]; }
@@ -119,7 +119,7 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
      *
      * \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
      */
-    void Setup(RCP<Epetra_Operator>& A, const Teuchos::ParameterList& origlist);
+    void Setup(Teuchos::RCP<Epetra_Operator>& A, const Teuchos::ParameterList& origlist);
 
     /*! \brief implementation of the V-Cycle
      * this function is called recursively
@@ -141,7 +141,7 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
 
     \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
     */
-    RCP<SparseMatrix> Multiply(const SparseMatrix& A, const SparseMatrix& B, const SparseMatrix& C, bool bComplete = true);
+    Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, const SparseMatrix& B, const SparseMatrix& C, bool bComplete = true);
 
 
 
@@ -154,20 +154,20 @@ class SaddlePointPreconditioner : public virtual Epetra_Operator
     int                                                 nmaxlevels_;  // /<number of maximal allowed multigrid levels
     int                                                 nlevels_;     ///< number of used multigrid levels
 
-    RCP<BlockSparseMatrixBase>                          Ainput_; ///< input matrix
+    Teuchos::RCP<BlockSparseMatrixBase>                          Ainput_; ///< input matrix
 
-    std::vector<RCP<SparseMatrix> >                    A11_;    ///< vector with splitted blocks of matrix for all multigrid levels
-    std::vector<RCP<SparseMatrix> >                    A12_;    ///< vector with splitted blocks of matrix for all multigrid levels
-    std::vector<RCP<SparseMatrix> >                    A21_;    ///< vector with splitted blocks of matrix for all multigrid levels
-    std::vector<RCP<SparseMatrix> >                    A22_;    ///< vector with splitted blocks of matrix for all multigrid levels
+    std::vector<Teuchos::RCP<SparseMatrix> >                    A11_;    ///< vector with splitted blocks of matrix for all multigrid levels
+    std::vector<Teuchos::RCP<SparseMatrix> >                    A12_;    ///< vector with splitted blocks of matrix for all multigrid levels
+    std::vector<Teuchos::RCP<SparseMatrix> >                    A21_;    ///< vector with splitted blocks of matrix for all multigrid levels
+    std::vector<Teuchos::RCP<SparseMatrix> >                    A22_;    ///< vector with splitted blocks of matrix for all multigrid levels
 
-    std::vector<RCP<TransferOperator> >                Tvel_;
-    std::vector<RCP<TransferOperator> >                Tpre_;
+    std::vector<Teuchos::RCP<TransferOperator> >                Tvel_;
+    std::vector<Teuchos::RCP<TransferOperator> >                Tpre_;
 
-    std::vector<RCP<BraessSarazin_Smoother> >          preS_; // presmoother (bad: we only support BraessSarazin, as we cannot use the standard ApplyInverse)
-    std::vector<RCP<BraessSarazin_Smoother> >          postS_; // postsmoother
+    std::vector<Teuchos::RCP<BraessSarazin_Smoother> >          preS_; // presmoother (bad: we only support BraessSarazin, as we cannot use the standard ApplyInverse)
+    std::vector<Teuchos::RCP<BraessSarazin_Smoother> >          postS_; // postsmoother
 
-    RCP<BraessSarazin_Smoother>                        coarsestSmoother_; // we also use BraessSarazin on coarsest level
+    Teuchos::RCP<BraessSarazin_Smoother>                        coarsestSmoother_; // we also use BraessSarazin on coarsest level
 
 
     MultiMapExtractor                                  mmex_;    // a  multimapetxractor to handle extracts

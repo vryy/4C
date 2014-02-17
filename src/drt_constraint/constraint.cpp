@@ -23,7 +23,7 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::Constraint::Constraint(RCP<DRT::Discretization> discr,
+UTILS::Constraint::Constraint(Teuchos::RCP<DRT::Discretization> discr,
         const std::string& conditionname,
         int& offsetID,
         int& maxID):
@@ -68,7 +68,7 @@ actdisc_(discr)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::Constraint::Constraint(RCP<DRT::Discretization> discr,
+UTILS::Constraint::Constraint(Teuchos::RCP<DRT::Discretization> discr,
         const std::string& conditionname):
 actdisc_(discr)
 {
@@ -255,10 +255,10 @@ void UTILS::Constraint::EvaluateConstraint(
       if(activecons_.find(condID)->second==false)
       {
         const std::string action = params.get<std::string>("action");
-        Teuchos::RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
+        Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
         actdisc_->SetState("displacement",displast);
         Initialize(params,systemvector2);
-        Teuchos::RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
+        Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
         actdisc_->SetState("displacement",disp);
         params.set("action",action);
       }
@@ -277,15 +277,15 @@ void UTILS::Constraint::EvaluateConstraint(
       const int lindex = (systemvector3->Map()).LID(gindex);
 
       // store loadcurve values
-      Teuchos::RCP<Epetra_Vector> timefact = params.get<RCP<Epetra_Vector> >("vector curve factors");
+      Teuchos::RCP<Epetra_Vector> timefact = params.get<Teuchos::RCP<Epetra_Vector> >("vector curve factors");
       timefact->ReplaceGlobalValues(1,&curvefac,&gindex);
 
       // Get the current lagrange multiplier value for this condition
-      const Teuchos::RCP<Epetra_Vector> lagramul = params.get<RCP<Epetra_Vector> >("LagrMultVector");
+      const Teuchos::RCP<Epetra_Vector> lagramul = params.get<Teuchos::RCP<Epetra_Vector> >("LagrMultVector");
       const double lagraval = (*lagramul)[lindex];
 
       // elements might need condition
-      params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+      params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
       // define element matrices and vectors
       Epetra_SerialDenseMatrix elematrix1;
@@ -294,12 +294,12 @@ void UTILS::Constraint::EvaluateConstraint(
       Epetra_SerialDenseVector elevector2;
       Epetra_SerialDenseVector elevector3;
 
-      std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+      std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
       // if (geom.empty()) dserror("evaluation of condition with empty geometry");
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
-      std::map<int,RCP<DRT::Element> >::iterator curr;
+      std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector and ownerships
@@ -384,7 +384,7 @@ void UTILS::Constraint::InitializeConstraint(
     // if current time is larger than initialization time of the condition, start computing
     if((inittimes_.find(condID)->second<=time) && (!(activecons_.find(condID)->second)))
     {
-      params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+      params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
       // define element matrices and vectors
       Epetra_SerialDenseMatrix elematrix1;
@@ -393,11 +393,11 @@ void UTILS::Constraint::InitializeConstraint(
       Epetra_SerialDenseVector elevector2;
       Epetra_SerialDenseVector elevector3;
 
-      std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+      std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
-      std::map<int,RCP<DRT::Element> >::iterator curr;
+      std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector and ownerships

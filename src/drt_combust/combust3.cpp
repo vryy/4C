@@ -485,7 +485,7 @@ DRT::ELEMENTS::Combust3::MyStateSurface::MyStateSurface(
 /*-----------------------------------------------------------------------*
  |  get internal face  element (public)                  rasthofer 04 /12|
  *-----------------------------------------------------------------------*/
-RCP<DRT::Element> DRT::ELEMENTS::Combust3::CreateFaceElement( DRT::Element* parent_slave,           //!< parent slave fluid3 element
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3::CreateFaceElement( DRT::Element* parent_slave,           //!< parent slave fluid3 element
                                                              int nnode,                           //!< number of surface nodes
                                                              const int* nodeids,                  //!< node ids of surface element
                                                              DRT::Node** nodes,                   //!< nodes of surface element

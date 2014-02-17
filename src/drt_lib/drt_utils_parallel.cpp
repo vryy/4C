@@ -158,8 +158,8 @@ Teuchos::RCP<const Epetra_Vector> DRT::UTILS::GetColVersionOfRowVector(
  |nodes as of subdicretization                                          |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> DRT::UTILS::ComputeNodeColMap(
-         const RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
-         const RCP<DRT::Discretization> subdis ///< subdiscretization prescribing ghosting
+         const Teuchos::RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
+         const Teuchos::RCP<DRT::Discretization> subdis ///< subdiscretization prescribing ghosting
          )
 {
   const Epetra_Map* oldcolnodemap = sourcedis->NodeColMap();
@@ -177,7 +177,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ComputeNodeColMap(
   }
 
   // now reconstruct the extended colmap
-  RCP<Epetra_Map> newcolnodemap = Teuchos::rcp(new Epetra_Map(-1,
+  Teuchos::RCP<Epetra_Map> newcolnodemap = Teuchos::rcp(new Epetra_Map(-1,
                                      mycolnodes.size(),
                                      &mycolnodes[0],
                                      0,

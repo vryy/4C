@@ -38,8 +38,8 @@ veljump_(veljump)
  * call computation of the projection approach for enrichment values             winklmaier 08/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::EnrichmentProjection::compute(
-    std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-    std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   if (FGIType_==FRSNot1_)

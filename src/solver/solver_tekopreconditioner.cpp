@@ -54,7 +54,7 @@ void LINALG::SOLVER::TekoPreconditioner::Setup( bool create,
     prec_    = Teuchos::null;
     Pmatrix_ = Teuchos::null;
 
-    // put A into a RCP pointer (memory not owned by preconditioner!)
+    // put A into a Teuchos::RCP pointer (memory not owned by preconditioner!)
     Pmatrix_ = Teuchos::rcp(A,false);
 
     // Handles some I/O to the output screen

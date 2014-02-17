@@ -1065,18 +1065,18 @@ void STR::GenInvAnalysis::ReadInParameters()
 
   for (unsigned prob=0; prob<DRT::Problem::NumInstances(); ++prob)
   {
-    const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
+    const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
     std::set<int> mymatset = matset_[prob];
 
     unsigned int overallnummat = mats.size();
     if (mymatset.size() > 0 && overallnummat > mymatset.size()) overallnummat = mymatset.size();
     if (myrank == 0) printf("No. material laws/summands considered : %d\n", overallnummat);
 
-    std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+    std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
 
     for (curr=mats.begin(); curr != mats.end(); ++curr)
     {
-      const RCP<MAT::PAR::Material> actmat = curr->second;
+      const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
 
       switch(actmat->Type())
       {
@@ -1136,7 +1136,7 @@ void STR::GenInvAnalysis::ReadInParameters()
 
           if (mymatset.size()==0 or mymatset.find(id)!=mymatset.end())
           {
-            const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+            const Teuchos::RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
             switch (actelastmat->Type())
             {
             case INPAR::MAT::mes_couplogneohooke:
@@ -1324,7 +1324,7 @@ void STR::GenInvAnalysis::ReadInParameters()
 
           if (mymatset.size()==0 or mymatset.find(id)!=mymatset.end())
           {
-            const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+            const Teuchos::RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
             switch (actelastmat->Type())
             {
             case INPAR::MAT::mes_couplogneohooke:
@@ -1573,7 +1573,7 @@ void STR::GenInvAnalysis::ReadInParameters()
 
           if (mymatset.size()==0 or mymatset.find(id)!=mymatset.end())
           {
-            const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+            const Teuchos::RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
             switch (actelastmat->Type())
             {
             case INPAR::MAT::mes_couplogneohooke:
@@ -1799,12 +1799,12 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
   //const int ngroup   = group->NumGroups();
 
   // loop all materials in problem
-  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
   int j=0;
-  std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+  std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
   {
-    const RCP<MAT::PAR::Material> actmat = curr->second;
+    const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
 
     switch(actmat->Type())
     {
@@ -1855,7 +1855,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
 
         if (mymatset.size()==0 or mymatset.find(id)!=mymatset.end())
         {
-          const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+          const Teuchos::RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
           switch (actelastmat->Type())
           {
           case INPAR::MAT::mes_couplogneohooke:
@@ -2108,7 +2108,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
         const int id = (*matids)[i];
         if (mymatset.size()==0 or mymatset.find(id)!=mymatset.end())
         {
-          const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+          const Teuchos::RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
           switch (actelastmat->Type())
           {
           case INPAR::MAT::mes_couplogneohooke:
@@ -2374,7 +2374,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
 
         if (mymatset.size()==0 or mymatset.find(id)!=mymatset.end())
         {
-          const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+          const Teuchos::RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
           switch (actelastmat->Type())
           {
           case INPAR::MAT::mes_couplogneohooke:
@@ -2575,7 +2575,7 @@ void STR::GenInvAnalysis::MultiInvAnaInit()
   for (int i=0; i<discret_->NumMyColElements(); i++)
   {
     DRT::Element* actele = discret_->lColElement(i);
-    RCP<MAT::Material> mat = actele->Material();
+    Teuchos::RCP<MAT::Material> mat = actele->Material();
     if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());

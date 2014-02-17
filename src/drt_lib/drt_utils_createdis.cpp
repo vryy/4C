@@ -90,14 +90,14 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeRowMap(
+Teuchos::RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeRowMap(
     std::set<int>& rownodeset,Teuchos::RCP<DRT::Discretization> targetdis)
 {
   // we get the node maps almost for free
   std::vector<int> targetnoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
 
-  RCP<Epetra_Map> targetnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
+  Teuchos::RCP<Epetra_Map> targetnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
       targetnoderowvec.size(),
       &targetnoderowvec[0],
       0,
@@ -110,13 +110,13 @@ RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeRowMap(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeColMap(
+Teuchos::RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeColMap(
     std::set<int>& colnodeset,Teuchos::RCP<DRT::Discretization> targetdis)
 {
   // we get the node maps almost for free
   std::vector<int> targetnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  RCP<Epetra_Map> targetnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
+  Teuchos::RCP<Epetra_Map> targetnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
       targetnodecolvec.size(),
       &targetnodecolvec[0],
       0,

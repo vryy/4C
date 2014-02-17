@@ -335,7 +335,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       int gid = Id();
       LINALG::Matrix<NUMGPT_,MAT::NUM_STRESS_3D> gpstress(((*gpstressmap)[gid])->A(),true);
 
-      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
+      Teuchos::RCP<Epetra_MultiVector> poststress=params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
       if (poststress==Teuchos::null)
         dserror("No element stress/strain vector available");
 
@@ -455,7 +455,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
     // read restart of microscale
     case multi_readrestart:
     {
-      RCP<MAT::Material> mat = Material();
+      Teuchos::RCP<MAT::Material> mat = Material();
 
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
         soh8_read_restart_multi();
@@ -487,12 +487,12 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
     // compute additional stresses due to intermolecular potential forces
     case calc_potential_stiff:
     {
-      RCP<PotentialManager> potentialmanager =
-        params.get<RCP<PotentialManager> >("pot_man",Teuchos::null);
+      Teuchos::RCP<PotentialManager> potentialmanager =
+        params.get<Teuchos::RCP<PotentialManager> >("pot_man",Teuchos::null);
       if (potentialmanager==Teuchos::null)
         dserror("No PotentialManager in sh8p8 available");
 
-      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
+      Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition",Teuchos::null);
       if (cond==Teuchos::null)
         dserror("Condition not available in sh8p8");
 

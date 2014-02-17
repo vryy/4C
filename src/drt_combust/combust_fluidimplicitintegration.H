@@ -171,21 +171,21 @@ public:
   /*!
   \brief get the velocity vector based on standard dofs
 
-  \return RCP to a copy of Veln with only standard dofs
+  \return Teuchos::RCP to a copy of Veln with only standard dofs
    */
   Teuchos::RCP<Epetra_Vector> StdVeln();
 
   /*!
   \brief get the velocity vector based on standard dofs
 
-  \return RCP to a copy of Velnp with only standard dofs
+  \return Teuchos::RCP to a copy of Velnp with only standard dofs
    */
   Teuchos::RCP<Epetra_Vector> StdVelnp();
 
   /*!
   \brief get the velocity vector based on standard dofs
 
-  \return RCP to a copy of Velaf with only standard dofs
+  \return Teuchos::RCP to a copy of Velaf with only standard dofs
    */
   Teuchos::RCP<Epetra_Vector> StdVelaf();
 

@@ -252,7 +252,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     // we have to invent some temporary element gids
     // that do not overlap with the node gids
     const Epetra_Map& elerowmap = *dis.ElementRowMap();
-    RCP<Epetra_IntVector> elerowgids = Teuchos::rcp(new Epetra_IntVector(elerowmap));
+    Teuchos::RCP<Epetra_IntVector> elerowgids = Teuchos::rcp(new Epetra_IntVector(elerowmap));
     std::vector<int> ssizeelerowgids(elerowmap.Comm().NumProc(),0);
     std::vector<int> rsizeelerowgids(elerowmap.Comm().NumProc(),0);
     ssizeelerowgids[elerowmap.Comm().MyPID()] = elerowmap.NumMyElements();
@@ -272,7 +272,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       (*elerowgids)[i] = ssizeelerowgids[elerowgids->Comm().MyPID()] + i;
     
     // export elerowgids to column map elecolgids
-    RCP<Epetra_IntVector> elecolgids = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
+    Teuchos::RCP<Epetra_IntVector> elecolgids = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
     LINALG::Export(*elerowgids,*elecolgids);
     
     // Build a rowmap that contains node and element gids
@@ -290,7 +290,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     
     // Loop Nodes and Elements and build a common nodal-elemental connectivity graph
     // Consider only elementsw rthat have dofs
-    RCP<Epetra_FECrsGraph> graphcombo =
+    Teuchos::RCP<Epetra_FECrsGraph> graphcombo =
                         Teuchos::rcp( new Epetra_FECrsGraph(Copy,rowmapcombo,180,false));
     for (int i=0; i<dis.ElementColMap()->NumMyElements(); ++i)
     {

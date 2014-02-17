@@ -30,7 +30,7 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::MPConstraint2::MPConstraint2(RCP<DRT::Discretization> discr,
+UTILS::MPConstraint2::MPConstraint2(Teuchos::RCP<DRT::Discretization> discr,
         const std::string& conditionname,
         int& minID,
         int& maxID)
@@ -160,7 +160,7 @@ void UTILS::MPConstraint2::Evaluate(
  |(private)                                                   tk 04/08    |
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
-std::map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFromCondition
+std::map<int,Teuchos::RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFromCondition
 (
   Teuchos::RCP<DRT::Discretization> actdisc,
   std::vector< DRT::Condition* >      constrcondvec,
@@ -250,7 +250,7 @@ std::map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizati
 
   newdis->Redistribute(*constraintnoderowmap,*constraintnodecolmap);
 
-  std::map<int,RCP<DRT::Discretization> > newdismap;
+  std::map<int,Teuchos::RCP<DRT::Discretization> > newdismap;
   newdismap[startID]=newdis;
   return newdismap;
 }
@@ -285,7 +285,7 @@ void UTILS::MPConstraint2::ReorderConstraintNodes
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
+void UTILS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> disc,
     Teuchos::ParameterList&        params,
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
@@ -343,7 +343,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       const int lindex = (systemvector3->Map()).LID(gindex);
 
       // Get the current lagrange multiplier value for this condition
-      const Teuchos::RCP<Epetra_Vector> lagramul = params.get<RCP<Epetra_Vector> >("LagrMultVector");
+      const Teuchos::RCP<Epetra_Vector> lagramul = params.get<Teuchos::RCP<Epetra_Vector> >("LagrMultVector");
       const double lagraval = (*lagramul)[lindex];
 
       // get element location vector, dirichlet flags and ownerships
@@ -361,7 +361,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       if (assemblevec3) elevector3.Size(1); // elevector3 always contains a scalar
 
       params.set("ConditionID",condID);
-      params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+      params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
       // call the element evaluate method
       int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
                                  elevector1,elevector2,elevector3);
@@ -406,7 +406,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       if (time<0.0) usetime = false;
       if (curvenum>=0 && usetime)
         curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-      Teuchos::RCP<Epetra_Vector> timefact = params.get<RCP<Epetra_Vector> >("vector curve factors");
+      Teuchos::RCP<Epetra_Vector> timefact = params.get<Teuchos::RCP<Epetra_Vector> >("vector curve factors");
       timefact->ReplaceGlobalValues(1,&curvefac,&gindex);
     }
   }

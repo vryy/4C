@@ -126,7 +126,7 @@ inline int DRT::ELEMENTS::MeshfreeFluidBoundary::NumSurface() const
 }
 
 /*--------------------------------------------------------------------------*
- |  Get vector of RCPs to the lines (dummy)              (public) nis Jan13 |
+ |  Get vector of Teuchos::RCPs to the lines (dummy)              (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeFluidBoundary::Lines()
 {
@@ -139,7 +139,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeFluidBoundary::L
 }
 
 /*--------------------------------------------------------------------------*
- |  Get vector of RCPs to the surfaces (dummy)           (public) nis Jan13 |
+ |  Get vector of Teuchos::RCPs to the surfaces (dummy)           (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeFluidBoundary::Surfaces()
 {

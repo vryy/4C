@@ -47,7 +47,7 @@
 
 #include "float.h" // for DBL_MAX and DBL_MIN
 
-LINALG::SaddlePointPreconditioner::SaddlePointPreconditioner(RCP<Epetra_Operator> A, const Teuchos::ParameterList& params, FILE* outfile)
+LINALG::SaddlePointPreconditioner::SaddlePointPreconditioner(Teuchos::RCP<Epetra_Operator> A, const Teuchos::ParameterList& params, FILE* outfile)
 :
 Epetra_Operator(),
 label_("LINALG::SaddlePointPreconditioner"),
@@ -73,11 +73,11 @@ int LINALG::SaddlePointPreconditioner::ApplyInverse(const Epetra_MultiVector& X,
   // note: Aztec might pass X and Y as physically identical objects,
   // so we better deep copy here
 
-  RCP<LINALG::ANA::Vector> Xv = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
-  RCP<LINALG::ANA::Vector> Xp = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
+  Teuchos::RCP<LINALG::ANA::Vector> Xv = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
+  Teuchos::RCP<LINALG::ANA::Vector> Xp = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
 
-  RCP<LINALG::ANA::Vector> Yv = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(0),/*false*/true));
-  RCP<LINALG::ANA::Vector> Yp = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1),/*false*/true));
+  Teuchos::RCP<LINALG::ANA::Vector> Yv = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(0),/*false*/true));
+  Teuchos::RCP<LINALG::ANA::Vector> Yp = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1),/*false*/true));
 
   // split vector using mmex_
   mmex_.ExtractVector(X,0,*Xv);
@@ -106,11 +106,11 @@ int LINALG::SaddlePointPreconditioner::VCycle(const Epetra_MultiVector& Xvel, co
 #ifdef ANALYSIS
 #ifdef DEBUG
 
-  RCP<Epetra_Vector> velresXX = Teuchos::rcp(new Epetra_Vector(Yvel.Map(),true));
-  RCP<Epetra_Vector> preresXX = Teuchos::rcp(new Epetra_Vector(Ypre.Map(),true));
+  Teuchos::RCP<Epetra_Vector> velresXX = Teuchos::rcp(new Epetra_Vector(Yvel.Map(),true));
+  Teuchos::RCP<Epetra_Vector> preresXX = Teuchos::rcp(new Epetra_Vector(Ypre.Map(),true));
 
-  RCP<Epetra_Vector> vtempXX = Teuchos::rcp(new Epetra_Vector(Yvel.Map(),true));
-  RCP<Epetra_Vector> ptempXX = Teuchos::rcp(new Epetra_Vector(Ypre.Map(),true));
+  Teuchos::RCP<Epetra_Vector> vtempXX = Teuchos::rcp(new Epetra_Vector(Yvel.Map(),true));
+  Teuchos::RCP<Epetra_Vector> ptempXX = Teuchos::rcp(new Epetra_Vector(Ypre.Map(),true));
 
   A11_[level]->Apply(Yvel,*vtempXX);
   A12_[level]->Apply(Ypre,*velresXX);
@@ -205,8 +205,8 @@ int LINALG::SaddlePointPreconditioner::VCycle(const Epetra_MultiVector& Xvel, co
 #endif
 
   // vectors for presmoothed solution
-  RCP<Epetra_MultiVector> Zvel = Teuchos::rcp(new Epetra_MultiVector(Yvel.Map(),1,true));
-  RCP<Epetra_MultiVector> Zpre = Teuchos::rcp(new Epetra_MultiVector(Ypre.Map(),1,true));
+  Teuchos::RCP<Epetra_MultiVector> Zvel = Teuchos::rcp(new Epetra_MultiVector(Yvel.Map(),1,true));
+  Teuchos::RCP<Epetra_MultiVector> Zpre = Teuchos::rcp(new Epetra_MultiVector(Ypre.Map(),1,true));
 
   Zvel->Update(1.0,Yvel,0.0);
   Zpre->Update(1.0,Ypre,0.0);
@@ -217,11 +217,11 @@ int LINALG::SaddlePointPreconditioner::VCycle(const Epetra_MultiVector& Xvel, co
 
 
   // calculate residual (fine grid)
-  RCP<Epetra_Vector> velres = Teuchos::rcp(new Epetra_Vector(Yvel.Map(),true));
-  RCP<Epetra_Vector> preres = Teuchos::rcp(new Epetra_Vector(Ypre.Map(),true));
+  Teuchos::RCP<Epetra_Vector> velres = Teuchos::rcp(new Epetra_Vector(Yvel.Map(),true));
+  Teuchos::RCP<Epetra_Vector> preres = Teuchos::rcp(new Epetra_Vector(Ypre.Map(),true));
 
-  RCP<Epetra_Vector> vtemp = Teuchos::rcp(new Epetra_Vector(Yvel.Map(),true));
-  RCP<Epetra_Vector> ptemp = Teuchos::rcp(new Epetra_Vector(Ypre.Map(),true));
+  Teuchos::RCP<Epetra_Vector> vtemp = Teuchos::rcp(new Epetra_Vector(Yvel.Map(),true));
+  Teuchos::RCP<Epetra_Vector> ptemp = Teuchos::rcp(new Epetra_Vector(Ypre.Map(),true));
 
   A11_[level]->Apply(*Zvel,*vtemp);
   A12_[level]->Apply(*Zpre,*velres);
@@ -318,21 +318,21 @@ int LINALG::SaddlePointPreconditioner::VCycle(const Epetra_MultiVector& Xvel, co
 #endif
 
   // calculate coarse residual
-  RCP<Epetra_Vector> velres_coarse = Teuchos::rcp(new Epetra_Vector(Tvel_[level]->R().RowMap(),true));
-  RCP<Epetra_Vector> preres_coarse = Teuchos::rcp(new Epetra_Vector(Tpre_[level]->R().RowMap(),true));
+  Teuchos::RCP<Epetra_Vector> velres_coarse = Teuchos::rcp(new Epetra_Vector(Tvel_[level]->R().RowMap(),true));
+  Teuchos::RCP<Epetra_Vector> preres_coarse = Teuchos::rcp(new Epetra_Vector(Tpre_[level]->R().RowMap(),true));
   Tvel_[level]->R().Apply(*velres,*velres_coarse);
   Tpre_[level]->R().Apply(*preres,*preres_coarse);
 
   // define vector for coarse level solution
-  RCP<Epetra_Vector> velsol_coarse = Teuchos::rcp(new Epetra_Vector(A11_[level+1]->RowMap(),true));
-  RCP<Epetra_Vector> presol_coarse = Teuchos::rcp(new Epetra_Vector(A22_[level+1]->RowMap(),true));
+  Teuchos::RCP<Epetra_Vector> velsol_coarse = Teuchos::rcp(new Epetra_Vector(A11_[level+1]->RowMap(),true));
+  Teuchos::RCP<Epetra_Vector> presol_coarse = Teuchos::rcp(new Epetra_Vector(A22_[level+1]->RowMap(),true));
 
   // call Vcycle recursively
   VCycle(*velres_coarse,*preres_coarse,*velsol_coarse,*presol_coarse,level+1);
 
   // define vectors for prolongated solution
-  RCP<Epetra_Vector> velsol_prolongated = Teuchos::rcp(new Epetra_Vector(A11_[level]->RowMap(),true));
-  RCP<Epetra_Vector> presol_prolongated = Teuchos::rcp(new Epetra_Vector(A22_[level]->RowMap(),true));
+  Teuchos::RCP<Epetra_Vector> velsol_prolongated = Teuchos::rcp(new Epetra_Vector(A11_[level]->RowMap(),true));
+  Teuchos::RCP<Epetra_Vector> presol_prolongated = Teuchos::rcp(new Epetra_Vector(A22_[level]->RowMap(),true));
 
   // prolongate solution
   Tvel_[level]->P().Apply(*velsol_coarse,*velsol_prolongated);
@@ -558,7 +558,7 @@ int LINALG::SaddlePointPreconditioner::VCycle(const Epetra_MultiVector& Xvel, co
   return 0;
 }
 
-void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuchos::ParameterList& origlist)
+void LINALG::SaddlePointPreconditioner::Setup(Teuchos::RCP<Epetra_Operator>& A,const Teuchos::ParameterList& origlist)
 {
 
 #ifdef WRITEOUTSTATISTICS
@@ -585,9 +585,9 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuc
   Teuchos::RCP<Epetra_MultiVector> nextpreNS = Teuchos::null;
 
   ///////////////// set parameter list
-  RCP<Teuchos::ParameterList> spparams = Teuchos::rcp(new Teuchos::ParameterList());     // all paramaters
-  RCP<Teuchos::ParameterList> velparams = Teuchos::rcp(new Teuchos::ParameterList());    // parameters (velocity specific)
-  RCP<Teuchos::ParameterList> preparams = Teuchos::rcp(new Teuchos::ParameterList());    // parameters (pressure specific)
+  Teuchos::RCP<Teuchos::ParameterList> spparams = Teuchos::rcp(new Teuchos::ParameterList());     // all paramaters
+  Teuchos::RCP<Teuchos::ParameterList> velparams = Teuchos::rcp(new Teuchos::ParameterList());    // parameters (velocity specific)
+  Teuchos::RCP<Teuchos::ParameterList> preparams = Teuchos::rcp(new Teuchos::ParameterList());    // parameters (pressure specific)
 
   // obtain common ML parameters from FLUID SOLVER block for coarsening from the dat file
   // we need at least "ML Parameters"."PDE equations" and "nullspace" information
@@ -661,7 +661,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuc
         vgid[vcount++] = fullmap.GID(i*ndofpernode+j);
       pgid[i] = fullmap.GID(i*ndofpernode+ndofpernode-1);
     }
-    std::vector<RCP<const Epetra_Map> > maps(2);
+    std::vector<Teuchos::RCP<const Epetra_Map> > maps(2);
     maps[0] = Teuchos::rcp(new Epetra_Map(-1,nlnode*nv,&vgid[0],0,fullmap.Comm()));
     maps[1] = Teuchos::rcp(new Epetra_Map(-1,nlnode,&pgid[0],0,fullmap.Comm()));
     vgid.clear(); pgid.clear();
@@ -687,7 +687,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuc
   velparams->sublist("AMGBS Parameters").set("PDE equations",nv);             // adapt nPDE (only velocity dofs)
   velparams->sublist("AMGBS Parameters").set("null space: dimension",nv);
   const int vlength = (*Ainput_)(0,0).RowMap().NumMyElements();
-  RCP<std::vector<double> > vnewns = Teuchos::rcp(new std::vector<double>(nv*vlength,0.0));
+  Teuchos::RCP<std::vector<double> > vnewns = Teuchos::rcp(new std::vector<double>(nv*vlength,0.0));
   for (int i=0; i<nlnode; ++i)
   {
     (*vnewns)[i*nv] = 1.0;
@@ -705,7 +705,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuc
   preparams->sublist("AMGBS Parameters").set("PDE equations",1);               // adapt nPDE (only one pressure dof)
   preparams->sublist("AMGBS Parameters").set("null space: dimension", 1);
   const int plength = (*Ainput_)(1,1).RowMap().NumMyElements();
-  RCP<std::vector<double> > pnewns = Teuchos::rcp(new std::vector<double>(plength,1.0));
+  Teuchos::RCP<std::vector<double> > pnewns = Teuchos::rcp(new std::vector<double>(plength,1.0));
   preparams->sublist("AMGBS Parameters").set("null space: vectors",&((*pnewns)[0]));
   preparams->sublist("AMGBS Parameters").remove("nullspace",false);
 
@@ -725,10 +725,10 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuc
   {
     /////////////////////////////////////////////////////////
     /////////////////////// AGGREGATION PROCESS
-    RCP<Epetra_IntVector> velaggs = Teuchos::null; //rcp(new Epetra_IntVector(A11_[curlevel]->RowMap(),true));
+    Teuchos::RCP<Epetra_IntVector> velaggs = Teuchos::null; //rcp(new Epetra_IntVector(A11_[curlevel]->RowMap(),true));
 
     ////////////// determine aggregates using the velocity block matrix A11_[curlevel]
-    RCP<AggregationMethod> aggm = AggregationMethodFactory::Create("Uncoupled",NULL);
+    Teuchos::RCP<AggregationMethod> aggm = AggregationMethodFactory::Create("Uncoupled",NULL);
     int naggregates_local = 0;
     int naggregates = 0;
     if(curlevel==0) velparams->sublist("AMGBS Parameters").set("Unamalgamated BlockSize",nv+1);
@@ -737,7 +737,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuc
     naggregates = aggm->GetGlobalAggregates(A11_[curlevel]->EpetraMatrix(),velparams->sublist("AMGBS Parameters"),velaggs,naggregates_local,curvelNS);
 
     ////////////// transform vector with velocity aggregates to pressure block
-    RCP<Epetra_IntVector> preaggs = Teuchos::rcp(new Epetra_IntVector(A22_[curlevel]->RowMap(),true));
+    Teuchos::RCP<Epetra_IntVector> preaggs = Teuchos::rcp(new Epetra_IntVector(A22_[curlevel]->RowMap(),true));
     for(int i=0; i < preaggs->MyLength(); i++)
     {
       (*preaggs)[i] = (*velaggs)[i*nv];
@@ -874,7 +874,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuc
   }
 
 #ifdef WRITEOUTSYMMETRY
-  RCP<SparseMatrix> tmpmtx = Teuchos::rcp(new SparseMatrix(*Ainput_->Merge(),Copy));
+  Teuchos::RCP<SparseMatrix> tmpmtx = Teuchos::rcp(new SparseMatrix(*Ainput_->Merge(),Copy));
   tmpmtx->Add(*Ainput_->Merge(),true,-1.0,1.0);
   fprintf(outfile_,"NormFrobenius %f\t",tmpmtx->NormFrobenius());
 #endif
@@ -884,11 +884,11 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuc
 }
 
 ///////////////////////////////////////////////////////////////////
-RCP<LINALG::SparseMatrix> LINALG::SaddlePointPreconditioner::Multiply(const SparseMatrix& A, const SparseMatrix& B, const SparseMatrix& C, bool bComplete)
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::SaddlePointPreconditioner::Multiply(const SparseMatrix& A, const SparseMatrix& B, const SparseMatrix& C, bool bComplete)
 {
   TEUCHOS_FUNC_TIME_MONITOR("SaddlePoint_Preconditioner::Multiply (with MLMultiply)");
 
-  RCP<SparseMatrix> tmp = LINALG::MLMultiply(B,C,true);
+  Teuchos::RCP<SparseMatrix> tmp = LINALG::MLMultiply(B,C,true);
   return LINALG::MLMultiply(A,*tmp,bComplete);
 }
 

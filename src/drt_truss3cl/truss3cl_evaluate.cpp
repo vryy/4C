@@ -79,7 +79,7 @@ int DRT::ELEMENTS::Truss3CL::Evaluate(Teuchos::ParameterList&   params,
     {
       // need current global displacement and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -107,12 +107,12 @@ int DRT::ELEMENTS::Truss3CL::Evaluate(Teuchos::ParameterList&   params,
       // making use of the local-to-global map lm one can extract current displacement and residual values for each degree of freedom
       //
       // get element displacements
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       // get residual displacements
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (res==Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
@@ -123,9 +123,9 @@ int DRT::ELEMENTS::Truss3CL::Evaluate(Teuchos::ParameterList&   params,
 
       //only if random numbers for Brownian dynamics are passed to element, get element velocities
       std::vector<double> myvel(lm.size());
-      if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
+      if( params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
       {
-        RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
+        Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       }
 
@@ -261,7 +261,7 @@ int DRT::ELEMENTS::Truss3CL::EvaluateNeumann(Teuchos::ParameterList&  params,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
   // get element displacements
-  RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -1239,7 +1239,7 @@ inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(Teuchos::ParameterList& 
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5; note carefully: a space between the two subsequal ">" signs is mandatory
    * for the C++ parser in order to avoid confusion with ">>" for streams*/
-   RCP<Epetra_MultiVector> randomnumbers = params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
+   Teuchos::RCP<Epetra_MultiVector> randomnumbers = params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
 
    //Here we need the position of the internodal Binding Spot at time t=0, when the filament beam elements where initialize!
    std::vector<double> rxstart;
@@ -1328,7 +1328,7 @@ inline void DRT::ELEMENTS::Truss3CL::CalcBrownian(Teuchos::ParameterList&    par
                                                 Epetra_SerialDenseVector   force) //!< element internal force vector
 {
   //if no random numbers for generation of stochastic forces are passed to the element no Brownian dynamics calculations are conducted
-  if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
+  if( params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
     return;
 
   //add stiffness and forces due to translational damping effects

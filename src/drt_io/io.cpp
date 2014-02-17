@@ -707,7 +707,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
       // remember where we put the map
       mapcache_[mapdata] = idname;
 
-      // Make a copy of the map. This is a RCP copy internally. We just make
+      // Make a copy of the map. This is a Teuchos::RCP copy internally. We just make
       // sure here the map stays alive as long as we keep our cache. Otherwise
       // subtle errors could occur.
       mapstack_.push_back(vec->Map());
@@ -820,7 +820,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
       // remember where we put the map
       mapcache_[mapdata] = idname;
 
-      // Make a copy of the map. This is a RCP copy internally. We just make
+      // Make a copy of the map. This is a Teuchos::RCP copy internally. We just make
       // sure here the map stays alive as long as we keep our cache. Otherwise
       // subtle errors could occur.
       mapstack_.push_back(elemap);

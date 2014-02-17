@@ -17,7 +17,7 @@
 
 #include "smoother.H"
 
-LINALG::Smoother::Smoother(string type, const RCP<Epetra_CrsMatrix>& A, ParameterList& params, FILE* outfile)
+LINALG::Smoother::Smoother(string type, const Teuchos::RCP<Epetra_CrsMatrix>& A, ParameterList& params, FILE* outfile)
 : Epetra_Operator(),
   A_(A),
   params_(params),
@@ -40,7 +40,7 @@ ostream& LINALG::Smoother::Print(std::ostream& os) const
 ////////////////////////////////////////////////
 // SMOOTHER IFPACK
 
-LINALG::Smoother_Ifpack::Smoother_Ifpack(string type, const RCP<Epetra_CrsMatrix>& A, ParameterList& params, FILE* outfile)
+LINALG::Smoother_Ifpack::Smoother_Ifpack(string type, const Teuchos::RCP<Epetra_CrsMatrix>& A, ParameterList& params, FILE* outfile)
 : Smoother(type,A,params,outfile)
 {
   Ifpack factory;
@@ -71,8 +71,8 @@ int LINALG::Smoother_Ifpack::ApplyInverse(const Epetra_MultiVector& X, Epetra_Mu
     Y.NormInf(&normY);
     if(normY != 0.0)
     {
-      RCP<Epetra_MultiVector> rhs_tmp = Teuchos::rcp(new Epetra_MultiVector(X));
-      RCP<Epetra_MultiVector> sol_tmp = Teuchos::rcp(new Epetra_MultiVector(Y));
+      Teuchos::RCP<Epetra_MultiVector> rhs_tmp = Teuchos::rcp(new Epetra_MultiVector(X));
+      Teuchos::RCP<Epetra_MultiVector> sol_tmp = Teuchos::rcp(new Epetra_MultiVector(Y));
 
       A_->Apply(Y,*rhs_tmp);
       rhs_tmp->Update(-1.0,X,1.0); // rhs_tmp is difference of new rhs and old rhs
@@ -100,7 +100,7 @@ int LINALG::Smoother_Ifpack::ApplyInverse(const Epetra_MultiVector& X, Epetra_Mu
 ////////////////////////////////////////////////
 // SMOOTHER IFPACK
 
-RCP<LINALG::Smoother> LINALG::SmootherFactory::Create(const string SmootherType, const Teuchos::RCP<SparseMatrix>& A, ParameterList& params, FILE* outfile)
+Teuchos::RCP<LINALG::Smoother> LINALG::SmootherFactory::Create(const string SmootherType, const Teuchos::RCP<SparseMatrix>& A, ParameterList& params, FILE* outfile)
 {
   try
   {

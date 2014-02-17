@@ -162,7 +162,7 @@ inline DRT::Node** DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Nodes()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-inline RCP<MAT::Material>  DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Material() const
+inline Teuchos::RCP<MAT::Material>  DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Material() const
 {
   return so3_ele::Material();
 }

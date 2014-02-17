@@ -30,7 +30,7 @@ namespace LINALG
   {
     public:
 
-    explicit AMGPreconditioner(RCP<Epetra_Operator> A, const Teuchos::ParameterList& params, FILE* outfile = NULL);
+    explicit AMGPreconditioner(Teuchos::RCP<Epetra_Operator> A, const Teuchos::ParameterList& params, FILE* outfile = NULL);
     virtual ~AMGPreconditioner() {}
 
     const char* Label() const { return &label_[0]; }
@@ -39,7 +39,7 @@ namespace LINALG
 
     ParameterList Params() const {return params_;}
 
-    RCP<SparseMatrix> A() {return Ainput_;}
+    Teuchos::RCP<SparseMatrix> A() {return Ainput_;}
 
     const Epetra_Map & OperatorDomainMap() const {return Ainput_->OperatorDomainMap();}
 
@@ -95,7 +95,7 @@ namespace LINALG
 
     \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
     */
-    RCP<SparseMatrix> Multiply(const SparseMatrix& A, const SparseMatrix& B, const SparseMatrix& C, bool bComplete = true);
+    Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, const SparseMatrix& B, const SparseMatrix& C, bool bComplete = true);
 
     // don't want copy-ctor and = operator
     AMGPreconditioner(AMGPreconditioner& old);
@@ -106,16 +106,16 @@ namespace LINALG
 
     string                  label_;      // name of this operator
     ParameterList           params_;     // ml parameter list (input)
-    RCP<SparseMatrix>       Ainput_;      ///< input matrix
+    Teuchos::RCP<SparseMatrix>       Ainput_;      ///< input matrix
     int                     nlevel_;      ///< no. of grids in hierarchy
     int                     nmaxlevels_;  ///< no. of maximal allowed number of levels
-    std::vector<RCP<SparseMatrix> >  A_;          ///< the matrix hierarchy
+    std::vector<Teuchos::RCP<SparseMatrix> >  A_;          ///< the matrix hierarchy
 
-    std::vector<RCP<Smoother> >          preS_; // presmoother
-    std::vector<RCP<Smoother> >          postS_; // postsmoother
-    RCP<Epetra_Operator>                   coarsestSmoother_; // we also use BraessSarazin on coarsest level
+    std::vector<Teuchos::RCP<Smoother> >          preS_; // presmoother
+    std::vector<Teuchos::RCP<Smoother> >          postS_; // postsmoother
+    Teuchos::RCP<Epetra_Operator>                   coarsestSmoother_; // we also use BraessSarazin on coarsest level
 
-    std::vector<RCP<TransferOperator> >  T_;          ///< transfer operators
+    std::vector<Teuchos::RCP<TransferOperator> >  T_;          ///< transfer operators
 
     int nVerbose_;                               ///< verbosity level
   };

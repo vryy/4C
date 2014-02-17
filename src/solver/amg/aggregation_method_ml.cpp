@@ -13,7 +13,7 @@ LINALG::AggregationMethod_ML::AggregationMethod_ML(FILE* outfile) :
 
 }
 
-int LINALG::AggregationMethod_ML::GetGlobalAggregates(const RCP<Epetra_CrsMatrix>& A, ParameterList& params, RCP<Epetra_IntVector>& aggrinfo, int& naggregates_local, const RCP<Epetra_MultiVector>& ThisNS)
+int LINALG::AggregationMethod_ML::GetGlobalAggregates(const Teuchos::RCP<Epetra_CrsMatrix>& A, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& aggrinfo, int& naggregates_local, const Teuchos::RCP<Epetra_MultiVector>& ThisNS)
 {
   // create aggrinfo vector
   if(aggrinfo != Teuchos::null) aggrinfo = Teuchos::null;
@@ -43,7 +43,7 @@ int LINALG::AggregationMethod_ML::GetGlobalAggregates(const RCP<Epetra_CrsMatrix
   return naggregatesglobal;
 }
 
-int LINALG::AggregationMethod_ML::GetAggregates(const RCP<Epetra_CrsMatrix>& A, ParameterList& List, const Epetra_MultiVector& ThisNS, RCP<Epetra_IntVector>& aggrinfo)
+int LINALG::AggregationMethod_ML::GetAggregates(const Teuchos::RCP<Epetra_CrsMatrix>& A, ParameterList& List, const Epetra_MultiVector& ThisNS, Teuchos::RCP<Epetra_IntVector>& aggrinfo)
 {
   if(!A->RowMap().SameAs(aggrinfo->Map())) dserror ("map of aggrinfo must match row map of operator");
 

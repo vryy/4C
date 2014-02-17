@@ -491,10 +491,10 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
     else dserror("invalid nsd %d", my::nsd_);
 
     // evaluate velocity and pressure
-    RCP<DRT::UTILS::Function> function = Teuchos::null;
+    Teuchos::RCP<DRT::UTILS::Function> function = Teuchos::null;
 
     // evaluate the velocity gradient
-    RCP<DRT::UTILS::Function> function_grad = Teuchos::null;
+    Teuchos::RCP<DRT::UTILS::Function> function_grad = Teuchos::null;
 
     bool is_stationary = false;
 
@@ -601,10 +601,10 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
     else dserror("invalid nsd %d", my::nsd_);
 
     // evaluate velocity and pressure
-    RCP<DRT::UTILS::Function> function = Teuchos::null;
+    Teuchos::RCP<DRT::UTILS::Function> function = Teuchos::null;
 
     // evaluate the velocity gradient
-    RCP<DRT::UTILS::Function> function_grad = Teuchos::null;
+    Teuchos::RCP<DRT::UTILS::Function> function_grad = Teuchos::null;
 
     bool is_stationary = false;
 
@@ -3610,7 +3610,7 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     if (nitsche_evp)
     {
     	// get the nitsche parameter from the eigenvalue problem
-    	std::map<int,double > sideidtonitschepar = *params.get<RCP<std::map<int,double > > >("nitschepar");
+    	std::map<int,double > sideidtonitschepar = *params.get<Teuchos::RCP<std::map<int,double > > >("nitschepar");
     	std::map<int, double >::const_iterator iter = sideidtonitschepar.find(sid);
 
         if (iter != sideidtonitschepar.end())

@@ -63,14 +63,14 @@ namespace UTILS
     Actually, only the \p rownodes and \p colnodes maps are created.
    */
 #if 0
-  void PartUsingParMetis(RCP<DRT::Discretization> dis,
-                         RCP<Epetra_Map> roweles,
-                         RCP<Epetra_Map>& rownodes,
-                         RCP<Epetra_Map>& colnodes,
+  void PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
+                         Teuchos::RCP<Epetra_Map> roweles,
+                         Teuchos::RCP<Epetra_Map>& rownodes,
+                         Teuchos::RCP<Epetra_Map>& colnodes,
                          std::vector<int>& nids,
                          int nblock,
                          int ntarget,
-                         RCP<Epetra_Comm> comm,
+                         Teuchos::RCP<Epetra_Comm> comm,
                          Epetra_Time& time,
                          bool outflag);
 #endif

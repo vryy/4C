@@ -68,7 +68,7 @@ void GEO::checkGeoType(
   if(eleDim == 3)
   {
     const std::vector< std::vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
-    std::vector< RCP<DRT::Element> >surfaces = (const_cast< DRT::Element* >(element))->Surfaces();
+    std::vector< Teuchos::RCP<DRT::Element> >surfaces = (const_cast< DRT::Element* >(element))->Surfaces();
     for(int i = 0; i < element->NumSurface(); i++)
     {
       CartesianCount = 0;

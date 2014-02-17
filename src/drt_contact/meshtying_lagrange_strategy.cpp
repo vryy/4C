@@ -406,7 +406,7 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseO
     // (FIXME: because a direct SplitMatrix3x3 is still missing!)
     Teuchos::RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
 
-    // some temporary RCPs
+    // some temporary Teuchos::RCPs
     Teuchos::RCP<Epetra_Map> tempmap;
     Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
     Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;

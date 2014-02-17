@@ -65,7 +65,7 @@ namespace STR
       return state_[IndexByStep(step)];
     }
 
-    //! Access state object by time step index as RCP
+    //! Access state object by time step index as Teuchos::RCP
     Teuchos::RCP<STATE> operator()
     (
       const int step  //!< inquire step

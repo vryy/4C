@@ -127,7 +127,7 @@ dofoffset_(dofoffset)
 /*----------------------------------------------------------------------*
  |  calls the almighty Octtree (public)                      meier 01/11|
  *----------------------------------------------------------------------*/
-std::vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step)
+std::vector<Teuchos::RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step)
 {
 #ifdef OCTREEDEBUG
   double t_start = Teuchos::Time::wallTime();
@@ -140,7 +140,7 @@ std::vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int,
   // clear vector for assigning bounding boxes to octants to be on the safe side before (re)assigning bounding boxes
   bool bboxesfound = locateAll();
   // intersection checks
-  std::vector<RCP<Beam3contact> > contactpairs;
+  std::vector<Teuchos::RCP<Beam3contact> > contactpairs;
   if(bboxesfound)
   {
     BoundingBoxIntersection(currentpositions, &contactpairs);
@@ -186,7 +186,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
   bool intersection = false;
 
   // determine bounding box limits
-  RCP<Epetra_SerialDenseMatrix> bboxlimits = Teuchos::rcp(new Epetra_SerialDenseMatrix(1,1));
+  Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits = Teuchos::rcp(new Epetra_SerialDenseMatrix(1,1));
 
   // build bounding box according to given type
   switch(boundingbox_)
@@ -276,7 +276,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
 /*-----------------------------------------------------------------------------------*
  |  Output of octants, bounding boxes and contact pairs (public)       mueller 01/12 |
  *----------------------------------------------------------------------------------.*/
-void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, int step)
+void Beam3ContactOctTree::OctreeOutput(std::vector<Teuchos::RCP<Beam3contact> >& cpairs, int step)
 {
   if(!discret_.Comm().MyPID() && step!=-1)
   {
@@ -479,7 +479,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> 
 /*-----------------------------------------------------------------------------------------*
  |  Create an Axis Aligned Bounding Box   (private)                           mueller 11/11|
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits)
+void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int& elecolid, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits seperately: The idea is that we can use this method to check whether a hypothetical bounding box (i.e. without an element)
   // can be tested for intersection. Hence, we store the limits of this bounding box into bboxlimits if needed.
@@ -819,7 +819,7 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
 /*-----------------------------------------------------------------------------------------*
  |  Create Cylindrical an Oriented Bounding Box   (private)                   mueller 11/11|
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits)
+void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int& elecolid, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits seperately: The idea is that we can use this method to check whether a hypothetical bounding box (i.e. without an element)
   // can be tested for intersection. Hence, we store the limits of this bounding box into bboxlimits if needed.
@@ -1046,7 +1046,7 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
 /*-----------------------------------------------------------------------------------------*
  |  Create Cylindrical an Oriented Bounding Box   (private)                   mueller 1/12|
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::CreateSPBB(Epetra_SerialDenseMatrix& coord, const int& elecolid, RCP<Epetra_SerialDenseMatrix> bboxlimits)
+void Beam3ContactOctTree::CreateSPBB(Epetra_SerialDenseMatrix& coord, const int& elecolid, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits)
 {
   if(bboxlimits!=Teuchos::null)
   {
@@ -1560,7 +1560,7 @@ LINALG::Matrix<6,1> Beam3ContactOctTree::GetRootBox()
  |  Gives back vector of intersection pairs                                          |
  *----------------------------------------------------------------------------------*/
 void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions,
-                                                  std::vector<RCP<Beam3contact> >* contactpairs)
+                                                  std::vector<Teuchos::RCP<Beam3contact> >* contactpairs)
 {
 #ifdef MEASURETIME
   double t_search = Teuchos::Time::wallTime();
@@ -1695,7 +1695,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
  |  Axis Aligned Bounding Box Intersection function when both bounding boxes         |
  |  represent actual finite elements  (private)                         mueller 11/11|
  *----------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::IntersectionAABB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits)
+bool Beam3ContactOctTree::IntersectionAABB(const std::vector<int>& bboxIDs, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits)
 {
   /* Why have bboxlimits seperately? In certain cases, it is required to intersect hypothetical bounding boxes
    * (i.e. without an existing element) with bounding boxes of existing elements. Then, the second bounding box ID
@@ -1784,7 +1784,7 @@ bool Beam3ContactOctTree::IntersectionAABB(const std::vector<int>& bboxIDs, RCP<
  |  Cylindrical Oriented Bounding Box Intersection function when both bounding boxes |
  |  represent actual finite elements  (private)                         mueller 11/11|
  *----------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits)
+bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits)
 {
   /* intersection test by calculating the distance between the two bounding box center lines
    * and comparing it to the respective diameters of the beams*/
@@ -2114,7 +2114,7 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, RCP<
  |  Spherical Bounding Box Intersection function when both bounding boxes           |
  |  for linkers                                       (private)        mueller 01/12|
  *----------------------------------------------------------------------------------*/
-bool Beam3ContactOctTree::IntersectionSPBB(const std::vector<int>& bboxIDs, RCP<Epetra_SerialDenseMatrix> bboxlimits)
+bool Beam3ContactOctTree::IntersectionSPBB(const std::vector<int>& bboxIDs, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits)
 {
   bool intersection = false;
   int bboxid0 = searchdis_.ElementColMap()->LID(bboxIDs[0]);

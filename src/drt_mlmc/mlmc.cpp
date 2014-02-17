@@ -877,7 +877,7 @@ void STR::MLMC::ProlongateResults()
   name << filename_ << "_run_"<< numb_run_;
   filename_helper = name.str();
 
-  RCP<IO::InputControl> inputcontrol = Teuchos::rcp(new IO::InputControl(filename_helper, false));
+  Teuchos::RCP<IO::InputControl> inputcontrol = Teuchos::rcp(new IO::InputControl(filename_helper, false));
 
   IO::DiscretizationReader input_coarse(actdis_coarse_, inputcontrol,tsteps_);
   // Vector for displacements
@@ -935,9 +935,9 @@ void STR::MLMC::ProlongateResults()
   double alphaf        = 0.459; // params_.get<double>("alpha f"                ,0.459);
   INPAR::STR::StressType iostress =INPAR::STR::stress_2pk; //stress_none;
   INPAR::STR::StrainType iostrain= INPAR::STR::strain_gl; // strain_none;
-  RCP<Epetra_Vector>    zeros_ = Teuchos::rcp(new Epetra_Vector(*actdis_fine_->DofRowMap(),true));
-  RCP<Epetra_Vector>    dis_ = dis_fine_single;
-  RCP<Epetra_Vector>    vel_ = Teuchos::rcp(new Epetra_Vector(*actdis_fine_->DofRowMap(),true));
+  Teuchos::RCP<Epetra_Vector>    zeros_ = Teuchos::rcp(new Epetra_Vector(*actdis_fine_->DofRowMap(),true));
+  Teuchos::RCP<Epetra_Vector>    dis_ = dis_fine_single;
+  Teuchos::RCP<Epetra_Vector>    vel_ = Teuchos::rcp(new Epetra_Vector(*actdis_fine_->DofRowMap(),true));
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
@@ -983,9 +983,9 @@ void STR::MLMC::ProlongateResults()
   //#####################################################################################
 
   // use same parameter list as above
-  RCP<Epetra_Vector>    zeros_coarse = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
-  //RCP<Epetra_Vector>    dis_ = dis_fine_single;
-  RCP<Epetra_Vector>    vel_coarse = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  Teuchos::RCP<Epetra_Vector>    zeros_coarse = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  //Teuchos::RCP<Epetra_Vector>    dis_ = dis_fine_single;
+  Teuchos::RCP<Epetra_Vector>    vel_coarse = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
   actdis_coarse_->ClearState();
   actdis_coarse_->SetState("residual displacement",zeros_coarse);
   actdis_coarse_->SetState("displacement",dis_coarse);
@@ -993,10 +993,10 @@ void STR::MLMC::ProlongateResults()
   // Alrigth lets get the nodal stresses
   p.set("action","calc_global_gpstresses_map");
 
-  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstressmap", gpstressmap);
 
-  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstrainmap", gpstrainmap);
 
   actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -1004,9 +1004,9 @@ void STR::MLMC::ProlongateResults()
   // st action to calc poststresse
   p.set("action","postprocess_stress");
   // Multivector to store poststresses
-  RCP<Epetra_MultiVector> poststress =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->NodeRowMap()),6,true));
+  Teuchos::RCP<Epetra_MultiVector> poststress =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->NodeRowMap()),6,true));
   // for fine diskretization as well
-  RCP<Epetra_MultiVector> poststress_fine =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+  Teuchos::RCP<Epetra_MultiVector> poststress_fine =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
 
   p.set("poststress", poststress);
   p.set("stresstype","ndxyz");
@@ -1018,9 +1018,9 @@ void STR::MLMC::ProlongateResults()
   // again for strains
   p.set("action","postprocess_stress");
   // Multivector to store poststrains
-  RCP<Epetra_MultiVector> poststrain =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->NodeRowMap()),6,true));
+  Teuchos::RCP<Epetra_MultiVector> poststrain =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->NodeRowMap()),6,true));
   // for fine diskretization as well
-  RCP<Epetra_MultiVector> poststrain_fine =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+  Teuchos::RCP<Epetra_MultiVector> poststrain_fine =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
   p.set("poststress", poststrain);
   p.set("gpstressmap", gpstrainmap);
   p.set("stresstype","ndxyz");
@@ -1235,7 +1235,7 @@ void STR::MLMC::ReadResultsFromLowerLevel()
   name_helper << filename_lower_level_ <<"_prolongated"<< "_run_" << numb_run_ ;
   std::string name_ll = name_helper.str();
   // check if bool should be true or false
-  RCP<IO::InputControl> inputcontrol = Teuchos::rcp(new IO::InputControl(name_ll, false));
+  Teuchos::RCP<IO::InputControl> inputcontrol = Teuchos::rcp(new IO::InputControl(name_ll, false));
   IO::DiscretizationReader input_coarse(actdis_fine_, inputcontrol,1);
 
   // read in displacements
@@ -1246,7 +1246,7 @@ void STR::MLMC::ReadResultsFromLowerLevel()
    input_coarse.ReadMultiVector(strain_lower_level_, "prolongated_gauss_GL_strains_xyz");
 }
 
-void STR::MLMC::CalcDifferenceToLowerLevel(RCP< Epetra_MultiVector> stress, RCP< Epetra_MultiVector> strain, RCP<Epetra_MultiVector> disp)
+void STR::MLMC::CalcDifferenceToLowerLevel(Teuchos::RCP< Epetra_MultiVector> stress, Teuchos::RCP< Epetra_MultiVector> strain, Teuchos::RCP<Epetra_MultiVector> disp)
 {
   // store difference not in new vectors to save memory
   disp_lower_level_->Update(1.0,*disp,-1.0);
@@ -1264,13 +1264,13 @@ void STR::MLMC::SetupStochMatDet(double value)
    const int myrank = discret_->Comm().MyPID();
 
    // loop all materials in problem
-   const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
    if (myrank == 0)
      IO::cout << "No. material laws considered: " << (int)mats.size() << IO::endl;
-   std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+   std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
    for (curr=mats.begin(); curr != mats.end(); curr++)
    {
-     const RCP<MAT::PAR::Material> actmat = curr->second;
+     const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
      switch(actmat->Type())
      {
         case INPAR::MAT::m_aaaneohooke_stopro:
@@ -1317,13 +1317,13 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
   const int myrank = discret_->Comm().MyPID();
 
   // loop all materials in problem
-  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
   if (myrank == 0)
     IO::cout << "No. material laws considered: " << (int)mats.size() << IO::endl;
-  std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+  std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); curr++)
   {
-    const RCP<MAT::PAR::Material> actmat = curr->second;
+    const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
     switch(actmat->Type())
     {
        case INPAR::MAT::m_aaaneohooke_stopro:
@@ -1458,13 +1458,13 @@ void STR::MLMC::SetupStochMat2(unsigned int random_seed)
   const int myrank = discret_->Comm().MyPID();
 
   // loop all materials in problem
-  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
   if (myrank == 0)
     IO::cout << "No. material laws considered: " << (int)mats.size() << IO::endl;
-  std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+  std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); curr++)
   {
-    const RCP<MAT::PAR::Material> actmat = curr->second;
+    const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
     switch(actmat->Type())
     {
        case INPAR::MAT::m_aaaneohooke_stopro:
@@ -1547,12 +1547,12 @@ void STR::MLMC::SetupStochMat2(unsigned int random_seed)
   // now we have filled the vector and we can set it
 
   // loop all materials in problem
-    //const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+    //const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
-    std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr2;
+    std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr2;
     for (curr2=mats.begin(); curr2 != mats.end(); curr2++)
     {
-      const RCP<MAT::PAR::Material> actmat = curr2->second;
+      const Teuchos::RCP<MAT::PAR::Material> actmat = curr2->second;
       switch(actmat->Type())
       {
          case INPAR::MAT::m_aaaneohooke:
@@ -1596,13 +1596,13 @@ void STR::MLMC::BlendStochMat(unsigned int random_seed, bool reuse_rf_values, do
   const int myrank = discret_->Comm().MyPID();
 
   // loop all materials in problem
-  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
   if (myrank == 0)
     IO::cout << "No. material laws considered: " << (int)mats.size() << IO::endl;
-  std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+  std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); curr++)
   {
-    const RCP<MAT::PAR::Material> actmat = curr->second;
+    const Teuchos::RCP<MAT::PAR::Material> actmat = curr->second;
     switch(actmat->Type())
     {
        case INPAR::MAT::m_aaaneohooke_stopro:
@@ -1677,7 +1677,7 @@ void STR::MLMC::BlendStochMat(unsigned int random_seed, bool reuse_rf_values, do
 }
 
 // calculate some statistics
-void STR::MLMC::CalcStatStressDisp(RCP< Epetra_MultiVector> curr_stress,RCP< Epetra_MultiVector> curr_strain,RCP<Epetra_MultiVector> curr_disp)
+void STR::MLMC::CalcStatStressDisp(Teuchos::RCP< Epetra_MultiVector> curr_stress,Teuchos::RCP< Epetra_MultiVector> curr_strain,Teuchos::RCP<Epetra_MultiVector> curr_disp)
 {
   // in order to avoid saving the stresses and displacements for each step an online
   // algorithm to compute the std deviation is needed .
@@ -1806,7 +1806,7 @@ void STR::MLMC::ResetPrestress()
 }
 
 
-void STR::MLMC::HelperFunctionOutput(RCP< Epetra_MultiVector> stress,RCP< Epetra_MultiVector> strain, RCP<Epetra_MultiVector> disp)
+void STR::MLMC::HelperFunctionOutput(Teuchos::RCP< Epetra_MultiVector> stress,Teuchos::RCP< Epetra_MultiVector> strain, Teuchos::RCP<Epetra_MultiVector> disp)
 {
   // assamble name for outputfil
   std::stringstream outputfile;
@@ -1825,7 +1825,7 @@ void STR::MLMC::HelperFunctionOutput(RCP< Epetra_MultiVector> stress,RCP< Epetra
   File << numb_run_ << "    "<< (*disp)[0][72]<< "    " << (*stress)[0][435] << std::endl;
   File.close();
 }
-void STR::MLMC::HelperFunctionOutputTube(RCP< Epetra_MultiVector> stress,RCP< Epetra_MultiVector> strain, RCP<Epetra_MultiVector> disp)
+void STR::MLMC::HelperFunctionOutputTube(Teuchos::RCP< Epetra_MultiVector> stress,Teuchos::RCP< Epetra_MultiVector> strain, Teuchos::RCP<Epetra_MultiVector> disp)
 {
 
   // assamble name for outputfil
@@ -1921,8 +1921,8 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   p.set<int>("iostress", iostress);
   p.set<int>("iostrain", iostrain);
 
-  RCP<Epetra_Vector>    zeros_coarse = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
-  RCP<Epetra_Vector>    vel_coarse = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  Teuchos::RCP<Epetra_Vector>    zeros_coarse = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  Teuchos::RCP<Epetra_Vector>    vel_coarse = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
   actdis_coarse_->ClearState();
   actdis_coarse_->SetState("residual displacement",zeros_coarse);
   // disp is passed to the function no need for reading in results anymore
@@ -1930,10 +1930,10 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   actdis_coarse_->SetState("velocity",vel_coarse);
   // Alrigth lets get the nodal stresses
   p.set("action","calc_global_gpstresses_map");
-  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstressmap", gpstressmap);
 
-  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
  p.set("gpstrainmap", gpstrainmap);
 
 
@@ -1945,7 +1945,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   p.set("action","postprocess_stress");
   // Multivector to store poststresses
   // WE need the collumn Map here because we need all the ghosted nodes to calculate stresses at the nodes
-  RCP<Epetra_MultiVector> poststress =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->NodeColMap()),6,true));
+  Teuchos::RCP<Epetra_MultiVector> poststress =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->NodeColMap()),6,true));
 
   p.set("gpstressmap", gpstressmap);
   p.set("poststress", poststress);
@@ -1958,7 +1958,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   // again for strains
   p.set("action","postprocess_stress");
   // Multivector to store poststrains
-  RCP<Epetra_MultiVector> poststrain =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->NodeColMap()),6,true));
+  Teuchos::RCP<Epetra_MultiVector> poststrain =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->NodeColMap()),6,true));
   p.set("poststress", poststrain);
   p.set("gpstressmap", gpstrainmap);
   p.set("stresstype","ndxyz");
@@ -1971,7 +1971,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   p.set("action","postprocess_stress");
   p.set("stresstype","cxyz");
   p.set("gpstressmap", gpstressmap);
-  RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
+  Teuchos::RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
   p.set("poststress",elestress);
   actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   if (elestress==Teuchos::null)
@@ -1982,7 +1982,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   dserror("stop here");
   // and strains
   p.set("gpstressmap", gpstrainmap);
-  RCP<Epetra_MultiVector> elestrains = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
+  Teuchos::RCP<Epetra_MultiVector> elestrains = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
   p.set("poststress",elestrains);
   actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   if (elestress==Teuchos::null)
@@ -1996,9 +1996,9 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   std::string name2 = outputfile2.str();;
   // file to write output
 
-  RCP<Epetra_Vector> output_disp = LINALG::CreateVector(output_dof_map,false);
-  RCP<Epetra_MultiVector> output_stress =  Teuchos::rcp(new Epetra_MultiVector(output_node_map,6,true));
-  RCP<Epetra_MultiVector> output_strain =  Teuchos::rcp(new Epetra_MultiVector(output_node_map,6,true));
+  Teuchos::RCP<Epetra_Vector> output_disp = LINALG::CreateVector(output_dof_map,false);
+  Teuchos::RCP<Epetra_MultiVector> output_stress =  Teuchos::rcp(new Epetra_MultiVector(output_node_map,6,true));
+  Teuchos::RCP<Epetra_MultiVector> output_strain =  Teuchos::rcp(new Epetra_MultiVector(output_node_map,6,true));
   LINALG::Export(*poststress,*output_stress);
   LINALG::Export(*poststrain,*output_strain);
   LINALG::Export(*disp,*output_disp);
@@ -2333,8 +2333,8 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp,
   p.set<int>("iostress", iostress);
   p.set<int>("iostrain", iostrain);
 
-  RCP<Epetra_Vector>    zeros_coarse = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
-  RCP<Epetra_Vector>    vel_coarse = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  Teuchos::RCP<Epetra_Vector>    zeros_coarse = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
+  Teuchos::RCP<Epetra_Vector>    vel_coarse = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
   actdis_coarse_->ClearState();
   actdis_coarse_->SetState("residual displacement",zeros_coarse);
   // disp is passed to the function no need for reading in results anymore
@@ -2342,10 +2342,10 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp,
   actdis_coarse_->SetState("velocity",vel_coarse);
   // Alright lets get the nodal stresses
   p.set("action","calc_global_gpstresses_map");
-  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstressmap", gpstressmap);
 
-  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstrainmap", gpstrainmap);
   //actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   Evaluate2(p,output_elements,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -2354,7 +2354,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp,
   p.set("action","postprocess_stress");
   p.set("stresstype","cxyz");
   p.set("gpstressmap", gpstressmap);
-  RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
+  Teuchos::RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
   p.set("poststress",elestress);
   Evaluate2(p,output_elements,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   //actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -2364,7 +2364,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp,
   }
   // and strains
   p.set("gpstressmap", gpstrainmap);
-  RCP<Epetra_MultiVector> elestrains = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
+  Teuchos::RCP<Epetra_MultiVector> elestrains = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
   p.set("poststress",elestrains);
   Evaluate2(p,output_elements,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   //actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);

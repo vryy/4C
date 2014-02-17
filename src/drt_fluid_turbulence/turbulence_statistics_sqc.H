@@ -75,7 +75,7 @@ public:
   </pre>
 
   */
-  TurbulenceStatisticsSqc(RCP<DRT::Discretization> actdis,
+  TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discretization> actdis,
                           Teuchos::ParameterList&                   params);
 
   /*!
@@ -157,130 +157,130 @@ private:
   double                           dragsq_;
 
   //! The discretisation (required for nodes, dofs etc;)
-  RCP<DRT::Discretization> discret_;
+  Teuchos::RCP<DRT::Discretization> discret_;
 
   //! parameter list
   Teuchos::ParameterList&                   params_;
 
    //! pointer to vel/pres^2 field (space allocated in constructor)
-  RCP<Epetra_Vector>       squaredvelnp_;
+  Teuchos::RCP<Epetra_Vector>       squaredvelnp_;
 
   //! toogle vectors: sums are computed by scalarproducts
-  RCP<Epetra_Vector>       toggleu_;
-  RCP<Epetra_Vector>       togglev_;
-  RCP<Epetra_Vector>       togglew_;
-  RCP<Epetra_Vector>       togglep_;
+  Teuchos::RCP<Epetra_Vector>       toggleu_;
+  Teuchos::RCP<Epetra_Vector>       togglev_;
+  Teuchos::RCP<Epetra_Vector>       togglew_;
+  Teuchos::RCP<Epetra_Vector>       togglep_;
 
   //! the coordinates of various lines
-  RCP<std::vector<double> >     x1ccoordinates_;
-  RCP<std::vector<double> >     x2ccoordinates_;
-  RCP<std::vector<double> >     x2wcoordinates_;
-  RCP<std::vector<double> >     clrcoordinates_;
-  RCP<std::vector<double> >     ctbcoordinates_;
+  Teuchos::RCP<std::vector<double> >     x1ccoordinates_;
+  Teuchos::RCP<std::vector<double> >     x2ccoordinates_;
+  Teuchos::RCP<std::vector<double> >     x2wcoordinates_;
+  Teuchos::RCP<std::vector<double> >     clrcoordinates_;
+  Teuchos::RCP<std::vector<double> >     ctbcoordinates_;
   //! all coordinates in x1- and x2-direction (required for averaging of Smagorinsky constant)
-  RCP<std::vector<double> >     x1coordinates_;
-  RCP<std::vector<double> >     x2coordinates_;
+  Teuchos::RCP<std::vector<double> >     x1coordinates_;
+  Teuchos::RCP<std::vector<double> >     x2coordinates_;
 
   //! sum over u
-  RCP<std::vector<double> >     x1csumu_;
-  RCP<std::vector<double> >     x2csumu_;
-  RCP<std::vector<double> >     x2w1sumu_;
-  RCP<std::vector<double> >     x2w2sumu_;
-  RCP<std::vector<double> >     cyllsumu_;
-  RCP<std::vector<double> >     cyltsumu_;
-  RCP<std::vector<double> >     cylrsumu_;
-  RCP<std::vector<double> >     cylbsumu_;
+  Teuchos::RCP<std::vector<double> >     x1csumu_;
+  Teuchos::RCP<std::vector<double> >     x2csumu_;
+  Teuchos::RCP<std::vector<double> >     x2w1sumu_;
+  Teuchos::RCP<std::vector<double> >     x2w2sumu_;
+  Teuchos::RCP<std::vector<double> >     cyllsumu_;
+  Teuchos::RCP<std::vector<double> >     cyltsumu_;
+  Teuchos::RCP<std::vector<double> >     cylrsumu_;
+  Teuchos::RCP<std::vector<double> >     cylbsumu_;
   //! sum over v
-  RCP<std::vector<double> >     x1csumv_;
-  RCP<std::vector<double> >     x2csumv_;
-  RCP<std::vector<double> >     x2w1sumv_;
-  RCP<std::vector<double> >     x2w2sumv_;
-  RCP<std::vector<double> >     cyllsumv_;
-  RCP<std::vector<double> >     cyltsumv_;
-  RCP<std::vector<double> >     cylrsumv_;
-  RCP<std::vector<double> >     cylbsumv_;
+  Teuchos::RCP<std::vector<double> >     x1csumv_;
+  Teuchos::RCP<std::vector<double> >     x2csumv_;
+  Teuchos::RCP<std::vector<double> >     x2w1sumv_;
+  Teuchos::RCP<std::vector<double> >     x2w2sumv_;
+  Teuchos::RCP<std::vector<double> >     cyllsumv_;
+  Teuchos::RCP<std::vector<double> >     cyltsumv_;
+  Teuchos::RCP<std::vector<double> >     cylrsumv_;
+  Teuchos::RCP<std::vector<double> >     cylbsumv_;
   //! sum over w
-  RCP<std::vector<double> >     x1csumw_;
-  RCP<std::vector<double> >     x2csumw_;
-  RCP<std::vector<double> >     x2w1sumw_;
-  RCP<std::vector<double> >     x2w2sumw_;
-  RCP<std::vector<double> >     cyllsumw_;
-  RCP<std::vector<double> >     cyltsumw_;
-  RCP<std::vector<double> >     cylrsumw_;
-  RCP<std::vector<double> >     cylbsumw_;
+  Teuchos::RCP<std::vector<double> >     x1csumw_;
+  Teuchos::RCP<std::vector<double> >     x2csumw_;
+  Teuchos::RCP<std::vector<double> >     x2w1sumw_;
+  Teuchos::RCP<std::vector<double> >     x2w2sumw_;
+  Teuchos::RCP<std::vector<double> >     cyllsumw_;
+  Teuchos::RCP<std::vector<double> >     cyltsumw_;
+  Teuchos::RCP<std::vector<double> >     cylrsumw_;
+  Teuchos::RCP<std::vector<double> >     cylbsumw_;
   //! sum over p
-  RCP<std::vector<double> >     x1csump_;
-  RCP<std::vector<double> >     x2csump_;
-  RCP<std::vector<double> >     x2w1sump_;
-  RCP<std::vector<double> >     x2w2sump_;
-  RCP<std::vector<double> >     cyllsump_;
-  RCP<std::vector<double> >     cyltsump_;
-  RCP<std::vector<double> >     cylrsump_;
-  RCP<std::vector<double> >     cylbsump_;
+  Teuchos::RCP<std::vector<double> >     x1csump_;
+  Teuchos::RCP<std::vector<double> >     x2csump_;
+  Teuchos::RCP<std::vector<double> >     x2w1sump_;
+  Teuchos::RCP<std::vector<double> >     x2w2sump_;
+  Teuchos::RCP<std::vector<double> >     cyllsump_;
+  Teuchos::RCP<std::vector<double> >     cyltsump_;
+  Teuchos::RCP<std::vector<double> >     cylrsump_;
+  Teuchos::RCP<std::vector<double> >     cylbsump_;
 
   //! sum over u^2
-  RCP<std::vector<double> >     x1csumsqu_;
-  RCP<std::vector<double> >     x2csumsqu_;
-  RCP<std::vector<double> >     x2w1sumsqu_;
-  RCP<std::vector<double> >     x2w2sumsqu_;
-  RCP<std::vector<double> >     cyllsumsqu_;
-  RCP<std::vector<double> >     cyltsumsqu_;
-  RCP<std::vector<double> >     cylrsumsqu_;
-  RCP<std::vector<double> >     cylbsumsqu_;
+  Teuchos::RCP<std::vector<double> >     x1csumsqu_;
+  Teuchos::RCP<std::vector<double> >     x2csumsqu_;
+  Teuchos::RCP<std::vector<double> >     x2w1sumsqu_;
+  Teuchos::RCP<std::vector<double> >     x2w2sumsqu_;
+  Teuchos::RCP<std::vector<double> >     cyllsumsqu_;
+  Teuchos::RCP<std::vector<double> >     cyltsumsqu_;
+  Teuchos::RCP<std::vector<double> >     cylrsumsqu_;
+  Teuchos::RCP<std::vector<double> >     cylbsumsqu_;
   //! sum over v^2
-  RCP<std::vector<double> >     x1csumsqv_;
-  RCP<std::vector<double> >     x2csumsqv_;
-  RCP<std::vector<double> >     x2w1sumsqv_;
-  RCP<std::vector<double> >     x2w2sumsqv_;
-  RCP<std::vector<double> >     cyllsumsqv_;
-  RCP<std::vector<double> >     cyltsumsqv_;
-  RCP<std::vector<double> >     cylrsumsqv_;
-  RCP<std::vector<double> >     cylbsumsqv_;
+  Teuchos::RCP<std::vector<double> >     x1csumsqv_;
+  Teuchos::RCP<std::vector<double> >     x2csumsqv_;
+  Teuchos::RCP<std::vector<double> >     x2w1sumsqv_;
+  Teuchos::RCP<std::vector<double> >     x2w2sumsqv_;
+  Teuchos::RCP<std::vector<double> >     cyllsumsqv_;
+  Teuchos::RCP<std::vector<double> >     cyltsumsqv_;
+  Teuchos::RCP<std::vector<double> >     cylrsumsqv_;
+  Teuchos::RCP<std::vector<double> >     cylbsumsqv_;
   //! sum over w^2
-  RCP<std::vector<double> >     x1csumsqw_;
-  RCP<std::vector<double> >     x2csumsqw_;
-  RCP<std::vector<double> >     x2w1sumsqw_;
-  RCP<std::vector<double> >     x2w2sumsqw_;
-  RCP<std::vector<double> >     cyllsumsqw_;
-  RCP<std::vector<double> >     cyltsumsqw_;
-  RCP<std::vector<double> >     cylrsumsqw_;
-  RCP<std::vector<double> >     cylbsumsqw_;
+  Teuchos::RCP<std::vector<double> >     x1csumsqw_;
+  Teuchos::RCP<std::vector<double> >     x2csumsqw_;
+  Teuchos::RCP<std::vector<double> >     x2w1sumsqw_;
+  Teuchos::RCP<std::vector<double> >     x2w2sumsqw_;
+  Teuchos::RCP<std::vector<double> >     cyllsumsqw_;
+  Teuchos::RCP<std::vector<double> >     cyltsumsqw_;
+  Teuchos::RCP<std::vector<double> >     cylrsumsqw_;
+  Teuchos::RCP<std::vector<double> >     cylbsumsqw_;
   //! sum over uv
-  RCP<std::vector<double> >     x1csumuv_;
-  RCP<std::vector<double> >     x2csumuv_;
-  RCP<std::vector<double> >     x2w1sumuv_;
-  RCP<std::vector<double> >     x2w2sumuv_;
-  RCP<std::vector<double> >     cyllsumuv_;
-  RCP<std::vector<double> >     cyltsumuv_;
-  RCP<std::vector<double> >     cylrsumuv_;
-  RCP<std::vector<double> >     cylbsumuv_;
+  Teuchos::RCP<std::vector<double> >     x1csumuv_;
+  Teuchos::RCP<std::vector<double> >     x2csumuv_;
+  Teuchos::RCP<std::vector<double> >     x2w1sumuv_;
+  Teuchos::RCP<std::vector<double> >     x2w2sumuv_;
+  Teuchos::RCP<std::vector<double> >     cyllsumuv_;
+  Teuchos::RCP<std::vector<double> >     cyltsumuv_;
+  Teuchos::RCP<std::vector<double> >     cylrsumuv_;
+  Teuchos::RCP<std::vector<double> >     cylbsumuv_;
   //! sum over uw
-  RCP<std::vector<double> >     x1csumuw_;
-  RCP<std::vector<double> >     x2csumuw_;
-  RCP<std::vector<double> >     x2w1sumuw_;
-  RCP<std::vector<double> >     x2w2sumuw_;
-  RCP<std::vector<double> >     cyllsumuw_;
-  RCP<std::vector<double> >     cyltsumuw_;
-  RCP<std::vector<double> >     cylrsumuw_;
-  RCP<std::vector<double> >     cylbsumuw_;
+  Teuchos::RCP<std::vector<double> >     x1csumuw_;
+  Teuchos::RCP<std::vector<double> >     x2csumuw_;
+  Teuchos::RCP<std::vector<double> >     x2w1sumuw_;
+  Teuchos::RCP<std::vector<double> >     x2w2sumuw_;
+  Teuchos::RCP<std::vector<double> >     cyllsumuw_;
+  Teuchos::RCP<std::vector<double> >     cyltsumuw_;
+  Teuchos::RCP<std::vector<double> >     cylrsumuw_;
+  Teuchos::RCP<std::vector<double> >     cylbsumuw_;
   //! sum over vw
-  RCP<std::vector<double> >     x1csumvw_;
-  RCP<std::vector<double> >     x2csumvw_;
-  RCP<std::vector<double> >     x2w1sumvw_;
-  RCP<std::vector<double> >     x2w2sumvw_;
-  RCP<std::vector<double> >     cyllsumvw_;
-  RCP<std::vector<double> >     cyltsumvw_;
-  RCP<std::vector<double> >     cylrsumvw_;
-  RCP<std::vector<double> >     cylbsumvw_;
+  Teuchos::RCP<std::vector<double> >     x1csumvw_;
+  Teuchos::RCP<std::vector<double> >     x2csumvw_;
+  Teuchos::RCP<std::vector<double> >     x2w1sumvw_;
+  Teuchos::RCP<std::vector<double> >     x2w2sumvw_;
+  Teuchos::RCP<std::vector<double> >     cyllsumvw_;
+  Teuchos::RCP<std::vector<double> >     cyltsumvw_;
+  Teuchos::RCP<std::vector<double> >     cylrsumvw_;
+  Teuchos::RCP<std::vector<double> >     cylbsumvw_;
   //! sum over p^2
-  RCP<std::vector<double> >     x1csumsqp_;
-  RCP<std::vector<double> >     x2csumsqp_;
-  RCP<std::vector<double> >     x2w1sumsqp_;
-  RCP<std::vector<double> >     x2w2sumsqp_;
-  RCP<std::vector<double> >     cyllsumsqp_;
-  RCP<std::vector<double> >     cyltsumsqp_;
-  RCP<std::vector<double> >     cylrsumsqp_;
-  RCP<std::vector<double> >     cylbsumsqp_;
+  Teuchos::RCP<std::vector<double> >     x1csumsqp_;
+  Teuchos::RCP<std::vector<double> >     x2csumsqp_;
+  Teuchos::RCP<std::vector<double> >     x2w1sumsqp_;
+  Teuchos::RCP<std::vector<double> >     x2w2sumsqp_;
+  Teuchos::RCP<std::vector<double> >     cyllsumsqp_;
+  Teuchos::RCP<std::vector<double> >     cyltsumsqp_;
+  Teuchos::RCP<std::vector<double> >     cylrsumsqp_;
+  Teuchos::RCP<std::vector<double> >     cylbsumsqp_;
 
 };
 

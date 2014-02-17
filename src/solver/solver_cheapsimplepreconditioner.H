@@ -13,9 +13,8 @@ Maintainer: Tobias Wiesner
 
 #include "../drt_lib/drt_dserror.H"
 
-#include "../linalg/linalg_mapextractor.H" // This is for mmex_ (reference, not RCP by intention)
+#include "../linalg/linalg_mapextractor.H" // This is for mmex_ (reference, not Teuchos::RCP by intention)
 
-using Teuchos::RCP;				// it's ok to use Teuchos::RCP and Teuchos::ParameterList
 using Teuchos::ParameterList;   // note, we do not include a whole namespace!
 
 namespace LINALG
@@ -62,7 +61,7 @@ public:
 	/*!
   \brief Standard Constructor
 	 */
-	explicit CheapSIMPLE_BlockPreconditioner(RCP<Epetra_Operator> A,
+	explicit CheapSIMPLE_BlockPreconditioner(Teuchos::RCP<Epetra_Operator> A,
 			const Teuchos::ParameterList& velocitylist,
 			const Teuchos::ParameterList& pressurelist,
 			FILE* outfile = NULL);
@@ -221,7 +220,7 @@ private:
 	/*!
   \brief setup phase of preconditioner
 	 */
-	void Setup(RCP<Epetra_Operator> A,
+	void Setup(Teuchos::RCP<Epetra_Operator> A,
 			const Teuchos::ParameterList& origvlist,
 			const Teuchos::ParameterList& origplist);
 
@@ -249,37 +248,37 @@ private:
 	ParameterList                                       schurSolver_list_;   // list for secondary solver
 	double                                              alpha_;   // pressure damping \in (0,1]
 
-	MultiMapExtractor                                   mmex_;    // a multimapetxractor to handle extracts (reference not an RCP by intention!)
-	RCP<BlockSparseMatrixBase>                          A_;       // 2x2 block matrix
-	RCP<SparseMatrix>                                   diagAinv_;// inverse of main diagonal of A(0,0)
-	RCP<SparseMatrix>                                   S_;       // Approximate Schur complement on the pressure space
+	MultiMapExtractor                                   mmex_;    // a multimapetxractor to handle extracts (reference not an Teuchos::RCP by intention!)
+	Teuchos::RCP<BlockSparseMatrixBase>                          A_;       // 2x2 block matrix
+	Teuchos::RCP<SparseMatrix>                                   diagAinv_;// inverse of main diagonal of A(0,0)
+	Teuchos::RCP<SparseMatrix>                                   S_;       // Approximate Schur complement on the pressure space
 
-	RCP<Epetra_Operator>                                Ppredict_;        // preconditioner for primary prediction subproblem
-	RCP<Epetra_Operator>                                Pschur_;      // preconditioner for Schur-complement subproblem
+	Teuchos::RCP<Epetra_Operator>                                Ppredict_;        // preconditioner for primary prediction subproblem
+	Teuchos::RCP<Epetra_Operator>                                Pschur_;      // preconditioner for Schur-complement subproblem
 
-	RCP<LINALG::ANA::Vector>                            vx_;      // velocity solution
-	RCP<LINALG::ANA::Vector>                            px_;      // pressure solution
-	RCP<LINALG::ANA::Vector>                            vb_;      // velocity rhs
-	RCP<LINALG::ANA::Vector>                            pb_;      // pressure rhs
-	RCP<LINALG::ANA::Vector>                            vwork1_;   // working vector velocity dimension
-	RCP<LINALG::ANA::Vector>                            vwork2_;   // working vector velocity dimension
-	RCP<LINALG::ANA::Vector>                            pwork1_;  // working vector pressure dimension
-	RCP<LINALG::ANA::Vector>                            pwork2_;  // working vector pressure dimension
+	Teuchos::RCP<LINALG::ANA::Vector>                            vx_;      // velocity solution
+	Teuchos::RCP<LINALG::ANA::Vector>                            px_;      // pressure solution
+	Teuchos::RCP<LINALG::ANA::Vector>                            vb_;      // velocity rhs
+	Teuchos::RCP<LINALG::ANA::Vector>                            pb_;      // pressure rhs
+	Teuchos::RCP<LINALG::ANA::Vector>                            vwork1_;   // working vector velocity dimension
+	Teuchos::RCP<LINALG::ANA::Vector>                            vwork2_;   // working vector velocity dimension
+	Teuchos::RCP<LINALG::ANA::Vector>                            pwork1_;  // working vector pressure dimension
+	Teuchos::RCP<LINALG::ANA::Vector>                            pwork2_;  // working vector pressure dimension
 
-	RCP<LINALG::Solver>                                 vsolver_; // velocity solver // not used for CheapSIMPLE
-	RCP<LINALG::Solver>                                 psolver_; // pressure solver // not used for CheapSIMPLE
+	Teuchos::RCP<LINALG::Solver>                                 vsolver_; // velocity solver // not used for CheapSIMPLE
+	Teuchos::RCP<LINALG::Solver>                                 psolver_; // pressure solver // not used for CheapSIMPLE
 
 	bool                                                vdw_;     // indicate downwinding for velocity subproblem
-	RCP<LINALG::DownwindMatrix>                         vdwind_;  // downwinding reindexer for velocity subproblem
-	RCP<Epetra_CrsMatrix>                               dwA00_;
-	RCP<LINALG::ANA::Vector>                            vdwin_;   // working vector
-	RCP<LINALG::ANA::Vector>                            vdwout_;  // working vector
+	Teuchos::RCP<LINALG::DownwindMatrix>                         vdwind_;  // downwinding reindexer for velocity subproblem
+	Teuchos::RCP<Epetra_CrsMatrix>                               dwA00_;
+	Teuchos::RCP<LINALG::ANA::Vector>                            vdwin_;   // working vector
+	Teuchos::RCP<LINALG::ANA::Vector>                            vdwout_;  // working vector
 
 	bool                                                pdw_;     // indicate downwinding for velocity subproblem
-	RCP<LINALG::DownwindMatrix>                         pdwind_;  // downwinding reindexer for velocity subproblem
-	RCP<Epetra_CrsMatrix>                               dwS_;
-	RCP<LINALG::ANA::Vector>                            pdwin_;   // working vector
-	RCP<LINALG::ANA::Vector>                            pdwout_;  // working vector
+	Teuchos::RCP<LINALG::DownwindMatrix>                         pdwind_;  // downwinding reindexer for velocity subproblem
+	Teuchos::RCP<Epetra_CrsMatrix>                               dwS_;
+	Teuchos::RCP<LINALG::ANA::Vector>                            pdwin_;   // working vector
+	Teuchos::RCP<LINALG::ANA::Vector>                            pdwout_;  // working vector
 
 	std::string                                         label_;   // label
 }; // class  CheapSIMPLE_Operator : public virtual Epetra_Operator

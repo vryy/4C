@@ -266,14 +266,14 @@ namespace STR
     };
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    virtual const RCP< ::UTILS::ConstrManager> GetConstraintManager()
+    virtual const Teuchos::RCP< ::UTILS::ConstrManager> GetConstraintManager()
     {
       dserror("GetConstraintManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
     //! Return Teuchos::rcp to WindkesselManager conman_
-    virtual const RCP< ::UTILS::WindkesselManager> GetWindkesselManager()
+    virtual const Teuchos::RCP< ::UTILS::WindkesselManager> GetWindkesselManager()
     {
       dserror("GetWindkesselManager() has not been tested for explicit time integrators");
       return Teuchos::null;

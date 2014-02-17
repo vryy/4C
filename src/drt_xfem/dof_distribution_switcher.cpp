@@ -109,7 +109,7 @@ void XFEM::DofDistributionSwitcher::extractDofKeysForInitialization(
 //---------------------------------------------------------------
 void XFEM::DofDistributionSwitcher::GmshOutput(
   int                               step,
-  const RCP<DRT::Discretization>    patchdis,
+  const Teuchos::RCP<DRT::Discretization>    patchdis,
   std::map<int,int>                 mapforoutput
   ) const
 {
@@ -211,7 +211,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
 #ifdef DEBUG
 //     bool completely_unchanged = true;
 #endif
-    const RCP<Epetra_Vector> oldVector = vector;
+    const Teuchos::RCP<Epetra_Vector> oldVector = vector;
     const Epetra_BlockMap& oldmap = oldVector->Map();
 //    std::cout << "olddofrowmap_" << std::endl;
 //    std::cout << (olddofrowmap_) << std::endl;

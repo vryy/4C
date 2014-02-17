@@ -940,7 +940,7 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
  *----------------------------------------------------------------------*/
 //void STR::TimIntStatMech::ReadRestart(int step)
 //{
-//  RCP<DRT::Discretization> Teuchos::rcpdiscret = Teuchos::rcp(&discret_,false);
+//  Teuchos::RCP<DRT::Discretization> Teuchos::rcpdiscret = Teuchos::rcp(&discret_,false);
 //  IO::DiscretizationReader reader(rcpdiscret,step);
 //  double time  = reader.ReadDouble("time");
 //  int    rstep = reader.ReadInt("step");
@@ -981,8 +981,8 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
 //  {
 //    double uzawatemp = reader.ReadDouble("uzawaparameter");
 //    constrSolv_->SetUzawaParameter(uzawatemp);
-//    RCP<Epetra_Map> constrmap=constrMan_->GetConstraintMap();
-//    RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*constrmap,true);
+//    Teuchos::RCP<Epetra_Map> constrmap=constrMan_->GetConstraintMap();
+//    Teuchos::RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*constrmap,true);
 //    reader.ReadVector(tempvec, "lagrmultiplier");
 //    constrMan_->SetLagrMultVector(tempvec);
 //    reader.ReadVector(tempvec, "refconval");

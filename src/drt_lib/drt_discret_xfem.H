@@ -88,7 +88,7 @@ public:
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
   */
-  DiscretizationXFEM(const std::string name, RCP<Epetra_Comm> comm)
+  DiscretizationXFEM(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
   :DiscretizationFaces(name, comm) { extension_filled_ = false; }; // use base class constructor
 
   /*!

@@ -70,8 +70,8 @@ public:
 
   */
   DynSmagFilter(
-    RCP<DRT::Discretization>     actdis             ,
-    RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
+    Teuchos::RCP<DRT::Discretization>     actdis             ,
+    Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
     Teuchos::ParameterList&      params             );
 
   /*!
@@ -81,9 +81,9 @@ public:
   virtual ~DynSmagFilter();
 
   void AddScatra(
-    RCP<DRT::Discretization>     scatradis,
+    Teuchos::RCP<DRT::Discretization>     scatradis,
     INPAR::SCATRA::ScaTraType    scatratype,
-    RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
+    Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
 
   /*!
   \brief Perform box filter operation, compare filtered quantities
@@ -182,9 +182,9 @@ private:
   Teuchos::RCP<FLD::Boxfilter> Boxfsc_;
 
   //! the discretization
-  RCP<DRT::Discretization>     discret_;
+  Teuchos::RCP<DRT::Discretization>     discret_;
   //! connection between master and slave nodes on this proc
-  RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave_;
   //! parameterlist including time params, stabilization params and turbulence sublist
   Teuchos::ParameterList&      params_ ;
   //! flag for physical type of fluid flow
@@ -200,46 +200,46 @@ private:
 
   //! @name special scatra variables
   //! the discretization
-  RCP<DRT::Discretization>     scatradiscret_;
+  Teuchos::RCP<DRT::Discretization>     scatradiscret_;
   INPAR::SCATRA::ScaTraType    scatratype_;
-  RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave_;
   //@}
 
   //! @name vectors used for filtering (for dynamic Smagorinsky model)
   //        --------------------------
 
   //! the filtered vel exported to column map
-  RCP<Epetra_MultiVector>      col_filtered_vel_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_vel_;
   //! the filtered reystress exported to column map
-  RCP<Epetra_MultiVector>      col_filtered_reynoldsstress_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_reynoldsstress_;
   //! the modeled subgrid stresses exported to column map
-  RCP<Epetra_MultiVector>      col_filtered_modeled_subgrid_stress_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_modeled_subgrid_stress_;
   //! the filtered velocities times rho exported to column map
-  RCP<Epetra_MultiVector>      col_filtered_dens_vel_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_dens_vel_;
   //! the filtered density exported to column map
-  RCP<Epetra_Vector>           col_filtered_dens_;
+  Teuchos::RCP<Epetra_Vector>           col_filtered_dens_;
   //! the filtered strainrate times rho exported to column map
-  RCP<Epetra_Vector>           col_filtered_dens_strainrate_;
+  Teuchos::RCP<Epetra_Vector>           col_filtered_dens_strainrate_;
   //! the modeled fine scale velocities exported to column map
-  RCP<Epetra_MultiVector>      col_fs_vel_;
+  Teuchos::RCP<Epetra_MultiVector>      col_fs_vel_;
   //! the filtered density times temperature times velocity exported to column map (scalar)
-  RCP<Epetra_MultiVector>      col_filtered_dens_vel_temp_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_dens_vel_temp_;
   //! the filtered density times temperature gradient times rate of strain exported to column map (scalar)
-  RCP<Epetra_MultiVector>      col_filtered_dens_rateofstrain_temp_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_dens_rateofstrain_temp_;
 //  //! the filtered temperature gradient exported to column map (scalar)
-//  RCP<Epetra_MultiVector>      col_filtered_gradtemp_;
+//  Teuchos::RCP<Epetra_MultiVector>      col_filtered_gradtemp_;
   //! the filtered temperature exported to column map (scalar)
-  RCP<Epetra_Vector>           col_filtered_temp_;
+  Teuchos::RCP<Epetra_Vector>           col_filtered_temp_;
   //! the filtered density times temperature exported to column map (scalar)
-  RCP<Epetra_Vector>           col_filtered_dens_temp_;
+  Teuchos::RCP<Epetra_Vector>           col_filtered_dens_temp_;
   //@}
 
   //! @name homogeneous flow specials
   //        -------------------------------
 
   //! the direction coordinates for the above mentioned averaging procedure
-  RCP<std::vector<double> >         dir1coords_;
-  RCP<std::vector<double> >         dir2coords_;
+  Teuchos::RCP<std::vector<double> >         dir1coords_;
+  Teuchos::RCP<std::vector<double> >         dir2coords_;
   //@}
 
 }; // end class DynSmagFilter

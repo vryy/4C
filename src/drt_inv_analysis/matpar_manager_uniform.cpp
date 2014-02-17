@@ -43,7 +43,7 @@ void STR::INVANA::MatParManagerUniform::ComputeParamsMultiVectorFromSMCParticleP
 
 
   // get all materials from drt::problem
-  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
   std::map<int,std::vector<std::string> >::const_iterator it;
   // loop over all mats that we have in the optimization

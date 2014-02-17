@@ -147,7 +147,7 @@ public:
                               On output, the map has a distribution of
                               TargetMap().
   */
-  template<typename T> void Export(std::map<int,RCP<T> >& parobjects);
+  template<typename T> void Export(std::map<int,Teuchos::RCP<T> >& parobjects);
 
   /*!
   \brief Communicate a map of vectors of some basic data type T
@@ -240,7 +240,7 @@ public:
                               On output, the map has a distribution of
                               TargetMap().
   */
-  void Export(std::map<int,RCP<Epetra_SerialDenseMatrix> >& data);
+  void Export(std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& data);
 
 
 #ifdef PARALLEL
@@ -533,19 +533,19 @@ private:
   };
 
 
-  /// Concrete helper class that handles RCPs to ParObjects
+  /// Concrete helper class that handles Teuchos::RCPs to ParObjects
   template<typename T>
   class ParObjectExporterHelper : public ExporterHelper
   {
   public:
 
-    explicit ParObjectExporterHelper(std::map<int,RCP<T> >& parobjects)
+    explicit ParObjectExporterHelper(std::map<int,Teuchos::RCP<T> >& parobjects)
       : parobjects_(parobjects) {}
 
     virtual void PreExportTest(Exporter* exporter)
     {
       // test whether type T implements ParObject
-      typename std::map<int,RCP<T> >::iterator curr = parobjects_.begin();
+      typename std::map<int,Teuchos::RCP<T> >::iterator curr = parobjects_.begin();
       if (curr != parobjects_.end())
       {
         T* ptr = curr->second.get();
@@ -556,7 +556,7 @@ private:
 
     virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
     {
-      typename std::map<int,RCP<T> >::const_iterator curr = parobjects_.find(gid);
+      typename std::map<int,Teuchos::RCP<T> >::const_iterator curr = parobjects_.find(gid);
       if (curr!=parobjects_.end())
       {
         ParObject::AddtoPack(sendblock,*curr->second);
@@ -573,7 +573,7 @@ private:
       DRT::ParObject* o = DRT::UTILS::Factory(data);
       T* ptr = dynamic_cast<T*>(o);
       if (!ptr) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
-      RCP<T> refptr = Teuchos::rcp(ptr);
+      Teuchos::RCP<T> refptr = Teuchos::rcp(ptr);
       // add object to my map
       parobjects_[gid] = refptr;
     }
@@ -581,8 +581,8 @@ private:
     virtual void PostExportCleanup(Exporter* exporter)
     {
       // loop map and kick out everything that's not in TargetMap()
-      std::map<int,RCP<T> > newmap;
-      typename std::map<int,RCP<T> >::const_iterator fool;
+      std::map<int,Teuchos::RCP<T> > newmap;
+      typename std::map<int,Teuchos::RCP<T> >::const_iterator fool;
       for (fool=parobjects_.begin(); fool != parobjects_.end(); ++fool)
         if (exporter->TargetMap().MyGID(fool->first))
           newmap[fool->first] = fool->second;
@@ -590,11 +590,11 @@ private:
     }
 
   private:
-    std::map<int,RCP<T> >& parobjects_;
+    std::map<int,Teuchos::RCP<T> >& parobjects_;
   };
 
 
-  /// Concrete helper class that handles RCPs to any object
+  /// Concrete helper class that handles Teuchos::RCPs to any object
   /**!
      The objects considered here must have a default constructor and must be
      supported by ParObject::AddtoPack and ParObject::ExtractfromPack
@@ -608,7 +608,7 @@ private:
   {
   public:
 
-    explicit AnyObjectExporterHelper(std::map<int,RCP<T> >& objects)
+    explicit AnyObjectExporterHelper(std::map<int,Teuchos::RCP<T> >& objects)
       : objects_(objects) {}
 
     virtual void PreExportTest(Exporter* exporter)
@@ -617,7 +617,7 @@ private:
 
     virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
     {
-      typename std::map<int,RCP<T> >::const_iterator curr = objects_.find(gid);
+      typename std::map<int,Teuchos::RCP<T> >::const_iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
       {
         ParObject::AddtoPack(sendblock,*curr->second);
@@ -628,7 +628,7 @@ private:
 
     virtual void UnpackObject(int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock)
     {
-      RCP<T> obj = Teuchos::rcp(new T);
+      Teuchos::RCP<T> obj = Teuchos::rcp(new T);
       ParObject::ExtractfromPack(index,recvblock,*obj);
 
       // add object to my map
@@ -638,8 +638,8 @@ private:
     virtual void PostExportCleanup(Exporter* exporter)
     {
       // loop map and kick out everything that's not in TargetMap()
-      std::map<int,RCP<T> > newmap;
-      typename std::map<int,RCP<T> >::const_iterator fool;
+      std::map<int,Teuchos::RCP<T> > newmap;
+      typename std::map<int,Teuchos::RCP<T> >::const_iterator fool;
       for (fool=objects_.begin(); fool != objects_.end(); ++fool)
         if (exporter->TargetMap().MyGID(fool->first))
           newmap[fool->first] = fool->second;
@@ -647,7 +647,7 @@ private:
     }
 
   private:
-    std::map<int,RCP<T> >& objects_;
+    std::map<int,Teuchos::RCP<T> >& objects_;
   };
 
 
@@ -842,7 +842,7 @@ private:
  |  communicate objects (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
 template<typename T> void DRT::Exporter::Export(
-                                     std::map<int,RCP<T> >& parobjects)
+                                     std::map<int,Teuchos::RCP<T> >& parobjects)
 {
   ParObjectExporterHelper<T> helper(parobjects);
   GenericExport(helper);

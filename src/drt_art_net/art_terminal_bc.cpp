@@ -35,7 +35,7 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
+void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> actdis,
                                            const DRT::Condition *condition,
                                            Teuchos::ParameterList & params)
 {
@@ -169,7 +169,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
 
     int ID = condition->GetInt("ConditionID");
     Teuchos::RCP<std::map<std::string,double> > map3D;
-    map3D   = CoupledTo3DParams->get<RCP<std::map<std::string,double > > >("3D map of values");
+    map3D   = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string,double > > >("3D map of values");
 
     // find the applied boundary variable
     std::stringstream stringID;
@@ -469,7 +469,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
 
     int ID = condition->GetInt("ConditionID");
     Teuchos::RCP<std::map<std::string,double> >  map1D;
-    map1D   = CoupledTo3DParams->get<RCP<std::map<std::string,double> > >("reducedD map of values");
+    map1D   = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string,double> > >("reducedD map of values");
 
     std::string returnedBC = *(condition->Get<std::string>("ReturnedVariable"));
 
@@ -537,7 +537,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::SolveReflectiveTerminal(RCP<DRT::Discretization> actdis,
+void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdis,
                                          const DRT::Condition *condition,
                                          Teuchos::ParameterList & params)
 {
@@ -614,7 +614,7 @@ void ART::UTILS::SolveReflectiveTerminal(RCP<DRT::Discretization> actdis,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::SolveExplWindkesselBC(RCP<DRT::Discretization> actdis,
+void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
                                        const DRT::Condition *condition,
                                        Teuchos::ParameterList & params)
 {

@@ -21,7 +21,7 @@ LINALG::AggregationMethod_Uncoupled::AggregationMethod_Uncoupled(FILE* outfile) 
 }
 
 
-int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMatrix>& A, ParameterList& params, RCP<Epetra_CrsGraph>& amalA, RCP<Epetra_IntVector>& bdry_array)
+int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const Teuchos::RCP<Epetra_CrsMatrix>& A, ParameterList& params, Teuchos::RCP<Epetra_CrsGraph>& amalA, Teuchos::RCP<Epetra_IntVector>& bdry_array)
 {
 
   int nUnamalgamatedBlockSize = params.get("Unamalgamated BlockSize",3);          // number of real PDE equations (for setting up amalgamated maps)
@@ -74,7 +74,7 @@ int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMa
   }
 
   ////////////// generate row map for amalgamated matrix with same distribution over all procs as row map of A
-  //RCP<Epetra_Map> amalA_RowMap = Teuchos::rcp(new Epetra_Map(-1,globalamalblockids_.size(),&globalamalblockids_[0],0,A->Comm()));
+  //Teuchos::RCP<Epetra_Map> amalA_RowMap = Teuchos::rcp(new Epetra_Map(-1,globalamalblockids_.size(),&globalamalblockids_[0],0,A->Comm()));
   amal_map_ = Teuchos::rcp(new Epetra_Map(-1,globalamalblockids_.size(),&globalamalblockids_[0],0,A->Comm()));
 #ifdef DEBUG
   int nRows = A->NumMyRows();  // number of matrix rows for current proc
@@ -186,7 +186,7 @@ int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMa
   return 0;
 }
 
-int LINALG::AggregationMethod_Uncoupled::Coarsen(const RCP<Epetra_CrsGraph>& amalA, const RCP<Epetra_IntVector>& bdry_array, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, int& nLocalAggregates)
+int LINALG::AggregationMethod_Uncoupled::Coarsen(const Teuchos::RCP<Epetra_CrsGraph>& amalA, const Teuchos::RCP<Epetra_IntVector>& bdry_array, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& amal_Aggregates, int& nLocalAggregates)
 {
   ///////////// prepare amal_Aggregates vector (contains local aggregate id)
   if (amal_Aggregates==Teuchos::null) amal_Aggregates = Teuchos::rcp(new Epetra_IntVector(amalA->RowMap(),true));
@@ -194,7 +194,7 @@ int LINALG::AggregationMethod_Uncoupled::Coarsen(const RCP<Epetra_CrsGraph>& ama
 
   ///////////// create internal vector for aggregate status
   // boundary nodes are already marked as AGGR_BDRY
-  RCP<Epetra_IntVector> aggr_stat = Teuchos::rcp(new Epetra_IntVector(*bdry_array));
+  Teuchos::RCP<Epetra_IntVector> aggr_stat = Teuchos::rcp(new Epetra_IntVector(*bdry_array));
 
 #ifdef DEBUG
   if(nVerbose_>5)
@@ -258,7 +258,7 @@ int LINALG::AggregationMethod_Uncoupled::Coarsen(const RCP<Epetra_CrsGraph>& ama
 }
 
 
-int LINALG::AggregationMethod_Uncoupled::Phase1(const RCP<Epetra_CrsGraph>& amalA, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates)
+int LINALG::AggregationMethod_Uncoupled::Phase1(const Teuchos::RCP<Epetra_CrsGraph>& amalA, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& amal_Aggregates, Teuchos::RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates)
 {
   ///////////// set some variables that might be in the parameter list later
   unsigned int min_nodes_per_aggregate = params.get("phase 1: min nodes per aggregate", 9);
@@ -460,7 +460,7 @@ int LINALG::AggregationMethod_Uncoupled::Phase1(const RCP<Epetra_CrsGraph>& amal
 
 // Phase 2 MAXLINK
 // search for a neighboring aggregate that has the most connections to my node
-int LINALG::AggregationMethod_Uncoupled::Phase2_maxlink(const RCP<Epetra_CrsGraph>& amalA, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates)
+int LINALG::AggregationMethod_Uncoupled::Phase2_maxlink(const Teuchos::RCP<Epetra_CrsGraph>& amalA, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& amal_Aggregates, Teuchos::RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates)
 {
   ///////////////// initialize local variables
 #ifdef DEBUG
@@ -575,7 +575,7 @@ int LINALG::AggregationMethod_Uncoupled::Phase2_maxlink(const RCP<Epetra_CrsGrap
 
 // Phase 2 MINRANK
 // search for a neighboring aggregate that has the fewest number of nodes
-int LINALG::AggregationMethod_Uncoupled::Phase2_minrank(const RCP<Epetra_CrsGraph>& amalA, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates)
+int LINALG::AggregationMethod_Uncoupled::Phase2_minrank(const Teuchos::RCP<Epetra_CrsGraph>& amalA, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& amal_Aggregates, Teuchos::RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates)
 {
   ///////////////// initialize local variables
 #ifdef DEBUG
@@ -698,7 +698,7 @@ int LINALG::AggregationMethod_Uncoupled::Phase2_minrank(const RCP<Epetra_CrsGrap
 }
 
 
-int LINALG::AggregationMethod_Uncoupled::Phase3(const RCP<Epetra_CrsGraph>& amalA, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates)
+int LINALG::AggregationMethod_Uncoupled::Phase3(const Teuchos::RCP<Epetra_CrsGraph>& amalA, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& amal_Aggregates, Teuchos::RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates)
 {
   ///////////// form new aggregates for non-aggregated nodes
   for(int inode=0; inode<amalA->NumMyRows(); inode++)
@@ -763,7 +763,7 @@ int LINALG::AggregationMethod_Uncoupled::Phase3(const RCP<Epetra_CrsGraph>& amal
   return cntready + cntnotselected;
 }
 
-int LINALG::AggregationMethod_Uncoupled::Phase4(const RCP<Epetra_CrsGraph>& amalA, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates)
+int LINALG::AggregationMethod_Uncoupled::Phase4(const Teuchos::RCP<Epetra_CrsGraph>& amalA, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& amal_Aggregates, Teuchos::RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates)
 {
   ///////////// form new aggregates for boundary nodes
   for(int inode=0; inode<amalA->NumMyRows(); inode++)
@@ -828,10 +828,10 @@ int LINALG::AggregationMethod_Uncoupled::Phase4(const RCP<Epetra_CrsGraph>& amal
 }
 
 
-RCP<Epetra_IntVector> LINALG::AggregationMethod_Uncoupled::UnamalgamateVector(const RCP<Epetra_IntVector>& amal_Aggregates)
+Teuchos::RCP<Epetra_IntVector> LINALG::AggregationMethod_Uncoupled::UnamalgamateVector(const Teuchos::RCP<Epetra_IntVector>& amal_Aggregates)
 {
   /////////////// generate result vector
-  RCP<Epetra_IntVector> ret = Teuchos::rcp(new Epetra_IntVector(*map_,true));
+  Teuchos::RCP<Epetra_IntVector> ret = Teuchos::rcp(new Epetra_IntVector(*map_,true));
 
 
   // loop over all amalgamated block ids for current proc
@@ -857,7 +857,7 @@ RCP<Epetra_IntVector> LINALG::AggregationMethod_Uncoupled::UnamalgamateVector(co
   return ret;
 }
 
-int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra_CrsMatrix>& A, RCP<Epetra_CrsMatrix>& prunedA, double epsilon, int curlevel)
+int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const Teuchos::RCP<Epetra_CrsMatrix>& A, Teuchos::RCP<Epetra_CrsMatrix>& prunedA, double epsilon, int curlevel)
 {
   if(curlevel >= 0)
   {
@@ -1104,7 +1104,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
 }
 
 
-int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<Epetra_CrsMatrix>& A, RCP<Epetra_CrsMatrix>& prunedA, double epsilon, int curlevel)
+int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const Teuchos::RCP<Epetra_CrsMatrix>& A, Teuchos::RCP<Epetra_CrsMatrix>& prunedA, double epsilon, int curlevel)
 {
   if(curlevel >= 0)
   {
@@ -1138,7 +1138,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<
 
 
  // extract matrix diagonal entries
- RCP<Epetra_Vector> diagVec = Teuchos::rcp(new Epetra_Vector(A->RowMap(),true));
+ Teuchos::RCP<Epetra_Vector> diagVec = Teuchos::rcp(new Epetra_Vector(A->RowMap(),true));
  A->ExtractDiagonalCopy(*diagVec);
 
 
@@ -1243,7 +1243,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<
   return 0;
 }
 
-int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>& A, RCP<Epetra_CrsMatrix>& prunedA)
+int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const Teuchos::RCP<Epetra_CrsMatrix>& A, Teuchos::RCP<Epetra_CrsMatrix>& prunedA)
 {
 #ifdef DEBUG
   if(nVerbose_>5)
@@ -1382,15 +1382,15 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
   return 0;
 }
 
-int LINALG::AggregationMethod_Uncoupled::GetGlobalAggregates(const RCP<Epetra_CrsMatrix>& A, ParameterList& params, RCP<Epetra_IntVector>& aggrinfo, int& naggregates_local, const RCP<Epetra_MultiVector>& ThisNS)
+int LINALG::AggregationMethod_Uncoupled::GetGlobalAggregates(const Teuchos::RCP<Epetra_CrsMatrix>& A, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& aggrinfo, int& naggregates_local, const Teuchos::RCP<Epetra_MultiVector>& ThisNS)
 {
-  RCP<Epetra_CrsGraph> amal_graph = Teuchos::null; // graph of amalgamated A matrix (lives on amal_map_)
-  RCP<Epetra_IntVector> bdry_array = Teuchos::null; // bdry array vector (lives on amal_map_)
-  RCP<Epetra_IntVector> amal_aggs = Teuchos::null; // vector with aggregate ids (local aggregate ids)
+  Teuchos::RCP<Epetra_CrsGraph> amal_graph = Teuchos::null; // graph of amalgamated A matrix (lives on amal_map_)
+  Teuchos::RCP<Epetra_IntVector> bdry_array = Teuchos::null; // bdry array vector (lives on amal_map_)
+  Teuchos::RCP<Epetra_IntVector> amal_aggs = Teuchos::null; // vector with aggregate ids (local aggregate ids)
 
   nVerbose_ = params.get("ML output",0);  // store verbosity level
 
-  RCP<Epetra_CrsMatrix> prunedA = Teuchos::null;
+  Teuchos::RCP<Epetra_CrsMatrix> prunedA = Teuchos::null;
   string pruningAlgorithm = params.get("aggregation method", "isotropic aggregation");
   if(pruningAlgorithm == "isotropic aggregation")
   {
@@ -1416,7 +1416,7 @@ int LINALG::AggregationMethod_Uncoupled::GetGlobalAggregates(const RCP<Epetra_Cr
   //AmalgamateMatrix(A,params,amal_graph,bdry_array);
   AmalgamateMatrix(prunedA,params,amal_graph,bdry_array);
   Coarsen(amal_graph,bdry_array,params,amal_aggs,naggregates_local);
-  RCP<Epetra_IntVector> aggs = UnamalgamateVector(amal_aggs); // stores unamalgamted vector with local agg ids
+  Teuchos::RCP<Epetra_IntVector> aggs = UnamalgamateVector(amal_aggs); // stores unamalgamted vector with local agg ids
 
   // transform local agg ids to global agg ids
   const Epetra_Comm& comm = A->Comm();

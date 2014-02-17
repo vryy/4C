@@ -134,7 +134,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
-  RCP<LINALG::Solver> solver =
+  Teuchos::RCP<LINALG::Solver> solver =
     Teuchos::rcp(new LINALG::Solver(problem->SolverParams(linsolvernumber),
                            actdis->Comm(),
                            problem->ErrorFile()->Handle()));
@@ -170,7 +170,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   Teuchos::RCP<Teuchos::ParameterList> fluidadjointtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
 
   // --------------------provide info about periodic boundary conditions
-  fluidadjointtimeparams->set<RCP<std::map<int,std::vector<int> > > >("periodic bc",pbcmapmastertoslave);
+  fluidadjointtimeparams->set<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc",pbcmapmastertoslave);
 
   fluidadjointtimeparams->set<int>("Simple Preconditioner",DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"));
   fluidadjointtimeparams->set<int>("AMG(BS) Preconditioner",DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC"));

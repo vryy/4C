@@ -289,7 +289,7 @@ void UTILS::ConstrManager::ComputeError(double time, Teuchos::RCP<Epetra_Vector>
 |(public)                                                       tk 08/08|
 |Reset reference base values for restart                                |
 *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::SetRefBaseValues(RCP<Epetra_Vector> newrefval,const double& time)
+void UTILS::ConstrManager::SetRefBaseValues(Teuchos::RCP<Epetra_Vector> newrefval,const double& time)
 {
   volconstr3d_->Initialize(time);
   areaconstr3d_->Initialize(time);
@@ -334,13 +334,13 @@ void UTILS::ConstrManager::Update()
 |(public)                                                       tk 01/08|
 |Add Lagrange increment to Lagrange multiplier.                         |
 *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::UpdateLagrMult(RCP<Epetra_Vector> vect)
+void UTILS::ConstrManager::UpdateLagrMult(Teuchos::RCP<Epetra_Vector> vect)
 {
   lagrMultVec_->Update(1.0,*vect,1.0);
   return;
 }
 
-void UTILS::ConstrManager::UpdateTotLagrMult(RCP<Epetra_Vector> vect)
+void UTILS::ConstrManager::UpdateTotLagrMult(Teuchos::RCP<Epetra_Vector> vect)
 {
   lagrMultVec_->Update(1.0,*vect,1.0,*lagrMultVecOld_,0.0);
   return;
@@ -350,7 +350,7 @@ void UTILS::ConstrManager::UpdateTotLagrMult(RCP<Epetra_Vector> vect)
 |(public)                                                        tk 01/08|
 |Compute values defined to keep track of.                                |
 *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
+void UTILS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<Epetra_Vector> disp)
 {
   std::vector<DRT::Condition*> monitcond(0);
   monitorvalues_->PutScalar(0.0);
@@ -374,7 +374,7 @@ void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
 |(public)                                                        tk 01/08|
 |Compute values defined to keep track of.                                |
 *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::ComputeMonitorValues(RCP<const Epetra_Vector> disp)
+void UTILS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<const Epetra_Vector> disp)
 {
   std::vector<DRT::Condition*> monitcond(0);
   monitorvalues_->PutScalar(0.0);

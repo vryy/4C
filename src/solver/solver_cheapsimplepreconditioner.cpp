@@ -40,7 +40,7 @@ Maintainer: Tobias Wiesner
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/08|
  *----------------------------------------------------------------------*/
-LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSIMPLE_BlockPreconditioner(RCP<Epetra_Operator> A,
+LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSIMPLE_BlockPreconditioner(Teuchos::RCP<Epetra_Operator> A,
                                            const Teuchos::ParameterList& predict_list,
                                            const Teuchos::ParameterList& correct_list,
                                            FILE* outfile)
@@ -76,7 +76,7 @@ LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSIMPLE_BlockPreconditioner
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 02/08|
  *----------------------------------------------------------------------*/
-void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator> A,
+void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_Operator> A,
                                      const Teuchos::ParameterList& origvlist,
                                      const Teuchos::ParameterList& origplist)
 {
@@ -123,7 +123,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
   //-------------------------------------------------------------------------
   {
     Epetra_Vector diag(*mmex_.Map(0),false);
-    RCP<Epetra_CrsMatrix> A00 = (*A_)(0,0).EpetraMatrix();
+    Teuchos::RCP<Epetra_CrsMatrix> A00 = (*A_)(0,0).EpetraMatrix();
     A00->InvRowSums(diag);
     diagAinv_ = Teuchos::rcp(new SparseMatrix(diag));
     diagAinv_->Complete(*mmex_.Map(0),*mmex_.Map(0));
@@ -265,9 +265,9 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
   // Allocate solver for pressure and velocity
   //-------------------------------------------------------------------------
   {
-    RCP<Teuchos::ParameterList> vrcplist = Teuchos::rcp(&predictSolver_list_,false);
+    Teuchos::RCP<Teuchos::ParameterList> vrcplist = Teuchos::rcp(&predictSolver_list_,false);
     vsolver_ = Teuchos::rcp(new LINALG::Solver(vrcplist,A_->Comm(),outfile_));
-    RCP<Teuchos::ParameterList> prcplist = Teuchos::rcp(&schurSolver_list_,false);
+    Teuchos::RCP<Teuchos::ParameterList> prcplist = Teuchos::rcp(&schurSolver_list_,false);
     psolver_ = Teuchos::rcp(new LINALG::Solver(prcplist,A_->Comm(),outfile_));
   }
 #endif

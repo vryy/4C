@@ -156,7 +156,7 @@ void POTENTIAL::Potential::treeSearchElementsInCutOffRadius(
 | evaluate potential                                                 |
 *--------------------------------------------------------------------*/
 void POTENTIAL::Potential::EvaluatePotentialfromCondition(
-    RCP<DRT::Condition>   cond,
+    Teuchos::RCP<DRT::Condition>   cond,
     const LINALG::Matrix<3,1>&    x,
     const LINALG::Matrix<3,1>&    y,
     LINALG::Matrix<3,1>&          potderiv1,
@@ -203,7 +203,7 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition(
 | evaluate potential 2D                                              |
 *--------------------------------------------------------------------*/
 void POTENTIAL::Potential::EvaluatePotentialfromCondition(
-    RCP<DRT::Condition>   cond,
+    Teuchos::RCP<DRT::Condition>   cond,
     const LINALG::Matrix<2,1>&    x,
     const LINALG::Matrix<2,1>&    y,
     LINALG::Matrix<2,1>&          potderiv1,
@@ -249,7 +249,7 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition(
 | evaluate potential (approximation)                                 |
 *--------------------------------------------------------------------*/
 void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx1(
-    RCP<DRT::Condition>   cond,
+    Teuchos::RCP<DRT::Condition>   cond,
     const LINALG::Matrix<3,1>&    x,
     const LINALG::Matrix<3,1>&    y,
     LINALG::Matrix<3,1>&          potderiv1,
@@ -287,7 +287,7 @@ void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx1(
 | evaluate potential (approximation)                                 |
 *--------------------------------------------------------------------*/
 void POTENTIAL::Potential::EvaluatePotentialfromCondition_Approx2(
-    RCP<DRT::Condition>   cond,
+    Teuchos::RCP<DRT::Condition>   cond,
     const LINALG::Matrix<3,1>&    x,
     const LINALG::Matrix<3,1>&    y,
     LINALG::Matrix<3,1>&          Fs,
@@ -1104,7 +1104,7 @@ Epetra_SerialDenseMatrix POTENTIAL::Potential::SpatialConfiguration(
 double POTENTIAL::Potential::GetTimeCurveFactor(
     Teuchos::ParameterList&                  params)
 {
-  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
+  Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition",Teuchos::null);
   const int    curvenum = cond->GetInt("curve");
   const double time     = params.get<double>("total time",-1.0);
   const double t_end    = DRT::Problem::Instance()->Curve(curvenum).end();
@@ -1176,8 +1176,8 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
   const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
   const std::map<int,std::set<int> >&     elementsByLabel_Vol,
   const std::map<int,std::set<int> >&     elementsByLabel_Surf,
-  const RCP<const Epetra_Vector>  disp,
-  const RCP<Epetra_Vector>        fint,
+  const Teuchos::RCP<const Epetra_Vector>  disp,
+  const Teuchos::RCP<Epetra_Vector>        fint,
   const double                            time,
   const int                               step,
   const double                            vdw_radius,
@@ -1276,8 +1276,8 @@ void POTENTIAL::Potential::computeTestVanDerWaalsMembranes(
   const Teuchos::RCP<DRT::Discretization> potentialsurfdis,
   const std::map<int,std::set<int> >&     elementsByLabel_Vol,
   const std::map<int,std::set<int> >&     elementsByLabel_Surf,
-  const RCP<const Epetra_Vector>  disp,
-  const RCP<Epetra_Vector>        fint,
+  const Teuchos::RCP<const Epetra_Vector>  disp,
+  const Teuchos::RCP<Epetra_Vector>        fint,
   const double                            time,
   const int                               step,
   const double                            vdw_radius,
@@ -1422,8 +1422,8 @@ double POTENTIAL::Potential::computeLocalForceAndCOG(
     Teuchos::RCP<DRT::Discretization> 	potentialdis,  
     LINALG::Matrix<3,1>&         		fpot_sphere,
     LINALG::Matrix<3,1>&         		cog_sphere,
-    const RCP<Epetra_Vector>     		fint,
-    const RCP<const Epetra_Vector>    	disp,
+    const Teuchos::RCP<Epetra_Vector>     		fint,
+    const Teuchos::RCP<const Epetra_Vector>    	disp,
     const std::set<int>&         		elementIds,
     const std::set<int>&         		surfElementIds )
 {

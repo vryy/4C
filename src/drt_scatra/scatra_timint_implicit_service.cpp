@@ -800,8 +800,8 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
  | Evaluate surface/interface permeability                              |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
-    RCP<LINALG::SparseOperator> matrix,
-    RCP<Epetra_Vector>          rhs)
+    Teuchos::RCP<LINALG::SparseOperator> matrix,
+    Teuchos::RCP<Epetra_Vector>          rhs)
 {
   // time measurement: evaluate condition 'SurfacePermeability'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ScaTraCoupling'");
@@ -889,14 +889,14 @@ void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(
 /*----------------------------------------------------------------------*
  | compute outward pointing unit normal vectors at given b.c.  gjb 01/09|
  *----------------------------------------------------------------------*/
-RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
     const std::vector<std::string>& condnames
 )
 {
   // create vectors for x,y and z component of average normal vector field
   // get noderowmap of discretization
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  RCP<Epetra_MultiVector> normal = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  Teuchos::RCP<Epetra_MultiVector> normal = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
   discret_->ClearState();
 
@@ -904,7 +904,7 @@ RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::bd_calc_normal_vectors);
   eleparams.set<int>("scatratype",scatratype_);
-  eleparams.set<RCP<Epetra_MultiVector> >("normal vectors",normal);
+  eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("normal vectors",normal);
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -947,8 +947,8 @@ RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
  | evaluate Neumann inflow boundary condition                  vg 03/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
-    RCP<LINALG::SparseOperator> matrix,
-    RCP<Epetra_Vector>          rhs)
+    Teuchos::RCP<LINALG::SparseOperator> matrix,
+    Teuchos::RCP<Epetra_Vector>          rhs)
 {
   // time measurement: evaluate condition 'Neumann inflow'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'TransportNeumannInflow'");
@@ -988,8 +988,8 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
  | evaluate boundary cond. due to convective heat transfer     vg 10/11 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
-    RCP<LINALG::SparseOperator> matrix,
-    RCP<Epetra_Vector>          rhs)
+    Teuchos::RCP<LINALG::SparseOperator> matrix,
+    Teuchos::RCP<Epetra_Vector>          rhs)
 {
   // time measurement: evaluate condition 'ThermoConvections'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ThermoConvections'");
@@ -1073,7 +1073,7 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmsh(
 /*----------------------------------------------------------------------*
  |  write mass / heat flux vector to BINIO                   gjb   08/08|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
+void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux)
 {
   //safety check
   if (flux == Teuchos::null)
@@ -1086,7 +1086,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
   = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
   if(nurbsdis!=NULL)
   {
-    RCP<Epetra_Vector> normalflux = Teuchos::rcp(((*flux)(0)),false);
+    Teuchos::RCP<Epetra_Vector> normalflux = Teuchos::rcp(((*flux)(0)),false);
     output_->WriteVector("normalflux", normalflux, IO::DiscretizationWriter::dofvector);
     return; // leave here
   }
@@ -1303,16 +1303,16 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
     }
 
     // get plain aggregation Ptent
-    RCP<Epetra_CrsMatrix> crsPtent;
+    Teuchos::RCP<Epetra_CrsMatrix> crsPtent;
     MLAPI::GetPtent(*sysmat_sd_->EpetraMatrix(),mlparams,nullspace,crsPtent);
     LINALG::SparseMatrix Ptent(crsPtent);
 
     // compute scale-separation matrix: S = I - Ptent*Ptent^T
     Sep_ = LINALG::Multiply(Ptent,false,Ptent,true);
     Sep_->Scale(-1.0);
-    RCP<Epetra_Vector> tmp = LINALG::CreateVector(Sep_->RowMap(),false);
+    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(Sep_->RowMap(),false);
     tmp->PutScalar(1.0);
-    RCP<Epetra_Vector> diag = LINALG::CreateVector(Sep_->RowMap(),false);
+    Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(Sep_->RowMap(),false);
     Sep_->ExtractDiagonalCopy(*diag);
     diag->Update(1.0,*tmp,1.0);
     Sep_->ReplaceDiagonalValues(*diag);

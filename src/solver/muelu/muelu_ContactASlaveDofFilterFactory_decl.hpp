@@ -37,7 +37,7 @@ namespace MueLu {
     //@{
 
     //! Constructor.
-    ContactASlaveDofFilterFactory(RCP<const FactoryBase> AFact = Teuchos::null);
+    ContactASlaveDofFilterFactory(Teuchos::RCP<const FactoryBase> AFact = Teuchos::null);
 
     //! Destructor.
     virtual ~ContactASlaveDofFilterFactory();
@@ -60,10 +60,10 @@ namespace MueLu {
 
   private:
 
-    RCP<const FactoryBase> AFact_;
+    Teuchos::RCP<const FactoryBase> AFact_;
     //bool IsGlobalId(Teuchos::RCP<const Map> & map, GlobalOrdinal gid) const;
 
-    //RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
+    //Teuchos::RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
 
 
   }; // class ContactASlaveDofFilterFactory

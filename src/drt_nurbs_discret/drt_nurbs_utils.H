@@ -128,7 +128,7 @@ bool GetKnotVectorAndWeightsForNurbsBoundary(
   DRT::NURBS::NurbsDiscretization* nurbsdis
   = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-  RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+  Teuchos::RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
 
   bool zero_size = knots->GetBoundaryEleAndParentKnots(mypknots     ,
       myknots      ,
@@ -190,7 +190,7 @@ bool GetKnotVectorAndWeightsForNurbsBoundaryAndParent(
   DRT::NURBS::NurbsDiscretization* nurbsdis
   = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-  RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+  Teuchos::RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
 
   bool zero_size = knots->GetBoundaryEleAndParentKnots(mypknots     ,
       myknots      ,

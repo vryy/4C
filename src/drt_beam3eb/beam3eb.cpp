@@ -225,7 +225,7 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3eb::Lines()
 {
-  std::vector<RCP<Element> > lines(1);
+  std::vector<Teuchos::RCP<Element> > lines(1);
   lines[0]= Teuchos::rcp(this, false);
   return lines;
 }

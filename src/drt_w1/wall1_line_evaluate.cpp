@@ -117,7 +117,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   {
     loadlin = false; // no linearization needed for load in last converged configuration
 
-    RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
     if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
     std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -134,7 +134,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   {
     if (!loadlin) dserror("No linearization provided for orthopressure load (add 'LOADLIN yes' to input file)");
 
-    RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
+    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
     if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
     std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -387,7 +387,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       if(Comm.MyPID()==Owner())
       {
         // element geometry update
-        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -415,7 +415,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 	  if(Comm.MyPID()==Owner())
       {
 		  // element geometry update
-        RCP<const Epetra_Vector> disptotal = discretization.GetState("displacementtotal");
+        Teuchos::RCP<const Epetra_Vector> disptotal = discretization.GetState("displacementtotal");
         if (disptotal==Teuchos::null) dserror("Cannot get state vector 'displacementtotal'");
         std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disptotal,mydisp,lm);
@@ -443,7 +443,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
        LINALG::SerialDenseVector    funct(numnod);
        LINALG::SerialDenseMatrix    deriv(1,numnod);
       
-       RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
+       Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
        std::vector<double> edispincr(lm.size());
 	    DRT::UTILS::ExtractMyValues(*dispincr,edispincr,lm);
 	    
@@ -487,7 +487,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       {
         dserror("Area Constraint only works for line2 curves!");
       }  // element geometry update
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null)
       {
         dserror("Cannot get state vector 'displacement'");
@@ -518,12 +518,12 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         // compute additional stresses due to intermolecular potential forces
     case calc_potential_stiff:
     {
-      RCP<PotentialManager> potentialmanager =
-        params.get<RCP<PotentialManager> >("pot_man_",Teuchos::null);
+      Teuchos::RCP<PotentialManager> potentialmanager =
+        params.get<Teuchos::RCP<PotentialManager> >("pot_man_",Teuchos::null);
       if (potentialmanager==Teuchos::null)
         dserror("No PotentialManager in Wall1 line available");
 
-      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
+      Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition",Teuchos::null);
       if (cond==Teuchos::null)
         dserror("Condition not available in Wall1 line");
 

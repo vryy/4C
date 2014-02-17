@@ -1317,7 +1317,7 @@ void Nitsche_BuildDomainIntegratedErrors(
     //-----------------------------------------------------------
     // evaluate the enrichment function for this integration cell
     //-----------------------------------------------------------
-    RCP<XFEM::ElementEnrichmentValues> enrvals;
+    Teuchos::RCP<XFEM::ElementEnrichmentValues> enrvals;
     // caution: kink enrichments are evaluated in gauss point loop
     if (!withkinks)
       enrvals = Teuchos::rcp(new XFEM::ElementEnrichmentValues(*ele,dofman,*cell,ephi));

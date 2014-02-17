@@ -22,16 +22,16 @@ Maintainer: Martin Winklmaier
  * basic XFEM time-integration constructor                                       winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
 XFEM::TIMEINT::TIMEINT(
-    const RCP<DRT::Discretization> discret,
-    const RCP<DofManager> olddofman,
-    const RCP<DofManager> newdofman,
-    std::vector<RCP<Epetra_Vector> > oldVectors,
-    const RCP<COMBUST::FlameFront> flamefront,
+    const Teuchos::RCP<DRT::Discretization> discret,
+    const Teuchos::RCP<DofManager> olddofman,
+    const Teuchos::RCP<DofManager> newdofman,
+    std::vector<Teuchos::RCP<Epetra_Vector> > oldVectors,
+    const Teuchos::RCP<COMBUST::FlameFront> flamefront,
     const Epetra_Map& olddofcolmap,
     const Epetra_Map& newdofrowmap,
     const std::map<DofKey, DofGID>& oldNodalDofColDistrib,
     const std::map<DofKey, DofGID>& newNodalDofRowDistrib,
-    const RCP<std::map<int,std::vector<int> > > pbcmap
+    const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap
 ) :
 discret_(discret),
 olddofman_(olddofman),
@@ -77,8 +77,8 @@ void XFEM::TIMEINT::type(
  * algorithms data structure                                                     winklmaier 10/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::handleVectors(
-    std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-    std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   if (newRowVectorsn.size()!=newRowVectorsnp.size())
@@ -104,8 +104,8 @@ XFEM::TIMEINT::intersectionType XFEM::TIMEINT::intersectionStatus(
   // return status are: 0 = uncut, 1 = bisected/trisected, 2 = numerically intersected
 
   // initialization
-  RCP<COMBUST::InterfaceHandleCombust> ih;
-  RCP<Epetra_Vector> phi;
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ih;
+  Teuchos::RCP<Epetra_Vector> phi;
 
   if (oldTimeStep)
   {
@@ -171,7 +171,7 @@ int XFEM::TIMEINT::interfaceSide(
   const int nsd = 3; // dimension
 
   // required interfacehandle
-  RCP<COMBUST::InterfaceHandleCombust> ih = newTimeStep ? newinterfacehandle_ : oldinterfacehandle_;
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ih = newTimeStep ? newinterfacehandle_ : oldinterfacehandle_;
   const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(ele->Id()));
 
   static LINALG::Matrix<nsd,1> eta(true); // local cell coordinates
@@ -502,9 +502,9 @@ void XFEM::TIMEINT::unpackNode(
 XFEM::STD::STD(
     XFEM::TIMEINT& timeInt,
     INPAR::COMBUST::XFEMTimeIntegration& timeIntType,
-    const RCP<Epetra_Vector> veln,
+    const Teuchos::RCP<Epetra_Vector> veln,
     const double& dt,
-    const RCP<COMBUST::FlameFront> flamefront,
+    const Teuchos::RCP<COMBUST::FlameFront> flamefront,
     bool initialize
 ) :
 XFEM::TIMEINT::TIMEINT(timeInt),
@@ -584,9 +584,9 @@ flamefront_(flamefront)
  * initialize data when called in a new FGI                                      winklmaier 10/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::STD::importNewFGIData(
-    const RCP<DRT::Discretization> discret,
-    const RCP<XFEM::DofManager> newdofman,
-    const RCP<COMBUST::FlameFront> flamefront,
+    const Teuchos::RCP<DRT::Discretization> discret,
+    const Teuchos::RCP<XFEM::DofManager> newdofman,
+    const Teuchos::RCP<COMBUST::FlameFront> flamefront,
     const Epetra_Map& newdofrowmap,
     const std::map<DofKey, DofGID>& newNodalDofRowDistrib)
 {
@@ -1110,8 +1110,8 @@ critTol_(1.0e-02)
  * out of order!                                                                 winklmaier 10/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::ENR::compute(
-    std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-    std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+    std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   dserror("Unused function! Use a function of the derived classes");
@@ -1123,9 +1123,9 @@ void XFEM::ENR::compute(
  * initialize data when called in a new FGI                                      winklmaier 10/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::ENR::importNewFGIData(
-    const RCP<DRT::Discretization> discret,
-    const RCP<XFEM::DofManager> newdofman,
-    const RCP<COMBUST::FlameFront> flamefront,
+    const Teuchos::RCP<DRT::Discretization> discret,
+    const Teuchos::RCP<XFEM::DofManager> newdofman,
+    const Teuchos::RCP<COMBUST::FlameFront> flamefront,
     const Epetra_Map& newdofrowmap,
     const std::map<DofKey, DofGID>& newNodalDofRowDistrib,
     const std::map<DofKey, DofGID>& oldNodalDofColDistrib
@@ -1362,8 +1362,8 @@ bool XFEM::TIMEINT::SignedDistance(
   const int nsd = 3;
   LINALG::Matrix<nsd,1> nodecoord(node->X()); // coordinates of this node
 
-  RCP<COMBUST::InterfaceHandleCombust> ih;
-  RCP<Epetra_Vector> phi;
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ih;
+  Teuchos::RCP<Epetra_Vector> phi;
 
   if (oldTimeStep)
   {

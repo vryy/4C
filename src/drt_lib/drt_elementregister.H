@@ -206,11 +206,11 @@ public:
   */
   virtual inline void PreEvaluate(DRT::Discretization& dis,
                                   Teuchos::ParameterList& p,
-                                  RCP<LINALG::SparseOperator> systemmatrix1,
-                                  RCP<LINALG::SparseOperator> systemmatrix2,
-                                  RCP<Epetra_Vector>          systemvector1,
-                                  RCP<Epetra_Vector>          systemvector2,
-                                  RCP<Epetra_Vector>          systemvector3)
+                                  Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                                  Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                                  Teuchos::RCP<Epetra_Vector>          systemvector1,
+                                  Teuchos::RCP<Epetra_Vector>          systemvector2,
+                                  Teuchos::RCP<Epetra_Vector>          systemvector3)
   { return; }
   //@}
 

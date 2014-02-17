@@ -169,7 +169,7 @@ void DRT::ELEMENTS::TopOpt::SetMaterial(int matnum)
 
   // the special part:
   // now the element knows its material, and we can use it to determine numdofpernode
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
   if(mat->MaterialType() != INPAR::MAT::m_opti_dens)
     dserror("Topology optimization element got unsupported material type %d", mat->MaterialType());
 
@@ -301,7 +301,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Lines()
   else
   {
     // 1D (we return the element itself)
-    std::vector<RCP<Element> > lines(1);
+    std::vector<Teuchos::RCP<Element> > lines(1);
     lines[0]= Teuchos::rcp(this, false);
     return lines;
   }
@@ -326,7 +326,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Surfaces()
   else if (NumSurface() == 1)
   {
     // 2D (we return the element itself)
-    std::vector<RCP<Element> > surfaces(1);
+    std::vector<Teuchos::RCP<Element> > surfaces(1);
     surfaces[0]= Teuchos::rcp(this, false);
     return surfaces;
   }

@@ -26,7 +26,7 @@
 
 #include "ml_MultiLevelPreconditioner.h"
 
-LINALG::BraessSarazin_Smoother::BraessSarazin_Smoother(RCP<const SparseMatrix> A11, RCP<const SparseMatrix> A12, RCP<const SparseMatrix> A21, RCP<const SparseMatrix> A22, const Teuchos::ParameterList& params)
+LINALG::BraessSarazin_Smoother::BraessSarazin_Smoother(Teuchos::RCP<const SparseMatrix> A11, Teuchos::RCP<const SparseMatrix> A12, Teuchos::RCP<const SparseMatrix> A21, Teuchos::RCP<const SparseMatrix> A22, const Teuchos::ParameterList& params)
 :
 Epetra_Operator(),
 F_(A11),
@@ -57,11 +57,11 @@ int LINALG::BraessSarazin_Smoother::ApplyInverse(const Epetra_MultiVector& velrh
   TEUCHOS_FUNC_TIME_MONITOR("BraessSarazin_Smoother::ApplyInverse");
 
   ////////////////// define some variables
-  RCP<Epetra_Vector> velres = Teuchos::rcp(new Epetra_Vector(F_->RowMap(),true));
-  RCP<Epetra_Vector> preres = Teuchos::rcp(new Epetra_Vector(Z_->RowMap(),true));
+  Teuchos::RCP<Epetra_Vector> velres = Teuchos::rcp(new Epetra_Vector(F_->RowMap(),true));
+  Teuchos::RCP<Epetra_Vector> preres = Teuchos::rcp(new Epetra_Vector(Z_->RowMap(),true));
 
-  RCP<Epetra_Vector> vtemp = Teuchos::rcp(new Epetra_Vector(F_->RowMap(),true));
-  RCP<Epetra_Vector> ptemp = Teuchos::rcp(new Epetra_Vector(Z_->RowMap(),true));
+  Teuchos::RCP<Epetra_Vector> vtemp = Teuchos::rcp(new Epetra_Vector(F_->RowMap(),true));
+  Teuchos::RCP<Epetra_Vector> ptemp = Teuchos::rcp(new Epetra_Vector(Z_->RowMap(),true));
 
   for(int k = 0; k<nSweeps_; k++)
   {
@@ -87,13 +87,13 @@ int LINALG::BraessSarazin_Smoother::ApplyInverse(const Epetra_MultiVector& velrh
     ////////////////// 2) solve for pressure update q = (D Fhatinv G)^{-1} (D Fhatinv velres - omega preres)
     ////////////////// 2.1) calculate rhs
     vtemp->PutScalar(0.0);
-    RCP<Epetra_Vector> qrhs = Teuchos::rcp(new Epetra_Vector(Z_->RowMap(),true));
+    Teuchos::RCP<Epetra_Vector> qrhs = Teuchos::rcp(new Epetra_Vector(Z_->RowMap(),true));
     vtemp->Multiply(1.0,*diagFinv_,*velres,0.0);
     D_->Apply(*vtemp,*qrhs);
     qrhs->Update(omega_,*preres,-1.0);  // qrhs = -D * Fhatinv * velres + omega * preres
 
     ////////////////// 2.2) "solve" pressure correction equation for pressure update
-    RCP<Epetra_Vector> q = Teuchos::rcp(new Epetra_Vector(Z_->RowMap(),true)); // vector for "solution" (pressure update)
+    Teuchos::RCP<Epetra_Vector> q = Teuchos::rcp(new Epetra_Vector(Z_->RowMap(),true)); // vector for "solution" (pressure update)
     Pp_->ApplyInverse(*qrhs,*q);    // use IFPACK
 
     ////////////////// 3) update step
@@ -101,7 +101,7 @@ int LINALG::BraessSarazin_Smoother::ApplyInverse(const Epetra_MultiVector& velrh
     G_->Apply(*q,*vtemp);
     vtemp->Update(1.0,*velres,-1.0);    // velres - G * q
 
-    RCP<Epetra_Vector> vx = Teuchos::rcp(new Epetra_Vector(diagFinv_->Map(),true));
+    Teuchos::RCP<Epetra_Vector> vx = Teuchos::rcp(new Epetra_Vector(diagFinv_->Map(),true));
     vx->Multiply(1/omega_,*diagFinv_,*vtemp,0.0); // vx = 1/omega_ diagFinv * (velres - G * q)
 
     ////////////////// adapt solution v: v = v + [vx;q]
@@ -155,7 +155,7 @@ bool LINALG::BraessSarazin_Smoother::Setup()
   int err = diagFinv_->Reciprocal(*diagFinv_);
   if (err) dserror("diagonal entries = 0");
 
-  RCP<SparseMatrix> Gscaled = Teuchos::rcp(new SparseMatrix(*G_,Copy)); // ok, not the best but just works
+  Teuchos::RCP<SparseMatrix> Gscaled = Teuchos::rcp(new SparseMatrix(*G_,Copy)); // ok, not the best but just works
   Gscaled->LeftScale(*diagFinv_);                               // Ascaled = damping/maxeig(D^{-1} A) * D^{-1} * A
   S_ = LINALG::MLMultiply(*D_,*Gscaled,false);
   S_->Add(*Z_,false,omega_,-1.0);
@@ -217,7 +217,7 @@ bool LINALG::BraessSarazin_Smoother::Setup()
   {
     ParameterList amesosParams;
     amesosParams.set("amesos: solver type","Amesos_Klu");
-    RCP<Ifpack_Amesos> prec = Teuchos::rcp(new Ifpack_Amesos(S_->EpetraMatrix().get()));
+    Teuchos::RCP<Ifpack_Amesos> prec = Teuchos::rcp(new Ifpack_Amesos(S_->EpetraMatrix().get()));
     prec->SetParameters(amesosParams);
     prec->Initialize();
     prec->Compute();
@@ -227,7 +227,7 @@ bool LINALG::BraessSarazin_Smoother::Setup()
   {
     ParameterList amesosParams;
     amesosParams.set("amesos: solver type","Amesos_Umfpack");
-    RCP<Ifpack_Amesos> prec = Teuchos::rcp(new Ifpack_Amesos(S_->EpetraMatrix().get()));
+    Teuchos::RCP<Ifpack_Amesos> prec = Teuchos::rcp(new Ifpack_Amesos(S_->EpetraMatrix().get()));
     prec->SetParameters(amesosParams);
     prec->Initialize();
     prec->Compute();
@@ -249,18 +249,18 @@ bool LINALG::BraessSarazin_Smoother::Setup()
   return true;
 }
 
-RCP<LINALG::SparseMatrix> LINALG::BraessSarazin_Smoother::Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, const SparseMatrix& C, bool transC, bool bComplete)
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::BraessSarazin_Smoother::Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, const SparseMatrix& C, bool transC, bool bComplete)
 {
   // it's ok to use MLMultiply here (only quadratic matrices with the same map)
 #if 0
-  RCP<SparseMatrix> tmp = LINALG::Multiply(B,transB,C,transC,true);
+  Teuchos::RCP<SparseMatrix> tmp = LINALG::Multiply(B,transB,C,transC,true);
   return LINALG::Multiply(A,transA,*tmp,false,bComplete);
 #else
   // use Michael's MLMultiply
   if(transA == true || transB == true || transC == true)
     dserror("up to now we don't support matri-matrix multiplication with transposed flag on");
 
-  RCP<SparseMatrix> tmp = LINALG::MLMultiply(B,C,true);
+  Teuchos::RCP<SparseMatrix> tmp = LINALG::MLMultiply(B,C,true);
   return LINALG::MLMultiply(A,*tmp,bComplete);
 #endif
 }

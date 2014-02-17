@@ -83,10 +83,10 @@ FLD::TimIntLoma::~TimIntLoma()
  | set fields for low-Mach-number flow within iteration loop   vg 09/09 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntLoma::SetIterLomaFields(
-   RCP<const Epetra_Vector> scalaraf,
-   RCP<const Epetra_Vector> scalaram,
-   RCP<const Epetra_Vector> scalardtam,
-   RCP<const Epetra_Vector> fsscalaraf,
+   Teuchos::RCP<const Epetra_Vector> scalaraf,
+   Teuchos::RCP<const Epetra_Vector> scalaram,
+   Teuchos::RCP<const Epetra_Vector> scalardtam,
+   Teuchos::RCP<const Epetra_Vector> fsscalaraf,
    const double             thermpressaf,
    const double             thermpressam,
    const double             thermpressdtaf,
@@ -113,9 +113,9 @@ void FLD::TimIntLoma::SetIterLomaFields(
  | set fields for low-Mach-number flow at end of time step     vg 09/09 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntLoma::SetTimeLomaFields(
-   RCP<const Epetra_Vector> scalarnp,
+   Teuchos::RCP<const Epetra_Vector> scalarnp,
    const double             thermpressnp,
-   RCP<const Epetra_Vector> scatraresidual,
+   Teuchos::RCP<const Epetra_Vector> scatraresidual,
    Teuchos::RCP<DRT::Discretization> scatradis,
    const int                whichscalar)
 {

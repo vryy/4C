@@ -495,7 +495,7 @@ void GEO::CUT::MeshIntersection::CreateNodalDofSetNEW( bool include_inner, DRT::
 /*--------------------------------------------------------------------------------------*
  | fill parallel DofSetData with information that has to be communicated   schott 03/12 |
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::MeshIntersection::FillParallelDofSetData(RCP<std::vector<DofSetData> > parallel_dofSetData,
+void GEO::CUT::MeshIntersection::FillParallelDofSetData(Teuchos::RCP<std::vector<DofSetData> > parallel_dofSetData,
                                                         DRT::Discretization& dis)
 {
 
@@ -589,7 +589,7 @@ void GEO::CUT::MeshIntersection::FillParallelDofSetData(RCP<std::vector<DofSetDa
 /*--------------------------------------------------------------------------------------*
  | create parallel DofSetData for a volumecell that has to be communicated schott 03/12 |
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::MeshIntersection::CreateParallelDofSetDataVC( RCP<std::vector<DofSetData> > parallel_dofSetData,
+void GEO::CUT::MeshIntersection::CreateParallelDofSetDataVC( Teuchos::RCP<std::vector<DofSetData> > parallel_dofSetData,
                                                              int                           eid,
                                                              int                           set_index,
                                                              bool                          inside,

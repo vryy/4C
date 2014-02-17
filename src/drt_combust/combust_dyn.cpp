@@ -59,13 +59,13 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
 
   // access fluid discretization
-  RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
   if (!fluiddis->Filled()) fluiddis->FillComplete(false,false,false);
   if (fluiddis->NumGlobalNodes()==0)
     dserror("No fluid discretization found!");
 
   // access G-function discretization (it should be empty)
-  RCP<DRT::Discretization> gfuncdis = DRT::Problem::Instance()->GetDis("scatra");
+  Teuchos::RCP<DRT::Discretization> gfuncdis = DRT::Problem::Instance()->GetDis("scatra");
   /* remark: here the ScaTra discretization is renamed according to its physical
    * meaning in the combustion context, namely the G-function.*/
   if (!gfuncdis->Filled()) gfuncdis->FillComplete(false,false,false);

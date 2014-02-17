@@ -28,7 +28,7 @@ namespace LINALG
   class TentativeTransferOperator : public TransferOperator
   {
     public:
-      explicit TentativeTransferOperator(const RCP<SparseMatrix>& A, FILE* outfile);
+      explicit TentativeTransferOperator(const Teuchos::RCP<SparseMatrix>& A, FILE* outfile);
       virtual ~TentativeTransferOperator() {}
 
       virtual const char* Label() const { return "TentativeTransferOperator"; }
@@ -51,10 +51,10 @@ namespace LINALG
 
       \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
       */
-      RCP<Epetra_MultiVector> buildTransferOperators(const RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const RCP<Epetra_MultiVector>& ThisNS, const int domainoffset = 0);
+      Teuchos::RCP<Epetra_MultiVector> buildTransferOperators(const Teuchos::RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_MultiVector>& ThisNS, const int domainoffset = 0);
     protected:
 
-      void GetPtent(const Epetra_Map& rowmap, const Epetra_IntVector aggvec, int naggs, ParameterList& List, const Epetra_MultiVector& ThisNS, RCP<SparseMatrix>& Ptent, RCP<Epetra_MultiVector>& NextNS, const int domainoffset);
+      void GetPtent(const Epetra_Map& rowmap, const Epetra_IntVector aggvec, int naggs, ParameterList& List, const Epetra_MultiVector& ThisNS, Teuchos::RCP<SparseMatrix>& Ptent, Teuchos::RCP<Epetra_MultiVector>& NextNS, const int domainoffset);
 
 
   };

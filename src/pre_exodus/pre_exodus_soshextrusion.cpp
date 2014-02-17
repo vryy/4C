@@ -558,8 +558,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
 //      else if (numnodes == 8) newshape = ElementBlock::hex8;
 //      else dserror("Number of basenodes for extrusion not supported");
 //      blockname << highestblock;
-//      RCP<EXODUS::ElementBlock> neweblock = Teuchos::rcp(new ElementBlock(newshape,newconn,blockname.str()));
-//      neweblocks.insert(std::pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
+//      Teuchos::RCP<EXODUS::ElementBlock> neweblock = Teuchos::rcp(new ElementBlock(newshape,newconn,blockname.str()));
+//      neweblocks.insert(std::pair<int,Teuchos::RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
 //      highestblock ++;
 //      break;
     }

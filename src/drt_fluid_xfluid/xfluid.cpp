@@ -299,7 +299,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
   residual_->Update(1.0,*neumann_loads_,0.0);
 
   // create an column residual vector for assembly over row elements that has to be communicated at the end
-  RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*discret.DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*discret.DofColMap(),true);
 
   // create an column iforce vector for assembly over row elements that has to be communicated at the end
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutdiscret.DofColMap(),true);
@@ -851,7 +851,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
       //------------------------------------------------------------
       // loop over row faces
 
-      RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(xfluid_.discret_, true);
+      Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(xfluid_.discret_, true);
 
       const int numrowintfaces = xdiscret->NumMyRowFaces();
 
@@ -936,7 +936,7 @@ void FLD::XFluid::XFluidState::IntegrateShapeFunction(
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::IntegrateShapeFunction" );
 
   // create an column vector for assembly over row elements that has to be communicated at the end
-  RCP<Epetra_Vector> w_col = LINALG::CreateVector(*discret.DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> w_col = LINALG::CreateVector(*discret.DofColMap(),true);
 
 
   //----------------------------------------------------------------------
@@ -1981,7 +1981,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> FLD::XFluid::XFluidState::BlockSyste
 void FLD::XFluid::XFluidState::GradientPenalty( Teuchos::ParameterList & eleparams,
                                          DRT::Discretization & discret,
                                          DRT::Discretization & cutdiscret,
-                                         RCP<Epetra_Vector> vec,
+                                         Teuchos::RCP<Epetra_Vector> vec,
                                          int itnum )
 {
 
@@ -1994,7 +1994,7 @@ void FLD::XFluid::XFluidState::GradientPenalty( Teuchos::ParameterList & elepara
   residual_->PutScalar(0.0);
 
   // create an column residual vector for assembly over row elements that has to be communicated at the end
-  RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*discret.DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*discret.DofColMap(),true);
 
   //----------------------------------------------------------------------
   // set general vector values needed by elements
@@ -2038,7 +2038,7 @@ void FLD::XFluid::XFluidState::GradientPenalty( Teuchos::ParameterList & elepara
       //------------------------------------------------------------
       // loop over row faces
 
-      RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(xfluid_.discret_, true);
+      Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(xfluid_.discret_, true);
 
       const int numrowintfaces = xdiscret->NumMyRowFaces();
 
@@ -2214,7 +2214,7 @@ FLD::XFluid::XFluid(
   // create internal faces for edgebased fluid stabilization and ghost penalty stabilization
   if(edge_based_ or ghost_penalty_ or ghost_penalty_2ndorder_)
   {
-    RCP<DRT::DiscretizationFaces> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
+    Teuchos::RCP<DRT::DiscretizationFaces> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
     actdis->CreateInternalFacesExtension(Teuchos::null);
   }
 
@@ -2233,7 +2233,7 @@ FLD::XFluid::XFluid(
 
 
   // TODO: for parallel jobs maybe we have to call TransparentDofSet with additional flag true
-  RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
+  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
   boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
   boundarydis_->FillComplete();
 
@@ -2273,7 +2273,7 @@ FLD::XFluid::XFluid(
     addCrackTipElements( tipnodes );
   }*/
 
-/*  RCP<DRT::DofSet> newdofset1 = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
+/*  Teuchos::RCP<DRT::DofSet> newdofset1 = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
 
   boundarydis2_->ReplaceDofSet(newdofset1);//do not call this with true!!
   boundarydis2_->FillComplete();*/
@@ -3632,7 +3632,7 @@ void FLD::XFluid::Solve()
             // matrix printing options (DEBUGGING!)
       cout << "print matrix in matlab format to sparsematrix.mtl";
 
-            RCP<LINALG::SparseMatrix> A = state_->SystemMatrix();
+            Teuchos::RCP<LINALG::SparseMatrix> A = state_->SystemMatrix();
             if (A != Teuchos::null)
             {
               // print to file in matlab format
@@ -3835,7 +3835,7 @@ void FLD::XFluid::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::XFluid::UpdateKrylovSpaceProjection()
 {
-  // get RCP to kernel vector of projector
+  // get Teuchos::RCP to kernel vector of projector
   Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
   Teuchos::RCP<Epetra_Vector> c0 = Teuchos::rcp((*c)(0),false);
   c0->PutScalar(0.0);
@@ -3867,7 +3867,7 @@ void FLD::XFluid::UpdateKrylovSpaceProjection()
   }
   else if(*weighttype == "integration")
   {
-    // get RCP to weight vector of projector
+    // get Teuchos::RCP to weight vector of projector
     Teuchos::RCP<Epetra_MultiVector> w = projector_->GetNonConstWeights();
     Teuchos::RCP<Epetra_Vector> w0 = Teuchos::rcp((*w)(0),false);
     w0->PutScalar(0.0);
@@ -4375,15 +4375,15 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
       boundarydis2_->SetState("idispnp",idispnp_);
       boundarydis2_->SetState("idispn",idispn_);
 
-      RCP<Epetra_Vector> veln_col = Teuchos::rcp(new Epetra_Vector(*dofcolmap_Intn_,true));
+      Teuchos::RCP<Epetra_Vector> veln_col = Teuchos::rcp(new Epetra_Vector(*dofcolmap_Intn_,true));
       LINALG::Export(*veln_Intn_,*veln_col);
 
       // Important: export the vectors used for Semi-Lagrangean method after transfer between interface processors above
-      std::vector<RCP<Epetra_Vector> > oldColStateVectorsn;
+      std::vector<Teuchos::RCP<Epetra_Vector> > oldColStateVectorsn;
       {
         oldColStateVectorsn.push_back(veln_col);
 
-        RCP<Epetra_Vector> accn_col = Teuchos::rcp(new Epetra_Vector(*dofcolmap_Intn_,true));
+        Teuchos::RCP<Epetra_Vector> accn_col = Teuchos::rcp(new Epetra_Vector(*dofcolmap_Intn_,true));
         LINALG::Export(*accn_Intn_,*accn_col);
         oldColStateVectorsn.push_back(accn_col);
       }
@@ -4399,7 +4399,7 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
       if (totalitnumFRS_==0) // construct time int classes once every time step
       {
         // basic time integration data
-        RCP<XFEM::XFLUID_TIMEINT_BASE> timeIntData = Teuchos::null;
+        Teuchos::RCP<XFEM::XFLUID_TIMEINT_BASE> timeIntData = Teuchos::null;
 
         timeIntData = Teuchos::rcp(new XFEM::XFLUID_TIMEINT_BASE(
             discret_,
@@ -4483,7 +4483,7 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
       }
 
       // ghost-penalty reconstruction for all vectors
-      for(std::vector<RCP<Epetra_Vector> >::iterator vecs = newRowStateVectors.begin();
+      for(std::vector<Teuchos::RCP<Epetra_Vector> >::iterator vecs = newRowStateVectors.begin();
           vecs != newRowStateVectors.end();
           vecs++)
       {
@@ -4581,8 +4581,8 @@ void FLD::XFluid::TransferDofsBetweenSteps(
     const Teuchos::RCP<DRT::Discretization> dis,                               /// discretization
     const Epetra_Map&                       olddofrowmap,                      /// dof row map w.r.t old interface position
     const Epetra_Map&                       olddofcolmap,                      /// dof col map w.r.t old interface position
-    std::vector<RCP<const Epetra_Vector> >& oldRowStateVectors,                /// row map based vectors w.r.t old interface position
-    std::vector<RCP<Epetra_Vector> >&       newRowStateVectors,                /// row map based vectors w.r.t new interface position
+    std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,                /// row map based vectors w.r.t old interface position
+    std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,                /// row map based vectors w.r.t new interface position
     const Teuchos::RCP<XFEM::FluidWizard>   wizard_old,                        /// fluid wizard w.r.t old interface position
     const Teuchos::RCP<XFEM::FluidWizard>   wizard_new,                        /// fluid wizard w.r.t new interface position
     const Teuchos::RCP<XFEM::FluidDofSet>   dofset_old,                        /// dofset w.r.t old interface position
@@ -4618,8 +4618,8 @@ void FLD::XFluid::TransferDofsBetweenSteps(
 /*----------------------------------------------------------------------*
  |  reconstruct ghost values via ghost penalty             schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps,
-                                         RCP<Epetra_Vector> vec,
+void FLD::XFluid::ReconstructGhostValues(Teuchos::RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps,
+                                         Teuchos::RCP<Epetra_Vector> vec,
                                          const bool screen_out)
 {
   state_->residual_->PutScalar(0.0);
@@ -5017,7 +5017,7 @@ void FLD::XFluid::OutputDiscret()
     //TODO: fill the soliddispnp in the XFSI case!
 
     // cast to DiscretizationXFEM
-    RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
+    Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
     if (xdiscret == Teuchos::null)
       dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
@@ -5107,7 +5107,7 @@ void FLD::XFluid::Output()
   if(gmsh_EOS_out_)
   {
     // cast to DiscretizationXFEM
-    RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
+    Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
     if (xdiscret == Teuchos::null)
       dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
@@ -5457,7 +5457,7 @@ void FLD::XFluid::disToStream(Teuchos::RCP<DRT::Discretization> dis,
   if(faces)
   {
     // cast to DiscretizationXFEM
-    RCP<DRT::DiscretizationFaces> xdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(dis, true);
+    Teuchos::RCP<DRT::DiscretizationFaces> xdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(dis, true);
     if (xdis == Teuchos::null)
       dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 

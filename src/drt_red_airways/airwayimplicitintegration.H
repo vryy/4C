@@ -93,7 +93,7 @@ public:
   \brief Standard Constructor
 
   */
-  RedAirwayImplicitTimeInt(RCP<DRT::Discretization>  dis,
+  RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Discretization>  dis,
                            LINALG::Solver&            solver,
                            Teuchos::ParameterList&    params,
                            IO::DiscretizationWriter&  output);
@@ -134,7 +134,7 @@ public:
   \brief Integrate one step
 
   */
-  void IntegrateStep(RCP<Teuchos::ParameterList> CouplingTo3DParams = Teuchos::null);
+  void IntegrateStep(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams = Teuchos::null);
 
 
   /// setup the variables to do a new time step

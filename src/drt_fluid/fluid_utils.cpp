@@ -261,7 +261,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
   veldofmapvec.reserve(veldofset.size());
   veldofmapvec.assign(veldofset.begin(), veldofset.end());
   veldofset.clear();
-  RCP<Epetra_Map> velrowmap = Teuchos::rcp(new Epetra_Map(-1,
+  Teuchos::RCP<Epetra_Map> velrowmap = Teuchos::rcp(new Epetra_Map(-1,
                                   veldofmapvec.size(),&veldofmapvec[0],0,
                                   fluiddis.Comm()));
   veldofmapvec.clear();
@@ -270,7 +270,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
   presdofmapvec.reserve(presdofset.size());
   presdofmapvec.assign(presdofset.begin(), presdofset.end());
   presdofset.clear();
-  RCP<Epetra_Map> presrowmap = Teuchos::rcp(new Epetra_Map(-1,
+  Teuchos::RCP<Epetra_Map> presrowmap = Teuchos::rcp(new Epetra_Map(-1,
                                   presdofmapvec.size(),&presdofmapvec[0],0,
                                   alefluiddis.Comm()));
   extractor.Setup(*fullmap, presrowmap, velrowmap);
@@ -546,7 +546,7 @@ void FLD::UTILS::WriteLiftDragToFile(
  *----------------------------------------------------------------------*/
 std::map<int,double> FLD::UTILS::ComputeFlowRates(
     DRT::Discretization&           dis  ,
-    const RCP<Epetra_Vector>       velnp,
+    const Teuchos::RCP<Epetra_Vector>       velnp,
     const std::string              condstring)
 {
   return ComputeFlowRates(dis,velnp,Teuchos::null,Teuchos::null,condstring);
@@ -556,9 +556,9 @@ std::map<int,double> FLD::UTILS::ComputeFlowRates(
  *----------------------------------------------------------------------*/
 std::map<int,double> FLD::UTILS::ComputeFlowRates(
     DRT::Discretization&           dis  ,
-    const RCP<Epetra_Vector>       velnp,
-    const RCP<Epetra_Vector>       gridv,
-    const RCP<Epetra_Vector>       dispnp,
+    const Teuchos::RCP<Epetra_Vector>       velnp,
+    const Teuchos::RCP<Epetra_Vector>       gridv,
+    const Teuchos::RCP<Epetra_Vector>       dispnp,
     const std::string              condstring)
 {
   Teuchos::ParameterList eleparams;
@@ -619,9 +619,9 @@ std::map<int,double> FLD::UTILS::ComputeFlowRates(
  *----------------------------------------------------------------------*/
 std::map<int,double> FLD::UTILS::ComputeVolume(
     DRT::Discretization&           dis  ,
-    const RCP<Epetra_Vector>       velnp,
-    const RCP<Epetra_Vector>       gridv,
-    const RCP<Epetra_Vector>       dispnp)
+    const Teuchos::RCP<Epetra_Vector>       velnp,
+    const Teuchos::RCP<Epetra_Vector>       gridv,
+    const Teuchos::RCP<Epetra_Vector>       dispnp)
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
@@ -666,7 +666,7 @@ std::map<int,double> FLD::UTILS::ComputeVolume(
  *----------------------------------------------------------------------*/
 std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
     DRT::Discretization&           dis  ,
-    const RCP<Epetra_Vector>       velnp
+    const Teuchos::RCP<Epetra_Vector>       velnp
     )
 {
   Teuchos::ParameterList eleparams;

@@ -85,14 +85,14 @@ int DRT::ELEMENTS::Beam3ebanisotrop::Evaluate(Teuchos::ParameterList& params,
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacement and residual values for each degree of freedom
       // get element displacements
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
 
       if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
       // get residual displacements
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (res==Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
@@ -113,11 +113,11 @@ int DRT::ELEMENTS::Beam3ebanisotrop::Evaluate(Teuchos::ParameterList& params,
           dserror("Dynamic Calculation is not implemented for MATERIALREF so far!!!");
         #endif
 
-        RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
+        Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
         if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
-        RCP<const Epetra_Vector> acc  = discretization.GetState("acceleration");
+        Teuchos::RCP<const Epetra_Vector> acc  = discretization.GetState("acceleration");
         if (acc==Teuchos::null) dserror("Cannot get state vectors 'acceleration'");
         DRT::UTILS::ExtractMyValues(*acc,myacc,lm);
       }
@@ -173,11 +173,11 @@ int DRT::ELEMENTS::Beam3ebanisotrop::Evaluate(Teuchos::ParameterList& params,
 
       if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP")!=INPAR::STR::dyna_statics)
       {
-        RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
+        Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
         if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
-        RCP<const Epetra_Vector> acc  = discretization.GetState("acceleration");
+        Teuchos::RCP<const Epetra_Vector> acc  = discretization.GetState("acceleration");
         if (acc==Teuchos::null) dserror("Cannot get state vectors 'acceleration'");
         DRT::UTILS::ExtractMyValues(*acc,myacc,lm);
       }
@@ -1178,7 +1178,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
 	const int dofgamma = 6; //gamma is the seventh dof
 
   // get element displacements
-  RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -1227,7 +1227,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
 
   // get element velocities (UNCOMMENT IF NEEDED)
   /*
-  RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
+  Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
   if (vel==null) dserror("Cannot get state vectors 'velocity'");
   vector<double> myvel(lm.size());
   DRT::UTILS::ExtractMyValues(*vel,myvel,lm);

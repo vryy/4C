@@ -93,7 +93,7 @@ public:
   \brief Standard Constructor
 
   */
-  ArtNetExplicitTimeInt(RCP<DRT::Discretization>  dis,
+  ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretization>  dis,
                        LINALG::Solver&            solver,
                        Teuchos::ParameterList&    params,
                        IO::DiscretizationWriter&  output);

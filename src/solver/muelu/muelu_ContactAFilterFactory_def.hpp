@@ -40,13 +40,13 @@ namespace MueLu {
     Teuchos::RCP<Teuchos::ParameterList> validParamList = Teuchos::rcp(new Teuchos::ParameterList());
 
     validParamList->set< std::string >           ("Input matrix name", "A", "Name of input matrix. (default='A')");
-    validParamList->set< RCP<const FactoryBase> >("Input matrix factory", Teuchos::null, "Generating factory of the input matrix.");
+    validParamList->set< Teuchos::RCP<const FactoryBase> >("Input matrix factory", Teuchos::null, "Generating factory of the input matrix.");
 
     validParamList->set< std::string >           ("Map block 1 name", "SlaveDofMap", "Name of part 1 of map to be splitted.");
-    validParamList->set< RCP<const FactoryBase> >("Map block 1 factory", MueLu::NoFactory::getRCP(), "Generating factory of part 1 of map to be segregated.");
+    validParamList->set< Teuchos::RCP<const FactoryBase> >("Map block 1 factory", MueLu::NoFactory::getRCP(), "Generating factory of part 1 of map to be segregated.");
 
     validParamList->set< std::string >           ("Map block 2 name", "MasterDofMap", "Name of part 2 of map to be splitted.");
-    validParamList->set< RCP<const FactoryBase> >("Map block 2 factory", MueLu::NoFactory::getRCP(), "Generating factory of part 2 of map to be segregated.");
+    validParamList->set< Teuchos::RCP<const FactoryBase> >("Map block 2 factory", MueLu::NoFactory::getRCP(), "Generating factory of part 2 of map to be segregated.");
 
     return validParamList;
   }
@@ -81,27 +81,27 @@ namespace MueLu {
     Teuchos::RCP<const FactoryBase> blockFactory2 = GetFactory ("Map block 2 factory");
 
     // fetch map with slave Dofs from Level
-    RCP<const Map> DofMap1 = currentLevel.Get< RCP<const Map> >(blockName1,blockFactory1.get());
-    RCP<const Map> DofMap2 = currentLevel.Get< RCP<const Map> >(blockName2,blockFactory2.get());
+    Teuchos::RCP<const Map> DofMap1 = currentLevel.Get< Teuchos::RCP<const Map> >(blockName1,blockFactory1.get());
+    Teuchos::RCP<const Map> DofMap2 = currentLevel.Get< Teuchos::RCP<const Map> >(blockName2,blockFactory2.get());
 
-    RCP<Matrix> Ain = currentLevel.Get< RCP<Matrix> >(inputName, inputFactory.get());
+    Teuchos::RCP<Matrix> Ain = currentLevel.Get< Teuchos::RCP<Matrix> >(inputName, inputFactory.get());
 
-    RCP<Vector> blockVectorRowMap = VectorFactory::Build(Ain->getRowMap());
+    Teuchos::RCP<Vector> blockVectorRowMap = VectorFactory::Build(Ain->getRowMap());
     blockVectorRowMap->putScalar(-1.0);         // -1.0 denotes that this Dof is not slave DOF
 
     // define (sub) block vectors
-    RCP<Vector> blockVector1  = VectorFactory::Build(DofMap1); blockVector1->putScalar(1);
-    RCP<Vector> blockVector2  = VectorFactory::Build(DofMap2); blockVector2->putScalar(2);
+    Teuchos::RCP<Vector> blockVector1  = VectorFactory::Build(DofMap1); blockVector1->putScalar(1);
+    Teuchos::RCP<Vector> blockVector2  = VectorFactory::Build(DofMap2); blockVector2->putScalar(2);
 
-    RCP<const Import> importer1 = ImportFactory::Build(DofMap1, Ain->getColMap());
-    RCP<const Import> importer2 = ImportFactory::Build(DofMap2, Ain->getColMap());
-    RCP<Vector> blockVectorColMapData = VectorFactory::Build(Ain->getColMap());
+    Teuchos::RCP<const Import> importer1 = ImportFactory::Build(DofMap1, Ain->getColMap());
+    Teuchos::RCP<const Import> importer2 = ImportFactory::Build(DofMap2, Ain->getColMap());
+    Teuchos::RCP<Vector> blockVectorColMapData = VectorFactory::Build(Ain->getColMap());
     blockVectorColMapData->putScalar(-1.0);         // -1.0 denotes that this Dof is not slave DOF
     blockVectorColMapData->doImport(*blockVector1,*importer1,Xpetra::INSERT);
     blockVectorColMapData->doImport(*blockVector2,*importer2,Xpetra::INSERT);
 
     // create new empty Operator
-    RCP<Matrix> Aout = MatrixFactory::Build(Ain->getRowMap(), Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile);
+    Teuchos::RCP<Matrix> Aout = MatrixFactory::Build(Ain->getRowMap(), Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile);
 
     // loop over local rows
     Teuchos::ArrayRCP< const Scalar > colBlockData = blockVectorColMapData->getData(0);
@@ -237,32 +237,32 @@ namespace MueLu {
     }
 
     // fetch map extractor from level
-    RCP<const MapExtractorClass> mapextractor = currentLevel.Get< RCP<const MapExtractorClass> >("SegAMapExtractor",MueLu::NoFactory::get());
+    Teuchos::RCP<const MapExtractorClass> mapextractor = currentLevel.Get< Teuchos::RCP<const MapExtractorClass> >("SegAMapExtractor",MueLu::NoFactory::get());
 
     // extract maps from mapextractor:                        // TODO: write a more common class for n distinct submaps in mapextractor (not just 2)
-    RCP<const Map> mastermap = mapextractor->getMap(0);
-    RCP<const Map> slavemap  = mapextractor->getMap(1);
+    Teuchos::RCP<const Map> mastermap = mapextractor->getMap(0);
+    Teuchos::RCP<const Map> slavemap  = mapextractor->getMap(1);
 
-    RCP<OOperator> Ain = currentLevel.Get< RCP<OOperator> >(varName_, factory_);
+    Teuchos::RCP<OOperator> Ain = currentLevel.Get< Teuchos::RCP<OOperator> >(varName_, factory_);
 
-    RCP<Vector> blockVectorRowMap = VectorFactoryClass::Build(Ain->getRowMap());
+    Teuchos::RCP<Vector> blockVectorRowMap = VectorFactoryClass::Build(Ain->getRowMap());
     blockVectorRowMap->putScalar(-1.0);         // -1.0 denotes that this Dof is not a master or slave dof
 
     // use master map as source map (since all GIDs are uniquely owned by its corresponding proc
     // use column map of current matrix Ain as target map
     // define Xpetra::Import object
-    RCP<Vector> blockVectorMaster = VectorFactoryClass::Build(mastermap); blockVectorMaster->putScalar(0);
-    RCP<Vector> blockVectorSlave  = VectorFactoryClass::Build(slavemap);  blockVectorSlave->putScalar(1);
+    Teuchos::RCP<Vector> blockVectorMaster = VectorFactoryClass::Build(mastermap); blockVectorMaster->putScalar(0);
+    Teuchos::RCP<Vector> blockVectorSlave  = VectorFactoryClass::Build(slavemap);  blockVectorSlave->putScalar(1);
     mapextractor->InsertVector(blockVectorMaster, 0, blockVectorRowMap);
     mapextractor->InsertVector(blockVectorSlave,  1, blockVectorRowMap);
 
-    RCP<const Import> importer = ImportFactory::Build(Ain->getRowMap(), Ain->getColMap());
-    RCP<Vector> blockVectorColMap = VectorFactoryClass::Build(Ain->getColMap());
+    Teuchos::RCP<const Import> importer = ImportFactory::Build(Ain->getRowMap(), Ain->getColMap());
+    Teuchos::RCP<Vector> blockVectorColMap = VectorFactoryClass::Build(Ain->getColMap());
     blockVectorColMap->putScalar(-1.0);         // -1.0 denotes that this Dof is not a master or slave dof
     blockVectorColMap->doImport(*blockVectorRowMap,*importer,Xpetra::INSERT);
 
     // create new empty Operator
-    RCP<CrsOOperator> Aout = Teuchos::rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME
+    Teuchos::RCP<CrsOOperator> Aout = Teuchos::rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME
 
     // loop over local rows
     for(size_t row=0; row<Ain->getNodeNumRows(); row++) {
@@ -272,7 +272,7 @@ namespace MueLu {
         // check in which submap of mapextractor grid belongs to
         LocalOrdinal rowBlockId = -Teuchos::ScalarTraits<LocalOrdinal>::one();
         for (size_t bb=0; bb<mapextractor->NumMaps(); bb++) {
-            const RCP<const Map> cmap = mapextractor->getMap(bb);
+            const Teuchos::RCP<const Map> cmap = mapextractor->getMap(bb);
             if (cmap->isNodeGlobalElement(grid)) {
                 rowBlockId = bb;
                 break;

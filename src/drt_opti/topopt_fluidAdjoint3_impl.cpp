@@ -225,7 +225,7 @@ int DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid*   
   LINALG::Matrix<nen_,1> edens(true);
   {
     // read nodal values from global vector
-    RCP<const Epetra_Vector> topopt_density = params.get<RCP<const Epetra_Vector> >("topopt_density");
+    Teuchos::RCP<const Epetra_Vector> topopt_density = params.get<Teuchos::RCP<const Epetra_Vector> >("topopt_density");
     for (int nn=0;nn<nen_;++nn)
     {
       int lid = (ele->Nodes()[nn])->LID();

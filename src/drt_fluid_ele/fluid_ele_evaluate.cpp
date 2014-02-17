@@ -180,7 +180,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           // distributed vectors
           // --------------------------------------------------
           // velocity and pressure values (n+1)
-          RCP<const Epetra_Vector> velnp
+          Teuchos::RCP<const Epetra_Vector> velnp
           = discretization.GetState("u and p (n+1,converged)");
           if (velnp==Teuchos::null) dserror("Cannot get state vector 'velnp'");
 
@@ -192,7 +192,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           if(is_ale_)
           {
             // get most recent displacements
-            RCP<const Epetra_Vector> dispnp
+            Teuchos::RCP<const Epetra_Vector> dispnp
             =
                 discretization.GetState("dispnp");
 
@@ -256,9 +256,9 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           // distributed vectors
           // --------------------------------------------------
           // velocity/pressure and scalar values (n+1)
-          RCP<const Epetra_Vector> velnp
+          Teuchos::RCP<const Epetra_Vector> velnp
             = discretization.GetState("u and p (n+1,converged)");
-          RCP<const Epetra_Vector> scanp
+          Teuchos::RCP<const Epetra_Vector> scanp
             = discretization.GetState("scalar (n+1,converged)");
           if (velnp==Teuchos::null || scanp==Teuchos::null)
             dserror("Cannot get state vectors 'velnp' and/or 'scanp'");
@@ -311,9 +311,9 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           // global distributed vectors
           // --------------------------------------------------
           // velocity/pressure and scalar values (n+1)
-          RCP<const Epetra_Vector> velnp
+          Teuchos::RCP<const Epetra_Vector> velnp
           = discretization.GetState("u and p (n+1,converged)");
-          RCP<const Epetra_Vector> scanp
+          Teuchos::RCP<const Epetra_Vector> scanp
           = discretization.GetState("scalar (n+1,converged)");
           if (velnp==Teuchos::null || scanp==Teuchos::null)
             dserror("Cannot get state vectors 'velnp' and/or 'scanp'");
@@ -376,7 +376,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         // velocity, pressure and temperature values (most recent
         // intermediate solution, i.e. n+alphaF for genalpha
         // and n+1 for one-step-theta)
-        RCP<const Epetra_Vector> vel =
+        Teuchos::RCP<const Epetra_Vector> vel =
             discretization.GetState("u and p (trial)");
         if (vel==Teuchos::null)
           dserror("Cannot get state vectors 'vel'");
@@ -391,7 +391,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
         if (fldpara->PhysicalType()==INPAR::FLUID::loma)
         {
-          RCP<const Epetra_Vector> temp = discretization.GetState("T (trial)");
+          Teuchos::RCP<const Epetra_Vector> temp = discretization.GetState("T (trial)");
           if (temp==Teuchos::null)
             dserror("Cannot get state vectors 'temp'");
           DRT::UTILS::ExtractMyValues(*temp,tmp_temp,lm);
@@ -409,15 +409,15 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         double dens_hat = 0.0;
         double dens_strainrate_hat = 0.0;
         // get pointers for vector quantities
-        RCP<std::vector<double> > vel_hat = params.get<RCP<std::vector<double> > >("vel_hat");
-        RCP<std::vector<double> > densvel_hat = params.get<RCP<std::vector<double> > >("densvel_hat");
-        RCP<std::vector<std::vector<double> > > reynoldsstress_hat = params.get<RCP<std::vector<std::vector<double> > > >("reynoldsstress_hat");
-        RCP<std::vector<std::vector<double> > > modeled_subgrid_stress = params.get<RCP<std::vector<std::vector<double> > > >("modeled_subgrid_stress");
+        Teuchos::RCP<std::vector<double> > vel_hat = params.get<Teuchos::RCP<std::vector<double> > >("vel_hat");
+        Teuchos::RCP<std::vector<double> > densvel_hat = params.get<Teuchos::RCP<std::vector<double> > >("densvel_hat");
+        Teuchos::RCP<std::vector<std::vector<double> > > reynoldsstress_hat = params.get<Teuchos::RCP<std::vector<std::vector<double> > > >("reynoldsstress_hat");
+        Teuchos::RCP<std::vector<std::vector<double> > > modeled_subgrid_stress = params.get<Teuchos::RCP<std::vector<std::vector<double> > > >("modeled_subgrid_stress");
         //Vreman
         double expression_hat=0.0;
         double alpha2_hat=0.0;
-        RCP<std::vector<std::vector<double> > > strainrate_hat = params.get<RCP<std::vector<std::vector<double> > > >("strainrate_hat");
-        RCP<std::vector<std::vector<double> > > alphaij_hat = params.get<RCP<std::vector<std::vector<double> > > >("alphaij_hat");
+        Teuchos::RCP<std::vector<std::vector<double> > > strainrate_hat = params.get<Teuchos::RCP<std::vector<std::vector<double> > > >("strainrate_hat");
+        Teuchos::RCP<std::vector<std::vector<double> > > alphaij_hat = params.get<Teuchos::RCP<std::vector<std::vector<double> > > >("alphaij_hat");
         // integrate the convolution with the box filter function for this element
         // the results are assembled onto the *_hat arrays
         switch (distype)
@@ -487,24 +487,24 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     {
       if(nsd == 3)
       {
-        RCP<Epetra_MultiVector> col_filtered_vel                    =
-            params.get<RCP<Epetra_MultiVector> >("col_filtered_vel");
-        RCP<Epetra_MultiVector> col_filtered_reynoldsstress         =
-            params.get<RCP<Epetra_MultiVector> >("col_filtered_reynoldsstress");
-        RCP<Epetra_MultiVector> col_filtered_modeled_subgrid_stress =
-            params.get<RCP<Epetra_MultiVector> >("col_filtered_modeled_subgrid_stress");
+        Teuchos::RCP<Epetra_MultiVector> col_filtered_vel                    =
+            params.get<Teuchos::RCP<Epetra_MultiVector> >("col_filtered_vel");
+        Teuchos::RCP<Epetra_MultiVector> col_filtered_reynoldsstress         =
+            params.get<Teuchos::RCP<Epetra_MultiVector> >("col_filtered_reynoldsstress");
+        Teuchos::RCP<Epetra_MultiVector> col_filtered_modeled_subgrid_stress =
+            params.get<Teuchos::RCP<Epetra_MultiVector> >("col_filtered_modeled_subgrid_stress");
 
         // pointer to class FluidEleParameter (access to the general parameter)
         DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
         // add potential loma specific vectors
-        RCP<Epetra_MultiVector> col_filtered_dens_vel = Teuchos::null;
-        RCP<Epetra_Vector> col_filtered_dens = Teuchos::null;
-        RCP<Epetra_Vector> col_filtered_dens_strainrate = Teuchos::null;
+        Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel = Teuchos::null;
+        Teuchos::RCP<Epetra_Vector> col_filtered_dens = Teuchos::null;
+        Teuchos::RCP<Epetra_Vector> col_filtered_dens_strainrate = Teuchos::null;
         if (fldpara->PhysicalType()==INPAR::FLUID::loma)
         {
-          col_filtered_dens_vel = params.get<RCP<Epetra_MultiVector> >("col_filtered_dens_vel");
-          col_filtered_dens = params.get<RCP<Epetra_Vector> >("col_filtered_dens");
-          col_filtered_dens_strainrate = params.get<RCP<Epetra_Vector> >("col_filtered_dens_strainrate");
+          col_filtered_dens_vel = params.get<Teuchos::RCP<Epetra_MultiVector> >("col_filtered_dens_vel");
+          col_filtered_dens = params.get<Teuchos::RCP<Epetra_Vector> >("col_filtered_dens");
+          col_filtered_dens_strainrate = params.get<Teuchos::RCP<Epetra_Vector> >("col_filtered_dens_strainrate");
         }
 
         double LijMij   = 0.0;
@@ -603,16 +603,16 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     {
       if(nsd == 3)
       {
-        RCP<Epetra_MultiVector> col_filtered_strainrate         =
-            params.get<RCP<Epetra_MultiVector> >("col_filtered_strainrate");
-        RCP<Epetra_MultiVector> col_filtered_alphaij =
-            params.get<RCP<Epetra_MultiVector> >("col_filtered_alphaij");
+        Teuchos::RCP<Epetra_MultiVector> col_filtered_strainrate         =
+            params.get<Teuchos::RCP<Epetra_MultiVector> >("col_filtered_strainrate");
+        Teuchos::RCP<Epetra_MultiVector> col_filtered_alphaij =
+            params.get<Teuchos::RCP<Epetra_MultiVector> >("col_filtered_alphaij");
         // pointer to class FluidEleParameter (access to the general parameter)
         // required? Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
-        RCP<Epetra_Vector> col_filtered_expression = Teuchos::null;
-        RCP<Epetra_Vector> col_filtered_alpha2 = Teuchos::null;
-        col_filtered_expression = params.get<RCP<Epetra_Vector> >("col_filtered_expression");
-        col_filtered_alpha2 = params.get<RCP<Epetra_Vector> >("col_filtered_alpha2");
+        Teuchos::RCP<Epetra_Vector> col_filtered_expression = Teuchos::null;
+        Teuchos::RCP<Epetra_Vector> col_filtered_alpha2 = Teuchos::null;
+        col_filtered_expression = params.get<Teuchos::RCP<Epetra_Vector> >("col_filtered_expression");
+        col_filtered_alpha2 = params.get<Teuchos::RCP<Epetra_Vector> >("col_filtered_alpha2");
 
         double cv_numerator   = 0.0;
         double cv_denominator   = 0.0;
@@ -676,9 +676,9 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
       if (nsd == 3)
       {
         // velocity values
-        RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+        Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
         // fine-scale velocity values
-        RCP<const Epetra_Vector> fsvelnp = discretization.GetState("fsvelnp");
+        Teuchos::RCP<const Epetra_Vector> fsvelnp = discretization.GetState("fsvelnp");
         if (velnp==Teuchos::null or fsvelnp==Teuchos::null)
         {
           dserror("Cannot get state vectors");
@@ -726,9 +726,9 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
 
         // velocity values
         //renamed to "velaf" to be consistent i fluidimplicitintegration.cpp (krank 12/13)
-        RCP<const Epetra_Vector> vel = discretization.GetState("velaf");
+        Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velaf");
         // scalar values
-        RCP<const Epetra_Vector> sca = discretization.GetState("scalar");
+        Teuchos::RCP<const Epetra_Vector> sca = discretization.GetState("scalar");
         if (vel==Teuchos::null or sca==Teuchos::null)
         {
           dserror("Cannot get state vectors");

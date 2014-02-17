@@ -143,7 +143,7 @@ class SparseMatrix : public SparseMatrixBase
     /*!
       Implicit construction from a Epetra_CrsMatrix or Epetra_FECrsMatrix
 
-      \warning Does not make a copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix. The RCP is copied
+      \warning Does not make a copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix. The Teuchos::RCP is copied
       internally. So this constructor creates a new view on the
       Epetra_CrsMatrix or Epetra_FECrsMatrix.
      */

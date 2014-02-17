@@ -60,10 +60,10 @@ public:
   //! destructor
   ~KrylovProjector();
 
-  //! give out RCP to c_ for change
+  //! give out Teuchos::RCP to c_ for change
   Teuchos::RCP<Epetra_MultiVector> GetNonConstKernel();
 
-  //! give out RCP to w_ for change
+  //! give out Teuchos::RCP to w_ for change
   Teuchos::RCP<Epetra_MultiVector> GetNonConstWeights();
   //set c_ and w_ from outside
   void SetCW(Teuchos::RCP<Epetra_MultiVector> c0, Teuchos::RCP<Epetra_MultiVector> w0, const Epetra_BlockMap* newmap);

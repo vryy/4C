@@ -51,8 +51,8 @@ namespace MueLu {
 
     Monitor m(*this, "Contact info factory");
 
-    RCP<OperatorClass> A = fineLevel.Get<RCP<OperatorClass> >("A",AFact_.get());
-    RCP<MultiVectorClass> nsp = fineLevel.Get<RCP<MultiVectorClass> >("Nullspace",nspFact_.get());
+    Teuchos::RCP<OperatorClass> A = fineLevel.Get<Teuchos::RCP<OperatorClass> >("A",AFact_.get());
+    Teuchos::RCP<MultiVectorClass> nsp = fineLevel.Get<Teuchos::RCP<MultiVectorClass> >("Nullspace",nspFact_.get());
 
     std::string outFile = filename_prototype_;
     std::stringstream streamLevel; streamLevel << fineLevel.GetLevelID();
@@ -65,7 +65,7 @@ namespace MueLu {
     int    nPDE  = 3; // number of equations (usually 2 or 3)
     
     // matrix-vector multiplication
-    RCP<MultiVectorClass> Ansp = MultiVectorFactoryClass::Build(A->getRowMap(),nsdim);
+    Teuchos::RCP<MultiVectorClass> Ansp = MultiVectorFactoryClass::Build(A->getRowMap(),nsdim);
     
     A->apply(*nsp,*Ansp);
 

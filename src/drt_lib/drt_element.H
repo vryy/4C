@@ -411,7 +411,7 @@ public:
 
 
   /*!
-  \brief Get vector of RCPs to the lines of this element
+  \brief Get vector of Teuchos::RCPs to the lines of this element
 
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
@@ -433,7 +433,7 @@ public:
   //virtual const Element*const* Lines() const { dserror("unexpected base method called."); return NULL; }
 
   /*!
-  \brief Get vector of RCPs to the surfaces of this element
+  \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
@@ -453,7 +453,7 @@ public:
   }
 
   /*!
-  \brief Get vector of RCPs to the volumes of this element
+  \brief Get vector of Teuchos::RCPs to the volumes of this element
 
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
@@ -482,7 +482,7 @@ public:
   }
 
   /*!
-  \brief Get vector of RCPs to the faces of this element (as opposed to the Lines or Surfaces)
+  \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or Surfaces)
   */
   DRT::Element** Faces()
   {
@@ -490,7 +490,7 @@ public:
   }
 
   /*!
-  \brief Get vector of RCPs to the faces of this element (as opposed to the Lines or Surfaces)
+  \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or Surfaces)
   */
   const DRT::Element*const * Faces() const
   {

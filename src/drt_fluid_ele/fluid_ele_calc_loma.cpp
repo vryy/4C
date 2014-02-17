@@ -203,8 +203,8 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
   double CiDeltaSq = 0.0;
   if (my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
   {
-    RCP<Epetra_Vector> ele_CsDeltaSq = params.sublist("TURBULENCE MODEL").get<RCP<Epetra_Vector> >("col_Cs_delta_sq");
-    RCP<Epetra_Vector> ele_CiDeltaSq = params.sublist("TURBULENCE MODEL").get<RCP<Epetra_Vector> >("col_Ci_delta_sq");
+    Teuchos::RCP<Epetra_Vector> ele_CsDeltaSq = params.sublist("TURBULENCE MODEL").get<Teuchos::RCP<Epetra_Vector> >("col_Cs_delta_sq");
+    Teuchos::RCP<Epetra_Vector> ele_CiDeltaSq = params.sublist("TURBULENCE MODEL").get<Teuchos::RCP<Epetra_Vector> >("col_Ci_delta_sq");
     const int id = ele->LID();
     CsDeltaSq = (*ele_CsDeltaSq)[id];
     CiDeltaSq = (*ele_CiDeltaSq)[id];

@@ -65,10 +65,10 @@ namespace MueLu {
 
     std::string filename_prototype_; ///< prototype string for output filename
 
-    RCP<FactoryBase>   AFact_;       ///< A factory (needed for maps)
-    RCP<FactoryBase>   nspFact_;     ///< Nullspace factory
+    Teuchos::RCP<FactoryBase>   AFact_;       ///< A factory (needed for maps)
+    Teuchos::RCP<FactoryBase>   nspFact_;     ///< Nullspace factory
 
-    RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
+    Teuchos::RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
 
 
   }; // class ContactInfoFactory

@@ -50,7 +50,7 @@ public:
   virtual ~TurbulenceStatisticsHit();
 
   //! store scatra discretization if passive scalar is included
-  void StoreScatraDiscret(RCP<DRT::Discretization> scatradis)
+  void StoreScatraDiscret(Teuchos::RCP<DRT::Discretization> scatradis)
   { scatradiscret_ = scatradis; return; };
 
   //! space and time (only forced but not decaying case) averaging
@@ -61,7 +61,7 @@ public:
                           Teuchos::RCP<Epetra_Vector> phinp);
 
   // evaluation of dissipation rate and rbvmm-related quantities
-  void EvaluateResiduals(std::map<std::string,RCP<Epetra_Vector> > statevecs);
+  void EvaluateResiduals(std::map<std::string,Teuchos::RCP<Epetra_Vector> > statevecs);
 
   //! dump the result to file
   void DumpStatistics(int step, bool multiple_records = false);
@@ -153,10 +153,10 @@ private:
   Teuchos::RCP<std::vector<double> > scalarvariancespectrum_;
 
   //! sum over velocity vector
-  RCP<std::vector<double> > sumvel_;
+  Teuchos::RCP<std::vector<double> > sumvel_;
 
   //! sum over squares of velocity vector componetnts
-  RCP<std::vector<double> > sumvelvel_;
+  Teuchos::RCP<std::vector<double> > sumvelvel_;
 
   //! number of samples taken
   int  numsamp_;
@@ -171,9 +171,9 @@ private:
   Teuchos::RCP<std::vector<int> > outsteps_;
 
   //! toogle vectors: sums are computed by scalarproducts
-  RCP<Epetra_Vector>       toggleu_;
-  RCP<Epetra_Vector>       togglev_;
-  RCP<Epetra_Vector>       togglew_;
+  Teuchos::RCP<Epetra_Vector>       toggleu_;
+  Teuchos::RCP<Epetra_Vector>       togglev_;
+  Teuchos::RCP<Epetra_Vector>       togglew_;
 
 };
 

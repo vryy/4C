@@ -22,9 +22,9 @@
 
   ---------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
-  RCP<DRT::Discretization> actdis             ,
+  Teuchos::RCP<DRT::Discretization> actdis             ,
   bool                             alefluid           ,
-  RCP<Epetra_Vector>       dispnp             ,
+  Teuchos::RCP<Epetra_Vector>       dispnp             ,
   Teuchos::ParameterList&                   params             ,
   const bool                       withscatra
   )
@@ -120,7 +120,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
     std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
 
     // get the knotvector itself
-    RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+    Teuchos::RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
     // resize and initialise to 0
     {
@@ -621,7 +621,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
       dserror("Oops. Your discretization is not a NurbsDiscretization.");
 
     if(meanfullphinp_ == Teuchos::null)
-      dserror("RCP is Teuchos::null");
+      dserror("Teuchos::RCP is Teuchos::null");
     else
       scatranurbsdis->SetState("phinp_for_statistics",meanfullphinp_);
 
@@ -640,7 +640,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
   std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
 
   // get the knotvector itself
-  RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+  Teuchos::RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
   // get element map
   const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
@@ -747,7 +747,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
       actscatraele->LocationVector(*scatranurbsdis,scatralm,scatralmowner,scatralmstride);
 
-      RCP<const Epetra_Vector> phinp = scatranurbsdis->GetState("phinp_for_statistics");
+      Teuchos::RCP<const Epetra_Vector> phinp = scatranurbsdis->GetState("phinp_for_statistics");
       if (phinp==Teuchos::null)
         dserror("Cannot get state vector 'phinp' for statistics");
       std::vector<double> myphinp(scatralm.size());
@@ -1548,8 +1548,8 @@ Add results from scalar transport fields to statistics
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
-    RCP<DRT::Discretization> scatradis,
-    RCP<Epetra_Vector> phinp
+    Teuchos::RCP<DRT::Discretization> scatradis,
+    Teuchos::RCP<Epetra_Vector> phinp
 )
 {
   if (withscatra_)

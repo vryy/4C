@@ -18,7 +18,7 @@ FLD::LESScaleSeparation::~LESScaleSeparation()
  *----------------------------------------------------------------------*/
 FLD::LESScaleSeparation::LESScaleSeparation(
   INPAR::FLUID::ScaleSeparation scale_sep,
-  RCP<DRT::Discretization> discret):
+  Teuchos::RCP<DRT::Discretization> discret):
   scale_sep_(scale_sep),
   discret_(discret),
   sepmat_build_(false)
@@ -323,11 +323,11 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
   // push coordinates in vectors
   //----------------------------------------------------------------------
 
-  RCP<std::vector<double> > x1coordinates;
+  Teuchos::RCP<std::vector<double> > x1coordinates;
   x1coordinates = Teuchos::rcp(new std::vector<double> );
-  RCP<std::vector<double> > x2coordinates;
+  Teuchos::RCP<std::vector<double> > x2coordinates;
   x2coordinates = Teuchos::rcp(new std::vector<double> );
-  RCP<std::vector<double> > x3coordinates;
+  Teuchos::RCP<std::vector<double> > x3coordinates;
   x3coordinates = Teuchos::rcp(new std::vector<double> );
 
   for(std::set<double,LineSortCriterion>::iterator coord1=x1coords.begin();
@@ -359,11 +359,11 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
   //----------------------------------------------------------------------
 
   // start with first coordinate and take ever other
-  RCP<std::vector<double> > x1coarsecoordinates;
+  Teuchos::RCP<std::vector<double> > x1coarsecoordinates;
   x1coarsecoordinates = Teuchos::rcp(new std::vector<double> );
-  RCP<std::vector<double> > x2coarsecoordinates;
+  Teuchos::RCP<std::vector<double> > x2coarsecoordinates;
   x2coarsecoordinates = Teuchos::rcp(new std::vector<double> );
-  RCP<std::vector<double> > x3coarsecoordinates;
+  Teuchos::RCP<std::vector<double> > x3coarsecoordinates;
   x3coarsecoordinates = Teuchos::rcp(new std::vector<double> );
 
   if ((x1coordinates->size()%2==0) or (x3coordinates->size()%2==0) or (x3coordinates->size()%2==0))
@@ -393,7 +393,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
 
   // separation matrix
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  RCP<Epetra_CrsMatrix> crsPRmat;
+  Teuchos::RCP<Epetra_CrsMatrix> crsPRmat;
   crsPRmat = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*dofrowmap,8,true));
 
   // loop all nodes on this proc
@@ -824,7 +824,7 @@ void FLD::LESScaleSeparation::ApplyScaleSeparation(
   case INPAR::FLUID::geometric_multigrid_operator:
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    RCP<Epetra_Vector> tmp;
+    Teuchos::RCP<Epetra_Vector> tmp;
     tmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
     // get the coarse velocity
     Sep_->Multiply(false,*vel,*tmp);

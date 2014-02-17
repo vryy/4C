@@ -1208,11 +1208,11 @@ bool ACOU::InvAnalysis::ConvergenceCheck()
 /*----------------------------------------------------------------------*/
 void ACOU::InvAnalysis::ReadInParameters()
 {
-  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(0)->Materials()->Map();
-  std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(0)->Materials()->Map();
+  std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
   {
-    const RCP<MAT::PAR::Material> material = curr->second;
+    const Teuchos::RCP<MAT::PAR::Material> material = curr->second;
     switch(material->Type())
     {
     case INPAR::MAT::m_scatra:
@@ -1242,12 +1242,12 @@ void ACOU::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
 {
   acou_discret_->Comm().Broadcast(&p_cur[0],np_,0);
 
-  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(0)->Materials()->Map();
-  std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(0)->Materials()->Map();
+  std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
   int j=0;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
   {
-    const RCP<MAT::PAR::Material> material = curr->second;
+    const Teuchos::RCP<MAT::PAR::Material> material = curr->second;
     switch(material->Type())
     {
     case INPAR::MAT::m_scatra:

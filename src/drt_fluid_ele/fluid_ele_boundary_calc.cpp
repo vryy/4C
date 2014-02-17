@@ -92,7 +92,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
   {
   case FLD::integrate_Shapefunction:
   {
-    RCP<const Epetra_Vector> dispnp;
+    Teuchos::RCP<const Epetra_Vector> dispnp;
     std::vector<double> mydispnp;
 
     if (isale)
@@ -171,7 +171,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
   }
   case FLD::ba_calc_node_normal:
   {
-    RCP<const Epetra_Vector> dispnp;
+    Teuchos::RCP<const Epetra_Vector> dispnp;
     std::vector<double> mydispnp;
 
     if (isale)
@@ -194,7 +194,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
   }
   case FLD::calc_node_curvature:
   {
-    RCP<const Epetra_Vector> dispnp;
+    Teuchos::RCP<const Epetra_Vector> dispnp;
     std::vector<double> mydispnp;
 
     if (isale)
@@ -207,7 +207,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
       }
     }
 
-    RCP<const Epetra_Vector> normals;
+    Teuchos::RCP<const Epetra_Vector> normals;
     std::vector<double> mynormals;
 
     normals = discretization.GetState("normals");
@@ -257,7 +257,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
     // employs the divergence theorem acc. to Saksono eq. (24) and does not
         // require second derivatives.
 
-        RCP<const Epetra_Vector> dispnp;
+        Teuchos::RCP<const Epetra_Vector> dispnp;
         std::vector<double> mydispnp;
 
         dispnp = discretization.GetState("dispnp");
@@ -1209,7 +1209,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
       DRT::Element* Element = ElementsPtr[ele];
 
       // get surfaces
-      std::vector< RCP< DRT::Element > > surfaces = Element->Surfaces();
+      std::vector< Teuchos::RCP< DRT::Element > > surfaces = Element->Surfaces();
 
       // loop over surfaces: how many free surfaces with this node on it?
       for (unsigned int surf=0; surf<surfaces.size(); ++surf)
@@ -1646,9 +1646,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
   }
 
   // Get the center of mass of the already calculate surface elements
-  Teuchos::RCP<std::vector<double> > xyzG  = params.get<RCP<std::vector<double> > >("center of mass");
+  Teuchos::RCP<std::vector<double> > xyzG  = params.get<Teuchos::RCP<std::vector<double> > >("center of mass");
 
-  Teuchos::RCP<std::vector<double> > normal  = params.get<RCP<std::vector<double> > >("normal");
+  Teuchos::RCP<std::vector<double> > normal  = params.get<Teuchos::RCP<std::vector<double> > >("normal");
 
   // Get the area of the of the already calculate surface elements
   double area = params.get<double>("total area");
@@ -2340,8 +2340,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   }
 
 
-  Teuchos::RCP<Epetra_Vector> cond_velocities = params.get<RCP<Epetra_Vector> > ("condition velocities");
-  Teuchos::RCP<Epetra_Map>    cond_dofrowmap  = params.get<RCP<Epetra_Map> > ("condition dofrowmap");
+  Teuchos::RCP<Epetra_Vector> cond_velocities = params.get<Teuchos::RCP<Epetra_Vector> > ("condition velocities");
+  Teuchos::RCP<Epetra_Map>    cond_dofrowmap  = params.get<Teuchos::RCP<Epetra_Map> > ("condition dofrowmap");
 
   double density=0.0; // inverse density of my parent element
 

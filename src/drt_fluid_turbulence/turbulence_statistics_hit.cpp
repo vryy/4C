@@ -41,7 +41,7 @@ namespace FLD
  | constructor                                  rasthofer 04/13 |
  *--------------------------------------------------------------*/
 TurbulenceStatisticsHit::TurbulenceStatisticsHit(
-  RCP<DRT::Discretization>    actdis,
+  Teuchos::RCP<DRT::Discretization>    actdis,
   Teuchos::ParameterList&     params,
   const bool forced):
   discret_(actdis),
@@ -1165,7 +1165,7 @@ void TurbulenceStatisticsHit::DoScatraTimeSample(
  |                                              rasthofer 04/13 |
  *--------------------------------------------------------------*/
 void TurbulenceStatisticsHit::EvaluateResiduals(
-  std::map<std::string,RCP<Epetra_Vector> > statevecs)
+  std::map<std::string,Teuchos::RCP<Epetra_Vector> > statevecs)
 {
   dserror("EvaluateResiduals() not yet implemented for hit!");
   return;

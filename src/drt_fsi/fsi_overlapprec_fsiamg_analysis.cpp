@@ -128,7 +128,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(
                             AnalyzeBest& best)
 {
   Teuchos::RCP<MLAPI::InverseOperator> S;
-  //RCP<MLAPI::LoadBalanceInverseOperator> lbS;
+  //Teuchos::RCP<MLAPI::LoadBalanceInverseOperator> lbS;
 
   // measure r_l2 decrease per time in bestrate
   std::vector<double> bestrate(nlevel-1,10.0);

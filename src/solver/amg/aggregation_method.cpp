@@ -21,7 +21,7 @@ LINALG::AggregationMethod::AggregationMethod(FILE* outfile) :
 }
 
 
-int LINALG::AggregationMethod::GetGlobalAggregates(const RCP<Epetra_CrsMatrix>& A, ParameterList& params, RCP<Epetra_IntVector>& aggrinfo, int& naggregates_local, const RCP<Epetra_MultiVector>& ThisNS)
+int LINALG::AggregationMethod::GetGlobalAggregates(const Teuchos::RCP<Epetra_CrsMatrix>& A, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& aggrinfo, int& naggregates_local, const Teuchos::RCP<Epetra_MultiVector>& ThisNS)
 {
    return 0;
 }
@@ -98,7 +98,7 @@ void LINALG::AggregationMethod::PrintIntVectorInMatlabFormat(std::string fname, 
 }
 
 
-RCP<LINALG::AggregationMethod> LINALG::AggregationMethodFactory::Create(const string AggregationMethodType, FILE* outfile)
+Teuchos::RCP<LINALG::AggregationMethod> LINALG::AggregationMethodFactory::Create(const string AggregationMethodType, FILE* outfile)
 {
   try
   {

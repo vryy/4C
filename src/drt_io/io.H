@@ -77,7 +77,7 @@ public:
   /// read into given vector
   void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
 
-  /// read into given std::map<int, RCP<Epetra_SerialDenseMatrix> >
+  /// read into given std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >
   void ReadSerialDenseMatrix(Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > mapdata,
                              std::string name);
 

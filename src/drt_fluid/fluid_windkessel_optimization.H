@@ -59,9 +59,9 @@ public:
   /*!
   \brief Standard Constructor
   */
-  FluidWkOptimizationWrapper( RCP<DRT::Discretization>  actdis,
+  FluidWkOptimizationWrapper( Teuchos::RCP<DRT::Discretization>  actdis,
                               IO::DiscretizationWriter& output,
-                              RCP<FLD::UTILS::FluidImpedanceWrapper> ImpWrapper,
+                              Teuchos::RCP<FLD::UTILS::FluidImpedanceWrapper> ImpWrapper,
                               double dta);
 
   /*!
@@ -72,7 +72,7 @@ public:
   /*!
   \brief FluidWkOptimizationWrapper::GetObjectiveFunctionSize
   */
-  int GetObjectiveFunctionSize(RCP<DRT::Condition> cond, int condid);
+  int GetObjectiveFunctionSize(Teuchos::RCP<DRT::Condition> cond, int condid);
 
   /*!
   \brief FluidWkOptimizationWrapper::CalcAdjointJacobian
@@ -89,9 +89,9 @@ public:
   \brief FluidWkOptimizationWrapper::CalcObjFunction
   */
   void CalcObjFunction( int                   index,
-                        RCP<DRT::Condition>   cond,
-                        RCP<std::vector<double> >  pressures,
-                        RCP<std::vector<double> >  flowrates,
+                        Teuchos::RCP<DRT::Condition>   cond,
+                        Teuchos::RCP<std::vector<double> >  pressures,
+                        Teuchos::RCP<std::vector<double> >  flowrates,
                         double                dt);
 
   /*!
@@ -99,9 +99,9 @@ public:
   */
   void dN_du( int                   index,
               int                   constrain_num,
-              RCP<DRT::Condition>   cond,
-              RCP<std::vector<double> >  pressures,
-              RCP<std::vector<double> >  flowrates,
+              Teuchos::RCP<DRT::Condition>   cond,
+              Teuchos::RCP<std::vector<double> >  pressures,
+              Teuchos::RCP<std::vector<double> >  flowrates,
               Teuchos::ParameterList     params,
               double                dt);
 
@@ -110,9 +110,9 @@ public:
   */
   void dN_dphi( int                   index,
                 int                   constrain_num,
-                RCP<DRT::Condition>   cond,
-                RCP<std::vector<double> >  pressures,
-                RCP<std::vector<double> >  flowrates,
+                Teuchos::RCP<DRT::Condition>   cond,
+                Teuchos::RCP<std::vector<double> >  pressures,
+                Teuchos::RCP<std::vector<double> >  flowrates,
                 Teuchos::ParameterList     params,
                 double                dt);
 
@@ -121,9 +121,9 @@ public:
   */
   void dL_du( int                   index,
               int                   constrain_num,
-              RCP<DRT::Condition>   cond,
-              RCP<std::vector<double> >  pressures,
-              RCP<std::vector<double> >  flowrates,
+              Teuchos::RCP<DRT::Condition>   cond,
+              Teuchos::RCP<std::vector<double> >  pressures,
+              Teuchos::RCP<std::vector<double> >  flowrates,
               Teuchos::ParameterList     params,
               double                dt);
 
@@ -132,9 +132,9 @@ public:
   */
   void dJ_dphi( int                   index,
                 int                   constrain_num,
-                RCP<DRT::Condition>   cond,
-                RCP<std::vector<double> >  pressures,
-                RCP<std::vector<double> >  flowrates,
+                Teuchos::RCP<DRT::Condition>   cond,
+                Teuchos::RCP<std::vector<double> >  pressures,
+                Teuchos::RCP<std::vector<double> >  flowrates,
                 Teuchos::ParameterList     params,
                 double                dt);
 
@@ -167,10 +167,10 @@ private:
   /*!
   \brief all single windkessel conditions to be optimized
   */
-  std::map<const int, RCP<DRT::Condition> > optwkmap_;
+  std::map<const int, Teuchos::RCP<DRT::Condition> > optwkmap_;
 
   //! fluid discretization
-  RCP<DRT::Discretization>      discret_;
+  Teuchos::RCP<DRT::Discretization>      discret_;
 
   //! An epetra wrapper for Dense matrix solver
   Epetra_SerialDenseSolver      solver_;
@@ -179,40 +179,40 @@ private:
   IO::DiscretizationWriter&     output_;
 
   //! the Jacobian of the optimization problem
-  RCP<Epetra_SerialDenseMatrix>  Jacobian_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>  Jacobian_;
 
   //! the Jacobian of the optimization problem at n-1
-  RCP<Epetra_SerialDenseMatrix>  Jnm_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>  Jnm_;
 
   //! the residual of the optimazation problem at n
-  RCP<Epetra_SerialDenseVector>  fn_;
+  Teuchos::RCP<Epetra_SerialDenseVector>  fn_;
 
   //! the residual of the optimazation problem at n-1
-  RCP<Epetra_SerialDenseVector>  fnm_;
+  Teuchos::RCP<Epetra_SerialDenseVector>  fnm_;
 
   //! the design variables of the optimazation problem at n
-  RCP<Epetra_SerialDenseVector>  xn_;
+  Teuchos::RCP<Epetra_SerialDenseVector>  xn_;
 
   //! the design variables of the optimazation problem at n-1
-  RCP<Epetra_SerialDenseVector>  xnm_;
+  Teuchos::RCP<Epetra_SerialDenseVector>  xnm_;
 
   //! the derivative of constraints w.r.t state variables (ex. Pressure)
-  RCP<Epetra_SerialDenseMatrix>  dN_du_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>  dN_du_;
 
   //! the derivative of constraints w.r.t design variables (ex. resistance)
-  RCP<Epetra_SerialDenseMatrix>  dN_dphi_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>  dN_dphi_;
 
   //! the derivative of objective function w.r.t state variables (ex. Pressure)
-  RCP<Epetra_SerialDenseMatrix>  dL_du_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>  dL_du_;
 
   //! the derivative of objective function w.r.t design variables (ex. resistance)
-  RCP<Epetra_SerialDenseMatrix>  dJ_dphi_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>  dJ_dphi_;
  
   //! the derivative of state variables w.r.t design variables
-  RCP<Epetra_SerialDenseMatrix>  du_dphi_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>  du_dphi_;
 
   //! pointer to impedance wrapper
-  RCP<FLD::UTILS::FluidImpedanceWrapper> imp_;
+  Teuchos::RCP<FLD::UTILS::FluidImpedanceWrapper> imp_;
 
   //! Cardiac cycle period
   double                                 period_;

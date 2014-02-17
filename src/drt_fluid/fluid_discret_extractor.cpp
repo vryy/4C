@@ -17,7 +17,7 @@ FLD::FluidDiscretExtractor::~FluidDiscretExtractor()
  | Constructor (public)                                  rasthofer 05/11|
  *----------------------------------------------------------------------*/
 FLD::FluidDiscretExtractor::FluidDiscretExtractor(
-  RCP<DRT::Discretization>    actdis,
+  Teuchos::RCP<DRT::Discretization>    actdis,
   const std::string& condition,
   bool yescondition
   ):
@@ -161,7 +161,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     {
       DRT::Node* actnode=parentdiscret_->gNode(*id);
 
-      RCP<DRT::Node> sepcondnode =Teuchos::rcp(actnode->Clone());
+      Teuchos::RCP<DRT::Node> sepcondnode =Teuchos::rcp(actnode->Clone());
 
       childdiscret_->AddNode(sepcondnode);
     }
@@ -198,15 +198,15 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       // yes, we have a turbulent separation condition (for this element)
       if(found==true)
       {
-        RCP<DRT::Element> sepcondele =Teuchos::rcp(actele->Clone());
+        Teuchos::RCP<DRT::Element> sepcondele =Teuchos::rcp(actele->Clone());
 
         childdiscret_->AddElement(sepcondele);
       }
     }
 
     // child discretization needs a full NodeRowMap and a NodeColMap
-    RCP<Epetra_Map> newrownodemap;
-    RCP<Epetra_Map> newcolnodemap;
+    Teuchos::RCP<Epetra_Map> newrownodemap;
+    Teuchos::RCP<Epetra_Map> newcolnodemap;
 
     {
       std::vector<int> rownodes;
@@ -361,12 +361,12 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // call PARMETIS (with #ifdef to be on the safe side)
 #if defined(PARALLEL) && defined(PARMETIS)
 
-    RCP<Epetra_Map> sepcondrownodes;
-    RCP<Epetra_Map> sepcondcolnodes;
+    Teuchos::RCP<Epetra_Map> sepcondrownodes;
+    Teuchos::RCP<Epetra_Map> sepcondcolnodes;
 
-    RCP<Epetra_Map> sepcondelenodesmap = Teuchos::rcp( new Epetra_Map(*childdiscret_->ElementRowMap()));
+    Teuchos::RCP<Epetra_Map> sepcondelenodesmap = Teuchos::rcp( new Epetra_Map(*childdiscret_->ElementRowMap()));
     Epetra_Time time(parentdiscret_->Comm());
-    RCP<Epetra_Comm> comm = Teuchos::rcp(parentdiscret_->Comm().Clone());
+    Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(parentdiscret_->Comm().Clone());
 
     // ParMetis gets the current distribution (sepcondelenodesmap) and returns a better one (sepcondrownodes, sepcondcolnodes)
     // hopefully the optimal one

@@ -51,7 +51,7 @@ void DRT::ELEMENTS::So_tet4::sotet4_homog(Teuchos::ParameterList&  params)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::sotet4_read_restart_multi()
 {
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
   {

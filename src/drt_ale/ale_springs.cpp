@@ -25,7 +25,7 @@ Maintainer: Ulrich Kuettler
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ALE::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
+ALE::AleSprings::AleSprings(Teuchos::RCP<DRT::Discretization> actdis,
                                 Teuchos::RCP<LINALG::Solver> solver,
                                 Teuchos::RCP<Teuchos::ParameterList> params,
                                 Teuchos::RCP<IO::DiscretizationWriter> output,

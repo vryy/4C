@@ -610,7 +610,7 @@ void MAT::GrowthOutputToGmsh
     std::vector<double> mydisp(lm.size(),0);
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-    RCP<MAT::Material> mat = actele->Material();
+    Teuchos::RCP<MAT::Material> mat = actele->Material();
     MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
     Teuchos::RCP<std::vector<double> > mandel = grow->Getmandel();
     Teuchos::RCP<std::vector<double> > theta = grow->Gettheta();

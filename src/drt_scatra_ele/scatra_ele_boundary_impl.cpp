@@ -248,7 +248,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   isale_ = params.get<bool>("isale");
   if (isale_)
   {
-    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
+    const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
     if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_+1);
     // add nodal displacements
@@ -275,7 +275,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   case SCATRA::bd_calc_normal_vectors:
   {
     // access the global vector
-    const RCP<Epetra_MultiVector> normals = params.get< RCP<Epetra_MultiVector> >("normal vectors",Teuchos::null);
+    const Teuchos::RCP<Epetra_MultiVector> normals = params.get< Teuchos::RCP<Epetra_MultiVector> >("normal vectors",Teuchos::null);
     if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
 
     // determine constant outer normal to this element
@@ -318,7 +318,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       dserror("Element parameter SCATRATYPE has not been set!");
 
     // get actual values of transported scalars
-    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vector
@@ -326,7 +326,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
 
     // get history variable (needed for double layer modeling)
-    RCP<const Epetra_Vector> hist = discretization.GetState("hist");
+    Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'hist'");
 
     // extract local values from the global vector
@@ -456,7 +456,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       if(ele->Owner() == discretization.Comm().MyPID())
       {
         // get actual values of transported scalars
-        RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
+        Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
         if (phidtnp==Teuchos::null) dserror("Cannot get state vector 'ephidtnp'");
         // extract local values from the global vector
         std::vector<double> ephidtnp(lm.size());
@@ -505,7 +505,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     if(kinetics == INPAR::SCATRA::nernst)
     {
       // get actual values of transported scalars
-      RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
       // extract local values from the global vector
@@ -614,14 +614,14 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     parentele->LocationVector(discretization,lmparent,lmparentowner,lmparentstride);
 
     // get velocity values at nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
+    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
 
     // we deal with a (nsd_+1)-dimensional flow field
     Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
     DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
 
     // get values of scalar
-    RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vectors for the parent(!) element
@@ -642,8 +642,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     std::ostringstream temp;
     temp << k;
     std::string name = "flux_phi_"+temp.str();
-    // try to get the pointer to the entry (and check if type is RCP<Epetra_MultiVector>)
-    RCP<Epetra_MultiVector>* f = params.getPtr< RCP<Epetra_MultiVector> >(name);
+    // try to get the pointer to the entry (and check if type is Teuchos::RCP<Epetra_MultiVector>)
+    Teuchos::RCP<Epetra_MultiVector>* f = params.getPtr< Teuchos::RCP<Epetra_MultiVector> >(name);
     // check: field has been set and is not of type Teuchos::null
     if (f!= NULL) DRT::UTILS::ExtractMyNodeBasedValues(peleptr,eflux,*f,3);
     else          dserror("MultiVector %s has not been found!",name.c_str());
@@ -711,7 +711,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       thermpress_ = params.get<double>("thermodynamic pressure");
 
     // get values of scalar
-    RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from global vector
@@ -726,7 +726,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     parentele->LocationVector(discretization,lmparent,lmparentowner,lmparentstride);
 
     // get velocity values at nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
+    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
 
     // we deal with a (nsd_+1)-dimensional flow field
     Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
@@ -778,7 +778,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     }
 
     // get values of scalar
-    RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from global vector
@@ -873,7 +873,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     }
 
     // get values of scalar
-    RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from global vector
@@ -1018,7 +1018,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     //       it would be wrong to suppress results for a ghosted boundary!
 
     // get actual values of transported scalars
-    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vector
@@ -1026,7 +1026,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
 
     // get velocity values at nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
+    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
 
     // we deal with a (nsd_+1)-dimensional flow field
     LINALG::Matrix<nsd_+1,nen_>  evel(true);
@@ -1103,7 +1103,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   isale_ = params.get<bool>("isale");
   if (isale_)
   {
-    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
+    const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
     if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_+1);
     // add nodal displacements to point coordinates
@@ -3458,7 +3458,7 @@ template <DRT::Element::DiscretizationType bdistype,
   //------------------------------------------------------------------------
   // Dirichlet boundary condition
   //------------------------------------------------------------------------
-  RCP<DRT::Condition> dbc = params.get<RCP<DRT::Condition> >("condition");
+  Teuchos::RCP<DRT::Condition> dbc = params.get<Teuchos::RCP<DRT::Condition> >("condition");
 
   // check of total time
   bool usetime = true;
@@ -4209,14 +4209,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
   pele->LocationVector(discretization,plm,plmowner,plmstride);
 
   // get velocity values at parent element nodes
-  const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
+  const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
   Epetra_SerialDenseVector evel(pnsd*pnen);
   DRT::UTILS::ExtractMyNodeBasedValues(pele,evel,velocity,pnsd);
 
   // get scalar values at parent element nodes
-  RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-  RCP<const Epetra_Vector> phin = discretization.GetState("phin");
+  Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
   if (phinp==Teuchos::null) dserror("Cannot get state vector 'phin'");
 
 
@@ -4635,9 +4635,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBou
   pele->LocationVector(discretization,plm,plmowner,plmstride);
 
   // get scalar values at parent element nodes
-  RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-  RCP<const Epetra_Vector> phin = discretization.GetState("phin");
+  Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
   if (phinp==Teuchos::null) dserror("Cannot get state vector 'phin'");
 
   // extract local values from global vectors for parent element

@@ -35,10 +35,10 @@ Maintainer: Martin Winklmaier
  |  Constructor (public)                               winklmaier 03/12 |
  *----------------------------------------------------------------------*/
 TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
-    RCP<DRT::Discretization>      actdis,
-    RCP<LINALG::Solver>           solver,
-    RCP<Teuchos::ParameterList>   params,
-    RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<DRT::Discretization>      actdis,
+    Teuchos::RCP<LINALG::Solver>           solver,
+    Teuchos::RCP<Teuchos::ParameterList>   params,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
   : FluidAdjointTimeInt(actdis,solver,params,output)
 {
   // time measurement: initialization
@@ -64,7 +64,7 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
   // -------------------------------------------------------------------
   // care for periodic boundary conditions
   // -------------------------------------------------------------------
-  pbcmapmastertoslave_ = params_->get<RCP<std::map<int,std::vector<int> > > >("periodic bc");
+  pbcmapmastertoslave_ = params_->get<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc");
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // ensure that degrees of freedom in the discretization have been set
@@ -842,9 +842,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetInitialAdjointField(
  | sent density field for topology optimization         winklmaier 12/11|
  *----------------------------------------------------------------------*/
 void TOPOPT::ADJOINT::ImplicitTimeInt::SetTopOptData(
-    Teuchos::RCP<const std::map<int,RCP<Epetra_Vector> > > fluidvelocities,
-    RCP<const Epetra_Vector> density,
-    RCP<TOPOPT::Optimizer>& optimizer
+    Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvelocities,
+    Teuchos::RCP<const Epetra_Vector> density,
+    Teuchos::RCP<TOPOPT::Optimizer>& optimizer
 )
 {
   fluid_vels_= fluidvelocities;

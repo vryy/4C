@@ -49,7 +49,7 @@ namespace MueLu {
     //@{
 
     //! Constructor.
-    IterationAFactory(const std::string mapName, const RCP<const FactoryBase> & mapFact);
+    IterationAFactory(const std::string mapName, const Teuchos::RCP<const FactoryBase> & mapFact);
 
     //! Destructor.
     virtual ~IterationAFactory();
@@ -73,7 +73,7 @@ namespace MueLu {
   private:
 
     const std::string mapName_;
-    const RCP<const FactoryBase> mapFact_;
+    const Teuchos::RCP<const FactoryBase> mapFact_;
 
   }; // class IterationAFactory
 

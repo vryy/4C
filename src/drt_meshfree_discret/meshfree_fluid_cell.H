@@ -210,21 +210,21 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get vector of RCPs to the lines of this cell
+   * \brief Get vector of Teuchos::RCPs to the lines of this cell
    *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get vector of RCPs to the surfaces of this cell
+   * \brief Get vector of Teuchos::RCPs to the surfaces of this cell
    *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get vector of RCPs to the volume of this cell
+   * \brief Get vector of Teuchos::RCPs to the volume of this cell
    *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
   virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
@@ -563,7 +563,7 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get vector of RCPs to the lines of this cell
+   * \brief Get vector of Teuchos::RCPs to the lines of this cell
    *        Dummy - not provided.
    *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/
@@ -571,7 +571,7 @@ public:
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Get vector of RCPs to the surfaces of this cell
+   * \brief Get vector of Teuchos::RCPs to the surfaces of this cell
    *        Dummy - not provided.
    *///                                                   (public) nis Jan13
   /*------------------------------------------------------------------------*/

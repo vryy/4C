@@ -47,11 +47,11 @@ namespace LINALG
        *  performs aggregation process for given Epetra_CrsMatrix A and parameters params
        *  using an Uncoupled aggregation method. We're supposing a constant block size over all nodes.
        *
-       *  \param const RCP<Epetra_CrsMatrix> A: input matrix
+       *  \param const Teuchos::RCP<Epetra_CrsMatrix> A: input matrix
        *  \param ParameterList params: parameter list with parameters for aggregation
-       *  \param RCP<Epetra_IntVector>& aggrinfo: returns vector with aggregation info. lives on row map of input matrix A.
+       *  \param Teuchos::RCP<Epetra_IntVector>& aggrinfo: returns vector with aggregation info. lives on row map of input matrix A.
        *  \param int& naggregates_local: returns number of built aggregates on current processor
-       *  \param const RCP<Epetra_MultiVector>& ThisNS: null space of current level, needed for ML
+       *  \param const Teuchos::RCP<Epetra_MultiVector>& ThisNS: null space of current level, needed for ML
        *  \return number of built aggregates (over all processors)
        *
        *  The following parameters are used for the aggregation process
@@ -65,7 +65,7 @@ namespace LINALG
        *  - "phase 2: node attachement scheme": attachement scheme for non-aggregated nodes in phase 2. Can be either "MinRank" or "MaxLink".
        *    With "MinRank" the node is attached to the smallest neighbour aggregate. With "MaxLink" the node is added to the aggregate with the maximum number of links to it.
        */
-      virtual int GetGlobalAggregates(const RCP<Epetra_CrsMatrix>& A, ParameterList& params, RCP<Epetra_IntVector>& aggrinfo, int& naggregates_local, const RCP<Epetra_MultiVector>& ThisNS = null);
+      virtual int GetGlobalAggregates(const Teuchos::RCP<Epetra_CrsMatrix>& A, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& aggrinfo, int& naggregates_local, const Teuchos::RCP<Epetra_MultiVector>& ThisNS = null);
 
       /*!
        *  \brief return number of dirichlet blocks
@@ -98,7 +98,7 @@ namespace LINALG
 
       \author Michael Gee (gee@lnm.mw.tum.de)
       */
-      int GetAggregates(const RCP<Epetra_CrsMatrix>& A, ParameterList& List, const Epetra_MultiVector& ThisNS, RCP<Epetra_IntVector>& aggrinfo);
+      int GetAggregates(const Teuchos::RCP<Epetra_CrsMatrix>& A, ParameterList& List, const Epetra_MultiVector& ThisNS, Teuchos::RCP<Epetra_IntVector>& aggrinfo);
 
 
     protected:

@@ -371,9 +371,9 @@ void DRT::ELEMENTS::BeamCL::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          cyron 01/08|
  *----------------------------------------------------------------------*/
-std::vector<RCP<DRT::Element> > DRT::ELEMENTS::BeamCL::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::BeamCL::Lines()
 {
-  std::vector<RCP<Element> > lines(1);
+  std::vector<Teuchos::RCP<Element> > lines(1);
   lines[0]= Teuchos::rcp(this, false);
   return lines;
 }

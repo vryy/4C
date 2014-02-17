@@ -59,7 +59,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList&   params,
   {
     case calc_ale_lin_stiff:
     {
-      //RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      //Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       //vector<double> my_dispnp(lm.size());
       //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
@@ -69,7 +69,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList&   params,
     }
     case calc_ale_laplace:
     {
-      //RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      //Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       //vector<double> my_dispnp(lm.size());
       //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 

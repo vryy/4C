@@ -26,7 +26,7 @@ Maintainer: Ursula Rasthofer
 //
 //----------------------------------------------------------------------
 FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
-  RCP<DRT::Discretization> discret        ,
+  Teuchos::RCP<DRT::Discretization> discret        ,
   std::string                   homdir         ,
   LINALG::MapExtractor&    velpressplitter,
   const bool               withscatra
@@ -153,9 +153,9 @@ FLD::TurbulenceStatisticsGeneralMean::~TurbulenceStatisticsGeneralMean()
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(
   const double             dt ,
-  const RCP<Epetra_Vector> vec,
-  const RCP<Epetra_Vector> scavec,
-  const RCP<Epetra_Vector> scatravec)
+  const Teuchos::RCP<Epetra_Vector> vec,
+  const Teuchos::RCP<Epetra_Vector> scavec,
+  const Teuchos::RCP<Epetra_Vector> scatravec)
 {
   // remember time included in this average
   const double old_time = curr_avg_time_;
@@ -1372,8 +1372,8 @@ Add results from scalar transport field solver to statistics
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults(
-    RCP<DRT::Discretization> scatradis,
-    RCP<Epetra_Vector> phinp
+    Teuchos::RCP<DRT::Discretization> scatradis,
+    Teuchos::RCP<Epetra_Vector> phinp
 )
 {
     withscatra_=true; // now it is clear: we have scatra results as well!

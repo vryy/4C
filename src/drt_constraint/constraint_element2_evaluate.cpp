@@ -39,7 +39,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_MPC_stiff")
   {
 
-    Teuchos::RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
+    Teuchos::RCP<DRT::Condition> condition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
     const std::string* type = condition->Get<std::string>("control value");
 
     if (*type == "dist") act = calc_MPC_dist_stiff;

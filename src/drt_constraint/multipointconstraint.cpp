@@ -22,7 +22,7 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
+UTILS::MPConstraint::MPConstraint(Teuchos::RCP<DRT::Discretization> discr,
         const std::string& conditionname,
         int& minID,
         int& maxID)
@@ -40,7 +40,7 @@ UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
+UTILS::MPConstraint::MPConstraint(Teuchos::RCP<DRT::Discretization> discr,
         const std::string& conditionname)
 : UTILS::Constraint
   (
@@ -60,7 +60,7 @@ void UTILS::MPConstraint::SetConstrState
 {
   if (constrtype_!=none)
   {
-    std::map<int,RCP<DRT::Discretization> >::iterator discrit;
+    std::map<int,Teuchos::RCP<DRT::Discretization> >::iterator discrit;
     for(discrit=constraintdis_.begin();discrit!=constraintdis_.end();++discrit)
     {
       Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(discrit->second)->DofColMap(),false);

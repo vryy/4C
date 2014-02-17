@@ -621,13 +621,13 @@ namespace STR
     bool HaveWindkessel();
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    const RCP< ::UTILS::ConstrManager> GetConstraintManager()
+    const Teuchos::RCP< ::UTILS::ConstrManager> GetConstraintManager()
     {
       return conman_;
     }
 
     //! Return Teuchos::rcp to WindkesselManager windkman_
-    const RCP< ::UTILS::WindkesselManager> GetWindkesselManager()
+    const Teuchos::RCP< ::UTILS::WindkesselManager> GetWindkesselManager()
     {
       return windkman_;
     }

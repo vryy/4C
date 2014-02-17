@@ -133,7 +133,7 @@ public:
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
   */
-  DiscretizationFaces(const std::string name, RCP<Epetra_Comm> comm);
+  DiscretizationFaces(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
   /*!
   \brief Destructor

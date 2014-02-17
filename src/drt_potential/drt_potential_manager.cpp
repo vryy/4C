@@ -165,9 +165,9 @@ void POTENTIAL::PotentialManager::ReadParameter()
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
 void POTENTIAL::PotentialManager::EvaluatePotential(  Teuchos::ParameterList&                    p,
-                                                      RCP<Epetra_Vector>        disp,
-                                                      RCP<Epetra_Vector>        fint,
-                                                      RCP<LINALG::SparseMatrix> stiff)
+                                                      Teuchos::RCP<Epetra_Vector>        disp,
+                                                      Teuchos::RCP<Epetra_Vector>        fint,
+                                                      Teuchos::RCP<LINALG::SparseMatrix> stiff)
 {
   if(surface_)
     surfacePotential_->EvaluatePotential(p, disp, fint, stiff);
@@ -184,9 +184,9 @@ void POTENTIAL::PotentialManager::EvaluatePotential(  Teuchos::ParameterList&   
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
 void POTENTIAL::PotentialManager::TestEvaluatePotential(  Teuchos::ParameterList&                    p,
-                                                          RCP<Epetra_Vector>        disp,
-                                                          RCP<Epetra_Vector>        fint,
-                                                          RCP<LINALG::SparseMatrix> stiff,
+                                                          Teuchos::RCP<Epetra_Vector>        disp,
+                                                          Teuchos::RCP<Epetra_Vector>        fint,
+                                                          Teuchos::RCP<LINALG::SparseMatrix> stiff,
                                                           const double                      time,
                                                           const int                         step)
 {

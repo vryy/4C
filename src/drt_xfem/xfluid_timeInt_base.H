@@ -306,16 +306,16 @@ public:
 
   //! constructor
   explicit XFLUID_TIMEINT_BASE(
-      const RCP<DRT::Discretization>          discret,          /// background discretization
-      const RCP<DRT::Discretization>          boundarydis,      /// cut discretization
+      const Teuchos::RCP<DRT::Discretization>          discret,          /// background discretization
+      const Teuchos::RCP<DRT::Discretization>          boundarydis,      /// cut discretization
       Teuchos::RCP<XFEM::FluidWizard>         wizard_old,       /// fluid wizard w.r.t. old interface position
       Teuchos::RCP<XFEM::FluidWizard>         wizard_new,       /// fluid wizard w.r.t. new interface position
       Teuchos::RCP<XFEM::FluidDofSet>         dofset_old,       /// fluid dofset w.r.t. old interface position
       Teuchos::RCP<XFEM::FluidDofSet>         dofset_new,       /// fluid dofset w.r.t. new interface position
-      std::vector<RCP<Epetra_Vector> >        oldVectors,       /// vector of col-vectors w.r.t. old interface position
+      std::vector<Teuchos::RCP<Epetra_Vector> >        oldVectors,       /// vector of col-vectors w.r.t. old interface position
       const Epetra_Map&                       olddofcolmap,     /// dofcolmap w.r.t. old interface position
       const Epetra_Map&                       newdofrowmap,     /// dofcolmap w.r.t. new interface position
-      const RCP<std::map<int,std::vector<int> > > pbcmap        /// map of periodic boundary conditions
+      const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap        /// map of periodic boundary conditions
   );
 
   //! destructor
@@ -323,8 +323,8 @@ public:
 
   //! perform the computation
   virtual void compute(
-      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
   ){  dserror("Unused function! Use a function of the derived classes"); };
 
   //! set computation type due to iteration counter
@@ -356,7 +356,7 @@ public:
 protected:
 
   //! initialize data to be set in every computation
-  void handleVectors( std::vector<RCP<Epetra_Vector> >& newRowVectorsn );
+  void handleVectors( std::vector<Teuchos::RCP<Epetra_Vector> >& newRowVectorsn );
 
   //! return the number of Epetra vectors which shall get new values for a given node with according data
   size_t vectorSize(TimeIntData* data) const {return vectorSize(data->type_);};
@@ -543,11 +543,11 @@ protected:
   //! @name  data w.r.t old and new interface position
   /*========================================================================*/
 
-  RCP<DRT::Discretization> discret_;                  //! background discretization
-  RCP<DRT::Discretization> boundarydis_;              //! cut discretization
+  Teuchos::RCP<DRT::Discretization> discret_;                  //! background discretization
+  Teuchos::RCP<DRT::Discretization> boundarydis_;              //! cut discretization
 
-  RCP<XFEM::FluidWizard> wizard_old_;                 //! fluid wizard w.r.t. old interface position
-  RCP<XFEM::FluidWizard> wizard_new_;                 //! fluid wizard w.r.t. new interface position
+  Teuchos::RCP<XFEM::FluidWizard> wizard_old_;                 //! fluid wizard w.r.t. old interface position
+  Teuchos::RCP<XFEM::FluidWizard> wizard_new_;                 //! fluid wizard w.r.t. new interface position
 
   Teuchos::RCP<XFEM::FluidDofSet> dofset_old_;        //! fluid dofset w.r.t. old interface position
   Teuchos::RCP<XFEM::FluidDofSet> dofset_new_;        //! fluid dofset w.r.t. new interface position
@@ -555,10 +555,10 @@ protected:
   const Epetra_Map olddofcolmap_;                     //! dofcolmap w.r.t. old interface position
   const Epetra_Map newdofrowmap_;                     //! dofcolmap w.r.t. new interface position
 
-  const std::vector<RCP<Epetra_Vector> > oldVectors_; //! vector of col!-vectors w.r.t. old interface position
-  std::vector<RCP<Epetra_Vector> > newVectors_;       //! vector of row!-vectors w.r.t. new interface position (overwritten with new information for non-predictor case and filled otherwise)
+  const std::vector<Teuchos::RCP<Epetra_Vector> > oldVectors_; //! vector of col!-vectors w.r.t. old interface position
+  std::vector<Teuchos::RCP<Epetra_Vector> > newVectors_;       //! vector of row!-vectors w.r.t. new interface position (overwritten with new information for non-predictor case and filled otherwise)
 
-  RCP<std::vector<TimeIntData> > timeIntData_;        //! data-vector containing all data for computation with help of sub-class TimeIntData
+  Teuchos::RCP<std::vector<TimeIntData> > timeIntData_;        //! data-vector containing all data for computation with help of sub-class TimeIntData
 
   //@}
 
@@ -566,7 +566,7 @@ protected:
   //! @name stuff for parallel communication
   /*========================================================================*/
 
-  const RCP<std::map<int,std::vector<int> > > pbcmap_; //! map for master and slave elements of nodes
+  const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap_; //! map for master and slave elements of nodes
   const int myrank_;                                   //! current processor id
   const int numproc_;                                  //! number of processors
 
@@ -604,7 +604,7 @@ public:
       XFEM::XFLUID_TIMEINT_BASE&                                       timeInt,            ///< time integration base class object
       const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&   reconstr_method,    ///< reconstruction map for nodes and its dofsets
       INPAR::XFEM::XFluidTimeInt&                                      timeIntType,        ///< type of time integration
-      const RCP<Epetra_Vector>                                         veln,               ///< velocity at time t^n
+      const Teuchos::RCP<Epetra_Vector>                                         veln,               ///< velocity at time t^n
       const double&                                                    dt,                 ///< time step size
       const bool                                                       initialize          ///< is initialization?
   );
@@ -620,7 +620,7 @@ public:
   /*========================================================================*/
 
   //! perform the computation
-  virtual void compute( std::vector<RCP<Epetra_Vector> >& newRowVectorsn );
+  virtual void compute( std::vector<Teuchos::RCP<Epetra_Vector> >& newRowVectorsn );
 
   /*========================================================================*/
   //! element based routines
@@ -870,7 +870,7 @@ protected:
 
   INPAR::XFEM::XFluidTimeInt timeIntType_; //! which computation/reconstruction algorithm for standard dofs
 
-  RCP<Epetra_Vector> veln_;                //! velocity w.r.t old interface position in column map
+  Teuchos::RCP<Epetra_Vector> veln_;                //! velocity w.r.t old interface position in column map
 
   const double dt_;                        //! time step size
 

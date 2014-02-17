@@ -46,7 +46,7 @@ public:
   */
   LESScaleSeparation(
   INPAR::FLUID::ScaleSeparation scale_sep, //! separation type
-  RCP<DRT::Discretization> discret);
+  Teuchos::RCP<DRT::Discretization> discret);
 
    /*!
   \brief Destructor
@@ -98,11 +98,11 @@ private:
   //! filter type
   enum INPAR::FLUID::ScaleSeparation scale_sep_;
   //! pointer to discretization
-  RCP<DRT::Discretization> discret_;
+  Teuchos::RCP<DRT::Discretization> discret_;
   //! bool: true if Sep_-matrix has been build
   bool sepmat_build_;
   //! separation matrix
-  RCP<LINALG::SparseMatrix> Sep_;
+  Teuchos::RCP<LINALG::SparseMatrix> Sep_;
 };
 
 }

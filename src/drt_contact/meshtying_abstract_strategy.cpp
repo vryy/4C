@@ -823,7 +823,7 @@ void CONTACT::MtAbstractStrategy::StoreDirichletStatus(Teuchos::RCP<LINALG::MapE
 //#ifdef CONTACTCONSTRAINTXYZ
   // create old style dirichtoggle vector (supposed to go away)
   pgsdirichtoggle_ = LINALG::CreateVector(*gsdofrowmap_,true);
-  RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
+  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
   temp->PutScalar(1.0);
   LINALG::Export(*temp,*pgsdirichtoggle_);
 //#endif

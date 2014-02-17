@@ -50,7 +50,7 @@ namespace MueLu {
     //! Input
     //@{
 
-    RCP<const ParameterList> GetValidParameterList(const ParameterList& paramList = ParameterList()) const;
+    Teuchos::RCP<const ParameterList> GetValidParameterList(const ParameterList& paramList = ParameterList()) const;
 
     void DeclareInput(Level &currentLevel) const;
 
@@ -66,7 +66,7 @@ namespace MueLu {
 
   private:
     // amalgamation information
-    mutable RCP<std::map<GlobalOrdinal,std::vector<GlobalOrdinal> > > nodegid2dofgids_;
+    mutable Teuchos::RCP<std::map<GlobalOrdinal,std::vector<GlobalOrdinal> > > nodegid2dofgids_;
 
 
   }; // class MeshtyingSPAmalgamationFactory

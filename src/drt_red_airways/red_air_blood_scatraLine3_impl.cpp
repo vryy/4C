@@ -96,7 +96,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(
   Teuchos::RCP<const MAT::Material>      material)
 {
 
-  Teuchos::RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
+  Teuchos::RCP<Epetra_Vector> generations   = params.get<Teuchos::RCP<Epetra_Vector> >("generations");
 
   //--------------------------------------------------------------------
   // get the generation numbers
@@ -242,9 +242,9 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::SolveBloodAirTransport(
   // get time-step size
   const double dt = params.get<double>("time step size");
 
-  Teuchos::RCP<Epetra_Vector> volnp    = params.get<RCP<Epetra_Vector> >("volumenp");
-  Teuchos::RCP<Epetra_Vector> areanp   = params.get<RCP<Epetra_Vector> >("areanp");
-  Teuchos::RCP<Epetra_Vector> scatranp = params.get<RCP<Epetra_Vector> >("scatranp");
+  Teuchos::RCP<Epetra_Vector> volnp    = params.get<Teuchos::RCP<Epetra_Vector> >("volumenp");
+  Teuchos::RCP<Epetra_Vector> areanp   = params.get<Teuchos::RCP<Epetra_Vector> >("areanp");
+  Teuchos::RCP<Epetra_Vector> scatranp = params.get<Teuchos::RCP<Epetra_Vector> >("scatranp");
 
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
@@ -508,9 +508,9 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::SolveBloodAirTransport(
   // get time-step size
   const double dt = params.get<double>("time step size");
 
-  Teuchos::RCP<Epetra_Vector> volnp    = params.get<RCP<Epetra_Vector> >("volumenp");
-  Teuchos::RCP<Epetra_Vector> areanp   = params.get<RCP<Epetra_Vector> >("areanp");
-  Teuchos::RCP<Epetra_Vector> scatranp = params.get<RCP<Epetra_Vector> >("scatranp");
+  Teuchos::RCP<Epetra_Vector> volnp    = params.get<Teuchos::RCP<Epetra_Vector> >("volumenp");
+  Teuchos::RCP<Epetra_Vector> areanp   = params.get<Teuchos::RCP<Epetra_Vector> >("areanp");
+  Teuchos::RCP<Epetra_Vector> scatranp = params.get<Teuchos::RCP<Epetra_Vector> >("scatranp");
 
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());

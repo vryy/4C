@@ -93,7 +93,7 @@ namespace MueLu {
     //@{
 
     //! @brief Constructor
-    MyTrilinosSmoother(std::string const & mapName, const RCP<const FactoryBase> & mapFact, std::string const & type = "", Teuchos::ParameterList const & paramList = Teuchos::ParameterList(), LO const &overlap=0, RCP<FactoryBase> AFact = Teuchos::null);
+    MyTrilinosSmoother(std::string const & mapName, const Teuchos::RCP<const FactoryBase> & mapFact, std::string const & type = "", Teuchos::ParameterList const & paramList = Teuchos::ParameterList(), LO const &overlap=0, Teuchos::RCP<FactoryBase> AFact = Teuchos::null);
 
     //! Destructor
     virtual ~MyTrilinosSmoother() { }
@@ -123,7 +123,7 @@ namespace MueLu {
     //@}
 
     //! When this prototype is cloned using Copy(), the clone is an Ifpack or an Ifpack2 smoother.
-    RCP<SmootherPrototype> Copy() const;
+    Teuchos::RCP<SmootherPrototype> Copy() const;
 
 
     //! @name Overridden from Teuchos::Describable
@@ -145,10 +145,10 @@ namespace MueLu {
     std::string mapName_;
 
     //! Factory for projected variable
-    RCP<const FactoryBase> mapFact_;
+    Teuchos::RCP<const FactoryBase> mapFact_;
 
     //! map which has prescribed solution/rhs
-    RCP<const Map> map_;
+    Teuchos::RCP<const Map> map_;
 
     //! ifpack1/2-specific key phrase that denote smoother type
     std::string type_;
@@ -160,14 +160,14 @@ namespace MueLu {
     LO overlap_;
 
     //! A Factory
-    RCP<FactoryBase> AFact_;
+    Teuchos::RCP<FactoryBase> AFact_;
 
     //
     // Underlying Smoother
     //
 
     //! Smoother
-    RCP<SmootherPrototype> s_; // TrilinosSmoother object
+    Teuchos::RCP<SmootherPrototype> s_; // TrilinosSmoother object
 
   }; // class MyTrilinosSmoother
 

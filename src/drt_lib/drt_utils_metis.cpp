@@ -290,10 +290,10 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
 #if 0 // we are not using metis anymore, use parmetis instead
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
-                                RCP<Epetra_Map>& colnodes,
+void DRT::UTILS::PartUsingMetis(Teuchos::RCP<Epetra_Map>& rownodes,
+                                Teuchos::RCP<Epetra_Map>& colnodes,
                                 list<std::vector<int> >& elementnodes,
-                                RCP<Epetra_Comm> comm)
+                                Teuchos::RCP<Epetra_Comm> comm)
 {
 
 #if 0

@@ -50,7 +50,7 @@ namespace DRT
 
     */
 
-    explicit TransparentIndependentDofSet(RCP<DRT::Discretization> sourcedis,
+    explicit TransparentIndependentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis,
                                           bool parallel,
                                           Teuchos::RCP<XFEM::FluidWizard> wizard);
 

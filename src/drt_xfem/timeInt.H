@@ -42,16 +42,16 @@ public:
 
   //! constructor
   explicit TIMEINT(
-      const RCP<DRT::Discretization> discret,
-      const RCP<XFEM::DofManager> olddofman,
-      const RCP<XFEM::DofManager> newdofman,
-      std::vector<RCP<Epetra_Vector> > oldVectors,
-      const RCP<COMBUST::FlameFront> flamefront,
+      const Teuchos::RCP<DRT::Discretization> discret,
+      const Teuchos::RCP<XFEM::DofManager> olddofman,
+      const Teuchos::RCP<XFEM::DofManager> newdofman,
+      std::vector<Teuchos::RCP<Epetra_Vector> > oldVectors,
+      const Teuchos::RCP<COMBUST::FlameFront> flamefront,
       const Epetra_Map& olddofcolmap,
       const Epetra_Map& newdofrowmap,
       const std::map<DofKey, DofGID>& oldNodalDofColDistrib,
       const std::map<DofKey, DofGID>& newNodalDofRowDistrib,
-      const RCP<std::map<int,std::vector<int> > > pbcmap
+      const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap
   );
 
   //! destructor
@@ -62,8 +62,8 @@ public:
 
   //! perform the computation
   virtual void compute(
-      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
   )
   {
     dserror("Unused function! Use a function of the derived classes");
@@ -71,7 +71,7 @@ public:
 
   //! perform the computation
   virtual void compute(
-      std::vector<RCP<Epetra_Vector> > newRowVectorsn
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn
   )
   {
     dserror("Unused function! Use a function of the derived classes");
@@ -99,8 +99,8 @@ protected:
 
   //! initialize data to be set in every computation
   void handleVectors(
-      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
   );
 
   //! check the intersection status of an element
@@ -638,25 +638,25 @@ protected:
 
 
   // data accessing
-  RCP<DRT::Discretization> discret_; // discretization
-  const RCP<XFEM::DofManager> olddofman_; // dof manager of last time step t^n
-  RCP<XFEM::DofManager> newdofman_; // dof manager of current time step t^n+1
+  Teuchos::RCP<DRT::Discretization> discret_; // discretization
+  const Teuchos::RCP<XFEM::DofManager> olddofman_; // dof manager of last time step t^n
+  Teuchos::RCP<XFEM::DofManager> newdofman_; // dof manager of current time step t^n+1
   const Epetra_Map olddofcolmap_; // dof column map of last time step t^n in column map
   Epetra_Map newdofrowmap_; // dof column map of current time step t^n+1 in row map
   const std::map<DofKey, DofGID> oldNodalDofColDistrib_; // dof distribution map of last time step t^n in column map
   std::map<DofKey, DofGID> newNodalDofRowDistrib_; // dof distribution map of current time step t^n+1 in row map
 
   // data
-  const RCP<Epetra_Vector> phin_; // phi^n in column map
-  RCP<Epetra_Vector> phinp_; // phi^n+1,i+1 in column map
-  const RCP<COMBUST::InterfaceHandleCombust> oldinterfacehandle_; // interface handle of old time step t^n
-  RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle_; // interface handle of new time step t^n+1
-  RCP<Epetra_MultiVector> gradphi_; // smoothed gradient of phi-vector of new time step t^n+1
-  const std::vector<RCP<Epetra_Vector> > oldVectors_; // global vectors of old time step t^n in column map
-  std::vector<RCP<Epetra_Vector> > newVectors_; // global vectors of new time step t^n+1 in row map
+  const Teuchos::RCP<Epetra_Vector> phin_; // phi^n in column map
+  Teuchos::RCP<Epetra_Vector> phinp_; // phi^n+1,i+1 in column map
+  const Teuchos::RCP<COMBUST::InterfaceHandleCombust> oldinterfacehandle_; // interface handle of old time step t^n
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle_; // interface handle of new time step t^n+1
+  Teuchos::RCP<Epetra_MultiVector> gradphi_; // smoothed gradient of phi-vector of new time step t^n+1
+  const std::vector<Teuchos::RCP<Epetra_Vector> > oldVectors_; // global vectors of old time step t^n in column map
+  std::vector<Teuchos::RCP<Epetra_Vector> > newVectors_; // global vectors of new time step t^n+1 in row map
 
   // stuff for parallel communication
-  const RCP<std::map<int,std::vector<int> > > pbcmap_; // map for master and slave elements of nodes
+  const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap_; // map for master and slave elements of nodes
   const int myrank_; // current processor id
   const int numproc_; // number of processors
 
@@ -666,7 +666,7 @@ protected:
 
 public:
 
-  RCP<std::vector<TimeIntData> > timeIntData_; // data-vector containing all data for computation with help of sub-class TimeIntData
+  Teuchos::RCP<std::vector<TimeIntData> > timeIntData_; // data-vector containing all data for computation with help of sub-class TimeIntData
 
   int numNodes(){return timeIntData_->size();};
 
@@ -719,8 +719,8 @@ protected:
     const int* elenodeids = element->NodeIds();  // nodeids of element
     const int nsd = 3; // dimension
 
-    RCP<XFEM::DofManager> dofman; // required dofmanager
-    RCP<Epetra_Vector> phi; // required phi-field
+    Teuchos::RCP<XFEM::DofManager> dofman; // required dofmanager
+    Teuchos::RCP<Epetra_Vector> phi; // required phi-field
     if (newTimeStep) // new time step -> new data
     {
       dofman = newdofman_;
@@ -865,9 +865,9 @@ public:
   explicit STD(
       XFEM::TIMEINT& timeInt,
       INPAR::COMBUST::XFEMTimeIntegration& timeIntType,
-      const RCP<Epetra_Vector> veln,
+      const Teuchos::RCP<Epetra_Vector> veln,
       const double& dta,
-      const RCP<COMBUST::FlameFront> flamefront,
+      const Teuchos::RCP<COMBUST::FlameFront> flamefront,
       bool initialize
   );
 
@@ -879,8 +879,8 @@ public:
 
   //! perform the computation
   virtual void compute(
-      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
   )
   {
     dserror("Unused function! Use a function of the derived classes");
@@ -888,16 +888,16 @@ public:
 
   //! perform the computation
   virtual void compute(
-      std::vector<RCP<Epetra_Vector> > newRowVectors
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectors
   )
   {
     dserror("Unused function! Use a function of the derived classes");
   };
   //! initialize data when called in a new FGI
   void importNewFGIData(
-      const RCP<DRT::Discretization> discret,
-      const RCP<XFEM::DofManager> newdofman,
-      const RCP<COMBUST::FlameFront> flamefront,
+      const Teuchos::RCP<DRT::Discretization> discret,
+      const Teuchos::RCP<XFEM::DofManager> newdofman,
+      const Teuchos::RCP<COMBUST::FlameFront> flamefront,
       const Epetra_Map& newdofrowmap,
       const std::map<DofKey, DofGID>& newNodalDofRowDistrib
   );
@@ -986,8 +986,8 @@ public:
   template<const int numnode>
   void elementsNodalData(
       DRT::Element* element,
-      const RCP<Epetra_Vector> field, // Epetra_Vector fitting to field and dofDistribution
-      const RCP<DofManager> dofman,
+      const Teuchos::RCP<Epetra_Vector> field, // Epetra_Vector fitting to field and dofDistribution
+      const Teuchos::RCP<DofManager> dofman,
       const Epetra_Map& dofMap, // DofMap fitting to field and dofDistribution
       const std::map<DofKey, DofGID>& dofDistribution, // dofDistribution fitting to Epetra_Vector and field
       LINALG::Matrix<3,2*numnode>& nodevel,
@@ -1087,12 +1087,12 @@ protected:
   INPAR::COMBUST::XFEMTimeIntegration timeIntType_; // computation algorithm of the time integration for standard dofs
 
   // data
-  RCP<Epetra_Vector> veln_; // velocity at old time t^n in column map
+  Teuchos::RCP<Epetra_Vector> veln_; // velocity at old time t^n in column map
   std::set<int> oldEnrNodes_; // global ids of column nodes intersected by old interface at time n
   const double dt_; // time step size
 
-  RCP<COMBUST::FlameFront> flamefront_;
-  RCP<Epetra_Vector> phinpi_; // phi^n+1,i in column map
+  Teuchos::RCP<COMBUST::FlameFront> flamefront_;
+  Teuchos::RCP<Epetra_Vector> phinpi_; // phi^n+1,i in column map
 }; // class Startvalues
 
 
@@ -1119,16 +1119,16 @@ public:
 
   //! perform the computation
   virtual void compute(
-      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
   );
 
 
   // initialize data when called in a new FGI
   void importNewFGIData(
-      const RCP<DRT::Discretization> discret,
-      const RCP<XFEM::DofManager> newdofman,
-      const RCP<COMBUST::FlameFront> flamefront,
+      const Teuchos::RCP<DRT::Discretization> discret,
+      const Teuchos::RCP<XFEM::DofManager> newdofman,
+      const Teuchos::RCP<COMBUST::FlameFront> flamefront,
       const Epetra_Map& newdofrowmap,
       const std::map<DofKey, DofGID>& newNodalDofRowDistrib,
       const std::map<DofKey,XFEM::DofGID>& oldNodalDofColDistrib

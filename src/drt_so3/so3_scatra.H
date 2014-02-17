@@ -303,7 +303,7 @@ private:
 
   DRT::Node** Nodes();
 
-  RCP<MAT::Material> Material() const;
+  Teuchos::RCP<MAT::Material> Material() const;
 
   int Id() const;
 

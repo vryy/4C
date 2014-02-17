@@ -143,19 +143,19 @@ public:
   virtual int NumLine() const {return 12;}
 
   /*!
-  \brief Get vector of RCPs to the lines of this element
+  \brief Get vector of Teuchos::RCPs to the lines of this element
 
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of RCPs to the surfaces of this element
+  \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
-  \brief Get vector of RCPs to the volumes of this element
+  \brief Get vector of Teuchos::RCPs to the volumes of this element
 
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
@@ -457,7 +457,7 @@ protected:
   double                                                                pstime_;
   double                                                                time_;
   /// Prestressing object
-  RCP<DRT::ELEMENTS::PreStress>                                         prestress_;
+  Teuchos::RCP<DRT::ELEMENTS::PreStress>                                         prestress_;
   // compute Jacobian mapping wrt to deformed configuration
   virtual void UpdateJacobianMapping(const std::vector<double>& disp,
                                      DRT::ELEMENTS::PreStress& prestress);
@@ -468,7 +468,7 @@ protected:
 
   // inverse design analysis objects
   friend class DRT::ELEMENTS::InvDesign;
-  RCP<DRT::ELEMENTS::InvDesign>                                         invdesign_;
+  Teuchos::RCP<DRT::ELEMENTS::InvDesign>                                         invdesign_;
 
 
   // internal calculation methods
@@ -530,7 +530,7 @@ protected:
         std::vector<int>&         lm,             // location matrix
         std::vector<double>&      disp,           // current displacements
         Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
-        RCP<MAT::Material>        mat);            // material
+        Teuchos::RCP<MAT::Material>        mat);            // material
 
   //! Evaluate Hex8 Shapefcts to keep them static
   const std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > soh8_shapefcts();

@@ -21,7 +21,7 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-UTILS::Monitor::Monitor(RCP<DRT::Discretization> discr,
+UTILS::Monitor::Monitor(Teuchos::RCP<DRT::Discretization> discr,
         const std::string& conditionname,
         int& minID,
         int& maxID):
@@ -121,7 +121,7 @@ void UTILS::Monitor::EvaluateMonitor
     const std::vector<int>*    CondIDVec  = cond.Get<std::vector<int> >("ConditionID");
     const int condID=(*CondIDVec)[0];
     const int offsetID=params.get("OffsetID",0);
-    params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+    params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
     // define element matrices and vectors
     Epetra_SerialDenseMatrix elematrix1;
@@ -130,11 +130,11 @@ void UTILS::Monitor::EvaluateMonitor
     Epetra_SerialDenseVector elevector2;
     Epetra_SerialDenseVector elevector3;
 
-    std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int,RCP<DRT::Element> >::iterator curr;
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       // get element location vector and ownerships

@@ -333,7 +333,7 @@ private:
   //! 2D-map with pointers on the contact pairs_. This map is necessary, to call a contact pair directly by the two element-iD's of the pair.
   // It is not needed at the moment due to the direct neigbour determination in the constructor but may be useful for future operations
   std::map<std::pair<int,int>, Teuchos::RCP<Beam3contact> > contactpairmap_;
-  //std::map<int, RCP<Beam3contact> > contactpairmap_;
+  //std::map<int, Teuchos::RCP<Beam3contact> > contactpairmap_;
 
   //! parameter list for beam contact options
   Teuchos::ParameterList sbeamcontact_;

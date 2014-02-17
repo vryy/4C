@@ -36,7 +36,7 @@ Maintainer: Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
-  RCP<DRT::Discretization> actdis,
+  Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::ParameterList&                   params)
   :
   discret_(actdis),

@@ -30,9 +30,9 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
-  RCP<DRT::Discretization> actdis,
+  Teuchos::RCP<DRT::Discretization> actdis,
   IO::DiscretizationWriter& output,
-  RCP<FLD::UTILS::FluidImpedanceWrapper> ImpWrapper,
+  Teuchos::RCP<FLD::UTILS::FluidImpedanceWrapper> ImpWrapper,
   double dta) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
@@ -50,7 +50,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
   // The corresponding resorting of result values has to be done later
   int numcondlines = impedancecond.size();
 
-  std::map<const int, RCP<DRT::Condition> > wkmap;
+  std::map<const int, Teuchos::RCP<DRT::Condition> > wkmap;
 
   if (numcondlines > 0) // if there is at least one impedance condition
   {
@@ -78,7 +78,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
       // -----------------------------------------------------------------
       // stack the impedances into a map
       // -----------------------------------------------------------------
-      RCP<DRT::Condition> wkCond = Teuchos::rcp(new DRT::Condition(*(impedancecond[i])));
+      Teuchos::RCP<DRT::Condition> wkCond = Teuchos::rcp(new DRT::Condition(*(impedancecond[i])));
       bool inserted = wkmap.insert( std::make_pair( condid, wkCond ) ).second;
       
       if ( !inserted )
@@ -129,7 +129,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
       // sort optimization bc's in map and test if one condition ID
       // appears more than once. Currently this case is forbidden.
       // -----------------------------------------------------------------
-      RCP<DRT::Condition> wkoptCond = Teuchos::rcp(new DRT::Condition(*(wk_optim_cond[i])));
+      Teuchos::RCP<DRT::Condition> wkoptCond = Teuchos::rcp(new DRT::Condition(*(wk_optim_cond[i])));
       bool inserted = optwkmap_.insert( std::make_pair( optID, wkoptCond ) ).second;
       if ( !inserted )
       {
@@ -169,7 +169,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-int FLD::UTILS::FluidWkOptimizationWrapper::GetObjectiveFunctionSize(RCP<DRT::Condition> cond, int condid)
+int FLD::UTILS::FluidWkOptimizationWrapper::GetObjectiveFunctionSize(Teuchos::RCP<DRT::Condition> cond, int condid)
 {
   // Get name of objective function
   std::string ObjFunType = *(cond->Get<std::string>("ObjectiveFunction"));
@@ -262,7 +262,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
   // -------------------------------------------------------------------
   // Read in all of the pressures and evaluate the objective function
   // -------------------------------------------------------------------
-  std::map<int, RCP<DRT::Condition> >::iterator itr;
+  std::map<int, Teuchos::RCP<DRT::Condition> >::iterator itr;
   
   int index = 0;
   int constrain_num = 0;
@@ -301,8 +301,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
     pstream<<"pressures"<<itr->first;
     qstream<<"flowrates"<<itr->first;
 
-    RCP<std::vector<double> > pressures = params.get<RCP<std::vector<double> > > (pstream.str());
-    RCP<std::vector<double> > flowrates = params.get<RCP<std::vector<double> > > (qstream.str());
+    Teuchos::RCP<std::vector<double> > pressures = params.get<Teuchos::RCP<std::vector<double> > > (pstream.str());
+    Teuchos::RCP<std::vector<double> > flowrates = params.get<Teuchos::RCP<std::vector<double> > > (qstream.str());
 
     double pres_T, flow_T;
     pres_T = (*pressures)[0];
@@ -497,9 +497,9 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidWkOptimizationWrapper::CalcObjFunction(
   int                   index,
-  RCP<DRT::Condition>   cond,
-  RCP<std::vector<double> >  pressures,
-  RCP<std::vector<double> >  flowrates,
+  Teuchos::RCP<DRT::Condition>   cond,
+  Teuchos::RCP<std::vector<double> >  pressures,
+  Teuchos::RCP<std::vector<double> >  flowrates,
   double                dt
   )
 {
@@ -568,9 +568,9 @@ void FLD::UTILS::FluidWkOptimizationWrapper::CalcObjFunction(
 void FLD::UTILS::FluidWkOptimizationWrapper::dN_du(
   int                   index,
   int                   constrain_num,
-  RCP<DRT::Condition>   cond,
-  RCP<std::vector<double> >  pressures,
-  RCP<std::vector<double> >  flowrates,
+  Teuchos::RCP<DRT::Condition>   cond,
+  Teuchos::RCP<std::vector<double> >  pressures,
+  Teuchos::RCP<std::vector<double> >  flowrates,
   Teuchos::ParameterList     params,
   double                dt)
 {
@@ -662,9 +662,9 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_du(
 void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
   int                   index,
   int                   constrain_num,
-  RCP<DRT::Condition>   cond,
-  RCP<std::vector<double> >  pressures,
-  RCP<std::vector<double> >  flowrates,
+  Teuchos::RCP<DRT::Condition>   cond,
+  Teuchos::RCP<std::vector<double> >  pressures,
+  Teuchos::RCP<std::vector<double> >  flowrates,
   Teuchos::ParameterList     params,
   double                dt)
 {
@@ -777,9 +777,9 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
 void FLD::UTILS::FluidWkOptimizationWrapper::dL_du(
   int                   index,
   int                   constrain_num,
-  RCP<DRT::Condition>   cond,
-  RCP<std::vector<double> >  pressures,
-  RCP<std::vector<double> >  flowrates,
+  Teuchos::RCP<DRT::Condition>   cond,
+  Teuchos::RCP<std::vector<double> >  pressures,
+  Teuchos::RCP<std::vector<double> >  flowrates,
   Teuchos::ParameterList     params,
   double                dt)
 {
@@ -897,9 +897,9 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dL_du(
 void FLD::UTILS::FluidWkOptimizationWrapper::dJ_dphi(
   int                   index,
   int                   constrain_num,
-  RCP<DRT::Condition>   cond,
-  RCP<std::vector<double> >  pressures,
-  RCP<std::vector<double> >  flowrates,
+  Teuchos::RCP<DRT::Condition>   cond,
+  Teuchos::RCP<std::vector<double> >  pressures,
+  Teuchos::RCP<std::vector<double> >  flowrates,
   Teuchos::ParameterList     params,
   double                dt)
 {
@@ -1000,7 +1000,7 @@ bool FLD::UTILS::FluidWkOptimizationWrapper::SteadyStateIsObtained(
   // if results are at n*CardiacPeriod, then
   // check if all of the boundaries reached a steady state
   // -------------------------------------------------------------------
-  std::map<const int, RCP<DRT::Condition> >::iterator itr;
+  std::map<const int, Teuchos::RCP<DRT::Condition> >::iterator itr;
 
   bool converged = false;
   for(itr = optwkmap_.begin(); itr != optwkmap_.end(); itr++)
@@ -1159,7 +1159,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::UpdateResidual()
   
   int index = 0;
   int VarDim= 0;
-  std::map<const int, RCP<DRT::Condition> >::iterator  itr;
+  std::map<const int, Teuchos::RCP<DRT::Condition> >::iterator  itr;
   for (itr = optwkmap_.begin(); itr != optwkmap_.end();itr++)
   {
     Teuchos::ParameterList params;

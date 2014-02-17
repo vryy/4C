@@ -40,7 +40,7 @@ EnsightWriter::EnsightWriter(PostField* field,
     nodeidgiven_(true)
 {
   // initialize proc0map_ correctly
-  const RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* noderowmap = dis->NodeRowMap();
   proc0map_ = LINALG::AllreduceEMap(*noderowmap,0);
 
@@ -298,7 +298,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
   }
 
   // write the grid information
-  RCP<Epetra_Map> proc0map = WriteCoordinates(file, field_->discretization());
+  Teuchos::RCP<Epetra_Map> proc0map = WriteCoordinates(file, field_->discretization());
   proc0map_=proc0map; // update the internal map
   WriteCells(file, field_->discretization(), proc0map);
 
@@ -309,9 +309,9 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
+Teuchos::RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
   std::ofstream& geofile,
-  const RCP<DRT::Discretization> dis
+  const Teuchos::RCP<DRT::Discretization> dis
   )
 {
 
@@ -324,7 +324,7 @@ RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
 
   // map for all visualisation points after they have been
   // communicated to proc 0
-  RCP<Epetra_Map> proc0map;
+  Teuchos::RCP<Epetra_Map> proc0map;
 
   if(field_->problem()->SpatialApproximation()=="Polynomial")
   {
@@ -352,8 +352,8 @@ RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
   *----------------------------------------------------------------------*/
 void EnsightWriter::WriteCells(
   std::ofstream& geofile,
-  const RCP<DRT::Discretization> dis,
-  const RCP<Epetra_Map>& proc0map
+  const Teuchos::RCP<DRT::Discretization> dis,
+  const Teuchos::RCP<Epetra_Map>& proc0map
   ) const
 {
   const Epetra_Map* elementmap = dis->ElementRowMap();
@@ -493,9 +493,9 @@ void EnsightWriter::WriteCells(
 */
 void EnsightWriter::WriteNodeConnectivityPar(
   std::ofstream& geofile,
-  const RCP<DRT::Discretization> dis,
+  const Teuchos::RCP<DRT::Discretization> dis,
   const std::vector<int>& nodevector,
-  const RCP<Epetra_Map> proc0map) const
+  const Teuchos::RCP<Epetra_Map> proc0map) const
 {
 #ifdef PARALLEL
   // no we have communicate the connectivity infos from proc 1...proc n to proc 0
@@ -587,7 +587,7 @@ void EnsightWriter::WriteNodeConnectivityPar(
  * \date 01/08
  */
 NumElePerDisType EnsightWriter::GetNumElePerDisType(
-  const RCP<DRT::Discretization> dis
+  const Teuchos::RCP<DRT::Discretization> dis
   ) const
 {
   const Epetra_Map* elementmap = dis->ElementRowMap();
@@ -677,7 +677,7 @@ int EnsightWriter::GetNumSubEle(
  * \brief parse all elements and get the global ids of the elements for each distype
  */
 EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
-  const RCP<DRT::Discretization> dis,
+  const Teuchos::RCP<DRT::Discretization> dis,
   NumElePerDisType numeleperdistype
   ) const
 {
@@ -1131,15 +1131,15 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
   Write(file, field_->field_pos()+1);
   Write(file, "coordinates");
 
-  const RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* nodemap = dis->NodeRowMap(); //local node row map
   const int numnp = nodemap->NumGlobalElements();
 
-  const RCP<Epetra_Vector> data = result.read_result(groupname);
+  const Teuchos::RCP<Epetra_Vector> data = result.read_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
 
   // do stupid conversion into Epetra map
-  RCP<Epetra_Map> epetradatamap;
+  Teuchos::RCP<Epetra_Map> epetradatamap;
   epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
@@ -1184,12 +1184,12 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
     // each processor provides its result values for proc 0
     //------------------------------------------------------
 
-    RCP<Epetra_Map> proc0datamap;
+    Teuchos::RCP<Epetra_Map> proc0datamap;
     proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
 
     // contract result values on proc0 (proc0 gets everything, other procs empty)
     Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
-    RCP<Epetra_Vector> proc0data = Teuchos::rcp(new Epetra_Vector(*proc0datamap));
+    Teuchos::RCP<Epetra_Vector> proc0data = Teuchos::rcp(new Epetra_Vector(*proc0datamap));
     int err = proc0data->Import(*data,proc0dataimporter,Insert);
     if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
@@ -1200,7 +1200,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
     //------------------------------------------------------------------
 
     // would be nice to have an Epetra_IntMultiVector, instead of casting to doubles
-    RCP<Epetra_MultiVector> dofgidpernodelid = Teuchos::rcp(new Epetra_MultiVector(*nodemap,numdf));
+    Teuchos::RCP<Epetra_MultiVector> dofgidpernodelid = Teuchos::rcp(new Epetra_MultiVector(*nodemap,numdf));
     dofgidpernodelid->PutScalar(-1.0);
 
     const int mynumnp = nodemap->NumMyElements();
@@ -1223,7 +1223,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
     }
 
     // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-    RCP<Epetra_MultiVector> dofgidpernodelid_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
+    Teuchos::RCP<Epetra_MultiVector> dofgidpernodelid_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
     Epetra_Import proc0dofimporter(*proc0map_,*nodemap);
     err = dofgidpernodelid_proc0->Import(*dofgidpernodelid,proc0dofimporter,Insert);
     if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -1319,11 +1319,11 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   Write(file, field_->field_pos()+1);
   Write(file, "coordinates");
 
-  const RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
+  const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
 
   // do stupid conversion into Epetra map
-  RCP<Epetra_Map> epetradatamap;
+  Teuchos::RCP<Epetra_Map> epetradatamap;
   epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
@@ -1347,7 +1347,7 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   {
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
+  Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
   Epetra_Import proc0dofimporter(*proc0map_,datamap);
   int err = data_proc0->Import(*data,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -1406,14 +1406,14 @@ void EnsightWriter::WriteElementDOFResultStep(
   Write(file, "part");
   Write(file, field_->field_pos()+1);
 
-  const RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* elementmap = dis->ElementRowMap(); //local node row map
 
-  const RCP<Epetra_Vector> data = result.read_result(groupname);
+  const Teuchos::RCP<Epetra_Vector> data = result.read_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
 
   // do stupid conversion into Epetra map
-  RCP<Epetra_Map> epetradatamap;
+  Teuchos::RCP<Epetra_Map> epetradatamap;
   epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
@@ -1430,12 +1430,12 @@ void EnsightWriter::WriteElementDOFResultStep(
   // each processor provides its result values for proc 0
   //------------------------------------------------------
 
-  RCP<Epetra_Map> proc0datamap;
+  Teuchos::RCP<Epetra_Map> proc0datamap;
   proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
-  RCP<Epetra_Vector> proc0data = Teuchos::rcp(new Epetra_Vector(*proc0datamap));
+  Teuchos::RCP<Epetra_Vector> proc0data = Teuchos::rcp(new Epetra_Vector(*proc0datamap));
   int err = proc0data->Import(*data,proc0dataimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
@@ -1445,7 +1445,7 @@ void EnsightWriter::WriteElementDOFResultStep(
   // each processor provides its dof global id information for proc 0
   //------------------------------------------------------------------
 
-  RCP<Epetra_MultiVector> dofgidperelementlid = Teuchos::rcp(new Epetra_MultiVector(*elementmap,numdof));
+  Teuchos::RCP<Epetra_MultiVector> dofgidperelementlid = Teuchos::rcp(new Epetra_MultiVector(*elementmap,numdof));
   dofgidperelementlid->PutScalar(-1.0);
 
   const int nummyelem = elementmap->NumMyElements();
@@ -1467,7 +1467,7 @@ void EnsightWriter::WriteElementDOFResultStep(
   }
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RCP<Epetra_MultiVector> dofgidperelementlid_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdof));
+  Teuchos::RCP<Epetra_MultiVector> dofgidperelementlid_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdof));
   Epetra_Import proc0dofimporter(*proc0map_,*elementmap);
   err = dofgidperelementlid_proc0->Import(*dofgidperelementlid,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -1569,12 +1569,12 @@ void EnsightWriter::WriteElementResultStep(
   Write(file, field_->field_pos()+1);
 
   // read the results
-  const RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
+  const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
   const int numcol = data->NumVectors();
 
   // do stupid conversion into Epetra map
-  RCP<Epetra_Map> epetradatamap;
+  Teuchos::RCP<Epetra_Map> epetradatamap;
   epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
@@ -1585,12 +1585,12 @@ void EnsightWriter::WriteElementResultStep(
   // each processor provides its result values for proc 0
   //------------------------------------------------------
 
-  RCP<Epetra_Map> proc0datamap;
+  Teuchos::RCP<Epetra_Map> proc0datamap;
   proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
-  RCP<Epetra_MultiVector> proc0data = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,numcol));
+  Teuchos::RCP<Epetra_MultiVector> proc0data = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,numcol));
   int err = proc0data->Import(*data,proc0dataimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
@@ -1931,14 +1931,14 @@ std::string EnsightWriter::GetFileSectionStringFromFilesets(
 void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions
 (
   std::ofstream&                      geofile ,
-  const RCP<DRT::Discretization> dis     ,
-  RCP<Epetra_Map>&               proc0map
+  const Teuchos::RCP<DRT::Discretization> dis     ,
+  Teuchos::RCP<Epetra_Map>&               proc0map
   )
 {
 
   // refcountpointer to vector of all coordinates
   // distributed among all procs
-  RCP<Epetra_MultiVector> nodecoords;
+  Teuchos::RCP<Epetra_MultiVector> nodecoords;
 
   const int NSD = 3; // number of space dimensions
 
@@ -1963,7 +1963,7 @@ void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map,*nodemap);
-  RCP<Epetra_MultiVector> allnodecoords = Teuchos::rcp(new Epetra_MultiVector(*proc0map,3));
+  Teuchos::RCP<Epetra_MultiVector> allnodecoords = Teuchos::rcp(new Epetra_MultiVector(*proc0map,3));
   int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 

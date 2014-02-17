@@ -213,7 +213,7 @@ int PostProblem::field_pos(const PostField* field) const
 /*----------------------------------------------------------------------*
  * returns the Epetra Communicator object
  *----------------------------------------------------------------------*/
-RCP<Epetra_Comm> PostProblem::comm()
+Teuchos::RCP<Epetra_Comm> PostProblem::comm()
 {
   return comm_;
 }
@@ -489,8 +489,8 @@ void PostProblem::read_meshes()
         currfield.discretization()->UnPackMyElements(element_data);
       }
 
-      RCP<std::vector<char> > cond_pbcsline;
-      RCP<std::vector<char> > cond_pbcssurf;
+      Teuchos::RCP<std::vector<char> > cond_pbcsline;
+      Teuchos::RCP<std::vector<char> > cond_pbcssurf;
 
       for (SYMBOL* condition = map_find_symbol(meshmap,"condition");
            condition!=NULL;
@@ -663,7 +663,7 @@ void PostProblem::read_meshes()
         if(nurbsdis==NULL)
           dserror("Discretization %s is not a NurbsDiscretization",currfield.discretization()->Name().c_str());
 
-        RCP<std::vector<char> > packed_knots;
+        Teuchos::RCP<std::vector<char> > packed_knots;
         if (comm_->MyPID()==0)
           packed_knots = reader.ReadKnotvector(step);
         else
@@ -710,7 +710,7 @@ void PostProblem::read_meshes()
           }
         }
 
-        RCP<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
+        Teuchos::RCP<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
 
         knots->Unpack(*packed_knots);
 
@@ -775,7 +775,7 @@ PostField PostProblem::getfield(MAP* field_info)
   const int numnd = map_read_int(field_info, "num_nd");
   const int numele = map_read_int(field_info, "num_ele");
 
-  RCP<DRT::Discretization> dis;
+  Teuchos::RCP<DRT::Discretization> dis;
 
   if(spatial_approx_=="Polynomial" or spatial_approx_=="Meshfree")
   {
@@ -834,7 +834,7 @@ int PostProblem::get_max_nodeid(const std::string& fieldname)
  * Constructor of PostField.
  *----------------------------------------------------------------------*/
 PostField::PostField(
-    RCP<DRT::Discretization> dis,
+    Teuchos::RCP<DRT::Discretization> dis,
     PostProblem* problem,
     std::string field_name,
     const int numnd,
@@ -1036,7 +1036,7 @@ void PostResult::open_result_files(MAP* field_info)
  * reads the data of the result vector 'name' from the current result
  * block and returns it as an Epetra Vector.
  *----------------------------------------------------------------------*/
-RCP<Epetra_Vector> PostResult::read_result(const std::string name)
+Teuchos::RCP<Epetra_Vector> PostResult::read_result(const std::string name)
 {
   MAP* result = map_read_map(group_, name.c_str());
   int columns;
@@ -1053,10 +1053,10 @@ RCP<Epetra_Vector> PostResult::read_result(const std::string name)
  * block and returns it as an std::vector<char>. the corresponding
  * elemap is returned, too.
  *----------------------------------------------------------------------*/
-RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > >
+Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > >
 PostResult::read_result_serialdensematrix(const std::string name)
 {
-  RCP<Epetra_Comm> comm = field_->problem()->comm();
+  Teuchos::RCP<Epetra_Comm> comm = field_->problem()->comm();
   MAP* result = map_read_map(group_, name.c_str());
   std::string id_path = map_read_string(result, "ids");
   std::string value_path = map_read_string(result, "values");
@@ -1068,17 +1068,17 @@ PostResult::read_result_serialdensematrix(const std::string name)
   if (columns != 1)
     dserror("got multivector with name '%s', std::vector<char> expected", name.c_str());
 
-  RCP<Epetra_Map> elemap;
-  RCP<std::vector<char> > data = file_.ReadResultDataVecChar(id_path, value_path, columns,
+  Teuchos::RCP<Epetra_Map> elemap;
+  Teuchos::RCP<std::vector<char> > data = file_.ReadResultDataVecChar(id_path, value_path, columns,
                                                                      *comm, elemap);
 
-  RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > mapdata = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > mapdata = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
   std::vector<char>::size_type position=0;
 //   std::cout << "elemap:\n" << *elemap << std::endl;
 //   std::cout << "myelenum: " << elemap->NumMyElements() << std::endl;
   for (int i=0;i<elemap->NumMyElements();++i)
   {
-    RCP<Epetra_SerialDenseMatrix> gpstress = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+    Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress = Teuchos::rcp(new Epetra_SerialDenseMatrix);
     DRT::ParObject::ExtractfromPack(position, *data, *gpstress);
     (*mapdata)[elemap->GID(i)]=gpstress;
   }
@@ -1094,9 +1094,9 @@ PostResult::read_result_serialdensematrix(const std::string name)
  * reads the data of the result vector 'name' from the current result
  * block and returns it as an Epetra Vector.
  *----------------------------------------------------------------------*/
-RCP<Epetra_MultiVector> PostResult::read_multi_result(const std::string name)
+Teuchos::RCP<Epetra_MultiVector> PostResult::read_multi_result(const std::string name)
 {
-  const RCP<Epetra_Comm> comm = field_->problem()->comm();
+  const Teuchos::RCP<Epetra_Comm> comm = field_->problem()->comm();
   MAP* result = map_read_map(group_, name.c_str());
   const std::string id_path = map_read_string(result, "ids");
   const std::string value_path = map_read_string(result, "values");

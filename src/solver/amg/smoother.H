@@ -20,7 +20,6 @@
 
 #include "../../drt_lib/drt_dserror.H"
 
-using Teuchos::RCP;
 using Teuchos::ParameterList;
 
 namespace LINALG
@@ -38,7 +37,7 @@ class SparseMatrix;
 class Smoother : public virtual Epetra_Operator
 {
   public:
-    explicit Smoother(string type, const RCP<Epetra_CrsMatrix>& A, ParameterList& params, FILE* outfile = NULL);
+    explicit Smoother(string type, const Teuchos::RCP<Epetra_CrsMatrix>& A, ParameterList& params, FILE* outfile = NULL);
     virtual ~Smoother();
 
     virtual const char* Label() const { return "Smoother"; }
@@ -95,7 +94,7 @@ class Smoother : public virtual Epetra_Operator
 class Smoother_Ifpack : public virtual Smoother
 {
   public:
-    explicit Smoother_Ifpack(string type, const RCP<Epetra_CrsMatrix>& A, ParameterList& params, FILE* outfile = NULL);
+    explicit Smoother_Ifpack(string type, const Teuchos::RCP<Epetra_CrsMatrix>& A, ParameterList& params, FILE* outfile = NULL);
     virtual ~Smoother_Ifpack();
 
     virtual const char* Label() const { return "Smoother_Ifpack"; }
@@ -103,7 +102,7 @@ class Smoother_Ifpack : public virtual Smoother
     virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
   private:
-    RCP<Ifpack_Preconditioner> prec_;
+    Teuchos::RCP<Ifpack_Preconditioner> prec_;
 };
 
 class SmootherFactory
@@ -112,7 +111,7 @@ class SmootherFactory
     SmootherFactory() {};
     ~SmootherFactory() {};
 
-    static RCP<Smoother> Create(const string SmootherType, const Teuchos::RCP<SparseMatrix>& A, ParameterList& params, FILE* outfile = NULL);
+    static Teuchos::RCP<Smoother> Create(const string SmootherType, const Teuchos::RCP<SparseMatrix>& A, ParameterList& params, FILE* outfile = NULL);
 };
 
 } /* end namespace LINALG */

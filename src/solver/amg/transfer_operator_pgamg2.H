@@ -19,7 +19,7 @@ namespace LINALG
   class PGAMG2TransferOperator : public SAAMGTransferOperator
   {
     public:
-      explicit PGAMG2TransferOperator(const RCP<SparseMatrix>& A, FILE* outfile);
+      explicit PGAMG2TransferOperator(const Teuchos::RCP<SparseMatrix>& A, FILE* outfile);
       virtual ~PGAMG2TransferOperator() {}
 
       virtual const char* Label() const { return "PGAMG2TransferOperator"; }
@@ -42,16 +42,16 @@ namespace LINALG
 
       \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
       */
-      RCP<Epetra_MultiVector> buildTransferOperators(const RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const RCP<Epetra_MultiVector>& ThisNS, const int domainoffset = 0);
+      Teuchos::RCP<Epetra_MultiVector> buildTransferOperators(const Teuchos::RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_MultiVector>& ThisNS, const int domainoffset = 0);
     protected:
 
     private:
-      RCP<Epetra_Vector> CalculateColBasedOmegaP(const RCP<SparseMatrix>& A,const RCP<Epetra_Vector>& Dinv,const RCP<SparseMatrix>& Ptent,const RCP<SparseMatrix>& AP0);
-      RCP<Epetra_Vector> CalculateRowBasedOmegaR(const RCP<SparseMatrix>& A,const RCP<Epetra_Vector>& Dinv,const RCP<SparseMatrix>& Ptent,const RCP<SparseMatrix>& AtP0);
-      RCP<Epetra_Vector> TransformColBased2RowBasedOmegas(const RCP<SparseMatrix>& AP, const RCP<Epetra_Vector> colbasedomegas, double fallbackvalue = 0.0);
+      Teuchos::RCP<Epetra_Vector> CalculateColBasedOmegaP(const Teuchos::RCP<SparseMatrix>& A,const Teuchos::RCP<Epetra_Vector>& Dinv,const Teuchos::RCP<SparseMatrix>& Ptent,const Teuchos::RCP<SparseMatrix>& AP0);
+      Teuchos::RCP<Epetra_Vector> CalculateRowBasedOmegaR(const Teuchos::RCP<SparseMatrix>& A,const Teuchos::RCP<Epetra_Vector>& Dinv,const Teuchos::RCP<SparseMatrix>& Ptent,const Teuchos::RCP<SparseMatrix>& AtP0);
+      Teuchos::RCP<Epetra_Vector> TransformColBased2RowBasedOmegas(const Teuchos::RCP<SparseMatrix>& AP, const Teuchos::RCP<Epetra_Vector> colbasedomegas, double fallbackvalue = 0.0);
 
-      void MultiplyAll(const RCP<SparseMatrix>& left, const RCP<SparseMatrix>& right, RCP<Epetra_Vector>& InnerProd);
-      void MultiplySelfAll(const RCP<SparseMatrix>& Op,RCP<Epetra_Vector>& Column2Norm);
+      void MultiplyAll(const Teuchos::RCP<SparseMatrix>& left, const Teuchos::RCP<SparseMatrix>& right, Teuchos::RCP<Epetra_Vector>& InnerProd);
+      void MultiplySelfAll(const Teuchos::RCP<SparseMatrix>& Op,Teuchos::RCP<Epetra_Vector>& Column2Norm);
 
 
       int nVerbose_;    ///< verbosity level

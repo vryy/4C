@@ -30,8 +30,8 @@ Maintainer: Benjamin Krank
  *----------------------------------------------------------------------*/
 
 FLD::Boxfilter::Boxfilter(
-  RCP<DRT::Discretization>     actdis             ,
-  RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
+  Teuchos::RCP<DRT::Discretization>     actdis             ,
+  Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
   Teuchos::ParameterList&      params)
   :
   // call constructor for "nontrivial" objects
@@ -138,9 +138,9 @@ FLD::Boxfilter::~Boxfilter()
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
 void FLD::Boxfilter::AddScatra(
-  RCP<DRT::Discretization>     scatradis,
+  Teuchos::RCP<DRT::Discretization>     scatradis,
   INPAR::SCATRA::ScaTraType    scatratype,
-  RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
+  Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
 {
   scatradiscret_ = scatradis;
   scatratype_ = scatratype;
@@ -160,9 +160,9 @@ void FLD::Boxfilter::InitializeVreman()
 }
 
 void FLD::Boxfilter::InitializeVremanScatra(
-  RCP<DRT::Discretization>     scatradis,
+  Teuchos::RCP<DRT::Discretization>     scatradis,
   INPAR::SCATRA::ScaTraType    scatratype,
-  RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
+  Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
 {
   scatradiscret_ = scatradis;
   scatratype_ = scatratype;
@@ -245,7 +245,7 @@ void FLD::Boxfilter::ApplyBoxFilter(
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
   // alloc an additional vector to store/add up the patch volume
-  RCP<Epetra_Vector> patchvol     = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
+  Teuchos::RCP<Epetra_Vector> patchvol     = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
 
   // free mem and reallocate to zero out vecs
   if(velocity_)
@@ -307,11 +307,11 @@ void FLD::Boxfilter::ApplyBoxFilter(
 
     // provide vectors for filtered quantities
     //if(velocity_)
-      RCP<std::vector<double> > vel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
+      Teuchos::RCP<std::vector<double> > vel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
     //if(reynoldsstress_)
-      RCP<std::vector<std::vector<double> > > reynoldsstress_hat = Teuchos::rcp(new std::vector<std::vector<double> >);
+      Teuchos::RCP<std::vector<std::vector<double> > > reynoldsstress_hat = Teuchos::rcp(new std::vector<std::vector<double> >);
     //if(modeled_subgrid_stress_)
-      RCP<std::vector<std::vector<double> > > modeled_subgrid_stress = Teuchos::rcp(new std::vector<std::vector<double> >);
+      Teuchos::RCP<std::vector<std::vector<double> > > modeled_subgrid_stress = Teuchos::rcp(new std::vector<std::vector<double> >);
     // set to dimensions
     if(reynoldsstress_)
       (*reynoldsstress_hat).resize(numdim);
@@ -335,17 +335,17 @@ void FLD::Boxfilter::ApplyBoxFilter(
           (*modeled_subgrid_stress)[rr][ss] = 0.0;
       }
     }
-    RCP<std::vector<double> > densvel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
+    Teuchos::RCP<std::vector<double> > densvel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
     // and set them in parameter list
-    filterparams.set<RCP<std::vector<double> > >("densvel_hat",densvel_hat);
+    filterparams.set<Teuchos::RCP<std::vector<double> > >("densvel_hat",densvel_hat);
 
-    filterparams.set<RCP<std::vector<double> > >("vel_hat",vel_hat);
-    filterparams.set<RCP<std::vector<std::vector<double> > > >("reynoldsstress_hat",reynoldsstress_hat);
-    filterparams.set<RCP<std::vector<std::vector<double> > > >("modeled_subgrid_stress",modeled_subgrid_stress);
+    filterparams.set<Teuchos::RCP<std::vector<double> > >("vel_hat",vel_hat);
+    filterparams.set<Teuchos::RCP<std::vector<std::vector<double> > > >("reynoldsstress_hat",reynoldsstress_hat);
+    filterparams.set<Teuchos::RCP<std::vector<std::vector<double> > > >("modeled_subgrid_stress",modeled_subgrid_stress);
 
     //Vreman_initialization
-    RCP<std::vector<std::vector<double> > > strainrate_hat = Teuchos::rcp(new std::vector<std::vector<double> >);
-    RCP<std::vector<std::vector<double> > > alphaij_hat = Teuchos::rcp(new std::vector<std::vector<double> >);
+    Teuchos::RCP<std::vector<std::vector<double> > > strainrate_hat = Teuchos::rcp(new std::vector<std::vector<double> >);
+    Teuchos::RCP<std::vector<std::vector<double> > > alphaij_hat = Teuchos::rcp(new std::vector<std::vector<double> >);
     if(strainrate_)
       (*strainrate_hat).resize(numdim);
     if(alphaij_)
@@ -370,9 +370,9 @@ void FLD::Boxfilter::ApplyBoxFilter(
     }
 
     //if(strainrate_)
-      filterparams.set<RCP<std::vector<std::vector<double> > > >("strainrate_hat",strainrate_hat);
+      filterparams.set<Teuchos::RCP<std::vector<std::vector<double> > > >("strainrate_hat",strainrate_hat);
     //if(alphaij_)
-      filterparams.set<RCP<std::vector<std::vector<double> > > >("alphaij_hat",alphaij_hat);
+      filterparams.set<Teuchos::RCP<std::vector<std::vector<double> > > >("alphaij_hat",alphaij_hat);
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
@@ -1068,7 +1068,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
     //SetState cannot be used since this multi-vector is nodebased and not dofbased!
     const Epetra_Map* nodecolmap = scatradiscret_->NodeColMap();
     int numcol = velocity->NumVectors();
-    RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+    Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
     LINALG::Export(*velocity,*tmp);
     filterparams.set("velocity",tmp);
   }
@@ -1093,7 +1093,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
   const Epetra_Map* noderowmap = scatradiscret_->NodeRowMap();
 
   // alloc an additional vector to store/add up the patch volume
-  RCP<Epetra_Vector> patchvol     = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
+  Teuchos::RCP<Epetra_Vector> patchvol     = Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
 
   // free mem and reallocate to zero out vecs
   filtered_dens_vel_temp_ = Teuchos::null;
@@ -1142,12 +1142,12 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
     DRT::Element* ele = scatradiscret_->lColElement(nele);
 
     // provide vectors for filtered quantities //declaration necessary even if not used
-    RCP<std::vector<double> > vel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
-    RCP<std::vector<double> > densvel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
-    RCP<std::vector<double> > densveltemp_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
-    RCP<std::vector<double> > densstraintemp_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
-    RCP<std::vector<double> > phi_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
-    RCP<std::vector<std::vector<double> > > alphaijsc_hat = Teuchos::rcp(new std::vector<std::vector<double> >);
+    Teuchos::RCP<std::vector<double> > vel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
+    Teuchos::RCP<std::vector<double> > densvel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
+    Teuchos::RCP<std::vector<double> > densveltemp_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
+    Teuchos::RCP<std::vector<double> > densstraintemp_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
+    Teuchos::RCP<std::vector<double> > phi_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
+    Teuchos::RCP<std::vector<std::vector<double> > > alphaijsc_hat = Teuchos::rcp(new std::vector<std::vector<double> >);
     if(alphaijsc_)
     {
       (*alphaijsc_hat).resize(numdim);
@@ -1161,12 +1161,12 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
       }
     }
     // and set them in parameter list
-    filterparams.set<RCP<std::vector<double> > >("vel_hat",vel_hat);
-    filterparams.set<RCP<std::vector<double> > >("densvel_hat",densvel_hat);
-    filterparams.set<RCP<std::vector<double> > >("densveltemp_hat",densveltemp_hat);
-    filterparams.set<RCP<std::vector<double> > >("densstraintemp_hat",densstraintemp_hat);
-    filterparams.set<RCP<std::vector<double> > >("phi_hat",phi_hat);
-    filterparams.set<RCP<std::vector<std::vector<double> > > >("alphaijsc_hat",alphaijsc_hat);
+    filterparams.set<Teuchos::RCP<std::vector<double> > >("vel_hat",vel_hat);
+    filterparams.set<Teuchos::RCP<std::vector<double> > >("densvel_hat",densvel_hat);
+    filterparams.set<Teuchos::RCP<std::vector<double> > >("densveltemp_hat",densveltemp_hat);
+    filterparams.set<Teuchos::RCP<std::vector<double> > >("densstraintemp_hat",densstraintemp_hat);
+    filterparams.set<Teuchos::RCP<std::vector<double> > >("phi_hat",phi_hat);
+    filterparams.set<Teuchos::RCP<std::vector<std::vector<double> > > >("alphaijsc_hat",alphaijsc_hat);
 
     // initialize variables for filtered scalar quantities
     double dens_hat = 0.0;

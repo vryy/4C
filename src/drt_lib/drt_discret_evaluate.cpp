@@ -229,7 +229,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  std::multimap<std::string,RCP<Condition> >::iterator fool;
+  std::multimap<std::string,Teuchos::RCP<Condition> >::iterator fool;
   //--------------------------------------------------------
   // loop through Point Neumann conditions and evaluate them
   //--------------------------------------------------------
@@ -283,8 +283,8 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
        )
     {
       DRT::Condition& cond = *(fool->second);
-      std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
-      std::map<int,RCP<DRT::Element> >::iterator curr;
+      std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
+      std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
       Epetra_SerialDenseVector elevector;
       Epetra_SerialDenseMatrix elematrix;
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
@@ -400,7 +400,7 @@ void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
   Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
   if (dbcmapextractor != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
 
-  std::multimap<std::string,RCP<Condition> >::iterator fool;
+  std::multimap<std::string,Teuchos::RCP<Condition> >::iterator fool;
   //--------------------------------------------------------
   // loop through Dirichlet conditions and evaluate them
   //--------------------------------------------------------
@@ -497,7 +497,7 @@ void DRT::Discretization::EvaluateGrowthDirichlet(Teuchos::ParameterList& params
   Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
   if (dbcmapextractor != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
 
-  std::multimap<std::string,RCP<Condition> >::iterator fool;
+  std::multimap<std::string,Teuchos::RCP<Condition> >::iterator fool;
   //--------------------------------------------------------
   // loop through Dirichlet conditions and evaluate them
   //--------------------------------------------------------
@@ -718,7 +718,7 @@ void DRT::Discretization::DoDirichletCondition(
 void DRT::Discretization::EvaluateCondition
 (
   Teuchos::ParameterList& params,
-  RCP<Epetra_Vector> systemvector,
+  Teuchos::RCP<Epetra_Vector> systemvector,
   const std::string& condstring,
   const int condid
 )
@@ -749,11 +749,11 @@ void DRT::Discretization::EvaluateCondition
 void DRT::Discretization::EvaluateCondition
 (
   Teuchos::ParameterList& params,
-  RCP<LINALG::SparseOperator> systemmatrix1,
-  RCP<LINALG::SparseOperator> systemmatrix2,
-  RCP<Epetra_Vector> systemvector1,
-  RCP<Epetra_Vector> systemvector2,
-  RCP<Epetra_Vector> systemvector3,
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+  Teuchos::RCP<Epetra_Vector> systemvector1,
+  Teuchos::RCP<Epetra_Vector> systemvector2,
+  Teuchos::RCP<Epetra_Vector> systemvector3,
   const std::string& condstring,
   const int condid
 )
@@ -787,7 +787,7 @@ void DRT::Discretization::EvaluateCondition
 
   Element::LocationArray la(dofsets_.size());
 
-  std::multimap<std::string,RCP<Condition> >::iterator fool;
+  std::multimap<std::string,Teuchos::RCP<Condition> >::iterator fool;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -799,12 +799,12 @@ void DRT::Discretization::EvaluateCondition
       DRT::Condition& cond = *(fool->second);
       if (condid == -1 || condid ==cond.GetInt("ConditionID"))
       {
-        std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+        std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
         // if (geom.empty()) dserror("evaluation of condition with empty geometry");
         // no check for empty geometry here since in parallel computations
         // can exist processors which do not own a portion of the elements belonging
         // to the condition geometry
-        std::map<int,RCP<DRT::Element> >::iterator curr;
+        std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
 
         // Evaluate Loadcurve if defined. Put current load factor in parameterlist
         const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
@@ -827,7 +827,7 @@ void DRT::Discretization::EvaluateCondition
         {
           params.set("LoadCurveFactor",curvefac);
         }
-        params.set<RCP<DRT::Condition> >("condition", fool->second);
+        params.set<Teuchos::RCP<DRT::Condition> >("condition", fool->second);
 
         for (curr=geom.begin(); curr!=geom.end(); ++curr)
         {
@@ -989,7 +989,7 @@ void DRT::Discretization::EvaluateScalars(
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateInitialField(
     const std::string& fieldstring,
-    RCP<Epetra_Vector> fieldvector,
+    Teuchos::RCP<Epetra_Vector> fieldvector,
     const std::vector<int> locids
 )
 {
@@ -1066,7 +1066,7 @@ void DRT::Discretization::EvaluateInitialField(
  |  evaluate an initial scalar or vector field (public)       popp 06/11|
  *----------------------------------------------------------------------*/
 void  DRT::Discretization::DoInitialField(DRT::Condition& cond,
-                                          RCP<Epetra_Vector> fieldvector,
+                                          Teuchos::RCP<Epetra_Vector> fieldvector,
                                           const std::vector<int> locids
 )
 {

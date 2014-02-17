@@ -82,7 +82,7 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
       //const Epetra_Map& fullmap = matrix->OperatorRangeMap();
       //const int length = fullmap.NumMyElements();
 
-      RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
+      Teuchos::RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
       if (A==Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
 
       // fix null space for ML inverses
@@ -183,7 +183,7 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
     }
     else if(tsi == true) {
 
-      RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
+      Teuchos::RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
       if (A==Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
 
       Teuchos::RCP<const Map> fullrangemap = Teuchos::rcp(new Xpetra::EpetraMap(Teuchos::rcpFromRef(A->FullRangeMap())));
@@ -323,7 +323,7 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
     if (mt || co || cstr)
     {
       // adapt ML null space for contact/meshtying/constraint problems
-      RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
+      Teuchos::RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
       if (A==Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
 
       // fix null space for "Inverse1"
@@ -342,18 +342,18 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
         inv2.sublist("ML Parameters").set("PDE equations",1);
         inv2.sublist("ML Parameters").set("null space: dimension",1);
         const int plength = (*A)(1,1).RowMap().NumMyElements();
-        RCP<std::vector<double> > pnewns = Teuchos::rcp(new std::vector<double>(plength,1.0));
+        Teuchos::RCP<std::vector<double> > pnewns = Teuchos::rcp(new std::vector<double>(plength,1.0));
         //TODO: std::vector<double> has zero length for particular cases (e.g. no Lagrange multiplier on this processor)
-        //      -> RCP for the null space is set to NULL in Fedora 12 -> dserror
-        //      -> RCP points to a random memory field in Fedora 8 -> RCP for null space is not NULL
+        //      -> Teuchos::RCP for the null space is set to NULL in Fedora 12 -> dserror
+        //      -> Teuchos::RCP points to a random memory field in Fedora 8 -> Teuchos::RCP for null space is not NULL
         // Temporary work around (ehrl, 21.12.11):
         // In the case of plength=0 the std::vector<double> is rescaled (size 0 -> size 1, initial value 0) in order to avoid problems with ML
-        // (ML expects an RCP for the null space != NULL)
+        // (ML expects an Teuchos::RCP for the null space != NULL)
         if (plength==0)
           pnewns->resize(1,0.0);
         inv2.sublist("ML Parameters").set("null space: vectors",&((*pnewns)[0]));
         inv2.sublist("ML Parameters").remove("nullspace",false);
-        inv2.sublist("Michael's secret vault").set<RCP<std::vector<double> > >("pressure nullspace",pnewns);
+        inv2.sublist("Michael's secret vault").set<Teuchos::RCP<std::vector<double> > >("pressure nullspace",pnewns);
       }
 
       //P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
@@ -370,7 +370,7 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
       const Epetra_Map& fullmap = matrix->OperatorRangeMap();
       const int length = fullmap.NumMyElements();
 
-      RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
+      Teuchos::RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
       if (A==Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
 
       // this is a fix for the old SIMPLER sublist
@@ -415,7 +415,7 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
         }
         inv1.sublist("ML Parameters").set("null space: vectors",&((*vnewns)[0]));
         inv1.sublist("ML Parameters").remove("nullspace",false); // necessary??
-        inv1.sublist("Michael's secret vault").set<RCP<std::vector<double> > >("velocity nullspace",vnewns);
+        inv1.sublist("Michael's secret vault").set<Teuchos::RCP<std::vector<double> > >("velocity nullspace",vnewns);
       }
 
       //Teuchos::ParameterList& inv2 = params_.sublist("Inverse2");
@@ -428,7 +428,7 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
         Teuchos::RCP<std::vector<double> > pnewns = Teuchos::rcp(new std::vector<double>(plength,1.0));
         inv2.sublist("ML Parameters").set("null space: vectors",&((*pnewns)[0]));
         inv2.sublist("ML Parameters").remove("nullspace",false); // necessary?
-        inv2.sublist("Michael's secret vault").set<RCP<std::vector<double> > >("pressure nullspace",pnewns);
+        inv2.sublist("Michael's secret vault").set<Teuchos::RCP<std::vector<double> > >("pressure nullspace",pnewns);
       }
 
       P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"),params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2"),outfile_));

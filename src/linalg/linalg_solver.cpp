@@ -2084,8 +2084,8 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
 
   // For debugging, it might be helpful when all columns are
   // sorted and all zero values are wiped from the input:
-  //RCP<Epetra_CrsMatrix> As = CreateMatrix(A.RowMap(),A.MaxNumEntries());
-  //RCP<Epetra_CrsMatrix> Bs = CreateMatrix(B.RowMap(),B.MaxNumEntries());
+  //Teuchos::RCP<Epetra_CrsMatrix> As = CreateMatrix(A.RowMap(),A.MaxNumEntries());
+  //Teuchos::RCP<Epetra_CrsMatrix> Bs = CreateMatrix(B.RowMap(),B.MaxNumEntries());
   //CopySortDeleteZeros(A,*As);
   //CopySortDeleteZeros(B,*Bs);
   ML_Operator* ml_As = ML_Operator_Create(MLAPI::GetML_Comm());

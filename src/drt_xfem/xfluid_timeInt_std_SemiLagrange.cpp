@@ -905,13 +905,13 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
 
   const int nsd=3;
 
-  std::vector<RCP<Epetra_Vector> > newColVectors;
+  std::vector<Teuchos::RCP<Epetra_Vector> > newColVectors;
 
   for (size_t index=0;index<newRowVectors.size();index++)
   {
     const Epetra_Map* newdofcolmap = discret_->DofColMap();
 
-    RCP<Epetra_Vector> tmpColVector = Teuchos::rcp(new Epetra_Vector(*newdofcolmap,true));
+    Teuchos::RCP<Epetra_Vector> tmpColVector = Teuchos::rcp(new Epetra_Vector(*newdofcolmap,true));
     newColVectors.push_back(tmpColVector);
     LINALG::Export(*newRowVectors[index],*newColVectors[index]);
   }
@@ -1504,7 +1504,7 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(
 #endif
 
 
-  RCP<XFEM::FluidWizard> wizard = step_np ? wizard_new_ : wizard_old_;
+  Teuchos::RCP<XFEM::FluidWizard> wizard = step_np ? wizard_new_ : wizard_old_;
 
   GEO::CUT::ElementHandle* e = wizard->GetElement(ele);
 

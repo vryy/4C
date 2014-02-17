@@ -32,7 +32,7 @@ namespace POTENTIAL
     \brief Standard Constructor
 
     */
-    explicit PotentialDofSet(RCP<DRT::Discretization> sourcedis);
+    explicit PotentialDofSet(Teuchos::RCP<DRT::Discretization> sourcedis);
 
     /*!
     \brief Destructor
@@ -62,7 +62,7 @@ namespace POTENTIAL
     PotentialDofSet operator = (const PotentialDofSet& old);
     PotentialDofSet(const PotentialDofSet& old);
 
-    RCP<DRT::Discretization> sourcedis_; ///< source discretization
+    Teuchos::RCP<DRT::Discretization> sourcedis_; ///< source discretization
 
 
   }; // class PotentialDofSet

@@ -47,7 +47,7 @@ FLD::FluidMHDEvaluate::~FluidMHDEvaluate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::FluidMHDEvaluate::FluidMHDEvaluate(
-  RCP<DRT::Discretization>    actdis
+  Teuchos::RCP<DRT::Discretization>    actdis
   )
   :
   pdiscret_(actdis)
@@ -154,7 +154,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     {
       DRT::Node* actnode=pdiscret_->gNode(*id);
 
-      RCP<DRT::Node> bndnode =Teuchos::rcp(actnode->Clone());
+      Teuchos::RCP<DRT::Node> bndnode =Teuchos::rcp(actnode->Clone());
 
       bnd_discret_->AddNode(bndnode);
     }
@@ -185,15 +185,15 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
       // yes, we have a MHD condition
       if(found==true)
       {
-        RCP<DRT::Element> bndele =Teuchos::rcp(actele->Clone());
+        Teuchos::RCP<DRT::Element> bndele =Teuchos::rcp(actele->Clone());
 
         bnd_discret_->AddElement(bndele);
       }
     }
 
     // bndydis needs a full NodeRowMap and a NodeColMap
-    RCP<Epetra_Map> newrownodemap;
-    RCP<Epetra_Map> newcolnodemap;
+    Teuchos::RCP<Epetra_Map> newrownodemap;
+    Teuchos::RCP<Epetra_Map> newcolnodemap;
 
     {
 
@@ -362,12 +362,12 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     // call PARMETIS (again with #ifdef to be on the safe side)
 #if defined(PARALLEL) && defined(PARMETIS)
    
-    RCP<Epetra_Map> bndrownodes;
-    RCP<Epetra_Map> bndcolnodes;
+    Teuchos::RCP<Epetra_Map> bndrownodes;
+    Teuchos::RCP<Epetra_Map> bndcolnodes;
 
-    RCP<Epetra_Map> belemap = Teuchos::rcp( new Epetra_Map(*bnd_discret_->ElementRowMap()));
+    Teuchos::RCP<Epetra_Map> belemap = Teuchos::rcp( new Epetra_Map(*bnd_discret_->ElementRowMap()));
     Epetra_Time time(pdiscret_->Comm());
-    RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_->Comm().Clone());
+    Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_->Comm().Clone());
  
     DRT::UTILS::PartUsingParMetis(bnd_discret_,
                                   belemap,
@@ -540,7 +540,7 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
   )
 {
     // set the required state vectors
-    RCP<Epetra_Vector> tmp = LINALG::CreateVector(*bnd_discret_->DofColMap(),true);
+    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*bnd_discret_->DofColMap(),true);
 
 
     LINALG::Export(*velaf_,*tmp);
@@ -548,7 +548,7 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
     bnd_discret_->SetState("velaf",tmp); // was missing. gjb 12/12
 
     {
-      RCP<Epetra_Vector> tmp = LINALG::CreateVector(*bnd_discret_->DofColMap(),true);
+      Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*bnd_discret_->DofColMap(),true);
       LINALG::Export(*velnp_,*tmp);
       bnd_discret_->SetState("u and p (trial,n+1)",tmp);
       bnd_discret_->SetState("velnp",tmp); // was missing. gjb 12/12
@@ -558,7 +558,7 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
     //bndmat_->Zero(); // please tell me why zero doesn't work in parallel
     bndmat_->Reset();
 
-    RCP<Epetra_Vector> bndres = LINALG::CreateVector(*bnd_discret_->DofRowMap(),true); 
+    Teuchos::RCP<Epetra_Vector> bndres = LINALG::CreateVector(*bnd_discret_->DofRowMap(),true); 
 
     std::vector<DRT::Condition*> bndMHDcnd;
     const std::string condstring = "SurfaceMixHybDirichlet";
@@ -569,11 +569,11 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
       // loop all MHD conditions
       for (unsigned numcond=0;numcond<bndMHDcnd.size();++numcond)
       {
-        std::map<int,RCP<DRT::Element> >& geom = (*bndMHDcnd[numcond]).Geometry();
+        std::map<int,Teuchos::RCP<DRT::Element> >& geom = (*bndMHDcnd[numcond]).Geometry();
 
-        RCP<DRT::Condition> thiscond = Teuchos::rcp(bndMHDcnd[numcond],false);
+        Teuchos::RCP<DRT::Condition> thiscond = Teuchos::rcp(bndMHDcnd[numcond],false);
 
-        mhdbcparams.set<RCP<DRT::Condition> >("condition",thiscond);
+        mhdbcparams.set<Teuchos::RCP<DRT::Condition> >("condition",thiscond);
 
         // define element matrices and vectors
         Epetra_SerialDenseMatrix elematrix1;
@@ -584,7 +584,7 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
         // element matrices and vectors will be reshaped
         // during the element call!
 
-        for (std::map<int,RCP<DRT::Element> >::iterator curr=geom.begin(); curr!=geom.end(); ++curr)
+        for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr=geom.begin(); curr!=geom.end(); ++curr)
         {
           // get element location vector and ownerships
           // the LocationVector method will return the the location vector
@@ -635,7 +635,7 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
                 1.0);
 
     {
-      RCP<Epetra_Vector> tmp=LINALG::CreateVector(*pdiscret_->DofRowMap(),true);
+      Teuchos::RCP<Epetra_Vector> tmp=LINALG::CreateVector(*pdiscret_->DofRowMap(),true);
         
       Epetra_Export exporter(bndres->Map(),tmp->Map());
       int err = tmp->Export(*bndres,exporter,Add);

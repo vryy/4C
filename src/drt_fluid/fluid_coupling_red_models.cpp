@@ -28,9 +28,9 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RCP<DRT::Discretization> dis_3D,
-                                                         RCP<DRT::Discretization> dis_redD,
-                                                         //                                                         RCP<red_D_time_int>      RedD_Time_integ,
+FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(Teuchos::RCP<DRT::Discretization> dis_3D,
+                                                         Teuchos::RCP<DRT::Discretization> dis_redD,
+                                                         //                                                         Teuchos::RCP<red_D_time_int>      RedD_Time_integ,
                                                          IO::DiscretizationWriter& output,
                                                          double dt_3D,
                                                          double dt_redD) :
@@ -143,7 +143,7 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RCP<DRT::Discre
       // ------------------------------------------------------------------
       // allocate the coupling bc class members for every case
       // ------------------------------------------------------------------
-      RCP<Fluid_couplingBc > couplingbc = Teuchos::rcp(new Fluid_couplingBc(discret3D_, discret_redD_, output_, dt_f3_, dt_rm_, condid, i, j) );
+      Teuchos::RCP<Fluid_couplingBc > couplingbc = Teuchos::rcp(new Fluid_couplingBc(discret3D_, discret_redD_, output_, dt_f3_, dt_rm_, condid, i, j) );
 
       // -----------------------------------------------------------------
       // sort coupling bc's in map and test, if one condition ID appears
@@ -242,7 +242,7 @@ FLD::UTILS::Fluid_couplingWrapperBase::~Fluid_couplingWrapperBase()
 void FLD::UTILS::Fluid_couplingWrapperBase ::FlowRateCalculation(double time, double dta)
 {
   // get an iterator to my map
-  std::map<const int, RCP< class Fluid_couplingBc > >::iterator mapiter;
+  std::map<const int, Teuchos::RCP< class Fluid_couplingBc > >::iterator mapiter;
 
   for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
   {
@@ -265,7 +265,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::PressureCalculation(double time, dou
 {
 
   // get an iterator to my map
-  std::map<const int, RCP<class Fluid_couplingBc > >::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class Fluid_couplingBc > >::iterator mapiter;
 
   for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
   {
@@ -289,7 +289,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
 {
 
   // get an iterator to my map
-  std::map<const int, RCP<class Fluid_couplingBc > >::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class Fluid_couplingBc > >::iterator mapiter;
 
   // ---------------------------------------------------------------------
   // Read in all conditions
@@ -419,7 +419,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
     // Define a map that will have the interpolated values at the
     // reduced-D time subscale
     // -----------------------------------------------------------------
-    RCP<std::map<std::string, double > >  map3D_inter_to_Red = Teuchos::rcp(new std::map<std::string, double >);
+    Teuchos::RCP<std::map<std::string, double > >  map3D_inter_to_Red = Teuchos::rcp(new std::map<std::string, double >);
     double dstep = 1.0/double(NumOfSteps);
 
     // -----------------------------------------------------------------
@@ -464,14 +464,14 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
       (*map3D_inter_to_Red)[var_str] = var;
     }
 
-    RCP<Teuchos::ParameterList> params = Teuchos::rcp( new Teuchos::ParameterList);
+    Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp( new Teuchos::ParameterList);
     //    params->set("3D map of values", map3_Dnp_);
     params->set("3D map of values",map3D_inter_to_Red);
     params->set("reducedD map of values", mapRed_Dnp_);
     params->set("time",time);
 //#endif
 
-//    RCP<Teuchos::ParameterList> params = Teuchos::rcp( new Teuchos::ParameterList);
+//    Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp( new Teuchos::ParameterList);
 //    params->set("3D map of values", map3_Dnp_);
 //    params->set("reducedD map of values", mapRed_Dnp_);
 
@@ -534,10 +534,10 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::Fluid_couplingWrapperBase::UpdateResidual(RCP<Epetra_Vector>  residual )
+void FLD::UTILS::Fluid_couplingWrapperBase::UpdateResidual(Teuchos::RCP<Epetra_Vector>  residual )
 {
 
-  std::map<const int, RCP<class Fluid_couplingBc > >::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class Fluid_couplingBc > >::iterator mapiter;
 
   (*mapRed_Dn_) = (*mapRed_Dnp_);
   (*map3_Dn_  ) = (*map3_Dnp_);
@@ -560,11 +560,11 @@ void FLD::UTILS::Fluid_couplingWrapperBase::UpdateResidual(RCP<Epetra_Vector>  r
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::Fluid_couplingWrapperBase::EvaluateDirichlet(RCP<Epetra_Vector>  velnp ,
+void FLD::UTILS::Fluid_couplingWrapperBase::EvaluateDirichlet(Teuchos::RCP<Epetra_Vector>  velnp ,
                                                           const Epetra_Map &  condmap,
                                                           double              time)
 {
-  std::map<const int, RCP<class Fluid_couplingBc > >::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class Fluid_couplingBc > >::iterator mapiter;
 
   (*mapRed_Dn_) = (*mapRed_Dnp_);
   (*map3_Dn_  ) = (*map3_Dnp_);
@@ -619,7 +619,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::WriteRestart( IO::DiscretizationWrit
     output.WriteDouble(stream.str(), it->second);
   }
 
-  std::map<const int, RCP<class Fluid_couplingBc > >::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class Fluid_couplingBc > >::iterator mapiter;
 
   for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
   {
@@ -679,7 +679,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ReadRestart( IO::DiscretizationReade
     it->second = val;
   }
 
-  std::map<const int, RCP<class Fluid_couplingBc > >::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class Fluid_couplingBc > >::iterator mapiter;
 
   for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
     mapiter->second->Fluid_couplingBc::ReadRestart(reader,mapiter->first);
@@ -696,8 +696,8 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ReadRestart( IO::DiscretizationReade
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FLD::UTILS::Fluid_couplingBc::Fluid_couplingBc(RCP<DRT::Discretization> dis_3D,
-                                                               RCP<DRT::Discretization> dis_redD,
+FLD::UTILS::Fluid_couplingBc::Fluid_couplingBc(Teuchos::RCP<DRT::Discretization> dis_3D,
+                                                               Teuchos::RCP<DRT::Discretization> dis_redD,
                                                                IO::DiscretizationWriter& output,
                                                                double dt_3d,
                                                                double dt_rm,
@@ -1023,7 +1023,7 @@ double FLD::UTILS::Fluid_couplingBc::PressureCalculation(double time, double dta
   const Epetra_Map* dofrowmap = discret_3D_->DofRowMap();
 
   // get elemental flowrates ...
-  RCP<Epetra_Vector> myStoredPressures=Teuchos::rcp(new Epetra_Vector(*dofrowmap,100));
+  Teuchos::RCP<Epetra_Vector> myStoredPressures=Teuchos::rcp(new Epetra_Vector(*dofrowmap,100));
   const std::string condstring("Art_3D_redD_CouplingCond");
   discret_3D_->EvaluateCondition(eleparams,myStoredPressures,condstring,condid);
 
@@ -1146,7 +1146,7 @@ void FLD::UTILS::Fluid_couplingBc::InflowBoundary(double flowrate, double time, 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*!
 */
-void FLD::UTILS::Fluid_couplingBc::UpdateResidual(RCP<Epetra_Vector>  residual )
+void FLD::UTILS::Fluid_couplingBc::UpdateResidual(Teuchos::RCP<Epetra_Vector>  residual )
 {
   residual->Update(1.0,*couplingbc_,1.0);
 }
@@ -1162,7 +1162,7 @@ void FLD::UTILS::Fluid_couplingBc::UpdateResidual(RCP<Epetra_Vector>  residual )
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*!
 */
-void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp ,
+void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(Teuchos::RCP<Epetra_Vector>    velnp ,
                                                      const Epetra_Map & condmap,
                                                      double                time)
 {

@@ -160,7 +160,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
   DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       optidis,
-  RCP<MAT::Material>         mat,
+  Teuchos::RCP<MAT::Material>         mat,
   std::vector<int>&          lm
 )
 {
@@ -182,7 +182,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
   DRT::Element*                 ele,
   Teuchos::ParameterList&       params,
   DRT::Discretization&          optidis,
-  RCP<MAT::Material>            mat,
+  Teuchos::RCP<MAT::Material>            mat,
   std::vector<int>&             lm,
   DRT::UTILS::GaussIntegration& intpoints
 )
@@ -192,7 +192,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
 
   Teuchos::RCP<DRT::Discretization> fluiddis = params.get<Teuchos::RCP<DRT::Discretization> >("fluiddis");
 
-  Teuchos::RCP<std::map<int,RCP<Epetra_Vector> > > fluidvels = params.get<Teuchos::RCP<std::map<int,RCP<Epetra_Vector> > > >("fluidvel");
+  Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvels = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > >("fluidvel");
 
   std::map<int,LINALG::Matrix<nsd_,nen_> > efluidvels;
 
@@ -209,7 +209,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
     efluidvels.insert(std::pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,efluidvel));
   }
 
-  RCP<const Epetra_Vector> dens = optidis.GetState("density");
+  Teuchos::RCP<const Epetra_Vector> dens = optidis.GetState("density");
   LINALG::Matrix<nen_,1> edens(true);
 
   std::vector<double> mymatrix(lm.size());
@@ -332,7 +332,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
   DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       optidis,
-  RCP<MAT::Material>         mat,
+  Teuchos::RCP<MAT::Material>         mat,
   std::vector<int>&          lm,
   Epetra_SerialDenseVector&  elevec1_epetra
   )
@@ -356,7 +356,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
   DRT::Element*                 ele,
   Teuchos::ParameterList&       params,
   DRT::Discretization&          optidis,
-  RCP<MAT::Material>            mat,
+  Teuchos::RCP<MAT::Material>            mat,
   std::vector<int>&             lm,
   Epetra_SerialDenseVector&     elevec1_epetra,
   DRT::UTILS::GaussIntegration& intpoints
@@ -367,10 +367,10 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
   Epetra_SerialDenseVector constr_deriv(nen_);
   LINALG::Matrix<nen_,1> econstr_der(constr_deriv,true); // volume constraint
 
-  RCP<DRT::Discretization> fluiddis = params.get<RCP<DRT::Discretization> >("fluiddis");
+  Teuchos::RCP<DRT::Discretization> fluiddis = params.get<Teuchos::RCP<DRT::Discretization> >("fluiddis");
 
-  Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvels = params.get<Teuchos::RCP<std::map<int,RCP<Epetra_Vector> > > >("fluidvel");
-  Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > adjointvels = params.get<Teuchos::RCP<std::map<int,RCP<Epetra_Vector> > > >("adjointvel");
+  Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvels = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > >("fluidvel");
+  Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > adjointvels = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > >("adjointvel");
 
   std::map<int,LINALG::Matrix<nsd_,nen_> > efluidvels;
   std::map<int,LINALG::Matrix<nsd_,nen_> > eadjointvels;
@@ -449,7 +449,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
   LINALG::Matrix<nen_,1>& edens,
   LINALG::Matrix<nen_,1>& egrad,
   LINALG::Matrix<nen_,1>& econstr_der,
-  RCP<MAT::Material> mat,
+  Teuchos::RCP<MAT::Material> mat,
   DRT::UTILS::GaussIntegration& intpoints
 )
 {
@@ -1256,7 +1256,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::ExtractValuesFromGlobalVector(
     const std::vector<int>&      lm,                  ///<
     LINALG::Matrix<nsd_,nen_> *  matrixtofill,        ///< vector field
     LINALG::Matrix<nen_,1> *     vectortofill,        ///< scalar field
-    RCP<Epetra_Vector>&          globalvector         ///< global vector
+    Teuchos::RCP<Epetra_Vector>&          globalvector         ///< global vector
 ) const
 {
   // extract local values of the global vectors
@@ -1386,7 +1386,7 @@ int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryValues(
   DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       optidis,
-  RCP<MAT::Material>         mat,
+  Teuchos::RCP<MAT::Material>         mat,
   std::vector<int>&          lm
   )
 {
@@ -1404,7 +1404,7 @@ int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryGradients(
   DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       optidis,
-  RCP<MAT::Material>         mat,
+  Teuchos::RCP<MAT::Material>         mat,
   std::vector<int>&          lm,
   Epetra_SerialDenseVector&  elevec1_epetra
   )
@@ -1426,7 +1426,7 @@ void DRT::ELEMENTS::TopOptBoundaryImpl<distype>::ExtractValuesFromGlobalVector(
     const std::vector<int>&      lm,                  ///<
     LINALG::Matrix<nsd_,nen_> *  matrixtofill,        ///< vector field
     LINALG::Matrix<nen_,1> *     vectortofill,        ///< scalar field
-    RCP<Epetra_Vector>&          globalvector         ///< global vector
+    Teuchos::RCP<Epetra_Vector>&          globalvector         ///< global vector
 ) const
 {
   // extract local values of the global vectors

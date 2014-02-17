@@ -120,19 +120,19 @@ public:
   virtual int NumSurface() const {return DRT::UTILS::getNumberOfElementSurfaces(Shape());}
 
   /*!
-  \brief Get vector of RCPs to the lines of this element
+  \brief Get vector of Teuchos::RCPs to the lines of this element
 
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of RCPs to the surfaces of this element
+  \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
-  \brief Get vector of RCPs to the volumes of this element
+  \brief Get vector of Teuchos::RCPs to the volumes of this element
 
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();

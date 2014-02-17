@@ -345,7 +345,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       if(this->Owner() == discretization.Comm().MyPID())
       {
         // need current velocity and history vector
-        RCP<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
+        Teuchos::RCP<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
         if (vel_pre_np==Teuchos::null)
           dserror("Cannot get state vectors 'velnp'");
 
@@ -460,7 +460,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
         // extract velocities and pressure from the global distributed vectors
 
         // velocity and pressure values (n+1)
-        RCP<const Epetra_Vector> velnp = discretization.GetState("u and p (n+1,converged)");
+        Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("u and p (n+1,converged)");
         if (velnp==Teuchos::null)
           dserror("Cannot get state vector 'velnp'");
 
@@ -745,11 +745,11 @@ void DRT::ELEMENTS::Combust3::calc_volume_fraction(
 
   // the vector planes contains the coordinates of the homogeneous planes (in
   // wall normal direction)
-  RCP<std::vector<double> > planes = params.get<RCP<std::vector<double> > >("coordinate vector for hom. planes");
+  Teuchos::RCP<std::vector<double> > planes = params.get<Teuchos::RCP<std::vector<double> > >("coordinate vector for hom. planes");
 
   // a map to link a material to its index in the vectors
-  RCP<std::map<int,int> > matidtoindex = params.get<RCP<std::map<int,int> > >("map materialid to index");
-  RCP<const MAT::Material> material = this->Material();
+  Teuchos::RCP<std::map<int,int> > matidtoindex = params.get<Teuchos::RCP<std::map<int,int> > >("map materialid to index");
+  Teuchos::RCP<const MAT::Material> material = this->Material();
   int matidplus  = -1;
   int matidminus = -1;
 
@@ -764,7 +764,7 @@ void DRT::ELEMENTS::Combust3::calc_volume_fraction(
 
 
   // get the pointers to the solution vectors
-  std::vector<RCP<std::vector<double> > >& sumvol = *(params.get<std::vector<RCP<std::vector<double> > >* >("element volume"));
+  std::vector<Teuchos::RCP<std::vector<double> > >& sumvol = *(params.get<std::vector<Teuchos::RCP<std::vector<double> > >* >("element volume"));
 
   // get node coordinates of element
   LINALG::Matrix<3,8>  xyze;

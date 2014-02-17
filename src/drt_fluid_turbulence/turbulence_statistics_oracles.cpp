@@ -26,7 +26,7 @@ Maintainer: Ursula Rasthofer
  | constructor                                                                        henke 06/11 |
  *------------------------------------------------------------------------------------------------*/
 COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
-  RCP<DRT::Discretization> discret,
+  Teuchos::RCP<DRT::Discretization> discret,
   Teuchos::ParameterList&          params,
   const std::string&                    geotype,
   const bool                       withscatra)

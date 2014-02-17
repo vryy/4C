@@ -219,8 +219,8 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
     Teuchos::ParameterList&              params,          ///< parameter list
     DRT::DiscretizationFaces&             discretization,  ///< faces discretization
-    RCP<LINALG::SparseMatrix>            systemmatrix,    ///< systemmatrix
-    RCP<Epetra_Vector>                   systemvector     ///< systemvector
+    Teuchos::RCP<LINALG::SparseMatrix>            systemmatrix,    ///< systemmatrix
+    Teuchos::RCP<Epetra_Vector>                   systemvector     ///< systemvector
     )
 {
   Teuchos::ParameterList edgebasedparams;

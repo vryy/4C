@@ -79,7 +79,7 @@ private:
   //const FactoryBase* factory_;   ///< generating factory of input variable
   //const Scalar       threshold_; ///< threshold parameter
 
-  //RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
+  //Teuchos::RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
 
 
 }; // class ContactAFilterFactory
@@ -132,7 +132,7 @@ private:
     const FactoryBase* factory_;   ///< generating factory of input variable
     const Scalar       threshold_; ///< threshold parameter
 
-    RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
+    Teuchos::RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
 
 
   }; // class ContactAFilterFactory

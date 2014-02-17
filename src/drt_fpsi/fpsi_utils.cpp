@@ -249,12 +249,12 @@ void FPSI::UTILS::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
 
 
   DRT::Condition* slavecond = slavedis.GetCondition(condname);
-  std::map<int,RCP<DRT::Element> >& slavegeom = slavecond->Geometry();
+  std::map<int,Teuchos::RCP<DRT::Element> >& slavegeom = slavecond->Geometry();
 
   DRT::Condition* mastercond = masterdis.GetCondition(condname);
-  std::map<int,RCP<DRT::Element> >& mastergeom = mastercond->Geometry();
+  std::map<int,Teuchos::RCP<DRT::Element> >& mastergeom = mastercond->Geometry();
 
-  std::map<int,RCP<DRT::Element> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
 
   std::multimap<int,double> slaveinterfaceelementidentificationmap;
 
@@ -515,8 +515,8 @@ void FPSI::UTILS::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
   int printid = -1;
 
   std::map<int,int>::iterator mapcurr;
-  std::map<int,RCP<DRT::Element> >::iterator slaveelecurr;
-  std::map<int,RCP<DRT::Element> >::iterator masterelecurr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator slaveelecurr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator masterelecurr;
   DRT::Element* masterele = NULL;
 
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -524,7 +524,7 @@ void FPSI::UTILS::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
   Teuchos::RCP<Epetra_Comm> rcpcomm = Teuchos::rcp(comm.Clone());
 
   //DRT::Condition* slavecond = slavedis.GetCondition(condname);
-  //std::map<int,RCP<DRT::Element> >& slavegeom = slavecond->Geometry();
+  //std::map<int,Teuchos::RCP<DRT::Element> >& slavegeom = slavecond->Geometry();
 
   int mymapsize = interfacefacingelementmap.size();
   int globalmapsize;

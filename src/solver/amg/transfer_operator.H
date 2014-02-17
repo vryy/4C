@@ -43,7 +43,7 @@ class TransferOperator : public virtual Epetra_Operator
 {
 
   public:
-    explicit TransferOperator(const RCP<SparseMatrix>& A, FILE* outfile = NULL);
+    explicit TransferOperator(const Teuchos::RCP<SparseMatrix>& A, FILE* outfile = NULL);
     virtual ~TransferOperator();
 
     virtual const char* Label() const { return "TransferOperator"; }
@@ -106,10 +106,10 @@ class TransferOperator : public virtual Epetra_Operator
 
     \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
     */
-    virtual RCP<Epetra_MultiVector> buildTransferOperators(const RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const RCP<Epetra_MultiVector>& ThisNS, const int domainoffset = 0) = 0;
+    virtual Teuchos::RCP<Epetra_MultiVector> buildTransferOperators(const Teuchos::RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_MultiVector>& ThisNS, const int domainoffset = 0) = 0;
 
-    RCP<SparseMatrix> Prolongator() {return prolongator_; };///< returns the prolongation operator
-    RCP<SparseMatrix> Restrictor() {return restrictor_; }; ///< returns the restriction operator
+    Teuchos::RCP<SparseMatrix> Prolongator() {return prolongator_; };///< returns the prolongation operator
+    Teuchos::RCP<SparseMatrix> Restrictor() {return restrictor_; }; ///< returns the restriction operator
     const SparseMatrix& P() {return *prolongator_; }; ///< returns the prolongation operator
     const SparseMatrix& R() {return *restrictor_; };  ///< returns the restriction operator
 
@@ -128,7 +128,7 @@ class TransferOperatorFactory
     TransferOperatorFactory() {};
     ~TransferOperatorFactory() {};
 
-    static RCP<TransferOperator> Create(const string TransferOperatorType, const Teuchos::RCP<SparseMatrix>& A, FILE* outfile = NULL);
+    static Teuchos::RCP<TransferOperator> Create(const string TransferOperatorType, const Teuchos::RCP<SparseMatrix>& A, FILE* outfile = NULL);
 };
 
 } // namespace LINALG

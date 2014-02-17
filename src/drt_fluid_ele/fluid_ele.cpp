@@ -557,7 +557,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Volumes()
 /*----------------------------------------------------------------------*
  |  get face element (public)                               schott 03/12|
  *----------------------------------------------------------------------*/
-RCP<DRT::Element> DRT::ELEMENTS::Fluid::CreateFaceElement( DRT::Element* parent_slave,           //!< parent slave fluid3 element
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Fluid::CreateFaceElement( DRT::Element* parent_slave,           //!< parent slave fluid3 element
                                                            int nnode,                            //!< number of surface nodes
                                                            const int* nodeids,                   //!< node ids of surface element
                                                            DRT::Node** nodes,                    //!< nodes of surface element

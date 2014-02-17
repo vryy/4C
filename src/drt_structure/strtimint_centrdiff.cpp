@@ -190,8 +190,8 @@ int STR::TimIntCentrDiff::IntegrateStep()
     // direct inversion based on lumped mass matrix
     else
     {
-      RCP<LINALG::SparseMatrix> massmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_);
-      RCP<Epetra_Vector> diagonal = LINALG::CreateVector(*DofRowMapView(), true);
+      Teuchos::RCP<LINALG::SparseMatrix> massmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_);
+      Teuchos::RCP<Epetra_Vector> diagonal = LINALG::CreateVector(*DofRowMapView(), true);
       int error = massmatrix->ExtractDiagonalCopy(*diagonal);
       if (error!=0) dserror("ERROR: ExtractDiagonalCopy went wrong");
       accn_->ReciprocalMultiply(1.0,*diagonal,*frimpn_,0.0);

@@ -25,7 +25,7 @@ namespace LINALG
   class PGAMGTransferOperator : public SAAMGTransferOperator
   {
     public:
-      explicit PGAMGTransferOperator(const RCP<SparseMatrix>& A, FILE* outfile);
+      explicit PGAMGTransferOperator(const Teuchos::RCP<SparseMatrix>& A, FILE* outfile);
       virtual ~PGAMGTransferOperator() {}
 
       virtual const char* Label() const { return "PGAMGTransferOperator"; }
@@ -48,7 +48,7 @@ namespace LINALG
 
       \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
       */
-      RCP<Epetra_MultiVector> buildTransferOperators(const RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const RCP<Epetra_MultiVector>& ThisNS, const int domainoffset = 0);
+      Teuchos::RCP<Epetra_MultiVector> buildTransferOperators(const Teuchos::RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_MultiVector>& ThisNS, const int domainoffset = 0);
     protected:
 
     private:
@@ -76,10 +76,10 @@ namespace LINALG
       \author Tobias Wiesner (wiesner@lnm.mw.tum.de)
 
        */
-      void PG_AMG(const RCP<SparseMatrix>& A, const RCP<SparseMatrix>& P_tent, const RCP<SparseMatrix>& R_tent, RCP<SparseMatrix>& P_smoothed, RCP<SparseMatrix>& R_smoothed);
+      void PG_AMG(const Teuchos::RCP<SparseMatrix>& A, const Teuchos::RCP<SparseMatrix>& P_tent, const Teuchos::RCP<SparseMatrix>& R_tent, Teuchos::RCP<SparseMatrix>& P_smoothed, Teuchos::RCP<SparseMatrix>& R_smoothed);
 
-      void MultiplyAll(const RCP<SparseMatrix>& left, const RCP<SparseMatrix>& right, RCP<Epetra_Vector>& InnerProd);
-      void MultiplySelfAll(const RCP<SparseMatrix>& Op,RCP<Epetra_Vector>& Column2Norm);
+      void MultiplyAll(const Teuchos::RCP<SparseMatrix>& left, const Teuchos::RCP<SparseMatrix>& right, Teuchos::RCP<Epetra_Vector>& InnerProd);
+      void MultiplySelfAll(const Teuchos::RCP<SparseMatrix>& Op,Teuchos::RCP<Epetra_Vector>& Column2Norm);
 
 
       int nVerbose_;    ///< verbosity level

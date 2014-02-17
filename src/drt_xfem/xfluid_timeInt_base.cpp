@@ -45,16 +45,16 @@ Maintainer: Benedikt Schott
  * basic XFEM time-integration constructor                                           schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 XFEM::XFLUID_TIMEINT_BASE::XFLUID_TIMEINT_BASE(
-    const RCP<DRT::Discretization>          discret,          /// background discretization
-    const RCP<DRT::Discretization>          boundarydis,      /// cut discretization
+    const Teuchos::RCP<DRT::Discretization>          discret,          /// background discretization
+    const Teuchos::RCP<DRT::Discretization>          boundarydis,      /// cut discretization
     Teuchos::RCP<XFEM::FluidWizard>         wizard_old,       /// fluid wizard w.r.t. old interface position
     Teuchos::RCP<XFEM::FluidWizard>         wizard_new,       /// fluid wizard w.r.t. new interface position
     Teuchos::RCP<XFEM::FluidDofSet>         dofset_old,       /// fluid dofset w.r.t. old interface position
     Teuchos::RCP<XFEM::FluidDofSet>         dofset_new,       /// fluid dofset w.r.t. new interface position
-    std::vector<RCP<Epetra_Vector> >        oldVectors,       /// vector of col-vectors w.r.t. old interface position
+    std::vector<Teuchos::RCP<Epetra_Vector> >        oldVectors,       /// vector of col-vectors w.r.t. old interface position
     const Epetra_Map&                       olddofcolmap,     /// dofcolmap w.r.t. old interface position
     const Epetra_Map&                       newdofrowmap,     /// dofcolmap w.r.t. new interface position
-    const RCP<std::map<int,std::vector<int> > > pbcmap        /// map of periodic boundary conditions
+    const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap        /// map of periodic boundary conditions
 ) :
 discret_(discret),
 boundarydis_(boundarydis),
@@ -103,7 +103,7 @@ void XFEM::XFLUID_TIMEINT_BASE::type(
  * algorithms data structure                                                         schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::handleVectors(
-    std::vector<RCP<Epetra_Vector> >& newRowVectorsn
+    std::vector<Teuchos::RCP<Epetra_Vector> >& newRowVectorsn
 )
 {
   newVectors_ = newRowVectorsn;
@@ -141,7 +141,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
   //-----------------------------------------------------------------------
   // standard case of a real line between x1 and x2
 
-  RCP<XFEM::FluidWizard> wizard = newTimeStep ? wizard_new_ : wizard_old_;
+  Teuchos::RCP<XFEM::FluidWizard> wizard = newTimeStep ? wizard_new_ : wizard_old_;
 
   // REMARK:
   // changing the side of a point at two times (newton steps) with coordinates x1 and x2 is done
@@ -819,7 +819,7 @@ XFEM::XFLUID_STD::XFLUID_STD(
     XFEM::XFLUID_TIMEINT_BASE&                                       timeInt,            ///< time integration base class object
     const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&   reconstr_method,    ///< reconstruction map for nodes and its dofsets
     INPAR::XFEM::XFluidTimeInt&                                      timeIntType,        ///< type of time integration
-    const RCP<Epetra_Vector>                                         veln,               ///< velocity at time t^n in col map
+    const Teuchos::RCP<Epetra_Vector>                                         veln,               ///< velocity at time t^n in col map
     const double&                                                    dt,                 ///< time step size
     const bool                                                       initialize          ///< is initialization?
 ) :
@@ -908,7 +908,7 @@ dt_(dt)
  * out of order!                                                                     schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::compute(
-    std::vector<RCP<Epetra_Vector> >& newRowVectorsn
+    std::vector<Teuchos::RCP<Epetra_Vector> >& newRowVectorsn
 )
 {
   dserror("Unused function! Use a function of the derived classes");
@@ -920,9 +920,9 @@ void XFEM::XFLUID_STD::compute(
 // * initialize data when called in a new FGI                                      winklmaier 10/11 *
 // *------------------------------------------------------------------------------------------------*/
 //void XFEM::XFLUID_STD::importNewFGIData(
-//    const RCP<DRT::Discretization> discret,
-//    const RCP<XFEM::DofManager> newdofman,
-//    const RCP<COMBUST::FlameFront> flamefront,
+//    const Teuchos::RCP<DRT::Discretization> discret,
+//    const Teuchos::RCP<XFEM::DofManager> newdofman,
+//    const Teuchos::RCP<COMBUST::FlameFront> flamefront,
 //    const Epetra_Map& newdofrowmap,
 //    const std::map<DofKey, DofGID>& newNodalDofRowDistrib)
 //{
@@ -1432,9 +1432,9 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
         {
           DRT::Element* side_tmp = boundarydis_->gElement(*s);
 
-          std::vector<RCP<DRT::Element> > lines_tmp = side_tmp->Lines();
+          std::vector<Teuchos::RCP<DRT::Element> > lines_tmp = side_tmp->Lines();
 
-          for(std::vector<RCP<DRT::Element> >::iterator line_it = lines_tmp.begin(); line_it != lines_tmp.end(); line_it++)
+          for(std::vector<Teuchos::RCP<DRT::Element> >::iterator line_it = lines_tmp.begin(); line_it != lines_tmp.end(); line_it++)
           {
             DRT::Node** line_nodes = (*line_it)->Nodes();
             std::vector<int> line_nids;
@@ -1511,7 +1511,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 
       std::vector<Teuchos::RCP<DRT::Element> > lines = side_1->Lines();
 
-      RCP<DRT::Element> line_ele = lines[local_lineIds[0]];
+      Teuchos::RCP<DRT::Element> line_ele = lines[local_lineIds[0]];
 
       call_get_projxn_Line(side_1, &*line_ele, proj_x_n, local_xi_line[0]);
 

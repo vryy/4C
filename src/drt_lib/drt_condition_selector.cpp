@@ -139,7 +139,7 @@ void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretizatio
   // Setup all maps. The "other" map goes first so it becomes the zeroth map
   // of the MultiMapExtractor.
 
-  std::vector<RCP<const Epetra_Map> > maps;
+  std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   maps.reserve(conddofset_.size()+1);
 
   maps.push_back(LINALG::CreateMap(otherdofset, dis.Comm()));

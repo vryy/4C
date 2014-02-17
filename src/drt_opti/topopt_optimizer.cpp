@@ -32,7 +32,7 @@ Maintainer: Martin Winklmaier
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 TOPOPT::Optimizer::Optimizer(
-    RCP<DRT::Discretization> optidis,
+    Teuchos::RCP<DRT::Discretization> optidis,
     Teuchos::RCP<DRT::Discretization> fluiddis,
     const Teuchos::ParameterList& params,
     Teuchos::RCP<IO::DiscretizationWriter>& output
@@ -427,7 +427,7 @@ void TOPOPT::Optimizer::ImportFlowParams(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void TOPOPT::Optimizer::ImportFluidData(
-    RCP<Epetra_Vector> vel,
+    Teuchos::RCP<Epetra_Vector> vel,
     int step
 )
 {
@@ -436,8 +436,8 @@ void TOPOPT::Optimizer::ImportFluidData(
   else
   {
     // a copy is required here, otherwise the values are changed within the fluid time integration
-    RCP<Epetra_Vector> new_vel = Teuchos::rcp(new Epetra_Vector(*vel)); // copy
-    fluidvel_->insert(std::pair<int,RCP<Epetra_Vector> >(step,new_vel));
+    Teuchos::RCP<Epetra_Vector> new_vel = Teuchos::rcp(new Epetra_Vector(*vel)); // copy
+    fluidvel_->insert(std::pair<int,Teuchos::RCP<Epetra_Vector> >(step,new_vel));
   }
 }
 
@@ -446,7 +446,7 @@ void TOPOPT::Optimizer::ImportFluidData(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void TOPOPT::Optimizer::ImportAdjointFluidData(
-    RCP<Epetra_Vector> vel,
+    Teuchos::RCP<Epetra_Vector> vel,
     int step)
 {
   if (adjointvel_->find(step)!=adjointvel_->end())
@@ -454,8 +454,8 @@ void TOPOPT::Optimizer::ImportAdjointFluidData(
   else
   {
     // a copy is required here, otherwise the values are changed within the adjoint time integration
-    RCP<Epetra_Vector> new_vel = Teuchos::rcp(new Epetra_Vector(*vel));
-    adjointvel_->insert(std::pair<int,RCP<Epetra_Vector> >(step,new_vel));
+    Teuchos::RCP<Epetra_Vector> new_vel = Teuchos::rcp(new Epetra_Vector(*vel));
+    adjointvel_->insert(std::pair<int,Teuchos::RCP<Epetra_Vector> >(step,new_vel));
   }
 }
 
@@ -580,7 +580,7 @@ void TOPOPT::Optimizer::TransformFlowFields(const bool doAdjoint, const bool row
     // if maps have been mapped before, dont change them
     if (i->second->Map().PointSameAs(*targetmap)) continue;
 
-    RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*targetmap,false));
+    Teuchos::RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*targetmap,false));
 
     // export vector to target map
     LINALG::Export(*i->second,*vec);
@@ -595,7 +595,7 @@ void TOPOPT::Optimizer::TransformFlowFields(const bool doAdjoint, const bool row
     {
       if (i->second->Map().PointSameAs(*targetmap)) continue;
 
-      RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*targetmap,false));
+      Teuchos::RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*targetmap,false));
 
       // export vector to target map
       LINALG::Export(*i->second,*vec);

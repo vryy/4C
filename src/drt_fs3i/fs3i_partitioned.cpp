@@ -89,11 +89,11 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // and structure-based scalar transport and get material map for fluid
   // and scalar transport elements
   //---------------------------------------------------------------------
-  RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
-  RCP<DRT::Discretization> structdis = problem->GetDis("structure");
-  RCP<DRT::Discretization> fluidscatradis = problem->GetDis("scatra1");
-  RCP<DRT::Discretization> structscatradis = problem->GetDis("scatra2");
-  RCP<DRT::Discretization> aledis = problem->GetDis("ale");
+  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> fluidscatradis = problem->GetDis("scatra1");
+  Teuchos::RCP<DRT::Discretization> structscatradis = problem->GetDis("scatra2");
+  Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
 
   //---------------------------------------------------------------------
   // create ale discretization as a clone from fluid discretization

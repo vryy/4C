@@ -1494,7 +1494,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
      // loop over all integration cells
      for (int c=0;c<(int)Coupling()[m]->Cells().size();++c)
      {
-       RCP<MORTAR::IntCell> currcell = Coupling()[m]->Cells()[c];
+       Teuchos::RCP<MORTAR::IntCell> currcell = Coupling()[m]->Cells()[c];
 
        // create an integrator for this cell
        CONTACT::CoIntegrator integrator(imortar_,currcell->Shape(),Comm());

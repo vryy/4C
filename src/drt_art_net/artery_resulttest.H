@@ -44,9 +44,9 @@ public:
 
 private:
 
-  /// RCP to scalar transport discretization
+  /// Teuchos::RCP to scalar transport discretization
   Teuchos::RCP<DRT::Discretization> dis_;
-  /// RCP to solution vector
+  /// Teuchos::RCP to solution vector
   Teuchos::RCP<Epetra_Vector>       mysol_;
 
 };

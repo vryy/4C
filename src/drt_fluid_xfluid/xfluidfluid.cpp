@@ -203,8 +203,8 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   // merge the fluid and alefluid maps
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   // std::vector<const Epetra_Map*> maps;
-  RCP<Epetra_Map> fluiddofrowmap = Teuchos::rcp(new Epetra_Map(*xfluid.bgdis_->DofRowMap()));
-  RCP<Epetra_Map> alefluiddofrowmap = Teuchos::rcp(new Epetra_Map(*xfluid.embdis_->DofRowMap()));
+  Teuchos::RCP<Epetra_Map> fluiddofrowmap = Teuchos::rcp(new Epetra_Map(*xfluid.bgdis_->DofRowMap()));
+  Teuchos::RCP<Epetra_Map> alefluiddofrowmap = Teuchos::rcp(new Epetra_Map(*xfluid.embdis_->DofRowMap()));
   maps.push_back(fluiddofrowmap);
   maps.push_back(alefluiddofrowmap);
   fluidfluiddofrowmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
@@ -242,17 +242,17 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateNitschepar()
 
     params.set<double>("nitsche_evp_fac",xfluid_.nitsche_evp_fac_);
 
-    RCP<Epetra_Vector> embboundarydispnp = LINALG::CreateVector(*(xfluid_.embboundarydis_->DofRowMap()),true);
+    Teuchos::RCP<Epetra_Vector> embboundarydispnp = LINALG::CreateVector(*(xfluid_.embboundarydis_->DofRowMap()),true);
     LINALG::Export(*(xfluid_.aledispnp_),*(embboundarydispnp));
 
     xfluid_.embboundarydis_->SetState("dispnp", embboundarydispnp);
 
     std::map<int,double>  boundaryeleidtobeta;
     xfluid_.nitschepar_ =  Teuchos::rcp(new std::map<int,double> (boundaryeleidtobeta));
-    params.set<RCP<std::map<int,double > > >("nitschepar", xfluid_.nitschepar_);
+    params.set<Teuchos::RCP<std::map<int,double > > >("nitschepar", xfluid_.nitschepar_);
 
-    RCP<LINALG::SparseOperator> systemmatrixA;
-    RCP<LINALG::SparseOperator> systemmatrixB;
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrixA;
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrixB;
 
     // Evaluate the general eigen value problem Ax = lambda Bx for local for the elements of embboundarydis
     xfluid_.embboundarydis_->EvaluateCondition(params,
@@ -264,7 +264,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateNitschepar()
     		  	  	  	  	  	  	  	  	   "XFEMCoupling");
 
 	// gather the information form all processors
-	RCP<std::map<int,double> > nitschepar_tmp = params.get<RCP<std::map<int,double > > >("nitschepar");
+	Teuchos::RCP<std::map<int,double> > nitschepar_tmp = params.get<Teuchos::RCP<std::map<int,double > > >("nitschepar");
 
 	// information how many processors work at all
 	std::vector<int> allproc(xfluid_.embboundarydis_->Comm().NumProc());
@@ -370,7 +370,7 @@ void FLD::XFluidFluid::XFluidFluidState::CreateEmbeddedBoundarydis()
   {
     DRT::Node* actnode=xfluid_.embdis_->gNode(*id);
 
-    RCP<DRT::Node> bndnode =Teuchos::rcp(actnode->Clone());
+    Teuchos::RCP<DRT::Node> bndnode =Teuchos::rcp(actnode->Clone());
 
     xfluid_.embboundarydis_->AddNode(bndnode);
   }
@@ -401,15 +401,15 @@ void FLD::XFluidFluid::XFluidFluidState::CreateEmbeddedBoundarydis()
     // yes, we have a xfem condition
     if(found==true)
     {
-      RCP<DRT::Element> bndele =Teuchos::rcp(actele->Clone());
+      Teuchos::RCP<DRT::Element> bndele =Teuchos::rcp(actele->Clone());
 
       xfluid_.embboundarydis_->AddElement(bndele);
     }
   }
 
   // the discretization needs a full NodeRowMap and a NodeColMap
-  RCP<Epetra_Map> newrownodemap;
-  RCP<Epetra_Map> newcolnodemap;
+  Teuchos::RCP<Epetra_Map> newrownodemap;
+  Teuchos::RCP<Epetra_Map> newcolnodemap;
 
   {
     std::vector<int> rownodes;
@@ -447,7 +447,7 @@ void FLD::XFluidFluid::XFluidFluidState::CreateEmbeddedBoundarydis()
     xfluid_.embboundarydis_->Redistribute(*newrownodemap,*newcolnodemap,false,false,false);
 
     // make embboundarydis have the same dofs as embedded-dis
-    RCP<DRT::DofSet> newdofset=Teuchos::rcp(new DRT::TransparentIndependentDofSet(xfluid_.embdis_,false,Teuchos::null));
+    Teuchos::RCP<DRT::DofSet> newdofset=Teuchos::rcp(new DRT::TransparentIndependentDofSet(xfluid_.embdis_,false,Teuchos::null));
     xfluid_.embboundarydis_->ReplaceDofSet(newdofset); // do not call this with true!!
     xfluid_.embboundarydis_->FillComplete();
   }
@@ -469,9 +469,9 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   xfluid_.aleresidual_->Update(1.0,*xfluid_.aleneumann_loads_,0.0);
 
   // create an column residual vector for assembly over row elements that has to be communicated at the end
-  RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*discret.DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*discret.DofColMap(),true);
   // create an column coupling rhC_ui vector for assembly over row elements that has to be communicated at the end
-  RCP<Epetra_Vector> rhC_ui_col;
+  Teuchos::RCP<Epetra_Vector> rhC_ui_col;
 
   //----------------------------------------------------------------------
 
@@ -1090,7 +1090,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     //------------------------------------------------------------
     // loop over row faces
 
-    RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(xfluid_.bgdis_, true);
+    Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(xfluid_.bgdis_, true);
 
     const int numrowintfaces = xdiscret->NumMyRowFaces();
 
@@ -2205,9 +2205,9 @@ FLD::XFluidFluid::XFluidFluid(
   boundarydis_->FillComplete();
 
   // make the dofset of boundarydis be a subset of the embedded dis
-  RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(embdis_,boundarydis_);
+  Teuchos::RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(embdis_,boundarydis_);
   embdis_->Redistribute(*(embdis_->NodeRowMap()), *newcolnodemap);
-  RCP<DRT::DofSet> newdofset=Teuchos::rcp(new DRT::TransparentIndependentDofSet(embdis_,false,Teuchos::null));
+  Teuchos::RCP<DRT::DofSet> newdofset=Teuchos::rcp(new DRT::TransparentIndependentDofSet(embdis_,false,Teuchos::null));
   boundarydis_->ReplaceDofSet(newdofset); // do not call this with true!!
   boundarydis_->FillComplete();
 
@@ -2249,10 +2249,10 @@ FLD::XFluidFluid::XFluidFluid(
   // create internal faces extension for edge based stabilization
   if(edge_based_ or ghost_penalty_ or ghost_penalty_2ndorder_)
   {
-    RCP<DRT::DiscretizationFaces> actembdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(embdis_, true);
+    Teuchos::RCP<DRT::DiscretizationFaces> actembdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(embdis_, true);
     actembdis->CreateInternalFacesExtension(Teuchos::null);
 
-    RCP<DRT::DiscretizationFaces> actbgdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(bgdis_, true);
+    Teuchos::RCP<DRT::DiscretizationFaces> actbgdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(bgdis_, true);
     actbgdis->CreateInternalFacesExtension(Teuchos::null);
   }
   //-------------------------------------------------------------------
@@ -3060,7 +3060,7 @@ void FLD::XFluidFluid::Solve()
       // create the parameters for the discretization
       Teuchos::ParameterList eleparams;
 
-     eleparams.set<RCP<std::map<int,double> > >("nitschepar", nitschepar_ );
+     eleparams.set<Teuchos::RCP<std::map<int,double> > >("nitschepar", nitschepar_ );
 
       // Set action type
       eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
@@ -3452,7 +3452,7 @@ void FLD::XFluidFluid::Evaluate(
   eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
-  eleparams.set<RCP<std::map<int,double> > >("nitschepar", nitschepar_ );
+  eleparams.set<Teuchos::RCP<std::map<int,double> > >("nitschepar", nitschepar_ );
 
   state_->EvaluateFluidFluid( eleparams, *bgdis_, *boundarydis_, *embdis_);
 
@@ -4039,7 +4039,7 @@ void FLD::XFluidFluid::StatisticsAndOutput()
   // store subfilter stresses for additional output
 //   if (scale_similarity_)
 //   {
-//     RCP<Epetra_Vector> stress12 = CalcSFS(1,2);
+//     Teuchos::RCP<Epetra_Vector> stress12 = CalcSFS(1,2);
 //     statisticsmanager_->StoreNodalValues(step_, stress12);
 //   }
   // -------------------------------------------------------------------
@@ -4082,7 +4082,7 @@ void FLD::XFluidFluid::OutputDiscret()
     ExtractNodeVectors(*boundarydis_, idispnp_, currinterfacepositions);
 
     // cast to DiscretizationXFEM
-    RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
+    Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
     if (xdiscret == Teuchos::null)
       dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
@@ -4143,11 +4143,11 @@ void FLD::XFluidFluid::Output()
   {
 
     // cast to DiscretizationXFEM
-    RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
+    Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
     if (xdiscret == Teuchos::null)
       dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
-    RCP<DRT::DiscretizationFaces> embxdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(embdis_, true);
+    Teuchos::RCP<DRT::DiscretizationFaces> embxdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(embdis_, true);
     if (embxdiscret == Teuchos::null)
       dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
@@ -4576,7 +4576,7 @@ void FLD::XFluidFluid::disToStream(Teuchos::RCP<DRT::Discretization> dis,
   if(faces)
   {
     // cast to DiscretizationXFEM
-    RCP<DRT::DiscretizationFaces> xdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(dis, true);
+    Teuchos::RCP<DRT::DiscretizationFaces> xdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(dis, true);
     if (xdis == Teuchos::null)
       dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 

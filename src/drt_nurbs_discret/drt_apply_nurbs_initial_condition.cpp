@@ -55,7 +55,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
   const double newtol  = 1.0e-11;
   p.set("AZTOL",newtol);
 
-  RCP<LINALG::Solver> lssolver =
+  Teuchos::RCP<LINALG::Solver> lssolver =
       Teuchos::rcp(new LINALG::Solver(p,
           dis.Comm(),
           outfile));
@@ -101,7 +101,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(
   }
 
   // get the knotvector from nurbs discretisation
-  RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+  Teuchos::RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
   // get the processor ID from the communicator
   const int myrank  = dis.Comm().MyPID();

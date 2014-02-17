@@ -314,7 +314,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::RedAirway::Lines()
   else if (NumLine()==1) // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
   {
     // 1D (we return the element itself)
-    std::vector<RCP<Element> > lines(1);
+    std::vector<Teuchos::RCP<Element> > lines(1);
     lines[0]= Teuchos::rcp(this, false);
     return lines;
   }

@@ -268,7 +268,7 @@ ART::UTILS::ArtWriteGnuplot::ArtWriteGnuplot()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
+void ART::UTILS::ArtWriteGnuplot::Write(Teuchos::RCP<DRT::Discretization>  discret,
                                         Teuchos::ParameterList&   params,
                                         const std::vector<int>*        nodes)
 {

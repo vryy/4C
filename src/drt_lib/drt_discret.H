@@ -54,13 +54,6 @@ Maintainer: Michael Gee
 #include "drt_dofset.H"
 #include "drt_dserror.H"
 
-// ToDo This last using statement has to go away!
-// This is an intermediate solution to still use RCP without
-// an explicit specification of the namespace in front.
-// Note: at least we do not include the whole namespace!
-using Teuchos::RCP;
-
-
 namespace LINALG
 {
   class SparseOperator;
@@ -2041,8 +2034,8 @@ protected:
    */
   static void AssignGlobalIDs(const Epetra_Comm& comm,
                               const std::map< std::vector<int>,
-                              RCP<DRT::Element> >& elementmap,
-                              std::map< int, RCP<DRT::Element> >& finalelements );
+                              Teuchos::RCP<DRT::Element> >& elementmap,
+                              std::map< int, Teuchos::RCP<DRT::Element> >& finalelements );
 
   // internal data
   std::string                            name_;              // name of this discretization

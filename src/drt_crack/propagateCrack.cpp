@@ -74,7 +74,7 @@ DRT::CRACK::PropagateCrack::PropagateCrack( Teuchos::RCP<DRT::Discretization>& d
     oldTipnodes_.insert( (*slavenodes)[i] );
   }
 
-  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
   DRT::Element * tempele = discret_->lRowElement(0);
 
   Teuchos::RCP<MAT::Material> actmat = tempele->Material();
@@ -88,7 +88,7 @@ DRT::CRACK::PropagateCrack::PropagateCrack( Teuchos::RCP<DRT::Discretization>& d
       if ( not params->nummat_ == 1 ) dserror("At the moment, not possible");
       int matid = (*(params->matids_))[0];
 
-      const RCP<MAT::PAR::Material> actelastmat = mats.find(matid)->second;
+      const Teuchos::RCP<MAT::PAR::Material> actelastmat = mats.find(matid)->second;
 
       switch (actelastmat->Type())
       {

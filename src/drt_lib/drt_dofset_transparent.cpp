@@ -15,7 +15,7 @@ Maintainer: Thomas Kloeppel
 #include "drt_dofset_transparent.H"
 #include "../linalg/linalg_utils.H"
 
-DRT::TransparentDofSet::TransparentDofSet(RCP<DRT::Discretization> sourcedis,bool parallel) :
+DRT::TransparentDofSet::TransparentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis,bool parallel) :
 DRT::DofSet(),
 sourcedis_(sourcedis),
 parallel_(parallel)

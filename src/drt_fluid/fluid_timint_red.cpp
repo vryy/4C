@@ -270,7 +270,7 @@ void FLD::TimIntRedModels::OutputReducedD()
     // Check if one-dimensional artery network problem exist
     if (ART_exp_timeInt_ != Teuchos::null)
     {
-      RCP<Teuchos::ParameterList> redD_export_params;
+      Teuchos::RCP<Teuchos::ParameterList> redD_export_params;
       redD_export_params = Teuchos::rcp(new Teuchos::ParameterList());
 
       redD_export_params->set<int>("step",step_);
@@ -284,7 +284,7 @@ void FLD::TimIntRedModels::OutputReducedD()
     // Check if one-dimensional artery network problem exist
     if (airway_imp_timeInt_ != Teuchos::null)
     {
-      RCP<Teuchos::ParameterList> redD_export_params;
+      Teuchos::RCP<Teuchos::ParameterList> redD_export_params;
       redD_export_params = Teuchos::rcp(new Teuchos::ParameterList());
 
       redD_export_params->set<int>("step",step_);
@@ -556,7 +556,7 @@ void FLD::TimIntRedModels::InsertVolumetricSurfaceFlowCondVector(Teuchos::RCP<Ep
 
   // -------------------------------------------------------------------
   // take surface volumetric flow rate into account
-  //    RCP<Epetra_Vector> temp_vec = Teuchos::rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
+  //    Teuchos::RCP<Epetra_Vector> temp_vec = Teuchos::rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
   //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
   // -------------------------------------------------------------------
   vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(

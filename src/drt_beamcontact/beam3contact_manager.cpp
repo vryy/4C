@@ -45,7 +45,7 @@ constrnorm_(0.0)
   // Then, within all beam contact specific routines we will
   // NEVER use the underlying problem discretization but always
   // the copied beam contact discretization.
-  RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_.Comm().Clone());
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_.Comm().Clone());
   cdiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"beam contact",comm));
 
   // loop over all column nodes of underlying problem discret and add
@@ -53,7 +53,7 @@ constrnorm_(0.0)
   {
     DRT::Node* node = ProblemDiscret().lColNode(i);
     if (!node) dserror("Cannot find node with lid %",i);
-    RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
+    Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
     ContactDiscret().AddNode(newnode);
   }
 
@@ -62,7 +62,7 @@ constrnorm_(0.0)
   {
     DRT::Element* ele = ProblemDiscret().lColElement(i);
     if (!ele) dserror("Cannot find element with lid %",i);
-    RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
+    Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
     ContactDiscret().AddElement(newele);
   }
 
@@ -118,14 +118,14 @@ constrnorm_(0.0)
   LINALG::Gather<int>(esdata,erdata,(int)ertproc.size(),&ertproc[0],ContactDiscret().Comm());
 
   // build completely overlapping node map (on participating processors)
-  RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,ContactDiscret().Comm()));
+  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,ContactDiscret().Comm()));
   sdata.clear();
   stproc.clear();
   rdata.clear();
   allproc.clear();
 
   // build completely overlapping element map (on participating processors)
-  RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)erdata.size(),&erdata[0],0,ContactDiscret().Comm()));
+  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)erdata.size(),&erdata[0],0,ContactDiscret().Comm()));
   esdata.clear();
   estproc.clear();
   erdata.clear();
@@ -242,7 +242,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   {
     double t_start = Teuchos::Time::wallTime();
 
-    std::vector<RCP<Beam3contact> > newpairs = tree_->OctTreeSearch(currentpositions);
+    std::vector<Teuchos::RCP<Beam3contact> > newpairs = tree_->OctTreeSearch(currentpositions);
 
     // merge old and new contact pairs
     for (int k=0;k<(int)newpairs.size();++k)
@@ -1139,7 +1139,7 @@ void CONTACT::Beam3cmanager::InitializeUzawa(LINALG::SparseMatrix& stiffmatrix,
   fres.Update(-alphaf_,*fcold_,1.0);
 
   // now redo Evaluate()
-  RCP<Epetra_Vector> nullvec = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> nullvec = Teuchos::null;
   Evaluate(stiffmatrix,fres,disrow,newsti);
 
   return;

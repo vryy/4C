@@ -41,9 +41,9 @@ MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalM
 }
 
 template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-RCP<const ParameterList> MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const ParameterList& paramList) const {
-  RCP<ParameterList> validParamList = rcp(new ParameterList());
-  validParamList->set< RCP<const FactoryBase> >("A",              Teuchos::null, "Generating factory of the matrix A");
+Teuchos::RCP<const ParameterList> MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const ParameterList& paramList) const {
+  Teuchos::RCP<ParameterList> validParamList = rcp(new ParameterList());
+  validParamList->set< Teuchos::RCP<const FactoryBase> >("A",              Teuchos::null, "Generating factory of the matrix A");
   return validParamList;
 }
 
@@ -64,7 +64,7 @@ template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, cla
 void MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Build(Level & currentLevel) const {
   FactoryMonitor m(*this, "Build", currentLevel);
 
-  RCP<Matrix> A = Get< RCP<Matrix> >(currentLevel, "A");
+  Teuchos::RCP<Matrix> A = Get< Teuchos::RCP<Matrix> >(currentLevel, "A");
 
   LocalOrdinal  fullblocksize = 1;   // block dim for fixed size blocks
   GlobalOrdinal offset = 0;          // global offset of dof gids
@@ -102,7 +102,7 @@ void MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, L
   // 2) prepare maps for amalgamated graph of A and
   //    setup unamalgamation information
 
-  RCP<std::vector<GlobalOrdinal> > gNodeIds; // contains global node ids on current proc
+  Teuchos::RCP<std::vector<GlobalOrdinal> > gNodeIds; // contains global node ids on current proc
   gNodeIds = Teuchos::rcp(new std::vector<GlobalOrdinal>);
   gNodeIds->empty();
 
@@ -154,10 +154,10 @@ void MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, L
 
   // store (un)amalgamation information on current level
 #ifdef HAVE_Trilinos_Q1_2014
-  RCP<AmalgamationInfo> amalgamationData = rcp(new AmalgamationInfo(nodegid2dofgids_,gNodeIds));
+  Teuchos::RCP<AmalgamationInfo> amalgamationData = rcp(new AmalgamationInfo(nodegid2dofgids_,gNodeIds));
   Set(currentLevel, "UnAmalgamationInfo", amalgamationData);
 #else
-  RCP<AmalgamationInfo> amalgamationData = rcp(new AmalgamationInfo());
+  Teuchos::RCP<AmalgamationInfo> amalgamationData = rcp(new AmalgamationInfo());
   amalgamationData->SetAmalgamationParams(nodegid2dofgids_);
   amalgamationData->SetNodeGIDVector(gNodeIds);
   amalgamationData->SetNumberOfNodes(cnt_amalRows);

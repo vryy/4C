@@ -109,9 +109,9 @@ void UTILS::SurfStressManager::WriteResults(const int istep, const double timen)
   // The column map based vectors used for calculations are exported
   // to row map based ones needed for writing
 
-  RCP<Epetra_Vector> A_row = LINALG::CreateVector(*surfrowmap_,true);
-  RCP<Epetra_Vector> con_row = LINALG::CreateVector(*surfrowmap_,true);
-  RCP<Epetra_Vector> gamma_row = LINALG::CreateVector(*surfrowmap_,true);
+  Teuchos::RCP<Epetra_Vector> A_row = LINALG::CreateVector(*surfrowmap_,true);
+  Teuchos::RCP<Epetra_Vector> con_row = LINALG::CreateVector(*surfrowmap_,true);
+  Teuchos::RCP<Epetra_Vector> gamma_row = LINALG::CreateVector(*surfrowmap_,true);
 
   LINALG::Export(*A_current_, *A_row);
   LINALG::Export(*con_current_, *con_row);
@@ -143,8 +143,8 @@ void UTILS::SurfStressManager::ReadRestart(const int step,
   // The row map based vectors written in case of restart are exported
   // to column based ones needed for calculations again
 
-  RCP<Epetra_Vector> A = LINALG::CreateVector(*surfrowmap_,true);
-  RCP<Epetra_Vector> con = LINALG::CreateVector(*surfrowmap_,true);
+  Teuchos::RCP<Epetra_Vector> A = LINALG::CreateVector(*surfrowmap_,true);
+  Teuchos::RCP<Epetra_Vector> con = LINALG::CreateVector(*surfrowmap_,true);
 
   reader.ReadVector(A, "Area");
   reader.ReadVector(con, "Gamma");
@@ -162,7 +162,7 @@ void UTILS::SurfStressManager::ReadRestart(const int step,
 *--------------------------------------------------------------------*/
 
 void UTILS::SurfStressManager::EvaluateSurfStress(Teuchos::ParameterList& p,
-                                                  const RCP<Epetra_Vector> disn,
+                                                  const Teuchos::RCP<Epetra_Vector> disn,
                                                   Teuchos::RCP<Epetra_Vector> fint,
                                                   Teuchos::RCP<LINALG::SparseOperator> stiff)
 {
@@ -209,8 +209,8 @@ void UTILS::SurfStressManager::Update()
 
 void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
                                                           const double& A,
-                                                          const RCP<Epetra_SerialDenseVector> Adiff,
-                                                          const RCP<Epetra_SerialDenseMatrix> Adiff2,
+                                                          const Teuchos::RCP<Epetra_SerialDenseVector> Adiff,
+                                                          const Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2,
                                                           Epetra_SerialDenseVector& fint,
                                                           Epetra_SerialDenseMatrix& K_surf,
                                                           const int ID,

@@ -24,7 +24,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 double FLD::GetComponentOfRotatedVectorField
 (const int idf,
-    const RCP<const Epetra_Vector> proc0data,
+    const Teuchos::RCP<const Epetra_Vector> proc0data,
     const int lid,
     const double rotangle
 )

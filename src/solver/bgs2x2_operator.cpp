@@ -21,7 +21,7 @@ Maintainer: Lena Wiechert
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::BGS2x2_Operator::BGS2x2_Operator(RCP<Epetra_Operator> A,
+LINALG::BGS2x2_Operator::BGS2x2_Operator(Teuchos::RCP<Epetra_Operator> A,
                                          const Teuchos::ParameterList& list1,
                                          const Teuchos::ParameterList& list2,
                                          int global_iter,

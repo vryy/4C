@@ -26,10 +26,10 @@ public:
 
 private:
   PostField* field_;
-  RCP<DRT::Discretization> h8dis_;
-  RCP<DRT::Discretization> s8dis_;
-  RCP<IO::OutputControl> control_;
-  RCP<IO::DiscretizationWriter> writer_;
+  Teuchos::RCP<DRT::Discretization> h8dis_;
+  Teuchos::RCP<DRT::Discretization> s8dis_;
+  Teuchos::RCP<IO::OutputControl> control_;
+  Teuchos::RCP<IO::DiscretizationWriter> writer_;
   std::map<int, int> nodeids_;
   int maxgid_;
 };
@@ -176,10 +176,10 @@ void Converter::write_vector_result(std::string result_name,
                                     PostField* field,
                                     PostResult* result)
 {
-  RCP<Epetra_Vector> s8data = result->read_result(result_name);
+  Teuchos::RCP<Epetra_Vector> s8data = result->read_result(result_name);
   const Epetra_BlockMap& s8map = s8data->Map();
 
-  RCP<Epetra_Vector> h8data = Teuchos::rcp(new Epetra_Vector(*h8dis_->DofRowMap()));
+  Teuchos::RCP<Epetra_Vector> h8data = Teuchos::rcp(new Epetra_Vector(*h8dis_->DofRowMap()));
   const Epetra_BlockMap& h8map = h8data->Map();
 
   int numnodes = s8dis_->NumGlobalNodes();
@@ -209,7 +209,7 @@ void Converter::write_element_result(std::string result_name,
                                      PostField* field,
                                      PostResult* result)
 {
-  RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > s8data =
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > s8data =
     result->read_result_serialdensematrix(result_name);
 
   const Epetra_Map* h8map = h8dis_->ElementRowMap();

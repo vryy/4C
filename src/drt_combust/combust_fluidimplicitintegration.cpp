@@ -708,11 +708,11 @@ void FLD::CombustFluidImplicitTimeInt::PrepareSolve()
     {
       TEUCHOS_FUNC_TIME_MONITOR("   + xfem time integration");
 
-      std::vector<RCP<Epetra_Vector> > newRowVectorsn; // solution vectors of old time step due to new interface
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn; // solution vectors of old time step due to new interface
       newRowVectorsn.push_back(state_.veln_);
       newRowVectorsn.push_back(state_.accn_);
 
-      std::vector<RCP<Epetra_Vector> > newRowVectorsnp; // solution vectors at new time step
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp; // solution vectors at new time step
       newRowVectorsnp.push_back(state_.velnp_);
       newRowVectorsnp.push_back(state_.accnp_);
 
@@ -878,7 +878,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
   );
 
   // temporarely save old dofmanager
-  const RCP<XFEM::DofManager> olddofmanager = dofmanagerForOutput_;
+  const Teuchos::RCP<XFEM::DofManager> olddofmanager = dofmanagerForOutput_;
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
@@ -925,21 +925,21 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
     //---------------------------------------------------------------
     // extract old enrichment dofkeys and values before they are lost
     //---------------------------------------------------------------
-    std::vector<RCP<Epetra_Vector> > oldColStateVectors; // same order of vectors as newRowVectorsn combined with newRowVectorsnp
-    RCP<Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
+    std::vector<Teuchos::RCP<Epetra_Vector> > oldColStateVectors; // same order of vectors as newRowVectorsn combined with newRowVectorsnp
+    Teuchos::RCP<Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
     {
       LINALG::Export(*state_.veln_,*veln);
       oldColStateVectors.push_back(veln);
 
-      RCP<Epetra_Vector> accn = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
+      Teuchos::RCP<Epetra_Vector> accn = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
       LINALG::Export(*state_.accn_,*accn);
       oldColStateVectors.push_back(accn);
 
-      RCP<Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
+      Teuchos::RCP<Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
       LINALG::Export(*state_.velnp_,*velnp);
       oldColStateVectors.push_back(velnp);
 
-      RCP<Epetra_Vector> accnp = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
+      Teuchos::RCP<Epetra_Vector> accnp = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
       LINALG::Export(*state_.accnp_,*accnp);
       oldColStateVectors.push_back(accnp);
     }
@@ -1019,7 +1019,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
             ((xfemtimeint_enr_ !=INPAR::COMBUST::xfemtimeintenr_donothing) and (xfemtimeint_enr_ !=INPAR::COMBUST::xfemtimeintenr_quasistatic)))
         {
           // basic time integration data
-          RCP<XFEM::TIMEINT> timeIntData = Teuchos::rcp(new XFEM::TIMEINT(
+          Teuchos::RCP<XFEM::TIMEINT> timeIntData = Teuchos::rcp(new XFEM::TIMEINT(
               discret_,
               olddofmanager,
               dofmanager,
@@ -1799,7 +1799,7 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
           std::map<XFEM::DofKey,XFEM::DofGID> dofColDistrib;
           dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
 
-          RCP<Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
+          Teuchos::RCP<Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
           LINALG::Export(*state_.velnp_,*velnp);
 
 
@@ -1928,7 +1928,7 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
         std::map<XFEM::DofKey,XFEM::DofGID> dofColDistrib;
         dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
 
-        RCP<Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
+        Teuchos::RCP<Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
         LINALG::Export(*state_.velnp_,*velnp);
 
 
@@ -2194,7 +2194,7 @@ void FLD::CombustFluidImplicitTimeInt::SetupKrylovSpaceProjection(DRT::Condition
  *--------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::UpdateKrylovSpaceProjection()
 {
-  // get RCP to kernel vector of projector
+  // get Teuchos::RCP to kernel vector of projector
   Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
   Teuchos::RCP<Epetra_Vector> c0 = Teuchos::rcp((*c)(0),false);
   c0->PutScalar(0.0);
@@ -2222,7 +2222,7 @@ void FLD::CombustFluidImplicitTimeInt::UpdateKrylovSpaceProjection()
   }
   else if(*weighttype == "integration")
   {
-    // get RCP to weight vector of projector
+    // get Teuchos::RCP to weight vector of projector
     Teuchos::RCP<Epetra_MultiVector> w = projector_->GetNonConstWeights();
     Teuchos::RCP<Epetra_Vector> w0 = Teuchos::rcp((*w)(0),false);
     w0->PutScalar(0.0);
@@ -5126,7 +5126,7 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
 // -------------------------------------------------------------------
 void FLD::CombustFluidImplicitTimeInt::SetupXFluidSplit(
         const DRT::Discretization& dis,
-        const RCP<XFEM::DofManager> dofman,
+        const Teuchos::RCP<XFEM::DofManager> dofman,
         LINALG::MapExtractor& extractor)
 {
   // -------------------------------------------------------------------
@@ -5172,10 +5172,10 @@ void FLD::CombustFluidImplicitTimeInt::SetupXFluidSplit(
 
   // the rowmaps are generated according to the pattern provided by
   // the data vectors
-  RCP<Epetra_Map> velrowmap = Teuchos::rcp(new Epetra_Map(-1,
+  Teuchos::RCP<Epetra_Map> velrowmap = Teuchos::rcp(new Epetra_Map(-1,
       velmapdata.size(),&velmapdata[0],0,
       dis.Comm()));
-  RCP<Epetra_Map> prerowmap = Teuchos::rcp(new Epetra_Map(-1,
+  Teuchos::RCP<Epetra_Map> prerowmap = Teuchos::rcp(new Epetra_Map(-1,
       premapdata.size(),&premapdata[0],0,
       dis.Comm()));
 
@@ -5652,7 +5652,7 @@ void FLD::CombustFluidImplicitTimeInt::LiftDrag() const
 {
 //   dserror("LiftDrag() not yet implemented for combustion problems");
 //  // in this map, the results of the lift drag calculation are stored
-//  RCP<std::map<int,std::vector<double> > > liftdragvals;
+//  Teuchos::RCP<std::map<int,std::vector<double> > > liftdragvals;
 //
 //  FLD::UTILS::LiftDrag(*discret_,*trueresidual_,*params_,liftdragvals);
 //

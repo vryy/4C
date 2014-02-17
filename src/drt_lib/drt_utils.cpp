@@ -126,7 +126,7 @@ void DRT::UTILS::ExtractMyNodeBasedValues(
 void DRT::UTILS::ExtractMyNodeBasedValues(
     const DRT::Element* ele,
     Epetra_SerialDenseVector& local,
-    const RCP<Epetra_MultiVector>& global,
+    const Teuchos::RCP<Epetra_MultiVector>& global,
     const int nsd
     )
 {

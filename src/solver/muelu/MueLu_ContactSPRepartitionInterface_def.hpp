@@ -25,10 +25,10 @@
 namespace MueLu {
 
  template <class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
- RCP<const ParameterList> ContactSPRepartitionInterface<LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const ParameterList& paramList) const {
-    RCP<ParameterList> validParamList = rcp(new ParameterList());
-    validParamList->set< RCP<const FactoryBase> >("A",                    Teuchos::null, "Factory of the matrix A");
-    validParamList->set< RCP<const FactoryBase> >("AmalgamatedPartition", Teuchos::null, "(advanced) Factory generating the AmalgamatedPartition (e.g. an IsorropiaInterface)");
+ Teuchos::RCP<const ParameterList> ContactSPRepartitionInterface<LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const ParameterList& paramList) const {
+    Teuchos::RCP<ParameterList> validParamList = rcp(new ParameterList());
+    validParamList->set< Teuchos::RCP<const FactoryBase> >("A",                    Teuchos::null, "Factory of the matrix A");
+    validParamList->set< Teuchos::RCP<const FactoryBase> >("AmalgamatedPartition", Teuchos::null, "(advanced) Factory generating the AmalgamatedPartition (e.g. an IsorropiaInterface)");
 
     return validParamList;
   }
@@ -45,11 +45,11 @@ namespace MueLu {
     FactoryMonitor m(*this, "Build", level);
     level.print(GetOStream(Statistics0,0));
     // extract blocked operator A from current level
-    RCP<Matrix> A = Get< RCP<Matrix> >     (level, "A");
-    RCP<const Teuchos::Comm< int > > comm = A->getRowMap()->getComm();
+    Teuchos::RCP<Matrix> A = Get< Teuchos::RCP<Matrix> >     (level, "A");
+    Teuchos::RCP<const Teuchos::Comm< int > > comm = A->getRowMap()->getComm();
     const int myRank = comm->getRank();
 
-    RCP<Xpetra::Vector<GO, LO, GO, NO> > decomposition = Xpetra::VectorFactory<GO, LO, GO, NO>::Build(A->getRowMap(), false);
+    Teuchos::RCP<Xpetra::Vector<GO, LO, GO, NO> > decomposition = Xpetra::VectorFactory<GO, LO, GO, NO>::Build(A->getRowMap(), false);
     ArrayRCP<GO> decompEntries = decomposition->getDataNonConst(0);
 
     // fill decomposition vector

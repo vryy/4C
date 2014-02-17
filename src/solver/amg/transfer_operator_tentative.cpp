@@ -9,16 +9,16 @@
 #include "transfer_operator.H"
 #include "transfer_operator_tentative.H"
 
-LINALG::TentativeTransferOperator::TentativeTransferOperator(const RCP<SparseMatrix>& A, FILE* outfile) :
+LINALG::TentativeTransferOperator::TentativeTransferOperator(const Teuchos::RCP<SparseMatrix>& A, FILE* outfile) :
   TransferOperator(A,outfile)
 {
 
 }
 
-RCP<Epetra_MultiVector>  LINALG::TentativeTransferOperator::buildTransferOperators(const RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const RCP<Epetra_MultiVector>& ThisNS, const int domainoffset)
+Teuchos::RCP<Epetra_MultiVector>  LINALG::TentativeTransferOperator::buildTransferOperators(const Teuchos::RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_MultiVector>& ThisNS, const int domainoffset)
 {
   ////////////// define dummy variable for next nullspace
-  RCP<Epetra_MultiVector> NextNS = Teuchos::null;
+  Teuchos::RCP<Epetra_MultiVector> NextNS = Teuchos::null;
 
   ////////////// build tentative prolongator
   GetPtent(A_->RowMap(),*aggs,naggs_local,params,*ThisNS,prolongator_,NextNS,domainoffset);
@@ -30,7 +30,7 @@ RCP<Epetra_MultiVector>  LINALG::TentativeTransferOperator::buildTransferOperato
   return NextNS;
 }
 
-void LINALG::TentativeTransferOperator::GetPtent(const Epetra_Map& rowmap, const Epetra_IntVector aggvec, int naggs, ParameterList& List, const Epetra_MultiVector& ThisNS, RCP<SparseMatrix>& Ptent, RCP<Epetra_MultiVector>& NextNS, const int domainoffset)
+void LINALG::TentativeTransferOperator::GetPtent(const Epetra_Map& rowmap, const Epetra_IntVector aggvec, int naggs, ParameterList& List, const Epetra_MultiVector& ThisNS, Teuchos::RCP<SparseMatrix>& Ptent, Teuchos::RCP<Epetra_MultiVector>& NextNS, const int domainoffset)
 {
   const int nsdim = List.get<int>("null space: dimension",-1);
   if(nsdim <= 0) dserror("null space dimension not given");

@@ -47,7 +47,7 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(
     {
     case integrate_Shapefunction:
     {
-      RCP<const Epetra_Vector> dispnp;
+      Teuchos::RCP<const Epetra_Vector> dispnp;
       std::vector<double> mydispnp;
 
 //      if (parent_->IsMoving())

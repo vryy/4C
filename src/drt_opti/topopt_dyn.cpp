@@ -52,13 +52,13 @@ void fluid_topopt_dyn()
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // access fluid discretization
-  RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
   if (!fluiddis->Filled()) fluiddis->FillComplete(false,false,false);
   if (fluiddis->NumGlobalNodes()==0)
     dserror("No fluid discretization found!");
 
   // access optimization discretization (it should be empty if it will be cloned)
-  RCP<DRT::Discretization> optidis = problem->GetDis("opti");
+  Teuchos::RCP<DRT::Discretization> optidis = problem->GetDis("opti");
   if (!optidis->Filled()) optidis->FillComplete(false,false,false);
 
   if (optidis->NumGlobalNodes()==0)

@@ -51,7 +51,7 @@ Maintainer: Marc Hirschvogel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
-UTILS::Windkessel::Windkessel(RCP<DRT::Discretization> discr,
+UTILS::Windkessel::Windkessel(Teuchos::RCP<DRT::Discretization> discr,
         const std::string& conditionname,
         int& offsetID,
         int& maxID,
@@ -130,7 +130,7 @@ actdisc_(discr)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
-UTILS::Windkessel::Windkessel(RCP<DRT::Discretization> discr,
+UTILS::Windkessel::Windkessel(Teuchos::RCP<DRT::Discretization> discr,
         const std::string& conditionname):
 actdisc_(discr)
 {
@@ -336,9 +336,9 @@ void UTILS::Windkessel::EvaluateRCRWindkessel(
 		if(activecons_.find(condID)->second==false)
 		{
 			const std::string action = params.get<std::string>("action");
-			RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
+			Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
 			actdisc_->SetState("displacement",displast);
-			RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
+			Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
 			actdisc_->SetState("displacement",disp);
 			params.set("action",action);
 		}
@@ -349,7 +349,7 @@ void UTILS::Windkessel::EvaluateRCRWindkessel(
     //std::cout << "" << offsetID << std::endl;
 
 		// elements might need condition
-		params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+		params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
 		// assemble the Windkessel stiffness matrix and scale with time-integrator dependent value
 		if (assmat1)
@@ -403,12 +403,12 @@ void UTILS::Windkessel::EvaluateRCRWindkessel(
 		Epetra_SerialDenseVector elevector2;
 		Epetra_SerialDenseVector elevector3;
 
-		std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+		std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
 		// if (geom.empty()) dserror("evaluation of condition with empty geometry");
 		// no check for empty geometry here since in parallel computations
 		// can exist processors which do not own a portion of the elements belonging
 		// to the condition geometry
-		std::map<int,RCP<DRT::Element> >::iterator curr;
+		std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
 		for (curr=geom.begin(); curr!=geom.end(); ++curr)
 		{
 			// get element location vector and ownerships
@@ -595,9 +595,9 @@ void UTILS::Windkessel::EvaluateNonlinHeartRCRWindkessel(
 		if(activecons_.find(condID)->second==false)
 		{
 			const std::string action = params.get<std::string>("action");
-			RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
+			Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
 			actdisc_->SetState("displacement",displast);
-			RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
+			Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
 			actdisc_->SetState("displacement",disp);
 			params.set("action",action);
 		}
@@ -607,7 +607,7 @@ void UTILS::Windkessel::EvaluateNonlinHeartRCRWindkessel(
     int gindex = condID-offsetID;
 
 		// elements might need condition
-		params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+		params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
 		// assemble the Windkessel stiffness matrix and scale with time-integrator dependent value
 		if (assmat1)
@@ -660,12 +660,12 @@ void UTILS::Windkessel::EvaluateNonlinHeartRCRWindkessel(
 		Epetra_SerialDenseVector elevector2;
 		Epetra_SerialDenseVector elevector3;
 
-		std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+		std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
 		// if (geom.empty()) dserror("evaluation of condition with empty geometry");
 		// no check for empty geometry here since in parallel computations
 		// can exist processors which do not own a portion of the elements belonging
 		// to the condition geometry
-		std::map<int,RCP<DRT::Element> >::iterator curr;
+		std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
 		for (curr=geom.begin(); curr!=geom.end(); ++curr)
 		{
 			// get element location vector and ownerships
@@ -759,7 +759,7 @@ void UTILS::Windkessel::InitializeWindkessel(
 		int err1 = sysvec2->SumIntoGlobalValues(1,&p_init[i],&colvec[0]);
 		if (err1) dserror("SumIntoGlobalValues failed!");
 
-		params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+		params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
 		// define element matrices and vectors
 		Epetra_SerialDenseMatrix elematrix1;
@@ -768,11 +768,11 @@ void UTILS::Windkessel::InitializeWindkessel(
 		Epetra_SerialDenseVector elevector2;
 		Epetra_SerialDenseVector elevector3;
 
-		std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+		std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
 		// no check for empty geometry here since in parallel computations
 		// can exist processors which do not own a portion of the elements belonging
 		// to the condition geometry
-		std::map<int,RCP<DRT::Element> >::iterator curr;
+		std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
 		for (curr=geom.begin(); curr!=geom.end(); ++curr)
 		{
 			// get element location vector and ownerships

@@ -155,7 +155,7 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
                                       std::map<int, DRT::Node*>& nodes,
-                                      std::map<int, RCP<DRT::Element> >& elements,
+                                      std::map<int, Teuchos::RCP<DRT::Element> >& elements,
                                       const std::string& condname)
 {
   int myrank = dis.Comm().MyPID();
@@ -167,8 +167,8 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
   for (unsigned i = 0; i < conds.size(); ++i)
   {
     // get this condition's elements
-    std::map< int, RCP< DRT::Element > >& geo = conds[i]->Geometry();
-    std::map< int, RCP< DRT::Element > >::iterator iter, pos;
+    std::map< int, Teuchos::RCP< DRT::Element > >& geo = conds[i]->Geometry();
+    std::map< int, Teuchos::RCP< DRT::Element > >::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
     {
@@ -185,7 +185,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
                                       std::map<int, DRT::Node*>& nodes,
                                       std::map<int, DRT::Node*>& gnodes,
-                                      std::map<int, RCP<DRT::Element> >& elements,
+                                      std::map<int, Teuchos::RCP<DRT::Element> >& elements,
                                       std::vector<DRT::Condition*>& conds)
 {
   FindConditionedNodes(dis, conds, nodes);
@@ -193,8 +193,8 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
   for (size_t i = 0; i < conds.size(); ++i)
   {
     // get this condition's elements
-    std::map< int, RCP< DRT::Element > >& geo = conds[i]->Geometry();
-    std::map< int, RCP< DRT::Element > >::iterator iter, pos;
+    std::map< int, Teuchos::RCP< DRT::Element > >& geo = conds[i]->Geometry();
+    std::map< int, Teuchos::RCP< DRT::Element > >::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
     {
@@ -221,7 +221,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
                                       std::map<int, DRT::Node*>& nodes,
                                       std::map<int, DRT::Node*>& gnodes,
-                                      std::map<int, RCP<DRT::Element> >& elements,
+                                      std::map<int, Teuchos::RCP<DRT::Element> >& elements,
                                       const std::string& condname)
 {
   std::vector<DRT::Condition*> conds;
@@ -232,8 +232,8 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
   for (unsigned i = 0; i < conds.size(); ++i)
   {
     // get this condition's elements
-    std::map< int, RCP< DRT::Element > >& geo = conds[i]->Geometry();
-    std::map< int, RCP< DRT::Element > >::iterator iter, pos;
+    std::map< int, Teuchos::RCP< DRT::Element > >& geo = conds[i]->Geometry();
+    std::map< int, Teuchos::RCP< DRT::Element > >::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
     {
@@ -259,7 +259,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
                                       std::map<int, std::map<int, DRT::Node*> >& nodes,
                                       std::map<int, std::map<int, DRT::Node*> >& gnodes,
-                                      std::map<int, std::map<int, RCP<DRT::Element> > >& elements,
+                                      std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > >& elements,
                                       const std::string& condname)
 {
   std::vector<DRT::Condition*> conds;
@@ -271,8 +271,8 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
   {
     int id = conds[i]->GetInt("coupling id");
     // get this condition's elements
-    std::map< int, RCP< DRT::Element > >& geo = conds[i]->Geometry();
-    std::map< int, RCP< DRT::Element > >::iterator iter, pos;
+    std::map< int, Teuchos::RCP< DRT::Element > >& geo = conds[i]->Geometry();
+    std::map< int, Teuchos::RCP< DRT::Element > >::iterator iter, pos;
     pos = elements[id].begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
     {
@@ -296,7 +296,7 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
-                                      std::map<int, RCP<DRT::Element> >& elements,
+                                      std::map<int, Teuchos::RCP<DRT::Element> >& elements,
                                       const std::string& condname)
 {
   std::vector<DRT::Condition*> conds;
@@ -304,8 +304,8 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
   for (unsigned i = 0; i < conds.size(); ++i)
   {
     // get this condition's elements
-    std::map< int, RCP< DRT::Element > >& geo = conds[i]->Geometry();
-    std::map< int, RCP< DRT::Element > >::iterator iter, pos;
+    std::map< int, Teuchos::RCP< DRT::Element > >& geo = conds[i]->Geometry();
+    std::map< int, Teuchos::RCP< DRT::Element > >::iterator iter, pos;
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
     {
@@ -330,11 +330,11 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionElementMap(const DRT::Discretizati
   {
     for (unsigned i=0; i<conds.size(); ++i)
     {
-      std::map<int,RCP<DRT::Element> >& geometry = conds[i]->Geometry();
+      std::map<int,Teuchos::RCP<DRT::Element> >& geometry = conds[i]->Geometry();
       std::transform(geometry.begin(),
                      geometry.end(),
                      std::inserter(elementset,elementset.begin()),
-                     LINALG::select1st<std::pair<int,RCP<DRT::Element> > >());
+                     LINALG::select1st<std::pair<int,Teuchos::RCP<DRT::Element> > >());
     }
   }
   else
@@ -342,8 +342,8 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionElementMap(const DRT::Discretizati
     int myrank = dis.Comm().MyPID();
     for (unsigned i=0; i<conds.size(); ++i)
     {
-      std::map<int,RCP<DRT::Element> >& geometry = conds[i]->Geometry();
-      for (std::map<int,RCP<DRT::Element> >::const_iterator iter=geometry.begin();
+      std::map<int,Teuchos::RCP<DRT::Element> >& geometry = conds[i]->Geometry();
+      for (std::map<int,Teuchos::RCP<DRT::Element> >::const_iterator iter=geometry.begin();
            iter!=geometry.end();
            ++iter)
       {
@@ -500,8 +500,8 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
         const std::vector<std::string>&          conditions_to_copy
         )
 {
-  RCP<Epetra_Comm> com = Teuchos::rcp(sourcedis->Comm().Clone());
-  RCP<DRT::Discretization> conditiondis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(sourcedis->Comm().Clone());
+  Teuchos::RCP<DRT::Discretization> conditiondis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
 
   // make sure connectivity is all set
   // we don't care, whether dofs exist or not
@@ -513,18 +513,18 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
 
   // We need to test for all elements (including ghosted ones) to
   // catch all nodes
-  std::map<int, RCP<DRT::Element> >  sourceelements;
+  std::map<int, Teuchos::RCP<DRT::Element> >  sourceelements;
   DRT::UTILS::FindConditionObjects(*sourcedis, sourceelements, condname);
 
   std::set<int> rownodeset;
   std::set<int> colnodeset;
 
   // construct new elements
-  for (std::map<int, RCP<DRT::Element> >::const_iterator sourceele_iter = sourceelements.begin();
+  for (std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator sourceele_iter = sourceelements.begin();
        sourceele_iter != sourceelements.end();
        ++sourceele_iter)
   {
-    const RCP<DRT::Element> sourceele = sourceele_iter->second;
+    const Teuchos::RCP<DRT::Element> sourceele = sourceele_iter->second;
 
     // get global node ids
     std::vector<int> nids;
@@ -557,7 +557,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
     if (sourceele->Owner()==myrank)
     {
       // create an element with the same global element id
-      RCP<DRT::Element> condele = DRT::UTILS::Factory(element_name, "Polynomial", sourceele->Id(), myrank);
+      Teuchos::RCP<DRT::Element> condele = DRT::UTILS::Factory(element_name, "Polynomial", sourceele->Id(), myrank);
 
       // set the same global node ids to the new element
       condele->SetNodeIds(nids.size(), &nids[0]);
@@ -581,7 +581,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   // we get the node maps almost for free
   std::vector<int> condnoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
-  RCP<Epetra_Map> condnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
+  Teuchos::RCP<Epetra_Map> condnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
                                                       condnoderowvec.size(),
                                                       &condnoderowvec[0],
                                                       0,
@@ -590,7 +590,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
 
   std::vector<int> condnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  RCP<Epetra_Map> condnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
+  Teuchos::RCP<Epetra_Map> condnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
                                                       condnodecolvec.size(),
                                                       &condnodecolvec[0],
                                                       0,

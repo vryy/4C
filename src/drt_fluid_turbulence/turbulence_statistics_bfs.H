@@ -74,7 +74,7 @@ public:
   </pre>
 
   */
-  TurbulenceStatisticsBfs(RCP<DRT::Discretization> actdis,
+  TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discretization> actdis,
                           Teuchos::ParameterList&           params,
                           const std::string&            geotype);
 
@@ -191,7 +191,7 @@ private:
   double  x3max_;
 
   //! The discretisation (required for nodes, dofs etc;)
-  RCP<DRT::Discretization> discret_;
+  Teuchos::RCP<DRT::Discretization> discret_;
 
   //! parameter list
   Teuchos::ParameterList&                   params_;
@@ -205,23 +205,23 @@ private:
   const double inflowmax_;
 
    //! pointer to vel/pres^2 field (space allocated in constructor)
-  RCP<Epetra_Vector>       squaredvelnp_;
+  Teuchos::RCP<Epetra_Vector>       squaredvelnp_;
   //! pointer to T^2 field (space allocated in constructor)
-  RCP<Epetra_Vector>       squaredscanp_;
+  Teuchos::RCP<Epetra_Vector>       squaredscanp_;
   //! pointer to 1/T field (space allocated in constructor)
-  RCP<Epetra_Vector>       invscanp_;
+  Teuchos::RCP<Epetra_Vector>       invscanp_;
   //! pointer to (1/T)^2 field (space allocated in constructor)
-  RCP<Epetra_Vector>       squaredinvscanp_;
+  Teuchos::RCP<Epetra_Vector>       squaredinvscanp_;
 
   //! toogle vectors: sums are computed by scalarproducts
-  RCP<Epetra_Vector>       toggleu_;
-  RCP<Epetra_Vector>       togglev_;
-  RCP<Epetra_Vector>       togglew_;
-  RCP<Epetra_Vector>       togglep_;
+  Teuchos::RCP<Epetra_Vector>       toggleu_;
+  Teuchos::RCP<Epetra_Vector>       togglev_;
+  Teuchos::RCP<Epetra_Vector>       togglew_;
+  Teuchos::RCP<Epetra_Vector>       togglep_;
 
   //! available x1- and x2-coordinates
-  RCP<std::vector<double> >     x1coordinates_;
-  RCP<std::vector<double> >     x2coordinates_;
+  Teuchos::RCP<std::vector<double> >     x1coordinates_;
+  Teuchos::RCP<std::vector<double> >     x2coordinates_;
 
   //! coordinates of locations in x1- and x2-direction for statistical evaluation
   LINALG::Matrix<21,1> x1statlocations_;
@@ -235,36 +235,36 @@ private:
   LINALG::Matrix<10,1>  x1supplocations_;
 
   //! matrices containing values
-  RCP<Epetra_SerialDenseMatrix>     x1sumu_;
-  RCP<Epetra_SerialDenseMatrix>     x1sump_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x1sumu_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x1sump_;
 
-  RCP<Epetra_SerialDenseMatrix>     x1sumrho_;
-  RCP<Epetra_SerialDenseMatrix>     x1sumT_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x1sumrho_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x1sumT_;
 
-  RCP<Epetra_SerialDenseMatrix>     x2sumu_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumv_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumw_;
-  RCP<Epetra_SerialDenseMatrix>     x2sump_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumu_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumv_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumw_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sump_;
 
-  RCP<Epetra_SerialDenseMatrix>     x2sumrho_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumT_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumrho_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumT_;
 
-  RCP<Epetra_SerialDenseMatrix>     x2sumsqu_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumsqv_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumsqw_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumsqp_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumsqu_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumsqv_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumsqw_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumsqp_;
 
-  RCP<Epetra_SerialDenseMatrix>     x2sumsqrho_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumsqT_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumsqrho_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumsqT_;
 
-  RCP<Epetra_SerialDenseMatrix>     x2sumuv_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumuw_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumvw_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumuv_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumuw_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumvw_;
 
-  RCP<Epetra_SerialDenseMatrix>     x2sumrhou_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumuT_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumrhov_;
-  RCP<Epetra_SerialDenseMatrix>     x2sumvT_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumrhou_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumuT_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumrhov_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumvT_;
 
   void convertStringToGeoType(const std::string& geotype);
 };

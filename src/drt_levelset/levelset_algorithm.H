@@ -310,10 +310,10 @@ namespace SCATRA
 
     //TODO:
 //    /// vector containing denominator of penalty parameter for each element (ReinitEq() only)
-//    RCP<Epetra_Vector> lambda_ele_denominator_;
+//    Teuchos::RCP<Epetra_Vector> lambda_ele_denominator_;
 //
 //    /// vector containing smoothed haevyside function for each dof (ReinitEq() only)
-//    RCP<Epetra_Vector> node_deriv_smoothfunct_;
+//    Teuchos::RCP<Epetra_Vector> node_deriv_smoothfunct_;
 
     /// flag to correct volume after reinitialization
     bool reinitvolcorrection_;

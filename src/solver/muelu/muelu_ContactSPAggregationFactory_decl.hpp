@@ -38,7 +38,7 @@ namespace MueLu {
     //@{
 
     //! Constructor.
-    ContactSPAggregationFactory(RCP<const FactoryBase> aggregatesFact = Teuchos::null, RCP<const FactoryBase> amalgFact = Teuchos::null);
+    ContactSPAggregationFactory(Teuchos::RCP<const FactoryBase> aggregatesFact = Teuchos::null, Teuchos::RCP<const FactoryBase> amalgFact = Teuchos::null);
 
     //! Destructor.
     virtual ~ContactSPAggregationFactory();
@@ -47,7 +47,7 @@ namespace MueLu {
     //! Input
     //@{
 
-    RCP<const Teuchos::ParameterList> GetValidParameterList(const Teuchos::ParameterList& paramList = Teuchos::ParameterList()) const;
+    Teuchos::RCP<const Teuchos::ParameterList> GetValidParameterList(const Teuchos::ParameterList& paramList = Teuchos::ParameterList()) const;
 
     void DeclareInput(Level &currentLevel) const;
 
@@ -63,13 +63,13 @@ namespace MueLu {
 
   private:
 
-    RCP<const FactoryBase> aggregatesFact_; //! Factory that creates aggregates
-    RCP<const FactoryBase> amalgFact_;      //! Factory that (Un)Amalgamation info from A
-    RCP<const FactoryBase> AFact_;          //! Define which matrix A is used in this factory
+    Teuchos::RCP<const FactoryBase> aggregatesFact_; //! Factory that creates aggregates
+    Teuchos::RCP<const FactoryBase> amalgFact_;      //! Factory that (Un)Amalgamation info from A
+    Teuchos::RCP<const FactoryBase> AFact_;          //! Define which matrix A is used in this factory
 
     //bool IsGlobalId(Teuchos::RCP<const Map> & map, GlobalOrdinal gid) const;
 
-    //RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
+    //Teuchos::RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
 
 
   }; // class ContactSPAggregationFactory

@@ -76,8 +76,8 @@ int DRT::ELEMENTS::SoDisp::Evaluate(Teuchos::ParameterList& params,
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff: {
       // need current displacement and residual forces
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -90,8 +90,8 @@ int DRT::ELEMENTS::SoDisp::Evaluate(Teuchos::ParameterList& params,
     // internal force vector only
     case calc_struct_internalforce: {
       // need current displacement and residual forces
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -111,8 +111,8 @@ int DRT::ELEMENTS::SoDisp::Evaluate(Teuchos::ParameterList& params,
     // nonlinear stiffness, internal force vector, and consistent mass matrix
     case calc_struct_nlnstiffmass: {
       // need current displacement and residual forces
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -165,7 +165,7 @@ int DRT::ELEMENTS::SoDisp::Evaluate(Teuchos::ParameterList& params,
     if (elevec1.Length() < 3) dserror("The given result vector is too short.");
 
     // check material law
-    RCP<MAT::Material> mat = Material();
+    Teuchos::RCP<MAT::Material> mat = Material();
 
     //******************************************************************
         // only for St.Venant Kirchhoff material
@@ -183,7 +183,7 @@ int DRT::ELEMENTS::SoDisp::Evaluate(Teuchos::ParameterList& params,
             std::vector<double> weights(numgpt_disp_);
             sodisp_shapederiv(shapefcts,derivs,weights);
             // get displacements and extract values of this element
-            RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+            Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
             if (disp==Teuchos::null) dserror("Cannot get state displacement vector");
             std::vector<double> mydisp(lm.size());
             DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);

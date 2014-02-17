@@ -1888,7 +1888,7 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
   // projected. for only a second projected scalar it seems worthwhile. feel
   // free! :)
 
-  // get RCP to kernel vector of projector
+  // get Teuchos::RCP to kernel vector of projector
   Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
   c->PutScalar(0.0);
 
@@ -1900,7 +1900,7 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
   }
   else if(*weighttype == "integration")
   {
-    // get RCP to weight vector of projector
+    // get Teuchos::RCP to weight vector of projector
     Teuchos::RCP<Epetra_MultiVector> w = projector_->GetNonConstWeights();
     w->PutScalar(0.0);
 
@@ -1945,7 +1945,7 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
       //                   /              /                      /
       */
 
-      // get an RCP of the current column Epetra_Vector of the MultiVector
+      // get an Teuchos::RCP of the current column Epetra_Vector of the MultiVector
       Teuchos::RCP<Epetra_Vector> wi = Teuchos::rcp((*w)(imode),false);
 
       // compute integral of shape functions
@@ -2018,7 +2018,7 @@ void SCATRA::ScaTraTimIntImpl::AddMultiVectorToParameterList
     //SetState cannot be used since this multi-vector is nodebased and not dofbased!
     const Epetra_Map* nodecolmap = discret_->NodeColMap();
     int numcol = vec->NumVectors();
-    RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+    Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
     LINALG::Export(*vec,*tmp);
     p.set(name,tmp);
   }
@@ -2101,7 +2101,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC
 /*----------------------------------------------------------------------*
  | compute outward pointing unit normal vectors at given b.c.  gjb 01/09|
  *----------------------------------------------------------------------*/
-// RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors
+// Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors
 // defined in scalar_timint_implicit_service.cpp
 
 /*----------------------------------------------------------------------*
@@ -2837,7 +2837,7 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
 /*----------------------------------------------------------------------*
  |  write mass / heat flux vector to BINIO                   gjb   08/08|
  *----------------------------------------------------------------------*/
-// void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
+// void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux)
 // defined in scalar_timint_implicit_service.cpp
 
 /*----------------------------------------------------------------------*

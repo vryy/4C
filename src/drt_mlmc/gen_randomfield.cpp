@@ -458,7 +458,7 @@ void GenRandomField::SimGaussRandomFieldFFT()
   fftw_plan ifft_of_collums;
   // Why we have to do this &((*b1)[0]))
   // the fftw requires the adress of the first element of a fftw_complex array. We can  get to a normal array by casting.
-  // Since we do not want to use standard arrays with new double[size] but RCP::Teuchos::Arrays instead we have to do (*b1)[0]
+  // Since we do not want to use standard arrays with new double[size] but Teuchos::RCP::Teuchos::Arrays instead we have to do (*b1)[0]
   // to get the first element of the array and than &(..) to get the adress
 
   ifft_of_rows = fftw_plan_many_dft(rank, &N_fftw,howmany,(reinterpret_cast<fftw_complex*>(&((*b1)[0]))),

@@ -46,7 +46,7 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actdis,
+ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretization>  actdis,
                                                   LINALG::Solver  &         solver,
                                                   Teuchos::ParameterList&   params,
                                                   IO::DiscretizationWriter& output)
@@ -170,7 +170,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
 
   junc_nodal_vals_=Teuchos::rcp(new std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> >);
 
-  junparams.set<RCP<std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
+  junparams.set<Teuchos::RCP<std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
 
   artjun_ = Teuchos::rcp(new UTILS::ArtJunctionWrapper(discret_, output_, junparams, dta_) );
 
@@ -517,7 +517,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     eleparams.set("Wbnp",Wbnp_);
 
     eleparams.set("total time",time_);
-    eleparams.set<RCP<std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
+    eleparams.set<Teuchos::RCP<std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
@@ -547,7 +547,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     eleparams.set("dbctog",dbctog_);
     eleparams.set("Wfnp",Wfnp_);
     eleparams.set("Wbnp",Wbnp_);
-    eleparams.set<RCP<std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
+    eleparams.set<Teuchos::RCP<std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
 
     // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
     eleparams.set("coupling with 3D fluid params",CouplingTo3DParams);
@@ -653,13 +653,13 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     eleparams.set("total time",time_);
 
     // set vector values needed by elements
-    eleparams.set<RCP<Epetra_Vector> >("qanp",qanp_);
-    eleparams.set<RCP<Epetra_Vector> >("qan",qan_);
-    eleparams.set<RCP<Epetra_Vector> >("Wfnp",Wfnp_);
-    eleparams.set<RCP<Epetra_Vector> >("Wbnp",Wbnp_);
-    eleparams.set<RCP<Epetra_Vector> >("Wfo",Wfo_);
-    eleparams.set<RCP<Epetra_Vector> >("Wbo",Wbo_);
-    eleparams.set<RCP<Epetra_Vector> >("scatran",scatraO2n_);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> >("qanp",qanp_);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> >("qan",qan_);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> >("Wfnp",Wfnp_);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> >("Wbnp",Wbnp_);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> >("Wfo",Wfo_);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> >("Wbo",Wbo_);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> >("scatran",scatraO2n_);
 
     // call standard loop over all elements
 #if 0 // Exporting some values for debugging purposes
@@ -730,12 +730,12 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     // set vecotr values needed by elements
     discret_->ClearState();
 
-    eleparams.set<RCP<Epetra_Vector> >("Wfn",Wfn_);
-    eleparams.set<RCP<Epetra_Vector> >("Wbn",Wbn_);
-    eleparams.set<RCP<Epetra_Vector> >("Wfo",Wfo_);
-    eleparams.set<RCP<Epetra_Vector> >("Wbo",Wbo_);
-    eleparams.set<RCP<Epetra_Vector> >("scatran",scatraO2n_);
-    eleparams.set<RCP<Epetra_Vector> >("scatranp",scatraO2np_);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> >("Wfn",Wfn_);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> >("Wbn",Wbn_);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> >("Wfo",Wfo_);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> >("Wbo",Wbo_);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> >("scatran",scatraO2n_);
+    eleparams.set<Teuchos::RCP<Epetra_Vector> >("scatranp",scatraO2np_);
 
     eleparams.set("time step size",dta_);
 

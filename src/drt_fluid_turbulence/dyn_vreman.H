@@ -70,8 +70,8 @@ public:
   \brief Standard Constructor (public)
 
   */
-  Vreman(    RCP<DRT::Discretization>     actdis             ,
-      RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
+  Vreman(    Teuchos::RCP<DRT::Discretization>     actdis             ,
+      Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
       Teuchos::ParameterList&      params);
 
   /*!
@@ -97,9 +97,9 @@ public:
     );
 
   void AddScatra(
-    RCP<DRT::Discretization>     scatradis,
+    Teuchos::RCP<DRT::Discretization>     scatradis,
     INPAR::SCATRA::ScaTraType    scatratype,
-    RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
+    Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
 
   void GetCv(double& Cv)
   {
@@ -120,17 +120,17 @@ private:
 
 
   //! the discretization
-  RCP<DRT::Discretization>     discret_;
+  Teuchos::RCP<DRT::Discretization>     discret_;
   //! connection between master and slave nodes on this proc
-  RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave_;
   //! parameterlist including time params, stabilization params and turbulence sublist
   Teuchos::ParameterList&      params_ ;
   //! flag for physical type of fluid flow
   INPAR::FLUID::PhysicalType   physicaltype_;
   //scatra specific
-  RCP<DRT::Discretization>     scatradiscret_;
+  Teuchos::RCP<DRT::Discretization>     scatradiscret_;
   INPAR::SCATRA::ScaTraType    scatratype_;
-  RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave_;
 
 
   double DynVremanComputeCv();
@@ -143,14 +143,14 @@ private:
   //        --------------------------
 
   //! the filtered reystress exported to column map
-  RCP<Epetra_MultiVector>      col_filtered_strainrate_;
-  RCP<Epetra_Vector>      col_filtered_expression_;
-  RCP<Epetra_MultiVector>      col_filtered_alphaij_;
-  RCP<Epetra_Vector>      col_filtered_alpha2_;
-  RCP<Epetra_MultiVector>      col_filtered_phi_;
-  RCP<Epetra_Vector>      col_filtered_phi2_;
-  RCP<Epetra_Vector>      col_filtered_phiexpression_;
-  RCP<Epetra_MultiVector>      col_filtered_alphaijsc_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_strainrate_;
+  Teuchos::RCP<Epetra_Vector>      col_filtered_expression_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_alphaij_;
+  Teuchos::RCP<Epetra_Vector>      col_filtered_alpha2_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_phi_;
+  Teuchos::RCP<Epetra_Vector>      col_filtered_phi2_;
+  Teuchos::RCP<Epetra_Vector>      col_filtered_phiexpression_;
+  Teuchos::RCP<Epetra_MultiVector>      col_filtered_alphaijsc_;
   //@}
 
   //! @name homogeneous flow specials

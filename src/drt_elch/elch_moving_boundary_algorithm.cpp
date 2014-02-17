@@ -111,7 +111,7 @@ if (not pseudotransient_)
     // prepare next time step
     PrepareTimeStep();
 
-    RCP<Epetra_Vector> incr(FluidField().ExtractInterfaceVeln());
+    Teuchos::RCP<Epetra_Vector> incr(FluidField().ExtractInterfaceVeln());
     incr->PutScalar(0.0);
     double incnorm(0.0);
     int iter(0);
@@ -323,8 +323,8 @@ void ELCH::MovingBoundaryAlgorithm::Output()
 
 
 void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
-    RCP<Epetra_Vector> idispnp,
-    RCP<Epetra_Vector> iveln)
+    Teuchos::RCP<Epetra_Vector> idispnp,
+    Teuchos::RCP<Epetra_Vector> iveln)
 {
   // calculate normal flux vector field only at FSICoupling boundaries (no output to file)
   std::vector<std::string> condnames(1);
@@ -332,8 +332,8 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
   fluxnp_ = ScaTraField()->CalcFluxAtBoundary(condnames,false);
 
   // access discretizations
-  RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
-  RCP<DRT::Discretization> scatradis = ScaTraField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
+  Teuchos::RCP<DRT::Discretization> scatradis = ScaTraField()->Discretization();
 
   // no support for multiple reactions at the interface !
   // id of the reacting species

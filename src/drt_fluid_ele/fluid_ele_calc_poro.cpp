@@ -4507,7 +4507,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetStructMaterial()
 {
   //access structure discretization
-  RCP<DRT::Discretization> structdis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
   structdis = DRT::Problem::Instance()->GetDis("structure");
   //get corresponding structure element (it has the same global ID as the fluid element)
   DRT::Element* structele = structdis->gElement(my::eid_);

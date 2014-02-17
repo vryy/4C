@@ -440,9 +440,9 @@ void ELCH::Algorithm::OuterIterationConvection()
   std::string outname = temp.str();
   std::string probtype = DRT::Problem::Instance()->ProblemName();
 
-  RCP<IO::OutputControl> myoutputcontrol = Teuchos::rcp(new IO::OutputControl(ScaTraField().Discretization()->Comm(),probtype,"Polynomial","myinput",outname,numdim,0,1000));
+  Teuchos::RCP<IO::OutputControl> myoutputcontrol = Teuchos::rcp(new IO::OutputControl(ScaTraField().Discretization()->Comm(),probtype,"Polynomial","myinput",outname,numdim,0,1000));
   // create discretization writer with my own control settings
-  RCP<IO::DiscretizationWriter> myoutput = ScaTraField().Discretization()->Writer();
+  Teuchos::RCP<IO::DiscretizationWriter> myoutput = ScaTraField().Discretization()->Writer();
   myoutput->SetOutput(myoutputcontrol);
   // write mesh at step 0
   myoutput->WriteMesh(0,0.0);

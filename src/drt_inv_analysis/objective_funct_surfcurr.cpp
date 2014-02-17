@@ -195,8 +195,8 @@ const Epetra_Map STR::INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(DRT::Con
   std::vector<int> gids;
 
   // get the geometry and loop the elements
-  std::map<int,RCP<DRT::Element> >& geom = cond->Geometry();
-  std::map<int,RCP<DRT::Element> >::iterator ele;
+  std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond->Geometry();
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator ele;
   for (ele=geom.begin(); ele != geom.end(); ++ele)
   {
     DRT::Element* element = ele->second.get();
@@ -240,8 +240,8 @@ void  STR::INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterMaterialConfig(DRT
   cond->Comm()->SumAll(&lnumele,&gnumele,1);
 
   // get the geometry and loop the elements
-  std::map<int,RCP<DRT::Element> >& geom = cond->Geometry();
-  std::map<int,RCP<DRT::Element> >::iterator ele;
+  std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond->Geometry();
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator ele;
   for (ele=geom.begin(); ele != geom.end(); ++ele)
   {
     DRT::Element* element = ele->second.get();
@@ -333,8 +333,8 @@ void  STR::INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterSpatialConfig(DRT:
   cond->Comm()->SumAll(&lnumele,&gnumele,1);
 
   // get the geometry and loop the elements
-  std::map<int,RCP<DRT::Element> >& geom = cond->Geometry();
-  std::map<int,RCP<DRT::Element> >::iterator ele;
+  std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond->Geometry();
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator ele;
   for (ele=geom.begin(); ele != geom.end(); ++ele)
   {
     DRT::Element* element = ele->second.get();

@@ -20,7 +20,7 @@ Maintainer: Peter Gamnitzer
  *----------------------------------------------------------------------*/
 DRT::NURBS::NurbsDiscretization::NurbsDiscretization(
   const std::string             name,
-  RCP<Epetra_Comm> comm)
+  Teuchos::RCP<Epetra_Comm> comm)
   :
   DRT::Discretization::Discretization(name,comm    ),
   npatches_                          (            0),
@@ -44,7 +44,7 @@ DRT::NURBS::NurbsDiscretization::~NurbsDiscretization()
  *----------------------------------------------------------------------*/
 void
 DRT::NURBS::NurbsDiscretization::SetKnotVector
-(RCP<DRT::NURBS::Knotvector> knots)
+(Teuchos::RCP<DRT::NURBS::Knotvector> knots)
 {
 
   if(knots==Teuchos::null)
@@ -60,7 +60,7 @@ DRT::NURBS::NurbsDiscretization::SetKnotVector
  |  get a pointer to knotvector from the discretization         (public)|
  |                                                           gammi 05/08|
  *----------------------------------------------------------------------*/
-RCP<DRT::NURBS::Knotvector>
+Teuchos::RCP<DRT::NURBS::Knotvector>
 DRT::NURBS::NurbsDiscretization::GetKnotVector
 ()
 {

@@ -1040,7 +1040,7 @@ void DRT::DiscretizationXFEM::EvaluateDirichletCombust(Teuchos::ParameterList& p
   Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
   if (dbcmapextractor != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
 
-  std::multimap<std::string,RCP<Condition> >::iterator fool;
+  std::multimap<std::string,Teuchos::RCP<Condition> >::iterator fool;
   //--------------------------------------------------------
   // loop through Dirichlet conditions and evaluate them
   //--------------------------------------------------------

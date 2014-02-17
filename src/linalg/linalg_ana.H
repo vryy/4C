@@ -204,20 +204,20 @@ when writing algorithms with ANA:
   A good rule of thumb is, that if Epetra can do it without extra temporary Vector objects,
   ANA can as well.
 
-- ANA works with RCPed Vectors on the right hand side of the "=" operator as well.
-  It does not work with RCPed Operators and does not accept RCPed quantities on the
+- ANA works with Teuchos::RCPed Vectors on the right hand side of the "=" operator as well.
+  It does not work with Teuchos::RCPed Operators and does not accept Teuchos::RCPed quantities on the
   left hand side of the "=" operator:
   \code
-  RCP<LINALG::ANA::Vector>  a = Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false));
-  RCP<LINALG::ANA::Vector>  b = Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false));
-  RCP<LINALG::ANA::Vector>  c = Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false));
-  RCP<LINALG::SparseMatrix> A = Teuchos::rcp(Amatrix));
+  Teuchos::RCP<LINALG::ANA::Vector>  a = Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false));
+  Teuchos::RCP<LINALG::ANA::Vector>  b = Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false));
+  Teuchos::RCP<LINALG::ANA::Vector>  c = Teuchos::rcp(new LINALG::ANA::Vector(A.RowMap(),false));
+  Teuchos::RCP<LINALG::SparseMatrix> A = Teuchos::rcp(Amatrix));
   *a = 3.141;              // Always need to dereference on the left of "="
   *b = 1.0;
   *c = 2.0*a + 3.0*b;      // no need to dereference on the right side of "="
-  *c += 2.0 * (*A) * b;    // ANA will not accept RCPed Operator objects -> always need to dereference
+  *c += 2.0 * (*A) * b;    // ANA will not accept Teuchos::RCPed Operator objects -> always need to dereference
   \endcode
-  The compiler will tell you when its ok to use RCPed objects.
+  The compiler will tell you when its ok to use Teuchos::RCPed objects.
 
   - Of course you are free to mix with classical Epetra calls (not on the same line, though).
     You can also continue using classical Epetra style programming, you can use ANA but you don't have to.
@@ -963,7 +963,7 @@ public:
     Update(1.0,rhs,0.0);
   }
 
-  /// RCP version of the above method
+  /// Teuchos::RCP version of the above method
   inline void operator = (const Teuchos::RCP<LINALG::ANA::Vector>& rhs)
   { *this = *rhs; }
 
@@ -980,7 +980,7 @@ public:
     Update(1.0,rhs,1.0);
   }
 
-  /// RCP version of the above method
+  /// Teuchos::RCP version of the above method
   inline void operator += (const Teuchos::RCP<LINALG::ANA::Vector>& rhs)
   { *this += *rhs; }
 
@@ -997,7 +997,7 @@ public:
     Update(-1.0,rhs,1.0);
   }
 
-  /// RCP version of the above method
+  /// Teuchos::RCP version of the above method
   inline void operator -= (const Teuchos::RCP<LINALG::ANA::Vector>& rhs)
   { *this -= *rhs; }
 
@@ -1993,7 +1993,7 @@ inline LINALG::ANA::LC_lcsv_plus_lcsv operator+ (const LINALG::ANA::Vector& left
 inline LINALG::ANA::LC_lcsv_minus_lcsv operator- (const LINALG::ANA::Vector& left, const LINALG::ANA::Vector& right) { return (1.0*left - 1.0*right); }
 inline LINALG::ANA::LC_s_times_lc operator* (const double& scalar, const LINALG::ANA::LCBase& right) { return LINALG::ANA::LC_s_times_lc(scalar,right); }
 inline LINALG::ANA::LC_s_times_lc operator* (const LINALG::ANA::LCBase& left, const double& scalar) { return (scalar*left); }
-// RCP versions of the above operations
+// Teuchos::RCP versions of the above operations
 inline LINALG::ANA::LC_s_times_vec operator* (const double& scalar, const Teuchos::RCP<const LINALG::ANA::Vector> vec) { return (scalar * (*vec)); }
 inline LINALG::ANA::LC_s_times_vec operator* (const Teuchos::RCP<const LINALG::ANA::Vector> vec, const double& scalar) { return (scalar * (*vec)); }
 inline LINALG::ANA::LC_s_times_vec operator/ (const Teuchos::RCP<const LINALG::ANA::Vector> vec, const double& scalar) { return ((*vec)/scalar); }
@@ -2034,7 +2034,7 @@ inline LINALG::ANA::OperatorSum operator- (const LINALG::ANA::LightWeightOperato
 inline LINALG::ANA::OperatorSum operator- (const Epetra_Operator& left, const Epetra_Operator& right) { return LINALG::ANA::OperatorSum(LINALG::ANA::lw(left),LINALG::ANA::lw(right),-1); }
 inline LINALG::ANA::OperatorSum operator- (const LINALG::ANA::LightWeightOperatorBase& left, const Epetra_Operator& right) { return LINALG::ANA::OperatorSum(left,LINALG::ANA::lw(right),-1); }
 inline LINALG::ANA::OperatorSum operator- (const Epetra_Operator& left, const LINALG::ANA::LightWeightOperatorBase& right) { return LINALG::ANA::OperatorSum(LINALG::ANA::lw(left),right,-1); }
-// RCP versions of the above operations
+// Teuchos::RCP versions of the above operations
 inline LINALG::ANA::LC_Operator_times_lcsv operator* (const LINALG::ANA::LightWeightOperatorBase& op, const Teuchos::RCP<const LINALG::ANA::Vector> vec) { return op*(*vec); }
 inline LINALG::ANA::LC_Operator_times_lcsv operator* (const Epetra_Operator& op, const Teuchos::RCP<const LINALG::ANA::Vector> vec) { return op*(*vec); }
 
@@ -2049,7 +2049,7 @@ double operator* (const LINALG::ANA::LCBase& left, const LINALG::ANA::LCBase& ri
 double operator* (const LINALG::ANA::LC_s_times_vec& left, const LINALG::ANA::LC_s_times_vec& right);
 inline double operator* (const LINALG::ANA::LCBase& left, const LINALG::ANA::Vector& vec1) { return vec1*left; }
 inline double operator* (const LINALG::ANA::LC_s_times_vec& left, const LINALG::ANA::Vector& vec1) { return vec1*left; }
-// RCP versions of the above operations
+// Teuchos::RCP versions of the above operations
 inline double operator* (const Teuchos::RCP<const LINALG::ANA::Vector> vec1, const Teuchos::RCP<const LINALG::ANA::Vector> vec2) { return (*vec1)*(*vec2); }
 inline double operator* (const Teuchos::RCP<const LINALG::ANA::Vector> vec1, const LINALG::ANA::LCBase& right) { return (*vec1)*right; }
 inline double operator* (const LINALG::ANA::LCBase& left, const Teuchos::RCP<const LINALG::ANA::Vector> vec1) { return (*vec1)*left; }
@@ -2066,7 +2066,7 @@ inline LINALG::ANA::LC_vec_pointwise_lcsv  pw(const LINALG::ANA::Vector& vec , c
 inline LINALG::ANA::LC_vec_pointwise_lcsv  pw(const LINALG::ANA::LC_s_times_vec& left, const LINALG::ANA::Vector& vec) { return LINALG::ANA::pw(vec,left); }
 inline LINALG::ANA::LC_lc_pointwise_lc     pw(const LINALG::ANA::LCBase& left, const LINALG::ANA::LCBase& right) { return LINALG::ANA::LC_lc_pointwise_lc(left,right); }
 inline LINALG::ANA::LC_lcsv_pointwise_lcsv pw(const LINALG::ANA::LC_s_times_vec& left, const LINALG::ANA::LC_s_times_vec& right) { return LINALG::ANA::LC_lcsv_pointwise_lcsv(left,right); }
-// RCP versions of the above operations
+// Teuchos::RCP versions of the above operations
 inline LINALG::ANA::LC_vec_pointwise_vec   pw(const Teuchos::RCP<const LINALG::ANA::Vector> vec1, const Teuchos::RCP<const LINALG::ANA::Vector> vec2) { return LINALG::ANA::pw(*vec1,*vec2); }
 inline LINALG::ANA::LC_vec_pointwise_lc    pw(const Teuchos::RCP<const LINALG::ANA::Vector> vec , const LINALG::ANA::LCBase& right) { return LINALG::ANA::pw(*vec,right); }
 inline LINALG::ANA::LC_vec_pointwise_lc    pw(const LINALG::ANA::LCBase& left, const Teuchos::RCP<const LINALG::ANA::Vector> vec) { return LINALG::ANA::pw(left,*vec); }

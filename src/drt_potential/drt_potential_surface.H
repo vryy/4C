@@ -68,17 +68,17 @@ public:
     \param stiff (out): stiffness matrix
    */
   void EvaluatePotential(   Teuchos::ParameterList&                    p,
-                            RCP<Epetra_Vector>        disp,
-                            RCP<Epetra_Vector>        fint,
-                            RCP<LINALG::SparseMatrix> stiff);
-  
-  
-  
+                            Teuchos::RCP<Epetra_Vector>        disp,
+                            Teuchos::RCP<Epetra_Vector>        fint,
+                            Teuchos::RCP<LINALG::SparseMatrix> stiff);
+
+
+
   void EvaluateSurfacePotentialCondition(
       Teuchos::ParameterList&                          params,
-      RCP<LINALG::SparseMatrix>       systemmatrix1,
-      RCP<LINALG::SparseMatrix>       systemmatrix2,
-      RCP<Epetra_Vector>              systemvector1,
+      Teuchos::RCP<LINALG::SparseMatrix>       systemmatrix1,
+      Teuchos::RCP<LINALG::SparseMatrix>       systemmatrix2,
+      Teuchos::RCP<Epetra_Vector>              systemvector1,
       Teuchos::RCP<Epetra_Vector>             systemvector2,
       Teuchos::RCP<Epetra_Vector>             systemvector3,
       const std::string&                           condstring);
@@ -101,8 +101,8 @@ public:
       std::vector<int>&                 lm,
       Epetra_SerialDenseMatrix&         K_surf,
       Epetra_SerialDenseVector&         fint);
-  
-  
+
+
   void StiffnessAndInternalForcesPotentialApprox1(
         const DRT::Element*               element,
         const DRT::UTILS::GaussRule2D&    gaussrule,
@@ -110,8 +110,8 @@ public:
         std::vector<int>&                 lm,
         Epetra_SerialDenseMatrix&         K_surf,
         Epetra_SerialDenseVector&         fint);
-  
-  
+
+
   void StiffnessAndInternalForcesPotentialApprox2(
         const DRT::Element*               element,
         const DRT::UTILS::GaussRule2D&    gaussrule,
@@ -137,8 +137,8 @@ public:
       std::vector<int>&                 lm,
       Epetra_SerialDenseMatrix&         K_surf,
       Epetra_SerialDenseVector&         fint);
-  
-  
+
+
   /*!
     \brief TEST Routine to calculate additional internal forces and
     stiffnesses due to interfacial phenomena for line elements
@@ -151,9 +151,9 @@ public:
    */
   void TestEvaluatePotential(
       Teuchos::ParameterList&                    p,
-      RCP<Epetra_Vector>        disp,
-      RCP<Epetra_Vector>        fint,
-      RCP<LINALG::SparseMatrix> stiff,
+      Teuchos::RCP<Epetra_Vector>        disp,
+      Teuchos::RCP<Epetra_Vector>        fint,
+      Teuchos::RCP<LINALG::SparseMatrix> stiff,
       const double                      time,
       const int                         step
   );
@@ -185,11 +185,11 @@ private:
       std::vector<int>&                lm,
       Epetra_SerialDenseMatrix&        K_surf,
       Epetra_SerialDenseVector&        F_int,
-      RCP<DRT::Condition>      cond,
+      Teuchos::RCP<DRT::Condition>      cond,
       const int                        label,
       const double                     curvefac
       );
-  
+
   void computeFandK_Approx1(
         const DRT::Element*              actEle,
         const DRT::UTILS::GaussRule2D&   gaussrule,
@@ -197,11 +197,11 @@ private:
         std::vector<int>&                lm,
         Epetra_SerialDenseMatrix&        K_surf,
         Epetra_SerialDenseVector&        F_int,
-        RCP<DRT::Condition>      cond,
+        Teuchos::RCP<DRT::Condition>      cond,
         const int                        label,
         const double                     curvefac);
-  
-  
+
+
   void computeFandK_Approx1_new(
      const DRT::Element*              actEle,
      const DRT::UTILS::GaussRule2D&   gaussrule,
@@ -209,32 +209,32 @@ private:
      std::vector<int>&                lm,
      Epetra_SerialDenseMatrix&        K_surf,
      Epetra_SerialDenseVector&        F_int,
-     RCP<DRT::Condition>      cond,
+     Teuchos::RCP<DRT::Condition>      cond,
      const int                        label,
      const double                     curvefac);
-  
-  
+
+
   void computeFandK_Approx2(
       const DRT::Element*                                         actEle,
-      const DRT::UTILS::GaussRule2D&                              gaussrule,  
+      const DRT::UTILS::GaussRule2D&                              gaussrule,
       const std::map< int, std::map<int, GEO::NearestObject> >&   potentialObjects,
       std::vector<int>&                                           lm,
       Epetra_SerialDenseMatrix&                                   K_surf,
       Epetra_SerialDenseVector&                                   F_int,
-      RCP<DRT::Condition>                                 cond,
+      Teuchos::RCP<DRT::Condition>                                 cond,
       const int                                                   label,
       const double                                                curvefac
   );
-  
-  
+
+
   void computeFandK_Approx2_new(
      const DRT::Element*                                        actEle,
-     const DRT::UTILS::GaussRule2D&                             gaussrule,  
+     const DRT::UTILS::GaussRule2D&                             gaussrule,
      const std::map< int, std::map<int, GEO::NearestObject> >&  potentialObjects,
      std::vector<int>&                                          lm,
      Epetra_SerialDenseMatrix&                                  K_surf,
      Epetra_SerialDenseVector&                                  F_int,
-     RCP<DRT::Condition>                                cond,
+     Teuchos::RCP<DRT::Condition>                                cond,
      const int                                                  label,
      const double                                               curvefac
      );
@@ -251,7 +251,7 @@ private:
         std::vector<int>&                lm,
         Epetra_SerialDenseMatrix&        K_surf,
         Epetra_SerialDenseVector&        F_int,
-        RCP<DRT::Condition>      cond,
+        Teuchos::RCP<DRT::Condition>      cond,
         const int                        label,
         const double                     curvefac
         );
@@ -264,12 +264,12 @@ private:
         Epetra_SerialDenseMatrix&              deriv,
         const DRT::UTILS::IntegrationPoints2D&  intpoints,
         const int                               gp,
-        LINALG::Matrix<3,1>&                    x_gp,     
+        LINALG::Matrix<3,1>&                    x_gp,
         const double                            curve_fac
     );
-   
 
-    
+
+
     double ComputeFactorApprox(
         const DRT::Element*                     element,
         Epetra_SerialDenseVector&              funct,
@@ -279,22 +279,22 @@ private:
         const int                               gp,
         LINALG::Matrix<3,1>&                    x_gp,
         LINALG::Matrix<3,1>&                    X_gp,
-        const double                            curve_fac        
-    );    
-    
-    
+        const double                            curve_fac
+    );
+
+
     double ComputeFactorApprox_new(
         const DRT::Element*                     element,
         Epetra_SerialDenseVector&               funct,
         Epetra_SerialDenseMatrix&               deriv,
         const DRT::UTILS::IntegrationPoints2D&  intpoints,
-        const int                               gp,    
+        const int                               gp,
         LINALG::Matrix<3,1>&                    x_gp,
         LINALG::Matrix<3,1>&                    n_xsi,
         const double                            curve_fac
         );
-    
-    
+
+
     //! compute integration factors for line elements
     double ComputeFactor(
         const DRT::Element*                     element,
@@ -306,16 +306,16 @@ private:
         const double                            curve_fac
         );
 
-  
-  
+
+
   std::map< int, std::map<int, GEO::NearestObject> > GetPotentialObjectsAtGP(
-      const DRT::Element*                 element, 
+      const DRT::Element*                 element,
       const DRT::UTILS::GaussRule2D&      gaussrule,
       const int                           label,
       const double                        cutoff
       );
-  
-  
+
+
   std::vector< LINALG::Matrix<3,1> > ComputeGP(
       const DRT::Element*                     element,
       const DRT::UTILS::IntegrationPoints2D&  intpoints
@@ -326,8 +326,8 @@ private:
       const DRT::Element::DiscretizationType& distype,
       DRT::UTILS::GaussRule2D&                rule_pot
       );
-  
-  
+
+
   //! rechnet Normale und det des Deformatinsgradienten in xp
   double ComputeNormalAndDetFinXp(
       const DRT::Element*                     element,
@@ -340,28 +340,28 @@ private:
       const DRT::Element*                     element,
       const LINALG::Matrix<3,1>&              x_gp
       );
-    
+
   /*!
     \brief  computes unit distance vector
     */
   void computeDistanceVector(
       const LINALG::Matrix<3,1>&  x,
-      const LINALG::Matrix<3,1>&  y,    
+      const LINALG::Matrix<3,1>&  y,
       LINALG::Matrix<3,1>&        dist_unit);
 
- 
+
   void ComputeNormalOnPotentialElement(
     const DRT::Element*                     element,
     const LINALG::Matrix<3,1>&              xp,
     LINALG::Matrix<3,1>&                    np);
 
- 
+
   //! compute surface normal in gaussian point in reference configuration
   LINALG::Matrix<3,1> ComputeNormalInGP_Initialconf(
       const DRT::Element*                     element,
       const LINALG::Matrix<3,1>&              X_gp
       );
-  
+
 
   //! determine valid contribution
   bool DetermineValidContribution(
@@ -370,33 +370,33 @@ private:
       const LINALG::Matrix<3,1>&              normal_gp,
       const LINALG::Matrix<3,1>&              normal_pot_gp
       );
-  
+
   //! TEST compute element by label vol list
   std::map<int, std::set<int> > computeEleByLabelVol(
-    RCP<const Epetra_Vector>    disp,
+    Teuchos::RCP<const Epetra_Vector>    disp,
     std::map<int, std::set<int> >       elementList
     );
-  
-  
+
+
   //! TEST compute potential forces and center of gravity
-  void FintSumAndCenterOfGravityVector(  
+  void FintSumAndCenterOfGravityVector(
       LINALG::Matrix<3,1>&        fint_sum_Body,
       LINALG::Matrix<3,1>&        Schwerpunkt_Body,
-      RCP<Epetra_Vector>  fint,
-      RCP<Epetra_Vector>  disp,
+      Teuchos::RCP<Epetra_Vector>  fint,
+      Teuchos::RCP<Epetra_Vector>  disp,
       int                         gidBegin,
       int                         gidEnd,
       int                         dofBegin,
       int                         dofEnd
       );
-  
+
   //! TEST update displacements
   void UpdateDisplacements(
       Teuchos::RCP<Epetra_Vector>     idisp_solid,
       const DRT::Element*             element,
       LINALG::SerialDenseMatrix&      xyze
       );
-  
+
   //! TEST write output
   void AusgabedateiSchreiben(
       double            dDistance,
@@ -405,15 +405,15 @@ private:
       const double      time
       );
 
-  //! name@ Private Attributes 
+  //! name@ Private Attributes
 
   //! current position of boundary elements
   std::map<int,LINALG::Matrix<3,1> >          currentpositions_;
 
   //! for each potential condition label there is a set of elements
   std::map<int,std::set<int> >                elementsByLabel_;
-  
-  //! for each element there is a potential condition 
+
+  //! for each element there is a potential condition
   std::map<int,int >                          labelByElement_;
 
   //! map extrator potential boundary
@@ -430,7 +430,7 @@ private:
 
   //! @name importer
   Teuchos::RCP<Epetra_Import>                 importer_;
-  
+
   //! search tree type
   GEO::TreeType                               treetype_;
 

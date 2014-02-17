@@ -92,7 +92,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   //                                                                         NO  (if both parent elements are uncut)
 
 
-  RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret);
+  Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret);
   if (xdiscret == Teuchos::null)
     dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 
@@ -617,7 +617,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabStd(
     Teuchos::RCP<Epetra_Vector>            systemvector      ///< systemvector
 )
 {
-  RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret);
+  Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret);
   if (xdiscret == Teuchos::null)
     dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
 

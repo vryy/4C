@@ -252,7 +252,7 @@ void FLD::TimIntPoro::Output()
   {
     if((physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2) and discret_->Name()=="porofluid" )
     {
-      RCP<Epetra_Vector>  convel= Teuchos::rcp(new Epetra_Vector(*velnp_));
+      Teuchos::RCP<Epetra_Vector>  convel= Teuchos::rcp(new Epetra_Vector(*velnp_));
       convel->Update(-1.0,*gridv_,1.0);
       output_->WriteVector("convel", convel);
       output_->WriteVector("gridv", gridv_);

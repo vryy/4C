@@ -64,10 +64,10 @@ namespace MueLu {
     std::string        varName_;   ///< name of input and output variable
     const FactoryBase* factory_;   ///< generating factory of input variable
 
-    RCP<FactoryBase>   PtentFact_; ///< tentative P Factory
-    RCP<FactoryBase>   AFact_;     ///< A factory (needed for maps)
+    Teuchos::RCP<FactoryBase>   PtentFact_; ///< tentative P Factory
+    Teuchos::RCP<FactoryBase>   AFact_;     ///< A factory (needed for maps)
 
-    RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
+    Teuchos::RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
 
 
   }; // class ContactTransferFactory

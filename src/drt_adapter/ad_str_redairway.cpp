@@ -87,11 +87,11 @@ void ADAPTER::StructureRedAirway::CalcVol(std::map<int,double>& V)
     Epetra_SerialDenseVector elevector2;
     Epetra_SerialDenseVector elevector3;
 
-    std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int,RCP<DRT::Element> >::iterator curr;
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       // get element location vector and ownerships

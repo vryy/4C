@@ -441,7 +441,7 @@ template <DRT::Element::DiscretizationType bdistype,
   //---------------------------------------------------------------------
   // get condition information and ID
   //---------------------------------------------------------------------
-  RCP<DRT::Condition> fdp_cond = params.get<RCP<DRT::Condition> >("condition");
+  Teuchos::RCP<DRT::Condition> fdp_cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
   int fdp_cond_id = params.get<int>("ConditionID");
 
   // decide on whether it is a flow-rate- or flow-volume-based condition
@@ -571,7 +571,7 @@ template <DRT::Element::DiscretizationType bdistype,
   // extract parent and boundary values from global distributed vectors
   //---------------------------------------------------------------------
   // parent velocity at n+alpha_F
-  RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
+  Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
   if (velaf==Teuchos::null) dserror("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
@@ -591,7 +591,7 @@ template <DRT::Element::DiscretizationType bdistype,
   std::vector<double> mybedispnp((blm).size());
   if (surfele->ParentElement()->IsAle())
   {
-    RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 
     DRT::UTILS::ExtractMyValues(*dispnp,mypedispnp,plm);
@@ -1007,7 +1007,7 @@ template <DRT::Element::DiscretizationType bdistype,
   // extract parent and boundary values from global distributed vectors
   //---------------------------------------------------------------------
   // parent velocity at n+alpha_F
-  RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
+  Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
   if (velaf==Teuchos::null) dserror("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
@@ -1034,7 +1034,7 @@ template <DRT::Element::DiscretizationType bdistype,
   }
 
   // node normals
-  RCP<const Epetra_Vector> nodenormalvec = discretization.GetState("nodenormal");
+  Teuchos::RCP<const Epetra_Vector> nodenormalvec = discretization.GetState("nodenormal");
   std::vector<double> mypnodenormal(plm.size());
   DRT::UTILS::ExtractMyValues(*nodenormalvec,mypnodenormal,plm);
 
@@ -1052,7 +1052,7 @@ template <DRT::Element::DiscretizationType bdistype,
   std::vector<double> mybedispnp((blm).size());
   if (surfele->ParentElement()->IsAle())
   {
-    RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 
     DRT::UTILS::ExtractMyValues(*dispnp,mypedispnp,plm);
@@ -1269,7 +1269,7 @@ template <DRT::Element::DiscretizationType bdistype,
   //---------------------------------------------------------------------
   // get condition information
   //---------------------------------------------------------------------
-  RCP<DRT::Condition> wdbc_cond = params.get<RCP<DRT::Condition> >("condition");
+  Teuchos::RCP<DRT::Condition> wdbc_cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
 
   // type of consistency (default: adjoint-consistent)
   const std::string* consistency = (*wdbc_cond).Get<std::string>("Choice of gamma parameter");
@@ -1427,7 +1427,7 @@ template <DRT::Element::DiscretizationType bdistype,
   // extract parent and boundary values from global distributed vectors
   //---------------------------------------------------------------------
   // parent velocity at n+alpha_F
-  RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
+  Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
   if (velaf==Teuchos::null) dserror("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
@@ -1447,7 +1447,7 @@ template <DRT::Element::DiscretizationType bdistype,
 
   if (fldparatimint_->TimeAlgo() == INPAR::FLUID::timeint_npgenalpha)
   {
-    RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+    Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
     if (velnp==Teuchos::null) dserror("Cannot get state vector 'velnp'");
 
     DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,plm);
@@ -1470,7 +1470,7 @@ template <DRT::Element::DiscretizationType bdistype,
   std::vector<double> mybedispnp((blm).size());
   if (surfele->ParentElement()->IsAle())
   {
-    RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 
     DRT::UTILS::ExtractMyValues(*dispnp,mypedispnp,plm);
@@ -1506,7 +1506,7 @@ template <DRT::Element::DiscretizationType bdistype,
   if (surfele->Shape() == Fluid::nurbs4 or surfele->Shape() == Fluid::nurbs9)
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-    RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+    Teuchos::RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
     bool zero_sized_parent = knots->GetBoundaryEleAndParentKnots(mypknots,mybknots,normalfac,pid,bid);
 
     if (zero_sized_parent) dserror("NURBS: zero-sized parent\n");
@@ -3214,7 +3214,7 @@ template <DRT::Element::DiscretizationType bdistype,
   std::vector<double> mybedispnp((blm).size());
   if (surfele->ParentElement()->IsAle())
   {
-    RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 
     DRT::UTILS::ExtractMyValues(*dispnp,mypedispnp,plm);
@@ -3571,10 +3571,10 @@ template <DRT::Element::DiscretizationType bdistype,
     double beta = nitsche_evp_fac * maxeigenvalue * visc_;
 
     // fill the map: every side id has it's own parameter beta
-    (*params.get<RCP<std::map<int,double > > >("nitschepar"))[surfele->Id()] = beta;
+    (*params.get<Teuchos::RCP<std::map<int,double > > >("nitschepar"))[surfele->Id()] = beta;
 
     // set the nitschepar to access to it in the time-integration approach
-    params.set<RCP<std::map<int,double > > >("nitschepar",(params.get<RCP<std::map<int,double > > >("nitschepar")));
+    params.set<Teuchos::RCP<std::map<int,double > > >("nitschepar",(params.get<Teuchos::RCP<std::map<int,double > > >("nitschepar")));
 
   return;
 }
@@ -3643,7 +3643,7 @@ template <DRT::Element::DiscretizationType bdistype,
   // get the condition information
   Teuchos::RCP<DRT::Condition> hixhybdbc_cond
     =
-    params.get<RCP<DRT::Condition> >("condition");
+    params.get<Teuchos::RCP<DRT::Condition> >("condition");
 
   // get value for boundary condition
   const std::vector<double>* val = (*hixhybdbc_cond).Get<std::vector<double> >("val");

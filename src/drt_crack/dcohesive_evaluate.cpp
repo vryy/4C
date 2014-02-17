@@ -195,7 +195,7 @@ std::vector<double> DRT::ELEMENTS::Dcohesive::calculateDeflections( DRT::Discret
   /*******************************************************/
 
   const int numdf = 3;
-  RCP<const Epetra_Vector> disp = discret.GetState("displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = discret.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
   std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);

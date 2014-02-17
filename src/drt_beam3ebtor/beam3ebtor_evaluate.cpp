@@ -90,13 +90,13 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacement and residual values for each degree of freedom
       // get element displacements
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
       // get residual displacements
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (res==Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
@@ -109,7 +109,7 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
 
       if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP")!=INPAR::STR::dyna_statics)
       {
-        RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
+        Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
         if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       }
@@ -171,7 +171,7 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
                                                Epetra_SerialDenseMatrix* elemat1)
 {
   // get element displacements
-  RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -182,7 +182,7 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // get element velocities (UNCOMMENT IF NEEDED)
   /*
-  RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
+  Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
   if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
   vector<double> myvel(lm.size());
   DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
@@ -1675,7 +1675,7 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckNeumann(Teuchos::ParameterList& params,
 //  }
 //
 //  //get element displacements
-//  RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
+//  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
 //  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
 //  vector<double> mydisp(lm.size());
 //  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);

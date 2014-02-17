@@ -47,8 +47,8 @@ void SPRINGDASHPOT::SpringDashpot(Teuchos::RCP<DRT::Discretization> dis)
       Epetra_Vector nodalarea(*dis->NodeRowMap(),true);
 
       //IO::cout << *springdashpotcond[cond];
-      std::map<int,RCP<DRT::Element> >& geom = springdashpotcond[cond]->Geometry();
-      std::map<int,RCP<DRT::Element> >::iterator ele;
+      std::map<int,Teuchos::RCP<DRT::Element> >& geom = springdashpotcond[cond]->Geometry();
+      std::map<int,Teuchos::RCP<DRT::Element> >::iterator ele;
       for (ele=geom.begin(); ele != geom.end(); ++ele)
       {
         DRT::Element* element = ele->second.get();

@@ -843,7 +843,7 @@ void THR::TimInt::ApplyForceTangInternal(
   if (MethodName() == INPAR::THR::dyna_genalpha)
   {
     Teuchos::RCP<const Epetra_Vector> ratem
-      = p.get<RCP<const Epetra_Vector> >("mid-temprate");
+      = p.get<Teuchos::RCP<const Epetra_Vector> >("mid-temprate");
     if (ratem != Teuchos::null)
       discret_->SetState(0,"mid-temprate", ratem);
   }

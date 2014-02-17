@@ -40,7 +40,7 @@ Maintainer: Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
-  RCP<DRT::Discretization> actdis,
+  Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::ParameterList&          params,
   const std::string&                    geotype):
   discret_      (actdis),
@@ -545,8 +545,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   if (modelparams->get<std::string>("PHYSICAL_MODEL","no_model") == "Dynamic_Smagorinsky")
   {
     // store them in parameterlist for access on the element
-    modelparams->set<RCP<std::vector<double> > >("dir1coords_",x1coordinates_);
-    modelparams->set<RCP<std::vector<double> > >("dir2coords_",x2coordinates_);
+    modelparams->set<Teuchos::RCP<std::vector<double> > >("dir1coords_",x1coordinates_);
+    modelparams->set<Teuchos::RCP<std::vector<double> > >("dir2coords_",x2coordinates_);
   }
 
   //----------------------------------------------------------------------

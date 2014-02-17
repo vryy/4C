@@ -18,7 +18,7 @@ flows.
 
   ---------------------------------------------------------------------*/
 COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
-  RCP<DRT::Discretization>   actdis,
+  Teuchos::RCP<DRT::Discretization>   actdis,
   Teuchos::ParameterList&                     params)
   :
   discret_(actdis),
@@ -608,8 +608,8 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
   const int size = sumvol_[0]->size();
 
   // generate processor local result vectors
-  std::vector<RCP<std::vector<double> > > locvol( numphase_);
-  std::vector<RCP<std::vector<double> > > globvol(numphase_);
+  std::vector<Teuchos::RCP<std::vector<double> > > locvol( numphase_);
+  std::vector<Teuchos::RCP<std::vector<double> > > globvol(numphase_);
 
   for (size_t i = 0; i < numphase_; i++)
   {
@@ -643,7 +643,7 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
 
   //----------------------------------------------------------------------
   // add contributions from all processors
-  // it looks a bit messy due to the std::vector<RCP<std::vector<double> > > construct
+  // it looks a bit messy due to the std::vector<Teuchos::RCP<std::vector<double> > > construct
   for (size_t i = 0; i < numphase_; i++)
   {
     discret_->Comm().SumAll(&((*(locvol[i]))[0]), &((*(globvol[i]))[0]), size);

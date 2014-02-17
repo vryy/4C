@@ -130,7 +130,7 @@ int DRT::ELEMENTS::BeamCL::Evaluate(Teuchos::ParameterList&   params,
 
       //only if random numbers for Brownian dynamics are passed to element, get element velocities
       std::vector<double> myvel(lm.size());
-      if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
+      if( params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
       {
         Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);

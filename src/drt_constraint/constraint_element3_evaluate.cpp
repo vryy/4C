@@ -81,7 +81,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       }
       else if (numnod == 2)
       {
-        Teuchos::RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
+        Teuchos::RCP<DRT::Condition> condition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
         const std::vector<double>*  direct = condition->Get<std::vector<double> > ("direction");
         const std::string* value = condition-> Get<std::string>("value");
         if (*value == "disp")
@@ -130,7 +130,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       }
       else if (numnod == 2)
       {
-        Teuchos::RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
+        Teuchos::RCP<DRT::Condition> condition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
         const std::vector<double>*  direct = condition->Get<std::vector<double> > ("direction");
 
         //Compute weighted difference between masternode and other node and it's derivative

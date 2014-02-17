@@ -47,10 +47,10 @@ public:
 
 private:
 
-  /// RCP to scatra discretization
+  /// Teuchos::RCP to scatra discretization
   Teuchos::RCP<DRT::Discretization> dis_;
 
-  /// RCP to solution vector
+  /// Teuchos::RCP to solution vector
   Teuchos::RCP<Epetra_Vector>       mysol_;
 
 }; // class AcouInvResultTest

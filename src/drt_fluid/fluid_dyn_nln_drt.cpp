@@ -120,18 +120,18 @@ void fluid_fluid_drt(const int restart)
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  RCP<DRT::Discretization> bgfluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> bgfluiddis = problem->GetDis("fluid");
   bgfluiddis->FillComplete();
 
   const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
 
-  RCP<DRT::Discretization> embfluiddis = problem->GetDis("xfluid");
+  Teuchos::RCP<DRT::Discretization> embfluiddis = problem->GetDis("xfluid");
   embfluiddis->FillComplete();
 
   // -------------------------------------------------------------------
   // ---------------- find MovingFluid's elements and nodes
   std::map<int, DRT::Node*> MovingFluidNodemap;
-  std::map<int, RCP< DRT::Element> > MovingFluidelemap;
+  std::map<int, Teuchos::RCP< DRT::Element> > MovingFluidelemap;
   DRT::UTILS::FindConditionObjects(*bgfluiddis, MovingFluidNodemap, MovingFluidelemap, "MovingFluid");
 
   // local vectors of nodes and elements of moving dis
@@ -141,7 +141,7 @@ void fluid_fluid_drt(const int restart)
   for( std::map<int, DRT::Node*>::iterator it = MovingFluidNodemap.begin(); it != MovingFluidNodemap.end(); ++it )
     MovingFluidNodeGIDs.push_back( it->first);
 
-  for( std::map<int, RCP< DRT::Element> >::iterator it = MovingFluidelemap.begin(); it != MovingFluidelemap.end(); ++it )
+  for( std::map<int, Teuchos::RCP< DRT::Element> >::iterator it = MovingFluidelemap.begin(); it != MovingFluidelemap.end(); ++it )
     MovingFluideleGIDs.push_back( it->first);
 
   // --------------------------------------------------------------------------
@@ -225,16 +225,16 @@ void fluid_fluid_drt(const int restart)
   }
 
   // Background discretization redistribution..
-  RCP<Epetra_Map> bgroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)bgeleids.size(),&bgeleids[0],0,bgfluiddis->Comm()));
-  RCP<Epetra_Map> bgrownodes = Teuchos::null;
-  RCP<Epetra_Map> bgcolnodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> bgroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)bgeleids.size(),&bgeleids[0],0,bgfluiddis->Comm()));
+  Teuchos::RCP<Epetra_Map> bgrownodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> bgcolnodes = Teuchos::null;
 
 #if defined(PARALLEL) && defined(PARMETIS)
   DRT::UTILS::PartUsingParMetis(bgfluiddis,bgroweles,bgrownodes,bgcolnodes,comm,false);
 #endif
 
-  RCP<Epetra_Map> bgnewroweles  = Teuchos::null;
-  RCP<Epetra_Map> bgnewcoleles  = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> bgnewroweles  = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> bgnewcoleles  = Teuchos::null;
   bgfluiddis->BuildElementRowColumn(*bgrownodes,*bgcolnodes,bgnewroweles,bgnewcoleles);
 
   // export nodes and elements to the row map
@@ -275,16 +275,16 @@ void fluid_fluid_drt(const int restart)
   }
 
   // Embedded discretization redistribution..
-  RCP<Epetra_Map> embroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)eleids.size(),&eleids[0],0,embfluiddis->Comm()));
-  RCP<Epetra_Map> embrownodes = Teuchos::null;
-  RCP<Epetra_Map> embcolnodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> embroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)eleids.size(),&eleids[0],0,embfluiddis->Comm()));
+  Teuchos::RCP<Epetra_Map> embrownodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> embcolnodes = Teuchos::null;
 
 #if defined(PARALLEL) && defined(PARMETIS)
   DRT::UTILS::PartUsingParMetis(embfluiddis,embroweles,embrownodes,embcolnodes,comm,false);
 #endif
 
-  RCP<Epetra_Map> embnewroweles  = Teuchos::null;
-  RCP<Epetra_Map> embnewcoleles  = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> embnewroweles  = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> embnewcoleles  = Teuchos::null;
   embfluiddis->BuildElementRowColumn(*embrownodes,*embcolnodes,embnewroweles,embnewcoleles);
 
   // export nodes and elements to the row map

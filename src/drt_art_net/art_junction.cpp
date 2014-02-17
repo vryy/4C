@@ -75,7 +75,7 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actdis,
+ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretization> actdis,
                                                    IO::DiscretizationWriter& output,
                                                    Teuchos::ParameterList & params,
                                                    double dta):
@@ -188,7 +188,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
       // ---------------------------------------------------------------------
       int condid;
       Teuchos::RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams> > >  nodalParams;
-      nodalParams = params.get<RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams> > > >("Junctions Parameters");
+      nodalParams = params.get<Teuchos::RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams> > > >("Junctions Parameters");
 
       for(unsigned int i=0; i<SortedConds.size(); i++)
       {
@@ -210,7 +210,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
         // Finally check wheather a node has multiple BC, which is not allowed 
         // -------------------------------------------------------------------
         bool inserted;
-        // create an empty map associated to the RCP nodalParams_
+        // create an empty map associated to the Teuchos::RCP nodalParams_
         //      nodalParams = Teuchos::rcp(new std::map<const int, Teuchos::RCP<JunctionNodeParams> >());
         
         for (unsigned int j=0 ; j< SortedConds[i].size(); j++)

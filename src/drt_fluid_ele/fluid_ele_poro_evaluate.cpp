@@ -68,7 +68,7 @@ int DRT::ELEMENTS::FluidPoro::Evaluate( Teuchos::ParameterList&   params,
   const FLD::Action act = DRT::INPUT::get<FLD::Action>(params,"action");
 
   // get material
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   // switch between different physical types as used below
   std::string impltype = "poro";

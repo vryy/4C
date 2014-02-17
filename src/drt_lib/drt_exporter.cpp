@@ -552,7 +552,7 @@ void DRT::Exporter::Export(std::map<int,double>& data)
 /*----------------------------------------------------------------------*
  |  communicate objects (public)                             u.kue 07/09|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::Export(std::map<int,RCP<Epetra_SerialDenseMatrix> >& data)
+void DRT::Exporter::Export(std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& data)
 {
   AnyObjectExporterHelper<Epetra_SerialDenseMatrix> helper(data);
   GenericExport(helper);

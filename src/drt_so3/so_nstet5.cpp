@@ -48,7 +48,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create( const std::string 
 {
   if ( eletype=="NSTET5" )
   {
-    RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id,owner));
     return ele;
   }
   return Teuchos::null;
@@ -59,7 +59,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create( const std::string 
 //-----------------------------------------------------------------------
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create( const int id, const int owner )
 {
-  RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id,owner));
   return ele;
 }
 

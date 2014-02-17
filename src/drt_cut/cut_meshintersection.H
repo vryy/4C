@@ -276,7 +276,7 @@ private:
   //! @name private class variables
   /*========================================================================*/
 
-  Teuchos::RCP<PointPool> pp_;                       ///< pointpool (octTree) whose nodes consist of bounding boxes, each bb contains a set of RCPs to points
+  Teuchos::RCP<PointPool> pp_;                       ///< pointpool (octTree) whose nodes consist of bounding boxes, each bb contains a set of Teuchos::RCPs to points
   Options options_;                                  ///< options
   MeshHandle mesh_;                                  ///< the background mesh
   std::vector<Teuchos::RCP<MeshHandle> > cut_mesh_;  ///< a vector of cut_meshes

@@ -183,14 +183,14 @@ void DRT::UTILS::UnpackLocalConnectivity(
 #if 0 // this is out of date and replaced by the next function mwgee 4/12
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
-                                   RCP<Epetra_Map> roweles,
-                                   RCP<Epetra_Map>& rownodes,
-                                   RCP<Epetra_Map>& colnodes,
+void DRT::UTILS::PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
+                                   Teuchos::RCP<Epetra_Map> roweles,
+                                   Teuchos::RCP<Epetra_Map>& rownodes,
+                                   Teuchos::RCP<Epetra_Map>& colnodes,
                                    std::vector<int>& nids,
                                    int nblock,
                                    int ntarget,
-                                   RCP<Epetra_Comm> comm,
+                                   Teuchos::RCP<Epetra_Comm> comm,
                                    Epetra_Time& time,
                                    bool outflag)
 {
@@ -288,7 +288,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       mynsize = numnodes-(numproc-1)*nbsize;
 
     // construct the initial linear node rowmap
-    RCP<Epetra_Map> lin_noderowmap = Teuchos::rcp(new Epetra_Map(-1,mynsize,&nids[myrank*nbsize],0,*comm));
+    Teuchos::RCP<Epetra_Map> lin_noderowmap = Teuchos::rcp(new Epetra_Map(-1,mynsize,&nids[myrank*nbsize],0,*comm));
 
     // remember my vertex distribution for the later parmetis call
     std::vector<int> vtxdist(numproc+1);
@@ -786,7 +786,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     Epetra_Map newmap(globalpart.size(),count,&part[0],0,*comm);
 
     // create the output graph and export to it
-    RCP<Epetra_CrsGraph> outgraph =
+    Teuchos::RCP<Epetra_CrsGraph> outgraph =
       Teuchos::rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
     Epetra_Export exporter(graph->RowMap(),newmap);
     int err = outgraph->Export(*graph,exporter,Add);

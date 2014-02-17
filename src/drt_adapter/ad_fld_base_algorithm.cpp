@@ -362,11 +362,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // set parameters in list
   // -------------------------------------------------------------------
-  RCP<Teuchos::ParameterList> fluidtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
 
   // provide info about periodic boundary conditions
-  fluidtimeparams->set<RCP<std::map<int,std::vector<int> > > >("periodic bc (row)",row_pbcmapmastertoslave);
-  fluidtimeparams->set<RCP<std::map<int,std::vector<int> > > >("periodic bc (col)",col_pbcmapmastertoslave);
+  fluidtimeparams->set<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc (row)",row_pbcmapmastertoslave);
+  fluidtimeparams->set<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc (col)",col_pbcmapmastertoslave);
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma, poro)
   fluidtimeparams->set<int>("Physical Type",
@@ -960,7 +960,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
-  RCP<LINALG::Solver> solver =
+  Teuchos::RCP<LINALG::Solver> solver =
     Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                            discret->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
@@ -973,11 +973,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
-  RCP<Teuchos::ParameterList> fluidtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
 
   // --------------------provide info about periodic boundary conditions
-  fluidtimeparams->set<RCP<std::map<int,std::vector<int> > > >("periodic bc (row)",row_pbcmapmastertoslave);
-  fluidtimeparams->set<RCP<std::map<int,std::vector<int> > > >("periodic bc (col)",col_pbcmapmastertoslave);
+  fluidtimeparams->set<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc (row)",row_pbcmapmastertoslave);
+  fluidtimeparams->set<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc (col)",col_pbcmapmastertoslave);
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma)
   fluidtimeparams->set<int>("Physical Type",
@@ -1072,7 +1072,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
- const RCP<Teuchos::ParameterList> fluidtimeparams,
+ const Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams,
  const Teuchos::ParameterList& prbdyn,
  const Teuchos::ParameterList& fdyn)
 {
@@ -1207,7 +1207,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
-  const RCP<LINALG::Solver> solver,
+  const Teuchos::RCP<LINALG::Solver> solver,
   const Teuchos::ParameterList& fdyn)
 {
   // The SIMPLER (yes,no) parameter only controls whether the fluid matrix is

@@ -31,8 +31,8 @@ Maintainer: Ursula Rasthofer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
-  RCP<DRT::Discretization>  dis    ,
-  RCP<LINALG::MapExtractor> dbcmaps
+  Teuchos::RCP<DRT::Discretization>  dis    ,
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps
     )
   : dis_(dis),
     dbcmaps_(dbcmaps),

@@ -348,7 +348,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Surfaces()
 {
-  std::vector<RCP<Element> > surfaces(1);
+  std::vector<Teuchos::RCP<Element> > surfaces(1);
   surfaces[0]= Teuchos::rcp(this, false);
   return surfaces;
 }

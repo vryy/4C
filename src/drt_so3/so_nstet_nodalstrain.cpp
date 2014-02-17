@@ -37,7 +37,7 @@ Maintainer: Michael Gee
 void DRT::ELEMENTS::NStetType::ElementDeformationGradient(DRT::Discretization& dis)
 {
   // current displacement
-  RCP<const Epetra_Vector> disp = dis.GetState("displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = dis.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   // loop elements
   std::map<int,DRT::ELEMENTS::NStet*>::iterator ele;
@@ -73,11 +73,11 @@ void AutoDiffDemo(DRT::Discretization& dis);
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
                                           Teuchos::ParameterList& p,
-                                          RCP<LINALG::SparseOperator> systemmatrix1,
-                                          RCP<LINALG::SparseOperator> systemmatrix2,
-                                          RCP<Epetra_Vector>          systemvector1,
-                                          RCP<Epetra_Vector>          systemvector2,
-                                          RCP<Epetra_Vector>          systemvector3)
+                                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                                          Teuchos::RCP<Epetra_Vector>          systemvector1,
+                                          Teuchos::RCP<Epetra_Vector>          systemvector2,
+                                          Teuchos::RCP<Epetra_Vector>          systemvector3)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetType::PreEvaluate");
 
@@ -131,8 +131,8 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   const Epetra_Map* rmap = NULL;
   const Epetra_Map* dmap = NULL;
 
-  RCP<Epetra_FECrsMatrix> stifftmp;
-  RCP<LINALG::SparseMatrix> systemmatrix;
+  Teuchos::RCP<Epetra_FECrsMatrix> stifftmp;
+  Teuchos::RCP<LINALG::SparseMatrix> systemmatrix;
   if (systemmatrix1 != Teuchos::null)
   {
     rmap = &(systemmatrix1->OperatorRangeMap());
@@ -158,7 +158,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 
   //-----------------------------------------------------------------
   // current displacements
-  RCP<const Epetra_Vector> disp = dis.GetState("displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = dis.GetState("displacement");
 
   //================================================== do nodal stiffness
   std::map<int,DRT::Node*>::iterator node;
@@ -456,7 +456,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
   {
     // we have to export the nodal stresses and strains to column map
     // so they can be written by the elements
-    RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeColMap(),6,false));
+    Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeColMap(),6,false));
     LINALG::Export(*nstress_,*tmp);
     nstress_ = tmp;
     tmp = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeColMap(),6,false));
@@ -803,7 +803,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   if (matequal) // element patch has single material
   {
     double density; // just a dummy density
-    RCP<MAT::Material> mat = adjele[0]->Material();
+    Teuchos::RCP<MAT::Material> mat = adjele[0]->Material();
     // EleGID is set to -1 errorcheck is performed in
     // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
     SelectMaterial(mat,stress,cmat,density,glstrain,FnodeL,0,-1);
@@ -822,7 +822,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
       // volume of that element assigned to node L
       const double V = actele->Vol()/4;
       // def-gradient of the element
-      RCP<MAT::Material> mat = actele->Material();
+      Teuchos::RCP<MAT::Material> mat = actele->Material();
       // EleGID is set to -1 errorcheck is performed in
       // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
       SelectMaterial(mat,stressele,cmatele,density,glstrain,FnodeL,0,-1);
@@ -1215,7 +1215,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   if (matequal) // element patch has single material
   {
     double density; // just a dummy density
-    RCP<MAT::Material> mat = adjele[0]->Material();
+    Teuchos::RCP<MAT::Material> mat = adjele[0]->Material();
     // EleGID is set to -1 errorcheck is performed in
     // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
     SelectMaterial(mat,stress,cmat,density,glstrain,FnodeL,0,-1);
@@ -1234,7 +1234,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
       // volume of that element assigned to node L
       const double V = weight[ele] * actele->Vol();
       // def-gradient of the element
-      RCP<MAT::Material> mat = actele->Material();
+      Teuchos::RCP<MAT::Material> mat = actele->Material();
       // EleGID is set to -1 errorcheck is performed in
       // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
       SelectMaterial(mat,stressele,cmatele,density,glstrain,FnodeL,0,-1);
@@ -1340,7 +1340,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
  | material laws for NStet (protected)                          gee 10/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStetType::SelectMaterial(
-                      RCP<MAT::Material> mat,
+                      Teuchos::RCP<MAT::Material> mat,
                       LINALG::Matrix<6,1>& stress,
                       LINALG::Matrix<6,6>& cmat,
                       double& density,

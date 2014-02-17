@@ -68,7 +68,7 @@ params_o_(Teuchos::null)
 /*----------------------------------------------------------------------*/
 void STR::INVANA::MatParManager::InitParams()
 {
-  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
   std::map<int,std::vector<std::string> >::const_iterator it;
   for (it=paramap_.begin(); it!=paramap_.end(); it++)
@@ -132,7 +132,7 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
   std::cout << "the number of parameters is: " << numparams_ << std::endl;
 
   // check input consistency
-  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
   //loop materials to be optimized
   std::map<int,std::vector<std::string> >::const_iterator curr;
@@ -144,7 +144,7 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
     else
     {
       //check whether input params for this material are valid parameters for optimization
-      RCP<MAT::PAR::Material> actmat = mats.at(curr->first);
+      Teuchos::RCP<MAT::PAR::Material> actmat = mats.at(curr->first);
       std::vector<std::string> actmatparams;
       actmat->Parameter()->OptParams(&actmatparams);
       std::set<std::string> actmatparamsset(actmatparams.begin(),actmatparams.end());

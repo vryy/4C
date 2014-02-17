@@ -42,11 +42,11 @@ namespace LINALG
        *  performs aggregation process for given Epetra_CrsMatrix A and parameters params
        *  using an Uncoupled aggregation method. We're supposing a constant block size over all nodes.
        *
-       *  \param const RCP<Epetra_CrsMatrix> A: input matrix
+       *  \param const Teuchos::RCP<Epetra_CrsMatrix> A: input matrix
        *  \param ParameterList params: parameter list with parameters for aggregation
-       *  \param RCP<Epetra_IntVector>& aggrinfo: returns vector with aggregation info. lives on row map of input matrix A.
+       *  \param Teuchos::RCP<Epetra_IntVector>& aggrinfo: returns vector with aggregation info. lives on row map of input matrix A.
        *  \param int& naggregates_local: returns number of built aggregates on current processor
-       *  \param const RCP<Epetra_MultiVector>& ThisNS: null space of current level -> NOT NEEDED -> set to null
+       *  \param const Teuchos::RCP<Epetra_MultiVector>& ThisNS: null space of current level -> NOT NEEDED -> set to null
        *  \return number of built aggregates (over all processors)
        *
        *  The following parameters are used for the aggregation process
@@ -66,7 +66,7 @@ namespace LINALG
        *  - "anisotropic aggregation: epsilon": threshold parameter for anisotropic aggregation. used for "anisotropic aggregation" and "anisotropic aggregation (coupled)".
        *  - "Current Level": number of current level, should be provided of multigrid algorithm. only used for anisotropic aggregation process now. 0 = finest level.
        */
-      virtual int GetGlobalAggregates(const RCP<Epetra_CrsMatrix>& A, ParameterList& params, RCP<Epetra_IntVector>& aggrinfo, int& naggregates_local, const RCP<Epetra_MultiVector>& ThisNS = null);
+      virtual int GetGlobalAggregates(const Teuchos::RCP<Epetra_CrsMatrix>& A, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& aggrinfo, int& naggregates_local, const Teuchos::RCP<Epetra_MultiVector>& ThisNS = null);
 
       /*!
        *  \brief return number of dirichlet blocks
@@ -91,7 +91,7 @@ namespace LINALG
        * have to choose "PDE equations" = "BlockSize" = 2 (in 2D), since there are no holes for the pressure dofs in the row map
        * of A11 on the coarser levels.
        */
-      int AmalgamateMatrix(const RCP<Epetra_CrsMatrix>& A, ParameterList& params, RCP<Epetra_CrsGraph>& amalA, RCP<Epetra_IntVector>& bdry_array);
+      int AmalgamateMatrix(const Teuchos::RCP<Epetra_CrsMatrix>& A, ParameterList& params, Teuchos::RCP<Epetra_CrsGraph>& amalA, Teuchos::RCP<Epetra_IntVector>& bdry_array);
 
       /*!
        * \brief Simple Matrix pruning method
@@ -102,7 +102,7 @@ namespace LINALG
        * \param prunedA (out): Epetra_CrsMatrix with pruned matrix
        * \return 0
        */
-      int PruneMatrix(const RCP<Epetra_CrsMatrix>& A, RCP<Epetra_CrsMatrix>& prunedA);
+      int PruneMatrix(const Teuchos::RCP<Epetra_CrsMatrix>& A, Teuchos::RCP<Epetra_CrsMatrix>& prunedA);
 
       /*!
        * \brief Matrix pruning method with anisotropic aggregation algorithm
@@ -117,7 +117,7 @@ namespace LINALG
        * \param curlevel (in): level number of current multigrid level (0=finest level). used for adaption of epsilon -> epsilon = epsilon * pow(0.5,curlevel)
        * \return 0
        */
-      int PruneMatrixAnisotropic(const RCP<Epetra_CrsMatrix>& A, RCP<Epetra_CrsMatrix>& prunedA, double epsilon, int curlevel = 0);
+      int PruneMatrixAnisotropic(const Teuchos::RCP<Epetra_CrsMatrix>& A, Teuchos::RCP<Epetra_CrsMatrix>& prunedA, double epsilon, int curlevel = 0);
 
       /*!
        * \brief Matrix pruning method with anisotropic aggregation algorithm
@@ -132,7 +132,7 @@ namespace LINALG
        * \param curlevel (in): level number of current multigrid level (0=finest level). used for adaption of epsilon -> epsilon = epsilon * pow(0.5,curlevel)
        * \return 0
        */
-      int PruneMatrixAnisotropicSimple(const RCP<Epetra_CrsMatrix>& A, RCP<Epetra_CrsMatrix>& prunedA, double epsilon, int curlevel = 0);
+      int PruneMatrixAnisotropicSimple(const Teuchos::RCP<Epetra_CrsMatrix>& A, Teuchos::RCP<Epetra_CrsMatrix>& prunedA, double epsilon, int curlevel = 0);
 
       /*! \brief unamalgamtes vector
        *  build unamalgamated vector
@@ -140,80 +140,80 @@ namespace LINALG
        *  \param amal_Aggregates: amalgamated vector with aggregate information (lives on amalgamated map amal_map_)
        *  \return Aggregates: unamalgamated vector with aggregate information (lives on map_)
        */
-      RCP<Epetra_IntVector> UnamalgamateVector(const RCP<Epetra_IntVector>& amal_Aggregates);
+      Teuchos::RCP<Epetra_IntVector> UnamalgamateVector(const Teuchos::RCP<Epetra_IntVector>& amal_Aggregates);
 
       /*!
        *  \brief this routine controls the coarsening process
        *
        *  coarsening process
        *
-       *  \param const RCP<Epetra_CrsGraph>& amalA: the graph of the amalgamated matrix that is to be coarsened
-       *  \param const RCP<Epetra_IntVector>& bdry_array: vector array with information whether node is a dirichlet boundary node or not
+       *  \param const Teuchos::RCP<Epetra_CrsGraph>& amalA: the graph of the amalgamated matrix that is to be coarsened
+       *  \param const Teuchos::RCP<Epetra_IntVector>& bdry_array: vector array with information whether node is a dirichlet boundary node or not
        *  \param ParameterList& params: parameter list (see GetGlobalAggregates for more information about the accepted parameters)
-       *  \param RCP<Epetra_IntVector>& amal_Aggregates: returns the local aggregation information (the local aggregate ids for the nodes)
+       *  \param Teuchos::RCP<Epetra_IntVector>& amal_Aggregates: returns the local aggregation information (the local aggregate ids for the nodes)
        *  \param int& nLocalAggregates: returns the local number of nodes, that have been found on this processor
        *  \return 0, if successful
        *
        *
        */
-      int Coarsen(const RCP<Epetra_CrsGraph>& amalA, const RCP<Epetra_IntVector>& bdry_array, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, int& nLocalAggregates);
+      int Coarsen(const Teuchos::RCP<Epetra_CrsGraph>& amalA, const Teuchos::RCP<Epetra_IntVector>& bdry_array, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& amal_Aggregates, int& nLocalAggregates);
 
       /*! \brief phase 1 of uncoupled coarsening
        * Phase 1 of uncoupled coarsening. build as many as possible tentative aggregates using the "phase 1" parameters
        *
-       * \param const RCP<Epetra_CrsGraph>& amalA: amalgamated graph
+       * \param const Teuchos::RCP<Epetra_CrsGraph>& amalA: amalgamated graph
        * \param ParameterList& params: parameter list. see GetGlobalAggregates for more information about allowed parameters
-       * \param RCP<Epetra_IntVector>& amal_Aggregates: returns vector with aggregation information (local aggid for each node on current proc. -1, if node is not aggregated yet)
-       * \param RCP<Epetra_IntVector>& aggr_stat: stores internal information about the aggregation status of each node
+       * \param Teuchos::RCP<Epetra_IntVector>& amal_Aggregates: returns vector with aggregation information (local aggid for each node on current proc. -1, if node is not aggregated yet)
+       * \param Teuchos::RCP<Epetra_IntVector>& aggr_stat: stores internal information about the aggregation status of each node
        * \param int& nLocalAggregates: number of local aggregates that has been built on current processor so far.
        * \return number of nodes, that are not aggregated (and also no dirichlet boundary nodes!)
        */
-      int Phase1(const RCP<Epetra_CrsGraph>& amalA, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates);
+      int Phase1(const Teuchos::RCP<Epetra_CrsGraph>& amalA, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& amal_Aggregates, Teuchos::RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates);
       /*! \brief phase 2 of uncoupled coarsening
        * Phase 2 of uncoupled coarsening. use MinRank node attachement method
        *
-       * \param const RCP<Epetra_CrsGraph>& amalA: amalgamated graph
+       * \param const Teuchos::RCP<Epetra_CrsGraph>& amalA: amalgamated graph
        * \param ParameterList& params: parameter list. see GetGlobalAggregates for more information about allowed parameters
-       * \param RCP<Epetra_IntVector>& amal_Aggregates: returns vector with aggregation information (local aggid for each node on current proc. -1, if node is not aggregated yet)
-       * \param RCP<Epetra_IntVector>& aggr_stat: stores internal information about the aggregation status of each node
+       * \param Teuchos::RCP<Epetra_IntVector>& amal_Aggregates: returns vector with aggregation information (local aggid for each node on current proc. -1, if node is not aggregated yet)
+       * \param Teuchos::RCP<Epetra_IntVector>& aggr_stat: stores internal information about the aggregation status of each node
        * \param int& nLocalAggregates: number of local aggregates that has been built on current processor so far.
        * \return number of nodes, that are not aggregated (and also no dirichlet boundary nodes!)
        */
-      int Phase2_minrank(const RCP<Epetra_CrsGraph>& amalA, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates);
+      int Phase2_minrank(const Teuchos::RCP<Epetra_CrsGraph>& amalA, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& amal_Aggregates, Teuchos::RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates);
       /*! \brief phase 2 of uncoupled coarsening
        * Phase 2 of uncoupled coarsening. use MaxLink as node attachment method
        *
-       * \param const RCP<Epetra_CrsGraph>& amalA: amalgamated graph
+       * \param const Teuchos::RCP<Epetra_CrsGraph>& amalA: amalgamated graph
        * \param ParameterList& params: parameter list. see GetGlobalAggregates for more information about allowed parameters
-       * \param RCP<Epetra_IntVector>& amal_Aggregates: returns vector with aggregation information (local aggid for each node on current proc. -1, if node is not aggregated yet)
-       * \param RCP<Epetra_IntVector>& aggr_stat: stores internal information about the aggregation status of each node
+       * \param Teuchos::RCP<Epetra_IntVector>& amal_Aggregates: returns vector with aggregation information (local aggid for each node on current proc. -1, if node is not aggregated yet)
+       * \param Teuchos::RCP<Epetra_IntVector>& aggr_stat: stores internal information about the aggregation status of each node
        * \param int& nLocalAggregates: number of local aggregates that has been built on current processor so far.
        * \return number of nodes, that are not aggregated (and also no dirichlet boundary nodes!)
        */
-      int Phase2_maxlink(const RCP<Epetra_CrsGraph>& amalA, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates);
+      int Phase2_maxlink(const Teuchos::RCP<Epetra_CrsGraph>& amalA, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& amal_Aggregates, Teuchos::RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates);
       /*! \brief phase 3 of uncoupled coarsening
        * Phase 3 of uncoupled coarsening. put all left non-Dirichlet boundary nodes into (one-node) aggregates.
        * The method should return 0, as all nodes have to be aggregated now (unless Dirichlet boundary nodes)
        *
-       * \param const RCP<Epetra_CrsGraph>& amalA: amalgamated graph
+       * \param const Teuchos::RCP<Epetra_CrsGraph>& amalA: amalgamated graph
        * \param ParameterList& params: parameter list. see GetGlobalAggregates for more information about allowed parameters
-       * \param RCP<Epetra_IntVector>& amal_Aggregates: returns vector with aggregation information (local aggid for each node on current proc. -1, if node is not aggregated yet)
-       * \param RCP<Epetra_IntVector>& aggr_stat: stores internal information about the aggregation status of each node
+       * \param Teuchos::RCP<Epetra_IntVector>& amal_Aggregates: returns vector with aggregation information (local aggid for each node on current proc. -1, if node is not aggregated yet)
+       * \param Teuchos::RCP<Epetra_IntVector>& aggr_stat: stores internal information about the aggregation status of each node
        * \param int& nLocalAggregates: number of local aggregates that has been built on current processor so far.
        * \return number of nodes, that are not aggregated (and also no dirichlet boundary nodes!)
        */
-      int Phase3(const RCP<Epetra_CrsGraph>& amalA, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates);
+      int Phase3(const Teuchos::RCP<Epetra_CrsGraph>& amalA, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& amal_Aggregates, Teuchos::RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates);
       /*! \brief phase 4 of uncoupled coarsening
        * Phase 4 of uncoupled coarsening. Put all Dirichlet boundary nodes into one-node aggregates.
        *
-       * \param const RCP<Epetra_CrsGraph>& amalA: amalgamated graph
+       * \param const Teuchos::RCP<Epetra_CrsGraph>& amalA: amalgamated graph
        * \param ParameterList& params: parameter list. see GetGlobalAggregates for more information about allowed parameters
-       * \param RCP<Epetra_IntVector>& amal_Aggregates: returns vector with aggregation information (local aggid for each node on current proc. -1, if node is not aggregated yet)
-       * \param RCP<Epetra_IntVector>& aggr_stat: stores internal information about the aggregation status of each node
+       * \param Teuchos::RCP<Epetra_IntVector>& amal_Aggregates: returns vector with aggregation information (local aggid for each node on current proc. -1, if node is not aggregated yet)
+       * \param Teuchos::RCP<Epetra_IntVector>& aggr_stat: stores internal information about the aggregation status of each node
        * \param int& nLocalAggregates: number of local aggregates that has been built on current processor so far.
        * \return 0)
        */
-      int Phase4(const RCP<Epetra_CrsGraph>& amalA, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates);
+      int Phase4(const Teuchos::RCP<Epetra_CrsGraph>& amalA, ParameterList& params, Teuchos::RCP<Epetra_IntVector>& amal_Aggregates, Teuchos::RCP<Epetra_IntVector>& aggr_stat, int& nLocalAggregates);
 
     protected:
       int nGlobalDirichletBlocks;         ///< number of Dirichlet boundary blocks
@@ -223,8 +223,8 @@ namespace LINALG
       std::map<int,std::vector<int> > globalamalblockid2myrowid_;  ///< map: global block id -> myrowid of unamalgamated matrix (only for global block ids of current proc)
       std::vector<int>  globalamalblockids_;                      ///< vector with global block ids for amalgamated matrix on current proc
 
-      RCP<Epetra_Map> map_;               ///< row map of input matrix
-      RCP<Epetra_Map> amal_map_;          ///< row map of amalgamated matrix
+      Teuchos::RCP<Epetra_Map> map_;               ///< row map of input matrix
+      Teuchos::RCP<Epetra_Map> amal_map_;          ///< row map of amalgamated matrix
       int nVerbose_;                      ///< verbosity level
   };
 }

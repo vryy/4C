@@ -780,10 +780,10 @@ namespace STR
     virtual bool HaveWindkessel() = 0;
 
     //! get constraint manager defined in the structure
-    virtual const RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
+    virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
 
     //! get Windkessel manager defined in the structure
-    virtual const RCP<UTILS::WindkesselManager> GetWindkesselManager() = 0;
+    virtual const Teuchos::RCP<UTILS::WindkesselManager> GetWindkesselManager() = 0;
 
     //! get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
@@ -1168,7 +1168,7 @@ namespace STR
 
     //! @name Time measurement
     //@{
-    RCP<Epetra_Time>  timer_;           //!< timer for solution technique
+    Teuchos::RCP<Epetra_Time>  timer_;           //!< timer for solution technique
     double            dtsolve_;         //!< linear solver time
     double            dtele_;           //!< element evaluation time
     double            dtcmt_;           //!< contact / meshtying evaluation time

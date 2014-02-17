@@ -238,8 +238,8 @@ void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > 
     )
     {
       DRT::Condition& cond = *(fool->second);
-      std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
-      std::map<int,RCP<DRT::Element> >::iterator curr;
+      std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
+      std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
       Epetra_SerialDenseVector elevector;
       Epetra_SerialDenseMatrix elematrix;
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
@@ -302,8 +302,8 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
     if (fool->first == (std::string)"SurfaceXFEMNeumann")
     {
       DRT::Condition& cond = *(fool->second);
-      std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
-      std::map<int,RCP<DRT::Element> >::iterator curr;
+      std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
+      std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
       Epetra_SerialDenseVector elevector;
       Epetra_SerialDenseMatrix elematrix;
 
@@ -433,7 +433,7 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
 
 
 
-int XFEM::getParentElementId(DRT::Discretization& discret, RCP<DRT::Element> surf_ele)
+int XFEM::getParentElementId(DRT::Discretization& discret, Teuchos::RCP<DRT::Element> surf_ele)
 {
   int parent_ele_id = -1;
 
@@ -488,7 +488,7 @@ int XFEM::getParentElementId(DRT::Discretization& discret, RCP<DRT::Element> sur
 /*------------------------------------------------------------------------------*
  |  check for cut Neumann surface and decide for evaluate strategy  schott 09/11|
  *-----------------------------------------------------------------------------*/
-void XFEM::CutNeumannSurf(RCP<DRT::Element> neumann_surface, DRT::Element* parentele, GEO::CUT::ElementHandle * parentele_handle, bool & eval_Neumann, bool & xfem_eval_Neumann)
+void XFEM::CutNeumannSurf(Teuchos::RCP<DRT::Element> neumann_surface, DRT::Element* parentele, GEO::CUT::ElementHandle * parentele_handle, bool & eval_Neumann, bool & xfem_eval_Neumann)
 {
 
   // -> yes: xfem assembly, separated for each vc
@@ -535,7 +535,7 @@ void XFEM::CutNeumannSurf(RCP<DRT::Element> neumann_surface, DRT::Element* paren
   //  if(psurf_id == -1) dserror("Neumann surface in element surfaces not found!");
   //
   //  // get the surface of the element identical to the Neumann surface
-  //  RCP<DRT::Element> parent_surf = surfaces[psurf_id];
+  //  Teuchos::RCP<DRT::Element> parent_surf = surfaces[psurf_id];
 
 
   // find the cut_side, there must be one cut side identical to the Neumann boundary side

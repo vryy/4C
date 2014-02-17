@@ -57,7 +57,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  FluidVolumetricSurfaceFlowWrapper( RCP<DRT::Discretization>  actdis,
+  FluidVolumetricSurfaceFlowWrapper( Teuchos::RCP<DRT::Discretization>  actdis,
                                      IO::DiscretizationWriter& output,
                                      double dta);
 
@@ -70,24 +70,24 @@ public:
   /*!
   \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
   */
-  void EvaluateVelocities(RCP<Epetra_Vector> bcdof,
+  void EvaluateVelocities(Teuchos::RCP<Epetra_Vector> bcdof,
                           double             time);
 
   /*!
   \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
   */
-  void EvaluateCondMap(RCP<Epetra_Map> &   bcmap );
+  void EvaluateCondMap(Teuchos::RCP<Epetra_Map> &   bcmap );
 
   void InsertCondVector(Epetra_Vector & vec1, Epetra_Vector & vec2);
   /*!
   \brief Returns the map extractor of the conditions
   */
-  void EvaluateMapExtractor(RCP<FLD::UTILS::MapExtractor>&  mapextractor );
+  void EvaluateMapExtractor(Teuchos::RCP<FLD::UTILS::MapExtractor>&  mapextractor );
 
   /*!
   \brief Wrapper for FluidVolumetricSurfaceFlowBc::UpdateResidual
   */
-  void UpdateResidual(RCP<Epetra_Vector>  residual );
+  void UpdateResidual(Teuchos::RCP<Epetra_Vector>  residual );
 
 
   /*!
@@ -105,19 +105,19 @@ private:
   /*!
   \brief all single fluid volumetric surface flow conditions
   */
-  std::map<const int, RCP<class FluidVolumetricSurfaceFlowBc> > fvsf_map_;
+  std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc> > fvsf_map_;
 
   //! fluid discretization
-  RCP<DRT::Discretization>      discret_;
+  Teuchos::RCP<DRT::Discretization>      discret_;
 
   //! output
   IO::DiscretizationWriter&     output_;
 
   //! 
-  RCP<Epetra_Vector>            womersleyvbc_;
+  Teuchos::RCP<Epetra_Vector>            womersleyvbc_;
 
   //!
-  RCP<FLD::UTILS::MapExtractor> womersley_mp_extractor_;
+  Teuchos::RCP<FLD::UTILS::MapExtractor> womersley_mp_extractor_;
 
 }; // class FluidWomersleyWrapper
 
@@ -131,7 +131,7 @@ public:
   \brief Standard Constructor
   */
 
-  TotalTractionCorrector( RCP<DRT::Discretization>  actdis,
+  TotalTractionCorrector( Teuchos::RCP<DRT::Discretization>  actdis,
                           IO::DiscretizationWriter& output,
                           double dta);
 
@@ -144,7 +144,7 @@ public:
   /*!
   \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
   */
-  void EvaluateVelocities(RCP<Epetra_Vector> bcdof,
+  void EvaluateVelocities(Teuchos::RCP<Epetra_Vector> bcdof,
                           double             time,
                           double             theta,
                           double             dta);
@@ -152,18 +152,18 @@ public:
   /*!
   \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
   */
-  void EvaluateCondMap(RCP<Epetra_Map> &   bcmap );
+  void EvaluateCondMap(Teuchos::RCP<Epetra_Map> &   bcmap );
 
 
   /*!
   \brief Returns the map extractor of the conditions
   */
-  void EvaluateMapExtractor(RCP<FLD::UTILS::MapExtractor>&  mapextractor );
+  void EvaluateMapExtractor(Teuchos::RCP<FLD::UTILS::MapExtractor>&  mapextractor );
 
   /*!
   \brief Wrapper for FluidVolumetricSurfaceFlowBc::UpdateResidual
   */
-  void UpdateResidual(RCP<Epetra_Vector>  residual );
+  void UpdateResidual(Teuchos::RCP<Epetra_Vector>  residual );
 
 
   /*!
@@ -181,19 +181,19 @@ private:
   /*!
   \brief all single fluid volumetric surface flow conditions
   */
-  std::map<const int, RCP<class FluidVolumetricSurfaceFlowBc> > fvsf_map_;
+  std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc> > fvsf_map_;
 
   //! fluid discretization
-  RCP<DRT::Discretization>      discret_;
+  Teuchos::RCP<DRT::Discretization>      discret_;
 
   //! output
   IO::DiscretizationWriter&     output_;
 
   //! 
-  RCP<Epetra_Vector>            tractionvbc_;
+  Teuchos::RCP<Epetra_Vector>            tractionvbc_;
 
   //!
-  RCP<FLD::UTILS::MapExtractor> traction_mp_extractor_;
+  Teuchos::RCP<FLD::UTILS::MapExtractor> traction_mp_extractor_;
 
 }; // class TotalTractionCorrector
 
@@ -218,7 +218,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  FluidVolumetricSurfaceFlowBc( RCP<DRT::Discretization>  actdis,
+  FluidVolumetricSurfaceFlowBc( Teuchos::RCP<DRT::Discretization>  actdis,
                                 IO::DiscretizationWriter& output,
                                 double                    dta,
                                 std::string                    ds_condname,
@@ -241,8 +241,8 @@ public:
   /*!
   \brief calculates the center of mass
   */
-  void CenterOfMassCalculation(RCP<std::vector<double> > coords,
-                               RCP<std::vector<double> > normal,
+  void CenterOfMassCalculation(Teuchos::RCP<std::vector<double> > coords,
+                               Teuchos::RCP<std::vector<double> > normal,
                                std::string                    ds_condname);
 
 
@@ -255,30 +255,30 @@ public:
   /*!
   \brief get the node row map of the womersley condition
   */
-  void BuildConditionNodeRowMap(RCP<DRT::Discretization>  dis,
+  void BuildConditionNodeRowMap(Teuchos::RCP<DRT::Discretization>  dis,
                                 std::string                    condname,
                                 int                       condid,
                                 int                       condnum,
-                                RCP<Epetra_Map> &         cond_noderowmap);
+                                Teuchos::RCP<Epetra_Map> &         cond_noderowmap);
 
   /*!
   \brief get the dof row map of the womersley condition
   */
-  void BuildConditionDofRowMap(RCP<DRT::Discretization>      dis,
+  void BuildConditionDofRowMap(Teuchos::RCP<DRT::Discretization>      dis,
                                const std::string                  condname,
                                int                           condid,
                                int                           condnum  ,
-                               RCP<Epetra_Map> &             cond_dofrowmap);
+                               Teuchos::RCP<Epetra_Map> &             cond_dofrowmap);
 
 #if 0
   /*!
   \brief Broadcast node information over all processors
   */
-  void BroadcastNodeInformation(RCP<DRT::Discretization>  dis,
+  void BroadcastNodeInformation(Teuchos::RCP<DRT::Discretization>  dis,
                                 std::string                    noderowmap,
                                 int                       condid,
                                 int                       condnum,
-                                RCP<Epetra_Map>           cond_noderowmap);
+                                Teuchos::RCP<Epetra_Map>           cond_noderowmap);
 #endif
 
   /*!
@@ -292,7 +292,7 @@ public:
   /*!
   \brief Evaluate flowrate
   */
-  double EvaluateFlowrate(//RCP<Epetra_Vector> bcdof,
+  double EvaluateFlowrate(//Teuchos::RCP<Epetra_Vector> bcdof,
                           std::string             ds_condname,
                           double             time);
 
@@ -300,18 +300,18 @@ public:
   /*!
   \brief UpdateResidual
   */
-  void UpdateResidual(RCP<Epetra_Vector>  residual );
+  void UpdateResidual(Teuchos::RCP<Epetra_Vector>  residual );
 
   /*!
   \brief Evaluate velocities
   */
-  void Velocities(  RCP<DRT::Discretization>  disc,
-                    RCP<Epetra_Vector>        bcdof,
-                    RCP<Epetra_Map>           cond_noderowmap,
-                    RCP<Epetra_Vector>        local_radii,
-                    RCP<Epetra_Vector>        border_radii,
-                    RCP<std::vector<double> > normal,
-                    RCP<Teuchos::ParameterList>        params);
+  void Velocities(  Teuchos::RCP<DRT::Discretization>  disc,
+                    Teuchos::RCP<Epetra_Vector>        bcdof,
+                    Teuchos::RCP<Epetra_Map>           cond_noderowmap,
+                    Teuchos::RCP<Epetra_Vector>        local_radii,
+                    Teuchos::RCP<Epetra_Vector>        border_radii,
+                    Teuchos::RCP<std::vector<double> > normal,
+                    Teuchos::RCP<Teuchos::ParameterList>        params);
 
   /*!
   \brief Polynomail shaped velocity profile
@@ -346,7 +346,7 @@ public:
   /*!
   \brief Calculate the Flowrate on a boundary
   */
-  void SetVelocities(RCP<Epetra_Vector> velocities);
+  void SetVelocities(Teuchos::RCP<Epetra_Vector> velocities);
 
   /*!
   \brief Reset condition velocities
@@ -368,8 +368,8 @@ public:
   /*!
   \brief Calculate the Flowrate on a boundary
   */
-  void   DFT(RCP<std::vector<double> >   f,
-             RCP<std::vector<std::complex<double> > > & F,
+  void   DFT(Teuchos::RCP<std::vector<double> >   f,
+             Teuchos::RCP<std::vector<std::complex<double> > > & F,
              int starting_pos);
 
 
@@ -401,8 +401,8 @@ private:
   /*!
   \brief Interpolation function
   */
-  void Interpolate(RCP<std::vector<double> > V1,
-                   RCP<std::vector<double> > V2,
+  void Interpolate(Teuchos::RCP<std::vector<double> > V1,
+                   Teuchos::RCP<std::vector<double> > V2,
                    int index1,
                    int & index2,
                    double time);
@@ -415,7 +415,7 @@ private:
 
 protected:
 
-  RCP<Epetra_Vector> womersleybc_;
+  Teuchos::RCP<Epetra_Vector> womersleybc_;
 
 private:
 
@@ -444,13 +444,13 @@ private:
   int                           myrank_;
 
   //! fluid discretization
-  RCP<DRT::Discretization>      discret_;
+  Teuchos::RCP<DRT::Discretization>      discret_;
 
   //! output
   IO::DiscretizationWriter&     output_;
 
   //! Flowrate array for Womersley conditions
-  RCP<std::vector<double> >     flowrates_;
+  Teuchos::RCP<std::vector<double> >     flowrates_;
 
   //! Position at which the next element should be replaced
   //! initialised to zero as the first element will be replaced first
@@ -460,34 +460,34 @@ private:
   int cyclesteps_;
 
   //! center of mass coordinates
-  RCP<std::vector<double> >     cmass_;
+  Teuchos::RCP<std::vector<double> >     cmass_;
 
   //! avarage normal of the surface
-  RCP<std::vector<double> >     normal_;
+  Teuchos::RCP<std::vector<double> >     normal_;
 
   //! direction normal of the velocity
-  RCP<std::vector<double> >     vnormal_;
+  Teuchos::RCP<std::vector<double> >     vnormal_;
 
   //! a Node row map of the nodes that belong to the current condition
-  RCP<Epetra_Map> cond_surfnoderowmap_;
+  Teuchos::RCP<Epetra_Map> cond_surfnoderowmap_;
 
   //! a Node row map of the nodes that belong to border of the current condition
-  RCP<Epetra_Map> cond_linenoderowmap_;
+  Teuchos::RCP<Epetra_Map> cond_linenoderowmap_;
 
   //! a Dof row map of the degrees of freedom that belong to the current condition
-  RCP<Epetra_Map> cond_dofrowmap_;
+  Teuchos::RCP<Epetra_Map> cond_dofrowmap_;
 
   //! A map of the local radii
-  RCP<Epetra_Vector> local_radii_;
+  Teuchos::RCP<Epetra_Vector> local_radii_;
 
   //! A map of corresponding border radii
-  RCP<Epetra_Vector> border_radii_;
+  Teuchos::RCP<Epetra_Vector> border_radii_;
 
   //! A map of only condition velocites
-  RCP<Epetra_Vector> cond_velocities_;
+  Teuchos::RCP<Epetra_Vector> cond_velocities_;
 
   //! A map of only condition velocites
-  RCP<Epetra_Vector> cond_traction_vel_;
+  Teuchos::RCP<Epetra_Vector> cond_traction_vel_;
   
   //! A correction factor that will scale the velocities to the correct volumetric-flow-rate
   double correction_factor_;

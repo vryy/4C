@@ -152,8 +152,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   // care for periodic boundary conditions
   // -------------------------------------------------------------------
 
-  row_pbcmapmastertoslave_ = params_->get<RCP<std::map<int,std::vector<int> > > >("periodic bc (row)");
-  col_pbcmapmastertoslave_ = params_->get<RCP<std::map<int,std::vector<int> > > >("periodic bc (col)");
+  row_pbcmapmastertoslave_ = params_->get<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc (row)");
+  col_pbcmapmastertoslave_ = params_->get<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc (col)");
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // ensure that degrees of freedom in the discretization have been set
@@ -1875,7 +1875,7 @@ void FLD::FluidImplicitTimeInt::SetupKrylovSpaceProjection(DRT::Condition* kspco
  *--------------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::UpdateKrylovSpaceProjection()
 {
-  // get RCP to kernel vector of projector
+  // get Teuchos::RCP to kernel vector of projector
   Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
   Teuchos::RCP<Epetra_Vector> c0 = Teuchos::rcp((*c)(0),false);
   c0->PutScalar(0.0);
@@ -1903,7 +1903,7 @@ void FLD::FluidImplicitTimeInt::UpdateKrylovSpaceProjection()
   }
   else if(*weighttype == "integration")
   {
-    // get RCP to weight vector of projector
+    // get Teuchos::RCP to weight vector of projector
     Teuchos::RCP<Epetra_MultiVector> w = projector_->GetNonConstWeights();
     Teuchos::RCP<Epetra_Vector> w0 = Teuchos::rcp((*w)(0),false);
     w0->PutScalar(0.0);
@@ -2078,7 +2078,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 
   // -------------------------------------------------------------------
   // take surface volumetric flow rate into account
-  //    RCP<Epetra_Vector> temp_vec = Teuchos::rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
+  //    Teuchos::RCP<Epetra_Vector> temp_vec = Teuchos::rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
   //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
   // -------------------------------------------------------------------
   InsertVolumetricSurfaceFlowCondVector(zeros_,residual_);
@@ -2674,7 +2674,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // store subfilter stresses for additional output
   if (turbmodel_==INPAR::FLUID::scale_similarity)
   {
-    RCP<Epetra_Vector> stress12 = CalcSFS(1,2);
+    Teuchos::RCP<Epetra_Vector> stress12 = CalcSFS(1,2);
     statisticsmanager_->StoreNodalValues(step_, stress12);
   }
   // -------------------------------------------------------------------
@@ -2736,7 +2736,7 @@ void FLD::FluidImplicitTimeInt::StatisticsOutput()
   // store subfilter stresses for additional output
   if (turbmodel_==INPAR::FLUID::scale_similarity)
   {
-    RCP<Epetra_Vector> stress12 = CalcSFS(1,2);
+    Teuchos::RCP<Epetra_Vector> stress12 = CalcSFS(1,2);
     statisticsmanager_->StoreNodalValues(step_, stress12);
   }
   // -------------------------------------------------------------------
@@ -2798,14 +2798,14 @@ void FLD::FluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-      RCP<Epetra_Vector> traction = CalcStresses();
+      Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
       output_->WriteVector("traction",traction);
       if (myrank_==0)
         std::cout<<"Writing stresses"<<std::endl;
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
       {
-        RCP<Epetra_Vector> wss = CalcWallShearStresses();
+        Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses();
         output_->WriteVector("wss",wss);
       }
     }
@@ -2828,8 +2828,8 @@ void FLD::FluidImplicitTimeInt::Output()
     if (turbmodel_==INPAR::FLUID::scale_similarity or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales) // or dynamic_smagorinsky_)
     {
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
-      RCP<Epetra_Vector> filteredvel = LINALG::CreateVector(*dofrowmap,true);
-      RCP<Epetra_Vector> fsvel = LINALG::CreateVector(*dofrowmap,true);
+      Teuchos::RCP<Epetra_Vector> filteredvel = LINALG::CreateVector(*dofrowmap,true);
+      Teuchos::RCP<Epetra_Vector> fsvel = LINALG::CreateVector(*dofrowmap,true);
       if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator
         or scale_sep_ == INPAR::FLUID::geometric_multigrid_operator)
       {
@@ -2846,17 +2846,17 @@ void FLD::FluidImplicitTimeInt::Output()
       {
         if (myrank_==0)
            std::cout << "output of subfilter stresses for scale similarity model ..." << std::endl;
-        RCP<Epetra_Vector> stress11 = CalcSFS(1,1);
+        Teuchos::RCP<Epetra_Vector> stress11 = CalcSFS(1,1);
         output_->WriteVector("sfs11",stress11);
-        RCP<Epetra_Vector> stress12 = CalcSFS(1,2);
+        Teuchos::RCP<Epetra_Vector> stress12 = CalcSFS(1,2);
         output_->WriteVector("sfs12",stress12);
-        RCP<Epetra_Vector> stress13 = CalcSFS(1,3);
+        Teuchos::RCP<Epetra_Vector> stress13 = CalcSFS(1,3);
         output_->WriteVector("sfs13",stress13);
-        RCP<Epetra_Vector> stress22 = CalcSFS(2,2);
+        Teuchos::RCP<Epetra_Vector> stress22 = CalcSFS(2,2);
         output_->WriteVector("sfs22",stress22);
-        RCP<Epetra_Vector> stress23 = CalcSFS(2,3);
+        Teuchos::RCP<Epetra_Vector> stress23 = CalcSFS(2,3);
         output_->WriteVector("sfs23",stress23);
-        RCP<Epetra_Vector> stress33 = CalcSFS(3,3);
+        Teuchos::RCP<Epetra_Vector> stress33 = CalcSFS(3,3);
         output_->WriteVector("sfs33",stress33);
       }
     }
@@ -2955,12 +2955,12 @@ void FLD::FluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-      RCP<Epetra_Vector> traction = CalcStresses();
+      Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
       output_->WriteVector("traction",traction);
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
       {
-        RCP<Epetra_Vector> wss = CalcWallShearStresses();
+        Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses();
         output_->WriteVector("wss",wss);
       }
     }
@@ -3022,8 +3022,8 @@ void FLD::FluidImplicitTimeInt::Output()
   // does discret_ exist here?
   //std::cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << std::endl;
 
-  //RCP<Epetra_Vector> mynoderowmap = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
-  //RCP<Epetra_Vector> noderowmap_ = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
+  //Teuchos::RCP<Epetra_Vector> mynoderowmap = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
+  //Teuchos::RCP<Epetra_Vector> noderowmap_ = Teuchos::rcp(new Epetra_Vector(discret_->NodeRowMap()));
   //dofrowmap_  = Teuchos::rcp(new discret_->DofRowMap());
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -3445,16 +3445,16 @@ void FLD::FluidImplicitTimeInt::AVM3GetScaleSeparationMatrix()
   }
 
   // get plain aggregation Ptent
-  RCP<Epetra_CrsMatrix> crsPtent;
+  Teuchos::RCP<Epetra_CrsMatrix> crsPtent;
   MLAPI::GetPtent(*SystemMatrix()->EpetraMatrix(),mlparams,nullspace,crsPtent);
   LINALG::SparseMatrix Ptent(crsPtent);
 
   // compute scale-separation matrix: S = I - Ptent*Ptent^T
   Sep_ = LINALG::Multiply(Ptent,false,Ptent,true);
   Sep_->Scale(-1.0);
-  RCP<Epetra_Vector> tmp = LINALG::CreateVector(Sep_->RowMap(),false);
+  Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(Sep_->RowMap(),false);
   tmp->PutScalar(1.0);
-  RCP<Epetra_Vector> diag = LINALG::CreateVector(Sep_->RowMap(),false);
+  Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(Sep_->RowMap(),false);
   Sep_->ExtractDiagonalCopy(*diag);
   diag->Update(1.0,*tmp,1.0);
   Sep_->ReplaceDiagonalValues(*diag);
@@ -3915,10 +3915,10 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
  | overloaded in TimIntLoma                                    bk 12/13 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetIterLomaFields(
-   RCP<const Epetra_Vector> scalaraf,
-   RCP<const Epetra_Vector> scalaram,
-   RCP<const Epetra_Vector> scalardtam,
-   RCP<const Epetra_Vector> fsscalaraf,
+   Teuchos::RCP<const Epetra_Vector> scalaraf,
+   Teuchos::RCP<const Epetra_Vector> scalaram,
+   Teuchos::RCP<const Epetra_Vector> scalardtam,
+   Teuchos::RCP<const Epetra_Vector> fsscalaraf,
    const double             thermpressaf,
    const double             thermpressam,
    const double             thermpressdtaf,
@@ -4005,9 +4005,9 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
  | overloaded in TimIntLoma                                    bk 12/13 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetTimeLomaFields(
-   RCP<const Epetra_Vector> scalarnp,
+   Teuchos::RCP<const Epetra_Vector> scalarnp,
    const double             thermpressnp,
-   RCP<const Epetra_Vector> scatraresidual,
+   Teuchos::RCP<const Epetra_Vector> scatraresidual,
    Teuchos::RCP<DRT::Discretization> scatradis,
    const int                whichscalar)
 {
@@ -4256,7 +4256,7 @@ Teuchos::RCP<double> FLD::FluidImplicitTimeInt::EvaluateDivU()
     SetStateTimInt();
 
     const Epetra_Map* elementrowmap = discret_->ElementRowMap();
-    RCP<Epetra_MultiVector> divu = Teuchos::rcp(new Epetra_MultiVector(*elementrowmap,1,true));
+    Teuchos::RCP<Epetra_MultiVector> divu = Teuchos::rcp(new Epetra_MultiVector(*elementrowmap,1,true));
 
     // optional: elementwise defined div u may be written to standard output file (not implemented yet)
     discret_->EvaluateScalars(eleparams, divu);
@@ -4354,7 +4354,7 @@ Notice: Angular moments obtained from lift&drag forces currently refer to the
 void FLD::FluidImplicitTimeInt::LiftDrag() const
 {
   // in this map, the results of the lift drag calculation are stored
-  RCP<std::map<int,std::vector<double> > > liftdragvals;
+  Teuchos::RCP<std::map<int,std::vector<double> > > liftdragvals;
 
   FLD::UTILS::LiftDrag(*discret_,*trueresidual_,*params_,liftdragvals);
 
@@ -4743,7 +4743,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
   // -------------------------------------------------------------------
 
   // get traction
-  RCP<Epetra_Vector> wss = CalcStresses();
+  Teuchos::RCP<Epetra_Vector> wss = CalcStresses();
 
   // loop over all entities within the traction vector
   for (int i = 0; i < ndnorm0->MyLength();i+=numdim_+1)
@@ -4783,11 +4783,11 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcSFS(
   Teuchos::RCP<Epetra_Vector> tauSFS = LINALG::CreateVector(*noderowmap,true);
 
   // get filtered velocity
-  RCP<Epetra_Vector> filteredvel = LINALG::CreateVector(*noderowmap,true);
+  Teuchos::RCP<Epetra_Vector> filteredvel = LINALG::CreateVector(*noderowmap,true);
   Boxf_->FilteredVelComp(filteredvel, i, j);
 
   // get filtered reynoldsstress
-  RCP<Epetra_Vector> filteredreystr = LINALG::CreateVector(*noderowmap,true);
+  Teuchos::RCP<Epetra_Vector> filteredreystr = LINALG::CreateVector(*noderowmap,true);
   Boxf_->FilteredReyStrComp(filteredreystr, i , j);
 
   tauSFS->Update(1.0,*filteredreystr,-1.0, *filteredvel,0.0);

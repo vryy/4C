@@ -71,7 +71,7 @@
 namespace MueLu {
 
   template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::MyTrilinosSmoother(std::string const & mapName, const RCP<const FactoryBase> & mapFact, std::string const & type, Teuchos::ParameterList const & paramList, LO const &overlap, RCP<FactoryBase> AFact)
+  MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::MyTrilinosSmoother(std::string const & mapName, const Teuchos::RCP<const FactoryBase> & mapFact, std::string const & type, Teuchos::ParameterList const & paramList, LO const &overlap, Teuchos::RCP<FactoryBase> AFact)
     : mapName_(mapName), mapFact_(mapFact), type_(type), paramList_(paramList), overlap_(overlap), AFact_(AFact)
   {
     TEUCHOS_TEST_FOR_EXCEPTION(overlap_ < 0, Exceptions::RuntimeError, "overlap_ < 0");
@@ -102,7 +102,7 @@ namespace MueLu {
     //TEUCHOS_TEST_FOR_EXCEPTION(s_ != Teuchos::null, Exceptions::RuntimeError, "IsSetup() == false but s_ != Teuchos::null. This does not make sense");
 
     if(currentLevel.IsAvailable(mapName_,mapFact_.get())) {
-      map_ = currentLevel.Get<RCP<const Map> >(mapName_,mapFact_.get());
+      map_ = currentLevel.Get<Teuchos::RCP<const Map> >(mapName_,mapFact_.get());
       TEUCHOS_TEST_FOR_EXCEPTION(map_ == Teuchos::null, Exceptions::RuntimeError, "MueLu::MyTrilinosSmoother::Setup: map is Teuchos::null.");
     }
     else map_ = Teuchos::null; // no map with artificial Dirichlet boundaries available.
@@ -127,7 +127,7 @@ namespace MueLu {
     //TEUCHOS_TEST_FOR_EXCEPTION(X.getNumVectors() > 1, Exceptions::RuntimeError, "MyTrilinosSmoother::Apply: MyTrilinosSmoother only supports vectors (and no multivectors with more than one vectors");
 
     // create non-const copy of rhs vector B
-    RCP<MultiVector> Btemp = MultiVectorFactory::Build(B.getMap(),1,true);
+    Teuchos::RCP<MultiVector> Btemp = MultiVectorFactory::Build(B.getMap(),1,true);
     Btemp->update(1.0,B,0.0);
 
     if (map_ != Teuchos::null) {
@@ -151,7 +151,7 @@ namespace MueLu {
   }
 
   template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  RCP<MueLu::SmootherPrototype<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Copy() const {
+  Teuchos::RCP<MueLu::SmootherPrototype<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Copy() const {
     return Teuchos::rcp( new MyTrilinosSmoother(*this) );
   }
 

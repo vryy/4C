@@ -457,7 +457,7 @@ protected:
                     A deep copy of the map is made and stored.
                     Normally though, these elements are a line, surface or
                     volume elements produced by and shared with the discretization.
-                    Do not mess with their RCP!
+                    Do not mess with their Teuchos::RCP!
 
   */
   virtual void AddGeometry(Teuchos::RCP<std::map<int,Teuchos::RCP<DRT::Element> > > geom)

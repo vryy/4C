@@ -33,9 +33,9 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
   // -------------------------------------------------------------------
   // access the fluid and the optimization discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> optidis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> optidis = Teuchos::null;
   optidis = problem->GetDis(disname);
-  RCP<DRT::Discretization> fluiddis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
   fluiddis = problem->GetDis("fluid");
 
   // -------------------------------------------------------------------
@@ -64,7 +64,7 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
       )
   );
 
-  RCP<IO::DiscretizationWriter> output = optidis->Writer();
+  Teuchos::RCP<IO::DiscretizationWriter> output = optidis->Writer();
   output->SetOutput(optioutput);
   output->WriteMesh(0,0.0);
 

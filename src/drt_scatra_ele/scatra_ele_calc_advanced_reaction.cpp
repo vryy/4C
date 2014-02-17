@@ -187,7 +187,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatGrowthScd(
 
   //strategy to obtain theta from the structure at equivalent gauss-point
   //access structure discretization
-   RCP<DRT::Discretization> structdis = Teuchos::null;
+   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
    structdis = DRT::Problem::Instance()->GetDis("structure");
    //get corresponding structure element (it has the same global ID as the scatra element)
    DRT::Element* structele = structdis->gElement(my::eid_);

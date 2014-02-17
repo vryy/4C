@@ -20,20 +20,20 @@
 #include "MLAPI.h"
 
 
-LINALG::SAAMGTransferOperator::SAAMGTransferOperator(const RCP<SparseMatrix>& A, FILE* outfile) :
+LINALG::SAAMGTransferOperator::SAAMGTransferOperator(const Teuchos::RCP<SparseMatrix>& A, FILE* outfile) :
   TentativeTransferOperator(A, outfile)
 {
 
 }
 
-RCP<Epetra_MultiVector>  LINALG::SAAMGTransferOperator::buildTransferOperators(const RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const RCP<Epetra_MultiVector>& ThisNS, const int domainoffset)
+Teuchos::RCP<Epetra_MultiVector>  LINALG::SAAMGTransferOperator::buildTransferOperators(const Teuchos::RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_MultiVector>& ThisNS, const int domainoffset)
 {
   TEUCHOS_FUNC_TIME_MONITOR("SAAMGTransferOperator::buildTransferOperators");
 
   ////////////// define dummy variable for next nullspace
-  RCP<Epetra_MultiVector> NextNS = Teuchos::null;
-  RCP<SparseMatrix> prolongator_tent = Teuchos::null;
-  RCP<SparseMatrix> restrictor_tent = Teuchos::null;
+  Teuchos::RCP<Epetra_MultiVector> NextNS = Teuchos::null;
+  Teuchos::RCP<SparseMatrix> prolongator_tent = Teuchos::null;
+  Teuchos::RCP<SparseMatrix> restrictor_tent = Teuchos::null;
 
   ////////////// build tentative prolongator
   GetPtent(A_->RowMap(),*aggs,naggs_local,params,*ThisNS,prolongator_tent,NextNS,domainoffset);
@@ -48,14 +48,14 @@ RCP<Epetra_MultiVector>  LINALG::SAAMGTransferOperator::buildTransferOperators(c
   double maxeig = MaxEigCG(*A_,true);
 
   ////////////////// extract diagonal of A
-  RCP<Epetra_Vector> diagA = Teuchos::rcp(new Epetra_Vector(A_->RowMap(),true));
+  Teuchos::RCP<Epetra_Vector> diagA = Teuchos::rcp(new Epetra_Vector(A_->RowMap(),true));
   A_->ExtractDiagonalCopy(*diagA);
 
   int err = diagA->Reciprocal(*diagA);
   if(err) dserror("SaddlePointPreconditioner::SA_AMG: diagonal entries of A are 0");
 
   /////////////////// setup smoothed aggregation prolongator
-  RCP<SparseMatrix> Ascaled = Teuchos::rcp(new SparseMatrix(*A_,Copy)); // ok, not the best but just works
+  Teuchos::RCP<SparseMatrix> Ascaled = Teuchos::rcp(new SparseMatrix(*A_,Copy)); // ok, not the best but just works
   diagA->Scale(dampingFactor/maxeig);
   Ascaled->LeftScale(*diagA);                               // Ascaled = damping/maxeig(D^{-1} A) * D^{-1} * A
   prolongator_ = LINALG::MLMultiply(*Ascaled,*prolongator_tent,false);  // Psmoothed = damping/maxeig(D^{-1} A) * D^{-1} * A * Ptent

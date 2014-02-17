@@ -71,9 +71,9 @@ namespace THR
                             double dt);
     
     // convert maps form structure discretization to thermo discretization
-    void ConvertMaps(RCP<Epetra_Map>& slavedofs,
-                     RCP<Epetra_Map>& activedofs,
-                     RCP<Epetra_Map>& masterdofs);
+    void ConvertMaps(Teuchos::RCP<Epetra_Map>& slavedofs,
+                     Teuchos::RCP<Epetra_Map>& activedofs,
+                     Teuchos::RCP<Epetra_Map>& masterdofs);
     
     //! transform mortar matrices from structure dofs in thermo dofs
     // This needs
@@ -81,12 +81,12 @@ namespace THR
     // 2. Transformation into thermo dofs
     void TransformDM(LINALG::SparseMatrix& dmatrix,
                      LINALG::SparseMatrix& mmatrix,
-                     RCP<Epetra_Map>& slavedofs,
-                     RCP<Epetra_Map>& masterdofs);
+                     Teuchos::RCP<Epetra_Map>& slavedofs,
+                     Teuchos::RCP<Epetra_Map>& masterdofs);
     
     //! transform matrix A
     void TransformA(LINALG::SparseMatrix& amatrix,
-                    RCP<Epetra_Map>& slavedofs);
+                    Teuchos::RCP<Epetra_Map>& slavedofs);
 
     //! apply B matrix for nodes in contact
     void AssembleB(LINALG::SparseMatrix& bmatrix);
@@ -104,16 +104,16 @@ namespace THR
                                     LINALG::SparseMatrix& dmatrix,
                                     LINALG::SparseMatrix& mmatrix,
                                     LINALG::SparseMatrix& amatrix,
-                                    RCP<Epetra_Map> activedofs,
-                                    RCP<Epetra_Map> masterdofs,
+                                    Teuchos::RCP<Epetra_Map> activedofs,
+                                    Teuchos::RCP<Epetra_Map> masterdofs,
                                     Teuchos::RCP<Epetra_Vector>& temp,
                                     double dt);
     
     //! initialize thermal lagrange multipliers
-    void InitializeThermLM(RCP<Epetra_Map> sthermdofs);
+    void InitializeThermLM(Teuchos::RCP<Epetra_Map> sthermdofs);
     
     //! recover thermal lagrange multipliers from temperature
-    void RecoverThermLM(RCP<Epetra_Vector> tempi);
+    void RecoverThermLM(Teuchos::RCP<Epetra_Vector> tempi);
   
     protected:
   
@@ -124,18 +124,18 @@ namespace THR
     Teuchos::RCP<DRT::Discretization> discretstruct_;  // structural discretisation
     Teuchos::RCP<DRT::Discretization> discretthermo_;  // thermal discretisation
     
-    RCP<Epetra_Comm>                      comm_;       // an Epetra_comm
+    Teuchos::RCP<Epetra_Comm>                      comm_;       // an Epetra_comm
     
-    // some RCP's needed for contact,
+    // some Teuchos::RCP's needed for contact,
     // will be moved to seperate class soon!
-    RCP<LINALG::SparseMatrix> thermcondLM_; // stiffness of thermal condition
+    Teuchos::RCP<LINALG::SparseMatrix> thermcondLM_; // stiffness of thermal condition
                                             // with respect to Lagrange multipliers
-    RCP<Epetra_Vector> z_;                  // thermal Lagrange multipliers
-    RCP<Epetra_Vector> fs_;                 // slave side effective heat fluxes (needed for LM)
-    RCP<LINALG::SparseMatrix> invd_;        // inverse of Mortar matrix D (needed for LM)
-    RCP<LINALG::SparseMatrix> ksn_;         // stiffness block K_sn (needed for LM)
-    RCP<LINALG::SparseMatrix> ksm_;         // stiffness block K_sm (needed for LM)
-    RCP<LINALG::SparseMatrix> kss_;         // stiffness block K_ss (needed for LM)
+    Teuchos::RCP<Epetra_Vector> z_;                  // thermal Lagrange multipliers
+    Teuchos::RCP<Epetra_Vector> fs_;                 // slave side effective heat fluxes (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> invd_;        // inverse of Mortar matrix D (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> ksn_;         // stiffness block K_sn (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> ksm_;         // stiffness block K_sm (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> kss_;         // stiffness block K_ss (needed for LM)
 
     
   };  // class ThermoContactMan

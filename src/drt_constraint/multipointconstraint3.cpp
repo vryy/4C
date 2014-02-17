@@ -214,7 +214,7 @@ void UTILS::MPConstraint3::Evaluate(
  |(private)                                                   tk 04/08    |
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
-std::map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFromCondition
+std::map<int,Teuchos::RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFromCondition
 (
   Teuchos::RCP<DRT::Discretization> actdisc,
   std::vector< DRT::Condition* >      constrcondvec,
@@ -224,7 +224,7 @@ std::map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizati
 )
 {
   // start with empty map
-  std::map<int,RCP<DRT::Discretization> > newdiscmap;
+  std::map<int,Teuchos::RCP<DRT::Discretization> > newdiscmap;
 
    if (!actdisc->Filled())
   {
@@ -417,11 +417,11 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       if(activecons_.find(condID)->second==false)
       {
         const std::string action = params.get<std::string>("action");
-        Teuchos::RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
+        Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
         SetConstrState("displacement",displast);
         // last converged step is used reference
         Initialize(params,systemvector2);
-        Teuchos::RCP<Epetra_Vector> disp=params.get<RCP<Epetra_Vector> >("new disp");
+        Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
         SetConstrState("displacement",disp);
         params.set("action",action);
       }
@@ -432,7 +432,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       const int lindex = (systemvector3->Map()).LID(gindex);
 
       // Get the current lagrange multiplier value for this condition
-      const Teuchos::RCP<Epetra_Vector> lagramul = params.get<RCP<Epetra_Vector> >("LagrMultVector");
+      const Teuchos::RCP<Epetra_Vector> lagramul = params.get<Teuchos::RCP<Epetra_Vector> >("LagrMultVector");
       const double lagraval = (*lagramul)[lindex];
 
       // get element location vector, dirichlet flags and ownerships
@@ -491,7 +491,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       if (time<0.0) usetime = false;
       if (curvenum>=0 && usetime)
         curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-      Teuchos::RCP<Epetra_Vector> timefact = params.get<RCP<Epetra_Vector> >("vector curve factors");
+      Teuchos::RCP<Epetra_Vector> timefact = params.get<Teuchos::RCP<Epetra_Vector> >("vector curve factors");
       timefact->ReplaceGlobalValues(1,&curvefac,&gindex);
     }
   }
@@ -503,7 +503,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
+void UTILS::MPConstraint3::InitializeConstraint(Teuchos::RCP<DRT::Discretization> disc,
     Teuchos::ParameterList&        params,
     Teuchos::RCP<Epetra_Vector>    systemvector)
 {

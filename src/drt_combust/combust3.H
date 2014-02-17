@@ -191,7 +191,7 @@ private:
         virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
         /*!
-        \brief Get RCP to the internal face adjacent to this element as master element and the parent_slave element
+        \brief Get Teuchos::RCP to the internal face adjacent to this element as master element and the parent_slave element
         */
         virtual Teuchos::RCP<DRT::Element> CreateFaceElement(
                                                       DRT::Element* parent_slave,          //!< parent slave fluid3 element
@@ -883,7 +883,7 @@ private:
       }
 
       /*!
-      \brief Get vector of RCPs to the lines of this element
+      \brief Get vector of Teuchos::RCPs to the lines of this element
       */
       virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 

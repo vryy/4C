@@ -67,7 +67,7 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization>      dis,
 /*  Setup mesh-tying problem                ehrl (04/11) */
 /*-------------------------------------------------------*/
 
-RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coupleddof)
+Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coupleddof)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  1)   Setup Meshtying");
@@ -582,10 +582,10 @@ void FLD::Meshtying::SolveMeshtying(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmatnew = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat);
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmatsolve = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmatsolve_);
 
-      RCP<Epetra_Vector> res      = Teuchos::null;
-      RCP<Epetra_Vector> inc      = Teuchos::null;
+      Teuchos::RCP<Epetra_Vector> res      = Teuchos::null;
+      Teuchos::RCP<Epetra_Vector> inc      = Teuchos::null;
 
-      RCP<LINALG::SparseMatrix> mergedmatrix = Teuchos::null;
+      Teuchos::RCP<LINALG::SparseMatrix> mergedmatrix = Teuchos::null;
 
       res      = LINALG::CreateVector(*mergedmap_,true);
       inc      = LINALG::CreateVector(*mergedmap_,true);

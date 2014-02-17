@@ -168,7 +168,7 @@ public:
 
   std::map<int,int> curr_undecidedNodePos_;
 
-  RCP<std::vector<GEO::CUT::MeshIntersection::DofSetData> > dofSetData_;
+  Teuchos::RCP<std::vector<GEO::CUT::MeshIntersection::DofSetData> > dofSetData_;
 
 
 }; // class PARALLEL

@@ -1043,7 +1043,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
 /*----------------------------------------------------------------------*
  | writing Gmsh data for current step                 public)cyron 01/09|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostringstream& filename, const int& step, RCP<CONTACT::Beam3cmanager> beamcmanager)
+void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostringstream& filename, const int& step, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   /*the following method writes output data for Gmsh into file with name "filename"; all line elements are written;
    * the nodal displacements are handed over in the variable "dis"; note: in case of parallel computing only
@@ -2808,7 +2808,7 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector&      disrow,
   // Compute internal energy
   std::vector<double> internalenergy;
   internalenergy.clear();
-  const RCP<Epetra_Vector> disp = Teuchos::rcp(new Epetra_Vector(disrow));
+  const Teuchos::RCP<Epetra_Vector> disp = Teuchos::rcp(new Epetra_Vector(disrow));
   ComputeInternalEnergy(disp, internalenergy,dt, filename);
 
 #ifdef MEASURETIME
@@ -4590,7 +4590,7 @@ void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector&    
   // Compute internal energy
   std::vector<double> internalenergy;
   internalenergy.clear();
-  const RCP<Epetra_Vector> disp = Teuchos::rcp(new Epetra_Vector(disrow));
+  const Teuchos::RCP<Epetra_Vector> disp = Teuchos::rcp(new Epetra_Vector(disrow));
   ComputeInternalEnergy(disp, internalenergy,dt, filename, false, false);
 
   // retrieve distance between fixed end (at x=0) and hoop position (x=x_hoop)
@@ -4959,7 +4959,7 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
 {
   if(coverageonly)
   {
-    RCP<Epetra_Vector> bspotstatustrans = Teuchos::rcp(new Epetra_Vector(*bspotrowmap_));
+    Teuchos::RCP<Epetra_Vector> bspotstatustrans = Teuchos::rcp(new Epetra_Vector(*bspotrowmap_));
     CommunicateVector(bspotstatustrans, bspotstatus_,true,false,false,true);
 
     // check for occupied binding spots

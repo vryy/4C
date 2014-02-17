@@ -21,7 +21,7 @@ Maintainer: Shadan Shahmiri
 
 
 DRT::TransparentIndependentDofSet::TransparentIndependentDofSet(
-  RCP<DRT::Discretization> sourcedis,
+  Teuchos::RCP<DRT::Discretization> sourcedis,
   bool parallel,
   Teuchos::RCP<XFEM::FluidWizard> wizard = Teuchos::null)
   : DRT::TransparentDofSet(sourcedis, parallel),

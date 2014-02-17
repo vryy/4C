@@ -318,7 +318,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     // (FIXME: because a direct SplitMatrix3x3 is still missing!)
     Teuchos::RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
 
-    // some temporary RCPs
+    // some temporary Teuchos::RCPs
     Teuchos::RCP<Epetra_Map> tempmap;
     Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
     Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
@@ -431,7 +431,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     // we want to split kan / kam / kai into 2 groups sl,st = 2 blocks
     Teuchos::RCP<LINALG::SparseMatrix> ksln, kstn, kslm, kstm, ksli, ksti;
 
-    // some temporary RCPs
+    // some temporary Teuchos::RCPs
     Teuchos::RCP<Epetra_Map> temp1map;
     Teuchos::RCP<LINALG::SparseMatrix> temp1mtx4,temp1mtx5;
 
@@ -1350,7 +1350,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     // (FIXME: because a direct SplitMatrix3x3 is still missing!)
     Teuchos::RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
 
-    // some temporary RCPs
+    // some temporary Teuchos::RCPs
     Teuchos::RCP<Epetra_Map> tempmap;
     Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
     Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;

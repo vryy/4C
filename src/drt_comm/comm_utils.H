@@ -62,7 +62,7 @@ namespace COMM_UTILS
                                  Teuchos::RCP<DRT::Discretization> dis,
                                  Teuchos::RCP<Epetra_MpiComm> icomm);
 
-  //! transform Epetra_Comm to Teuchos::Comm, RCP version
+  //! transform Epetra_Comm to Teuchos::Comm, Teuchos::RCP version
   template<class datatype>
   Teuchos::RCP<const Teuchos::Comm<datatype> > toTeuchosComm(const Epetra_Comm & comm)
   {

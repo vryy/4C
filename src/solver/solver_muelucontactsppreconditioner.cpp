@@ -1106,7 +1106,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Write(const Teuchos::RCP<Hier
 
     if (i>0) {
       fileName = "P_" + buf.str() + ".m";
-      //Utils::Write( fileName,*(Levels_[i]-> template Get< RCP< Matrix> >("P")) );
+      //Utils::Write( fileName,*(Levels_[i]-> template Get< Teuchos::RCP< Matrix> >("P")) );
 
       Teuchos::RCP<Matrix> P = H->GetLevel(i)->Get<Teuchos::RCP<Matrix> >("P");
       Teuchos::RCP<BlockedCrsMatrix> Pb = Teuchos::rcp_dynamic_cast<BlockedCrsMatrix>(P);
@@ -1117,7 +1117,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Write(const Teuchos::RCP<Hier
       //if (!implicitTranspose_) {
 
       fileName = "R_" + buf.str() + ".m";
-      //Utils::Write( fileName,*(Levels_[i]-> template Get< RCP< Matrix> >("R")) );
+      //Utils::Write( fileName,*(Levels_[i]-> template Get< Teuchos::RCP< Matrix> >("R")) );
       Teuchos::RCP<Matrix> R = H->GetLevel(i)->Get<Teuchos::RCP<Matrix> >("R");
       Teuchos::RCP<BlockedCrsMatrix> Rb = Teuchos::rcp_dynamic_cast<BlockedCrsMatrix>(R);
       Teuchos::RCP<CrsMatrix> Rm = Rb->Merge();

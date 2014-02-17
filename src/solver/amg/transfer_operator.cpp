@@ -12,7 +12,7 @@
 #include "transfer_operator_pgamg.H"
 #include "transfer_operator_pgamg2.H"
 
-LINALG::TransferOperator::TransferOperator(const RCP<SparseMatrix>& A, FILE* outfile) :
+LINALG::TransferOperator::TransferOperator(const Teuchos::RCP<SparseMatrix>& A, FILE* outfile) :
  A_(A),
  prolongator_(Teuchos::null),
  restrictor_(Teuchos::null),
@@ -34,7 +34,7 @@ ostream& LINALG::TransferOperator::Print(std::ostream& os) const
   return(os);
 }
 
-RCP<LINALG::TransferOperator> LINALG::TransferOperatorFactory::Create(const string TransferOperatorType, const Teuchos::RCP<SparseMatrix>& A, FILE* outfile)
+Teuchos::RCP<LINALG::TransferOperator> LINALG::TransferOperatorFactory::Create(const string TransferOperatorType, const Teuchos::RCP<SparseMatrix>& A, FILE* outfile)
 {
   try
   {

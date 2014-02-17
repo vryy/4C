@@ -207,7 +207,7 @@ void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno, double pulse)
  *----------------------------------------------------------------------*/
 void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
                                                        Teuchos::RCP<Epetra_Vector> light,
-                                                       RCP<DRT::Discretization> scatradis,
+                                                       Teuchos::RCP<DRT::Discretization> scatradis,
                                                        bool meshconform)
 {
   if (meshconform == false)

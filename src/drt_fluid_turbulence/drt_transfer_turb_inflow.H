@@ -41,8 +41,8 @@ public:
 
   */
   TransferTurbulentInflowCondition(
-    RCP<DRT::Discretization>  dis,
-    RCP<LINALG::MapExtractor> dbcmaps
+    Teuchos::RCP<DRT::Discretization>  dis,
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps
     );
 
   /*!
@@ -116,10 +116,10 @@ private:
   bool                             active_;
 
   //! the discretisation
-  RCP<DRT::Discretization> dis_;
+  Teuchos::RCP<DRT::Discretization> dis_;
 
   //! info on DIirchlet boundary
-  RCP<LINALG::MapExtractor> dbcmaps_;
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
   //! the connectivity of the boundary condition
   std::map<int,std::vector<int> >       midtosid_;

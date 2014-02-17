@@ -899,7 +899,7 @@ void STRUMULTI::MicroStatic::SetState(Teuchos::RCP<Epetra_Vector> dis,
   strain_ = strain;
   plstrain_ = plstrain;
 
-  // using RCP's here means we do not need to return EAS data explicitly
+  // using Teuchos::RCP's here means we do not need to return EAS data explicitly
   lastalpha_ = lastalpha;
   oldalpha_  = oldalpha;
   oldfeas_   = oldfeas;

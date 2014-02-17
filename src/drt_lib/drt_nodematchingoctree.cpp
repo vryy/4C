@@ -32,7 +32,7 @@ Maintainer: Peter Gamnitzer
 
 <pre>
 
-\param    RCP<DRT::Discretization> (i) discretisation
+\param    Teuchos::RCP<DRT::Discretization> (i) discretisation
 \param    const vector <int> &             (i) list of masternodeids
 \param    int                              (i) parameter for octree
 \param    double                           (i) tolerance for octree
@@ -646,7 +646,7 @@ bool DRT::UTILS::NodeMatchingOctree::SearchClosestNodeOnThisProc(
       dserror("No root for octree on proc");
     }
 
-    RCP<OctreeElement> octreeele = octreeroot_;
+    Teuchos::RCP<OctreeElement> octreeele = octreeroot_;
 
     while(octreeele->IsLeaf()==false)
     {
@@ -936,11 +936,11 @@ bool DRT::UTILS::OctreeElement::IsPointInBoundingBox(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-RCP<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeElement::ReturnChildContainingPoint(
+Teuchos::RCP<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeElement::ReturnChildContainingPoint(
   const std::vector <double> &x
   )
 {
-  RCP<OctreeElement> nextelement;
+  Teuchos::RCP<OctreeElement> nextelement;
 
   if (this->octreechild1_ == Teuchos::null || this->octreechild2_ == Teuchos::null)
   {

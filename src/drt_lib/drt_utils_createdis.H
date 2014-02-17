@@ -62,10 +62,10 @@ protected:
       std::set<int>& colnodeset,
       const bool isnurbsdis);
 
-  RCP<Epetra_Map> CreateNodeRowMap(
+  Teuchos::RCP<Epetra_Map> CreateNodeRowMap(
       std::set<int>& rownodeset,Teuchos::RCP<DRT::Discretization> targetdis);
 
-  RCP<Epetra_Map> CreateNodeColMap(
+  Teuchos::RCP<Epetra_Map> CreateNodeColMap(
       std::set<int>& colnodeset,Teuchos::RCP<DRT::Discretization> targetdis);
 
   void InitialChecks(
@@ -84,8 +84,8 @@ protected:
 
 protected:
 
-  RCP<Epetra_Map> targetnoderowmap_;
-  RCP<Epetra_Map> targetnodecolmap_;
+  Teuchos::RCP<Epetra_Map> targetnoderowmap_;
+  Teuchos::RCP<Epetra_Map> targetnodecolmap_;
   //! local number of skipped elements during cloning
   int numeleskips_;
 
@@ -108,8 +108,8 @@ public:
 
   /// method for cloning a new discretization from an existing one
   void CreateMatchingDiscretization(
-      Teuchos::RCP<DRT::Discretization> sourcedis,  ///< RCP to source discretization
-      Teuchos::RCP<DRT::Discretization> targetdis, ///< RCP to empty target discretization
+      Teuchos::RCP<DRT::Discretization> sourcedis,  ///< Teuchos::RCP to source discretization
+      Teuchos::RCP<DRT::Discretization> targetdis, ///< Teuchos::RCP to empty target discretization
       const int matid ///< ID of the material which generated elements will get
       )
   {
@@ -145,8 +145,8 @@ public:
 
   /// method for cloning a new discretization from an existing one
   void CreateMatchingDiscretization(
-      Teuchos::RCP<DRT::Discretization> sourcedis,  ///< RCP to source discretization
-      Teuchos::RCP<DRT::Discretization> targetdis, ///< RCP to empty target discretization
+      Teuchos::RCP<DRT::Discretization> sourcedis,  ///< Teuchos::RCP to source discretization
+      Teuchos::RCP<DRT::Discretization> targetdis, ///< Teuchos::RCP to empty target discretization
       const std::map<int,int> matmap ///< map of material IDs (source element -> target element)
       )
   {
@@ -279,7 +279,7 @@ private:
       }
 
       // create a new element of desired type with the same global element id
-      RCP<DRT::Element> newele = DRT::UTILS::Factory(eletype_[i],approxtype,egid_[i],myrank);
+      Teuchos::RCP<DRT::Element> newele = DRT::UTILS::Factory(eletype_[i],approxtype,egid_[i],myrank);
 
       // get global node ids of fluid element
       std::vector<int> nids;

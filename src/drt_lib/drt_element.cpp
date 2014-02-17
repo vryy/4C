@@ -181,7 +181,7 @@ void DRT::Element::Print(std::ostream& os) const
   if (numcond)
   {
     os << std::endl << numcond << " Conditions:\n";
-    std::map<std::string,RCP<Condition> >::const_iterator curr;
+    std::map<std::string,Teuchos::RCP<Condition> >::const_iterator curr;
     for (curr=condition_.begin(); curr != condition_.end(); ++curr)
     {
       os << curr->first << " ";

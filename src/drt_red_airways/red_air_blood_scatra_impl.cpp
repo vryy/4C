@@ -99,7 +99,7 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Initial(
   Teuchos::RCP<const MAT::Material>      material)
 {
 
-  Teuchos::RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
+  Teuchos::RCP<Epetra_Vector> generations   = params.get<Teuchos::RCP<Epetra_Vector> >("generations");
 
   //--------------------------------------------------------------------
   // get the generation numbers

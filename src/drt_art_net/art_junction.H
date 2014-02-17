@@ -86,7 +86,7 @@ namespace ART
       /*!
       \brief Wrapper for ArtJunctionBc::UpdateResidual
      */
-      void UpdateResidual(RCP<Epetra_Vector>  residual );
+      void UpdateResidual(Teuchos::RCP<Epetra_Vector>  residual );
 
       /*!
       \brief Standard solver

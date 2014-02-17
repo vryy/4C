@@ -1062,7 +1062,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
   std::vector<int>&          lm,
-  RCP<MAT::Material> mat)
+  Teuchos::RCP<MAT::Material> mat)
 {
   //----------------------------------------------------------------------
   // get all nodal values
@@ -1156,9 +1156,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity
       or fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
   {
-    RCP<Epetra_MultiVector> filtered_vel = params.get<RCP<Epetra_MultiVector> >("Filtered velocity");
-    RCP<Epetra_MultiVector> fs_vel = params.get<RCP<Epetra_MultiVector> >("Fine scale velocity");
-    RCP<Epetra_MultiVector> filtered_reystre = params.get<RCP<Epetra_MultiVector> >("Filtered reynoldsstress");
+    Teuchos::RCP<Epetra_MultiVector> filtered_vel = params.get<Teuchos::RCP<Epetra_MultiVector> >("Filtered velocity");
+    Teuchos::RCP<Epetra_MultiVector> fs_vel = params.get<Teuchos::RCP<Epetra_MultiVector> >("Fine scale velocity");
+    Teuchos::RCP<Epetra_MultiVector> filtered_reystre = params.get<Teuchos::RCP<Epetra_MultiVector> >("Filtered reynoldsstress");
 
     for (int nn=0;nn<nen_;++nn)
     {
@@ -1210,8 +1210,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   double CiDeltaSq = 0.0;
   if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
   {
-    RCP<Epetra_Vector> ele_CsDeltaSq = params.sublist("TURBULENCE MODEL").get<RCP<Epetra_Vector> >("col_Cs_delta_sq");
-    RCP<Epetra_Vector> ele_CiDeltaSq = params.sublist("TURBULENCE MODEL").get<RCP<Epetra_Vector> >("col_Ci_delta_sq");
+    Teuchos::RCP<Epetra_Vector> ele_CsDeltaSq = params.sublist("TURBULENCE MODEL").get<Teuchos::RCP<Epetra_Vector> >("col_Cs_delta_sq");
+    Teuchos::RCP<Epetra_Vector> ele_CiDeltaSq = params.sublist("TURBULENCE MODEL").get<Teuchos::RCP<Epetra_Vector> >("col_Ci_delta_sq");
     const int id = ele->LID();
     CsDeltaSq = (*ele_CsDeltaSq)[id];
     CiDeltaSq = (*ele_CiDeltaSq)[id];
@@ -1230,7 +1230,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 
   // the coordinates of the element layers in the channel
   // planecoords are named nodeplanes in turbulence_statistics_channel!
-  RCP<std::vector<double> > planecoords  = params.get<RCP<std::vector<double> > >("planecoords_",Teuchos::null);
+  Teuchos::RCP<std::vector<double> > planecoords  = params.get<Teuchos::RCP<std::vector<double> > >("planecoords_",Teuchos::null);
   if(planecoords==Teuchos::null)
     dserror("planecoords is null, but need channel_flow_of_height_2\n");
 
@@ -2102,45 +2102,45 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   eps_graddiv /= vol;
   eps_pspg /= vol;
 
-  RCP<std::vector<double> > incrvol           = params.get<RCP<std::vector<double> > >("incrvol"          );
+  Teuchos::RCP<std::vector<double> > incrvol           = params.get<Teuchos::RCP<std::vector<double> > >("incrvol"          );
 
-  RCP<std::vector<double> > incr_eps_visc      = params.get<RCP<std::vector<double> > >("incr_eps_visc"    );
-  RCP<std::vector<double> > incr_eps_conv      = params.get<RCP<std::vector<double> > >("incr_eps_conv"    );
-  RCP<std::vector<double> > incr_eps_smag      = params.get<RCP<std::vector<double> > >("incr_eps_eddyvisc");
-  RCP<std::vector<double> > incr_eps_avm3      = params.get<RCP<std::vector<double> > >("incr_eps_avm3"    );
-  RCP<std::vector<double> > incr_eps_mfs       = params.get<RCP<std::vector<double> > >("incr_eps_mfs"     );
-  RCP<std::vector<double> > incr_eps_mfscross  = params.get<RCP<std::vector<double> > >("incr_eps_mfscross");
-  RCP<std::vector<double> > incr_eps_mfsrey    = params.get<RCP<std::vector<double> > >("incr_eps_mfsrey"  );
-  RCP<std::vector<double> > incr_eps_supg      = params.get<RCP<std::vector<double> > >("incr_eps_supg"    );
-  RCP<std::vector<double> > incr_eps_cross     = params.get<RCP<std::vector<double> > >("incr_eps_cross"   );
-  RCP<std::vector<double> > incr_eps_rey       = params.get<RCP<std::vector<double> > >("incr_eps_rey"     );
-  RCP<std::vector<double> > incr_eps_graddiv     = params.get<RCP<std::vector<double> > >("incr_eps_graddiv"   );
-  RCP<std::vector<double> > incr_eps_pspg      = params.get<RCP<std::vector<double> > >("incr_eps_pspg"    );
+  Teuchos::RCP<std::vector<double> > incr_eps_visc      = params.get<Teuchos::RCP<std::vector<double> > >("incr_eps_visc"    );
+  Teuchos::RCP<std::vector<double> > incr_eps_conv      = params.get<Teuchos::RCP<std::vector<double> > >("incr_eps_conv"    );
+  Teuchos::RCP<std::vector<double> > incr_eps_smag      = params.get<Teuchos::RCP<std::vector<double> > >("incr_eps_eddyvisc");
+  Teuchos::RCP<std::vector<double> > incr_eps_avm3      = params.get<Teuchos::RCP<std::vector<double> > >("incr_eps_avm3"    );
+  Teuchos::RCP<std::vector<double> > incr_eps_mfs       = params.get<Teuchos::RCP<std::vector<double> > >("incr_eps_mfs"     );
+  Teuchos::RCP<std::vector<double> > incr_eps_mfscross  = params.get<Teuchos::RCP<std::vector<double> > >("incr_eps_mfscross");
+  Teuchos::RCP<std::vector<double> > incr_eps_mfsrey    = params.get<Teuchos::RCP<std::vector<double> > >("incr_eps_mfsrey"  );
+  Teuchos::RCP<std::vector<double> > incr_eps_supg      = params.get<Teuchos::RCP<std::vector<double> > >("incr_eps_supg"    );
+  Teuchos::RCP<std::vector<double> > incr_eps_cross     = params.get<Teuchos::RCP<std::vector<double> > >("incr_eps_cross"   );
+  Teuchos::RCP<std::vector<double> > incr_eps_rey       = params.get<Teuchos::RCP<std::vector<double> > >("incr_eps_rey"     );
+  Teuchos::RCP<std::vector<double> > incr_eps_graddiv     = params.get<Teuchos::RCP<std::vector<double> > >("incr_eps_graddiv"   );
+  Teuchos::RCP<std::vector<double> > incr_eps_pspg      = params.get<Teuchos::RCP<std::vector<double> > >("incr_eps_pspg"    );
 
-  RCP<std::vector<double> > incrhk            = params.get<RCP<std::vector<double> > >("incrhk"           );
-  RCP<std::vector<double> > incrhbazilevs     = params.get<RCP<std::vector<double> > >("incrhbazilevs"    );
-  RCP<std::vector<double> > incrstrle         = params.get<RCP<std::vector<double> > >("incrstrle"        );
-  RCP<std::vector<double> > incrgradle        = params.get<RCP<std::vector<double> > >("incrgradle"       );
+  Teuchos::RCP<std::vector<double> > incrhk            = params.get<Teuchos::RCP<std::vector<double> > >("incrhk"           );
+  Teuchos::RCP<std::vector<double> > incrhbazilevs     = params.get<Teuchos::RCP<std::vector<double> > >("incrhbazilevs"    );
+  Teuchos::RCP<std::vector<double> > incrstrle         = params.get<Teuchos::RCP<std::vector<double> > >("incrstrle"        );
+  Teuchos::RCP<std::vector<double> > incrgradle        = params.get<Teuchos::RCP<std::vector<double> > >("incrgradle"       );
 
-  RCP<std::vector<double> > incrres           = params.get<RCP<std::vector<double> > >("incrres"          );
-  RCP<std::vector<double> > incrres_sq        = params.get<RCP<std::vector<double> > >("incrres_sq"       );
-  RCP<std::vector<double> > incrabsres        = params.get<RCP<std::vector<double> > >("incrabsres"       );
-  RCP<std::vector<double> > incrtauinvsvel    = params.get<RCP<std::vector<double> > >("incrtauinvsvel"   );
+  Teuchos::RCP<std::vector<double> > incrres           = params.get<Teuchos::RCP<std::vector<double> > >("incrres"          );
+  Teuchos::RCP<std::vector<double> > incrres_sq        = params.get<Teuchos::RCP<std::vector<double> > >("incrres_sq"       );
+  Teuchos::RCP<std::vector<double> > incrabsres        = params.get<Teuchos::RCP<std::vector<double> > >("incrabsres"       );
+  Teuchos::RCP<std::vector<double> > incrtauinvsvel    = params.get<Teuchos::RCP<std::vector<double> > >("incrtauinvsvel"   );
 
-  RCP<std::vector<double> > incrsvelaf        = params.get<RCP<std::vector<double> > >("incrsvelaf"       );
-  RCP<std::vector<double> > incrsvelaf_sq     = params.get<RCP<std::vector<double> > >("incrsvelaf_sq"    );
-  RCP<std::vector<double> > incrabssvelaf     = params.get<RCP<std::vector<double> > >("incrabssvelaf"    );
+  Teuchos::RCP<std::vector<double> > incrsvelaf        = params.get<Teuchos::RCP<std::vector<double> > >("incrsvelaf"       );
+  Teuchos::RCP<std::vector<double> > incrsvelaf_sq     = params.get<Teuchos::RCP<std::vector<double> > >("incrsvelaf_sq"    );
+  Teuchos::RCP<std::vector<double> > incrabssvelaf     = params.get<Teuchos::RCP<std::vector<double> > >("incrabssvelaf"    );
 
-  RCP<std::vector<double> > incrresC          = params.get<RCP<std::vector<double> > >("incrresC"         );
-  RCP<std::vector<double> > incrresC_sq       = params.get<RCP<std::vector<double> > >("incrresC_sq"      );
-  RCP<std::vector<double> > spressnp          = params.get<RCP<std::vector<double> > >("incrspressnp"     );
-  RCP<std::vector<double> > spressnp_sq       = params.get<RCP<std::vector<double> > >("incrspressnp_sq"  );
+  Teuchos::RCP<std::vector<double> > incrresC          = params.get<Teuchos::RCP<std::vector<double> > >("incrresC"         );
+  Teuchos::RCP<std::vector<double> > incrresC_sq       = params.get<Teuchos::RCP<std::vector<double> > >("incrresC_sq"      );
+  Teuchos::RCP<std::vector<double> > spressnp          = params.get<Teuchos::RCP<std::vector<double> > >("incrspressnp"     );
+  Teuchos::RCP<std::vector<double> > spressnp_sq       = params.get<Teuchos::RCP<std::vector<double> > >("incrspressnp_sq"  );
 
-  RCP<std::vector<double> > incrtauC          = params.get<RCP<std::vector<double> > >("incrtauC"         );
-  RCP<std::vector<double> > incrtauM          = params.get<RCP<std::vector<double> > >("incrtauM"         );
+  Teuchos::RCP<std::vector<double> > incrtauC          = params.get<Teuchos::RCP<std::vector<double> > >("incrtauC"         );
+  Teuchos::RCP<std::vector<double> > incrtauM          = params.get<Teuchos::RCP<std::vector<double> > >("incrtauM"         );
 
-  RCP<std::vector<double> > incrcrossstress   = params.get<RCP<std::vector<double> > >("incrcrossstress"  );
-  RCP<std::vector<double> > incrreystress     = params.get<RCP<std::vector<double> > >("incrreystress"    );
+  Teuchos::RCP<std::vector<double> > incrcrossstress   = params.get<Teuchos::RCP<std::vector<double> > >("incrcrossstress"  );
+  Teuchos::RCP<std::vector<double> > incrreystress     = params.get<Teuchos::RCP<std::vector<double> > >("incrreystress"    );
 
   bool found = false;
 

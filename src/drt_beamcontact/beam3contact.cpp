@@ -155,7 +155,7 @@ bool CONTACT::Beam3contact::PreEvaluation(int beams_smoothing, std::map<int,LINA
  *----------------------------------------------------------------------*/
 bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
                                      Epetra_Vector& fint, double& pp, bool ngf,
-                                     std::map<std::pair<int,int>, RCP<Beam3contact> >& contactpairmap,
+                                     std::map<std::pair<int,int>, Teuchos::RCP<Beam3contact> >& contactpairmap,
                                      int beams_smoothing)
 {
   //**********************************************************************

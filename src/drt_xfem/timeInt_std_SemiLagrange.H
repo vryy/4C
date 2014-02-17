@@ -35,10 +35,10 @@ public:
   explicit SemiLagrange(
       XFEM::TIMEINT& timeInt,
       INPAR::COMBUST::XFEMTimeIntegration& timeIntType,
-      const RCP<Epetra_Vector> veln,
+      const Teuchos::RCP<Epetra_Vector> veln,
       const double& dt,
       const double& theta,
-      const RCP<COMBUST::FlameFront> flamefront,
+      const Teuchos::RCP<COMBUST::FlameFront> flamefront,
       const double& veljump,
       bool initialize
   );
@@ -49,8 +49,8 @@ public:
 
   //! get startvalues in time step for nodes which changed interface-side
   void compute(
-      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectorsnp
   );
 
 private:
@@ -108,12 +108,12 @@ private:
 
   //! preparation of new iteration
   void newIteration_prepare(
-      std::vector<RCP<Epetra_Vector> > newRowVectors
+      std::vector<Teuchos::RCP<Epetra_Vector> > newRowVectors
   );
 
   //! gradients at a node
   void newIteration_nodalData(
-      std::vector<RCP<Epetra_Vector> > newColVectors
+      std::vector<Teuchos::RCP<Epetra_Vector> > newColVectors
   );
 
   //! reinitialize some data for new computations, f.e. at a new FGI
@@ -122,7 +122,7 @@ private:
   //! compute the nodal gradient
   template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
   void computeNodalGradient(
-      std::vector<RCP<Epetra_Vector> >& newColVectors,
+      std::vector<Teuchos::RCP<Epetra_Vector> >& newColVectors,
       const Epetra_Map& newdofcolmap,
       std::map<XFEM::DofKey,XFEM::DofGID>& newNodalDofColDistrib,
       const DRT::Element* ele,
