@@ -109,6 +109,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Materials(
         reamanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j),k,j );
       }
     }
+
     break;
   case INPAR::MAT::m_biofilm:
     MatBioFilm(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
@@ -120,7 +121,6 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Materials(
     dserror("Material type %i is not supported",material->MaterialType());
    break;
   }
-
   return;
 }
 
@@ -305,7 +305,7 @@ bool DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::IsCoupledAndRead(
 }
 
 /*----------------------------------------------------------------------*
- |  Calculate K(c)                                         thon 02/14 |
+ |  Calculate K(c)                                           thon 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeff(const int k)
@@ -329,7 +329,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeff(const int k)
 }
 
 /*----------------------------------------------------------------------*
- |  helper for calculating K(c)                                 thon 02/14 |
+ |  helper for calculating K(c)                              thon 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffFac(
@@ -387,7 +387,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivMatrix(con
 }
 
 /*----------------------------------------------------------------------*
- |  helper for calculating \frac{partial}{\partial c} K(c)                thon 02/14 |
+ |  helper for calculating \frac{partial}{\partial c} K(c)   thon 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivFac(
@@ -408,7 +408,8 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivFac(
         switch (couplingtype)
         {
         case DRT::ELEMENTS::simple_multiplicative:
-          rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+          if (ii!=k and ii!= toderive)
+            rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
           break;
         //case ... :  //insert new Couplings here
         }
@@ -518,7 +519,8 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivFac(
         switch (couplingtype)
         {
         case DRT::ELEMENTS::simple_multiplicative:
-          bfdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+          if (ii!=toderive)
+            bfdmfac *= my::funct_.Dot(my::ephinp_[ii]);
           break;
         //case ... :  //insert new Couplings here
         }
@@ -585,13 +587,13 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
   const LINALG::Matrix<my::nen_,1>&      diff
   )
 {
-  // first care for Term K(c)*(\partial_c c)=K(c)*Id
+  // first care for Term K(c)*(\partial_c c)=Id*K(c)
     my::CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,phinp,reamanager,conv,sgconv,diff);
 
-    // second care for Term (\partial_c K(c)) .* c + (\partial_c f_{reabody}(c))
+    // second care for Term (\partial_c K(c)) .* c - (\partial_c f_{reabody}(c))
   for (int j=0; j<my::numscal_ ;j++)
   {
-    const double fac_reac        = timefacfac*densnp*( reamanager->GetReaCoeffDerivMatrix(k,j)*phinp+reamanager->GetReaBodyForceDerivMatrix(k,j) );
+    const double fac_reac        = timefacfac*densnp*( reamanager->GetReaCoeffDerivMatrix(k,j)*phinp - reamanager->GetReaBodyForceDerivMatrix(k,j) );
     const double timetaufac_reac = timetaufac*densnp*reamanager->GetReaCoeffDerivMatrix(k,j)*phinp;
 
     //----------------------------------------------------------------

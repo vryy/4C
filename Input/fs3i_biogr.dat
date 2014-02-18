@@ -223,7 +223,7 @@ CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 EVALUATION_MAT                  element_center
-EVALUATION_TAU                  element_center
+EVALUATION_TAU                  integration_point
 STABTYPE                        SUPG
 SUGRVEL                         no
 -------------------------------------------------------------BIOFILM CONTROL
