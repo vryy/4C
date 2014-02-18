@@ -106,6 +106,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   dta_      (params->get<double>("TIMESTEP")),
   dtele_(0.0),
   dtsolve_(0.0),
+  iternum_(0),
   timealgo_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
   nsd_(DRT::Problem::Instance()->NDim()),
   numscal_(0),
@@ -2435,7 +2436,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   const double abstolres = params_->sublist("NONLINEAR").get<double>("ABSTOLRES");
   double       actresidual(0.0);
 
-  int   itnum = 0;
+  iternum_=0;
   int   itemax = params_->sublist("NONLINEAR").get<int>("ITEMAX");
   bool  stopnonliniter = false;
 
@@ -2447,7 +2448,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   while (stopnonliniter==false)
   {
 
-    itnum++;
+    iternum_++;
 
     // check for negative/zero concentration values (in case of ELCH only)
     CheckConcentrationValues(phinp_);
@@ -2478,8 +2479,10 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       projector_->ApplyPT(*residual_);
 
     // abort nonlinear iteration if desired
-    if (AbortNonlinIter(itnum,itemax,ittol,abstolres,actresidual))
-       break;
+    if (AbortNonlinIter(iternum_,itemax,ittol,abstolres,actresidual))
+    {
+      break;
+    }
 
     //--------- Apply Dirichlet boundary conditions to system of equations
     // residual values are supposed to be zero at Dirichlet boundaries
@@ -2501,7 +2504,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + call linear solver");
 
       // do adaptive linear solver tolerance (not in first solve)
-      if (isadapttol && itnum>1)
+      if (isadapttol && iternum_>1)
       {
         solver_->AdaptTolerance(ittol,actresidual,adaptolbetter);
       }
@@ -2513,9 +2516,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       }
 
       if (msht_==INPAR::FLUID::no_meshtying)
-        solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1, projector_);
+        solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,iternum_==1, projector_);
       else
-        meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, itnum, projector_);
+        meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, iternum_, projector_);
 
       solver_->ResetTolerance();
 

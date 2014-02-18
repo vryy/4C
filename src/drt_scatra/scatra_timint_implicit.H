@@ -297,6 +297,10 @@ public:
   //! total number of time steps ? rename StepMax?
   int NStep() const { return stepmax_;}
 
+  //! return number of newton iterations in last timestep
+  double IterNum() const { return iternum_; }
+
+
   /*========================================================================*/
   //! @name scalar degrees of freedom and related
   /*========================================================================*/
@@ -837,6 +841,9 @@ protected:
   double dtele_;
   //! time measurement solve
   double dtsolve_;
+
+  //! number of newton iterations in actual timestep
+  int iternum_;
 
   //! used time integration scheme
   INPAR::SCATRA::TimeIntegrationScheme timealgo_;

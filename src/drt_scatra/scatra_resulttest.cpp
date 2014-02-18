@@ -33,6 +33,7 @@ SCATRA::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatra
   myelectkin_ = scatra->OutputElectrodeInfo(false,false);
   mystrgrowth_ = scatra->StrGrowth();
   myfldgrowth_ = scatra->FldGrowth();
+  mynumiter_ =scatra->IterNum();
 }
 
 
@@ -128,4 +129,30 @@ void SCATRA::ScaTraResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
       test_count++;
     }
   }
+}
+
+void SCATRA::ScaTraResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+{
+  std::string quantity;
+  res.ExtractString("QUANTITY",quantity);
+  bool unknownquantity = true; // make sure the result value std::string can be handled
+  double result = 0.0;    // will hold the actual result of run
+
+  // test for time step size
+  if ( quantity == "numiterlastnewton" )
+  {
+    unknownquantity = false;
+    result = (double)mynumiter_;
+  }
+
+  // catch quantity strings, which are not handled by scatra result test
+  if ( unknownquantity )
+    dserror("Quantity '%s' not supported in scatra testing", quantity.c_str());
+
+  // compare values
+  const int err = CompareValues(result, "SPECIAL", res);
+  nerr += err;
+  test_count++;
+
+  return;
 }

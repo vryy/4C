@@ -54,6 +54,8 @@ public:
    */
   virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
+  virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+
 private:
 
   /// Teuchos::RCP to scalar transport discretization
@@ -70,6 +72,8 @@ private:
   Teuchos::RCP<Epetra_MultiVector>  mystrgrowth_;
   /// Teuchos::RCP to scatra fluid biofilm growth vector
   Teuchos::RCP<Epetra_MultiVector>  myfldgrowth_;
+  /// number of iterations in last newton iteration
+  int mynumiter_;
 };
 
 } // namespace SCATRA

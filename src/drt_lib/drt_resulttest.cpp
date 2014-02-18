@@ -295,6 +295,16 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddOptionalNamedString("NAME")
     ;
 
+  DRT::INPUT::LineDefinition scatra_special;
+  scatra_special
+    .AddTag("SCATRA")
+    .AddTag("SPECIAL")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
+
   DRT::INPUT::LineDefinition red_airway;
   red_airway
     .AddTag("RED_AIRWAY")
@@ -410,6 +420,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(ale);
   lines->Add(thermal);
   lines->Add(scatra);
+  lines->Add(scatra_special);
   lines->Add(red_airway);
   lines->Add(art_net);
   lines->Add(fld_adj);
