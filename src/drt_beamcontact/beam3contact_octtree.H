@@ -16,6 +16,8 @@ Maintainer: Kei Müller
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
 #include "beam3contact.H"
+#include "beam3contactnew.H"
+#include "beam3contact_defines.H"
 
 
 using namespace CONTACT;
@@ -49,7 +51,7 @@ class Beam3ContactOctTree
     /*!\brief call octtree search routine
      * \param currentposition (in) node positions in column map format (fully overlapping)
      * \param step            (in) time step (needed for output)*/
-    std::vector<Teuchos::RCP<Beam3contact> > OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step=-1);
+    std::vector<std::vector<DRT::Element*> > OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step=-1);
 
     //!\brief checks in which octant a given bounding box lies
     std::vector<int> InWhichOctantLies(const int& thisBBoxID);
@@ -62,7 +64,7 @@ class Beam3ContactOctTree
     /*!\brief output of octree discretization, bounding boxes and contact pairs
      * \param cpairs (in) vector with contact pairs
      * \param step   (in) time step */
-    void OctreeOutput(std::vector<Teuchos::RCP<Beam3contact> >& cpairs, int step);
+    void OctreeOutput(std::vector<std::vector<DRT::Element*> > contactpairelements, int step);
 
   private:
     // ! \brief Bounding Box Types available for this search routine
@@ -118,7 +120,8 @@ class Beam3ContactOctTree
      * \param currentpositions  (in)  node positions in column map format (fully overlapping)
      * \param contactpaits      (out) vector holding all contact pairs considered after octree evaluation
      */
-    void BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, std::vector<Teuchos::RCP<Beam3contact> >* contactpairs);
+    void BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions,
+                                 std::vector<std::vector<DRT::Element*> >& contactpairelements);
 
     /*!\brief intersection method applying axis-aligned bounding boxes when both boxes belong to existing elements
      * \param bboxIDs    (in) vector with bounding box Ids (element GIDs)

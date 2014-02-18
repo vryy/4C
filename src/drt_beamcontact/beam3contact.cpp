@@ -26,6 +26,7 @@ Maintainer: Christoph Meier
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_inpar/inpar_statmech.H"
 
+#ifndef NEWBEAMCONTACT
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
@@ -34,21 +35,18 @@ CONTACT::Beam3contact::Beam3contact(const DRT::Discretization& pdiscret,
                                     const DRT::Discretization& cdiscret,
                                     const int& dofoffset,
                                     DRT::Element* element1,
-                                    DRT::Element* element2,
-                                    const Epetra_SerialDenseMatrix ele1pos,
-                                    const Epetra_SerialDenseMatrix ele2pos):
+                                    DRT::Element* element2):
 pdiscret_(pdiscret),
 cdiscret_(cdiscret),
 dofoffset_(dofoffset),
 element1_(element1),
 element2_(element2),
-ele1pos_(ele1pos),
-ele2pos_(ele2pos),
 ele1tangent_(3,2),
 ele2tangent_(3,2),
 ngf_(false),
 contactflag_(false)
 {
+
   // initialize augmented lagrange multiplier to zero
   lmuzawa_ = 0.0;
   gap_=0.0;
@@ -58,11 +56,11 @@ contactflag_(false)
   neighbor2_ = Teuchos::rcp(new CONTACT::B3CNeighbor());
 
   // initialize class variables for contact point coordinates
-  x1_.Size(NDIM);
-  x2_.Size(NDIM);
-  normal_.Size(NDIM);
-  normal_old_.Size(NDIM);
-  for(int i=0;i<NDIM;i++)
+  x1_.Size(3);
+  x2_.Size(3);
+  normal_.Size(3);
+  normal_old_.Size(3);
+  for(int i=0;i<3;i++)
   {
     x1_[i]=0.0;
     x2_[i]=0.0;
@@ -176,11 +174,11 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   std::vector<double> XiContact(2);
   XiContact[0]=xicontact_[0];
   XiContact[1]=xicontact_[1];
-  
+
   // detect whether two elements lie on the same axis
   bool elementscolinear = false;
   elementscolinear = elementscolinear_;
-  
+
   // number of nodes of each element
   const int numnode1 = element1_->NumNode();
   const int numnode2 = element2_->NumNode();
@@ -192,14 +190,14 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   Epetra_SerialDenseMatrix deriv2(1,numnode2);        // = N2,eta
   Epetra_SerialDenseMatrix secondderiv1(1,numnode1);  // = N1,xixi
   Epetra_SerialDenseMatrix secondderiv2(1,numnode2);  // = N2,etaeta
-  
+
   // coords and derivatives of the two contact points
-  std::vector<double> x1(NDIM);                            // = x1
-  std::vector<double> x2(NDIM);                            // = x2
-  std::vector<double> dx1(NDIM);                            // = x1,xi
-  std::vector<double> dx2(NDIM);                          // = x2,eta
-  std::vector<double> ddx1(NDIM);                          // = x1,xixi
-  std::vector<double> ddx2(NDIM);                          // = x2,etaeta
+  std::vector<double> x1(3);                            // = x1
+  std::vector<double> x2(3);                            // = x2
+  std::vector<double> dx1(3);                            // = x1,xi
+  std::vector<double> dx2(3);                          // = x2,eta
+  std::vector<double> ddx1(3);                          // = x1,xixi
+  std::vector<double> ddx2(3);                          // = x2,etaeta
 
 
   // initialize
@@ -221,7 +219,6 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
   if (abs(XiContact[0])< NEIGHBORTOL && abs(XiContact[1]) < NEIGHBORTOL && elementscolinear == false)
   {
-
     // call function to fill variables for shape functions and their derivatives
     GetShapeFunctions(funct1,funct2,deriv1,deriv2,secondderiv1,secondderiv2,XiContact);
 
@@ -271,16 +268,16 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   CheckContactStatus(pp);
   
   // store coordinates of contact point into class variables
-  for(int i=0;i<NDIM;i++)
+  for(int i=0;i<3;i++)
   {
     x1_[i]=x1[i];
     x2_[i]=x2[i];
   }
-  
+
   //**********************************************************************
   // (2) Compute contact forces and stiffness
   //**********************************************************************
-  
+
   // call function to evaluate and assemble contact forces
   EvaluateFcContact(pp,gap,normal,fint,funct1,funct2,numnode1,numnode2);
   // call function to evaluate and assemble contact stiffness
@@ -305,6 +302,9 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     // local variables for element coordinates
     std::vector<double> eta(2);
 
+
+//    cout << "Element1: " << Element1()->Id() << endl;
+//    cout << "Element2: " << Element2()->Id() << endl;
 
     // number of nodes of each element
     const int numnode1 = Element1()->NumNode();
@@ -331,16 +331,16 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     Epetra_SerialDenseMatrix secondderiv2(1,numnode2);  // = N2,etaeta
 
     // coords and derivatives of the two contacting points
-    std::vector<double> x1(NDIM);                            // = x1
-    std::vector<double> x2(NDIM);                            // = x2
-    std::vector<double> dx1(NDIM);                           // = x1,xi
-    std::vector<double> dx2(NDIM);                           // = x2,eta
-    std::vector<double> ddx1(NDIM);                          // = x1,xixi
-    std::vector<double> ddx2(NDIM);                          // = x2,etaeta
-    std::vector<double> t1(NDIM);                            // = t1
-    std::vector<double> t2(NDIM);                            // = t2
-    std::vector<double> dt1(NDIM);                           // = t1,xi
-    std::vector<double> dt2(NDIM);                           // = t2,eta
+    std::vector<double> x1(3);                            // = x1
+    std::vector<double> x2(3);                            // = x2
+    std::vector<double> dx1(3);                           // = x1,xi
+    std::vector<double> dx2(3);                           // = x2,eta
+    std::vector<double> ddx1(3);                          // = x1,xixi
+    std::vector<double> ddx2(3);                          // = x2,etaeta
+    std::vector<double> t1(3);                            // = t1
+    std::vector<double> t2(3);                            // = t2
+    std::vector<double> dt1(3);                           // = t1,xi
+    std::vector<double> dt2(3);                           // = t2,eta
 
     // initialize function f and Jacobian df for Newton iteration
     std::vector<double> f(2);
@@ -351,13 +351,15 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
 
 
-
+    int iter=0;
 
     //**********************************************************************
     // local Newton iteration
     //**********************************************************************
     for (int i=0;i<BEAMCONTACTMAXITER;++i)
     {
+      iter++;
+
       // reset shape function variables to zero
       for (int j=0;j<numnode1;j++) funct1[j]=0;
       for (int j=0;j<numnode2;j++) funct2[j]=0;
@@ -379,16 +381,8 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
       // update contact point tangents and their derivatives
 
       if (beams_smoothing != INPAR::BEAMCONTACT::bsm_none)
-      {ComputeTangentsAndDerivs(t1,t2,dt1,dt2,funct1,funct2,deriv1,deriv2,numnode1, numnode2);
-
-      // some trial output
-      //std::cout << "Kontakttangente1: " << t1 << " Kontakttangente2: " << t2 << std::endl;
-      //std::cout << "Kontakttangente1 / Kontakttangente2: " << std::endl;
-        //    for (int i=0;i<3;i++)
-          //    std::cout << t1[i] << " / " << t2[i] << std::endl;
-     // std::cout << "Ableitung Kontakttangente1 / Ableitung Kontakttangente2: " << std::endl;
-      //for (int i=0;i<3;i++)
-        //std::cout << dt1[i] << " / " << dt2[i] << std::endl;
+      {
+        ComputeTangentsAndDerivs(t1,t2,dt1,dt2,funct1,funct2,deriv1,deriv2,numnode1, numnode2);
       }
 
 
@@ -428,8 +422,6 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
       // evaluate Jacobian of f at current eta[i]
       EvaluateNewtonGradF(df,x1,x2,dx1,dx2,ddx1,ddx2,t1,t2,dt1,dt2,norm, beams_smoothing);
-
-
 
       //*******************Uncomment the following to lines for FD-Check of the local Newton iteration*************************
 
@@ -498,8 +490,6 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     xicontact_[0]=eta[0];
     xicontact_[1]=eta[1];
 
-
-
     //show the closest point parameter coordinates of the contact pairs
     //std::cout << "Paar: " << Element1()->Id() << "/" << Element2()->Id() << ": " << eta[0] << "/"<< eta[1] << std::endl;
 
@@ -528,14 +518,14 @@ void CONTACT::Beam3contact::EvaluateNewtonF(std::vector<double>& f, const std::v
 
   if (beams_smoothing == INPAR::BEAMCONTACT::bsm_none)
     {
-  for (int i=0;i<NDIM;i++)
+  for (int i=0;i<3;i++)
   {
     f[0] += (x1[i]-x2[i])*dx1[i] / norm;
     f[1] += (x2[i]-x1[i])*dx2[i] / norm;
   }
     }
   else{
-    for (int i=0;i<NDIM;i++)
+    for (int i=0;i<3;i++)
       {
         f[0] += (x1[i]-x2[i])*t1[i] / norm;
         f[1] += (x2[i]-x1[i])*t2[i] / norm;
@@ -572,7 +562,7 @@ void CONTACT::Beam3contact::EvaluateNewtonGradF(LINALG::Matrix<2,2>& df, const s
   // see Wriggers, Computational Contact Mechanics, equation (12.7)
   if (beams_smoothing == INPAR::BEAMCONTACT::bsm_none)
       {
-        for(int i=0;i<NDIM;i++)
+        for(int i=0;i<3;i++)
         {
           df(0,0) += (dx1[i]*dx1[i] + (x1[i]-x2[i])*ddx1[i]) / norm;
           df(0,1) += -dx1[i]*dx2[i] / norm;
@@ -582,7 +572,7 @@ void CONTACT::Beam3contact::EvaluateNewtonGradF(LINALG::Matrix<2,2>& df, const s
       }
   else
   {
-    for(int i=0;i<NDIM;i++)
+    for(int i=0;i<3;i++)
             {
               df(0,0) += (dx1[i]*t1[i] + (x1[i]-x2[i])*dt1[i]) / norm;
               df(0,1) += -dx2[i]*t1[i] / norm;
@@ -644,8 +634,8 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
      const int numnode1, const int numnode2)
 {
   // get dimensions for vectors fc1 and fc2
-  const int dim1 = NDIM*numnode1;
-  const int dim2 = NDIM*numnode2;
+  const int dim1 = 3*numnode1;
+  const int dim2 = 3*numnode2;
   
   // temporary vectors for contact forces, DOF-GIDs and owning procs
   Epetra_SerialDenseVector fc1(dim1);
@@ -654,7 +644,7 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
   std::vector<int> lm2(dim2);
   std::vector<int> lmowner1(dim1);
   std::vector<int> lmowner2(dim2);
-  
+
   // flag indicating assembly
   bool DoNotAssemble = false;
   
@@ -683,11 +673,11 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
       std::vector<int> NodeDofGIDs = GetGlobalDofs(node);
 
       // compute force vector Fc1 and prepare assembly
-      for (int j=0;j<NDIM;++j)
+      for (int j=0;j<3;++j)
       {
-        fc1[NDIM*i+j] = (lmuzawa_ - pp*gap) * sgn_skalar * normal[j] * funct1[i];
-        lm1[NDIM*i+j] = NodeDofGIDs[j];
-        lmowner1[NDIM*i+j] = node->Owner();
+        fc1[3*i+j] = (lmuzawa_ - pp*gap) * sgn_skalar * normal[j] * funct1[i];
+        lm1[3*i+j] = NodeDofGIDs[j];
+        lmowner1[3*i+j] = node->Owner();
       }
     }
     //********************************************************************
@@ -700,11 +690,11 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
       std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
       
       // compute force vector Fc2 and prepare assembly
-      for (int j=0;j<NDIM;++j)
+      for (int j=0;j<3;++j)
       {
-        fc2[NDIM*i+j] = -(lmuzawa_ - pp*gap) * sgn_skalar * normal[j] * funct2[i];
-        lm2[NDIM*i+j] = NodeDofGIDs[j];
-        lmowner2[NDIM*i+j] = node->Owner();
+        fc2[3*i+j] = -(lmuzawa_ - pp*gap) * sgn_skalar * normal[j] * funct2[i];
+        lm2[3*i+j] = NodeDofGIDs[j];
+        lmowner2[3*i+j] = node->Owner();
       }
     }
   }
@@ -718,8 +708,8 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
     DoNotAssemble = true;
     
     // compute forces
-    for (int i=0;i<NDIM*numnode1;++i) fc1[i]=0;
-    for (int i=0;i<NDIM*numnode2;++i) fc2[i]=0;
+    for (int i=0;i<3*numnode1;++i) fc1[i]=0;
+    for (int i=0;i<3*numnode2;++i) fc2[i]=0;
   }
   
   //**********************************************************************
@@ -730,10 +720,11 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
     // assemble fc1 and fc2 into global contact force vector
     LINALG::Assemble(fint,fc1,lm1,lmowner1);
     LINALG::Assemble(fint,fc2,lm2,lmowner2);
+
     // debug output
     //std::cout << "********************  FC *********************"<<std::endl;
-    //for (int i=0;i<NDIM*numnode1;++i) std::cout << "Fc_1_" << i << ": " << fc1[i] << std::endl;
-    //for (int i=0;i<NDIM*numnode2;++i) std::cout << "Fc_2_" << i << ": " << fc2[i] << std::endl;
+    //for (int i=0;i<3*numnode1;++i) std::cout << "Fc_1_" << i << ": " << fc1[i] << std::endl;
+    //for (int i=0;i<3*numnode2;++i) std::cout << "Fc_2_" << i << ": " << fc2[i] << std::endl;
 
     //int istart = (cdiscret_.NodeRowMap()->LID(element1_->Id()) * 6);
     //int iend = (cdiscret_.NodeRowMap()->LID(element2_->Id()) * 6 + 5);
@@ -747,7 +738,6 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
 /*----------------------------------------------------------------------*
  |  end: Compute contact forces
  *----------------------------------------------------------------------*/
-
 
 /*----------------------------------------------------------------------*
  |  Evaluate contact stiffness                                popp 04/10|
@@ -764,14 +754,14 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
      int beams_smoothing)
 {
   // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs 
-  Epetra_SerialDenseMatrix stiffc1(NDIM*numnode1,NDIM*(numnode1+numnode2));
-  Epetra_SerialDenseMatrix stiffc2(NDIM*numnode2,NDIM*(numnode1+numnode2));
-  std::vector<int> lmrow1(NDIM*numnode1);
-  std::vector<int> lmrow2(NDIM*numnode2);
-  std::vector<int> lmrowowner1(NDIM*numnode1);
-  std::vector<int> lmrowowner2(NDIM*numnode2);
-  std::vector<int> lmcol1(NDIM*(numnode1+numnode2));
-  std::vector<int> lmcol2(NDIM*(numnode1+numnode2));
+  Epetra_SerialDenseMatrix stiffc1(3*numnode1,3*(numnode1+numnode2));
+  Epetra_SerialDenseMatrix stiffc2(3*numnode2,3*(numnode1+numnode2));
+  std::vector<int> lmrow1(3*numnode1);
+  std::vector<int> lmrow2(3*numnode2);
+  std::vector<int> lmrowowner1(3*numnode1);
+  std::vector<int> lmrowowner2(3*numnode2);
+  std::vector<int> lmcol1(3*(numnode1+numnode2));
+  std::vector<int> lmcol2(3*(numnode1+numnode2));
   
   // flag indicating assembly
   bool DoNotAssemble = false;
@@ -788,20 +778,20 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
     if (ngf_) sgn_skalar = Signum(Computeskalar());
 
     // auxiliary stiffmatrix for part III of linearization to avoid tensor notation
-    Epetra_SerialDenseMatrix stiffc_III(NDIM*(numnode1+numnode2),NDIM*(numnode1+numnode2));
+    Epetra_SerialDenseMatrix stiffc_III(3*(numnode1+numnode2),3*(numnode1+numnode2));
     
     // node ids of both elements
     const int* node_ids1 = element1_->NodeIds();
     const int* node_ids2 = element2_->NodeIds();
     
     // initialize storage for linearizations
-    std::vector<double> delta_xi(NDIM*(numnode1+numnode2));
-    std::vector<double> delta_eta(NDIM*(numnode1+numnode2));
+    std::vector<double> delta_xi(3*(numnode1+numnode2));
+    std::vector<double> delta_eta(3*(numnode1+numnode2));
     std::vector<double> distance(3);
     double normdist = 0.0;
-    std::vector<double> delta_gap(NDIM*(numnode1+numnode2));
-    Epetra_SerialDenseMatrix delta_x1_minus_x2(NDIM,NDIM*(numnode1+numnode2));
-    Epetra_SerialDenseMatrix delta_n(NDIM, NDIM*(numnode1+numnode2));
+    std::vector<double> delta_gap(3*(numnode1+numnode2));
+    Epetra_SerialDenseMatrix delta_x1_minus_x2(3,3*(numnode1+numnode2));
+    Epetra_SerialDenseMatrix delta_n(3, 3*(numnode1+numnode2));
     
     //********************************************************************
     // evaluate linearizations and distance
@@ -816,10 +806,10 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
     // linearization of gap function which is equal to delta d
     ComputeLinGap(delta_gap,delta_xi,delta_eta,x1,x2,dx1,dx2,funct1,funct2,normdist,
                   numnode1,numnode2,normal,norm,gap,delta_x1_minus_x2, beams_smoothing);
-    
+
     // linearization of normal vector
     ComputeLinNormal(delta_n,x1,x2,norm,numnode1,numnode2,delta_x1_minus_x2,normal,XiContact, beams_smoothing);
-    
+
     //********************************************************************
     // prepare assembly
     //********************************************************************
@@ -830,10 +820,10 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
       DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
       std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
       
-      for (int j=0;j<NDIM;++j)
+      for (int j=0;j<3;++j)
       {
-        lmrow1[NDIM*i+j]=NodeDofGIDs[j];
-        lmrowowner1[NDIM*i+j]=node->Owner();
+        lmrow1[3*i+j]=NodeDofGIDs[j];
+        lmrowowner1[3*i+j]=node->Owner();
       }
     }
     
@@ -844,10 +834,10 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
       DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
       std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
       
-      for (int j=0;j<NDIM;++j)
+      for (int j=0;j<3;++j)
       {
-        lmrow2[NDIM*i+j]=NodeDofGIDs[j];
-        lmrowowner2[NDIM*i+j]=node->Owner();
+        lmrow2[3*i+j]=NodeDofGIDs[j];
+        lmrowowner2[3*i+j]=node->Owner();
       }
     }
     
@@ -858,10 +848,10 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
       DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
       std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
       
-      for (int j=0;j<NDIM;++j)
+      for (int j=0;j<3;++j)
       {
-        lmcol1[NDIM*i+j] = NodeDofGIDs[j];
-        lmcol2[NDIM*i+j] = NodeDofGIDs[j];
+        lmcol1[3*i+j] = NodeDofGIDs[j];
+        lmcol2[3*i+j] = NodeDofGIDs[j];
       }
     }
     
@@ -872,10 +862,10 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
       DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
       std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
       
-      for (int j=0;j<NDIM;++j)
+      for (int j=0;j<3;++j)
       {
-        lmcol1[NDIM*numnode1+NDIM*i+j] = NodeDofGIDs[j];
-        lmcol2[NDIM*numnode1+NDIM*i+j] = NodeDofGIDs[j];
+        lmcol1[3*numnode1+3*i+j] = NodeDofGIDs[j];
+        lmcol2[3*numnode1+3*i+j] = NodeDofGIDs[j];
       }
     }
         
@@ -887,22 +877,22 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
     // use index vectors, that relate the vector index to the row index of
     // the shape function matrices. Use an if-contruction to select only
     // the entries of the shape function matrices, that are != 0.
-    // --> if (j%NDIM == i): only quasi-diagonal entries are considered
+    // --> if (j%3 == i): only quasi-diagonal entries are considered
     //********************************************************************
     // intialize index vectors
-    std::vector<int> index1(NDIM*(numnode1+numnode2));
-    std::vector<int> index2(NDIM*(numnode1+numnode2));
+    std::vector<int> index1(3*(numnode1+numnode2));
+    std::vector<int> index2(3*(numnode1+numnode2));
     
     // fill the index vectors
-    for (int i=0;i<NDIM*numnode1;++i)
+    for (int i=0;i<3*numnode1;++i)
     {
-      index1[i]=(int)floor(i/NDIM);
-      index2[i]=(int)floor(i/NDIM);
+      index1[i]=(int)floor(i/3);
+      index2[i]=(int)floor(i/3);
     }
-    for (int i=NDIM*numnode1;i<NDIM*(numnode1+numnode2);++i)
+    for (int i=3*numnode1;i<3*(numnode1+numnode2);++i)
     {
-      index1[i]=(int)floor((i-NDIM*numnode1)/NDIM);
-      index2[i]=(int)floor((i-NDIM*numnode1)/NDIM);
+      index1[i]=(int)floor((i-3*numnode1)/3);
+      index2[i]=(int)floor((i-3*numnode1)/3);
     }
     
     //********************************************************************
@@ -913,37 +903,37 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
     //********************************************************************
     // part I
     //********************************************************************
-    std::vector<double> normal_t_N1(NDIM*numnode1);
-    for (int i=0;i<NDIM;i++)
+    std::vector<double> normal_t_N1(3*numnode1);
+    for (int i=0;i<3;i++)
     {
-      for (int j=0;j<NDIM*numnode1;j++)
+      for (int j=0;j<3*numnode1;j++)
       {
-        if (j%NDIM == i)
+        if (j%3 == i)
         {
           int row = index1[j];
           normal_t_N1[j] += normal[i] * funct1[row];
         }
       }
     }
-    
-    for (int i=0;i<NDIM*numnode1;i++)    
+
+    for (int i=0;i<3*numnode1;i++)
     {
-      for (int j=0;j<NDIM*(numnode1+numnode2);j++)
+      for (int j=0;j<3*(numnode1+numnode2);j++)
       {
         stiffc1(i,j) = -pp * normal_t_N1[i] * delta_gap[j];
       }
     }
-    
+
     //********************************************************************
     // part II
     //********************************************************************
-    for  (int i=0;i<NDIM;i++)
+    for  (int i=0;i<3;i++)
     {
-      for (int j=0;j<NDIM*numnode1;j++)
+      for (int j=0;j<3*numnode1;j++)
       {
-        for (int k=0;k<NDIM*(numnode1+numnode2);k++)
+        for (int k=0;k<3*(numnode1+numnode2);k++)
         {
-          if (j%NDIM == i)
+          if (j%3 == i)
           {
             int row = index1[j];
             stiffc1(j,k) += (lmuzawa_ - pp*gap) * sgn_skalar * funct1[row] * delta_n(i,k);
@@ -955,66 +945,66 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
     //********************************************************************
     // part III
     //********************************************************************
-    std::vector<double> normal_t_N1_xi(NDIM*numnode1);
-    for (int i=0;i<NDIM;i++)
+    std::vector<double> normal_t_N1_xi(3*numnode1);
+    for (int i=0;i<3;i++)
     {
-      for (int j=0;j<NDIM*numnode1;j++)
+      for (int j=0;j<3*numnode1;j++)
       {
-        if (j%NDIM == i)
+        if (j%3 == i)
         {
           int row = index1[j];
           normal_t_N1_xi[j] += normal[i] * deriv1(0,row);
         }
       }
     }
-        
-    for (int i=0;i<NDIM*numnode1;i++)
+
+    for (int i=0;i<3*numnode1;i++)
     {
-      for (int j=0;j<NDIM*(numnode1+numnode2);j++)
+      for (int j=0;j<3*(numnode1+numnode2);j++)
       {
         stiffc1(i,j) += (lmuzawa_ - pp*gap) * sgn_skalar * normal_t_N1_xi[i] * delta_xi[j];
       }
     }
-    
+
     //********************************************************************
     // evaluate contact stiffness
     // (2) stiffc2 of second element
     //********************************************************************
-    
+
     //********************************************************************
     // part I
     //********************************************************************
-    std::vector<double> normal_t_N2(NDIM*numnode2);
-    for (int i=0;i<NDIM;i++)
+    std::vector<double> normal_t_N2(3*numnode2);
+    for (int i=0;i<3;i++)
     {
-      for (int j=0;j<NDIM*numnode2;j++)
+      for (int j=0;j<3*numnode2;j++)
       {
-        if (j%NDIM == i)
+        if (j%3 == i)
         {
           int row = index2[j];
           normal_t_N2[j] += normal[i] * funct2[row];
         }
       }
     }
-    
-    for (int i=0;i<NDIM*numnode2;i++)    
+
+    for (int i=0;i<3*numnode2;i++)
     {
-      for (int j=0;j<NDIM*(numnode1+numnode2);j++)
+      for (int j=0;j<3*(numnode1+numnode2);j++)
       {
         stiffc2(i,j) = pp * normal_t_N2[i] * delta_gap[j];
       }
     }
-    
+
     //********************************************************************
     // part II
     //********************************************************************
-    for (int i=0;i<NDIM;i++)
+    for (int i=0;i<3;i++)
     {
-      for (int j=0;j<NDIM*numnode2;j++)
+      for (int j=0;j<3*numnode2;j++)
       {
-        for (int k=0;k<NDIM*(numnode1+numnode2);k++)
+        for (int k=0;k<3*(numnode1+numnode2);k++)
         {
-          if (j%NDIM == i)
+          if (j%3 == i)
           {
             int row = index2[j];
             stiffc2(j,k) += -(lmuzawa_  - pp*gap) * sgn_skalar * funct2[row] * delta_n(i,k);
@@ -1022,16 +1012,15 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
         }
       }
     }
-
     //********************************************************************
     // part III
     //********************************************************************
-    std::vector<double> normal_t_N2_eta(NDIM*numnode2);
-    for (int i=0;i<NDIM;i++)
+    std::vector<double> normal_t_N2_eta(3*numnode2);
+    for (int i=0;i<3;i++)
     {
-      for (int j=0;j<NDIM*numnode2;j++)
+      for (int j=0;j<3*numnode2;j++)
       {
-        if (j%NDIM == i)
+        if (j%3 == i)
         {
           int row = index2[j];
           normal_t_N2_eta[j] += normal[i] * deriv2(0,row);
@@ -1039,9 +1028,9 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
       }
     }
 
-    for (int i=0;i<NDIM*numnode2;i++)
+    for (int i=0;i<3*numnode2;i++)
     {
-      for (int j=0;j<NDIM*(numnode1+numnode2);j++)
+      for (int j=0;j<3*(numnode1+numnode2);j++)
       {
         stiffc2(i,j) += -(lmuzawa_ - pp*gap) * sgn_skalar * normal_t_N2_eta[i] * delta_eta[j];
       }
@@ -1064,11 +1053,11 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
     DoNotAssemble = true;
     
     // compute stiffness
-    for (int i=0;i<NDIM*numnode1;i++)
-      for (int j=0;j<NDIM*numnode1;j++)
+    for (int i=0;i<3*numnode1;i++)
+      for (int j=0;j<3*numnode1;j++)
         stiffc1(i,j) = 0;
-    for (int i=0;i<NDIM*numnode2;i++)
-      for (int j=0;j<NDIM*numnode2;j++)
+    for (int i=0;i<3*numnode2;i++)
+      for (int j=0;j<3*numnode2;j++)
         stiffc2(i,j) = 0;
   }
   
@@ -1078,19 +1067,37 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
   // change sign of stiffc1 and stiffc2 due to time integration.
   // according to analytical derivation there is no minus sign, but for
   // our time integration methods the negative stiffness must be assembled.
-  for (int j=0;j<NDIM*(numnode1+numnode2);j++)
+  for (int j=0;j<3*(numnode1+numnode2);j++)
   {
-    for (int i=0;i<NDIM*numnode1;i++)
+    for (int i=0;i<3*numnode1;i++)
       stiffc1(i,j) = stiffc1(i,j) * (-1);
-    for (int i=0;i<NDIM*numnode2;i++)
+    for (int i=0;i<3*numnode2;i++)
       stiffc2(i,j) = stiffc2(i,j) * (-1);
   }
-    
+
   // now finally assemble stiffc1 and stiffc2
   if (!DoNotAssemble)
-  {  
+  {
+//    cout << "stiff1: " << endl;
+//    for (int i=0;i<6;i++)
+//    {
+//      for (int j=0;j<12;j++)
+//        cout << stiffc1(i,j) << "  ";
+//
+//      cout << endl;
+//    }
+//
+//    cout << "stiff2: " << endl;
+//    for (int i=0;i<6;i++)
+//    {
+//      for (int j=0;j<12;j++)
+//        cout << stiffc2(i,j) << "  ";
+//
+//      cout << endl;
+//    }
     stiffmatrix.Assemble(0,stiffc1,lmrow1,lmrowowner1,lmcol1);
     stiffmatrix.Assemble(0,stiffc2,lmrow2,lmrowowner2,lmcol2);
+
   }
   
   return;
@@ -1110,15 +1117,16 @@ void CONTACT::Beam3contact::ComputeNormal(std::vector<double>& normal, double& g
     //std::cout << "Compute Normal" << std::endl;
 
   // compute non-unit normal
-  for (int i=0;i<NDIM;i++) normal[i] = x1[i]-x2[i];    
+  for (int i=0;i<3;i++) normal[i] = x1[i]-x2[i];
 
   // compute length of normal
   norm = sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
-  if (norm < 0.1*NORMTOL) dserror("ERROR: Normal of length zero! --> change time step!");
+  //cout << "pair: " << element1_->Id() << " / " << element2_->Id() << " - norm_delta_r: " << norm << endl;
+  if (norm < NORMTOL) dserror("ERROR: Normal of length zero! --> change time step!");
   
 
   // compute unit normal
-  for (int i=0;i<NDIM;i++)
+  for (int i=0;i<3;i++)
     {
     normal[i] /= norm;
 
@@ -1128,7 +1136,7 @@ void CONTACT::Beam3contact::ComputeNormal(std::vector<double>& normal, double& g
   if (firstcall_)
     {
 
-    for (int i=0;i<NDIM;i++)
+    for (int i=0;i<3;i++)
       {
 
       normal_old_[i] = normal_[i];
@@ -1264,7 +1272,7 @@ void CONTACT::Beam3contact::ComputeCoordsAndDerivs(std::vector<double>& x1,
      const int& numnode1, const int& numnode2)
 {
   // reset input variables
-  for (int i=0;i<NDIM;i++)
+  for (int i=0;i<3;i++)
   {
     x1[i]   = 0.0;
     x2[i]   = 0.0;
@@ -1275,19 +1283,19 @@ void CONTACT::Beam3contact::ComputeCoordsAndDerivs(std::vector<double>& x1,
   }
     
   // auxialiary variables for the nodal coordinates
-  Epetra_SerialDenseMatrix coord1(NDIM,numnode1);
-  Epetra_SerialDenseMatrix coord2(NDIM,numnode2);
+  Epetra_SerialDenseMatrix coord1(3,numnode1);
+  Epetra_SerialDenseMatrix coord2(3,numnode2);
   
   // full coord1 and coord2
-  for (int i=0;i<NDIM;i++)  
+  for (int i=0;i<3;i++)
     for (int j=0;j<numnode1;j++)      
       coord1(i,j)=ele1pos_(i,j);      
-  for (int i=0;i<NDIM;i++)
+  for (int i=0;i<3;i++)
     for (int j=0;j<numnode2;j++)  
       coord2(i,j)=ele2pos_(i,j);
   
   // compute output variable
-  for (int i=0;i<NDIM;i++)
+  for (int i=0;i<3;i++)
   {
     for (int j=0;j<numnode1;j++)
       x1[i] += funct1[j] * coord1(i,j);              // x1 = N1 * x~1
@@ -1323,7 +1331,7 @@ void CONTACT::Beam3contact::ComputeTangentsAndDerivs
     const int& numnode1, const int& numnode2)
 {
   // reset input variables
-  for (int i=0;i<NDIM;i++)
+  for (int i=0;i<3;i++)
   {
     t1[i]   = 0.0;
     t2[i]   = 0.0;
@@ -1332,36 +1340,36 @@ void CONTACT::Beam3contact::ComputeTangentsAndDerivs
   }
 
   // auxialiary variables for the nodal coordinates
-  Epetra_SerialDenseMatrix nodetangent1(NDIM,numnode1);
-  Epetra_SerialDenseMatrix nodetangent2(NDIM,numnode2);
+  Epetra_SerialDenseMatrix nodetangent1(3,numnode1);
+  Epetra_SerialDenseMatrix nodetangent2(3,numnode2);
 
 //  std::cout << "nodetangent";
-//  for (int i=0;i<NDIM;i++)
+//  for (int i=0;i<3;i++)
 //    for (int j=0;j<numnode1;j++)
 //      std::cout << nodetangent1(i,j) << std::endl;
-//  for (int i=0;i<NDIM;i++)
+//  for (int i=0;i<3;i++)
 //    for (int j=0;j<numnode2;j++)
 //      std::cout << nodetangent1(i,j) << std::endl;
 //
 //  std::cout << "eletangent";
-//    for (int i=0;i<NDIM;i++)
+//    for (int i=0;i<3;i++)
 //      for (int j=0;j<numnode1;j++)
 //        std::cout << ele1tangent_(i,j) << std::endl;
-//    for (int i=0;i<NDIM;i++)
+//    for (int i=0;i<3;i++)
 //      for (int j=0;j<numnode2;j++)
 //        std::cout << ele2tangent_(i,j) << std::endl;
 
 
   // full coord1 and coord2
-  for (int i=0;i<NDIM;i++)
+  for (int i=0;i<3;i++)
     for (int j=0;j<numnode1;j++)
       nodetangent1(i,j)=ele1tangent_(i,j);
-  for (int i=0;i<NDIM;i++)
+  for (int i=0;i<3;i++)
     for (int j=0;j<numnode2;j++)
       nodetangent2(i,j)=ele2tangent_(i,j);
 
   // compute output variable
-  for (int i=0;i<NDIM;i++)
+  for (int i=0;i<3;i++)
   {
     for (int j=0;j<numnode1;j++)
       t1[i] += funct1[j] * nodetangent1(i,j);              // t1 = N1 * t~1
@@ -1482,11 +1490,11 @@ void CONTACT::Beam3contact::ComputeLinXiAndLinEta(
   // matrices to compute Lin_Xi and Lin_Eta
   Epetra_SerialDenseMatrix L(2,2);
   Epetra_SerialDenseMatrix L_inv(2,2);
-  Epetra_SerialDenseMatrix B(2,NDIM*(numnode1+numnode2));
-  Epetra_SerialDenseMatrix D(2,NDIM*(numnode1+numnode2));
+  Epetra_SerialDenseMatrix B(2,3*(numnode1+numnode2));
+  Epetra_SerialDenseMatrix D(2,3*(numnode1+numnode2));
   
   // compute L elementwise
-  for (int i=0;i<NDIM;i++)
+  for (int i=0;i<3;i++)
   {
     L(0,0) +=  dx1[i]*dx1[i] + (x1[i]-x2[i])*ddx1[i];
     L(0,1) += -dx2[i]*dx1[i];
@@ -1503,30 +1511,30 @@ void CONTACT::Beam3contact::ComputeLinXiAndLinEta(
   L_inv(1,1) =  L(0,0) / det_L;
   
   // index vectors for access to shape function vectors and matrices
-  std::vector<int> index1(NDIM*(numnode1+numnode2));
-  std::vector<int> index2(NDIM*(numnode1+numnode2));
+  std::vector<int> index1(3*(numnode1+numnode2));
+  std::vector<int> index2(3*(numnode1+numnode2));
   
   // fill the index vectors
-  for (int i=0;i<NDIM*numnode1;i++)
+  for (int i=0;i<3*numnode1;i++)
   {
     index1[i]=(int) floor(i/3);
     index2[i]=(int) floor(i/3);
   }
-  for (int i=NDIM*numnode1;i<NDIM*(numnode1+numnode2);i++)
+  for (int i=3*numnode1;i<3*(numnode1+numnode2);i++)
   {
-    index1[i]=(int) floor((i-NDIM*numnode1)/3);
-    index2[i]=(int) floor((i-NDIM*numnode1)/3);
+    index1[i]=(int) floor((i-3*numnode1)/3);
+    index2[i]=(int) floor((i-3*numnode1)/3);
   }
   
   // compute B elementwise
-  for (int i=0;i<NDIM*(numnode1+numnode2);i++)
+  for (int i=0;i<3*(numnode1+numnode2);i++)
   {
     int j=i%3;
     int row1 = index1[i];  
     int row2 = index2[i];
     
     // first block
-    if (i<NDIM*numnode1)
+    if (i<3*numnode1)
     {
       B(0,i) = -(x1[j]-x2[j])*deriv1(0,row1) - dx1[j]*funct1[row1];
       B(1,i) = -dx2[j]*funct1[row1];
@@ -1543,12 +1551,12 @@ void CONTACT::Beam3contact::ComputeLinXiAndLinEta(
   // compute D = L^-1 * B
   for (int i=0;i<2;i++)
     for (int j=0;j<2;j++)
-      for (int k=0;k<NDIM*(numnode1+numnode2);k++)
+      for (int k=0;k<3*(numnode1+numnode2);k++)
         D(i,k) += L_inv(i,j) * B(j,k);    
   
 
   // finally the linearizations / directional derivatives
-  for (int i=0;i<NDIM*(numnode1+numnode2);i++)
+  for (int i=0;i<3*(numnode1+numnode2);i++)
   {
     delta_xi[i] = D(0,i);
     delta_eta[i] = D(1,i);
@@ -1600,39 +1608,39 @@ void CONTACT::Beam3contact::ComputeLinGap(std::vector<double>& delta_gap,
       Epetra_SerialDenseMatrix& delta_x1_minus_x2, int beams_smoothing)
 {
   // index vectors for access to shape function vectors and matrices
-  std::vector<int> index1(NDIM*(numnode1+numnode2));
-  std::vector<int> index2(NDIM*(numnode1+numnode2));
+  std::vector<int> index1(3*(numnode1+numnode2));
+  std::vector<int> index2(3*(numnode1+numnode2));
   
   // fill the index vectors
-  for (int i=0;i<NDIM*numnode1;i++)
+  for (int i=0;i<3*numnode1;i++)
   {
     index1[i]=(int) floor(i/3);
     index2[i]=(int) floor(i/3);
   }
   
-  for (int i=NDIM*numnode1;i<NDIM*(numnode1+numnode2);i++)
+  for (int i=3*numnode1;i<3*(numnode1+numnode2);i++)
   {
-    index1[i]=(int) floor((i-NDIM*numnode1)/3);
-    index2[i]=(int) floor((i-NDIM*numnode1)/3);
+    index1[i]=(int) floor((i-3*numnode1)/3);
+    index2[i]=(int) floor((i-3*numnode1)/3);
   }
-  
+
   // compute linearization of disctance vector
-  for (int i=0;i<NDIM;i++)
+  for (int i=0;i<3;i++)
   {
-    for (int j=0;j<NDIM*(numnode1+numnode2);j++)
+    for (int j=0;j<3*(numnode1+numnode2);j++)
     {
       // standard part for each j
       delta_x1_minus_x2(i,j) = dx1[i]*delta_xi[j] - dx2[i]*delta_eta[j];
 
       // only for first block
-      if (j<NDIM*numnode1 && j%NDIM == i)
+      if (j<3*numnode1 && j%3 == i)
       {
         int row = index1[j];
         delta_x1_minus_x2(i,j) += funct1[row];
       }
       
       // only for second block
-      else if(j%NDIM == i)
+      else if(j%3 == i)
       {
         int row = index2[j];
         delta_x1_minus_x2(i,j) += -funct2[row];
@@ -1641,8 +1649,8 @@ void CONTACT::Beam3contact::ComputeLinGap(std::vector<double>& delta_gap,
   }
   
   // compute linearization of gap
-  for (int i=0;i<NDIM;i++)                
-    for (int j=0;j<NDIM*(numnode1+numnode2);j++)
+  for (int i=0;i<3;i++)
+    for (int j=0;j<3*(numnode1+numnode2);j++)
       delta_gap[j] +=  (x1[i]-x2[i])/normdist * delta_x1_minus_x2(i,j);
   
   // finite difference check
@@ -1673,24 +1681,24 @@ void CONTACT::Beam3contact::ComputeLinNormal(Epetra_SerialDenseMatrix& delta_n,
   Epetra_SerialDenseMatrix deriv2(1,numnode2);
   Epetra_SerialDenseMatrix secondderiv1(1,numnode1);
   Epetra_SerialDenseMatrix secondderiv2(1,numnode2);
-  
+
   // get shape functions and their derivatives
   GetShapeFunctions(funct1,funct2,deriv1,deriv2,secondderiv1,secondderiv2,XiContact);
     
   // tensor product of normal (x) normal
-  Epetra_SerialDenseMatrix n_tp_n(NDIM,NDIM);
-  for (int i=0;i<NDIM;i++)
-    for (int j=0;j<NDIM;j++)
+  Epetra_SerialDenseMatrix n_tp_n(3,3);
+  for (int i=0;i<3;i++)
+    for (int j=0;j<3;j++)
       n_tp_n(i,j) = normal[i] * normal[j];
 
   // build a 3x3-identity matrix
-  Epetra_SerialDenseMatrix identity(NDIM,NDIM);
-  for (int i=0;i<NDIM;i++) identity(i,i) = 1;
+  Epetra_SerialDenseMatrix identity(3,3);
+  for (int i=0;i<3;i++) identity(i,i) = 1;
       
   // compute linearization of normal
   for (int i=0;i<3;i++)
-    for (int j=0;j<NDIM;j++)
-      for (int k=0;k<NDIM*(numnode1+numnode2);k++)
+    for (int j=0;j<3;j++)
+      for (int k=0;k<3*(numnode1+numnode2);k++)
         delta_n(i,k) += (identity(i,j) - n_tp_n(i,j)) * delta_x1_minus_x2(j,k) / norm;
   
   // finite difference check
@@ -1720,11 +1728,11 @@ void CONTACT::Beam3contact::Resetlmuzawa()
 
 
 /*----------------------------------------------------------------------*
- |  Shift current normal vector to old normal vector        meier 10/2010|
+ |  Shift normal to old normal at the end of time step     meier 10/2010|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::ShiftNormal()
 {
-  for (int j=0;j<NDIM;j++)
+  for (int j=0;j<3;j++)
         normal_old_[j] = normal_[j];
 
 }
@@ -1768,7 +1776,7 @@ void CONTACT::Beam3contact::InvertNormal()
 double CONTACT::Beam3contact::Computeskalar()
 {
   double skalar = 0;
-  for (int j=0;j<NDIM;j++) skalar += normal_old_[j] * normal_[j];
+  for (int j=0;j<3;j++) skalar += normal_old_[j] * normal_[j];
 
 
   return skalar;
@@ -2282,16 +2290,16 @@ void CONTACT::Beam3contact::FDCheckNewtonCPP(const int& numnode1, const int& num
   Epetra_SerialDenseMatrix secondderiv2(1,numnode2);  // = N2,etaeta
 
   // coords and derivatives of the two contacting points
-  std::vector<double> x1(NDIM);                            // = x1
-  std::vector<double> x2(NDIM);                            // = x2
-  std::vector<double> dx1(NDIM);                           // = x1,xi
-  std::vector<double> dx2(NDIM);                           // = x2,eta
-  std::vector<double> ddx1(NDIM);                          // = x1,xixi
-  std::vector<double> ddx2(NDIM);                          // = x2,etaeta
-  std::vector<double> t1(NDIM);                            // = t1
-  std::vector<double> t2(NDIM);                            // = t2
-  std::vector<double> dt1(NDIM);                           // = t1,xi
-  std::vector<double> dt2(NDIM);                           // = t2,eta
+  std::vector<double> x1(3);                            // = x1
+  std::vector<double> x2(3);                            // = x2
+  std::vector<double> dx1(3);                           // = x1,xi
+  std::vector<double> dx2(3);                           // = x2,eta
+  std::vector<double> ddx1(3);                          // = x1,xixi
+  std::vector<double> ddx2(3);                          // = x2,etaeta
+  std::vector<double> t1(3);                            // = t1
+  std::vector<double> t2(3);                            // = t2
+  std::vector<double> dt1(3);                           // = t1,xi
+  std::vector<double> dt2(3);                           // = t2,eta
 
   // initialize function f and Jacobian df for Newton iteration
   std::vector<double> f(2);
@@ -2411,8 +2419,8 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
   //bool FD_elementscolinear = false;
   
   // local vectors for FD-approximations of delta_xi and delta_eta
-  std::vector<double> FD_delta_xi(NDIM*(numnode1+numnode2));
-  std::vector<double> FD_delta_eta(NDIM*(numnode1+numnode2));
+  std::vector<double> FD_delta_xi(3*(numnode1+numnode2));
+  std::vector<double> FD_delta_eta(3*(numnode1+numnode2));
   
   // step width and tolerances for FD-Check
   double eps = 1e-8;
@@ -2423,7 +2431,7 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
   // loop over ele1pos_
   for(int i=0;i<numnode1;i++)
   {
-    for(int j=0;j<NDIM;j++)
+    for(int j=0;j<3;j++)
     {
       // local vector with the two parameter coordinates xi1 and xi2 of the contact point
       std::vector<double> FD_XiContact;
@@ -2440,8 +2448,8 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
       //FD_elementscolinear=elementscolinear_;
       
       // FD-approximation
-      FD_delta_xi[NDIM*i+j] = (FD_XiContact[0]-XiContact[0])/eps;
-      FD_delta_eta[NDIM*i+j] = (FD_XiContact[1]-XiContact[1])/eps;
+      FD_delta_xi[3*i+j] = (FD_XiContact[0]-XiContact[0])/eps;
+      FD_delta_eta[3*i+j] = (FD_XiContact[1]-XiContact[1])/eps;
       
       // Undo step forward
       ele1pos_(j,i) -= eps;
@@ -2450,7 +2458,7 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
   // loop over ele2pos_
   for(int i=0;i<numnode2;i++)
   {
-    for(int j=0;j<NDIM;j++)
+    for(int j=0;j<3;j++)
     {
       // local vector with the two parameter coordinates xi1 and xi2 of the contact point
       std::vector<double> FD_XiContact;
@@ -2467,8 +2475,8 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
       //FD_elementscolinear=elementscolinear_;
       
       // FD-approximation
-      FD_delta_xi[NDIM*numnode1+NDIM*i+j] = (FD_XiContact[0]-XiContact[0])/eps;
-      FD_delta_eta[NDIM*numnode1+NDIM*i+j] = (FD_XiContact[1]-XiContact[1])/eps;
+      FD_delta_xi[3*numnode1+3*i+j] = (FD_XiContact[0]-XiContact[0])/eps;
+      FD_delta_eta[3*numnode1+3*i+j] = (FD_XiContact[1]-XiContact[1])/eps;
       
       // Undo step forward
       ele2pos_(j,i) -= eps;
@@ -2477,7 +2485,7 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
   
 //  // Print the FD-Approximations to compare with analytical values
 //  std::cout<<std::endl<<"Finite-Differences-Approximation of delta_xi and delta_eta:"<<std::endl<<std::endl;
-//  for(int i=0;i<NDIM*(numnode1+numnode2);i++)
+//  for(int i=0;i<3*(numnode1+numnode2);i++)
 //  {          
 //    std::cout << "FD_delta_xi_"<<i<<" = "<<FD_delta_xi[i]<<"  FD_delta_eta_"<<i<<" = "<<FD_delta_eta[i]<<std::endl;
 //  }
@@ -2536,7 +2544,7 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
      const std::vector<double>& delta_gap, const double& gap, int beams_smoothing)
 {
   // local auxiliary variables for FD-approximations of delta_gap
-  std::vector<double> FD_delta_gap(NDIM*(numnode1+numnode2));
+  std::vector<double> FD_delta_gap(3*(numnode1+numnode2));
   double FD_gap = 0.0;
   std::vector<double> FD_normal(3);
   double FD_norm = 0.0;
@@ -2558,17 +2566,17 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
   Epetra_SerialDenseMatrix FD_secondderiv2(1,numnode2);
     
   // local coords and derivatives of the two contacting points
-  std::vector<double> FD_x1(NDIM);    // = x1
-  std::vector<double> FD_x2(NDIM);    // = x2
-  std::vector<double> FD_dx1(NDIM);    // = x1,xi
-  std::vector<double> FD_dx2(NDIM);    // = x2,eta
-  std::vector<double> FD_ddx1(NDIM);  // = x1,xixi
-  std::vector<double> FD_ddx2(NDIM);  // = x2,etaeta
+  std::vector<double> FD_x1(3);    // = x1
+  std::vector<double> FD_x2(3);    // = x2
+  std::vector<double> FD_dx1(3);    // = x1,xi
+  std::vector<double> FD_dx2(3);    // = x2,eta
+  std::vector<double> FD_ddx1(3);  // = x1,xixi
+  std::vector<double> FD_ddx2(3);  // = x2,etaeta
   
   // loop over ele1pos_
   for(int i=0;i<numnode1;i++)
   {
-    for(int j=0;j<NDIM;j++)
+    for(int j=0;j<3;j++)
     {
       // step forward
       ele1pos_(j,i) += eps; 
@@ -2588,11 +2596,11 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
       // Call function to compute scaled normal and gap in possible contact point
       ComputeNormal(FD_normal,FD_gap,FD_norm,FD_x1,FD_x2);
   
-//      std::cout<<"FD_gap_"<<NDIM*i+j<<" = "<<FD_gap<<std::endl;
+//      std::cout<<"FD_gap_"<<3*i+j<<" = "<<FD_gap<<std::endl;
   
       // FD-approximation
-      FD_delta_gap[NDIM*i+j] = (FD_gap - gap)/eps;
-//      std::cout<<"FD_delta_gap_"<<NDIM*i+j<<" = "<<FD_delta_gap[NDIM*i+j]<<std::endl;
+      FD_delta_gap[3*i+j] = (FD_gap - gap)/eps;
+//      std::cout<<"FD_delta_gap_"<<3*i+j<<" = "<<FD_delta_gap[3*i+j]<<std::endl;
       
       // Undo step forward
       ele1pos_(j,i) -= eps;
@@ -2601,7 +2609,7 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
   // loop over ele2pos_
   for(int i=0;i<numnode2;i++)
   {
-    for(int j=0;j<NDIM;j++)
+    for(int j=0;j<3;j++)
     {
       // step forward
       ele2pos_(j,i) += eps; 
@@ -2621,11 +2629,11 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
       // Call function to compute scaled normal and gap in possible contact point
       ComputeNormal(FD_normal,FD_gap,FD_norm,FD_x1,FD_x2);
       
-//      std::cout<<"FD_gap_"<<NDIM*numnode1+NDIM*i+j<<" = "<<FD_gap<<std::endl;
+//      std::cout<<"FD_gap_"<<3*numnode1+3*i+j<<" = "<<FD_gap<<std::endl;
       
       // FD-approximation
-      FD_delta_gap[NDIM*numnode1+NDIM*i+j] = (FD_gap - gap)/eps;
-//      std::cout<<"FD_delta_gap_"<<NDIM*numnode1+NDIM*i+j<<" = "<<FD_delta_gap[NDIM*numnode1+NDIM*i+j]<<std::endl;              
+      FD_delta_gap[3*numnode1+3*i+j] = (FD_gap - gap)/eps;
+//      std::cout<<"FD_delta_gap_"<<3*numnode1+3*i+j<<" = "<<FD_delta_gap[3*numnode1+3*i+j]<<std::endl;
       
       // Undo step forward
       ele2pos_(j,i) -= eps;
@@ -2634,7 +2642,7 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
   
 //  // Print the FD-Approximations to compare with analytical values
 //  std::cout<<std::endl<<"Finite-Differences-Approximation of delta_gap:"<<std::endl<<std::endl;
-//  for(int i=0;i<NDIM*(numnode1+numnode2);i++)
+//  for(int i=0;i<3*(numnode1+numnode2);i++)
 //  {          
 //    std::cout << "FD_delta_gap_"<<i<<" = "<<FD_delta_gap[i]<<std::endl;
 //  }
@@ -2676,7 +2684,7 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
      const Epetra_SerialDenseMatrix& delta_n, const std::vector<double>& normal, int beams_smoothing)
 {
   // local auxiliary variables for FD-approximations of delta_n
-  Epetra_SerialDenseMatrix FD_delta_n(NDIM, NDIM*(numnode1+numnode2));
+  Epetra_SerialDenseMatrix FD_delta_n(3, 3*(numnode1+numnode2));
     
   // step width and tolerances for FD-Check
   double eps = 1e-6;
@@ -2693,19 +2701,19 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
   Epetra_SerialDenseMatrix FD_secondderiv2(1,numnode2);
     
   // local coords and derivatives of the two contacting points
-  std::vector<double> FD_x1(NDIM);    // = x1
-  std::vector<double> FD_x2(NDIM);    // = x2
-  std::vector<double> FD_dx1(NDIM);    // = x1,xi
-  std::vector<double> FD_dx2(NDIM);    // = x2,eta
-  std::vector<double> FD_ddx1(NDIM);  // = x1,xixi
-  std::vector<double> FD_ddx2(NDIM);  // = x2,etaeta
+  std::vector<double> FD_x1(3);    // = x1
+  std::vector<double> FD_x2(3);    // = x2
+  std::vector<double> FD_dx1(3);    // = x1,xi
+  std::vector<double> FD_dx2(3);    // = x2,eta
+  std::vector<double> FD_ddx1(3);  // = x1,xixi
+  std::vector<double> FD_ddx2(3);  // = x2,etaeta
   
 //  std::cout<<std::endl<<"loop over ele1pos_"<<std::endl<<std::endl;
   
   // loop over ele1pos_
   for(int j=0;j<numnode1;j++)
   {
-    for(int i=0;i<NDIM;i++)
+    for(int i=0;i<3;i++)
     {
       std::vector<double> FD_normal(3);
       double FD_norm = 0.0;
@@ -2740,13 +2748,13 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
 //      // Test print of FD_normal
 //      std::cout<<"FD_normal    "<<FD_normal[0]<<"  "<<FD_normal[1]<<"  "<<FD_normal[2]<<std::endl<<std::endl;
       
-      for(int k=0;k<NDIM;k++)
+      for(int k=0;k<3;k++)
       {
         // FD-approximation
-        FD_delta_n(k,NDIM*j+i) += (FD_normal[k] - normal[k])/eps;
+        FD_delta_n(k,3*j+i) += (FD_normal[k] - normal[k])/eps;
       }
       
-//      std::cout<<"FD_delta_n_row"<<NDIM*j+i<<":  "<<FD_delta_n(0,NDIM*j+i)<<"  "<<FD_delta_n(1,NDIM*j+i)<<"  "<<FD_delta_n(2,NDIM*j+i)<<std::endl;
+//      std::cout<<"FD_delta_n_row"<<3*j+i<<":  "<<FD_delta_n(0,3*j+i)<<"  "<<FD_delta_n(1,3*j+i)<<"  "<<FD_delta_n(2,3*j+i)<<std::endl;
       
       // Undo step forward
       ele1pos_(i,j) -= eps;
@@ -2758,7 +2766,7 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
   // loop over ele2pos_
   for(int j=0;j<numnode2;j++)
   {
-    for(int i=0;i<NDIM;i++)
+    for(int i=0;i<3;i++)
     {
       std::vector<double> FD_normal(3);
       double FD_norm = 0.0;
@@ -2783,7 +2791,7 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
       // Call function to fill variables with coordinates and derivatives of the two contacting points
       ComputeCoordsAndDerivs(FD_x1,FD_x2,FD_dx1,FD_dx2,FD_ddx1,FD_ddx2,FD_funct1,FD_funct2,FD_deriv1,FD_deriv2,FD_secondderiv1,FD_secondderiv2,numnode1,numnode2);
       
-//      for(int k=0;k<NDIM;k++)
+//      for(int k=0;k<3;k++)
 //      {
 //        FD_x1[k]=0;
 //        FD_x2[k]=0;
@@ -2806,13 +2814,13 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
 //      // Test print of FD_normal
 //      std::cout<<"FD_normal    "<<FD_normal[0]<<"  "<<FD_normal[1]<<"  "<<FD_normal[2]<<std::endl<<std::endl;
       
-      for(int k=0;k<NDIM;k++)
+      for(int k=0;k<3;k++)
       {
         // FD-approximation
-        FD_delta_n(k,NDIM*numnode1+NDIM*j+i) += (FD_normal[k] - normal[k])/eps;
+        FD_delta_n(k,3*numnode1+3*j+i) += (FD_normal[k] - normal[k])/eps;
       }
       
-//      std::cout<<"FD_delta_n_row"<<NDIM*numnode1+NDIM*j+i<<":  "<<FD_delta_n(0,NDIM*numnode1+NDIM*j+i)<<"  "<<FD_delta_n(1,NDIM*numnode1+NDIM*j+i)<<"  "<<FD_delta_n(2,NDIM*numnode1+NDIM*j+i)<<std::endl;
+//      std::cout<<"FD_delta_n_row"<<3*numnode1+3*j+i<<":  "<<FD_delta_n(0,3*numnode1+3*j+i)<<"  "<<FD_delta_n(1,3*numnode1+3*j+i)<<"  "<<FD_delta_n(2,3*numnode1+3*j+i)<<std::endl;
       
       // Undo step forward
       ele2pos_(i,j) -= eps;
@@ -2827,9 +2835,9 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
     
   // Compare FD-Approximations and analytical values and give a warning, if deviation is to large
   std::cout<<std::endl;
-  for(int i=0;i<NDIM;i++)
+  for(int i=0;i<3;i++)
   {
-    for(int j=0;j<NDIM*(numnode1+numnode2);j++)
+    for(int j=0;j<3*(numnode1+numnode2);j++)
     {
       if(delta_n(i,j) > toltreshold)      // then check relative error
       {
@@ -2870,7 +2878,7 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
      const Epetra_SerialDenseVector& funct1, const Epetra_SerialDenseVector& funct2, int beams_smoothing)
 {
   // local auxiliary variables for FD-approximations of stiffc1 and stiffc2
-  std::vector<double> FD_delta_gap(NDIM*(numnode1+numnode2));
+  std::vector<double> FD_delta_gap(3*(numnode1+numnode2));
   double FD_gap = 0.0;
   std::vector<double> FD_normal(3);
   double FD_norm = 0.0;
@@ -2878,8 +2886,8 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
   //bool FD_elementscolinear = false;
   
   // local matrices for FD-approximations of stiffc1 and stiffc2
-  Epetra_SerialDenseMatrix FD_stiffc1(NDIM*numnode1,NDIM*(numnode1+numnode2));
-  Epetra_SerialDenseMatrix FD_stiffc2(NDIM*numnode2,NDIM*(numnode1+numnode2));
+  Epetra_SerialDenseMatrix FD_stiffc1(3*numnode1,3*(numnode1+numnode2));
+  Epetra_SerialDenseMatrix FD_stiffc2(3*numnode2,3*(numnode1+numnode2));
   
   // step width and tolerances for FD-Check
   double eps = 1e-8;
@@ -2896,19 +2904,19 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
   Epetra_SerialDenseMatrix FD_secondderiv2(1,numnode2);
     
   // local coords and derivatives of the two contacting points
-  std::vector<double> FD_x1(NDIM);    // = x1
-  std::vector<double> FD_x2(NDIM);    // = x2
-  std::vector<double> FD_dx1(NDIM);  // = x1,xi
-  std::vector<double> FD_dx2(NDIM);  // = x2,eta
-  std::vector<double> FD_ddx1(NDIM);  // = x1,xixi
-  std::vector<double> FD_ddx2(NDIM);  // = x2,etaeta
+  std::vector<double> FD_x1(3);    // = x1
+  std::vector<double> FD_x2(3);    // = x2
+  std::vector<double> FD_dx1(3);  // = x1,xi
+  std::vector<double> FD_dx2(3);  // = x2,eta
+  std::vector<double> FD_ddx1(3);  // = x1,xixi
+  std::vector<double> FD_ddx2(3);  // = x2,etaeta
   
   // Compute fc1 and fc2 analytical here explicit and not via the function "EvaluateFcContact"
   // because there may not be a second assembly of fc1 and fc2 
   
   // temporary vectors for contact forces, DOF-GIDs and owning procs 
-  Epetra_SerialDenseVector fc1(NDIM*numnode1); // additional internal forces for element1 based on contact
-  Epetra_SerialDenseVector fc2(NDIM*numnode2); // additional internal forces for element2 based on contact    
+  Epetra_SerialDenseVector fc1(3*numnode1); // additional internal forces for element1 based on contact
+  Epetra_SerialDenseVector fc2(3*numnode2); // additional internal forces for element2 based on contact
   
   for(int i=0;i<fc1.Length();i++)
     fc1[i]=0;
@@ -2921,36 +2929,36 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
     // Compute Fc1
     for(int i=0;i<numnode1;i++)
     {
-      for(int j=0;j<NDIM;j++)
+      for(int j=0;j<3;j++)
       {
-        fc1[NDIM*i+j]=pp*(-gap)*normal[j]*funct1[i];
+        fc1[3*i+j]=pp*(-gap)*normal[j]*funct1[i];
       }
     }
     // Compute Fc2
     for(int i=0;i<numnode2;i++)
         {
-          for(int j=0;j<NDIM;j++)
+          for(int j=0;j<3;j++)
           {
-            fc2[NDIM*i+j]=-pp*(-gap)*normal[j]*funct2[i];
+            fc2[3*i+j]=-pp*(-gap)*normal[j]*funct2[i];
           }
         }
   }
   else  // No penetration --> fc = 0
   {
     // No additional forces --> all entries = 0
-    for(int i=0;i<NDIM*numnode1;i++)
+    for(int i=0;i<3*numnode1;i++)
       fc1[i]=0;
-    for(int i=0;i<NDIM*numnode2;i++)
+    for(int i=0;i<3*numnode2;i++)
           fc2[i]=0;
   }
   
 //  // Test print of Fc
 //  std::cout<<"************  FD_stiffc ****************"<<std::endl;
-//  for(int i=0;i<NDIM*numnode1;i++)
+//  for(int i=0;i<3*numnode1;i++)
 //  {
 //    std::cout<<"Fc_1_"<<i<<": "<<fc1[i]<<std::endl;
 //  }  
-//  for(int i=0;i<NDIM*numnode2;i++)
+//  for(int i=0;i<3*numnode2;i++)
 //  {
 //    std::cout<<"Fc_2_"<<i<<": "<<fc2[i]<<std::endl;
 //  }
@@ -2959,7 +2967,7 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
   // loop over ele1pos_
   for(int j=0;j<numnode1;j++)
   {
-    for(int i=0;i<NDIM;i++)
+    for(int i=0;i<3;i++)
     {
       // step forward
       ele1pos_(i,j) += eps; 
@@ -2981,35 +2989,35 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
       ComputeNormal(FD_normal,FD_gap,FD_norm,FD_x1,FD_x2);
           
       // local vector for contact forces from FD
-      std::vector<double> FD_fc1(NDIM*numnode1);
-      std::vector<double> FD_fc2(NDIM*numnode2);
+      std::vector<double> FD_fc1(3*numnode1);
+      std::vector<double> FD_fc2(3*numnode2);
             
       // Compute FD_Fc1
       for(int k=0;k<numnode1;k++)
       {
-        for(int m=0;m<NDIM;m++)
+        for(int m=0;m<3;m++)
         {
-          FD_fc1[NDIM*k+m]= pp*(-FD_gap)*FD_normal[m]*FD_funct1[k];
-          FD_fc2[NDIM*k+m]=-pp*(-FD_gap)*FD_normal[m]*FD_funct2[k];
+          FD_fc1[3*k+m]= pp*(-FD_gap)*FD_normal[m]*FD_funct1[k];
+          FD_fc2[3*k+m]=-pp*(-FD_gap)*FD_normal[m]*FD_funct2[k];
         }
       }
       
 //      // Test print of FD_fc1 and FD_fc2
-//      for(int k=0;k<NDIM*numnode1;k++)
+//      for(int k=0;k<3*numnode1;k++)
 //      {
 //        std::cout<<"FD_fc_1_"<<k<<": "<<FD_fc1[k]<<std::endl;
 //      }  
-//      for(int k=0;k<NDIM*numnode2;k++)
+//      for(int k=0;k<3*numnode2;k++)
 //      {
 //        std::cout<<"FD_fc_2_"<<k<<": "<<FD_fc2[k]<<std::endl;
 //      }
 //      std::cout<<std::endl;
       
       // FD-approximation
-      for(int k=0;k<NDIM*numnode1;k++)    
+      for(int k=0;k<3*numnode1;k++)
       {
-        FD_stiffc1(k,NDIM*j+i) = (FD_fc1[k] - fc1[k])/eps;                // left block of FD_stiffc1
-        FD_stiffc2(k,NDIM*j+i) = (FD_fc2[k] - fc2[k])/eps;                // left block of FD_stiffc2
+        FD_stiffc1(k,3*j+i) = (FD_fc1[k] - fc1[k])/eps;                // left block of FD_stiffc1
+        FD_stiffc2(k,3*j+i) = (FD_fc2[k] - fc2[k])/eps;                // left block of FD_stiffc2
       }
                     
       // Undo step forward
@@ -3019,7 +3027,7 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
   // loop over ele2pos_
   for(int j=0;j<numnode2;j++)
   {
-    for(int i=0;i<NDIM;i++)
+    for(int i=0;i<3;i++)
     {
       // step forward
       ele2pos_(i,j) += eps; 
@@ -3041,36 +3049,36 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
       ComputeNormal(FD_normal,FD_gap,FD_norm,FD_x1,FD_x2);
       
       // local vector for contact forces from FD
-      std::vector<double> FD_fc1(NDIM*numnode1);
-      std::vector<double> FD_fc2(NDIM*numnode2);
+      std::vector<double> FD_fc1(3*numnode1);
+      std::vector<double> FD_fc2(3*numnode2);
       
       // Compute FD_Fc2
       for(int k=0;k<numnode2;k++)
       {
-        for(int m=0;m<NDIM;m++)
+        for(int m=0;m<3;m++)
         {
-//          std::cout<<"Index Fc_2: "<<NDIM*k+m<<std::endl;
-          FD_fc1[NDIM*k+m]= pp*(-FD_gap)*FD_normal[m]*FD_funct1[k];
-          FD_fc2[NDIM*k+m]= -pp*(-FD_gap)*FD_normal[m]*FD_funct2[k];
+//          std::cout<<"Index Fc_2: "<<3*k+m<<std::endl;
+          FD_fc1[3*k+m]= pp*(-FD_gap)*FD_normal[m]*FD_funct1[k];
+          FD_fc2[3*k+m]= -pp*(-FD_gap)*FD_normal[m]*FD_funct2[k];
         }
       }
   
 //      // Test print of FD_fc1 and FD_fc2
-//      for(int k=0;k<NDIM*numnode1;k++)
+//      for(int k=0;k<3*numnode1;k++)
 //      {
 //        std::cout<<"FD_fc_1_"<<k<<": "<<FD_fc1[k]<<std::endl;
 //      }  
-//      for(int k=0;k<NDIM*numnode2;k++)
+//      for(int k=0;k<3*numnode2;k++)
 //      {
 //        std::cout<<"FD_fc_2_"<<k<<": "<<FD_fc2[k]<<std::endl;
 //      }
 //      std::cout<<std::endl;
       
       // FD-approximation
-      for(int k=0;k<NDIM*numnode2;k++)    
+      for(int k=0;k<3*numnode2;k++)
       {
-        FD_stiffc1(k,NDIM*numnode1+NDIM*j+i) = (FD_fc1[k] - fc1[k])/eps;  // right block of FC_stiffc1
-        FD_stiffc2(k,NDIM*numnode1+NDIM*j+i) = (FD_fc2[k] - fc2[k])/eps;  // right block of FD_stiffc2
+        FD_stiffc1(k,3*numnode1+3*j+i) = (FD_fc1[k] - fc1[k])/eps;  // right block of FC_stiffc1
+        FD_stiffc2(k,3*numnode1+3*j+i) = (FD_fc2[k] - fc2[k])/eps;  // right block of FD_stiffc2
       }
             
       // Undo step forward
@@ -3083,9 +3091,9 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
 //  std::cout<<"FD_stiffc1:"<<std::endl<<FD_stiffc1<<std::endl<<std::endl<<"FD_stiffc2:"<<std::endl<<FD_stiffc2<<std::endl;
   
   // Compare FD-Approximations and analytical values and give a warning, if deviation is to large
-  for(int i=0;i<NDIM*numnode1;i++)
+  for(int i=0;i<3*numnode1;i++)
   {
-    for(int j=0;j<NDIM*(numnode1+numnode2);j++)
+    for(int j=0;j<3*(numnode1+numnode2);j++)
     {
       if(stiffc1(i,j) > toltreshold)              // then check relative error
       {
@@ -3108,9 +3116,9 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
       }
     }
   }
-  for(int i=0;i<NDIM*numnode2;i++)
+  for(int i=0;i<3*numnode2;i++)
   {
-    for(int j=0;j<NDIM*(numnode1+numnode2);j++)
+    for(int j=0;j<3*(numnode1+numnode2);j++)
     {
       if(stiffc2(i,j) > toltreshold)              // then check relative error
       {
@@ -3140,4 +3148,4 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
  |  end: FD check for contact stiffness
  *----------------------------------------------------------------------*/
 
-
+#endif //#ifndef NEWBEAMCONTACT

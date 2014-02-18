@@ -1985,10 +1985,10 @@ namespace UTILS
   /*!
   \brief Fill a vector of type V with 1D shape function
   */
-  template<class V>
+  template<class M, typename t>
   void shape_function_1D(
-    V&                                       funct,   ///< to be filled with shape function values
-    const double&                            r,       ///< r coordinate
+    M&                                       funct,   ///< to be filled with shape function values
+    const t&                            r,       ///< r coordinate
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     )
   {
@@ -2065,10 +2065,10 @@ namespace UTILS
   /*!
   \brief Fill a matrix of type M with first 1D shape function derivative
   */
-  template <class M>
+  template <class M, typename t>
   void shape_function_1D_deriv1(
     M&                                       deriv1,  ///< to be filled with shape function derivative values
-    const double&                            r,       ///< r coordinate
+    const t&                            r,       ///< r coordinate
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     )
   {
@@ -2146,10 +2146,10 @@ namespace UTILS
   /*!
   \brief Fill a matrix of type M with second 1D shape function derivative
   */
-  template <class M>
+  template <class M, typename t>
   void shape_function_1D_deriv2(
     M&                                       deriv2,  ///< to be filled with shape function 2-nd derivative values
-    const double&                            r,       ///< r coordinate
+    const t&                            r,       ///< r coordinate
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     )
   {
@@ -2174,6 +2174,14 @@ namespace UTILS
           deriv2(drdr, 2)= -2.0;
           break;
       }
+      case DRT::Element::line4:
+      {
+          deriv2(drdr, 0)=  + (9.0/8.0) -(27.0/16.0)*2*r;
+          deriv2(drdr, 1)=  + (9.0/8.0) +(27.0/16.0)*2*r;
+          deriv2(drdr, 2)=  - (9.0/8.0) + (81.0/16.0)*2*r;
+          deriv2(drdr, 3)=  - (9.0/8.0) - (81.0/16.0)*2*r;
+          break;
+      }
       default:
           dserror("distype unknown\n");
       }
@@ -2185,10 +2193,10 @@ namespace UTILS
   /*!
   \brief Fill a matrix of type M with 1D hermite shape function
   */
-  template <class M>
+  template <class M, typename t>
   void shape_function_hermite_1D(
     M&                                       funct,  ///< to be filled with shape function values
-    const double&                            r,       ///< r coordinate
+    const t&                            r,       ///< r coordinate
     const double&              l,     ///< length of element
     const DRT::Element::DiscretizationType&  distype  ///< distinguish between DiscretizationType
     )
@@ -2214,10 +2222,10 @@ namespace UTILS
   /*!
   \brief Fill a matrix of type M with 1D hermite shape function derivatives
   */
-  template <class M>
+  template <class M, typename t>
   void shape_function_hermite_1D_deriv1(
     M&                                       deriv1,  ///< to be filled with hermite shape function first derivative values
-    const double&                            r,       ///< r coordinate
+    const t&                            r,       ///< r coordinate
     const double&              l,     ///< length of element
     const DRT::Element::DiscretizationType&  distype  ///< distinguish between DiscretizationType
     )
@@ -2243,10 +2251,10 @@ namespace UTILS
   /*!
   \brief Fill a matrix of type M with 1D hermite shape function derivatives
   */
-  template <class M>
+  template <class M, typename t>
   void shape_function_hermite_1D_deriv2(
     M&                                       deriv2,  ///< to be filled with hermite shape function second derivative values
-    const double&                            r,       ///< r coordinate
+    const t&                            r,       ///< r coordinate
     const double&              l,     ///< length of element
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     )
@@ -2273,10 +2281,10 @@ namespace UTILS
   /*!
     \brief Fill a matrix of type M with 1D hermite shape function derivatives
     */
-    template <class M>
+    template <class M, typename t>
     void shape_function_hermite_1D_deriv3(
       M&                                       deriv3,  ///< to be filled with hermite shape function second derivative values
-      const double&                            r,       ///< r coordinate
+      const t&                            r,       ///< r coordinate
       const double&              l,     ///< length of element
       const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
       )
@@ -2303,10 +2311,10 @@ namespace UTILS
   /*!
   \brief Fill a matrix of type M with 1D hermite shape functions of order five
    */
-  template <class M>
+  template <class M, typename t>
   void shape_function_hermite_1D_order5(
 	M&											funct, 		///< to be filled with the values hermite shape functions of order five
-	const double&								r,			///< r coordinate
+	const t&								r,			///< r coordinate
 	const double& 								l,	  		///< length of element
 	const DRT::Element::DiscretizationType& 	distype 	///< distinguish between Discretization Type
 	)
@@ -2332,10 +2340,10 @@ namespace UTILS
   /*!
   \brief Fill a matrix of type M with the first derivative of 1D hermite shape functions of order five
    */
-  template <class M>
+  template <class M, typename t>
   void shape_function_hermite_1D_order5_deriv1(
 	M&											funct, 		///< to be filled with the values hermite shape functions of order five
-	const double&								r,			///< r coordinate
+	const t&								r,			///< r coordinate
 	const double& 								l,	  		///< length of element
 	const DRT::Element::DiscretizationType& 	distype 	///< distinguish between Discretization Type
 	)
@@ -2361,10 +2369,10 @@ namespace UTILS
   /*!
   \brief Fill a matrix of type M with the second derivative of 1D hermite shape functions of order five
    */
-  template <class M>
+  template <class M, typename t>
   void shape_function_hermite_1D_order5_deriv2(
 	M&											funct, 		///< to be filled with the values hermite shape functions of order five
-	const double&								r,			///< r coordinate
+	const t&								r,			///< r coordinate
 	const double& 								l,	  		///< length of element
 	const DRT::Element::DiscretizationType& 	distype 	///< distinguish between Discretization Type
 	)
@@ -2390,10 +2398,10 @@ namespace UTILS
   /*!
   \brief Fill a matrix of type M with the third derivative of 1D hermite shape functions of order five
    */
-  template <class M>
+  template <class M, typename t>
   void shape_function_hermite_1D_order5_deriv3(
 	M&											funct, 		///< to be filled with the values hermite shape functions of order five
-	const double&								r,			///< r coordinate
+	const t&								r,			///< r coordinate
 	const double& 								l,	  		///< length of element
 	const DRT::Element::DiscretizationType& 	distype 	///< distinguish between Discretization Type
 	)

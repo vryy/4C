@@ -102,6 +102,7 @@ dofoffset_(dofoffset)
     }
       break;
     default: dserror("No octree (i.e. none) declared in your input file!");
+      break;
   }
 
   if(!discret_.Comm().MyPID())
@@ -123,11 +124,10 @@ dofoffset_(dofoffset)
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  |  calls the almighty Octtree (public)                      meier 01/11|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step)
+std::vector<std::vector<DRT::Element*> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step)
 {
 #ifdef OCTREEDEBUG
   double t_start = Teuchos::Time::wallTime();
@@ -140,20 +140,21 @@ std::vector<Teuchos::RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std:
   // clear vector for assigning bounding boxes to octants to be on the safe side before (re)assigning bounding boxes
   bool bboxesfound = locateAll();
   // intersection checks
-  std::vector<Teuchos::RCP<Beam3contact> > contactpairs;
+  std::vector<std::vector<DRT::Element*> > contactpairelements;
   if(bboxesfound)
   {
-    BoundingBoxIntersection(currentpositions, &contactpairs);
+    BoundingBoxIntersection(currentpositions, contactpairelements);
     // output
-    OctreeOutput(contactpairs , step);
+    OctreeOutput(contactpairelements , step);
   }
-  else
-    contactpairs.clear();
+
 #ifdef OCTREEDEBUG
   if(!discret_.Comm().MyPID())
     std::cout<<"Octree Search time:\t\t"<<Teuchos::Time::wallTime()-t_start<<" seconds"<<std::endl;
 #endif
-  return contactpairs;
+
+  //return contactpairs;
+  return contactpairelements;
 }// OctTreeSearch()
 /*----------------------------------------------------------------------*
  |  Return the octants to which this bounding box belongs               |
@@ -198,6 +199,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
       CreateCOBB(nodecoords,0,bboxlimits);
     break;
     default: dserror("No or an invalid Octree type was chosen. Check your input file!");
+    break;
   }
 
   // retrieve octants in which the bounding box with ID thisBBoxID is located
@@ -251,6 +253,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
                   intersection = IntersectionCOBB(bboxinoct, bboxlimits);
                 break;
                 default: dserror("No or an invalid Octree type was chosen. Check your input file!");
+                break;
               }
             }
 
@@ -276,12 +279,12 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoor
 /*-----------------------------------------------------------------------------------*
  |  Output of octants, bounding boxes and contact pairs (public)       mueller 01/12 |
  *----------------------------------------------------------------------------------.*/
-void Beam3ContactOctTree::OctreeOutput(std::vector<Teuchos::RCP<Beam3contact> >& cpairs, int step)
+void Beam3ContactOctTree::OctreeOutput(std::vector<std::vector<DRT::Element*> > cpairelements, int step)
 {
   if(!discret_.Comm().MyPID() && step!=-1)
   {
     // active contact pairs
-    if((int)cpairs.size()>0)
+    if((int)cpairelements.size()>0)
     {
       //Print ContactPairs to .dat-file and plot with Matlab....................
       std::ostringstream filename;
@@ -292,8 +295,8 @@ void Beam3ContactOctTree::OctreeOutput(std::vector<Teuchos::RCP<Beam3contact> >&
       FILE* fp = NULL;
       fp = fopen(filename.str().c_str(), "w");
       std::stringstream myfile;
-      for (int i=0;i<(int)cpairs.size();i++)
-        myfile << (cpairs[i]->Element1())->Id() <<"  "<< (cpairs[i]->Element2())->Id() <<std::endl;
+      for (int i=0;i<(int)cpairelements.size();i++)
+        myfile << ((cpairelements[i])[0])->Id() <<"  "<< ((cpairelements[i][1]))->Id() <<std::endl;
       fprintf(fp, myfile.str().c_str());
       fclose(fp);
     }
@@ -449,6 +452,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> 
           CreateSPBB(coord, elecolid);
         break;
         default: dserror("No or an invalid Octree type was chosen. Check your input file!");
+        break;
       }
     }
   } //end for-loop which goes through all elements
@@ -770,6 +774,7 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
         }
       }
     }
+    break;
   }
 
   if(bboxlimits==Teuchos::null)
@@ -1029,6 +1034,7 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
         }
       }
     }
+    break;
   }
 
   // fill all latter entries  except for the last one (->ID) with bogus values (in case of periodic BCs)
@@ -1338,6 +1344,7 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> >& allbboxes
               }
               break;
               default: dserror("No or an invalid Octree type was chosen. Check your input file!");
+              break;
             }
 
             if(inoctant) // isub-loop
@@ -1401,6 +1408,7 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> >& allbboxes
           }
           break;
           default: dserror("No or an invalid Octree type was chosen. Check your input file!");
+          break;
         }
       }// end of for-loop which goes through all elements of input
     }
@@ -1549,6 +1557,7 @@ LINALG::Matrix<6,1> Beam3ContactOctTree::GetRootBox()
       }
       break;
       default: dserror("selected bounding box typ is not implemented!");
+      break;
     }
   }
   return lim;
@@ -1560,7 +1569,7 @@ LINALG::Matrix<6,1> Beam3ContactOctTree::GetRootBox()
  |  Gives back vector of intersection pairs                                          |
  *----------------------------------------------------------------------------------*/
 void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions,
-                                                  std::vector<Teuchos::RCP<Beam3contact> >* contactpairs)
+                                                  std::vector<std::vector<DRT::Element*> >& contactpairelements)
 {
 #ifdef MEASURETIME
   double t_search = Teuchos::Time::wallTime();
@@ -1625,6 +1634,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
               intersection = IntersectionSPBB(bboxIDs);
             break;
             default: dserror("No or an invalid Octree type was chosen. Check your input file!");
+            break;
           }
 
           if (intersection)
@@ -1673,7 +1683,10 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
     }
 
     // add to pair vector
-    contactpairs->push_back(Teuchos::rcp (new Beam3contact(discret_,searchdis_,dofoffset_,tempele1,tempele2,ele1pos,ele2pos)));
+    std::vector<DRT::Element*> temp_vec(2);
+    temp_vec[0]=tempele1;
+    temp_vec[1]=tempele2;
+    contactpairelements.push_back(temp_vec);
   }
   //if(!discret_.Comm().MyPID())
     //std::cout<<"number of boxes: "<<counter<<std::endl;

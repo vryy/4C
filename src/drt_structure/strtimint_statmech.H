@@ -162,9 +162,6 @@ namespace STR
     //! \brief Reset relevant values, vectors, discretization state, etc. before repeating the time step (if unconverged)
     void StatMechRestoreConvState();
 
-    //! \brief preparation for the current time step relevant to Beam Contact
-    void BeamContactPrepareStep();
-
     //! \brief check convergence status of Newton scheme for Augmented Lagrange method
     bool BeamContactExitUzawaAt(int& maxuzawaiter);
 

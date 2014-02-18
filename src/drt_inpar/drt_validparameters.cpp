@@ -1847,13 +1847,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("BEAMS_SMOOTHING","None","Application of smoothed tangent field",
        tuple<std::string>("None","none",
-                          "Smoothed","smoothed",
-                          "Partially","partially",
                           "Cpp", "cpp"),
        tuple<int>(
                   INPAR::BEAMCONTACT::bsm_none,INPAR::BEAMCONTACT::bsm_none,
-                  INPAR::BEAMCONTACT::bsm_smoothed,INPAR::BEAMCONTACT::bsm_smoothed,
-                  INPAR::BEAMCONTACT::bsm_partially,INPAR::BEAMCONTACT::bsm_partially,
                   INPAR::BEAMCONTACT::bsm_cpp,INPAR::BEAMCONTACT::bsm_cpp),
        &beamcontact);
 

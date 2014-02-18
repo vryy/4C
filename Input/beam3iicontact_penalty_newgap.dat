@@ -8,17 +8,15 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Small beam contact example with three beams in order to test the new gap function and the smoothing of the CCP
+Small 3D beam contact example with beam3ii elements and penalty approach which tests the new gap function (BEAMS_NEWGAP: Yes)
 ----------------------------------------------------------------PROBLEM SIZE
-ELEMENTS                        3
-NODES                           5
+ELEMENTS                        2
+NODES                           4
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
-//TIMETYP                       Dynamic
-//ALGEBRA                       Trilinos                      // ccarat/Trilinos
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
@@ -43,15 +41,15 @@ DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
-TIMESTEP                        0.002                         // pseudo time step as load step
-NUMSTEP                         500                           // number of pseudo time steps
-MAXTIME                         1                             // normalized pseudo simulation time
+TIMESTEP                        0.5
+NUMSTEP                         2
+MAXTIME                         1
 DAMPING                         No
 M_DAMP                          0
 K_DAMP                          0
-PREDICT                         ConstDis                      // ConstDisVelAcc ConstDis
-TOLRES                          1.0E-06
-TOLDISP                         1.0E-10
+PREDICT                         ConstDis
+TOLRES                          1.0E-8
+TOLDISP                         1.0E-8
 NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
@@ -66,10 +64,10 @@ ALPHA_F                         0.5
 LINEAR_SOLVER                   2
 APPLICATION                     BeamContact
 STRATEGY                        Penalty
-PENALTYPARAM                    1e+5
+PENALTYPARAM                    1e+05
 ----------------------------------------------------------------BEAM CONTACT
 BEAMS_NEWGAP                    Yes
-BEAMS_SMOOTHING                 cpp
+BEAMS_SMOOTHING                 None
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym
@@ -83,46 +81,42 @@ NDSURF                          0
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT 2 // Anzahl der DPOINTs mit DBC
-E 3 - NUMDOF 6 ONOFF 1 1 1 1 0 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 4 - NUMDOF 6 ONOFF 1 1 1 1 0 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+DPOINT                          1
+E 1 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE 1 // Anzahl der DLINEs mit DBC
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 -0.4 0.0 0.0 0.0 CURVE none 1 1 none none none FUNCT 0 0 0 0 0 0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
-DPOINT                          0
-//E 3 - 1 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+DLINE                           1
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0 -1.6 0.0 0.0 0.0 CURVE none none 1 none none none FUNCT 0 0 0 0 0 0
+------------------------------------------------------------FILAMENT NUMBERS
+DLINE                           2
+E 1 - 0
+E 2 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 2 DNODE 2
 NODE 3 DNODE 3
-NODE 5 DNODE 4
+NODE 4 DNODE 4
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 2 DLINE 1
 NODE 3 DLINE 2
 NODE 4 DLINE 2
-NODE 5 DLINE 2
 -----------------------------------------------------------------NODE COORDS
-NODE 1 COORD -0.500000000000000 -0.0000000000000 0.4000000000000000e+00
-NODE 2 COORD 0.500000000000000 -0.0000000000000 0.4000000000000000e+00
-NODE 3 COORD 0.000000000000000 -0.500000000000000 0.000000000000000e+00
-NODE 4 COORD 0.000000000000000 -0.00000000000000 0.1000000000000000e+00
-NODE 5 COORD 0.000000000000000 0.500000000000000 0.000000000000000e+00
+NODE 1 COORD -1.00000000000000e+00 0.100000000000000e+00 -0.000000000000000e+00
+NODE 2 COORD  1.00000000000000e+00 0.1000000000000000e+00 -0.000000000000000e+00
+NODE 3 COORD  0.2e-01 -1.0e+00 1.40000000000000e+00
+NODE 4 COORD  0.2e-01  1.0e+00 1.40000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 BEAM3 LIN2 1 2 MAT 1 CROSS 0.03142 SHEARCORR 1.1 MOMIN 0.00007854 MOMINPOL 0.0001571
-2 BEAM3 LIN2 3 4 MAT 1 CROSS 0.03142 SHEARCORR 1.1 MOMIN 0.00007854 MOMINPOL 0.0001571
-3 BEAM3 LIN2 4 5 MAT 1 CROSS 0.03142 SHEARCORR 1.1 MOMIN 0.00007854 MOMINPOL 0.0001571
+1 BEAM3II LIN2 1 2 MAT 1 CROSS 0.282743 SHEARCORR 1.1 IYY 0.00636173 IZZ 0.00636173 IRR 0.0127235 TRIADS 0 0 0 0 0 0
+2 BEAM3II LIN2 3 4 MAT 1 CROSS 0.282743 SHEARCORR 1.1 IYY 0.00636173 IZZ 0.00636173 IRR 0.0127235 TRIADS 0 0 1.570796327 0 0 1.570796327
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100000 NUE 0 DENS 0.001 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE 5.2878585445951741e-14 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE 4.0774324833961079e-17 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 4 QUANTITY dispz VALUE -2.89867118309391381e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -6.03443751356686930e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE  5.59986650086083899e-11 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE  -1.43108257475190226e+00 TOLERANCE 1e-12
 -------------------------------------------------------------------------END
 //                              END

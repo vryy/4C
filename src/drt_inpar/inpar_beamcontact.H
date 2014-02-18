@@ -53,8 +53,6 @@ namespace INPAR
     enum Smoothing
     {
       bsm_none,         ///< no smoothing
-      bsm_smoothed,     ///< smoothing for all pairs
-      bsm_partially,    ///< smoothing only for pairs which are not found with "no smoothing"
       bsm_cpp           ///< smoothing only for the closest point projection; element evaluation without smoothing"
     };
 

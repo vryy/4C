@@ -8,7 +8,7 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-first 3D beam contact example with penalty approach, StatMech
+First 3D beam contact example with beam3 elements and penalty approach in statmech framework
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        38
 NODES                           40
@@ -236,8 +236,8 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100000 NUE 0 DENS 0.001 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -2.3535240835071247e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 8.0326519792948442e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.6414704218327179e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -2.3535240835071247e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 8.0326519792948442e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.6414704218327179e+00 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END

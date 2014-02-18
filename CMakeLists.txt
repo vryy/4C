@@ -670,6 +670,9 @@ set(OBJS_DRT_BEAMCONTACT_LIB
   src/drt_beamcontact/beam3contact.cpp
   src/drt_beamcontact/beam3contact_manager.cpp
   src/drt_beamcontact/beam3contact_octtree.cpp
+  src/drt_beamcontact/beam3contactnew.cpp
+  src/drt_beamcontact/beam3contact_utils.cpp
+  src/drt_beamcontact/beam3contact_tangentsmoothing.cpp
 )
 set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/convert_mat.cpp

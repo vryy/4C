@@ -292,8 +292,6 @@ int STR::TimIntStatMech::Integrate()
     const double t0 = Teuchos::Time::wallTime();
 #endif
 
-    // preparations for contact in this time step
-    BeamContactPrepareStep();
     // preparations for statistical mechanics in this time step
     StatMechPrepareStep();
 #ifdef MEASURETIME
@@ -1513,20 +1511,6 @@ void STR::TimIntStatMech::ConvergenceStatusUpdate(bool converged, bool increases
 }
 
 /*----------------------------------------------------------------------*
- | Precautions for Contact during one time step (private)  mueller 03/12|
- *----------------------------------------------------------------------*/
-void STR::TimIntStatMech::BeamContactPrepareStep()
-{
-  if(HaveBeamContact() && DRT::INPUT::IntegralValue<int>(beamcman_->BeamContactParameters(),"BEAMS_NEWGAP"))
-  {
-    // set normal vector of last time "normal_" to old normal vector "normal_old_" (maybe this go inside the do loop?)
-      beamcman_->ShiftAllNormal();
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Evaluate beam contact according to solution strategy                |
  |                                            (private)    mueller 02/12|
  *----------------------------------------------------------------------*/
@@ -1580,10 +1564,6 @@ void STR::TimIntStatMech::BeamContactAugLag()
   double eps = beamcman_->GeneralContactParameters().get<double>("UZAWACONSTRTOL");
   int maxuzawaiter = beamcman_->GeneralContactParameters().get<int>("UZAWAMAXSTEPS");
 
-  // Initialize Lagrange Multipliers and Uzawa iteration counter for the Augmented Lagrangian loop
-  beamcman_->ResetAlllmuzawa();
-  beamcman_->ResetUzawaIter();
-
   Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
   if(!discret_->Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
     std::cout<<"Predictor:"<<std::endl;
@@ -1625,8 +1605,12 @@ void STR::TimIntStatMech::BeamContactAugLag()
     beamcman_->UpdateAlllmuzawa();
   } while (abs(beamcman_->GetConstrNorm()) >= eps);
 
-  // reset penalty parameter
+  // Reset Penalty parameter, Lagrange Multipliers and Uzawa iteration counter for the Augmented Lagrangian loop
   beamcman_->ResetCurrentpp();
+  beamcman_->ResetUzawaIter();
+  beamcman_->ResetAlllmuzawa();
+
+
   return;
 }
 

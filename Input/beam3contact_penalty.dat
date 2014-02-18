@@ -1,17 +1,13 @@
-//
 // Maintainer: Christoph Meier
 // meier@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
 // 089 - 289-15262
 //
-// necessary defines: D_BEAM3 BINIO
-//
 ==================================================================
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-first 3D beam contact example with penalty approach
-// - using new time integration module STI
+First 3D beam contact example with beam3 elements and penalty approach
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        38
 NODES                           40
@@ -223,8 +219,8 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100000 NUE 0 DENS 0.001 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -2.35320636690075330e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 8.03793046908387043e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.64147761604003972e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -2.35320636690075330e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 8.03793046908387043e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.64147761604003972e+00 TOLERANCE 1e-12
 -------------------------------------------------------------------------END
 //                              END

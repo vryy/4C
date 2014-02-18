@@ -11,6 +11,7 @@ Maintainer: Christoph Meier
 #ifndef BEAM3C_H
 #define BEAM3C_H
 
+#include "beam3contact_defines.H"
 #include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
@@ -24,8 +25,7 @@ Maintainer: Christoph Meier
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
 
-
-
+#ifndef NEWBEAMCONTACT
 namespace CONTACT
 {
 
@@ -52,11 +52,7 @@ public:
 
    virtual ~B3CNeighbor() {}; // destructor
 
-
-
-
 }; // class B3CNeighbor
-
 
 
 class Beam3contact 
@@ -87,9 +83,7 @@ public:
                const DRT::Discretization& cdiscret,
                const int& dofoffset,
                DRT::Element* element1,
-               DRT::Element* element2,
-               const Epetra_SerialDenseMatrix ele1pos,
-               const Epetra_SerialDenseMatrix ele2pos);
+               DRT::Element* element2);
 
   /*!
   \brief Copy Constructor
@@ -330,16 +324,6 @@ private:
   //! normal vector of last time step
   Epetra_SerialDenseVector normal_old_;
 
-
-
-
-
-
-
-
-
-
-
   //@}
  
   //! @name Private evaluation methods
@@ -412,7 +396,6 @@ private:
 
    /*!
     \brief determine the neighbour elements of an element
-
     */
   void DetermineNeigbours(DRT::Element* element1,
                           DRT::Element* element2);
@@ -639,5 +622,7 @@ private:
 
 }; // class Beam3contact
 } // namespace CONTACT
+
+#endif //#ifndef NEWBEAMCONTACT
 
 #endif  // #ifndef BEAM3C_H

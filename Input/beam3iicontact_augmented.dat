@@ -10,7 +10,7 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-first 3D beam contact example with augmented Lagrange approach
+First 3D beam contact example with beam3 elements and augmented Lagrange approach
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        38
 NODES                           40
@@ -224,8 +224,8 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100000 NUE 0 DENS 0.001 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -2.28918175114224631e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 7.49553210742393006e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.65304792569279990e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -2.28918175114224631e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 7.49553210742393006e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.65304792569279990e+00 TOLERANCE 1e-12
 -------------------------------------------------------------------------END
 //                              END
