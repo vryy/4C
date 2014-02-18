@@ -365,8 +365,9 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     // set up sliding ale if necessary
     if(aleproj_ != INPAR::FSI::ALEprojection_none)
     {
-      // set up sliding ale utils
+      // MeshInit possibly modifies reference configuration of slave side --> recompute element volume in InitializeElements()
       StructureField()->Discretization()->FillComplete(false,true,true);
+      // set up sliding ale utils
       slideale_ = Teuchos::rcp(new FSI::UTILS::SlideAleUtils(StructureField()->Discretization(),
                                                     FluidField().Discretization(),
                                                     *coupsfm_,
