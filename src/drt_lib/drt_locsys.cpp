@@ -15,6 +15,7 @@ Maintainer: Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "drt_locsys.H"
+#include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -528,7 +529,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
   }  // end point locsys
 
   if (time < 0.0)
-    Print(std::cout);
+    Print();
 
   // When building the transformation matrix we apply a node-by-node
   // strategy. The global matrix trafo_ will consist of nodal blocks
@@ -737,35 +738,25 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  << operator                                               popp 09/08|
- *----------------------------------------------------------------------*/
-std::ostream& operator << (std::ostream& os, const DRT::UTILS::LocsysManager& manager)
-{
-  manager.Print(os);
-  return os;
-}
-
 
 /*----------------------------------------------------------------------*
  |  print manager (public)                                   meier 06/13|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::Print(std::ostream& os) const
+void DRT::UTILS::LocsysManager::Print() const
 {
   if (Comm().MyPID()==0)
   {
-    os << "\n-------------------------------------DRT::UTILS::LocysManager\n";
+    IO::cout << "\n-------------------------------------DRT::UTILS::LocsysManager" << IO::endl;
     for (int i=0;i<NumLocsys();++i)
     {
-      printf("*  *  *  *  *  *  *  *  *  *  *  *  *Locsys entity ID: %1d ",locsysconds_[i]->Id());
-      if (TypeLocsys(i)==DRT::Condition::PointLocsys)        printf("Point   ");
-      else if (TypeLocsys(i)==DRT::Condition::LineLocsys)    printf("Line    ");
-      else if (TypeLocsys(i)==DRT::Condition::SurfaceLocsys) printf("Surface ");
-      else if (TypeLocsys(i)==DRT::Condition::VolumeLocsys)  printf("Volume  ");
+      IO::cout << "*  *  *  *  *  *  *  *  *  *  *  *  *Locsys entity ID: " << locsysconds_[i]->Id();
+      if (TypeLocsys(i)==DRT::Condition::PointLocsys)        IO::cout << " Point   " << IO::endl;
+      else if (TypeLocsys(i)==DRT::Condition::LineLocsys)    IO::cout << " Line    " << IO::endl;
+      else if (TypeLocsys(i)==DRT::Condition::SurfaceLocsys) IO::cout << " Surface " << IO::endl;
+      else if (TypeLocsys(i)==DRT::Condition::VolumeLocsys)  IO::cout << " Volume  " << IO::endl;
       else dserror("ERROR: Unknown type of locsys condition!");
-      printf("\n");
     }
-    os << "-------------------------------------------------------------\n\n";
+    IO::cout << "-------------------------------------------------------------\n\n";
   }
   return;
 }
