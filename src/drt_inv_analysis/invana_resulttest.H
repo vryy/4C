@@ -52,6 +52,12 @@ public:
     */
     virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
+    /*
+    Possible flags are "gradient" and "error"
+    */
+
+    virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+
 private:
 
     //! pointer to discretization
@@ -63,6 +69,8 @@ private:
     //! pointer to manager of the material parameters to be optimized
     Teuchos::RCP<MatParManager> matman_;
 
+    //! the inverse analysis algorithm object
+    StatInvAnalysis& ia_;
 
 
 

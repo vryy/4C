@@ -180,6 +180,12 @@ public:
 
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
+  // return the value of the objective function
+  double GetError(){return objval_;};
+
+  // return the value of the gradient 2-norm
+  double GetGrad2Norm(){double res; MVNorm(objgrad_,2,&res); return res;};
+
 
 }; // class StatInvAnalysis
 }  // namespace INVANA

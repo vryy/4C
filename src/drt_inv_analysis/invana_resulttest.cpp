@@ -26,10 +26,11 @@ kehl@lnm.mw.tum.de
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 STR::INVANA::InvAnaResultTest::InvAnaResultTest(StatInvAnalysis& ia)
-  : DRT::ResultTest("INVANA")
+  : DRT::ResultTest("INVANA"),
+    ia_(ia)
 {
-    discret_= ia.Discretization();
-    matman_ = ia.MatParManager();
+    discret_= ia_.Discretization();
+    matman_ = ia_.MatParManager();
     mysol_ = matman_->GetParams();
 }
 
@@ -62,16 +63,16 @@ void STR::INVANA::InvAnaResultTest::TestElement(DRT::INPUT::LineDefinition& res,
     {
       const DRT::Element* actelement = discret_->gElement(element);
 
-      // Here we are just interested in the elements that we own (i.e. a row element)!
+      // Here we are just interested in elements we own
       if (actelement->Owner() != discret_->Comm().MyPID())
         return;
 
+      // find out which position the quantity to test has in the material parameter vector
       std::string position;
       res.ExtractString("QUANTITY",position);
 
+      // get the value
       int location = matman_->GetParameterLocation(element,position);
-
-
       double result = (*(*mysol_)(location))[discret_->ElementColMap()->LID(element)];
 
       nerr += CompareValues(result, "ELEMENT", res);
@@ -80,5 +81,23 @@ void STR::INVANA::InvAnaResultTest::TestElement(DRT::INPUT::LineDefinition& res,
   }
 }
 
+void STR::INVANA::InvAnaResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+{
+  // get the quantity to test
+  std::string quantity;
+  res.ExtractString("QUANTITY",quantity);
 
+  double result=0.0;
+
+  if (quantity == "gradient")
+    result=ia_.GetGrad2Norm();
+  else if (quantity == "error")
+    result=ia_.GetError();
+  else
+    dserror("given quantity to test not to be found yet!");
+
+  nerr += CompareValues(result, "SPECIAL", res);
+  test_count++;
+
+}
 
