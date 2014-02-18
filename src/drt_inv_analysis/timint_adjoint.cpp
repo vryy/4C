@@ -175,23 +175,6 @@ void STR::TimIntAdjoint::EvaluateStiff()
   //neumann might bring asymmetrie but we want the adjoint operator to the stiffness matrix, so add transpose
   stiff_->Add(*stiffn_,true,1.0,1.0);
 
-  //const std::string fname = "dirichlet.mtl";
-  //LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
-  //exit(0);
-
-#if 0
-  //check if the system really converged in the forward problem
-  // this is now fres;
-  LINALG::ApplyDirichlettoSystem(fintn,fextn, zeros_,dbctoggle_);
-  fintn->Update(-1.0,*fextn,1.0);
-  //give residual norm:
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  enum INPAR::STR::VectorNorm norm = DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdyn,"ITERNORM");
-  double normfres = STR::AUX::CalculateVectorNorm(norm, fintn);
-
-  cout << "converged ?: " << normfres << endl;
-#endif
-
   stiff_->Complete();
   discret_->ClearState();
 

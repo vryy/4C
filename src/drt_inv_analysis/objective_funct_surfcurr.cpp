@@ -152,17 +152,9 @@ targetmapred_(Teuchos::null)
   sourcemap_ = Teuchos::rcp(new Epetra_Map(SetupConditionMap(sourcecond_)));
   targetmap_ = Teuchos::rcp(new Epetra_Map(SetupConditionMap(targetcond_)));
 
-  //cout << "source map: " << endl;
-  //cout << *sourcemap_ << endl;
-
   // compute the all reduced maps
   sourcemapred_ = LINALG::AllreduceEMap(*sourcemap_,0);
   targetmapred_ = LINALG::AllreduceEMap(*targetmap_,0);
-
-  //cout << "source ele col map " << *(sourcedis_->ElementColMap()) << endl;
-  //cout << "target ele col map " << *(targetdis_->ElementColMap()) << endl;
-  //cout << "full map" << *sourcemap_ << endl;
-  //cout << "reduced map" << *sourcemapred_ << endl;
 
   //complete evaluation of the target data can be done here once
   ComputeNormalCenterMaterialConfig(targetcond_,targetdis_,&normal_t_,&center_t_);
@@ -175,10 +167,6 @@ targetmapred_(Teuchos::null)
   // precompute structural integrity component of the functional
   structinttarget_=Convolute(normal_t_,center_t_,normal_t_,center_t_);
 
-  //cout << "target stuff" << endl;
-  //PrintDataToScreen(center_t_);
-  //PrintDataToScreen(normal_t_);
-
 }
 
 
@@ -190,7 +178,6 @@ const Epetra_Map STR::INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(DRT::Con
   int gnumele;
   cond->Comm()->SumAll(&lnumele,&gnumele,1);
 
-
   // a vector to hold the gids
   std::vector<int> gids;
 
@@ -200,7 +187,6 @@ const Epetra_Map STR::INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(DRT::Con
   for (ele=geom.begin(); ele != geom.end(); ++ele)
   {
     DRT::Element* element = ele->second.get();
-    //cout << "pid: " << cond->Comm()->MyPID() << " eleid: " << element->Id() << endl;
     switch(element->NumNode())
     {
     case 3:
@@ -318,7 +304,6 @@ void  STR::INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterSpatialConfig(DRT:
   centers->clear();
   derivnormal->clear();
   facetdofmap->clear();
-
 
   // get state of displacement
   if (!discret->HasState("displacements"))
@@ -574,7 +559,6 @@ double STR::INVANA::ObjectiveFunctSurfCurr::Convolute(std::map<int,Teuchos::RCP<
     {
       for (iti=n2.begin(); iti!=n2.end(); ++iti)
       {
-        //double dot = dum.DOT(3,(*(ito->second))[0],(*(iti->second))[0],1,1);
         double dot = dotp(*(ito->second),*(iti->second));
         val+=dot*kernel(*c2[iti->first], *c1[ito->first]);
       }
@@ -711,10 +695,6 @@ void STR::INVANA::ObjectiveFunctSurfCurr::GradientWSpaceNorm(Teuchos::RCP<Epetra
   // global dof and then distribute it afterwards
   Teuchos::RCP<Epetra_Map> dofrowmapred =  LINALG::AllreduceEMap(*(sourcedis_->DofRowMap()),0);
 
-//  cout << "original target dofrowmap: " << *(targetdis_->DofRowMap()) << endl;
-//  cout << "original source dofrowmap: " << *(sourcedis_->DofRowMap()) << endl;
-//  cout << "reduced dofrowmap: " << *dofrowmapred << endl;
-
   // the gradient living on proc0 only
   Teuchos::RCP<Epetra_Vector> lgradient = Teuchos::rcp(new Epetra_Vector(*dofrowmapred,true));
   // temporal helpers
@@ -723,10 +703,6 @@ void STR::INVANA::ObjectiveFunctSurfCurr::GradientWSpaceNorm(Teuchos::RCP<Epetra
 
   // evaluate centers, normals and derivatives of the source in the spatial configuration
   ComputeNormalCenterSpatialConfig(sourcecond_,sourcedis_,&normal_s_,&center_s_,&derivnormal_s_,&facetdofmap_,true);
-
-  //cout << "source stuff" << endl;
-  //PrintDataToScreen(center_s_);
-  //PrintDataToScreen(normal_s_);
 
   //PrintDataToScreen(facetdofmap_);
 
