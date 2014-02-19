@@ -329,8 +329,6 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     Hmax = std::max(Hmax, periodlength_->at(2));
     for(int i=0; i<(int)searchres_->size(); i++)
       searchres_->at(i) = (int)(floor((periodlength_->at(i)/Hmax) * (double)(statmechparams_.get<int>("SEARCHRES",1))));
-
-    std::cout<<"SEARCHRES: "<<searchres_->at(0)<<", "<<searchres_->at(1)<<", "<<searchres_->at(2)<<", "<<std::endl;
   }
 
   // read times for actions and the corresponding step sizes from input file
@@ -2861,14 +2859,15 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
             linkermodel_ == statmech_linker_myosinthick)
           rotrefe.resize(12);
 
-        for(int k=0; k<3; k++)
+        // all beam elements
+        if(statmechparams_.get<double>("ILINK",0.0)>0.0)
         {
-          xrefe[k ] = (*bspotpositions)[k][bspotcolmap.LID(bspotgid.at(0))];
-          xrefe[k+3] = (*bspotpositions)[k][bspotcolmap.LID(bspotgid.at(1))];
-
-          //set nodal rotations (not true ones, only those given in the displacement vector)
-          if(statmechparams_.get<double>("ILINK",0.0)>0.0)
+          for(int k=0; k<3; k++)
           {
+            xrefe[k]   = (*bspotpositions)[k][bspotcolmap.LID(bspotgid.at(0))];
+            xrefe[k+3] = (*bspotpositions)[k][bspotcolmap.LID(bspotgid.at(1))];
+
+            //set nodal rotations (not true ones, only those given in the displacement vector)
             switch(linkermodel_)
             {
               case statmech_linker_stdintpol:
@@ -2894,6 +2893,15 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
             }
           }
         }
+        else // truss elements
+        {
+          for(int k=0; k<3; k++)
+          {
+            xrefe[k]   = (*bspotpositions)[k][bspotcolmap.LID(bspotgid.at(0))];
+            xrefe[k+3] = (*bspotpositions)[k][bspotcolmap.LID(bspotgid.at(1))];
+          }
+        }
+
 
         /*a crosslinker is added on each processor which is row node owner of at least one of its nodes;
          *the processor which is row map owner of the node with the larger GID will be the owner of the new crosslinker element; on the other processors the new

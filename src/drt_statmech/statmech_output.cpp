@@ -1188,9 +1188,9 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
           std::vector<int> dofnode0;
           std::vector<int> dofnode1;
 
-          std::vector<LINALG::Matrix<1,4> > Ibp(2);
+          std::vector<LINALG::Matrix<1,2> > Ibp(2);
           for(int filament=0; filament<2; filament++)
-             DRT::UTILS::shape_function_1D(Ibp[filament],currele->MyBindingPosition()[filament],currele->Shape());
+            DRT::UTILS::shape_function_1D(Ibp[filament],currele->MyBindingPosition()[filament],currele->Shape());
 
           // determine positions of the interpolated nodes
           for(int ifil=0; ifil<coord.N(); ifil++)
@@ -1237,11 +1237,11 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
         double color = 1.0;
         if (element->Id() >= basisnodes_)
         {
-          if(eot != DRT::ELEMENTS::BeamCLType::Instance() && eot != DRT::ELEMENTS::Torsion3Type::Instance() && element->NumNode()!=2)
-          {
-            if(eot != DRT::ELEMENTS::Truss3CLType::Instance() && element->NumNode()!=2)
+          if(eot != DRT::ELEMENTS::BeamCLType::Instance() &&
+             eot != DRT::ELEMENTS::Torsion3Type::Instance() &&
+             eot != DRT::ELEMENTS::Truss3CLType::Instance() &&
+             element->NumNode()!=2)
               dserror("Crosslinker element has more than 2 nodes! No visualization has been implemented for such linkers!");
-          }
           //apply different colors for different crosslinkers
           if(crosslinkertype_!=Teuchos::null)
           {
@@ -1260,6 +1260,9 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
           else // standard linker color (red) without any active linkers
             color = 0.5;
         }
+        // different color for substrate filaments of motility assay
+        if(networktype_==statmech_network_motassay && (*filamentnumber_)[discret_->NodeColMap()->LID(element->Nodes()[0]->Id())]<statmechparams_.get<int>("NUMSUBSTRATEFIL",0))
+          color = 0.375;
 
         // highlight contacting elements
         if(beamcmanager!=Teuchos::null)
@@ -1276,6 +1279,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
               eot==DRT::ELEMENTS::Beam3iiType::Instance() ||
               eot==DRT::ELEMENTS::BeamCLType::Instance() ||
               eot==DRT::ELEMENTS::Beam3ebType::Instance()||
+              eot == DRT::ELEMENTS::Truss3Type::Instance() ||
               eot==DRT::ELEMENTS::Truss3CLType::Instance())
           {
             if (!kinked)
@@ -1292,21 +1296,6 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
                     coordout(m,n)=coord(m,j+n);
 
                  GmshWedge(nline,coordout,element,gmshfilecontent,color);
-              }
-            }
-            else
-              GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
-          }
-          else if (eot == DRT::ELEMENTS::Truss3Type::Instance())
-          {
-            if (!kinked)
-            {
-              for (int j=0; j<element->NumNode()-1; j++)
-              {
-                gmshfilecontent << "SL(" << std::scientific;
-                gmshfilecontent << coord(0, j) << "," << coord(1, j) << ","<< coord(2, j) << ","
-                                << coord(0, j + 1) << "," << coord(1,j + 1) << "," << coord(2, j + 1);
-                gmshfilecontent << ")" << "{" << std::scientific << color << ","<< color << "};" << std::endl;
               }
             }
             else
@@ -1337,6 +1326,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
     }
     discret_->Comm().Barrier();
   }
+
   // plot the periodic boundary box
   LINALG::Matrix<3,1> center;
   for(int i=0; i<(int)center.M(); i++)
@@ -1423,9 +1413,9 @@ void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialD
     else if(element->ElementType().Name()=="Beam3ebType")
       dotline = eot==DRT::ELEMENTS::Beam3ebType::Instance();
     else if(element->ElementType().Name()=="Truss3CLType")
-      dotline = dotline or eot==DRT::ELEMENTS::Truss3CLType::Instance();
+      dotline = eot==DRT::ELEMENTS::Truss3CLType::Instance();
     else if (element->ElementType().Name() == "Truss3Type")
-      dotline = dotline or eot == DRT::ELEMENTS::Truss3Type::Instance();
+      dotline = eot == DRT::ELEMENTS::Truss3Type::Instance();
     // draw spheres at node positions ("beads" of the bead spring model)
     else if (eot == DRT::ELEMENTS::Torsion3Type::Instance())
     {
