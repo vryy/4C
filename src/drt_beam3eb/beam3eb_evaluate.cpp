@@ -114,20 +114,22 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
 
 
       //TODO: Only in the dynamic case the velocities are needed.
-      // get element velocities
-      Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
-      if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-      std::vector<double> myvel(lm.size());
-      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      // get element velocities only if example is static in nature
 
+
+      Teuchos::RCP<const Epetra_Vector> vel;
+      std::vector<double> myvel(lm.size());
+      myvel.clear();
       const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
       if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP")!=INPAR::STR::dyna_statics)
       {
-        Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
+        vel  = discretization.GetState("velocity");
         if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       }
+
+
       if (act == Beam3eb::calc_struct_nlnstiffmass)
       {
 			eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
@@ -192,13 +194,15 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     mydisp[i] = mydisp[i]*ScaleFactorColumn;
   }
 
-
-  // get element velocities (UNCOMMENT IF NEEDED)
-  Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
-  if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-  std::vector<double> myvel(lm.size());
-  DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-
+  // get element velocities only if it's not a static problem, otherwise a dynamics problem (UNCOMMENT IF NEEDED)
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")!=INPAR::STR::dyna_statics)
+  {
+    Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
+    if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+    std::vector<double> myvel(lm.size());
+    DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+  }
 
   // find out whether we will use a time curve
   bool usetime = true;
