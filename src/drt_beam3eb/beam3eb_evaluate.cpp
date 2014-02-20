@@ -113,7 +113,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
 
-      //TODO: Only in the dynamic case the velocities are needed.
+      //Only in the dynamic case the velocities are needed.
       // get element velocities only if example is static in nature
 
 
@@ -502,7 +502,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
   /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
    *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
-  NodeShift<nnode,3>(params,disp);
+  // Only for statmech problems
+  if( params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
+    NodeShift<nnode,3>(params,disp);
 
 #ifdef SIMPLECALC
 {

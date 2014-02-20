@@ -18,6 +18,7 @@ Maintainer: Christian Cyron
 #include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
@@ -109,7 +110,9 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList&   params,
 
       /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
        *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
+      if( params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
       NodeShift<2,3>(params,mydisp);
+
 
       //only if random numbers for Brownian dynamics are passed to element, get element velocities
       std::vector<double> myvel(lm.size());
@@ -609,15 +612,23 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(std::vector<double>&      dis
         (*stiffmatrix)(i,j) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
    }
 
+  // Get if normal dynamics problem or statmech problem
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
   //calculating consistent mass matrix
   if (massmatrix != NULL)
   {
     for (int i=0; i<3; ++i)
     {
-      (*massmatrix)(i,i) = density*lrefe_*crosssec_ / 3;
-      (*massmatrix)(i+3,i+3) = density*lrefe_*crosssec_ / 3;
-      (*massmatrix)(i,i+3) = density*lrefe_*crosssec_ / 6;
-      (*massmatrix)(i+3,i) = density*lrefe_*crosssec_ / 6;
+      if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")==INPAR::STR::dyna_statmech)
+        (*massmatrix)(i,i)     = 1;
+      else
+      {
+        (*massmatrix)(i,i)     = density*lrefe_*crosssec_ / 3;
+        (*massmatrix)(i+3,i+3) = density*lrefe_*crosssec_ / 3;
+        (*massmatrix)(i,i+3)   = density*lrefe_*crosssec_ / 6;
+        (*massmatrix)(i+3,i)   = density*lrefe_*crosssec_ / 6;
+      }
     }
   }
 
@@ -716,15 +727,23 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(std::vector<double>&      dis
         (*stiffmatrix)(i,j) += (ym*crosssec_/pow(lcurr,3))*aux(i)*aux(j);
   }
 
+  // Get if normal dynamics problem or statmech problem
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
   //calculating consistent mass matrix
   if (massmatrix != NULL)
   {
     for (int i=0; i<3; ++i)
     {
-      (*massmatrix)(i,i)     = density*lrefe_*crosssec_ / 3;
-      (*massmatrix)(i+3,i+3) = density*lrefe_*crosssec_ / 3;
-      (*massmatrix)(i,i+3)   = density*lrefe_*crosssec_ / 6;
-      (*massmatrix)(i+3,i)   = density*lrefe_*crosssec_ / 6;
+      if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")==INPAR::STR::dyna_statmech)
+        (*massmatrix)(i,i)     = 1;
+      else
+      {
+        (*massmatrix)(i,i)     = density*lrefe_*crosssec_ / 3;
+        (*massmatrix)(i+3,i+3) = density*lrefe_*crosssec_ / 3;
+        (*massmatrix)(i,i+3)   = density*lrefe_*crosssec_ / 6;
+        (*massmatrix)(i+3,i)   = density*lrefe_*crosssec_ / 6;
+      }
     }
   }
 
