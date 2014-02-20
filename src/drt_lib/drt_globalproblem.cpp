@@ -2023,10 +2023,22 @@ void DRT::Problem::ReadReferenceDiscretization(DRT::INPUT::DatFileReader& reader
   // check whether we do surface current based inverse analysis
   const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
 
+  // check wether valid target discretization is specified
   std::string reference_input_file = statinvp.get<std::string>("TARGETDISCRETIZATION");
-
   if (reference_input_file.compare("none.dat"))
   {
+    // check wether absolut path is given and preprend if not
+    if (reference_input_file[0]!='/')
+    {
+      std::string filename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+      std::string::size_type pos = filename.rfind('/');
+      if (pos!=std::string::npos)
+      {
+        std::string path = filename.substr(0,pos+1);
+        reference_input_file.insert(reference_input_file.begin(), path.begin(), path.end());
+      }
+    }
+
     DRT::Problem* reference_problem = DRT::Problem::Instance(1);
 
     DRT::INPUT::DatFileReader refreader(reference_input_file, reader.Comm(), 1);
