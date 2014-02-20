@@ -3329,40 +3329,48 @@ bool STATMECH::StatMechManager::LinkerPolarityCheckAttach(Teuchos::RCP<Epetra_Mu
   if((*crosslinkeractcycletime_)[crosslid] >= recoverytime)
   {
     // 1. polarity criterion (2D): filaments are not allowed to link from too far away + angle criterion
-    // alpha = angle between new crosslinker and normal (secdir) --> has to be smaller than pi/2
     // retrieve tangential and normal vector from binding spot quaternions
     LINALG::Matrix<3,3> bspottriad(true);
-    // auxiliary variable for storing a triad in quaternion form
+    // nodal quaternion
     LINALG::Matrix<4, 1> qnode(true);
-    // unit tangential direction of the filament: first triad vector = tangent
-    LINALG::Matrix<3,1> firstdir(true);
+    // unit tangent corresponding to first column of bspottriad
+    LINALG::Matrix<3,1> tangent(true);
 
     for (int l=0; l<4; l++)
       qnode(l) = (*bspottriadscol)[l][(int)LID(1,0)];
     LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
     for (int l=0; l<(int)bspottriad.M(); l++)
-      firstdir(l) = bspottriad(l,0);
-    firstdir.Scale(1/firstdir.Norm2());
+      tangent(l) = bspottriad(l,0);
+    tangent.Scale(1/tangent.Norm2());
 
-    // distance of LID(1,0) to plane containing LID(0,0) and normal firstdir (Hesse normal form)
-    double dist = direction.Dot(firstdir);
-    double absdir = direction.Norm2();
-    // angle enclosed between LID(1,0) and plane
-    double alpha = asin(dist/absdir);
-    if (alpha > statmechparams_.get<double>("PHIBSPOT", 1.0472))
-      return false;
+    // direction vector from linker->binding spot, parallel/orthogonal projection of that direction w. respect to binding spot tangent
+    LINALG::Matrix<3,1> linkdir(true);
+    LINALG::Matrix<3,1> linkpardir(tangent);
+    LINALG::Matrix<3,1> linkorthodir(true);
+    linkdir -= direction; // according to convention X(LID_1)-X(LID_0), note: direction is unscaled, i.e., carries distance info
+    linkpardir.Scale(linkdir.Dot(tangent));
+    linkorthodir = linkdir;
+    linkorthodir -= linkpardir;
+
+//    std::cout<<"direct : "<<direction(0)<<" "<<direction(1)<<" "<<direction(2)<<std::endl;
+//    std::cout<<"linkdir: "<<linkdir(0)<<" "<<linkdir(1)<<" "<<linkdir(2)<<std::endl;
+//    std::cout<<"tangent: "<<tangent(0)<<" "<<tangent(1)<<" "<<tangent(2)<<std::endl;
+//    std::cout<<"  pardir  : "<<linkpardir(0)<<" "<<linkpardir(1)<<" "<<linkpardir(2)<<std::endl;
+//    std::cout<<"  orthodir: "<<linkorthodir(0)<<" "<<linkorthodir(1)<<" "<<linkorthodir(2)<<std::endl;
+
+    // scale to unit length for later use
     direction.Scale(1.0/direction.Norm2());
 
-    // 2. polarity check: direction vector from substrate filament node to filament node must be in positive direction of the filament
-    // direction vector, calculated before := current position (free filament node) - current position (substrate filament node)
-    LINALG::Matrix<3,1> linkdirection(true);
-    linkdirection -= direction;
+    // 1. criterion: angle
+    double alpha = acos(linkorthodir.Norm2()/linkdir.Norm2());
+    if (alpha > statmechparams_.get<double>("PHIBSPOT", 1.0472) || alpha < 0.176)
+      return false;
 
-    // calculate orientation of direction vector to tangential direction
-    double tangentialscalefactor = linkdirection.Dot(firstdir);
-
+    // 2. criterion: polarity
+    linkdir.Scale(1.0/linkdir.Norm2());
+    double polarityscale = linkdir.Dot(tangent);
     // zero-positive scale factor signals parallelity, negative scale factor signals antiparallelity
-    if (tangentialscalefactor >= 0)
+    if (polarityscale >= 0)
       return true;
     else
       return false;
