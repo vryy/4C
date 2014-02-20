@@ -983,6 +983,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_lsreinit.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro.cpp
   src/drt_scatra_ele/scatra_ele_calc_advanced_reaction.cpp
+  src/drt_scatra_ele/scatra_ele_calc_poro_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_utils.cpp
   src/drt_scatra_ele/scatra_ele_parameter.cpp
   src/drt_scatra_ele/scatra_ele_parameter_std.cpp

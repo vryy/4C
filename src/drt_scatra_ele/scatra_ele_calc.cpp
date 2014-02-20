@@ -1092,10 +1092,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Materials(
 {
   if (material->MaterialType() == INPAR::MAT::m_scatra)
     MatScaTra(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
-  //else if (material->MaterialType() == INPAR::MAT::m_biofilm)
-  //  MatBioFilm(material,densn,densnp,densam,diffus,visc);
-  //else if (material->MaterialType() == INPAR::MAT::m_myocard)
-  //  MatMyoCard(material,densn,densnp,densam,diffus,visc);
   else dserror("Material type is not supported");
 
   return;

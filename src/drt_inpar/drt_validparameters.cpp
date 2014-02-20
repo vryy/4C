@@ -4603,6 +4603,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "LevelSet",
                                  "Poroscatra",
                                  "Advanced_Reaction",
+                                 "Poro_Scatra_Reaction",
                                  "Cardio_Monodomain"),
                                tuple<int>(
                                  INPAR::SCATRA::scatratype_undefined,
@@ -4612,6 +4613,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::SCATRA::scatratype_levelset,
                                  INPAR::SCATRA::scatratype_poro,
                                  INPAR::SCATRA::scatratype_advreac,
+                                 INPAR::SCATRA::scatratype_pororeac,
                                  INPAR::SCATRA::scatratype_cardio_monodomain),
                                  &scatradyn);
 

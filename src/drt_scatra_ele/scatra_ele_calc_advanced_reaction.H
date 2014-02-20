@@ -29,11 +29,13 @@ enum reaction_coupling
   };
 
 template<DRT::Element::DiscretizationType distype>
-class ScaTraEleCalcAdvReac : public ScaTraEleCalc<distype>
+class ScaTraEleCalcAdvReac : public virtual ScaTraEleCalc<distype>
 {
-private:
-    /// private constructor, since we are a Singleton.
+protected:
+    /// (private) protected constructor, since we are a Singleton.
   ScaTraEleCalcAdvReac(const int numdofpernode,const int numscal);
+
+private:
 
   typedef ScaTraEleCalc<distype> my;
 
@@ -64,8 +66,21 @@ protected:
     const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
 
+  //! material ScaTra
+  virtual void MatScaTra(
+    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+    const int                               k,        //!< id of current scalar
+    double&                                 densn,    //!< density at t_(n)
+    double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+    double&                                 densam,   //!< density at t_(n+alpha_M)
+    Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
+    Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
+    double&                                 visc,      //!< fluid viscosity
+    const int                               iquad=-1   //!< id of current gauss point (default = -1)
+  );
+
   //! material BioFilm
-  void MatBioFilm(
+  virtual void MatBioFilm(
       const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       const int                               k,        //!< id of current scalar
       double&                                 densn,    //!< density at t_(n)
@@ -78,7 +93,7 @@ protected:
   );
 
   //! material ScatraGrowthScd
-  void MatGrowthScd(
+  virtual void MatGrowthScd(
       const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       const int                               k,        //!< id of current scalar
       double&                                 densn,    //!< density at t_(n)
@@ -97,41 +112,41 @@ protected:
   );
 
   //! check if homogenous scatra couplung condition exists and if, read it
-  bool IsCoupledAndRead(
+  virtual bool IsCoupledAndRead(
       const DRT::Discretization&            ScaTraDiscretization //!<discretisation of the ScaTra field
     );
 
-  double CalcReaCoeff(const int k);
+  virtual double CalcReaCoeff(const int k);
 
-    double CalcReaCoeffFac(
-        const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-        const DRT::ELEMENTS::reaction_coupling    couplingtype,            //!<type of coupling the stoichometry coefficients
-        const int                                 k                       //!< id of current scalar
-    );
+  virtual double CalcReaCoeffFac(
+      const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
+      const DRT::ELEMENTS::reaction_coupling    couplingtype,            //!<type of coupling the stoichometry coefficients
+      const int                                 k                       //!< id of current scalar
+  );
 
-    double CalcReaCoeffDerivMatrix(const int k, const int j);
+  virtual double CalcReaCoeffDerivMatrix(const int k, const int j);
 
-    double CalcReaCoeffDerivFac(
-        const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
-        const DRT::ELEMENTS::reaction_coupling  couplingtype,            //!<type of coupling the stoichometry coefficients
-        const int                               toderive,                //!<concentration to be derived
-        const int                               k                       //!< id of current scalar
-    );
+  virtual double CalcReaCoeffDerivFac(
+      const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
+      const DRT::ELEMENTS::reaction_coupling  couplingtype,            //!<type of coupling the stoichometry coefficients
+      const int                               toderive,                //!<concentration to be derived
+      const int                               k                       //!< id of current scalar
+  );
 
-    double CalcReaBodyForceTerm(const int k);
+  virtual double CalcReaBodyForceTerm(const int k);
 
-    double CalcReaBodyForceTermFac(
-        const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
-        const DRT::ELEMENTS::reaction_coupling      couplingtype            //!<type of coupling the stoichometry coefficients
-    );
+  virtual double CalcReaBodyForceTermFac(
+      const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
+      const DRT::ELEMENTS::reaction_coupling      couplingtype            //!<type of coupling the stoichometry coefficients
+  );
 
-    double CalcReaBodyForceDerivMatrix(const int k, const int j);
+  virtual double CalcReaBodyForceDerivMatrix(const int k, const int j);
 
-    double CalcReaBodyForceDerivFac(
-        const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-        const DRT::ELEMENTS::reaction_coupling    couplingtype,            //!<type of coupling the stoichometry coefficients
-        const int                                 toderive                 //!<concentration to be derived
-    );
+  virtual double CalcReaBodyForceDerivFac(
+      const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
+      const DRT::ELEMENTS::reaction_coupling    couplingtype,            //!<type of coupling the stoichometry coefficients
+      const int                                 toderive                 //!<concentration to be derived
+  );
 
   virtual int Evaluate(DRT::ELEMENTS::Transport*     ele,
                          Teuchos::ParameterList&       params,
@@ -165,7 +180,7 @@ protected:
   std::vector<double> reaconst_;             ///constant by which the reaction coefficient is multiplied
   std::vector<DRT::ELEMENTS::reaction_coupling> couplingtype_;///how to calculate the different couplings
 
-};
+}; //end ScaTraEleCalcAdvReac
 
 }
 

@@ -97,19 +97,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Materials(
   switch(material->MaterialType())
   {
   case INPAR::MAT::m_scatra:
-    my::MatScaTra(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
-    if (iscoupled_)
-    {
-      my::MatScaTra(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
-      reamanager->SetReaBodyForce( CalcReaBodyForceTerm(k) ,k);
-      reamanager->SetReaCoeff( CalcReaCoeff(k) ,k);
-      for (int j=0; j<my::numscal_ ;j++)
-      {
-        reamanager->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j) ,k,j );
-        reamanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j),k,j );
-      }
-    }
-
+    MatScaTra(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
     break;
   case INPAR::MAT::m_biofilm:
     MatBioFilm(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
@@ -125,7 +113,38 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Materials(
 }
 
 /*----------------------------------------------------------------------*
- |  Material BioFilm                                         ehrl 11/13 |
+ |  Material ScaTra                                          thon 02/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatScaTra(
+  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+  const int                               k,        //!< id of current scalar
+  double&                                 densn,    //!< density at t_(n)
+  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+  double&                                 densam,   //!< density at t_(n+alpha_M)
+  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
+  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
+  double&                                 visc,     //!< fluid viscosity
+  const int                               iquad     //!< id of current gauss point
+  )
+{
+  my::MatScaTra(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+
+  if (iscoupled_)
+  {
+    reamanager->SetReaBodyForce( CalcReaBodyForceTerm(k) ,k);
+    reamanager->SetReaCoeff( CalcReaCoeff(k) ,k);
+    for (int j=0; j<my::numscal_ ;j++)
+    {
+      reamanager->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j) ,k,j );
+      reamanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j) ,k,j );
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Material BioFilm                                         thon 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatBioFilm(
@@ -238,7 +257,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetRhsInt(
   // if not constant, and for temperature equation of a reactive
   // equation system, the reaction-rate term
 
-                                    //... + reaction terms not depending on phi(k) -> source term
+                                       //... + reaction terms not depending on phi(k) -> source term
   rhsint = my::bodyforce_[k].Dot(my::funct_) + my::reamanager_->GetReaBodyForce(k);
 
   return;

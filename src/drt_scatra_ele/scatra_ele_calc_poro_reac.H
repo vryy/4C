@@ -1,22 +1,24 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file scatra_ele_calc_poro.H
+ \file scatra_ele_calc_poro_reac.H
 
  \brief
 
  <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
+   Maintainer: Moritz Thon
+               thon@mhpc.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15264
+               089 - 289-10364
  </pre>
  *----------------------------------------------------------------------*/
 
 
-#ifndef SCATRA_ELE_CALC_PORO_H_
-#define SCATRA_ELE_CALC_PORO_H_
+#ifndef SCATRA_ELE_CALC_PORO_REAC_H_
+#define SCATRA_ELE_CALC_PORO_REAC_H_
 
 #include "scatra_ele_calc.H"
+#include "scatra_ele_calc_poro.H"
+#include "scatra_ele_calc_advanced_reaction.H"
 
 namespace DRT
 {
@@ -24,20 +26,21 @@ namespace ELEMENTS
 {
 
 template<DRT::Element::DiscretizationType distype>
-class ScaTraEleCalcPoro : public virtual ScaTraEleCalc<distype>
+class ScaTraEleCalcPoroReac : public ScaTraEleCalcPoro<distype>, public ScaTraEleCalcAdvReac<distype>
 {
-protected:
-  /// (private) protected constructor, since we are a Singleton.
-  ScaTraEleCalcPoro(const int numdofpernode,const int numscal);
+private:
+  /// private constructor, since we are a Singleton.
+  ScaTraEleCalcPoroReac(const int numdofpernode,const int numscal);
 
-  private:
   typedef ScaTraEleCalc<distype> my;
+  typedef ScaTraEleCalcPoro<distype> poro;
+  typedef ScaTraEleCalcAdvReac<distype> advreac;
 
 public:
-  virtual ~ScaTraEleCalcPoro() {}
+  virtual ~ScaTraEleCalcPoroReac() {}
 
   /// Singleton access method
-  static ScaTraEleCalcPoro<distype> * Instance(
+  static ScaTraEleCalcPoroReac<distype> * Instance(
     const int numdofpernode,
     const int numscal,
     bool create=true );

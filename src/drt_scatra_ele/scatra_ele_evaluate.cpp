@@ -150,6 +150,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
   case INPAR::SCATRA::scatratype_loma:      impltype = INPAR::SCATRA::impltype_loma;    break;
   case INPAR::SCATRA::scatratype_poro:      impltype = INPAR::SCATRA::impltype_poro;    break;
   case INPAR::SCATRA::scatratype_advreac:   impltype = INPAR::SCATRA::impltype_advreac; break;
+  case INPAR::SCATRA::scatratype_pororeac:  impltype = INPAR::SCATRA::impltype_pororeac; break;
   case INPAR::SCATRA::scatratype_elch:
   {
     // At this point, we know that we have a parameter class from type ScaTraEleParameterElch

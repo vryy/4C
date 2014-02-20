@@ -120,7 +120,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
 
 
   return;
-} // ScaTraEleCalc<distype>::MatScaTra
+} // ScaTraEleCalcPoro<distype>::MatScaTra
 
 
 

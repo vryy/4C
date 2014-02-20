@@ -173,6 +173,7 @@ namespace INPAR
       scatratype_levelset,
       scatratype_poro,
       scatratype_advreac,
+      scatratype_pororeac,
       scatratype_cardio_monodomain
     };
 
@@ -187,6 +188,7 @@ namespace INPAR
       impltype_lsreinit,
       impltype_poro,
       impltype_advreac,
+      impltype_pororeac,
       impltype_std_meshfree
     };
 
