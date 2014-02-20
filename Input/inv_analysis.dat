@@ -79,7 +79,7 @@ MC_Y_2                          1.86011223957
 
 INV_ANA_TOL                     10.
 
-INV_ANA_MAX_RUN                 20
+INV_ANA_MAX_RUN                 1
 
 
 //INV_ANALYSIS                  lung
