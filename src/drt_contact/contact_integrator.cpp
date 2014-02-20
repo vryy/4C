@@ -76,6 +76,104 @@ Comm_(comm)
 }
 
 /*----------------------------------------------------------------------*
+ |  check for boundary elements                              farah 02/14|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoIntegrator::BoundarySegmCheck2D(MORTAR::MortarElement& sele,
+                                         std::vector<MORTAR::MortarElement*> meles)
+{
+
+  double sxi_test[2] = {0.0, 0.0};
+  bool proj_test=false;
+  bool boundary_ele = false;
+
+  double glob_test[3] = {0.0, 0.0, 0.0};
+
+  DRT::Node** mynodes_test = sele.Nodes();
+  if (!mynodes_test) dserror("ERROR: HasProjStatus: Null pointer!");
+
+  if(sele.Shape()==DRT::Element::line2 || sele.Shape()==DRT::Element::nurbs2)
+  {
+    for (int s_test=0;s_test<2;++s_test)
+    {
+      if (s_test==0) sxi_test[0]=-1.0;
+      else sxi_test[0]=1.0;
+
+      proj_test=false;
+      for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
+      {
+        double mxi_test[2] = {0.0, 0.0};
+        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
+
+        if ((mxi_test[0]>=-1.0) && (mxi_test[0]<=1.0))
+        {
+          //get hasproj
+          sele.LocalToGlobal(sxi_test,glob_test,0);
+          for (int ii=0;ii<sele.NumNode();++ii)
+          {
+            MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+            if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+
+            if (glob_test[0]==mycnode_test->xspatial()[0] && glob_test[1]==mycnode_test->xspatial()[1] && glob_test[2]==mycnode_test->xspatial()[2])
+              mycnode_test->HasProj()=true;
+          }
+
+          glob_test[0]=0.0;
+          glob_test[1]=0.0;
+          glob_test[2]=0.0;
+
+          proj_test=true;
+        }
+      }
+      if(proj_test==false) boundary_ele=true;
+    }
+  }
+  else if (sele.Shape()==DRT::Element::line3 || sele.Shape()==DRT::Element::nurbs3)
+  {
+    for (int s_test=0;s_test<3;++s_test)
+    {
+      if (s_test==0) sxi_test[0]=-1.0;
+      else if (s_test==1) sxi_test[0]=0.0;
+      else if (s_test==2) sxi_test[0]=1.0;
+
+      proj_test=false;
+      for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
+      {
+        double mxi_test[2] = {0.0, 0.0};
+        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
+
+        if ((mxi_test[0]>=-1.0) && (mxi_test[0]<=1.0))
+        {
+          //get hasproj
+          sele.LocalToGlobal(sxi_test,glob_test,0);
+          for (int ii=0;ii<sele.NumNode();++ii)
+          {
+            MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
+            if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+
+            if (glob_test[0]==mycnode_test->xspatial()[0] && glob_test[1]==mycnode_test->xspatial()[1] && glob_test[2]==mycnode_test->xspatial()[2])
+              mycnode_test->HasProj()=true;
+          }
+
+          glob_test[0]=0.0;
+          glob_test[1]=0.0;
+          glob_test[2]=0.0;
+
+          proj_test=true;
+        }
+      }
+      if(proj_test==false) boundary_ele=true;
+    }
+  }
+  else
+  {
+    dserror("No valid element type for slave discretization!");
+  }
+
+  return boundary_ele;
+}
+
+
+/*----------------------------------------------------------------------*
  |  Initialize gauss points                                   popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletype)
@@ -122,6 +220,8 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
   {
   case DRT::Element::line2:
   case DRT::Element::line3:
+  case DRT::Element::nurbs2:
+  case DRT::Element::nurbs3:
   {
     dim_=2;
 
@@ -315,6 +415,9 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
   case DRT::Element::quad4:
   case DRT::Element::quad8:
   case DRT::Element::quad9:
+  case DRT::Element::nurbs4:
+  case DRT::Element::nurbs8:
+  case DRT::Element::nurbs9:
   {
     dim_=3;
 
@@ -801,8 +904,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
   // check input data
   for (int test=0;test<(int)meles.size();++test)
   {
-  if ((!sele.IsSlave()) || (meles[test]->IsSlave()))
-    dserror("ERROR: IntegrateDerivCell3D called on a wrong type of MortarElement pair!");
+    if ((!sele.IsSlave()) || (meles[test]->IsSlave()))
+      dserror("ERROR: IntegrateDerivCell3D called on a wrong type of MortarElement pair!");
   }
 
   int msize   = meles.size();
@@ -2536,20 +2639,16 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate and linearize D                                farah 01/13|
+ |  Integrate and linearize mortar terms                     farah 01/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::EleBased_Integration(
+void CONTACT::CoIntegrator::IntegrateDerivEle2D(
      MORTAR::MortarElement& sele,
      std::vector<MORTAR::MortarElement*> meles,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> gseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> scseg,
-     Teuchos::RCP<Epetra_SerialDenseVector> wseg,
      bool *boundary_ele)
 {
-  // get LMtype
-  INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
+  // *********************************************************************
+  // Check integrator input for non-reasonable quantities
+  // *********************************************************************
 
   // explicitely defined shapefunction type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
@@ -2558,12 +2657,20 @@ void CONTACT::CoIntegrator::EleBased_Integration(
   //check for problem dimension
   if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
 
+  // get slave element nodes themselves
+  DRT::Node** mynodes = sele.Nodes();
+  if(!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+
   // check input data
   for (int i=0;i<(int)meles.size();++i)
   {
     if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
       dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
   }
+
+  // *********************************************************************
+  // Define slave quantities
+  // *********************************************************************
 
   //consider entire slave element --> parameter space [-1,1]
   double sxia=-1.0;
@@ -2572,20 +2679,12 @@ void CONTACT::CoIntegrator::EleBased_Integration(
   // number of nodes (slave, master)
   int nrow      =   sele.NumNode();
   int ndof      =   Dim();
-  int mndof     =   static_cast<MORTAR::MortarNode*>(meles[0]->Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
   LINALG::SerialDenseMatrix sderiv(nrow,1);
   LINALG::SerialDenseVector lmval(nrow);
   LINALG::SerialDenseMatrix lmderiv(nrow,1);
-
-  // get slave element nodes themselves
-  DRT::Node** mynodes = sele.Nodes();
-  if(!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-
-  // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseMatrix ssecderiv(nrow,1);
 
   // get slave nodal coords for Jacobian / GP evaluation
   LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
@@ -2620,14 +2719,6 @@ void CONTACT::CoIntegrator::EleBased_Integration(
     bound += mymrtrnode->IsOnBound();
   }
 
-  // decide whether linear LM are used for quadratic FE here
-  bool linlm = false;
-  if (lmtype == INPAR::MORTAR::lagmult_lin_lin && sele.Shape() == DRT::Element::line3)
-  {
-    bound = false; // crosspoints and linear LM NOT at the same time!!!!
-    linlm = true;
-  }
-
   // get numerical integration type
   INPAR::MORTAR::IntType inttype =
     DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE");
@@ -2635,92 +2726,8 @@ void CONTACT::CoIntegrator::EleBased_Integration(
   //************************************************************************
   //Boundary Segmentation check -- HasProj()-check
   //************************************************************************
-  double sxi_test[2] = {0.0, 0.0};
-  bool proj_test=false;
-
-  double glob_test[3] = {0.0, 0.0, 0.0};
-
-  DRT::Node** mynodes_test = sele.Nodes();
-  if (!mynodes_test) dserror("ERROR: HasProjStatus: Null pointer!");
-
-  if(sele.Shape()==DRT::Element::line2)
-  {
-    for (int s_test=0;s_test<2;++s_test)
-    {
-      if (s_test==0) sxi_test[0]=-1.0;
-      else sxi_test[0]=1.0;
-
-      proj_test=false;
-      for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
-      {
-        double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
-
-        if ((mxi_test[0]>=-1.0) && (mxi_test[0]<=1.0))
-        {
-          //get hasproj
-          sele.LocalToGlobal(sxi_test,glob_test,0);
-          for (int ii=0;ii<sele.NumNode();++ii)
-          {
-            MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
-            if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
-
-            if (glob_test[0]==mycnode_test->xspatial()[0] && glob_test[1]==mycnode_test->xspatial()[1] && glob_test[2]==mycnode_test->xspatial()[2])
-              mycnode_test->HasProj()=true;
-          }
-
-          glob_test[0]=0.0;
-          glob_test[1]=0.0;
-          glob_test[2]=0.0;
-
-          proj_test=true;
-        }
-      }
-      if(proj_test==false) *boundary_ele=true;
-    }
-  }
-  else if (sele.Shape()==DRT::Element::line3)
-  {
-    for (int s_test=0;s_test<3;++s_test)
-    {
-      if (s_test==0) sxi_test[0]=-1.0;
-      else if (s_test==1) sxi_test[0]=0.0;
-      else if (s_test==2) sxi_test[0]=1.0;
-
-      proj_test=false;
-      for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
-      {
-        double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
-
-        if ((mxi_test[0]>=-1.0) && (mxi_test[0]<=1.0))
-        {
-          //get hasproj
-          sele.LocalToGlobal(sxi_test,glob_test,0);
-          for (int ii=0;ii<sele.NumNode();++ii)
-          {
-            MORTAR::MortarNode* mycnode_test = static_cast<MORTAR::MortarNode*> (mynodes_test[ii]);
-            if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
-
-            if (glob_test[0]==mycnode_test->xspatial()[0] && glob_test[1]==mycnode_test->xspatial()[1] && glob_test[2]==mycnode_test->xspatial()[2])
-              mycnode_test->HasProj()=true;
-          }
-
-          glob_test[0]=0.0;
-          glob_test[1]=0.0;
-          glob_test[2]=0.0;
-
-          proj_test=true;
-        }
-      }
-      if(proj_test==false) *boundary_ele=true;
-    }
-  }
-  else
-  {
-    dserror("No valid element type for slave discretization!");
-  }
-
+  if(inttype==INPAR::MORTAR::inttype_elements_BS)
+    *boundary_ele=BoundarySegmCheck2D(sele,meles);
 
 
   if (*boundary_ele==false || inttype==INPAR::MORTAR::inttype_elements)
@@ -2740,11 +2747,12 @@ void CONTACT::CoIntegrator::EleBased_Integration(
       double sxi[2] = {0.0, 0.0};
       sxi[0]= eta[0];
 
+      // evaluate the two slave side Jacobians
+      double dxdsxi = sele.Jacobian(sxi);
+      double dsxideta = -0.5*sxia + 0.5*sxib; // dummy for gap
+
       // evaluate Lagrange multiplier shape functions (on slave element)
-      if (linlm)
-        sele.EvaluateShapeLagMultLin(ShapeFcn(),sxi,lmval,lmderiv,nrow);
-      else
-        sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
+      sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
 
       // evaluate trace space shape functions
       sele.EvaluateShape(sxi,sval,sderiv,nrow);
@@ -2754,203 +2762,25 @@ void CONTACT::CoIntegrator::EleBased_Integration(
       //****************************************************************************************************************
       for (int nummaster=0;nummaster<(int)meles.size();++nummaster)
       {
-        int ncol      =   meles[nummaster]->NumNode();
-        LINALG::SerialDenseVector mval(ncol);
-        LINALG::SerialDenseMatrix mderiv(ncol,1);
-
-        // get master nodal coords for Jacobian / GP evaluation
-        LINALG::SerialDenseMatrix mcoord(3,meles[nummaster]->NumNode());
-        meles[nummaster]->GetNodalCoords(mcoord);
-
         // project Gauss point onto master element
         double mxi[2] = {0.0, 0.0};
         MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,sxi,*meles[nummaster],mxi);
 
-        // evaluate trace space shape functions
-        meles[nummaster]->EvaluateShape(mxi,mval,mderiv,ncol);
-
-        // evaluate the two slave side Jacobians
-        double dxdsxi = sele.Jacobian(sxi);
-        double dsxideta = -0.5*sxia + 0.5*sxib;
-
+        // gp on mele?
         if ((mxi[0]>=-1.0) && (mxi[0]<=1.0) && (kink_projection==false))
         {
           kink_projection=true;
 
-          // compute segment D/M matrix ****************************************
-          // standard shape functions
-          if (ShapeFcn() == INPAR::MORTAR::shape_standard)
-          {
-            // loop over all mseg matrix entries
-            // !!! nrow represents the slave Lagrange multipliers !!!
-            // !!! ncol represents the master dofs                !!!
-            // (this DOES matter here for mseg, as it might
-            // sometimes be rectangular, not quadratic!)
-            for (int j=0; j<nrow*ndof; ++j)
-            {
-              // integrate mseg
-              for (int k=0; k<ncol*mndof; ++k)    //loop over dofs of the considered master element
-              {
-                int jindex = (int)(j/ndof);
-                int kindex = (int)(k/mndof);
+          int ncol      =   meles[nummaster]->NumNode();
+          LINALG::SerialDenseVector mval(ncol);
+          LINALG::SerialDenseMatrix mderiv(ncol,1);
 
-                DRT::Node** mnodes = meles[nummaster]->Nodes();
-                MORTAR::MortarNode* mymnode = static_cast<MORTAR::MortarNode*> (mnodes[kindex]);
-                if (!mymnode) dserror("ERROR: Null pointer!");
+          // get master nodal coords for Jacobian / GP evaluation
+          LINALG::SerialDenseMatrix mcoord(3,meles[nummaster]->NumNode());
+          meles[nummaster]->GetNodalCoords(mcoord);
 
-                // multiply the two shape functions
-                double prod = lmval[jindex]*mval[kindex];   //Lagrange-Shapefunction * Masterelement-Shapefunction
-
-                // isolate the mseg and dseg entries to be filled
-                // (both the main diagonal and every other secondary diagonal)
-                // and add current Gauss point's contribution to mseg and dseg
-                if ((j==k) || ((j-jindex*ndof)==(k-kindex*mndof)))
-                {
-                  (*mseg)(j, k+nummaster*ncol*mndof) += prod*dxdsxi*dsxideta*wgt;
-                }
-              }
-            }
-          }
-          //***********************
-          // dual shape functions
-          //***********************
-          else if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-          {
-            //dserror("ERROR: noch nicht vervollständigt");
-            // loop over all mseg matrix entries
-            // nrow represents the slave Lagrange multipliers !!!
-            // ncol represents the master dofs !!!
-            // (this DOES matter here for mseg, as it might
-            // sometimes be rectangular, not quadratic!)
-            for (int j=0;j<nrow*ndof;++j)
-            {
-              // for dual shape functions we can make use
-              // of the row summing lemma: D_jj = Sum(k) M_jk
-              // hence, they can be combined into one single loop
-
-              // integrate mseg and dseg (no boundary modification)
-              for (int k=0;k<ncol*mndof;++k)
-              {
-                int jindex = (int)(j/ndof);
-                int kindex = (int)(k/ndof);
-
-                // multiply the two shape functions
-                double prod = lmval[jindex]*mval[kindex];
-
-                // isolate the mseg and dseg entries to be filled
-                // (both the main diagonal and every other secondary diagonal for mseg)
-                // (only the main diagonal for dseg)
-                // and add current Gauss point's contribution to mseg
-                if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-                {
-                  (*mseg)(j, k+nummaster*ncol*mndof) += prod*dxdsxi*dsxideta*wgt;
-                  if(!bound)
-                  {
-                    (*dseg)(j,j) += prod*dxdsxi*dsxideta*wgt;
-                  }
-                }
-              }
-            }
-          }//end - dualshapefunction // ShapeFcn() switch
-
-          if (ShapeFcn() == INPAR::MORTAR::shape_standard)
-          {
-            //integrate dseg
-            for (int j=0; j<nrow*ndof; ++j)
-            {
-              for (int k=0; k<nrow*ndof; ++k)
-              {
-                int jindex = (int)(j/ndof);
-                int kindex = (int)(k/ndof);
-
-                // multiply the two shape functions
-                double prod = lmval[jindex]*sval[kindex];
-
-                // isolate the mseg and dseg entries to be filled
-                // (both the main diagonal and every other secondary diagonal)
-                // and add current Gauss point's contribution to mseg and dseg
-                if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-                {
-                  (*dseg)(j, k) += prod*dxdsxi*dsxideta*wgt;
-                }
-              }
-            }
-          }
-          else if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-          {
-            for (int j=0;j<nrow*ndof;++j)
-            {
-              // integrate dseg (boundary modification)
-              if (bound)
-              {
-                MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[(int)(j/ndof)]);
-                if (!mymrtrnode) dserror("ERROR: elebased_integration: Null pointer!");
-                bool j_boundnode = mymrtrnode->IsOnBound();
-
-                for (int k=0;k<nrow*ndof;++k)
-                {
-                  MORTAR::MortarNode* mymrtrnode2 = static_cast<MORTAR::MortarNode*>(mynodes[(int)(k/ndof)]);
-                  if (!mymrtrnode2) dserror("ERROR: elebased_integration: Null pointer!");
-                  bool k_boundnode = mymrtrnode2->IsOnBound();
-
-                  int jindex = (int)(j/ndof);
-                  int kindex = (int)(k/ndof);
-
-                  // do not assemble off-diagonal terms if j,k are both non-boundary nodes
-                  if (!j_boundnode && !k_boundnode && (jindex!=kindex)) continue;
-
-                  // multiply the two shape functions
-                  double prod = lmval[jindex]*sval[kindex];
-
-                  // isolate the dseg entries to be filled
-                  // (both the main diagonal and every other secondary diagonal)
-                  // and add current Gauss point's contribution to dseg
-                  if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
-                    (*dseg)(j,k) += prod*dxdsxi*dsxideta*wgt;
-                }
-              }
-            }
-          }
-
-          // evaluate 2nd deriv of trace space shape functions (on slave element)
-          sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);  //--> lin: 0
-
-          // build interpolation of slave GP normal and coordinates
-          double gpn[3] = {0.0,0.0,0.0};
-          double sgpx[3] = {0.0, 0.0, 0.0};
-          for (int i=0;i<nrow;++i)  //loop over all slave nodes
-          {
-            MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*> (mynodes[i]);
-            gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
-            gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
-            gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
-
-            sgpx[0]+=sval[i]*scoord(0,i);
-            sgpx[1]+=sval[i]*scoord(1,i);
-            sgpx[2]+=sval[i]*scoord(2,i);
-          }
-
-          // normalize interpolated GP normal back to length 1.0 !!!
-          double length = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
-          if (length<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
-
-          for (int i=0;i<3;++i)
-            gpn[i]/=length;
-
-          // build interpolation of master GP coordinates
-          double mgpx[3] = {0.0, 0.0, 0.0};
-          for (int i=0;i<ncol;++i)
-          {
-            mgpx[0]+=mval[i]*mcoord(0,i);
-            mgpx[1]+=mval[i]*mcoord(1,i);
-            mgpx[2]+=mval[i]*mcoord(2,i);
-          }
-
-          // build gap function at current GP
-          double gap = 0.0;
-          for (int i=0;i<3;++i)
-            gap+=(mgpx[i]-sgpx[i])*gpn[i];
-
+          // evaluate trace space shape functions
+          meles[nummaster]->EvaluateShape(mxi,mval,mderiv,ncol);
 
           // get directional derivatives of sxia, sxib, mxia, mxib --> derivatives of mxia/mxib not required
           std::vector<std::map<int,double> > ximaps(4);
@@ -2973,307 +2803,43 @@ void CONTACT::CoIntegrator::EleBased_Integration(
           std::map<int,double> derivjac;
           sele.DerivJacobian(sxi,derivjac); //direct derivative if xi^1_g does not change
 
-          // evaluate the GP gap function derivatives
-          std::map<int,double> dgapgp;
+          //**********************************************************************
+          // frequently reused quantities
+          //**********************************************************************
+          double gpn[3]      = {0.0,0.0,0.0};  // normalized normal at gp
+          double gap[1]      = {0.0};          // gap
+          double lengthn[1]  = {0.0};          // length of gp normal gpn
+          std::map<int,double> dsliptmatrixgp; // deriv. of slip for wear
+          std::map<int,double> dslipgp;        // deriv. of slip for slipincr
+          std::map<int,double> dgapgp;         // gap  lin without weighting and jac
+          std::map<int,double> dweargp;        // wear lin without weighting and jac
+          std::vector<std::map<int,double> > dnmap_unit(2); // deriv of x and y comp. of gpn (unit)
 
-          // we need the participating slave and master nodes
-          DRT::Node** snodes = sele.Nodes();
-          DRT::Node** mnodes = meles[nummaster]->Nodes();
-          std::vector<MORTAR::MortarNode*> smrtrnodes(sele.NumNode());
-          std::vector<MORTAR::MortarNode*> mmrtrnodes(meles[nummaster]->NumNode());
+          //**********************************************************************
+          // evaluate at GP and lin char. quantities
+          //**********************************************************************
 
-          //check whether the pointer to the nodes exist
-          for (int i=0;i<nrow;++i)
+          // integrate D and M
+          GP_DM(sele,*meles[nummaster],lmval,sval,mval,dxdsxi,wgt,nrow,ncol,ndof,bound);
+
+          // integrate and lin gp gap
+          GP_2D_G(sele,*meles[nummaster],sval,mval,lmval,scoord,mcoord,sderiv,mderiv,gap,gpn,lengthn,dsxideta,
+              dxdsxi,wgt,dsxigp,dmxigp,dgapgp, dnmap_unit);
+
+          //**********************************************************************
+          // compute LINEARIZATION
+          //**********************************************************************
+          for (int iter=0;iter<nrow;++iter)
           {
-            smrtrnodes[i] = static_cast<MORTAR::MortarNode*>(snodes[i]);
-            if (!smrtrnodes[i]) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+            //lin DM
+            GP_2D_DM_Ele_Lin(iter,bound,sele,*meles[nummaster],sval,mval,lmval,mderiv,
+                 dxdsxi,wgt,dmxigp,derivjac,dualmap);
+
+            // lin gap
+            GP_2D_G_Ele_Lin(iter,sele,sval,mval,lmval,*gap,dxdsxi,wgt,dgapgp,
+                derivjac, dualmap);
           }
-
-          for (int i=0;i<ncol;++i)
-          {
-            mmrtrnodes[i] = static_cast<MORTAR::MortarNode*>(mnodes[i]);
-            if (!mmrtrnodes[i]) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-          }
-
-          // build directional derivative of slave GP normal (non-unit)
-          std::map<int,double> dmap_nxsl_gp;
-          std::map<int,double> dmap_nysl_gp;
-
-          for (int i=0;i<nrow;++i)
-          {
-            std::map<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
-            std::map<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
-
-            //build nc --> gp nomal
-            for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
-              dmap_nxsl_gp[p->first] += sval[i]*(p->second);
-            for (CI p=dmap_nysl_i.begin();p!=dmap_nysl_i.end();++p)
-              dmap_nysl_gp[p->first] += sval[i]*(p->second);
-          }
-
-          // build directional derivative of slave GP normal (unit)
-          std::map<int,double> dmap_nxsl_gp_unit;
-          std::map<int,double> dmap_nysl_gp_unit;
-
-          double ll = length*length;
-          double sxsx = gpn[0]*gpn[0]*ll;
-          double sxsy = gpn[0]*gpn[1]*ll;
-          double sysy = gpn[1]*gpn[1]*ll;
-
-          for (CI p=dmap_nxsl_gp.begin();p!=dmap_nxsl_gp.end();++p)
-          {
-            dmap_nxsl_gp_unit[p->first] += 1/length*(p->second);
-            dmap_nxsl_gp_unit[p->first] -= 1/(length*length*length)*sxsx*(p->second);
-            dmap_nysl_gp_unit[p->first] -= 1/(length*length*length)*sxsy*(p->second);
-          }
-
-          for (CI p=dmap_nysl_gp.begin();p!=dmap_nysl_gp.end();++p)
-          {
-            dmap_nysl_gp_unit[p->first] += 1/length*(p->second);
-            dmap_nysl_gp_unit[p->first] -= 1/(length*length*length)*sysy*(p->second);
-            dmap_nxsl_gp_unit[p->first] -= 1/(length*length*length)*sxsy*(p->second);
-          }
-
-          // add everything to dgapgp
-          for (CI p=dmap_nxsl_gp_unit.begin();p!=dmap_nxsl_gp_unit.end();++p)
-            dgapgp[p->first] += (mgpx[0]-sgpx[0]) * (p->second);
-
-          for (CI p=dmap_nysl_gp_unit.begin();p!=dmap_nysl_gp_unit.end();++p)
-            dgapgp[p->first] += (mgpx[1]-sgpx[1]) * (p->second);
-
-          for (int z=0;z<nrow;++z)
-          {
-            for (int k=0;k<2;++k)
-            {
-              dgapgp[smrtrnodes[z]->Dofs()[k]] -= sval[z] * gpn[k];
-            }
-          }
-
-          for (int z=0;z<ncol;++z)
-          {
-            for (int k=0;k<2;++k)
-            {
-              dgapgp[mmrtrnodes[z]->Dofs()[k]] += mval[z] * gpn[k];
-
-              for (CI p=dmxigp.begin();p!=dmxigp.end();++p)
-                dgapgp[p->first] += gpn[k] * mderiv(z,0) * mmrtrnodes[z]->xspatial()[k] * (p->second);
-            }
-          }
-
-          // evaluate linearizations *******************************************
-
-          // compute gap vector ****************************************
-          // loop over all gseg vector entries
-          // nrow represents the slave side dofs !!!
-          for (int j=0;j<nrow;++j)
-          {
-            double prod = 0.0;
-
-            if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-              prod = sval[j]*gap;
-            else
-              prod = lmval[j]*gap;
-
-            // add current Gauss point's contribution to gseg
-            (*gseg)(j) += prod*dxdsxi*wgt;
-          }
-
-
-          // compute nodal scaling factor **************************************
-          if (scseg!=Teuchos::null)
-            for (int j=0;j<nrow;++j)
-              (*scseg)(j) += wgt*sval[j]*dsxideta/sele.Nodes()[j]->NumElement();
-          // compute nodal scaling factor **************************************
-
-          // compute segment D/M linearization *********************************
-
-          // no linear LM interpolation for quadratic FE
-          for (int j=0;j<nrow;++j)
-          {
-            MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[j]);
-            if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-
-            int sgid = mymrtrnode->Id();
-
-            // standard shape functions
-            if (ShapeFcn() == INPAR::MORTAR::shape_standard)
-            {
-              // integrate LinM
-              for (int k=0; k<ncol; ++k)
-              {
-                // global master node ID
-                int mgid = meles[nummaster]->Nodes()[k]->Id();
-                double fac = 0.0;
-
-                // get the correct map as a reference
-                std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
-
-                // (1) Lin(Phi) - dual shape functions    --> 0
-
-                // (2) Lin(NSlave) - slave GP coordinates --> 0
-
-
-                // (3) Lin(NMaster) - master GP coordinates
-                fac = wgt*lmval[j]*mderiv(k, 0)*dsxideta*dxdsxi;
-                for (CI p=dmxigp.begin(); p!=dmxigp.end(); ++p)
-                  dmmap_jk[p->first] += fac*(p->second);
-
-                // (4) Lin(dsxideta) - segment end coordinates --> 0
-
-
-                // (5) Lin(dxdsxi) - slave GP Jacobian
-                fac = wgt*lmval[j]*mval[k]*dsxideta;
-                for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-                  dmmap_jk[p->first] += fac*(p->second);
-
-                // (6) Lin(dxdsxi) - slave GP coordinates --> 0
-              } // loop over master nodes
-
-              // integrate LinD
-              for (int k=0; k<nrow; ++k)
-              {
-                // global slave node ID
-                int sgid = sele.Nodes()[k]->Id();
-                double fac = 0.0;
-
-                // get the correct map as a reference
-                std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
-
-                // (1) Lin(Phi) - dual shape functions --> 0
-
-                // (2) Lin(NSlave) - slave GP coordinates --> 0
-
-                // (3) Lin(NSlave) - slave GP coordinates --> 0
-
-                // (4) Lin(dsxideta) - segment end coordinates --> 0
-
-                // (5) Lin(dxdsxi) - slave GP Jacobian
-                fac = wgt*lmval[j]*sval[k]*dsxideta;
-                for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-                  ddmap_jk[p->first] += fac*(p->second);
-
-                // (6) Lin(dxdsxi) - slave GP coordinates --> 0
-              } // loop over slave nodes
-            }
-
-            // dual shape functions
-            else if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-            {
-              // get the D-map as a reference
-              std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
-
-              // integrate LinM and LinD (NO boundary modification)
-              for (int k=0; k<ncol; ++k)
-              {
-                // global master node ID
-                int mgid = meles[nummaster]->Nodes()[k]->Id();
-                double fac = 0.0;
-
-                // get the correct map as a reference
-                std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
-
-                // (1) Lin(Phi) - dual shape functions
-                for (int m=0; m<nrow; ++m)
-                {
-                  fac = wgt*sval[m]*mval[k]*dsxideta*dxdsxi;
-                  for (CI p=dualmap[j][m].begin(); p!=dualmap[j][m].end(); ++p)
-                  {
-                    dmmap_jk[p->first] += fac*(p->second);
-                    if (!bound) ddmap_jk[p->first] += fac*(p->second);
-                  }
-                }
-
-                // (2) Lin(Phi) - slave GP coordinates --> 0
-
-                // (3) Lin(NMaster) - master GP coordinates
-                fac = wgt*lmval(j, 0)*mderiv(k, 0)*dsxideta*dxdsxi;
-                for (CI p=dmxigp.begin(); p!=dmxigp.end(); ++p)
-                {
-                  dmmap_jk[p->first] += fac*(p->second);
-                  if (!bound) ddmap_jk[p->first] += fac*(p->second);
-                }
-
-                // (4) Lin(dsxideta) - segment end coordinates --> 0
-
-
-                // (5) Lin(dxdsxi) - slave GP Jacobian
-                fac = wgt*lmval[j]*mval[k]*dsxideta;
-                for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-                {
-                  dmmap_jk[p->first] += fac*(p->second);
-                  if (!bound) ddmap_jk[p->first] += fac*(p->second);
-                }
-
-                // (6) Lin(dxdsxi) - slave GP coordinates --> 0
-              } // loop over master nodes
-            } // ShapeFcn() switch
-          } // linlm or not
-
-          // compute segment gap linearization *********************************
-          for (int j=0;j<nrow;++j)
-          {
-            MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[j]);
-            if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-
-            double fac = 0.0;
-
-            // get the corresponding map as a reference
-            std::map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
-
-            if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-            {
-              // (1) Lin(Phi) - dual shape functions
-              // -->0 PG
-
-              // (2) Lin(Phi) - slave GP coordinates --> 0
-
-              // (3) Lin(g) - gap function
-              fac = wgt*sval[j]*dsxideta*dxdsxi;
-              for (CI p=dgapgp.begin();p!=dgapgp.end();++p)
-                dgmap[p->first] += fac*(p->second);
-
-              // (4) Lin(dsxideta) - segment end coordinates --> 0
-
-              // (5) Lin(dxdsxi) - slave GP Jacobian
-              fac = wgt*sval[j]*gap*dsxideta;
-              for (CI p=derivjac.begin();p!=derivjac.end();++p)
-                dgmap[p->first] += fac*(p->second);
-
-              // (6) Lin(dxdsxi) - slave GP coordinates --> 0
-            }
-            else
-            {
-              // (1) Lin(Phi) - dual shape functions
-              if (ShapeFcn() == INPAR::MORTAR::shape_dual)
-              {
-                for (int m=0;m<nrow;++m)
-                {
-                  fac = wgt*sval[m]*gap*dsxideta*dxdsxi;
-                  for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
-                  {
-                    dgmap[p->first] += fac*(p->second);
-                  }
-                }
-              }
-
-              // (2) Lin(Phi) - slave GP coordinates --> 0
-
-              // (3) Lin(g) - gap function
-              fac = wgt*lmval[j]*dsxideta*dxdsxi;
-              for (CI p=dgapgp.begin();p!=dgapgp.end();++p)
-                dgmap[p->first] += fac*(p->second);
-
-              // (4) Lin(dsxideta) - segment end coordinates --> 0
-
-              // (5) Lin(dxdsxi) - slave GP Jacobian
-              fac = wgt*lmval[j]*gap*dsxideta;
-              for (CI p=derivjac.begin();p!=derivjac.end();++p)
-                dgmap[p->first] += fac*(p->second);
-
-              // (6) Lin(dxdsxi) - slave GP coordinates --> 0
-            }
-          }
-        } //Abfrage ob GP auf Mele
+        }
       }//End Loop over all Master Elements
     } // End Loop over all GP
   }//boundary_ele abfrage
@@ -3923,7 +3489,7 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
   for (CI p=dmap_nxsl_gp.begin();p!=dmap_nxsl_gp.end();++p)
     derivmxi[p->first] -= fac_ymsl_gp*(p->second);
   for (CI p=dmap_nysl_gp.begin();p!=dmap_nysl_gp.end();++p)
-      derivmxi[p->first] += fac_xmsl_gp*(p->second);
+    derivmxi[p->first] += fac_xmsl_gp*(p->second);
 
   // multiply all entries with cmxigp
   for (CI p=derivmxi.begin();p!=derivmxi.end();++p)
@@ -5499,6 +5065,93 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
 }
 
 /*----------------------------------------------------------------------*
+ |  Do lin. entries for weighted Gap at GP - ele based       farah 02/14|
+ *----------------------------------------------------------------------*/
+void inline CONTACT::CoIntegrator::GP_2D_G_Ele_Lin(
+     int& iter,
+     MORTAR::MortarElement& sele,
+     LINALG::SerialDenseVector& sval,
+     LINALG::SerialDenseVector& mval,
+     LINALG::SerialDenseVector& lmval,
+     double& gap,
+     double& dxdsxi, double& wgt,
+     const std::map<int,double>& dgapgp,
+     const std::map<int,double>& derivjac,
+     const std::vector<std::vector<std::map<int,double> > >& dualmap)
+{
+  int nrow = sele.NumNode();
+
+  // get slave element nodes themselves
+  DRT::Node** snodes = sele.Nodes();
+
+  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+  if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+
+  // map iterator
+  typedef std::map<int,double>::const_iterator CI;
+
+  double fac = 0.0;
+
+  // get the corresponding map as a reference
+  std::map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
+
+  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  {
+    // (1) Lin(Phi) - dual shape functions
+    // -->0 PG
+
+    // (2) Lin(Phi) - slave GP coordinates --> 0
+
+    // (3) Lin(g) - gap function
+    fac = wgt*sval[iter]*dxdsxi;
+    for (CI p=dgapgp.begin();p!=dgapgp.end();++p)
+      dgmap[p->first] += fac*(p->second);
+
+    // (4) Lin(dsxideta) - segment end coordinates --> 0
+
+    // (5) Lin(dxdsxi) - slave GP Jacobian
+    fac = wgt*sval[iter]*gap;
+    for (CI p=derivjac.begin();p!=derivjac.end();++p)
+      dgmap[p->first] += fac*(p->second);
+
+    // (6) Lin(dxdsxi) - slave GP coordinates --> 0
+  }
+  else
+  {
+    // (1) Lin(Phi) - dual shape functions
+    if (ShapeFcn() == INPAR::MORTAR::shape_dual)
+    {
+      for (int m=0;m<nrow;++m)
+      {
+        fac = wgt*sval[m]*gap*dxdsxi;
+        for (CI p=dualmap[iter][m].begin();p!=dualmap[iter][m].end();++p)
+        {
+          dgmap[p->first] += fac*(p->second);
+        }
+      }
+    }
+
+    // (2) Lin(Phi) - slave GP coordinates --> 0
+
+    // (3) Lin(g) - gap function
+    fac = wgt*lmval[iter]*dxdsxi;
+    for (CI p=dgapgp.begin();p!=dgapgp.end();++p)
+      dgmap[p->first] += fac*(p->second);
+
+    // (4) Lin(dsxideta) - segment end coordinates --> 0
+
+    // (5) Lin(dxdsxi) - slave GP Jacobian
+    fac = wgt*lmval[iter]*gap;
+    for (CI p=derivjac.begin();p!=derivjac.end();++p)
+      dgmap[p->first] += fac*(p->second);
+
+    // (6) Lin(dxdsxi) - slave GP coordinates --> 0
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Do lin. entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
@@ -6089,7 +5742,150 @@ void inline CONTACT::CoIntegrator::GP_DM_Lin_bound(
 }
 
 
+/*----------------------------------------------------------------------*
+ |  Lin D and M matrix entries at GP                         farah 09/13|
+ *----------------------------------------------------------------------*/
+void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(
+     int& iter,
+     bool& bound,
+     MORTAR::MortarElement& sele,
+     MORTAR::MortarElement& mele,
+     LINALG::SerialDenseVector& sval,
+     LINALG::SerialDenseVector& mval,
+     LINALG::SerialDenseVector& lmval,
+     LINALG::SerialDenseMatrix& mderiv,
+     double& dxdsxi,
+     double& wgt,
+     const std::map<int,double>& dmxigp,
+     const std::map<int,double>& derivjac,
+     const std::vector<std::vector<std::map<int,double> > >& dualmap)
+{
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
 
+  // get slave element nodes themselves
+  DRT::Node** snodes = sele.Nodes();
+
+  // map iterator
+  typedef std::map<int,double>::const_iterator CI;
+
+  MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(snodes[iter]);
+  if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+
+  int sgid = mymrtrnode->Id();
+
+  // standard shape functions
+  if (ShapeFcn() == INPAR::MORTAR::shape_standard)
+  {
+    // integrate LinM
+    for (int k=0; k<ncol; ++k)
+    {
+      // global master node ID
+      int mgid = mele.Nodes()[k]->Id();
+      double fac = 0.0;
+
+      // get the correct map as a reference
+      std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+
+      // (1) Lin(Phi) - dual shape functions    --> 0
+
+      // (2) Lin(NSlave) - slave GP coordinates --> 0
+
+      // (3) Lin(NMaster) - master GP coordinates
+      fac = wgt*lmval[iter]*mderiv(k, 0)*dxdsxi;
+      for (CI p=dmxigp.begin(); p!=dmxigp.end(); ++p)
+        dmmap_jk[p->first] += fac*(p->second);
+
+      // (4) Lin(dsxideta) - segment end coordinates --> 0
+
+      // (5) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*lmval[iter]*mval[k];
+      for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
+        dmmap_jk[p->first] += fac*(p->second);
+
+      // (6) Lin(dxdsxi) - slave GP coordinates --> 0
+    } // loop over master nodes
+
+    // integrate LinD
+    for (int k=0; k<nrow; ++k)
+    {
+      // global slave node ID
+      int sgid = sele.Nodes()[k]->Id();
+      double fac = 0.0;
+
+      // get the correct map as a reference
+      std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+
+      // (1) Lin(Phi) - dual shape functions --> 0
+
+      // (2) Lin(NSlave) - slave GP coordinates --> 0
+
+      // (3) Lin(NSlave) - slave GP coordinates --> 0
+
+      // (4) Lin(dsxideta) - segment end coordinates --> 0
+
+      // (5) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*lmval[iter]*sval[k];
+      for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
+        ddmap_jk[p->first] += fac*(p->second);
+
+      // (6) Lin(dxdsxi) - slave GP coordinates --> 0
+    } // loop over slave nodes
+  }
+
+  // dual shape functions
+  else if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  {
+    // get the D-map as a reference
+    std::map<int,double>& ddmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+
+    // integrate LinM and LinD (NO boundary modification)
+    for (int k=0; k<ncol; ++k)
+    {
+      // global master node ID
+      int mgid = mele.Nodes()[k]->Id();
+      double fac = 0.0;
+
+      // get the correct map as a reference
+      std::map<int,double>& dmmap_jk = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
+
+      // (1) Lin(Phi) - dual shape functions
+      for (int m=0; m<nrow; ++m)
+      {
+        fac = wgt*sval[m]*mval[k]*dxdsxi;
+        for (CI p=dualmap[iter][m].begin(); p!=dualmap[iter][m].end(); ++p)
+        {
+          dmmap_jk[p->first] += fac*(p->second);
+          if (!bound) ddmap_jk[p->first] += fac*(p->second);
+        }
+      }
+
+      // (2) Lin(Phi) - slave GP coordinates --> 0
+
+      // (3) Lin(NMaster) - master GP coordinates
+      fac = wgt*lmval(iter, 0)*mderiv(k, 0)*dxdsxi;
+      for (CI p=dmxigp.begin(); p!=dmxigp.end(); ++p)
+      {
+        dmmap_jk[p->first] += fac*(p->second);
+        if (!bound) ddmap_jk[p->first] += fac*(p->second);
+      }
+
+      // (4) Lin(dsxideta) - segment end coordinates --> 0
+
+      // (5) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*lmval[iter]*mval[k];
+      for (CI p=derivjac.begin(); p!=derivjac.end(); ++p)
+      {
+        dmmap_jk[p->first] += fac*(p->second);
+        if (!bound) ddmap_jk[p->first] += fac*(p->second);
+      }
+
+      // (6) Lin(dxdsxi) - slave GP coordinates --> 0
+    } // loop over master nodes
+  } // ShapeFcn() switch
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  Lin D and M matrix entries at GP                         farah 09/13|

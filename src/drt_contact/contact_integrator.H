@@ -104,6 +104,12 @@ public:
   //! @name 2D and 3D integration methods
 
   /*!
+  \brief check for boundary segmentation in 2D
+
+  */
+  bool BoundarySegmCheck2D(MORTAR::MortarElement& sele,
+                           std::vector<MORTAR::MortarElement*> meles);
+  /*!
   \brief evaluate D2-matrix entries at GP
 
   */
@@ -186,6 +192,25 @@ public:
       const std::map<int,double>& dmxigp,
       const std::map<int,double>& derivjac,
       const std::vector<std::map<int,double> >& ximaps,
+      const std::vector<std::vector<std::map<int,double> > >& dualmap);
+
+  /*!
+  \brief lin D/M-matrix entries at GP for elebased integration
+
+  */
+  void inline GP_2D_DM_Ele_Lin(
+      int& iter,
+      bool& bound,
+      MORTAR::MortarElement& sele,
+      MORTAR::MortarElement& mele,
+      LINALG::SerialDenseVector& sval,
+      LINALG::SerialDenseVector& mval,
+      LINALG::SerialDenseVector& lmval,
+      LINALG::SerialDenseMatrix& mderiv,
+      double& dxdsxi,
+      double& wgt,
+      const std::map<int,double>& dmxigp,
+      const std::map<int,double>& derivjac,
       const std::vector<std::vector<std::map<int,double> > >& dualmap);
 
   /*!
@@ -338,6 +363,22 @@ public:
        const std::map<int,double>& derivjac,
        const std::vector<std::map<int,double> >& ximaps,
        const std::vector<std::vector<std::map<int,double> > >& dualmap);
+
+  /*!
+  \brief evaluate weighted Gap entries at GP
+
+  */
+  void inline GP_2D_G_Ele_Lin(
+      int& iter,
+      MORTAR::MortarElement& sele,
+      LINALG::SerialDenseVector& sval,
+      LINALG::SerialDenseVector& mval,
+      LINALG::SerialDenseVector& lmval,
+      double& gap,
+      double& dxdsxi, double& wgt,
+      const std::map<int,double>& dgapgp,
+      const std::map<int,double>& derivjac,
+      const std::vector<std::vector<std::map<int,double> > >& dualmap);
 
   /*!
   \brief evaluate weighted Gap entries at GP
@@ -771,14 +812,9 @@ public:
          (i.e. M, g, LinM, Ling and possibly D, LinD)
 
   */
-  void EleBased_Integration(
+  void IntegrateDerivEle2D(
       MORTAR::MortarElement& sele,
       std::vector<MORTAR::MortarElement*> meles,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> scseg,
-      Teuchos::RCP<Epetra_SerialDenseVector> wseg,
       bool *boundary_ele);
   /*!
   \brief Build all integrals and linearizations on a 1D slave /

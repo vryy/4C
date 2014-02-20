@@ -491,10 +491,15 @@ public:
 
   // for CONTACTCONSTRAINTXYZ
   // return dirichlet satus at node
-    bool*  DbcDofs() {return dbcdofs_;}
+  bool*  DbcDofs() {return dbcdofs_;}
+
+  /*!
+  \brief Return weighting for nurbs control point (node)
+
+  */
+  virtual inline double& NurbsW() { return nurbsw_; }
 
   //@}
-
 
 protected:
 
@@ -512,6 +517,9 @@ protected:
   bool              detected_;       // true if cnode is detected in active(slip) maps (only for master side)
 
   Teuchos::RCP<MORTAR::MortarNodeDataContainer> modata_;   // additional information of proc's mortar nodes
+
+  // nurbs specific:
+  double            nurbsw_;         // nurbs control point weighting
 
 }; // class MortarNode
 } // namespace MORTAR

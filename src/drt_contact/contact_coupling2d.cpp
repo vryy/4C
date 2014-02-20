@@ -288,114 +288,70 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
       //Bool for identification of boundary elements
       bool boundary_ele=false;
 
-        // do the integration (integrate and linearize both M and gap and wear)
-      int nrow = SlaveElement().NumNode();
-      int ncol = (MasterElements().size())*MasterElement(0).NumNode();
-      int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
+      // ***********************************************************
+      //                  START INTEGRATION !!!                   //
+      // ***********************************************************
+      integrator.IntegrateDerivEle2D(SlaveElement(),MasterElements(),&boundary_ele);
+      // ***********************************************************
+      //                   END INTEGRATION !!!                    //
+      // ***********************************************************
 
-      if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
-      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim() ));
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-      Teuchos::RCP<Epetra_SerialDenseVector> scseg = Teuchos::null;
-      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE"))
-        scseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-      Teuchos::RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
-      if(imortar_.get<double>("WEARCOEFF")>0.0)
-        wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
-
-      //perform integration
-      integrator.EleBased_Integration(SlaveElement(),MasterElements(),dseg,mseg,gseg,scseg,wseg,&boundary_ele);
-
-      if (IntType()==INPAR::MORTAR::inttype_elements_BS)
+      if (IntType()==INPAR::MORTAR::inttype_elements_BS and boundary_ele==true)
       {
-        if (boundary_ele==true)
+        // switch, if consistent boundary modification chosen
+        if (   DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true
+            && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
+        )
         {
-          // switch, if consistent boundary modification chosen
-          if (   DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true
-              && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
-          )
+          // loop over all master elements associated with this slave element
+          for (int m=0;m<(int)MasterElements().size();++m)
           {
-            // loop over all master elements associated with this slave element
-            for (int m=0;m<(int)MasterElements().size();++m)
-            {
-              // create Coupling2d object and push back
-              Coupling().push_back(Teuchos::rcp(new CoCoupling2d(
-                  idiscret_,dim_,quad_,imortar_,SlaveElement(),MasterElement(m))));
+            // create Coupling2d object and push back
+            Coupling().push_back(Teuchos::rcp(new CoCoupling2d(
+                idiscret_,dim_,quad_,imortar_,SlaveElement(),MasterElement(m))));
 
-              // project the element pair
-              Coupling()[m]->Project();
+            // project the element pair
+            Coupling()[m]->Project();
 
-              // check for element overlap
-              Coupling()[m]->DetectOverlap();
-            }
-
-            // calculate consistent dual shape functions for this element
-//            std::cout << "consistent dual for element: " << SlaveElement().Id() << std::endl;
-            ConsistDualShape();
-
-            // do mortar integration
-            for (int m=0;m<(int)MasterElements().size();++m)
-              Coupling()[m]->IntegrateOverlap();
-
-            // free memory of consistent dual shape function coefficient matrix
-            SlaveElement().MoData().ResetDualShape();
-            SlaveElement().MoData().ResetDerivDualShape();
+            // check for element overlap
+            Coupling()[m]->DetectOverlap();
           }
 
-          else
-          {
-            // loop over all master elements associated with this slave element
-            for (int m=0;m<(int)MasterElements().size();++m)
-            {
-              // create CoCoupling2d object and push back
-              Coupling().push_back(Teuchos::rcp(new CoCoupling2d(idiscret_,dim_,quad_,imortar_,SlaveElement(),MasterElement(m))));
+          // calculate consistent dual shape functions for this element
+          ConsistDualShape();
 
-              // project the element pair
-              Coupling()[m]->Project();
+          // do mortar integration
+          for (int m=0;m<(int)MasterElements().size();++m)
+            Coupling()[m]->IntegrateOverlap();
 
-              // check for element overlap
-              Coupling()[m]->DetectOverlap();
-
-              // integrate the element overlap
-              Coupling()[m]->IntegrateOverlap();
-            }
-          }
+          // free memory of consistent dual shape function coefficient matrix
+          SlaveElement().MoData().ResetDualShape();
+          SlaveElement().MoData().ResetDerivDualShape();
         }
+
+        // segment-based integration for boundary elements
         else
         {
-          // do the two assemblies into the slave nodes
-          integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-          integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
+          // loop over all master elements associated with this slave element
+          for (int m=0;m<(int)MasterElements().size();++m)
+          {
+            // create CoCoupling2d object and push back
+            Coupling().push_back(Teuchos::rcp(new CoCoupling2d(idiscret_,dim_,quad_,imortar_,SlaveElement(),MasterElement(m))));
 
-          // also do assembly of weighted gap vector
-          integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+            // project the element pair
+            Coupling()[m]->Project();
 
-          // assemble scaling factor
-          if (scseg!=Teuchos::null)
-            integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
+            // check for element overlap
+            Coupling()[m]->DetectOverlap();
 
-          // assemble wear
-          if(imortar_.get<double>("WEARCOEFF")>0.0)
-            integrator.AssembleWear(Comm(),SlaveElement(),*wseg);
+            // integrate the element overlap
+            Coupling()[m]->IntegrateOverlap();
+          }
         }
       }
       else
       {
-        // do the two assemblies into the slave nodes
-        integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-        integrator.AssembleM_EleBased(Comm(),SlaveElement(),MasterElements(),*mseg);
-
-        // also do assembly of weighted gap vector
-        integrator.AssembleG(Comm(),SlaveElement(),*gseg);
-
-        // assemble scaling factor
-        if (scseg!=Teuchos::null)
-          integrator.AssembleScale(Comm(),SlaveElement(),*scseg);
-
-        // assemble wear
-        if(imortar_.get<double>("WEARCOEFF")>0.0)
-          integrator.AssembleWear(Comm(),SlaveElement(),*wseg);
+        // nothing to do...
       }
     }
     // *******************************************************************

@@ -57,18 +57,26 @@ DRT::Element* DRT::ELEMENTS::Wall1Line::Clone() const
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
- |                                                          u.kue 03/07 |
+ |                                                          farah 02/14 |
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1Line::Shape() const
 {
-  switch (NumNode())
+  DRT::Element::DiscretizationType distype_line = dis_none;
+
+  switch(ParentMasterElement()->Shape())
   {
-  case 2: return line2;
-  case 3: return line3;
-  default:
-    dserror("unexpected number of nodes %d", NumNode());
+  case tri3:{ distype_line = line2; break;}
+  case tri6:{ distype_line = line3; break;}
+  case quad4:{ distype_line = line2; break;}
+  case quad8:{ distype_line = line3; break;}
+  case quad9:{ distype_line = line3; break;}
+  case nurbs4:{ distype_line = nurbs2; break;}
+  case nurbs8:{ distype_line = nurbs3; break;}
+  case nurbs9:{ distype_line = nurbs3; break;}
+  default: dserror("DRT::ELEMENTS::Wall1Line::Wall1Line: Unknown parent shape!");
   }
-  return dis_none;
+
+  return distype_line;
 }
 
 /*----------------------------------------------------------------------*

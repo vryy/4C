@@ -749,6 +749,8 @@ protected:
 
   double                             inttime_interface_;// integration time
 
+
+  bool                               nurbs_;
 }; // class MortarInterface
 } // namespace MORTAR
 

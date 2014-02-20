@@ -1966,6 +1966,22 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         int numdofpernode = actele->NumDofPerNode(*n);
         coldofset.insert(lm[inode*numdofpernode]+offset);
       }
+      //---------------------------------------------------
+      // contact - specific output:
+      else if(name == "norcontactstress" || name == "tancontactstress" || name == "interfacetraction" ||
+          name == "slaveforces" || name == "masterforces" || name == "norslaveforce" ||
+          name == "tanslaveforce" || name == "normasterforce" || name == "tanmasterforce" ||
+          name == "wear")
+      {
+        if(dim!=numdf)
+        {
+          dserror("dim and numdf not matching for field %s",name.c_str());
+        }
+        for(int rr=0;rr<dim;++rr)
+        {
+          coldofset.insert(lm[inode*dim+rr]+offset);
+        }
+      }
       else
       {
         dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
@@ -2154,6 +2170,23 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         //DRT::Node* n = nurbsdis->lRowNode(inode);
         int numdofpernode = 1; //actele->NumDofPerNode(*n);
         my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*numdofpernode]+offset)];
+      }
+    }
+    //---------------------------------------------------
+    // contact - specific output:
+    else if(name == "norcontactstress" || name == "tancontactstress" || name == "interfacetraction" ||
+        name == "slaveforces" || name == "masterforces" || name == "norslaveforce" ||
+        name == "tanslaveforce" || name == "normasterforce" || name == "tanmasterforce" ||
+        name == "wear")
+    {
+      my_data.resize(dim*numnp);
+
+      for (int inode=0; inode<numnp; ++inode)
+      {
+        for(int rr=0;rr<dim;++rr)
+        {
+          my_data[dim*inode+rr]=(*coldata)[(*coldata).Map().LID(lm[inode*dim+rr]+offset)];
+        }
       }
     }
     else
@@ -3604,7 +3637,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
 
   const Epetra_Map* fullnodemap = &(*colnodemap);
   const Teuchos::RCP<Epetra_MultiVector> coldata
-  = Teuchos::rcp(new Epetra_MultiVector(*fullnodemap,3,true));
+  = Teuchos::rcp(new Epetra_MultiVector(*fullnodemap,numdf,true)); // numdf important!!!
 
   // create an importer and import the data
   Epetra_Import importer((*coldata).Map(),(*data).Map());

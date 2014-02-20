@@ -640,6 +640,151 @@ namespace UTILS
 }
 
 
+template <class VF,class MD, class MSD,class UV,class WG>
+void nurbs_get_1D_funct_deriv_deriv2(
+    VF                                     & nurbs_shape_funct ,
+    MD                                     & nurbs_shape_deriv ,
+    MSD                                    & nurbs_shape_deriv2,
+    const UV                               & u                 ,
+    const Epetra_SerialDenseVector         & knots             ,
+    const WG                               & weights           ,
+    const DRT::Element::DiscretizationType & distype           )
+{
+  int degree = 1;
+
+  switch (distype)
+  {
+  case DRT::Element::nurbs2:
+  {
+    degree=1;
+
+    break;
+  }
+  case DRT::Element::nurbs3:
+  {
+    degree=2;
+
+    break;
+  }
+  default:
+  {
+    dserror("Unknown distype for nurbs element evaluation\n");
+    break;
+  }
+  }
+
+  // size is the number of control points/basis
+  // functions of this element
+  const int size   = (degree+1);
+
+  double du = knots(degree+1)-knots(degree);
+
+  double Ju =du/2.0;
+
+  // get mapped coordinates
+  double xi = knots(degree)+(u+1.0)*Ju;
+
+  // -----------------------------------------------
+  //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
+  // -----------------------------------------------
+
+  Epetra_SerialDenseVector bezier_shape_funct(size);
+  Epetra_SerialDenseVector bezier_shape_deriv(size);
+  Epetra_SerialDenseVector bezier_shape_deriv2(size);
+
+  // allocate bspline polynomials for both direction
+  DRT::NURBS::UTILS::BsplinePolynomial bspline_xi (degree,knots);
+
+  // get temporary doubles
+  double bspline_xi_value;
+  double bspline_xi_derivative;
+  double bspline_xi_deriv2;
+
+  // loop all basis functions (corresponding to
+  // control points)
+  for(int rr=0;rr<degree+1;++rr)
+  {
+    // in first direction:
+
+    // get bsplinevalue and derivative
+    bspline_xi.EvaluateBsplineFirstAndSecondDeriv(
+      bspline_xi_value,
+      bspline_xi_derivative,
+      bspline_xi_deriv2,
+      xi,
+      rr);
+
+    // add value to bezier_shape_funct
+    bezier_shape_funct(rr)=bspline_xi_value;
+
+    // add values to bezier_shape_deriv
+    bezier_shape_deriv(rr)=bspline_xi_derivative;
+
+    // add values to bspline_xi_deriv2
+    bezier_shape_deriv2(rr)=bspline_xi_deriv2;
+
+  }
+  // -----------------------------------------------
+  //  PART II: PROJECTING TO NURBS SHAPE FUNCTIONS
+  // -----------------------------------------------
+
+  // allocate temporary doubles, initialize to zero
+  double sum_funct_weight;
+  double sum_deriv_weight;
+  double sum_deriv2_weight;
+
+  sum_funct_weight=0.0;
+  sum_deriv_weight=0.0;
+  sum_deriv2_weight=0.0;
+
+
+  for(int rr=0;rr<size;++rr)
+  {
+    sum_funct_weight += weights(rr)*bezier_shape_funct(rr);
+
+    sum_deriv_weight += weights(rr)*bezier_shape_deriv(rr);
+
+    sum_deriv2_weight+= weights(rr)*bezier_shape_deriv2(rr);
+  }
+
+
+  // loop all basis functions
+  for(int rr=0;rr<size;++rr)
+  {
+    // get shape function
+    nurbs_shape_funct(rr)=weights(rr)*bezier_shape_funct(rr)/sum_funct_weight;
+
+    // loop directions to compute derivatives
+    nurbs_shape_deriv(rr)  = bezier_shape_deriv(rr)*sum_funct_weight;
+    nurbs_shape_deriv(rr) -= bezier_shape_funct(rr)*sum_deriv_weight;
+    nurbs_shape_deriv(rr) *= weights(rr)/(sum_funct_weight*sum_funct_weight);
+
+    // second derivative
+    nurbs_shape_deriv2(rr) =2*bezier_shape_funct(rr)*sum_deriv_weight*sum_deriv_weight;
+    nurbs_shape_deriv2(rr)/=sum_funct_weight;
+    nurbs_shape_deriv2(rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight;
+    nurbs_shape_deriv2(rr)-=bezier_shape_deriv(rr)*sum_deriv_weight;
+    nurbs_shape_deriv2(rr)-=bezier_shape_deriv(rr)*sum_deriv_weight;
+    nurbs_shape_deriv2(rr)/=sum_funct_weight;
+    nurbs_shape_deriv2(rr)+=bezier_shape_deriv2(rr);
+    nurbs_shape_deriv2(rr)*=weights(rr)/sum_funct_weight;
+  }
+
+  // -----------------------------------------------
+  //  PART III: TRANSFORMING DERIVATIVES FROM xi
+  //            TO u
+  // -----------------------------------------------
+  for(int rr=0;rr<size;++rr)
+  {
+    nurbs_shape_deriv(rr) *=Ju;
+    nurbs_shape_deriv2(rr)*=Ju*Ju;
+  }
+
+  return;
+
+}
+
+
 /*!
 \brief Evaluate 2d basis functions of nurbs basis functions.
 
@@ -725,11 +870,11 @@ PART  II: PROJECTING TO NURBS SHAPE FUNCTIONS
 */
 template <class VF,class UV,class WG>
 void nurbs_get_2D_funct(
-    VF                                     & nurbs_shape_funct,
-    const UV                               & uv               ,
+    VF                                          & nurbs_shape_funct,
+    const UV                                    & uv               ,
     const std::vector<Epetra_SerialDenseVector> & knots            ,
-    const WG                               & weights          ,
-    const DRT::Element::DiscretizationType & distype          )
+    const WG                                    & weights          ,
+    const DRT::Element::DiscretizationType      & distype          )
 {
 
   int degree = 1;

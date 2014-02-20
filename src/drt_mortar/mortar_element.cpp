@@ -124,11 +124,15 @@ MORTAR::MortarElement::MortarElement(int id, int owner,
                            const DRT::Element::DiscretizationType& shape,
                            const int numnode,
                            const int* nodeids,
-                           const bool isslave) :
+                           const bool isslave,
+                           bool isnurbs) :
 DRT::Element(id,owner),
 shape_(shape),
 isslave_(isslave),
-attached_(false)
+attached_(false),
+nurbs_(isnurbs),
+normalfac_(1.0),    // normal factor for nurbs
+zero_sized_(false)  // information for nurbs integration
 {
   SetNodeIds(numnode,nodeids);
   return;
@@ -199,6 +203,25 @@ void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,shape_);
   // add isslave_
   AddtoPack(data,isslave_);
+  // add nurbs_
+  AddtoPack(data,nurbs_);
+
+  // for nurbs:
+  if(nurbs_)
+  {
+    // add normalfac
+    AddtoPack(data,normalfac_);
+    // add normalfac
+    AddtoPack(data,zero_sized_);
+    // knots
+    int nr = mortarknots_.size();
+    DRT::ParObject::AddtoPack(data,nr);
+    if(nr!=0)
+    {
+      for (int i=0;i<nr;i++)
+        DRT::ParObject::AddtoPack(data,(mortarknots_[i]));
+    }
+  }
 
   // add modata_
   bool hasdata = (modata_!=Teuchos::null);
@@ -228,6 +251,27 @@ void MORTAR::MortarElement::Unpack(const std::vector<char>& data)
   shape_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
   // isslave_
   isslave_ = ExtractInt(position,data);
+  // nurbs_
+  nurbs_ = ExtractInt(position,data);
+
+  // for nurbs:
+  if(nurbs_)
+  {
+    // normalfac_
+    normalfac_ = ExtractDouble(position,data);
+    // normalfac_
+    zero_sized_ = ExtractInt(position,data);
+    //knots
+    int nr;
+    DRT::ParObject::ExtractfromPack(position,data,nr);
+
+    if(nr!=0)
+    {
+      mortarknots_.resize(nr);
+      for (int i=0;i<nr;i++)
+        DRT::ParObject::ExtractfromPack(position,data,mortarknots_[i]);
+    }
+  }
 
   // modata_
   bool hasdata = ExtractInt(position,data);
@@ -392,6 +436,35 @@ bool MORTAR::MortarElement::LocalCoordinatesOfNode(int& lid, double* xi)
     }
   }
 
+  //==================================================
+  //                     NURBS
+  else if (Shape()==nurbs2)
+  {
+    if (lid==0)
+      xi[0]=-1.0;
+    else if (lid==1)
+      xi[0]= 1.0;
+    else
+      dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
+
+    // we are in the 2D case here!
+    xi[1]=0.0;
+  }
+  else if (Shape()==nurbs3)
+  {
+    if (lid==0)
+      xi[0]=-1.0;
+    else if (lid==1)
+      xi[0]= 0.0;
+    else if (lid==2)
+      xi[0]= 1.0;
+    else
+      dserror("ERROR: LocalCoordinatesOfNode: Node number % in segment % out of range",lid,Id());
+
+    // we are in the 2D case here!
+    xi[1]=0.0;
+  }
+
   // unknown case
   else
     dserror("ERROR: LocalCoordinatesOfNode called for unknown element type");
@@ -453,9 +526,11 @@ void MORTAR::MortarElement::ComputeNormalAtXi(double* xi, int& i,
   Metrics(xi,gxi,geta);
 
   // n is cross product of gxi and geta
-  elens(0,i) = gxi[1]*geta[2]-gxi[2]*geta[1];
-  elens(1,i) = gxi[2]*geta[0]-gxi[0]*geta[2];
-  elens(2,i) = gxi[0]*geta[1]-gxi[1]*geta[0];
+  elens(0,i) = (gxi[1]*geta[2]-gxi[2]*geta[1])*NormalFac();
+  elens(1,i) = (gxi[2]*geta[0]-gxi[0]*geta[2])*NormalFac();
+  elens(2,i) = (gxi[0]*geta[1]-gxi[1]*geta[0])*NormalFac();
+
+
 
   // store length of normal and other information into elens
   elens(4,i) = sqrt(elens(0,i)*elens(0,i)+elens(1,i)*elens(1,i)+elens(2,i)*elens(2,i));
@@ -483,9 +558,9 @@ double MORTAR::MortarElement::ComputeUnitNormalAtXi(double* xi, double* n)
   Metrics(xi,gxi,geta);
 
   // n is cross product of gxi and geta
-  n[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
-  n[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
-  n[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+  n[0] = (gxi[1]*geta[2]-gxi[2]*geta[1]) * NormalFac();
+  n[1] = (gxi[2]*geta[0]-gxi[0]*geta[2]) * NormalFac();
+  n[2] = (gxi[0]*geta[1]-gxi[1]*geta[0]) * NormalFac();
 
   // build unit normal
   double length = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
@@ -683,8 +758,9 @@ void MORTAR::MortarElement::Metrics(double* xi, std::vector<double>& gxi,
   int nnodes = NumNode();
   int dim = 0;
   DRT::Element::DiscretizationType dt = Shape();
-  if (dt==line2 || dt==line3) dim = 2;
-  else if (dt==tri3 || dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9) dim = 3;
+  if (dt==line2 || dt==line3 || dt==nurbs2 || dt==nurbs3) dim = 2;
+  else if (dt==tri3   || dt==quad4  || dt==tri6 || dt==quad8 || dt==quad9 ||
+           dt==nurbs4 || dt==nurbs8 || dt==nurbs9) dim = 3;
   else dserror("ERROR: Metrics called for unknown element type");
 
   LINALG::SerialDenseVector val(nnodes);
@@ -747,7 +823,9 @@ double MORTAR::MortarElement::Jacobian(double* xi)
   // 3D quadratic case (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt==line3 || dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
+  else if (dt==line3  || dt==quad4  || dt==tri6   || dt==quad8  ||
+           dt==quad9  || dt==nurbs2 || dt==nurbs3 || dt==nurbs4 ||
+           dt==nurbs8 || dt==nurbs9)
   {
     // metrics routine gives local basis vectors
     Metrics(xi,gxi,geta);
@@ -809,9 +887,9 @@ void MORTAR::MortarElement::DerivJacobian(double* xi, std::map<int,double>& deri
   // 3D quadratic case (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt==line3 || dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
+  else if (dt==line3  || dt==quad4  || dt==tri6   || dt==quad8  || dt==quad9 ||
+           dt==nurbs2 || dt==nurbs3 || dt==nurbs4 || dt==nurbs8 || dt==nurbs9)
     jac = sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
-
   else
     dserror("ERROR: Jac. derivative not implemented for this type of CoElement");
 
@@ -897,7 +975,9 @@ double MORTAR::MortarElement::ComputeArea()
   // 3D quadratic case   (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt==line3 || dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
+  else if (dt==line3  || dt==quad4  || dt==tri6     || dt==quad8  ||
+           dt==quad9  || dt==nurbs2 || dt== nurbs3  || dt==nurbs4 ||
+           dt==nurbs8 || dt==nurbs9)
   {
     // Gauss quadrature with correct NumGP and Dim
     MORTAR::ElementIntegrator integrator(dt);
@@ -1034,6 +1114,37 @@ double MORTAR::MortarElement::MinEdgeSize()
       double dist = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
       if (dist<minedgesize) minedgesize = dist;
     }
+  }
+
+  //==================================================
+  //                     NURBS
+  else if (dt==nurbs3)
+  {
+    double sxi0[2]={-1.0 , 0.0};
+    double sxi1[2]={1.0 , 0.0};
+    int nrow    = NumNode();
+    LINALG::SerialDenseVector sval0(nrow);
+    LINALG::SerialDenseVector sval1(nrow);
+    LINALG::SerialDenseMatrix sderiv(nrow,1);
+    EvaluateShape(sxi0,sval0,sderiv,nrow);
+    EvaluateShape(sxi1,sval1,sderiv,nrow);
+
+    double gpx0[3] = {0.0, 0.0, 0.0};
+    double gpx1[3] = {0.0, 0.0, 0.0};
+
+    for (int j=0;j<nrow;++j)
+    {
+      for(int i=0;i<3;++i)
+      {
+        gpx0[i] +=sval0(j)*coord(i,j);
+        gpx1[i] +=sval1(j)*coord(i,j);
+      }
+    }
+
+    double diff[3] = {0.0, 0.0, 0.0};
+    for (int k=0;k<3;++k)
+      diff[k] = gpx1[k]-gpx0[k];
+    minedgesize = sqrt(diff[0]*diff[0]+diff[1]*diff[1]+diff[2]*diff[2]);
   }
 
   // invalid case

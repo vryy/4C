@@ -128,7 +128,8 @@ numdof_(numdof),
 dofs_(dofs),
 hasproj_(false),
 hassegment_(false),
-detected_(false)
+detected_(false),
+nurbsw_(-1.0)
 {
   for (int i=0;i<3;++i)
   {
@@ -136,6 +137,7 @@ detected_(false)
     xspatial()[i]=X()[i];
     dbcdofs_[i]=false;
   }
+
 
   return;
 }
@@ -243,6 +245,8 @@ void MORTAR::MortarNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,hasproj_);
   // add hassegment_
   AddtoPack(data,hassegment_);
+  // add nurbsw_
+  AddtoPack(data,nurbsw_);
 
   // add data_
   bool hasdata = (modata_!=Teuchos::null);
@@ -292,6 +296,8 @@ void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
   hasproj_ = ExtractInt(position,data);
   // hassegment_
   hassegment_ = ExtractInt(position,data);
+  // nurbsw_
+  nurbsw_ = ExtractDouble(position,data);
 
   // data_
   bool hasdata = ExtractInt(position,data);

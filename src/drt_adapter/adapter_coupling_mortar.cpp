@@ -108,7 +108,20 @@ void ADAPTER::CouplingMortar::Setup(
   }
 
   // get mortar coupling parameters
-  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& inputmortar = DRT::Problem::Instance()->MortarCouplingParams();
+  Teuchos::ParameterList input;
+  input.setParameters(inputmortar);
+
+  // is this a nurbs problem?
+  std::string distype = DRT::Problem::Instance()->SpatialApproximation();
+  if(distype=="Nurbs")
+  {
+    // ***
+    dserror("nurbs for fsi mortar not supported!");
+    input.set<bool>("NURBS",true);
+  }
+  else
+    input.set<bool>("NURBS",false);
 
   // check for invalid parameter values
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)

@@ -335,12 +335,11 @@ protected:
 
                          .                              (gammi)
 
-    \param std::ofstream                         (used for o) direct print to file
-    \param int                              (i)          number of degrees of freedom
-    \param Teuchos::RCP<Epetra_Vector>       (i)          the result data read from the baci output
-    \param std::string                           (i)          name of the thing we are writing
-                                                         (velocity, pressure etc.)
-    \param int                              (i)          potential offset in dof numbering
+    \param std::ofstream      (used for o) direct print to file
+    \param int                (i)          number of degrees of freedom
+    \param RCP<Epetra_Vector> (i)          the result data read from the baci output
+    \param std::string        (i)          name of the thing we are writing (velocity, pressure etc.)
+    \param int                (i)          potential offset in dof numbering
 
   */
   void WriteDofResultStepForNurbs(

@@ -80,8 +80,9 @@ CONTACT::CoElement::CoElement(int id, int owner,
                             const DRT::Element::DiscretizationType& shape,
                             const int numnode,
                             const int* nodeids,
-                            const bool isslave) :
-MORTAR::MortarElement(id,owner,shape,numnode,nodeids,isslave)
+                            const bool isslave,
+                            bool isnurbs) :
+MORTAR::MortarElement(id,owner,shape,numnode,nodeids,isslave,isnurbs)
 {
   // empty constructor
 
@@ -279,7 +280,7 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i,
     //create directional derivatives
     for (int j=0;j<3;++j)
       for (int k=0;k<ndof;++k)
-        (derivn[j])[mycnode->Dofs()[k]] += WF(j,k);
+        (derivn[j])[mycnode->Dofs()[k]] += WF(j,k)*NormalFac();
   }
 
   return;
@@ -304,7 +305,7 @@ void CONTACT::CoElement::DJacDXi(double* djacdxi, double* xi,
   }
 
   // 2D quadratic case (3noded line element)
-  else if (dt==line3)
+  else if (dt==line3 || dt==nurbs2 || dt==nurbs3)
   {
     // get nodal coords for 2nd deriv. evaluation
     LINALG::SerialDenseMatrix coord(3,NumNode());
@@ -332,7 +333,8 @@ void CONTACT::CoElement::DJacDXi(double* djacdxi, double* xi,
   // 3D quadratic case   (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt==quad4 || dt==tri6 || dt==quad8 || dt==quad9)
+  else if (dt==quad4  || dt==tri6   || dt==quad8 || dt==quad9 ||
+           dt==nurbs4 || dt==nurbs8 || dt==nurbs9)
   {
     // get nodal coords for 2nd deriv. evaluation
     LINALG::SerialDenseMatrix coord(3,NumNode());

@@ -56,6 +56,8 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
   {
   case DRT::Element::line2:
   case DRT::Element::line3:
+  case DRT::Element::nurbs2:
+  case DRT::Element::nurbs3:
   {
     const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_5point);
     ngp_ = intpoints.nquad;
@@ -87,6 +89,9 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
   case DRT::Element::quad4:
   case DRT::Element::quad8:
   case DRT::Element::quad9:
+  case DRT::Element::nurbs4:
+  case DRT::Element::nurbs8:
+  case DRT::Element::nurbs9:
   {
     const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_quad_9point);
     ngp_ = intpoints.nquad;

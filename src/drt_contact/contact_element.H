@@ -94,12 +94,14 @@ public:
   \param numnode (in): Number of nodes to this element
   \param nodeids (in): ids of nodes adjacent to this element
   \param isslave (in): flag indicating whether element is slave or master side
+  \param isnurbs (in): flag indicating whether element is nurbs element or not
   */
   CoElement(int id, int owner,
             const DRT::Element::DiscretizationType& shape,
             const int numnode,
             const int* nodeids,
-            const bool isslave);
+            const bool isslave,
+            bool isnurbs = false);
 
   /*!
   \brief Copy Constructor

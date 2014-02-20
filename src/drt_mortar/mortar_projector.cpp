@@ -84,6 +84,29 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& ele)
   {
     return MortarProjectorCalc<DRT::Element::line3>::Instance();
   }
+  //==================================================
+  //                     NURBS
+  //==================================================
+  case DRT::Element::nurbs2:
+  {
+    return MortarProjectorCalc<DRT::Element::nurbs2>::Instance();
+  }
+  case DRT::Element::nurbs3:
+  {
+    return MortarProjectorCalc<DRT::Element::nurbs3>::Instance();
+  }
+  case DRT::Element::nurbs4:
+  {
+    return MortarProjectorCalc<DRT::Element::nurbs4>::Instance();
+  }
+  case DRT::Element::nurbs8:
+  {
+    return MortarProjectorCalc<DRT::Element::nurbs8>::Instance();
+  }
+  case DRT::Element::nurbs9:
+  {
+    return MortarProjectorCalc<DRT::Element::nurbs9>::Instance();
+  }
   default:
     dserror("Element shape %d (%d nodes) not activated. Just do it.", ele.Shape(), ele.NumNode()); break;
   }
@@ -264,7 +287,17 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPoint(MORTAR::MortarEleme
     if(!mynodes) dserror("ERROR: ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
-    DRT::UTILS::shape_function_1D (val  ,gpeta[0],distype);
+    if(distype==DRT::Element::nurbs2 || distype==DRT::Element::nurbs3)
+    {
+      LINALG::SerialDenseVector auxval(n_);
+      LINALG::SerialDenseMatrix deriv(n_,1);
+      gpele.EvaluateShape(gpeta, auxval, deriv, gpele.NumNode());
+
+      for(int i=0;i<n_;++i)
+        val(i)=auxval(i);
+    }
+    else
+      DRT::UTILS::shape_function_1D (val ,gpeta[0],distype);
 
     // get interpolated GP normal and GP coordinates
     double gpn[ndim_];
@@ -508,7 +541,18 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPoint3D(MORTAR::MortarEle
     if(!mynodes) dserror("ERROR: ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
-    DRT::UTILS::shape_function_2D (val,gpeta[0],gpeta[1],distype);
+    if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs8 ||
+       distype==DRT::Element::nurbs9)
+    {
+      LINALG::SerialDenseVector auxval(n_);
+      LINALG::SerialDenseMatrix deriv(n_,1);
+      gpele.EvaluateShape(xi, auxval, deriv, gpele.NumNode());
+
+      for(int i=0;i<n_;++i)
+        val(i)=auxval(i);
+    }
+    else
+      DRT::UTILS::shape_function_2D (val,gpeta[0],gpeta[1],distype);
 
     // get interpolated GP normal and GP coordinates
     double gpn[3];
@@ -762,7 +806,17 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateFElementNormal(MORTAR::Mort
   LINALG::Matrix<ndim_,n_>   coord;
 
   // get shape function values and derivatives at gpeta
-  DRT::UTILS::shape_function_1D (val,eta[0],distype);
+  if(distype==DRT::Element::nurbs2 || distype==DRT::Element::nurbs3)
+  {
+    LINALG::SerialDenseVector auxval(n_);
+    LINALG::SerialDenseMatrix deriv(n_,1);
+    ele.EvaluateShape(eta, auxval, deriv, ele.NumNode());
+
+    for(int i=0;i<n_;++i)
+      val(i)=auxval(i);
+  }
+  else
+    DRT::UTILS::shape_function_1D (val,eta[0],distype);
 
   // get interpolated normal and proj. coordinates for current eta
   double nn[ndim_];
@@ -830,8 +884,23 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(MORTAR::
   if(!mynodes) dserror("ERROR: EvaluateGradFElementNormal: Null pointer!");
 
   // get shape function values and derivatives at gpeta
-  DRT::UTILS::shape_function_1D        (val,eta[0],distype);
-  DRT::UTILS::shape_function_1D_deriv1 (deriv,eta[0],distype);
+  if(distype==DRT::Element::nurbs2 || distype==DRT::Element::nurbs3)
+  {
+    LINALG::SerialDenseVector auxval(n_);
+    LINALG::SerialDenseMatrix auxderiv(n_,1);
+    ele.EvaluateShape(eta, auxval, auxderiv, ele.NumNode());
+
+    for(int i=0;i<n_;++i)
+    {
+      val(i)=auxval(i);
+      deriv(0,i)=auxderiv(i,0);
+    }
+  }
+  else
+  {
+    DRT::UTILS::shape_function_1D        (val,eta[0],distype);
+    DRT::UTILS::shape_function_1D_deriv1 (deriv,eta[0],distype);
+  }
 
   // get interpolated normal and proj. coordinates for current eta
   double nn[ndim_];

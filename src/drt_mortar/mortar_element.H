@@ -271,12 +271,14 @@ public:
   \param numnode (in): Number of nodes to this element
   \param nodeids (in): ids of nodes adjacent to this element
   \param isslave (in): flag indicating whether element is slave or master side
+  \param isnurbs (in): flag indicating whether element is nurbs element or not
   */
   MortarElement(int id, int owner,
                 const DRT::Element::DiscretizationType& shape,
                 const int numnode,
                 const int* nodeids,
-                const bool isslave);
+                const bool isslave,
+                bool isnurbs = false);
 
   /*!
   \brief Copy Constructor
@@ -428,6 +430,7 @@ public:
     switch(Shape())
     {
     case DRT::Element::line2:
+    case DRT::Element::nurbs2:
     case DRT::Element::tri3:
     case DRT::Element::quad4:
     {
@@ -435,6 +438,7 @@ public:
       break;
     }
     case DRT::Element::line3:
+    case DRT::Element::nurbs3:
     case DRT::Element::quad8:
     case DRT::Element::quad9:
     case DRT::Element::tri6:
@@ -704,8 +708,12 @@ public:
   */
   virtual void InitializeDataContainer();
 
-  // delete all found meles for this element
+  /*!
+  \brief delete all found meles for this element
+
+  */
   virtual void DeleteSearchElements();
+
   /*!
   \brief Resets the data container of the element
 
@@ -714,6 +722,28 @@ public:
 
   */
   virtual void ResetDataContainer();
+
+  // nurbs specific:
+
+  /*!
+  \brief bool for integration: if true: no integration for this element
+
+  this is only the case if there are more than polynom degree + 1 multiple knot entries
+
+  */
+  virtual bool& ZeroSized() { return zero_sized_; };
+
+  /*!
+  \brief factor for normal calculation (default 1.0)
+
+  */
+  virtual double& NormalFac() { return normalfac_; };
+
+  /*!
+  \brief get knot vectors for this mortar element
+
+  */
+  virtual std::vector<Epetra_SerialDenseVector>& Knots() { return mortarknots_; };
 
   //@}
 
@@ -724,6 +754,12 @@ protected:
   bool                                          attached_;   // bool whether an element contributes to M
 
   Teuchos::RCP<MORTAR::MortarEleDataContainer>  modata_;     // additional information
+
+  // nurbs specific:
+  bool                                          nurbs_;
+  std::vector<Epetra_SerialDenseVector>         mortarknots_;// mortar element knot vector
+  double                                        normalfac_;  // factor for normal orientation
+  bool                                          zero_sized_; // zero-sized element: if true: no integration for this element
 
 }; // class MortarElement
 

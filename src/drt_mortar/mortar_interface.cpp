@@ -60,6 +60,7 @@ Maintainer: Alexander Popp
 #include <Teuchos_Time.hpp>
 #include <Epetra_Time.h>
 
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -79,12 +80,18 @@ redundant_(redundant),
 maxdofglobal_(-1),
 searchalgo_(DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(imortar,"SEARCH_ALGORITHM")),
 searchparam_(imortar.get<double>("SEARCH_PARAM")),
-searchuseauxpos_(DRT::INPUT::IntegralValue<int>(imortar,"SEARCH_USE_AUX_POS"))
+searchuseauxpos_(DRT::INPUT::IntegralValue<int>(imortar,"SEARCH_USE_AUX_POS")),
+nurbs_(imortar.get<bool>("NURBS"))
 {
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(Comm().Clone());
   if (Dim()!=2 && Dim()!=3) dserror("ERROR: Mortar problem must be 2D or 3D");
   procmap_.clear();
-  idiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"mortar interface",com));
+
+  // build interface disretization
+  if (!nurbs_)
+    idiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"mortar interface",com));
+  else
+    idiscret_ = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization((std::string)"mortar interface",com));
 
   // overwrite shape function type
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(IParams(),"SHAPEFCN");
@@ -108,7 +115,6 @@ std::ostream& operator << (std::ostream& os, const MORTAR::MortarInterface& inte
   interface.Print(os);
   return os;
 }
-
 
 /*----------------------------------------------------------------------*
  |  print interface (public)                                 mwgee 10/07|
@@ -242,13 +248,16 @@ void MORTAR::MortarInterface::AddMortarNode(Teuchos::RCP<MORTAR::MortarNode> mrt
 void MORTAR::MortarInterface::AddMortarElement(Teuchos::RCP<MORTAR::MortarElement> mrtrele)
 {
   // check for quadratic 2d slave elements to be modified
-  if (mrtrele->IsSlave() && (mrtrele->Shape()==DRT::Element::line3))
+  if (mrtrele->IsSlave() && ( mrtrele->Shape()==DRT::Element::line3
+                           || mrtrele->Shape()==DRT::Element::nurbs3))
     quadslave_=true;
 
   // check for quadratic 3d slave elements to be modified
   if (mrtrele->IsSlave() && (mrtrele->Shape()==DRT::Element::quad9
                           || mrtrele->Shape()==DRT::Element::quad8
-                          || mrtrele->Shape()==DRT::Element::tri6))
+                          || mrtrele->Shape()==DRT::Element::tri6
+                          || mrtrele->Shape()==DRT::Element::nurbs8
+                          || mrtrele->Shape()==DRT::Element::nurbs9))
     quadslave_=true;
 
   idiscret_->AddElement(mrtrele);
@@ -1571,6 +1580,9 @@ void MORTAR::MortarInterface::Evaluate(int rriter, const int step, const int ite
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     MortarElement* selement = static_cast<MortarElement*>(ele1);
 
+    if (selement->ZeroSized())
+      continue;
+
     // empty vector of master element pointers
     std::vector<MortarElement*> melements;
 
@@ -1582,6 +1594,9 @@ void MORTAR::MortarInterface::Evaluate(int rriter, const int step, const int ite
       DRT::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
       MortarElement* melement = static_cast<MortarElement*>(ele2);
+
+      if (melement->ZeroSized())
+        continue;
 
       melements.push_back(melement);
     }

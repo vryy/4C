@@ -46,6 +46,7 @@ Maintainer: Philipp Farah
  | Header                                                   farah 01/14 |
  *----------------------------------------------------------------------*/
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "mortar_node.H"
 
@@ -84,12 +85,39 @@ bool LocalToGlobal(MORTAR::MortarElement& ele,
 
   LINALG::Matrix<ndim,n>   coord;
 
+  //===========================================
   // Basic value
   if(inttype==0)
   {
     LINALG::Matrix<n,1>      val;
-    if(ndim==2)      DRT::UTILS::shape_function_1D(val,xi[0],distype);
-    else if(ndim==3) DRT::UTILS::shape_function_2D(val,xi[0],xi[1],distype);
+    if(ndim==2)
+    {
+      if(distype==DRT::Element::nurbs2 || distype==DRT::Element::nurbs3)
+      {
+        LINALG::SerialDenseVector auxval(n);
+        LINALG::SerialDenseMatrix auxderiv(n,1);
+        ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+
+        for(int i=0;i<n;++i)
+          val(i)=auxval(i);
+      }
+      else
+        DRT::UTILS::shape_function_1D(val,xi[0],distype);
+    }
+    else if(ndim==3)
+    {
+      if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs8 || distype==DRT::Element::nurbs9)
+      {
+        LINALG::SerialDenseVector auxval(n);
+        LINALG::SerialDenseMatrix auxderiv(n,2);
+        ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+
+        for(int i=0;i<n;++i)
+          val(i)=auxval(i);
+      }
+      else
+        DRT::UTILS::shape_function_2D(val,xi[0],xi[1],distype);
+    }
     else dserror("Wrong Dimension");
 
     for (int i=0;i<n;++i)
@@ -106,12 +134,40 @@ bool LocalToGlobal(MORTAR::MortarElement& ele,
       }
     }
   }
-  // First Derivation
+
+  //===========================================
+  // First Derivation (xi)
   else if (inttype==1)
   {
     LINALG::Matrix<ndim-1,n>   deriv1;
-    if(ndim==2)      DRT::UTILS::shape_function_1D_deriv1(deriv1,xi[0],distype);
-    else if(ndim==3) DRT::UTILS::shape_function_2D_deriv1(deriv1,xi[0],xi[1],distype);
+    if(ndim==2)
+    {
+      if(distype==DRT::Element::nurbs2 || distype==DRT::Element::nurbs3)
+      {
+        LINALG::SerialDenseVector auxval(n);
+        LINALG::SerialDenseMatrix auxderiv(n,1);
+        ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+
+        for(int i=0;i<n;++i)
+          deriv1(0,i)=auxderiv(i,0);
+      }
+      else
+        DRT::UTILS::shape_function_1D_deriv1(deriv1,xi[0],distype);
+    }
+    else if(ndim==3)
+    {
+      if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs8 || distype==DRT::Element::nurbs9)
+      {
+        LINALG::SerialDenseVector auxval(n);
+        LINALG::SerialDenseMatrix auxderiv(n,2);
+        ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+
+        for(int i=0;i<n;++i)
+          deriv1(0,i)=auxderiv(i,0);
+      }
+      else
+        DRT::UTILS::shape_function_2D_deriv1(deriv1,xi[0],xi[1],distype);
+    }
     else dserror("Wrong Dimension");
 
     for (int i=0;i<n;++i)
@@ -128,12 +184,39 @@ bool LocalToGlobal(MORTAR::MortarElement& ele,
       }
     }
   }
-  // Second Derivation
+  //===========================================
+  // Second Derivation (eta)
   else if(inttype==2)
   {
     LINALG::Matrix<ndim-1,n>   deriv2;
-    if(ndim==2)      DRT::UTILS::shape_function_1D_deriv1(deriv2,xi[0],distype);
-    else if(ndim==3) DRT::UTILS::shape_function_2D_deriv1(deriv2,xi[0],xi[1],distype);
+    if(ndim==2)
+    {
+      if(distype==DRT::Element::nurbs2 || distype==DRT::Element::nurbs3)
+      {
+        LINALG::SerialDenseVector auxval(n);
+        LINALG::SerialDenseMatrix auxderiv(n,1);
+        ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+
+        for(int i=0;i<n;++i)
+          deriv2(0,i)=auxderiv(i,0);
+      }
+      else
+        DRT::UTILS::shape_function_1D_deriv1(deriv2,xi[0],distype);
+    }
+    else if(ndim==3)
+    {
+      if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs8 || distype==DRT::Element::nurbs9)
+      {
+        LINALG::SerialDenseVector auxval(n);
+        LINALG::SerialDenseMatrix auxderiv(n,2);
+        ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
+
+        for(int i=0;i<n;++i)
+          deriv2(1,i)=auxderiv(i,1);
+      }
+      else
+        DRT::UTILS::shape_function_2D_deriv1(deriv2,xi[0],xi[1],distype);
+    }
     else dserror("Wrong Dimension");
 
     for (int i=0;i<n;++i)

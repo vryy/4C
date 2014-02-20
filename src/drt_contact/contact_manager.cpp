@@ -58,6 +58,9 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_io/io_control.H"
 
+#include "../drt_nurbs_discret/drt_control_point.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_nurbs_discret/drt_knotvector.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
@@ -365,6 +368,15 @@ discret_(discret)
                                                              Discret().Dof(0,node),
                                                              isslave[j],isactive[j]+foundinitialactive,
                                                              friplus));
+           //-------------------
+           // get nurbs weight!
+           if(cparams.get<bool>("NURBS")==true)
+           {
+             DRT::NURBS::ControlPoint* cp =
+               dynamic_cast<DRT::NURBS::ControlPoint* > (node);
+
+             cnode->NurbsW() = cp->W();
+           }
 
 #ifdef CONTACTCONSTRAINTXYZ
            // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
@@ -400,6 +412,15 @@ discret_(discret)
                                                            Discret().NumDof(0,node),
                                                            Discret().Dof(0,node),
                                                            isslave[j],isactive[j]+foundinitialactive));
+          //-------------------
+          // get nurbs weight!
+          if(cparams.get<bool>("NURBS")==true)
+          {
+            DRT::NURBS::ControlPoint* cp =
+              dynamic_cast<DRT::NURBS::ControlPoint* > (node);
+
+            cnode->NurbsW() = cp->W();
+          }
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<DRT::Condition*> contactSymconditions(0);
@@ -453,7 +474,32 @@ discret_(discret)
                                                                 ele->Shape(),
                                                                 ele->NumNode(),
                                                                 ele->NodeIds(),
-                                                                isslave[j]));
+                                                                isslave[j],
+                                                                cparams.get<bool>("NURBS")));
+
+        //------------------------------------------------------------------
+        // get knotvector, normal factor and zero-size information for nurbs
+        if(cparams.get<bool>("NURBS")==true)
+        {
+          DRT::NURBS::NurbsDiscretization* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discret_));
+
+          Teuchos::RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+          std::vector<Epetra_SerialDenseVector> parentknots(dim);
+          std::vector<Epetra_SerialDenseVector> mortarknots(dim-1);
+
+          double normalfac = 0.0;
+          bool zero_size=knots->GetBoundaryEleAndParentKnots(parentknots,
+                                                             mortarknots,
+                                                             normalfac,
+                                                             ele->ParentMasterElement()->Id(),
+                                                             ele->FaceMasterNumber());
+
+          // store nurbs specific data to node
+          cele->ZeroSized() = zero_size;
+          cele->Knots()     = mortarknots;
+          cele->NormalFac() = normalfac;
+        }
+
         interface->AddCoElement(cele);
       } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
 
@@ -547,6 +593,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
   // read Problem Type and Problem Dimension from DRT::Problem
   const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
+  std::string distype = DRT::Problem::Instance()->SpatialApproximation();
   int dim = DRT::Problem::Instance()->NDim();
 
   // *********************************************************************
@@ -816,12 +863,21 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(wearlist,"BOTH_SIDED_WEAR") !=  INPAR::CONTACT::wear_slave)
     std::cout << ("\n \n Warning: Contact with both-sided wear is still experimental !") << std::endl;
 
+  // *********************************************************************
   // store contents of BOTH ParameterLists in local parameter list
+  // *********************************************************************
   cparams.setParameters(mortar);
   cparams.setParameters(contact);
   cparams.setParameters(wearlist);
   cparams.setParameters(tsic);
   cparams.set<double>("TIMESTEP",stru.get<double>("TIMESTEP"));
+
+  // NURBS PROBLEM?
+  if(distype=="Nurbs")
+    cparams.set<bool>("NURBS",true);
+  else
+    cparams.set<bool>("NURBS",false);
+
   cparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // store relevant problem types

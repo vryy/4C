@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "contact_element.H"
 #include "contact_defines.H"
 
+#include "../drt_nurbs_discret/drt_control_point.H"
 
 CONTACT::CoNodeType CONTACT::CoNodeType::instance_;
 

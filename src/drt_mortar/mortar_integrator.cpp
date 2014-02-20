@@ -241,6 +241,45 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(MortarElement& sele,
     }
     break;
   }
+
+  //==================================================
+  //                     NURBS
+  //==================================================
+  //1D surface elements
+  case DRT::Element::nurbs2:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::nurbs2:
+    {
+      return MortarIntegratorCalc<DRT::Element::nurbs2,DRT::Element::nurbs2>::Instance(true, params);
+    }
+    case DRT::Element::nurbs3:
+    {
+      return MortarIntegratorCalc<DRT::Element::nurbs2,DRT::Element::nurbs3>::Instance(true, params);
+    }
+    default:
+      dserror("Element combination not allowed!");
+    }
+    break;
+  }
+  case DRT::Element::nurbs3:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::nurbs2:
+    {
+      return MortarIntegratorCalc<DRT::Element::nurbs3,DRT::Element::nurbs2>::Instance(true, params);
+    }
+    case DRT::Element::nurbs3:
+    {
+      return MortarIntegratorCalc<DRT::Element::nurbs3,DRT::Element::nurbs3>::Instance(true, params);
+    }
+    default:
+      dserror("Element combination not allowed!");
+    }
+    break;
+  }
   default:
     dserror("Error...");
     break;
@@ -357,6 +396,8 @@ void MORTAR::MortarIntegratorCalc<distypeS,distypeM>::InitializeGP()
   {
   case DRT::Element::line2:
   case DRT::Element::line3:
+  case DRT::Element::nurbs2:
+  case DRT::Element::nurbs3:
   {
     // set default value for segment-based version first
     DRT::UTILS::GaussRule1D mygaussrule = DRT::UTILS::intrule_line_5point;
@@ -546,6 +587,9 @@ void MORTAR::MortarIntegratorCalc<distypeS,distypeM>::InitializeGP()
   case DRT::Element::quad4:
   case DRT::Element::quad8:
   case DRT::Element::quad9:
+  case DRT::Element::nurbs4:
+  case DRT::Element::nurbs8:
+  case DRT::Element::nurbs9:
   {
     // set default value for segment-based version first
     DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_quad_9point;
@@ -2737,3 +2781,14 @@ template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6,DRT::Element::qua
 template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6,DRT::Element::quad9>;
 template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6,DRT::Element::tri3>;
 template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6,DRT::Element::tri6>;
+
+//==================================================
+//                     NURBS
+//==================================================
+//nurbs2 slave
+template class MORTAR::MortarIntegratorCalc<DRT::Element::nurbs2,DRT::Element::nurbs2>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::nurbs2,DRT::Element::nurbs3>;
+
+//nurbs3 slave
+template class MORTAR::MortarIntegratorCalc<DRT::Element::nurbs3,DRT::Element::nurbs2>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::nurbs3,DRT::Element::nurbs3>;

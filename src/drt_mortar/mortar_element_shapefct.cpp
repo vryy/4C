@@ -44,6 +44,9 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 
+// nurbs specific
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+
 /*----------------------------------------------------------------------*
  |  1D/2D shape function repository                           popp 04/08|
  *----------------------------------------------------------------------*/
@@ -1418,6 +1421,150 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseV
     else                          ShapeFunctions(MortarElement::biquad2D,xi,val,deriv);
     break;
   }
+
+  //==================================================
+  //                     NURBS
+  //==================================================
+
+  // 1D -- nurbs2
+  case DRT::Element::nurbs2:
+  {
+    if (valdim!=2) dserror("ERROR: Inconsistency in EvluateShape");
+
+    Epetra_SerialDenseVector weights(NumNode());
+    for (int inode=0; inode<NumNode(); ++inode)
+      weights(inode) = static_cast<MORTAR::MortarNode* > (Nodes()[inode])->NurbsW();
+
+    LINALG::SerialDenseMatrix auxderiv(1,NumNode());
+    DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(val,
+                                                auxderiv,
+                                                xi[0],
+                                                Knots()[0],
+                                                weights,
+                                                nurbs2 );
+
+    // copy entries for to be conform with the mortar code!
+    for(int i=0;i<NumNode();++i)
+      deriv(i,0) = auxderiv(0,i);
+
+    break;
+  }
+
+  // 1D -- nurbs3
+  case DRT::Element::nurbs3:
+  {
+    if (valdim!=3) dserror("ERROR: Inconsistency in EvluateShape");
+
+    Epetra_SerialDenseVector weights(NumNode());
+    for (int inode=0; inode<NumNode(); ++inode)
+    {
+      weights(inode) = static_cast<MORTAR::MortarNode* > (Nodes()[inode])->NurbsW();
+      if(static_cast<MORTAR::MortarNode* > (Nodes()[inode])->NurbsW()<1.0)
+        dserror("wrong weight");
+    }
+
+    LINALG::SerialDenseMatrix auxderiv(1,NumNode());
+    DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(val,
+                                                auxderiv,
+                                                xi[0],
+                                                Knots()[0],
+                                                weights,
+                                                nurbs3 );
+
+    // copy entries for to be conform with the mortar code!
+    for(int i=0;i<NumNode();++i)
+      deriv(i,0) = auxderiv(0,i);
+
+    break;
+  }
+
+  // ===========================================================
+  // 2D -- nurbs4
+  case DRT::Element::nurbs4:
+  {
+    if (valdim!=4) dserror("ERROR: Inconsistency in EvluateShape");
+
+    Epetra_SerialDenseVector weights(NumNode());
+    for (int inode=0; inode<NumNode(); ++inode)
+      weights(inode) = static_cast<MORTAR::MortarNode* > (Nodes()[inode])->NurbsW();
+
+    LINALG::SerialDenseVector uv(2);
+    uv(0) = xi[0];
+    uv(1) = xi[1];
+
+    LINALG::SerialDenseMatrix auxderiv(2,NumNode());
+    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(val,
+                                                auxderiv,
+                                                uv,
+                                                Knots(),
+                                                weights,
+                                                nurbs4 );
+
+    // copy entries for to be conform with the mortar code!
+    for(int d=0;d<2;++d)
+      for(int i=0;i<NumNode();++i)
+        deriv(i,d) = auxderiv(d,i);
+
+    break;
+  }
+
+  // 2D -- nurbs8
+  case DRT::Element::nurbs8:
+  {
+    if (valdim!=8) dserror("ERROR: Inconsistency in EvluateShape");
+
+    Epetra_SerialDenseVector weights(NumNode());
+    for (int inode=0; inode<NumNode(); ++inode)
+      weights(inode) = static_cast<MORTAR::MortarNode* > (Nodes()[inode])->NurbsW();
+
+    LINALG::SerialDenseVector uv(2);
+    uv(0) = xi[0];
+    uv(1) = xi[1];
+
+    LINALG::SerialDenseMatrix auxderiv(2,NumNode());
+    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(val,
+                                                auxderiv,
+                                                uv,
+                                                Knots(),
+                                                weights,
+                                                nurbs8 );
+
+    // copy entries for to be conform with the mortar code!
+    for(int d=0;d<2;++d)
+      for(int i=0;i<NumNode();++i)
+        deriv(i,d) = auxderiv(d,i);
+
+    break;
+  }
+
+  // 2D -- nurbs9
+  case DRT::Element::nurbs9:
+  {
+    if (valdim!=9) dserror("ERROR: Inconsistency in EvluateShape");
+
+    Epetra_SerialDenseVector weights(NumNode());
+    for (int inode=0; inode<NumNode(); ++inode)
+      weights(inode) = static_cast<MORTAR::MortarNode* > (Nodes()[inode])->NurbsW();
+
+    LINALG::SerialDenseVector uv(2);
+    uv(0) = xi[0];
+    uv(1) = xi[1];
+
+    LINALG::SerialDenseMatrix auxderiv(2,NumNode());
+    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(val,
+                                                auxderiv,
+                                                uv,
+                                                Knots(),
+                                                weights,
+                                                nurbs9 );
+
+    // copy entries for to be conform with the mortar code!
+    for(int d=0;d<2;++d)
+      for(int i=0;i<NumNode();++i)
+        deriv(i,d) = auxderiv(d,i);
+
+    break;
+  }
   // unknown case
   default:
     dserror("ERROR: EvaluateShape called for unknown MortarElement type");
@@ -1567,6 +1714,116 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
         else /*Shape()==quad9*/  ShapeFunctions(MortarElement::biquad2D,xi,val,deriv);
       }
       
+    break;
+  }
+  //==================================================
+  //                     NURBS
+  //==================================================
+
+  // 1D -- nurbs2
+  case DRT::Element::nurbs2:
+  {
+    if(dual)
+      dserror("no dual shape functions provided for nurbs!");
+    else
+      EvaluateShape(xi,val,deriv,valdim);
+
+    break;
+  }
+
+  // 1D -- nurbs3
+  case DRT::Element::nurbs3:
+  {
+    if(dual)
+    {
+      // establish fundamental data
+      double detg = 0.0;
+      int nnodes = NumNode();
+
+      // compute entries to bi-ortho matrices me/de with Gauss quadrature
+      MORTAR::ElementIntegrator integrator(Shape());
+
+      LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+      LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+
+      for (int i=0;i<integrator.nGP();++i)
+      {
+        double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+        EvaluateShape(gpc, val, deriv, nnodes);
+        detg = Jacobian(gpc);
+
+        for (int j=0;j<nnodes;++j)
+          for (int k=0;k<nnodes;++k)
+          {
+            me(j,k)+=integrator.Weight(i)*val[j]*val[k]*detg;
+            de(j,k)+=(j==k)*integrator.Weight(i)*val[j]*detg;
+          }
+      }
+
+      // invert bi-ortho matrix me
+      LINALG::SymmetricInverse(me,nnodes);
+
+      // get solution matrix with dual parameters
+      LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+      ae.Multiply('N','N',1.0,de,me,0.0);
+
+      // evaluate dual shape functions at loc. coord. xi
+      // need standard shape functions at xi first
+      EvaluateShape(xi, val, deriv, nnodes);
+
+      // check whether this is a 1D or 2D mortar element
+      int dim = 1;
+      // evaluate dual shape functions
+      LINALG::SerialDenseVector valtemp(nnodes,true);
+      LINALG::SerialDenseMatrix derivtemp(nnodes,dim,true);
+      for (int i=0;i<nnodes;++i)
+        for (int j=0;j<nnodes;++j)
+        {
+          valtemp[i]+=ae(i,j)*val[j];
+          derivtemp(i,0)+=ae(i,j)*deriv(j,0);
+          if (dim==2) derivtemp(i,1)+=ae(i,j)*deriv(j,1);
+        }
+
+      val=valtemp;
+      deriv=derivtemp;
+    }
+    else
+      EvaluateShape(xi,val,deriv,valdim);
+
+    break;
+  }
+
+  // ===========================================================
+  // 2D -- nurbs4
+  case DRT::Element::nurbs4:
+  {
+    if(dual)
+      dserror("no dual shape functions provided for nurbs!");
+    else
+      EvaluateShape(xi,val,deriv,valdim);
+
+    break;
+  }
+
+  // 2D -- nurbs8
+  case DRT::Element::nurbs8:
+  {
+    if(dual)
+      dserror("no dual shape functions provided for nurbs!");
+    else
+      EvaluateShape(xi,val,deriv,valdim);
+
+    break;
+  }
+
+  // 2D -- nurbs9
+  case DRT::Element::nurbs9:
+  {
+    if(dual)
+      dserror("no dual shape functions provided for nurbs!");
+    else
+      EvaluateShape(xi,val,deriv,valdim);
+
     break;
   }
 
@@ -2630,6 +2887,165 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(const double* xi,
     secderiv(6,0) = -2.0*sh*sp; secderiv(6,1) =         r2; secderiv(6,2) =  -2.0*r*shp;
     secderiv(7,0) =         s2; secderiv(7,1) =  2.0*rh*rm; secderiv(7,2) =  -2.0*s*rhm;
     secderiv(8,0) =    -2.0*s2; secderiv(8,1) =    -2.0*r2; secderiv(8,2) = 2.0*s*2.0*r;
+    break;
+  }
+
+  //==================================================
+  //                     NURBS
+  //==================================================
+  // 1D -- nurbs2
+  case DRT::Element::nurbs2:
+  {
+    if (valdim!=2) dserror("ERROR: Inconsistency in EvluateShape");
+
+    Epetra_SerialDenseVector weights(NumNode());
+    for (int inode=0; inode<NumNode(); ++inode)
+      weights(inode) = static_cast<MORTAR::MortarNode* > (Nodes()[inode])->NurbsW();
+
+    LINALG::SerialDenseVector auxval(NumNode());
+    LINALG::SerialDenseVector auxderiv(NumNode());
+    LINALG::SerialDenseVector auxderiv2(NumNode());
+
+    DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(auxval,
+                                                auxderiv,
+                                                auxderiv2,
+                                                xi[0],
+                                                Knots()[0],
+                                                weights,
+                                                nurbs2 );
+
+    // copy entries for to be conform with the mortar code!
+    for(int i=0;i<NumNode();++i)
+      secderiv(i,0) = auxderiv2(0,i);
+
+    break;
+  }
+
+  // 1D -- nurbs3
+  case DRT::Element::nurbs3:
+  {
+    if (valdim!=3) dserror("ERROR: Inconsistency in EvluateShape");
+
+    Epetra_SerialDenseVector weights(3);
+    for (int inode=0; inode<3; ++inode)
+      weights(inode) = static_cast<MORTAR::MortarNode* > (Nodes()[inode])->NurbsW();
+
+    LINALG::SerialDenseVector auxval(3);
+    LINALG::SerialDenseVector auxderiv(3);
+    LINALG::SerialDenseVector auxderiv2(3);
+
+    DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(auxval,
+                                                auxderiv,
+                                                auxderiv2,
+                                                xi[0],
+                                                Knots()[0],
+                                                weights,
+                                                nurbs3 );
+
+    // copy entries for to be conform with the mortar code!
+    for(int i=0;i<NumNode();++i)
+      secderiv(i,0) = auxderiv2(i);
+
+    break;
+  }
+
+  // ===========================================================
+  // 2D -- nurbs4
+  case DRT::Element::nurbs4:
+  {
+    if (valdim!=4) dserror("ERROR: Inconsistency in EvluateShape");
+
+    Epetra_SerialDenseVector weights(NumNode());
+    for (int inode=0; inode<NumNode(); ++inode)
+      weights(inode) = static_cast<MORTAR::MortarNode* > (Nodes()[inode])->NurbsW();
+
+    LINALG::SerialDenseVector uv(2);
+    uv(0) = xi[0];
+    uv(1) = xi[1];
+
+    LINALG::SerialDenseVector auxval(NumNode());
+    LINALG::SerialDenseMatrix auxderiv(2,NumNode());
+    LINALG::SerialDenseMatrix auxderiv2(3,NumNode());
+
+    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(auxval,
+                                                       auxderiv,
+                                                       auxderiv2,
+                                                       uv,
+                                                       Knots(),
+                                                       weights,
+                                                       nurbs4 );
+
+    // copy entries for to be conform with the mortar code!
+    for(int d=0;d<3;++d)
+      for(int i=0;i<NumNode();++i)
+        secderiv(i,d) = auxderiv(d,i);
+
+    break;
+  }
+
+  // 2D -- nurbs8
+  case DRT::Element::nurbs8:
+  {
+    if (valdim!=8) dserror("ERROR: Inconsistency in EvluateShape");
+
+    Epetra_SerialDenseVector weights(NumNode());
+    for (int inode=0; inode<NumNode(); ++inode)
+      weights(inode) = static_cast<MORTAR::MortarNode* > (Nodes()[inode])->NurbsW();
+
+    LINALG::SerialDenseVector uv(2);
+    uv(0) = xi[0];
+    uv(1) = xi[1];
+
+    LINALG::SerialDenseVector auxval(NumNode());
+    LINALG::SerialDenseMatrix auxderiv(2,NumNode());
+    LINALG::SerialDenseMatrix auxderiv2(3,NumNode());
+
+    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(auxval,
+                                                       auxderiv,
+                                                       auxderiv2,
+                                                       uv,
+                                                       Knots(),
+                                                       weights,
+                                                       nurbs8 );
+
+    // copy entries for to be conform with the mortar code!
+    for(int d=0;d<3;++d)
+      for(int i=0;i<NumNode();++i)
+        secderiv(i,d) = auxderiv(d,i);
+
+    break;
+  }
+
+  // 2D -- nurbs9
+  case DRT::Element::nurbs9:
+  {
+    if (valdim!=9) dserror("ERROR: Inconsistency in EvluateShape");
+
+    Epetra_SerialDenseVector weights(NumNode());
+    for (int inode=0; inode<NumNode(); ++inode)
+      weights(inode) = static_cast<MORTAR::MortarNode* > (Nodes()[inode])->NurbsW();
+
+    LINALG::SerialDenseVector uv(2);
+    uv(0) = xi[0];
+    uv(1) = xi[1];
+
+    LINALG::SerialDenseVector auxval(NumNode());
+    LINALG::SerialDenseMatrix auxderiv(2,NumNode());
+    LINALG::SerialDenseMatrix auxderiv2(3,NumNode());
+
+    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(auxval,
+                                                       auxderiv,
+                                                       auxderiv2,
+                                                       uv,
+                                                       Knots(),
+                                                       weights,
+                                                       nurbs9 );
+
+    // copy entries for to be conform with the mortar code!
+    for(int d=0;d<3;++d)
+      for(int i=0;i<NumNode();++i)
+        secderiv(i,d) = auxderiv(d,i);
+
     break;
   }
   // unknown case
