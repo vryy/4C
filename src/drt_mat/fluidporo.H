@@ -211,7 +211,7 @@ namespace MAT
       }
 
       /// return permeabilityfunction
-      PAR::PoroFlowPermeabilityFunction PermeabilityFunction() const {return params_->permeabilityfunc_;}
+      PAR::PoroFlowPermeabilityFunction PermeabilityFunction() const { return params_->permeabilityfunc_; }
 
       /// evaluate material law
       void EvaluateViscStress(LINALG::Matrix<6,1>* stress,

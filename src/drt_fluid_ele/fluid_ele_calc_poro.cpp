@@ -172,6 +172,9 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid*    
                                                  Epetra_SerialDenseVector&      elevec3_epetra,
                                                  bool                           offdiag)
 {
+  Teuchos::RCP<const MAT::FluidPoro> actmat = Teuchos::rcp_static_cast<const MAT::FluidPoro>(mat);
+  const_permeability_ = (actmat->PermeabilityFunction() == MAT::PAR::const_);
+
   if (not offdiag) //evaluate diagonal block (pure fluid block)
     return Evaluate(  ele,
                       discretization,
@@ -1953,6 +1956,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
             reatensorlinODgridvel_(i, gid) += dJ_dus(gid)*J_inv * reagridvel_(i);
             reatensorlinODvel_(i, gid)     += dphi_dus(gid)*porosity_inv * reavel_(i);
             reatensorlinODgridvel_(i, gid) += dphi_dus(gid)*porosity_inv * reagridvel_(i);
+
             for (int j=0; j<my::nsd_; ++j)
             {
               for (int k=0; k<my::nsd_; ++k)
@@ -1961,16 +1965,32 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
                   reatensorlinODvel_(i, gid) += J_ * porosity_ *
                                                 my::velint_(j) *
                                                    ( - defgrd_inv(k,d) * my::derxy_(i,n) * matreatensor_(k,l) * defgrd_inv(l,j)
-                                                     - defgrd_inv(k,i) *
-                                                     matreatensor_(k,l) * defgrd_inv(l,d) * my::derxy_(j,n)
+                                                     - defgrd_inv(k,i) * matreatensor_(k,l) * defgrd_inv(l,d) * my::derxy_(j,n)
                                                     );
                   reatensorlinODgridvel_(i, gid) += J_ * porosity_ *
                                                     gridvelint_(j) *
                                                        ( - defgrd_inv(k,d) * my::derxy_(i,n) * matreatensor_(k,l) * defgrd_inv(l,j)
-                                                         - defgrd_inv(k,i) *
-                                                         matreatensor_(k,l) * defgrd_inv(l,d) * my::derxy_(j,n)
+                                                         - defgrd_inv(k,i) * matreatensor_(k,l) * defgrd_inv(l,d) * my::derxy_(j,n)
                                                         );
                 }
+            }
+            if (!const_permeability_)//check if derivatives of reaction tensor are zero --> significant speed up
+            {
+              for (int j=0; j<my::nsd_; ++j)
+              {
+                for (int k=0; k<my::nsd_; ++k)
+                  for(int l=0; l<my::nsd_; ++l)
+                  {
+                    reatensorlinODvel_(i, gid) += J_ * porosity_ *
+                                                  my::velint_(j) *
+                                                     ( defgrd_inv(k,i) * (matreatensorlinporosity_ (k,l) * dphi_dus(gid) + matreatensorlinJ_(k,l) * dJ_dus(gid)) * defgrd_inv(l,j)
+                                                      );
+                    reatensorlinODgridvel_(i, gid) += J_ * porosity_ *
+                                                      gridvelint_(j) *
+                                                         ( defgrd_inv(k,i) * (matreatensorlinporosity_ (k,l) * dphi_dus(gid) + matreatensorlinJ_(k,l) * dJ_dus(gid)) * defgrd_inv(l,j)
+                                                          );
+                  }
+              }
             }
           }
         }
@@ -4901,25 +4921,43 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDp(
   */
 
   for (int ui=0; ui<my::nen_; ++ui)
-   {
+  {
      //const double w = my::funct_(ui)*timefacfacpre*my::reacoeff_/porosity_*dphi_dp;
     const double w = my::funct_(ui)*timefacfacpre*dphi_dp/porosity_;
-    const double w1 = my::funct_(ui)*timefacfacpre*dphi_dp*porosity_;
        for (int idim = 0; idim <my::nsd_; ++idim)
        {
-         lin_resM_Dp(idim,ui) +=   w * reavel_(idim) + w1 * lin_p_vel_(idim);
+         lin_resM_Dp(idim,ui) +=   w * reavel_(idim);
        }
    }
+  if (!const_permeability_) //check if derivatives of reaction tensor are zero --> significant speed up
+  {
+    for (int ui=0; ui<my::nen_; ++ui)
+    {
+      const double w1 = my::funct_(ui)*timefacfacpre*dphi_dp*porosity_;
+      for (int idim = 0; idim <my::nsd_; ++idim)
+      {
+        lin_resM_Dp(idim,ui) +=   w1 * lin_p_vel_(idim);
+      }
+    }
+  }
 
   if (not my::fldparatimint_->IsStationary())
   {
     for (int ui=0; ui<my::nen_; ++ui)
-     {
+    {
        const double w = my::funct_(ui)*timefacfacpre/porosity_*dphi_dp;
-       const double w1 = my::funct_(ui)*timefacfacpre*dphi_dp*porosity_;
        for (int idim = 0; idim <my::nsd_; ++idim)
-         lin_resM_Dp(idim,ui) +=  w * (- reagridvel_(idim) ) - w1 * lin_p_vel_grid_(idim);
-     }
+         lin_resM_Dp(idim,ui) +=  w * (- reagridvel_(idim) );
+    }
+    if (!const_permeability_) //check if derivatives of reaction tensor are zero --> significant speed up
+    {
+      for (int ui=0; ui<my::nen_; ++ui)
+      {
+        const double w1 = my::funct_(ui)*timefacfacpre*dphi_dp*porosity_;
+        for (int idim = 0; idim <my::nsd_; ++idim)
+          lin_resM_Dp(idim,ui) += - w1 * lin_p_vel_grid_(idim);
+      }
+    }
   }
 
   return;

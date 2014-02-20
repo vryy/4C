@@ -1729,6 +1729,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
 
           for (int l=0; l<numdim_; l++)
           {
+            const double dphi_dus_ = dphi_dus(fi+l);
+            const double dJ_dus_ = dJ_dus(fi+l);
+
             /* additional "reactive darcy-term"
              detJ * w(gp) * ( J^2 * reacoeff * phi^2  ) * D(v_s)
              */
@@ -1739,9 +1742,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
              - detJ * w(gp) * d(phi)/d(us) * J * F^-T * Grad(p) * D(us)
              */
             (*stiffmatrix)(fk+j,fi+l) += fac * (
-                                              - porosity * dJ_dus(fi+l) * Finvgradp(j)
+                                              - porosity * dJ_dus_ * Finvgradp(j)
                                               - porosity * J * dFinvdus_gradp(j, fi+l)
-                                              - dphi_dus(fi+l) * J * Finvgradp(j)
+                                              - dphi_dus_ * J * Finvgradp(j)
                                             )
             ;
 
@@ -1750,18 +1753,32 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
              - detJ * w(gp) *  2 * ( J * dJ/d(us) * v^f * reacoeff * phi^2 + J * reacoeff * phi * d(phi)/d(us) * v^f ) * D(us)
              */
             (*stiffmatrix)(fk+j,fi+l) += fac * J * porosity *  2 * ( reavel(j) - reafvel(j) ) *
-                                            ( porosity * dJ_dus(fi+l) + J * dphi_dus(fi+l) );
-            for (int m=0; m<numdim_; ++m)
-              for (int n=0; n<numdim_; ++n)
-                for (int p=0; p<numdim_; ++p)
-                  (*stiffmatrix)(fk+j,fi+l) += v * ( velint(p) - fvelint(p) ) * (
-                                                  dFinvTdus(j*numdim_+m,fi+l) * matreatensor(m,n) * defgrd_inv(n,p)
-                                                + defgrd_inv(m,j) * matreatensor(m,n) * dFinvTdus(p*numdim_+n,fi+l)
-                                                + defgrd_inv(m,j) * (
-                                                linreac_dphi(m,n) * dphi_dus(fi+l) + linreac_dJ(m,n) * dJ_dus(fi+l)
-                                                ) * defgrd_inv(n,p)
-                                                )
-                                              ;
+                                            ( porosity * dJ_dus_ + J * dphi_dus_ );
+
+            //check if derivatives of reaction tensor are zero --> significant speed up
+            if (fluidmat_->PermeabilityFunction() == MAT::PAR::const_)
+            {
+              for (int m=0; m<numdim_; ++m)
+                for (int n=0; n<numdim_; ++n)
+                  for (int p=0; p<numdim_; ++p)
+                    (*stiffmatrix)(fk+j,fi+l) += v * ( velint(p) - fvelint(p) ) * (
+                                                    dFinvTdus(j*numdim_+m,fi+l) * matreatensor(m,n) * defgrd_inv(n,p)
+                                                  + defgrd_inv(m,j) * matreatensor(m,n) * dFinvTdus(p*numdim_+n,fi+l)
+                                                  );
+            } //const permeability function
+            else
+            {
+              for (int m=0; m<numdim_; ++m)
+                for (int n=0; n<numdim_; ++n)
+                  for (int p=0; p<numdim_; ++p)
+                    (*stiffmatrix)(fk+j,fi+l) += v * ( velint(p) - fvelint(p) ) * (
+                                                    dFinvTdus(j*numdim_+m,fi+l) * matreatensor(m,n) * defgrd_inv(n,p)
+                                                  + defgrd_inv(m,j) * matreatensor(m,n) * dFinvTdus(p*numdim_+n,fi+l)
+                                                  + defgrd_inv(m,j) * (
+                                                  linreac_dphi(m,n) * dphi_dus_ + linreac_dJ(m,n) * dJ_dus_
+                                                  ) * defgrd_inv(n,p)
+                                                  );
+            } //any other permeability function
           }
         }
       }
@@ -2009,15 +2026,19 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsOD(
 
         (*stiffmatrix)(fi+j, fkp1+numdim_ ) += tmp * reavel(j);
 
-        const double tmp2 = 0.5 * tmp * porosity;
-        for (int m=0; m<numdim_; ++m)
+        //check if derivatives of reaction tensor are zero --> significant speed up
+        if (fluidmat_->PermeabilityFunction() != MAT::PAR::const_)
         {
-          for (int n=0; n<numdim_; ++n)
+          const double tmp2 = 0.5 * tmp * porosity;
+          for (int m=0; m<numdim_; ++m)
           {
-            for (int p=0; p<numdim_; ++p)
+            for (int n=0; n<numdim_; ++n)
             {
-              (*stiffmatrix)(fi+j, fkp1+numdim_ ) +=  tmp2 * defgrd_inv(m,j) * linreac_dphi(m,n) * defgrd_inv(n,p) *
-                                          ( velint(p) - fvelint(p) );
+              for (int p=0; p<numdim_; ++p)
+              {
+                (*stiffmatrix)(fi+j, fkp1+numdim_ ) +=  tmp2 * defgrd_inv(m,j) * linreac_dphi(m,n) * defgrd_inv(n,p) *
+                                            ( velint(p) - fvelint(p) );
+              }
             }
           }
         }

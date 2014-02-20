@@ -989,6 +989,9 @@ protected:
   //! corresponding solid element
   DRT::ELEMENTS::So_Poro_Interface* so_interface_;
 
+  //! state if reaction/permeability tensor is constant
+  bool const_permeability_;
+
 };
 }
 }

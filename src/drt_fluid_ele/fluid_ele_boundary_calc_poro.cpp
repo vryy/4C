@@ -1330,7 +1330,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
           {
             for (int idof3=0;idof3<my::nsd_;idof3++)
             {
-              elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::numdofpernode_)+idof3)  -=
+              elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::nsd_)+idof3)  -=
                   (
                       // d (dd, mu*u_i,j o n ) / d d^L_l
                       + fluiddynamicviscosity*pfunct(inode)*dudxioJinv(idof2,idof3)*dNdxon(nnod)*my::fac_        // d ui,j / d d^L_l
