@@ -713,6 +713,11 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
   // converged active set
   bool converged_active_set=true;
 
+  // get references from parameter list
+  double& lp_inc = params.get<double>("Lp_increment_square");
+  double& lp_res = params.get<double>("Lp_residual_square");
+  int& num_active_gp = params.get<int>("number_active_plastic_gp");
+
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
@@ -813,13 +818,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
       tmp524.Multiply((*KbbInv_)[gp],(*Kbd_)[gp]);
       tmp51.Multiply(1.,tmp524,res_d,1.);
       (*DalphaK_last_iter_)[gp].Update(-1.,tmp51,1.);
-      double inrement_norm_sqare=tmp51(0)*tmp51(0)
+      lp_inc +=tmp51(0)*tmp51(0)
                                       +tmp51(1)*tmp51(1)
                                       +(-tmp51(0)-tmp51(1))*(-tmp51(0)-tmp51(1))
                                       +tmp51(2)*tmp51(2)*2.
                                       +tmp51(3)*tmp51(3)*2.
                                       +tmp51(4)*tmp51(4)*2.;
-      params.get<double>("Lp_increment_square")+=inrement_norm_sqare;
     }
     // end of recover *********************************************
 
@@ -1171,7 +1175,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
           {
             // communicate number of active plastic gauss points back to time integration
             // don't sum up for ghost elements
-            if (MyPID == so3_ele::Owner()) params.get<int>("number_active_plastic_gp")++;
+            if (MyPID == so3_ele::Owner()) ++num_active_gp;
 
             // **************************************************************
             // stiffness matrix [k^e_{beta beta}]_ij (i=1..5; j=1..5)
@@ -1251,17 +1255,11 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
           // static condensation of inner variables
           // **************************************************************
           //inverse matrix block [k_beta beta]_ij
-          Epetra_SerialDenseMatrix Kbetabeta_epetra(5,5);
-          for (int i=0; i<5; i++)
-            for (int j=0; j<5; j++)
-              Kbetabeta_epetra(i,j) = (*KbbInv_)[gp](i,j);
-          // we need the inverse of K_beta beta
-          Epetra_SerialDenseSolver solve_for_inverseKbb;
-          solve_for_inverseKbb.SetMatrix(Kbetabeta_epetra);
-          solve_for_inverseKbb.Invert();
-          for (int i=0; i<5; i++)
-            for (int j=0; j<5; j++)
-              (*KbbInv_)[gp](i,j) = Kbetabeta_epetra(i,j);
+          LINALG::FixedSizeSerialDenseSolver<5,5,1> solve_for_kbbinv;
+          solve_for_kbbinv.SetMatrix((*KbbInv_)[gp]);
+          int err2 = solve_for_kbbinv.Factor();
+          int err = solve_for_kbbinv.Invert();
+          if ((err != 0) || (err2!=0)) dserror("Inversion of Kbb failed");
 
           LINALG::Matrix<numdofperelement_,5> KdbKbb; // temporary  Kdb.Kbb^-1
           KdbKbb.Multiply(kdbeta,(*KbbInv_)[gp]);
@@ -1298,13 +1296,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
       }
 
       // square of the residual L2 norm
-      double residual_norm_sqare=(*fbeta_)[gp](0)*(*fbeta_)[gp](0)
+      lp_res +=(*fbeta_)[gp](0)*(*fbeta_)[gp](0)
                                   +(*fbeta_)[gp](1)*(*fbeta_)[gp](1)
                                   +(-(*fbeta_)[gp](0)-(*fbeta_)[gp](1))*(-(*fbeta_)[gp](0)-(*fbeta_)[gp](1))
                                   +(*fbeta_)[gp](2)*(*fbeta_)[gp](2)*2.
                                   +(*fbeta_)[gp](3)*(*fbeta_)[gp](3)*2.
                                   +(*fbeta_)[gp](4)*(*fbeta_)[gp](4)*2.;
-      params.get<double>("Lp_residual_square")+=residual_norm_sqare;
 
     } // modification for plastic Gauss points
   } // gp loop
@@ -1391,6 +1388,11 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
 
   // converged active set
   bool converged_active_set=true;
+
+  // get references from parameter list
+  double& lp_inc = params.get<double>("Lp_increment_square");
+  double& lp_res = params.get<double>("Lp_residual_square");
+  int& num_active_gp = params.get<int>("number_active_plastic_gp");
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1492,11 +1494,11 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
       tmp824.Multiply((*KbbInvHill_)[gp],(*KbdHill_)[gp]);
       tmp81.Multiply(1.,tmp824,res_d,1.);
       (*mDLp_last_iter_)[gp].Update(-1.,tmp81,1.);
-      double increment_norm_sqare=tmp81(0)*tmp81(0)
-                                      +tmp81(1)*tmp81(1)
-                                      +(-tmp81(0)-tmp81(1))*(-tmp81(0)-tmp81(1));
-      for (int i=2; i<8; i++) increment_norm_sqare+=tmp81(i)*tmp81(i)*2.;
-      params.get<double>("Lp_increment_square")+=increment_norm_sqare;
+      lp_inc +=tmp81(0)*tmp81(0)
+                       +tmp81(1)*tmp81(1)
+                       +(-tmp81(0)-tmp81(1))*(-tmp81(0)-tmp81(1));
+      for (int i=2; i<8; i++)
+        lp_inc +=tmp81(i)*tmp81(i)*2.;
     }
     // end of recover *********************************************
 
@@ -1930,8 +1932,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
           {
             // communicate number of active plastic gauss points back to time integration
             // don't sum up for ghost elements
-            if (MyPID == so3_ele::Owner()) params.get<int>("number_active_plastic_gp")++;
-
+            if (MyPID == so3_ele::Owner())
+              ++num_active_gp;
 
             CplSym.Update(1.,eta_vec,0.);
             CplSym.Update(-Ypl/AnormEtatrial,eta_trial_vec,1.);
@@ -2432,25 +2434,19 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
           // static condensation of inner variables
           // **************************************************************
           //inverse matrix block [k_beta beta]_ij
-          LINALG::Matrix<8,8> InvKbetabeta;
-          Epetra_SerialDenseMatrix Kbetabeta_epetra(8,8);
-          for (int i=0; i<8; i++)
-            for (int j=0; j<8; j++)
-              Kbetabeta_epetra(i,j) = kbetabeta(i,j);
-          // we need the inverse of K_beta beta
-          Epetra_SerialDenseSolver solve_for_inverseKbb;
-          solve_for_inverseKbb.SetMatrix(Kbetabeta_epetra);
-          solve_for_inverseKbb.Invert();
-          for (int i=0; i<8; i++)
-            for (int j=0; j<8; j++)
-              InvKbetabeta(i,j) = Kbetabeta_epetra(i,j);
+          LINALG::FixedSizeSerialDenseSolver<8,8,1> solve_for_kbbinv;
+          solve_for_kbbinv.SetMatrix(kbetabeta);
+          int err2 = solve_for_kbbinv.Factor();
+          int err = solve_for_kbbinv.Invert();
+          if ((err != 0) || (err2!=0)) dserror("Inversion of Kbb failed");
+
           // store for recover step
-          (*KbbInvHill_)[gp] = InvKbetabeta;
+          (*KbbInvHill_)[gp] = kbetabeta;
           (*fbetaHill_)[gp] = force_beta;
           (*KbdHill_)[gp] = kbetad;
 
           LINALG::Matrix<numdofperelement_,8> KdbKbb; // temporary  Kdb.Kbb^-1
-          KdbKbb.Multiply(kdbeta,InvKbetabeta);
+          KdbKbb.Multiply(kdbeta,(*KbbInvHill_)[gp]);
 
           // "plastic displacement stiffness"
           // plstiff = [k_d beta] * [k_beta beta]^-1 * [k_beta d]
@@ -2484,11 +2480,11 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
       }
 
       // square of the residual L2 norm
-      double residual_norm_sqare=(*fbetaHill_)[gp](0)*(*fbetaHill_)[gp](0)
+      lp_res+=(*fbetaHill_)[gp](0)*(*fbetaHill_)[gp](0)
                                     +(*fbetaHill_)[gp](1)*(*fbetaHill_)[gp](1)
                                     +(-(*fbetaHill_)[gp](0)-(*fbetaHill_)[gp](1))*(-(*fbetaHill_)[gp](0)-(*fbetaHill_)[gp](1));
-      for (int i=2; i<8; i++) residual_norm_sqare+=(*fbetaHill_)[gp](i)*(*fbetaHill_)[gp](i)*2.;
-      params.get<double>("Lp_residual_square")+=residual_norm_sqare;
+      for (int i=2; i<8; i++)
+        lp_res+=(*fbetaHill_)[gp](i)*(*fbetaHill_)[gp](i)*2.;
 
     } // modification for plastic Gauss points
   } // gp loop
@@ -2599,6 +2595,11 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
 
   // converged active set
   bool converged_active_set=true;
+
+  // get references from parameter list
+  double& lp_inc = params.get<double>("Lp_increment_square");
+  double& lp_res = params.get<double>("Lp_residual_square");
+  int& num_active_gp = params.get<int>("number_active_plastic_gp");
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -2713,13 +2714,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
       tmp524.Multiply((*KbbInv_)[gp],(*Kbd_)[gp]);
       tmp51.Multiply(1.,tmp524,res_d,1.);
       (*DalphaK_last_iter_)[gp].Update(-1.,tmp51,1.);
-      double increment_norm_sqare=tmp51(0)*tmp51(0)
-                                  +tmp51(1)*tmp51(1)
-                                  +(-tmp51(0)-tmp51(1))*(-tmp51(0)-tmp51(1))
-                                  +tmp51(2)*tmp51(2)*2.
-                                  +tmp51(3)*tmp51(3)*2.
-                                  +tmp51(4)*tmp51(4)*2.;
-      params.get<double>("Lp_increment_square")+=increment_norm_sqare;
+      lp_inc +=tmp51(0)*tmp51(0)
+              +tmp51(1)*tmp51(1)
+              +(-tmp51(0)-tmp51(1))*(-tmp51(0)-tmp51(1))
+              +tmp51(2)*tmp51(2)*2.
+              +tmp51(3)*tmp51(3)*2.
+              +tmp51(4)*tmp51(4)*2.;
     }
     // end of recover **********************************************
 
@@ -3098,9 +3098,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
             // communicate number of active plastic gauss points back to time integration
             // don't sum up for ghost elements
             if (MyPID == so3_ele::Owner())
-            {
-              params.get<int>("number_active_plastic_gp")++;
-            }
+              ++num_active_gp;
 
             // **************************************************************
             // stiffness matrix [k^e_{beta beta}]_ij (i=1..5; j=1..5)
@@ -3186,17 +3184,11 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
           // static condensation of inner variables
           // **************************************************************
           //inverse matrix block [k_beta beta]_ij
-          Epetra_SerialDenseMatrix Kbetabeta_epetra(5,5);
-          for (int i=0; i<5; i++)
-            for (int j=0; j<5; j++)
-              Kbetabeta_epetra(i,j) = (*KbbInv_)[gp](i,j);
-          // we need the inverse of K_beta beta
-          Epetra_SerialDenseSolver solve_for_inverseKbb;
-          solve_for_inverseKbb.SetMatrix(Kbetabeta_epetra);
-          solve_for_inverseKbb.Invert();
-          for (int i=0; i<5; i++)
-            for (int j=0; j<5; j++)
-              (*KbbInv_)[gp](i,j) = Kbetabeta_epetra(i,j);
+          LINALG::FixedSizeSerialDenseSolver<5,5,1> solve_for_kbbinv;
+          solve_for_kbbinv.SetMatrix((*KbbInv_)[gp]);
+          int err2 = solve_for_kbbinv.Factor();
+          int err = solve_for_kbbinv.Invert();
+          if ((err != 0) || (err2!=0)) dserror("Inversion of Kbb failed");
 
           LINALG::Matrix<numdofperelement_,5> KdbKbb; // temporary  Kdb.Kbb^-1
           KdbKbb.Multiply(kdbeta,(*KbbInv_)[gp]);
@@ -3233,13 +3225,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
       }
 
       // square of the residual L2 norm
-      double residual_norm_sqare=(*fbeta_)[gp](0)*(*fbeta_)[gp](0)
-                                  +(*fbeta_)[gp](1)*(*fbeta_)[gp](1)
-                                  +(-(*fbeta_)[gp](0)-(*fbeta_)[gp](1))*(-(*fbeta_)[gp](0)-(*fbeta_)[gp](1))
-                                  +(*fbeta_)[gp](2)*(*fbeta_)[gp](2)*2.
-                                  +(*fbeta_)[gp](3)*(*fbeta_)[gp](3)*2.
-                                  +(*fbeta_)[gp](4)*(*fbeta_)[gp](4)*2.;
-      params.get<double>("Lp_residual_square")+=residual_norm_sqare;
+      lp_res+=(*fbeta_)[gp](0)*(*fbeta_)[gp](0)
+             +(*fbeta_)[gp](1)*(*fbeta_)[gp](1)
+             +(-(*fbeta_)[gp](0)-(*fbeta_)[gp](1))*(-(*fbeta_)[gp](0)-(*fbeta_)[gp](1))
+             +(*fbeta_)[gp](2)*(*fbeta_)[gp](2)*2.
+             +(*fbeta_)[gp](3)*(*fbeta_)[gp](3)*2.
+             +(*fbeta_)[gp](4)*(*fbeta_)[gp](4)*2.;
 
     } // modification for plastic Gauss points
   } // gp loop
@@ -3353,6 +3344,11 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
 
   // converged active set
   bool converged_active_set=true;
+
+  // get references from parameter list
+  double& lp_inc = params.get<double>("Lp_increment_square");
+  double& lp_res = params.get<double>("Lp_residual_square");
+  int& num_active_gp = params.get<int>("number_active_plastic_gp");
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -3468,11 +3464,11 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
       tmp824.Multiply((*KbbInvHill_)[gp],(*KbdHill_)[gp]);
       tmp81.Multiply(1.,tmp824,res_d,1.);
       (*mDLp_last_iter_)[gp].Update(-1.,tmp81,1.);
-      double increment_norm_sqare=tmp81(0)*tmp81(0)
-                                      +tmp81(1)*tmp81(1)
-                                      +(-tmp81(0)-tmp81(1))*(-tmp81(0)-tmp81(1));
-      for (int i=2; i<8; i++) increment_norm_sqare+=tmp81(i)*tmp81(i)*2.;
-      params.get<double>("Lp_increment_square")+=increment_norm_sqare;
+      lp_inc +=tmp81(0)*tmp81(0)
+                       +tmp81(1)*tmp81(1)
+                       +(-tmp81(0)-tmp81(1))*(-tmp81(0)-tmp81(1));
+      for (int i=2; i<8; i++)
+        lp_inc +=tmp81(i)*tmp81(i)*2.;
     }
     // end of recover *********************************************
 
@@ -3932,7 +3928,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
           {
             // communicate number of active plastic gauss points back to time integration
             // don't sum up for ghost elements
-            if (MyPID == so3_ele::Owner()) params.get<int>("number_active_plastic_gp")++;
+            if (MyPID == so3_ele::Owner())
+              ++num_active_gp;
 
             // Symmetric complementarity function
             CplSym.Update(1.,eta_vec,0.);
@@ -4298,25 +4295,19 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
           // static condensation of inner variables
           // **************************************************************
           //inverse matrix block [k_beta beta]_ij
-          LINALG::Matrix<8,8> InvKbetabeta;
-          Epetra_SerialDenseMatrix Kbetabeta_epetra(8,8);
-          for (int i=0; i<8; i++)
-            for (int j=0; j<8; j++)
-              Kbetabeta_epetra(i,j) = kbetabeta(i,j);
-          // we need the inverse of K_beta beta
-          Epetra_SerialDenseSolver solve_for_inverseKbb;
-          solve_for_inverseKbb.SetMatrix(Kbetabeta_epetra);
-          solve_for_inverseKbb.Invert();
-          for (int i=0; i<8; i++)
-            for (int j=0; j<8; j++)
-              InvKbetabeta(i,j) = Kbetabeta_epetra(i,j);
+          LINALG::FixedSizeSerialDenseSolver<8,8,1> solve_for_kbbinv;
+          solve_for_kbbinv.SetMatrix(kbetabeta);
+          int err2 = solve_for_kbbinv.Factor();
+          int err = solve_for_kbbinv.Invert();
+          if ((err != 0) || (err2!=0)) dserror("Inversion of Kbb failed");
+
           // store for recover step
-          (*KbbInvHill_)[gp] = InvKbetabeta;
+          (*KbbInvHill_)[gp] = kbetabeta;
           (*fbetaHill_)[gp] = force_beta;
           (*KbdHill_)[gp] = kbetad;
 
           LINALG::Matrix<numdofperelement_,8> KdbKbb; // temporary  Kdb.Kbb^-1
-          KdbKbb.Multiply(kdbeta,InvKbetabeta);
+          KdbKbb.Multiply(kdbeta,(*KbbInvHill_)[gp]);
 
           // "plastic displacement stiffness"
           // plstiff = [k_d beta] * [k_beta beta]^-1 * [k_beta d]
@@ -4345,11 +4336,11 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
       }
 
       // square of the residual L2 norm
-      double residual_norm_sqare=(*fbetaHill_)[gp](0)*(*fbetaHill_)[gp](0)
+      lp_res+=(*fbetaHill_)[gp](0)*(*fbetaHill_)[gp](0)
                                     +(*fbetaHill_)[gp](1)*(*fbetaHill_)[gp](1)
                                     +(-(*fbetaHill_)[gp](0)-(*fbetaHill_)[gp](1))*(-(*fbetaHill_)[gp](0)-(*fbetaHill_)[gp](1));
-      for (int i=2; i<8; i++) residual_norm_sqare+=(*fbetaHill_)[gp](i)*(*fbetaHill_)[gp](i)*2.;
-      params.get<double>("Lp_residual_square")+=residual_norm_sqare;
+      for (int i=2; i<8; i++)
+        lp_res+=(*fbetaHill_)[gp](i)*(*fbetaHill_)[gp](i)*2.;
 
     } // modification for plastic Gauss points
   } // gp loop
