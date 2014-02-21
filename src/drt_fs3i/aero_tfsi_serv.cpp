@@ -261,6 +261,7 @@ mastermaxeleid_(0)
     // for triangles which will be almost all lying in a quad element on the master side, this should be a good set of params
     input.set<std::string>("INTTYPE","Elements");
     input.set<int>("NUMGP_PER_DIM",3);
+    input.set<bool>("NURBS",false);
 
     // create mortar interface for each coupling interface with INCA
     Teuchos::RCP<MORTAR::MortarInterface> interface = Teuchos::rcp(
