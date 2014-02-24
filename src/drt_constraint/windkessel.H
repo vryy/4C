@@ -4,28 +4,28 @@
 \brief Basic Windkessel class, dealing with Windkessel functions living on boundaries
 
 **************************************************************************************************************************
-Monolithic coupling of a three-element Windkessel governed by
+Monolithic coupling of structure and a three-element Windkessel governed by
+c dp/dt - c r2 dQ/dt + (p-p_0)/r1 - (1 + r2/r1) Q(d) = 0
+[c: compliance, r1: first resistance, r2: second resistance, Q = -dV/dt: flux, p: pressure variable]
+						                ____
+											 ____|R_1 |___
+   			    _____	   	|		 |____|		|
+----Q >----|_R_2_|----|							|--->----| p_0
+    									|______|C|____|
+												     | |
 
-either the standard linear version in p
-(1) c dp/dt - c r2 dq/dt + p/r1 - (1 + r2/r1) q(d) = 0
+There are three different versions:
+a) the standard model,
 
-or a special nonlinear heart version to mimic opened and closed valves
-(2) c(p) dp/dt - c(p) r2(p) dq/dt + p/r1(p) - (1 + r2(p)/r1(p)) q(d) = 0
+b) a special trimodular one where every parameter is pressure-dependent in terms of
+PARAM(p) = (PARAM_b - PARAM_c)*0.5*(1.0 - tanh[(p-p_bc)/k_p] ) + PARAM_c + (PARAM_a - PARAM_b)*(1.0 - tanh[(p-p_ab)/k_p] )
 
-with
-c(p) = (c_iso - c_ejec)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + c_ejec + (c_fill - c_iso)*(1.0 - tanh[(p-p_close)/k_p] )
-r1(p) = (r1_iso - r1_ejec)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r1_ejec + (r1_fill - r1_iso)*(1.0 - tanh[(p-p_close)/k_p] )
-r2(p) = (r2_iso - r2_ejec)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r2_ejec + (r2_fill - r2_iso)*(1.0 - tanh[(p-p_close)/k_p] )
+c) a heart-specific model governing the arterial pressure with a three-element Windkessel with an additional valve law
+(resistive Windkessel) infront of it, opening when arterial pressure is reached in the ventricels and closing when flux is
+beginning to be reversed (cf. Saine-Marie et. al. "Modeling and estimation of the cardiac electromechanical activity",
+Comp. & Struct. 84 (2006) 1743-1759)
 
-[c: compliance, r1: first resistance, r2: second resistance, q = -dV/dt: flux, p: pressure variable]
-
-_iso: values during isovolumic phases
-_ejec: values during ejection phases
-_fill: values during filling phases
-p_open: valve opening pressure
-p_close: valve closing pressure
-
-and the standard structural dynamics governing equation
+The Windkessel is momolithically coupled with the standard structural dynamics governing equation
 
 M a + C v + f_int(d) - f_ext(d,p) = 0,
 
@@ -78,8 +78,9 @@ namespace UTILS
     enum WindkesselType
     {
       none,
-      rcr,
-      rcr_nlnheart,
+      wk_std,
+      wk_trimodular,
+      wk_heartvalvearterial,
     };
 
     /*!
@@ -160,7 +161,8 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector> sysvec6,
       Teuchos::RCP<Epetra_Vector> sysvec7,
       Teuchos::RCP<Epetra_Vector> sysvec8,
-      Teuchos::RCP<Epetra_Vector> sysvec9
+      Teuchos::RCP<Epetra_Vector> sysvec9,
+      Teuchos::RCP<Epetra_Vector> sysvec10
     );
 
     ///Return type of Windkessel function
@@ -194,7 +196,7 @@ namespace UTILS
     );
 
     //! Evaluate Windkessel conditions and assemble the results
-    void EvaluateRCRWindkessel
+    void EvaluateStdWindkessel
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Windkessel stiffness matrix
@@ -204,11 +206,12 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec2,
       Teuchos::RCP<Epetra_Vector>    sysvec3,
       Teuchos::RCP<Epetra_Vector>    sysvec4,
-      Teuchos::RCP<Epetra_Vector>    sysvec5
+      Teuchos::RCP<Epetra_Vector>    sysvec5,
+      Teuchos::RCP<Epetra_Vector>    sysvec6
     );
 
     //! Evaluate Windkessel conditions and assemble the results
-    void EvaluateNonlinHeartRCRWindkessel
+    void EvaluateTrimodularWindkessel
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Windkessel stiffness matrix
@@ -222,11 +225,36 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec6,
       Teuchos::RCP<Epetra_Vector>    sysvec7,
       Teuchos::RCP<Epetra_Vector>    sysvec8,
-      Teuchos::RCP<Epetra_Vector>    sysvec9
+      Teuchos::RCP<Epetra_Vector>    sysvec9,
+      Teuchos::RCP<Epetra_Vector>    sysvec10
     );
 
-    //! Compute and assemble initial Windkessel values (depending on user specific activation times)
-    void InitializeWindkessel
+    //! Evaluate Windkessel conditions and assemble the results
+    void EvaluateHeartValveArterialWindkessel
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Windkessel stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Windkessel offdiagonal matrix dV/dd
+      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Windkessel offdiagonal matrix dfext/dp
+      Teuchos::RCP<Epetra_Vector>    sysvec1,  ///< distributed vectors that may be filled by aasembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec2,
+      Teuchos::RCP<Epetra_Vector>    sysvec3,
+      Teuchos::RCP<Epetra_Vector>    sysvec4,
+      Teuchos::RCP<Epetra_Vector>    sysvec5,
+      Teuchos::RCP<Epetra_Vector>    sysvec6,
+      Teuchos::RCP<Epetra_Vector>    sysvec7
+    );
+
+    //! Compute and assemble initial Windkessel values
+    void InitializeStdAndTrimodularWindkessel
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<Epetra_Vector>    sysvec1, ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec2 ///< distributed vector that may be filled by assembly of element contributions
+    );
+
+    //! Compute and assemble initial Windkessel values
+    void InitializeHeartValveArterialWindkessel
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<Epetra_Vector>    sysvec1, ///< distributed vector that may be filled by assembly of element contributions

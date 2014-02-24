@@ -163,7 +163,7 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 15.0
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -3.81207537471844993e-01 TOLERANCE 1e-5
 STRUCTURE DIS structure NODE 13 QUANTITY dispx VALUE -7.49662011642054146e-03 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE -1.45839406735030597e-01 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE -1.65012960785284046e-01 TOLERANCE 1e-5
 -------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -189,9 +189,9 @@ E 6 - 2
 E 9 - 3
 ----------------------------------DESIGN SURF WINDKESSEL CONDITIONS
 DSURF 3
-E 3 - id 1 resistance 5.0 compliance 1.5 resistance2 0.0 p_init 10.0
-E 6 - id 2 resistance 10.0 compliance 0.0 resistance2 0.0 p_init 0.0
-E 9 - id 3 resistance 0.01 compliance 1.0 resistance2 0.5 p_init 0.0
+E 3 - id 1 resistance 5.0 compliance 1.5 resistance2 0.0 p_0 0.0 p_init 10.0
+E 6 - id 2 resistance 10.0 compliance 0.0 resistance2 0.0 p_0 0.0 p_init 0.0
+E 9 - id 3 resistance 0.01 compliance 1.0 resistance2 0.5 p_0 1.0 p_init 0.0
 ---------------DESIGN SURF WINDKESSEL STRUCTURE COUPLING CONDITIONS
 DSURF 3
 E 3 - 1

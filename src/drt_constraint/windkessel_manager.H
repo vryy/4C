@@ -4,28 +4,28 @@
 \brief Class controlling Windkessel boundary conditions and containing the necessary data
 
 **************************************************************************************************************************
-Monolithic coupling of a three-element Windkessel governed by
+Monolithic coupling of structure and a three-element Windkessel governed by
+c dp/dt - c r2 dQ/dt + (p-p_0)/r1 - (1 + r2/r1) Q(d) = 0
+[c: compliance, r1: first resistance, r2: second resistance, Q = -dV/dt: flux, p: pressure variable]
+						                ____
+											 ____|R_1 |___
+   			    _____	   	|		 |____|		|
+----Q >----|_R_2_|----|							|--->----| p_0
+    									|______|C|____|
+												     | |
 
-either the standard linear version in p
-(1) c dp/dt - c r2 dq/dt + p/r1 - (1 + r2/r1) q(d) = 0
+There are three different versions:
+a) the standard model,
 
-or a special nonlinear heart version to mimic opened and closed valves
-(2) c(p) dp/dt - c(p) r2(p) dq/dt + p/r1(p) - (1 + r2(p)/r1(p)) q(d) = 0
+b) a special trimodular one where every parameter is pressure-dependent in terms of
+PARAM(p) = (PARAM_b - PARAM_c)*0.5*(1.0 - tanh[(p-p_bc)/k_p] ) + PARAM_c + (PARAM_a - PARAM_b)*(1.0 - tanh[(p-p_ab)/k_p] )
 
-with
-c(p) = (c_iso - c_ejec)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + c_ejec + (c_fill - c_iso)*(1.0 - tanh[(p-p_close)/k_p] )
-r1(p) = (r1_iso - r1_ejec)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r1_ejec + (r1_fill - r1_iso)*(1.0 - tanh[(p-p_close)/k_p] )
-r2(p) = (r2_iso - r2_ejec)*0.5*(1.0 - tanh[(p-p_open)/k_p] ) + r2_ejec + (r2_fill - r2_iso)*(1.0 - tanh[(p-p_close)/k_p] )
+c) a heart-specific model governing the arterial pressure with a three-element Windkessel with an additional valve law
+(resistive Windkessel) infront of it, opening when arterial pressure is reached in the ventricels and closing when flux is
+beginning to be reversed (cf. Saine-Marie et. al. "Modeling and estimation of the cardiac electromechanical activity",
+Comp. & Struct. 84 (2006) 1743-1759)
 
-[c: compliance, r1: first resistance, r2: second resistance, q = -dV/dt: flux, p: pressure variable]
-
-_iso: values during isovolumic phases
-_ejec: values during ejection phases
-_fill: values during filling phases
-p_open: valve opening pressure
-p_close: valve closing pressure
-
-and the standard structural dynamics governing equation
+The Windkessel is momolithically coupled with the standard structural dynamics governing equation
 
 M a + C v + f_int(d) - f_ext(d,p) = 0,
 
@@ -337,6 +337,7 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> windk_rhs_dpdt_; ///< Windkessel rhs associated with dp/dt
     Teuchos::RCP<Epetra_Vector> windk_rhs_q_; ///< Windkessel rhs associated with q
     Teuchos::RCP<Epetra_Vector> windk_rhs_dqdt_; ///< Windkessel rhs associated with dq/dt
+    Teuchos::RCP<Epetra_Vector> windk_rhs_1_; ///< Windkessel rhs associated with 1
     Teuchos::RCP<Epetra_Vector> presnprint_;
     Teuchos::RCP<Epetra_Vector> fluxnprint_;
     int WindkesselID_;  ///< smallest Windkessel bc id
@@ -347,8 +348,9 @@ namespace UTILS
     Teuchos::RCP<LINALG::SparseOperator> coupoffdiag_fext_p_;  ///< additional rectangular matrix
     Teuchos::RCP<LINALG::SparseMatrix> windkesselstiffness_;  ///< additional rectangular matrix
     bool havewindkessel_;  ///< are there Windkessel bcs at all?
-    Teuchos::RCP<Windkessel> rcr_;
-    Teuchos::RCP<Windkessel> rcr_nlnheart_;
+    Teuchos::RCP<Windkessel> wk_std_;
+    Teuchos::RCP<Windkessel> wk_trimodular_;
+    Teuchos::RCP<Windkessel> wk_heartvalvearterial_;
     int myrank_;
     Teuchos::RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counts how often #Solve is called
