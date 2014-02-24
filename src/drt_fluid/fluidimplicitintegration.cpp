@@ -3962,7 +3962,7 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
     const int numdof = discret_->NumDof(0,lnode);
     const int globaldofid = discret_->Dof(0,lnode,numdof-1);
     const int localdofid = scaam_->Map().LID(globaldofid);
-    if (localscatradofid < 0)
+    if (localdofid < 0)
       dserror("localdofid not found in map for given globaldofid");
 
     // now copy the values
