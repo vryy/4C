@@ -206,6 +206,7 @@ template <DRT::Element::DiscretizationType distype>
   }
 }
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -444,6 +445,27 @@ template <DRT::Element::DiscretizationType bdistype,
   Teuchos::RCP<DRT::Condition> fdp_cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
   int fdp_cond_id = params.get<int>("ConditionID");
 
+  // find out whether there is a time curve and get factor:
+  // usable as a time-curve factor for fixed pressure as well as
+  // for switching off any flow-dependent pressure condition in case
+  // time-curve factor being zero
+  // (time curve at n+1 applied for all time-integration schemes, but
+  //  variable time_ in fluid3_parameter is n+alpha_F in case of
+  //  generalized-alpha time-integration scheme -> reset to time n+1)
+  bool usetime = true;
+  const double time = fldparatimint_->Time()+(1-fldparatimint_->AlphaF())*fldparatimint_->Dt();
+  if (time < 0.0) usetime = false;
+  const int curve  = (*fdp_cond).GetInt("curve");
+  int curvenum = -1;
+  if (curve) curvenum = curve;
+  double curvefac = 1.0;
+  if (curvenum >= 0 and usetime)
+    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  
+  // (temporarily) switch off any flow-dependent pressure condition in case of zero 
+  // time-curve factor
+  if (curvefac > 0.0)
+  {
   // decide on whether it is a flow-rate- or flow-volume-based condition
   const std::string* condtype = (*fdp_cond).Get<std::string>("type of flow dependence");
 
@@ -477,18 +499,20 @@ template <DRT::Element::DiscretizationType bdistype,
     // subtract reference pressure for usual case of zero ambient pressure
     pressure -= ref_pre;          
   }
-  // fixed-pressure condition
+  // fixed-pressure condition (with potential time curve)
   else if (*condtype == "fixed_pressure")
   {
-    pressure = (*fdp_cond).GetDouble("ConstCoeff");
+    pressure = (*fdp_cond).GetDouble("ConstCoeff")*curvefac;
   }
   else dserror("Unknown type of flow-dependent pressure condition: %s",(*condtype).c_str());
   
   //---------------------------------------------------------------------
-  // get time-integration parameters
+  // get time-integration parameters and flag for linearization scheme
   //---------------------------------------------------------------------
   const double timefac    = fldparatimint_->TimeFac();
   const double timefacrhs = fldparatimint_->TimeFacRhs();
+
+  bool is_newton = fldpara_->IsNewton();
 
   //---------------------------------------------------------------------
   // get parent element data
@@ -621,6 +645,7 @@ template <DRT::Element::DiscretizationType bdistype,
   LINALG::Matrix<nsd,nsd>  pxji(true);
   LINALG::Matrix<nsd,1>    unitnormal(true);
   LINALG::Matrix<nsd,piel> pderxy(true);
+  LINALG::Matrix<nsd,1>    pvelaf(true);
   LINALG::Matrix<nsd,nsd>  pvderxyaf(true);
 
   LINALG::Matrix<bnsd,1>    xsi(true);
@@ -666,6 +691,12 @@ template <DRT::Element::DiscretizationType bdistype,
 
     // compute integration factor for boundary element
     fac_ = bintpoints.IP().qwgt[iquad]*drs_;
+
+    // compute velocity vector and normal velocity at integration point
+    // (here via parent element)
+    double normvel = 0.0;
+    pvelaf.Multiply(pevelaf,pfunct);
+    normvel = pvelaf.Dot(unitnormal);
 
     // compute global first derivates for parent element
     pderxy.Multiply(pxji,pderiv);
@@ -715,7 +746,7 @@ template <DRT::Element::DiscretizationType bdistype,
       rateofstrain = sqrt(rateofstrain/2.0);
     }
 
-    // get viscosity at integration point
+    // get (constant, for the time being) density and viscosity at integration point
     GetDensityAndViscosity(material,rateofstrain);
 
     //---------------------------------------------------------------------
@@ -724,189 +755,362 @@ template <DRT::Element::DiscretizationType bdistype,
     //---------------------------------------------------------------------
     if (nsd == 3)
     {
-    // contributions to element matrix on left-hand side
-    /*
-    //             /                           \
-    //            |                             |
-    //          + |  v , n * pressder * n * Du  |
-    //            |                             |
-    //             \                           / boundaryele
-    //
-    */
-    const double timefacfacnpredern = timefac*fac_*1.0*pressder;
+      // Four potential contributions to element matrix on left-hand side:
+      // 1) pressure term
+      //   (only active if there is a dependence on flow rate and thus velocity,
+      //    further non-linear dependence on velocity, e.g., in case of quadratic
+      //    dependence of pressure on flow rate, not yet considered by including 
+      //    additional term for Newton linearization)
+      /*
+      //             /                           \
+      //            |                             |
+      //          + |  v , n * pressder * n * Du  |
+      //            |                             |
+      //             \                           / boundaryele
+      //
+      */
+      const double timefacfacnpredern = timefac*fac_*1.0*pressder;
 
-    for (int ui=0; ui<piel; ++ui)
-    {
+      for (int ui=0; ui<piel; ++ui)
+      {
+        for (int vi=0; vi<piel; ++vi)
+        {
+          const double temp = timefacfacnpredern*pfunct(ui)*pfunct(vi);
+          elemat(vi*4  ,ui*4  ) += temp;
+          elemat(vi*4+1,ui*4+1) += temp;
+          elemat(vi*4+2,ui*4+2) += temp;
+        }
+      }
+
+      // 2) viscous term
+      /*
+      //    /                   \
+      //   |           s         |
+      // - |  v , nabla  Du * n  |
+      //   |                     |
+      //    \                   / boundaryele
+      //
+      */
+      const double timefacmu=timefac*fac_*2.0*visc_;
+
+      for (int ui=0; ui<piel; ++ui)
+      {
+        double nabla_u_o_n_lin[3][3];
+        nabla_u_o_n_lin[0][0]=timefacmu*(    pderxy(0,ui)*unitnormal(0)+
+                                         0.5*pderxy(1,ui)*unitnormal(1)+
+                                         0.5*pderxy(2,ui)*unitnormal(2));
+        nabla_u_o_n_lin[0][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(1));
+        nabla_u_o_n_lin[0][2]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(2));
+  
+        nabla_u_o_n_lin[1][0]=timefacmu*(0.5*pderxy(1,ui)*unitnormal(0));
+        nabla_u_o_n_lin[1][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(0)+
+                                             pderxy(1,ui)*unitnormal(1)+
+                                         0.5*pderxy(2,ui)*unitnormal(2));
+        nabla_u_o_n_lin[1][2]=timefacmu*(0.5*pderxy(1,ui)*unitnormal(2));
+
+        nabla_u_o_n_lin[2][0]=timefacmu*(0.5*pderxy(2,ui)*unitnormal(0));
+        nabla_u_o_n_lin[2][1]=timefacmu*(0.5*pderxy(2,ui)*unitnormal(1));
+        nabla_u_o_n_lin[2][2]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(0)+
+                                         0.5*pderxy(1,ui)*unitnormal(1)+
+                                             pderxy(2,ui)*unitnormal(2));
+
+        for (int vi=0; vi<piel; ++vi)
+        {
+          elemat(vi*4    ,ui*4    ) -= pfunct(vi)*nabla_u_o_n_lin[0][0];
+          elemat(vi*4    ,ui*4 + 1) -= pfunct(vi)*nabla_u_o_n_lin[0][1];
+          elemat(vi*4    ,ui*4 + 2) -= pfunct(vi)*nabla_u_o_n_lin[0][2];
+
+          elemat(vi*4 + 1,ui*4    ) -= pfunct(vi)*nabla_u_o_n_lin[1][0];
+          elemat(vi*4 + 1,ui*4 + 1) -= pfunct(vi)*nabla_u_o_n_lin[1][1];
+          elemat(vi*4 + 1,ui*4 + 2) -= pfunct(vi)*nabla_u_o_n_lin[1][2];
+
+          elemat(vi*4 + 2,ui*4    ) -= pfunct(vi)*nabla_u_o_n_lin[2][0];
+          elemat(vi*4 + 2,ui*4 + 1) -= pfunct(vi)*nabla_u_o_n_lin[2][1];
+          elemat(vi*4 + 2,ui*4 + 2) -= pfunct(vi)*nabla_u_o_n_lin[2][2];
+        }
+      }
+
+      // check normal velocity -> further computation only required for
+      // negative normal velocity, that is, inflow at this boundary
+      if (normvel < -0.0001)
+      {
+        // 3) convective term
+        /*
+        //             /                        \
+        //            |                          |
+        //          - |  v , rho * Du ( u o n )  |
+        //            |                          |
+        //             \                        / boundaryele
+        //
+        */
+        const double timefacfacdensnormvel = timefac*fac_*densaf_*normvel;
+
+        for (int ui=0; ui<piel; ++ui)
+        {
+          for (int vi=0; vi<piel; ++vi)
+          {
+            const double temp = timefacfacdensnormvel*pfunct(ui)*pfunct(vi);
+            elemat(vi*4  ,ui*4  ) -= temp;
+            elemat(vi*4+1,ui*4+1) -= temp;
+            elemat(vi*4+2,ui*4+2) -= temp;
+          }
+        }
+
+        // 4) additional convective term for Newton linearization
+        if (is_newton)
+        {
+          /*
+          //             /                        \
+          //            |                          |
+          //          - |  v , rho * u ( Du o n )  |
+          //            |                          |
+          //             \                        / boundaryele
+          //
+          */
+          const double timefacfacdens = timefac*fac_*densaf_;
+  
+          // dyadic product of unit normal vector and velocity vector
+          LINALG::Matrix<nsd,nsd>  n_x_u(true);
+          n_x_u.MultiplyNT(pvelaf,unitnormal);
+
+          for (int ui=0; ui<piel; ++ui)
+          {
+            for (int vi=0; vi<piel; ++vi)
+            {
+              const double temp = timefacfacdens*pfunct(ui)*pfunct(vi);
+
+              elemat(vi*4    ,ui*4    ) -= temp*n_x_u(0,0);
+              elemat(vi*4    ,ui*4 + 1) -= temp*n_x_u(0,1);
+              elemat(vi*4    ,ui*4 + 2) -= temp*n_x_u(0,2);
+
+              elemat(vi*4 + 1,ui*4    ) -= temp*n_x_u(1,0);
+              elemat(vi*4 + 1,ui*4 + 1) -= temp*n_x_u(1,1);
+              elemat(vi*4 + 1,ui*4 + 2) -= temp*n_x_u(1,2);
+
+              elemat(vi*4 + 2,ui*4    ) -= temp*n_x_u(2,0);
+              elemat(vi*4 + 2,ui*4 + 1) -= temp*n_x_u(2,1);
+              elemat(vi*4 + 2,ui*4 + 2) -= temp*n_x_u(2,2);
+            }
+          }
+        }
+
+        // convective contribution to element vector on right-hand side:
+        /*
+        //    /                       \
+        //   |                         |
+        // - |  v , rho * u ( u o n )  |
+        //   |                         |
+        //    \                       / boundaryele
+        //
+        */
+        const double timefacconvrhs=timefacrhs*fac_*densaf_*normvel;
+ 
+        for (int vi=0; vi<piel; ++vi)
+        {
+          elevec(vi*4    ) -= pfunct(vi)*timefacconvrhs*pvelaf(0);
+          elevec(vi*4 + 1) -= pfunct(vi)*timefacconvrhs*pvelaf(1);
+          elevec(vi*4 + 2) -= pfunct(vi)*timefacconvrhs*pvelaf(2);
+        }
+      }
+
+      // pressure and viscous contribution to element vector on right-hand side:
+      /*
+      //    /                             \
+      //   |                   s  n+af     |
+      // + |  v , - p n + nabla  u    * n  |
+      //   |                               |
+      //    \                             / boundaryele
+      //
+      */
+      const double timefacmurhs=timefacrhs*fac_*2.0*visc_;
+      const double timefacprhs =timefacrhs*fac_*pressure;
+
+      double nabla_u_o_n[3];
+      nabla_u_o_n[0]=timefacmurhs*(                    pvderxyaf(0,0) *unitnormal(0)
+                                  +0.5*(pvderxyaf(0,1)+pvderxyaf(1,0))*unitnormal(1)
+                                  +0.5*(pvderxyaf(0,2)+pvderxyaf(2,0))*unitnormal(2));
+      nabla_u_o_n[1]=timefacmurhs*(0.5*(pvderxyaf(1,0)+pvderxyaf(0,1))*unitnormal(0)
+                                                      +pvderxyaf(1,1) *unitnormal(1)
+                                  +0.5*(pvderxyaf(1,2)+pvderxyaf(2,1))*unitnormal(2));
+      nabla_u_o_n[2]=timefacmurhs*(0.5*(pvderxyaf(2,0)+pvderxyaf(0,2))*unitnormal(0)
+                                  +0.5*(pvderxyaf(2,1)+pvderxyaf(1,2))*unitnormal(1)
+                                                      +pvderxyaf(2,2) *unitnormal(2));
+
       for (int vi=0; vi<piel; ++vi)
       {
-        const double temp = timefacfacnpredern*pfunct(ui)*pfunct(vi);
-        elemat(vi*4  ,ui*4  ) += temp;
-        elemat(vi*4+1,ui*4+1) += temp;
-        elemat(vi*4+2,ui*4+2) += temp;
+        elevec(vi*4    ) += pfunct(vi)*(-timefacprhs*unitnormal(0)+nabla_u_o_n[0]);
+        elevec(vi*4 + 1) += pfunct(vi)*(-timefacprhs*unitnormal(1)+nabla_u_o_n[1]);
+        elevec(vi*4 + 2) += pfunct(vi)*(-timefacprhs*unitnormal(2)+nabla_u_o_n[2]);
       }
-    }
-
-    /*
-    //    /                   \
-    //   |           s         |
-    // - |  v , nabla  Du * n  |
-    //   |                     |
-    //    \                   / boundaryele
-    //
-    */
-    const double timefacmu=timefac*fac_*2.0*visc_;
-
-    for (int ui=0; ui<piel; ++ui)
-    {
-      double nabla_u_o_n_lin[3][3];
-      nabla_u_o_n_lin[0][0]=timefacmu*(    pderxy(0,ui)*unitnormal(0)+
-                                       0.5*pderxy(1,ui)*unitnormal(1)+
-                                       0.5*pderxy(2,ui)*unitnormal(2));
-      nabla_u_o_n_lin[0][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(1));
-      nabla_u_o_n_lin[0][2]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(2));
-
-      nabla_u_o_n_lin[1][0]=timefacmu*(0.5*pderxy(1,ui)*unitnormal(0));
-      nabla_u_o_n_lin[1][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(0)+
-                                           pderxy(1,ui)*unitnormal(1)+
-                                       0.5*pderxy(2,ui)*unitnormal(2));
-      nabla_u_o_n_lin[1][2]=timefacmu*(0.5*pderxy(1,ui)*unitnormal(2));
-
-      nabla_u_o_n_lin[2][0]=timefacmu*(0.5*pderxy(2,ui)*unitnormal(0));
-      nabla_u_o_n_lin[2][1]=timefacmu*(0.5*pderxy(2,ui)*unitnormal(1));
-      nabla_u_o_n_lin[2][2]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(0)+
-                                       0.5*pderxy(1,ui)*unitnormal(1)+
-                                           pderxy(2,ui)*unitnormal(2));
-
-      for (int vi=0; vi<piel; ++vi)
-      {
-        elemat(vi*4    ,ui*4    ) -= pfunct(vi)*nabla_u_o_n_lin[0][0];
-        elemat(vi*4    ,ui*4 + 1) -= pfunct(vi)*nabla_u_o_n_lin[0][1];
-        elemat(vi*4    ,ui*4 + 2) -= pfunct(vi)*nabla_u_o_n_lin[0][2];
-
-        elemat(vi*4 + 1,ui*4    ) -= pfunct(vi)*nabla_u_o_n_lin[1][0];
-        elemat(vi*4 + 1,ui*4 + 1) -= pfunct(vi)*nabla_u_o_n_lin[1][1];
-        elemat(vi*4 + 1,ui*4 + 2) -= pfunct(vi)*nabla_u_o_n_lin[1][2];
-
-        elemat(vi*4 + 2,ui*4    ) -= pfunct(vi)*nabla_u_o_n_lin[2][0];
-        elemat(vi*4 + 2,ui*4 + 1) -= pfunct(vi)*nabla_u_o_n_lin[2][1];
-        elemat(vi*4 + 2,ui*4 + 2) -= pfunct(vi)*nabla_u_o_n_lin[2][2];
-      }
-    }
-
-    // contribution to element vector on right-hand side
-    /*
-    //    /                             \
-    //   |                   s  n+af     |
-    // + |  v , - p n + nabla  u    * n  |
-    //   |                               |
-    //    \                             / boundaryele
-    //
-    */
-    const double timefacmurhs=timefacrhs*fac_*2.0*visc_;
-    const double timefacprhs =timefacrhs*fac_*pressure;
-
-    double nabla_u_o_n[3];
-    nabla_u_o_n[0]=timefacmurhs*(                    pvderxyaf(0,0) *unitnormal(0)
-                                +0.5*(pvderxyaf(0,1)+pvderxyaf(1,0))*unitnormal(1)
-                                +0.5*(pvderxyaf(0,2)+pvderxyaf(2,0))*unitnormal(2));
-    nabla_u_o_n[1]=timefacmurhs*(0.5*(pvderxyaf(1,0)+pvderxyaf(0,1))*unitnormal(0)
-                                                    +pvderxyaf(1,1) *unitnormal(1)
-                                +0.5*(pvderxyaf(1,2)+pvderxyaf(2,1))*unitnormal(2));
-    nabla_u_o_n[2]=timefacmurhs*(0.5*(pvderxyaf(2,0)+pvderxyaf(0,2))*unitnormal(0)
-                                +0.5*(pvderxyaf(2,1)+pvderxyaf(1,2))*unitnormal(1)
-                                                    +pvderxyaf(2,2) *unitnormal(2));
-
-    for (int vi=0; vi<piel; ++vi)
-    {
-      elevec(vi*4    ) += pfunct(vi)*(-timefacprhs*unitnormal(0)+nabla_u_o_n[0]);
-      elevec(vi*4 + 1) += pfunct(vi)*(-timefacprhs*unitnormal(1)+nabla_u_o_n[1]);
-      elevec(vi*4 + 2) += pfunct(vi)*(-timefacprhs*unitnormal(2)+nabla_u_o_n[2]);
-    }
     }
     else if (nsd == 2)
     {
-    // contributions to element matrix on left-hand side
-    /*
-    //             /                           \
-    //            |                             |
-    //          + |  v , n * pressder * n * Du  |
-    //            |                             |
-    //             \                           / boundaryele
-    //
-    */
-    const double timefacfacnpredern = timefac*fac_*1.0*pressder;
+      // Four potential contributions to element matrix on left-hand side:
+      // 1) pressure term
+      //   (only active if there is a dependence on flow rate and thus velocity,
+      //    further non-linear dependence on velocity, e.g., in case of quadratic
+      //    dependence of pressure on flow rate, not yet considered by including 
+      //    additional term for Newton linearization)
+      /*
+      //             /                           \
+      //            |                             |
+      //          + |  v , n * pressder * n * Du  |
+      //            |                             |
+      //             \                           / boundaryele
+      //
+      */
+      const double timefacfacnpredern = timefac*fac_*1.0*pressder;
 
-    for (int ui=0; ui<piel; ++ui)
-    {
-      for (int vi=0; vi<piel; ++vi)
+      for (int ui=0; ui<piel; ++ui)
       {
-        const double temp = timefacfacnpredern*pfunct(ui)*pfunct(vi);
-        elemat(vi*3  ,ui*3  ) += temp;
-        elemat(vi*3+1,ui*3+1) += temp;
+        for (int vi=0; vi<piel; ++vi)
+        {
+          const double temp = timefacfacnpredern*pfunct(ui)*pfunct(vi);
+          elemat(vi*3  ,ui*3  ) += temp;
+          elemat(vi*3+1,ui*3+1) += temp;
+        }
       }
-    }
 
-    /*
-    //    /                   \
-    //   |           s         |
-    // - |  v , nabla  Du * n  |
-    //   |                     |
-    //    \                   / boundaryele
-    //
-    */
-    const double timefacmu=timefac*fac_*2.0*visc_;
+      // 2) viscous term
+      /*
+      //    /                   \
+      //   |           s         |
+      // - |  v , nabla  Du * n  |
+      //   |                     |
+      //    \                   / boundaryele
+      //
+      */
+      const double timefacmu=timefac*fac_*2.0*visc_;
 
-    for (int ui=0; ui<piel; ++ui)
-    {
-      double nabla_u_o_n_lin[2][2];
-      nabla_u_o_n_lin[0][0]=timefacmu*(    pderxy(0,ui)*unitnormal(0)+
-                                       0.5*pderxy(1,ui)*unitnormal(1));
-      nabla_u_o_n_lin[0][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(1));
-
-      nabla_u_o_n_lin[1][0]=timefacmu*(0.5*pderxy(1,ui)*unitnormal(0));
-      nabla_u_o_n_lin[1][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(0)+
-                                           pderxy(1,ui)*unitnormal(1));
-
-      for (int vi=0; vi<piel; ++vi)
+      for (int ui=0; ui<piel; ++ui)
       {
-        elemat(vi*3    ,ui*3    ) -= pfunct(vi)*nabla_u_o_n_lin[0][0];
-        elemat(vi*3    ,ui*3 + 1) -= pfunct(vi)*nabla_u_o_n_lin[0][1];
+        double nabla_u_o_n_lin[2][2];
+        nabla_u_o_n_lin[0][0]=timefacmu*(    pderxy(0,ui)*unitnormal(0)+
+                                         0.5*pderxy(1,ui)*unitnormal(1));
+        nabla_u_o_n_lin[0][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(1));
 
-        elemat(vi*3 + 1,ui*3    ) -= pfunct(vi)*nabla_u_o_n_lin[1][0];
-        elemat(vi*3 + 1,ui*3 + 1) -= pfunct(vi)*nabla_u_o_n_lin[1][1];
+        nabla_u_o_n_lin[1][0]=timefacmu*(0.5*pderxy(1,ui)*unitnormal(0));
+        nabla_u_o_n_lin[1][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(0)+
+                                             pderxy(1,ui)*unitnormal(1));
+
+        for (int vi=0; vi<piel; ++vi)
+        {
+          elemat(vi*3    ,ui*3    ) -= pfunct(vi)*nabla_u_o_n_lin[0][0];
+          elemat(vi*3    ,ui*3 + 1) -= pfunct(vi)*nabla_u_o_n_lin[0][1];
+
+          elemat(vi*3 + 1,ui*3    ) -= pfunct(vi)*nabla_u_o_n_lin[1][0];
+          elemat(vi*3 + 1,ui*3 + 1) -= pfunct(vi)*nabla_u_o_n_lin[1][1];
+        }
       }
-    }
 
-    // contribution to element vector on right-hand side
-    /*
-    //    /                             \
-    //   |                   s  n+af     |
-    // + |  v , - p n + nabla  u    * n  |
-    //   |                               |
-    //    \                             / boundaryele
-    //
-    */
-    const double timefacmurhs=timefacrhs*fac_*2.0*visc_;
-    const double timefacprhs =timefacrhs*fac_*pressure;
+      // check normal velocity -> further computation only required for
+      // negative normal velocity, that is, inflow at this boundary
+      if (normvel < -0.0001)
+      {
+        // 3) convective term
+        /*
+        //             /                        \
+        //            |                          |
+        //          - |  v , rho * Du ( u o n )  |
+        //            |                          |
+        //             \                        / boundaryele
+        //
+        */
+        const double timefacfacdensnormvel = timefac*fac_*densaf_*normvel;
 
-    double nabla_u_o_n[2];
-    nabla_u_o_n[0]=timefacmurhs*(                    pvderxyaf(0,0) *unitnormal(0)
-                                +0.5*(pvderxyaf(0,1)+pvderxyaf(1,0))*unitnormal(1));
-    nabla_u_o_n[1]=timefacmurhs*(0.5*(pvderxyaf(1,0)+pvderxyaf(0,1))*unitnormal(0)
+        for (int ui=0; ui<piel; ++ui)
+        {
+          for (int vi=0; vi<piel; ++vi)
+          {
+            const double temp = timefacfacdensnormvel*pfunct(ui)*pfunct(vi);
+            elemat(vi*3  ,ui*3  ) -= temp;
+            elemat(vi*3+1,ui*3+1) -= temp;
+          }
+        }
+
+        // 4) additional convective term for Newton linearization
+        if (is_newton)
+        {
+          /*
+          //             /                        \
+          //            |                          |
+          //          - |  v , rho * u ( Du o n )  |
+          //            |                          |
+          //             \                        / boundaryele
+          //
+          */
+          const double timefacfacdens = timefac*fac_*densaf_;
+  
+          // dyadic product of unit normal vector and velocity vector
+          LINALG::Matrix<nsd,nsd>  n_x_u(true);
+          n_x_u.MultiplyNT(pvelaf,unitnormal);
+
+          for (int ui=0; ui<piel; ++ui)
+          {
+            for (int vi=0; vi<piel; ++vi)
+            {
+              const double temp = timefacfacdens*pfunct(ui)*pfunct(vi);
+
+              elemat(vi*3    ,ui*3    ) -= temp*n_x_u(0,0);
+              elemat(vi*3    ,ui*3 + 1) -= temp*n_x_u(0,1);
+
+              elemat(vi*3 + 1,ui*3    ) -= temp*n_x_u(1,0);
+              elemat(vi*3 + 1,ui*3 + 1) -= temp*n_x_u(1,1);
+            }
+          }
+        }
+
+        // convective contribution to element vector on right-hand side:
+        /*
+        //    /                       \
+        //   |                         |
+        // - |  v , rho * u ( u o n )  |
+        //   |                         |
+        //    \                       / boundaryele
+        //
+        */
+        const double timefacconvrhs=timefacrhs*fac_*densaf_*normvel;
+
+        for (int vi=0; vi<piel; ++vi)
+        {
+          elevec(vi*3    ) -= pfunct(vi)*timefacconvrhs*pvelaf(0);
+          elevec(vi*3 + 1) -= pfunct(vi)*timefacconvrhs*pvelaf(1);
+        }
+      }
+
+      // pressure and viscous contribution to element vector on right-hand side:
+      /*
+      //    /                             \
+      //   |                   s  n+af     |
+      // + |  v , - p n + nabla  u    * n  |
+      //   |                               |
+      //    \                             / boundaryele
+      //
+      */
+      const double timefacmurhs=timefacrhs*fac_*2.0*visc_;
+      const double timefacprhs =timefacrhs*fac_*pressure;
+
+      double nabla_u_o_n[2];
+      nabla_u_o_n[0]=timefacmurhs*(                    pvderxyaf(0,0) *unitnormal(0)
+                                  +0.5*(pvderxyaf(0,1)+pvderxyaf(1,0))*unitnormal(1));
+      nabla_u_o_n[1]=timefacmurhs*(0.5*(pvderxyaf(1,0)+pvderxyaf(0,1))*unitnormal(0)
                                                     +pvderxyaf(1,1) *unitnormal(1));
 
-    for (int vi=0; vi<piel; ++vi)
-    {
-      elevec(vi*3    ) += pfunct(vi)*(-timefacprhs*unitnormal(0)+nabla_u_o_n[0]);
-      elevec(vi*3 + 1) += pfunct(vi)*(-timefacprhs*unitnormal(1)+nabla_u_o_n[1]);
-    }
+      for (int vi=0; vi<piel; ++vi)
+      {
+        elevec(vi*3    ) += pfunct(vi)*(-timefacprhs*unitnormal(0)+nabla_u_o_n[0]);
+        elevec(vi*3 + 1) += pfunct(vi)*(-timefacprhs*unitnormal(1)+nabla_u_o_n[1]);
+      }
     }
     else dserror("incorrect number of spatial dimensions for parent element!");
-  } // end of integration loop
+  } // end of integration loop  
+  } // end of (temporarily) switching off of flow-dependent pressure boundary 
+    // conditions for zero time-curve factor
 
   return;
 } //DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC
 
+  
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -1296,10 +1500,10 @@ template <DRT::Element::DiscretizationType bdistype,
     dserror("unknown linearisation for weak DBC: %s",(*linearisation_approach).c_str());
 
   // find out whether there is a time curve and get factor
+  // (time curve at n+1 applied for all time-integration schemes, but
+  //  variable time_ in fluid3_parameter is n+alpha_F in case of
+  //  generalized-alpha time-integration scheme -> reset to time n+1)
   bool usetime = true;
-  // apply time curve at (n+1) for all time integration schemes (dirichlet condition)
-  // time_ in fluid3_parameter is time(n+alphaF) in the case of genalpha
-  // therefore, it need to be reset to time(n+1)
   const double time = fldparatimint_->Time()+(1-fldparatimint_->AlphaF())*fldparatimint_->Dt();
   if (time < 0.0) usetime = false;
   const std::vector<int>* curve  = (*wdbc_cond).Get<std::vector<int> >("curve");
@@ -1309,6 +1513,10 @@ template <DRT::Element::DiscretizationType bdistype,
   if (curvenum>=0 && usetime)
   curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
+  // (temporarily) switch off any weak Dirichlet condition in case of zero 
+  // time-curve factor
+  if (curvefac > 0.0)
+  {
   // get values and switches from condition
   // (assumed to be constant on element boundary)
   const std::vector<int>* functions = (*wdbc_cond).Get<std::vector<int> >   ("funct");
@@ -1726,9 +1934,6 @@ template <DRT::Element::DiscretizationType bdistype,
     // get viscosity at integration point
     GetDensityAndViscosity(material,rateofstrain);
 
-    // only constant density of 1.0 allowed, for the time being
-    if (densaf_ != 1.0) dserror("Only incompressible flow with density 1.0 allowed for weak DBCs so far!");
-
     // define (initial) penalty parameter
     /*
     //
@@ -1746,6 +1951,9 @@ template <DRT::Element::DiscretizationType bdistype,
     if (spalding)
     {
       if (nsd != 3) dserror("Application of Spalding's law only reasonable for three-dimensional problems!");
+
+      // only constant density of 1.0 allowed, for the time being
+      if (densaf_ != 1.0) dserror("Only incompressible flow with density 1.0 allowed for Spalding's law so far!");
       
       //                             +--------------------+
       //                            /  +---+              |
@@ -1871,6 +2079,10 @@ template <DRT::Element::DiscretizationType bdistype,
     //---------------------------------------------------------------------
     if (nsd == 3)
     {
+    // factors used in the following
+    const double timefacfacpre = fac_*timefacpre;
+    const double timefacfacrhs = fac_*timefacrhs;
+
     //--------------------------------------------------
     // partially integrated pressure term, rescaled by gamma*dt
     /*
@@ -1883,21 +2095,22 @@ template <DRT::Element::DiscretizationType bdistype,
     //             \            / boundaryele
     //
     */
+
     for (int ui=0; ui<piel; ++ui)
     {
       for (int vi=0; vi<piel; ++vi)
       {
-        elemat(vi*4  ,ui*4+3) += fac_*timefacpre*pfunct(vi)*pfunct(ui)*unitnormal(0);
-        elemat(vi*4+1,ui*4+3) += fac_*timefacpre*pfunct(vi)*pfunct(ui)*unitnormal(1);
-        elemat(vi*4+2,ui*4+3) += fac_*timefacpre*pfunct(vi)*pfunct(ui)*unitnormal(2);
+        elemat(vi*4  ,ui*4+3) += timefacfacpre*pfunct(vi)*pfunct(ui)*unitnormal(0);
+        elemat(vi*4+1,ui*4+3) += timefacfacpre*pfunct(vi)*pfunct(ui)*unitnormal(1);
+        elemat(vi*4+2,ui*4+3) += timefacfacpre*pfunct(vi)*pfunct(ui)*unitnormal(2);
       }
     }
 
     for (int vi=0; vi<piel; ++vi)
     {
-      elevec(vi*4    ) -= fac_*timefacrhs*pfunct(vi)*unitnormal(0)*preintnp;
-      elevec(vi*4 + 1) -= fac_*timefacrhs*pfunct(vi)*unitnormal(1)*preintnp;
-      elevec(vi*4 + 2) -= fac_*timefacrhs*pfunct(vi)*unitnormal(2)*preintnp;
+      elevec(vi*4    ) -= timefacfacrhs*pfunct(vi)*unitnormal(0)*preintnp;
+      elevec(vi*4 + 1) -= timefacfacrhs*pfunct(vi)*unitnormal(1)*preintnp;
+      elevec(vi*4 + 2) -= timefacfacrhs*pfunct(vi)*unitnormal(2)*preintnp;
     }
 
     //--------------------------------------------------
@@ -1905,20 +2118,20 @@ template <DRT::Element::DiscretizationType bdistype,
     /*
     // factor: gdt
     //
-    //             /              \
-    //            |                |
-    //          - |  q , Dacc * n  |
-    //            |                |
-    //             \              / boundaryele
+    //             /            \
+    //            |              |
+    //          - |  q , Du * n  |
+    //            |              |
+    //             \            / boundaryele
     //
     */
     for (int ui=0; ui<piel; ++ui)
     {
       for (int vi=0; vi<piel; ++vi)
       {
-        elemat(vi*4+3,ui*4  ) -= fac_*timefacpre*pfunct(vi)*pfunct(ui)*unitnormal(0);
-        elemat(vi*4+3,ui*4+1) -= fac_*timefacpre*pfunct(vi)*pfunct(ui)*unitnormal(1);
-        elemat(vi*4+3,ui*4+2) -= fac_*timefacpre*pfunct(vi)*pfunct(ui)*unitnormal(2);
+        elemat(vi*4+3,ui*4  ) -= timefacfacpre*pfunct(vi)*pfunct(ui)*unitnormal(0);
+        elemat(vi*4+3,ui*4+1) -= timefacfacpre*pfunct(vi)*pfunct(ui)*unitnormal(1);
+        elemat(vi*4+3,ui*4+2) -= timefacfacpre*pfunct(vi)*pfunct(ui)*unitnormal(2);
       }
     }
 
@@ -1934,7 +2147,7 @@ template <DRT::Element::DiscretizationType bdistype,
     */
     for (int vi=0; vi<piel; ++vi)
     {
-      elevec(vi*4+3) += fac_*timefacrhs*pfunct(vi)*
+      elevec(vi*4+3) += timefacfacrhs*pfunct(vi)*
         ((pvelintnp(0)-(*val)[0]*functionfac(0)*curvefac)*unitnormal(0)
          +
          (pvelintnp(1)-(*val)[1]*functionfac(1)*curvefac)*unitnormal(1)
@@ -1949,44 +2162,43 @@ template <DRT::Element::DiscretizationType bdistype,
     //---------------------------------------------------------------------
     if(!onlynormal)
     {
-      const double timefacnu=fac_*2.0*visc_*timefac;
-
       //--------------------------------------------------
       // partially integrated viscous term
       /*
-      // factor: 2*nu*afgdt
+      // factor: 2*mu*afgdt
       //
-      //    /                     \
-      //   |           s           |
-      // - |  v , nabla  Dacc * n  |
-      //   |                       |
-      //    \                     / boundaryele
+      //    /                   \
+      //   |           s         |
+      // - |  v , nabla  Du * n  |
+      //   |                     |
+      //    \                   / boundaryele
       //
       */
+      const double timefacmu = fac_*2.0*visc_*timefac;
 
       for (int ui=0; ui<piel; ++ui)
       {
         double nabla_u_o_n_lin[3][3];
 
-        nabla_u_o_n_lin[0][0]=timefacnu*(    pderxy(0,ui)*unitnormal(0)
+        nabla_u_o_n_lin[0][0]=timefacmu*(    pderxy(0,ui)*unitnormal(0)
                                          +
                                          0.5*pderxy(1,ui)*unitnormal(1)
                                          +
                                          0.5*pderxy(2,ui)*unitnormal(2));
-        nabla_u_o_n_lin[0][1]=timefacnu*(0.5*pderxy(0,ui)*unitnormal(1));
-        nabla_u_o_n_lin[0][2]=timefacnu*(0.5*pderxy(0,ui)*unitnormal(2));
+        nabla_u_o_n_lin[0][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(1));
+        nabla_u_o_n_lin[0][2]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(2));
 
-        nabla_u_o_n_lin[1][0]=timefacnu*(0.5*pderxy(1,ui)*unitnormal(0));
-        nabla_u_o_n_lin[1][1]=timefacnu*(0.5*pderxy(0,ui)*unitnormal(0)
+        nabla_u_o_n_lin[1][0]=timefacmu*(0.5*pderxy(1,ui)*unitnormal(0));
+        nabla_u_o_n_lin[1][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(0)
                                          +
                                          pderxy(1,ui)*unitnormal(1)
                                          +
                                          0.5*pderxy(2,ui)*unitnormal(2));
-        nabla_u_o_n_lin[1][2]=timefacnu*(0.5*pderxy(1,ui)*unitnormal(2));
+        nabla_u_o_n_lin[1][2]=timefacmu*(0.5*pderxy(1,ui)*unitnormal(2));
 
-        nabla_u_o_n_lin[2][0]=timefacnu*(0.5*pderxy(2,ui)*unitnormal(0));
-        nabla_u_o_n_lin[2][1]=timefacnu*(0.5*pderxy(2,ui)*unitnormal(1));
-        nabla_u_o_n_lin[2][2]=timefacnu*(0.5*pderxy(0,ui)*unitnormal(0)
+        nabla_u_o_n_lin[2][0]=timefacmu*(0.5*pderxy(2,ui)*unitnormal(0));
+        nabla_u_o_n_lin[2][1]=timefacmu*(0.5*pderxy(2,ui)*unitnormal(1));
+        nabla_u_o_n_lin[2][2]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(0)
                                          +
                                          0.5*pderxy(1,ui)*unitnormal(1)
                                          +
@@ -2010,7 +2222,7 @@ template <DRT::Element::DiscretizationType bdistype,
       }
 
       /*
-      // factor: 2*nu
+      // factor: 2*mu
       //
       //    /                     \
       //   |           s  n+af     |
@@ -2019,18 +2231,19 @@ template <DRT::Element::DiscretizationType bdistype,
       //    \                     / boundaryele
       //
       */
+      const double timefacmurhs = fac_*2.0*visc_*timefacrhs;
 
       {
         double nabla_u_o_n[3];
-        nabla_u_o_n[0]=fac_*timefacrhs*2.0*visc_*
+        nabla_u_o_n[0]=timefacmurhs*
           (                     pvderxyaf(0,0) *unitnormal(0)
            +0.5*(pvderxyaf(0,1)+pvderxyaf(1,0))*unitnormal(1)
            +0.5*(pvderxyaf(0,2)+pvderxyaf(2,0))*unitnormal(2));
-        nabla_u_o_n[1]=fac_*2.0*visc_*
+        nabla_u_o_n[1]=timefacmurhs*
           ( 0.5*(pvderxyaf(1,0)+pvderxyaf(0,1))*unitnormal(0)
             +                    pvderxyaf(1,1) *unitnormal(1)
             +0.5*(pvderxyaf(1,2)+pvderxyaf(2,1))*unitnormal(2));
-        nabla_u_o_n[2]=fac_*2.0*visc_*
+        nabla_u_o_n[2]=timefacmurhs*
           ( 0.5*(pvderxyaf(2,0)+pvderxyaf(0,2))*unitnormal(0)
            +0.5*(pvderxyaf(2,1)+pvderxyaf(1,2))*unitnormal(1)
            +                    pvderxyaf(2,2) *unitnormal(2));
@@ -2045,20 +2258,17 @@ template <DRT::Element::DiscretizationType bdistype,
 
       //--------------------------------------------------
       // (adjoint) consistency term, viscous part
-
-      const double consistencytimefac=fac_*2.0*visc_*wd_gamma*timefac;
-
-
       /*
-      // factor: 2*nu*gamma_wd*afgdt
+      // factor: 2*mu*gamma_wd*afgdt
       //
-      //    /                     \
-      //   |        s              |
-      // - |   nabla  w * n , Dacc |
-      //   |                       |
-      //    \                     / boundaryele
+      //    /                   \
+      //   |        s            |
+      // - |   nabla  w * n , Du |
+      //   |                     |
+      //    \                   / boundaryele
       //
       */
+      const double consistencytimefac = fac_*2.0*visc_*wd_gamma*timefac;
 
       LINALG::Matrix<3,3> nabla_s_w_o_n;
       for (int vi=0; vi<piel; ++vi)
@@ -2091,8 +2301,9 @@ template <DRT::Element::DiscretizationType bdistype,
           elemat(vi*4 + 2,ui*4 + 2) -= pfunct(ui)*nabla_s_w_o_n(2,2);
         }
       }
+
       /*
-      // factor: 2*nu*gamma_wd
+      // factor: 2*mu*gamma_wd
       //
       //    /                           \
       //   |        s          n+af      |
@@ -2101,10 +2312,11 @@ template <DRT::Element::DiscretizationType bdistype,
       //    \                           / boundaryele
       //
       */
+      const double consistencytimefacrhs = fac_*2.0*visc_*wd_gamma*timefacrhs;
 
       for (int vi=0; vi<piel; ++vi)
       {
-        elevec(vi*4    ) += fac_*timefacrhs*2.0*visc_*wd_gamma*(
+        elevec(vi*4    ) += consistencytimefacrhs*(
           unitnormal(0)*bvres(0)*(    pderxy(0,vi))
           +
           unitnormal(1)*bvres(0)*(0.5*pderxy(1,vi))
@@ -2115,7 +2327,7 @@ template <DRT::Element::DiscretizationType bdistype,
           +
           unitnormal(0)*bvres(2)*(0.5*pderxy(2,vi)));
 
-        elevec(vi*4 + 1) += fac_*timefacrhs*2.0*visc_*wd_gamma*(
+        elevec(vi*4 + 1) += consistencytimefacrhs*(
           unitnormal(1)*bvres(0)*(0.5*pderxy(0,vi))
           +
           unitnormal(0)*bvres(1)*(0.5*pderxy(0,vi))
@@ -2126,7 +2338,7 @@ template <DRT::Element::DiscretizationType bdistype,
           +
           unitnormal(1)*bvres(2)*(0.5*pderxy(2,vi)));
 
-        elevec(vi*4 + 2) += fac_*timefacrhs*2.0*visc_*wd_gamma*(
+        elevec(vi*4 + 2) += consistencytimefacrhs*(
           unitnormal(2)*bvres(0)*(0.5*pderxy(0,vi))
           +
           unitnormal(2)*bvres(1)*(0.5*pderxy(1,vi))
@@ -2151,107 +2363,103 @@ template <DRT::Element::DiscretizationType bdistype,
           //
           // factor: afgdt
           //
-          //    /                             \
-          //   |    /        \       n+af      |
-          // - |   | Dacc * n | w , u    - u   |
-          //   |    \        /              b  |
-          //    \                             / boundaryele, inflow
+          //    /                                \
+          //   |         /      \       n+af      |
+          // - | rho *  | Du * n | w , u    - u   |
+          //   |         \      /              b  |
+          //    \                                 / boundaryele, inflow
           //
           */
+          const double timefacfacdens = fac_*timefac*densaf_;
 
           for (int ui=0; ui<piel; ++ui)
           {
             for (int vi=0; vi<piel; ++vi)
             {
-              elemat(vi*4    ,ui*4    ) -= fac_*timefac*pfunct(vi)*unitnormal(0)*bvres(0);
-              elemat(vi*4    ,ui*4 + 1) -= fac_*timefac*pfunct(vi)*unitnormal(1)*bvres(0);
-              elemat(vi*4    ,ui*4 + 2) -= fac_*timefac*pfunct(vi)*unitnormal(2)*bvres(0);
+              elemat(vi*4    ,ui*4    ) -= timefacfacdens*pfunct(vi)*unitnormal(0)*bvres(0);
+              elemat(vi*4    ,ui*4 + 1) -= timefacfacdens*pfunct(vi)*unitnormal(1)*bvres(0);
+              elemat(vi*4    ,ui*4 + 2) -= timefacfacdens*pfunct(vi)*unitnormal(2)*bvres(0);
 
-              elemat(vi*4 + 1,ui*4    ) -= fac_*timefac*pfunct(vi)*unitnormal(0)*bvres(1);
-              elemat(vi*4 + 1,ui*4 + 1) -= fac_*timefac*pfunct(vi)*unitnormal(1)*bvres(1);
-              elemat(vi*4 + 1,ui*4 + 2) -= fac_*timefac*pfunct(vi)*unitnormal(2)*bvres(1);
+              elemat(vi*4 + 1,ui*4    ) -= timefacfacdens*pfunct(vi)*unitnormal(0)*bvres(1);
+              elemat(vi*4 + 1,ui*4 + 1) -= timefacfacdens*pfunct(vi)*unitnormal(1)*bvres(1);
+              elemat(vi*4 + 1,ui*4 + 2) -= timefacfacdens*pfunct(vi)*unitnormal(2)*bvres(1);
 
-              elemat(vi*4 + 2,ui*4    ) -= fac_*timefac*pfunct(vi)*unitnormal(0)*bvres(2);
-              elemat(vi*4 + 2,ui*4 + 1) -= fac_*timefac*pfunct(vi)*unitnormal(1)*bvres(2);
-              elemat(vi*4 + 2,ui*4 + 2) -= fac_*timefac*pfunct(vi)*unitnormal(2)*bvres(2);
+              elemat(vi*4 + 2,ui*4    ) -= timefacfacdens*pfunct(vi)*unitnormal(0)*bvres(2);
+              elemat(vi*4 + 2,ui*4 + 1) -= timefacfacdens*pfunct(vi)*unitnormal(1)*bvres(2);
+              elemat(vi*4 + 2,ui*4 + 2) -= timefacfacdens*pfunct(vi)*unitnormal(2)*bvres(2);
             }
           }
 
           /*
           // factor: afgdt
           //
-          //    /                       \
-          //   |    / n+af   \           |
-          // - |   | u    * n | w , Dacc |
-          //   |    \        /           |
-          //    \  |          |         / boundaryele, inflow
-          //       +----------+
-          //           <0
+          //    /                          \
+          //   |         / n+af   \         |
+          // - | rho *  | u    * n | w , Du |
+          //   |         \        /         |
+          //    \       |          |       / boundaryele, inflow
+          //            +----------+
+          //                 <0
           */
-
-          const double normveltimefac =fac_*timefac*normvel;
+          const double normveltimefacfacdens = fac_*timefac*normvel*densaf_;
 
           for (int ui=0; ui<piel; ++ui)
           {
             for (int vi=0; vi<piel; ++vi)
             {
-              elemat(vi*4    ,ui*4    ) -= normveltimefac*pfunct(ui)*pfunct(vi);
-              elemat(vi*4 + 1,ui*4 + 1) -= normveltimefac*pfunct(ui)*pfunct(vi);
-              elemat(vi*4 + 2,ui*4 + 2) -= normveltimefac*pfunct(ui)*pfunct(vi);
+              elemat(vi*4    ,ui*4    ) -= normveltimefacfacdens*pfunct(ui)*pfunct(vi);
+              elemat(vi*4 + 1,ui*4 + 1) -= normveltimefacfacdens*pfunct(ui)*pfunct(vi);
+              elemat(vi*4 + 2,ui*4 + 2) -= normveltimefacfacdens*pfunct(ui)*pfunct(vi);
             }
           }
         } // end if full_linearisation
 
-        const double normvelfac =fac_*normvel*timefacrhs;
-
         /*
         // factor: 1
         //
-        //    /                             \
-        //   |    / n+af   \       n+af      |
-        // - |   | u    * n | w , u    - u   |
-        //   |    \        /              b  |
-        //    \  |          |               / boundaryele, inflow
-        //       +----------+
-        //           <0
+        //    /                                  \
+        //   |         / n+af   \       n+af      |
+        // - | rho *  | u    * n | w , u    - u   |
+        //   |         \        /              b  |
+        //    \       |          |               / boundaryele, inflow
+        //            +----------+
+        //                <0
         */
+        const double normveltimefacfacdensrhs = fac_*timefacrhs*normvel*densaf_;
+
         for (int vi=0; vi<piel; ++vi)
         {
-          elevec(vi*4    ) += normvelfac*pfunct(vi)*bvres(0);
-          elevec(vi*4 + 1) += normvelfac*pfunct(vi)*bvres(1);
-          elevec(vi*4 + 2) += normvelfac*pfunct(vi)*bvres(2);
+          elevec(vi*4    ) += normveltimefacfacdensrhs*pfunct(vi)*bvres(0);
+          elevec(vi*4 + 1) += normveltimefacfacdensrhs*pfunct(vi)*bvres(1);
+          elevec(vi*4 + 2) += normveltimefacfacdensrhs*pfunct(vi)*bvres(2);
         }
       } // end if normvel<0, i.e. boundary is an inflow boundary
 
       //--------------------------------------------------
       // penalty term
-
       /*
       // factor: nu*Cb/h*afgdt
       //
-      //    /          \
-      //   |            |
-      // + |  w , Dacc  |
-      //   |            |
-      //    \          / boundaryele
+      //    /        \
+      //   |          |
+      // + |  w , Du  |
+      //   |          |
+      //    \        / boundaryele
       //
       */
-
-      const double penaltytimefac=timefac*tau_B*fac_;
+      const double timefacfactaub = fac_*timefac*tau_B;
 
       for (int ui=0; ui<piel; ++ui)
       {
         for (int vi=0; vi<piel; ++vi)
         {
-          const double temp=penaltytimefac*pfunct(ui)*pfunct(vi);
+          const double temp = timefacfactaub*pfunct(ui)*pfunct(vi);
 
           elemat(vi*4    ,ui*4    ) += temp;
           elemat(vi*4 + 1,ui*4 + 1) += temp;
           elemat(vi*4 + 2,ui*4 + 2) += temp;
         }
       }
-
-      const double penaltyfac=tau_B*fac_*timefacrhs;
 
       /*
       // factor: nu*Cb/h
@@ -2263,12 +2471,13 @@ template <DRT::Element::DiscretizationType bdistype,
       //    \                / boundaryele
       //
       */
+      const double timefacfactaubrhs = fac_*timefacrhs*tau_B;
 
       for (int vi=0; vi<piel; ++vi)
       {
-        elevec(vi*4    ) -= penaltyfac*pfunct(vi)*bvres(0);
-        elevec(vi*4 + 1) -= penaltyfac*pfunct(vi)*bvres(1);
-        elevec(vi*4 + 2) -= penaltyfac*pfunct(vi)*bvres(2);
+        elevec(vi*4    ) -= timefacfactaubrhs*pfunct(vi)*bvres(0);
+        elevec(vi*4 + 1) -= timefacfactaubrhs*pfunct(vi)*bvres(1);
+        elevec(vi*4 + 2) -= timefacfactaubrhs*pfunct(vi)*bvres(2);
       }
     } // !onlynormal
     //---------------------------------------------------------------------
@@ -2280,23 +2489,22 @@ template <DRT::Element::DiscretizationType bdistype,
     {
       //--------------------------------------------------
       // partially integrated viscous term
-
-      const double timefacnu=fac_*2.0*visc_*timefac;
-
       /*
-      // factor: 2*nu
+      // factor: 2*mu
       //
-      //    /                             \
-      //   |                   s           |
-      // + |  v * n , n * nabla  Dacc * n  |
-      //   |                               |
-      //    \                             / boundaryele
+      //    /                           \
+      //   |                   s         |
+      // + |  v * n , n * nabla  Du * n  |
+      //   |                             |
+      //    \                           / boundaryele
       //
       */
+      const double timefacmu = fac_*2.0*visc_*timefac;
+
       for (int ui=0; ui<piel; ++ui)
       {
 
-        const double aux=timefacnu*(pderxy(0,ui)*unitnormal(0)+pderxy(1,ui)*unitnormal(1)+pderxy(2,ui)*unitnormal(2));
+        const double aux = timefacmu*(pderxy(0,ui)*unitnormal(0)+pderxy(1,ui)*unitnormal(1)+pderxy(2,ui)*unitnormal(2));
         for (int vi=0; vi<piel; ++vi)
         {
           elemat(vi*4    ,ui*4    ) -= pfunct(vi)*unitnormal(0)*unitnormal(0)*aux;
@@ -2314,7 +2522,7 @@ template <DRT::Element::DiscretizationType bdistype,
       }
 
       /*
-      // factor: 2*nu
+      // factor: 2*mu
       //
       //    /                             \
       //   |                   s  n+af     |
@@ -2323,6 +2531,8 @@ template <DRT::Element::DiscretizationType bdistype,
       //    \                             / boundaryele
       //
       */
+      const double timefacmurhs = fac_*2.0*visc_*timefacrhs;
+
       double n_o_nabla_u_o_n =
         pvderxyaf(0,0)*unitnormal(0)*unitnormal(0)
         +
@@ -2338,32 +2548,30 @@ template <DRT::Element::DiscretizationType bdistype,
 
       for (int vi=0; vi<piel; ++vi)
       {
-        elevec(vi*4    ) += fac_*timefacrhs*2.0*visc_*wd_gamma*pfunct(vi)*unitnormal(0)*n_o_nabla_u_o_n;
-        elevec(vi*4 + 1) += fac_*timefacrhs*2.0*visc_*wd_gamma*pfunct(vi)*unitnormal(1)*n_o_nabla_u_o_n;
-        elevec(vi*4 + 2) += fac_*timefacrhs*2.0*visc_*wd_gamma*pfunct(vi)*unitnormal(2)*n_o_nabla_u_o_n;
+        elevec(vi*4    ) += timefacmurhs*pfunct(vi)*unitnormal(0)*n_o_nabla_u_o_n;
+        elevec(vi*4 + 1) += timefacmurhs*pfunct(vi)*unitnormal(1)*n_o_nabla_u_o_n;
+        elevec(vi*4 + 2) += timefacmurhs*pfunct(vi)*unitnormal(2)*n_o_nabla_u_o_n;
       }
 
       //--------------------------------------------------
       // (adjoint) consistency term, viscous part
-
-      const double consistencytimefac=fac_*2.0*visc_*wd_gamma*timefac;
-
       /*
-      // factor: 2*nu*gamma_wd
+      // factor: 2*mu*gamma_wd*afgdt
       //
-      //    /                               \
-      //   |            s                    |
-      // + |   n * nabla  w * n ,  Dacc * n  |
-      //   |                                 |
-      //    \                               / boundaryele
+      //    /                             \
+      //   |            s                  |
+      // + |   n * nabla  w * n ,  Du * n  |
+      //   |                               |
+      //    \                             / boundaryele
       //
       */
+      const double consistencytimefac = fac_*2.0*visc_*wd_gamma*timefac;
 
       for (int vi=0; vi<piel; ++vi)
       {
         for (int ui=0; ui<piel; ++ui)
         {
-          const double aux=pderxy(0,vi)*unitnormal(0)+pderxy(1,vi)*unitnormal(1)+pderxy(2,vi)*unitnormal(2);
+          const double aux = pderxy(0,vi)*unitnormal(0)+pderxy(1,vi)*unitnormal(1)+pderxy(2,vi)*unitnormal(2);
 
           elemat(vi*4    ,ui*4    ) -= aux*unitnormal(0)*unitnormal(0)*pfunct(ui)*consistencytimefac;
           elemat(vi*4    ,ui*4 + 1) -= aux*unitnormal(0)*unitnormal(1)*pfunct(ui)*consistencytimefac;
@@ -2378,8 +2586,9 @@ template <DRT::Element::DiscretizationType bdistype,
           elemat(vi*4 + 2,ui*4 + 2) -= aux*unitnormal(2)*unitnormal(2)*pfunct(ui)*consistencytimefac;
         }
       }
+
       /*
-      // factor: 2*nu*gamma_wd
+      // factor: 2*mu*gamma_wd
       //
       //    /                                        \
       //   |            s          / n+af     \       |
@@ -2388,55 +2597,53 @@ template <DRT::Element::DiscretizationType bdistype,
       //    \                                        / boundaryele
       //
       */
+      const double consistencytimefacrhs = fac_*2.0*visc_*wd_gamma*timefacrhs;
 
-      double bvres_o_n=bvres(0)*unitnormal(0)+bvres(1)*unitnormal(1)+bvres(2)*unitnormal(2);
+      double bvres_o_n = bvres(0)*unitnormal(0)+bvres(1)*unitnormal(1)+bvres(2)*unitnormal(2);
 
       for (int vi=0; vi<piel; ++vi)
       {
-        double aux=(pderxy(0,vi)*unitnormal(0)+pderxy(1,vi)*unitnormal(1)+pderxy(2,vi)*unitnormal(2));
+        double aux = (pderxy(0,vi)*unitnormal(0)+pderxy(1,vi)*unitnormal(1)+pderxy(2,vi)*unitnormal(2));
 
-        elevec(vi*4    ) += fac_*timefacrhs*2.0*visc_*wd_gamma*aux*unitnormal(0)*bvres_o_n;
-        elevec(vi*4 + 1) += fac_*timefacrhs*2.0*visc_*wd_gamma*aux*unitnormal(1)*bvres_o_n;
-        elevec(vi*4 + 2) += fac_*timefacrhs*2.0*visc_*wd_gamma*aux*unitnormal(2)*bvres_o_n;
+        elevec(vi*4    ) += consistencytimefacrhs*aux*unitnormal(0)*bvres_o_n;
+        elevec(vi*4 + 1) += consistencytimefacrhs*aux*unitnormal(1)*bvres_o_n;
+        elevec(vi*4 + 2) += consistencytimefacrhs*aux*unitnormal(2)*bvres_o_n;
       }
 
       //--------------------------------------------------
       // penalty term
-
-      const double penaltytimefac=timefac*tau_B*fac_;
-
       /*
-      // factor: nu*Cb/h*afgdt
+      // factor:mu*Cb/h*afgdt
       //
-      //    /                  \
-      //   |                    |
-      // + |  w o n , Dacc o n  |
-      //   |                    |
-      //    \                  / boundaryele
+      //    /                \
+      //   |                  |
+      // + |  w o n , Du o n  |
+      //   |                  |
+      //    \                / boundaryele
       //
       */
+      const double timefacfactaub = fac_*timefac*tau_B;
+
       for (int ui=0; ui<piel; ++ui)
       {
         for (int vi=0; vi<piel; ++vi)
         {
-          elemat(vi*4    ,ui*4    ) += penaltytimefac*pfunct(vi)*unitnormal(0)*unitnormal(0)*pfunct(ui);
-          elemat(vi*4    ,ui*4 + 1) += penaltytimefac*pfunct(vi)*unitnormal(0)*unitnormal(1)*pfunct(ui);
-          elemat(vi*4    ,ui*4 + 2) += penaltytimefac*pfunct(vi)*unitnormal(0)*unitnormal(2)*pfunct(ui);
+          elemat(vi*4    ,ui*4    ) += timefacfactaub*pfunct(vi)*unitnormal(0)*unitnormal(0)*pfunct(ui);
+          elemat(vi*4    ,ui*4 + 1) += timefacfactaub*pfunct(vi)*unitnormal(0)*unitnormal(1)*pfunct(ui);
+          elemat(vi*4    ,ui*4 + 2) += timefacfactaub*pfunct(vi)*unitnormal(0)*unitnormal(2)*pfunct(ui);
 
-          elemat(vi*4 + 1,ui*4    ) += penaltytimefac*pfunct(vi)*unitnormal(1)*unitnormal(0)*pfunct(ui);
-          elemat(vi*4 + 1,ui*4 + 1) += penaltytimefac*pfunct(vi)*unitnormal(1)*unitnormal(1)*pfunct(ui);
-          elemat(vi*4 + 1,ui*4 + 2) += penaltytimefac*pfunct(vi)*unitnormal(1)*unitnormal(2)*pfunct(ui);
+          elemat(vi*4 + 1,ui*4    ) += timefacfactaub*pfunct(vi)*unitnormal(1)*unitnormal(0)*pfunct(ui);
+          elemat(vi*4 + 1,ui*4 + 1) += timefacfactaub*pfunct(vi)*unitnormal(1)*unitnormal(1)*pfunct(ui);
+          elemat(vi*4 + 1,ui*4 + 2) += timefacfactaub*pfunct(vi)*unitnormal(1)*unitnormal(2)*pfunct(ui);
 
-          elemat(vi*4 + 2,ui*4    ) += penaltytimefac*pfunct(vi)*unitnormal(2)*unitnormal(0)*pfunct(ui);
-          elemat(vi*4 + 2,ui*4 + 1) += penaltytimefac*pfunct(vi)*unitnormal(2)*unitnormal(1)*pfunct(ui);
-          elemat(vi*4 + 2,ui*4 + 2) += penaltytimefac*pfunct(vi)*unitnormal(2)*unitnormal(2)*pfunct(ui);
+          elemat(vi*4 + 2,ui*4    ) += timefacfactaub*pfunct(vi)*unitnormal(2)*unitnormal(0)*pfunct(ui);
+          elemat(vi*4 + 2,ui*4 + 1) += timefacfactaub*pfunct(vi)*unitnormal(2)*unitnormal(1)*pfunct(ui);
+          elemat(vi*4 + 2,ui*4 + 2) += timefacfactaub*pfunct(vi)*unitnormal(2)*unitnormal(2)*pfunct(ui);
         }
       }
 
-      const double penaltyfac=tau_B*fac_*timefacrhs;
-
       /*
-      // factor: nu*Cb/h
+      // factor: mu*Cb/h
       //
       //    /                           \
       //   |            / n+af   \       |
@@ -2445,12 +2652,13 @@ template <DRT::Element::DiscretizationType bdistype,
       //    \                           / boundaryele
       //
       */
+      const double timefacfactaubrhs = fac_*timefacrhs*tau_B;
 
       for (int vi=0; vi<piel; ++vi)
       {
-        elevec(vi*4    ) -= penaltyfac*pfunct(vi)*unitnormal(0)*bvres_o_n;
-        elevec(vi*4 + 1) -= penaltyfac*pfunct(vi)*unitnormal(1)*bvres_o_n;
-        elevec(vi*4 + 2) -= penaltyfac*pfunct(vi)*unitnormal(2)*bvres_o_n;
+        elevec(vi*4    ) -= timefacfactaubrhs*pfunct(vi)*unitnormal(0)*bvres_o_n;
+        elevec(vi*4 + 1) -= timefacfactaubrhs*pfunct(vi)*unitnormal(1)*bvres_o_n;
+        elevec(vi*4 + 2) -= timefacfactaubrhs*pfunct(vi)*unitnormal(2)*bvres_o_n;
       }
 
       //--------------------------------------------------
@@ -2466,89 +2674,94 @@ template <DRT::Element::DiscretizationType bdistype,
           //
           // factor: afgdt
           //
-          //    /                                              \
-          //   |    /        \    /     \     / n+af     \      |
-          // - |   | Dacc * n |  | w o n | , | u    - u   | o n |
-          //   |    \        /    \     /     \        b /      |
-          //    \                                              / boundaryele, inflow
+          //    /                                                 \
+          //   |        /       \    /     \     / n+af     \      |
+          // - | rho *  | Du * n |  | w o n | , | u    - u   | o n |
+          //   |         \      /    \     /     \        b /      |
+          //    \                                                 / boundaryele, inflow
           //
           */
+          const double timefacfacdensbvresn = fac_*timefac*densaf_*bvres_o_n;
 
           for (int ui=0; ui<piel; ++ui)
           {
             for (int vi=0; vi<piel; ++vi)
             {
-              elemat(vi*4    ,ui*4    ) -= fac_*timefac*bvres_o_n*pfunct(vi)*unitnormal(0)*unitnormal(0)*pfunct(ui);
-              elemat(vi*4    ,ui*4 + 1) -= fac_*timefac*bvres_o_n*pfunct(vi)*unitnormal(0)*unitnormal(1)*pfunct(ui);
-              elemat(vi*4    ,ui*4 + 2) -= fac_*timefac*bvres_o_n*pfunct(vi)*unitnormal(0)*unitnormal(2)*pfunct(ui);
+              elemat(vi*4    ,ui*4    ) -= timefacfacdensbvresn*pfunct(vi)*unitnormal(0)*unitnormal(0)*pfunct(ui);
+              elemat(vi*4    ,ui*4 + 1) -= timefacfacdensbvresn*pfunct(vi)*unitnormal(0)*unitnormal(1)*pfunct(ui);
+              elemat(vi*4    ,ui*4 + 2) -= timefacfacdensbvresn*pfunct(vi)*unitnormal(0)*unitnormal(2)*pfunct(ui);
 
-              elemat(vi*4 + 1,ui*4    ) -= fac_*timefac*bvres_o_n*pfunct(vi)*unitnormal(1)*unitnormal(0)*pfunct(ui);
-              elemat(vi*4 + 1,ui*4 + 1) -= fac_*timefac*bvres_o_n*pfunct(vi)*unitnormal(1)*unitnormal(1)*pfunct(ui);
-              elemat(vi*4 + 1,ui*4 + 2) -= fac_*timefac*bvres_o_n*pfunct(vi)*unitnormal(1)*unitnormal(2)*pfunct(ui);
+              elemat(vi*4 + 1,ui*4    ) -= timefacfacdensbvresn*pfunct(vi)*unitnormal(1)*unitnormal(0)*pfunct(ui);
+              elemat(vi*4 + 1,ui*4 + 1) -= timefacfacdensbvresn*pfunct(vi)*unitnormal(1)*unitnormal(1)*pfunct(ui);
+              elemat(vi*4 + 1,ui*4 + 2) -= timefacfacdensbvresn*pfunct(vi)*unitnormal(1)*unitnormal(2)*pfunct(ui);
 
-              elemat(vi*4 + 2,ui*4    ) -= fac_*timefac*bvres_o_n*pfunct(vi)*unitnormal(2)*unitnormal(0)*pfunct(ui);
-              elemat(vi*4 + 2,ui*4 + 1) -= fac_*timefac*bvres_o_n*pfunct(vi)*unitnormal(2)*unitnormal(1)*pfunct(ui);
-              elemat(vi*4 + 2,ui*4 + 2) -= fac_*timefac*bvres_o_n*pfunct(vi)*unitnormal(2)*unitnormal(2)*pfunct(ui);
+              elemat(vi*4 + 2,ui*4    ) -= timefacfacdensbvresn*pfunct(vi)*unitnormal(2)*unitnormal(0)*pfunct(ui);
+              elemat(vi*4 + 2,ui*4 + 1) -= timefacfacdensbvresn*pfunct(vi)*unitnormal(2)*unitnormal(1)*pfunct(ui);
+              elemat(vi*4 + 2,ui*4 + 2) -= timefacfacdensbvresn*pfunct(vi)*unitnormal(2)*unitnormal(2)*pfunct(ui);
             }
           }
-
-          const double normveltimefac =fac_*timefac*normvel;
 
           /*
           // factor: afgdt
           //
-          //    /                                   \
-          //   |    / n+af   \   /     \             |
-          // - |   | u    * n | | w o n | , Dacc o n |
-          //   |    \        /   \     /             |
-          //    \  |          |                     / boundaryele, inflow
-          //       +----------+
-          //           <0
+          //    /                                      \
+          //   |         / n+af   \   /     \           |
+          // - | rho *  | u    * n | | w o n | , Du o n |
+          //   |         \        /   \     /           |
+          //    \        |          |                   / boundaryele, inflow
+          //             +----------+
+          //                 <0
           */
+          const double normveltimefacfacdens = fac_*timefac*normvel*densaf_;
+
           for (int ui=0; ui<piel; ++ui)
           {
             for (int vi=0; vi<piel; ++vi)
             {
-              elemat(vi*4    ,ui*4    ) -= normveltimefac*pfunct(vi)*unitnormal(0)*unitnormal(0)*pfunct(ui);
-              elemat(vi*4    ,ui*4 + 1) -= normveltimefac*pfunct(vi)*unitnormal(0)*unitnormal(1)*pfunct(ui);
-              elemat(vi*4    ,ui*4 + 2) -= normveltimefac*pfunct(vi)*unitnormal(0)*unitnormal(2)*pfunct(ui);
+              elemat(vi*4    ,ui*4    ) -= normveltimefacfacdens*pfunct(vi)*unitnormal(0)*unitnormal(0)*pfunct(ui);
+              elemat(vi*4    ,ui*4 + 1) -= normveltimefacfacdens*pfunct(vi)*unitnormal(0)*unitnormal(1)*pfunct(ui);
+              elemat(vi*4    ,ui*4 + 2) -= normveltimefacfacdens*pfunct(vi)*unitnormal(0)*unitnormal(2)*pfunct(ui);
 
-              elemat(vi*4 + 1,ui*4    ) -= normveltimefac*pfunct(vi)*unitnormal(1)*unitnormal(0)*pfunct(ui);
-              elemat(vi*4 + 1,ui*4 + 1) -= normveltimefac*pfunct(vi)*unitnormal(1)*unitnormal(1)*pfunct(ui);
-              elemat(vi*4 + 1,ui*4 + 2) -= normveltimefac*pfunct(vi)*unitnormal(1)*unitnormal(2)*pfunct(ui);
+              elemat(vi*4 + 1,ui*4    ) -= normveltimefacfacdens*pfunct(vi)*unitnormal(1)*unitnormal(0)*pfunct(ui);
+              elemat(vi*4 + 1,ui*4 + 1) -= normveltimefacfacdens*pfunct(vi)*unitnormal(1)*unitnormal(1)*pfunct(ui);
+              elemat(vi*4 + 1,ui*4 + 2) -= normveltimefacfacdens*pfunct(vi)*unitnormal(1)*unitnormal(2)*pfunct(ui);
 
-              elemat(vi*4 + 2,ui*4    ) -= normveltimefac*pfunct(vi)*unitnormal(2)*unitnormal(0)*pfunct(ui);
-              elemat(vi*4 + 2,ui*4 + 1) -= normveltimefac*pfunct(vi)*unitnormal(2)*unitnormal(1)*pfunct(ui);
-              elemat(vi*4 + 2,ui*4 + 2) -= normveltimefac*pfunct(vi)*unitnormal(2)*unitnormal(2)*pfunct(ui);
+              elemat(vi*4 + 2,ui*4    ) -= normveltimefacfacdens*pfunct(vi)*unitnormal(2)*unitnormal(0)*pfunct(ui);
+              elemat(vi*4 + 2,ui*4 + 1) -= normveltimefacfacdens*pfunct(vi)*unitnormal(2)*unitnormal(1)*pfunct(ui);
+              elemat(vi*4 + 2,ui*4 + 2) -= normveltimefacfacdens*pfunct(vi)*unitnormal(2)*unitnormal(2)*pfunct(ui);
             }
           }
 
         } // end complete_linearisation
 
-        const double normvelfac =fac_*normvel*timefacrhs;
-
         /*
         // factor: 1
         //
         //    /                                            \
-        //   |    / n+af   \   /     \    / n+af     \      |
-        // - |   | u    * n | | w o n |, | u    - u   | o n |
-        //   |    \        /   \     /    \        b /      |
-        //    \  |          |                              / boundaryele, inflow
-        //       +----------+
-        //           <0
+        //   |          / n+af   \   /     \    / n+af     \      |
+        // - |  rho *  | u    * n | | w o n |, | u    - u   | o n |
+        //   |          \        /   \     /    \        b /      |
+        //    \        |          |                              / boundaryele, inflow
+        //             +----------+
+        //                 <0
         */
+        const double normveltimefacfacdensrhs = fac_*timefacrhs*normvel*densaf_*bvres_o_n;
+
         for (int vi=0; vi<piel; ++vi)
         {
-          elevec(vi*4    ) += normvelfac*pfunct(vi)*unitnormal(0)*bvres_o_n;
-          elevec(vi*4 + 1) += normvelfac*pfunct(vi)*unitnormal(1)*bvres_o_n;
-          elevec(vi*4 + 2) += normvelfac*pfunct(vi)*unitnormal(2)*bvres_o_n;
+          elevec(vi*4    ) += normveltimefacfacdensrhs*pfunct(vi)*unitnormal(0);
+          elevec(vi*4 + 1) += normveltimefacfacdensrhs*pfunct(vi)*unitnormal(1);
+          elevec(vi*4 + 2) += normveltimefacfacdensrhs*pfunct(vi)*unitnormal(2);
         }
       } // end if normvel<0, i.e. boundary is an inflow boundary
     } // onlynormal
     }
     else if (nsd == 2)
     {
+    // factors used in the following
+    const double timefacfacpre = fac_*timefacpre;
+    const double timefacfacrhs = fac_*timefacrhs;
+
     //--------------------------------------------------
     // partially integrated pressure term, rescaled by gamma*dt
     /*
@@ -2565,15 +2778,15 @@ template <DRT::Element::DiscretizationType bdistype,
     {
       for (int vi=0; vi<piel; ++vi)
       {
-        elemat(vi*3  ,ui*3+2) += fac_*timefacpre*pfunct(vi)*pfunct(ui)*unitnormal(0);
-        elemat(vi*3+1,ui*3+2) += fac_*timefacpre*pfunct(vi)*pfunct(ui)*unitnormal(1);
+        elemat(vi*3  ,ui*3+2) += timefacfacpre*pfunct(vi)*pfunct(ui)*unitnormal(0);
+        elemat(vi*3+1,ui*3+2) += timefacfacpre*pfunct(vi)*pfunct(ui)*unitnormal(1);
       }
     }
 
     for (int vi=0; vi<piel; ++vi)
     {
-      elevec(vi*3    ) -= fac_*timefacrhs*pfunct(vi)*unitnormal(0)*preintnp;
-      elevec(vi*3 + 1) -= fac_*timefacrhs*pfunct(vi)*unitnormal(1)*preintnp;
+      elevec(vi*3    ) -= timefacfacrhs*pfunct(vi)*unitnormal(0)*preintnp;
+      elevec(vi*3 + 1) -= timefacfacrhs*pfunct(vi)*unitnormal(1)*preintnp;
     }
 
     //--------------------------------------------------
@@ -2592,8 +2805,8 @@ template <DRT::Element::DiscretizationType bdistype,
     {
       for (int vi=0; vi<piel; ++vi)
       {
-        elemat(vi*3+2,ui*3  ) -= fac_*timefacpre*pfunct(vi)*pfunct(ui)*unitnormal(0);
-        elemat(vi*3+2,ui*3+1) -= fac_*timefacpre*pfunct(vi)*pfunct(ui)*unitnormal(1);
+        elemat(vi*3+2,ui*3  ) -= timefacfacpre*pfunct(vi)*pfunct(ui)*unitnormal(0);
+        elemat(vi*3+2,ui*3+1) -= timefacfacpre*pfunct(vi)*pfunct(ui)*unitnormal(1);
       }
     }
 
@@ -2609,7 +2822,7 @@ template <DRT::Element::DiscretizationType bdistype,
     */
     for (int vi=0; vi<piel; ++vi)
     {
-      elevec(vi*3+2) += fac_*timefacrhs*pfunct(vi)*
+      elevec(vi*3+2) += timefacfacrhs*pfunct(vi)*
         ((pvelintnp(0)-(*val)[0]*functionfac(0)*curvefac)*unitnormal(0)
          +
          (pvelintnp(1)-(*val)[1]*functionfac(1)*curvefac)*unitnormal(1));
@@ -2622,32 +2835,31 @@ template <DRT::Element::DiscretizationType bdistype,
     //---------------------------------------------------------------------
     if(!onlynormal)
     {
-      const double timefacnu=fac_*2.0*visc_*timefac;
-
       //--------------------------------------------------
       // partially integrated viscous term
       /*
-      // factor: 2*nu*afgdt
+      // factor: 2*mu*afgdt
       //
-      //    /                     \
-      //   |           s           |
-      // - |  v , nabla  Dacc * n  |
-      //   |                       |
-      //    \                     / boundaryele
+      //    /                   \
+      //   |           s         |
+      // - |  v , nabla  Du * n  |
+      //   |                     |
+      //    \                   / boundaryele
       //
       */
+      const double timefacmu = fac_*2.0*visc_*timefac;
 
       for (int ui=0; ui<piel; ++ui)
       {
         double nabla_u_o_n_lin[2][2];
 
-        nabla_u_o_n_lin[0][0]=timefacnu*(    pderxy(0,ui)*unitnormal(0)
+        nabla_u_o_n_lin[0][0]=timefacmu*(    pderxy(0,ui)*unitnormal(0)
                                          +
                                          0.5*pderxy(1,ui)*unitnormal(1));
-        nabla_u_o_n_lin[0][1]=timefacnu*(0.5*pderxy(0,ui)*unitnormal(1));
+        nabla_u_o_n_lin[0][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(1));
 
-        nabla_u_o_n_lin[1][0]=timefacnu*(0.5*pderxy(1,ui)*unitnormal(0));
-        nabla_u_o_n_lin[1][1]=timefacnu*(0.5*pderxy(0,ui)*unitnormal(0)
+        nabla_u_o_n_lin[1][0]=timefacmu*(0.5*pderxy(1,ui)*unitnormal(0));
+        nabla_u_o_n_lin[1][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(0)
                                          +
                                          pderxy(1,ui)*unitnormal(1));
 
@@ -2663,7 +2875,7 @@ template <DRT::Element::DiscretizationType bdistype,
       }
 
       /*
-      // factor: 2*nu
+      // factor: 2*mu
       //
       //    /                     \
       //   |           s  n+af     |
@@ -2672,11 +2884,12 @@ template <DRT::Element::DiscretizationType bdistype,
       //    \                     / boundaryele
       //
       */
+      const double timefacmurhs = fac_*2.0*visc_*timefacrhs;
 
       {
         double nabla_u_o_n[2];
-        nabla_u_o_n[0]=fac_*timefacrhs*2.0*visc_*(pvderxyaf(0,0)*unitnormal(0)+0.5*(pvderxyaf(0,1)+pvderxyaf(1,0))*unitnormal(1));
-        nabla_u_o_n[1]=fac_*timefacrhs*2.0*visc_*(0.5*(pvderxyaf(1,0)+pvderxyaf(0,1))*unitnormal(0)+pvderxyaf(1,1) *unitnormal(1));
+        nabla_u_o_n[0]=timefacmurhs*(pvderxyaf(0,0)*unitnormal(0)+0.5*(pvderxyaf(0,1)+pvderxyaf(1,0))*unitnormal(1));
+        nabla_u_o_n[1]=timefacmurhs*(0.5*(pvderxyaf(1,0)+pvderxyaf(0,1))*unitnormal(0)+pvderxyaf(1,1) *unitnormal(1));
 
         for (int vi=0; vi<piel; ++vi)
         {
@@ -2687,20 +2900,17 @@ template <DRT::Element::DiscretizationType bdistype,
 
       //--------------------------------------------------
       // (adjoint) consistency term, viscous part
-
-      const double consistencytimefac=fac_*2.0*visc_*wd_gamma*timefac;
-
-
       /*
-      // factor: 2*nu*gamma_wd*afgdt
+      // factor: 2*mu*gamma_wd*afgdt
       //
-      //    /                     \
-      //   |        s              |
-      // - |   nabla  w * n , Dacc |
-      //   |                       |
-      //    \                     / boundaryele
+      //    /                   \
+      //   |        s            |
+      // - |   nabla  w * n , Du |
+      //   |                     |
+      //    \                   / boundaryele
       //
       */
+      const double consistencytimefac = fac_*2.0*visc_*wd_gamma*timefac;
 
       LINALG::Matrix<2,2> nabla_s_w_o_n;
       for (int vi=0; vi<piel; ++vi)
@@ -2721,8 +2931,9 @@ template <DRT::Element::DiscretizationType bdistype,
           elemat(vi*3 + 1,ui*3 + 1) -= pfunct(ui)*nabla_s_w_o_n(1,1);
         }
       }
+
       /*
-      // factor: 2*nu*gamma_wd
+      // factor: 2*mu*gamma_wd
       //
       //    /                           \
       //   |        s          n+af      |
@@ -2731,17 +2942,18 @@ template <DRT::Element::DiscretizationType bdistype,
       //    \                           / boundaryele
       //
       */
+      const double consistencytimefacrhs = fac_*2.0*visc_*wd_gamma*timefacrhs;
 
       for (int vi=0; vi<piel; ++vi)
       {
-        elevec(vi*3    ) += fac_*timefacrhs*2.0*visc_*wd_gamma*(
+        elevec(vi*3    ) += consistencytimefacrhs*(
           unitnormal(0)*bvres(0)*(    pderxy(0,vi))
           +
           unitnormal(1)*bvres(0)*(0.5*pderxy(1,vi))
           +
           unitnormal(0)*bvres(1)*(0.5*pderxy(1,vi)));
 
-        elevec(vi*3 + 1) += fac_*timefacrhs*2.0*visc_*wd_gamma*(
+        elevec(vi*3 + 1) += consistencytimefacrhs*(
           unitnormal(1)*bvres(0)*(0.5*pderxy(0,vi))
           +
           unitnormal(0)*bvres(1)*(0.5*pderxy(0,vi))
@@ -2762,98 +2974,94 @@ template <DRT::Element::DiscretizationType bdistype,
           //
           // factor: afgdt
           //
-          //    /                             \
-          //   |    /        \       n+af      |
-          // - |   | Dacc * n | w , u    - u   |
-          //   |    \        /              b  |
-          //    \                             / boundaryele, inflow
+          //    /                                \
+          //   |         /      \       n+af      |
+          // - | rho *  | Du * n | w , u    - u   |
+          //   |         \      /              b  |
+          //    \                                 / boundaryele, inflow
           //
           */
+          const double timefacfacdens = fac_*timefac*densaf_;
 
           for (int ui=0; ui<piel; ++ui)
           {
             for (int vi=0; vi<piel; ++vi)
             {
-              elemat(vi*3    ,ui*3    ) -= fac_*timefac*pfunct(vi)*unitnormal(0)*bvres(0);
-              elemat(vi*3    ,ui*3 + 1) -= fac_*timefac*pfunct(vi)*unitnormal(1)*bvres(0);
+              elemat(vi*3    ,ui*3    ) -= timefacfacdens*pfunct(vi)*unitnormal(0)*bvres(0);
+              elemat(vi*3    ,ui*3 + 1) -= timefacfacdens*pfunct(vi)*unitnormal(1)*bvres(0);
 
-              elemat(vi*3 + 1,ui*3    ) -= fac_*timefac*pfunct(vi)*unitnormal(0)*bvres(1);
-              elemat(vi*3 + 1,ui*3 + 1) -= fac_*timefac*pfunct(vi)*unitnormal(1)*bvres(1);
+              elemat(vi*3 + 1,ui*3    ) -= timefacfacdens*pfunct(vi)*unitnormal(0)*bvres(1);
+              elemat(vi*3 + 1,ui*3 + 1) -= timefacfacdens*pfunct(vi)*unitnormal(1)*bvres(1);
             }
           }
 
           /*
           // factor: afgdt
           //
-          //    /                       \
-          //   |    / n+af   \           |
-          // - |   | u    * n | w , Dacc |
-          //   |    \        /           |
-          //    \  |          |         / boundaryele, inflow
-          //       +----------+
-          //           <0
+          //    /                          \
+          //   |         / n+af   \         |
+          // - | rho *  | u    * n | w , Du |
+          //   |         \        /         |
+          //    \       |          |       / boundaryele, inflow
+          //            +----------+
+          //                 <0
           */
-
-          const double normveltimefac =fac_*timefac*normvel;
+          const double normveltimefacfacdens = fac_*timefac*normvel*densaf_;
 
           for (int ui=0; ui<piel; ++ui)
           {
             for (int vi=0; vi<piel; ++vi)
             {
-              elemat(vi*3    ,ui*3    ) -= normveltimefac*pfunct(ui)*pfunct(vi);
-              elemat(vi*3 + 1,ui*3 + 1) -= normveltimefac*pfunct(ui)*pfunct(vi);
+              elemat(vi*3    ,ui*3    ) -= normveltimefacfacdens*pfunct(ui)*pfunct(vi);
+              elemat(vi*3 + 1,ui*3 + 1) -= normveltimefacfacdens*pfunct(ui)*pfunct(vi);
             }
           }
         } // end if full_linearisation
 
-        const double normvelfac =fac_*timefacrhs*normvel;
-
         /*
         // factor: 1
         //
-        //    /                             \
-        //   |    / n+af   \       n+af      |
-        // - |   | u    * n | w , u    - u   |
-        //   |    \        /              b  |
-        //    \  |          |               / boundaryele, inflow
-        //       +----------+
-        //           <0
+        //    /                                  \
+        //   |         / n+af   \       n+af      |
+        // - | rho *  | u    * n | w , u    - u   |
+        //   |         \        /              b  |
+        //    \       |          |               / boundaryele, inflow
+        //            +----------+
+        //                <0
         */
+        const double normveltimefacfacdensrhs = fac_*timefacrhs*normvel*densaf_;
+
         for (int vi=0; vi<piel; ++vi)
         {
-          elevec(vi*3    ) += normvelfac*pfunct(vi)*bvres(0);
-          elevec(vi*3 + 1) += normvelfac*pfunct(vi)*bvres(1);
+          elevec(vi*3    ) += normveltimefacfacdensrhs*pfunct(vi)*bvres(0);
+          elevec(vi*3 + 1) += normveltimefacfacdensrhs*pfunct(vi)*bvres(1);
         }
       } // end if normvel<0, i.e. boundary is an inflow boundary
 
       //--------------------------------------------------
       // penalty term
-
       /*
       // factor: nu*Cb/h*afgdt
       //
-      //    /          \
-      //   |            |
-      // + |  w , Dacc  |
-      //   |            |
-      //    \          / boundaryele
+      //    /        \
+      //   |          |
+      // + |  w , Du  |
+      //   |          |
+      //    \        / boundaryele
       //
       */
-
-      const double penaltytimefac=timefac*tau_B*fac_;
+      const double timefacfactaub = fac_*timefac*tau_B;
 
       for (int ui=0; ui<piel; ++ui)
       {
         for (int vi=0; vi<piel; ++vi)
         {
-          const double temp=penaltytimefac*pfunct(ui)*pfunct(vi);
+          const double temp = timefacfactaub*pfunct(ui)*pfunct(vi);
 
           elemat(vi*3    ,ui*3    ) += temp;
           elemat(vi*3 + 1,ui*3 + 1) += temp;
         }
       }
-
-      const double penaltyfac=tau_B*fac_*timefacrhs;
 
       /*
       // factor: nu*Cb/h
@@ -2865,11 +3073,12 @@ template <DRT::Element::DiscretizationType bdistype,
       //    \                / boundaryele
       //
       */
+      const double timefacfactaubrhs = fac_*timefacrhs*tau_B;
 
       for (int vi=0; vi<piel; ++vi)
       {
-        elevec(vi*3    ) -= penaltyfac*pfunct(vi)*bvres(0);
-        elevec(vi*3 + 1) -= penaltyfac*pfunct(vi)*bvres(1);
+        elevec(vi*3    ) -= timefacfactaubrhs*pfunct(vi)*bvres(0);
+        elevec(vi*3 + 1) -= timefacfactaubrhs*pfunct(vi)*bvres(1);
       }
     } // !onlynormal
     //---------------------------------------------------------------------
@@ -2881,22 +3090,21 @@ template <DRT::Element::DiscretizationType bdistype,
     {
       //--------------------------------------------------
       // partially integrated viscous term
-
-      const double timefacnu=fac_*2.0*visc_*timefac;
-
       /*
-      // factor: 2*nu
+      // factor: 2*mu
       //
-      //    /                             \
-      //   |                   s           |
-      // + |  v * n , n * nabla  Dacc * n  |
-      //   |                               |
-      //    \                             / boundaryele
+      //    /                           \
+      //   |                   s         |
+      // + |  v * n , n * nabla  Du * n  |
+      //   |                             |
+      //    \                           / boundaryele
       //
       */
+      const double timefacmu = fac_*2.0*visc_*timefac;
+
       for (int ui=0; ui<piel; ++ui)
       {
-        const double aux=timefacnu*(pderxy(0,ui)*unitnormal(0)+pderxy(1,ui)*unitnormal(1));
+        const double aux = timefacmu*(pderxy(0,ui)*unitnormal(0)+pderxy(1,ui)*unitnormal(1));
 
         for (int vi=0; vi<piel; ++vi)
         {
@@ -2909,7 +3117,7 @@ template <DRT::Element::DiscretizationType bdistype,
       }
 
       /*
-      // factor: 2*nu
+      // factor: 2*mu
       //
       //    /                             \
       //   |                   s  n+af     |
@@ -2918,6 +3126,8 @@ template <DRT::Element::DiscretizationType bdistype,
       //    \                             / boundaryele
       //
       */
+      const double timefacmurhs = fac_*2.0*visc_*timefacrhs;
+
       double n_o_nabla_u_o_n =
         pvderxyaf(0,0)*unitnormal(0)*unitnormal(0)
         +
@@ -2927,31 +3137,29 @@ template <DRT::Element::DiscretizationType bdistype,
 
       for (int vi=0; vi<piel; ++vi)
       {
-        elevec(vi*3    ) += fac_*timefacrhs*2.0*visc_*wd_gamma*pfunct(vi)*unitnormal(0)*n_o_nabla_u_o_n;
-        elevec(vi*3 + 1) += fac_*timefacrhs*2.0*visc_*wd_gamma*pfunct(vi)*unitnormal(1)*n_o_nabla_u_o_n;
+        elevec(vi*3    ) += timefacmurhs*pfunct(vi)*unitnormal(0)*n_o_nabla_u_o_n;
+        elevec(vi*3 + 1) += timefacmurhs*pfunct(vi)*unitnormal(1)*n_o_nabla_u_o_n;
       }
 
       //--------------------------------------------------
       // (adjoint) consistency term, viscous part
-
-      const double consistencytimefac=fac_*2.0*visc_*wd_gamma*timefac;
-
       /*
-      // factor: 2*nu*gamma_wd
+      // factor: 2*mu*gamma_wd*afgdt
       //
-      //    /                               \
-      //   |            s                    |
-      // + |   n * nabla  w * n ,  Dacc * n  |
-      //   |                                 |
-      //    \                               / boundaryele
+      //    /                             \
+      //   |            s                  |
+      // + |   n * nabla  w * n ,  Du * n  |
+      //   |                               |
+      //    \                             / boundaryele
       //
       */
+      const double consistencytimefac = fac_*2.0*visc_*wd_gamma*timefac;
 
       for (int vi=0; vi<piel; ++vi)
       {
         for (int ui=0; ui<piel; ++ui)
         {
-          const double aux=pderxy(0,vi)*unitnormal(0)+pderxy(1,vi)*unitnormal(1);
+          const double aux = pderxy(0,vi)*unitnormal(0)+pderxy(1,vi)*unitnormal(1);
 
           elemat(vi*3    ,ui*3    ) -= aux*unitnormal(0)*unitnormal(0)*pfunct(ui)*consistencytimefac;
           elemat(vi*3    ,ui*3 + 1) -= aux*unitnormal(0)*unitnormal(1)*pfunct(ui)*consistencytimefac;
@@ -2960,8 +3168,9 @@ template <DRT::Element::DiscretizationType bdistype,
           elemat(vi*3 + 1,ui*3 + 1) -= aux*unitnormal(1)*unitnormal(1)*pfunct(ui)*consistencytimefac;
         }
       }
+
       /*
-      // factor: 2*nu*gamma_wd
+      // factor: 2*mu*gamma_wd
       //
       //    /                                        \
       //   |            s          / n+af     \       |
@@ -2970,48 +3179,46 @@ template <DRT::Element::DiscretizationType bdistype,
       //    \                                        / boundaryele
       //
       */
+      const double consistencytimefacrhs = fac_*2.0*visc_*wd_gamma*timefacrhs;
 
-      double bvres_o_n=bvres(0)*unitnormal(0)+bvres(1)*unitnormal(1);
+      double bvres_o_n = bvres(0)*unitnormal(0)+bvres(1)*unitnormal(1);
 
       for (int vi=0; vi<piel; ++vi)
       {
-        double aux=(pderxy(0,vi)*unitnormal(0)+pderxy(1,vi)*unitnormal(1));
+        double aux = pderxy(0,vi)*unitnormal(0)+pderxy(1,vi)*unitnormal(1);
 
-        elevec(vi*3    ) += fac_*timefacrhs*2.0*visc_*wd_gamma*aux*unitnormal(0)*bvres_o_n;
-        elevec(vi*3 + 1) += fac_*timefacrhs*2.0*visc_*wd_gamma*aux*unitnormal(1)*bvres_o_n;
+        elevec(vi*3    ) += consistencytimefacrhs*aux*unitnormal(0)*bvres_o_n;
+        elevec(vi*3 + 1) += consistencytimefacrhs*aux*unitnormal(1)*bvres_o_n;
       }
 
       //--------------------------------------------------
       // penalty term
-
-      const double penaltytimefac=timefac*tau_B*fac_;
-
       /*
-      // factor: nu*Cb/h*afgdt
+      // factor: mu*Cb/h*afgdt
       //
-      //    /                  \
-      //   |                    |
-      // + |  w o n , Dacc o n  |
-      //   |                    |
-      //    \                  / boundaryele
+      //    /                \
+      //   |                  |
+      // + |  w o n , Du o n  |
+      //   |                  |
+      //    \                / boundaryele
       //
       */
+      const double timefacfactaub = fac_*timefac*tau_B;
+
       for (int ui=0; ui<piel; ++ui)
       {
         for (int vi=0; vi<piel; ++vi)
         {
-          elemat(vi*3    ,ui*3    ) += penaltytimefac*pfunct(vi)*unitnormal(0)*unitnormal(0)*pfunct(ui);
-          elemat(vi*3    ,ui*3 + 1) += penaltytimefac*pfunct(vi)*unitnormal(0)*unitnormal(1)*pfunct(ui);
+          elemat(vi*3    ,ui*3    ) += timefacfactaub*pfunct(vi)*unitnormal(0)*unitnormal(0)*pfunct(ui);
+          elemat(vi*3    ,ui*3 + 1) += timefacfactaub*pfunct(vi)*unitnormal(0)*unitnormal(1)*pfunct(ui);
 
-          elemat(vi*3 + 1,ui*3    ) += penaltytimefac*pfunct(vi)*unitnormal(1)*unitnormal(0)*pfunct(ui);
-          elemat(vi*3 + 1,ui*3 + 1) += penaltytimefac*pfunct(vi)*unitnormal(1)*unitnormal(1)*pfunct(ui);
+          elemat(vi*3 + 1,ui*3    ) += timefacfactaub*pfunct(vi)*unitnormal(1)*unitnormal(0)*pfunct(ui);
+          elemat(vi*3 + 1,ui*3 + 1) += timefacfactaub*pfunct(vi)*unitnormal(1)*unitnormal(1)*pfunct(ui);
         }
       }
 
-      const double penaltyfac=tau_B*fac_*timefacrhs;
-
       /*
-      // factor: nu*Cb/h
+      // factor: mu*Cb/h
       //
       //    /                           \
       //   |            / n+af   \       |
@@ -3020,11 +3227,12 @@ template <DRT::Element::DiscretizationType bdistype,
       //    \                           / boundaryele
       //
       */
+      const double timefacfactaubrhs = fac_*timefacrhs*tau_B;
 
       for (int vi=0; vi<piel; ++vi)
       {
-        elevec(vi*3    ) -= penaltyfac*pfunct(vi)*unitnormal(0)*bvres_o_n;
-        elevec(vi*3 + 1) -= penaltyfac*pfunct(vi)*unitnormal(1)*bvres_o_n;
+        elevec(vi*3    ) -= timefacfactaubrhs*pfunct(vi)*unitnormal(0)*bvres_o_n;
+        elevec(vi*3 + 1) -= timefacfactaubrhs*pfunct(vi)*unitnormal(1)*bvres_o_n;
       }
 
       //--------------------------------------------------
@@ -3040,70 +3248,71 @@ template <DRT::Element::DiscretizationType bdistype,
           //
           // factor: afgdt
           //
-          //    /                                              \
-          //   |    /        \    /     \     / n+af     \      |
-          // - |   | Dacc * n |  | w o n | , | u    - u   | o n |
-          //   |    \        /    \     /     \        b /      |
-          //    \                                              / boundaryele, inflow
+          //    /                                                 \
+          //   |        /       \    /     \     / n+af     \      |
+          // - | rho *  | Du * n |  | w o n | , | u    - u   | o n |
+          //   |         \      /    \     /     \        b /      |
+          //    \                                                 / boundaryele, inflow
           //
           */
+          const double timefacfacdensbvresn = fac_*timefac*densaf_*bvres_o_n;
 
           for (int ui=0; ui<piel; ++ui)
           {
             for (int vi=0; vi<piel; ++vi)
             {
-              elemat(vi*3    ,ui*3    ) -= fac_*timefac*bvres_o_n*pfunct(vi)*unitnormal(0)*unitnormal(0)*pfunct(ui);
-              elemat(vi*3    ,ui*3 + 1) -= fac_*timefac*bvres_o_n*pfunct(vi)*unitnormal(0)*unitnormal(1)*pfunct(ui);
+              elemat(vi*3    ,ui*3    ) -= timefacfacdensbvresn*pfunct(vi)*unitnormal(0)*unitnormal(0)*pfunct(ui);
+              elemat(vi*3    ,ui*3 + 1) -= timefacfacdensbvresn*pfunct(vi)*unitnormal(0)*unitnormal(1)*pfunct(ui);
 
-              elemat(vi*3 + 1,ui*3    ) -= fac_*timefac*bvres_o_n*pfunct(vi)*unitnormal(1)*unitnormal(0)*pfunct(ui);
-              elemat(vi*3 + 1,ui*3 + 1) -= fac_*timefac*bvres_o_n*pfunct(vi)*unitnormal(1)*unitnormal(1)*pfunct(ui);
+              elemat(vi*3 + 1,ui*3    ) -= timefacfacdensbvresn*pfunct(vi)*unitnormal(1)*unitnormal(0)*pfunct(ui);
+              elemat(vi*3 + 1,ui*3 + 1) -= timefacfacdensbvresn*pfunct(vi)*unitnormal(1)*unitnormal(1)*pfunct(ui);
             }
           }
-
-          const double normveltimefac =fac_*timefac*normvel;
 
           /*
           // factor: afgdt
           //
-          //    /                                   \
-          //   |    / n+af   \   /     \             |
-          // - |   | u    * n | | w o n | , Dacc o n |
-          //   |    \        /   \     /             |
-          //    \  |          |                     / boundaryele, inflow
-          //       +----------+
-          //           <0
+          //    /                                      \
+          //   |         / n+af   \   /     \           |
+          // - | rho *  | u    * n | | w o n | , Du o n |
+          //   |         \        /   \     /           |
+          //    \        |          |                   / boundaryele, inflow
+          //             +----------+
+          //                 <0
           */
+          const double normveltimefacfacdens = fac_*timefac*normvel*densaf_;
+
           for (int ui=0; ui<piel; ++ui)
           {
             for (int vi=0; vi<piel; ++vi)
             {
-              elemat(vi*3    ,ui*3    ) -= normveltimefac*pfunct(vi)*unitnormal(0)*unitnormal(0)*pfunct(ui);
-              elemat(vi*3    ,ui*3 + 1) -= normveltimefac*pfunct(vi)*unitnormal(0)*unitnormal(1)*pfunct(ui);
+              elemat(vi*3    ,ui*3    ) -= normveltimefacfacdens*pfunct(vi)*unitnormal(0)*unitnormal(0)*pfunct(ui);
+              elemat(vi*3    ,ui*3 + 1) -= normveltimefacfacdens*pfunct(vi)*unitnormal(0)*unitnormal(1)*pfunct(ui);
 
-              elemat(vi*3 + 1,ui*3    ) -= normveltimefac*pfunct(vi)*unitnormal(1)*unitnormal(0)*pfunct(ui);
-              elemat(vi*3 + 1,ui*3 + 1) -= normveltimefac*pfunct(vi)*unitnormal(1)*unitnormal(1)*pfunct(ui);
+              elemat(vi*3 + 1,ui*3    ) -= normveltimefacfacdens*pfunct(vi)*unitnormal(1)*unitnormal(0)*pfunct(ui);
+              elemat(vi*3 + 1,ui*3 + 1) -= normveltimefacfacdens*pfunct(vi)*unitnormal(1)*unitnormal(1)*pfunct(ui);
             }
           }
 
         } // end complete_linearisation
 
-        const double normvelfac =fac_*timefacrhs*normvel;
-
         /*
         // factor: 1
         //
         //    /                                            \
-        //   |    / n+af   \   /     \    / n+af     \      |
-        // - |   | u    * n | | w o n |, | u    - u   | o n |
-        //   |    \        /   \     /    \        b /      |
-        //    \  |          |                              / boundaryele, inflow
-        //       +----------+
-        //           <0
+        //   |          / n+af   \   /     \    / n+af     \      |
+        // - |  rho *  | u    * n | | w o n |, | u    - u   | o n |
+        //   |          \        /   \     /    \        b /      |
+        //    \        |          |                              / boundaryele, inflow
+        //             +----------+
+        //                 <0
         */
+        const double normveltimefacfacdensrhs = fac_*timefacrhs*normvel*densaf_*bvres_o_n;
+
         for (int vi=0; vi<piel; ++vi)
         {
-          elevec(vi*3    ) += normvelfac*pfunct(vi)*unitnormal(0)*bvres_o_n;
-          elevec(vi*3 + 1) += normvelfac*pfunct(vi)*unitnormal(1)*bvres_o_n;
+          elevec(vi*3    ) += normveltimefacfacdensrhs*pfunct(vi)*unitnormal(0);
+          elevec(vi*3 + 1) += normveltimefacfacdensrhs*pfunct(vi)*unitnormal(1);
         }
       } // end if normvel<0, i.e. boundary is an inflow boundary
 
@@ -3112,6 +3321,8 @@ template <DRT::Element::DiscretizationType bdistype,
     }
     else dserror("incorrect number of spatial dimensions for parent element!");
   } // end integration loop
+  } // end of (temporarily) switching off of weak Dirichlet boundary conditions 
+    // for zero time-curve factor
 
   return;
 }

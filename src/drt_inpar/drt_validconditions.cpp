@@ -1052,6 +1052,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // adiabatic exponent
   flowdeppressurecomponents.push_back(Teuchos::rcp(new RealConditionComponent("AdiabaticExponent")));
 
+  // values for time curve
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+
 
   Teuchos::RCP<ConditionDefinition> lineflowdeppressure
     =
