@@ -22,7 +22,7 @@ PARAM(p) = (PARAM_b - PARAM_c)*0.5*(1.0 - tanh[(p-p_bc)/k_p] ) + PARAM_c + (PARA
 
 c) a heart-specific model governing the arterial pressure with a three-element Windkessel with an additional valve law
 (resistive Windkessel) infront of it, opening when arterial pressure is reached in the ventricels and closing when flux is
-beginning to be reversed (cf. Saine-Marie et. al. "Modeling and estimation of the cardiac electromechanical activity",
+beginning to be reversed (cf. Sainte-Marie et. al. "Modeling and estimation of the cardiac electromechanical activity",
 Comp. & Struct. 84 (2006) 1743-1759)
 
 The Windkessel is momolithically coupled with the standard structural dynamics governing equation
