@@ -163,7 +163,7 @@ private:
    double structinttarget_;
 
   //! set up maps to hold each facets gid
-  const Epetra_Map SetupConditionMap(DRT::Condition* cond);
+  const Epetra_Map SetupConditionMap(DRT::Condition* cond, Teuchos::RCP<DRT::Discretization> dis);
 
   //! Compute normals and centers in a material configuration
   void ComputeNormalCenterMaterialConfig(DRT::Condition* cond,

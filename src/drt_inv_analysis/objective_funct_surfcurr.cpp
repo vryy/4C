@@ -149,17 +149,17 @@ targetmapred_(Teuchos::null)
   sigmaW2_=sigmaW*sigmaW;
 
   // generate map of boundary elements of source and target
-  sourcemap_ = Teuchos::rcp(new Epetra_Map(SetupConditionMap(sourcecond_)));
-  targetmap_ = Teuchos::rcp(new Epetra_Map(SetupConditionMap(targetcond_)));
+  sourcemap_ = Teuchos::rcp(new Epetra_Map(SetupConditionMap(sourcecond_, sourcedis_)));
+  targetmap_ = Teuchos::rcp(new Epetra_Map(SetupConditionMap(targetcond_, targetdis_)));
 
-  // compute the all reduced maps
+  // compute the all reduced maps for data communication
   sourcemapred_ = LINALG::AllreduceEMap(*sourcemap_,0);
   targetmapred_ = LINALG::AllreduceEMap(*targetmap_,0);
 
   //complete evaluation of the target data can be done here once
   ComputeNormalCenterMaterialConfig(targetcond_,targetdis_,&normal_t_,&center_t_);
 
-  // all reduce target data to proc0 here already, since it is the same throughout
+  // "allreduce" target data to proc0 here already, since it is the same throughout
   DRT::Exporter ex(*targetmap_,*targetmapred_,targetdis_->Comm());
   ex.Export(normal_t_);
   ex.Export(center_t_);
@@ -169,9 +169,10 @@ targetmapred_(Teuchos::null)
 
 }
 
-
-
-const Epetra_Map STR::INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(DRT::Condition* cond)
+/*----------------------------------------------------------------------*/
+/* buid unique map of tris in conditions                     keh 11/13  */
+/*----------------------------------------------------------------------*/
+const Epetra_Map STR::INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(DRT::Condition* cond, Teuchos::RCP<DRT::Discretization> dis)
 {
   // get total number of elements in this condition
   int lnumele = cond->Geometry().size();
@@ -187,6 +188,11 @@ const Epetra_Map STR::INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(DRT::Con
   for (ele=geom.begin(); ele != geom.end(); ++ele)
   {
     DRT::Element* element = ele->second.get();
+
+    // only proceed in case this element has a row element parent:
+    if ( dis->ElementRowMap()->LID( element->ParentElement()->Id() ) == -1 )
+      continue;
+
     switch(element->NumNode())
     {
     case 3:
