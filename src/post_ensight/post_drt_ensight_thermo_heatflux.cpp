@@ -452,7 +452,7 @@ void ThermoEnsightWriter::WriteElementCenterHeatfluxStep(
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // other parameters that might be needed by the elements
-  p.set("action",THR::postproc_thermo_heatflux);
+  p.set<int>("action",THR::postproc_thermo_heatflux);
   p.set("heatfluxtype","cxyz");
   p.set("gpheatfluxmap",data);
   p.set("total time", -1.0);
