@@ -167,10 +167,13 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   // viscous mid-point force vector F_visc
   fviscm_ = LINALG::CreateVector(*DofRowMapView(), true);
 
+    // create parameter list
+    Teuchos::ParameterList params;
+
   if (!HaveNonlinearMass())
   {
     // set initial internal force vector
-    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_);
+    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_,params);
   }
   else
   {
@@ -178,7 +181,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
     double timeintfac_vel=gamma_*(*dt_)[0];
 
     // Check, if initial residuum really vanishes for acc_ = 0
-    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_);
+    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_,params);
 
     NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0));
   }
@@ -260,8 +263,13 @@ void STR::TimIntGenAlpha::PredictConstAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
+void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
 {
+  // get info about prediction step from parameter list
+  bool predict = false;
+  if(params.isParameter("predict"))
+    predict = params.get<bool>("predict");
+
   // initialise stiffness matrix to zero
   stiff_->Zero();
 
@@ -297,7 +305,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
   // build new internal forces and stiffness
   if (!HaveNonlinearMass())
   {
-    ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_);
+    ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_,params);
   }
   else
   {
@@ -320,7 +328,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
 
     double timintfac_dis=beta_*(*dt_)[0]*(*dt_)[0];
     double timintfac_vel=gamma_*(*dt_)[0];
-    ApplyForceStiffInternalAndInertial(timen_, (*dt_)[0], timintfac_dis, timintfac_vel, disn_, disi_, veln_, accn_, fintn_, finertn_, stiff_, mass_);
+    ApplyForceStiffInternalAndInertial(timen_, (*dt_)[0], timintfac_dis, timintfac_vel, disn_, disi_, veln_, accn_, fintn_, finertn_, stiff_, mass_,params);
   }
 
   // add forces and stiffness due to constraints
@@ -413,10 +421,10 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
 /*----------------------------------------------------------------------*/
 /* Evaluate/define the residual force vector #fres_ for
  * relaxation solution with SolveRelaxationLinear */
-void STR::TimIntGenAlpha::EvaluateForceStiffResidualRelax()
+void STR::TimIntGenAlpha::EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params)
 {
   // compute residual forces #fres_ and stiffness #stiff_
-  EvaluateForceStiffResidual();
+  EvaluateForceStiffResidual(params);
 
   // overwrite the residual forces #fres_ with interface load
   fres_->Update(-1+alphaf_, *fifc_, 0.0);
@@ -724,10 +732,13 @@ void STR::TimIntGenAlpha::updateMethodSpecificEpetraCrack( std::map<int,int>& ol
 
   ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
 
+    // create parameter list
+    Teuchos::ParameterList params;
+
   if (!HaveNonlinearMass())
   {
     // set initial internal force vector
-    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_);
+    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_,params);
   }
   else
   {
@@ -735,7 +746,7 @@ void STR::TimIntGenAlpha::updateMethodSpecificEpetraCrack( std::map<int,int>& ol
     double timeintfac_vel=gamma_*(*dt_)[0];
 
     // Check, if initial residuum really vanishes for acc_ = 0
-    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_);
+    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_,params);
 
     NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0));
   }

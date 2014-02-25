@@ -122,10 +122,13 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   // viscous mid-point force vector F_visc
   fvisct_ = LINALG::CreateVector(*DofRowMapView(), true);
 
+    // create parameter list
+    Teuchos::ParameterList params;
+
   if (!HaveNonlinearMass())
   {
     // set initial internal force vector
-    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_);
+    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_,params);
   }
   else
   {
@@ -133,7 +136,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
     double timeintfac_vel=theta_*(*dt_)[0];
 
     // Check, if initial residuum really vanishes for acc_ = 0
-    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_);
+    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_,params);
 
     NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0));
   }
@@ -238,8 +241,13 @@ void STR::TimIntOneStepTheta::PredictConstAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
+void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
 {
+  // get info about prediction step from parameter list
+  bool predict = false;
+  if(params.isParameter("predict"))
+    predict = params.get<bool>("predict");
+
   // initialise stiffness matrix to zero
   stiff_->Zero();
   if(damping_ == INPAR::STR::damp_material)
@@ -272,7 +280,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
   if (!HaveNonlinearMass())
   {
     // ordinary internal force and stiffness
-    ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, damp_);
+    ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_,params, damp_);
   }
   else
   {
@@ -299,7 +307,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
 
     double timintfac_dis=theta_*theta_*(*dt_)[0]*(*dt_)[0];
     double timintfac_vel=theta_*(*dt_)[0];
-    ApplyForceStiffInternalAndInertial(timen_, (*dt_)[0], timintfac_dis, timintfac_vel, disn_, disi_, veln_, accn_, fintn_, finertn_, stiff_, mass_);
+    ApplyForceStiffInternalAndInertial(timen_, (*dt_)[0], timintfac_dis, timintfac_vel, disn_, disi_, veln_, accn_, fintn_, finertn_, stiff_, mass_,params);
   }
 
   // add forces and stiffness due to spring dashpot condition
@@ -383,10 +391,10 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
 /*----------------------------------------------------------------------*/
 /* Evaluate/define the residual force vector #fres_ for
  * relaxation solution with SolveRelaxationLinear */
-void STR::TimIntOneStepTheta::EvaluateForceStiffResidualRelax()
+void STR::TimIntOneStepTheta::EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params)
 {
   // compute residual forces #fres_ and stiffness #stiff_
-  EvaluateForceStiffResidual();
+  EvaluateForceStiffResidual(params);
 
   // overwrite the residual forces #fres_ with interface load
   fres_->Update(-theta_, *fifc_, 0.0);

@@ -430,8 +430,9 @@ void STR::TimIntStatMech::Predict()
   ApplyDirichletBC(timen_, disn_, veln_);
 
   // calculate internal force and stiffness matrix
-  bool predict = true;
-  EvaluateForceStiffResidual(predict);
+  Teuchos::ParameterList params;
+  params.set<bool>("predict",true);
+  EvaluateForceStiffResidual(params);
 
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
@@ -514,8 +515,13 @@ void STR::TimIntStatMech::ApplyDirichletBC(const double                time,
 /*----------------------------------------------------------------------*
  |  evaluate residual                             (public) mueller 03/12|
  *----------------------------------------------------------------------*/
-void STR::TimIntStatMech::EvaluateForceStiffResidual(bool predict)
+void STR::TimIntStatMech::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
 {
+  // get info about prediction step from parameter list
+  bool predict = false;
+  if(params.isParameter("predict"))
+    predict = params.get<bool>("predict");
+
   // initialise stiffness matrix to zero
   stiff_->Zero();
 
@@ -769,7 +775,8 @@ void STR::TimIntStatMech::NewtonFull()
 
     // compute residual forces #fres_ and stiffness #stiff_
     // whose components are globally oriented
-    EvaluateForceStiffResidual();
+    Teuchos::ParameterList params;
+    EvaluateForceStiffResidual(params);
 
     // extract reaction forces
     // reactions are negative to balance residual on DBC
@@ -1248,8 +1255,11 @@ void STR::TimIntStatMech::PTC()
     // update displacements and velocities for this iteration step
     UpdateIter(iter_);
 
+    // empty parameter list
+    Teuchos::ParameterList params;
+
     //---------------- compute internal forces, stiffness and residual
-    EvaluateForceStiffResidual();
+    EvaluateForceStiffResidual(params);
 
     // reactions are negative to balance residual on DBC
     // note: due to the use of the old "dirichtoggle_" vector, fres_ dofs with DBCs have already been blanked

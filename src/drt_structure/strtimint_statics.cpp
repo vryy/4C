@@ -124,8 +124,13 @@ void STR::TimIntStatics::PredictConstDisConsistVelAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void STR::TimIntStatics::EvaluateForceStiffResidual(bool predict)
+void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
 {
+  // get info about prediction step from parameter list
+  bool predict = false;
+  if(params.isParameter("predict"))
+    predict = params.get<bool>("predict");
+
   // initialize stiffness matrix to zero
   stiff_->Zero();
 
@@ -140,7 +145,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(bool predict)
   fintn_->PutScalar(0.0);
 
   // ordinary internal force and stiffness
-  ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_);
+  ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, params);
 
   // apply forces and stiffness due to constraints
   Teuchos::ParameterList pcon; //apply empty parameterlist, no scaling necessary
@@ -179,10 +184,10 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(bool predict)
 /*----------------------------------------------------------------------*/
 /* Evaluate/define the residual force vector #fres_ for
  * relaxation solution with SolveRelaxationLinear */
-void STR::TimIntStatics::EvaluateForceStiffResidualRelax()
+void STR::TimIntStatics::EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params)
 {
   // compute residual forces #fres_ and stiffness #stiff_
-  EvaluateForceStiffResidual();
+  EvaluateForceStiffResidual(params);
 
   // overwrite the residual forces #fres_ with interface load
   fres_->Update(-1.0, *fifc_, 0.0);

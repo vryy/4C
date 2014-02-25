@@ -310,10 +310,12 @@ void STR::TimIntImpl::Predict()
   //    conman_->ScaleLagrMult(0.0);
   //  }
 
+  // create parameter list to hand in boolean flag indicating that this a predictor
+  Teuchos::ParameterList params;
+  params.set<bool>("predict",true);
+
   // compute residual forces fres_ and stiffness stiff_
-  // (hand in boolean flag indicating that this a predictor)
-  bool predict = true;
-  EvaluateForceStiffResidual(predict);
+  EvaluateForceStiffResidual(params);
 
   // rotate to local coordinate systems
   if (locsysman_ != Teuchos::null)
@@ -375,10 +377,12 @@ void STR::TimIntImpl::PreparePartitionStep()
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, accn_, false);
 
+  // create parameter list to hand in boolean flag indicating that this a predictor
+  Teuchos::ParameterList params;
+  params.set<bool>("predict",true);
+
   // compute residual forces fres_ and stiffness stiff_
-  // (hand in boolean flag indicating that this a predictor)
-  bool predict = true;
-  EvaluateForceStiffResidual(predict);
+  EvaluateForceStiffResidual(params);
 
   // rotate to local co-ordinate systems
   if (locsysman_ != Teuchos::null)
@@ -467,11 +471,13 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   // free-DOFs hold zeros
   dbcinc->Update(-1.0, *(*dis_)(0), 1.0);
 
+  // create parameter list to hand in boolean flag indicating that this a predictor
+  Teuchos::ParameterList params;
+  params.set<bool>("predict",true);
+
   // compute residual forces fres_ and stiffness stiff_
   // at disn_, etc which are unchanged
-  // (hand in boolean flag indicating that this a predictor)
-  bool predict = true;
-  EvaluateForceStiffResidual(predict);
+  EvaluateForceStiffResidual(params);
 
   // add linear reaction forces to residual
   {
@@ -1254,9 +1260,12 @@ int STR::TimIntImpl::NewtonFull()
     // update end-point displacements etc
     UpdateIter(iter_);
 
+    // create empty parameter list
+    Teuchos::ParameterList params;
+
     // compute residual forces #fres_ and stiffness #stiff_
     // whose components are globally oriented
-    EvaluateForceStiffResidual();
+    EvaluateForceStiffResidual(params);
 
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
@@ -1672,9 +1681,12 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 			// update end-point displacements etc
 			UpdateIter(iter_);
 
+      // create parameter list
+      Teuchos::ParameterList params;
+
 			// compute residual forces #fres_ and stiffness #stiff_
 			// which contain forces and stiffness of constraints
-			EvaluateForceStiffResidual();
+			EvaluateForceStiffResidual(params);
 			// compute residual and stiffness of constraint equations
 			conrhs = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
 
@@ -1799,9 +1811,12 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 			// update end-point displacements, velocities, accelerations
 			UpdateIter(iter_);
 
+      // create parameter list
+      Teuchos::ParameterList params;
+
 			// compute residual forces #fres_ and stiffness #stiff_
 			// which contain forces and stiffness of Windkessels
-			EvaluateForceStiffResidual();
+			EvaluateForceStiffResidual(params);
 
 			// blank residual at (locally oriented) Dirichlet DOFs
 			// rotate to local co-ordinate systems
@@ -2368,9 +2383,12 @@ int STR::TimIntImpl::PTC()
     // update end-point displacements etc
     UpdateIter(iter_);
 
+    // create parameter list
+    Teuchos::ParameterList params;
+
     // compute residual forces #fres_ and stiffness #stiff_
     // whose components are globally oriented
-    EvaluateForceStiffResidual();
+    EvaluateForceStiffResidual(params);
 
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
@@ -3074,9 +3092,12 @@ void STR::TimIntImpl::PrintStepText
 /* Linear structure solve with just an interface load */
 Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 {
+  // create parameter list
+  Teuchos::ParameterList params;
+
   // Evaluate/define the residual force vector #fres_ for
   // relaxation solution with SolveRelaxationLinear
-  EvaluateForceStiffResidualRelax();
+  EvaluateForceStiffResidualRelax(params);
 
   // negative residual
   fres_->Scale(-1.0);

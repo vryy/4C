@@ -233,11 +233,11 @@ namespace STR
     void PredictConstAcc();
 
     //! Create force residual #fres_ and its stiffness #stiff_
-    void EvaluateForceStiffResidual(bool predict = false);
+    void EvaluateForceStiffResidual(Teuchos::ParameterList& params);
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear
-    void EvaluateForceStiffResidualRelax();
+    void EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params);
 
     //! Determine characteristic norm for displacements
     //! \author lw (originally)

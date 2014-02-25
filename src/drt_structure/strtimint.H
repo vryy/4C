@@ -469,6 +469,7 @@ namespace STR
       const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
       Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
+      Teuchos::ParameterList& params,  //!< parameters from nonlinear solver
       Teuchos::RCP<LINALG::SparseOperator> damp = Teuchos::null  //!< material damping matrix
     );
 
@@ -486,7 +487,8 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
       Teuchos::RCP<Epetra_Vector> finert,  //!< inertia force
       Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
-      Teuchos::RCP<LINALG::SparseOperator> mass  //!< mass matrix
+      Teuchos::RCP<LINALG::SparseOperator> mass,  //!< mass matrix
+      Teuchos::ParameterList& params  //!< parameters from nonlinear solver
     );
 
 

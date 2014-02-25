@@ -183,8 +183,13 @@ void STR::TimIntGEMM::PredictConstAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void STR::TimIntGEMM::EvaluateForceStiffResidual(bool predict)
+void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
 {
+  // get info about prediction step from parameter list
+  bool predict = false;
+  if(params.isParameter("predict"))
+    predict = params.get<bool>("predict");
+
   // build by last converged state and predicted target state
   // the predicted mid-state
   EvaluateMidState();
@@ -286,10 +291,10 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(bool predict)
 /*----------------------------------------------------------------------*/
 /* Evaluate/define the residual force vector #fres_ for
  * relaxation solution with SolveRelaxationLinear */
-void STR::TimIntGEMM::EvaluateForceStiffResidualRelax()
+void STR::TimIntGEMM::EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params)
 {
   // compute residual forces #fres_ and stiffness #stiff_
-  EvaluateForceStiffResidual();
+  EvaluateForceStiffResidual(params);
 
   // overwrite the residual forces #fres_ with interface load
   fres_->Update(-(1.0-alphaf_), *fifc_, 0.0);

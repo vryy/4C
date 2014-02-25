@@ -323,8 +323,11 @@ bool STR::TimIntImpl::computeF
   //   brings #disn_ in sync with #x, so we are ready for next call here
   UpdateIter(0);
 
+  // create parameter list
+  Teuchos::ParameterList params;
+
   // make force residual and tangent, disi is needed for elementwise variables
-  EvaluateForceStiffResidual();
+  EvaluateForceStiffResidual(params);
 
   // blank DBC stuff etc.
   // HINT: a negative residual is returned

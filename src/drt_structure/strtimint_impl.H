@@ -169,7 +169,7 @@ namespace STR
     //! whether this method is called from a predictor step or
     //! from a regular Newton step. Thus we hand in a boolean flag
     //! which reflects the respective situation.
-    virtual void EvaluateForceStiffResidual(bool predict = false) = 0;
+    virtual void EvaluateForceStiffResidual(Teuchos::ParameterList& params) = 0;
 
     //! Evaluate forces due to constraints
     void ApplyForceStiffConstraint
@@ -672,7 +672,7 @@ namespace STR
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear
-    virtual void EvaluateForceStiffResidualRelax() = 0;
+    virtual void EvaluateForceStiffResidualRelax(Teuchos::ParameterList& params) = 0;
 
     //! Linear structure solve with just an interface load
     Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
@@ -742,8 +742,10 @@ namespace STR
     {
       UpdateIterIncrementally(disiterinc);
 
+      Teuchos::ParameterList params;
+
       // builds tangent, residual and applies DBC
-      EvaluateForceStiffResidual();
+      EvaluateForceStiffResidual(params);
       PrepareSystemForNewtonSolve();
       return;
     }

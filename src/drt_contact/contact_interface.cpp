@@ -3599,7 +3599,7 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
 
     // complementarity parameter scaling linearization
     if (adaptive_cn && mesh_h != 0.0)
-    {;
+    {
       for (colcurr=deriv_mesh_h.begin(); colcurr!=deriv_mesh_h.end(); ++colcurr)
       {
         int col = colcurr->first;

@@ -2234,27 +2234,25 @@ void STR::TimInt::ApplyForceStiffInternal
   const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
   Teuchos::RCP<Epetra_Vector> fint,  // internal force
   Teuchos::RCP<LINALG::SparseOperator> stiff,  // stiffness matrix
+  Teuchos::ParameterList& params,  //!< parameters from nonlinear solver
   Teuchos::RCP<LINALG::SparseOperator> damp   // material damping matrix
 )
 {
   // *********** time measurement ***********
   double dtcpu = timer_->WallTime();
   // *********** time measurement ***********
-
-  // create the parameters for the discretization
-  Teuchos::ParameterList p;
   // action for elements
   const std::string action = "calc_struct_nlnstiff";
-  p.set("action", action);
+  params.set("action", action);
   // other parameters that might be needed by the elements
-  p.set("total time", time);
-  p.set("delta time", dt);
-  p.set("damping", damping_);
-  p.set<int>("young_temp", young_temp_);
-  if (pressure_ != Teuchos::null) p.set("volume", 0.0);
+  params.set("total time", time);
+  params.set("delta time", dt);
+  params.set("damping", damping_);
+  params.set<int>("young_temp", young_temp_);
+  if (pressure_ != Teuchos::null) params.set("volume", 0.0);
 
   // set plasticity data
-  if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(p);
+  if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(params);
 
   // compute new inner radius
   discret_->ClearState();
@@ -2273,11 +2271,11 @@ void STR::TimInt::ApplyForceStiffInternal
   if( (dismatn_!=Teuchos::null) )
     discret_->SetState(0,"material_displacement",dismatn_);
 
-  discret_->Evaluate(p, stiff, damp, fint, Teuchos::null, Teuchos::null);
+  discret_->Evaluate(params, stiff, damp, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
   // get plasticity data
-  if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(p);
+  if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(params);
 
 #if 0
   if (pressure_ != Teuchos::null)
@@ -2307,25 +2305,25 @@ void STR::TimInt::ApplyForceStiffInternalAndInertial
   Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
   Teuchos::RCP<Epetra_Vector> finert,  //!< inertia force
   Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
-  Teuchos::RCP<LINALG::SparseOperator> mass  //!< mass matrix
+  Teuchos::RCP<LINALG::SparseOperator> mass,  //!< mass matrix
+  Teuchos::ParameterList& params  //!< parameters from nonlinear solver
 )
 {
     //dis->Print(std::cout);
     //vel->Print(std::cout);
-    // create the parameters for the discretization
-    Teuchos::ParameterList p;
+
     // action for elements
     const std::string action = "calc_struct_nlnstiffmass";
-    p.set("action", action);
+    params.set("action", action);
     // other parameters that might be needed by the elements
-    p.set("total time", time);
-    p.set("delta time", dt);
+    params.set("total time", time);
+    params.set("delta time", dt);
 
-    p.set("timintfac_dis", timintfac_dis);
-    p.set("timintfac_vel", timintfac_vel);
+    params.set("timintfac_dis", timintfac_dis);
+    params.set("timintfac_vel", timintfac_vel);
 
     // set plasticity data
-    if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(p);
+    if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(params);
 
     // compute new inner radius
     discret_->ClearState();
@@ -2338,11 +2336,11 @@ void STR::TimInt::ApplyForceStiffInternalAndInertial
     discret_->SetState(0,"velocity", vel);
     discret_->SetState(0,"acceleration", acc);
 
-    discret_->Evaluate(p, stiff, mass, fint, finert, Teuchos::null);
+    discret_->Evaluate(params, stiff, mass, fint, finert, Teuchos::null);
     discret_->ClearState();
 
     // get plasticity data
-    if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(p);
+    if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(params);
 
     mass->Complete();
 

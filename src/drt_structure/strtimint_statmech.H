@@ -89,7 +89,7 @@ namespace STR
     void PredictConstDisConsistVel();
 
     //! \brief evaluate residual
-    void EvaluateForceStiffResidual(bool predict=false);
+    void EvaluateForceStiffResidual(Teuchos::ParameterList& params);
 
     //! \brief Apply Dirichlet Boundary values
     void ApplyDirichletBC(const double                time,
