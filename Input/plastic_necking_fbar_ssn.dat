@@ -54,7 +54,7 @@ TOLRES                          1.0e-5
 NORMCOMBI_DISPPRES              Or
 MAXITER                         50
 MINITER                         2
-NLNSOL                          ptc
+NLNSOL                          fullnewton
 PREDICT                         TangDis
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike

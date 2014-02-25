@@ -24,6 +24,7 @@
 #include "../linalg/linalg_utils.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/material_service.H"
+#include "../drt_inpar/inpar_structure.H"
 
 // headers of supported hyperelastic-materials
 
@@ -717,6 +718,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
   double& lp_inc = params.get<double>("Lp_increment_square");
   double& lp_res = params.get<double>("Lp_residual_square");
   int& num_active_gp = params.get<int>("number_active_plastic_gp");
+  INPAR::STR::PredEnum pred = INPAR::STR::pred_vague;
+  if (params.isParameter("predict_type"))
+    pred = params.get<INPAR::STR::PredEnum>("predict_type");
+  bool tang_pred = false;
+  if (params.isParameter("eval_tang_pred"))
+    tang_pred = params.get<bool>("eval_tang_pred");
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -809,6 +816,17 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     // recover condensed variables from last iteration step *********
     if (stiffmatrix != NULL)
     {
+      // constant predictor
+      if (pred == INPAR::STR::pred_constdis)
+        (*DalphaK_last_iter_)[gp].Clear();
+
+      // tangential predictor
+      else if (pred == INPAR::STR::pred_tangdis)
+        (*DalphaK_last_iter_)[gp] = (*DalphaK_last_timestep_)[gp];
+
+      // do usual recovery
+      else if (pred == INPAR::STR::pred_vague)
+      {
       // first part
       LINALG::Matrix<5,1> tmp51;
       tmp51.Multiply((*KbbInv_)[gp],(*fbeta_)[gp]);
@@ -819,11 +837,17 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
       tmp51.Multiply(1.,tmp524,res_d,1.);
       (*DalphaK_last_iter_)[gp].Update(-1.,tmp51,1.);
       lp_inc +=tmp51(0)*tmp51(0)
-                                      +tmp51(1)*tmp51(1)
-                                      +(-tmp51(0)-tmp51(1))*(-tmp51(0)-tmp51(1))
-                                      +tmp51(2)*tmp51(2)*2.
-                                      +tmp51(3)*tmp51(3)*2.
-                                      +tmp51(4)*tmp51(4)*2.;
+              +tmp51(1)*tmp51(1)
+              +(-tmp51(0)-tmp51(1))*(-tmp51(0)-tmp51(1))
+              +tmp51(2)*tmp51(2)*2.
+              +tmp51(3)*tmp51(3)*2.
+              +tmp51(4)*tmp51(4)*2.;
+      }
+
+      // unknown predictor type
+      else
+        dserror("semi-smooth Newton plasticity algorithm doesn't know "
+            "what to do with predictor type %i",pred);
     }
     // end of recover *********************************************
 
@@ -1031,7 +1055,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
 
     // plastic modifications
-    if (stiffmatrix!=NULL || force!=NULL)
+    if ((stiffmatrix!=NULL || force!=NULL) && !tang_pred)
     {
       if ((*activity_state_)[gp]==true || (*DalphaK_last_iter_)[gp].NormInf()!=0.)
       {
@@ -1393,6 +1417,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
   double& lp_inc = params.get<double>("Lp_increment_square");
   double& lp_res = params.get<double>("Lp_residual_square");
   int& num_active_gp = params.get<int>("number_active_plastic_gp");
+  INPAR::STR::PredEnum pred = INPAR::STR::pred_vague;
+  if (params.isParameter("predict_type"))
+    pred = params.get<INPAR::STR::PredEnum>("predict_type");
+  bool tang_pred = false;
+  if (params.isParameter("eval_tang_pred"))
+    tang_pred = params.get<bool>("eval_tang_pred");
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1483,22 +1513,39 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
     }// end of strain output **************************
 
     // recover condensed variables from last iteration step *********
-    // first part
     if (stiffmatrix != NULL)
     {
-      LINALG::Matrix<8,1> tmp81;
-      tmp81.Multiply((*KbbInvHill_)[gp],(*fbetaHill_)[gp]);
+      // constant predictor
+      if (pred == INPAR::STR::pred_constdis)
+        (*mDLp_last_iter_)[gp].Clear();
 
-      // second part
-      LINALG::Matrix<8,numdofperelement_> tmp824;
-      tmp824.Multiply((*KbbInvHill_)[gp],(*KbdHill_)[gp]);
-      tmp81.Multiply(1.,tmp824,res_d,1.);
-      (*mDLp_last_iter_)[gp].Update(-1.,tmp81,1.);
-      lp_inc +=tmp81(0)*tmp81(0)
-                       +tmp81(1)*tmp81(1)
-                       +(-tmp81(0)-tmp81(1))*(-tmp81(0)-tmp81(1));
-      for (int i=2; i<8; i++)
-        lp_inc +=tmp81(i)*tmp81(i)*2.;
+      // tangential predictor
+      else if (pred == INPAR::STR::pred_tangdis)
+        (*mDLp_last_iter_)[gp] = (*mDLp_last_timestep_)[gp];
+
+      // do usual recovery
+      else if (pred == INPAR::STR::pred_vague)
+      {
+      // first part
+        LINALG::Matrix<8,1> tmp81;
+        tmp81.Multiply((*KbbInvHill_)[gp],(*fbetaHill_)[gp]);
+
+        // second part
+        LINALG::Matrix<8,numdofperelement_> tmp824;
+        tmp824.Multiply((*KbbInvHill_)[gp],(*KbdHill_)[gp]);
+        tmp81.Multiply(1.,tmp824,res_d,1.);
+        (*mDLp_last_iter_)[gp].Update(-1.,tmp81,1.);
+        lp_inc +=tmp81(0)*tmp81(0)
+                         +tmp81(1)*tmp81(1)
+                         +(-tmp81(0)-tmp81(1))*(-tmp81(0)-tmp81(1));
+        for (int i=2; i<8; i++)
+          lp_inc +=tmp81(i)*tmp81(i)*2.;
+      }
+
+      // unknown predictor type
+      else
+        dserror("semi-smooth Newton plasticity algorithm doesn't know "
+            "what to do with predictor type %i",pred);
     }
     // end of recover *********************************************
 
@@ -1742,10 +1789,9 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
 
 
     // plastic modifications
-    if (stiffmatrix!=NULL || force!=NULL)
+    if ((stiffmatrix!=NULL || force!=NULL) && !tang_pred)
     {
       if  ((*activity_state_)[gp]==true || (*mDLp_last_iter_)[gp].NormInf()!=0.)
-
       {
         // variables needed for condensation and calculated seperately for active and inactive Gauss points
         LINALG::Matrix<8,numdofperelement_> kbetad(true);
@@ -2600,6 +2646,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
   double& lp_inc = params.get<double>("Lp_increment_square");
   double& lp_res = params.get<double>("Lp_residual_square");
   int& num_active_gp = params.get<int>("number_active_plastic_gp");
+  INPAR::STR::PredEnum pred = INPAR::STR::pred_vague;
+  if (params.isParameter("predict_type"))
+    pred = params.get<INPAR::STR::PredEnum>("predict_type");
+  bool tang_pred = false;
+  if (params.isParameter("eval_tang_pred"))
+    tang_pred = params.get<bool>("eval_tang_pred");
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -2703,23 +2755,40 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
     // end of strain output **************************
 
     // recover condensed variables from last iteration step *********
-    // first part
     if (stiffmatrix!= NULL)
     {
-      LINALG::Matrix<5,1> tmp51;
-      tmp51.Multiply((*KbbInv_)[gp],(*fbeta_)[gp]);
+      // constant predictor
+      if (pred == INPAR::STR::pred_constdis)
+        (*DalphaK_last_iter_)[gp].Clear();
 
-      // second part
-      LINALG::Matrix<5,numdofperelement_> tmp524;
-      tmp524.Multiply((*KbbInv_)[gp],(*Kbd_)[gp]);
-      tmp51.Multiply(1.,tmp524,res_d,1.);
-      (*DalphaK_last_iter_)[gp].Update(-1.,tmp51,1.);
-      lp_inc +=tmp51(0)*tmp51(0)
-              +tmp51(1)*tmp51(1)
-              +(-tmp51(0)-tmp51(1))*(-tmp51(0)-tmp51(1))
-              +tmp51(2)*tmp51(2)*2.
-              +tmp51(3)*tmp51(3)*2.
-              +tmp51(4)*tmp51(4)*2.;
+      // tangential predictor
+      else if (pred == INPAR::STR::pred_tangdis)
+        (*DalphaK_last_iter_)[gp] = (*DalphaK_last_timestep_)[gp];
+
+      // do usual recovery
+      else if (pred == INPAR::STR::pred_vague)
+      {
+        // first part
+        LINALG::Matrix<5,1> tmp51;
+        tmp51.Multiply((*KbbInv_)[gp],(*fbeta_)[gp]);
+
+        // second part
+        LINALG::Matrix<5,numdofperelement_> tmp524;
+        tmp524.Multiply((*KbbInv_)[gp],(*Kbd_)[gp]);
+        tmp51.Multiply(1.,tmp524,res_d,1.);
+        (*DalphaK_last_iter_)[gp].Update(-1.,tmp51,1.);
+        lp_inc +=tmp51(0)*tmp51(0)
+                +tmp51(1)*tmp51(1)
+                +(-tmp51(0)-tmp51(1))*(-tmp51(0)-tmp51(1))
+                +tmp51(2)*tmp51(2)*2.
+                +tmp51(3)*tmp51(3)*2.
+                +tmp51(4)*tmp51(4)*2.;
+      }
+
+      // unknown predictor type
+      else
+        dserror("semi-smooth Newton plasticity algorithm doesn't know "
+            "what to do with predictor type %i",pred);
     }
     // end of recover **********************************************
 
@@ -2952,7 +3021,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_fbar(
     } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
 
     // plastic modifications
-    if ( (stiffmatrix!=NULL || force!=NULL) )
+    if ( (stiffmatrix!=NULL || force!=NULL) && !tang_pred)
     {
       if ((*activity_state_)[gp]==true || (*DalphaK_last_iter_)[gp].NormInf()!=0.)
       {
@@ -3349,6 +3418,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
   double& lp_inc = params.get<double>("Lp_increment_square");
   double& lp_res = params.get<double>("Lp_residual_square");
   int& num_active_gp = params.get<int>("number_active_plastic_gp");
+  INPAR::STR::PredEnum pred = INPAR::STR::pred_vague;
+  if (params.isParameter("predict_type"))
+    pred = params.get<INPAR::STR::PredEnum>("predict_type");
+  bool tang_pred = false;
+  if (params.isParameter("eval_tang_pred"))
+    tang_pred = params.get<bool>("eval_tang_pred");
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -3456,19 +3531,36 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
     // first part
     if (stiffmatrix != NULL)
     {
-      LINALG::Matrix<8,1> tmp81;
-      tmp81.Multiply((*KbbInvHill_)[gp],(*fbetaHill_)[gp]);
+      // constant predictor
+      if (pred == INPAR::STR::pred_constdis)
+        (*mDLp_last_iter_)[gp].Clear();
 
-      // second part
-      LINALG::Matrix<8,numdofperelement_> tmp824;
-      tmp824.Multiply((*KbbInvHill_)[gp],(*KbdHill_)[gp]);
-      tmp81.Multiply(1.,tmp824,res_d,1.);
-      (*mDLp_last_iter_)[gp].Update(-1.,tmp81,1.);
-      lp_inc +=tmp81(0)*tmp81(0)
-                       +tmp81(1)*tmp81(1)
-                       +(-tmp81(0)-tmp81(1))*(-tmp81(0)-tmp81(1));
-      for (int i=2; i<8; i++)
-        lp_inc +=tmp81(i)*tmp81(i)*2.;
+      // tangential predictor
+      else if (pred == INPAR::STR::pred_tangdis)
+        (*mDLp_last_iter_)[gp] = (*mDLp_last_timestep_)[gp];
+
+      // do usual recovery
+      else if (pred == INPAR::STR::pred_vague)
+      {
+        LINALG::Matrix<8,1> tmp81;
+        tmp81.Multiply((*KbbInvHill_)[gp],(*fbetaHill_)[gp]);
+
+        // second part
+        LINALG::Matrix<8,numdofperelement_> tmp824;
+        tmp824.Multiply((*KbbInvHill_)[gp],(*KbdHill_)[gp]);
+        tmp81.Multiply(1.,tmp824,res_d,1.);
+        (*mDLp_last_iter_)[gp].Update(-1.,tmp81,1.);
+        lp_inc +=tmp81(0)*tmp81(0)
+                           +tmp81(1)*tmp81(1)
+                           +(-tmp81(0)-tmp81(1))*(-tmp81(0)-tmp81(1));
+        for (int i=2; i<8; i++)
+          lp_inc +=tmp81(i)*tmp81(i)*2.;
+      }
+
+      // unknown predictor type
+      else
+        dserror("semi-smooth Newton plasticity algorithm doesn't know "
+            "what to do with predictor type %i",pred);
     }
     // end of recover *********************************************
 
@@ -3730,7 +3822,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmassHill_fbar(
     } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
 
     // plastic modifications
-    if (stiffmatrix!=NULL || force!=NULL)
+    if ((stiffmatrix!=NULL || force!=NULL) && !tang_pred)
     {
       if ((*activity_state_)[gp]==true || (*mDLp_last_iter_)[gp].NormInf()!=0.)
       {
