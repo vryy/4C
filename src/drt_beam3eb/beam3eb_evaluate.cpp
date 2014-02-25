@@ -1992,6 +1992,28 @@ return;
 }//DRT::ELEMENTS::Beam3eb::NodeShift
 
 
+/*----------------------------------------------------------------------------------------------------------*
+ | Get position vector at xi for given nodal displacements                                       meier 02/14|
+ *----------------------------------------------------------------------------------------------------------*/
+LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3eb::GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const
+{
+  LINALG::Matrix<3,1> r(true);
+  LINALG::Matrix<4,1> N_i(true);
+ 
+  const DRT::Element::DiscretizationType distype = Shape();
+  DRT::UTILS::shape_function_hermite_1D(N_i,xi,jacobi_*2.0,distype);
+ 
+  for (int n=0;n<4;n++)
+  {
+    for (int i=0;i<3;i++)
+    {
+      r(i)+=N_i(n)*disp_totlag(3*n+i);
+    }
+  }
+
+  return r;
+}
+
 
 //***************************************************************************************
 //Methods for FAD Check
