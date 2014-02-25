@@ -585,7 +585,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcCharEleLength(
     {
       // cast dimension to a double varibale -> pow()
       const double dim = double (nsd_);
-      h = std::pow(vol,1/dim);
+      h = std::pow(vol,1.0/dim);
     }
     break;
 

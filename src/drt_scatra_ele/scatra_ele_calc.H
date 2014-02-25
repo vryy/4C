@@ -990,9 +990,8 @@ namespace ELEMENTS
 
   /// Scatra reaction manager
   /*!
-      This is a basic class to handle reaction. It exclusively contains
-      the a constant reaction coefficient. For more advanced reaction laws,
-      e.g., nonlinear ones, a derived class has to be constructed in the
+      This is a basic class to handle reaction. For even more advanced reaction laws,
+      a derived class has to be constructed in the
       problem-dependent subclass for element evaluation.
   */
   class ScaTraEleReaManager

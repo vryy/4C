@@ -20,9 +20,6 @@ Maintainer: Ursula Rasthofer
 
 #include "../drt_lib/drt_elementtype.H"
 
-// turbulence model development
-#include "../drt_fluid_turbulence/fluid_turbulence_defines.H"
-
 
 /*----------------------------------------------------------------------*
  |  compute turbulence parameters                       rasthofer 10/11 |
@@ -651,11 +648,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
     {
       for (int rr=1;rr<3;rr++)
         Nvel[rr] = fldpara_->N();
-#ifdef DIR_N // direction dependent stuff, currently not used
-    Nvel[0] = NUMX;
-    Nvel[1] = NUMY;
-    Nvel[2] = NUMZ;
-#endif
     }
     else //no, so we calculate N from Re
     {
@@ -689,8 +681,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       }
       case INPAR::FLUID::cube_edge:
       {
-        // c) qubic element length
-        hk = std::pow(vol,(1.0/nsd_));
+        // c) cubic element length
+        hk = std::pow(vol,(1.0/(double (nsd_))));
         break;
       }
       case INPAR::FLUID::metric_tensor:
@@ -799,7 +791,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       }
 
 // alternative length for comparison, currently not used
-#ifdef HMIN
+#ifdef HMIN // minimal element length
       double xmin = 0.0;
       double ymin = 0.0;
       double zmin = 0.0;
@@ -846,7 +838,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
            hk = zmax-zmin;
       }
 #endif
-#ifdef HMAX
+#ifdef HMAX // maximal element length
       double xmin = 0.0;
       double ymin = 0.0;
       double zmin = 0.0;
@@ -930,7 +922,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       //  ---------  ~ Re^(3/4)
       //  lambda_nu
       //
-      scale_ratio = fldpara_->CNu() * pow(Re_ele,3.0/4.0);
+      scale_ratio = fldpara_->CNu() * pow(Re_ele,0.75);
       // scale_ratio < 1.0 leads to N < 0
       // therefore, we clip once more
       if (scale_ratio < 1.0)
@@ -947,15 +939,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       for (int i=0; i<nsd_; i++)
         Nvel[i] = N_re;
     }
-
-#ifdef DIR_N
-    std::vector<double> weights (3);
-    weights[0] = WEIGHT_NX;
-    weights[1] = WEIGHT_NY;
-    weights[2] = WEIGHT_NZ;
-    for (int i=0; i<nsd_; i++)
-      Nvel[i] *= weights[i];
-#endif
 
     // calculate near-wall correction
     double Cai_phi = 0.0;
@@ -1023,10 +1006,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
         //
         // Pr <= 1: p=3/4
         // Pr >> 1: p=1/2
-        double p = 3.0/4.0;
-        if (Pr>Pr_limit) p =1.0/2.0;
+        double p = 0.75;
+        if (Pr>Pr_limit) p =0.5;
 
-        scale_ratio_phi = fldpara_->CDiff() * pow(Re_ele,3.0/4.0) * pow(Pr,p);
+        scale_ratio_phi = fldpara_->CDiff() * pow(Re_ele,0.75) * pow(Pr,p);
         // scale_ratio < 1.0 leads to N < 0
         // therefore, we clip again
         if (scale_ratio_phi < 1.0)
@@ -1084,13 +1067,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcMultiFracSubgridVelCoef(
   {
     B_mfs(dim,0) = Csgs *sqrt(kappa) * pow(2.0,-2.0*Nvel[dim]/3.0) * sqrt((pow(2.0,4.0*Nvel[dim]/3.0)-1.0));
   }
-
-#ifdef CONST_B // overwrite all, just for testing
-  for (int dim=0; dim<nsd_; dim++)
-  {
-    B_mfs(dim,0) = B_CONST;
-  }
-#endif
 
 //  if (eid_ == 100){
 //    std::cout << "B  " << std::setprecision(10) << B_mfs(0,0) << "  " << B_mfs(1,0) << "  " << B_mfs(2,0) << "  " << std::endl;
@@ -1507,51 +1483,53 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesCross(
   // turn left-hand-side contribution on
   double beta = fldpara_->Beta();
 
-  // convective part
-  for (int ui=0; ui<nen_; ui++)
+  if (beta > 1.0e-9)
   {
-    for (int idim=0; idim<nsd_; idim++)
+    // convective part
+    for (int ui=0; ui<nen_; ui++)
     {
-      int fui = ui * nsd_ + idim;
-      for (int vi=0; vi<nen_; vi++)
+      for (int idim=0; idim<nsd_; idim++)
       {
-        for (int jdim=0; jdim<nsd_; jdim++)
+        int fui = ui * nsd_ + idim;
+        for (int vi=0; vi<nen_; vi++)
         {
-          int fvi = vi * nsd_ + jdim;
-          /*
+          for (int jdim=0; jdim<nsd_; jdim++)
+          {
+            int fvi = vi * nsd_ + jdim;
+            /*
                     /                             \
                    |  /                 \          |
                    | |   rho*Du  o nabla | du , v  |
                    |  \                 /          |
                     \                             /
-          */
-          estif_u(fvi,fui) += beta * timefacfac * densaf_ * funct_(vi)
-                            * funct_(ui) * mffsvderxy_(jdim,idim);
-          /*
+            */
+            estif_u(fvi,fui) += beta * timefacfac * densaf_ * funct_(vi)
+                              * funct_(ui) * mffsvderxy_(jdim,idim);
+            /*
                     /                             \
                    |  /                 \          |
                    | |   rho*du  o nabla | Du , v  |
                    |  \                 /          |
                     \                             /
-          */
-          if (jdim == idim)
-          {
-            estif_u(fvi,fui) += beta * timefacfac * densaf_ * funct_(vi)
-                              * mfconv_c(ui);
-          }
+            */
+            if (jdim == idim)
+            {
+              estif_u(fvi,fui) += beta * timefacfac * densaf_ * funct_(vi)
+                                * mfconv_c(ui);
+            }
 
-          // additional terms conservative part
-          if (fldpara_->MfsIsConservative() or fldpara_->IsConservative())
-          {
-            /*
+            // additional terms conservative part
+            if (fldpara_->MfsIsConservative() or fldpara_->IsConservative())
+            {
+              /*
                    /                                     \
                    |      /               \       \      |
                    |  du | rho*nabla o Du  | , v   |     |
                    |      \               /       /      |
                    \                                     /
-            */
-            estif_u(fvi,fui) += beta * timefacfac * densaf_ * funct_(vi)
-                              * mffsvelint_(jdim) * derxy_(idim, ui);
+              */
+              estif_u(fvi,fui) += beta * timefacfac * densaf_ * funct_(vi)
+                                * mffsvelint_(jdim) * derxy_(idim, ui);
               /*
                     /                                     \
                     |      /               \       \      |
@@ -1559,15 +1537,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesCross(
                     |      \               /       /      |
                     \                                     /
               */
-            if (jdim == idim)
-            {
-              estif_u(fvi,fui) += beta * timefacfac * densaf_
-                                * funct_(vi) * funct_(ui) * mffsvdiv_;
-            }
+              if (jdim == idim)
+              {
+                estif_u(fvi,fui) += beta * timefacfac * densaf_
+                                  * funct_(vi) * funct_(ui) * mffsvdiv_;
+              }
 
-            if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
-            {
-              dserror("Conservative formulation not supported for loma!");
+              if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+              {
+                dserror("Conservative formulation not supported for loma!");
+              }
             }
           }
         }

@@ -68,11 +68,10 @@ namespace ELEMENTS
     \author u.kue
     \date 07/07
   */
-template<DRT::Element::DiscretizationType distype>
-class FluidEleCalc : public FluidEleInterface
-{
-  friend class FluidEleParameter;
-  friend class FluidEleParameterTimInt;
+
+  template<DRT::Element::DiscretizationType distype>
+  class FluidEleCalc : public FluidEleInterface
+  {
 
 public:
 

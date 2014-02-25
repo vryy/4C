@@ -2877,11 +2877,6 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
   {
     for (int rr=1;rr<3;rr++)
       Nvel[rr] = turbmodelparamsmfs->get<double>("N");
-#ifdef DIR_N // direction dependent stuff, currently not used
-  Nvel[0] = NUMX;
-  Nvel[1] = NUMY;
-  Nvel[2] = NUMZ;
-#endif
   }
   else //no, so we calculate N from Re
   {
@@ -2939,7 +2934,7 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
     case INPAR::FLUID::cube_edge:
     {
       // c) qubic element length
-      hk = std::pow(vol,(1.0/NSD));
+      hk = std::pow(vol,(1.0/(double (NSD))));
       break;
     }
     case INPAR::FLUID::metric_tensor:
@@ -3172,8 +3167,7 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
   //  ---------  ~ Re^(3/4)
   //  lambda_nu
   //
-  scale_ratio = std::pow(Re_ele,3.0/4.0);
-  scale_ratio = turbmodelparamsmfs->get<double>("C_NU") * pow(Re_ele,3.0/4.0);
+  scale_ratio = turbmodelparamsmfs->get<double>("C_NU") * pow(Re_ele,0.75);
   // scale_ration < 1.0 leads to N < 0
   // therefore, we clip once more
   if (scale_ratio < 1.0)
@@ -3189,14 +3183,6 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
   for (int i=0; i<NSD; i++)
     Nvel[i] = N_re;
   }
-#ifdef DIR_N
-    std::vector<double> weights (3);
-    weights[0] = WEIGHT_NX;
-    weights[1] = WEIGHT_NY;
-    weights[2] = WEIGHT_NZ;
-    for (int i=0; i<NSD; i++)
-      Nvel[i] *= weights[i];
-#endif
 
 
   // calculate coefficient of subgrid-velocity
@@ -3244,13 +3230,6 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
       B(dim,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*Nvel[0]/3.0) * sqrt((pow(2.0,4.0*Nvel[0]/3.0)-1.0));
     }
 
-#ifdef CONST_B
-  for (int dim=0; dim<NSD; dim++)
-  {
-    B(dim,0) = B_CONST;
-  }
-#endif
-
   // calculate model parameters for passive scalar transport
   // allocate vector for parameter N
   // N may depend on the direction -> currently unused
@@ -3276,10 +3255,10 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
       //
       // Sc <= 1: p=3/4
       // Sc >> 1: p=1/2
-      double p = 3.0/4.0;
-      if (scnum>1.0) p =1.0/2.0;
+      double p = 0.75;
+      if (scnum>1.0) p =0.5;
 
-      scale_ratio_phi = turbmodelparamsmfs->get<double>("C_DIFF") * pow(Re_ele,3.0/4.0) * pow(scnum,p);
+      scale_ratio_phi = turbmodelparamsmfs->get<double>("C_DIFF") * pow(Re_ele,0.75) * pow(scnum,p);
       // scale_ratio < 1.0 leads to N < 0
       // therefore, we clip again
       if (scale_ratio_phi < 1.0)
@@ -3668,8 +3647,8 @@ void f3_get_mf_nwc(DRT::ELEMENTS::Fluid* ele,
       }
       case INPAR::FLUID::cube_edge:
       {
-        // c) qubic element length
-        hk = std::pow(vol,(1.0/NSD));
+        // c) cubic element length
+        hk = std::pow(vol,(1.0/(double (NSD))));
         break;
       }
       case INPAR::FLUID::metric_tensor:
@@ -3794,7 +3773,7 @@ void f3_get_mf_nwc(DRT::ELEMENTS::Fluid* ele,
       //           -3/16
       //   (1 - (Re)   )
       //
-      Cai += (1-pow(Re_ele_str,-3.0/16.0))*fac;
+      Cai += (1.0-pow(Re_ele_str,-3.0/16.0))*fac;
     }
   }
 

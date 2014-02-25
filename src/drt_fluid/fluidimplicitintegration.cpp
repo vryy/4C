@@ -864,6 +864,7 @@ void FLD::FluidImplicitTimeInt::Solve()
   // variable-density flow at low Mach number:
   // adaption of CsgsD to resolution dependent CsgsB
   // when near-wall limit is used
+  // see also comment within function
   // -------------------------------------------------------------------
   if ((physicaltype_ == INPAR::FLUID::loma or statisticsmanager_->WithScaTra()) and turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
     RecomputeMeanCsgsB();
@@ -5070,6 +5071,13 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
 //-------------------------------------------------------------------------
 void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
 {
+  // For loma, this function is required at the respective position to set up CsgsD of the scalar field for including the subgrid-scale
+  // temperature in the physical properties and the subgrid-scale terms arising in the continuity equation. This recomputation
+  // avoids transferring the respective value from the scalar to the fluid field.
+  // The so computed value is also used for calculating statistical data for MFS, although this is not the final value for gen-alpha
+  // that is seen by the scalar field. However, note that vel_n ~ vel_np ~ vel_af for statistically stationary flow. Hence, the expected
+  // error is marginal, but another computation is avoided.
+
   if (DRT::INPUT::IntegralValue<int>(params_->sublist("MULTIFRACTAL SUBGRID SCALES"),"ADAPT_CSGS_PHI"))
   {
     // mean Cai

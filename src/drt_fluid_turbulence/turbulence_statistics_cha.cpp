@@ -2013,7 +2013,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
 
   for(unsigned i=0; i<planecoordinates_->size(); ++i)
   {
-    // get averege element size
+    // get average element size
     (*globarea)[i]/=numele_;
 
     (*sumu_)[i]  +=(*globsumu)[i]/(*globarea)[i];

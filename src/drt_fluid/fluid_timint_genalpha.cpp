@@ -91,6 +91,7 @@ void FLD::TimIntGenAlpha::PrintTimeStepInfo()
   return;
 }
 
+
 /*----------------------------------------------------------------------*
 | calculate pseudo-theta for startalgo_                        bk 12/13 |
 *-----------------------------------------------------------------------*/
@@ -135,6 +136,7 @@ void FLD::TimIntGenAlpha::SetTheta()
   return;
 }
 
+
 /*----------------------------------------------------------------------*
 | set old part of right hand side                              bk 12/13 |
 *-----------------------------------------------------------------------*/
@@ -155,6 +157,7 @@ void FLD::TimIntGenAlpha::SetOldPartOfRighthandside()
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  | update acceleration for generalized-alpha time integration  vg 02/09 |
@@ -199,6 +202,7 @@ void FLD::TimIntGenAlpha::GenAlphaUpdateAcceleration()
   }
 
 } // TimIntGenAlpha::GenAlphaUpdateAcceleration
+
 
 /*----------------------------------------------------------------------*
  | compute values at intermediate time steps for gen.-alpha    vg 02/09 |
@@ -252,6 +256,7 @@ void FLD::TimIntGenAlpha::GenAlphaIntermediateValues()
 
 } // TimIntGenAlpha::GenAlphaIntermediateValues
 
+
 /*----------------------------------------------------------------------*
 | set integration-scheme-specific state                        bk 12/13 |
 *-----------------------------------------------------------------------*/
@@ -261,7 +266,6 @@ void FLD::TimIntGenAlpha::SetStateTimInt()
   discret_->SetState("velaf",velaf_);
   if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
     discret_->SetState("velnp",velnp_);
-
 
   return;
 }
@@ -273,6 +277,7 @@ double FLD::TimIntGenAlpha::SetTimeFac()
 {
   return alphaF_;
 }
+
 
 /*----------------------------------------------------------------------*
 | calculate acceleration                                       bk 12/13 |
@@ -290,6 +295,7 @@ void FLD::TimIntGenAlpha::CalculateAcceleration(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
 | set gamma                                                    bk 12/13 |
 *-----------------------------------------------------------------------*/
@@ -298,6 +304,7 @@ void FLD::TimIntGenAlpha::SetGamma(Teuchos::ParameterList& eleparams)
   eleparams.set("gamma"  ,gamma_);
   return;
 }
+
 
 /*----------------------------------------------------------------------*
 | scale separation                                             bk 12/13 |
@@ -308,6 +315,7 @@ void FLD::TimIntGenAlpha::Sep_Multiply()
   return;
 }
 
+
 /*----------------------------------------------------------------------*
 | update velaf_                                                bk 12/13 |
 *-----------------------------------------------------------------------*/
@@ -316,6 +324,7 @@ void FLD::TimIntGenAlpha::UpdateVelafGenAlpha()
   velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  | paraview output of filtered velocity                  rasthofer 02/11|
@@ -340,6 +349,7 @@ void FLD::TimIntGenAlpha::OutputofFilteredVel(
 
   return;
 }
+
 
 // -------------------------------------------------------------------
 // set general time parameter (AE 01/2011)
@@ -386,6 +396,7 @@ const double FLD::TimIntGenAlpha::TimIntParam() const
 
   return retval;
 }
+
 
 /*----------------------------------------------------------------------*
  | filtered quantities for classical LES models          rasthofer 02/11|
@@ -651,6 +662,7 @@ void FLD::TimIntGenAlpha::ApplyScaleSeparationForLES()
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
 | extrapolate end point                                        bk 12/13 |

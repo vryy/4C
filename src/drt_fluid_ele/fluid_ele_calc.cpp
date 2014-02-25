@@ -3381,7 +3381,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcCharEleLength(
     {
       // cast dimension to a double varibale -> pow()
       const double dim = double (nsd_);
-      h_u = std::pow(vol,1/dim);
+      h_u = std::pow(vol,1.0/dim);
     }
     break;
 
@@ -4037,6 +4037,127 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU_subscales(
   return;
 }
 
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalc<distype>::StabLinGalMomResU(
+    LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
+    const double &                            timefacfac)
+{
+
+  /*
+                 /       n+1       \        /                \  n+1
+       rho*Du + |   rho*u   o nabla | Du + |   rho*Du o nabla | u   +
+                 \      (i)        /        \                /   (i)
+
+                               /  \
+     + sigma*Du + nabla o eps | Du |
+                               \  /
+  */
+  if(fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent
+     ||
+     fldpara_->Cross()==INPAR::FLUID::cross_stress_stab)
+  {
+    //----------------------------------------------------------------------
+    /* GALERKIN residual was rescaled and cannot be reused; so rebuild it */
+
+    lin_resM_Du.Clear();
+
+    int idim_nsd_p_idim[nsd_];
+
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      idim_nsd_p_idim[idim]=idim*nsd_+idim;
+    }
+
+    if (fldparatimint_->IsStationary() == false)
+    {
+      const double fac_densam=fac_*densam_;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const double v=fac_densam*funct_(ui);
+
+        for (int idim = 0; idim <nsd_; ++idim)
+        {
+          lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
+        }
+      }
+    }
+
+    const double timefacfac_densaf=timefacfac*densaf_;
+
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      // deleted +sgconv_c_(ui)
+      const double v=timefacfac_densaf*conv_c_(ui);
+
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
+      }
+    }
+
+    if (fldpara_->IsNewton())
+    {
+//
+//
+// dr_j   d    /    du_j \          du_j         dN_B
+// ----= ---- | u_i*----  | = N_B * ---- + u_i * ---- * d_jk
+// du_k  du_k  \    dx_i /          dx_k         dx_i
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const double temp=timefacfac_densaf*funct_(ui);
+
+        for (int idim = 0; idim <nsd_; ++idim)
+        {
+          const int idim_nsd=idim*nsd_;
+
+          for(int jdim=0;jdim<nsd_;++jdim)
+          {
+            lin_resM_Du(idim_nsd+jdim,ui)+=temp*vderxy_(idim,jdim);
+          }
+        }
+      }
+    }
+
+    if (fldpara_->Reaction())
+    {
+      const double fac_reac=timefacfac*reacoeff_;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const double v=fac_reac*funct_(ui);
+
+        for (int idim = 0; idim <nsd_; ++idim)
+        {
+          lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
+        }
+      }
+    }
+  }
+
+  if (is_higher_order_ele_)
+  {
+    const double v = -2.0*visceff_*timefacfac;
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      const int nsd_idim=nsd_*idim;
+
+      for(int jdim=0;jdim<nsd_;++jdim)
+      {
+        const int nsd_idim_p_jdim=nsd_idim+jdim;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          lin_resM_Du(nsd_idim_p_jdim,ui)+=v*viscs2_(nsd_idim_p_jdim, ui);
+        }
+      }
+    }
+  }
+
+  return;
+}
 
 
 template <DRT::Element::DiscretizationType distype>

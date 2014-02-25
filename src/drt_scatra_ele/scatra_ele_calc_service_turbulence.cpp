@@ -949,7 +949,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcBAndDForMultifracSubgridScales(
     //  ---------  ~ Re^(3/4)
     //  lambda_nu
     //
-    scale_ratio = scatrapara_->C_Nu() * pow(Re_ele,3.0/4.0);
+    scale_ratio = scatrapara_->C_Nu() * pow(Re_ele,0.75);
     // scale_ratio < 1.0 leads to N < 0
     // therefore, we clip once more
     if (scale_ratio < 1.0)
@@ -1049,10 +1049,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcBAndDForMultifracSubgridScales(
     //
     // Pr <= 1: p=3/4
     // Pr >> 1: p=1/2
-    double p = 3.0/4.0;
-    if (Pr>Pr_limit) p =1.0/2.0;
+    double p = 0.75;
+    if (Pr>Pr_limit) p =0.5;
 
-    scale_ratio_phi = scatrapara_->C_Diff() * pow(Re_ele,3.0/4.0) * pow(Pr,p);
+    scale_ratio_phi = scatrapara_->C_Diff() * pow(Re_ele,0.75) * pow(Pr,p);
     // scale_ratio < 1.0 leads to N < 0
     // therefore, we clip again
     if (scale_ratio_phi < 1.0)
@@ -1204,8 +1204,8 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRefLength(
     }
     case INPAR::FLUID::cube_edge:
     {
-      // c) qubic element length
-      hk = std::pow(vol,(1.0/nsd_));
+      // c) cubic element length
+      hk = std::pow(vol,(1.0/(double (nsd_))));
 
       break;
     }
