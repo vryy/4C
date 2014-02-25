@@ -29,7 +29,7 @@ The Windkessel is momolithically coupled with the standard structural dynamics g
 
 M a + C v + f_int(d) - f_ext(d,p) = 0,
 
-with q being a function of the displacement vector d and f_ext additionally being a function of the Windkessel pressure p.
+with Q being a function of the displacement vector d and f_ext additionally being a function of the Windkessel pressure p.
 **************************************************************************************************************************
 
 <pre>
@@ -645,7 +645,7 @@ void UTILS::Windkessel::EvaluateTrimodularWindkessel(
 			std::vector<int> colvec(1);
 			colvec[0]=gindex;
 			sysmat1->UnComplete();
-			wkstiff = sc_timint*(dcdp*dpdtmid - dr1dp*pmid/(r1*r1) + (dcdp*r2+c*dr2dp)*dqdtmid + (r1*dr2dp-dr1dp*r2)*qmid/(r1*r1) + c/(gamma*ts_size) + 1./r1);
+			wkstiff = sc_timint*(dcdp*dpdtmid - dr1dp*(pmid-p_0)/(r1*r1) + (dcdp*r2+c*dr2dp)*dqdtmid + (r1*dr2dp-dr1dp*r2)*qmid/(r1*r1) + c/(gamma*ts_size) + 1./r1);
 			havegid = sysmat1->RowMap().MyGID(gindex);
 			if(havegid) sysmat1->Assemble(wkstiff,colvec[0],colvec[0]);
 		}

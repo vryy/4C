@@ -29,7 +29,7 @@ The Windkessel is momolithically coupled with the standard structural dynamics g
 
 M a + C v + f_int(d) - f_ext(d,p) = 0,
 
-with q being a function of the displacement vector d and f_ext additionally being a function of the Windkessel pressure p.
+with Q being a function of the displacement vector d and f_ext additionally being a function of the Windkessel pressure p.
 **************************************************************************************************************************
 
 <pre>
