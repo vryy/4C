@@ -36,8 +36,8 @@ double DRT::UTILS::BubbleFunction::Evaluate(int index, const double* xp, double 
   double distance = 0.0;
 
   // compute phi-value with respect to the lower/small and the upper/large bubble
-  double phi_small = std::sqrt((xp[0]-0.5)*(xp[0]-0.5) + (xp[1]-0.35)*(xp[1]-0.35) + xp[2]*xp[2])-0.1;
-  double phi_large = std::sqrt((xp[0]-0.5)*(xp[0]-0.5) + (xp[1]-0.6)*(xp[1]-0.6) + xp[2]*xp[2])-0.15;
+  double phi_small = std::sqrt((xp[0]-0.5)*(xp[0]-0.5) + (xp[1]-0.3)*(xp[1]-0.3) + xp[2]*xp[2])-0.1;
+  double phi_large = std::sqrt((xp[0]-0.5)*(xp[0]-0.5) + (xp[1]-0.58)*(xp[1]-0.58) + xp[2]*xp[2])-0.15;
 
   // select correct phi-value
   if ( (phi_large <= 0.0) and (phi_small > 0.0) )
@@ -298,7 +298,7 @@ double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(int index, const doub
 
   double xp_corner[2];
   double xp_center[2];
-  double radius=0.03;
+  double radius=0.0; //0.03;
 
   xp_corner[0]=0.146; //0.144859;
   xp_corner[1]=0.292; //0.290859;
