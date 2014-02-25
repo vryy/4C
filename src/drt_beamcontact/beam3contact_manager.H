@@ -517,6 +517,16 @@ private:
   void GMSH_3_noded(const int& n, const Epetra_SerialDenseMatrix& allcoord,
                     const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
+  /*!
+  \brief Compute coordinates for GMSH-Output for N-noded-elements
+
+  */
+  void GMSH_N_noded(const int& n,
+                    const int& n_axial,
+                    const Epetra_SerialDenseMatrix& allcoord,
+                    const DRT::Element* thisele,
+                    std::stringstream& gmshfilecontent);
+
   //@}
 
 }; // class Beam3cmanager

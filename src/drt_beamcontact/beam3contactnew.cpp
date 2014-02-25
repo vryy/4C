@@ -151,6 +151,7 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate( LINALG::Spars
   //**********************************************************************
 
   ClosestPointProjection();
+
   //**********************************************************************
   // (2) Compute some auxiliary quantities
   //**********************************************************************
@@ -432,8 +433,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
     ComputeLinXiAndLinEta(delta_xi,delta_eta,delta_r,r1_xi,r2_xi,r1_xixi,r2_xixi,N1,N2,N1_xi,N2_xi);
 
     #ifdef FADCHECKS
-      cout << "delta_xi: " << delta_xi << endl;
-      cout << "delta_eta: " << delta_eta << endl;
+      cout << "delta_xi: " << endl;
+      for (int i=0;i<dim1+dim2;i++)
+        cout << delta_xi(i).val() << "  ";
+      cout << endl << "delta_eta: " << endl;
+      for (int i=0;i<dim1+dim2;i++)
+        cout << delta_eta(i).val() << "  ";
+      cout << endl;
       FADCheckLinXiAndLinEta(delta_r,r1_xi,r2_xi,r1_xixi,r2_xixi,N1,N2,N1_xi,N2_xi);
     #endif
 
@@ -629,38 +635,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
         for (int i=0;i<dim2;i++)
           stiffc2_FAD(i,j) = -(fc2_FAD(i).dx(j)+fc2_FAD(i).dx(dim1+dim2)*delta_xi(j)+fc2_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
       }
-//      cout << "stiff1_FAD: "<< endl;
-//      for (int j=0;j<dim1;j++)
-//      {
-//        for (int i=0;i<dim1+dim2;i++)
-//          cout << std::setprecision(14) << stiffc1_FAD(j,i).val() << "   ";
-//
-//        cout << endl;
-//      }
-//      cout << "stiff1: "<< endl;
-//      for (int j=0;j<dim1;j++)
-//      {
-//        for (int i=0;i<dim1+dim2;i++)
-//          cout << -stiffc1(j,i).val() << "   ";
-//
-//        cout << endl;
-//      }
-//      cout << "stiff2_FAD: "<< endl;
-//      for (int j=0;j<dim2;j++)
-//      {
-//        for (int i=0;i<dim1+dim2;i++)
-//          cout << stiffc2_FAD(j,i).val() << "   ";
-//
-//        cout << endl;
-//      }
-//      cout << "stiff2: "<< endl;
-//      for (int j=0;j<dim2;j++)
-//      {
-//        for (int i=0;i<dim1+dim2;i++)
-//          cout << -stiffc2(j,i).val() << "   ";
-//
-//        cout << endl;
-//      }
+
     #endif
 
   } //if(contactflag_)
@@ -702,6 +677,9 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
 
     stiffmatrix.Assemble(0,stiffcontact1,lmrow1,lmrowowner1,lmcol1);
     stiffmatrix.Assemble(0,stiffcontact2,lmrow2,lmrowowner2,lmcol2);
+
+//    cout << "Steifigkeitsmatrix: " << (*(stiffmatrix.EpetraMatrix())) << endl;
+//    cout << "test: " << (*(stiffmatrix.EpetraMatrix()))[0,0] << endl;
   }
 
   return;
@@ -1655,7 +1633,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ShiftNodalPositions()
     }
   }
   //Kirchhoff beams
-  else if (numnodalvalues == 1)
+  else if (numnodalvalues == 2)
   {
     if (numnodes == 2)
     {

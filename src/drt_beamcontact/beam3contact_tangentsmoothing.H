@@ -245,7 +245,7 @@ namespace CONTACT
 
       for (int i=0;i<3;i++)
       {
-        for (int j=0;j<3*numnodes*numnodalvalues;j++)
+        for (int j=0;j<3*numnodes;j++)
         {
           t(i)+=N(i,j)*nodaltangentssmooth1(j);
           t_xi(i)+=N_xi(i,j)*nodaltangentssmooth1(j);

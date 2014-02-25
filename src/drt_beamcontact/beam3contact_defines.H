@@ -41,7 +41,9 @@ Maintainer: Christoph Meier
 //default: 1.0e-12
 #define NORMALTOL 0.001            /* tolerance how small the scalar product of normal_old and normal is allowed to be */
 //default: 0.001
-#define MANIPULATERADIUS 1        /* with this parameter the geometrical radius used for contact evaluation can be
+#define MANIPULATERADIUS 1.0        /* with this parameter the geometrical radius used for contact evaluation can be
+//default: 1                         chosen different from the physical radius appearing in the bending stiffness */
+#define MANIPULATERADIUSVIS 50.0     /* with this parameter the geometrical radius used for gmsh visualization can be
 //default: 1                         chosen different from the physical radius appearing in the bending stiffness */
 #define NEIGHBORTOL 3             /* parameter that allows to also evaluate the contact normal of neighbor elements
 //default: 3                         needed for new gap function. It has proven useful that NEIGHBORTOL ca. 3,
@@ -65,6 +67,9 @@ Maintainer: Christoph Meier
 /************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
+#define N_CIRCUMFERENTIAL 16      /* number of gmsh visualzation devisions of beam element in circumferential direction*/
+#define N_Axial 50                /* number of gmsh visualzation devisions of beam element in axial direction*/
+//
 //#define GMSHTIMESTEPS           /* write gmsh output in each time step */
 //#define GMSHNEWTONSTEPS         /* write gmsh and console output in each Newton step */
 //#define REACTIONFORCES          /* output of reaction forces and moments */

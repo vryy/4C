@@ -131,7 +131,7 @@ public:
                         const double& pp)=0;
 
   //! return appropriate internal implementation class (acts as a simple factory)
-  Teuchos::RCP<Beam3contactinterface> Impl(const int numnodes,
+  static Teuchos::RCP<Beam3contactinterface> Impl(const int numnodes,
                                      const int numnodalvalues,
                                      const DRT::Discretization& pdiscret,
                                      const DRT::Discretization& cdiscret,

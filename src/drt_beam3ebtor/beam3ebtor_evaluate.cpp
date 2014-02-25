@@ -349,9 +349,7 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
       (*elemat1)(insert*(dofpn+1) +6, insert*(dofpn+1) + j) -= momentrxrxTNx(0,j-3)*Factor;
     }
 
-
   }
-
   //if a line neumann condition needs to be linearized
     else if(condition.Type() == DRT::Condition::LineNeumann)
     {
@@ -516,7 +514,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
   LINALG::Matrix<nnode*(dofpn+1),1> Res_torsion;
 
   //some matrices necessary for ANS approach
-  #ifdef ANS
+  #ifdef ANS_BEA3EBTOR
   LINALG::Matrix<1,3> L_i;
   L_i.Clear();
   LINALG::Matrix<nnode*dofpn,1> Res_tension_ANS;
@@ -600,7 +598,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
 
   //Calculate epsilon at collocation points
-  #ifdef ANS
+  #ifdef ANS_BEA3EBTOR
   LINALG::Matrix<3,1> epsilon_cp;
   epsilon_cp.Clear();
   LINALG::Matrix<3,3> tangent_cp;
@@ -882,7 +880,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
       }	//for (int j=0 ; j < dofpn*nnode ; j++)
     }	//for (int i=0 ; i < dofpn*nnode ; i++)
 
-#ifdef ANS
+#ifdef ANS_BEA3EBTOR
     L_i.Clear();
     DRT::UTILS::shape_function_1D(L_i,xi,line3);
     epsilon_ANS = 0.0;
@@ -911,7 +909,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
     //assemble internal stiffness matrix / R = d/(dd) Res in thesis Meier
     if (stiffmatrix != NULL)
     {
-      #ifndef ANS
+      #ifndef ANS_BEA3EBTOR
       R_tension = NTilde_x;
       R_tension.Scale(1.0 - 1.0/pow(dTNTilde_xd,0.5));
       R_tension.Update(1.0 / pow(dTNTilde_xd,1.5),NTilde_xddTNTilde_x,1.0);
@@ -942,7 +940,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
       {
         for(int j = 0; j < 6; j++)
         {
-          #ifndef ANS
+          #ifndef ANS_BEA3EBTOR
           (*stiffmatrix)(i,j) += R_tension(i,j);
           #else
           (*stiffmatrix)(i,j) += R_tension_ANS(i,j);
@@ -957,7 +955,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
       {
         for(int j = 7; j < 13; j++)
         {
-          #ifndef ANS
+          #ifndef ANS_BEA3EBTOR
           (*stiffmatrix)(i,j) += R_tension(i,j-1);
           #else
           (*stiffmatrix)(i,j) += R_tension_ANS(i,j-1);
@@ -972,7 +970,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
        {
          for(int j = 0; j < 6; j++)
          {
-            #ifndef ANS
+            #ifndef ANS_BEA3EBTOR
             (*stiffmatrix)(i,j) += R_tension(i-1,j);
             #else
             (*stiffmatrix)(i,j) += R_tension_ANS(i-1,j);
@@ -987,7 +985,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
       {
         for(int j = 7; j < 13; j++)
         {
-          #ifndef ANS
+          #ifndef ANS_BEA3EBTOR
           (*stiffmatrix)(i,j) += R_tension(i-1,j-1);
           #else
           (*stiffmatrix)(i,j) += R_tension_ANS(i-1,j-1);
@@ -1036,13 +1034,14 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
     if (force != NULL)
     {
       //assemble parts from tension
-      #ifndef ANS
+      #ifndef ANS_BEA3EBTOR
       Res_tension = NTilde_xd;
       Res_tension.Scale(1.0 - 1.0 /pow(dTNTilde_xd,0.5));
+
       Res_tension.Scale(ym * crosssec_ * jacobi_ * wgt);
       #endif
 
-      #ifdef ANS
+      #ifdef ANS_BEA3EBTOR
       Res_tension_ANS.Update(ym * crosssec_ * jacobi_*wgt*epsilon_ANS / pow(dTNTilde_xd,0.5),NTilde_xd,1.0);
       #endif
       //assemble parts from bending
@@ -1075,7 +1074,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
       //shifting values from fixed size vector to epetra vector *force
       for(int i = 0; i < 6; i++)
       {
-        #ifndef ANS
+        #ifndef ANS_BEA3EBTOR
         (*force)(i) += Res_tension(i) ;
         #else
         (*force)(i) += Res_tension_ANS(i);
@@ -1086,7 +1085,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
       for(int i = 7; i < 13; i++)
       {
-        #ifndef ANS
+        #ifndef ANS_BEA3EBTOR
         (*force)(i) += Res_tension(i-1) ;
         #else
         (*force)(i) += Res_tension_ANS(i-1);
@@ -1645,6 +1644,37 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckStiffMatrix(std::vector<double>& disp,
 //  //std::cout<<"Forde_FAD"<< endl;
 //  //cout << "Steifigkeitsmatrix2: " << (*stiffmatrix) << endl;
 
+}
+
+/*-----------------------------------------------------------------------------------------------------------*
+ |  Scalar Product of two Linalg Matrizes                                                         meier 05/13|
+ *-----------------------------------------------------------------------------------------------------------*/
+double DRT::ELEMENTS::Beam3ebtor::ScalarProduct(LINALG::Matrix<3,1> first_vector, LINALG::Matrix<3,1> second_vector)
+{
+  double result=0.0;
+
+  for (int i=0;i<3;i++)
+  {
+    result+=first_vector(i)*second_vector(i);
+  }
+
+  return result;
+}
+
+/*-----------------------------------------------------------------------------------------------------------*
+ |  Vector product of two FAD vectors                                                             meier 05/13|
+ *-----------------------------------------------------------------------------------------------------------*/
+LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3ebtor::VectorProduct(LINALG::Matrix<3,1> first_vector, LINALG::Matrix<3,1> second_vector)
+{
+  LINALG::Matrix<3,1> result_vector;
+  result_vector.Clear();
+  LINALG::Matrix<3,3> S_first_vector;
+  S_first_vector.Clear();
+  LARGEROTATIONS::computespin(S_first_vector,first_vector);
+
+  result_vector.Multiply(S_first_vector, second_vector);
+
+  return result_vector;
 }
 
 void DRT::ELEMENTS::Beam3ebtor::FADCheckNeumann(Teuchos::ParameterList& params,

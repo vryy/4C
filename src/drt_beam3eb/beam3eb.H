@@ -82,16 +82,22 @@ typedef Sacado::Fad::DFad<double> FAD;
 using namespace cln;
 #endif
 
-//#define SIMPLECALC ;          // simplified residuum and stiffness calculation for the small tension case
+//#define SIMPLECALC ;            // simplified residuum and stiffness calculation for the small tension case
+//Default: Off
 #define ScaleFactorLine 1.0;    // Scale factor for each line of the equation system for better conditioning
 #define ScaleFactorColumn 1.0;  // Scale factor for each column of the stiffness matrix for better conditioning
 #define PreConditioning false;  // Flag to switch preconditioning of element stiffness matrix on or off
 #define NODALDOFS 2             // With this flag it can be switched between third order (2 nodal dofs) and fifth order
                                 // hermitian polynomials (3 nodal dofs). So the valid values of NODALDOFS are 2 and 3
-//#define ANS                     // Flag, to apply Assumed Natural Strain approach for axial tension epsilon
+//Default: 2
+
+//#define ANS_BEAM3EB             // Flag, to apply Assumed Natural Strain approach for axial tension epsilon
+//Default: Off
 //#define ANSVALUES 3             //Decide, how many ANS points are applied (2 or 3 possible)
+//Default: 3
 
 #define mygaussruleeb intrule_line_6point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented
+//Default: 6
 
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
@@ -226,6 +232,10 @@ public:
     return Izz_;
   }
 
+  /*!
+   \brief Get centerline position at given parameter coordinate xi
+  */
+  LINALG::Matrix<3,1> GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const;
 
   /*!
   \brief Get vector of Teuchos::RCPs to the lines of this element
