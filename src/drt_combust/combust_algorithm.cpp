@@ -208,6 +208,10 @@ void COMBUST::Algorithm::TimeLoop()
 
     } // Fluid-G-function-Interaction loop
 
+    // solve for level-set field once more
+    if (not gen_flow_)
+      DoGfuncField();
+
     // update all field solvers
     UpdateTimeStep();
     //Remark (important for restart): the time level of phi (n+1, n or n-1) used to reconstruct the interface
@@ -581,6 +585,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
   return conveltmp;
 }
 
+
 /*------------------------------------------------------------------------------------------------*
  | protected: FGI iteration converged?                                                henke 06/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -591,11 +596,13 @@ bool COMBUST::Algorithm::NotConvergedFGI()
   if (fgitermax_ == 0)
     dserror("A maximum of 0 FGI is not sensible!!!");
 
+  // get state vectors; in case nothing is done here,
+  // they are used to initialize velnpi_ and phinpi_
+  const Teuchos::RCP<const Epetra_Vector> velnpip = FluidField().StdVelnp();
+  const Teuchos::RCP<const Epetra_Vector> phinpip = ScaTraField()->Phinp();
+
   if (fgiter_ > 0) // nothing to do for FGI = 0
   {
-    const Teuchos::RCP<const Epetra_Vector> velnpip = FluidField().StdVelnp();
-    const Teuchos::RCP<const Epetra_Vector> phinpip = ScaTraField()->Phinp();
-
     double velnormL2 = 1.0;
     double gfuncnormL2 = 1.0;
 
@@ -626,16 +633,19 @@ bool COMBUST::Algorithm::NotConvergedFGI()
         printf("\n|   %2d/%2d    | %10.3E[L2] | %10.3E | %10.3E |",
             fgiter_,fgitermax_,convtol_,fgvelnormL2/velnormL2,fggfuncnormL2/gfuncnormL2);
         printf("\n|+-----------------------------------------------------+|\n");
-
-        if (fgiter_ == fgitermax_)
-        {
-          printf("|+---------------- not converged ----------------------+|");
-          printf("\n|+-----------------------------------------------------+|\n");
-        }
       } // end if processor 0 for output
 
       if ((fgvelnormL2/velnormL2 <= convtol_) and (fggfuncnormL2/gfuncnormL2 <= convtol_))
         notconverged = false;
+
+      if (Comm().MyPID()==0)
+      {
+        if ((fgiter_ == fgitermax_) and (notconverged == true))
+        {
+          printf("|+---------------- not converged ----------------------+|");
+          printf("\n|+-----------------------------------------------------+|\n");
+        }
+      }
     } // end if fgitermax > 1
 
     if (fgiter_ >= fgitermax_)
@@ -643,14 +653,16 @@ bool COMBUST::Algorithm::NotConvergedFGI()
 
     if (!notconverged)
       FluidField().ClearTimeInt(); // clear XFEM time integration
-
-    // update fgi-vectors
-    velnpi_->Update(1.0,*velnpip,0.0);
-    phinpi_->Update(1.0,*phinpip,0.0);
   }
+
+  // update fgi-vectors
+  // initialization in case of fgiter_ == 0
+  velnpi_->Update(1.0,*velnpip,0.0);
+  phinpi_->Update(1.0,*phinpip,0.0);
 
   return notconverged;
 }
+
 
 /*------------------------------------------------------------------------------------------------*
  | protected: do a stationary first time step for combustion algorithm               schott 08/10 |
@@ -810,7 +822,7 @@ void COMBUST::Algorithm::PrepareTimeStep()
 void COMBUST::Algorithm::PrepareFGIteration()
 {
   fgiter_ += 1;
-  if (Comm().MyPID()==0 and fgitermax_>1)
+  if (Comm().MyPID()==0)
   {
     printf("\n---------------------------------------  FGI loop: iteration number: %2d ----------------------\n",fgiter_);
   }
