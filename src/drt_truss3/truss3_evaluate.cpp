@@ -615,21 +615,21 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(std::vector<double>&      dis
   // Get if normal dynamics problem or statmech problem
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
-  //calculating consistent mass matrix
+  //calculating mass matrix
   if (massmatrix != NULL)
   {
-    for (int i=0; i<3; ++i)
-    {
-      if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")==INPAR::STR::dyna_statmech)
-        (*massmatrix)(i,i)     = 1;
-      else
+    if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")==INPAR::STR::dyna_statmech)
+      for (int i=0; i<3*2; ++i)
+        (*massmatrix)(i,i) = 1;
+    else
+      //calculating consistent mass matrix
+      for (int i=0; i<3; ++i)
       {
         (*massmatrix)(i,i)     = density*lrefe_*crosssec_ / 3;
         (*massmatrix)(i+3,i+3) = density*lrefe_*crosssec_ / 3;
         (*massmatrix)(i,i+3)   = density*lrefe_*crosssec_ / 6;
         (*massmatrix)(i+3,i)   = density*lrefe_*crosssec_ / 6;
       }
-    }
   }
 
   return;
@@ -730,21 +730,21 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(std::vector<double>&      dis
   // Get if normal dynamics problem or statmech problem
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
-  //calculating consistent mass matrix
+  //calculating mass matrix
   if (massmatrix != NULL)
   {
-    for (int i=0; i<3; ++i)
-    {
-      if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")==INPAR::STR::dyna_statmech)
-        (*massmatrix)(i,i)     = 1;
-      else
+    if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")==INPAR::STR::dyna_statmech)
+      for (int i=0; i<3*2; ++i)
+        (*massmatrix)(i,i) = 1;
+    else
+      //calculating consistent mass matrix
+      for (int i=0; i<3; ++i)
       {
         (*massmatrix)(i,i)     = density*lrefe_*crosssec_ / 3;
         (*massmatrix)(i+3,i+3) = density*lrefe_*crosssec_ / 3;
         (*massmatrix)(i,i+3)   = density*lrefe_*crosssec_ / 6;
         (*massmatrix)(i+3,i)   = density*lrefe_*crosssec_ / 6;
       }
-    }
   }
 
   return;
@@ -1033,7 +1033,7 @@ inline void DRT::ELEMENTS::Truss3::CalcBrownian(Teuchos::ParameterList&    param
   MyTranslationalDamping<nnode,ndim,dof>(params,vel,disp,stiffmatrix,force);
 
   //add stochastic forces and (if required) resulting stiffness
-  MyStochasticForces<nnode,ndim,dof,randompergauss>(params,vel,disp,stiffmatrix,force);
+//  MyStochasticForces<nnode,ndim,dof,randompergauss>(params,vel,disp,stiffmatrix,force);
 
 return;
 
