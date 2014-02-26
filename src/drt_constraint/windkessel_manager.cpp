@@ -314,6 +314,7 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   wk_std_->Evaluate(p,windkesselstiffness_,coupoffdiag_vol_d_,coupoffdiag_fext_p_,windk_rhs_p_red,windk_rhs_dpdt_red,windk_rhs_q_red,windk_rhs_dqdt_red,windk_rhs_1_red,voldummy,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   wk_trimodular_->Evaluate(p,windkesselstiffness_,coupoffdiag_vol_d_,coupoffdiag_fext_p_,windk_rhs_p_red,windk_rhs_dpdt_red,windk_rhs_q_red,windk_rhs_dqdt_red,windk_rhs_1_red,voldummy,presratemredundant,presmredundant,fluxratemredundant,fluxmredundant);
   wk_heartvalvearterial_->Evaluate(p,windkesselstiffness_,coupoffdiag_vol_d_,coupoffdiag_fext_p_,windk_rhs_p_red,windk_rhs_dpdt_red,windk_rhs_q_red,windk_rhs_dqdt_red,windk_rhs_1_red,voldummy,presmredundant,Teuchos::null,Teuchos::null,Teuchos::null);
+  //wk_heartvalvearterial_->Evaluate(p,windkesselstiffness_,coupoffdiag_vol_d_,coupoffdiag_fext_p_,windk_rhs_p_red,windk_rhs_dpdt_red,windk_rhs_q_red,windk_rhs_dqdt_red,windk_rhs_1_red,voldummy,presratemredundant,presmredundant,fluxratemredundant,fluxmredundant);
 
   windk_rhs_p_->PutScalar(0.0);
   windk_rhs_p_->Export(*windk_rhs_p_red,*windkimpo_,Insert);

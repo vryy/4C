@@ -245,6 +245,25 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec7
     );
 
+    //! Evaluate Windkessel conditions and assemble the results
+    void EvaluateHeartValveArterialWindkessel_Experimental
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Windkessel stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Windkessel offdiagonal matrix dV/dd
+      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Windkessel offdiagonal matrix dfext/dp
+      Teuchos::RCP<Epetra_Vector>    sysvec1,  ///< distributed vectors that may be filled by aasembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec2,
+      Teuchos::RCP<Epetra_Vector>    sysvec3,
+      Teuchos::RCP<Epetra_Vector>    sysvec4,
+      Teuchos::RCP<Epetra_Vector>    sysvec5,
+      Teuchos::RCP<Epetra_Vector>    sysvec6,
+      Teuchos::RCP<Epetra_Vector>    sysvec7,
+      Teuchos::RCP<Epetra_Vector>    sysvec8,
+      Teuchos::RCP<Epetra_Vector>    sysvec9,
+      Teuchos::RCP<Epetra_Vector>    sysvec10
+    );
+
     //! Compute and assemble initial Windkessel values
     void InitializeStdAndTrimodularWindkessel
     (

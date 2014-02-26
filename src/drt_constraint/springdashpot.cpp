@@ -37,7 +37,7 @@ void SPRINGDASHPOT::SpringDashpot(Teuchos::RCP<DRT::Discretization> dis)
   dis->GetCondition("SpringDashpot",springdashpotcond);
   if ((int)springdashpotcond.size())
   {
-  	//params->set("havespringdashpot", true); // so the condition is evaluated in STR::ApplyForceStiffSpringDashpot
+    //params->set("havespringdashpot", true); // so the condition is evaluated in STR::ApplyForceStiffSpringDashpot
     if (!dis->Comm().MyPID()) IO::cout << "Computing area for spring dashpot condition...\n";
 
     // loop over all spring dashpot conditions
@@ -112,11 +112,11 @@ void SPRINGDASHPOT::SpringDashpot(Teuchos::RCP<DRT::Discretization> dis)
  |                                                             mhv 01/14|
  *----------------------------------------------------------------------*/
 void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> discret,
-                                   Teuchos::RCP<LINALG::SparseOperator> stiff,
-                                   Teuchos::RCP<Epetra_Vector> fint,
-                                   Teuchos::RCP<Epetra_Vector> disp,
-                                   Teuchos::RCP<Epetra_Vector> velo,
-                                   Teuchos::ParameterList parlist)
+    Teuchos::RCP<LINALG::SparseOperator> stiff,
+    Teuchos::RCP<Epetra_Vector> fint,
+    Teuchos::RCP<Epetra_Vector> disp,
+    Teuchos::RCP<Epetra_Vector> velo,
+    Teuchos::ParameterList parlist)
 {
 
   if (disp==Teuchos::null) dserror("Cannot find displacement state in discretization");
@@ -157,9 +157,9 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
 
       if (nodemap->MyGID(nds[j]))
       {
-      	int gid = nds[j];
-      	double nodalarea = (*areapernode)[j];
-      	//IO::cout << nodalarea << IO::endl;
+        int gid = nds[j];
+        double nodalarea = (*areapernode)[j];
+        //IO::cout << nodalarea << IO::endl;
         DRT::Node* node = discret->gNode(gid);
 
         if (!node) dserror("Cannot find global node %d",gid);
@@ -211,28 +211,28 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
         Epetra_SerialDenseMatrix N_x_N(numdof,numdof);
         for (int l=0; l<numdof; ++l)
           for (int m=0; m<numdof; ++m)
-          	N_x_N(l,m)=unitrefnormal[l]*unitrefnormal[m];
+            N_x_N(l,m)=unitrefnormal[l]*unitrefnormal[m];
 
         if (*dir == "direction_all")
         {
-        	for (int k=0; k<numdof; ++k)
-        	{
-						double val = nodalarea*(springstiff*(u[k]-springoffset) + dashpotvisc*v[k]);
-						fint->SumIntoGlobalValues(1,&val,&dofs[k]);
-						stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size)),dofs[k],dofs[k]);
-        	}
+          for (int k=0; k<numdof; ++k)
+          {
+            double val = nodalarea*(springstiff*(u[k]-springoffset) + dashpotvisc*v[k]);
+            fint->SumIntoGlobalValues(1,&val,&dofs[k]);
+            stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size)),dofs[k],dofs[k]);
+          }
         }
         else if (*dir == "direction_refsurfnormal")
         {
-        	for (int k=0; k<numdof; ++k)
-        	{
-						for (int m=0; m<numdof; ++m)
-						{
-							double val = nodalarea*N_x_N(k,m)*(springstiff*(u[m]-springoffset) + dashpotvisc*v[m]);
-							stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size))*N_x_N(k,m),dofs[k],dofs[m]);
-							fint->SumIntoGlobalValues(1,&val,&dofs[k]);
-						}
-        	}
+          for (int k=0; k<numdof; ++k)
+          {
+            for (int m=0; m<numdof; ++m)
+            {
+              double val = nodalarea*N_x_N(k,m)*(springstiff*(u[m]-springoffset) + dashpotvisc*v[m]);
+              stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size))*N_x_N(k,m),dofs[k],dofs[m]);
+              fint->SumIntoGlobalValues(1,&val,&dofs[k]);
+            }
+          }
         }
         else dserror("Invalid direction option! Choose direction_all or direction_refsurfnormal!");
 
