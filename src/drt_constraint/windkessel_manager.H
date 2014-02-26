@@ -7,12 +7,12 @@
 Monolithic coupling of structure and a three-element Windkessel governed by
 c dp/dt - c r2 dQ/dt + (p-p_0)/r1 - (1 + r2/r1) Q(d) = 0
 [c: compliance, r1: first resistance, r2: second resistance, Q = -dV/dt: flux, p: pressure variable]
-						                ____
-											 ____|R_1 |___
-   			    _____	   	|		 |____|		|
-----Q >----|_R_2_|----|							|--->----| p_0
-    									|______|C|____|
-												     | |
+                            ____
+                       ____|R_1 |___
+                      |    |____|   |
+----Q >----|_R_2_|----|             |--->----| p_0
+                      |______|C|____|
+                             | |
 
 There are three different versions:
 a) the standard model,

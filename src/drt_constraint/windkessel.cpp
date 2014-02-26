@@ -7,12 +7,12 @@
 Monolithic coupling of structure and a three-element Windkessel governed by
 c dp/dt - c r2 dQ/dt + (p-p_0)/r1 - (1 + r2/r1) Q(d) = 0
 [c: compliance, r1: first resistance, r2: second resistance, Q = -dV/dt: flux, p: pressure variable]
-						                ____
-											 ____|R_1 |___
-   			    _____	   	|		 |____|		|
-----Q >----|_R_2_|----|							|--->----| p_0
-    									|______|C|____|
-												     | |
+                            ____
+                       ____|R_1 |___
+                      |    |____|   |
+----Q >----|_R_2_|----|             |--->----| p_0
+                      |______|C|____|
+                             | |
 
 There are three different versions:
 a) the standard model,
@@ -52,17 +52,17 @@ Maintainer: Marc Hirschvogel
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
 UTILS::Windkessel::Windkessel(Teuchos::RCP<DRT::Discretization> discr,
-        const std::string& conditionname,
-        int& offsetID,
-        int& maxID,
-        std::vector<int>& curID):
-actdisc_(discr)
+    const std::string& conditionname,
+    int& offsetID,
+    int& maxID,
+    std::vector<int>& curID):
+    actdisc_(discr)
 {
   actdisc_->GetCondition(conditionname,windkesselcond_);
   if (windkesselcond_.size())
   {
-  	windkesseltype_=GetWindkesselType(conditionname);
-		std::vector<int> curcoupID;
+    windkesseltype_=GetWindkesselType(conditionname);
+    std::vector<int> curcoupID;
     for (unsigned int i=0; i<windkesselcond_.size();i++)
     {
       //windkesselcond_[i]->Print(std::cout);
@@ -96,26 +96,26 @@ actdisc_(discr)
       {
         DRT::Condition* actcond = surfneumcond[k];
         if (actcond->Type() == DRT::Condition::WindkesselStructureCoupling)
-    	  coupcond.push_back(actcond);
+          coupcond.push_back(actcond);
       }
       unsigned int numcond = coupcond.size();
 
-			curcoupID.push_back((coupcond[i])->GetInt("coupling id"));
-			if (curID.size() != curcoupID.size()) dserror("Coupling conditions do not match Windkessel conditions!");
+      curcoupID.push_back((coupcond[i])->GetInt("coupling id"));
+      if (curID.size() != curcoupID.size()) dserror("Coupling conditions do not match Windkessel conditions!");
 
       if (numcond == 0) dserror("no coupling conditions found");
 
       int coupcondID = 0;
 
-			DRT::Condition* cond = coupcond[i];
-			cond->Add("type","neum_orthopressure");
-			std::vector<int> onoff(6,0);
-			onoff[0] = 1;
-			cond->Add("onoff",onoff);
-			std::vector<double> val(6,0.0);
-			cond->Add("val",val);
-			coupcondID = (coupcond[i])->GetInt("coupling id");
-			tmp.push_back(coupcondID);
+      DRT::Condition* cond = coupcond[i];
+      cond->Add("type","neum_orthopressure");
+      std::vector<int> onoff(6,0);
+      onoff[0] = 1;
+      cond->Add("onoff",onoff);
+      std::vector<double> val(6,0.0);
+      cond->Add("val",val);
+      coupcondID = (coupcond[i])->GetInt("coupling id");
+      tmp.push_back(coupcondID);
 
       if (curID[i] != curcoupID[i]) dserror("Choose the same ids for the Windkessel and the structural coupling surface!");
 
@@ -123,7 +123,7 @@ actdisc_(discr)
   }
   else
   {
-	windkesseltype_=none;
+    windkesseltype_=none;
   }
 }
 
@@ -131,14 +131,14 @@ actdisc_(discr)
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
 UTILS::Windkessel::Windkessel(Teuchos::RCP<DRT::Discretization> discr,
-        const std::string& conditionname):
-actdisc_(discr)
+    const std::string& conditionname):
+    actdisc_(discr)
 {
   actdisc_->GetCondition(conditionname,windkesselcond_);
-  
+
   if (windkesselcond_.size())
   {
-	windkesseltype_=GetWindkesselType(conditionname);
+    windkesseltype_=GetWindkesselType(conditionname);
     for (unsigned int i=0; i<windkesselcond_.size();i++)
     {
 
@@ -150,13 +150,13 @@ actdisc_(discr)
   }
   else
   {
-	windkesseltype_=none;
+    windkesseltype_=none;
   }
 }
 
 /*-----------------------------------------------------------------------*
 |(private)                                                      mhv 10/13|
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 UTILS::Windkessel::WindkesselType UTILS::Windkessel::GetWindkesselType(const std::string& name)
 {
   if (name=="WindkesselStdStructureCond")
@@ -171,32 +171,32 @@ UTILS::Windkessel::WindkesselType UTILS::Windkessel::GetWindkesselType(const std
 /*------------------------------------------------------------------------*
 |(public)                                                      mhv 10/13  |
 |Initialization routine computes ref base values and activates conditions |
-*------------------------------------------------------------------------*/
+ *------------------------------------------------------------------------*/
 void UTILS::Windkessel::Initialize(
     Teuchos::ParameterList&        params,
-		Teuchos::RCP<Epetra_Vector>    sysvec1,
-		Teuchos::RCP<Epetra_Vector>    sysvec2)
+    Teuchos::RCP<Epetra_Vector>    sysvec1,
+    Teuchos::RCP<Epetra_Vector>    sysvec2)
 {
 
   // choose action
   switch (windkesseltype_)
   {
-    case wk_std:
-      params.set("action","calc_struct_constrvol");
-      InitializeStdAndTrimodularWindkessel(params,sysvec1,sysvec2);
+  case wk_std:
+    params.set("action","calc_struct_constrvol");
+    InitializeStdAndTrimodularWindkessel(params,sysvec1,sysvec2);
     break;
-    case wk_trimodular:
-      params.set("action","calc_struct_constrvol");
-      InitializeStdAndTrimodularWindkessel(params,sysvec1,sysvec2);
+  case wk_trimodular:
+    params.set("action","calc_struct_constrvol");
+    InitializeStdAndTrimodularWindkessel(params,sysvec1,sysvec2);
     break;
-    case wk_heartvalvearterial:
-      params.set("action","calc_struct_constrvol");
-      InitializeHeartValveArterialWindkessel(params,sysvec1,sysvec2);
+  case wk_heartvalvearterial:
+    params.set("action","calc_struct_constrvol");
+    InitializeHeartValveArterialWindkessel(params,sysvec1,sysvec2);
     break;
-    case none:
-      return;
-    default:
-      dserror("Unknown Windkessel type to be evaluated in Windkessel class!");
+  case none:
+    return;
+  default:
+    dserror("Unknown Windkessel type to be evaluated in Windkessel class!");
   }
 
   return;
@@ -205,10 +205,10 @@ void UTILS::Windkessel::Initialize(
 /*------------------------------------------------------------------------*
 |(public)                                                      mhv 12/13  |
 |Initialization routine activates conditions (restart)                    |
-*------------------------------------------------------------------------*/
+ *------------------------------------------------------------------------*/
 void UTILS::Windkessel::Initialize
 (
-  const double& time
+    const double& time
 )
 {
   for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
@@ -233,7 +233,7 @@ void UTILS::Windkessel::Initialize
 /*-----------------------------------------------------------------------*
 |(public)                                                       mhv 10/13|
 |Evaluate Windkessel functions, choose the right action based on type    |
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 void UTILS::Windkessel::Evaluate(
     Teuchos::ParameterList&        params,
     Teuchos::RCP<LINALG::SparseMatrix> sysmat1,
@@ -245,31 +245,31 @@ void UTILS::Windkessel::Evaluate(
     Teuchos::RCP<Epetra_Vector>    sysvec4,
     Teuchos::RCP<Epetra_Vector>    sysvec5,
     Teuchos::RCP<Epetra_Vector>    sysvec6,
-		Teuchos::RCP<Epetra_Vector>    sysvec7,
-		Teuchos::RCP<Epetra_Vector>    sysvec8,
-		Teuchos::RCP<Epetra_Vector>    sysvec9,
-		Teuchos::RCP<Epetra_Vector>    sysvec10)
+    Teuchos::RCP<Epetra_Vector>    sysvec7,
+    Teuchos::RCP<Epetra_Vector>    sysvec8,
+    Teuchos::RCP<Epetra_Vector>    sysvec9,
+    Teuchos::RCP<Epetra_Vector>    sysvec10)
 {
 
   // choose action
   switch (windkesseltype_)
   {
-    case wk_std:
-      params.set("action","calc_struct_volconstrstiff");
-      EvaluateStdWindkessel(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6);
+  case wk_std:
+    params.set("action","calc_struct_volconstrstiff");
+    EvaluateStdWindkessel(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6);
     break;
-    case wk_trimodular:
-      params.set("action","calc_struct_volconstrstiff");
-      EvaluateTrimodularWindkessel(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7,sysvec8,sysvec9,sysvec10);
+  case wk_trimodular:
+    params.set("action","calc_struct_volconstrstiff");
+    EvaluateTrimodularWindkessel(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7,sysvec8,sysvec9,sysvec10);
     break;
-    case wk_heartvalvearterial:
-      params.set("action","calc_struct_volconstrstiff");
-      EvaluateHeartValveArterialWindkessel(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7);
+  case wk_heartvalvearterial:
+    params.set("action","calc_struct_volconstrstiff");
+    EvaluateHeartValveArterialWindkessel(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7);
     break;
-    case none:
-      return;
-    default:
-      dserror("Unknown Windkessel type!");
+  case none:
+    return;
+  default:
+    dserror("Unknown Windkessel type!");
   }
 
 
@@ -284,15 +284,15 @@ void UTILS::Windkessel::Evaluate(
  *----------------------------------------------------------------------*/
 void UTILS::Windkessel::EvaluateStdWindkessel(
     Teuchos::ParameterList&        params,
-		Teuchos::RCP<LINALG::SparseMatrix> sysmat1,
+    Teuchos::RCP<LINALG::SparseMatrix> sysmat1,
     Teuchos::RCP<LINALG::SparseOperator> sysmat2,
     Teuchos::RCP<LINALG::SparseOperator> sysmat3,
     Teuchos::RCP<Epetra_Vector>    sysvec1,
     Teuchos::RCP<Epetra_Vector>    sysvec2,
-		Teuchos::RCP<Epetra_Vector>    sysvec3,
-		Teuchos::RCP<Epetra_Vector>    sysvec4,
-		Teuchos::RCP<Epetra_Vector>    sysvec5,
-		Teuchos::RCP<Epetra_Vector>    sysvec6)
+    Teuchos::RCP<Epetra_Vector>    sysvec3,
+    Teuchos::RCP<Epetra_Vector>    sysvec4,
+    Teuchos::RCP<Epetra_Vector>    sysvec5,
+    Teuchos::RCP<Epetra_Vector>    sysvec6)
 {
 
   if (!actdisc_->Filled()) dserror("FillComplete() was not called");
@@ -328,167 +328,167 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
     //std::cout << "" << condition << std::endl;
     params.set("id",condID);
 
-		double res = windkesselcond_[i]->GetDouble("resistance");
-		double comp = windkesselcond_[i]->GetDouble("compliance");
-		double res2 = windkesselcond_[i]->GetDouble("resistance2");
-		double p_0 = windkesselcond_[i]->GetDouble("p_0");
+    double res = windkesselcond_[i]->GetDouble("resistance");
+    double comp = windkesselcond_[i]->GetDouble("compliance");
+    double res2 = windkesselcond_[i]->GetDouble("resistance2");
+    double p_0 = windkesselcond_[i]->GetDouble("p_0");
 
-		// Windkessel stiffness
-		double wkstiff = 0.;
+    // Windkessel stiffness
+    double wkstiff = 0.;
 
-		// Windkessel rhs contributions
-		double factor_p = 0.;
-		double factor_dpdt = 0.;
-		double factor_q = 0.;
-		double factor_dqdt = 0.;
-		double factor_1 = 0.;
+    // Windkessel rhs contributions
+    double factor_p = 0.;
+    double factor_dpdt = 0.;
+    double factor_q = 0.;
+    double factor_dqdt = 0.;
+    double factor_1 = 0.;
 
-		if (assvec1 or assvec2 or assvec3 or assvec4 or assvec5)
-		{
-			factor_p = 1./res;
-			factor_dpdt = comp;
-			factor_q = 1.+res2/res;
-			factor_dqdt = res2*comp;
-			factor_1 = -p_0/res;
-		}
+    if (assvec1 or assvec2 or assvec3 or assvec4 or assvec5)
+    {
+      factor_p = 1./res;
+      factor_dpdt = comp;
+      factor_q = 1.+res2/res;
+      factor_dqdt = res2*comp;
+      factor_1 = -p_0/res;
+    }
 
 
-		// is condition already labeled as active?
-		if(activecons_.find(condID)->second==false)
-		{
-			const std::string action = params.get<std::string>("action");
-			Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
-			actdisc_->SetState("displacement",displast);
-			Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
-			actdisc_->SetState("displacement",disp);
-			params.set("action",action);
-		}
+    // is condition already labeled as active?
+    if(activecons_.find(condID)->second==false)
+    {
+      const std::string action = params.get<std::string>("action");
+      Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
+      actdisc_->SetState("displacement",displast);
+      Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
+      actdisc_->SetState("displacement",disp);
+      params.set("action",action);
+    }
 
     // global and local ID of this bc in the redundant vectors
     const int offsetID = params.get<int>("OffsetID");
     int gindex = condID-offsetID;
 
-		// elements might need condition
-		params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+    // elements might need condition
+    params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
-		// assemble the Windkessel stiffness matrix and scale with time-integrator dependent value
-		if (assmat1)
-		{
-			std::vector<int> colvec(1);
-			colvec[0]=gindex;
-			sysmat1->UnComplete();
-			wkstiff = sc_timint*(factor_dpdt/(gamma*ts_size)+factor_p);
+    // assemble the Windkessel stiffness matrix and scale with time-integrator dependent value
+    if (assmat1)
+    {
+      std::vector<int> colvec(1);
+      colvec[0]=gindex;
+      sysmat1->UnComplete();
+      wkstiff = sc_timint*(factor_dpdt/(gamma*ts_size)+factor_p);
 
-			havegid = sysmat1->RowMap().MyGID(gindex);
-			if(havegid) sysmat1->Assemble(wkstiff,colvec[0],colvec[0]);
-		}
-		// rhs part associated with p
-		if (assvec1)
-		{
-			std::vector<int> colvec(1);
-			colvec[0]=gindex;
-			int err1 = sysvec1->SumIntoGlobalValues(1,&factor_p,&colvec[0]);
-			if (err1) dserror("SumIntoGlobalValues failed!");
-		}
-		// rhs part associated with dp/dt
-		if (assvec2)
-		{
-			std::vector<int> colvec(1);
-			colvec[0]=gindex;
-			int err2 = sysvec2->SumIntoGlobalValues(1,&factor_dpdt,&colvec[0]);
-			if (err2) dserror("SumIntoGlobalValues failed!");
-		}
-		// rhs part associated with q
-		if (assvec3)
-		{
-			std::vector<int> colvec(1);
-			colvec[0]=gindex;
-			int err3 = sysvec3->SumIntoGlobalValues(1,&factor_q,&colvec[0]);
-			if (err3) dserror("SumIntoGlobalValues failed!");
-		}
-		// rhs part associated with dq/dt
-		if (assvec4)
-		{
-			std::vector<int> colvec(1);
-			colvec[0]=gindex;
-			int err4 = sysvec4->SumIntoGlobalValues(1,&factor_dqdt,&colvec[0]);
-			if (err4) dserror("SumIntoGlobalValues failed!");
-		}
-		// rhs part associated with 1
-		if (assvec5)
-		{
-			std::vector<int> colvec(1);
-			colvec[0]=gindex;
-			int err5 = sysvec5->SumIntoGlobalValues(1,&factor_1,&colvec[0]);
-			if (err5) dserror("SumIntoGlobalValues failed!");
-		}
+      havegid = sysmat1->RowMap().MyGID(gindex);
+      if(havegid) sysmat1->Assemble(wkstiff,colvec[0],colvec[0]);
+    }
+    // rhs part associated with p
+    if (assvec1)
+    {
+      std::vector<int> colvec(1);
+      colvec[0]=gindex;
+      int err1 = sysvec1->SumIntoGlobalValues(1,&factor_p,&colvec[0]);
+      if (err1) dserror("SumIntoGlobalValues failed!");
+    }
+    // rhs part associated with dp/dt
+    if (assvec2)
+    {
+      std::vector<int> colvec(1);
+      colvec[0]=gindex;
+      int err2 = sysvec2->SumIntoGlobalValues(1,&factor_dpdt,&colvec[0]);
+      if (err2) dserror("SumIntoGlobalValues failed!");
+    }
+    // rhs part associated with q
+    if (assvec3)
+    {
+      std::vector<int> colvec(1);
+      colvec[0]=gindex;
+      int err3 = sysvec3->SumIntoGlobalValues(1,&factor_q,&colvec[0]);
+      if (err3) dserror("SumIntoGlobalValues failed!");
+    }
+    // rhs part associated with dq/dt
+    if (assvec4)
+    {
+      std::vector<int> colvec(1);
+      colvec[0]=gindex;
+      int err4 = sysvec4->SumIntoGlobalValues(1,&factor_dqdt,&colvec[0]);
+      if (err4) dserror("SumIntoGlobalValues failed!");
+    }
+    // rhs part associated with 1
+    if (assvec5)
+    {
+      std::vector<int> colvec(1);
+      colvec[0]=gindex;
+      int err5 = sysvec5->SumIntoGlobalValues(1,&factor_1,&colvec[0]);
+      if (err5) dserror("SumIntoGlobalValues failed!");
+    }
 
-		// define element matrices and vectors
-		Epetra_SerialDenseMatrix elematrix1;
-		Epetra_SerialDenseMatrix elematrix2;
-		Epetra_SerialDenseVector elevector1;
-		Epetra_SerialDenseVector elevector2;
-		Epetra_SerialDenseVector elevector3;
-		Epetra_SerialDenseVector elevector4;
+    // define element matrices and vectors
+    Epetra_SerialDenseMatrix elematrix1;
+    Epetra_SerialDenseMatrix elematrix2;
+    Epetra_SerialDenseVector elevector1;
+    Epetra_SerialDenseVector elevector2;
+    Epetra_SerialDenseVector elevector3;
+    Epetra_SerialDenseVector elevector4;
 
-		std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
-		// if (geom.empty()) dserror("evaluation of condition with empty geometry");
-		// no check for empty geometry here since in parallel computations
-		// can exist processors which do not own a portion of the elements belonging
-		// to the condition geometry
-		std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
-		for (curr=geom.begin(); curr!=geom.end(); ++curr)
-		{
-			// get element location vector and ownerships
-			std::vector<int> lm;
-			std::vector<int> lmowner;
-			std::vector<int> lmstride;
-			curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
+    // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+    // no check for empty geometry here since in parallel computations
+    // can exist processors which do not own a portion of the elements belonging
+    // to the condition geometry
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    {
+      // get element location vector and ownerships
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
-			// get dimension of element matrices and vectors
-			// Reshape element matrices and vectors and init to zero
-			const int eledim = (int)lm.size();
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      const int eledim = (int)lm.size();
 
-			elematrix2.Shape(eledim,eledim);
-			elevector2.Size(eledim);
-			elevector3.Size(eledim);
-			elevector4.Size(1);
+      elematrix2.Shape(eledim,eledim);
+      elevector2.Size(eledim);
+      elevector3.Size(eledim);
+      elevector4.Size(1);
 
       Epetra_SerialDenseMatrix dummat(0,0);
       Epetra_SerialDenseVector dumvec(0);
 
-			// call the element specific evaluate method
-			int err1 = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector4);
-			int err2 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector3,dumvec);
-			if (err1 or err2) dserror("error while evaluating elements");
+      // call the element specific evaluate method
+      int err1 = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector4);
+      int err2 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector3,dumvec);
+      if (err1 or err2) dserror("error while evaluating elements");
 
-			// assembly
-			int eid = curr->second->Id();
+      // assembly
+      int eid = curr->second->Id();
 
-			if (assmat2)
-			{
-				// assemble to rectangular matrix. The col corresponds to the Windkessel ID.
-				std::vector<int> colvec(1);
-				colvec[0]=gindex;
-				elevector2.Scale(-sc_timint*(factor_dqdt/(beta*ts_size*ts_size)+factor_q*(gamma/(beta*ts_size))));
-				sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
-			}
-			if (assmat3)
-			{
-				// assemble to rectangular matrix. The col corresponds to the Windkessel ID.
-				std::vector<int> colvec(1);
-				colvec[0]=gindex;
-				elevector3.Scale(sc_timint);
-				sysmat3->Assemble(eid,lmstride,elevector3,lm,lmowner,colvec);
-			}
-			if (assvec6)
-			{
-				std::vector<int> windkessellm;
-				std::vector<int> windkesselowner;
-				windkessellm.push_back(gindex);
-				windkesselowner.push_back(curr->second->Owner());
-				LINALG::Assemble(*sysvec6,elevector4,windkessellm,windkesselowner);
-			}
+      if (assmat2)
+      {
+        // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
+        std::vector<int> colvec(1);
+        colvec[0]=gindex;
+        elevector2.Scale(-sc_timint*(factor_dqdt/(beta*ts_size*ts_size)+factor_q*(gamma/(beta*ts_size))));
+        sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
+      }
+      if (assmat3)
+      {
+        // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
+        std::vector<int> colvec(1);
+        colvec[0]=gindex;
+        elevector3.Scale(sc_timint);
+        sysmat3->Assemble(eid,lmstride,elevector3,lm,lmowner,colvec);
+      }
+      if (assvec6)
+      {
+        std::vector<int> windkessellm;
+        std::vector<int> windkesselowner;
+        windkessellm.push_back(gindex);
+        windkesselowner.push_back(curr->second->Owner());
+        LINALG::Assemble(*sysvec6,elevector4,windkessellm,windkesselowner);
+      }
 
     }
 
@@ -532,7 +532,7 @@ void UTILS::Windkessel::EvaluateTrimodularWindkessel(
   double ts_size = params.get("time_step_size",1.0);
 
 
-	bool havegid = false;
+  bool havegid = false;
 
   const bool assmat1 = sysmat1!=Teuchos::null;
   const bool assmat2 = sysmat2!=Teuchos::null;
@@ -560,202 +560,202 @@ void UTILS::Windkessel::EvaluateTrimodularWindkessel(
     //std::cout << "" << condition << std::endl;
     params.set("id",condID);
 
-		double R1_a = windkesselcond_[i]->GetDouble("R1_a");
-		double R1_b = windkesselcond_[i]->GetDouble("R1_b");
-		double R1_c = windkesselcond_[i]->GetDouble("R1_c");
-		double C_a = windkesselcond_[i]->GetDouble("C_a");
-		double C_b = windkesselcond_[i]->GetDouble("C_b");
-		double C_c = windkesselcond_[i]->GetDouble("C_c");
-		double R2_a = windkesselcond_[i]->GetDouble("R2_a");
-		double R2_b = windkesselcond_[i]->GetDouble("R2_b");
-		double R2_c = windkesselcond_[i]->GetDouble("R2_c");
-		double p_0 = windkesselcond_[i]->GetDouble("p_0");
-		double p_ab = windkesselcond_[i]->GetDouble("p_ab");
-		double p_bc = windkesselcond_[i]->GetDouble("p_bc");
+    double R1_a = windkesselcond_[i]->GetDouble("R1_a");
+    double R1_b = windkesselcond_[i]->GetDouble("R1_b");
+    double R1_c = windkesselcond_[i]->GetDouble("R1_c");
+    double C_a = windkesselcond_[i]->GetDouble("C_a");
+    double C_b = windkesselcond_[i]->GetDouble("C_b");
+    double C_c = windkesselcond_[i]->GetDouble("C_c");
+    double R2_a = windkesselcond_[i]->GetDouble("R2_a");
+    double R2_b = windkesselcond_[i]->GetDouble("R2_b");
+    double R2_c = windkesselcond_[i]->GetDouble("R2_c");
+    double p_0 = windkesselcond_[i]->GetDouble("p_0");
+    double p_ab = windkesselcond_[i]->GetDouble("p_ab");
+    double p_bc = windkesselcond_[i]->GetDouble("p_bc");
 
-		double k_p = windkesselcond_[i]->GetDouble("k_p");
+    double k_p = windkesselcond_[i]->GetDouble("k_p");
 
-		// Windkessel stiffness
-		double wkstiff = 0.;
+    // Windkessel stiffness
+    double wkstiff = 0.;
 
-		double c = 0.;
-		double r1 = 0.;
-		double r2 = 0.;
-		double dcdp = 0.;
-		double dr1dp = 0.;
-		double dr2dp = 0.;
+    double c = 0.;
+    double r1 = 0.;
+    double r2 = 0.;
+    double dcdp = 0.;
+    double dr1dp = 0.;
+    double dr2dp = 0.;
 
-		// Windkessel rhs contributions
-		double factor_p = 0.;
-		double factor_dpdt = 0.;
-		double factor_q = 0.;
-		double factor_dqdt = 0.;
-		double factor_1 = 0.;
+    // Windkessel rhs contributions
+    double factor_p = 0.;
+    double factor_dpdt = 0.;
+    double factor_q = 0.;
+    double factor_dqdt = 0.;
+    double factor_1 = 0.;
 
-		double dpdtmid = 0.;
-		double pmid = 0.;
-		double dqdtmid = 0.;
-		double qmid = 0.;
+    double dpdtmid = 0.;
+    double pmid = 0.;
+    double dqdtmid = 0.;
+    double qmid = 0.;
 
-		if (assvec1 or assvec2 or assvec3 or assvec4 or assvec5 or assvec7 or assvec8 or assvec9 or assvec10)
-		{
+    if (assvec1 or assvec2 or assvec3 or assvec4 or assvec5 or assvec7 or assvec8 or assvec9 or assvec10)
+    {
 
-			dpdtmid = (*sysvec7)[i];
-			pmid = (*sysvec8)[i];
-			dqdtmid = (*sysvec9)[i];
-			qmid = (*sysvec10)[i];
+      dpdtmid = (*sysvec7)[i];
+      pmid = (*sysvec8)[i];
+      dqdtmid = (*sysvec9)[i];
+      qmid = (*sysvec10)[i];
 
-			c = (C_b-C_c)*0.5*(1.-tanh((pmid-p_bc)/k_p)) + C_c + (C_a-C_b)*0.5*(1.-tanh((pmid-p_ab)/k_p));
-			r1 = (R1_b-R1_c)*0.5*(1.-tanh((pmid-p_bc)/k_p)) + R1_c + (R1_a-R1_b)*0.5*(1.-tanh((pmid-p_ab)/k_p));
-			r2 = (R2_b-R2_c)*0.5*(1.-tanh((pmid-p_bc)/k_p)) + R2_c + (R2_a-R2_b)*0.5*(1.-tanh((pmid-p_ab)/k_p));
+      c = (C_b-C_c)*0.5*(1.-tanh((pmid-p_bc)/k_p)) + C_c + (C_a-C_b)*0.5*(1.-tanh((pmid-p_ab)/k_p));
+      r1 = (R1_b-R1_c)*0.5*(1.-tanh((pmid-p_bc)/k_p)) + R1_c + (R1_a-R1_b)*0.5*(1.-tanh((pmid-p_ab)/k_p));
+      r2 = (R2_b-R2_c)*0.5*(1.-tanh((pmid-p_bc)/k_p)) + R2_c + (R2_a-R2_b)*0.5*(1.-tanh((pmid-p_ab)/k_p));
 
-			dcdp = (C_b-C_c)*0.5*(tanh((pmid-p_bc)/k_p)*tanh((pmid-p_bc)/k_p) - 1.) / k_p + (C_a-C_b)*0.5*(tanh((pmid-p_ab)/k_p)*tanh((pmid-p_ab)/k_p) - 1.) / k_p;
-			dr1dp = (R1_b-R1_c)*0.5*(tanh((pmid-p_bc)/k_p)*tanh((pmid-p_bc)/k_p) - 1.) / k_p + (R1_a-R1_b)*0.5*(tanh((pmid-p_ab)/k_p)*tanh((pmid-p_ab)/k_p) - 1.) / k_p;
-			dr2dp = (R2_b-R2_c)*0.5*(tanh((pmid-p_bc)/k_p)*tanh((pmid-p_bc)/k_p) - 1.) / k_p + (R2_a-R2_b)*0.5*(tanh((pmid-p_ab)/k_p)*tanh((pmid-p_ab)/k_p) - 1.) / k_p;
+      dcdp = (C_b-C_c)*0.5*(tanh((pmid-p_bc)/k_p)*tanh((pmid-p_bc)/k_p) - 1.) / k_p + (C_a-C_b)*0.5*(tanh((pmid-p_ab)/k_p)*tanh((pmid-p_ab)/k_p) - 1.) / k_p;
+      dr1dp = (R1_b-R1_c)*0.5*(tanh((pmid-p_bc)/k_p)*tanh((pmid-p_bc)/k_p) - 1.) / k_p + (R1_a-R1_b)*0.5*(tanh((pmid-p_ab)/k_p)*tanh((pmid-p_ab)/k_p) - 1.) / k_p;
+      dr2dp = (R2_b-R2_c)*0.5*(tanh((pmid-p_bc)/k_p)*tanh((pmid-p_bc)/k_p) - 1.) / k_p + (R2_a-R2_b)*0.5*(tanh((pmid-p_ab)/k_p)*tanh((pmid-p_ab)/k_p) - 1.) / k_p;
 
-			factor_p = 1./r1;
-			factor_dpdt = c;
-			factor_q = 1.+r2/r1;
-			factor_dqdt = c*r2;
-			factor_1 = -p_0/r1;
+      factor_p = 1./r1;
+      factor_dpdt = c;
+      factor_q = 1.+r2/r1;
+      factor_dqdt = c*r2;
+      factor_1 = -p_0/r1;
 
-		}
+    }
 
-		// is condition already labeled as active?
-		if(activecons_.find(condID)->second==false)
-		{
-			const std::string action = params.get<std::string>("action");
-			Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
-			actdisc_->SetState("displacement",displast);
-			Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
-			actdisc_->SetState("displacement",disp);
-			params.set("action",action);
-		}
+    // is condition already labeled as active?
+    if(activecons_.find(condID)->second==false)
+    {
+      const std::string action = params.get<std::string>("action");
+      Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
+      actdisc_->SetState("displacement",displast);
+      Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
+      actdisc_->SetState("displacement",disp);
+      params.set("action",action);
+    }
 
     // global and local ID of this bc in the redundant vectors
     const int offsetID = params.get<int>("OffsetID");
     int gindex = condID-offsetID;
 
-		// elements might need condition
-		params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+    // elements might need condition
+    params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
-		// assemble the Windkessel stiffness matrix and scale with time-integrator dependent value
-		if (assmat1)
-		{
-			std::vector<int> colvec(1);
-			colvec[0]=gindex;
-			sysmat1->UnComplete();
-			wkstiff = sc_timint*(dcdp*dpdtmid - dr1dp*(pmid-p_0)/(r1*r1) + (dcdp*r2+c*dr2dp)*dqdtmid + (r1*dr2dp-dr1dp*r2)*qmid/(r1*r1) + c/(gamma*ts_size) + 1./r1);
-			havegid = sysmat1->RowMap().MyGID(gindex);
-			if(havegid) sysmat1->Assemble(wkstiff,colvec[0],colvec[0]);
-		}
-		// rhs part associated with p
-		if (assvec1)
-		{
-			std::vector<int> colvec(1);
-			colvec[0]=gindex;
-			int err1 = sysvec1->SumIntoGlobalValues(1,&factor_p,&colvec[0]);
-			if (err1) dserror("SumIntoGlobalValues failed!");
-		}
-		// rhs part associated with dp/dt
-		if (assvec2)
-		{
-			std::vector<int> colvec(1);
-			colvec[0]=gindex;
-			int err2 = sysvec2->SumIntoGlobalValues(1,&factor_dpdt,&colvec[0]);
-			if (err2) dserror("SumIntoGlobalValues failed!");
-		}
-		// rhs part associated with q
-		if (assvec3)
-		{
-			std::vector<int> colvec(1);
-			colvec[0]=gindex;
-			int err3 = sysvec3->SumIntoGlobalValues(1,&factor_q,&colvec[0]);
-			if (err3) dserror("SumIntoGlobalValues failed!");
-		}
-		// rhs part associated with dq/dt
-		if (assvec4)
-		{
-			std::vector<int> colvec(1);
-			colvec[0]=gindex;
-			int err4 = sysvec4->SumIntoGlobalValues(1,&factor_dqdt,&colvec[0]);
-			if (err4) dserror("SumIntoGlobalValues failed!");
-		}
-		// rhs part associated with 1
-		if (assvec5)
-		{
-			std::vector<int> colvec(1);
-			colvec[0]=gindex;
-			int err5 = sysvec5->SumIntoGlobalValues(1,&factor_1,&colvec[0]);
-			if (err5) dserror("SumIntoGlobalValues failed!");
-		}
+    // assemble the Windkessel stiffness matrix and scale with time-integrator dependent value
+    if (assmat1)
+    {
+      std::vector<int> colvec(1);
+      colvec[0]=gindex;
+      sysmat1->UnComplete();
+      wkstiff = sc_timint*(dcdp*dpdtmid - dr1dp*(pmid-p_0)/(r1*r1) + (dcdp*r2+c*dr2dp)*dqdtmid + (r1*dr2dp-dr1dp*r2)*qmid/(r1*r1) + c/(gamma*ts_size) + 1./r1);
+      havegid = sysmat1->RowMap().MyGID(gindex);
+      if(havegid) sysmat1->Assemble(wkstiff,colvec[0],colvec[0]);
+    }
+    // rhs part associated with p
+    if (assvec1)
+    {
+      std::vector<int> colvec(1);
+      colvec[0]=gindex;
+      int err1 = sysvec1->SumIntoGlobalValues(1,&factor_p,&colvec[0]);
+      if (err1) dserror("SumIntoGlobalValues failed!");
+    }
+    // rhs part associated with dp/dt
+    if (assvec2)
+    {
+      std::vector<int> colvec(1);
+      colvec[0]=gindex;
+      int err2 = sysvec2->SumIntoGlobalValues(1,&factor_dpdt,&colvec[0]);
+      if (err2) dserror("SumIntoGlobalValues failed!");
+    }
+    // rhs part associated with q
+    if (assvec3)
+    {
+      std::vector<int> colvec(1);
+      colvec[0]=gindex;
+      int err3 = sysvec3->SumIntoGlobalValues(1,&factor_q,&colvec[0]);
+      if (err3) dserror("SumIntoGlobalValues failed!");
+    }
+    // rhs part associated with dq/dt
+    if (assvec4)
+    {
+      std::vector<int> colvec(1);
+      colvec[0]=gindex;
+      int err4 = sysvec4->SumIntoGlobalValues(1,&factor_dqdt,&colvec[0]);
+      if (err4) dserror("SumIntoGlobalValues failed!");
+    }
+    // rhs part associated with 1
+    if (assvec5)
+    {
+      std::vector<int> colvec(1);
+      colvec[0]=gindex;
+      int err5 = sysvec5->SumIntoGlobalValues(1,&factor_1,&colvec[0]);
+      if (err5) dserror("SumIntoGlobalValues failed!");
+    }
 
-		// define element matrices and vectors
-		Epetra_SerialDenseMatrix elematrix1;
-		Epetra_SerialDenseMatrix elematrix2;
-		Epetra_SerialDenseVector elevector1;
-		Epetra_SerialDenseVector elevector2;
-		Epetra_SerialDenseVector elevector3;
-		Epetra_SerialDenseVector elevector4;
+    // define element matrices and vectors
+    Epetra_SerialDenseMatrix elematrix1;
+    Epetra_SerialDenseMatrix elematrix2;
+    Epetra_SerialDenseVector elevector1;
+    Epetra_SerialDenseVector elevector2;
+    Epetra_SerialDenseVector elevector3;
+    Epetra_SerialDenseVector elevector4;
 
-		std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
-		// if (geom.empty()) dserror("evaluation of condition with empty geometry");
-		// no check for empty geometry here since in parallel computations
-		// can exist processors which do not own a portion of the elements belonging
-		// to the condition geometry
-		std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
-		for (curr=geom.begin(); curr!=geom.end(); ++curr)
-		{
-			// get element location vector and ownerships
-			std::vector<int> lm;
-			std::vector<int> lmowner;
-			std::vector<int> lmstride;
-			curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
+    // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+    // no check for empty geometry here since in parallel computations
+    // can exist processors which do not own a portion of the elements belonging
+    // to the condition geometry
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    {
+      // get element location vector and ownerships
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
-			// get dimension of element matrices and vectors
-			// Reshape element matrices and vectors and init to zero
-			const int eledim = (int)lm.size();
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      const int eledim = (int)lm.size();
 
-			elematrix2.Shape(eledim,eledim);
-			elevector2.Size(eledim);
-			elevector3.Size(eledim);
-			elevector4.Size(1);
+      elematrix2.Shape(eledim,eledim);
+      elevector2.Size(eledim);
+      elevector3.Size(eledim);
+      elevector4.Size(1);
 
       Epetra_SerialDenseMatrix dummat(0,0);
       Epetra_SerialDenseVector dumvec(0);
 
-			// call the element specific evaluate method
-			int err1 = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector4);
-			int err2 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector3,dumvec);
-			if (err1 or err2) dserror("error while evaluating elements");
+      // call the element specific evaluate method
+      int err1 = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector4);
+      int err2 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector3,dumvec);
+      if (err1 or err2) dserror("error while evaluating elements");
 
-			// assembly
-			int eid = curr->second->Id();
+      // assembly
+      int eid = curr->second->Id();
 
-			if (assmat2)
-			{
-				// assemble to rectangular matrix. The col corresponds to the Windkessel ID.
-				std::vector<int> colvec(1);
-				colvec[0]=gindex;
-				elevector2.Scale(-sc_timint*(factor_dqdt/(beta*ts_size*ts_size)+factor_q*(gamma/(beta*ts_size))));
-				sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
-			}
-			if (assmat3)
-			{
-				// assemble to rectangular matrix. The col corresponds to the Windkessel ID.
-				std::vector<int> colvec(1);
-				colvec[0]=gindex;
-				elevector3.Scale(sc_timint);
-				sysmat3->Assemble(eid,lmstride,elevector3,lm,lmowner,colvec);
-			}
-			if (assvec6)
-			{
-				std::vector<int> windkessellm;
-				std::vector<int> windkesselowner;
-				windkessellm.push_back(gindex);
-				windkesselowner.push_back(curr->second->Owner());
-				LINALG::Assemble(*sysvec6,elevector4,windkessellm,windkesselowner);
-			}
+      if (assmat2)
+      {
+        // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
+        std::vector<int> colvec(1);
+        colvec[0]=gindex;
+        elevector2.Scale(-sc_timint*(factor_dqdt/(beta*ts_size*ts_size)+factor_q*(gamma/(beta*ts_size))));
+        sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
+      }
+      if (assmat3)
+      {
+        // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
+        std::vector<int> colvec(1);
+        colvec[0]=gindex;
+        elevector3.Scale(sc_timint);
+        sysmat3->Assemble(eid,lmstride,elevector3,lm,lmowner,colvec);
+      }
+      if (assvec6)
+      {
+        std::vector<int> windkessellm;
+        std::vector<int> windkesselowner;
+        windkessellm.push_back(gindex);
+        windkesselowner.push_back(curr->second->Owner());
+        LINALG::Assemble(*sysvec6,elevector4,windkessellm,windkesselowner);
+      }
 
     }
 
@@ -797,8 +797,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
   double ts_size = params.get("time_step_size",1.0);
 
 
-	bool havegid = false;
-	bool havegid2 = false;
+  bool havegid = false;
+  bool havegid2 = false;
 
   const bool assmat1 = sysmat1!=Teuchos::null;
   const bool assmat2 = sysmat2!=Teuchos::null;
@@ -823,272 +823,272 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
     //std::cout << "" << condition << std::endl;
     params.set("id",condID);
 
-		double K_at = windkesselcond_[i]->GetDouble("K_at");
-		double K_p = windkesselcond_[i]->GetDouble("K_p");
-		double K_ar = windkesselcond_[i]->GetDouble("K_ar");
-		double C = windkesselcond_[i]->GetDouble("C");
-		double R_c = windkesselcond_[i]->GetDouble("R_c");
-		double R_p = windkesselcond_[i]->GetDouble("R_p");
-		double p_ve = windkesselcond_[i]->GetDouble("p_ve");
-		double p_at = windkesselcond_[i]->GetDouble("p_at");
+    double K_at = windkesselcond_[i]->GetDouble("K_at");
+    double K_p = windkesselcond_[i]->GetDouble("K_p");
+    double K_ar = windkesselcond_[i]->GetDouble("K_ar");
+    double C = windkesselcond_[i]->GetDouble("C");
+    double R_c = windkesselcond_[i]->GetDouble("R_c");
+    double R_p = windkesselcond_[i]->GetDouble("R_p");
+    double p_ve = windkesselcond_[i]->GetDouble("p_ve");
+    double p_at = windkesselcond_[i]->GetDouble("p_at");
 
-		// Windkessel stiffness
-		Epetra_SerialDenseMatrix wkstiff(2,2);
+    // Windkessel stiffness
+    Epetra_SerialDenseMatrix wkstiff(2,2);
 
-		// Windkessel rhs contributions
-		std::vector<double> factor_p(2);
-		std::vector<double> factor_dpdt(2);
-		std::vector<double> factor_q(2);
-		std::vector<double> factor_dqdt(2);
-		std::vector<double> factor_1(2);
+    // Windkessel rhs contributions
+    std::vector<double> factor_p(2);
+    std::vector<double> factor_dpdt(2);
+    std::vector<double> factor_q(2);
+    std::vector<double> factor_dqdt(2);
+    std::vector<double> factor_1(2);
 
-		double p_v = 0.;
-		double p_ar = 0.;
+    double p_v = 0.;
+    double p_ar = 0.;
 
-		if (assvec1 or assvec2 or assvec3 or assvec4 or assvec5 or assvec7)
-		{
+    if (assvec1 or assvec2 or assvec3 or assvec4 or assvec5 or assvec7)
+    {
 
-			p_v = (*sysvec7)[2*i];
-			p_ar = (*sysvec7)[2*i+1];
-			p_at = 0.0;
+      p_v = (*sysvec7)[2*i];
+      p_ar = (*sysvec7)[2*i+1];
+      p_at = 0.0;
 
-			//std::cout << "" << p_v << std::endl;
-			//std::cout << "" << p_ar << std::endl;
+      //std::cout << "" << p_v << std::endl;
+      //std::cout << "" << p_ar << std::endl;
 
-			//treat rhs contributions for valve law Windkessel
-			if (p_v < p_at)
-			{
-				factor_p[0] = K_at;
-				factor_dpdt[0] = 0.;
-				factor_q[0] = 1.;
-				factor_dqdt[0] = 0.;
-				factor_1[0] = -K_at*p_at;
-			}
-			if (p_v >= p_at and p_v < p_ar)
-			{
-				factor_p[0] = K_p;
-				factor_dpdt[0] = 0.;
-				factor_q[0] = 1.;
-				factor_dqdt[0] = 0.;
-				factor_1[0] = -K_p*p_at;
-			}
-			if (p_v >= p_ar)
-			{
-				factor_p[0] = K_ar;
-				factor_dpdt[0] = 0.;
-				factor_q[0] = 1.;
-				factor_dqdt[0] = 0.;
-				factor_1[0] = -K_ar*p_ar + K_p*p_ar - K_p*p_at;
-			}
+      //treat rhs contributions for valve law Windkessel
+      if (p_v < p_at)
+      {
+        factor_p[0] = K_at;
+        factor_dpdt[0] = 0.;
+        factor_q[0] = 1.;
+        factor_dqdt[0] = 0.;
+        factor_1[0] = -K_at*p_at;
+      }
+      if (p_v >= p_at and p_v < p_ar)
+      {
+        factor_p[0] = K_p;
+        factor_dpdt[0] = 0.;
+        factor_q[0] = 1.;
+        factor_dqdt[0] = 0.;
+        factor_1[0] = -K_p*p_at;
+      }
+      if (p_v >= p_ar)
+      {
+        factor_p[0] = K_ar;
+        factor_dpdt[0] = 0.;
+        factor_q[0] = 1.;
+        factor_dqdt[0] = 0.;
+        factor_1[0] = -K_ar*p_ar + K_p*p_ar - K_p*p_at;
+      }
 
-			//treat rhs contributions for arterial/pulmonal Windkessel
-			if (p_v < p_ar)
-			{
-				factor_p[1] = 1./R_p;
-				factor_dpdt[1] = C;
-				factor_q[1] = 0.;
-				factor_dqdt[1] = 0.;
-				factor_1[1] = -p_ve/R_p;
-			}
-			if (p_v >= p_ar)
-			{
-				factor_p[1] = 1./R_p;
-				factor_dpdt[1] = C;
-				factor_q[1] = 1.+R_c/R_p;
-				factor_dqdt[1] = R_c*C;
-				factor_1[1] = -p_ve/R_p;
-			}
+      //treat rhs contributions for arterial/pulmonal Windkessel
+      if (p_v < p_ar)
+      {
+        factor_p[1] = 1./R_p;
+        factor_dpdt[1] = C;
+        factor_q[1] = 0.;
+        factor_dqdt[1] = 0.;
+        factor_1[1] = -p_ve/R_p;
+      }
+      if (p_v >= p_ar)
+      {
+        factor_p[1] = 1./R_p;
+        factor_dpdt[1] = C;
+        factor_q[1] = 1.+R_c/R_p;
+        factor_dqdt[1] = R_c*C;
+        factor_1[1] = -p_ve/R_p;
+      }
 
-		}
+    }
 
 
-		// is condition already labeled as active?
-		if(activecons_.find(condID)->second==false)
-		{
-			const std::string action = params.get<std::string>("action");
-			Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
-			actdisc_->SetState("displacement",displast);
-			Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
-			actdisc_->SetState("displacement",disp);
-			params.set("action",action);
-		}
+    // is condition already labeled as active?
+    if(activecons_.find(condID)->second==false)
+    {
+      const std::string action = params.get<std::string>("action");
+      Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
+      actdisc_->SetState("displacement",displast);
+      Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
+      actdisc_->SetState("displacement",disp);
+      params.set("action",action);
+    }
 
     // global and local ID of this bc in the redundant vectors
     const int offsetID = params.get<int>("OffsetID");
     int gindex = condID-offsetID + i ;
     int gindex2 = gindex+1;
 
-		// elements might need condition
-		params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+    // elements might need condition
+    params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
-		// assemble the Windkessel stiffness matrix and scale with time-integrator dependent value
-		if (assmat1)
-		{
-			std::vector<int> colvec(2);
-			colvec[0]=gindex;
-			colvec[1]=gindex2;
+    // assemble the Windkessel stiffness matrix and scale with time-integrator dependent value
+    if (assmat1)
+    {
+      std::vector<int> colvec(2);
+      colvec[0]=gindex;
+      colvec[1]=gindex2;
 
-			if (p_v < p_at) wkstiff(0,0) = sc_timint*K_at;
-			if (p_v >= p_at and p_v < p_ar) wkstiff(0,0) = sc_timint*K_p;
-			if (p_v >= p_ar) wkstiff(0,0) = sc_timint*K_ar;
+      if (p_v < p_at) wkstiff(0,0) = sc_timint*K_at;
+      if (p_v >= p_at and p_v < p_ar) wkstiff(0,0) = sc_timint*K_p;
+      if (p_v >= p_ar) wkstiff(0,0) = sc_timint*K_ar;
 
-			if (p_v < p_at) wkstiff(0,1) = 0.;
-			if (p_v >= p_at and p_v < p_ar) wkstiff(0,1) = 0.;
-			if (p_v >= p_ar) wkstiff(0,1) = sc_timint*(K_p-K_ar);
+      if (p_v < p_at) wkstiff(0,1) = 0.;
+      if (p_v >= p_at and p_v < p_ar) wkstiff(0,1) = 0.;
+      if (p_v >= p_ar) wkstiff(0,1) = sc_timint*(K_p-K_ar);
 
-			wkstiff(1,0) = 0.;
+      wkstiff(1,0) = 0.;
 
-			wkstiff(1,1) = sc_timint*(factor_dpdt[1]/(gamma*ts_size)+factor_p[1]);
+      wkstiff(1,1) = sc_timint*(factor_dpdt[1]/(gamma*ts_size)+factor_p[1]);
 
-			sysmat1->UnComplete();
+      sysmat1->UnComplete();
 
-			havegid = sysmat1->RowMap().MyGID(gindex);
-			havegid2 = sysmat1->RowMap().MyGID(gindex2);
+      havegid = sysmat1->RowMap().MyGID(gindex);
+      havegid2 = sysmat1->RowMap().MyGID(gindex2);
 
-			if(havegid) sysmat1->Assemble(wkstiff(0,0),colvec[0],colvec[0]);
-			if(havegid) sysmat1->Assemble(wkstiff(0,1),colvec[0],colvec[1]);
-			if(havegid2) sysmat1->Assemble(wkstiff(1,0),colvec[1],colvec[0]);
-			if(havegid2) sysmat1->Assemble(wkstiff(1,1),colvec[1],colvec[1]);
+      if(havegid) sysmat1->Assemble(wkstiff(0,0),colvec[0],colvec[0]);
+      if(havegid) sysmat1->Assemble(wkstiff(0,1),colvec[0],colvec[1]);
+      if(havegid2) sysmat1->Assemble(wkstiff(1,0),colvec[1],colvec[0]);
+      if(havegid2) sysmat1->Assemble(wkstiff(1,1),colvec[1],colvec[1]);
 
-		}
-		// rhs part associated with p
-		if (assvec1)
-		{
-			std::vector<int> colvec(2);
-			colvec[0]=gindex;
-			colvec[1]=gindex2;
-			int err11 = sysvec1->SumIntoGlobalValues(1,&factor_p[0],&colvec[0]);
-			int err12 = sysvec1->SumIntoGlobalValues(1,&factor_p[1],&colvec[1]);
-			if (err11 or err12) dserror("SumIntoGlobalValues failed!");
-		}
-		// rhs part associated with dp/dt
-		if (assvec2)
-		{
-			std::vector<int> colvec(2);
-			colvec[0]=gindex;
-			colvec[1]=gindex2;
-			int err21 = sysvec2->SumIntoGlobalValues(1,&factor_dpdt[0],&colvec[0]);
-			int err22 = sysvec2->SumIntoGlobalValues(1,&factor_dpdt[1],&colvec[1]);
-			if (err21 or err22) dserror("SumIntoGlobalValues failed!");
-		}
-		// rhs part associated with q
-		if (assvec3)
-		{
-			std::vector<int> colvec(2);
-			colvec[0]=gindex;
-			colvec[1]=gindex2;
-			int err31 = sysvec3->SumIntoGlobalValues(1,&factor_q[0],&colvec[0]);
-			int err32 = sysvec3->SumIntoGlobalValues(1,&factor_q[1],&colvec[1]);
-			if (err31 or err32) dserror("SumIntoGlobalValues failed!");
-		}
-		// rhs part associated with dq/dt
-		if (assvec4)
-		{
-			std::vector<int> colvec(2);
-			colvec[0]=gindex;
-			colvec[1]=gindex2;
-			int err41 = sysvec4->SumIntoGlobalValues(1,&factor_dqdt[0],&colvec[0]);
-			int err42 = sysvec4->SumIntoGlobalValues(1,&factor_dqdt[1],&colvec[1]);
-			if (err41 or err42) dserror("SumIntoGlobalValues failed!");
-		}
-		// rhs part associated with 1
-		if (assvec5)
-		{
-			std::vector<int> colvec(2);
-			colvec[0]=gindex;
-			colvec[1]=gindex2;
-			int err51 = sysvec5->SumIntoGlobalValues(1,&factor_1[0],&colvec[0]);
-			int err52 = sysvec5->SumIntoGlobalValues(1,&factor_1[1],&colvec[1]);
-			if (err51 or err52) dserror("SumIntoGlobalValues failed!");
-		}
+    }
+    // rhs part associated with p
+    if (assvec1)
+    {
+      std::vector<int> colvec(2);
+      colvec[0]=gindex;
+      colvec[1]=gindex2;
+      int err11 = sysvec1->SumIntoGlobalValues(1,&factor_p[0],&colvec[0]);
+      int err12 = sysvec1->SumIntoGlobalValues(1,&factor_p[1],&colvec[1]);
+      if (err11 or err12) dserror("SumIntoGlobalValues failed!");
+    }
+    // rhs part associated with dp/dt
+    if (assvec2)
+    {
+      std::vector<int> colvec(2);
+      colvec[0]=gindex;
+      colvec[1]=gindex2;
+      int err21 = sysvec2->SumIntoGlobalValues(1,&factor_dpdt[0],&colvec[0]);
+      int err22 = sysvec2->SumIntoGlobalValues(1,&factor_dpdt[1],&colvec[1]);
+      if (err21 or err22) dserror("SumIntoGlobalValues failed!");
+    }
+    // rhs part associated with q
+    if (assvec3)
+    {
+      std::vector<int> colvec(2);
+      colvec[0]=gindex;
+      colvec[1]=gindex2;
+      int err31 = sysvec3->SumIntoGlobalValues(1,&factor_q[0],&colvec[0]);
+      int err32 = sysvec3->SumIntoGlobalValues(1,&factor_q[1],&colvec[1]);
+      if (err31 or err32) dserror("SumIntoGlobalValues failed!");
+    }
+    // rhs part associated with dq/dt
+    if (assvec4)
+    {
+      std::vector<int> colvec(2);
+      colvec[0]=gindex;
+      colvec[1]=gindex2;
+      int err41 = sysvec4->SumIntoGlobalValues(1,&factor_dqdt[0],&colvec[0]);
+      int err42 = sysvec4->SumIntoGlobalValues(1,&factor_dqdt[1],&colvec[1]);
+      if (err41 or err42) dserror("SumIntoGlobalValues failed!");
+    }
+    // rhs part associated with 1
+    if (assvec5)
+    {
+      std::vector<int> colvec(2);
+      colvec[0]=gindex;
+      colvec[1]=gindex2;
+      int err51 = sysvec5->SumIntoGlobalValues(1,&factor_1[0],&colvec[0]);
+      int err52 = sysvec5->SumIntoGlobalValues(1,&factor_1[1],&colvec[1]);
+      if (err51 or err52) dserror("SumIntoGlobalValues failed!");
+    }
 
-		// define element matrices and vectors
-		Epetra_SerialDenseMatrix elematrix1;
-		Epetra_SerialDenseMatrix elematrix2;
-		Epetra_SerialDenseVector elevector1;
-		Epetra_SerialDenseVector elevector2a;
-		Epetra_SerialDenseVector elevector2b;
-		Epetra_SerialDenseVector elevector3a;
-		Epetra_SerialDenseVector elevector3b;
-		Epetra_SerialDenseVector elevector4;
+    // define element matrices and vectors
+    Epetra_SerialDenseMatrix elematrix1;
+    Epetra_SerialDenseMatrix elematrix2;
+    Epetra_SerialDenseVector elevector1;
+    Epetra_SerialDenseVector elevector2a;
+    Epetra_SerialDenseVector elevector2b;
+    Epetra_SerialDenseVector elevector3a;
+    Epetra_SerialDenseVector elevector3b;
+    Epetra_SerialDenseVector elevector4;
 
-		std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
-		// if (geom.empty()) dserror("evaluation of condition with empty geometry");
-		// no check for empty geometry here since in parallel computations
-		// can exist processors which do not own a portion of the elements belonging
-		// to the condition geometry
-		std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
-		for (curr=geom.begin(); curr!=geom.end(); ++curr)
-		{
-			// get element location vector and ownerships
-			std::vector<int> lm;
-			std::vector<int> lmowner;
-			std::vector<int> lmstride;
-			curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
+    // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+    // no check for empty geometry here since in parallel computations
+    // can exist processors which do not own a portion of the elements belonging
+    // to the condition geometry
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    {
+      // get element location vector and ownerships
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
-			// get dimension of element matrices and vectors
-			// Reshape element matrices and vectors and init to zero
-			const int eledim = (int)lm.size();
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      const int eledim = (int)lm.size();
 
-			elematrix2.Shape(eledim,eledim);
-			elevector2a.Size(eledim);
-			elevector2b.Size(eledim);
-			elevector3a.Size(eledim);
-			elevector3b.Size(eledim);
-			elevector4.Size(2);
+      elematrix2.Shape(eledim,eledim);
+      elevector2a.Size(eledim);
+      elevector2b.Size(eledim);
+      elevector3a.Size(eledim);
+      elevector3b.Size(eledim);
+      elevector4.Size(2);
 
 
       Epetra_SerialDenseMatrix dummat(0,0);
       Epetra_SerialDenseVector dumvec(0);
 
-			// call the element specific evaluate method
-			int err1 = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2a,elevector4);
-			int err2 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector2b,dumvec);
-			int err3 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector3a,dumvec);
-			int err4 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector3b,dumvec);
-			if (err1 or err2 or err3 or err4) dserror("error while evaluating elements");
+      // call the element specific evaluate method
+      int err1 = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2a,elevector4);
+      int err2 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector2b,dumvec);
+      int err3 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector3a,dumvec);
+      int err4 = curr->second->Evaluate(params,*actdisc_,lm,dummat,dummat,dumvec,elevector3b,dumvec);
+      if (err1 or err2 or err3 or err4) dserror("error while evaluating elements");
 
 
-			// assembly
-			int eid = curr->second->Id();
+      // assembly
+      int eid = curr->second->Id();
 
-			if (assmat2)
-			{
-				// assemble to rectangular matrix. The col corresponds to the Windkessel ID.
-				std::vector<int> colvec1(1);
-				std::vector<int> colvec2(1);
-				colvec1[0]=gindex;
-				colvec2[0]=gindex2;
-				elevector2a.Scale(-sc_timint*factor_q[0]*(gamma/(beta*ts_size)));
-				sysmat2->Assemble(eid,lmstride,elevector2a,lm,lmowner,colvec1);
-				if (p_v >= p_ar) elevector2b.Scale(-sc_timint*(factor_dqdt[1]/(beta*ts_size*ts_size)+factor_q[1]*(gamma/(beta*ts_size))));
-				if (p_v < p_ar) elevector2b.Scale(0.0);
-				sysmat2->Assemble(eid,lmstride,elevector2b,lm,lmowner,colvec2);
+      if (assmat2)
+      {
+        // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
+        std::vector<int> colvec1(1);
+        std::vector<int> colvec2(1);
+        colvec1[0]=gindex;
+        colvec2[0]=gindex2;
+        elevector2a.Scale(-sc_timint*factor_q[0]*(gamma/(beta*ts_size)));
+        sysmat2->Assemble(eid,lmstride,elevector2a,lm,lmowner,colvec1);
+        if (p_v >= p_ar) elevector2b.Scale(-sc_timint*(factor_dqdt[1]/(beta*ts_size*ts_size)+factor_q[1]*(gamma/(beta*ts_size))));
+        if (p_v < p_ar) elevector2b.Scale(0.0);
+        sysmat2->Assemble(eid,lmstride,elevector2b,lm,lmowner,colvec2);
 
-			}
-			if (assmat3)
-			{
-				// assemble to rectangular matrix. The col corresponds to the Windkessel ID.
-				std::vector<int> colvec1(1);
-				std::vector<int> colvec2(1);
-				colvec1[0]=gindex;
-				colvec2[0]=gindex2;
-				elevector3a.Scale(sc_timint);
-				sysmat3->Assemble(eid,lmstride,elevector3a,lm,lmowner,colvec1);
-				elevector3b.Scale(0.0);
-				sysmat3->Assemble(eid,lmstride,elevector3b,lm,lmowner,colvec2);
-			}
-			if (assvec6)
-			{
-				elevector4[1]=elevector4[0];
-				std::vector<int> windkessellm;
-				std::vector<int> windkesselowner;
-				windkessellm.push_back(gindex);
-				windkessellm.push_back(gindex2);
-				windkesselowner.push_back(curr->second->Owner());
-				windkesselowner.push_back(curr->second->Owner());
-				LINALG::Assemble(*sysvec6,elevector4,windkessellm,windkesselowner);
-			}
+      }
+      if (assmat3)
+      {
+        // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
+        std::vector<int> colvec1(1);
+        std::vector<int> colvec2(1);
+        colvec1[0]=gindex;
+        colvec2[0]=gindex2;
+        elevector3a.Scale(sc_timint);
+        sysmat3->Assemble(eid,lmstride,elevector3a,lm,lmowner,colvec1);
+        elevector3b.Scale(0.0);
+        sysmat3->Assemble(eid,lmstride,elevector3b,lm,lmowner,colvec2);
+      }
+      if (assvec6)
+      {
+        elevector4[1]=elevector4[0];
+        std::vector<int> windkessellm;
+        std::vector<int> windkesselowner;
+        windkessellm.push_back(gindex);
+        windkessellm.push_back(gindex2);
+        windkesselowner.push_back(curr->second->Owner());
+        windkesselowner.push_back(curr->second->Owner());
+        LINALG::Assemble(*sysvec6,elevector4,windkessellm,windkesselowner);
+      }
 
     }
 
@@ -1131,63 +1131,63 @@ void UTILS::Windkessel::InitializeStdAndTrimodularWindkessel(
     params.set("id",condID);
 
     // global and local ID of this bc in the redundant vectors
-		int offsetID = params.get<int> ("OffsetID");
+    int offsetID = params.get<int> ("OffsetID");
     int gindex = condID-offsetID;
 
     p_init.push_back(windkesselcond_[i]->GetDouble("p_init"));
 
-		std::vector<int> colvec(1);
-		colvec[0]=gindex;
-		int err1 = sysvec2->SumIntoGlobalValues(1,&p_init[i],&colvec[0]);
-		if (err1) dserror("SumIntoGlobalValues failed!");
+    std::vector<int> colvec(1);
+    colvec[0]=gindex;
+    int err1 = sysvec2->SumIntoGlobalValues(1,&p_init[i],&colvec[0]);
+    if (err1) dserror("SumIntoGlobalValues failed!");
 
-		params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+    params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
-		// define element matrices and vectors
-		Epetra_SerialDenseMatrix elematrix1;
-		Epetra_SerialDenseMatrix elematrix2;
-		Epetra_SerialDenseVector elevector1;
-		Epetra_SerialDenseVector elevector2;
-		Epetra_SerialDenseVector elevector3;
+    // define element matrices and vectors
+    Epetra_SerialDenseMatrix elematrix1;
+    Epetra_SerialDenseMatrix elematrix2;
+    Epetra_SerialDenseVector elevector1;
+    Epetra_SerialDenseVector elevector2;
+    Epetra_SerialDenseVector elevector3;
 
-		std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
-		// no check for empty geometry here since in parallel computations
-		// can exist processors which do not own a portion of the elements belonging
-		// to the condition geometry
-		std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
-		for (curr=geom.begin(); curr!=geom.end(); ++curr)
-		{
-			// get element location vector and ownerships
-			std::vector<int> lm;
-			std::vector<int> lmowner;
-			std::vector<int> lmstride;
-			curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
+    // no check for empty geometry here since in parallel computations
+    // can exist processors which do not own a portion of the elements belonging
+    // to the condition geometry
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    {
+      // get element location vector and ownerships
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
-			// get dimension of element matrices and vectors
-			// Reshape element matrices and vectors and init to zero
-			elevector3.Size(1);
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      elevector3.Size(1);
 
-			// call the element specific evaluate method
-			int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,
-																			 elevector1,elevector2,elevector3);
-			if (err) dserror("error while evaluating elements");
+      // call the element specific evaluate method
+      int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,
+          elevector1,elevector2,elevector3);
+      if (err) dserror("error while evaluating elements");
 
-			// assembly
+      // assembly
 
-			std::vector<int> windkessellm;
-			std::vector<int> windkesselowner;
+      std::vector<int> windkessellm;
+      std::vector<int> windkesselowner;
 
-			windkessellm.push_back(gindex);
-			windkesselowner.push_back(curr->second->Owner());
-			LINALG::Assemble(*sysvec1,elevector3,windkessellm,windkesselowner);
-		}
-		// remember next time, that this condition is already initialized, i.e. active
-		activecons_.find(condID)->second=true;
+      windkessellm.push_back(gindex);
+      windkesselowner.push_back(curr->second->Owner());
+      LINALG::Assemble(*sysvec1,elevector3,windkessellm,windkesselowner);
+    }
+    // remember next time, that this condition is already initialized, i.e. active
+    activecons_.find(condID)->second=true;
 
-		if (actdisc_->Comm().MyPID()==0)
-		{
-			std::cout << "===== Welcome to monolithic 3D structure 0D Windkessel coupling (coupling id = " << condID << ") ====="<< std::endl;
-		}
+    if (actdisc_->Comm().MyPID()==0)
+    {
+      std::cout << "===== Welcome to monolithic 3D structure 0D Windkessel coupling (coupling id = " << condID << ") ====="<< std::endl;
+    }
 
 
   }
@@ -1220,70 +1220,70 @@ void UTILS::Windkessel::InitializeHeartValveArterialWindkessel(
     params.set("id",condID);
 
     // global and local ID of this bc in the redundant vectors
-		int offsetID = params.get<int> ("OffsetID");
+    int offsetID = params.get<int> ("OffsetID");
     int gindex = condID-offsetID + i;
     int gindex2 = gindex+1;
 
     double p_v_init=windkesselcond_[i]->GetDouble("p_v_init");
     double p_ar_init=windkesselcond_[i]->GetDouble("p_ar_init");
 
-		std::vector<int> colvec(2);
-		colvec[0]=gindex;
-		colvec[1]=gindex2;
-		int err1 = sysvec2->SumIntoGlobalValues(1,&p_v_init,&colvec[0]);
-		int err2 = sysvec2->SumIntoGlobalValues(1,&p_ar_init,&colvec[1]);
-		if (err1 or err2) dserror("SumIntoGlobalValues failed!");
+    std::vector<int> colvec(2);
+    colvec[0]=gindex;
+    colvec[1]=gindex2;
+    int err1 = sysvec2->SumIntoGlobalValues(1,&p_v_init,&colvec[0]);
+    int err2 = sysvec2->SumIntoGlobalValues(1,&p_ar_init,&colvec[1]);
+    if (err1 or err2) dserror("SumIntoGlobalValues failed!");
 
-		params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+    params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
-		// define element matrices and vectors
-		Epetra_SerialDenseMatrix elematrix1;
-		Epetra_SerialDenseMatrix elematrix2;
-		Epetra_SerialDenseVector elevector1;
-		Epetra_SerialDenseVector elevector2;
-		Epetra_SerialDenseVector elevector3;
+    // define element matrices and vectors
+    Epetra_SerialDenseMatrix elematrix1;
+    Epetra_SerialDenseMatrix elematrix2;
+    Epetra_SerialDenseVector elevector1;
+    Epetra_SerialDenseVector elevector2;
+    Epetra_SerialDenseVector elevector3;
 
-		std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
-		// no check for empty geometry here since in parallel computations
-		// can exist processors which do not own a portion of the elements belonging
-		// to the condition geometry
-		std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
-		for (curr=geom.begin(); curr!=geom.end(); ++curr)
-		{
-			// get element location vector and ownerships
-			std::vector<int> lm;
-			std::vector<int> lmowner;
-			std::vector<int> lmstride;
-			curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
+    // no check for empty geometry here since in parallel computations
+    // can exist processors which do not own a portion of the elements belonging
+    // to the condition geometry
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    {
+      // get element location vector and ownerships
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
-			// get dimension of element matrices and vectors
-			// Reshape element matrices and vectors and init to zero
-			elevector3.Size(2);
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      elevector3.Size(2);
 
-			// call the element specific evaluate method
-			int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,
-																			 elevector1,elevector2,elevector3);
-			if (err) dserror("error while evaluating elements");
+      // call the element specific evaluate method
+      int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,
+          elevector1,elevector2,elevector3);
+      if (err) dserror("error while evaluating elements");
 
-			// assembly
+      // assembly
 
-			elevector3[1]=elevector3[0];
-			std::vector<int> windkessellm;
-			std::vector<int> windkesselowner;
+      elevector3[1]=elevector3[0];
+      std::vector<int> windkessellm;
+      std::vector<int> windkesselowner;
 
-			windkessellm.push_back(gindex);
-			windkessellm.push_back(gindex2);
-			windkesselowner.push_back(curr->second->Owner());
-			windkesselowner.push_back(curr->second->Owner());
-			LINALG::Assemble(*sysvec1,elevector3,windkessellm,windkesselowner);
-		}
-		// remember next time, that this condition is already initialized, i.e. active
-		activecons_.find(condID)->second=true;
+      windkessellm.push_back(gindex);
+      windkessellm.push_back(gindex2);
+      windkesselowner.push_back(curr->second->Owner());
+      windkesselowner.push_back(curr->second->Owner());
+      LINALG::Assemble(*sysvec1,elevector3,windkessellm,windkesselowner);
+    }
+    // remember next time, that this condition is already initialized, i.e. active
+    activecons_.find(condID)->second=true;
 
-		if (actdisc_->Comm().MyPID()==0)
-		{
-			std::cout << "===== Welcome to monolithic 3D structure 0D Windkessel coupling (coupling id = " << condID << ") ====="<< std::endl;
-		}
+    if (actdisc_->Comm().MyPID()==0)
+    {
+      std::cout << "===== Welcome to monolithic 3D structure 0D Windkessel coupling (coupling id = " << condID << ") ====="<< std::endl;
+    }
 
 
   }
@@ -1309,8 +1309,8 @@ std::vector<int> UTILS::Windkessel::GetActiveCondID()
  *-----------------------------------------------------------------------*/
 void UTILS::Windkessel::SetState
 (
-  const std::string& state,  ///< name of state to set
-  Teuchos::RCP<Epetra_Vector> V  ///< values to set
+    const std::string& state,  ///< name of state to set
+    Teuchos::RCP<Epetra_Vector> V  ///< values to set
 )
 {
   actdisc_->SetState(state,V);

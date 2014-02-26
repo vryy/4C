@@ -7,12 +7,12 @@
 Monolithic coupling of structure and a three-element Windkessel governed by
 c dp/dt - c r2 dQ/dt + (p-p_0)/r1 - (1 + r2/r1) Q(d) = 0
 [c: compliance, r1: first resistance, r2: second resistance, Q = -dV/dt: flux, p: pressure variable]
-						                ____
-											 ____|R_1 |___
-   			    _____	   	|		 |____|		|
-----Q >----|_R_2_|----|							|--->----| p_0
-    									|______|C|____|
-												     | |
+                            ____
+                       ____|R_1 |___
+                      |    |____|   |
+----Q >----|_R_2_|----|             |--->----| p_0
+                      |______|C|____|
+                             | |
 
 There are three different versions:
 a) the standard model,
@@ -64,18 +64,18 @@ Maintainer: Marc Hirschvogel
  *----------------------------------------------------------------------*/
 UTILS::WindkesselManager::WindkesselManager
 (
-  Teuchos::RCP<DRT::Discretization> discr,
-  Teuchos::RCP<Epetra_Vector> disp,
-  Teuchos::ParameterList params,
-  LINALG::Solver& solver,
-  Teuchos::RCP<LINALG::MapExtractor> dbcmaps):
-actdisc_(discr),
-myrank_(actdisc_->Comm().MyPID()),
-dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
+    Teuchos::RCP<DRT::Discretization> discr,
+    Teuchos::RCP<Epetra_Vector> disp,
+    Teuchos::ParameterList params,
+    LINALG::Solver& solver,
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps):
+    actdisc_(discr),
+    myrank_(actdisc_->Comm().MyPID()),
+    dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
 {
 
-	//setup solver
-	SolverSetup(discr,solver,dbcmaps,params);
+  //setup solver
+  SolverSetup(discr,solver,dbcmaps,params);
 
   // a zero vector of full length
   zeros_ = LINALG::CreateVector(*(actdisc_->DofRowMap()), true);
@@ -86,7 +86,7 @@ dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
     const double time=0.0;
     p.set("total time", time);
     actdisc_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null,
-                                Teuchos::null, dbcmaps_);
+        Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
 
@@ -219,12 +219,12 @@ dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
 |(public)                                                      mhv 11/13|
 |Compute difference between current and prescribed values.              |
 |Change Stiffnessmatrix and internal force vector                       |
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 void UTILS::WindkesselManager::StiffnessAndInternalForces(
-        const double time,
-        Teuchos::RCP<Epetra_Vector> displast,
-        Teuchos::RCP<Epetra_Vector> disp,
-        Teuchos::ParameterList scalelist)
+    const double time,
+    Teuchos::RCP<Epetra_Vector> displast,
+    Teuchos::RCP<Epetra_Vector> disp,
+    Teuchos::ParameterList scalelist)
 {
 
   double sc_timint = scalelist.get("scale_timint",1.0);
@@ -376,12 +376,12 @@ void UTILS::WindkesselManager::UpdatePres(Teuchos::RCP<Epetra_Vector> presincrem
 /*----------------------------------------------------------------------*
 |(public)                                                      mhv 12/13|
 |Reset reference base values for restart                                |
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 void UTILS::WindkesselManager::SetRefBaseValues(Teuchos::RCP<Epetra_Vector> newrefval,const double& time)
 {
-	wk_std_->Initialize(time);
-	wk_trimodular_->Initialize(time);
-	wk_heartvalvearterial_->Initialize(time);
+  wk_std_->Initialize(time);
+  wk_trimodular_->Initialize(time);
+  wk_heartvalvearterial_->Initialize(time);
 
   vol_->Update(1.0, *newrefval,0.0);
   return;
@@ -415,11 +415,11 @@ void UTILS::WindkesselManager::EvaluateNeumannWindkesselCoupling(Teuchos::RCP<Ep
 
   for (unsigned int i=0; i<numcond; ++i)
   {
-		DRT::Condition* cond = coupcond[i];
-		std::vector<double> newval(6,0.0);
-		if (wk_std_->HaveWindkessel() or wk_trimodular_->HaveWindkessel()) newval[0] = -(*actpres)[i];
-		if (wk_heartvalvearterial_->HaveWindkessel()) newval[0] = -(*actpres)[2*i];
-		cond->Add("val",newval);
+    DRT::Condition* cond = coupcond[i];
+    std::vector<double> newval(6,0.0);
+    if (wk_std_->HaveWindkessel() or wk_trimodular_->HaveWindkessel()) newval[0] = -(*actpres)[i];
+    if (wk_heartvalvearterial_->HaveWindkessel()) newval[0] = -(*actpres)[2*i];
+    cond->Add("val",newval);
   }
 
   return;
@@ -430,30 +430,30 @@ void UTILS::WindkesselManager::PrintPresFlux() const
   // prepare stuff for printing to screen
   Teuchos::RCP<Epetra_Vector> presnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   Teuchos::RCP<Epetra_Vector> fluxnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-	LINALG::Export(*presn_,*presnredundant);
-	LINALG::Export(*fluxn_,*fluxnredundant);
+  LINALG::Export(*presn_,*presnredundant);
+  LINALG::Export(*fluxn_,*fluxnredundant);
 
 
-	if (myrank_ == 0)
-	{
+  if (myrank_ == 0)
+  {
 
-	  for (unsigned int i=0; i<currentID.size(); ++i)
-	  {
-	  	if (wk_std_->HaveWindkessel() or wk_trimodular_->HaveWindkessel())
-	  	{
-	  		printf("Windkessel output id%2d:\n",currentID[i]);
-	  		printf("%2d pressure: %10.5e \n",currentID[i],(*presnredundant)[i]);
-	  		printf("%2d flux: %10.5e \n",currentID[i],(*fluxnredundant)[i]);
-	  	}
-	  	if (wk_heartvalvearterial_->HaveWindkessel())
-	  	{
-	  		printf("Windkessel output id%2d:\n",currentID[i]);
-	  		printf("%2d ventricular pressure: %10.5e \n",currentID[i],(*presnredundant)[2*i]);
-	  		printf("%2d arterial pressure: %10.5e \n",currentID[i],(*presnredundant)[2*i+1]);
-	  		printf("%2d flux: %10.5e \n",currentID[i],(*fluxnredundant)[i]);
-	  	}
-	  }
-	}
+    for (unsigned int i=0; i<currentID.size(); ++i)
+    {
+      if (wk_std_->HaveWindkessel() or wk_trimodular_->HaveWindkessel())
+      {
+        printf("Windkessel output id%2d:\n",currentID[i]);
+        printf("%2d pressure: %10.5e \n",currentID[i],(*presnredundant)[i]);
+        printf("%2d flux: %10.5e \n",currentID[i],(*fluxnredundant)[i]);
+      }
+      if (wk_heartvalvearterial_->HaveWindkessel())
+      {
+        printf("Windkessel output id%2d:\n",currentID[i]);
+        printf("%2d ventricular pressure: %10.5e \n",currentID[i],(*presnredundant)[2*i]);
+        printf("%2d arterial pressure: %10.5e \n",currentID[i],(*presnredundant)[2*i+1]);
+        printf("%2d flux: %10.5e \n",currentID[i],(*fluxnredundant)[i]);
+      }
+    }
+  }
 
   return;
 }
@@ -465,10 +465,10 @@ void UTILS::WindkesselManager::PrintPresFlux() const
  *----------------------------------------------------------------------*/
 void UTILS::WindkesselManager::SolverSetup
 (
-  Teuchos::RCP<DRT::Discretization> discr,
-  LINALG::Solver& solver,
-  Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
-  Teuchos::ParameterList params
+    Teuchos::RCP<DRT::Discretization> discr,
+    LINALG::Solver& solver,
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
+    Teuchos::ParameterList params
 )
 {
 
@@ -482,9 +482,9 @@ void UTILS::WindkesselManager::SolverSetup
 
 void UTILS::WindkesselManager::Solve
 (
-  Teuchos::RCP<LINALG::SparseMatrix> stiff,
-  Teuchos::RCP<Epetra_Vector> dispinc,
-  const Teuchos::RCP<Epetra_Vector> rhsstand
+    Teuchos::RCP<LINALG::SparseMatrix> stiff,
+    Teuchos::RCP<Epetra_Vector> dispinc,
+    const Teuchos::RCP<Epetra_Vector> rhsstand
 )
 {
 
@@ -496,23 +496,23 @@ void UTILS::WindkesselManager::Solve
 
   // allocate additional vectors and matrices
   Teuchos::RCP<Epetra_Vector> rhswindk
-	= Teuchos::rcp(new Epetra_Vector(*(GetWindkesselRHS())));
+  = Teuchos::rcp(new Epetra_Vector(*(GetWindkesselRHS())));
   Teuchos::RCP<Epetra_Vector> presincr
-	= Teuchos::rcp(new Epetra_Vector(*(GetWindkesselMap())));
-	Teuchos::RCP<LINALG::SparseMatrix> windkstiff =
-		(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetWindkesselStiffness()));
-	Teuchos::RCP<LINALG::SparseMatrix> coupoffdiag_vol_d =
-		(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetCoupOffdiagVolD()));
-	Teuchos::RCP<LINALG::SparseMatrix> coupoffdiag_fext_p =
-		(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetCoupOffdiagFextP()));
+  = Teuchos::rcp(new Epetra_Vector(*(GetWindkesselMap())));
+  Teuchos::RCP<LINALG::SparseMatrix> windkstiff =
+      (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetWindkesselStiffness()));
+  Teuchos::RCP<LINALG::SparseMatrix> coupoffdiag_vol_d =
+      (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetCoupOffdiagVolD()));
+  Teuchos::RCP<LINALG::SparseMatrix> coupoffdiag_fext_p =
+      (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetCoupOffdiagFextP()));
 
-	// prepare residual pressure
-	presincr->PutScalar(0.0);
+  // prepare residual pressure
+  presincr->PutScalar(0.0);
 
 
-	// apply DBC to additional offdiagonal coupling matrices
-	coupoffdiag_vol_d->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
-	coupoffdiag_fext_p->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
+  // apply DBC to additional offdiagonal coupling matrices
+  coupoffdiag_vol_d->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
+  coupoffdiag_fext_p->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
 
 
   // define maps of standard dofs and additional pressures
@@ -560,13 +560,13 @@ void UTILS::WindkesselManager::Solve
   LINALG::Export(*rhsstand,*mergedrhs);
 
 #if 0
-    const int myrank=(actdisc_->Comm().MyPID());
-    const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*mergedmatrix),Ifpack_GMRES, 100);
-    // computation of significant digits might be completely bogus, so don't take it serious
-    const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
-    const int sign_digits = (int)floor(tmp);
-    if (!myrank)
-      std::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits<<std::endl;
+  const int myrank=(actdisc_->Comm().MyPID());
+  const double cond_number = LINALG::Condest(static_cast<LINALG::SparseMatrix&>(*mergedmatrix),Ifpack_GMRES, 100);
+  // computation of significant digits might be completely bogus, so don't take it serious
+  const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
+  const int sign_digits = (int)floor(tmp);
+  if (!myrank)
+    std::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits<<std::endl;
 #endif
 
   // solve with merged matrix
@@ -581,8 +581,8 @@ void UTILS::WindkesselManager::Solve
 
   counter_++;
 
-	// update Windkessel pressure
-	UpdatePres(presincr);
+  // update Windkessel pressure
+  UpdatePres(presincr);
 
   return;
 }
