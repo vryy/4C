@@ -203,7 +203,6 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     std::vector<double> myvel(lm.size());
     DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
   }
-
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
@@ -213,7 +212,6 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
 
   int curvenum = -1;
-
   // number of the load curve related with a specific Neumann condition called
   if (curve) curvenum = (*curve)[0];
 
@@ -371,7 +369,6 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     }
 
   }
-
   //if a line neumann condition needs to be linearized
   else if(condition.Type() == DRT::Condition::LineNeumann)
   {
@@ -480,7 +477,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   //Uncomment the next line if the implementation of the Neumann part of the analytical stiffness matrix should be checked by Forward Automatic Differentiation (FAD)
   //FADCheckNeumann(params, discretization, condition, lm, elevec1, elemat1);
 
-  return 0;
+  return (0);
 
 }	//DRT::ELEMENTS::Beam3eb::EvaluateNeumann
 
@@ -556,9 +553,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   LINALG::Matrix<nnode*dofpn,1> Res_bending;
 
   //some matrices necessary for ANS approach
-  #ifdef ANS
+  #ifdef ANS_BEAM3EB
     #if (NODALDOFS ==3)
-    dserror("ANS approach so far only defined for third order Hermitian shape functions, set NODALDOFS=2!!!");
+    dserror("ANS_BEAM3EB approach so far only defined for third order Hermitian shape functions, set NODALDOFS=2!!!");
     #endif
   LINALG::Matrix<1,3> L_i;
   L_i.Clear();
@@ -626,7 +623,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   } //for (int node = 0 ; node < nnode ; node++)
 
   //Calculate epsilon at collocation points
-  #ifdef ANS
+  #ifdef ANS_BEAM3EB
   LINALG::Matrix<3,1> epsilon_cp;
   epsilon_cp.Clear();
   LINALG::Matrix<3,3> tangent_cp;
@@ -801,7 +798,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       }
     }
 
-#ifdef ANS
+#ifdef ANS_BEAM3EB
     DRT::UTILS::shape_function_1D(L_i,xi,line3);
     epsilon_ANS = 0.0;
     lin_epsilon_ANS.Clear();
@@ -831,7 +828,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     {
 
       //assemble parts from tension
-      #ifndef ANS
+      #ifndef ANS_BEAM3EB
       R_tension = NTildex;
       R_tension.Scale(tension);
       R_tension.Update(1.0 / pow(rxrx,1.5),NxTrxrxTNx,1.0);
@@ -855,7 +852,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       {
         for(int j = 0; j < dofpn*nnode; j++)
         {
-          #ifndef ANS
+          #ifndef ANS_BEAM3EB
           (*stiffmatrix)(i,j) += R_tension(i,j);
           #else
           (*stiffmatrix)(i,j) += R_tension_ANS(i,j);
@@ -880,12 +877,12 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
         for (int j=0;j<2*NODALDOFS;j++)
         {
           Res_bending(j*3 + i)+= N_i_x(j)*f1(i)/pow(jacobi_,5) + N_i_xx(j)*f2(i)/pow(jacobi_,3);
-          #ifndef ANS
+          #ifndef ANS_BEAM3EB
           Res_tension(j*3 + i)+= N_i_x(j)*n1(i);
           #endif
         }
       }
-      #ifdef ANS
+      #ifdef ANS_BEAM3EB
       Res_tension_ANS.Update(ym * crosssec_ * wgt*epsilon_ANS / jacobi_,NxTrx,1.0);
       #endif
       Res_bending.Scale(ym * Izz_ * wgt);
@@ -894,12 +891,12 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       //shifting values from fixed size vector to epetra vector *force
       for(int i = 0; i < dofpn*nnode; i++)
       {
-        #ifndef ANS
+        #ifndef ANS_BEAM3EB
         (*force)(i) += Res_tension(i);
         #else
         (*force)(i) += Res_tension_ANS(i);
         #endif
-        (*force)(i) += Res_bending(i) ;
+        (*force)(i) += Res_bending(i);
       }
     } //if (force != NULL)
 
@@ -1018,7 +1015,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   LINALG::Matrix<nnode*dofpn,1> Res_bending;
 
   //some matrices necessary for ANS approach
-  #ifdef ANS
+  #ifdef ANS_BEAM3EB
     #if (NODALDOFS ==3)
     dserror("ANS approach so far only defined for third order Hermitian shape functions, set NODALDOFS=2!!!");
     #endif
@@ -1098,8 +1095,14 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     disp_totlag_fad[dof].diff(dof,nnode*dofpn);
   }
 
+  double tangentnorm1 = sqrt(disp_totlag[3]*disp_totlag[3]+disp_totlag[4]*disp_totlag[4]+disp_totlag[5]*disp_totlag[5]);
+  double tangentnorm2 = sqrt(disp_totlag[9]*disp_totlag[9]+disp_totlag[10]*disp_totlag[10]+disp_totlag[11]*disp_totlag[11]);
+
+  if (tangentnorm1 <1.0e-12 or tangentnorm2 <1.0e-12)
+    dserror("Tangent of norm zero --> deformation to large!!!");
+
   //Calculate epsilon at collocation points
-  #ifdef ANS
+  #ifdef ANS_BEAM3EB
   LINALG::Matrix<3,1> epsilon_cp;
   epsilon_cp.Clear();
   LINALG::Matrix<3,3> tangent_cp;
@@ -1172,11 +1175,10 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     { //loop over all shape functions
       for (int j=0;j<2*NODALDOFS;j++)
       { //loop over CPs
-          lin_epsilon_cp(k,3*j + i)+=tangent_cp(i,k)*N_i_x(j)/(epsilon_cp(k)+1);
+        lin_epsilon_cp(k,3*j + i)+=tangent_cp(i,k)*N_i_x(j)/(epsilon_cp(k)+1);
       }
     }
   }
-
   #endif
 
   //Loop through all GP and calculate their contribution to the internal forcevector and stiffnessmatrix
@@ -1234,6 +1236,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 
 #if (NODALDOFS == 2)
     //Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
+    DRT::UTILS::shape_function_hermite_1D(N_i,xi,jacobi_*2.0,distype);
     DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_x,xi,jacobi_*2.0,distype);
     DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xx,xi,jacobi_*2.0,distype);
     //end--------------------------------------------------------
@@ -1298,7 +1301,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     }
 
     //calculate quantities necessary for ANS approach
-    #ifdef ANS
+    #ifdef ANS_BEAM3EB
     DRT::UTILS::shape_function_1D(L_i,xi,line3);
     epsilon_ANS = 0.0;
     epsilon_ANS_fad = 0.0;
@@ -1345,7 +1348,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     if (stiffmatrix != NULL)
     {
       //assemble parts from tension
-      #ifndef ANS
+      #ifndef ANS_BEAM3EB
       R_tension = NTildex;
       R_tension.Scale(tension);
       R_tension.Update(1.0 / pow(rxrx,1.5),NxTrxrxTNx,1.0);
@@ -1381,7 +1384,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       {
         for(int j = 0; j < dofpn*nnode; j++)
         {
-          #ifndef ANS
+          #ifndef ANS_BEAM3EB
           (*stiffmatrix)(i,j) += R_tension(i,j);
           #else
           (*stiffmatrix)(i,j) += R_tension_ANS(i,j);
@@ -1405,12 +1408,12 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
         for (int j=0;j<nnode*NODALDOFS;j++)
         {
           Res_bending(j*3 + i)+= N_i_x(j)*f1(i) + N_i_xx(j)*f2(i);
-          #ifndef ANS
+          #ifndef ANS_BEAM3EB
           Res_tension(j*3 + i)+= N_i_x(j)*n1(i);
           #endif
         }
       }
-      #ifdef ANS
+      #ifdef ANS_BEAM3EB
       Res_tension_ANS.Update(ym * crosssec_ * wgt*epsilon_ANS / pow(rxrx,0.5),NxTrx,1.0);
       #endif
       Res_bending.Scale(ym * Izz_ * wgt / jacobi_);
@@ -1419,7 +1422,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
       //shifting values from fixed size vector to epetra vector *force
       for(int i = 0; i < dofpn*nnode; i++)
       {
-          #ifndef ANS
+          #ifndef ANS_BEAM3EB
           (*force)(i) += Res_tension(i);
           #else
           (*force)(i) += Res_tension_ANS(i);
@@ -1488,8 +1491,10 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   }
 }
 #endif
+
 //Uncomment the next line if the implementation of the analytical stiffness matrix should be checked by Forward Automatic Differentiation (FAD)
 //FADCheckStiffMatrix(disp, stiffmatrix, force);
+
 // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
 if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
 internalforces_ = *force;
@@ -1991,7 +1996,6 @@ return;
 
 }//DRT::ELEMENTS::Beam3eb::NodeShift
 
-
 /*----------------------------------------------------------------------------------------------------------*
  | Get position vector at xi for given nodal displacements                                       meier 02/14|
  *----------------------------------------------------------------------------------------------------------*/
@@ -2011,9 +2015,8 @@ LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3eb::GetPos(double& xi, LINALG::Matrix<12
     }
   }
 
-  return r;
+  return (r);
 }
-
 
 //***************************************************************************************
 //Methods for FAD Check
