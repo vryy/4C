@@ -20,7 +20,6 @@ Maintainer: Alexander Popp
 #include "Epetra_SerialDenseVector.h"
 #include "Teuchos_TimeMonitor.hpp"
 
-#include "strtimint_mstep.H"
 #include "strtimint.H"
 #include "stru_resulttest.H"
 
@@ -183,8 +182,8 @@ STR::TimInt::TimInt
   }
 
   // time state
-  time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
-  dt_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
+  time_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
+  dt_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
   step_ = 0;
   timen_ = (*time_)[0] + (*dt_)[0];  // set target time to initial time plus step size
   stepn_ = step_ + 1;
@@ -194,11 +193,11 @@ STR::TimInt::TimInt
     AttachEnergyFile();
 
   // displacements D_{n}
-  dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  dis_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // velocities V_{n}
-  vel_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  vel_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // accelerations A_{n}
-  acc_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  acc_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
   // displacements D_{n+1} at t_{n+1}
   disn_ = LINALG::CreateVector(*DofRowMapView(), true);
@@ -210,7 +209,7 @@ STR::TimInt::TimInt
     dismatn_ = LINALG::CreateVector(*DofRowMapView(),true);
 
     // material_displacements D_{n}
-    dism_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+    dism_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   }
 
   // velocities V_{n+1} at t_{n+1}
@@ -1042,7 +1041,7 @@ void STR::TimInt::ReadRestart
 
   step_ = step;
   stepn_ = step_ + 1;
-  time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
+  time_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
   timen_ = (*time_)[0] + (*dt_)[0];
 
   ReadRestartState();
@@ -1072,7 +1071,7 @@ void STR::TimInt::SetRestart
 {
   step_ = step;
   stepn_ = step_ + 1;
-  time_ = Teuchos::rcp(new TimIntMStep<double>(0, 0, time));
+  time_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, time));
   timen_ = (*time_)[0] + (*dt_)[0];
 
   SetRestartState(disn,veln,accn,elementdata,nodedata);
@@ -2725,13 +2724,13 @@ void STR::TimInt::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptorem
 void STR::TimInt::Reset()
 {
   // displacements D_{n}
-  dis_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  dis_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // displacements D_{n}
-  dism_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  dism_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // velocities V_{n}
-  vel_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  vel_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // accelerations A_{n}
-  acc_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  acc_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
   // displacements D_{n+1} at t_{n+1}
   disn_ = LINALG::CreateVector(*DofRowMapView(), true);

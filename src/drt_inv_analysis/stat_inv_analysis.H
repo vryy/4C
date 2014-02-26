@@ -14,7 +14,6 @@ Maintainer: Jonas Biehler
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
-#include "../drt_structure/strtimint_mstep.H"
 
 // forward declarations
 
@@ -43,6 +42,10 @@ namespace DRT
   class Condition;
   class Discretization;
   class ResultTest;
+  namespace UTILS
+  {
+    template <typename> class TimIntMStep;
+  }
 }
 
 namespace STR
@@ -147,11 +150,11 @@ protected:
   void ResetDiscretization();
 
   //! MStep EpetraVector to EpetraMultiVector
-  void MStepEpetraToEpetraMulti(Teuchos::RCP<TimIntMStep<Epetra_Vector> > mstepvec,
+  void MStepEpetraToEpetraMulti(Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > mstepvec,
                                 Teuchos::RCP<Epetra_MultiVector> multivec);
 
   //! Mstep double to std::vector<double>
-  void MStepDToStdVecD(Teuchos::RCP<TimIntMStep<double> > mstepvec,
+  void MStepDToStdVecD(Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > mstepvec,
                        Teuchos::RCP<std::vector<double> > stdvec);
 
   //! compute some norm on a vector stored in multivector format for storage reasons only

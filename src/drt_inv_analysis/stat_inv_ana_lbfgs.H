@@ -14,6 +14,14 @@ Maintainer: Sebastian Kehl
 
 #include "stat_inv_analysis.H"
 
+namespace DRT
+{
+  namespace UTILS
+  {
+    template <typename> class TimIntMStep;
+  }
+}
+
 namespace STR
 {
 namespace INVANA
@@ -67,10 +75,10 @@ private:
   int actsize_;
 
   //! storage of solution delta
-  Teuchos::RCP<TimIntMStep<Epetra_Vector> > sstore_;
+  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > sstore_;
 
   //! storage of gradient delta
-  Teuchos::RCP<TimIntMStep<Epetra_Vector> > ystore_;
+  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > ystore_;
 
   //! current direction of steepest descent maybe properly scaled by hessian approximation
   Teuchos::RCP<Epetra_MultiVector> p_;

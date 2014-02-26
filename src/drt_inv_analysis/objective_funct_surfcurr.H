@@ -20,7 +20,6 @@ Maintainer: Sebastian Kehl
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
 #include "Epetra_Map.h"
-#include "../drt_structure/strtimint_mstep.H"
 
 // forward declarations
 namespace DRT

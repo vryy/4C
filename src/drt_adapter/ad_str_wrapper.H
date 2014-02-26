@@ -70,11 +70,11 @@ namespace ADAPTER
     { return structure_->Accn(); }
 
     /// return displacements at all the time steps
-    virtual Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > DispMStep()
+    virtual Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > DispMStep()
     { return structure_->DispMStep(); }
 
     /// return times at all the time steps
-    virtual Teuchos::RCP<STR::TimIntMStep<double> > TimeMStep()
+    virtual Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > TimeMStep()
     { return structure_->TimeMStep(); }
 
     //@}

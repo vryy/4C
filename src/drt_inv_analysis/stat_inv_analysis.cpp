@@ -23,6 +23,7 @@ Maintainer: Jonas Biehler
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_timintmstep.H"
 #include "../drt_comm/comm_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_invanalysis.H"
@@ -153,7 +154,7 @@ regweight_(0.0)
 /*----------------------------------------------------------------------*/
 /* MStep EpetraVector to EpetraMultiVector                   keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::StatInvAnalysis::MStepEpetraToEpetraMulti(Teuchos::RCP<TimIntMStep<Epetra_Vector> > mstepvec,
+void STR::INVANA::StatInvAnalysis::MStepEpetraToEpetraMulti(Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > mstepvec,
                                                             Teuchos::RCP<Epetra_MultiVector> multivec)
 {
   for (int i=0; i<msteps_; i++)
@@ -163,7 +164,7 @@ void STR::INVANA::StatInvAnalysis::MStepEpetraToEpetraMulti(Teuchos::RCP<TimIntM
 /*----------------------------------------------------------------------*/
 /* Mstep double to std::vector<double>                       keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::StatInvAnalysis::MStepDToStdVecD(Teuchos::RCP<TimIntMStep<double> > mstepvec,
+void STR::INVANA::StatInvAnalysis::MStepDToStdVecD(Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > mstepvec,
                                                    Teuchos::RCP<std::vector<double> > stdvec)
 {
   for (int i=0; i<msteps_; i++)

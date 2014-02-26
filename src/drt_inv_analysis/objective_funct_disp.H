@@ -19,7 +19,6 @@ Maintainer: Sebastian Kehl
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
-#include "../drt_structure/strtimint_mstep.H"
 
 // forward declarations
 namespace DRT

@@ -21,6 +21,7 @@ Maintainer: Sebastian Kehl
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_timintmstep.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_inpar/inpar_invanalysis.H"
 #include "../drt_adapter/ad_str_structure.H"
@@ -62,8 +63,8 @@ convcritc_(0)
   ssize_=ssize_*matman_->NumParams();
   actsize_=0;
 
-  sstore_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(-ssize_+1, 0, discret_->ElementColMap(), true));
-  ystore_ = Teuchos::rcp(new TimIntMStep<Epetra_Vector>(-ssize_+1, 0, discret_->ElementColMap(), true));
+  sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, discret_->ElementColMap(), true));
+  ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, discret_->ElementColMap(), true));
 
   p_= Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumParams(),true));
   step_= Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumParams(), true));

@@ -38,8 +38,8 @@ Maintainer: Alexander Popp
 #include <nlnml_finelevelnoxinterface.H>
 
 #include "../drt_adapter/ad_str_structure.H"
-#include "strtimint_mstep.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_lib/drt_utils_timintmstep.H"
 
 
 // forward declarations
@@ -794,10 +794,10 @@ namespace STR
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0 ;
 
     //! extract displacements (! not only (*dis_)(0) but all time steps
-    virtual Teuchos::RCP<TimIntMStep<Epetra_Vector> > DispMStep() { return dis_; };
+    virtual Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > DispMStep() { return dis_; };
 
     //! times for all the steps
-    virtual Teuchos::RCP<TimIntMStep<double> > TimeMStep() { return time_; };
+    virtual Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > TimeMStep() { return time_; };
 
 
     //@}
@@ -1115,9 +1115,9 @@ namespace STR
 
     //! @name General control parameters
     //@{
-    Teuchos::RCP<TimIntMStep<double> > time_;  //!< time \f$t_{n}\f$ of last converged step
+    Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > time_;  //!< time \f$t_{n}\f$ of last converged step
     double timen_;  //!< target time \f$t_{n+1}\f$
-    Teuchos::RCP<TimIntMStep<double> > dt_;  //!< time step size \f$\Delta t\f$
+    Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > dt_;  //!< time step size \f$\Delta t\f$
     double timemax_;  //!< final time \f$t_\text{fin}\f$
     int stepmax_;  //!< final step \f$N\f$
     int step_;  //!< time step index \f$n\f$
@@ -1136,13 +1136,13 @@ namespace STR
     //@{
 
     //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP<TimIntMStep<Epetra_Vector> > dis_;
+    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > dis_;
     //! global material displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP<TimIntMStep<Epetra_Vector> > dism_;
+    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > dism_;
     //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
-    Teuchos::RCP<TimIntMStep<Epetra_Vector> > vel_;
+    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > vel_;
     //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-    Teuchos::RCP<TimIntMStep<Epetra_Vector> > acc_;
+    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > acc_;
     Teuchos::RCP<Epetra_Vector> disn_;   //!< global displacements
                                          //!< \f${D}_{n+1}\f$
                                          //!< at \f$t_{n+1}\f$

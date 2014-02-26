@@ -25,7 +25,7 @@ Maintainer: Georg Hammerl
 
 #include "../drt_inpar/inpar_structure.H"
 
-#include "../drt_structure/strtimint_mstep.H"
+//#include "../drt_lib/drt_utils_timintmstep.H"
 
 // forward declarations:
 namespace DRT
@@ -35,6 +35,7 @@ namespace DRT
   namespace UTILS
   {
     class LocsysManager;
+    template <typename> class TimIntMStep;
   }
 }
 
@@ -62,12 +63,6 @@ namespace UTILS
   class ConstrManager;
   class WindkesselManager;
 }
-
-namespace STR
-{
-  template <typename> class TimIntMStep;
-}
-
 
 namespace ADAPTER {
 
@@ -151,10 +146,10 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> Accn() = 0;
 
     /// return displacements at all the time steps
-    virtual Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > DispMStep() = 0;
+    virtual Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > DispMStep() = 0;
 
     /// return times at all the time steps
-    virtual Teuchos::RCP<STR::TimIntMStep<double> > TimeMStep() = 0;
+    virtual Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > TimeMStep() = 0;
 
     virtual void ResizeMStepTimAda() = 0;
 

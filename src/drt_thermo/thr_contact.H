@@ -22,7 +22,6 @@ Maintainer: Markus Gitterle
 #include "thrtimint.H"
 #include "thr_aux.H"
 
-#include "thrtimint_mstep.H"
 #include "../linalg/linalg_sparsematrix.H"
 
 #include "../drt_mortar/mortar_manager_base.H"

@@ -1,19 +1,19 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strtimint_mstep.H
-\brief Multi-step functionalities for structural time integration
+\file drt_utils_timintmstep.H
+\brief Multi-step functionalities for time integration
 
 <pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+Maintainer: Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-10362
 </pre>
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef STRTIMINT_MSTEP_H
-#define STRTIMINT_MSTEP_H
+#ifndef UTILS_TIMINTMSTEP_H
+#define UTILS_TIMINTMSTEP_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -22,26 +22,27 @@ Maintainer: Alexander Popp
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 
-#include "../drt_lib/drt_dserror.H"
+#include "drt_dserror.H"
 
 /*----------------------------------------------------------------------*/
-/* belongs to structural dynamics namespace */
-namespace STR
+/* belongs to DRT::UTILS namespace */
+namespace DRT
 {
-
+namespace UTILS
+{
   /*====================================================================*/
   /*!
-   * \brief This is the base object for holding multi-step quantities,
+   * \brief This is the base object for holding multi-step solution quantities,
    *        e.g. displacements \f$D_n\f$, \f$D_{n-1}\f$, \f$D_{n-2}\f$,
    *        \f$\ldots\f$, or time points \f$t_n\f$, \f$t_{n-1}\f$,
    *        \f$t_{n-2}\f$, \f$\ldots\f$, etc.
    *
    * Multi-step quantities occur --surprisingly indeed-- in multi-step time
    * integrators. However, they are needed in single-step integrators
-   * as well, if the auxiliar scheme is multi-step. The idea is to be
+   * as well, if the auxiliary scheme is multi-step. The idea is to be
    * able to resize the multi-step quantities dynamically and have
    * intrinsic update mechanism such that a single-step integrator
-   * can provide the data on which a multi-step auxiliar integrator
+   * can provide the data on which a multi-step auxiliary integrator
    * can work.
    *
    * \author bborn
@@ -89,12 +90,12 @@ namespace STR
       steps_(0),
       state_()
     {
-      // that's it
       return;
     }
 
-    //! Another dummy constructor which sets vector limits and its size
-    //! but does not allocate anything
+    /*! Another dummy constructor which sets vector limits and its size
+     *  but does not allocate anything
+     */
     TimIntMStepBase
     (
       const int steppast,  //!< lower index bound
@@ -109,7 +110,6 @@ namespace STR
       if (steps_ <= 0)
         dserror("Past step must be lower or equal to future step");
 
-      // bye
       return;
     }
 
@@ -135,7 +135,6 @@ namespace STR
       if (not sane)
         dserror("Future step cannot be changed");
 
-      // deliver it
       return sane;
     }
 
@@ -182,12 +181,9 @@ namespace STR
     //! @name Steps
     //@{
 
-    //! lowest number
-    int steppast_;
-    //! highest number
-    int stepfuture_;
-    //! total
-    int steps_;
+    int steppast_;    ///< lowest number
+    int stepfuture_;  ///< highest number
+    int steps_;       ///< total
 
     //@}
 
@@ -231,7 +227,6 @@ namespace STR
         MStepBase::state_.push_back(STATE(init));
       }
 
-      // good bye
       return;
     }
 
@@ -260,7 +255,6 @@ namespace STR
         MStepBase::steps_ = MStepBase::stepfuture_ - MStepBase::steppast_ + 1;
       }
 
-      // farewell
       return;
     }
 
@@ -279,11 +273,13 @@ namespace STR
       MStepBase::state_.at(MStepBase::IndexByStep(step)) = value;
     }
 
-    //! Update multi-step state
-    //! i.e. state_{n} := state_{n+1},
-    //!      state_{n-1} := state_{n},
-    //!      state_{n} := state_{n+1},
-    //!      etc.
+    /*! \brief Update multi-step state
+     *
+     *  i.e. state_{n} := state_{n+1},
+     *       state_{n-1} := state_{n},
+     *       state_{n} := state_{n+1},
+     *       etc.
+     */
     void UpdateSteps
     (
       const STATE staten  //!< state_{n+1}
@@ -295,7 +291,6 @@ namespace STR
       }
       MStepBase::state_[MStepBase::steps_-1] = staten;
 
-      // ciao
       return;
     }
 
@@ -304,11 +299,9 @@ namespace STR
   };
 
   /*====================================================================*/
-  /*! \brief Specialise general #TimIntMStepBase object
+  /*! \brief Specialize general #TimIntMStepBase object
    *         for \c Epetra_Vector as needed for state vectors
-   *         -- displacements, velocities and accelerations
-   *         (all right, accelerations do not truly belong to the phase
-   *         state) -- in structural dynamics
+   *         like displacements, velocities and accelerations
    */
   template <> class TimIntMStep<Epetra_Vector>
   : public TimIntMStepBase<Epetra_Vector>
@@ -335,7 +328,7 @@ namespace STR
       const int steppast,  //!< lower index bound
       const int stepfuture,  //!< higher index bound, >= lower bound
       const Epetra_Map* dofrowmap,  //!< vector layout from discretization
-      const bool inittozero  //!< initialse to zero, if true
+      const bool inittozero  //!< initialise to zero, if true
     )
     : MStepBase(steppast, stepfuture)
     {
@@ -345,20 +338,20 @@ namespace STR
         state_.push_back(Epetra_Vector(*dofrowmap, inittozero));
       }
 
-      // good bye
       return;
     }
 
-    //! Resize
-    //!
-    //! State vectors are added and placed according to their
-    //! indices #steppast to #stepfuture
+    /*! \brief Resize
+     *
+     *  State vectors are added and placed according to their
+     *  indices #steppast to #stepfuture
+     */
     void Resize
     (
       const int steppast,  //!< lower index bound
       const int stepfuture,  //!< higher index bound, >= lower bound
       const Epetra_Map* dofrowmap,  //!< vector layout from discretization
-      const bool inittozero  //!< initialse to zero, if true
+      const bool inittozero  //!< initialise to zero, if true
     )
     {
       // check this
@@ -379,14 +372,14 @@ namespace STR
         MStepBase::steps_ = MStepBase::stepfuture_ - MStepBase::steppast_ + 1;
       }
 
-      // farewell
       return;
     }
 
-    //! Replace maps and init to zero
-    //!
-    //! State vectors cleared and rebuild with given map
-    //! take care that underlying discret_ contains the same maps
+    /*! \brief Replace maps and initialize to zero
+     *
+     *  State vectors cleared and rebuild with given map
+     *  take care that underlying discret_ contains the same maps
+     */
     void ReplaceMaps
     (
       const Epetra_Map* dofrowmap  //!< new vector layout
@@ -407,11 +400,13 @@ namespace STR
     //! @name Actions
     //@{
 
-    //! Update multi-step state
-    //! i.e. state_{n} := state_{n+1},
-    //!      state_{n-1} := state_{n},
-    //!      state_{n} := state_{n+1},
-    //!      etc.
+    /*! \brief Update multi-step state
+     *
+     *  i.e. state_{n} := state_{n+1},
+     *       state_{n-1} := state_{n},
+     *       state_{n} := state_{n+1},
+     *       etc.
+     */
     void UpdateSteps
     (
       const Epetra_Vector& staten  //!< state_{n+1}
@@ -423,15 +418,14 @@ namespace STR
       }
       (MStepBase::state_[steps_-1]).Update(1.0, staten, 0.0);
 
-      // ciao
       return;
     }
 
     //@}
 
   };  // class TimIntMStep<Epetra_Vector>
-
-}  // namespace STR
+} // namespace UTILS
+} // namespace DRT
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRTIMINT_MSTEP_H
+#endif  // #ifndef UTILS_TIMINTMSTEP_H
