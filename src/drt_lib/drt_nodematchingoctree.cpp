@@ -594,6 +594,15 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
         {
           std::map<int,std::pair<int,double> >::iterator found = coupling.find(gid);
 
+          // search for second point with same distance, if found gid is already in coupling
+          if (found != coupling.end())
+          {
+            if (SearchClosestNodeOnThisProc(x, gid, dist, true))
+            {
+              found = coupling.find(gid);
+            }
+          }
+
           // we are interested in the closest match
           if (found==coupling.end() or coupling[gid].second > dist)
           {
@@ -628,7 +637,8 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
 bool DRT::UTILS::NodeMatchingOctree::SearchClosestNodeOnThisProc(
   const std::vector<double>& x,
   int           & idofclosestpoint,
-  double        & distofclosestpoint
+  double        & distofclosestpoint,
+  bool          searchsecond
   )
 {
   // flag
@@ -659,7 +669,7 @@ bool DRT::UTILS::NodeMatchingOctree::SearchClosestNodeOnThisProc(
     }
 
     // now get closest point in leaf
-    octreeele->SearchClosestNodeInLeaf(x,idofclosestpoint,distofclosestpoint);
+    octreeele->SearchClosestNodeInLeaf(x,idofclosestpoint,distofclosestpoint,searchsecond);
   }
 
   return nodeisinbox;
@@ -1026,7 +1036,8 @@ void DRT::UTILS::OctreeElement::Print(std::ostream& os) const
 void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(
   const std::vector <double> & x,
   int             & idofclosestpoint,
-  double          & distofclosestpoint
+  double          & distofclosestpoint,
+  bool              searchsecond
   )
 {
   double          thisdist;
@@ -1053,10 +1064,18 @@ void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(
     }
     thisdist = sqrt(dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]);
 
-    if(thisdist<distofclosestpoint)
+    if (thisdist < (distofclosestpoint - 1e-05))
     {
-      distofclosestpoint=thisdist;
-      idofclosestpoint  =this->nodeids_[nn];
+      distofclosestpoint = thisdist;
+      idofclosestpoint = this->nodeids_[nn];
+    }
+    else
+    {
+      if ((abs(thisdist - distofclosestpoint) < 1e-05) & (searchsecond == true))
+      {
+        distofclosestpoint = thisdist;
+        idofclosestpoint = this->nodeids_[nn];
+      }
     }
   }
 

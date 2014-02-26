@@ -88,7 +88,8 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
                      (dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField().Discretization(),
                      coupleddof,
                      "FSICoupling",
-                     comm,false);
+                     comm,
+                     true);
   }
 
   // enable debugging

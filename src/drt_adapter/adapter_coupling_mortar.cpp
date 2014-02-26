@@ -45,7 +45,7 @@ void ADAPTER::CouplingMortar::Setup(
     std::vector<int>                    coupleddof,
     const std::string&                  couplingcond,
     const Epetra_Comm&                  comm,
-    bool                                structslave,
+    bool                                slavewithale,
     bool                                slidingale)
 {
   // vector coupleddof defines degree of freedom which are coupled (1: coupled; 0: not coupled), e.g.:
@@ -150,8 +150,8 @@ void ADAPTER::CouplingMortar::Setup(
 
   // number of dofs per node based on the coupling vector coupleddof
   int dof = coupleddof.size();
-  if((masterdis->NumDof(masterdis->lRowNode(0))!=dof and structslave==false and slidingale==false) or
-      (slavedis->NumDof(slavedis->lRowNode(0))!=dof and structslave==true and slidingale==false))
+  if((masterdis->NumDof(masterdis->lRowNode(0))!=dof and slavewithale==true and slidingale==false) or
+      (slavedis->NumDof(slavedis->lRowNode(0))!=dof and slavewithale==false and slidingale==false))
   {
     dserror("The size of the coupling vector coupleddof and dof defined in the discretization does not fit!! \n"
             "dof defined in the discretization: %i \n"
@@ -400,7 +400,7 @@ void ADAPTER::CouplingMortar::Setup(
     // which is necessary to perform the mesh intialization step!!
     // Hence, this method cannot be used for problem types like elch, scatra, ... having less
     // coupling degrees of freedom than spacial dimensions.
-    MeshInit(slavedis, aledis, redistmaster, redistslave, comm, structslave);
+    MeshInit(slavedis, aledis, redistmaster, redistslave, comm, slavewithale);
   }
 
   // only for parallel redistribution case
@@ -464,7 +464,7 @@ void ADAPTER::CouplingMortar::MeshInit(
     Teuchos::RCP<DRT::Discretization> aledis,
     Teuchos::RCP<Epetra_Map> masterdofrowmap,
     Teuchos::RCP<Epetra_Map> slavedofrowmap,
-    const Epetra_Comm& comm, bool structslave)
+    const Epetra_Comm& comm, bool slavewithale)
 {
   // problem dimension
   const int dim = DRT::Problem::Instance()->NDim();
@@ -680,7 +680,7 @@ void ADAPTER::CouplingMortar::MeshInit(
       if (isinproblemcolmap2)
       {
         alenode = aledis->gNode(gid);
-        if (!structslave && !alenode) dserror("ERROR: Cannot find node with gid %",gid);
+        if (slavewithale and not alenode) dserror("ERROR: Cannot find node with gid %",gid);
       }
     }
 
@@ -759,7 +759,7 @@ void ADAPTER::CouplingMortar::MeshInit(
         const_cast<double&>(pnode->X()[k])       = Xnewglobal[k];
 
       // modification in ALE discretization
-      if (isinproblemcolmap2 && !structslave)
+      if (isinproblemcolmap2 and slavewithale)
         const_cast<double&>(alenode->X()[k])     = Xnewglobal[k];
     }
   }

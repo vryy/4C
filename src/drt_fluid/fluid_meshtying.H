@@ -115,19 +115,28 @@ class Meshtying
 
     //! Prepare matrix and residual for meshtying
     void PrepareMeshtyingSystem(Teuchos::RCP<LINALG::SparseOperator>&  sysmat,     ///> sysmat established by the element routine
-                      Teuchos::RCP<Epetra_Vector>&                     residual);  ///> residual established by the element routine
+                      Teuchos::RCP<Epetra_Vector>&                     residual, ///> residual established by the element routine
+                      Teuchos::RCP<Epetra_Vector>&                     velnp); ///> current ALE displacement vector
+
+    //! Prepare matrix and residual for meshtying in ALE case
+    void PrepareMeshtyingSystem(Teuchos::RCP<LINALG::SparseOperator>&  sysmat,     ///> sysmat established by the element routine
+                      Teuchos::RCP<Epetra_Vector>&                     residual, ///> residual established by the element routine
+                      Teuchos::RCP<Epetra_Vector>&                     velnp, ///> current velocity vector
+                      Teuchos::RCP<Epetra_Vector>&                     dispnp); ///> current ALE displacement vector
 
     //! The residual has another length in case of bmat_merged --> residual has to be calculated in split form
     void ApplyPTToResidual(
         Teuchos::RCP<LINALG::SparseOperator>  sysmat,
         Teuchos::RCP<Epetra_Vector>           residual,
         Teuchos::RCP<LINALG::KrylovProjector> projector);
-    //! Solve mesh-tying problem
+
+    //! Solve mesh-tying problem (including ALE case)
     void SolveMeshtying(
       LINALG::Solver&                       solver,
       Teuchos::RCP<LINALG::SparseOperator>  sysmat,
       Teuchos::RCP<Epetra_Vector>&          incvel,
       Teuchos::RCP<Epetra_Vector>           residual,
+      Teuchos::RCP<Epetra_Vector>           velnp,
       int                                   itnum,
       Teuchos::RCP<LINALG::KrylovProjector> projector
       );
@@ -157,19 +166,22 @@ class Meshtying
     void ReplaceMatrixEntries(
         Teuchos::RCP<LINALG::SparseMatrix>        sparsematrix); ///> sparse matrix to analyze
 
-    //! Compute and update the increments of the slave node (Condensation)
-    void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>&   inc);
+    //! Compute and update the increments of the slave node (including ALE case)
+    void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>&   inc,
+                        Teuchos::RCP<Epetra_Vector>&   velnp);
 
   private:
 
-    //! Prepare condensation for a block matrix (PrepareMeshtyingSystem)
-    void CondensationBlockMatrix(Teuchos::RCP<LINALG::SparseOperator>&   sysmat,     ///> sysmat established by the element routine
-                                 Teuchos::RCP<Epetra_Vector>&            residual);  ///> residual established by the element routine
-
-    //! Prepare condensation for sparse matrix (PrepareMeshtyingSystem)
+    //! Prepare condensation for sparse matrix (including ALE case)
     void CondensationSparseMatrix(
         Teuchos::RCP<LINALG::SparseOperator>&   sysmat,      ///> sysmat established by the element routine
-        Teuchos::RCP<Epetra_Vector>&            residual);   ///> residual established by the element routine
+        Teuchos::RCP<Epetra_Vector>&            residual,  ///> residual established by the element routine
+        Teuchos::RCP<Epetra_Vector>&            velnp);  
+
+    //! Prepare condensation for a block matrix (including ALE case)
+    void CondensationBlockMatrix(Teuchos::RCP<LINALG::SparseOperator>&   sysmat,     ///> sysmat established by the element routine
+                                 Teuchos::RCP<Epetra_Vector>&            residual,  ///> residual established by the element routine
+                                 Teuchos::RCP<Epetra_Vector>&            velnp);  ///> current velocity vector
 
     //! Split sparse matrix and save blocks in a std::vector<Teuchos::RCP<Epetra_Vector> >
     void SplitMatrix(Teuchos::RCP<LINALG::SparseOperator>                matrix,         ///> sysmat established by the element routine
@@ -183,23 +195,25 @@ class Meshtying
     void SplitVectorBasedOn3x3(Teuchos::RCP<Epetra_Vector> orgvector,        ///> original vector based on 3x3 blockmatrix
                                Teuchos::RCP<Epetra_Vector> vectorbasedon2x2);     ///> split vector based on 2x2 blockmatrix
 
-    //! Condensation operation for a sparse matrix:
+    //! Condensation operation for a sparse matrix (including ALE case):
     /// the sysmat is manipulated via a second sparse matrix
     /// Assembling is slower, since the graph cannot be saved
     void CondensationOperationSparseMatrix(
         Teuchos::RCP<LINALG::SparseOperator>&              sysmat,         ///> sysmat established by the element routine
         Teuchos::RCP<Epetra_Vector>&                       residual,       ///> residual established by the element routine
         std::vector<Teuchos::RCP<LINALG::SparseMatrix> > & splitmatrix,    ///> container with split original sysmat
-        std::vector<Teuchos::RCP<Epetra_Vector> >&         splitvector);   ///> container with split original residual
+        std::vector<Teuchos::RCP<Epetra_Vector> >&         splitres,     ///> container with split original residual
+        std::vector<Teuchos::RCP<Epetra_Vector> >&         splitvel);   ///> container with split velocity vector
 
-    //! Condensation operation for a block matrix
+    //! Condensation operation for a block matrix (including ALE case):
     /// the original blocks (nn, nm, mn, mm) are manipulated directly;
     /// the remaining blocks (ns, ms, ss, sn, sm) are not touched at all,
     /// since finally a 2x2 block matrix is solved
     void CondensationOperationBlockMatrix(
         Teuchos::RCP<LINALG::SparseOperator>&              sysmat,         ///> sysmat established by the element routine
         Teuchos::RCP<Epetra_Vector>&                       residual,       ///> residual established by the element routine
-        std::vector<Teuchos::RCP<Epetra_Vector> >&         splitvector);   ///> container with split original residual
+        std::vector<Teuchos::RCP<Epetra_Vector> >&         splitres,     ///> container with split original residual
+        std::vector<Teuchos::RCP<Epetra_Vector> >&         splitvel);   ///> container with split velocity vector
 
   private:
 

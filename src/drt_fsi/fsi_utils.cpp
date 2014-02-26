@@ -330,7 +330,7 @@ aletype_(aleproj)
 
   // this setup only initialize two sets of identical mortar elements (master and slave)
   // -> projection matrix is a unity matrix
-  coupff_->Setup(fluiddis, fluiddis, Teuchos::null, coupleddof, "FSICoupling", fluiddis->Comm(),true,true);
+  coupff_->Setup(fluiddis,fluiddis,Teuchos::null,coupleddof,"FSICoupling",fluiddis->Comm(),false,true);
 }
 
 /*----------------------------------------------------------------------*/

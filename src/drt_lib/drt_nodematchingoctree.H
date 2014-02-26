@@ -184,8 +184,9 @@ protected:
   */
   bool SearchClosestNodeOnThisProc(
     const std::vector<double>& x,
-    int           & idofclosestpoint,
-    double        & distofclosestpoint
+    int                      & idofclosestpoint,
+    double                   & distofclosestpoint,
+    bool                       searchsecond = false
   );
 
   //@}
@@ -331,8 +332,9 @@ public:
 
   void SearchClosestNodeInLeaf(
     const std::vector<double> & x,
-    int             & idofclosestpoint,
-    double          & distofclosestpoint
+    int                       & idofclosestpoint,
+    double                    & distofclosestpoint,
+    bool                        searchsecond = false
   );
 
 

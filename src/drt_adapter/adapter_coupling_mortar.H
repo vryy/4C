@@ -79,7 +79,7 @@ namespace ADAPTER
                 std::vector<int>                    coupleddof,     ///> vector defining coupled degree's of freedom
                 const std::string&                       couplingcond,   ///> string for coupling condition
                 const Epetra_Comm&                  comm,           ///> communicate
-                bool                                structslave=false,  ///> flag defining if structure is slave side
+                bool                                slavewithale=false,  ///> flag defining if structure is slave side
                 bool                                slidingale=false);  //> flag defining sliding ale case
 
     /// perform mesh initialization
@@ -88,7 +88,7 @@ namespace ADAPTER
                    Teuchos::RCP<Epetra_Map> masterdofrowmap,
                    Teuchos::RCP<Epetra_Map> slavedofrowmap,
                    const Epetra_Comm& comm,
-                   bool   structslave);
+                   bool   slavewithale);
 
     /// perform mesh initialization
     void ReEvaluate(const Epetra_Comm& comm);

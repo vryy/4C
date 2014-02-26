@@ -2319,7 +2319,13 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
   if (msht_!=INPAR::FLUID::no_meshtying)
   {
-    meshtying_->PrepareMeshtyingSystem(sysmat_, residual_);
+    if (isale_)
+    {  
+      dserror("ALE case for mesh tying not yet supported in SCATRA!");
+      //meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,phinp_,dispnp_);
+    }
+    else
+      meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,phinp_);
   }
 
   return;
@@ -2353,7 +2359,7 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
     if (msht_==INPAR::FLUID::no_meshtying)
       solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,true);
     else
-      meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, 1, Teuchos::null);
+      meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, phinp_, 1, Teuchos::null);
 
     // end time measurement for solver
     dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
@@ -2390,7 +2396,7 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
     if (msht_==INPAR::FLUID::no_meshtying)
       solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
     else
-      meshtying_->SolveMeshtying(*solver_, sysmat_, phinp_, residual_, 1, Teuchos::null);
+      meshtying_->SolveMeshtying(*solver_, sysmat_, phinp_, residual_, phinp_, 1, Teuchos::null);
 
     //solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
 
@@ -2522,7 +2528,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       if (msht_==INPAR::FLUID::no_meshtying)
         solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,iternum_==1, projector_);
       else
-        meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, iternum_, projector_);
+        meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, phinp_, iternum_, projector_);
 
       solver_->ResetTolerance();
 

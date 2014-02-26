@@ -181,7 +181,8 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
                     AleField().Discretization(),
                     coupleddof,
                     "FSICoupling",
-                    comm_,false);
+                    comm_,
+                    true);
 
     // fluid to ale at the interface
 

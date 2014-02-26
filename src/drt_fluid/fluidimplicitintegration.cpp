@@ -937,7 +937,7 @@ void FLD::FluidImplicitTimeInt::Solve()
           fluid_infnormscaling_->UnscaleSolution(sysmat_, *incvel_,*residual_);
       }
       else
-       meshtying_->SolveMeshtying(*solver_, sysmat_, incvel_, residual_, itnum, projector_);
+        meshtying_->SolveMeshtying(*solver_, sysmat_, incvel_, residual_, velnp_, itnum, projector_);
 
       solver_->ResetTolerance();
 
@@ -975,11 +975,14 @@ void FLD::FluidImplicitTimeInt::Solve()
         locsysman_->RotateGlobalToLocal(residual_);
      }
 
-    // account for meshtying if required
-    if(msht_ != INPAR::FLUID::no_meshtying)
+    // take meshtying into account if required
+    if (msht_ != INPAR::FLUID::no_meshtying)
     {
-      meshtying_->PrepareMeshtyingSystem(sysmat_, residual_);
+      if (alefluid_)
+           meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,velnp_,dispnp_);
+      else meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,velnp_);
     }
+    
     // print to screen
     ConvergenceCheck(0,itmax,ittol);
   }
@@ -993,10 +996,14 @@ void FLD::FluidImplicitTimeInt::PrepareSolve()
   // call elements to calculate system matrix and rhs and assemble
   AssembleMatAndRHS();
 
-  // account for meshtying if required
-  if(msht_ != INPAR::FLUID::no_meshtying)
-    meshtying_->PrepareMeshtyingSystem(sysmat_, residual_);
-
+  // take meshtying into account if required
+  if (msht_ != INPAR::FLUID::no_meshtying)
+  {
+    if (alefluid_)
+         meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,velnp_,dispnp_);
+    else meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,velnp_);
+  }
+    
   // update local coordinate systems for ALE fluid case
   // (which may be time and displacement dependent)
   if ((locsysman_ != Teuchos::null) && (alefluid_)){
@@ -1323,6 +1330,15 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
     {
       // create parameter list
       Teuchos::ParameterList flowdeppressureparams;
+
+      // initialization of values at first time step
+      if (step_ <= 1)
+      {
+        flowraten_(fdpcondid) = 0.0;
+        flowratenm_(fdpcondid) = 0.0;
+        flowvolumen_(fdpcondid) = 0.0;
+        flowvolumenm_(fdpcondid) = 0.0;
+      }
 
       //--------------------------------------------------------------------
       // a) flow rate
@@ -2084,12 +2100,14 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
   // -------------------------------------------------------------------
   InsertVolumetricSurfaceFlowCondVector(zeros_,residual_);
 
-  // remove contributions of pressure mode
-  // that would not vanish due to the projection
-  // In meshtying, the projector has another length than the residual. The projector is applied there locally
+  // remove contributions of pressure mode that would not vanish due to the 
+  // projection
+  // In meshtying with block matrix, the projector might have another length
+  // compared to residual. Thus, the projector is applied differently in this case.
   if (projector_ != Teuchos::null)
   {
-    if (msht_==INPAR::FLUID::condensed_bmat_merged||msht_==INPAR::FLUID::condensed_bmat)
+    if (msht_ == INPAR::FLUID::condensed_bmat_merged or 
+        msht_ == INPAR::FLUID::condensed_bmat)
       meshtying_->ApplyPTToResidual(sysmat_,residual_,projector_);
     else
       projector_->ApplyPT(*residual_);
@@ -3621,8 +3639,8 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       //otherwise due to the non-linear terms in the matrix.
       if (msht_ != INPAR::FLUID::no_meshtying)
       {
-        meshtying_->UpdateSlaveDOF(velnp_);
-        meshtying_->UpdateSlaveDOF(veln_);
+        meshtying_->UpdateSlaveDOF(velnp_,velnp_);
+        meshtying_->UpdateSlaveDOF(veln_,veln_);
       }
     }
   }
