@@ -1147,8 +1147,10 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<int>("write wall shear stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_WALL_SHEAR_STRESS"));
   // flag for writing fluid field to gmsh
   fluidtimeparams->set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT"));
-  // flag for writing fluid field to gmsh
+  // flag for computing divergence
   fluidtimeparams->set<bool>("COMPUTE_DIVU", DRT::INPUT::IntegralValue<bool>(fdyn,"COMPUTE_DIVU"));
+  // flag for computing lift and drag values
+  fluidtimeparams->set<bool>("LIFTDRAG", DRT::INPUT::IntegralValue<bool>(fdyn,"LIFTDRAG"));
 
   // -------------------------------------------------- Oseen advection
   // set function number of given Oseen advective field

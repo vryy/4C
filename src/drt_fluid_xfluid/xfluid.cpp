@@ -4842,33 +4842,17 @@ void FLD::XFluid::ReconstructGhostValues(Teuchos::RCP<LINALG::MapExtractor> ghos
 //----------------------------------------------------------------------
 // LiftDrag                                                  chfoe 11/07
 //----------------------------------------------------------------------
-//calculate lift&drag forces and angular moments
+//calculate lift&drag forces
 //
 //Lift and drag forces are based upon the right hand side true-residual entities
 //of the corresponding nodes. The contribution of the end node of a line is entirely
 //added to a present L&D force.
-//
-//Notice: Angular moments obtained from lift&drag forces currently refer to the
-//        initial configuration, i.e. are built with the coordinates X of a particular
-//        node irrespective of its current position.
 /*----------------------------------------------------------------------*/
 void FLD::XFluid::LiftDrag() const
 {
-
-  const int liftdrag = params_->get<int>("liftdrag");
-
-  if (liftdrag == INPAR::FLUID::liftdrag_none)
+  // initially check whether computation of lift and drag values is required
+  if (params_->get<bool>("LIFTDRAG")) 
   {
-    // do nothing, we don't want lift & drag
-  }
-
-  if (liftdrag == INPAR::FLUID::liftdrag_nodeforce)
-  {
-
-    // -------------------------------------------------------------------
-    //          calculate lift'n'drag forces from the residual
-    // -------------------------------------------------------------------
-
     // get forces on all procs
     // create interface DOF vectors using the fluid parallel distribution
     Teuchos::RCP<const Epetra_Vector> iforcecol = DRT::UTILS::GetColVersionOfRowVector(boundarydis_, itrueresidual_);
@@ -4920,7 +4904,6 @@ void FLD::XFluid::LiftDrag() const
 
       std::cout << header.str() << endl << s.str() << endl;
     }
-
   }
 
   return;

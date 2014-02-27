@@ -886,11 +886,15 @@ namespace FLD
 
         statistics_sqc_->DoTimeSample(myvelnp_);
 
-        // computation of Lift&Drag statistics
+        // computation of Lift&Drag statistics, if required
+        if (params_->get<bool>("LIFTDRAG"))
         {
           Teuchos::RCP<std::map<int,std::vector<double> > > liftdragvals;
 
-          FLD::UTILS::LiftDrag(*discret_,*myforce_,*params_,liftdragvals);
+          // spatial dimension of problem
+          const int ndim = params_->get<int>("number of velocity degrees of freedom");
+
+          FLD::UTILS::LiftDrag(*discret_,*myforce_,*mydispnp_,ndim,liftdragvals,alefluid_);
 
           if((*liftdragvals).size()!=1)
           {

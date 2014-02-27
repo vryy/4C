@@ -2932,27 +2932,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("OSEENFIELDFUNCNO",-1,"function number of Oseen advective field",&fdyn);
 
-  setStringToIntegralParameter<int>("LIFTDRAG","No",
-                               "Calculate lift and drag forces along specified boundary",
-                               tuple<std::string>(
-                                 "No",
-                                 "no",
-                                 "Yes",
-                                 "yes",
-                                 "Nodeforce",
-                                 "NODEFORCE",
-                                 "nodeforce"
-                                 ),
-                               tuple<int>(
-                                 INPAR::FLUID::liftdrag_none,
-                                 INPAR::FLUID::liftdrag_none,
-                                 INPAR::FLUID::liftdrag_nodeforce,
-                                 INPAR::FLUID::liftdrag_nodeforce,
-                                 INPAR::FLUID::liftdrag_nodeforce,
-                                 INPAR::FLUID::liftdrag_nodeforce,
-                                 INPAR::FLUID::liftdrag_nodeforce
-                                 ),
-                               &fdyn);
+  BoolParameter("LIFTDRAG","No","Calculate lift and drag forces along specified boundary",&fdyn);
 
   setStringToIntegralParameter<int>("CONVFORM","convective","form of convective term",
                                tuple<std::string>(

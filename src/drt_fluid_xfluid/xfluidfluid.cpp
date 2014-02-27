@@ -4788,20 +4788,20 @@ const double FLD::XFluidFluid::TimIntParam() const
 //Lift and drag forces are based upon the right hand side true-residual entities
 //of the corresponding nodes. The contribution of the end node of a line is entirely
 //added to a present L&D force.
-//
-//Notice: Angular moments obtained from lift&drag forces currently refer to the
-//        initial configuration, i.e. are built with the coordinates X of a particular
-//        node irrespective of its current position.
 //--------------------------------------------------------------------
 void FLD::XFluidFluid::LiftDrag() const
 {
-  // in this map, the results of the lift drag calculation are stored
-  Teuchos::RCP<std::map<int,std::vector<double> > > liftdragvals;
+  // initially check whether computation of lift and drag values is required
+  if (params_->get<bool>("LIFTDRAG")) 
+  {
+    // in this map, the results of the lift drag calculation are stored
+    Teuchos::RCP<std::map<int,std::vector<double> > > liftdragvals;
 
-  FLD::UTILS::LiftDrag(*embdis_,*aletrueresidual_,*params_,liftdragvals);
+    FLD::UTILS::LiftDrag(*embdis_,*aletrueresidual_,*aledispnp_,numdim_,liftdragvals,alefluid_);
 
-  if (liftdragvals!=Teuchos::null and embdis_->Comm().MyPID() == 0)
-    FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
+    if (liftdragvals!=Teuchos::null and embdis_->Comm().MyPID() == 0)
+      FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
+  }
 
   return;
 }

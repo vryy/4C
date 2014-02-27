@@ -282,204 +282,203 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
 // compute forces and moments                          rasthofer 08/13
 // -------------------------------------------------------------------
 void FLD::UTILS::LiftDrag(
-  const DRT::Discretization      & dis         ,
-  const Epetra_Vector            & trueresidual,
-  const Teuchos::ParameterList   & params      ,
-  Teuchos::RCP<std::map<int,std::vector<double> > > & liftdragvals
+  const DRT::Discretization                         & dis,
+  const Epetra_Vector                               & trueresidual,
+  const Epetra_Vector                               & dispnp,
+  const int                                           ndim,
+  Teuchos::RCP<std::map<int,std::vector<double> > > & liftdragvals,
+  bool                                                alefluid
   )
 {
-  const int liftdrag = params.get<int>("liftdrag");
+  int myrank=dis.Comm().MyPID();
 
-  if (liftdrag == INPAR::FLUID::liftdrag_nodeforce)
+  std::map< const int, std::set<DRT::Node* > > ldnodemap;
+  std::map< const int, const std::vector<double>* > ldcoordmap;
+  std::map< const int, const std::vector<double>* > ldaxismap;
+  bool axis_for_moment = false;
+
+  // allocate and initialise LiftDrag conditions
+  std::vector<DRT::Condition*> ldconds;
+  dis.GetCondition("LIFTDRAG",ldconds);
+
+  // there is an L&D condition if it has a size
+  if( ldconds.size() )
   {
-    int myrank=dis.Comm().MyPID();
+    // vector with lift&drag forces after communication
+    liftdragvals = Teuchos::rcp(new std::map<int,std::vector<double> >);
 
-    std::map< const int, std::set<DRT::Node* > > ldnodemap;
-    std::map< const int, const std::vector<double>* > ldcoordmap;
-    std::map< const int, const std::vector<double>* > ldaxismap;
-    bool axis_for_moment = false;
-
-    // allocate and initialise LiftDrag conditions
-    std::vector<DRT::Condition*> ldconds;
-    dis.GetCondition("LIFTDRAG",ldconds);
-
-    // space dimension of the problem
-    const int ndim = params.get<int>("number of velocity degrees of freedom");
-
-    // there is an L&D condition if it has a size
-    if( ldconds.size() )
+    for( unsigned i=0; i<ldconds.size(); ++i) // loop L&D conditions (i.e. lines in .dat file)
     {
+      // get label of present LiftDrag condition
+      const int label = ldconds[i]->GetInt("label");
 
-      // vector with lift&drag forces after communication
-      liftdragvals = Teuchos::rcp(new std::map<int,std::vector<double> >);
+      ((*liftdragvals)).insert(std::pair<int,std::vector<double> >(label,std::vector<double> (6,0.0)));
+    }
 
-      for( unsigned i=0; i<ldconds.size(); ++i) // loop L&D conditions (i.e. lines in .dat file)
+    // prepare output
+    if (myrank==0)
+    {
+      std::cout << "Lift and drag calculation:" << "\n";
+      if (ndim == 2)
       {
-        /* get label of present LiftDrag condition  */
-        const int label = ldconds[i]->GetInt("label");
+        std::cout << "lift'n'drag Id      F_x             F_y             M_z :" << "\n";
+      }
+      if (ndim == 3)
+      {
+        std::cout << "lift'n'drag Id      F_x             F_y             F_z           ";
+        std::cout << "M_x             M_y             M_z :" << "\n";
+      }
+    }
 
-        ((*liftdragvals)).insert(std::pair<int,std::vector<double> >(label,std::vector<double> (6,0.0)));
+    // sort data
+    for( unsigned i=0; i<ldconds.size(); ++i) // loop L&D conditions (i.e. lines in .dat file)
+    {
+      // get label of present LiftDrag condition
+      const int label = ldconds[i]->GetInt("label");
+
+      /* get new nodeset for new label OR:
+         return pointer to nodeset for known label ... */
+      std::set<DRT::Node*>& nodes = ldnodemap[label];
+
+      // center coordinates to present label
+      ldcoordmap[label] = ldconds[i]->Get<std::vector<double> >("centerCoord");
+
+      // axis of rotation for present label (only needed for 3D)
+      if(ldconds[i]->Type() == DRT::Condition::SurfLIFTDRAG)
+      {
+        ldaxismap[label] = ldconds[i]->Get<std::vector<double> >("axis");
+        // get pointer to axis vector (if available)
+        const std::vector<double>* axisvecptr = ldaxismap[label];
+        if (axisvecptr->size() != 3) dserror("axis vector has not length 3");
+        LINALG::Matrix<3,1> axisvec(&((*axisvecptr)[0]),false);
+        if (axisvec.Norm2() > 1.0e-9) axis_for_moment=true; // axis has been set
       }
 
-      // prepare output
+      // get pointer to its nodal Ids
+      const std::vector<int>* ids = ldconds[i]->Get<std::vector<int> >("Node Ids");
+
+      /* put all nodes belonging to the L&D line or surface into 'nodes' which are
+         associated with the present label */
+      for (unsigned j=0; j<ids->size(); ++j)
+      {
+        // give me present node Id
+        const int node_id = (*ids)[j];
+        // put it into nodeset of actual label if node is new and mine
+        if( dis.HaveGlobalNode(node_id) && dis.gNode(node_id)->Owner()==myrank )
+          nodes.insert(dis.gNode(node_id));
+      }
+    } // end loop over conditions
+
+
+    // now step the label map
+    for( std::map< const int, std::set<DRT::Node*> >::const_iterator labelit = ldnodemap.begin();
+         labelit != ldnodemap.end(); ++labelit )
+    {
+      const std::set<DRT::Node*>& nodes = labelit->second; // pointer to nodeset of present label
+      const int label = labelit->first;                    // the present label
+      std::vector<double> myforces(3,0.0);                 // vector with lift&drag forces
+      std::vector<double> mymoments(3,0.0);                // vector with lift&drag moments
+
+      // get also pointer to center coordinates
+      const std::vector<double>* centerCoordvec = ldcoordmap[label];
+      if (centerCoordvec->size() != 3) dserror("axis vector has not length 3");
+        LINALG::Matrix<3,1> centerCoord(&((*centerCoordvec)[0]),false);
+
+      // loop all nodes within my set
+      for( std::set<DRT::Node*>::const_iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
+      {
+        const LINALG::Matrix<3,1> x((*actnode)->X(),false); // pointer to nodal coordinates
+        const Epetra_BlockMap& rowdofmap = trueresidual.Map();
+        const std::vector<int> dof = dis.Dof(*actnode);
+
+        // get nodal forces
+        LINALG::Matrix<3,1> actforces (true);
+        for (int idim=0; idim<ndim; idim++)
+        {
+          actforces(idim,0) = trueresidual[rowdofmap.LID(dof[idim])];
+          myforces[idim] += trueresidual[rowdofmap.LID(dof[idim])];
+        }
+        // z-component remains zero for ndim=2
+
+        // get moment
+        LINALG::Matrix<3,1> actmoments (true);
+        // get vector of point to center point
+        LINALG::Matrix<3,1> distances;
+        distances.Update(1.0, x, -1.0, centerCoord);
+
+        // ALE case: take displacements into account
+        if (alefluid)
+        {
+          for (int idim=0; idim<ndim; idim++)
+          {
+            distances(idim,0) += dispnp[rowdofmap.LID(dof[idim])];
+          }
+        }
+        
+        // calculate nodal angular moment with respect to global coordinate system
+        LINALG::Matrix<3,1> actmoment_gc (true);
+        actmoment_gc(0,0) = distances(1)*actforces(2,0)-distances(2)*actforces(1,0); // zero for 2D
+        actmoment_gc(1,0) = distances(2)*actforces(0,0)-distances(0)*actforces(2,0); // zero for 2D
+        actmoment_gc(2,0) = distances(0)*actforces(1,0)-distances(1)*actforces(0,0);
+
+        if (axis_for_moment)
+        {
+          const std::vector<double>* axisvecptr = ldaxismap[label];
+          LINALG::Matrix<3,1> axisvec(&((*axisvecptr)[0]),false);
+          double norm = 0.0;
+          if (axisvec.Norm2() != 0.0)
+          {
+            norm = axisvec.Norm2();
+            // normed axis vector
+            axisvec.Scale(1.0/norm);
+          }
+          else dserror("norm==0.0!");
+          // projection of moment on given axis
+          double mdir = actmoment_gc.Dot(axisvec);
+
+          actmoments(2,0) = mdir;
+        }
+        else
+        {
+          for (int idim=0; idim<3; idim++)
+            actmoments(idim,0) = actmoment_gc(idim,0);
+        }
+
+        for (int idim=0; idim<3; idim++)
+          mymoments[idim] += actmoments(idim,0);
+      } // end: loop over nodes
+
+      // care for the fact that we are (most likely) parallel
+      trueresidual.Comm().SumAll (&(myforces[0]), &(((*liftdragvals)[label])[0]), 3);
+      trueresidual.Comm().SumAll (&(mymoments[0]), &(((*liftdragvals)[label])[3]), 3);
+
+      // do the output
       if (myrank==0)
       {
-        std::cout << "Lift and drag calculation:" << "\n";
         if (ndim == 2)
         {
-          std::cout << "lift'n'drag Id      F_x             F_y             M_z :" << "\n";
+          std::cout << "     " << label << "         ";
+          std::cout << std::scientific << ((*liftdragvals)[label])[0] << "    ";
+          std::cout << std::scientific << ((*liftdragvals)[label])[1] << "    ";
+          std::cout << std::scientific << ((*liftdragvals)[label])[5];
+          std::cout << "\n";
         }
         if (ndim == 3)
         {
-          std::cout << "lift'n'drag Id      F_x             F_y             F_z           ";
-          std::cout << "M_x             M_y             M_z :" << "\n";
+          std::cout << "     " << label << "         ";
+          std::cout << std::scientific << ((*liftdragvals)[label])[0] << "    ";
+          std::cout << std::scientific << ((*liftdragvals)[label])[1] << "    ";
+          std::cout << std::scientific << ((*liftdragvals)[label])[2] << "    ";
+          std::cout << std::scientific << ((*liftdragvals)[label])[3] << "    ";
+          std::cout << std::scientific << ((*liftdragvals)[label])[4] << "    ";
+          std::cout << std::scientific << ((*liftdragvals)[label])[5];
+          std::cout << "\n";
         }
       }
-
-      // sort data
-      for( unsigned i=0; i<ldconds.size(); ++i) // loop L&D conditions (i.e. lines in .dat file)
-      {
-        /* get label of present LiftDrag condition  */
-        const int label = ldconds[i]->GetInt("label");
-
-        /* get new nodeset for new label OR:
-           return pointer to nodeset for known label ... */
-        std::set<DRT::Node*>& nodes = ldnodemap[label];
-
-        // center coordinates to present label
-        ldcoordmap[label] = ldconds[i]->Get<std::vector<double> >("centerCoord");
-
-        // axis of rotation for present label (only needed for 3D)
-        if(ldconds[i]->Type() == DRT::Condition::SurfLIFTDRAG)
-        {
-          ldaxismap[label] = ldconds[i]->Get<std::vector<double> >("axis");
-          // get pointer to axis vector (if available)
-          const std::vector<double>* axisvecptr = ldaxismap[label];
-          if (axisvecptr->size() != 3) dserror("axis vector has not length 3");
-          LINALG::Matrix<3,1> axisvec(&((*axisvecptr)[0]),false);
-          if (axisvec.Norm2() > 1.0e-9) axis_for_moment=true; // axis has been set
-        }
-
-        /* get pointer to its nodal Ids*/
-        const std::vector<int>* ids = ldconds[i]->Get<std::vector<int> >("Node Ids");
-
-        /* put all nodes belonging to the L&D line or surface into 'nodes' which are
-           associated with the present label */
-        for (unsigned j=0; j<ids->size(); ++j)
-        {
-          // give me present node Id
-          const int node_id = (*ids)[j];
-          // put it into nodeset of actual label if node is new and mine
-          if( dis.HaveGlobalNode(node_id) && dis.gNode(node_id)->Owner()==myrank )
-            nodes.insert(dis.gNode(node_id));
-        }
-      } // end loop over conditions
-
-
-      // now step the label map
-      for( std::map< const int, std::set<DRT::Node*> >::const_iterator labelit = ldnodemap.begin();
-           labelit != ldnodemap.end(); ++labelit )
-      {
-        const std::set<DRT::Node*>& nodes = labelit->second; // pointer to nodeset of present label
-        const int label = labelit->first;                    // the present label
-        std::vector<double> myforces(3,0.0);                 // vector with lift&drag forces
-        std::vector<double> mymoments(3,0.0);                // vector with lift&drag moments
-
-        // get also pointer to center coordinates
-        const std::vector<double>* centerCoordvec = ldcoordmap[label];
-        if (centerCoordvec->size() != 3) dserror("axis vector has not length 3");
-          LINALG::Matrix<3,1> centerCoord(&((*centerCoordvec)[0]),false);
-
-        // loop all nodes within my set
-        for( std::set<DRT::Node*>::const_iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
-        {
-          const LINALG::Matrix<3,1> x((*actnode)->X(),false); // pointer to nodal coordinates
-          const Epetra_BlockMap& rowdofmap = trueresidual.Map();
-          const std::vector<int> dof = dis.Dof(*actnode);
-
-          // get nodal forces
-          LINALG::Matrix<3,1> actforces (true);
-          for (int idim=0; idim<ndim; idim++)
-          {
-            actforces(idim,0) = trueresidual[rowdofmap.LID(dof[idim])];
-            myforces[idim] += trueresidual[rowdofmap.LID(dof[idim])];
-          }
-          // z-component remains zero for ndim=2
-
-          // get moment
-          LINALG::Matrix<3,1> actmoments (true);
-          // get vector of point to center point
-          LINALG::Matrix<3,1> distances;
-          distances.Update(1.0, x, -1.0, centerCoord);
-
-          // calculate nodal angular moment with respect to global coordinate system
-          LINALG::Matrix<3,1> actmoment_gc (true);
-          actmoment_gc(0,0) = distances(1)*actforces(2,0)-distances(2)*actforces(1,0); // zero for 2D
-          actmoment_gc(1,0) = distances(2)*actforces(0,0)-distances(0)*actforces(2,0); // zero for 2D
-          actmoment_gc(2,0) = distances(0)*actforces(1,0)-distances(1)*actforces(0,0);
-
-          if (axis_for_moment)
-          {
-            const std::vector<double>* axisvecptr = ldaxismap[label];
-            LINALG::Matrix<3,1> axisvec(&((*axisvecptr)[0]),false);
-            double norm = 0.0;
-            if (axisvec.Norm2() != 0.0)
-            {
-              norm = axisvec.Norm2();
-              // normed axis vector
-              axisvec.Scale(1.0/norm);
-            }
-            else
-              dserror("norm==0.0!");
-            // projection of moment on given axis
-            double mdir = actmoment_gc.Dot(axisvec);
-
-           actmoments(2,0) = mdir;
-
-          }
-          else
-          {
-            for (int idim=0; idim<3; idim++)
-              actmoments(idim,0) = actmoment_gc(idim,0);
-          }
-
-          for (int idim=0; idim<3; idim++)
-            mymoments[idim] += actmoments(idim,0);
-
-        } // end: loop over nodes
-
-        // care for the fact that we are (most likely) parallel
-        trueresidual.Comm().SumAll (&(myforces[0]), &(((*liftdragvals)[label])[0]), 3);
-        trueresidual.Comm().SumAll (&(mymoments[0]), &(((*liftdragvals)[label])[3]), 3);
-
-        // do the output
-        if (myrank==0)
-        {
-          if (ndim == 2)
-          {
-            std::cout << "     " << label << "         ";
-            std::cout << std::scientific << ((*liftdragvals)[label])[0] << "    ";
-            std::cout << std::scientific << ((*liftdragvals)[label])[1] << "    ";
-            std::cout << std::scientific << ((*liftdragvals)[label])[5];
-            std::cout << "\n";
-          }
-          if (ndim == 3)
-          {
-            std::cout << "     " << label << "         ";
-            std::cout << std::scientific << ((*liftdragvals)[label])[0] << "    ";
-            std::cout << std::scientific << ((*liftdragvals)[label])[1] << "    ";
-            std::cout << std::scientific << ((*liftdragvals)[label])[2] << "    ";
-            std::cout << std::scientific << ((*liftdragvals)[label])[3] << "    ";
-            std::cout << std::scientific << ((*liftdragvals)[label])[4] << "    ";
-            std::cout << std::scientific << ((*liftdragvals)[label])[5];
-            std::cout << "\n";
-          }
-        }
-      } // end: loop over L&D labels
-      if (myrank== 0)
-      {
-        std::cout << "\n";
-      }
+    } // end: loop over L&D labels
+    if (myrank== 0)
+    {
+      std::cout << "\n";
     }
   }
 

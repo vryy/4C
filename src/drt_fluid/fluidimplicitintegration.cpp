@@ -4357,28 +4357,28 @@ FLD::FluidImplicitTimeInt::~FluidImplicitTimeInt()
 
 
 /*----------------------------------------------------------------------*
- | LiftDrag                                                  chfoe 11/07|
+ | calculate lift and drag forces as well as angular moment: chfoe 11/07|
+ | Lift and drag forces are based upon the right-hand side              |
+ | true-residual entities of the corresponding nodes.                   |
+ | The contribution of the end node of a line is entirely               |
+ | added to a present L&D force.                                        |
+ | For computing the angular moment, potential displacements            |
+ | are taken into account when calculating the distance to              |
+ | the center of rotation.                                              |
  *----------------------------------------------------------------------*/
-/*
-calculate lift&drag forces and angular moments
-
-Lift and drag forces are based upon the right hand side true-residual entities
-of the corresponding nodes. The contribution of the end node of a line is entirely
-added to a present L&D force.
-
-Notice: Angular moments obtained from lift&drag forces currently refer to the
-        initial configuration, i.e. are built with the coordinates X of a particular
-        node irrespective of its current position.
-*/
 void FLD::FluidImplicitTimeInt::LiftDrag() const
 {
-  // in this map, the results of the lift drag calculation are stored
-  Teuchos::RCP<std::map<int,std::vector<double> > > liftdragvals;
+  // initially check whether computation of lift and drag values is required
+  if (params_->get<bool>("LIFTDRAG")) 
+  {
+    // in this map, the results of the lift drag calculation are stored
+    Teuchos::RCP<std::map<int,std::vector<double> > > liftdragvals;
 
-  FLD::UTILS::LiftDrag(*discret_,*trueresidual_,*params_,liftdragvals);
+    FLD::UTILS::LiftDrag(*discret_,*trueresidual_,*dispnp_,numdim_,liftdragvals,alefluid_);
 
-  if (liftdragvals!=Teuchos::null and discret_->Comm().MyPID() == 0)
-    FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
+    if (liftdragvals!=Teuchos::null and discret_->Comm().MyPID() == 0)
+      FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
+  }
 
   return;
 }

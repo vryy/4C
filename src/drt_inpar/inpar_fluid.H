@@ -326,13 +326,6 @@ namespace INPAR
       fncc_Linf      //converg. check with L-inf. norm
     };
 
-    //! options for lift & drag calculation
-    enum LiftDrag
-    {
-      liftdrag_none,
-      liftdrag_nodeforce
-    };
-
   }  // namespace FLUID
 
 }  // namespace INPAR
