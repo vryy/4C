@@ -285,6 +285,54 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
 }
 
 
+/*-------------------------------------------------------------------*
+| extend ghosting according to bin distribution          ghamm 02/14 |
+ *-------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::ExtendGhosting(
+  Teuchos::RCP<DRT::Discretization> scatradis,
+  std::map<int, std::set<int> >& escapedpartelemap,
+  std::map<int, std::set<int> >& myescapedpartelemap)
+{
+  // get fully redundant map of escaped particles
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // CAUTION: We chose this way here, since we expect that the map escapedpartelemap only contains
+  //          a small faction of elements!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  LINALG::GatherAll(escapedpartelemap,scatradis->Comm());
+
+  // filter particles required on this proc
+  std::set<int> myescapedparticles;
+  for(std::map<int, std::set<int> >::iterator iter=escapedpartelemap.begin(); iter!= escapedpartelemap.end(); ++iter)
+  {
+    if (scatradis->HaveGlobalElement(iter->first))
+    {
+      // gather all particles to create col map of particles
+      myescapedparticles.insert(iter->second.begin(),iter->second.end());
+
+      // insert data to map of all elements on this proc with escaped particles
+      myescapedpartelemap[iter->first].insert(iter->second.begin(),iter->second.end());
+    }
+  }
+
+  // insert standard row particle distribution
+  const Epetra_Map* particlerowmap = particledis_->NodeRowMap();
+  for(int lid=0; lid<particlerowmap->NumMyElements(); ++lid)
+    myescapedparticles.insert(particlerowmap->GID(lid));
+
+  // copy to a vector and create extended particle colmap
+  std::vector<int> myparticlecolgids(myescapedparticles.begin(),myescapedparticles.end());
+  Teuchos::RCP<Epetra_Map> particlecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)myparticlecolgids.size(),&myparticlecolgids[0],0,particledis_->Comm()));
+
+  // now ghost the nodes
+  particledis_->ExportColumnNodes(*particlecolmap);
+
+  // call fillcomplete
+  particledis_->FillComplete();
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
 | find XAABB and divide into bins                           ghamm 09/12 |
  *----------------------------------------------------------------------*/

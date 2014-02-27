@@ -89,6 +89,13 @@ namespace BINSTRATEGY
       std::map<int, std::set<int> >& masterbinelemap   /// map of bins and assigned master elements
       );
 
+    /// extend ghosting according to scatra elements
+    virtual void ExtendGhosting(
+      Teuchos::RCP<DRT::Discretization> scatradis,       ///< scatra discretization
+      std::map<int, std::set<int> >& escapedpartelemap,  ///< map of escaped particles and corresponding scatra elements
+      std::map<int, std::set<int> >& myescapedpartelemap ///< map of escaped particles and corresponding scatra elements including particles from other procs
+      );
+
     /// convert i,j,k into bin id
     virtual int ConvertijkToGid(
       int* ijk  ///< i,j,k to be converted into a bin id

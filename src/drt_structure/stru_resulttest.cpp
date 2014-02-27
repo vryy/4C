@@ -42,9 +42,13 @@ StruResultTest::StruResultTest(STR::TimInt& tintegrator)
 StruResultTest::StruResultTest(PARTICLE::TimInt& tintegrator)
   : DRT::ResultTest("PARTICLE")
 {
-  dis_  = tintegrator.Dispn();
-  vel_  = tintegrator.Veln();
-  acc_  = tintegrator.Accn();
+  dis_  = tintegrator.Dispnp();
+  if (DRT::Problem::Instance()->ProblemType() != prb_level_set and
+      DRT::Problem::Instance()->ProblemType() != prb_combust)
+  {
+    vel_  = tintegrator.Veln();
+    acc_  = tintegrator.Accn();
+  }
   strudisc_ = tintegrator.Discretization();
 }
 

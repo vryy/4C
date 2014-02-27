@@ -318,6 +318,12 @@ void SCATRA::LevelSetTimIntOneStepTheta::ReadRestart(int start)
   // do basic restart
   TimIntOneStepTheta::ReadRestart(start);
 
+  // initialize conveln
+  // note: basic scatra algorithm merely contains convel_
+  //       since conveln_ = convel_ after Update(),
+  //       we can simly initialize conveln_
+  conveln_->Update(1.0,*convel_,0.0);
+
   // read restart for particles
   if (particle_ != Teuchos::null)
     particle_->ReadRestart(start);
