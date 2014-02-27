@@ -1258,7 +1258,7 @@ namespace LINALG
     return;
   }
 
-  // 																														nagler 07/2012
+  // nagler 07/2012
   /*!
   \brief Gather information of type map<T,U> on a subset of processors                        
 
@@ -1286,52 +1286,52 @@ namespace LINALG
                                                const int*   tprocs,
                                                const        Epetra_Comm& comm)
     {
-  			const int myrank  = comm.MyPID();
-  	    const int numproc = comm.NumProc();
-  	    if (numproc==1)
-  	        {
-  	          rdata = sdata;
-  	          return; // nothing to do in serial
-  	        }
+      const int myrank  = comm.MyPID();
+      const int numproc = comm.NumProc();
+      if (numproc==1)
+      {
+        rdata = sdata;
+        return; // nothing to do in serial
+      }
 
-  	    // build a map of data
-  	    std::map<int,std::map<T,U> > datamap;
-  	    datamap[myrank] = sdata;
+      // build a map of data
+      std::map<int,std::map<T,U> > datamap;
+      datamap[myrank] = sdata;
 
-  	    // build a source map
-  	    Epetra_Map source(numproc,1,&myrank,0,comm);
-  	    // build a target map which is redundant on all target procs and zero everywhere else
-  	    bool iamtarget = false;
-  	    for (int i=0; i<ntargetprocs; ++i)
-  	      if (tprocs[i]==myrank)
-  	      {
-  	        iamtarget = true;
-  	        break;
-  	      }
-  	    std::vector<int> targetvec(0);
-  	    if (iamtarget)
-  	    {
-  	      targetvec.resize(numproc);
-  	      for (int i=0; i<numproc; ++i) targetvec[i] = i;
-  	    }
-  	    const int tnummyelements = (int)targetvec.size();
-  	    Epetra_Map target(-1,tnummyelements,&targetvec[0],0,comm);
-  	    // build an exporter and export data
-  	    DRT::Exporter exporter(source,target,comm);
-  	    exporter.Export(datamap);
-  	    // put data from map in rdata
-  	    rdata.clear();
-  	    typename std::map<int,std::map<T,U> >::const_iterator curr;
-  	    for (curr=datamap.begin(); curr != datamap.end(); ++curr)
-  	    {
-  	      const std::map<T,U>& current = curr->second;
-  	      typename std::map<T,U>::const_iterator mapiter;
-  	      for (mapiter = current.begin(); mapiter != current.end(); ++mapiter)
-  	      {
-  	        rdata.insert(std::make_pair(mapiter->first, mapiter->second));
-  	      }
-  	    }
-  	    return;
+      // build a source map
+      Epetra_Map source(numproc,1,&myrank,0,comm);
+      // build a target map which is redundant on all target procs and zero everywhere else
+      bool iamtarget = false;
+      for (int i=0; i<ntargetprocs; ++i)
+        if (tprocs[i]==myrank)
+        {
+          iamtarget = true;
+          break;
+        }
+      std::vector<int> targetvec(0);
+      if (iamtarget)
+      {
+        targetvec.resize(numproc);
+        for (int i=0; i<numproc; ++i) targetvec[i] = i;
+      }
+      const int tnummyelements = (int)targetvec.size();
+      Epetra_Map target(-1,tnummyelements,&targetvec[0],0,comm);
+      // build an exporter and export data
+      DRT::Exporter exporter(source,target,comm);
+      exporter.Export(datamap);
+      // put data from map in rdata
+      rdata.clear();
+      typename std::map<int,std::map<T,U> >::const_iterator curr;
+      for (curr=datamap.begin(); curr != datamap.end(); ++curr)
+      {
+        const std::map<T,U>& current = curr->second;
+        typename std::map<T,U>::const_iterator mapiter;
+        for (mapiter = current.begin(); mapiter != current.end(); ++mapiter)
+        {
+          rdata.insert(std::make_pair(mapiter->first, mapiter->second));
+        }
+      }
+      return;
     }
 
   /*!
@@ -1363,7 +1363,7 @@ namespace LINALG
     return;
   }
 
-  // 																															nagler 07/2012
+  // nagler 07/2012
   /*!
   \brief Gather information of type map<T,U> from all processors
 
@@ -1380,14 +1380,14 @@ namespace LINALG
   template<typename T, typename U> void GatherAll(std::map<T,U>&      data,
                                        const        Epetra_Comm& comm)
   {
-  	const int numprocs  = comm.NumProc();
-  	int allproc[numprocs];
-  	for (int i = 0; i < numprocs; ++i)
-  		allproc[i] = i;
+    const int numprocs  = comm.NumProc();
+    int allproc[numprocs];
+    for (int i = 0; i < numprocs; ++i)
+      allproc[i] = i;
 
-  	Gather<T,U>(data, data, numprocs, allproc, comm);
+    Gather<T,U>(data, data, numprocs, allproc, comm);
 
-  	return;
+    return;
   }
 
 
