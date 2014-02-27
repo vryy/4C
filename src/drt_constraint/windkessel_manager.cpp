@@ -429,29 +429,29 @@ void UTILS::WindkesselManager::EvaluateNeumannWindkesselCoupling(Teuchos::RCP<Ep
 void UTILS::WindkesselManager::PrintPresFlux() const
 {
   // prepare stuff for printing to screen
-  Teuchos::RCP<Epetra_Vector> presnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> fluxnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  LINALG::Export(*presn_,*presnredundant);
-  LINALG::Export(*fluxn_,*fluxnredundant);
-
+  // ATTENTION: we print the mid-point pressure (NOT the end-point pressure at t_{n+1}),
+  // since this is the one where mechanical equlibrium is guaranteed
+  Teuchos::RCP<Epetra_Vector> presmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> fluxmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  LINALG::Export(*presm_,*presmredundant);
+  LINALG::Export(*fluxm_,*fluxmredundant);
 
   if (myrank_ == 0)
   {
-
     for (unsigned int i=0; i<currentID.size(); ++i)
     {
       if (wk_std_->HaveWindkessel() or wk_trimodular_->HaveWindkessel())
       {
         printf("Windkessel output id%2d:\n",currentID[i]);
-        printf("%2d pressure: %10.5e \n",currentID[i],(*presnredundant)[i]);
-        printf("%2d flux: %10.5e \n",currentID[i],(*fluxnredundant)[i]);
+        printf("%2d pressure: %10.5e \n",currentID[i],(*presmredundant)[i]);
+        printf("%2d flux: %10.5e \n",currentID[i],(*fluxmredundant)[i]);
       }
       if (wk_heartvalvearterial_->HaveWindkessel())
       {
         printf("Windkessel output id%2d:\n",currentID[i]);
-        printf("%2d ventricular pressure: %10.5e \n",currentID[i],(*presnredundant)[2*i]);
-        printf("%2d arterial pressure: %10.5e \n",currentID[i],(*presnredundant)[2*i+1]);
-        printf("%2d flux: %10.5e \n",currentID[i],(*fluxnredundant)[i]);
+        printf("%2d ventricular pressure: %10.5e \n",currentID[i],(*presmredundant)[2*i]);
+        printf("%2d arterial pressure: %10.5e \n",currentID[i],(*presmredundant)[2*i+1]);
+        printf("%2d flux: %10.5e \n",currentID[i],(*fluxmredundant)[i]);
       }
     }
   }
