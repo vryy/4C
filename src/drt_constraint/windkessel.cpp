@@ -1179,7 +1179,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
 
     double p_v = 0.;
     double p_ar = 0.;
-    double k_p = 0.05;
+
+    double k_p = 0.00000000001;
 
     if (assvec1 or assvec2 or assvec3 or assvec4 or assvec5 or assvec7)
     {
@@ -1194,30 +1195,11 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
       //std::cout << "" << p_ar << std::endl;
 
       //treat rhs contributions for valve law Windkessel
-      if (p_v < p_at)
-      {
-        factor_p[0] = K_at;
-        factor_dpdt[0] = 0.;
-        factor_q[0] = 1.;
-        factor_dqdt[0] = 0.;
-        factor_1[0] = -K_at*p_at;
-      }
-      if (p_v >= p_at and p_v < p_ar)
-      {
-        factor_p[0] = K_p;
-        factor_dpdt[0] = 0.;
-        factor_q[0] = 1.;
-        factor_dqdt[0] = 0.;
-        factor_1[0] = -K_p*p_at;
-      }
-      if (p_v >= p_ar)
-      {
-        factor_p[0] = K_ar;
-        factor_dpdt[0] = 0.;
-        factor_q[0] = 1.;
-        factor_dqdt[0] = 0.;
-        factor_1[0] = -K_ar*p_ar + K_p*p_ar - K_p*p_at;
-      }
+      factor_p[0] = (K_at + K_ar + tanh((p_v-p_at)/k_p)*(K_p - K_at) + tanh((p_v-p_ar)/k_p)*(K_ar - K_p))/2.;
+      factor_dpdt[0] = 0.;
+      factor_q[0] = 1.;
+      factor_dqdt[0] = 0.;
+      factor_1[0] = (-(K_at + K_p)*p_at + (K_p-K_ar)*p_ar + (K_at - K_p)*p_at*tanh((p_v-p_at)/k_p) + (K_p - K_ar)*p_ar*tanh((p_v-p_ar)/k_p))/2.;
 
       //treat rhs contributions for arterial/pulmonal Windkessel
       factor_p[1] = 1./R_p;
@@ -1255,17 +1237,13 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
       colvec[0]=gindex;
       colvec[1]=gindex2;
 
-      if (p_v < p_at) wkstiff(0,0) = sc_timint*K_at;
-      if (p_v >= p_at and p_v < p_ar) wkstiff(0,0) = sc_timint*K_p;
-      if (p_v >= p_ar) wkstiff(0,0) = sc_timint*K_ar;
+      wkstiff(0,0) = sc_timint*(((K_p - K_at)*(1.-tanh((p_v-p_at)/k_p)*tanh((p_v-p_at)/k_p))/(2.*k_p) + (K_ar - K_p)*(1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))/(2.*k_p)) * p_v + factor_p[0] + (K_at - K_p)*p_at*(1.-tanh((p_v-p_at)/k_p)*tanh((p_v-p_at)/k_p))/(2.*k_p) + (K_p - K_ar)*p_ar*(1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))/(2.*k_p));
 
-      if (p_v < p_at) wkstiff(0,1) = 0.;
-      if (p_v >= p_at and p_v < p_ar) wkstiff(0,1) = 0.;
-      if (p_v >= p_ar) wkstiff(0,1) = sc_timint*(K_p-K_ar);
+      wkstiff(0,1) = sc_timint*((K_ar - K_p)*(1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))/(-2.*k_p) + (K_p - K_ar)/2. + (K_p - K_ar)*p_ar*(1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))/(-2.*k_p) + (K_p - K_ar)*tanh((p_v-p_ar)/k_p)/2.);
 
-      wkstiff(1,0) = -(1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))*(factor_q[1]*qmid + factor_dqdt[1]*dqdtmid)/(2.*k_p);
+      wkstiff(1,0) = sc_timint*(1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))*(factor_q[1]*qmid + factor_dqdt[1]*dqdtmid)/(2.*k_p);
 
-      wkstiff(1,1) = sc_timint*(factor_dpdt[1]/(gamma*ts_size)+factor_p[1] + (1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))*(factor_q[1]*qmid + factor_dqdt[1]*dqdtmid)/(2.*k_p));
+      wkstiff(1,1) = sc_timint*(factor_dpdt[1]/(gamma*ts_size)+factor_p[1] - (1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))*(factor_q[1]*qmid + factor_dqdt[1]*dqdtmid)/(2.*k_p));
 
       sysmat1->UnComplete();
 
@@ -1425,10 +1403,6 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
 
 
 
-
-
-
-
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void UTILS::Windkessel::InitializeStdAndTrimodularWindkessel(
@@ -1548,15 +1522,13 @@ void UTILS::Windkessel::InitializeHeartValveArterialWindkessel(
     int gindex = condID-offsetID + i;
     int gindex2 = gindex+1;
 
-    double p_v_init=windkesselcond_[i]->GetDouble("p_v_init");
     double p_ar_init=windkesselcond_[i]->GetDouble("p_ar_init");
 
     std::vector<int> colvec(2);
     colvec[0]=gindex;
     colvec[1]=gindex2;
-    int err1 = sysvec2->SumIntoGlobalValues(1,&p_v_init,&colvec[0]);
-    int err2 = sysvec2->SumIntoGlobalValues(1,&p_ar_init,&colvec[1]);
-    if (err1 or err2) dserror("SumIntoGlobalValues failed!");
+    int err = sysvec2->SumIntoGlobalValues(1,&p_ar_init,&colvec[1]);
+    if (err) dserror("SumIntoGlobalValues failed!");
 
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 

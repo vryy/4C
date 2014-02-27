@@ -3251,9 +3251,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkesselheartvalvearterialcondition,"R_c");
   AddNamedReal(windkesselheartvalvearterialcondition,"R_p");
   AddNamedReal(windkesselheartvalvearterialcondition,"p_ve");
-  AddNamedReal(windkesselheartvalvearterialcondition,"p_at");
   AddNamedReal(windkesselheartvalvearterialcondition,"p_ar_init");
-  AddNamedReal(windkesselheartvalvearterialcondition,"p_v_init");
+  AddNamedReal(windkesselheartvalvearterialcondition,"p_at");
 
   condlist.push_back(windkesselheartvalvearterialcondition);
 
