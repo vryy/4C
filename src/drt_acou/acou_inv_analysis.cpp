@@ -203,7 +203,7 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
   {
     if( numvec < nsteps_ )
     {
-      dserror("set your time step size smaller, at least to %f or implement here",timesteps_[1]-timesteps_[0]);
+      dserror("set your time step size smaller, at least to %14f or implement here",timesteps_[1]-timesteps_[0]);
     }
     else
     {
@@ -609,6 +609,7 @@ void ACOU::InvAnalysis::CalculateObjectiveFunctionValue()
     J_ += glo_integr_objf;
     J_ *= alpha_; // regularization parameter (0.5 already in element routine)
   }
+
   // now the last term  0.5 || p - p_m ||^2_L2G
   {
     Teuchos::RCP<Epetra_MultiVector> temp = Teuchos::rcp(new Epetra_MultiVector(*abcnodes_map_,acou_rhs_->NumVectors()));;
@@ -779,7 +780,7 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
       continue;
 
     double loc_value = 0.0;
-    if(acou_discret_->HaveGlobalNode(nd))
+    if(acou_discret_->NodeRowMap()->LID(nd)>-1)
     {
       loc_value = adjoint_phi_0_->operator [](acou_discret_->NodeRowMap()->LID(nd));
     }
@@ -862,11 +863,11 @@ void ACOU::InvAnalysis::CalculateGradient()
    *
    */
 
+  G_.Scale(0.0);
+
   // this implementation depends heavily on the number of considered materials
   // if we got much less materials than elements we act differently than if we
   // got approximately as many materials as elements
-
-  G_.Scale(0.0);
 
   // in this case we loop all materials, set one material to one, and all others
   // to zero and evaluate the materials, or so to say, integrate the terms as described above
@@ -894,7 +895,7 @@ void ACOU::InvAnalysis::CalculateGradient()
       continue;
 
     double loc_value = 0.0;
-    if(acou_discret_->HaveGlobalNode(nd))
+    if(acou_discret_->NodeRowMap()->LID(nd)>-1)
     {
       loc_value = adjoint_phi_0_->operator [](acou_discret_->NodeRowMap()->LID(nd));
     }
@@ -1021,7 +1022,10 @@ void ACOU::InvAnalysis::UpdateHessian()
 {
   if(iter_==0)
   {
-    H_.Scale(p_.Norm2()/G_.Norm2()/10.0);
+    if(p_.Norm2()<1.0)
+      H_.Scale(1.0);///G_.Norm2());
+    else
+      H_.Scale(p_.Norm2()/G_.Norm2()/10.0);
     return;
   }
   Epetra_SerialDenseVector s(np_);
