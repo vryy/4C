@@ -77,7 +77,8 @@ public:
               bool gmsh_output,               //!< print write gmsh output for cut
               bool positions = true,          //!< set inside and outside point, facet and volumecell positions);
               bool tetcellsonly = false,      //!< generate only tet cells
-              bool screenoutput = true        //!< print screen output
+              bool screenoutput = true,       //!< print screen output
+              bool cutinrefconf = false       //!< do not try to perform coordinate update
   );
 
   //! create a new fluid dofset and reserve a dofs for a maximal number of dofsets

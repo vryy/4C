@@ -205,6 +205,18 @@ double Jacobian(const double* xi, DRT::Element& ele)
       dserror("Element Jacobian mapping %10.5e <= 0.0",jac);
   }
 
+  // 3D Hex8
+  else if (distype == DRT::Element::tet4)
+  {
+    LINALG::Matrix<4,4> jacob;
+    for (int i=0; i<4; i++)  jacob(0,i)=1;
+    for (int row=0;row<3;row++)
+      for (int col=0;col<4;col++)
+        jacob(row+1,col)= ele.Nodes()[col]->X()[row];
+
+    jac=jacob.Determinant()/6.0;
+  }
+
   // unknown case
   else
     dserror("ERROR: Jacobian called for unknown element type!");
@@ -490,10 +502,10 @@ void volmortar_dualshape_function_3D(
   // *********************************************************************
   case DRT::Element::tet4:
   {
-    funct(0) = -5.0 + 3*xi0 + 3*xi1 + 3*xi2;
-    funct(1) =  2.0 + 3*xi0 - 3*xi1 - 3*xi2;
-    funct(2) =  2.0 - 3*xi0 + 3*xi1 - 3*xi2;
-    funct(3) =  2.0 - 3*xi0 - 3*xi1 + 3*xi2;
+    funct(0) =  4.0 - 5.0*xi0 - 5.0*xi1 - 5.0*xi2;
+    funct(1) = -1.0 + 5.0*xi0;
+    funct(2) = -1.0 + 5.0*xi1;
+    funct(3) = -1.0 + 5.0*xi2;
 
     break;
   }

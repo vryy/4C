@@ -68,7 +68,7 @@ void VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
     global[i]=0.0;
 
   LINALG::Matrix<n,1>      val;
-  DRT::UTILS::shape_function_3D(val,local[0],local[1],local[3],shape_);
+  DRT::UTILS::shape_function_3D(val,local[0],local[1],local[2],shape_);
 
   for (int i=0;i<n;++i)
   {

@@ -546,7 +546,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPoint3D(MORTAR::MortarEle
     {
       LINALG::SerialDenseVector auxval(n_);
       LINALG::SerialDenseMatrix deriv(n_,1);
-      gpele.EvaluateShape(xi, auxval, deriv, gpele.NumNode());
+      gpele.EvaluateShape(gpeta, auxval, deriv, gpele.NumNode());
 
       for(int i=0;i<n_;++i)
         val(i)=auxval(i);

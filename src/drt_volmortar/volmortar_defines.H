@@ -18,7 +18,11 @@ Maintainer: Philipp Farah
 /************************************************************************/
 
 // MORTAR INTEGRATION
-#define VOLMORTARINTTOL 0.0       /* tolerance for assembling gp-values*/
+#define VOLMORTARINTTOL   0.0       /* tolerance for assembling gp-values*/
 
+// GEOMETRIC TOLERANCES
+#define VOLMORTARELETOL   1.0e-8
+#define VOLMORTARCUTTOL   1.0e-8
+#define VOLMORTARCUT2TOL -1.0e-8
 
 #endif /* VOLMORTAR_DEFINES_H_ */

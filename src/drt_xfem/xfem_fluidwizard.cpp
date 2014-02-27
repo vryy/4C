@@ -37,7 +37,8 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
                               bool gmsh_output,               //!< print write gmsh output for cut
                               bool positions,                 //!< set inside and outside point, facet and volumecell positions
                               bool tetcellsonly,              //!< generate only tet cells
-                              bool screenoutput               //!< print screen output
+                              bool screenoutput,              //!< print screen output
+                              bool cutinrefconf               //!< do not try to update node coordinates
                               )
 {
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut" );
@@ -89,29 +90,33 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
       mydisp.clear();
       cutterdis_.Dof(&node, lm);
 
-      if(lm.size() == 3) // case for BELE3 boundary elements
+      LINALG::Matrix<3, 1> x( node.X() );
+
+      if(!cutinrefconf)
       {
-        DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
+        if(lm.size() == 3) // case for BELE3 boundary elements
+        {
+          DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
+        }
+        else if(lm.size() == 4) // case for BELE3_4 boundary elements
+        {
+          // copy the first three entries for the displacement, the fourth entry should be zero if BELE3_4 is used for cutdis instead of BELE3
+          std::vector<int> lm_red; // reduced local map
+          lm_red.clear();
+          for(int k=0; k< 3; k++) lm_red.push_back(lm[k]);
+
+          DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm_red);
+        }
+        else dserror("wrong number of dofs for node %i", lm.size());
+
+        if (mydisp.size() != 3)
+          dserror("we need 3 displacements here");
+
+        LINALG::Matrix<3, 1> disp( &mydisp[0], true );
+
+        //update x-position of cutter node for current time step (update with displacement)
+        x.Update( 1, disp, 1 );
       }
-      else if(lm.size() == 4) // case for BELE3_4 boundary elements
-      {
-        // copy the first three entries for the displacement, the fourth entry should be zero if BELE3_4 is used for cutdis instead of BELE3
-        std::vector<int> lm_red; // reduced local map
-        lm_red.clear();
-        for(int k=0; k< 3; k++) lm_red.push_back(lm[k]);
-
-        DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm_red);
-      }
-      else dserror("wrong number of dofs for node %i", lm.size());
-
-      if (mydisp.size() != 3)
-        dserror("we need 3 displacements here");
-
-      LINALG::Matrix<3, 1> disp( &mydisp[0], true ); //std::cout << "disp " << disp << std::endl;
-      LINALG::Matrix<3, 1> x( node.X() ); //std::cout << "x " << x << std::endl;
-
-      // update x-position of cutter node for current time step (update with displacement)
-      x.Update( 1, disp, 1 );
 
       // ------------------------------------------------------------------------------------------------
       // --- when simulating FSI with crack, nodes that represent crack are treated separately        ---

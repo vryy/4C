@@ -34,7 +34,6 @@ VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::VolMortarIntegrator()
   InitializeGP();
 }
 
-
 /*----------------------------------------------------------------------*
  |  Initialize gauss points                                  farah 01/14|
  *----------------------------------------------------------------------*/
@@ -284,152 +283,138 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D(
-     DRT::Element& sele,
-     DRT::Element& mele,
-     Teuchos::RCP<VOLMORTAR::Cell> cell,
-     LINALG::SparseMatrix& dmatrix,
-     LINALG::SparseMatrix& mmatrix,
-     Teuchos::RCP<const DRT::Discretization> slavedis,
-     Teuchos::RCP<const DRT::Discretization> masterdis)
+    DRT::Element& Aele,
+    DRT::Element& Bele,
+    Teuchos::RCP<VOLMORTAR::Cell> cell,
+    LINALG::SparseMatrix& dmatrix_A,
+    LINALG::SparseMatrix& mmatrix_A,
+    LINALG::SparseMatrix& dmatrix_B,
+    LINALG::SparseMatrix& mmatrix_B,
+    Teuchos::RCP<const DRT::Discretization> Adis,
+    Teuchos::RCP<const DRT::Discretization> Bdis)
 {
   // create empty vectors for shape fct. evaluation
-  LINALG::Matrix<ns_,1>             sval;
-  LINALG::Matrix<nm_,1>             mval;
-  LINALG::Matrix<ns_,1>             lmval;
+  LINALG::Matrix<ns_,1>             sval_A;
+  LINALG::Matrix<nm_,1>             mval_A;
+  LINALG::Matrix<ns_,1>             lmval_A;
+
+  LINALG::Matrix<nm_,1>             lmval_B;
 
   //**********************************************************************
   // loop over all Gauss points for integration
   //**********************************************************************
   for (int gp=0;gp<ngp_;++gp)
   {
-//    // coordinates and weight
+    // coordinates and weight
     double eta[3] = {coords_(gp,0), coords_(gp,1), coords_(gp,2)};
     double wgt = weights_[gp];
+
+    // evaluate the integration cell Jacobian
+    double jac = cell->Vol();
 
     // get global Gauss point coordinates
     double globgp[3] = {0.0, 0.0, 0.0};
     cell->LocalToGlobal(eta,globgp);
 
-    // map gp into slave and master para space
-    double sxi[3] = {0.0, 0.0, 0.0};
-    double mxi[3] = {0.0, 0.0, 0.0};
-    MORTAR::UTILS::GlobalToLocal<distypeS>(sele,globgp,sxi);
-    MORTAR::UTILS::GlobalToLocal<distypeM>(mele,globgp,mxi);
+    // map gp into A and B para space
+    double Axi[3] = {0.0, 0.0, 0.0};
+    double Bxi[3] = {0.0, 0.0, 0.0};
+    MORTAR::UTILS::GlobalToLocal<distypeS>(Aele,globgp,Axi);
+    MORTAR::UTILS::GlobalToLocal<distypeM>(Bele,globgp,Bxi);
 
     // Check parameter space mapping
-    bool proj = CheckMapping3D(sele,mele,sxi,mxi);
-    if (proj==false)
-      dserror("Mapping failed!");
+    CheckMapping3D(Aele,Bele,Axi,Bxi);
+//    bool proj = CheckMapping3D(Aele,Bele,Axi,Bxi);
+//    if (proj==false)
+//      jac=0.0;
+
+    //---------------------------------------------------
+    //---------------------------------------------------
+    //---------------------------------------------------
+    //---------------------------------------------------
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::volmortar_shape_function_3D(sval, sxi[0],sxi[1], sxi[2],distypeS);
-    UTILS::volmortar_shape_function_3D(mval, mxi[0],mxi[1], mxi[2],distypeM);
+    UTILS::volmortar_shape_function_3D(sval_A, Axi[0],Axi[1], Axi[2],distypeS);
+    UTILS::volmortar_shape_function_3D(mval_A, Bxi[0],Bxi[1], Bxi[2],distypeM);
 
     // evaluate Lagrange mutliplier shape functions (on slave element)
-    //UTILS::volmortar_shape_function_3D(lmval, sxi[0],sxi[1],sxi[2],distypeS);
-    UTILS::volmortar_dualshape_function_3D(lmval,sele, sxi[0],sxi[1],sxi[2],distypeS);
+    UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS);
+    // ---
+    UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM);
 
-    // evaluate the integration cell Jacobian
-    double jac = cell->Vol();
 
-    // compute segment D/M matrix ****************************************
-    // standard shape functions
-    if (false)//(shapefcn_ == INPAR::MORTAR::shape_standard)
+    // compute cell D/M matrix ****************************************
+    // dual shape functions
+    for (int j=0;j<ns_;++j)
     {
-      for (int j=0; j<ns_; ++j)
+      DRT::Node* cnode = Aele.Nodes()[j];
+      int nsdof=Adis->NumDof(1,cnode);
+
+      //loop over slave dofs
+      for (int jdof=0;jdof<nsdof;++jdof)
       {
-        DRT::Node* cnode = sele.Nodes()[j];
-        int nsdof=slavedis->NumDof(1,cnode);
+        int row = Adis->Dof(1,cnode,jdof);
 
-        //loop over slave dofs
-        for (int jdof=0;jdof<nsdof;++jdof)
+        // integrate M and D
+        for (int k=0; k<nm_; ++k)
         {
-          int row = slavedis->Dof(1,cnode,jdof);
+          DRT::Node* mnode = Bele.Nodes()[k];
+          int nmdof=Bdis->NumDof(0,mnode);
 
-          ////////////////////////////////////////
-          // integrate M
-          for (int k=0; k<nm_; ++k)
+          for (int kdof=0;kdof<nmdof;++kdof)
           {
-            DRT::Node* mnode = mele.Nodes()[k];
-            int nmdof=masterdis->NumDof(0,mnode);
+            int col = Bdis->Dof(0,mnode,kdof);
 
-            for (int kdof=0;kdof<nmdof;++kdof)
+            // multiply the two shape functions
+            double prod = lmval_A(j)*mval_A(k)*jac*wgt;
+
+            // dof to dof
+            if (jdof==kdof)
             {
-              int col = masterdis->Dof(0,mnode,kdof);
-
-              // multiply the two shape functions
-              double prod = lmval(j)*mval(k)*jac*wgt;
-
-              // dof to dof
-              if (jdof==kdof)
-              {
-                if(abs(prod)>VOLMORTARINTTOL) mmatrix.Assemble(prod, row, col);
-              }
-            }
-          }
-
-          ////////////////////////////////////////
-          // integrate D
-          for (int k=0; k<ns_; ++k)
-          {
-            DRT::Node* snode = sele.Nodes()[k];
-            int nddof=slavedis->NumDof(1,snode);
-
-            for (int kdof=0;kdof<nddof;++kdof)
-            {
-              int col = slavedis->Dof(1,snode,kdof);
-
-              // multiply the two shape functions
-              double prod = lmval(j)*sval(k)*jac*wgt;
-
-              // dof to dof
-              if (jdof==kdof)
-              {
-                if(abs(prod)>VOLMORTARINTTOL) dmatrix.Assemble(prod, row, col);
-              }
+              if (abs(prod)>VOLMORTARINTTOL) mmatrix_A.Assemble(prod, row, col);
+              if (abs(prod)>VOLMORTARINTTOL) dmatrix_A.Assemble(prod, row, row);
             }
           }
         }
       }
     }
-    else  // DUAL
+
+    // compute cell D/M matrix ****************************************
+    // dual shape functions
+    for (int j=0;j<nm_;++j)
     {
-      for (int j=0;j<ns_;++j)
+      DRT::Node* cnode = Bele.Nodes()[j];
+      int nsdof=Bdis->NumDof(1,cnode);
+
+      //loop over slave dofs
+      for (int jdof=0;jdof<nsdof;++jdof)
       {
-        DRT::Node* cnode = sele.Nodes()[j];
-        int nsdof=slavedis->NumDof(1,cnode);
+        int row = Bdis->Dof(1,cnode,jdof);
 
-        //loop over slave dofs
-        for (int jdof=0;jdof<nsdof;++jdof)
+        // integrate M and D
+        for (int k=0; k<ns_; ++k)
         {
-          int row = slavedis->Dof(1,cnode,jdof);
+          DRT::Node* mnode = Aele.Nodes()[k];
+          int nmdof=Adis->NumDof(0,mnode);
 
-          ////////////////////////////////////////////////////////////////
-          // integrate M and D
-          for (int k=0; k<nm_; ++k)
+          for (int kdof=0;kdof<nmdof;++kdof)
           {
-            DRT::Node* mnode = mele.Nodes()[k];
-            int nmdof=masterdis->NumDof(0,mnode);
+            int col = Adis->Dof(0,mnode,kdof);
 
-            for (int kdof=0;kdof<nmdof;++kdof)
+            // multiply the two shape functions
+            double prod = lmval_B(j)*sval_A(k)*jac*wgt;
+
+            // dof to dof
+            if (jdof==kdof)
             {
-              int col = masterdis->Dof(0,mnode,kdof);
-
-              // multiply the two shape functions
-              double prod = lmval(j)*mval(k)*jac*wgt;
-
-              // dof to dof
-              if (jdof==kdof)
-              {
-                if (abs(prod)>VOLMORTARINTTOL) mmatrix.Assemble(prod, row, col);
-                if (abs(prod)>VOLMORTARINTTOL) dmatrix.Assemble(prod, row, row);
-              }
+              if (abs(prod)>VOLMORTARINTTOL) mmatrix_B.Assemble(prod, row, col);
+              if (abs(prod)>VOLMORTARINTTOL) dmatrix_B.Assemble(prod, row, row);
             }
           }
-        ////////////////////////////////////////////////////////////////
         }
       }
     }
+
   }//end gp loop
 
   return;
@@ -440,18 +425,23 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D(
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateSele3D(
-     DRT::Element& sele,
-     DRT::Element& mele,
-     LINALG::SparseMatrix& dmatrix,
-     LINALG::SparseMatrix& mmatrix,
-     Teuchos::RCP<const DRT::Discretization> slavedis,
-     Teuchos::RCP<const DRT::Discretization> masterdis)
+void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEle3D(
+    int domain,
+     DRT::Element& Aele,
+     DRT::Element& Bele,
+     LINALG::SparseMatrix& dmatrix_A,
+     LINALG::SparseMatrix& mmatrix_A,
+     LINALG::SparseMatrix& dmatrix_B,
+     LINALG::SparseMatrix& mmatrix_B,
+     Teuchos::RCP<const DRT::Discretization> Adis,
+     Teuchos::RCP<const DRT::Discretization> Bdis)
 {
   // create empty vectors for shape fct. evaluation
-  LINALG::Matrix<ns_,1>             sval;
-  LINALG::Matrix<nm_,1>             mval;
-  LINALG::Matrix<ns_,1>             lmval;
+  LINALG::Matrix<ns_,1>             sval_A;
+  LINALG::Matrix<nm_,1>             mval_A;
+  LINALG::Matrix<ns_,1>             lmval_A;
+
+  LINALG::Matrix<nm_,1>             lmval_B;
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -461,292 +451,128 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateSele3D(
 //    // coordinates and weight
     double eta[3] = {coords_(gp,0), coords_(gp,1), coords_(gp,2)};
     double wgt = weights_[gp];
-
-    // get global Gauss point coordinates
+    double jac = 0.0;
     double globgp[3] = {0.0, 0.0, 0.0};
-    UTILS::LocalToGlobal<distypeS>(sele,eta,globgp);
 
-    // map gp into slave and master para space
-    double sxi[3] = {0.0, 0.0, 0.0};
-    double mxi[3] = {0.0, 0.0, 0.0};
-    MORTAR::UTILS::GlobalToLocal<distypeS>(sele,globgp,sxi);
-    MORTAR::UTILS::GlobalToLocal<distypeM>(mele,globgp,mxi);
+    if(domain==0)
+    {
+      // evaluate the integration cell Jacobian
+      jac = UTILS::Jacobian<distypeS>(eta,Aele);
+
+      // get global Gauss point coordinates
+      UTILS::LocalToGlobal<distypeS>(Aele,eta,globgp);
+    }
+    else if(domain==1)
+    {
+      // evaluate the integration cell Jacobian
+      jac = UTILS::Jacobian<distypeM>(eta,Bele);
+
+      // get global Gauss point coordinates
+      UTILS::LocalToGlobal<distypeM>(Bele,eta,globgp);
+    }
+    else
+      dserror("wrong domain for integration!");
+
+
+    // map gp into A and B para space
+    double Axi[3] = {0.0, 0.0, 0.0};
+    double Bxi[3] = {0.0, 0.0, 0.0};
+    MORTAR::UTILS::GlobalToLocal<distypeS>(Aele,globgp,Axi);
+    MORTAR::UTILS::GlobalToLocal<distypeM>(Bele,globgp,Bxi);
 
     // Check parameter space mapping
-    bool proj = CheckMapping3D(sele,mele,sxi,mxi);
+    CheckMapping3D(Aele,Bele,Axi,Bxi);
+//    bool proj = CheckMapping3D(Aele,Bele,Axi,Bxi);
+//    if (proj==false)
+//      jac=0.0;
 
-
-    // evaluate trace space shape functions (on both elements)
-    UTILS::volmortar_shape_function_3D(sval, sxi[0],sxi[1], sxi[2],distypeS);
-    UTILS::volmortar_shape_function_3D(mval, mxi[0],mxi[1], mxi[2],distypeM);
-
-    // evaluate Lagrange mutliplier shape functions (on slave element)
-    //UTILS::volmortar_shape_function_3D(lmval, sxi[0],sxi[1],sxi[2],distypeS);
-    UTILS::volmortar_dualshape_function_3D(lmval,sele, sxi[0],sxi[1],sxi[2],distypeS);
-
-    // evaluate the integration cell Jacobian
-    double jac = UTILS::Jacobian<distypeS>(eta,sele);
-    if (proj==false)
-    {
-//      dserror("Mapping failed!");
-      jac=0.0;
-    }
-    // compute segment D/M matrix ****************************************
-    // standard shape functions
-    if (false)//(shapefcn_ == INPAR::MORTAR::shape_standard)
-    {
-      for (int j=0; j<ns_; ++j)
-      {
-        DRT::Node* cnode = sele.Nodes()[j];
-        int nsdof=slavedis->NumDof(1,cnode);
-
-        //loop over slave dofs
-        for (int jdof=0;jdof<nsdof;++jdof)
-        {
-          int row = slavedis->Dof(1,cnode,jdof);
-
-          ////////////////////////////////////////
-          // integrate M
-          for (int k=0; k<nm_; ++k)
-          {
-            DRT::Node* mnode = mele.Nodes()[k];
-            int nmdof=masterdis->NumDof(0,mnode);
-
-            for (int kdof=0;kdof<nmdof;++kdof)
-            {
-              int col = masterdis->Dof(0,mnode,kdof);
-
-              // multiply the two shape functions
-              double prod = lmval(j)*mval(k)*jac*wgt;
-
-              // dof to dof
-              if (jdof==kdof)
-              {
-                if(abs(prod)>VOLMORTARINTTOL) mmatrix.Assemble(prod, row, col);
-              }
-            }
-          }
-
-          ////////////////////////////////////////
-          // integrate D
-          for (int k=0; k<ns_; ++k)
-          {
-            DRT::Node* snode = sele.Nodes()[k];
-            int nddof=slavedis->NumDof(1,snode);
-
-            for (int kdof=0;kdof<nddof;++kdof)
-            {
-              int col = slavedis->Dof(1,snode,kdof);
-
-              // multiply the two shape functions
-              double prod = lmval(j)*sval(k)*jac*wgt;
-
-              // dof to dof
-              if (jdof==kdof)
-              {
-                if(abs(prod)>VOLMORTARINTTOL) dmatrix.Assemble(prod, row, col);
-              }
-            }
-          }
-        }
-      }
-    }
-    else  // DUAL
-    {
-      for (int j=0;j<ns_;++j)
-      {
-        DRT::Node* cnode = sele.Nodes()[j];
-        int nsdof=slavedis->NumDof(1,cnode);
-
-        //loop over slave dofs
-        for (int jdof=0;jdof<nsdof;++jdof)
-        {
-          int row = slavedis->Dof(1,cnode,jdof);
-
-          ////////////////////////////////////////////////////////////////
-          // integrate M and D
-          for (int k=0; k<nm_; ++k)
-          {
-            DRT::Node* mnode = mele.Nodes()[k];
-            int nmdof=masterdis->NumDof(0,mnode);
-
-            for (int kdof=0;kdof<nmdof;++kdof)
-            {
-              int col = masterdis->Dof(0,mnode,kdof);
-
-              // multiply the two shape functions
-              double prod = lmval(j)*mval(k)*jac*wgt;
-
-              // dof to dof
-              if (jdof==kdof)
-              {
-                if (abs(prod)>VOLMORTARINTTOL) mmatrix.Assemble(prod, row, col);
-                if (abs(prod)>VOLMORTARINTTOL) dmatrix.Assemble(prod, row, row);
-              }
-            }
-          }
-        ////////////////////////////////////////////////////////////////
-        }
-      }
-    }
-  }//end gp loop
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Compute D/M entries for Volumetric Mortar                farah 01/14|
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateMele3D(
-     DRT::Element& sele,
-     DRT::Element& mele,
-     LINALG::SparseMatrix& dmatrix,
-     LINALG::SparseMatrix& mmatrix,
-     Teuchos::RCP<const DRT::Discretization> slavedis,
-     Teuchos::RCP<const DRT::Discretization> masterdis)
-{
-  // create empty vectors for shape fct. evaluation
-  LINALG::Matrix<ns_,1>             sval;
-  LINALG::Matrix<nm_,1>             mval;
-  LINALG::Matrix<ns_,1>             lmval;
-
-  //**********************************************************************
-  // loop over all Gauss points for integration
-  //**********************************************************************
-  for (int gp=0;gp<ngp_;++gp)
-  {
-//    // coordinates and weight
-    double eta[3] = {coords_(gp,0), coords_(gp,1), coords_(gp,2)};
-    double wgt = weights_[gp];
-
-    // get global Gauss point coordinates
-    double globgp[3] = {0.0, 0.0, 0.0};
-    UTILS::LocalToGlobal<distypeM>(mele,eta,globgp);
-
-    // map gp into slave and master para space
-    double sxi[3] = {0.0, 0.0, 0.0};
-    double mxi[3] = {0.0, 0.0, 0.0};
-    MORTAR::UTILS::GlobalToLocal<distypeS>(sele,globgp,sxi);
-    MORTAR::UTILS::GlobalToLocal<distypeM>(mele,globgp,mxi);
-
-    // Check parameter space mapping
-    bool proj = CheckMapping3D(sele,mele,sxi,mxi);
-
+    //---------------------------------------------------
+    //---------------------------------------------------
+    //---------------------------------------------------
+    //---------------------------------------------------
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::volmortar_shape_function_3D(sval, sxi[0],sxi[1], sxi[2],distypeS);
-    UTILS::volmortar_shape_function_3D(mval, mxi[0],mxi[1], mxi[2],distypeM);
+    UTILS::volmortar_shape_function_3D(sval_A, Axi[0],Axi[1], Axi[2],distypeS);
+    UTILS::volmortar_shape_function_3D(mval_A, Bxi[0],Bxi[1], Bxi[2],distypeM);
 
     // evaluate Lagrange mutliplier shape functions (on slave element)
-    //UTILS::volmortar_shape_function_3D(lmval, sxi[0],sxi[1],sxi[2],distypeS);
-    UTILS::volmortar_dualshape_function_3D(lmval,sele, sxi[0],sxi[1],sxi[2],distypeS);
+    UTILS::volmortar_dualshape_function_3D(lmval_A,Aele, Axi[0],Axi[1],Axi[2],distypeS);
+    // ---
+    UTILS::volmortar_dualshape_function_3D(lmval_B,Bele, Bxi[0],Bxi[1],Bxi[2],distypeM);
 
-    // evaluate the integration cell Jacobian
-    double jac = UTILS::Jacobian<distypeM>(eta,mele);
-    if (proj==false)
+
+    // compute cell D/M matrix ****************************************
+    // dual shape functions
+    for (int j=0;j<ns_;++j)
     {
-//      dserror("Mapping failed!");
-      jac=0.0;
-    }
-    // compute segment D/M matrix ****************************************
-    // standard shape functions
-    if (false)//(shapefcn_ == INPAR::MORTAR::shape_standard)
-    {
-      for (int j=0; j<ns_; ++j)
+      DRT::Node* cnode = Aele.Nodes()[j];
+      int nsdof=Adis->NumDof(1,cnode);
+
+      //loop over slave dofs
+      for (int jdof=0;jdof<nsdof;++jdof)
       {
-        DRT::Node* cnode = sele.Nodes()[j];
-        int nsdof=slavedis->NumDof(1,cnode);
+        int row = Adis->Dof(1,cnode,jdof);
 
-        //loop over slave dofs
-        for (int jdof=0;jdof<nsdof;++jdof)
+        // integrate M and D
+        for (int k=0; k<nm_; ++k)
         {
-          int row = slavedis->Dof(1,cnode,jdof);
+          DRT::Node* mnode = Bele.Nodes()[k];
+          int nmdof=Bdis->NumDof(0,mnode);
 
-          ////////////////////////////////////////
-          // integrate M
-          for (int k=0; k<nm_; ++k)
+          for (int kdof=0;kdof<nmdof;++kdof)
           {
-            DRT::Node* mnode = mele.Nodes()[k];
-            int nmdof=masterdis->NumDof(0,mnode);
+            int col = Bdis->Dof(0,mnode,kdof);
 
-            for (int kdof=0;kdof<nmdof;++kdof)
+            // multiply the two shape functions
+            double prod = lmval_A(j)*mval_A(k)*jac*wgt;
+
+            // dof to dof
+            if (jdof==kdof)
             {
-              int col = masterdis->Dof(0,mnode,kdof);
-
-              // multiply the two shape functions
-              double prod = lmval(j)*mval(k)*jac*wgt;
-
-              // dof to dof
-              if (jdof==kdof)
-              {
-                if(abs(prod)>VOLMORTARINTTOL) mmatrix.Assemble(prod, row, col);
-              }
-            }
-          }
-
-          ////////////////////////////////////////
-          // integrate D
-          for (int k=0; k<ns_; ++k)
-          {
-            DRT::Node* snode = sele.Nodes()[k];
-            int nddof=slavedis->NumDof(1,snode);
-
-            for (int kdof=0;kdof<nddof;++kdof)
-            {
-              int col = slavedis->Dof(1,snode,kdof);
-
-              // multiply the two shape functions
-              double prod = lmval(j)*sval(k)*jac*wgt;
-
-              // dof to dof
-              if (jdof==kdof)
-              {
-                if(abs(prod)>VOLMORTARINTTOL) dmatrix.Assemble(prod, row, col);
-              }
+              if (abs(prod)>VOLMORTARINTTOL) mmatrix_A.Assemble(prod, row, col);
+              if (abs(prod)>VOLMORTARINTTOL) dmatrix_A.Assemble(prod, row, row);
             }
           }
         }
       }
     }
-    else  // DUAL
+
+    // compute cell D/M matrix ****************************************
+    // dual shape functions
+    for (int j=0;j<nm_;++j)
     {
-      for (int j=0;j<ns_;++j)
+      DRT::Node* cnode = Bele.Nodes()[j];
+      int nsdof=Bdis->NumDof(1,cnode);
+
+      //loop over slave dofs
+      for (int jdof=0;jdof<nsdof;++jdof)
       {
-        DRT::Node* cnode = sele.Nodes()[j];
-        int nsdof=slavedis->NumDof(1,cnode);
+        int row = Bdis->Dof(1,cnode,jdof);
 
-        //loop over slave dofs
-        for (int jdof=0;jdof<nsdof;++jdof)
+        // integrate M and D
+        for (int k=0; k<ns_; ++k)
         {
-          int row = slavedis->Dof(1,cnode,jdof);
+          DRT::Node* mnode = Aele.Nodes()[k];
+          int nmdof=Adis->NumDof(0,mnode);
 
-          ////////////////////////////////////////////////////////////////
-          // integrate M and D
-          for (int k=0; k<nm_; ++k)
+          for (int kdof=0;kdof<nmdof;++kdof)
           {
-            DRT::Node* mnode = mele.Nodes()[k];
-            int nmdof=masterdis->NumDof(0,mnode);
+            int col = Adis->Dof(0,mnode,kdof);
 
-            for (int kdof=0;kdof<nmdof;++kdof)
+            // multiply the two shape functions
+            double prod = lmval_B(j)*sval_A(k)*jac*wgt;
+
+            // dof to dof
+            if (jdof==kdof)
             {
-              int col = masterdis->Dof(0,mnode,kdof);
-
-              // multiply the two shape functions
-              double prod = lmval(j)*mval(k)*jac*wgt;
-
-              // dof to dof
-              if (jdof==kdof)
-              {
-                if (abs(prod)>VOLMORTARINTTOL) mmatrix.Assemble(prod, row, col);
-                if (abs(prod)>VOLMORTARINTTOL) dmatrix.Assemble(prod, row, row);
-              }
+              if (abs(prod)>VOLMORTARINTTOL) mmatrix_B.Assemble(prod, row, col);
+              if (abs(prod)>VOLMORTARINTTOL) dmatrix_B.Assemble(prod, row, row);
             }
           }
-        ////////////////////////////////////////////////////////////////
         }
       }
     }
+
   }//end gp loop
 
   return;
@@ -817,7 +643,7 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping3D(DRT::Elem
                                                                        double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
-  double tol = 0.01;
+  double tol = 1e-5;
   if (distypeS==DRT::Element::hex8 || distypeS==DRT::Element::hex20 || distypeS==DRT::Element::hex27)
   {
     if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[2]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[2]>1.0+tol)
@@ -828,10 +654,18 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping3D(DRT::Elem
       return false;
     }
   }
-  else
+  else if(distypeS==DRT::Element::tet4 || distypeS==DRT::Element::tet10)
   {
-    //coming soon
+    if(sxi[0]<0.0-tol || sxi[1]<0.0-tol || sxi[2]<0.0-tol || (sxi[0]+sxi[1]+sxi[2])>1.0+tol)
+    {
+      std::cout << "\n***Warning: Gauss point projection outside!";
+      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+      std::cout << "Master GP projection: " << sxi[0] << " " << sxi[1] << " " << sxi[2] << std::endl;
+      return false;
+    }
   }
+  else
+    dserror("Wrong element type!");
 
   // check GP projection (MASTER)
   if (distypeM==DRT::Element::hex8 || distypeM==DRT::Element::hex20 || distypeM==DRT::Element::hex27)
@@ -844,10 +678,18 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping3D(DRT::Elem
       return false;
     }
   }
-  else
+  else if(distypeM==DRT::Element::tet4 || distypeM==DRT::Element::tet10)
   {
-    //coming soon
+    if(mxi[0]<0.0-tol || mxi[1]<0.0-tol || mxi[2]<0.0-tol || (mxi[0]+mxi[1]+mxi[2])>1.0+tol)
+    {
+      std::cout << "\n***Warning: Gauss point projection outside!";
+      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+      std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << " " << mxi[2] << std::endl;
+      return false;
+    }
   }
+  else
+    dserror("Wrong element type!");
 
   return true;
 }

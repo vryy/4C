@@ -295,10 +295,10 @@ void GlobalToLocal(
    static const int numnod = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
    static const int ndim   = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-   LINALG::Matrix<numnod,1>    funct;
-   LINALG::Matrix<ndim,numnod> xref;
-   LINALG::Matrix<ndim,ndim>   xjm;
-   LINALG::Matrix<ndim,numnod> deriv;
+   LINALG::Matrix<numnod,1>    funct(true);
+   LINALG::Matrix<ndim,numnod> xref(true);
+   LINALG::Matrix<ndim,ndim>   xjm(true);
+   LINALG::Matrix<ndim,numnod> deriv(true);
 
    // spatial configuration of this element!
    for (int k=0; k<numnod; ++k)
@@ -306,10 +306,21 @@ void GlobalToLocal(
        xref(j,k) = ele.Nodes()[k]->X()[j];
 
    // first estimation for parameter space coordinates
-   for(int p=0;p<3;++p)
-     xi[p] = 0.0;
+   for(int p=0;p<ndim;++p)
+   {
+     if(distype==DRT::Element::hex8)
+       xi[p] = 0.0;
+     else if(distype==DRT::Element::tet4)
+     {
+       xi[p] = 1.0/3.0;
+     }
+     else
+       dserror("Element type not supported for parameter space mapping!");
+   }
 
    double rhs[ndim];
+   for(int p=0;p<ndim;++p)
+     rhs[p]=0.0;
 
    // converged
    bool converged = false;
@@ -368,14 +379,28 @@ void GlobalToLocal(
 
 
      // solve equation
-     if (abs(xjm.Determinant())<1e-12)
+     if (abs(xjm.Determinant())<1e-15)
+     {
+
+       std::cout << "JAC= " << xjm.Determinant() << std::endl;
+       std::cout << "CONVERGED= " << converged << std::endl;
+       std::cout << "xi= " << xi[0] << "  " << xi[1] << "   " << xi[2]<< std::endl;
+       std::cout << "j= " << j << std::endl;
+       std::cout << "xjm= " << xjm << std::endl;
+       std::cout << "deriv= " << deriv << std::endl;
+       std::cout << "xref= " << xref << std::endl;
+       std::cout << "distype= " << distype << std::endl;
+       std::cout << "id= " << ele.Id() << std::endl;
+       std::cout << "ele shape= " << ele.Shape() << std::endl;
+
        dserror("*** WARNING: jacobi singular ***");
+     }
 
      double xjm_invert = xjm.Invert();
      if (abs(xjm_invert)<1e-12)
        dserror("ERROR: Singular Jacobian for advection map");
 
-     double deltaxi[3];
+     double deltaxi[ndim];
      for(int p=0;p<ndim;++p)
        deltaxi[p] = 0.0;
 
@@ -393,6 +418,8 @@ void GlobalToLocal(
 
    if(!converged)
      dserror("Evaluation of element coordinates not converged!");
+
+   //dserror("BITCH");
 
    return;
 };
@@ -475,13 +502,21 @@ void GlobalToLocal(
      if (sqrt(norm)<1e-12)
        converged = true;
 
+     if(converged == true)
+       break;
+
      // solve equation
-     if (abs(xjm.Determinant())<1e-12)
+     if (abs(xjm.Determinant())<1e-15)
+     {
+
+       std::cout << "JAC= " << xjm.Determinant() << std::endl;
+       std::cout << "CONVERGED= " << converged << std::endl;
        dserror("*** WARNING: jacobi singular ***");
+     }
 
      double xjm_invert = xjm.Invert();
-     if (abs(xjm_invert)<1e-12)
-       dserror("ERROR: Singular Jacobian for advection map");
+     if (abs(xjm_invert)<1e-15)
+       dserror("ERROR: Singular Jacobian");
 
      double deltaxi[3];
      for(int p=0;p<ndim;++p)

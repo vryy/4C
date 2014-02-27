@@ -16,9 +16,9 @@ Maintainer: Philipp Farah
 #include "volmortar_coupling.H"
 #include "volmortar_integrator.H"
 #include "volmortar_cell.H"
+#include "volmortar_defines.H"
 
 #include "../drt_lib/drt_discret.H"
-//#include "../drt_lib/drt_dofset_transparent.H"
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
@@ -68,6 +68,7 @@ Bdiscret_(Bdis)
   // initialize the counter
   polygoncounter_= 0;
   cellcounter_   = 0;
+  inteles_       = 0;
 
   return;
 }
@@ -78,6 +79,14 @@ Bdiscret_(Bdis)
 void VOLMORTAR::VolMortarCoupl::Evaluate()
 {
   /**************************************************
+   * Welcome                                        *
+   **************************************************/
+  std::cout << "**************************************************" << std::endl;
+  std::cout << "*****     Welcome to VOLMORTAR-Coupling!     *****" << std::endl;
+  std::cout << "**************************************************" << std::endl;
+
+
+  /**************************************************
    * initialize global matrices                     *
    **************************************************/
   Initialize();
@@ -87,8 +96,11 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
    **************************************************/
   for (int i=0;i<Adiscret_->NumMyRowElements();++i)
   {
+    //output of coupling status
+    PrintStatus(i);
+
     //get slave element
-    DRT::Element* sele = Adiscret_->lRowElement(i);
+    DRT::Element* Aele = Adiscret_->lRowElement(i);
 
     /**************************************************
      * loop over all master elements                  *
@@ -96,12 +108,12 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
     for (int j=0;j<Bdiscret_->NumMyColElements();++j)
     {
       //get master element
-      DRT::Element* mele = Bdiscret_->lColElement(j);
+      DRT::Element* Bele = Bdiscret_->lColElement(j);
 
       // exchange material pointers
       //TODO: make this more general
-      mele->AddMaterial(sele->Material());
-      sele->AddMaterial(mele->Material());
+      Bele->AddMaterial(Aele->Material());
+      Aele->AddMaterial(Bele->Material());
 
       /**************************************************
        *                    2D                          *
@@ -122,11 +134,11 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
         cells.resize(0);
 
         // build new polygons
-        DefineVerticesMaster(*mele,MasterVertices);
-        DefineVerticesSlave(*sele,SlaveVertices);
+        DefineVerticesMaster(*Bele,MasterVertices);
+        DefineVerticesSlave(*Aele,SlaveVertices);
 
         double tol = 1e-12;
-        PolygonClippingConvexHull(SlaveVertices,MasterVertices,ClippedPolygon,*sele,*mele,tol);
+        PolygonClippingConvexHull(SlaveVertices,MasterVertices,ClippedPolygon,*Aele,*Bele,tol);
         int clipsize = (int)(ClippedPolygon.size());
 
         // proceed only if clipping polygon is at least a triangle
@@ -140,7 +152,7 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
         cellcounter_+=(int)cells.size();
 
         //integrate cells
-        Integrate2D(*sele,*mele,cells);
+        Integrate2D(*Aele,*Bele,cells);
       }
 
       /**************************************************
@@ -149,43 +161,51 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
       else if (dim_==3)
       {
         //check need element-based integration over sele:
-        bool integratesele = CheckEleIntegration(*sele,*mele);
+        bool integrateA = CheckEleIntegration(*Aele,*Bele);
 
         //check need element-based integration over mele:
-        bool integratemele = CheckEleIntegration(*mele,*sele);
+        bool integrateB = CheckEleIntegration(*Bele,*Aele);
 
         //check need for cut:
-        bool performcut = CheckCut(*sele,*mele);
+        bool performcut = CheckCut(*Aele,*Bele);
 
         /**************************************************
          * Integrate element-based Sele                   *
          **************************************************/
-        if(integratesele)
+        if(integrateA)
         {
-          //integrate sele
-          Integrate3DSele(*sele, *mele);
+          //integrate over Aele
+          Integrate3D(*Aele, *Bele, 0);
         }
         /**************************************************
          * Integrate element-based Mele                   *
          **************************************************/
-        else if (integratemele)
+        else if (integrateB)
         {
-          //integrate mele
-          Integrate3DMele(*sele, *mele);
+          //integrate over Bele
+          Integrate3D(*Aele, *Bele,1);
         }
         /**************************************************
          * Start Cut                                      *
          **************************************************/
         else if(performcut)
         {
-          // create empty vector of integrationc ells
+          // create empty vector of integration cells
           std::vector<Teuchos::RCP<Cell> > IntCells;
 
           // call cut and create integration cells
-          PerformCut(sele, mele,IntCells);
+          try
+          {
+            PerformCut(Aele, Bele,IntCells);
+          }
+          catch ( std::runtime_error & err )
+          {
+            IntCells.clear();
+            PerformCut(Bele, Aele,IntCells);
+          }
 
           //integrate found cells
-          Integrate3DCell(*sele, *mele, IntCells);
+          Integrate3DCell(*Aele, *Bele, IntCells);
 
         }// end performcut
       }
@@ -207,6 +227,43 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
    * compute the projection operator P              *
    **************************************************/
   CreateProjectionOpterator();
+
+  std::cout << "**************************************************" << std::endl;
+  std::cout << "*****       VOLMORTAR-Coupling Done!!!       *****" << std::endl;
+  std::cout << "**************************************************" << std::endl;
+
+  //output
+  std::cout << "Polyogns/Polyhedra = " << polygoncounter_ << std::endl;
+  std::cout << "Created Cells      = " << cellcounter_ << std::endl;
+  std::cout << "Integr. Elements   = " << inteles_ << "\n" << std::endl;
+
+  // reset counter
+  polygoncounter_=0;
+  cellcounter_   =0;
+  inteles_       =0;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  PrintStatus (public)                                     farah 02/14|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::PrintStatus(int& i)
+{
+  static int percent_counter = 0;
+  static int AEleSum = 0;
+
+  if(i==0)
+    AEleSum = Adiscret_->NumGlobalElements();
+
+  if( (int)((i*100)/AEleSum) > (int)(10*percent_counter))
+  {
+    std::cout << "---------------------------" << std::endl;
+    std::cout << (int)((i*100)/AEleSum) -1 << "% of Coupling Evaluations are done!" << std::endl;
+    std::cout << "---------------------------" << std::endl;
+
+    percent_counter++;
+  }
 
   return;
 }
@@ -270,7 +327,8 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
                 false,           // gmsh output for cut library
                 true,            // find point positions
                 true,            // create tet cells only
-                false            // suppress screen output
+                false,           // suppress screen output
+                true             // cut in reference coordinates
                 );
 
   GEO::CUT::plain_volumecell_set cells_out;
@@ -311,7 +369,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele,
   double xgl[3] = {0.0 , 0.0, 0.0};
 
   //--------------------------------------------------------
-  // 1. all slave nodes coincide with master nodes ?
+  // 1. all slave nodes within with master ele ?
   for(int u=0;u<sele.NumNode();++u)
   {
     xgl[0] = sele.Nodes()[u]->X()[0];
@@ -328,14 +386,30 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele,
 
     if(converged==true)
     {
-      if( abs(xi[0])<1+1e-8 and abs(xi[1])<1+1e-8 and abs(xi[2])<1+1e-8)
-        integrateele = true;
-      else
-        return false;
+      if(mele.Shape()==DRT::Element::hex8)
+      {
+        if(xi[0]>-1.0-VOLMORTARELETOL and xi[0]<1.0+VOLMORTARELETOL and
+           xi[1]>-1.0-VOLMORTARELETOL and xi[1]<1.0+VOLMORTARELETOL and
+           xi[2]>-1.0-VOLMORTARELETOL and xi[2]<1.0+VOLMORTARELETOL )
+          integrateele = true;
+        else
+          return false;
+      }
+
+      if(mele.Shape()==DRT::Element::tet4)
+      {
+        if( xi[0]>0.0-VOLMORTARELETOL and xi[0]<1.0+VOLMORTARELETOL and
+            xi[1]>0.0-VOLMORTARELETOL and xi[1]<1.0+VOLMORTARELETOL and
+            xi[2]>0.0-VOLMORTARELETOL and xi[2]<1.0+VOLMORTARELETOL and
+            (xi[0]+xi[1]+xi[2])<1.0+3*VOLMORTARELETOL)
+          integrateele = true;
+        else
+          return false;
+      }
     }
     else
     {
-      std::cout << "NOT CONVERGED !!!!!!!!!" << std::endl;
+      std::cout << "!!!!!!!!! NOT CONVERGED !!!!!!!!!" << std::endl;
       integrateele = false;
     }
   }
@@ -353,35 +427,199 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele,
   double xgl[3] = {0.0 , 0.0, 0.0};
   bool converged=false;
 
+  {
   //--------------------------------------------------------
-  // 1. master nodes within slave parameter space?
+  // 1. check if all nodes are outside a parameter space surface
+  // bools for tet
+  bool xi0 =false;
+  bool xi1 =false;
+  bool xi2 =false;
+  bool all =false;
+
+  //bools for hex
+  bool xi0n =false;
+  bool xi1n =false;
+  bool xi2n =false;
+
   for(int u=0;u<mele.NumNode();++u)
   {
     xgl[0] = mele.Nodes()[u]->X()[0];
     xgl[1] = mele.Nodes()[u]->X()[1];
     xgl[2] = mele.Nodes()[u]->X()[2];
 
-    MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(sele,xgl,xi,converged);
+    // global to local:
+    if (sele.Shape()==DRT::Element::hex8)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(sele,xgl,xi,converged);
+    else if (sele.Shape()==DRT::Element::tet4)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(sele,xgl,xi,converged);
+    else
+      dserror("Shape function not supported!");
+
     if(converged==true)
-      if( abs(xi[0])<1-1e-8 and abs(xi[1])<1-1e-8 and abs(xi[2])<1-1e-8 )
-        return true;
+    {
+      if(sele.Shape()==DRT::Element::hex8)
+      {
+        if(xi[0]>-1.0+VOLMORTARCUTTOL) xi0=true;
+        if(xi[1]>-1.0+VOLMORTARCUTTOL) xi1=true;
+        if(xi[2]>-1.0+VOLMORTARCUTTOL) xi2=true;
+
+        if(xi[0]<1.0-VOLMORTARCUTTOL) xi0n=true;
+        if(xi[1]<1.0-VOLMORTARCUTTOL) xi1n=true;
+        if(xi[2]<1.0-VOLMORTARCUTTOL) xi2n=true;
+      }
+      else if(sele.Shape()==DRT::Element::tet4)
+      {
+        if(xi[0]>0.0+VOLMORTARCUTTOL) xi0=true;
+        if(xi[1]>0.0+VOLMORTARCUTTOL) xi1=true;
+        if(xi[2]>0.0+VOLMORTARCUTTOL) xi2=true;
+        if((xi[0]+xi[1]+xi[2])<1.0-VOLMORTARCUTTOL) all=true;
+      }
+
+    }
   }
 
+  if(sele.Shape()==DRT::Element::tet4)
+  {
+    if(!xi0 or !xi1 or !xi2 or !all)
+      return false;
+  }
+  if(sele.Shape()==DRT::Element::hex8)
+  {
+    if(!xi0 or !xi1 or !xi2 or !xi0n or !xi1n or !xi2n)
+      return false;
+  }
+
+  }
+
+  {
   //--------------------------------------------------------
-  // 2. slave nodes within master parameter space?
+  // 2. check if all nodes are outside a parameter space surface (changed elements)
+  bool xi0 =false;
+  bool xi1 =false;
+  bool xi2 =false;
+  bool all =false;
+
+  //bools for hex
+  bool xi0n =false;
+  bool xi1n =false;
+  bool xi2n =false;
+
   for(int u=0;u<sele.NumNode();++u)
   {
     xgl[0] = sele.Nodes()[u]->X()[0];
     xgl[1] = sele.Nodes()[u]->X()[1];
     xgl[2] = sele.Nodes()[u]->X()[2];
 
-    MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(mele,xgl,xi,converged);
+    // global to local:
+    if (mele.Shape()==DRT::Element::hex8)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(mele,xgl,xi,converged);
+    else if (mele.Shape()==DRT::Element::tet4)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(mele,xgl,xi,converged);
+    else
+      dserror("Shape function not supported!");
+
     if(converged==true)
-      if( abs(xi[0])<1-1e-8 and abs(xi[1])<1-1e-8 and abs(xi[2])<1-1e-8 )
-        return true;
+    {
+      if(mele.Shape()==DRT::Element::hex8)
+      {
+        if(xi[0]>-1.0+VOLMORTARCUTTOL) xi0=true;
+        if(xi[1]>-1.0+VOLMORTARCUTTOL) xi1=true;
+        if(xi[2]>-1.0+VOLMORTARCUTTOL) xi2=true;
+
+        if(xi[0]<1.0-VOLMORTARCUTTOL) xi0n=true;
+        if(xi[1]<1.0-VOLMORTARCUTTOL) xi1n=true;
+        if(xi[2]<1.0-VOLMORTARCUTTOL) xi2n=true;
+      }
+
+      else if(mele.Shape()==DRT::Element::tet4)
+      {
+        if(xi[0]>0.0+VOLMORTARCUTTOL) xi0=true;
+        if(xi[1]>0.0+VOLMORTARCUTTOL) xi1=true;
+        if(xi[2]>0.0+VOLMORTARCUTTOL) xi2=true;
+        if((xi[0]+xi[1]+xi[2])<1.0-VOLMORTARCUTTOL) all=true;
+      }
+    }
+  }
+
+  if(mele.Shape()==DRT::Element::tet4)
+  {
+    if(!xi0 or !xi1 or !xi2 or !all)
+      return false;
+  }
+  if(mele.Shape()==DRT::Element::hex8)
+  {
+    if(!xi0 or !xi1 or !xi2 or !xi0n or !xi1n or !xi2n)
+      return false;
+  }
+
   }
 
 
+  //--------------------------------------------------------
+  // 3. master nodes within slave parameter space?
+  for(int u=0;u<mele.NumNode();++u)
+  {
+    xgl[0] = mele.Nodes()[u]->X()[0];
+    xgl[1] = mele.Nodes()[u]->X()[1];
+    xgl[2] = mele.Nodes()[u]->X()[2];
+
+    // global to local:
+    if (sele.Shape()==DRT::Element::hex8)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(sele,xgl,xi,converged);
+    else if (sele.Shape()==DRT::Element::tet4)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(sele,xgl,xi,converged);
+    else
+      dserror("Shape function not supported!");
+
+    if(converged==true)
+    {
+      if(sele.Shape()==DRT::Element::hex8)
+        if( abs(xi[0])<1.0-VOLMORTARCUT2TOL and
+            abs(xi[1])<1.0-VOLMORTARCUT2TOL and
+            abs(xi[2])<1.0-VOLMORTARCUT2TOL )
+          return true;
+
+      if(sele.Shape()==DRT::Element::tet4)
+        if( xi[0]>0.0+VOLMORTARCUT2TOL and xi[0]<1.0-VOLMORTARCUT2TOL and
+            xi[1]>0.0+VOLMORTARCUT2TOL and xi[1]<1.0-VOLMORTARCUT2TOL and
+            xi[2]>0.0+VOLMORTARCUT2TOL and xi[2]<1.0-VOLMORTARCUT2TOL and
+            (xi[0]+xi[1]+xi[2])<1.0-3*VOLMORTARCUT2TOL)
+          return true;
+    }
+  }
+
+  //--------------------------------------------------------
+  // 4. slave nodes within master parameter space?
+  for(int u=0;u<sele.NumNode();++u)
+  {
+    xgl[0] = sele.Nodes()[u]->X()[0];
+    xgl[1] = sele.Nodes()[u]->X()[1];
+    xgl[2] = sele.Nodes()[u]->X()[2];
+
+    // global to local:
+    if (mele.Shape()==DRT::Element::hex8)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(mele,xgl,xi,converged);
+    else if (mele.Shape()==DRT::Element::tet4)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(mele,xgl,xi,converged);
+    else
+      dserror("Shape function not supported!");
+
+    if(converged==true)
+    {
+      if(mele.Shape()==DRT::Element::hex8)
+        if( abs(xi[0])<1.0-VOLMORTARCUT2TOL and
+            abs(xi[1])<1.0-VOLMORTARCUT2TOL and
+            abs(xi[2])<1.0-VOLMORTARCUT2TOL )
+          return true;
+
+      if(mele.Shape()==DRT::Element::tet4)
+        if( xi[0]>0.0+VOLMORTARCUT2TOL and xi[0]<1.0-VOLMORTARCUT2TOL and
+            xi[1]>0.0+VOLMORTARCUT2TOL and xi[1]<1.0-VOLMORTARCUT2TOL and
+            xi[2]>0.0+VOLMORTARCUT2TOL and xi[2]<1.0-VOLMORTARCUT2TOL and
+            (xi[0]+xi[1]+xi[2])<1.0-3*VOLMORTARCUT2TOL)
+          return true;
+    }
+  }
 
   return false;
 }
@@ -531,8 +769,6 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
                                                 DRT::Element& mele,
                                                 std::vector<Teuchos::RCP<Cell> >& cells)
 {
-  //std::cout << "START INTEGRATE 3D -- CELLS" << std::endl;
-
   //--------------------------------------------------------------------
   // loop over cells for A Field
   for(int q=0;q<(int)cells.size();++q)
@@ -549,14 +785,16 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
       {
         static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
         integrator.InitializeGP();
-        integrator.IntegrateCells3D(sele,mele,cells[q],*dmatrixA_,*mmatrixA_,Adiscret_,Bdiscret_);
+        integrator.IntegrateCells3D(sele,mele,cells[q],*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+            Adiscret_,Bdiscret_);
         break;
       }
       case DRT::Element::tet4:
       {
         static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4> integrator;
         integrator.InitializeGP();
-        integrator.IntegrateCells3D(sele,mele,cells[q],*dmatrixA_,*mmatrixA_,Adiscret_,Bdiscret_);
+        integrator.IntegrateCells3D(sele,mele,cells[q],*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+            Adiscret_,Bdiscret_);
         break;
       }
       default:
@@ -576,82 +814,16 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
       {
         static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8> integrator;
         integrator.InitializeGP();
-        integrator.IntegrateCells3D(sele,mele,cells[q],*dmatrixA_,*mmatrixA_,Adiscret_,Bdiscret_);
+        integrator.IntegrateCells3D(sele,mele,cells[q],*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+            Adiscret_,Bdiscret_);
         break;
       }
       case DRT::Element::tet4:
       {
         static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4> integrator;
         integrator.InitializeGP();
-        integrator.IntegrateCells3D(sele,mele,cells[q],*dmatrixA_,*mmatrixA_,Adiscret_,Bdiscret_);
-        break;
-      }
-      default:
-      {
-        dserror("unknown shape!");
-        break;
-      }
-      }
-      break;
-    }
-    default:
-    {
-      dserror("unknown shape!");
-      break;
-    }
-    }
-
-
-  //--------------------------------------------------------------------
-  // loop over cells for B field
-
-    switch (mele.Shape())
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      switch (sele.Shape())
-      {
-      // 2D surface elements
-      case DRT::Element::hex8:
-      {
-        static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
-        integrator.InitializeGP();
-        integrator.IntegrateCells3D(mele,sele,cells[q],*dmatrixB_,*mmatrixB_,Bdiscret_,Adiscret_);
-        break;
-      }
-      case DRT::Element::tet4:
-      {
-        static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4> integrator;
-        integrator.InitializeGP();
-        integrator.IntegrateCells3D(mele,sele,cells[q],*dmatrixB_,*mmatrixB_,Bdiscret_,Adiscret_);
-        break;
-      }
-      default:
-      {
-        dserror("unknown shape!");
-        break;
-      }
-      }
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      switch (mele.Shape())
-      {
-      // 2D surface elements
-      case DRT::Element::hex8:
-      {
-        static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8> integrator;
-        integrator.InitializeGP();
-        integrator.IntegrateCells3D(mele,sele,cells[q],*dmatrixB_,*mmatrixB_,Bdiscret_,Adiscret_);
-        break;
-      }
-      case DRT::Element::tet4:
-      {
-        static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4> integrator;
-        integrator.InitializeGP();
-        integrator.IntegrateCells3D(mele,sele,cells[q],*dmatrixB_,*mmatrixB_,Bdiscret_,Adiscret_);
+        integrator.IntegrateCells3D(sele,mele,cells[q],*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+            Adiscret_,Bdiscret_);
         break;
       }
       default:
@@ -673,14 +845,12 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate3D Cells                                        farah 01/14|
+ |  Integrate over A-element domain                          farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DSele(DRT::Element& sele,
-                                                DRT::Element& mele)
+void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
+                                            DRT::Element& mele,
+                                            int domain)
 {
-  //std::cout << "START INTEGRATE 3D -- SELE" << std::endl;
-
-
   //--------------------------------------------------------------------
   // loop over cells for A Field
   switch (sele.Shape())
@@ -695,14 +865,16 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DSele(DRT::Element& sele,
     {
       VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
       integrator.InitializeGP(true);
-      integrator.IntegrateSele3D(sele,mele,*dmatrixA_,*mmatrixA_,Adiscret_,Bdiscret_);
+      integrator.IntegrateEle3D(domain,sele,mele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+          Adiscret_,Bdiscret_);
       break;
     }
     case DRT::Element::tet4:
     {
       static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4> integrator;
       integrator.InitializeGP(true);
-      integrator.IntegrateSele3D(sele,mele,*dmatrixA_,*mmatrixA_,Adiscret_,Bdiscret_);
+      integrator.IntegrateEle3D(domain,sele,mele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+          Adiscret_,Bdiscret_);
       break;
     }
     default:
@@ -722,14 +894,16 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DSele(DRT::Element& sele,
     {
       static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8> integrator;
       integrator.InitializeGP(true);
-      integrator.IntegrateSele3D(sele,mele,*dmatrixA_,*mmatrixA_,Adiscret_,Bdiscret_);
+      integrator.IntegrateEle3D(domain,sele,mele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+          Adiscret_,Bdiscret_);
       break;
     }
     case DRT::Element::tet4:
     {
       static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4> integrator;
       integrator.InitializeGP(true);
-      integrator.IntegrateSele3D(sele,mele,*dmatrixA_,*mmatrixA_,Adiscret_,Bdiscret_);
+      integrator.IntegrateEle3D(domain,sele,mele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
+          Adiscret_,Bdiscret_);
       break;
     }
     default:
@@ -747,222 +921,13 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DSele(DRT::Element& sele,
   }
   }
 
-
-
-  //--------------------------------------------------------------------
-  // loop over cells for B Field
-  switch (mele.Shape())
-  {
-  // 2D surface elements
-  case DRT::Element::hex8:
-  {
-    switch (sele.Shape())
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
-      integrator.InitializeGP(true);
-      integrator.IntegrateMele3D(mele,sele,*dmatrixB_,*mmatrixB_,Bdiscret_,Adiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4> integrator;
-      integrator.InitializeGP(true);
-      integrator.IntegrateMele3D(mele,sele,*dmatrixB_,*mmatrixB_,Bdiscret_,Adiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("unknown shape!");
-      break;
-    }
-    }
-    break;
-  }
-  case DRT::Element::tet4:
-  {
-    switch (mele.Shape())
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8> integrator;
-      integrator.InitializeGP(true);
-      integrator.IntegrateMele3D(mele,sele,*dmatrixB_,*mmatrixB_,Bdiscret_,Adiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4> integrator;
-      integrator.InitializeGP(true);
-      integrator.IntegrateMele3D(mele,sele,*dmatrixB_,*mmatrixB_,Bdiscret_,Adiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("unknown shape!");
-      break;
-    }
-    }
-    break;
-  }
-  default:
-  {
-    dserror("unknown shape!");
-    break;
-  }
-  }
+  // integration element counter
+  inteles_++;
 
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  Integrate3D Cells                                        farah 01/14|
- *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DMele(DRT::Element& sele,
-                                               DRT::Element& mele)
-{
-  //std::cout << "START INTEGRATE 3D -- MELE" << std::endl;
 
-  //TODO:: init gp for mele
-
-  //--------------------------------------------------------------------
-  // loop over cells for A Field
-  switch (sele.Shape())
-  {
-  // 2D surface elements
-  case DRT::Element::hex8:
-  {
-    switch (mele.Shape())
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
-      integrator.InitializeGP(true);
-      integrator.IntegrateMele3D(sele,mele,*dmatrixA_,*mmatrixA_,Adiscret_,Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4> integrator;
-      integrator.InitializeGP(true);
-      integrator.IntegrateMele3D(sele,mele,*dmatrixA_,*mmatrixA_,Adiscret_,Bdiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("unknown shape!");
-      break;
-    }
-    }
-    break;
-  }
-  case DRT::Element::tet4:
-  {
-    switch (mele.Shape())
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8> integrator;
-      integrator.InitializeGP(true);
-      integrator.IntegrateMele3D(sele,mele,*dmatrixA_,*mmatrixA_,Adiscret_,Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4> integrator;
-      integrator.InitializeGP(true);
-      integrator.IntegrateMele3D(sele,mele,*dmatrixA_,*mmatrixA_,Adiscret_,Bdiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("unknown shape!");
-      break;
-    }
-    }
-    break;
-  }
-  default:
-  {
-    dserror("unknown shape!");
-    break;
-  }
-  }
-
-
-  //--------------------------------------------------------------------
-  // loop over cells for B Field
-  switch (mele.Shape())
-  {
-  // 2D surface elements
-  case DRT::Element::hex8:
-  {
-    switch (sele.Shape())
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
-      integrator.InitializeGP(true);
-      integrator.IntegrateSele3D(mele,sele,*dmatrixB_,*mmatrixB_,Bdiscret_,Adiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4> integrator;
-      integrator.InitializeGP(true);
-      integrator.IntegrateSele3D(mele,sele,*dmatrixB_,*mmatrixB_,Bdiscret_,Adiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("unknown shape!");
-      break;
-    }
-    }
-    break;
-  }
-  case DRT::Element::tet4:
-  {
-    switch (mele.Shape())
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8> integrator;
-      integrator.InitializeGP(true);
-      integrator.IntegrateSele3D(mele,sele,*dmatrixB_,*mmatrixB_,Bdiscret_,Adiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4> integrator;
-      integrator.InitializeGP(true);
-      integrator.IntegrateSele3D(mele,sele,*dmatrixB_,*mmatrixB_,Bdiscret_,Adiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("unknown shape!");
-      break;
-    }
-    }
-    break;
-  }
-  default:
-  {
-    dserror("unknown shape!");
-    break;
-  }
-  }
-
-  return;
-}
 /*----------------------------------------------------------------------*
  |  init (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
@@ -996,17 +961,6 @@ void VOLMORTAR::VolMortarCoupl::Complete()
   dmatrixB_->Complete(*BDiscret()->DofRowMap(1),*BDiscret()->DofRowMap(1));
   mmatrixB_->Complete(*ADiscret()->DofRowMap(0),*BDiscret()->DofRowMap(1));
 
-//  std::cout << *ADiscret().DofRowMap(0) << std::endl;
-//  std::cout << *BDiscret().DofRowMap(0) << std::endl;
-//  std::cout << *ADiscret().DofRowMap(1) << std::endl;
-//  std::cout << *BDiscret().DofRowMap(1) << std::endl;
-
-  // test output
-  std::cout << "Polyogns = " << polygoncounter_ << std::endl;
-  std::cout << "Cells    = " << cellcounter_ << std::endl;
-  polygoncounter_=0;
-  cellcounter_   =0;
-
   return;
 }
 
@@ -1027,7 +981,11 @@ void VOLMORTAR::VolMortarCoupl::CreateProjectionOpterator()
 
   // set zero diagonal values to dummy 1.0
   for (int i=0;i<diagA->MyLength();++i)
-    if ( abs((*diagA)[i])<1e-10) (*diagA)[i]=1.0;
+    if ( abs((*diagA)[i])<1e-12)
+    {
+      //dserror("shitti shit");
+      (*diagA)[i]=1.0;
+    }
 
   // scalar inversion of diagonal values
   err = diagA->Reciprocal(*diagA);
@@ -1050,7 +1008,7 @@ void VOLMORTAR::VolMortarCoupl::CreateProjectionOpterator()
 
   // set zero diagonal values to dummy 1.0
   for (int i=0;i<diagB->MyLength();++i)
-    if ( abs((*diagB)[i])<1e-10) (*diagB)[i]=1.0;
+    if ( abs((*diagB)[i])<1e-12) (*diagB)[i]=1.0;
 
   // scalar inversion of diagonal values
   err = diagB->Reciprocal(*diagB);
@@ -1062,14 +1020,9 @@ void VOLMORTAR::VolMortarCoupl::CreateProjectionOpterator()
   // do the multiplication P = inv(D) * M
   pmatrixB_  = LINALG::MLMultiply(*invdB,false,*mmatrixB_,false,false,false,true);
 
-
-//  std::cout <<*pmatrixA_ << std::endl;
-//  std::cout <<*pmatrixB_ << std::endl;
-
   return;
 
 }
-
 
 /*----------------------------------------------------------------------*
  |  Define polygon of mortar vertices                        farah 01/14|

@@ -83,16 +83,88 @@ public:
   virtual ~VolMortarCoupl() {}
 
   /*!
-  \brief Get discretization of slave
+  \brief Get discretization of A-field
 
   */
   virtual Teuchos::RCP<const DRT::Discretization> ADiscret() const { return Adiscret_; }
 
   /*!
-  \brief Get discretization of master
+  \brief Get discretization of B-field
 
   */
   virtual Teuchos::RCP<const DRT::Discretization> BDiscret() const { return Bdiscret_; }
+
+  /*!
+  \brief get auxiliary plane normal (2D)
+
+  */
+  virtual double* Auxn() { return auxn_; }
+
+  /*!
+  \brief check if we need cut (3D)
+
+  */
+  virtual bool CheckCut(DRT::Element& sele,
+                        DRT::Element& mele);
+
+  /*!
+  \brief check if we can integrate element-wise (3D)
+
+  */
+  virtual bool CheckEleIntegration(DRT::Element& sele,
+                                   DRT::Element& mele);
+
+  /*!
+  \brief complete created matrices
+
+  */
+  virtual void Complete();
+
+  /*!
+  \brief compute projection matrices D^-1 * M
+
+  */
+  virtual void CreateProjectionOpterator();
+
+  /*!
+  \brief define vertices for 2D polygon clipping (master)
+
+  */
+  virtual void DefineVerticesMaster(DRT::Element& ele,
+                                    std::vector<MORTAR::Vertex>& SlaveVertices);
+
+  /*!
+  \brief define vertices for 2D polygon clipping (slave)
+
+  */
+  virtual void DefineVerticesSlave(DRT::Element& ele,
+                                   std::vector<MORTAR::Vertex>& SlaveVertices);
+
+  /*!
+  \brief create integration cells for 2D volmortar
+
+  */
+  virtual bool DelaunayTriangulation(std::vector<Teuchos::RCP<MORTAR::IntCell> >&  cells,
+                                     std::vector<MORTAR::Vertex> & clip,
+                                     double tol);
+
+  /*!
+  \brief Evaluate volmortar coupling (basic routine)
+
+  */
+  virtual void Evaluate();
+
+  /*!
+  \brief get projection matrix A
+
+  */
+  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixAB() {return pmatrixA_;};
+
+  /*!
+  \brief get projection matrix B
+
+  */
+  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixBA() {return pmatrixB_;};
 
   /*!
   \brief Initialize / reset volmortar coupling
@@ -101,22 +173,42 @@ public:
   virtual void Initialize();
 
   /*!
-  \brief Evaluate volmortar coupling
+  \brief perform 2D integration
 
   */
-  virtual void Evaluate();
+  virtual void Integrate2D(DRT::Element& sele,
+                           DRT::Element& mele,
+                           std::vector<Teuchos::RCP<MORTAR::IntCell> >& cells);
 
-  virtual void DefineVerticesSlave(DRT::Element& ele,
-                                   std::vector<MORTAR::Vertex>& SlaveVertices);
+  /*!
+  \brief perform 3D element-wise integration
 
-  virtual void DefineVerticesMaster(DRT::Element& ele,
-                                    std::vector<MORTAR::Vertex>& SlaveVertices);
+  */
+  virtual void Integrate3D(DRT::Element& sele,
+                           DRT::Element& mele,
+                           int domain);
 
-  virtual void Complete();
+  /*!
+  \brief perform 3D integration of created cells
 
-  virtual void CreateProjectionOpterator();
+  */
+  virtual void Integrate3DCell(DRT::Element& sele,
+                               DRT::Element& mele,
+                               std::vector<Teuchos::RCP<Cell> >& cells);
 
 
+  /*!
+  \brief perform cut and create integration cells (3D)
+
+  */
+  virtual void PerformCut(DRT::Element* sele,
+                          DRT::Element* mele,
+                          std::vector<Teuchos::RCP<Cell> >& cells);
+
+  /*!
+  \brief perform 2D polygon clipping
+
+  */
   virtual bool PolygonClippingConvexHull(std::vector<MORTAR::Vertex>& poly1,
                                                       std::vector<MORTAR::Vertex>& poly2,
                                                       std::vector<MORTAR::Vertex>& respoly,
@@ -124,65 +216,40 @@ public:
                                                       DRT::Element& mele,
                                                       double& tol);
 
-  virtual bool DelaunayTriangulation(std::vector<Teuchos::RCP<MORTAR::IntCell> >&  cells,
-                                     std::vector<MORTAR::Vertex> & clip,
-                                     double tol);
+  /*!
+  \brief Output for evaluation status -- progress
 
-  virtual void Integrate2D(DRT::Element& sele,
-                           DRT::Element& mele,
-                           std::vector<Teuchos::RCP<MORTAR::IntCell> >& cells);
+  */
+  virtual void PrintStatus(int& i);
 
-  virtual void Integrate3DCell(DRT::Element& sele,
-                               DRT::Element& mele,
-                               std::vector<Teuchos::RCP<Cell> >& cells);
-
-  virtual void Integrate3DSele(DRT::Element& sele,
-                              DRT::Element& mele);
-
-  virtual void Integrate3DMele(DRT::Element& sele,
-                              DRT::Element& mele);
-
-  virtual bool CheckCut(DRT::Element& sele,
-                        DRT::Element& mele);
-
-  virtual bool CheckEleIntegration(DRT::Element& sele,
-                                   DRT::Element& mele);
-
-  virtual void PerformCut(DRT::Element* sele,
-                          DRT::Element* mele,
-                          std::vector<Teuchos::RCP<Cell> >& cells);
-
-  virtual double* Auxn() { return auxn_; }
-
-  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixAB() {return pmatrixA_;};
-  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixBA() {return pmatrixB_;};
-
+  //@}
 protected:
   // don't want = operator and cctor
   VolMortarCoupl operator = (const VolMortarCoupl& old);
   VolMortarCoupl(const VolMortarCoupl& old);
 
-  const int                                dim_;      /// dimension of problem (2D or 3D)
+  const int                                dim_;       /// dimension of problem (2D or 3D)
 
-  Teuchos::RCP<const DRT::Discretization>  Adiscret_; /// the discretization of field A
-  Teuchos::RCP<const DRT::Discretization>  Bdiscret_; /// the discretization of field B
+  Teuchos::RCP<const DRT::Discretization>  Adiscret_;  /// the discretization of field A
+  Teuchos::RCP<const DRT::Discretization>  Bdiscret_;  /// the discretization of field B
 
-  Teuchos::RCP<LINALG::SparseMatrix> dmatrixA_;       /// global Mortar matrix D for field A
-  Teuchos::RCP<LINALG::SparseMatrix> dmatrixB_;       /// global Mortar matrix D for field B
+  Teuchos::RCP<LINALG::SparseMatrix> dmatrixA_;        /// global Mortar matrix D for field A
+  Teuchos::RCP<LINALG::SparseMatrix> dmatrixB_;        /// global Mortar matrix D for field B
 
-  Teuchos::RCP<LINALG::SparseMatrix> mmatrixA_;       /// global Mortar matrix M for field A
-  Teuchos::RCP<LINALG::SparseMatrix> mmatrixB_;       /// global Mortar matrix M for field B
+  Teuchos::RCP<LINALG::SparseMatrix> mmatrixA_;        /// global Mortar matrix M for field A
+  Teuchos::RCP<LINALG::SparseMatrix> mmatrixB_;        /// global Mortar matrix M for field B
 
-  Teuchos::RCP<LINALG::SparseMatrix> pmatrixA_;       /// global Mortar projection matrix P for field A
-  Teuchos::RCP<LINALG::SparseMatrix> pmatrixB_;       /// global Mortar projection matrix P for field B
+  Teuchos::RCP<LINALG::SparseMatrix> pmatrixA_;        /// global Mortar projection matrix P for field A
+  Teuchos::RCP<LINALG::SparseMatrix> pmatrixB_;        /// global Mortar projection matrix P for field B
 
 
-  double                             auxn_[3];        /// normal of auxiliary plane
-  int                                polygoncounter_;
-  int                                cellcounter_;
+  double                             auxn_[3];         /// normal of auxiliary plane (2D problems)
+  int                                polygoncounter_;  /// counter for created polygons/polyhedra
+  int                                cellcounter_;     /// counter for created integration cells
+  int                                inteles_;         /// counter for element-wise integration
 
-  Teuchos::RCP<Epetra_Comm>          commA_;
-  Teuchos::RCP<Epetra_Comm>          commB_;
+  Teuchos::RCP<Epetra_Comm>          commA_;           /// communicator for field A
+  Teuchos::RCP<Epetra_Comm>          commB_;           /// communicator for field B
 };
 
 }//namespace...

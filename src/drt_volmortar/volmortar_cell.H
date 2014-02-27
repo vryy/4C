@@ -37,27 +37,47 @@ class Cell
 {
 public:
 
-  // constructor
+  /*!
+  \brief constructor
+
+  */
   Cell(int id,
        int nvertices,
        const Epetra_SerialDenseMatrix& coords,
        const DRT::Element::DiscretizationType& shape);
 
-  // destructor
+  /*!
+  \brief destructor
+
+  */
   virtual ~Cell() {};
 
-  // mapping between para space and global space
-  void LocalToGlobal(double* local, double* global);
 
-  // get shape
-  virtual DRT::Element::DiscretizationType Shape() const { return shape_;}
+  /*!
+  \brief get cell id
 
-  // get cell id
+  */
   int Id() const { return id_; }
 
-  // get cell volume
+  /*!
+  \brief mapping between para space and global space
+
+  */
+  void LocalToGlobal(double* local, double* global);
+
+  /*!
+  \brief get shape
+
+  */
+  virtual DRT::Element::DiscretizationType Shape() const { return shape_;}
+
+  /*!
+  \brief get cell volume
+
+  */
   virtual double& Vol() { return vol_; }
 
+  //@}
 protected:
 
   int                                  id_;        // local ID of this cell

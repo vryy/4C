@@ -60,6 +60,26 @@ public:
   static const int ndim_ = DRT::UTILS::DisTypeToDim<distypeS>::dim;
 
   /*!
+  \brief Check integration point mapping (2D)
+
+  */
+  bool CheckMapping2D(
+      DRT::Element& sele,
+      DRT::Element& mele,
+      double* sxi,
+      double* mxi);
+
+  /*!
+  \brief Check integration point mapping (3D)
+
+  */
+  bool CheckMapping3D(
+      DRT::Element& sele,
+      DRT::Element& mele,
+      double* sxi,
+      double* mxi);
+
+  /*!
   \brief Initialize Gauss rule (points, weights)
 
   */
@@ -83,53 +103,30 @@ public:
 
   */
   void IntegrateCells3D(
-       DRT::Element& sele,
-       DRT::Element& mele,
-       Teuchos::RCP<VOLMORTAR::Cell> cell,
-       LINALG::SparseMatrix& dmatrix,
-       LINALG::SparseMatrix& mmatrix,
-       Teuchos::RCP<const DRT::Discretization> slavedis,
-       Teuchos::RCP<const DRT::Discretization> masterdis);
+      DRT::Element& Aele,
+      DRT::Element& Bele,
+      Teuchos::RCP<VOLMORTAR::Cell> cell,
+      LINALG::SparseMatrix& dmatrix_A,
+      LINALG::SparseMatrix& mmatrix_A,
+      LINALG::SparseMatrix& dmatrix_B,
+      LINALG::SparseMatrix& mmatrix_B,
+      Teuchos::RCP<const DRT::Discretization> Adis,
+      Teuchos::RCP<const DRT::Discretization> Bdis);
 
   /*!
   \brief Integrate ele for 3D problems
 
   */
-  void IntegrateSele3D(
+  void IntegrateEle3D(
+       int domain,
        DRT::Element& sele,
        DRT::Element& mele,
-       LINALG::SparseMatrix& dmatrix,
-       LINALG::SparseMatrix& mmatrix,
-       Teuchos::RCP<const DRT::Discretization> slavedis,
-       Teuchos::RCP<const DRT::Discretization> masterdis);
-
-  /*!
-  \brief Integrate ele for 3D problems
-
-  */
-  void IntegrateMele3D(
-       DRT::Element& sele,
-       DRT::Element& mele,
-       LINALG::SparseMatrix& dmatrix,
-       LINALG::SparseMatrix& mmatrix,
-       Teuchos::RCP<const DRT::Discretization> slavedis,
-       Teuchos::RCP<const DRT::Discretization> masterdis);
-
-  /*!
-  \brief Initialize Gauss rule (points, weights)
-
-  */
-  bool CheckMapping2D(
-      DRT::Element& sele,
-      DRT::Element& mele,
-      double* sxi,
-      double* mxi);
-
-  bool CheckMapping3D(
-      DRT::Element& sele,
-      DRT::Element& mele,
-      double* sxi,
-      double* mxi);
+       LINALG::SparseMatrix& dmatrix_A,
+       LINALG::SparseMatrix& mmatrix_A,
+       LINALG::SparseMatrix& dmatrix_B,
+       LINALG::SparseMatrix& mmatrix_B,
+       Teuchos::RCP<const DRT::Discretization> Adis,
+       Teuchos::RCP<const DRT::Discretization> Bdis);
 
   //@}
 private:
