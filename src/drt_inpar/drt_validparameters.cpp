@@ -4546,12 +4546,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     "Automatically calculate initial field for electric potential",
                                     tuple<std::string>(
                                         "no",
-                                        "standard",
-                                        "fix_potential"),
+                                        "yes"),
                                     tuple<int>(
                                         INPAR::SCATRA::initpotcalc_no,
-                                        INPAR::SCATRA::initpotcalc_standard,
-                                        INPAR::SCATRA::initpotcalc_fix_pot),
+                                        INPAR::SCATRA::initpotcalc_yes),
                                     &scatradyn);
 
   setStringToIntegralParameter<int>("FSSUGRDIFF",

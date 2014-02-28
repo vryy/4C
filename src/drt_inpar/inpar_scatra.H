@@ -222,8 +222,7 @@ namespace INPAR
     enum Initpotcalc
     {
       initpotcalc_no,
-      initpotcalc_standard,
-      initpotcalc_fix_pot
+      initpotcalc_yes
     };
   }  // namespace SCATRA
 

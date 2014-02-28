@@ -30,6 +30,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_io/io_control.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_krylov_projector.H"
 
 #include "../drt_fluid/fluid_meshtying.H"
 
@@ -1121,7 +1122,7 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 {
-  if (DRT::INPUT::IntegralValue<int>(*params_,"INITPOTCALC")!=INPAR::SCATRA::initpotcalc_no)
+  if (DRT::INPUT::IntegralValue<int>(*params_,"INITPOTCALC")==INPAR::SCATRA::initpotcalc_yes)
   {
     // time measurement:
     TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial potential field");
@@ -1157,52 +1158,6 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     // the aforementioned strategy cannot be applied to our system
     // but nevertheless the potential level has to be fixed.
 
-    Teuchos::RCP<Epetra_Vector> electKinetToggle = Teuchos::null;
-    if(DRT::INPUT::IntegralValue<int>(*params_,"INITPOTCALC") == INPAR::SCATRA::initpotcalc_fix_pot)
-    {
-      std::vector<DRT::Condition*> cond;
-      discret_->GetCondition("ElectrodeKinetics", cond);
-      int numcond = cond.size();
-
-      electKinetToggle = LINALG::CreateVector(*dofrowmap,true);
-
-      if(numcond!=2)
-        dserror("option fix_potential: The framework is restricted to two electrode applications");
-
-      bool iszero = false;
-
-      for(int icond = 0; icond < numcond; icond++)
-      {
-        const int kinetics = cond[icond]->GetInt("kinetic model");
-
-        // So far it is implemented that
-        // you have to have at least one zero electrode boundary condition in your model.
-        if(kinetics != INPAR::SCATRA::zero)
-        {
-          const double pot0 = cond[icond]->GetDouble("pot");
-          const double one = 1.0;
-
-          // get nodes belonging to this boundary condition
-          const std::vector<int>* nodes = cond[icond]->Nodes();
-
-          for (unsigned int curr=0; curr<nodes->size(); ++curr)
-          {
-            int gid = (*nodes)[curr];
-            DRT::Node* bc_node = discret_->gNode(gid);
-            std::vector<int> bc_dof=discret_->Dof(bc_node);
-
-            phin_->ReplaceGlobalValues(1,&pot0,&bc_dof[numscal_]);
-            // toggle defining dof's belonging to electrode kinetics boundary condition
-            electKinetToggle->ReplaceGlobalValues(1,&one,&bc_dof[numscal_]);
-          }
-        }
-        else
-          iszero=true;
-      }
-      if(iszero==false)
-        dserror("A zero electrode condition is necessary to apply the option fix_potential");
-    }
-
     // create the parameters for the discretization
     Teuchos::ParameterList eleparams;
 
@@ -1237,17 +1192,18 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     // finalize the complete matrix
     sysmat_->Complete();
 
+    // project residual such that only part orthogonal to nullspace is considered
+    if (projector_!=Teuchos::null)
+      projector_->ApplyPT(*residual_);
+
     // apply Dirichlet boundary conditions to system matrix
     LINALG::ApplyDirichlettoSystem(sysmat_,phi0,rhs,phi0,*(dbcmaps_->CondMap()));
-
-    if(electKinetToggle != Teuchos::null)
-      LINALG::ApplyDirichlettoSystem(sysmat_,phi0,rhs,phi0,electKinetToggle);
 
     // solve the system linear incrementally:
     // the system is linear and therefore it converges in a single step but
     // an incremental solution procedure supports allows the solution for the potential field
     // to converge to an "defined" potential level due to initial conditions!
-    solver_->Solve(sysmat_->EpetraOperator(),inc,rhs,true,true);
+    solver_->Solve(sysmat_->EpetraOperator(),inc,rhs,true,true,projector_);
 
     // update the original initial field
     phi0->Update(1.0,*inc,1.0);

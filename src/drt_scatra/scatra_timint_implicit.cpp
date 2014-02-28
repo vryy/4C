@@ -757,28 +757,6 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + prepare time step");
 
   // -------------------------------------------------------------------
-  //                       initialization
-  // -------------------------------------------------------------------
-  if (step_ == 0)
-  {
-    // if initial velocity field has not been set here, the initial time derivative of phi will be
-    // calculated wrongly for some time integration schemes
-
-    // TODO (ehrl):
-    // Calculation of initial derivative yields in different results for the uncharged particle and
-    // the binary electrolyte solution
-    // -> Check calculation procedure of the method (genalpha)
-    if(not skipinitder_)
-    {
-      if (initialvelset_) PrepareFirstTimeStep();
-      else dserror("Initial velocity field has not been set");
-    }
-
-    // Initialize Nernst-BC
-    InitNernstBC();
-  }
-
-  // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
   // note the order of the following three functions is important
@@ -1087,9 +1065,28 @@ Teuchos::RCP<DRT::Discretization> dis)
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::TimeLoop()
 {
+  // -------------------------------------------------------------------
+  //                       initialization
+  // -------------------------------------------------------------------
   // provide information about initial field (do not do for restarts!)
   if (Step()==0)
   {
+    // if initial velocity field has not been set here, the initial time derivative of phi will be
+    // calculated wrongly for some time integration schemes
+
+    // TODO (ehrl):
+    // Calculation of initial derivative yields in different results for the uncharged particle and
+    // the binary electrolyte solution
+    // -> Check calculation procedure of the method (genalpha)
+    if(not skipinitder_)
+    {
+      if (initialvelset_) PrepareFirstTimeStep();
+      else dserror("Initial velocity field has not been set");
+    }
+
+    // Initialize Nernst-BC
+    InitNernstBC();
+
     // write out initial state
     Output();
 
@@ -1971,11 +1968,8 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
       {
         DRT::Node* node = discret_->lRowNode(inode);
         std::vector<int> gdof = discret_->Dof(node);
-        for(int rr=0;rr<nummodes;++rr)
-        {
-          int err = c->ReplaceGlobalValue(gdof[modeids[rr]],imode,1);
-          if (err != 0) dserror("error while inserting value into c");
-        }
+        int err = c->ReplaceGlobalValue(gdof[modeids[imode]],imode,1);
+        if (err != 0) dserror("error while inserting value into c");
       }
 
     } // loop over modes

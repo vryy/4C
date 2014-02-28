@@ -64,7 +64,7 @@ INITIALFIELD                    field_by_condition              // test this opt
 FSSUGRDIFF                      No
 WRITEFLUX                       No
 MATID                           1
-INITPOTCALC                     standard 
+INITPOTCALC                     yes
 SKIPINITDER                     no
 BLOCKPRECOND                    No
 SCATRATYPE                      Elch

@@ -556,32 +556,30 @@ void DRT::UTILS::ComputeFluidDNullSpace( DRT::Discretization & dis, std::vector<
   const Epetra_Map* rowmap = dis.DofRowMap();
   const int lrows = rowmap->NumMyElements();
   double* mode[6];
-  for (int i=0; i<dimns; ++i) mode[i] = &(ns[i*lrows]);
+  for (int i=0; i<dimns; ++i)
+    mode[i] = &(ns[i*lrows]);
 
-//   else if (ele->Type() == DRT::Element::element_transport or
-//       ele->Type() == DRT::Element::element_fluid3)
+  for (int i=0; i<dis.NumMyRowNodes(); ++i)
   {
-    for (int i=0; i<dis.NumMyRowNodes(); ++i)
+    DRT::Node* actnode = dis.lRowNode(i);
+    std::vector<int> dofs = dis.Dof(0,actnode);
+    const unsigned int ndof = dofs.size();
+
+    if (numdf>6) dserror("Cannot define more than 6 modes");
+    for (unsigned j=0; j<ndof; ++j)
     {
-      DRT::Node* actnode = dis.lRowNode(i);
-      std::vector<int> dofs = dis.Dof(0,actnode);
-      const unsigned int ndof = dofs.size();
-      if (numdf>6) dserror("Cannot define more than 6 modes");
-      for (unsigned j=0; j<ndof; ++j)
+      const int dof = dofs[j];
+      const int lid = rowmap->LID(dof);
+      if (lid<0) dserror("Cannot find dof");
+
+      for (unsigned k=0; k<ndof; ++k)
       {
-        const int dof = dofs[j];
-        const int lid = rowmap->LID(dof);
-        if (lid<0) dserror("Cannot find dof");
+        if (k%numdf == j%numdf)
+          mode[k%numdf][lid] = 1.0;
+        else
+          mode[k%numdf][lid] = 0.0;
+      }
 
-        for (unsigned k=0; k<ndof; ++k)
-        {
-          if (k%numdf == j%numdf)
-            mode[k%numdf][lid] = 1.0;
-          else
-            mode[k%numdf][lid] = 0.0;
-        }
-
-      } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
-    } // for (int i=0; i<NumMyRowNodes(); ++i)
-  } // else if (ele->Type() == DRT::Element::element_transport)
+    } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
+  } // for (int i=0; i<NumMyRowNodes(); ++i)
 }
