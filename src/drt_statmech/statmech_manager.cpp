@@ -2680,7 +2680,6 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                       if(CheckOrientation(direction,bspottriadscol,LID) && !intersection)
                       {
                         numsetelements++;
-
                         if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
                         {
                           if((*crosslinkertype_)[irandom]==1.0)
@@ -3424,6 +3423,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
 
   int numdetachpolarity = 0;
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"FILAMENTPOLARITY"))
+//    LinkerPolarityCheckDetach(punlink, bspotpositions, bspottriadscol);
     numdetachpolarity = LinkerPolarityCheckDetach(punlink, bspotpositions, bspottriadscol);
 
   // a vector indicating the upcoming deletion of crosslinker elements
@@ -4255,13 +4255,6 @@ int STATMECH::StatMechManager::LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_Mul
 
       for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
       {
-        std::vector<int> order = Permutation(2);
-        // prescribed order because only filament-linker bonds may be broken for motility assays
-        if(networktype_==statmech_network_motassay)
-        {
-          order[0] = 0;
-          order[1] = 1;
-        }
         // there exists a crosslinker element
         if((*crosslink2element_)[i]>-0.9)
         {
@@ -4270,6 +4263,13 @@ int STATMECH::StatMechManager::LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_Mul
             if((*crosslinkertype_)[i]==0.0)
               continue;
 
+          std::vector<int> order = Permutation(2);
+          // prescribed order because only filament-linker bonds may be broken for motility assays
+          if(networktype_==statmech_network_motassay)
+          {
+            order[0] = 0;
+            order[1] = 1;
+          }
           for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
           {
             int bspotlid0 = bspotcolmap_->LID((int)(*crosslinkerbond_)[order[j]][i]);
@@ -4284,25 +4284,32 @@ int STATMECH::StatMechManager::LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_Mul
             }
             UnshiftPositions(pos,2);
 
-            LINALG::Matrix<3,1> linkdirection(true);
-            for(int k=0; k<(int)linkdirection.M(); k++)
-              linkdirection(k) = pos[k+3]-pos[k];
+            LINALG::Matrix<3,1> linkdir(true);
+            for(int k=0; k<(int)linkdir.M(); k++)
+              linkdir(k) = pos[k+3]-pos[k];
+            linkdir.Scale(1.0/linkdir.Norm2());
 
-            LINALG::Matrix<3,1> firstdir(true);
             LINALG::Matrix<3,3> bspottriad(true);
             LINALG::Matrix<4, 1> qnode(true);
+            LINALG::Matrix<3,1> tangent(true);
 
             for (int k=0; k<4; k++)
               qnode(k) = (*bspottriadscol)[k][bspotlid1];
-
             LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
-
             for (int k=0; k<(int)bspottriad.M(); k++)
-              firstdir(k) = bspottriad(k,0);
+              tangent(k) = bspottriad(k,0);
+            tangent.Scale(1/tangent.Norm2());
 
-            double tangentialscalefactor = linkdirection.Dot(firstdir);
+
+        //    std::cout<<"direct : "<<direction(0)<<" "<<direction(1)<<" "<<direction(2)<<std::endl;
+        //    std::cout<<"linkdir: "<<linkdir(0)<<" "<<linkdir(1)<<" "<<linkdir(2)<<std::endl;
+        //    std::cout<<"tangent: "<<tangent(0)<<" "<<tangent(1)<<" "<<tangent(2)<<std::endl;
+        //    std::cout<<"  pardir  : "<<linkpardir(0)<<" "<<linkpardir(1)<<" "<<linkpardir(2)<<std::endl;
+        //    std::cout<<"  orthodir: "<<linkorthodir(0)<<" "<<linkorthodir(1)<<" "<<linkorthodir(2)<<std::endl;
+
+            double polarityscale = linkdir.Dot(tangent);
             // For now, manipulate j==1 since this is the free filament binding site
-            if (tangentialscalefactor < 0.0 || ((*crosslinkeractcycletime_)[i] >= recoverytime+detachtime && (*crosslinkeractlength_)[i]>0.9))
+            if (polarityscale < 0.0 || ((*crosslinkeractcycletime_)[i] >= recoverytime+detachtime && (*crosslinkeractlength_)[i]>0.9))
             {
               numdetach++;
               (*punlink)[!order[j]][i]=1.0;

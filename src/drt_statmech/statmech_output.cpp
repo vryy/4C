@@ -5741,6 +5741,7 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
 
   Epetra_SerialDenseVector force;
   double eps = 0.0;
+  double normalforce = 0.0;
 
   for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
   {
@@ -5765,6 +5766,7 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
           {
             force.Resize(crosslinker->NumNode()*6);
             force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->InternalForceVector();
+            normalforce = ((dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->MatForceGp())(0);
             eps = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->EpsilonSgn();
           }
           else if(eot == DRT::ELEMENTS::BeamCLType::Instance())
@@ -5773,24 +5775,19 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
               dserror("Currently only implemented for BEAM3CL with four nodes.");
             force.Resize(crosslinker->NumNode()/2*6);
             force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->InternalForceVector();
+            normalforce = ((dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->MatForceGp())(0);
             eps = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->EpsilonSgn();
           }
           else
             dserror("Unknown crosslinker beam element!");
 
           LINALG::Matrix<3,1> f0;
-          LINALG::Matrix<3,1> f1;
-
           for(int j=0; j<(int)f0.M(); j++)
-          {
             f0(j) = force[j];
-            f1(j) = force[6+j];
-          }
 
           double Fbspot0 = f0.Norm2();
-          double Fbspot1 = f1.Norm2();
 
-          linkerforces<<bspotgid0<<"\t"<<bspotgid1<<"\t"<<std::scientific<<std::setprecision(8)<<Fbspot0<<"\t"<<Fbspot1<<"\t"<<eps<<std::endl;
+          linkerforces<<bspotgid0<<"\t"<<bspotgid1<<"\t"<<std::scientific<<std::setprecision(8)<<Fbspot0<<"\t"<<normalforce<<"\t"<<eps<<std::endl;
         }
       }
     }
