@@ -122,7 +122,7 @@ CURVE1 on EXPR FUNC 0.5*16.0*(1.0-cos(pi*t/0.25)) t1 0.0 t2 0.5
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 35 QUANTITY dispx VALUE -1.15786584980671946e-03 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 35 QUANTITY dispx VALUE -8.45994903179252411e-02 TOLERANCE 1e-5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -144,7 +144,7 @@ DSURF  1
 E 8 - 1
 ------------DESIGN SURF HEART VALVE ARTERIAL WINDKESSEL CONDITIONS
 DSURF  1
-E 8 - id 1 K_at 1.0 K_p 0.001 K_ar 1.0 C 1.0 R_c 0.5 R_p 4.5 p_ve 1.0 p_ar_init 9.31 p_at 0.0
+E 8 - id 1 K_at 1.0e6 K_p 1.0e-6 K_ar 1.0e6 C 13126.08 R_c 4.39964e-6 R_p 1.05325e-4 p_ve 0.0 p_ar_init 9.30 p_at_init 0.0
 --------------DESIGN SURF WINDKESSEL STRUCTURE COUPLING CONDITIONS
 DSURF  1
 E 8 - 1

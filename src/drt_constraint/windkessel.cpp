@@ -796,6 +796,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
   double gamma = params.get("scale_gamma",1.0);
   double beta = params.get("scale_beta",1.0);
   double ts_size = params.get("time_step_size",1.0);
+  //double tim = params.get("total time",-1.0);
 
 
   bool havegid = false;
@@ -831,7 +832,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
     double R_c = windkesselcond_[i]->GetDouble("R_c");
     double R_p = windkesselcond_[i]->GetDouble("R_p");
     double p_ve = windkesselcond_[i]->GetDouble("p_ve");
-    double p_at = windkesselcond_[i]->GetDouble("p_at");
+    double p_at_init = windkesselcond_[i]->GetDouble("p_at_init");
 
     // Windkessel stiffness
     Epetra_SerialDenseMatrix wkstiff(2,2);
@@ -845,17 +846,21 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
 
     double p_v = 0.;
     double p_ar = 0.;
+    double p_at = 0.;
 
     if (assvec1 or assvec2 or assvec3 or assvec4 or assvec5 or assvec7)
     {
 
+      //ventricular pressure
       p_v = (*sysvec7)[2*i];
+      //arterial pressure
       p_ar = (*sysvec7)[2*i+1];
+      //constant atrial pressure
+      p_at = p_at_init;
+      //decaying atrial pressure function over time -> to be further tested for reasonability!
+      //p_at = p_at_init * (exp(-tim/0.01));
 
-      //std::cout << "" << p_v << std::endl;
-      //std::cout << "" << p_ar << std::endl;
-
-      //treat rhs contributions for valve law Windkessel
+      //rhs contributions for valve law Windkessel
       if (p_v < p_at)
       {
         factor_p[0] = K_at;
@@ -881,7 +886,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         factor_1[0] = -K_ar*p_ar + K_p*p_ar - K_p*p_at;
       }
 
-      //treat rhs contributions for arterial/pulmonal Windkessel
+      //rhs contributions for arterial Windkessel
       if (p_v < p_ar)
       {
         factor_p[1] = 1./R_p;
@@ -921,7 +926,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
     // elements might need condition
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
-    // assemble the Windkessel stiffness matrix and scale with time-integrator dependent value
+    // assemble of Windkessel stiffness matrix, scale with time-integrator dependent value
     if (assmat1)
     {
       std::vector<int> colvec(2);

@@ -77,6 +77,9 @@ void DRT::ELEMENTS::So_sh8Type::SetupElementDefinition( std::map<std::string,std
     .AddOptionalNamedDoubleVector("RAD",3)
     .AddOptionalNamedDoubleVector("AXI",3)
     .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDoubleVector("FIBER1",3)
+    .AddOptionalNamedDoubleVector("FIBER2",3)
+    .AddOptionalNamedDoubleVector("FIBER3",3)
     .AddOptionalNamedDouble("STRENGTH")
     ;
 }

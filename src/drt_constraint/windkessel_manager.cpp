@@ -334,8 +334,6 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   windkesselrhsm_->Multiply(1.0,*fluxratem_,*windk_rhs_dqdt_,1.0);
   windkesselrhsm_->Update(1.0,*windk_rhs_1_,1.0);
 
-  //std::cout << "" << *windk_rhs_dqdt_ << std::endl;
-
   // Complete matrices
   windkesselstiffness_->Complete(*windkesselmap_,*windkesselmap_);
   coupoffdiag_vol_d_->Complete(*windkesselmap_,*dofrowmap);
@@ -432,9 +430,15 @@ void UTILS::WindkesselManager::PrintPresFlux() const
   // ATTENTION: we print the mid-point pressure (NOT the end-point pressure at t_{n+1}),
   // since this is the one where mechanical equlibrium is guaranteed
   Teuchos::RCP<Epetra_Vector> presmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> presratemredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> volmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   Teuchos::RCP<Epetra_Vector> fluxmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> fluxratemredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   LINALG::Export(*presm_,*presmredundant);
+  LINALG::Export(*presratem_,*presratemredundant);
+  LINALG::Export(*volm_,*volmredundant);
   LINALG::Export(*fluxm_,*fluxmredundant);
+  LINALG::Export(*fluxratem_,*fluxratemredundant);
 
   if (myrank_ == 0)
   {
@@ -443,15 +447,22 @@ void UTILS::WindkesselManager::PrintPresFlux() const
       if (wk_std_->HaveWindkessel() or wk_trimodular_->HaveWindkessel())
       {
         printf("Windkessel output id%2d:\n",currentID[i]);
-        printf("%2d pressure: %10.5e \n",currentID[i],(*presmredundant)[i]);
+        printf("%2d pres: %10.5e \n",currentID[i],(*presmredundant)[i]);
+        printf("%2d pres rate: %10.5e \n",currentID[i],(*presratemredundant)[i]);
+        printf("%2d vol: %10.5e \n",currentID[i],(*volmredundant)[i]);
         printf("%2d flux: %10.5e \n",currentID[i],(*fluxmredundant)[i]);
+        printf("%2d flux rate: %10.5e \n",currentID[i],(*fluxratemredundant)[i]);
       }
       if (wk_heartvalvearterial_->HaveWindkessel())
       {
         printf("Windkessel output id%2d:\n",currentID[i]);
-        printf("%2d ventricular pressure: %10.5e \n",currentID[i],(*presmredundant)[2*i]);
-        printf("%2d arterial pressure: %10.5e \n",currentID[i],(*presmredundant)[2*i+1]);
-        printf("%2d flux: %10.5e \n",currentID[i],(*fluxmredundant)[i]);
+        printf("%2d pres ventricle: %10.5e \n",currentID[i],(*presmredundant)[2*i]);
+        printf("%2d pres artery: %10.5e \n",currentID[i],(*presmredundant)[2*i+1]);
+        printf("%2d pres rate ventricle: %10.5e \n",currentID[i],(*presratemredundant)[2*i]);
+        printf("%2d pres rate artery: %10.5e \n",currentID[i],(*presratemredundant)[2*i+1]);
+        printf("%2d vol: %10.5e \n",currentID[i],(*volmredundant)[2*i]);
+        printf("%2d flux: %10.5e \n",currentID[i],(*fluxmredundant)[2*i]);
+        printf("%2d flux rate: %10.5e \n",currentID[i],(*fluxratemredundant)[2*i]);
       }
     }
   }
