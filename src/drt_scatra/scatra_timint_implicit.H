@@ -159,7 +159,7 @@ public:
   virtual void ExplicitPredictor() = 0;
 
   //! set the velocity field (zero or field by function)
-  void SetVelocityField();
+  virtual void SetVelocityField();
 
   //! set convective velocity field (+ pressure and acceleration field as
   //! well as fine-scale velocity field, if required)

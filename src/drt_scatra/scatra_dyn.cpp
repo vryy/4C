@@ -59,6 +59,7 @@ void scatra_dyn(int restart)
   {
     case INPAR::SCATRA::velocity_zero:  // zero  (see case 1)
     case INPAR::SCATRA::velocity_function:  // function
+    case INPAR::SCATRA::velocity_function_and_curve: // function and time curve
     {
       // we directly use the elements from the scalar transport elements section
       if (scatradis->NumGlobalNodes()==0)
@@ -75,8 +76,9 @@ void scatra_dyn(int restart)
       // read the restart information, set vectors and variables
       if (restart) scatraonly->ScaTraField()->ReadRestart(restart);
 
-      // set velocity field
-      //(this is done only once. Time-dependent velocity fields are not supported)
+      // set initial velocity field
+      // note: The order ReadRestart() before SetVelocityField() is important here!!
+      // for time-dependent velocity fields, SetVelocityField() is additionally called in each PrepareTimeStep()-call
       (scatraonly->ScaTraField())->SetVelocityField();
 
       // enter time loop to solve problem with given convective velocity

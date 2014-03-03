@@ -94,7 +94,8 @@ void elch_dyn(int restart)
     if (restart) (scatraonly->ScaTraField())->ReadRestart(restart);
 
     // set velocity field
-    //(this is done only once. Time-dependent velocity fields are not supported)
+    // note: The order ReadRestart() before SetVelocityField() is important here!!
+    // for time-dependent velocity fields, SetVelocityField() is additionally called in each PrepareTimeStep()-call
     (scatraonly->ScaTraField())->SetVelocityField();
 
     // enter time loop to solve problem with given convective velocity

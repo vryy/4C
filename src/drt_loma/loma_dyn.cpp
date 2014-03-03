@@ -72,6 +72,7 @@ void loma_dyn(int restart)
   {
   case INPAR::SCATRA::velocity_zero:  // zero velocity field (see case 1)
   case INPAR::SCATRA::velocity_function:  // velocity field prescribed by function
+  case INPAR::SCATRA::velocity_function_and_curve: // velocity field prescribed by function and time curve
   {
     // directly use elements from input section 'transport elements'
     if (scatradis->NumGlobalNodes()==0)
@@ -88,7 +89,9 @@ void loma_dyn(int restart)
     // read restart information
     if (restart) (scatraonly->ScaTraField())->ReadRestart(restart);
 
-    // set velocity field (done only once, time-dependent fields not supported)
+    // set initial velocity field
+    // note: The order ReadRestart() before SetVelocityField() is important here!!
+    // for time-dependent velocity fields, SetVelocityField() is additionally called in each PrepareTimeStep()-call
     (scatraonly->ScaTraField())->SetVelocityField();
 
     // enter time loop to solve problem with given convective velocity field
