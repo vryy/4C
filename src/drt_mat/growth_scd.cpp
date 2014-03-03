@@ -252,29 +252,72 @@ void MAT::GrowthScd::Evaluate
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate growth law                           (private)        02/10|
+ |  Evaluate growth function                           (protected)        02/10|
  *----------------------------------------------------------------------*/
-void MAT::GrowthScd::EvaluateGrowthLaw
+void MAT::GrowthScd::EvaluateGrowthFunction
 (
-  double & ktheta,    // (o)
-  double & dktheta,   // (o)
-  double traceM,      // (i)
-  double theta,       // (i)
-  double hommandel    // (i)
+    double & growthfunc, // (o)
+    double traceM,       // (i)
+    double theta         // (i)
 )
 {
   //call stress based growth law
-  Growth::EvaluateGrowthLaw(ktheta,dktheta,traceM,theta,hommandel);
+  Growth::EvaluateGrowthFunction(growthfunc,traceM,theta);
 
   // parameters
   const double satcoeff = params_->satcoeff_;
 
-  // scale ktheta and dktheta with concentration dependent factor
- // if (traceM > hommandel)
-  {
-    ktheta  = concentration_/(satcoeff+concentration_) * ktheta;
-    dktheta = concentration_/(satcoeff+concentration_) * dktheta;
-  }
+  // scale with concentration dependent factor
+  growthfunc = concentration_/(satcoeff+concentration_) * growthfunc;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate derivative of growth function       (protected)        02/10|
+ *----------------------------------------------------------------------*/
+void MAT::GrowthScd::EvaluateGrowthFunctionDerivTheta
+(
+    double & dgrowthfunctheta,
+    double traceM,
+    double theta,
+    const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdach,
+    const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic
+)
+{
+  //call stress based growth law
+  Growth::EvaluateGrowthFunctionDerivTheta(dgrowthfunctheta,traceM,theta,Cdach,cmatelastic);
+
+  // parameters
+  const double satcoeff = params_->satcoeff_;
+
+  // scale with concentration dependent factor
+  dgrowthfunctheta = concentration_/(satcoeff+concentration_) * dgrowthfunctheta;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate derivative of growth function       (protected)        02/10|
+ *----------------------------------------------------------------------*/
+void MAT::GrowthScd::EvaluateGrowthFunctionDerivC
+(
+    LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdC,
+    double traceM,
+    double theta,
+    const LINALG::Matrix<NUM_STRESS_3D, 1>& C,
+    const LINALG::Matrix<NUM_STRESS_3D, 1>& S,
+    const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat
+)
+{
+  //call stress based growth law
+  Growth::EvaluateGrowthFunctionDerivC(dgrowthfuncdC,traceM,theta,C,S,cmat);
+
+  // parameters
+  const double satcoeff = params_->satcoeff_;
+
+  // scale with concentration dependent factor
+  dgrowthfuncdC.Scale(concentration_/(satcoeff+concentration_));
 
   return;
 }

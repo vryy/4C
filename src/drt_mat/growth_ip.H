@@ -33,6 +33,11 @@ namespace MAT
 
   namespace PAR
   {
+    enum GrowthFunctionType
+    {
+      growth_linear,
+      growth_exp_degreasing
+    };
 
     /*----------------------------------------------------------------------*/
     /// material parameters
@@ -70,6 +75,8 @@ namespace MAT
       const double mthetaminus_;
       /// homeostatic value for mandelstress
       const double hommandel_;
+      /// growth function type
+      GrowthFunctionType functionType_;
       //@}
 
       /// create material instance of matching type with my parameters
@@ -206,14 +213,33 @@ namespace MAT
     /// indicates if material is initialized
     bool isinit_;
 
-    /// Evaluate growth law
-    virtual void EvaluateGrowthLaw
+    /// Evaluate growth function
+    virtual void EvaluateGrowthFunction
     (
-      double & ktheta, ///< factor in growth law
-      double & dktheta, ///< derivative of ktheta
-      double traceM, ///< trace of Mandel stress
-      double theta, ///< growth parameter
-      double hommandel ///< homeostatic value for mandelstress
+        double & growthfunc,
+        double traceM,
+        double theta
+    );
+
+    /// Evaluate derivative of growth function w.r.t. growth factor
+    virtual void EvaluateGrowthFunctionDerivTheta
+    (
+        double & dgrowthfunctheta,
+        double traceM,
+        double theta,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdach,
+        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic
+    );
+
+    /// Evaluate derivative of growth function w.r.t. Green-Lagrange-Strain
+    virtual void EvaluateGrowthFunctionDerivC
+    (
+        LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdC,
+        double traceM,
+        double theta,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& C,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& S,
+        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat
     );
 
   private:

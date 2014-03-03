@@ -183,14 +183,33 @@ namespace MAT
     double GetConcentration() const {return concentration_;}
 
   protected:
-    /// Evaluate growth law (overwrites implementation in stress based growth law)
-    void EvaluateGrowthLaw
+    /// Evaluate growth function (overwrites implementation in stress based growth law)
+    virtual void EvaluateGrowthFunction
     (
-      double & ktheta,  ///< (o) factor in growth law
-      double & dktheta, ///< (o) derivative of ktheta
-      double traceM,    ///< (i) trace of Mandel stress
-      double theta,     ///< (i) growth parameter
-      double hommandel  ///< (i) homeostatic value for mandelstress
+        double & growthfunc,
+        double traceM,
+        double theta
+    );
+
+    /// Evaluate derivative of growth function w.r.t. growth factor (overwrites implementation in stress based growth law)
+    virtual void EvaluateGrowthFunctionDerivTheta
+    (
+        double & dgrowthfunctheta,
+        double traceM,
+        double theta,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdach,
+        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic
+    );
+
+    /// Evaluate derivative of growth function w.r.t. Green-Lagrange-Strain (overwrites implementation in stress based growth law)
+    virtual void EvaluateGrowthFunctionDerivC
+    (
+        LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdC,
+        double traceM,
+        double theta,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& C,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& S,
+        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat
     );
 
   private:

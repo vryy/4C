@@ -51,6 +51,14 @@ MAT::PAR::Growth::Growth(
   mthetaminus_(matdata->GetDouble("MMINUS")),
   hommandel_(matdata->GetDouble("HOMMANDEL"))
 {
+  const std::string *gfuncstring = matdata->Get<std::string>("GROWTHFUNCTION");
+
+  if(*gfuncstring == "linear")
+    functionType_ = MAT::PAR::growth_linear;
+  else if(*gfuncstring == "exponential")
+    functionType_ = MAT::PAR::growth_exp_degreasing;
+  else
+    dserror("Unknown Permeabilityfunction: %s", gfuncstring->c_str());
 }
 
 
@@ -271,75 +279,92 @@ void MAT::Growth::ResetStep()
  Only the elastic part contributes to the stresses, thus we have to
  compute the elastic Cauchy Green Tensor Cdach and elastic 2PK stress Sdach.
  */
-void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
-                           const LINALG::Matrix<6,1>* glstrain,
-                           Teuchos::ParameterList& params,
-                           LINALG::Matrix<6,1>* stress,
-                           LINALG::Matrix<6,6>* cmat,
-                           const int eleGID)
+void MAT::Growth::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
+                            const LINALG::Matrix<6, 1>* glstrain,
+                            Teuchos::ParameterList& params,
+                            LINALG::Matrix<6, 1>* stress,
+                            LINALG::Matrix<6, 6>* cmat,
+                            const int eleGID)
 {
   // get gauss point number
-  const int gp = params.get<int>("gp",-1);
-  if (gp == -1) dserror("no Gauss point number provided in material");
+  const int gp = params.get<int>("gp", -1);
+  if (gp == -1)
+    dserror("no Gauss point number provided in material");
 
-  double dt = params.get<double>("delta time",-1.0);
-  double time = params.get<double>("total time",-1.0);
-  std::string action = params.get<std::string>("action","none");
+  double dt = params.get<double>("delta time", -1.0);
+  double time = params.get<double>("total time", -1.0);
+  std::string action = params.get<std::string>("action", "none");
   bool output = false;
-  if (action == "calc_struct_stress") output = true;
+  if (action == "calc_struct_stress")
+    output = true;
 
   double eps = 1.0e-12;
   double endtime = params_->endtime_;
 
   // when stress output is calculated the final parameters already exist
   // we should not do another local Newton iteration, which uses eventually a wrong thetaold
-  if (output) time = endtime + dt;
+  if (output)
+    time = endtime + dt;
 
-  if (time > params_->starttime_ + eps && time <= endtime + eps) {
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatelastic(true);
-    LINALG::Matrix<NUM_STRESS_3D,1> Sdach(true);
+  if (time > params_->starttime_ + eps && time <= endtime + eps)
+  {
+    LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelastic(true);
+    LINALG::Matrix<NUM_STRESS_3D, 1> Sdach(true);
     const double thetaold = thetaold_->at(gp);
     //double theta = theta_->at(gp);
     double theta = thetaold;
-    double hommandel = params_->hommandel_;
     //double mandelcrit = 0.0; //1.0E-6;
     //double signmandel = 1.0; // adjusts sign of mandelcrit to sign of mandel
 
     // check wether starttime is divisible by dt, if not adapt dt in first growth step
-    if (time < params_->starttime_ + dt - eps) dt = time - params_->starttime_;
+    if (time < params_->starttime_ + dt - eps)
+      dt = time - params_->starttime_;
 
     //--------------------------------------------------------------------------------------
     // build identity tensor I
-    LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
-    for (int i = 0; i < 3; i++) Id(i) = 1.0;
+    LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
+    for (int i = 0; i < 3; i++)
+      Id(i) = 1.0;
 
     // right Cauchy-Green Tensor  C = 2 * E + I
-    LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
+    LINALG::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
     C.Scale(2.0);
     C += Id;
 
     // elastic right Cauchy-Green Tensor Cdach = F_g^-T C F_g^-1
-    LINALG::Matrix<NUM_STRESS_3D,1> Cdach(C);
-    Cdach.Scale(1.0/theta/theta);
-    LINALG::Matrix<3,3> defgrddach(*defgrd);
-    defgrddach.Scale(1.0/theta);
+    LINALG::Matrix<NUM_STRESS_3D, 1> Cdach(C);
+    Cdach.Scale(1.0 / theta / theta);
+    LINALG::Matrix<3, 3> defgrddach(*defgrd);
+    defgrddach.Scale(1.0 / theta);
     // elastic Green Lagrange strain
-    LINALG::Matrix<NUM_STRESS_3D,1> glstraindach(Cdach);
+    LINALG::Matrix<NUM_STRESS_3D, 1> glstraindach(Cdach);
     glstraindach -= Id;
     glstraindach.Scale(0.5);
     // elastic 2 PK stress and constitutive matrix
-    matelastic_->Evaluate(&defgrddach,&glstraindach,params,&Sdach,&cmatelastic,eleGID);
+    matelastic_->Evaluate(&defgrddach,
+                          &glstraindach,
+                          params,
+                          &Sdach,
+                          &cmatelastic,
+                          eleGID);
 
     // trace of elastic Mandel stress Mdach = Cdach Sdach
-    double mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
-                    Cdach(3)*Sdach(3) + Cdach(4)*Sdach(4) + Cdach(5)*Sdach(5);
+    double mandel =   Cdach(0) * Sdach(0)
+                    + Cdach(1) * Sdach(1)
+                    + Cdach(2) * Sdach(2)
+                    + Cdach(3) * Sdach(3)
+                    + Cdach(4) * Sdach(4)
+                    + Cdach(5) * Sdach(5);
     //if (signmandel*mandel < 0) signmandel = -1.0*signmandel;
 
     // Evaluate growth law
-    double ktheta = 0.0;
-    double dktheta = 0.0;
-    EvaluateGrowthLaw(ktheta, dktheta, mandel, theta, hommandel);
-    double residual = thetaold - theta + ktheta*(mandel-hommandel)*dt;
+    double growthfunc = 0.0;
+    double dgrowthfunctheta = 0.0;
+    EvaluateGrowthFunction(growthfunc, mandel, theta);
+    //evaluate derivative of growth function w.r.t. growth factor
+    EvaluateGrowthFunctionDerivTheta(dgrowthfunctheta, mandel, theta, Cdach, cmatelastic);
+
+    double residual = thetaold - theta + growthfunc * dt;
 
     int localistep = 0;
     double thetaquer = 0.0;
@@ -350,53 +375,62 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     while (abs(residual) > abstol && localistep < maxstep)
     {
       localistep += 1;
-      double temp = 0.0;
-      for (int i=0; i<6; i++)
-      {
-        temp += Cdach(i)*(cmatelastic(i,0)*Cdach(0) + cmatelastic(i,1)*Cdach(1) + cmatelastic(i,2)*Cdach(2)
-              + cmatelastic(i,3)*Cdach(3) + cmatelastic(i,4)*Cdach(4) + cmatelastic(i,5)*Cdach(5));
-      }
-      thetaquer = 1.0 - (dktheta*(mandel-hommandel) - ktheta/theta*(2.0*mandel+temp))*dt;
+
+      //evaluate derivative of growth function w.r.t. growth factor
+      //EvaluateGrowthFunctionDerivTheta(dgrowthfunctheta, mandel, thetatemp, Cdach, cmatelastic);
+      thetaquer =   1.0 - dgrowthfunctheta * dt;
 
       // damping strategy
       double omega = 2.0;
       double thetatemp = theta;
       double residualtemp = residual;
-      double omegamin = 1.0/64.0;
-      while (abs(residualtemp) > (1.0-0.5*omega)*abs(residual) && omega > omegamin)
+      double omegamin = 1.0 / 64.0;
+      while ( abs(residualtemp) > (1.0 - 0.5 * omega) * abs(residual) and
+              omega > omegamin )
       {
         // update of theta
-        omega = omega/2.0;
-        thetatemp = theta + omega*residual/thetaquer;
+        omega = 0.5*omega;
+        thetatemp = theta + omega * residual / thetaquer;
         //std::cout << gp << ": Theta " << thetatemp << " residual " << residualtemp << " stress " << mandel << std::endl;
 
         // update elastic variables
         Cdach = C;
-        Cdach.Scale(1.0/thetatemp/thetatemp);
-        LINALG::Matrix<3,3> defgrddach(*defgrd);
-        defgrddach.Scale(1.0/thetatemp);
+        Cdach.Scale(1.0 / thetatemp / thetatemp);
+        LINALG::Matrix<3, 3> defgrddach(*defgrd);
+        defgrddach.Scale(1.0 / thetatemp);
         glstraindach = Cdach;
         glstraindach -= Id;
         glstraindach.Scale(0.5);
         cmatelastic.Scale(0.0);
         Sdach.Scale(0.0);
-        matelastic_->Evaluate(&defgrddach,&glstraindach,params,&Sdach,&cmatelastic,eleGID);
+        matelastic_->Evaluate(&defgrddach,
+                              &glstraindach,
+                              params,
+                              &Sdach,
+                              &cmatelastic,
+                              eleGID);
 
         // trace of mandel stress
-        mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
-                 Cdach(3)*Sdach(3) + Cdach(4)*Sdach(4) + Cdach(5)*Sdach(5);
+        mandel =   Cdach(0) * Sdach(0) + Cdach(1) * Sdach(1) + Cdach(2) * Sdach(2)
+                 + Cdach(3) * Sdach(3) + Cdach(4) * Sdach(4) + Cdach(5) * Sdach(5);
         //if (signmandel*mandel < 0) signmandel = -1.0*signmandel;
 
-        ktheta = 0.0;
-        dktheta = 0.0;
-        EvaluateGrowthLaw(ktheta, dktheta, mandel, thetatemp, hommandel);
-        residualtemp = thetaold - thetatemp + ktheta*(mandel-hommandel)*dt;
+        growthfunc = 0.0;
+        EvaluateGrowthFunction(growthfunc, mandel, thetatemp);
+
+        residualtemp =    thetaold - thetatemp + growthfunc * dt;
       } // end of damping loop
       residual = residualtemp;
       theta = thetatemp;
-      if (omega <= omegamin && abs(residualtemp) > (1.0-0.5*omega)*abs(residual))
+
+      //evaluate derivative of growth function w.r.t. growth factor
+      EvaluateGrowthFunctionDerivTheta(dgrowthfunctheta, mandel, theta, Cdach, cmatelastic);
+
+      if ( omega <= omegamin and
+           abs(residualtemp) > (1.0 - 0.5 * omega) * abs(residual))
       {
-        std::cout << gp << ": Theta " << thetatemp << " residual " << residualtemp << " stress " << mandel << std::endl;
+        std::cout << gp << ": Theta " << thetatemp << " residual "
+            << residualtemp << " stress " << mandel << std::endl;
         //dserror("no damping coefficient found");
       }
 
@@ -404,30 +438,34 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     //std::cout.precision(13);
     //if ((time-1.2) > 1.0E-8) std::cout << gp << " strain " << *glstrain << std::endl;
     //if ((time-2.1E-4) > 1.0E-8) std::cout << gp << ": theta " << theta << " thetaold " << thetaold << std::endl;
-    if (localistep == maxstep && abs(residual) > abstol) dserror("local Newton iteration did not converge %e %f %f %e", residual, thetaold, theta, mandel);
+    if (localistep == maxstep && abs(residual) > abstol)
+      dserror("local Newton iteration did not converge after %i steps: residual: %e, thetaold: %f,"
+          " theta:  %f, mandel: %e",maxstep, residual, thetaold, theta, mandel);
 
-    double temp = 0.0;
-    for (int i=0; i<6; i++)
-    {
-      temp += Cdach(i)*(cmatelastic(i,0)*Cdach(0) + cmatelastic(i,1)*Cdach(1) + cmatelastic(i,2)*Cdach(2)
-            + cmatelastic(i,3)*Cdach(3) + cmatelastic(i,4)*Cdach(4) + cmatelastic(i,5)*Cdach(5));
-    }
-    thetaquer = 1.0 - (dktheta*(mandel-hommandel) - ktheta/theta*(2.0*mandel+temp))*dt;
+    thetaquer =   1.0 - dgrowthfunctheta * dt;
 
     // 2PK stress S = F_g^-1 Sdach F_g^-T
-    LINALG::Matrix<NUM_STRESS_3D,1> S(Sdach);
-    S.Scale(1.0/theta/theta);
+    LINALG::Matrix<NUM_STRESS_3D, 1> S(Sdach);
+    S.Scale(1.0 / theta / theta);
     *stress = S;
 
     // constitutive matrix including growth
-    cmatelastic.Scale(1.0/theta/theta/theta/theta);
-    for (int i=0; i<6; i++) {
-      for (int j=0; j<6; j++) {
-        double cmatelasCi = cmatelastic(i,0)*C(0) + cmatelastic(i,1)*C(1) + cmatelastic(i,2)*C(2)
-                            + cmatelastic(i,3)*C(3) + cmatelastic(i,4)*C(4) + cmatelastic(i,5)*C(5);
-        double Ccmatelasj = cmatelastic(0,j)*C(0) + cmatelastic(1,j)*C(1) + cmatelastic(2,j)*C(2)
-                            + cmatelastic(3,j)*C(3) + cmatelastic(4,j)*C(4) + cmatelastic(5,j)*C(5);
-        (*cmat)(i,j) = cmatelastic(i,j) - 2.0/theta/thetaquer*ktheta*dt* (2.0*S(i)+cmatelasCi) *(S(j)+0.5*Ccmatelasj);
+    cmatelastic.Scale(1.0 / theta / theta / theta / theta);
+
+    LINALG::Matrix<NUM_STRESS_3D, 1> dgrowthfuncdC(true);
+    EvaluateGrowthFunctionDerivC(dgrowthfuncdC,mandel,theta,C,S,cmatelastic);
+
+    for (int i = 0; i < 6; i++)
+    {
+      double cmatelasCi =   cmatelastic(i, 0) * C(0) + cmatelastic(i, 1) * C(1)
+                          + cmatelastic(i, 2) * C(2) + cmatelastic(i, 3) * C(3)
+                          + cmatelastic(i, 4) * C(4) + cmatelastic(i, 5) * C(5);
+
+      for (int j = 0; j < 6; j++)
+      {
+        (*cmat)(i, j) =  cmatelastic(i, j)
+                        -2.0 / theta / thetaquer * dt
+                        * (2.0 * S(i) + cmatelasCi) * dgrowthfuncdC(j);
       }
     }
 
@@ -437,90 +475,226 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     //std::cout.precision(10);
     //std::cout << gp << ": theta " << theta << " thetaold " << thetaold << " residual " << residual << std::endl;
 
-  } else if (time > endtime + eps) {  // turn off growth or calculate stresses for output
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatelastic(true);
-    LINALG::Matrix<NUM_STRESS_3D,1> Sdach(true);
+  }
+  else if (time > endtime + eps)
+  { // turn off growth or calculate stresses for output
+    LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelastic(true);
+    LINALG::Matrix<NUM_STRESS_3D, 1> Sdach(true);
     double theta = theta_->at(gp);
 
     //--------------------------------------------------------------------------------------
     // build identity tensor I
-    LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
-    for (int i = 0; i < 3; i++) Id(i) = 1.0;
+    LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
+    for (int i = 0; i < 3; i++)
+      Id(i) = 1.0;
 
     // right Cauchy-Green Tensor  C = 2 * E + I
-    LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
+    LINALG::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
     C.Scale(2.0);
     C += Id;
 
     // elastic right Cauchy-Green Tensor Cdach = F_g^-T C F_g^-1
-    LINALG::Matrix<NUM_STRESS_3D,1> Cdach(C);
-    Cdach.Scale(1.0/theta/theta);
-    LINALG::Matrix<3,3> defgrddach(*defgrd);
-    defgrddach.Scale(1.0/theta);
+    LINALG::Matrix<NUM_STRESS_3D, 1> Cdach(C);
+    Cdach.Scale(1.0 / theta / theta);
+    LINALG::Matrix<3, 3> defgrddach(*defgrd);
+    defgrddach.Scale(1.0 / theta);
     // elastic Green Lagrange strain
-    LINALG::Matrix<NUM_STRESS_3D,1> glstraindach(Cdach);
+    LINALG::Matrix<NUM_STRESS_3D, 1> glstraindach(Cdach);
     glstraindach -= Id;
     glstraindach.Scale(0.5);
     // elastic 2 PK stress and constitutive matrix
-    matelastic_->Evaluate(&defgrddach,&glstraindach,params,&Sdach,&cmatelastic,eleGID);
+    matelastic_->Evaluate( &defgrddach,
+                           &glstraindach,
+                           params,
+                           &Sdach,
+                           &cmatelastic,
+                           eleGID);
 
     // 2PK stress S = F_g^-1 Sdach F_g^-T
-    LINALG::Matrix<NUM_STRESS_3D,1> S(Sdach);
-    S.Scale(1.0/theta/theta);
+    LINALG::Matrix<NUM_STRESS_3D, 1> S(Sdach);
+    S.Scale(1.0 / theta / theta);
     *stress = S;
 
     // constitutive matrix including growth
-    cmatelastic.Scale(1.0/theta/theta/theta/theta);
+    cmatelastic.Scale(1.0 / theta / theta / theta / theta);
     *cmat = cmatelastic;
 
     // trace of elastic Mandel stress Mdach = Cdach Sdach
-    double mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
-                    Cdach(3)*Sdach(3) + Cdach(4)*Sdach(4) + Cdach(5)*Sdach(5);
+    double mandel =   Cdach(0) * Sdach(0) + Cdach(1) * Sdach(1)
+                    + Cdach(2) * Sdach(2) + Cdach(3) * Sdach(3) + Cdach(4) * Sdach(4)
+                    + Cdach(5) * Sdach(5);
     mandel_->at(gp) = mandel;
 
-  } else {
-    matelastic_->Evaluate(defgrd,glstrain,params,stress,cmat,eleGID);
+  }
+  else
+  {
+    matelastic_->Evaluate(defgrd, glstrain, params, stress, cmat, eleGID);
     // build identity tensor I
-    LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
-    for (int i = 0; i < 3; i++) Id(i) = 1.0;
+    LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
+    for (int i = 0; i < 3; i++)
+      Id(i) = 1.0;
     // right Cauchy-Green Tensor  C = 2 * E + I
-    LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
+    LINALG::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
     C.Scale(2.0);
     C += Id;
-    LINALG::Matrix<NUM_STRESS_3D,1> S(true);
+    LINALG::Matrix<NUM_STRESS_3D, 1> S(true);
     S = *stress;
-    mandel_->at(gp) = C(0)*S(0) + C(1)*S(1) + C(2)*S(2) + C(3)*S(3) + C(4)*S(4) + C(5)*S(5);
+    mandel_->at(gp) =   C(0) * S(0) + C(1) * S(1) + C(2) * S(2) + C(3) * S(3)
+                      + C(4) * S(4) + C(5) * S(5);
   }
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate growth law                           (protected)        02/10|
+ |  Evaluate growth function                           (protected)        02/10|
  *----------------------------------------------------------------------*/
-void MAT::Growth::EvaluateGrowthLaw
+void MAT::Growth::EvaluateGrowthFunction
 (
-  double & ktheta,
-  double & dktheta,
+  double & growthfunc,
   double traceM,
-  double theta,
-  double hommandel
+  double theta
 )
 {
   // parameters
-  double kthetaplus = params_->kthetaplus_; //1.0; 0.5;
-  double mthetaplus = params_->mthetaplus_; //2.0; 4.0;
-  double thetaplus = 1.5;
-  double kthetaminus = params_->kthetaminus_; //2.0; 0.25;
-  double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
-  double thetaminus = 0.5;
-  // ktheta and dktheta should be zero!
+  const double hommandel   = params_->hommandel_;
+  const double kthetaplus  = params_->kthetaplus_; //1.0; 0.5;
+  const double mthetaplus  = params_->mthetaplus_; //2.0; 4.0;
+  const double thetaplus   = 1.5;
+  const double kthetaminus = params_->kthetaminus_; //2.0; 0.25;
+  const double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
+  const double thetaminus  = 0.5;
+
+  double ktheta  = 0.0;
+
   if (traceM > hommandel) {
-    ktheta=kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus);
-    dktheta=mthetaplus*kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus-1.0)/(1.0-thetaplus);
+    ktheta  = kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus);
   } else if (traceM < hommandel) {
-    ktheta=kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus);
-    dktheta=mthetaminus*kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus-1.0)/(1.0-thetaminus);
+    ktheta  = kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus);
   }
 
+  if(params_->functionType_ == PAR::growth_linear)
+    growthfunc = ktheta * (traceM - hommandel);
+  else if(params_->functionType_ == PAR::growth_exp_degreasing)
+    growthfunc = theta * exp(-traceM*traceM/(hommandel*hommandel));
+  else
+    dserror("undefined growth function type");
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate derivative of growth function            (protected)   02/10|
+ *----------------------------------------------------------------------*/
+void MAT::Growth::EvaluateGrowthFunctionDerivTheta
+(
+  double & dgrowthfunctheta,
+  double traceM,
+  double theta,
+  const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdach,
+  const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic
+)
+{
+  // parameters
+  const double hommandel   = params_->hommandel_;
+  const double kthetaplus  = params_->kthetaplus_; //1.0; 0.5;
+  const double mthetaplus  = params_->mthetaplus_; //2.0; 4.0;
+  const double thetaplus   = 1.5;
+  const double kthetaminus = params_->kthetaminus_; //2.0; 0.25;
+  const double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
+  const double thetaminus  = 0.5;
+
+  double ktheta  = 0.0;
+  double dktheta = 0.0;
+
+  if (traceM > hommandel) {
+    ktheta  = kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus);
+    dktheta = mthetaplus*kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus-1.0)/(1.0-thetaplus);
+  } else if (traceM < hommandel) {
+    ktheta  = kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus);
+    dktheta = mthetaminus*kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus-1.0)/(1.0-thetaminus);
+  }
+
+  double temp = 0.0;
+  for (int i = 0; i < 6; i++)
+  {
+    temp += Cdach(i) *
+            (   cmatelastic(i, 0) * Cdach(0) + cmatelastic(i, 1) * Cdach(1)
+              + cmatelastic(i, 2) * Cdach(2) + cmatelastic(i, 3) * Cdach(3)
+              + cmatelastic(i, 4) * Cdach(4) + cmatelastic(i, 5) * Cdach(5));
+  }
+
+  double dtraceM =  -(2.0 * traceM + temp) / theta;
+
+
+  if(params_->functionType_ == PAR::growth_linear)
+    dgrowthfunctheta = dktheta * (traceM - hommandel) + ktheta * dtraceM;
+  else if(params_->functionType_ == PAR::growth_exp_degreasing)
+    dgrowthfunctheta =  exp(-traceM*traceM/(hommandel*hommandel)) *
+                        (
+                              1.0
+                            - 2.0 * traceM/(hommandel*hommandel) * theta * dtraceM
+                        );
+  else
+    dserror("undefined growth function type");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate derivative of growth function            (protected)   02/10|
+ *----------------------------------------------------------------------*/
+void MAT::Growth::EvaluateGrowthFunctionDerivC
+(
+  LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdC,
+  double traceM,
+  double theta,
+  const LINALG::Matrix<NUM_STRESS_3D, 1>& C,
+  const LINALG::Matrix<NUM_STRESS_3D, 1>& S,
+  const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat
+)
+{
+  // parameters
+  const double hommandel   = params_->hommandel_;
+  const double kthetaplus  = params_->kthetaplus_; //1.0; 0.5;
+  const double mthetaplus  = params_->mthetaplus_; //2.0; 4.0;
+  const double thetaplus   = 1.5;
+  const double kthetaminus = params_->kthetaminus_; //2.0; 0.25;
+  const double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
+  const double thetaminus  = 0.5;
+
+  double ktheta  = 0.0;
+
+  if (traceM > hommandel) {
+    ktheta  = kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus);
+  } else if (traceM < hommandel) {
+    ktheta  = kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus);
+  }
+
+  if(params_->functionType_ == PAR::growth_linear)
+  {
+    for (int j = 0; j < NUM_STRESS_3D; j++)
+    {
+      double Ccmatelasj =    cmat(0, j) * C(0) + cmat(1, j) * C(1)
+                          + cmat(2, j) * C(2) + cmat(3, j) * C(3)
+                          + cmat(4, j) * C(4) + cmat(5, j) * C(5);
+
+      dgrowthfuncdC(j) = ktheta * (S(j)+0.5*Ccmatelasj);
+    }
+  }
+  else if(params_->functionType_ == PAR::growth_exp_degreasing)
+  {
+    double expdC = - 2.0 * theta * traceM/(hommandel*hommandel)
+                                   * exp(-traceM*traceM/(hommandel*hommandel));
+    for (int j = 0; j < NUM_STRESS_3D; j++)
+    {
+      double Ccmatelasj =    cmat(0, j) * C(0) + cmat(1, j) * C(1)
+                          + cmat(2, j) * C(2) + cmat(3, j) * C(3)
+                          + cmat(4, j) * C(4) + cmat(5, j) * C(5);
+
+      dgrowthfuncdC(j) = expdC * (S(j)+0.5*Ccmatelasj);
+    }
+  }
+  else
+    dserror("undefined growth function type");
+
+  return;
 }
 
 /*----------------------------------------------------------------------*

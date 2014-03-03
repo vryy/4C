@@ -1405,6 +1405,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "integration point based growth",
                                             INPAR::MAT::m_growth));
 
+    AddNamedString(m,"GROWTHFUNCTION","growth function: linear(Default) or exponential","linear");
     AddNamedReal(m,"DENS","Density");
     AddNamedInt(m,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
     AddNamedReal(m,"STARTTIME","start growth after this time");
@@ -1628,6 +1629,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                              "integration point based and scalar dependent growth",
                                              INPAR::MAT::m_growthscd));
 
+     AddNamedString(m,"GROWTHFUNCTION","growth function: linear(Default) or exponential","linear");
      AddNamedReal(m,"DENS","Density");
      AddNamedInt(m,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
      AddNamedReal(m,"STARTTIME","start growth after this time");
