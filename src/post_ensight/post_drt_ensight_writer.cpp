@@ -188,6 +188,174 @@ void EnsightWriter::WriteFiles()
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void EnsightWriter::WriteFilesChangingGeom()
+{
+  // times and steps when the solution is written
+  std::vector<double> soltime;
+  std::vector<int> solstep;
+  {
+    PostResult result = PostResult(field_);
+    result.get_result_timesandsteps(field_->name(), soltime, solstep);
+  }
+  const unsigned int numsoltimes = soltime.size();
+
+  // prepare geometry file
+  const std::string geofilename = filename_ + "_"+ field_->name() + ".geo";
+  const size_t found_path = geofilename.find_last_of("/\\");
+  const std::string geofilename_nopath = geofilename.substr(found_path+1);
+
+  // open file
+  std::ofstream geofile;
+  if (myrank_ == 0)
+  {
+    geofile.open(geofilename.c_str());
+    if (!geofile)
+      dserror("failed to open file: %s", geofilename.c_str());
+  }
+
+  // header for geo file
+  Write(geofile, "C Binary");
+  if (geofile.is_open())
+    geofile.close();
+
+  std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos;
+  PostResult result = PostResult(field_);
+
+  // loop over number of time steps
+  for(unsigned int istep=0; istep<numsoltimes; istep++)
+  {
+
+    ///////////////////////////////////
+    //  read in correct mesh         //
+    ///////////////////////////////////
+
+    int fieldpos = field_->field_pos();
+    std::string fieldname = field_->name();
+    field_->problem()->re_read_mesh(fieldpos, fieldname, solstep[istep]);
+
+    ///////////////////////////////////
+    //  write geometry file          //
+    ///////////////////////////////////
+
+    // open file
+    if (myrank_ == 0)
+    {
+      geofile.open(geofilename.c_str(), std::ofstream::app | std::ofstream::binary);
+      if (!geofile)
+        dserror("failed to open file: %s", geofilename.c_str());
+    }
+
+    // print out one time step
+    {
+      WriteGeoFileOneTimeStep(geofile, resultfilepos, "geo");
+    }
+
+    if (geofile.is_open())
+      geofile.close();
+
+    timesetmap_["geo"].push_back(soltime[istep]);
+
+    ///////////////////////////////////
+    //  write solution fields files  //
+    ///////////////////////////////////
+
+    result.next_result();
+
+    bool firststep = false;
+    if( istep == 0 )
+      firststep = true;
+
+    bool laststep = false;
+    if(istep+1 == numsoltimes)
+      laststep = true;
+
+    WriteAllResultsOneTimeStep(result, firststep, laststep);
+  }
+
+  // append index table for geo file
+  if (myrank_ == 0)
+  {
+    geofile.open(geofilename.c_str(), std::ofstream::app | std::ofstream::binary);
+    if (!geofile)
+      dserror("failed to open file: %s", geofilename.c_str());
+  }
+
+  WriteIndexTable(geofile, resultfilepos["geo"]);
+
+  if (geofile.is_open())
+    geofile.close();
+
+  std::vector<int> filesteps;
+  filesteps.push_back(numsoltimes);
+  filesetmap_["geo"] = filesteps;
+
+  // prepare the time sets and file sets for case file creation
+  int setcounter = 0;
+  int allresulttimeset = 0;
+  for (std::map<std::string,std::vector<double> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry)
+  {
+    std::string key = entry->first;
+    if ((entry->second).size()== numsoltimes)
+    {
+      if (allresulttimeset == 0)
+      {
+        setcounter++;
+        allresulttimeset = setcounter;
+      }
+      timesetnumbermap_[key] = allresulttimeset; // reuse the default result time set, when possible
+    }
+    else
+    {
+      setcounter++;
+      timesetnumbermap_[key] = setcounter; // a new time set number is needed
+    }
+  }
+
+  // Paraview wants the geo file to be fileset number one
+  setcounter = 1;
+  for (std::map<std::string,std::vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry)
+  {
+    std::string key = entry->first;
+    if (entry->first=="geo")
+    {
+      filesetnumbermap_[key] = 1;
+    }
+    else
+    {
+      setcounter++;
+      filesetnumbermap_[key] = setcounter;
+    }
+  }
+
+  ///////////////////////////////////
+  //  now write the case file      //
+  ///////////////////////////////////
+  if (myrank_ == 0)
+  {
+    const std::string casefilename = filename_ + "_"+ field_->name() + ".case";
+    std::ofstream casefile;
+    casefile.open(casefilename.c_str());
+    casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
+
+    casefile << "\nGEOMETRY\n\n";
+    casefile << "model:\t"<<timesetnumbermap_["geo"]<<"\t"<<filesetnumbermap_["geo"]<<"\t"<< geofilename_nopath<< "\n";
+
+    casefile << "\nVARIABLE\n\n";
+    casefile << GetVariableSection(filesetmap_, variablenumdfmap_, variablefilenamemap_);
+
+    casefile << "\nTIME\n\n";
+    casefile << GetTimeSectionStringFromTimesets(timesetmap_);
+
+    casefile << "\nFILE\n\n";
+    casefile << GetFileSectionStringFromFilesets(filesetmap_);
+
+    casefile.close();
+  }
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -258,7 +426,6 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
   //switch between nurbs an others
   if(field_->problem()->SpatialApproximation()=="Nurbs")
   {
-
     // cast dis to NurbsDiscretisation
     DRT::NURBS::NurbsDiscretization* nurbsdis
       =
@@ -1071,6 +1238,194 @@ void EnsightWriter::WriteResult(const std::string groupname,
   // append index table
   WriteIndexTable(file, resultfilepos[name]);
   resultfilepos[name].clear();
+
+  // close result file
+  if (file.is_open())
+    file.close();
+
+  return;
+}
+
+void EnsightWriter::WriteResultOneTimeStep(PostResult& result,
+                                const std::string groupname,
+                                const std::string name,
+                                const ResultType restype,
+                                const int numdf,
+                                bool firststep,
+                                bool laststep,
+                                const int from)
+{
+
+  if(not map_has_map(result.group(), groupname.c_str()))
+    dserror("expected result: %s in step %i. Probably a return is missing here. But check!", groupname.c_str(), result.step());
+
+  // FILE CONTINUATION NOT SUPPORTED DUE TO ITS COMPLEXITY FOR VARIABLE GEOMETRY ghamm 03.03.2014
+  // guessing whether a new file is necessary should be possible with the current method because the file size is no hard limit
+  // more tricky are the things that happen in FileSwitcher --> need adaptation for variable geometry
+  bool multiple_files = false;
+
+  // open file
+  const std::string filename = filename_ + "_"+ field_->name() + "."+ name;
+  std::ofstream file;
+  int startfilepos = 0;
+  if (myrank_==0)
+  {
+    if( firststep )
+    {
+      file.open(filename.c_str());
+      startfilepos = file.tellp(); // file position should be zero, but we stay flexible
+    }
+    else
+    {
+      file.open(filename.c_str(), std::ofstream::app | std::ofstream::binary);
+      startfilepos = file.tellp(); // file position should be zero, but we stay flexible
+    }
+  }
+
+  int stepsize = 0;
+
+  // distinguish between node- and element-based results
+  switch(restype)
+  {
+  case dofbased:
+  {
+    if (myrank_==0)
+      std::cout<<"writing node-based field "<<name<<std::endl;
+    // store information for later case file creation
+    variableresulttypemap_[name] = "node";
+
+//    const Epetra_Map* nodemap = field_->discretization()->NodeRowMap();
+//    const int numnp = nodemap->NumGlobalElements();
+//    int effnumdf = numdf;
+//    if (numdf==2) effnumdf=3; // in 2D we still have to write a 3D vector with zero z-components!!!
+//    // get the number of bits to be written each time step
+//    const int stepsize = 5*80+sizeof(int)+effnumdf*numnp*sizeof(float);
+
+    if (map_has_map(result.group(), groupname.c_str()))
+    {
+      WriteDofResultStep(file, result, resultfilepos_, groupname, name, numdf, from, false);
+
+      // how many bits are necessary per time step (we assume a fixed size)?
+      if (myrank_==0)
+      {
+        stepsize = ((int) file.tellp())-startfilepos;
+        if (stepsize <= 0) dserror("found invalid step size for result file");
+      }
+      else
+        stepsize = 1; //use dummy value on other procs
+
+      const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
+      if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
+      {
+        dserror("file continuation not supported for variable geometries");
+        FileSwitcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
+      }
+    }
+  }
+  break;
+
+  case nodebased:
+  {
+    if (myrank_==0)
+      std::cout<<"writing node-based field "<<name<<std::endl;
+    // store information for later case file creation
+    variableresulttypemap_[name] = "node";
+
+    WriteNodalResultStep(file, result, resultfilepos_, groupname, name, numdf);
+
+    // how many bits are necessary per time step (we assume a fixed size)?
+    if (myrank_==0)
+    {
+      stepsize = ((int) file.tellp())-startfilepos;
+      if (stepsize <= 0) dserror("found invalid step size for result file");
+    }
+    else
+      stepsize = 1; //use dummy value on other procs
+
+    const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
+    if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
+    {
+      dserror("file continuation not supported for variable geometries");
+      FileSwitcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
+    }
+  }
+  break;
+
+  case elementdof:
+  {
+    if (myrank_==0)
+      std::cout<<"writing element based field "<<name<<std::endl;
+    // store information for later case file creation
+    variableresulttypemap_[name] = "element";
+
+    WriteElementDOFResultStep(file, result, resultfilepos_, groupname, name, numdf, from);
+
+    // how many bits are necessary per time step (we assume a fixed size)?
+    if (myrank_==0)
+    {
+      stepsize = ((int) file.tellp())-startfilepos;
+      if (stepsize <= 0) dserror("found invalid step size for result file");
+    }
+    else
+      stepsize = 1; //use dummy value on other procs
+
+    const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
+    if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
+    {
+      dserror("file continuation not supported for variable geometries");
+      FileSwitcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
+    }
+  }
+  break;
+
+  case elementbased:
+  {
+    if (myrank_==0)
+      std::cout<<"writing element-based field "<<name<<std::endl;
+    // store information for later case file creation
+    variableresulttypemap_[name] = "element";
+
+    WriteElementResultStep(file, result, resultfilepos_, groupname, name, numdf, from);
+
+    // how many bits are necessary per time step (we assume a fixed size)?
+    if (myrank_==0)
+    {
+      stepsize = ((int) file.tellp())-startfilepos;
+      if (stepsize <= 0) dserror("found invalid step size for result file");
+    }
+    else
+      stepsize = 1; //use dummy value on other procs
+
+    const int indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
+    if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize>= FILE_SIZE_LIMIT_)
+    {
+      dserror("file continuation not supported for variable geometries");
+      FileSwitcher(file, multiple_files, filesetmap_, resultfilepos_, stepsize, name, filename);
+    }
+  }
+  break;
+
+  case no_restype:
+  case max_restype:
+    dserror("found invalid result type");
+  break;
+  default:
+    dserror("Invalid output type in WriteResult");
+  break;
+  } // end of switch(restype)
+
+  // store information for later case file creation
+  timesetmap_[name].push_back(result.time());
+  if(laststep)
+  {
+    filesetmap_[name].push_back((int)(timesetmap_[name].size()));
+    variablenumdfmap_[name] = numdf;
+    variablefilenamemap_[name] = filename;
+
+    // append index table
+    WriteIndexTable(file, resultfilepos_[name]);
+    resultfilepos_[name].clear();
+  }
 
   // close result file
   if (file.is_open())

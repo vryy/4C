@@ -60,6 +60,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Level_Set"] =                                 prb_level_set;
     string2prbtype["Fluid_Structure_Crack_Interaction"] =         prb_fsi_crack;
     string2prbtype["Acoustics"] =                                 prb_acou;
+    string2prbtype["Crack"] =                                     prb_crack;
   }
 
   return string2prbtype;

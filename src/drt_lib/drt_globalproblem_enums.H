@@ -62,7 +62,8 @@ typedef enum _PROBLEM_TYP
      prb_level_set,      // level-set problem
      prb_fpsi,           // fluid porous structure interaction problem
      prb_fsi_crack,      // FSI with XFEM in presence of cracking structures
-     prb_acou            // acoustic problem
+     prb_acou,           // acoustic problem
+     prb_crack           // crack propagation modeling
 } PROBLEM_TYP;
 
 

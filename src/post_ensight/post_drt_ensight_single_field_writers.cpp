@@ -139,6 +139,13 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   }
 }
 
+void StructureEnsightWriter::WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep)
+{
+  EnsightWriter::WriteResultOneTimeStep(result, "displacement", "displacement", dofbased, result.field()->problem()->num_dim(), firststep, laststep);
+
+  return;
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FluidEnsightWriter::WriteAllResults(PostField* field)

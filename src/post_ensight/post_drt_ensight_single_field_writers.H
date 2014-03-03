@@ -36,6 +36,8 @@ protected:
 
   virtual void WriteAllResults(PostField* field);
 
+  virtual void WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep );
+
   /*!
   \brief postprocess gauss point stresses and write results
   \author lw

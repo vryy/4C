@@ -201,6 +201,13 @@ int main(
 
       break;
     }
+    case prb_crack:
+    {
+      PostField* crackfield = problem.get_discretization(0);
+      StructureEnsightWriter writer(crackfield, problem.outname(), problem.stresstype(), problem.straintype());
+      writer.WriteFilesChangingGeom();
+      break;
+    }
     case prb_cavitation:
     {
       PostField* fluidfield = problem.get_discretization(0);
