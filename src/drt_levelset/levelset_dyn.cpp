@@ -74,12 +74,16 @@ void levelset_dyn(int restart)
   // get pointer to time integrator
   Teuchos::RCP<SCATRA::ScaTraTimIntImpl> levelsetalgo = scatrabase->ScaTraField();
 
-  // set velocity field
-  //(This is done only once. Time-dependent velocity fields are not supported)
-  levelsetalgo->SetVelocityField();
-
   // read the restart information, set vectors and variables
   if (restart) levelsetalgo->ReadRestart(restart);
+
+  // set initial velocity field
+  // note: The order ReadRestart() before SetVelocityField() is important here!!
+  //       The velocity field is not initialized in the constructor of the basic scalar field. Moreover, it is not
+  //       read from restart data. Therefore, we first have to set the restart time in the function ReadRestart() and
+  //       then in case of time-dependent velocity fields to evaluate the velocity function and curve.
+  // bool true allows for setting old convective velocity required for particle coupling
+  Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(levelsetalgo)->SetVelocityField(true);
 
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("LEVEL SET:  + time loop");

@@ -130,21 +130,14 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   // clear fluid's memory to flamefront
   FluidField().ImportFlameFront(Teuchos::null,true);
 
-  if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion)
-  {
-    // extract convection velocity from fluid solution
-    const Teuchos::RCP<const Epetra_Vector> convel = (ScaTraField()->MethodName() == INPAR::SCATRA::timeint_gen_alpha)
-                                               ?(FluidField().StdVelaf())
-                                               :(FluidField().StdVelnp());
-
-    ScaTraField()->SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
-                                   Teuchos::null,
-                                   Teuchos::null,
-                                   Teuchos::null,
-                                   FluidField().DofSet(),
-                                   FluidField().Discretization());
-
-  }
+  // transfer the initial convective velocity from initial fluid field to scalar transport field
+  // subgrid scales not transferred since they are zero at time t=0.0
+  // this step has already been done in the ScaTraFluidCouplingAlgorithm(), however, for problems
+  // with particles we have to set the old convective velocity
+  // moreover, for combustion problems, we have to redo this step anyway, since we have to consider
+  // the flame velocity here, which can not be supported by the base class
+  // bool indicates initalization call
+  SetVelocityLevelSet(true);
 
 }
 
@@ -710,75 +703,13 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
   UpdateInterface();
 
   // assign the fluid velocity field to the G-function as convective velocity field
-  switch(combusttype_)
-  {
-  case INPAR::COMBUST::combusttype_twophaseflow:
-  case INPAR::COMBUST::combusttype_twophaseflow_surf:
-  case INPAR::COMBUST::combusttype_twophaseflowjump:
-  {
-    // for two-phase flow, the fluid velocity field is continuous; it can be directly transferred to
-    // the scalar transport field
-
-    ScaTraField()->SetVelocityField(
-      FluidField().StdVelnp(),
-      Teuchos::null,
-      Teuchos::null,
-      Teuchos::null,
-      FluidField().DofSet(),
-      FluidField().Discretization()
-    );
-
-    // Transfer history vector only for subgrid-velocity
-    //ScaTraField()->SetVelocityField(
-    //    FluidField().ExtractInterfaceVeln(),
-    //    FluidField().Hist(),
-    //    Teuchos::null,
-    //    FluidField().DofSet(),
-    //    FluidField().Discretization()
-    //);
-    break;
-  }
-  case INPAR::COMBUST::combusttype_premixedcombustion:
-  {
-    // for combustion, the velocity field is discontinuous; the relative flame velocity is added
-
-    // extract convection velocity from fluid solution
-    const Teuchos::RCP<const Epetra_Vector> convel = FluidField().StdVelnp();
-
-    ScaTraField()->SetVelocityField(
-        ComputeFlameVel(convel,FluidField().DofSet()),
-        Teuchos::null,
-        Teuchos::null,
-        Teuchos::null,
-        FluidField().DofSet(),
-        FluidField().Discretization()
-    );
-    break;
-  }
-  default:
-    dserror("unknown type of combustion problem");
-    break;
-  }
-
-
-  //-------
-  // output
-  //-------
-  // remark: if Output() was already called at initial state, another Output() call will cause an
-  //         error, because both times fields are written into the output control file at time and
-  //         time step 0.
-  //      -> the time and the time step have to be advanced even though this makes no physical sense
-  //         for a stationary computation
-  //IncrementTimeAndStep();
-  //FluidField().PrepareTimeStep();
-  //ScaTraField()->PrepareTimeStep();
+  SetVelocityLevelSet(true);
 
   // write output to screen and files (and Gmsh)
   Output();
 
   return;
 }
-
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -861,56 +792,8 @@ void COMBUST::Algorithm::DoGfuncField()
     IO::cout<<"\n---------------------------------------  G-FUNCTION SOLVER  ----------------------------------\n";
   }
 
-  // get the convel at the correct time
-  const Teuchos::RCP<const Epetra_Vector> convel = (ScaTraField()->MethodName() == INPAR::SCATRA::timeint_gen_alpha)
-                                                   ?(FluidField().StdVelaf())
-                                                   :(FluidField().StdVelnp());
   // assign the fluid velocity field to the G-function as convective velocity field
-  switch(combusttype_)
-  {
-  case INPAR::COMBUST::combusttype_twophaseflow:
-  case INPAR::COMBUST::combusttype_twophaseflow_surf:
-  case INPAR::COMBUST::combusttype_twophaseflowjump:
-  {
-    // for two-phase flow, the fluid velocity field is continuous; it can be directly transferred to
-    // the scalar transport field
-
-    ScaTraField()->SetVelocityField(convel,
-                                   Teuchos::null,
-                                   Teuchos::null,
-                                   Teuchos::null,
-                                   FluidField().DofSet(),
-                                   FluidField().Discretization());
-
-      // Transfer history vector only for subgrid-velocity
-      //ScaTraField()->SetVelocityField(
-      //    FluidField().ExtractInterfaceVeln(),
-      //    FluidField().Hist(),
-      //    Teuchos::null,
-      //    Teuchos::null,
-      //    FluidField().DofSet(),
-      //    FluidField().Discretization()
-      //);
-
-    break;
-  }
-  case INPAR::COMBUST::combusttype_premixedcombustion:
-  {
-    // for combustion, the velocity field is discontinuous; the relative flame velocity is added
-
-    ScaTraField()->SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
-                                   Teuchos::null,
-                                   Teuchos::null,
-                                   Teuchos::null,
-                                   FluidField().DofSet(),
-                                   FluidField().Discretization());
-
-    break;
-  }
-  default:
-    dserror("unknown type of combustion problem");
-    break;
-  }
+  SetVelocityLevelSet();
 
   //solve convection-diffusion equation
   ScaTraField()->Solve();
@@ -985,6 +868,87 @@ void COMBUST::Algorithm::Output()
   // write position of center of mass to file
   if (DRT::INPUT::IntegralValue<bool>(combustdyn_,"WRITE_CENTER_OF_MASS"))
     CenterOfMass();
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | set velocity field for level-set algorithm                                     rasthofer 03/14 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
+{
+  // get the convel at the correct time
+  const Teuchos::RCP<const Epetra_Vector> convel = (ScaTraField()->MethodName() == INPAR::SCATRA::timeint_gen_alpha)
+                                                   ?(FluidField().StdVelaf())
+                                                   :(FluidField().StdVelnp());
+
+  // assign the fluid velocity field to the G-function as convective velocity field
+  switch(combusttype_)
+  {
+    case INPAR::COMBUST::combusttype_twophaseflow:
+    case INPAR::COMBUST::combusttype_twophaseflow_surf:
+    case INPAR::COMBUST::combusttype_twophaseflowjump:
+    {
+      // for two-phase flow, the fluid velocity field is continuous; it can be directly transferred to
+      // the scalar transport field
+
+      if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_gen_alpha)
+        Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->SetVelocityField(convel,
+                                                                                              Teuchos::null,
+                                                                                              Teuchos::null,
+                                                                                              Teuchos::null,
+                                                                                              FluidField().DofSet(),
+                                                                                              FluidField().Discretization(),
+                                                                                              init);
+      else // temporary solution, since level-set algorithm does not yet support gen-alpha
+      {
+        if (Comm().MyPID()==0)
+          std::cout << "CORRECT THESE LINES WHEN LEVEL-SET ALOGITHM SUPPORTS GEN-ALPHA" << std::endl;
+
+        ScaTraField()->SetVelocityField(convel,
+                                        Teuchos::null,
+                                        Teuchos::null,
+                                        Teuchos::null,
+                                        FluidField().DofSet(),
+                                        FluidField().Discretization());
+      }
+
+      // transfer history vector only for subgrid-velocity: remark: complete RBVMM with cross- and Reynolds-stress term
+      // in level-set field does not work since the missing enrichment
+
+      break;
+    }
+    case INPAR::COMBUST::combusttype_premixedcombustion:
+    {
+      // for combustion, the velocity field is discontinuous; the relative flame velocity is added
+      if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_gen_alpha)
+        Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
+                                                                                              Teuchos::null,
+                                                                                              Teuchos::null,
+                                                                                              Teuchos::null,
+                                                                                              FluidField().DofSet(),
+                                                                                              FluidField().Discretization(),
+                                                                                              init);
+      else // temporary solution, since level-set algorithm does not yet support gen-alpha
+      {
+        if (Comm().MyPID()==0)
+          std::cout << "CORRECT THESE LINES WHEN LEVEL-SET ALOGITHM SUPPORTS GEN-ALPHA" << std::endl;
+
+        ScaTraField()->SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
+                                        Teuchos::null,
+                                        Teuchos::null,
+                                        Teuchos::null,
+                                        FluidField().DofSet(),
+                                        FluidField().Discretization());
+      }
+
+      break;
+    }
+    default:
+      dserror("unknown type of combustion problem");
+      break;
+  }
 
   return;
 }
@@ -1269,6 +1233,10 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     ScaTraField()->SetTimeStep(FluidField().Time(),step);
 
   SetTimeStep(FluidField().Time(),step);
+
+  // assign the fluid velocity field to the G-function as convective velocity field
+  // bool true allows for setting old convective velocity required for particle coupling
+  SetVelocityLevelSet(true);
 
   //UpdateTimeStep();
 

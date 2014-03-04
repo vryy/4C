@@ -73,11 +73,14 @@ namespace PARTICLE
     /// transfer particles into their correct bins and update solution
     void Update();
 
-    /// correct level set function with escaped particles
+    /// correct level-set function using escaped particles
     Teuchos::RCP<Epetra_Vector> CorrectionStep();
 
     /// output particle time step
     void Output();
+
+    /// compute velocities of particles at intermediate time n+theta
+    Teuchos::RCP<Epetra_Vector> GetVelocity(const double theta);
 
   protected:
 
@@ -90,14 +93,15 @@ namespace PARTICLE
     /// build connectivity from fluid elements to bins
     virtual void BuildElementToBinPointers();
 
-    /// set velocity of particle
-    void SetVelocity();
-
-     //@}
-
   private:
 
-    /// compute level-set value of particle with local id
+    /// adjust particle radii to current interface position
+    void AdjustParticleRadii();
+
+    /// reseeding of particles
+    void Reseeding();
+
+    /// compute level-set value of particle
     double GetPhiParticle(
       const int particle_lid              ///< local particle id
       );
@@ -108,13 +112,34 @@ namespace PARTICLE
       LINALG::Matrix<3,1>& elecoord       ///< matrix to be filled with particle coordinates in element space
     );
 
-    /// compute level-set value of particle with local id
+    /// compute level-set value of particle
     void GetLSValParticle(
       double& phi_particle,               ///< phi value at particle position
       LINALG::Matrix<3,1>& gradphi,       ///< gradient of level-set field at particle position
       DRT::Element* scatraele,            ///< corresponding scatra element
-      const LINALG::Matrix<3,1> elecoord  ///< matrix containing particle coordinates in element space
+      const LINALG::Matrix<3,1> elecoord, ///< matrix containing particle coordinates in element space
+      const Teuchos::RCP<const Epetra_Vector> phinp, ///< vector containing level-set values (col map)
+      bool compute_normal = true          ///< additionally compute normal vector
     );
+
+
+    /// compute level-set value of particle
+    void GetVelParticle(
+      LINALG::Matrix<3,1>& vel,           ///< velocity of level-set field at particle position
+      DRT::Element* scatraele,            ///< corresponding scatra element
+      const LINALG::Matrix<3,1> elecoord, ///< matrix containing particle coordinates in element space
+      const Teuchos::RCP< Epetra_MultiVector> lsvel ///< vector containing level-set values (col map)
+    );
+
+    /// compares the second entry of a pair<int,double>. To be passed to the sorting algo (helper function for Reseeding())
+    /// descending order
+    static bool MyComparePairs (const std::pair<int,double>& first, const std::pair<int,double>& second)
+    {
+      if (fabs(first.second) > fabs(second.second))
+        return true;
+      else
+        return false;
+    };
 
     //! @name scatra related stuff
     //@{

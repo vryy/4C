@@ -75,15 +75,19 @@ namespace SCATRA
     /// read restart data
     virtual void ReadRestart(int step) = 0;
 
+    //! set the velocity field (zero or field by function) (pure level-set problems)
+    void SetVelocityField(bool init=false);
+
     /// set convective velocity field (+ pressure and acceleration field as
-    /// well as fine-scale velocity field, if required)
+    /// well as fine-scale velocity field, if required) (function for coupled fluid problems)
     void SetVelocityField(
       Teuchos::RCP<const Epetra_Vector> convvel,
       Teuchos::RCP<const Epetra_Vector> acc,
       Teuchos::RCP<const Epetra_Vector> vel,
       Teuchos::RCP<const Epetra_Vector> fsvel,
       Teuchos::RCP<const DRT::DofSet>   dofset,
-      Teuchos::RCP<DRT::Discretization> dis);
+      Teuchos::RCP<DRT::Discretization> dis,
+      bool init=false);
 
     /// redistribute the scatra discretization and vectors according to nodegraph
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);

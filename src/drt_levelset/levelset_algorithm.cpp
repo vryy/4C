@@ -43,6 +43,7 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(
   : ScaTraTimIntImpl(dis,solver,sctratimintparams,extraparams,output),
   levelsetparams_(params),
   particle_(Teuchos::null),
+  conveln_(Teuchos::null),
   switchreinit_(false),
   pseudostepmax_(0),
   pseudostep_(0),
@@ -116,8 +117,14 @@ void SCATRA::LevelSetAlgorithm::Init()
   // velocity at time n (required for particle coupling)
   // velocities (always three velocity components per node)
   // (get noderowmap of discretization for creating this multivector)
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  conveln_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  if (particle_ != Teuchos::null) // to save memory, we only initalize in case of particles
+  {
+    const Epetra_Map* noderowmap = discret_->NodeRowMap();
+    conveln_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  }
+  // remark: conveln_ cannot be initialized here, since the convective velocity is
+  //         set after all Init()-calls and a potential in the dyn-classes (pure level-set
+  //         problems) or handled down in coupled problems.
 
   // -------------------------------------------------------------------
   //         initialize reinitialization
@@ -393,13 +400,13 @@ void SCATRA::LevelSetAlgorithm::ParticleCorrection()
     // -----------------------------------------------------------------
     // correct zero level-set using particles
     // update phinp
-    std::cout << "Particle correction not yet activated" << std::endl;
-    // TODO: particle correction will yield a mismatch between phin and phinp
+
+    // hint: particle correction will yield a mismatch between phin and phinp
     //       such that simple time-derivative calculation based on ost cannot be
-    //       used anymore and the more expensive calculation form the matrix sytem
+    //       used anymore and the more expensive calculation from the matrix system
     //       has to be done: possibly introduce flag to avoid the computation, if particles
     //       have not modified phinp
-    //phinp_->Update(1.0,*(particle_->CorrectionStep()),0.0);
+    phinp_->Update(1.0,*(particle_->CorrectionStep()),0.0);
   }
 
 
@@ -464,6 +471,9 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
  *----------------------------------------------------------------------*/
 const Teuchos::RCP< Epetra_MultiVector> SCATRA::LevelSetAlgorithm::ConVelTheta(double theta)
 {
+  if (conveln_==Teuchos::null)
+   dserror("Set convective velocity of previous time step!");
+
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   Teuchos::RCP< Epetra_MultiVector> tmpvel = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
   tmpvel->Update((1.0-theta),*conveln_,theta,*convel_,0.0);

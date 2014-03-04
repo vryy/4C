@@ -18,7 +18,7 @@ Maintainer: Ursula Rasthofer
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "particle_timint.H"
+#include "particle_timint_expl.H"
 #include "../drt_inpar/inpar_cavitation.H"
 
 
@@ -34,7 +34,7 @@ namespace PARTICLE
    * \author rasthofer
    * \date 01/14
    */
-  class TimIntRK : public PARTICLE::TimInt
+  class TimIntRK : public PARTICLE::TimIntExpl
   {
 
   public:

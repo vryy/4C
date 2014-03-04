@@ -111,6 +111,9 @@ namespace COMBUST
     /// compute center of mass of bubble etc
     void CenterOfMass();
 
+    /// set velocity field in level-set algorithm
+    void SetVelocityLevelSet(bool init=false);
+
     //! @name Fluid-G-function iteration variables
     // Fluid-G-function iteration counter
     int fgiter_;

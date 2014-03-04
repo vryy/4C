@@ -29,6 +29,27 @@ Maintainer: Ursula Rasthofer
 
 
 /*----------------------------------------------------------------------*
+ | initialize or update velocity field                  rasthofer 03/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::SetVelocityField(bool init)
+{
+  // call function of base class
+  ScaTraTimIntImpl::SetVelocityField();
+
+  // if the velocity field is initialized at the beginning of the simulation
+  // or set after restart according to the restart time, we have to initialize
+  // the velocity at time n
+  if (init and (particle_ != Teuchos::null))
+    conveln_->Update(1.0,*convel_,0.0);
+
+  // note: This function is only called from the level-set dyn. This is ok, since
+  //       we only want to initialize conveln_ at the beginning of the simulation.
+  //       for the remainder, it is updated as usual. For the dependent velocity fields
+  //       the base class function is called in PrepareTimeStep().
+}
+
+
+/*----------------------------------------------------------------------*
  | set convective velocity field (+ pressure and acceleration field as  |
  | well as fine-scale velocity field, if required)      rasthofer 11/13 |
  *----------------------------------------------------------------------*/
@@ -38,11 +59,9 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(
   Teuchos::RCP<const Epetra_Vector> vel,
   Teuchos::RCP<const Epetra_Vector> fsvel,
   Teuchos::RCP<const DRT::DofSet>   dofset,
-  Teuchos::RCP<DRT::Discretization> dis)
+  Teuchos::RCP<DRT::Discretization> dis,
+  bool init)
 {
-  // update convective velocity
-  conveln_->Update(1.0,*convel_,0.0);
-
   // call routine of base class
   ScaTraTimIntImpl::SetVelocityField(convvel, acc, vel, fsvel, dofset, dis);
 
@@ -53,6 +72,12 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(
   // estimate velocity at contact points, i.e., intersection points of interface and (no-slip) walls
   if (cpbc_)
     ApplyContactPointBoundaryCondition();
+
+  // if the velocity field is initialized at the beginning of the simulation
+  // or set after restart according to the restart time, we have to initialize
+  // the velocity at time n
+  if (init and (particle_ != Teuchos::null))
+    conveln_->Update(1.0,*convel_,0.0);
 
   return;
 }

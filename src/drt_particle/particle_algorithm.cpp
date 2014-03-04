@@ -874,8 +874,10 @@ void PARTICLE::Algorithm::TransferParticles(bool ghosting)
 
   } // end for ibin
 
+#ifdef DEBUG
   if(homelessparticles.size())
     std::cout << "There are " << homelessparticles.size() << " homeless particles on proc" << myrank_ << std::endl;
+#endif
 
   // homeless particles are sent to their new processors where they are inserted into their correct bin
   FillParticlesIntoBins(homelessparticles);

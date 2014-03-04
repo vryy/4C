@@ -101,6 +101,9 @@ namespace PARTICLE
     // return gravity acceleration
     LINALG::Matrix<3,1> GetGravityAcc() {return gravity_acc_ ; }
 
+    /// particles are checked whether they have moved out of their current bin
+    /// and transferred if necessary
+    virtual void TransferParticles(bool ghosting = true);
 
   protected:
 
@@ -147,10 +150,6 @@ namespace PARTICLE
     virtual void SetupGhosting(
       Teuchos::RCP<Epetra_Map> binrowmap  ///< rowmap of bins
       );
-
-    /// particles are checked whether they have moved out of their current bin
-    /// and transferred if necessary
-    virtual void TransferParticles(bool ghosting = true);
 
     /// particle walls are set up and assigned to bins
     virtual void SetupParticleWalls(
