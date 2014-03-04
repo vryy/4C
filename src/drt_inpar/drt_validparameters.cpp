@@ -5743,6 +5743,62 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      yesnotuple,yesnovalue,&fsidyn);
 
   /*----------------------------------------------------------------------*/
+  /* parameters for time step size adaptivity in fsi dynamics */
+  Teuchos::ParameterList& fsiadapt = fsidyn.sublist("TIMEADAPTIVITY",false,"");
+
+  DoubleParameter("DTMAX", 0.1, "Limit maximally permitted time step size (>0)", &fsiadapt);
+  DoubleParameter("DTMIN", 1.0e-4, "Limit minimally allowed time step size (>0)", &fsiadapt);
+
+  DoubleParameter("LOCERRTOLFLUID", 1.0e-3, "Tolerance for the norm of local velocity error", &fsiadapt);
+
+  IntParameter("ADAPTSTEPMAX", 5, "Maximum number of repetitions of one time step for adapting/reducing the time step size (>0)", &fsiadapt);
+  DoubleParameter("SIZERATIOMAX", 2.0, "Limit maximally permitted change of time step size compared to previous size (>0).", &fsiadapt);
+  DoubleParameter("SIZERATIOMIN", 0.5, "Limit minimally permitted change of time step size compared to previous size (>0).", &fsiadapt);
+  DoubleParameter("SAFETYFACTOR", 0.9, "This is a safety factor to scale theoretical optimal step size, should be lower than 1 and must be larger than 0", &fsiadapt);
+
+  IntParameter("NUMINCREASESTEPS", 0, "Number of consecutive steps that want to increase time step size before\n"
+                                      "actually increasing it. Set 0 to deactivate this feature.", &fsiadapt);
+
+  setNumericStringParameter("AVERAGINGDT", "0.3 0.7",
+                            "Averaging of time step sizes in case of increasing time step size.\n"
+                            "Parameters are ordered from most recent weight to the most historic one.\n"
+                            "Number of parameters determines the number of previous time steps that are involved\n"
+                            "in the averaging procedure.",
+                            &fsiadapt);
+
+  setStringToIntegralParameter<int>("TIMEADAPTON", "No",
+                                    "Activate or deactivate time step size adaptivity",
+                                    yesnotuple,yesnovalue, &fsiadapt);
+
+  setStringToIntegralParameter<int>("AUXINTEGRATORFLUID", "AB2",
+                                    "Method for error estimation in the fluid field",
+                                    tuple<std::string>(
+                                        "None",
+                                        "ExplicitEuler",
+                                        "AB2"),
+                                    tuple<int>(
+                                        INPAR::FSI::timada_fld_none,
+                                        INPAR::FSI::timada_fld_expleuler,
+                                        INPAR::FSI::timada_fld_adamsbashforth2),
+                                    &fsiadapt);
+
+  setStringToIntegralParameter<int>("DIVERCONT", "stop",
+                                    "What to do if nonlinear solver does not converge?",
+                                    tuple<std::string>(
+                                        "stop",
+                                        "continue",
+                                        "halve_step",
+                                        "revert_dt"),
+                                    tuple<int>(
+                                        INPAR::FSI::divcont_stop,
+                                        INPAR::FSI::divcont_continue,
+                                        INPAR::FSI::divcont_halve_step,
+                                        INPAR::FSI::divcont_revert_dt),
+                                    &fsiadapt);
+
+  /*----------------------------------------------------------------------*/
+
+  /*----------------------------------------------------------------------*/
   /* parameters for monolithic FSI solvers */
   Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER",false,"");
 
@@ -5962,54 +6018,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     DoubleParameter("RELAX",1.0,"fixed relaxation parameter for partitioned FSI solvers",&fsipart);
     DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&fsipart);
     IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&fsipart);
-
-  /*----------------------------------------------------------------------*/
-  /* parameters for time step size adaptivity in fsi dynamics */
-  Teuchos::ParameterList& fsiadapt = fsidyn.sublist("TIMEADAPTIVITY",false,"");
-
-  DoubleParameter("DTMAX", 0.1, "Limit maximally permitted time step size (>0)",&fsiadapt);
-  DoubleParameter("DTMIN", 1.0e-4, "Limit minimally allowed time step size (>0)",&fsiadapt);
-
-  DoubleParameter("LOCERRTOLFLUID", 1.0e-3, "Tolerance for the norm of local velocity error",&fsiadapt);
-
-  IntParameter("ADAPTSTEPMAX", 5, "Maximum number of repetitions of one time step for adapting/reducing the time step size (>0)",&fsiadapt);
-  DoubleParameter("SIZERATIOMAX", 2.0, "Limit maximally permitted change of time step size compared to previous size (>0). ",&fsiadapt);
-  DoubleParameter("SIZERATIOMIN", 0.5, "Limit minimally permitted change of time step size compared to previous size (>0). ",&fsiadapt);
-  DoubleParameter("SAFETYFACTOR", 0.9, "This is a safety factor to scale theoretical optimal step size, should be lower than 1 and must be larger than 0", &fsiadapt);
-
-
-
-  setStringToIntegralParameter<int>("TIMEADAPTON","No",
-                                    "Activate or deactivate time step size adaptivity",
-                                    yesnotuple,yesnovalue, &fsiadapt);
-
-  setStringToIntegralParameter<int>("AUXINTEGRATORFLUID","AB2",
-                                    "Method for error estimation in the fluid field",
-                                    tuple<std::string>(
-                                        "None",
-                                        "ExplicitEuler",
-                                        "AB2"),
-                                    tuple<int>(
-                                        INPAR::FSI::timada_fld_none,
-                                        INPAR::FSI::timada_fld_expleuler,
-                                        INPAR::FSI::timada_fld_adamsbashforth2),
-                                    &fsiadapt);
-
-  setStringToIntegralParameter<int>("DIVERCONT", "stop",
-                                    "What to do if nonlinear solver does not converge?",
-                                    tuple<std::string>(
-                                        "stop",
-                                        "continue",
-                                        "halve_step",
-                                        "revert_dt"),
-                                    tuple<int>(
-                                        INPAR::FSI::divcont_stop,
-                                        INPAR::FSI::divcont_continue,
-                                        INPAR::FSI::divcont_halve_step,
-                                        INPAR::FSI::divcont_revert_dt),
-                                    &fsiadapt);
-
-  /*----------------------------------------------------------------------*/
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& constrfsi = fsidyn.sublist("CONSTRAINT",false,"");

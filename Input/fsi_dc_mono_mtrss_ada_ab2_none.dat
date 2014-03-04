@@ -62,10 +62,12 @@ COUPALGO                        iter_mortar_monolithicstructuresplit
 --------------------------------------------------FSI DYNAMIC/TIMEADAPTIVITY
 ADAPTSTEPMAX                    5
 AUXINTEGRATORFLUID              AB2
+AVERAGINGDT                     1.0
 DIVERCONT                       stop
 DTMAX                           0.2
 DTMIN                           0.002
 LOCERRTOLFLUID                  0.01
+NUMINCREASESTEPS                0
 SAFETYFACTOR                    0.9
 SIZERATIOMAX                    2
 SIZERATIOMIN                    0.5

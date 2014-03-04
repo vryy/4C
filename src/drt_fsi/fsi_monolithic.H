@@ -39,6 +39,14 @@ namespace ALE
   class Ale;
 }
 
+namespace DRT
+{
+  namespace UTILS
+  {
+    template <typename> class TimIntMStep;
+  }
+}
+
 namespace FSI
 {
   class FSIResultTest;
@@ -470,6 +478,9 @@ namespace FSI
     //! @name FSI time adaptivity
     //@{
 
+    //! access past time step sizes
+    const double DtPast(const int step) const;
+
     // access to time step size suggestions based on different norms
     const double GetAdaStrDt() const      {return dtstr_;}      ///< \f$\Delta t\f$ based on all structural DOFs
     const double GetAdaStrFSIDt() const   {return dtstrfsi_;}   ///< \f$\Delta t\f$ based on structural FSI DOFs
@@ -622,6 +633,9 @@ namespace FSI
     //! Set time step size in all fields (fsi routine, ale, fluid, structure)
     void SetDt(const double dtnew);
 
+    //! Update past time step sizes
+    void UpdateDtPast(const double dtnew);
+
     /*! \brief Who is responsible for changing the time step size
      *
      *  Sets a member variable indicating who is responsible for changing the time
@@ -717,10 +731,25 @@ namespace FSI
     //@{
 
     // time step sizes
-    double dtmax_;      ///< maximum time step size
-    double dtmin_;      ///< minimum time step size
-    double dtprevious_; ///< time step size \f$\Delta t^{n+1}\f$ of previous run of this time step
-    double dtold_;      ///< time step size \f$\Delta t^{n}\f$ of last converged time step
+    double dtmax_; ///< maximum time step size
+    double dtmin_; ///< minimum time step size
+
+    /*! \brief Collection of past and present time step sizes
+     *
+     *  Current time step size \f$\Delta t_{n+1} = t_{n+1} - t_n\f$ is stored
+     *  in 'future' step (1). Past time step sizes \f$\Delta t_{n}\f$,
+     *  \f$\Delta t_{n-1}\f$, \f$\Delta t_{n-2}\f$, \f$\ldots\f$ are stored in
+     *  'past' positions (0), (-1), (-2), \f$\ldots\f$.
+     *
+     *  Number of past steps stored is at least one, i.e. \f$\Delta t_{n}\f$.
+     *  More past steps are only needed in case of time step size averaging.
+     *  Then, the number of stored past time step sizes is determined
+     *  by the length of #avgweights_.
+     *
+     *  The algorithm's marching time step size is still the one from
+     *  ADAPTER::AlgorithmBase.
+     */
+    Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > dt_;
 
     int adaptstep_; ///< current number of adaption steps, i.e. repetitions of this time step
 
@@ -752,6 +781,28 @@ namespace FSI
     int estorderstr_;   ///< order of accuracy of auxiliary time integrator in structure field
 
     bool dtminused_;    ///< true if time step size has been repeated with dtmin_
+
+    /*! Number of consecutive steps that want to increase time step size before
+     *  actually increasing it.
+     *
+     *  See also:
+     *  OC Zienkiewicz and YM Xie, A simple error estimator and adaptive
+     *  time stepping procedure for dynamic analysis, Earthquake Engrg.
+     *  and Structural Dynamics, 20:871-887, 1991.
+     */
+    int numincreasesteps_;
+
+    /*! \brief Weights for averaging of time step sizes
+     *
+     *  For increasing the time step size, one might apply weighted averaging
+     *  to smooth the time step size evolution. Weights are stored in reversed
+     *  order, i.e. element '0' corresponds to the most recent \f$\Delta t\f$ and
+     *  element 'k' to the time steps size 'k' time steps ago.
+     *
+     *  Length of #avgweights_ corresponds to the number of previous time step
+     *  sizes that are included into the averaging procedure.
+     */
+    std::vector<double> avgweights_;
 
     //@}
 
