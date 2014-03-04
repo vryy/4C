@@ -1,0 +1,93 @@
+//
+// Maintainer: Christoph Meier
+// meier@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15262
+//
+==================================================================
+General Data File CCARAT
+==================================================================
+-----------------------------------------------------------------------TITLE
+Brownianparticle dummy example
+----------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        1
+NODES                           1
+DIM                             3
+//MATERIALS                       1
+NUMDF                           3
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     0
+NUMSTRUCDIS                     1
+NUMALEDIS                       0
+NUMTHERMDIS                     0
+--------------------------------------------------------------------------IO
+OUTPUT_GID                      No
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRESS                   No
+STRUCT_STRAIN                   No
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+THERM_TEMPERATURE               No
+THERM_HEATFLUX                  No
+FILESTEPS                       1000
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+DYNAMICTYP                      GenAlpha //Statics
+RESULTSEVRY                     1
+RESTARTEVRY                     1
+NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
+TIMESTEP                        0.1
+NUMSTEP                         10
+MAXTIME                         1
+DAMPING                         Material
+M_DAMP                          0
+K_DAMP                          0
+PREDICT                         ConstDis
+TOLRES                          1.0E-8
+TOLDISP                         1.0E-8
+NORM_RESF                       Abs
+NORM_DISP                       Abs
+NORMCOMBI_RESFDISP              And
+MAXITER                         100
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          TrLike
+BETA                            0.5
+GAMMA                           1.0
+ALPHA_M                         0.5
+ALPHA_F                         0.5
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 2
+NAME                            Contact_Solver
+SOLVER                          Amesos_KLU_nonsym
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         1
+//----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+//DPOINT                         1
+//E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
+---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
+DPOINT                          1
+E 1 - 1 0 0 1 0 0 0 0.0 0.0 -41.002 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE 1 DNODE 1
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD  0.0000000000000e+00 0.00000000000000e+00 -0.000000000000000e+00
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 RIGIDSPHERE POINT1 1 RADIUS 1.0 DENSITY 1.0
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1e9 NUE 0.0 DENS 0 THEXPANS 0.0
+----------------------------------------------------------------------CURVE1
+CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 1.0 1.0
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE  0.0 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE  0.0 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -4.89425323249042510e+00 TOLERANCE 1e-12
+-------------------------------------------------------------------------END

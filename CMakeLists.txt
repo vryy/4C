@@ -673,6 +673,7 @@ set(OBJS_DRT_BEAMCONTACT_LIB
   src/drt_beamcontact/beam3contactnew.cpp
   src/drt_beamcontact/beam3contact_utils.cpp
   src/drt_beamcontact/beam3contact_tangentsmoothing.cpp
+  src/drt_beamcontact/beam3tospherecontact.cpp
 )
 set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/convert_mat.cpp
@@ -1250,6 +1251,11 @@ set(OBJS_DRT_B3EBANISOTROP_LIB
   src/drt_beam3eb_anisotrop/beam3eb_anisotrop_evaluate.cpp
   src/drt_beam3eb_anisotrop/beam3eb_anisotrop_input.cpp
 )
+set(OBJS_DRT_RIGIDSPHERE_LIB
+  src/drt_rigidsphere/rigidsphere.cpp
+  src/drt_rigidsphere/rigidsphere_evaluate.cpp
+  src/drt_rigidsphere/rigidsphere_input.cpp
+)
 set(OBJS_PRE_CURVE
   src/pre_curve/pre_curve.cpp
 )
@@ -1798,6 +1804,7 @@ add_library(ele_b3ii ${OBJS_DRT_B3II_LIB})
 add_library(ele_b3eb ${OBJS_DRT_B3EB_LIB})
 add_library(ele_b3ebtor ${OBJS_DRT_B3EBTOR_LIB})
 add_library(ele_b3ebanisotrop ${OBJS_DRT_B3EBANISOTROP_LIB})
+add_library(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
 add_library(ele_b3cl ${OBJS_DRT_B3CL_LIB})
 add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
@@ -1824,6 +1831,7 @@ set(ELEMENT_LIBRARIES
   ele_b3eb  
   ele_b3ebtor
   ele_b3ebanisotrop
+  ele_rigidsphere
   ele_b3cl
   ele_bele3
   ele_combust3
