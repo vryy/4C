@@ -2,7 +2,7 @@
 /*!
 \file adapter_algorithmbase.H
 
-\brief global list of problems
+\brief Base algorithm for all kinds of coupled problems
 
 <pre>
 Maintainer: Martin Kronbichler

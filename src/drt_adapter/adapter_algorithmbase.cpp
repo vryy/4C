@@ -2,7 +2,7 @@
 /*!
 \file adapter_algorithmbase.cpp
 
-\brief global list of problems
+\brief Base algorithm for all kinds of coupled problems
 
 <pre>
 Maintainer: Martin Kronbichler
@@ -12,7 +12,6 @@ Maintainer: Martin Kronbichler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
 
 #include <iostream>
 
@@ -62,8 +61,6 @@ void ADAPTER::AlgorithmBase::PrintHeader()
              << "TIME:  "    << std::scientific << time_ << "/" << std::scientific << maxtime_
              << "     DT = " << std::scientific << dt_
              << "     STEP = " YELLOW_LIGHT << std::setw(4) << step_ << END_COLOR "/" << std::setw(4) << nstep_
-    //               << "\n"
-    //               << NOX::Utils::fill(82)
              << "\n\n";
   }
 }

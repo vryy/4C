@@ -246,12 +246,20 @@ namespace ADAPTER {
      *
      *  <h3> References: </h3>
      *
-     *  - Wall, W. A., <em> Fluid-Struktur-Interaktion mit stabilisierten Finiten
+     *  - Wall, W. A.: Fluid-Struktur-Interaktion mit stabilisierten Finiten
      *  Elementen, PhD Thesis, Universitaet Stuttgart, 1999
      *
-     *  - Bornemann, B., Time Integration Algorithms for the Steady States of
+     *  - Bornemann, B.: Time Integration Algorithms for the Steady States of
      *  Dissipative Non-Linear Dynamic Systems, PhD Thesis, Imperial College
      *  London, 2003
+     *
+     *  - Gresho, P. M., Griffiths, D. F., Silvester, D. J.: Adaptive Time-Stepping
+     *  for Incompressible Flow Part I: Scalar Advection-Diffusion,
+     *  SIAM J. Sci. Comput. (30), pp. 2018-2054, 2008
+     *
+     *  - Kay, D. A., Gresho, P. M., Griffiths, D. F., Silvester, D. J.: Adaptive
+     *  Time Stepping for Incompressible Flow Part II: Navier-Stokes Equations,
+     *  SIAM J. Sci. Comput. (32), pp. 111-128, 2010
      *
      *  \author mayr.mt
      *  \date 11/2013
