@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file drt_utils_timintmstep.H
+
 \brief Multi-step functionalities for time integration
 
 <pre>
@@ -56,7 +57,7 @@ namespace UTILS
     //! @name Access functions
     //@{
 
-    //! Access state object by time step
+    //! Access state object by time step index
     STATE& operator[]
     (
       const int step  //!< inquiry step
@@ -66,10 +67,10 @@ namespace UTILS
       return state_[IndexByStep(step)];
     }
 
-    //! Access state object by time step index as Teuchos::RCP
+    //! Access state object by time step index and wrap into Teuchos::RCP
     Teuchos::RCP<STATE> operator()
     (
-      const int step  //!< inquire step
+      const int step  //!< inquiry step
     )
     {
       if (not StepExists(step)) dserror("Step %d is not admissible", step);
