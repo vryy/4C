@@ -541,12 +541,16 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver
       case INPAR::SOLVER::azprec_CheapSIMPLE:
       case INPAR::SOLVER::azprec_TekoSIMPLE:
       {
+
         // add Inverse1 block for velocity dofs
         // tell Inverse1 block about NodalBlockInformation
         Teuchos::ParameterList& inv1 = solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
         inv1.sublist("NodalBlockInformation") = solver->Params().sublist("NodalBlockInformation");
 
-        // CheapSIMPLE is somewhat hardwired here
+        // calculate null space information
+        actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"),true);
+        actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"),true);
+
         solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
         solver->Params().set("CONSTRAINT",true);
       }
