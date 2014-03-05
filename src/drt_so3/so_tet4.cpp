@@ -342,8 +342,8 @@ void DRT::ELEMENTS::So_tet4::Print(std::ostream& os) const
   /*====================================================================*/
   /* 4-node tetrahedra node topology*/
   /*--------------------------------------------------------------------*/
-  /* parameter coordinates (ksi1, ksi2, ksi3, ksi4) of nodes
-   * of a common tetrahedron [-1,1]x[-1,1]x[-1,1]
+  /* parameter coordinates (ksi1, ksi2, ksi3) of nodes
+   * of a common tetrahedron [0,1]x[0,1]x[0,1]
    *  4-node hexahedron: node 0,1,...,3
    *
    * -----------------------
@@ -409,8 +409,8 @@ std::vector<double> DRT::ELEMENTS::So_tet4::ElementCenterRefeCoords()
   }
   const DRT::Element::DiscretizationType distype = Shape();
   LINALG::Matrix<NUMNOD_SOTET4,1> funct;
-  // Element midpoint at r=s=t=0.0
-  DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  // Centroid of a tet with (0,1)(0,1)(0,1) is (0.25, 0.25, 0.25)
+  DRT::UTILS::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
   LINALG::Matrix<1,NUMDIM_SOTET4> midpoint;
   //midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);

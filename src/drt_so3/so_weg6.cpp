@@ -384,8 +384,8 @@ std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
   }
   const DRT::Element::DiscretizationType distype = Shape();
   LINALG::Matrix<NUMNOD_WEG6,1> funct;
-  // Element midpoint at r=s=t=0.0
-  DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  // Element midpoint at r=s=1/3, t=0.0
+  DRT::UTILS::shape_function_3D(funct, 1.0/3.0, 1.0/3.0, 0.0, distype);
   LINALG::Matrix<1,NUMDIM_WEG6> midpoint;
   //midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);

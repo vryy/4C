@@ -402,8 +402,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol
   /*====================================================================*/
   /* 10-node tetrahedra node topology*/
   /*--------------------------------------------------------------------*/
-  /* parameter coordinates (ksi1, ksi2, ksi3, ksi4) of nodes
-   * of a common tetrahedron [-1,1]x[-1,1]x[-1,1]
+  /* parameter coordinates (ksi1, ksi2, ksi3) of nodes
+   * of a common tetrahedron [0,1]x[0,1]x[0,1]
    *  10-node hexahedron: node 0,1,...,9
    *
    * -----------------------
@@ -483,8 +483,8 @@ std::vector<double> DRT::ELEMENTS::So_tet10::ElementCenterRefeCoords()
   }
   const DRT::Element::DiscretizationType distype = Shape();
   LINALG::Matrix<NUMNOD_SOTET10,1> funct;
-  // Element midpoint at r=s=t=0.0
-  DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  // Centroid of a tet with (0,1)(0,1)(0,1) is (0.25, 0.25, 0.25)
+  DRT::UTILS::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
   LINALG::Matrix<1,NUMDIM_SOTET10> midpoint;
   midpoint.MultiplyTN(funct, xrefe);
   std::vector<double> centercoords(3);
