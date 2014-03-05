@@ -20,7 +20,7 @@ created by pre_exodus
 //NODES       20
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+PROBLEMTYP                      Crack
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 ----------------------------------------------------------STRUCTURAL DYNAMIC
@@ -30,7 +30,7 @@ RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        0.0025
-NUMSTEP                         2
+NUMSTEP                         1
 MAXTIME                         0.75
 DAMPING                         No
 M_DAMP                          0.0
@@ -171,8 +171,8 @@ NODE 20  	COORD	2.0000000000000000e+00	2.0000000000000000e+00	1.0000000000000001
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE 2.38245454785716328e-02 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE -3.59987775726339264e-04 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE 1.23837810269711735e-03 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE 8.81325901029203582e-04 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 11 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-12
 ---------------------------------------------------------------END
 // END

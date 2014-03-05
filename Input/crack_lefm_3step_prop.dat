@@ -19,7 +19,7 @@ created by pre_exodus
 //NODES       38
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+PROBLEMTYP                      Crack
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 ----------------------------------------------------------STRUCTURAL DYNAMIC
