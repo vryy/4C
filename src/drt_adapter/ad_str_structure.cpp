@@ -163,7 +163,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   // overrule certain parameters
   sdyn.set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   sdyn.set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
-  if(probtype == prb_struct_ale || probtype == prb_structure || probtype == prb_redairways_tissue || probtype == prb_particle)
+  if(probtype == prb_struct_ale || probtype == prb_structure || probtype == prb_redairways_tissue
+      || probtype == prb_particle || probtype == prb_crack)
   {
     sdyn.set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
   }
@@ -402,6 +403,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     switch (probtype)
     {
       case prb_structure: // pure structural time adaptivity
+      case prb_crack:
       {
         structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr));
         break;

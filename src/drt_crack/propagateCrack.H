@@ -58,7 +58,7 @@ private:
   /*!
   \brief Construct normal and tangential vectors at the crack tip
    */
-  DRT::Node * findNormal( const DRT::Node * tipnode );
+  void findNormal( const DRT::Node * tipnode, const DRT::Node * surnode1, const DRT::Node * surnode2 );
 
   /*!
   \brief For each crack tip node, we get a neighboring node that falls on the crack surface
@@ -73,12 +73,12 @@ private:
   /*!
   \brief Compute stress intensity factors at crack tip
    */
-  void findStressIntensityFactor( Teuchos::RCP<const Epetra_Vector>& displace );
+  void findStressIntensityFactor();
 
   /*!
   \brief Extract displacement at a particular node
    */
-  std::vector<double> getDisplacementNode( DRT::Node * node, Teuchos::RCP<Epetra_Vector>& disp );
+  std::vector<double> getDisplacementNode( const DRT::Node * node, Teuchos::RCP<Epetra_Vector>& disp );
 
   /*!
   \brief Returns true if the crack propagation criterion is satisfied
@@ -98,7 +98,7 @@ private:
   /*!
   \brief Get limiting angles for this crack configuration to decide to which elements to attach new nodes
    */
-  std::vector<double> getLimitAngles();
+  std::vector<double> getLimitAngles( const std::vector<int>& newTip );
 
   /*!
   \brief Returns true if the criteron to replace the tipnode with a new duplicate node is satisfied
@@ -109,6 +109,7 @@ private:
   \brief When crack propagated to the new location, we find the new crack tip nodes
    */
   std::vector<int> findNewCrackTip();
+  std::vector<int> findNewCrackTip1();
 
   /*!
   \brief Get a particular surface that lies completely in the z-plane given by "coord"
@@ -120,14 +121,20 @@ private:
   \brief When a new node is introduced into the discretization, it is mandatory to copy the conditions
   existing in old nodes into its duplicated new nodes
    */
-  void modifyConditions();
+  void AddConditions();
+
+  void DeleteConditions();
 
 
   void printConditions(std::multimap<std::string,Teuchos::RCP<Condition> > allcondn); //blockkk
 
-
+  //! underlying structural discretization
   Teuchos::RCP<DRT::Discretization> discret_;
 
+  //! Holds the displacement in column vector
+  Teuchos::RCP<Epetra_Vector> disp_col_;
+
+  //! communicator
   const Epetra_Comm& comm_;
 
   //! all the nodes that defines the crack tip
@@ -151,18 +158,36 @@ private:
   //! stress intensity factors
   double K_I_, K_II_;
 
+  //! critical stress intensity factors
   double critical_K_I_, critical_K_II_;
 
+  //! Young's modulus
   double young_;
 
+  //! Poisson's ratio
   double poisson_;
 
   double kappa_;
 
   double fac_;
 
+  //! crack propagation angle in radians
   double propAngle_;
 
+  // This is in RADIANS
+  //! If the angle between an edge and the exact crack propagation angle is less than this value,
+  //! then crack is assumed to propagate through this edge
+  double min_angle_tol_;
+
+  //! Whether the crack tip nodes should be moved in the current configuration
+  bool moveNodes_;
+
+  //! tip boundary condition displacements to be enforced
+  std::map<int, std::vector<double> > tip_bc_disp_;
+
+  //! Whether Dirichlet BC set at the crack tip nodes should be cleared
+  bool clearCondns_;
+  //! value of PI
   double PI_;
 
   int myrank_;

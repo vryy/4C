@@ -1227,6 +1227,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
 
+  case prb_crack:
   case prb_structure:
   {
     if(distype == "Meshfree")
@@ -1629,6 +1630,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
     case prb_structure:
+    case prb_crack:
     {
       // read microscale fields from second, third, ... inputfile if necessary
       // (in case of multi-scale material models)

@@ -15,6 +15,7 @@ Maintainer: Sudhakar
 /*----------------------------------------------------------------------*/
 
 #include "propagateCrack.H"
+#include "crack_tolerance.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
@@ -33,11 +34,15 @@ Maintainer: Sudhakar
  *------------------------------------------------------------------------------------*/
 DRT::CRACK::PropagateCrack::PropagateCrack( Teuchos::RCP<DRT::Discretization>& discret )
 :discret_(discret),
+ disp_col_(Teuchos::null),
  comm_( discret_->Comm() ),
+ clearCondns_( false ),
  myrank_( comm_.MyPID() )
 {
 
   PI_ = 22.0 / 7.0;
+
+  min_angle_tol_ = MIN_PROP_ANGLE * PI_ / 180.0;
 
   // get the initial crack tip nodes when analyzing propagation of an existing crack
   DRT::Condition* crackpts = discret_->GetCondition( "CrackInitiationPoints" );
@@ -137,13 +142,51 @@ void DRT::CRACK::PropagateCrack::propagateOperations( Teuchos::RCP<const Epetra_
   oldnew_.clear();
   tip_phi_.clear();
   tip_mphi_.clear();
+  tip_bc_disp_.clear();
+
+  if( clearCondns_ )
+  {
+    DeleteConditions();
+    return;
+  }
+
+  /******************************************************************/
+  // check to see map can be gatheredall
+  /*std::map<int,std::vector<double> > check;
+  std::vector<double> ol;
+  for( unsigned i=0;i<3;i++ )
+    ol.push_back(myrank_+i);
+
+  check[myrank_] = ol;
+
+  LINALG::GatherAll( check, comm_ );
+
+  if( myrank_ == 0 )
+  {
+    for( std::map<int,std::vector<double> >::iterator it = check.begin(); it != check.end(); it++ )
+    {
+      int id = it->first;
+      std::vector<double> aa = it->second;
+      std::cout<<"id = "<<id<<"\t values = ";
+      for( unsigned i=0; i< aa.size(); i++ )
+        std::cout<<aa[i]<<"\t";
+      std::cout<<"\n";
+    }
+  }
+
+  dserror("done");*/
+  /******************************************************************/
 
   std::cout<<"tip nodes = "<<tipnodes_[0]<<"\t"<<tipnodes_[1]<<"\n";
+
+  // export "displacement" to column map
+  disp_col_ = LINALG::CreateVector( *discret_->DofColMap(), true );
+  LINALG::Export(*displace,*disp_col_);
 
   //-------------
   // STEP 1 : Compute stress-intensity factors at crack tip
   //-------------
-  findStressIntensityFactor( displace );
+  findStressIntensityFactor();
 
   // this arises at the very beginning of time integration
   // physically uncorrect
@@ -166,7 +209,9 @@ void DRT::CRACK::PropagateCrack::propagateOperations( Teuchos::RCP<const Epetra_
   //-------------
   // STEP 4 : Update crack information
   //-------------
-  std::vector<int> newTip = findNewCrackTip();
+
+  //std::vector<int> newTip = findNewCrackTip();
+  std::vector<int> newTip = findNewCrackTip1();
 
   //-------------
   // STEP 5 : Update crack information
@@ -185,16 +230,6 @@ void DRT::CRACK::PropagateCrack::buildNeighborInfoTipNodes( DRT::Node * node1, D
 #ifdef DEBUG
   if( node1->Id() == node2->Id() )
     dserror( "We should have got two different node ids\n" );
-
-  const double * cord1 = node1->X();
-  const double * cord2 = node2->X();
-
-  if( fabs( cord1[0] - cord2[0] ) > 1e-15 or
-      fabs( cord1[1] - cord2[1] ) > 1e-15 or
-      fabs( cord1[2] - cord2[2] ) > 1e-15 )
-  {
-    dserror( "two neighboring nodes should be at the same position\n" );
-  }
 #endif
 
   // we are considering only the first node to construct normal
@@ -232,24 +267,40 @@ void DRT::CRACK::PropagateCrack::buildNeighborInfoTipNodes( DRT::Node * node1, D
 /*------------------------------------------------------------------------------------*
  * Build normal coordinate system at the crack tip                            sudhakar 12/13
  *------------------------------------------------------------------------------------*/
-DRT::Node * DRT::CRACK::PropagateCrack::findNormal( const DRT::Node * tipnode )
+void DRT::CRACK::PropagateCrack::findNormal( const DRT::Node * tipnode,
+                                             const DRT::Node * surnode1,
+                                             const DRT::Node * surnode2 )
 {
   // we are considering only the first node to construct normal
   // because we assume through-thickness crack with crack properties same at each thickness plane
   //TODO: while extending to 3D crack, normal has to be calculated at each crack tip segment
 
   // In order to construct local coodinate system at crack tip, we consider one crack tip node
-  // We need to find another node that is connected to the tip node and is located in the crack
-  // surface (but not in the crack tip)
+  // and find two neighboring nodes that are falling on the surfaces of the crack (surnode1 and surnode2 here)
   // REMEMBER : This procedure works only for through-thickness crack
 
   const double * tipcoord = tipnode->X();
 
-  DRT::Node * surnode = findNeighboringCrackNode( tipnode, false, NULL );
-  const double * surcoord = surnode->X();
+  const double * surcoord1 = surnode1->X();
+  const double * surcoord2 = surnode2->X();
 
-  normal_(0,0) = tipcoord[0] - surcoord[0];
-  normal_(1,0) = tipcoord[1] - surcoord[1];
+  std::vector<double> tip_disp = getDisplacementNode( tipnode, disp_col_ );
+  std::vector<double> sur1_disp = getDisplacementNode( surnode1, disp_col_ );
+  std::vector<double> sur2_disp = getDisplacementNode( surnode2, disp_col_ );
+
+  for( unsigned i=0; i<3; i++ )
+  {
+    tip_disp[i] += tipcoord[i];
+    sur1_disp[i] += surcoord1[i];
+    sur2_disp[i] += surcoord2[i];
+  }
+
+  double surcoord[3];
+  for( int s = 0; s < 3; s++ )
+    surcoord[s] = 0.5*( sur1_disp[s] + sur2_disp[s] );
+
+  normal_(0,0) = tip_disp[0] - surcoord[0];
+  normal_(1,0) = tip_disp[1] - surcoord[1];
   normal_(2,0) = 0.0;
 
   double fac = sqrt( normal_(0,0)*normal_(0,0) + normal_(1,0)*normal_(1,0) + normal_(2,0)*normal_(2,0) );
@@ -286,7 +337,8 @@ DRT::Node * DRT::CRACK::PropagateCrack::findNormal( const DRT::Node * tipnode )
   tangent_(1,0) = cos(theta);
   tangent_(2,0) = 0.0;
 
-  return surnode;
+  std::cout<<"normal vector = "<<normal_(0,0)<<"\t"<<normal_(1,0)<<"\t"<<normal_(2,0)<<"\n";
+  std::cout<<"tangent vector = "<<tangent_(0,0)<<"\t"<<tangent_(1,0)<<"\t"<<tangent_(2,0)<<"\n";
 }
 
 /*------------------------------------------------------------------------------------*
@@ -328,7 +380,7 @@ DRT::Node * DRT::CRACK::PropagateCrack::findNormal( const DRT::Node * tipnode )
    *
    *
  *------------------------------------------------------------------------------------*/
-void DRT::CRACK::PropagateCrack::findStressIntensityFactor( Teuchos::RCP<const Epetra_Vector>& displace )
+void DRT::CRACK::PropagateCrack::findStressIntensityFactor()
 {
   DRT::Node * tipnode = NULL;
   int lmaster = 0, gmaster = 0;
@@ -339,8 +391,11 @@ void DRT::CRACK::PropagateCrack::findStressIntensityFactor( Teuchos::RCP<const E
     if( tipnode->Owner() == myrank_ )
     {
       lmaster = myrank_;
-      DRT::Node * node1 = findNormal( tipnode );
+
+      DRT::Node * node1 = findNeighboringCrackNode( tipnode, false, NULL );
       DRT::Node * node2 = findNeighboringCrackNode( tipnode, true, node1 );
+
+      findNormal( tipnode, node1, node2 );
 
       // find neighbor points to calculate stress-intensity factor
       buildNeighborInfoTipNodes( node1, node2, tipnode );
@@ -355,12 +410,8 @@ void DRT::CRACK::PropagateCrack::findStressIntensityFactor( Teuchos::RCP<const E
   comm_.Broadcast( &normal_(0,0), 3, gmaster );
   comm_.Broadcast( &tangent_(0,0), 3, gmaster );
 
-  LINALG::GatherAll( tip_phi_, discret_->Comm() );
-  LINALG::GatherAll( tip_mphi_, discret_->Comm() );
-
-  // export "displacement" to column map
-  Teuchos::RCP<Epetra_Vector> disp_col = LINALG::CreateVector( *discret_->DofColMap(), true );
-  LINALG::Export(*displace,*disp_col);
+  LINALG::GatherAll( tip_phi_, comm_ );
+  LINALG::GatherAll( tip_mphi_, comm_ );
 
   K_I_ = 0.0; K_II_ = 0.0;
   double local_k1 = 0.0, local_k2 = 0.0;
@@ -386,8 +437,8 @@ void DRT::CRACK::PropagateCrack::findStressIntensityFactor( Teuchos::RCP<const E
         DRT::Node * node_phi = discret_->gNode( phi_id );
         DRT::Node * node_mphi = discret_->gNode( mphi_id );
 
-        std::vector<double> disp_phi = getDisplacementNode( node_phi, disp_col );
-        std::vector<double> disp_mphi = getDisplacementNode( node_mphi, disp_col );
+        std::vector<double> disp_phi = getDisplacementNode( node_phi, disp_col_ );
+        std::vector<double> disp_mphi = getDisplacementNode( node_mphi, disp_col_ );
 
         const double * tipcord = tipnode->X();
         const double * cord_phi = node_phi->X();
@@ -437,7 +488,7 @@ void DRT::CRACK::PropagateCrack::findStressIntensityFactor( Teuchos::RCP<const E
 /*------------------------------------------------------------------------------------*
  * Extract displacement at the given node                                    sudhakar 12/13
  *------------------------------------------------------------------------------------*/
-std::vector<double> DRT::CRACK::PropagateCrack::getDisplacementNode( DRT::Node * node,
+std::vector<double> DRT::CRACK::PropagateCrack::getDisplacementNode( const DRT::Node * node,
                                                                      Teuchos::RCP<Epetra_Vector>& disp )
 {
   std::vector<int> lm;
@@ -468,7 +519,7 @@ DRT::Node * DRT::CRACK::PropagateCrack::findNeighboringCrackNode( const DRT::Nod
   const double * tipcoord = tipnode->X();
 
   DRT::Node * surnode = NULL;
-  int surnodeid;
+  int surnodeid=0;
   const double * surcoord = NULL;
 
   // get all elements that has this tipnode
@@ -542,8 +593,8 @@ DRT::Node * DRT::CRACK::PropagateCrack::findAttachedNode( DRT::Node * neigh, DRT
   DRT::Element** ElementsPtr = neigh->Elements();
   int NumElement = neigh->NumElement();
 
-  if( NumElement > 4 )
-    dserror( "For Hex8 elements, the crack point should have max four elements attached to it\n" );
+  /*if( NumElement > 4 )
+    dserror( "For Hex8 elements, the crack point should have max four elements attached to it\n" );*/
 
   bool foundele = false;
 
@@ -681,12 +732,42 @@ void DRT::CRACK::PropagateCrack::decidePropagationAngle()
   double deno = K_I_ + sqrt( K_I_ * K_I_ + 8.0 * K_II_ * K_II_ );
   propAngle_ = 2.0*atan( -2.0 * K_II_ / deno );
 
+
+  /*********************************************************/
+  /*static int k = 1;
+  if( k==1 )
+  {
+    std::cout<<"------WARNING: crack propagation angle set----------\n";
+    //propAngle_ = atan2( normal_(1,0), normal_(0,0) );
+    propAngle_ = 0.0;
+  }
+  k++;*/
+  /*********************************************************/
+
+  // Need to confirm whether this is generalized for all propagation criterion
+  // read the paper "Numerical modelling of crack propagation: automatic remeshing and comparison of
+  // different criteria" by Bouchard, Chastel in CMAME 2003 -->Maximum circumferential stress criterion
+  if( propAngle_ * 180 / PI_ > 70.54 )
+    dserror("Predicted crack propagation angle = %f but the limiting prop angle = 70.54",propAngle_ * 180 / PI_);
+
+  // the obtained propagation angle is w.r.t normal direction
+  // in order to get absolute propagation angle, add the normal angle to this
+  double norm_ang = atan2( normal_(1,0), normal_(0,0) );
   // atan2() returns values in the range (-pi,pi)
-  // in order to make meaningful comparisons we need it in range (0,2*pi)
-  if( fabs(propAngle_) < 1e-10 )
+  // in order to make comparisons we need it in range (0,2*pi)
+  if( (fabs(norm_ang) < ANGLE_TOL_ZERO) or (fabs(norm_ang - 2*PI_) < ANGLE_TOL_ZERO) )
+    norm_ang = 0.0;
+  else if( norm_ang < 0.0 )
+    norm_ang = 2 * PI_ + norm_ang;
+
+  propAngle_ += norm_ang;
+
+  if( (fabs(propAngle_) < ANGLE_TOL_ZERO) or (fabs(propAngle_-2*PI_) < ANGLE_TOL_ZERO) )
     propAngle_ = 0.0;
   else if( propAngle_ < 0.0 )
     propAngle_ = 2 * PI_ + propAngle_;
+  else if( propAngle_ > 2*PI_ )
+    propAngle_ = propAngle_ - 2*PI_;
 
   std::cout<<"propagation angle = "<<propAngle_ * 180.0 / PI_ <<"deg\n";
 }
@@ -733,7 +814,7 @@ void DRT::CRACK::PropagateCrack::updateCrack( std::vector<int>& newTip )
 
   int totalNodes = discret_->NumGlobalNodes(); // to decide the ids of new nodes
 
-  std::vector<double> lmtAngle = getLimitAngles();
+  std::vector<double> lmtAngle = getLimitAngles( newTip );
 
   // map of element ids to be modified with the new node
   // "key" contains the element id, and "value" is dummy here
@@ -757,7 +838,9 @@ void DRT::CRACK::PropagateCrack::updateCrack( std::vector<int>& newTip )
       {
         DRT::Element* Element = ElementsPtr[jEle];
         if( toReplaceNode( Element, tipnode, lmtAngle ) )
+        {
           delEle[ Element->Id() ] = 0;
+        }
       }
 
       discret_->AddNode( dupnode );
@@ -831,7 +914,7 @@ void DRT::CRACK::PropagateCrack::updateCrack( std::vector<int>& newTip )
     }
   }
 
-  modifyConditions();
+  AddConditions();
 
   discret_->FillComplete();
 
@@ -855,19 +938,49 @@ void DRT::CRACK::PropagateCrack::updateCrack( std::vector<int>& newTip )
  * these angles are used to determine which elements get new nodes and which
  * of them keep the old nodes
  *------------------------------------------------------------------------------------*/
-std::vector<double> DRT::CRACK::PropagateCrack::getLimitAngles()
+std::vector<double> DRT::CRACK::PropagateCrack::getLimitAngles( const std::vector<int>& newTip )
 {
   std::vector<double> ang;
 
   //the two angles are
   //1. negative of angle formed by normal
-  //2. crack propagation angle
+  //2. angle between new crack tip nodes, and old tip nodes (shuld be crack propagation angle if we move our nodes
+  // to accommodate crack propagation)
   double norm_ang = atan2( normal_(1,0), normal_(0,0) ) + PI_;
   if( norm_ang > 2*PI_ )
     norm_ang = norm_ang - 2*PI_;
 
   ang.push_back( norm_ang );
+
+  double tempAng = 0.0;
+
+  if( discret_->HaveGlobalNode( tipnodes_[0] ) )
+  {
+    DRT::Node * tipnode = discret_->gNode( tipnodes_[0] );
+    if( tipnode->Owner() == myrank_ )
+    {
+      const double * tipco = tipnode->X();
+
+      DRT::Node * newnode = discret_->gNode( newTip[0] );
+      const double * newco = newnode->X();
+
+      tempAng = atan2( (newco[1]-tipco[1]), (newco[0]-tipco[0]) );
+
+      if( fabs(tempAng) < 1e-12 )
+        tempAng = 0.0;
+      else if( tempAng < 0.0 )
+        tempAng = 2 * PI_ + tempAng;
+    }
+  }
+
+  double secAng = 0.0;
+  comm_.SumAll( &tempAng, &secAng, 1 );
+
+  ang.push_back( secAng );
+
+#if 0 // this shud be the case if we move crack nodes (I believe) -- sudhakar 02/14
   ang.push_back( propAngle_ );
+#endif
 
   std::sort( ang.begin(), ang.end() );
 
@@ -880,10 +993,9 @@ std::vector<double> DRT::CRACK::PropagateCrack::getLimitAngles()
  * (This is just a work-around. The vector copying operations can be avoided if
  * we can modify the way conditions are generated in Baci)
  *------------------------------------------------------------------------------------*/
-void DRT::CRACK::PropagateCrack::modifyConditions()
+void DRT::CRACK::PropagateCrack::AddConditions()
 {
-  std::multimap<std::string,Teuchos::RCP<Condition> > allcondn;
-  discret_->GetAllConditions( allcondn );
+  std::multimap<std::string,Teuchos::RCP<Condition> >& allcondn = discret_->GetAllConditions();
 
   for( std::multimap<std::string,Teuchos::RCP<Condition> >::iterator conit = allcondn.begin();
                                                                      conit != allcondn.end(); conit++ )
@@ -908,6 +1020,52 @@ void DRT::CRACK::PropagateCrack::modifyConditions()
       }
     }
   }
+
+  // Add the new Dirichlet conditions at the tip node to make sure that the crack
+  // propagation angle is maintained
+  /*clearCondns_ = true;
+  std::map<int, std::vector<double> >::iterator iter;
+  for( iter = tip_bc_disp_.begin(); iter != tip_bc_disp_.end(); iter++ )
+  {
+    Teuchos::RCP<DRT::Condition> cond = Teuchos::rcp( new DRT::Condition() );
+    std::vector<int> onoff(3,1);
+
+    cond->SetConditionType(  DRT::Condition::PointDirichlet );
+    cond->Add( "Node Ids", iter->first );
+    cond->Add("onoff",onoff);
+    cond->Add("val",iter->second);
+
+    discret_->SetCondition( "Dirichlet", cond );
+  }*/
+}
+
+/*------------------------------------------------------------------------------------*
+ * Delete the Dirichlet conditions existing at the previous crack tip nodes      sudhakar 01/14
+ *------------------------------------------------------------------------------------*/
+void DRT::CRACK::PropagateCrack::DeleteConditions()
+{
+  if( not clearCondns_ )
+    return;
+
+  std::vector<std::multimap<std::string,Teuchos::RCP<Condition> >::iterator> del;
+
+  std::multimap<std::string,Teuchos::RCP<Condition> >::iterator conit;
+  std::multimap<std::string,Teuchos::RCP<Condition> >& allcondn = discret_->GetAllConditions();
+  for( conit = allcondn.begin(); conit != allcondn.end(); conit++ )
+  {
+    Teuchos::RCP<Condition> cond = conit->second;
+    if( cond->Nodes()->size() == 1 )
+      del.push_back( conit );
+  }
+
+  for( unsigned i=0; i< del.size(); i++ )
+  {
+    conit = del[i];
+    allcondn.erase( conit );
+  }
+
+  // already we have cleared it now. unless new condns are set, no need to delete anyting
+  clearCondns_ = false;
 }
 
 /*------------------------------------------------------------------------------------*
@@ -920,7 +1078,7 @@ void DRT::CRACK::PropagateCrack::printConditions(std::multimap<std::string,Teuch
                                                                        conit != allcondn.end(); conit++ )
   {
     Teuchos::RCP<Condition> cond = conit->second;
-    std::cout<<"condn type = "<<cond->GType()<<" geom disc = "<<cond->GeometryDescription()<<"\n";
+    std::cout<<"Id = "<<cond->Id()<<" condn type = "<<cond->Type()<<" geom disc = "<<cond->GeometryDescription()<<"\n";
     const std::vector<int>* nodeids = cond->Nodes();
 
     std::cout<<"condition nodes are = ";
@@ -952,7 +1110,7 @@ bool DRT::CRACK::PropagateCrack::toReplaceNode( DRT::Element * ele, DRT::Node * 
 
   // atan2() returns values in the range (-pi,pi)
   // in order to make comparisons we need it in range (0,2*pi)
-  if( fabs(theta) < 1e-12 )
+  if( fabs(theta) < ANGLE_TOL_ZERO )
     theta = 0.0;
   else if( theta < 0.0 )
     theta = 2 * PI_ + theta;
@@ -1074,6 +1232,255 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip()
     comm_.SumAll( &lnewtip, &gnewtip, 1 );
     oldnew_tip[tipid] = gnewtip;
   }
+
+  if( not tipnodes_.size() == oldnew_tip.size() )
+    dserror("for each node, we should have a new tip node\n");
+
+  std::vector<int> newTip;
+  for( std::map<int,int>::iterator it = oldnew_tip.begin(); it != oldnew_tip.end(); it++ )
+    newTip.push_back( it->second );
+
+  return newTip;
+}
+
+/*------------------------------------------------------------------------------------*
+ *  find the new crack tip nodes.                                             sudhakar 12/13
+ *  We do not update the crack tip nodes here, because we still need the
+ *  old values to propagate crack from old position
+ *------------------------------------------------------------------------------------*/
+std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip1()
+{
+  moveNodes_ = true;
+
+  std::map<int,int> oldnew_tip;
+
+  //TODO: In the first step of crack propagation, we should not reach the surface
+  // that is located on the bundary of the domain
+  // Implement a procedure to take care of this
+
+  for( unsigned tip = 0; tip < tipnodes_.size(); tip++ )
+  {
+    int tipid = tipnodes_[tip];
+    int gnewtip = 0, lnewtip = 0;
+
+    if( discret_->HaveGlobalNode( tipid ) )
+    {
+      DRT::Node* tipnode = discret_->gNode( tipid );
+      if( tipnode->Owner() == myrank_ )
+      {
+        const double * tipcord = tipnode->X();
+
+        std::vector<double> disp_tip = getDisplacementNode( tipnode, disp_col_ );
+        for( unsigned dim=0; dim<3; dim++ )
+          disp_tip[dim] += tipcord[dim];
+
+        // construct a unit vector in the direction of propagation angle from crack tip
+        std::vector<double> prop_vec(3);
+        prop_vec[0] = disp_tip[0] + LENGTH_PROP_VECTOR * cos( propAngle_ );
+        prop_vec[1] = disp_tip[1] + LENGTH_PROP_VECTOR * sin( propAngle_ );
+        prop_vec[2] = disp_tip[2];
+
+        // This is same as the propagation angle but in the range [-pi,pi]
+        double projangle = atan2( sin( propAngle_ ), cos( propAngle_ ) );
+
+        DRT::Element** ElementsPtr = tipnode->Elements();
+        int NumElement = tipnode->NumElement();
+
+        bool found_edge = false;
+
+        for( int eleno = 0; eleno < NumElement; eleno++ )
+        {
+          DRT::Element* Element = ElementsPtr[eleno];
+          std::vector< Teuchos::RCP< DRT::Element > > Surfaces = Element->Surfaces();
+
+          Teuchos::RCP<DRT::Element> surf = getSurfaceSameZplane( Surfaces, tipcord );
+
+          if( surf == Teuchos::null )
+            dserror("Did not found the surface on same z-plane\n");
+
+          DRT::Node ** searchnodes = surf->Nodes();
+          int tip_index = 0;
+          bool found_tip = false;
+          int numnodes = surf->NumNode();
+          for (int num = 0; num < numnodes; num++)
+          {
+            DRT::Node * nod = searchnodes[num];
+            if( nod == tipnode )
+            {
+              found_tip = true;
+              tip_index = num;
+            }
+          }
+          if( not found_tip )
+            dserror("The surface we got does not contain the neighboring node that is given as input\n");
+
+          // FInd possible node ids. This means through which ids the crack can propagate
+          // For Tri surface there is no problem
+          // But if the surface is a Quad, then we must avoid the diagonal node as possible id
+          //
+          //                                                                    === crack surface
+          //            o---------------                    o                     * crack tip
+          //            |               |                   | \                   o possible id nodes
+          //            |               |                   |  \
+          //            |               |                   |   \
+          //            |               |                   |    \
+          //            |               |                   |     \
+          //       =====*---------------o                ===*------o
+          //
+          //
+
+          DRT::Node * possible1 = searchnodes[(tip_index+1)%numnodes];
+          int temp_index = 0;
+          if( tip_index == 0 )
+            temp_index = numnodes-1;
+          else
+            temp_index = tip_index-1;
+          DRT::Node * possible2 = searchnodes[temp_index];
+
+          std::vector<Teuchos::RCP<DRT::Element> > ele_lines = surf->Lines();
+
+          if( ele_lines.size() == 0 )
+            dserror("Surface element does not contain any lines");
+
+          for( std::vector<Teuchos::RCP<DRT::Element> >::iterator linit = ele_lines.begin();
+                                                                  linit != ele_lines.end(); linit++ )
+          {
+            Teuchos::RCP<DRT::Element> linele = *linit;
+
+            DRT::Node ** searchnodes = linele->Nodes();
+            DRT::Node* node1 = searchnodes[0];
+            DRT::Node* node2 = searchnodes[1];
+
+            // crack cannot propagate through the edge that has the crack node
+            if( node1 == tipnode or node2 == tipnode )
+              continue;
+
+            /*if( ( std::find( cracknodes_.begin(), cracknodes_.end(), node1->Id() ) != cracknodes_.end() ) or
+                ( std::find( cracknodes_.begin(), cracknodes_.end(), node2->Id() ) != cracknodes_.end() )  )
+              continue;*/
+
+            const double * node1_cord = node1->X();
+            const double * node2_cord = node2->X();
+
+            std::vector<double> disp1 = getDisplacementNode( node1, disp_col_ );
+            std::vector<double> disp2 = getDisplacementNode( node2, disp_col_ );
+
+            for( unsigned dim=0; dim<3; dim++ )
+            {
+              disp1[dim] += node1_cord[dim];
+              disp2[dim] += node2_cord[dim];
+            }
+
+            int num = 0;
+
+            double angle1 = atan2( disp1[1] - disp_tip[1], disp1[0] - disp_tip[0] ) - projangle;
+            double angle2 = atan2( disp2[1] - disp_tip[1], disp2[0] - disp_tip[0] ) - projangle;
+
+            // it may be possible that the crack can pass through the edge itself
+            if( ( fabs( angle1 ) < min_angle_tol_ ) and ( node1->Id() == possible1->Id() or node1->Id() == possible2->Id() ) )
+            {
+              found_edge = true;
+              lnewtip = node1->Id();
+
+              // Now we are checking this only once because we simulate pseudo-3D crack propagation
+              // For real 3D this has to  be set for all crack nodes
+              moveNodes_ = false;
+              break;
+            }
+
+            if( ( fabs( angle2 ) < min_angle_tol_ ) and ( node2->Id() == possible1->Id() or node2->Id() == possible2->Id() ) )
+            {
+              found_edge = true;
+              lnewtip = node2->Id();
+
+              // Now we are checking this only once because we simulate pseudo-3D crack propagation
+              // For real 3D this has to  be set for all crack nodes
+              moveNodes_ = false;
+              break;
+            }
+
+            if( (angle1 < 0.0 and angle2 > 0.0 ) or
+                (angle1 > 0.0 and angle2 < 0.0 ) )
+            {
+
+              std::string whichnode = "";
+
+              if( (node1->Id() == possible1->Id() and node2->Id() == possible2->Id()) or
+                  (node1->Id() == possible2->Id() and node2->Id() == possible1->Id()) )
+              {
+                if( fabs(angle1) < fabs(angle2) )
+                  whichnode = "node1";
+                else
+                  whichnode = "node2";
+              }
+
+              else if( node1->Id() == possible1->Id() or node1->Id() == possible2->Id() )
+                whichnode = "node1";
+              else if( node2->Id() == possible1->Id() or node2->Id() == possible2->Id() )
+                whichnode = "node2";
+              else
+                dserror(" one of the nodes must be a possible node id ");
+
+              if( whichnode == "node1" )
+              {
+                if( angle1 * 180 / PI_ > 50.0 )
+                  continue;
+                num = 1;
+                lnewtip = node1->Id();
+              }
+              else if( whichnode == "node2" )
+              {
+                if( angle2 * 180 / PI_ > 50.0 )
+                  continue;
+                num = 2;
+                lnewtip = node2->Id();
+              }
+
+              found_edge = true;
+
+              if( found_edge )
+              {
+                double tot_ang = fabs( angle1 - angle2 );
+                std::vector<double> disp_bc(3);
+                if( num == 1 )
+                {
+                  double ratio = fabs(angle1 / tot_ang);
+                  for( unsigned dim=0; dim<3; dim++ )
+                    disp_bc[dim] = ( ratio * disp2[dim] + (1.0-ratio) * disp1[dim]) - node1_cord[dim];
+                  tip_bc_disp_[node1->Id()] = disp_bc;
+                }
+                else if( num == 2 )
+                {
+                  double ratio = fabs(angle2 / tot_ang);
+                  for( unsigned dim=0; dim<3; dim++ )
+                    disp_bc[dim] = ( ratio * disp1[dim] + (1.0-ratio) * disp2[dim] ) - node2_cord[dim];
+                  tip_bc_disp_[node2->Id()] = disp_bc;
+                }
+                else
+                  dserror("the correct index not found");
+              }
+
+              break;
+            }
+          }
+
+          if( found_edge )
+          {
+            break;
+          }
+        }
+
+        if( not found_edge )
+          dserror( "not found the new crack tip for nodeid = %d", tipid );
+      }
+    }
+
+    comm_.SumAll( &lnewtip, &gnewtip, 1 );
+    oldnew_tip[tipid] = gnewtip;
+  }
+
+  LINALG::GatherAll( tip_bc_disp_, comm_ );
+
 
   if( not tipnodes_.size() == oldnew_tip.size() )
     dserror("for each node, we should have a new tip node\n");

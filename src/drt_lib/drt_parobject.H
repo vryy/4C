@@ -324,6 +324,39 @@ public:
   */
   static void AddtoPack(PackBuffer& data, const std::map<int, std::set<int> > & stuff);
   
+  //                                                            sudhakar 02/2014
+  /*!
+  \brief Add stuff to the end of a char vector data
+
+  This method is an overload of the above template for map<int,double>
+  \param data (in/out) : char string stuff shall be added to
+  \param stuff (in)    : std::map<int, std::set<int> > that get's added to stuff
+
+  */
+  template<typename T>
+  static void AddtoPack(PackBuffer& data, const std::map<int, std::vector<T> >& stuff)
+  {
+
+    int numentries = (int) stuff.size();
+    AddtoPack(data,numentries);
+
+    // iterator
+    typename std::map<int,std::vector<T> >::const_iterator colcurr;
+
+    int i=0;
+    for(colcurr=stuff.begin();colcurr!=stuff.end();++colcurr)
+    {
+      AddtoPack(data,colcurr->first);
+      AddtoPack(data,colcurr->second);
+      ++i;
+    }
+
+    if(i!=numentries)
+      dserror("Something wrong with number of elements");
+
+    return;
+  }
+
   /*!
   \brief Add stuff to the end of a char vector data
 
@@ -564,6 +597,41 @@ public:
 
   */
   static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<int, std::set<int> >& stuff);
+
+  /*!
+  \brief Extract stuff from a map<int, std::vector<> >
+
+  This method is an overload of the above template for stuff of type map<std::string,int>
+
+  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
+  \param data (in)         : char vector where stuff is extracted from
+  \param stuff (out)       : std::map<int, std::set<int> > to extract from data
+
+  */
+  template<typename T>
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<int,std::vector<T> >& stuff)
+  {
+
+    int numentries = 0;
+    ExtractfromPack(position,data,numentries);
+
+    stuff.clear();
+
+    for(int i=0;i<numentries;i++)
+    {
+      int keys;
+      std::vector<T> values;
+      ExtractfromPack(position,data,keys);
+      ExtractfromPack(position,data,values);
+
+      //add to map
+      stuff.insert(std::pair<int,std::vector<T> >(keys,values));
+
+    }
+
+    return;
+  }
+
   /*!
   \brief Extract stuff from a set
 

@@ -907,13 +907,10 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 {
   if(binio_)
   {
-    bool write_file = false;
-
     if (step - meshfile_changed_ >= output_->FileSteps() or
         meshfile_changed_ == -1)
     {
       CreateMeshFile(step);
-      write_file = true;
     }
     std::ostringstream name;
     name << "step" << step;
@@ -975,22 +972,19 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
       // knotvectors for nurbs-discretisation
       WriteKnotvector();
 
-      if (write_file)
+      if (dis_->Comm().NumProc() > 1)
       {
-        if (dis_->Comm().NumProc() > 1)
-        {
-          output_->ControlFile()
-            << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
-        }
-        std::string filename;
-        std::string::size_type pos = meshfilename_.find_last_of('/');
-        if (pos==std::string::npos)
-          filename = meshfilename_;
-        else
-          filename = meshfilename_.substr(pos+1);
         output_->ControlFile()
-          << "    mesh_file = \"" << filename << "\"\n\n";
+          << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
       }
+      std::string filename;
+      std::string::size_type pos = meshfilename_.find_last_of('/');
+      if (pos==std::string::npos)
+        filename = meshfilename_;
+      else
+        filename = meshfilename_.substr(pos+1);
+      output_->ControlFile()
+        << "    mesh_file = \"" << filename << "\"\n\n";
       output_->ControlFile() << std::flush;
     }
     const herr_t flush_status = H5Fflush(meshgroup_,H5F_SCOPE_LOCAL);

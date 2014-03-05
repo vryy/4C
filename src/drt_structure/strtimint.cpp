@@ -2778,15 +2778,15 @@ void STR::TimInt::ResizeMStepTimAda()
  * ---------------------------------------------------------------------------------*/
 void STR::TimInt::PrepareCrackSimulation()
 {
-  const Teuchos::ParameterList& crackparam = DRT::Problem::Instance()->CrackParams();
-  if ( DRT::INPUT::IntegralValue<INPAR::CRACK::crackModel>(crackparam,"CRACK_MODEL")
-        == INPAR::CRACK::crack_lefm )
+  if( DRT::Problem::Instance()->ProblemType() == prb_crack )
+   //or DRT::Problem::Instance()->ProblemType() == prb_fsi_crack)
   {
     isCrack_ = true;
     propcrack_ = Teuchos::rcp(new DRT::CRACK::PropagateCrack( discret_ ) );
-  }
 
-  gmsh_out_ = DRT::INPUT::IntegralValue<int>(crackparam,"GMSH_OUT")==1;
+    const Teuchos::ParameterList& crackparam = DRT::Problem::Instance()->CrackParams();
+    gmsh_out_ = DRT::INPUT::IntegralValue<int>(crackparam,"GMSH_OUT")==1;
+  }
 }
 
 /*-------------------------------------------------------------------------------------------------*
