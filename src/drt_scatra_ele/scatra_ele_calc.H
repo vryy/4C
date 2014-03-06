@@ -1001,8 +1001,6 @@ namespace ELEMENTS
       ScaTraEleReaManager(int numscal):
         reacoeff_(numscal,0.0),
         reacoeffderivmatrix_(numscal,std::vector<double>(numscal,0.0 )), // size of matrix + initialized to zero
-        reabodyforce_(numscal,0.0), // size of vector + initialized to zero
-        reabodyforcederiv_(numscal,std::vector<double>(numscal,0.0 )),
         include_me_(false)
         {return;}
 
@@ -1028,19 +1026,6 @@ namespace ELEMENTS
         return;
       }
 
-      //! Set the derivative of reaction coefficient
-      virtual void SetReaBodyForce(const double reabodyforce, const int k)
-      {
-        reabodyforce_[k] = reabodyforce;
-        return;
-      }
-
-      virtual void SetReaBodyForceDerivMatrix(const double reabodyforcederiv, const int k, const int j)
-      {
-        (reabodyforcederiv_[k])[j] = reabodyforcederiv;
-        return;
-      }
-
       //! @name access routines
 
       //! Return the reaction coefficient
@@ -1048,12 +1033,6 @@ namespace ELEMENTS
 
       //! Return the reaction coefficient
       virtual double GetReaCoeffDerivMatrix(const int k , const int j){return (reacoeffderivmatrix_[k])[j];}
-
-      //! Return the reaction coefficient
-      virtual double GetReaBodyForce(const int k){return reabodyforce_[k];}
-
-      //! Return the reaction coefficient
-      virtual double GetReaBodyForceDerivMatrix(const int k, const int j){return (reabodyforcederiv_[k])[j];}
 
       //! return flag: reaction activated
       virtual bool Active(){return include_me_;}
@@ -1065,12 +1044,6 @@ namespace ELEMENTS
 
       //! reaction derivative for coupled problems
       std::vector<std::vector<double> > reacoeffderivmatrix_;
-
-      //! scalar reaction coefficient
-      std::vector<double> reabodyforce_;
-
-      //! scalar reaction coefficient
-      std::vector<std::vector<double> > reabodyforcederiv_;
 
       //! flag for reaction
       bool include_me_;

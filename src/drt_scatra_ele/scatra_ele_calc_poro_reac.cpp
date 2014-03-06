@@ -148,11 +148,14 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
       reamanager->SetReaCoeff(actmat->ReaCoeff()*porosity,k); // set reaction coefficient (scaled with porosity)
     else
     {
-      reamanager->SetReaBodyForce( advreac::CalcReaBodyForceTerm(k)*porosity ,k);
-      reamanager->SetReaCoeff( advreac::CalcReaCoeff(k)*porosity ,k);
+      // dynamic cast to Advanced_Reaction-specific reaction manager
+      Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(reamanager);
+
+      reamanageradvreac->SetReaBodyForce( advreac::CalcReaBodyForceTerm(k)*porosity ,k);
+      reamanageradvreac->SetReaCoeff( advreac::CalcReaCoeff(k)*porosity ,k);
       for (int j=0; j<my::numscal_ ;j++)
       {
-        reamanager->SetReaBodyForceDerivMatrix( advreac::CalcReaBodyForceDerivMatrix(k,j)*porosity /*+reamanager->GetReaBodyForce(k)* \partial_c porosity; */ ,k,j );
+        reamanageradvreac->SetReaBodyForceDerivMatrix( advreac::CalcReaBodyForceDerivMatrix(k,j)*porosity ,k,j );
         reamanager->SetReaCoeffDerivMatrix( advreac::CalcReaCoeffDerivMatrix(k,j)*porosity ,k,j );
       }
     }

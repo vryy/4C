@@ -73,9 +73,10 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(const int num
   numcond_(0),
   stoich_(0,std::vector<int>(my::numscal_,0.0)),
   reaconst_(0,0.0),
-  couplingtype_(0,DRT::ELEMENTS::simple_multiplicative)
+  couplingtype_(0,DRT::ELEMENTS::simple_multiplicative),
+  reacstart_(0,0.0)
 {
-
+  my::reamanager_ = Teuchos::rcp(new ScaTraEleReaManagerAdvReac(my::numscal_));
 }
 
 /*----------------------------------------------------------------------*
@@ -132,16 +133,18 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatScaTra(
 
   if (iscoupled_)
   {
-    reamanager->SetReaBodyForce( CalcReaBodyForceTerm(k) ,k);
-    reamanager->SetReaCoeff( CalcReaCoeff(k) ,k);
+    // dynamic cast to Advanced_Reaction-specific reaction manager
+    Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(reamanager);
+
+    reamanageradvreac->SetReaBodyForce( CalcReaBodyForceTerm(k) ,k);
+    reamanageradvreac->SetReaCoeff( CalcReaCoeff(k) ,k);
     for (int j=0; j<my::numscal_ ;j++)
     {
-      reamanager->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j) ,k,j );
+      reamanageradvreac->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j) ,k,j );
       reamanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j) ,k,j );
     }
   }
 }
-
 
 /*----------------------------------------------------------------------*
  |  Material BioFilm                                         thon 02/14 |
@@ -257,8 +260,12 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetRhsInt(
   // if not constant, and for temperature equation of a reactive
   // equation system, the reaction-rate term
 
+
+  // dynamic cast to Advanced_Reaction-specific reaction manager
+  Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(my::reamanager_);
+
                                        //... + reaction terms not depending on phi(k) -> source term
-  rhsint = my::bodyforce_[k].Dot(my::funct_) + my::reamanager_->GetReaBodyForce(k);
+  rhsint = my::bodyforce_[k].Dot(my::funct_) + reamanageradvreac->GetReaBodyForce(k);
 
   return;
 }
@@ -270,23 +277,42 @@ bool DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::IsCoupledAndRead(
   const DRT::Discretization&            ScaTraDiscretization //discretisation of the ScaTra field
   )
 {
-  // note for the implementation of the homogenous scatra coupling:
+  //! note for the implementation of the homogenous scatra coupling:
+  //! assume the following reaction: 1*A + 2*B  --> 3*C with reaction coefficient 4.0
+  //!
+  //! if we assume the reaction is depending on the product of all
+  //! reactants (this corresponds to couplingtype "simple_multiplicative"),
+  //! the corresponding equations are: \partial_t A = -(4*1*B)*A  (negative since reactant)
+  //!                              \partial_t B = -(4*2*A)*B  (negative since reactant)
+  //!                              \partial_t C = + 4*3*A*B   (positive since product)
+  //!
+  //! this equation is in BACI achieved by the boundary condition:
+  //! ------------------------DESIGN HOMOGENEOUS SCATRA COUPLING VOLUME CONDITIONS
+  //! DVOL                           XYZ
+  //! E XYZ - numscal 3 stoich -1 -2 3 reaccoeff 4.0 coupling simple_multiplicative
+  //!
+  //! implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to depend on c_i
+  //! hence we have to calculate and set K(c)=(4*B;8*A;0) and f(c)=(0;0;12*A*B) and corresponding derivatives.
 
-  // assume the following reaction: 1*A + 2*B  --> 3*C with reaction coefficient 4.0
 
-  // if we assume the reaction is depending on the product of all
-  //reactants (this corresponds to couplingtype "simple_multiplicative"),
-  // the corresponding equations are: \partial_t A = -(4*1*B)*A  (negative since reactant)
-  //                              \partial_t B = -(4*2*A)*B  (negative since reactant)
-  //                              \partial_t C = + 4*3*A*B   (positive since product)
 
-  // this equation is in BACI achieved by the boundary condition:
-  //------------------------DESIGN HOMOGENEOUS SCATRA COUPLING VOLUME CONDITIONS
-  //DVOL                           XYZ
-  //E XYZ - numscal 3 stoich -1 -2 3 reaccoeff 4.0 coupling simple_multiplicative
+  //! note for the implementation of the homogenous scatra coupling reacstart feature:
+  //! Assume concentration A is reproducing with reaction coefficient 1.0 and if the concentration
+  //! exeeds some threshold 2.0 if starts to react A->3*B with reacion coefficient 4.0.
+  //!
+  //! the corresponding equations are:
+  //!            \partial_t A = -(-1.0)*A - 4.0*(A - 2.0)_{+} (first termn postive, since equivalent as reactant with negative reaction coefficient)
+  //!            \partial_t B = 3.0*4.0 (A - 2.0)_{+}   (positive since product)
+  //!
+  //! this equation is in BACI achieved by the boundary condition:
+  //! ------------------------DESIGN HOMOGENEOUS SCATRA COUPLING VOLUME CONDITIONS
+  //! DVOL                           XYZ
+  //! E XYZ - numscal 2 stoich -1 0 reaccoeff -1.0 coupling simple_multiplicative
+  //! E XYZ - numscal 2 stoich -1 3 reaccoeff 4.0 coupling simple_multiplicative reacstart 2.0
+  //!
+  //! implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to depend on c_i
+  //! hence we have to calculate and set K(c)=(-A + 4*(A-2)_{+};0) and f(c)=(0;12*(A-2)_{+}) and corresponding derivatives.
 
-  // implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to depend on c_i
-  // hence we have to calculate and set K(c)=(4*B;8*A;0) and f(c)=(0;0;12*A*B)
 
   if (isinit_ == true)
     dserror("this function should be called just once...");
@@ -295,26 +321,32 @@ bool DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::IsCoupledAndRead(
   ScaTraDiscretization.GetCondition("HomoScaTraCoupling",HSTCConds);
 
   numcond_ = HSTCConds.size();
+
   if (numcond_ > 0)  //if there exists condition "DESIGN HOMOGENEOUS SCATRA COUPLING VOLUME CONDITIONS"
   {
     stoich_.resize(numcond_);
     couplingtype_.resize(numcond_);
     reaconst_.resize(numcond_);
+    reacstart_.resize(numcond_);
 
     for (int i=0;i<numcond_;i++)
     {
     stoich_[i]=*HSTCConds[i]->GetMutable<std::vector<int> >("stoich");
 
     reaconst_[i]=HSTCConds[i]->GetDouble("reaccoeff");
-    if (reaconst_[i]<0)
-        dserror("reaccoeff of Condition %d is negativ",i);
+//    to allow self-growing concentrations =>negativ reaccoeff needed in current implementation
+//    if (reaconst_[i]<0)
+//        dserror("reaccoeff of Condition %d is negativ",i);
 
     if ( *HSTCConds[i]->Get<std::string>("coupling") == "simple_multiplicative")
       couplingtype_[i] = DRT::ELEMENTS::simple_multiplicative;
     //else if  insert new couplings here
     else
       dserror("couplingtype OTHER is just a dummy and hence not implemented");
-    } //end for
+
+    reacstart_[i] =HSTCConds[i]->GetDouble("reacstart");
+
+    }//end for
     return true; //1;
   } // end if
   else
@@ -327,7 +359,9 @@ bool DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::IsCoupledAndRead(
  |  Calculate K(c)                                           thon 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeff(const int k)
+double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeff(
+    const int                        k                       //!< id of current scalar
+)
 {
   double reactermK=0;
   //double reactermK=0;
@@ -341,6 +375,10 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeff(const int k)
     if (stoich[k] < 0)
     {
       double rcfac= CalcReaCoeffFac(stoich,couplingtype,k);
+
+      if (reacstart_[condnum]>0 and rcfac>0)
+        ReacStartForReaCoeff(k,condnum,rcfac);
+
       reactermK += -reaccoeff*stoich[k]*rcfac; // scalar at integration point np
     }
   }
@@ -386,7 +424,10 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffFac(
  |  calculate \frac{partial}{\partial c} K(c)                thon 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivMatrix(const int k, const int j)
+double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivMatrix(
+    const int                 k,                  //!< id of current scalar
+    const int                 j                   //!< concentration to be derived to
+)
 {
   double reacoeffderivmatrixKJ=0;
 
@@ -399,6 +440,10 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivMatrix(con
     if (stoich[k] < 0)
     {
       double rcdmfac = CalcReaCoeffDerivFac(stoich,couplingtype,j,k);
+
+      if (reacstart_[condnum]>0)
+        ReacStartForReaCoeffDeriv(k,j,condnum,rcdmfac,stoich,couplingtype);
+
       reacoeffderivmatrixKJ += -reaccoeff*stoich[k]*rcdmfac;
     } //end if(stoich[k] != 0)
   }
@@ -412,7 +457,7 @@ template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivFac(
           const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
           const DRT::ELEMENTS::reaction_coupling  couplingtype,            //!<type of coupling the stoichometry coefficients
-          const int                               toderive,                //!<concentration to be derived
+          const int                               toderive,                //!<concentration to be derived to
           const int                               k                       //!< id of current scalar
 )
 {
@@ -445,7 +490,9 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivFac(
  |  calculate f(c)                                           thon 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTerm(const int k)
+double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTerm(
+    const int                                 k                       //!< id of current scalar
+)
 {
   double bodyforcetermK=0;
 
@@ -458,6 +505,10 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTerm(const 
     if (stoich[k] > 0)
     {
       double bftfac = CalcReaBodyForceTermFac(stoich,couplingtype);// scalar at integration point np
+
+      if (reacstart_[condnum]>0 and bftfac>0)
+        ReacStartForReaBF(k,condnum,bftfac);
+
       bodyforcetermK += reaccoeff*stoich[k]*bftfac;
     }
   }
@@ -496,10 +547,13 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTermFac(
 }
 
 /*----------------------------------------------------------------------*
- |  calculate calculate \frac{partial}{\partial c} f(c)      thon 02/14 |
+ |  calculate \frac{partial}{\partial c} f(c)                thon 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivMatrix(const int k, const int j)
+double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivMatrix(
+    const int                 k,                  //!< id of current scalar
+    const int                 j                   //!< concentration to be derived to
+)
 {
   double reabodyforcederivmatrixKJ=0;
   for (int condnum = 0; condnum < numcond_; condnum++)
@@ -512,6 +566,10 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivMatrix
     if (stoich[k] > 0)
     {
       double bfdmfac = CalcReaBodyForceDerivFac(stoich,couplingtype,j);
+
+      if (reacstart_[condnum]>0 and bfdmfac>0)
+        ReacStartForReaBFDeriv(k,j,condnum,bfdmfac,stoich,couplingtype);
+
       reabodyforcederivmatrixKJ += reaccoeff*stoich[k]*bfdmfac;
     }
   }
@@ -525,7 +583,7 @@ template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivFac(
         const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
         const DRT::ELEMENTS::reaction_coupling    couplingtype,            //!<type of coupling the stoichometry coefficients
-        const int                                 toderive                 //!<concentration to be derived
+        const int                                 toderive                 //!<concentration to be derived to
 )
 {
   double bfdmfac=1;
@@ -550,6 +608,92 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivFac(
     bfdmfac = 0;
 
   return bfdmfac;
+}
+
+/*-------------------------------------------------------------------------------*
+ |  calculate reaction coefficient for "delayed" reactions            thon 03/14 |
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaCoeff(
+  const int                               k,            //!< id of current scalar
+  const int                               condnum,      //!< id of current condition
+  double&                                 value         //!< current reaction value
+  )
+{
+  double prod = value * my::funct_.Dot(my::ephinp_[k]); //for simple multiplikative only!
+
+    if (prod > reacstart_[condnum] )
+      value = value - reacstart_[condnum]/my::funct_.Dot(my::ephinp_[k]);
+    else
+      value = 0;
+
+    return;
+}
+
+///*----------------------------------------------------------------------------------*
+// |  calculate reaction coefficient derivative for "delayed" reactions    thon 03/14 |
+// *----------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaCoeffDeriv(
+        const int                               k,              //!< id of current scalar
+        const int                               toderive,       //!<concentration to be derived to
+        const int                               condnum,        //!< id of current condition
+        double&                                 value,          //!< current reaction value
+        const std::vector<int>                  stoich,         //!<stoichometrie of current condition
+        const DRT::ELEMENTS::reaction_coupling  couplingtype    //!<type of coupling the stoichometry coefficients
+  )
+{
+  double prod = CalcReaBodyForceTermFac(stoich,couplingtype);
+
+  if ( prod > reacstart_[condnum])
+  {
+    if (k==toderive)
+      value= value - (-reacstart_[condnum] / pow(my::funct_.Dot(my::ephinp_[k]),2) );
+  }
+  else
+    value = 0;
+  //std::cout<<__LINE__<<__FILE__<<"\t"<<value<<endl;
+  return;
+}
+
+/*-------------------------------------------------------------------------------*
+ |  calculate reactions body force term for "delayed" reactions       thon 03/14 |
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaBF(
+  const int                               k,            //!< id of current scalar
+  const int                               condnum,      //!< id of current condition
+  double&                                 value         //!< current reaction value
+  )
+{
+  if (value > reacstart_[condnum] )
+    value = value - reacstart_[condnum];
+  else
+    value = 0;
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------------------*
+ |  calculate reactions body force term derivative for "delayed" reactions      thon 03/14 |
+ *-----------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaBFDeriv(
+        const int                               k,              //!< id of current scalar
+        const int                               toderive,       //!<concentration to be derived to
+        const int                               condnum,        //!< id of current condition
+        double&                                 value,          //!< current reaction value
+        const std::vector<int>                  stoich,         //!<stoichometrie of current condition
+        const DRT::ELEMENTS::reaction_coupling  couplingtype    //!<type of coupling the stoichometry coefficients
+  )
+{
+  double prod = CalcReaBodyForceTermFac(stoich,couplingtype);
+
+  if ( prod > reacstart_[condnum]) { }
+  else
+    value = 0;
+
+  return;
 }
 
 
@@ -606,13 +750,19 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
   const LINALG::Matrix<my::nen_,1>&      diff
   )
 {
-  // first care for Term K(c)*(\partial_c c)=Id*K(c)
-    my::CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,phinp,reamanager,conv,sgconv,diff);
+  // -----------------first care for Term K(c)*(\partial_c c)=Id*K(c)--------------------------------------
 
-    // second care for Term (\partial_c K(c)) .* c - (\partial_c f_{reabody}(c))
+  my::CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,phinp,reamanager,conv,sgconv,diff);
+
+
+  // -----------------second care for Term (\partial_c K(c)) .* c - (\partial_c f_{reabody}(c))------------
+
+  // dynamic cast to Advanced_Reaction-specific reaction manager
+  Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(reamanager);
+
   for (int j=0; j<my::numscal_ ;j++)
   {
-    const double fac_reac        = timefacfac*densnp*( reamanager->GetReaCoeffDerivMatrix(k,j)*phinp - reamanager->GetReaBodyForceDerivMatrix(k,j) );
+    const double fac_reac        = timefacfac*densnp*( reamanager->GetReaCoeffDerivMatrix(k,j)*phinp - reamanageradvreac->GetReaBodyForceDerivMatrix(k,j) );
     const double timetaufac_reac = timetaufac*densnp*reamanager->GetReaCoeffDerivMatrix(k,j)*phinp;
 
     //----------------------------------------------------------------
