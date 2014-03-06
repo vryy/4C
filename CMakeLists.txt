@@ -452,6 +452,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/fluidporo.cpp
   src/drt_mat/fourieriso.cpp
   src/drt_mat/growth_ip.cpp
+  src/drt_mat/growth_law.cpp
   src/drt_mat/growth_scd.cpp
   src/drt_mat/scatra_growth_scd.cpp
   src/drt_mat/herschelbulkley.cpp

@@ -453,6 +453,8 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_isovolHUdependentneohooke:
   case INPAR::MAT::mes_isovolaaagasser:
   case INPAR::MAT::mes_isoratedep:
+  case INPAR::MAT::m_growth_linear:
+  case INPAR::MAT::m_growth_exponential:
   {
     return Teuchos::null;
   }

@@ -23,6 +23,7 @@ Maintainer: Susanna Tinkl
 
 
 #include "growth_ip.H"
+#include "growth_law.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_utils_factory.H"  // for function Factory in Unpack
@@ -40,25 +41,47 @@ MAT::PAR::Growth::Growth(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  density_(matdata->GetDouble("DENS")),
   idmatelastic_(matdata->GetInt("IDMATELASTIC")),
+  idgrowthlaw_(matdata->GetInt("GROWTHFUNCTION")),
   starttime_(matdata->GetDouble("STARTTIME")),
   endtime_(matdata->GetDouble("ENDTIME")),
-  abstol_(matdata->GetDouble("TOL")),
-  kthetaplus_(matdata->GetDouble("KPLUS")),
-  mthetaplus_(matdata->GetDouble("MPLUS")),
-  kthetaminus_(matdata->GetDouble("KMINUS")),
-  mthetaminus_(matdata->GetDouble("MMINUS")),
-  hommandel_(matdata->GetDouble("HOMMANDEL"))
+  abstol_(matdata->GetDouble("TOL"))
 {
-  const std::string *gfuncstring = matdata->Get<std::string>("GROWTHFUNCTION");
+  // retrieve problem instance to read from
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
 
-  if(*gfuncstring == "linear")
-    functionType_ = MAT::PAR::growth_linear;
-  else if(*gfuncstring == "exponential")
-    functionType_ = MAT::PAR::growth_exp_degreasing;
-  else
-    dserror("Unknown Permeabilityfunction: %s", gfuncstring->c_str());
+  // for the sake of safety
+  if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
+    dserror("Sorry dude, cannot work out problem instance.");
+  // yet another safety check
+  if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
+    dserror("Sorry dude, no materials defined.");
+
+  // retrieve validated input line of material ID in question
+  Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(idgrowthlaw_);
+
+  switch (curmat->Type())
+  {
+  case INPAR::MAT::m_growth_linear:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawLinear(curmat));
+    MAT::PAR::GrowthLawLinear* params = static_cast<MAT::PAR::GrowthLawLinear*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
+  case INPAR::MAT::m_growth_exponential:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawExp(curmat));
+    MAT::PAR::GrowthLawExp* params = static_cast<MAT::PAR::GrowthLawExp*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
+  default:
+    dserror("unknown material type %d", curmat->Type());
+    break;
+  }
 }
 
 
@@ -191,13 +214,16 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
   // Unpack data of elastic material (these lines are copied from drt_element.cpp)
   std::vector<char> dataelastic;
   ExtractfromPack(position,data,dataelastic);
-  if (dataelastic.size()>0) {
+  if (dataelastic.size()>0)
+  {
     DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
     MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
     if (matel==NULL)
       dserror("failed to unpack elastic material");
     matelastic_ = Teuchos::rcp(matel);
-  } else matelastic_ = Teuchos::null;
+  }
+  else
+    matelastic_ = Teuchos::null;
 
   // alternative way to unpack, but not in postprocessing
   // if (params_!=NULL) {
@@ -554,29 +580,8 @@ void MAT::Growth::EvaluateGrowthFunction
   double theta
 )
 {
-  // parameters
-  const double hommandel   = params_->hommandel_;
-  const double kthetaplus  = params_->kthetaplus_; //1.0; 0.5;
-  const double mthetaplus  = params_->mthetaplus_; //2.0; 4.0;
-  const double thetaplus   = 1.5;
-  const double kthetaminus = params_->kthetaminus_; //2.0; 0.25;
-  const double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
-  const double thetaminus  = 0.5;
-
-  double ktheta  = 0.0;
-
-  if (traceM > hommandel) {
-    ktheta  = kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus);
-  } else if (traceM < hommandel) {
-    ktheta  = kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus);
-  }
-
-  if(params_->functionType_ == PAR::growth_linear)
-    growthfunc = ktheta * (traceM - hommandel);
-  else if(params_->functionType_ == PAR::growth_exp_degreasing)
-    growthfunc = theta * exp(-traceM*traceM/(hommandel*hommandel));
-  else
-    dserror("undefined growth function type");
+  params_->growthlaw_->EvaluateGrowthFunction(growthfunc, traceM, theta);
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -591,49 +596,7 @@ void MAT::Growth::EvaluateGrowthFunctionDerivTheta
   const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic
 )
 {
-  // parameters
-  const double hommandel   = params_->hommandel_;
-  const double kthetaplus  = params_->kthetaplus_; //1.0; 0.5;
-  const double mthetaplus  = params_->mthetaplus_; //2.0; 4.0;
-  const double thetaplus   = 1.5;
-  const double kthetaminus = params_->kthetaminus_; //2.0; 0.25;
-  const double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
-  const double thetaminus  = 0.5;
-
-  double ktheta  = 0.0;
-  double dktheta = 0.0;
-
-  if (traceM > hommandel) {
-    ktheta  = kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus);
-    dktheta = mthetaplus*kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus-1.0)/(1.0-thetaplus);
-  } else if (traceM < hommandel) {
-    ktheta  = kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus);
-    dktheta = mthetaminus*kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus-1.0)/(1.0-thetaminus);
-  }
-
-  double temp = 0.0;
-  for (int i = 0; i < 6; i++)
-  {
-    temp += Cdach(i) *
-            (   cmatelastic(i, 0) * Cdach(0) + cmatelastic(i, 1) * Cdach(1)
-              + cmatelastic(i, 2) * Cdach(2) + cmatelastic(i, 3) * Cdach(3)
-              + cmatelastic(i, 4) * Cdach(4) + cmatelastic(i, 5) * Cdach(5));
-  }
-
-  double dtraceM =  -(2.0 * traceM + temp) / theta;
-
-
-  if(params_->functionType_ == PAR::growth_linear)
-    dgrowthfunctheta = dktheta * (traceM - hommandel) + ktheta * dtraceM;
-  else if(params_->functionType_ == PAR::growth_exp_degreasing)
-    dgrowthfunctheta =  exp(-traceM*traceM/(hommandel*hommandel)) *
-                        (
-                              1.0
-                            - 2.0 * traceM/(hommandel*hommandel) * theta * dtraceM
-                        );
-  else
-    dserror("undefined growth function type");
-
+  params_->growthlaw_->EvaluateGrowthFunctionDerivTheta(dgrowthfunctheta, traceM, theta, Cdach, cmatelastic);
   return;
 }
 
@@ -650,49 +613,7 @@ void MAT::Growth::EvaluateGrowthFunctionDerivC
   const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat
 )
 {
-  // parameters
-  const double hommandel   = params_->hommandel_;
-  const double kthetaplus  = params_->kthetaplus_; //1.0; 0.5;
-  const double mthetaplus  = params_->mthetaplus_; //2.0; 4.0;
-  const double thetaplus   = 1.5;
-  const double kthetaminus = params_->kthetaminus_; //2.0; 0.25;
-  const double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
-  const double thetaminus  = 0.5;
-
-  double ktheta  = 0.0;
-
-  if (traceM > hommandel) {
-    ktheta  = kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus);
-  } else if (traceM < hommandel) {
-    ktheta  = kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus);
-  }
-
-  if(params_->functionType_ == PAR::growth_linear)
-  {
-    for (int j = 0; j < NUM_STRESS_3D; j++)
-    {
-      double Ccmatelasj =    cmat(0, j) * C(0) + cmat(1, j) * C(1)
-                          + cmat(2, j) * C(2) + cmat(3, j) * C(3)
-                          + cmat(4, j) * C(4) + cmat(5, j) * C(5);
-
-      dgrowthfuncdC(j) = ktheta * (S(j)+0.5*Ccmatelasj);
-    }
-  }
-  else if(params_->functionType_ == PAR::growth_exp_degreasing)
-  {
-    double expdC = - 2.0 * theta * traceM/(hommandel*hommandel)
-                                   * exp(-traceM*traceM/(hommandel*hommandel));
-    for (int j = 0; j < NUM_STRESS_3D; j++)
-    {
-      double Ccmatelasj =    cmat(0, j) * C(0) + cmat(1, j) * C(1)
-                          + cmat(2, j) * C(2) + cmat(3, j) * C(3)
-                          + cmat(4, j) * C(4) + cmat(5, j) * C(5);
-
-      dgrowthfuncdC(j) = expdC * (S(j)+0.5*Ccmatelasj);
-    }
-  }
-  else
-    dserror("undefined growth function type");
+  params_->growthlaw_->EvaluateGrowthFunctionDerivC(dgrowthfuncdC,traceM,theta,C,S,cmat);
 
   return;
 }

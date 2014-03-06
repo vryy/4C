@@ -30,6 +30,7 @@ Maintainer: Susanna Tinkl
 
 namespace MAT
 {
+  class GrowthLaw;
 
   namespace PAR
   {
@@ -55,28 +56,18 @@ namespace MAT
 
       /// @name material parameters
       //@{
-      /// density
-      const double density_;
       /// elastic material number
       const int idmatelastic_;
+      /// elastic material number
+      const int idgrowthlaw_;
       /// start growth after starttime
       const double starttime_;
       /// stop growth after endtime
       const double endtime_;
       /// tolerance for local Newton iteration
       const double abstol_;
-      /// growth law parameter kthetaplus
-      const double kthetaplus_;
-      /// growth law parameter mthetaplus
-      const double mthetaplus_;
-      /// growth law parameter kthetaminus
-      const double kthetaminus_;
-      /// growth law parameter mthetaminus
-      const double mthetaminus_;
-      /// homeostatic value for mandelstress
-      const double hommandel_;
-      /// growth function type
-      GrowthFunctionType functionType_;
+      /// growth law
+      Teuchos::RCP<MAT::GrowthLaw> growthlaw_;
       //@}
 
       /// create material instance of matching type with my parameters
@@ -180,7 +171,13 @@ namespace MAT
                           const int eleGID );
 
     /// Return density
-    virtual double Density() const {return params_->density_;}
+    virtual double Density() const {dserror("growth material needs gauss point data for density!"); return 0.0;}
+    virtual double Density(int gp) const
+    {
+      double density = matelastic_->Density();
+      double theta_gp = (*theta_)[gp];
+      return density * theta_gp * theta_gp * theta_gp;
+    };
 
     /// Return theta
     Teuchos::RCP<std::vector<double> > Gettheta() const {return theta_;}
@@ -210,6 +207,7 @@ namespace MAT
     Teuchos::RCP<std::vector<double> > mandel_;
     /// elastic material
     Teuchos::RCP<MAT::So3Material> matelastic_;
+
     /// indicates if material is initialized
     bool isinit_;
 

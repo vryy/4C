@@ -2141,7 +2141,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
         for (int jdim = 0; jdim <my::nsd_; ++jdim)
         {
           ecoupl_u(fvi+idim,fui+jdim) += my::funct_(vi) * lin_resM_Dus(idim,fui+jdim);
-          ;
         }
       } // end for (idim)
     } //vi

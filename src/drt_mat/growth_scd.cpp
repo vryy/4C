@@ -20,6 +20,7 @@ See also Bachelor thesis Jasper Rieser (2013)
 
 
 #include "growth_scd.H"
+#include "growth_law.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"   // for function Factory in Unpack
 #include "../drt_lib/drt_utils_factory.H"   // for function Factory in Unpack
@@ -268,7 +269,7 @@ void MAT::GrowthScd::EvaluateGrowthFunction
   const double satcoeff = params_->satcoeff_;
 
   // scale with concentration dependent factor
-  growthfunc = concentration_/(satcoeff+concentration_) * growthfunc;
+ growthfunc = concentration_/(satcoeff+concentration_) * growthfunc;
 
   return;
 }

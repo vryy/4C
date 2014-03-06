@@ -77,6 +77,12 @@ namespace MAT
       int matnum  ///< material ID
       );
 
+    /// Return material density at gauss point (if provided by the specific material)
+    virtual double Density(int gp) const
+    {
+      return Density();
+    }
+
     /// Return material density (if provided by the specific material)
     virtual double Density() const
     {

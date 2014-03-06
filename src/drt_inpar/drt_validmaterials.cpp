@@ -1405,17 +1405,43 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "integration point based growth",
                                             INPAR::MAT::m_growth));
 
-    AddNamedString(m,"GROWTHFUNCTION","growth function: linear(Default) or exponential","linear");
-    AddNamedReal(m,"DENS","Density");
+    AddNamedInt(m,"GROWTHLAW","number of growth law in input file");
     AddNamedInt(m,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
     AddNamedReal(m,"STARTTIME","start growth after this time");
     AddNamedReal(m,"ENDTIME","end growth after this time");
     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // linear growth law
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GROWTH_LINEAR",
+                                            "linear growth law",
+                                            INPAR::MAT::m_growth_linear));
+
     AddNamedReal(m,"KPLUS","growth law parameter kthetaplus");
     AddNamedReal(m,"MPLUS","growth law parameter mthetaplus");
     AddNamedReal(m,"KMINUS","growth law parameter kthetaminus");
     AddNamedReal(m,"MMINUS","growth law parameter mthetaminus");
     AddNamedReal(m,"HOMMANDEL","homeostatic value for mandelstress");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // exponential growth law
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GROWTH_EXP",
+                                            "linear growth law",
+                                            INPAR::MAT::m_growth_exponential));
+
+    AddNamedReal(m,"MANDEL","reference value for mandelstress");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1629,17 +1655,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                              "integration point based and scalar dependent growth",
                                              INPAR::MAT::m_growthscd));
 
-     AddNamedString(m,"GROWTHFUNCTION","growth function: linear(Default) or exponential","linear");
-     AddNamedReal(m,"DENS","Density");
+     AddNamedInt(m,"GROWTHFUNCTION","growth function: linear(Default) or exponential");
      AddNamedInt(m,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
      AddNamedReal(m,"STARTTIME","start growth after this time");
      AddNamedReal(m,"ENDTIME","end growth after this time");
      AddNamedReal(m,"TOL","tolerance for local Newton iteration");
-     AddNamedReal(m,"KPLUS","growth law parameter kthetaplus");
-     AddNamedReal(m,"MPLUS","growth law parameter mthetaplus");
-     AddNamedReal(m,"KMINUS","growth law parameter kthetaminus");
-     AddNamedReal(m,"MMINUS"," law parameter mthetaminus");
-     AddNamedReal(m,"HOMMANDEL","homeostatic value for mandelstress");
      AddNamedReal(m,"SATCOEFF","saturation coefficient for concentration dependent growth law");
 
      AppendMaterialDefinition(matlist,m);

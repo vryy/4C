@@ -105,6 +105,8 @@ namespace INPAR
       mes_isoratedep,  ///< isotropic iscochoric frequency dependent viscos potential summand
       m_cnst_art,            ///< 1D_Artery constant material properties
       m_growth,   ///< integration point based growth
+      m_growth_linear,   ///< linear growth law
+      m_growth_exponential,   ///< exponential growth law
       m_growthscd,   ///< integration point based growth (scalar dependent)
       m_constraintmixture,  ///< growth and remodeling of arteries
       m_biofilm,   ///< biofilm modeling (convection-diffusion-reaction)

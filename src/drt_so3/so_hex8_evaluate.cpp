@@ -1888,7 +1888,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {
-      double density = Material()->Density();
+      double density = Material()->Density(gp);
 
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
@@ -2294,7 +2294,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {
-      double density = Material()->Density();
+      double density = Material()->Density(gp);
 
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
@@ -2500,7 +2500,7 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
     params.set<int>("gp",gp);
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
     so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
-    density = Material()->Density();
+    density = Material()->Density(gp);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

@@ -150,7 +150,7 @@ namespace MAT
      );
 
     /// Return density
-    virtual double Density() const {return params_->density_;}
+    //virtual double Density() const {return params_->density_;}
 
     /// Return theta
     Teuchos::RCP<std::vector<double> > Gettheta() const {return theta_;}
@@ -217,9 +217,9 @@ namespace MAT
     /// my material parameters
     MAT::PAR::GrowthScd* params_;
 
-    /// determinante of F_e
+    /// determinante of elastic deformation gradient F_e for each gauss point
     Teuchos::RCP<std::vector<double> > detFe_;
-    /// time derivative of theta
+    /// time derivative of growth factor theta for each gauss point
     Teuchos::RCP<std::vector<double> > dtheta_;
     /// concentration (e.g. nutrients)
     double concentration_;
