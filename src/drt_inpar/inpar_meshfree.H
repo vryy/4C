@@ -21,24 +21,44 @@ namespace INPAR
 /// Input parameters for Meshfree
 namespace MESHFREE
 {
- /*--------------------------------------------------------------------------*
-  *                                                                          *
-  * enums to specify meshfree problems                                       *
-  *                                                                          *
-  * Any changes should be consistent with changes in DRT_validarameters.cpp  *
-  *                                                                          *
-  *                                                                nis Mar12 *
-  *--------------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------------*
+   *                                                                          *
+   * enums to specify meshfree problems                                       *
+   *                                                                          *
+   * Any changes should be consistent with changes in drt_validarameters.cpp  *
+   *                                                                          *
+   *                                                                nis Mar12 *
+   *--------------------------------------------------------------------------*/
+
   //! type of meshfree discretisation
-  enum meshfreetype {maxent, particle};
+  enum meshfreetype {
+    maxent,
+    particle
+  };
+
   //! type of prior
-  enum priortype {p_gauss};
+  enum priortype {
+    p_gauss
+  };
+
   //! skewness type of prior
-  enum priorskew {p_sym, p_0815};
+  enum priorskew {
+    p_sym,
+    p_0815
+  };
+
   //! type of compliance condition
-  enum compltype {c_linear, c_stream, c_freesp};
+  enum compltype {
+    c_linear,
+    c_stream,
+    c_freesp
+  };
+
   //! type of gap function/projection
-  enum gaptype {g_perp, g_stream};
+  enum gaptype {
+    g_perp,
+    g_stream
+  };
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -53,7 +73,10 @@ namespace MESHFREE
    *
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  enum NodeAssignType {procwise, blockwise};
+  enum NodeAssignType {
+    procwise,
+    blockwise
+  };
 
 
 }  // namespace MESHFREE

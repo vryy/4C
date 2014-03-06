@@ -306,7 +306,10 @@ int DRT::MESHFREE::CellGaussPoints<distype>::GetCellGaussPointsAtX(
     J.MultiplyNT(dN_fsm,Xa);
     const double det = J.Determinant();
     if (det<0)
-      dserror("Jacobi determinant is negative! Check elements in input file!");
+    {
+      std::cout << "J:" << std::endl << J << std::endl << "dN_fsm:" << std::endl << dN_fsm << std::endl << "Xa:" << std::endl << Xa << std::endl;
+      return -1;
+    }
     w.Scale(det);
   }
   // generally non-constant Jacobian - evaluation at Gauss points
@@ -317,7 +320,10 @@ int DRT::MESHFREE::CellGaussPoints<distype>::GetCellGaussPointsAtX(
       J.MultiplyNT(dN_fsm,Xa);
       const double det = J.Determinant();
       if (det<0)
-        dserror("Jacobi determinant is negative! Check elements in input file!");
+      {
+        std::cout << "J:" << std::endl << J << std::endl << "dN_fsm:" << std::endl << dN_fsm << std::endl << "Xa:" << std::endl << Xa << std::endl;
+        return -1;
+      }
       w(i) *= det;
     }
   }

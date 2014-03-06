@@ -90,7 +90,7 @@ class MeshfreeFluidBoundaryCalc: public MeshfreeFluidBoundaryInterface
   static const int bdrynsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
   //! number of points of boundary element
-  static const int bdrynek_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int bdrynep_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   //! number of spatial dimensions of parent element
   static const int nsd_ = bdrynsd_+1;
@@ -163,9 +163,9 @@ protected:
   DRT::ELEMENTS::FluidEleParameter* fldpara_;
 
   //! node coordinates for boundary cell
-  LINALG::SerialDenseMatrix nxyz_;
+  Teuchos::RCP<LINALG::SerialDenseMatrix> nxyz_;
   //! point coordinates for boundary cell
-  LINALG::SerialDenseMatrix kxyz_;
+  Teuchos::RCP<LINALG::SerialDenseMatrix> pxyz_;
   //! Gauss point coordinates for boundary cell
   LINALG::SerialDenseMatrix gxyz_;
   //! Gauss point weights for boundary cell

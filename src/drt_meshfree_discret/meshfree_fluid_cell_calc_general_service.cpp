@@ -19,6 +19,7 @@ Maintainer: Keijo Nissen
 
 #include "drt_meshfree_discret.H"
 #include "drt_meshfree_node.H"        //
+#include "drt_meshfree_utils.H"  // for error output
 #include "drt_meshfree_cell_utils.H"  // to get Gauss points in real space
 
 #include "../drt_fem_general/drt_utils_maxent_basisfunctions.H"
@@ -207,10 +208,8 @@ int DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::IntegrateShapeFunction(
     }
 
     // calculate basis functions and derivatives via max-ent optimization
-    int error = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(nsd_,Teuchos::rcpFromRef(distng),sfunct_);
-
-    if (error)
-      dserror("Something went wrong when calculating the meshfree basis functions.");
+    int err = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(nsd_,Teuchos::rcpFromRef(distng),sfunct_);
+    if (err>0) DRT::MESHFREE::OutputMeshfreeError(err);
 
     for (int ui=0; ui<nen_; ++ui) // loop rows  (test functions)
     {

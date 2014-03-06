@@ -13,6 +13,7 @@ Maintainer: Keijo Nissen
 #include <iomanip>
 #include <string>
 #include "drt_utils_maxent_basisfunctions.H"
+#include "../drt_meshfree_discret/drt_meshfree_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -158,27 +159,9 @@ int DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::maxent_basisfunction(
   // check and if necessary adapt dimension of diffx
   if (diffx->M()!=dim)
   {
-    // compute covariance matrix
-    const int havedim = diffx->M();
-    LINALG::SerialDenseMatrix C(havedim,havedim);
-    C.Multiply('N','T',1.0,*diffx,*diffx,0.0);
-
-    // get eigenvlaues and eigenvectors of covariance matrix
-    LINALG::SerialDenseVector E(havedim);
-    LINALG::SymmetricEigenProblem(C,E,true);
-
-    // check for zero and negative eigenvalues
-    for (int i=0; i<(havedim-dim); ++i)
-      if (E(i)>1e-14)
-        dserror("Covariance matrix has only %i zero eigenvalues but needs %i for dimension reduction.\n So far, boundaries have to be plane/straight",i,(havedim-dim));
-      else if (E(i)<-1e-14)
-        dserror("Covariance matrix has negative eigenvalues.");
-
-    // reduce dimension of diffx
-    LINALG::SerialDenseMatrix C_reduced(View,C[(havedim-dim)],havedim,havedim,dim);
-    Teuchos::RCP<LINALG::SerialDenseMatrix> diffx_reduced = Teuchos::rcp(new LINALG::SerialDenseMatrix(dim,na));
-    diffx_reduced->Multiply('T','N',1.0,C_reduced,*diffx,0.0);
-    diffx = diffx_reduced;
+    int num_reduced = ReduceCloudDimensionOnFaces(diffx);
+    if (diffx->M()!=dim)
+      dserror("Covariance matrix has %i zero eigenvalues but needs to have %i for dimension reduction to %i.\nSo far, boundaries have to be plane/straight",num_reduced,num_reduced+(diffx->M()-dim),dim);
   }
 
   // check if we actually need to compute basis functions
@@ -200,21 +183,22 @@ int DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::maxent_basisfunction(
   // initilize vector/matrix for prior functions
   LINALG::SerialDenseVector q(na);
   LINALG::SerialDenseMatrix dxq(0,0);
-  if (der) {
+  if (der)
     dxq.Reshape(dim,na);
-  }
+
   // get prior functions and spatial derivatives
   SetPriorFunctDeriv(q,dxq,*diffx);
 
   // initilize matrices for consistency/compliance conditions
   LINALG::SerialDenseMatrix c(dim,na);
   std::vector<LINALG::SerialDenseMatrix> dxc(0);
-  if (der) {
+  if (der)
+  {
     dxc.resize(dim);
-    for (size_t i=0; i<dim; i++) {
+    for (size_t i=0; i<dim; i++)
       dxc[i].Reshape(dim,na);
-    }
   }
+
   // get consistency/compliance conditions and spatial derivatives
   SetComplCondFunctDeriv(c,dxc,*diffx,maxent_->type_,upsilon);
 
@@ -223,17 +207,21 @@ int DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::maxent_basisfunction(
   LINALG::Matrix<dim,1>   r(false);    // no initialisation needed
   LINALG::Matrix<dim,dim> Jinv(false); // no initialisation needed
 
+  // loop index initialized outside to be usable in error message if necessary
   int i;
-  for(i=0;i<maxent_->newtonmaxiter_;i++) {
+  for(i=0;i<maxent_->newtonmaxiter_;i++)
+  {
     // get parameters of dual problem
-    dualprob_->UpdateParams(*funct,r,Jinv,na,q,c,lam);
+    int err = dualprob_->UpdateParams(*funct,r,Jinv,na,q,c,lam);
+    if (err>0)
+      return err;
+
     // perform Newton step
     lam.MultiplyNN(-1.0,Jinv,r,1.0);
 
     // check if converged
-    if (r.Norm2()<maxent_->newtontol_) {
+    if (r.Norm2()<maxent_->newtontol_)
       break;
-    }
   }
 
   // update dual problem parameters at new lambda
@@ -250,11 +238,14 @@ int DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::maxent_basisfunction(
   }
 
   // compute spatial derivatives of basis function if required
-  if (der) {
-    dualprob_->GetDerivs(*funct,*deriv,lam,Jinv,q,dxq,c,dxc);
+  if (der)
+  {
+    int err = dualprob_->GetDerivs(*funct,*deriv,lam,Jinv,q,dxq,c,dxc);
+    if (err>0)
+      return err;
   }
 
-  // return error flag - bit useless though...
+  // everything went fine
   return 0;
 }
 
@@ -298,14 +289,24 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::SetComplCondFunctDeriv(
   std::vector<LINALG::SerialDenseMatrix>      & dxc  , // dim-vector of (dim x numnodes)-matrix
   const LINALG::SerialDenseMatrix             & diffx, // (dim x numnodes)-matrix
   const int                                     type,
-  Teuchos::RCP<const LINALG::SerialDenseVector> upsilon   // eigenvector at evaluation point for inf-flux weighting basis functions
+  Teuchos::RCP<const LINALG::SerialDenseVector> ups    // eigenvector at evaluation point for inf-flux weighting basis functions
   ) const
 {
+  // auxiliary variable: number of nodes
   int na = c.N();
-  // linear consistency
-  if (maxent_->cmpl_==INPAR::MESHFREE::c_linear)
+  // auxiliary variable: 2-norm of upsilon
+  double upsnorm = 0.0;
+  if (ups!=Teuchos::null)
+    upsnorm = ups->Norm2();
+
+  // in case of linear consistency:
+  // ==============================
+  if (maxent_->cmpl_==INPAR::MESHFREE::c_linear or upsnorm<1e-14)
   {
+    // linear consistency terms correspond to distance matrix
     c = diffx;
+
+    // compute spatial derivatives of linear consistency terms if necessary
     if (dxc.size())
     {
       for (size_t i=0;i<dim;i++)
@@ -313,59 +314,118 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::SetComplCondFunctDeriv(
           dxc[i](i,j) = -1.0;
     }
   }
+  // in case of streamline based convective consistency:
+  // ===================================================
   else if (maxent_->cmpl_==INPAR::MESHFREE::c_stream)
   {
     // check whether eigenvector at evaluation point has already been evaluated
-    if (upsilon==Teuchos::null) dserror("First compute eigenvectors at evaluation point by means of solution basis function before evaluation inf-flux weighting basis functions!");
-    // rotate to streamline space
-    //
-    // first (only if 2D or 3D):
-    //   - rotation around z-axis to get projection of upsilon into xy-plane
-    //   - this determines the y-component of the compliance matrix
-    // second (only if 3D):
-    //   - rotation around y-axis to be at upsilon in xyz-space
-    //   - this determines the z-component of the compliance matrix
-    c.Zero();
-    LINALG::SerialDenseVector temp(na,false);
-    temp.Multiply('T','N', 1.0, diffx, *upsilon, 0.0);
-    for (int j=0; j<na; ++j)
-      c(0,j) = (exp(temp(j))-1);///(exp(upsilon.Norm2()*10.0/2.0 - 1));
+    if (ups==Teuchos::null) dserror("First compute eigenvectors at evaluation point by means of solution basis function before evaluation inf-flux weighting basis functions!");
 
+    // clear consistency matrix
+    c.Zero();
+
+    // compute streamline convective consistency term
+    LINALG::SerialDenseVector temp(na,false);
+    temp.Multiply('T','N', 1.0, diffx, *ups, 0.0);
+    for (int j=0; j<na; ++j)
+      c(0,j) = (exp(temp(j))-1); // (exp(ups.Norm2()*10.0/2.0 - 1));
+
+    // compute spatial derivatives of streamline convective consistency term if necessary
     if (dxc.size())
     {
       LINALG::SerialDenseMatrix& dxc0 = dxc[0];
       for (int j=0; j<na; ++j)
         for (int k=0; k<dim; ++k)
-          dxc0(k,j) = - exp(temp(j)) * (*upsilon)(k);///(exp(upsilon.Norm2()*10.0/2.0 - 1));
+          dxc0(k,j) = - exp(temp(j)) * (*ups)(k);///(exp(ups->Norm2()*10.0/2.0 - 1));
     }
-    // second component (if at least 2D:
-    //   - rotation around z-axis to get projection of upsilon into xy-plane
-    //   - this determines the y-component of the compliance matrix
-    // third component (only if 3D):
-    //   - rotation around y-axis to be at upsilon in xyz-space
-    //   - this determines the z-component of the compliance matrix
-    for(int i=2; i>3-dim; --i)
+
+    // switch over dimension for linear consistency perpendicular to convection
+    switch (dim)
     {
-      double alpha = atan2((*upsilon)(0),(*upsilon)(3-i));
-      double rot[dim];
-      rot[0] = cos(alpha);
-      rot[3-i] = -sin(alpha);
-      if (dim==3) rot[i] = 1;
-      for (int k=0; k<dim; ++k)
-        for (int j=0; j<na; ++j)
-          c(3-i,j) += rot[k]*diffx(k,j);
-//      eupsilon(0,0) = rot[0] * eupsilon(0,0);
-//      eupsilon(0,0) += rot[3-i] * eupsilon(3-i,0);
-//      eupsilon(3-i) = 0.0;
+    case 2:
+    {
+      // get direction perpendicular to upsilon
+      LINALG::Matrix<dim,1> perp(false);
+      perp(0,0) =  (*ups)(1)/upsnorm;
+      perp(1,0) = -(*ups)(0)/upsnorm;
+
+      // compute linear consistency terms perpendicular to upsilon
+      for (int j=0; j<na; ++j)
+        c(1,j) = perp(0,0)*diffx(0,j) + perp(1,0)*diffx(1,j);
+
+      // compute spatial derivatives of linear consistency terms perpendicular to upsilon if necessary
       if (dxc.size())
       {
+        LINALG::SerialDenseMatrix& dxc1 = dxc[1];
         for (int j=0; j<na; ++j)
           for (int k=0; k<dim; ++k)
-            dxc[3-i](k,j) = -rot[k];
+            dxc1(k,j) = - perp(k,0);
       }
+
+      break;
     }
+    case 3:
+    {
+      // initialization
+      LINALG::Matrix<dim,2> perp(false);
+
+      // note:
+      // ======
+      // To enforce linear consistency perpendicular to upsilon, we need to
+      // impose linear consistency in two linearly independant directions in
+      // the plane normal to upsilon. It does not matter which two. However,
+      // orthogonality is assumed to improve robustness. Thus, our strategy is
+      // to find any direction perpendicular to upsilon and then get the
+      // second by cross product of upsilon and the first.
+
+      // get first direction perpendicular to upsilon
+      if (std::abs((*ups)(2)/upsnorm-1)>1e-3)
+      {
+        // for upsilon not too z-dominant (1e-3 is arbitrary value):
+        const double scale = std::sqrt((*ups)(0)*(*ups)(0) + (*ups)(1)*(*ups)(1));
+        perp(0,0) =  (*ups)(1)/scale;
+        perp(1,0) = -(*ups)(0)/scale;
+        perp(2,0) = 0.0;
+      }
+      else
+      {
+        // for z-dominant upsilon:
+        const double scale = std::sqrt((*ups)(1)*(*ups)(1) + (*ups)(2)*(*ups)(2));
+        perp(0,0) = 0.0;
+        perp(1,0) =  (*ups)(2)/scale;
+        perp(2,0) = -(*ups)(1)/scale;
+      }
+
+      // get second direction by cross-product
+      perp(0,1) = (*ups)(1)/upsnorm*perp(2,0) - (*ups)(2)/upsnorm*perp(1,0);
+      perp(1,1) = (*ups)(2)/upsnorm*perp(0,0) - (*ups)(0)/upsnorm*perp(2,0);
+      perp(2,1) = (*ups)(0)/upsnorm*perp(1,0) - (*ups)(1)/upsnorm*perp(0,0);
+
+      // compute linear consistency terms perpendicular to upsilon
+      for (int i=1; i<dim; ++i)
+        for (int j=0; j<na; ++j)
+          c(i,j) = perp(0,i-1)*diffx(0,j) + perp(1,i-1)*diffx(1,j) + perp(2,i-1)*diffx(2,j);
+
+      // compute spatial derivatives of linear consistency terms perpendicular to upsilon if necessary
+      if (dxc.size())
+      {
+        for (int i=1; i<dim; ++i)
+        {
+          LINALG::SerialDenseMatrix& dxci = dxc[i];
+          for (int j=0; j<na; ++j)
+            for (int k=0; k<dim; ++k)
+              dxci(k,j) = - perp(k,i-1);
+        }
+      }
+
+      break;
+    }
+    default:
+      dserror("Unknown dimension for streamline convective consistency.");
+    }
+
   }
-  // no other comliance conditions implemented
+  // no other compliance conditions implemented
   else {
     dserror("Unknown consistency condition for MaxEnt dual problem.");
   }
@@ -382,7 +442,7 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::SetComplCondFunctDeriv(
  | partition-of-unity constraint                         (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 template<int dim>
-void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualStandard::UpdateParams(
+int DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualStandard::UpdateParams(
   LINALG::SerialDenseVector       & funct,
   LINALG::Matrix<dim,1>           & r    ,
   LINALG::Matrix<dim,dim>         & J    ,
@@ -405,7 +465,8 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualStandard::UpdateParams(
   /*------------------------------------------------------------------------*
    * for-loop over all nodes
    *------------------------------------------------------------------------*/
-  for (int i=0; i<na; i++) {
+  for (int i=0; i<na; i++)
+  {
     // temporary vector for compliance of node a
     const LINALG::Matrix<dim,1> ca(const_cast<double*>(c[i]),true);
     // functi = q_i exp(lam_j c_ji) ["/ (q_k exp(lam_l c_lk))" will follow]
@@ -421,11 +482,19 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualStandard::UpdateParams(
   /*------------------------------------------------------------------------*
    * final scaling
    *------------------------------------------------------------------------*/
+
   funct.Scale(1.0/fsum);           // ["/ (q_k exp(lam_l c_lk))"]
   r.Scale(1.0/fsum);               // ["/ (q_k exp(lam_l c_lk))"]
   J.MultiplyNT(-1.0,r,r,1.0/fsum); // ["/ (q_k exp(lam_l c_lk)) - r_i r_j"]
 
+  // return with error code 1 if determinant of J is too close to zero
+  if (std::abs(J.Determinant())<1e-25)
+    return 1;
+
   J.Invert();
+
+  // everything went fine
+  return 0;
 };
 
 /*--------------------------------------------------------------------------*
@@ -433,7 +502,7 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualStandard::UpdateParams(
  | partition-of-unity constraint                         (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 template<int dim>
-void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualStandard::GetDerivs(
+int DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualStandard::GetDerivs(
   const LINALG::SerialDenseVector              & funct, // basis functions values
         LINALG::SerialDenseMatrix              & deriv, // spatial derivatives of basis functions
   const LINALG::Matrix<dim,1>                  & lam ,  // argmax of dual problem
@@ -503,4 +572,6 @@ void DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::DualStandard::GetDerivs(
   tempf_IIb.MultiplyNN(-1.0,Jinv,tempf_IIc);         // IIb = - Jinv * IIc
 
   deriv.Multiply('T','N',1.0,temp_IIb,temp_IIa,1.0); // (deriv = I + IIa * IIb)^T
+
+  return 0;
 }

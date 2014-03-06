@@ -597,7 +597,12 @@ void DRT::MESHFREE::MeshfreeDiscretization::ComputeValuesAtNodes(
       // get solution basis functions of neighbourhood
       //------------------------------------------------------------------------
       Teuchos::RCP<LINALG::SerialDenseVector> funct = Teuchos::rcp(new LINALG::SerialDenseVector(nneighbour,false));
-      solutionapprox_->GetMeshfreeBasisFunction(facedim, Teuchos::rcpFromRef(distnn), funct);
+      int err = solutionapprox_->GetMeshfreeBasisFunction(facedim, Teuchos::rcpFromRef(distnn), funct);
+      if (err>0)
+      {
+        std::cout << "When computing the solution basis functions at node " << i << ":" << std::endl;
+        DRT::MESHFREE::OutputMeshfreeError(err);
+      }
 
       //------------------------------------------------------------------------
       // compute values at current node

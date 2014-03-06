@@ -16,6 +16,7 @@ Maintainer: Keijo Nissen
 #include "meshfree_fluid_cell_calc.H"             // class declarations
 
 #include "meshfree_fluid_cell.H"                  //
+#include "drt_meshfree_utils.H"                    //
 #include "drt_meshfree_node.H"                    //
 #include "drt_meshfree_cell.H"                    //
 #include "drt_meshfree_cell_utils.H"              // to get Gauss points in real space
@@ -318,11 +319,11 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
     D_ = 0;
     Eu_.LightResize(nen_);
     Eu_.Zero();
-    Fu_.LightReshape(2,nen_);
+    Fu_.LightReshape(nsd_,nen_);
     Fu_.Zero();
     Ev_.LightResize(nen_);
     Ev_.Zero();
-    Fv_.LightReshape(2,nen_);
+    Fv_.LightReshape(nsd_,nen_);
     Fv_.Zero();
   }
 
@@ -368,8 +369,12 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
     }
 
     // calculate basis functions and derivatives via max-ent optimization
-    int error = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(nsd_,Teuchos::rcpFromRef(distng),sfunct_,sderiv_);
-    if (error) dserror("Something went wrong when calculating the meshfree basis functions.");
+    int err = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(nsd_,Teuchos::rcpFromRef(distng),sfunct_,sderiv_);
+    if (err>0)
+    {
+      std::cout << "When computing the solution basis functions at gauss point " << iquad << " of cell " << cell->Id() << ":" << std::endl;
+      DRT::MESHFREE::OutputMeshfreeError(err);
+    }
 
     //----------------------------------------------------------------------
     //  evaluation of various values at integration point:
@@ -497,8 +502,12 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
     // calculate weighting basis functions and derivatives via max-ent optimization
     Teuchos::RCP<LINALG::SerialDenseVector> upsilon = Teuchos::rcp(new LINALG::SerialDenseVector(Copy,convvelint_.A(),nsd_));
     upsilon->Scale(-1.0/visc_);
-    error = discret_->GetWeightingApprox()->GetMeshfreeBasisFunction(nsd_,Teuchos::rcpFromRef(distng),wfunct_,wderiv_,upsilon,sfunct_,sderiv_);
-    if (error) dserror("Something went wrong when calculating the meshfree weighting basis functions.");
+    err = discret_->GetWeightingApprox()->GetMeshfreeBasisFunction(nsd_,Teuchos::rcpFromRef(distng),wfunct_,wderiv_,upsilon,sfunct_,sderiv_);
+    if (err>0)
+    {
+      std::cout << "When computing the weighting basis functions at gauss point " << iquad << " of cell " << cell->Id() << ":" << std::endl;
+      DRT::MESHFREE::OutputMeshfreeError(err);
+    }
 
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
@@ -1050,6 +1059,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::ViscousGalPart(
     for (int ui=0; ui<nen_; ++ui)
     {
       const int fui = nsd_*ui;
+      const double * sderivs = (*sderiv_)[ui];
 
       for (int jdim=0; jdim<nsd_;++jdim)
       {
@@ -1059,8 +1069,8 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::ViscousGalPart(
         {
           const int fvi_p_idim = fvi+idim;
 
-          estif_u(fvi_p_idim,fui+jdim) += temp*(*sderiv_)(idim, ui);
-          estif_u(fvi_p_idim,fui+idim) += temp*(*sderiv_)(jdim, ui);
+          estif_u(fvi_p_idim,fui+jdim) += temp*sderivs[idim];
+          estif_u(fvi_p_idim,fui+idim) += temp*sderivs[jdim];
         } // end for (idim)
       } // ui
     } // end for (idim)
@@ -1101,12 +1111,14 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::ViscousGalPart(
   // computation of right-hand-side viscosity term
   for (int vi=0; vi<nen_; ++vi)
   {
+    const double * wderivs = (*wderiv_)[vi];
+
     for (int idim=0; idim<nsd_; ++idim)
     {
       for (int jdim=0; jdim<nsd_; ++jdim)
       {
         /* viscosity term on right-hand side */
-        velforce(idim,vi) -= viscstress(idim,jdim)*(*wderiv_)(jdim,vi);
+        velforce(idim,vi) -= viscstress(idim,jdim)*wderivs[jdim];
       }
     }
   }
@@ -1249,28 +1261,28 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::PressureProjectionFinalize(
   ppmat.Scale(1.0/visc_);
 
   // compute pressure-Galerkin and continuity-Galerkin term from F_
-  LINALG::SerialDenseVector Fu_vec(View,Fu_.A(),2*nen_);
-  LINALG::SerialDenseVector Fv_vec(View,Fv_.A(),2*nen_);
+  LINALG::SerialDenseVector Fu_vec(View,Fu_.A(),nsd_*nen_);
+  LINALG::SerialDenseVector Fv_vec(View,Fv_.A(),nsd_*nen_);
   estif_q_u.Multiply('N','T', 1.0/D_,Ev_,Fu_vec,0.0);
   estif_p_v.Multiply('N','T',-1.0/D_,Fv_vec,Eu_,0.0);
 
   //------------------------------------------------------------------------
-  // pressure projection matrices
+  // rhs-contributions of pressure projection matrices
   //------------------------------------------------------------------------
 
   // compute velocity rhs-contribution from pressure-Galerkin term
-  LINALG::SerialDenseVector temp_v(2*nen_,false);
+  LINALG::SerialDenseVector temp_v(nsd_*nen_,false);
   temp_v.Multiply('N','N',1.0,estif_p_v,epre,0.0);
 
   // add velocity rhs-contributions
-  LINALG::SerialDenseMatrix temp_v_mat(View,temp_v.A(),2,2,nen_);
+  LINALG::SerialDenseMatrix temp_v_mat(View,temp_v.A(),nsd_,nsd_,nen_);
   velforce.Update(-fldparatimint_->TimeFacRhs(),temp_v_mat,1.0);
 
   // compute pressure rhs-contribution from pressure-projection term
   LINALG::SerialDenseVector temp_p(nen_,false);
   temp_p.Multiply('N','N',1.0,ppmat,epre,0.0);
   // compute pressure rhs-contribution from continuity-Galerkin term
-  LINALG::SerialDenseVector evel_vec(View,evel.A(),2*nen_);
+  LINALG::SerialDenseVector evel_vec(View,evel.A(),nsd_*nen_);
   temp_p.Multiply('N','N',1.0,estif_q_u,evel_vec,1.0);
 
   // add pressure rhs-contributions

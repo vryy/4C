@@ -17,6 +17,7 @@
 #include "meshfree_scatra_cell.H"           // class declarations
 #include "drt_meshfree_discret.H"           // for cast to get points
 #include "drt_meshfree_node.H"              // for cast to get points
+#include "drt_meshfree_utils.H"              // for cast to get points
 #include "drt_meshfree_cell.H"              // for cast to get points
 #include "drt_meshfree_cell_utils.H"        // to get Gauss points in real space
 #include "../drt_scatra_ele/scatra_ele_action.H"// for enum of scatra actions
@@ -262,8 +263,12 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
     }
 
     // calculate solution basis functions and derivatives via max-ent optimization
-    int error = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(nsd_,Teuchos::rcpFromRef(distng),sfunct_,sderiv_);
-    if (error) dserror("Something went wrong when calculating the meshfree solution basis functions.");
+    int err = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(nsd_,Teuchos::rcpFromRef(distng),sfunct_,sderiv_);
+    if (err>0)
+    {
+      std::cout << "When computing the solution basis functions at gauss point " << iquad << " of cell " << cell->Id() << ":" << std::endl;
+      DRT::MESHFREE::OutputMeshfreeError(err);
+    }
 
     // get velocity at integration point
     LINALG::SerialDenseVector velint(nsd_,false);
@@ -285,8 +290,12 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
       // calculate weighting basis functions and derivatives via max-ent optimization
       Teuchos::RCP<LINALG::SerialDenseVector> upsilon = Teuchos::rcp(new LINALG::SerialDenseVector(convelint));
       upsilon->Scale(-1.0/diffus_[k]);
-      int error = discret_->GetWeightingApprox()->GetMeshfreeBasisFunction(nsd_,Teuchos::rcpFromRef(distng),wfunct_,wderiv_,upsilon,sfunct_,sderiv_);
-      if (error) dserror("Something went wrong when calculating the meshfree weighting basis functions.");
+      int err = discret_->GetWeightingApprox()->GetMeshfreeBasisFunction(nsd_,Teuchos::rcpFromRef(distng),wfunct_,wderiv_,upsilon,sfunct_,sderiv_);
+      if (err>0)
+      {
+        std::cout << "When computing the weighting basis functions for scalar " << k << " at gauss point " << iquad << " of cell " << cell->Id() << ":" << std::endl;
+        DRT::MESHFREE::OutputMeshfreeError(err);
+      }
 
       // scalar at integration point at time step n+1
       const double phinp = sfunct_->Dot(ephinp_[k]);

@@ -12,11 +12,11 @@ Maintainer: Keijo Nissen
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#include <vector>
-#include "drt_meshfree_cell.H"
 
 #ifndef DRT_MESHFREE_UTILS_H
 #define DRT_MESHFREE_UTILS_H
+
+#include <Teuchos_RCP.hpp>
 
 namespace LINALG
 {
@@ -28,7 +28,22 @@ namespace DRT
 
 namespace MESHFREE
 {
-  class Cell;
+
+  /*--------------------------------------------------------------------------*
+   *                                                                          *
+   * enums to specify error code                                              *
+   *                                                                nis Feb14 *
+   *--------------------------------------------------------------------------*/
+
+  //! type of errors - to be extended ad lib
+  enum errorcode {
+    fine,
+    det_zero
+  };
+
+  void OutputMeshfreeError(
+    int err
+    );
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -36,25 +51,25 @@ namespace MESHFREE
    *        lie. Herefore, node position are collected in a SerialDenseMatrix
    *        and given back in another SerialDenseMatrix.
    *
-   * \param xyz         (in) : original node positions; size: dim x number of nodes
-   * \param xyz_reduced (out): reduced node positions; size: face dim x number of nodes
-   * \param dims        (out): dimensions in which face lies
+   * \param xyz         (in/out)
    *///                                                   (public) nis Jan14
   /*------------------------------------------------------------------------*/
-  std::vector<int> ReduceDimensionOfFaceNodes(
-    const LINALG::SerialDenseMatrix & xyz,
-    LINALG::SerialDenseMatrix       & xyz_reduced
+  void MovePointOfReferenceToFace(
+    Teuchos::RCP<LINALG::SerialDenseMatrix>& xyz
     );
 
-  /*------------------------------------------------------------------------*/
-  /*!
-   * \brief Return coordinates of cell center computed by point positions
-   *///                                                   (public) nis Jan14
-  /*------------------------------------------------------------------------*/
-  void CellCenterAndMaxRadius(
-    const DRT::MESHFREE::Cell* cell,
-    LINALG::Matrix<3,1>&  center,
-    double& max_radius
+  void MovePointOfReferenceToFace(
+    Teuchos::RCP<LINALG::SerialDenseMatrix>& xyz1,
+    Teuchos::RCP<LINALG::SerialDenseMatrix>& xyz2
+    );
+
+  int ReduceCloudDimensionOnFaces(
+    Teuchos::RCP<LINALG::SerialDenseMatrix>& xyz
+    );
+
+  int ReduceCloudDimensionOnFaces(
+    Teuchos::RCP<LINALG::SerialDenseMatrix>& xyz1,
+    Teuchos::RCP<LINALG::SerialDenseMatrix>& xyz2
     );
 
 } // namespace MESHFREE

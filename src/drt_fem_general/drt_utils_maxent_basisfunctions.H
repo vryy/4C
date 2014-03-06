@@ -16,7 +16,6 @@ Maintainer: Keijo Nissen
 #include <vector>
 #include "../linalg/linalg_fixedsizematrix.H"
 #include <Teuchos_ParameterList.hpp>
-//#include "../drt_inpar/inpar_meshfree.H"
 
 /*==========================================================================*/
 // forward declarations
@@ -241,7 +240,7 @@ private:
     {
     public:
       //! pure virtual function to update dual problem
-      virtual void UpdateParams(
+      virtual int UpdateParams(
         LINALG::SerialDenseVector       & funct, //!< (o) basis functions values
         LINALG::Matrix<dim,1>           & r,     //!< (o) gradient of dual function
         LINALG::Matrix<dim,dim>         & J,     //!< (o) inverted Hessian of dual function
@@ -252,7 +251,7 @@ private:
       ) = 0;
 
       //! pure virtual function to get spatial derivatives of basis functions
-      virtual void GetDerivs(
+      virtual int GetDerivs(
         LINALG::SerialDenseVector              const & funct, //!< (i) basis functions values
         LINALG::SerialDenseMatrix                    & deriv, //!< (o) spatial derivatives of basis functions
         LINALG::Matrix<dim,1>                  const & lam,   //!< (i) argmax of dual problem
@@ -281,7 +280,7 @@ private:
       //! standard update of dual problem
       //! (for non-negative basis functions, reduced due to partition-of-unity
       //!  constraint - see Arroyo2006)
-      void UpdateParams(
+      int UpdateParams(
         LINALG::SerialDenseVector       & funct, //!< (o) basis functions values
         LINALG::Matrix<dim,1>           & r    , //!< (o) derivative of dual function
         LINALG::Matrix<dim,dim>         & J    , //!< (o) inverted Hessian of dual function
@@ -292,7 +291,7 @@ private:
       );
 
       //! computes spatial derivatives for standard problem
-      void GetDerivs(
+      int GetDerivs(
         LINALG::SerialDenseVector              const & funct, //!< (i) basis functions values
         LINALG::SerialDenseMatrix                    & deriv, //!< (o) spatial derivatives of basis functions
         LINALG::Matrix<dim,1>                  const & lam  , //!< (i) argmax of dual problem

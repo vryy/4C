@@ -36,7 +36,8 @@ Maintainer: Keijo Nissen
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::MeshfreeFluidBoundaryCalc():
-  kxyz_(bdrynsd_,bdrynek_),
+  nxyz_(Teuchos::rcp(new LINALG::SerialDenseMatrix())),
+  pxyz_(Teuchos::rcp(new LINALG::SerialDenseMatrix(bdrynsd_,bdrynep_))),
   gxyz_(bdrynsd_,ngp_),
   gw_(ngp_),
   funct_(Teuchos::rcp(new LINALG::SerialDenseVector())),
@@ -118,7 +119,8 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
 
   // resize matrices and vectors
   funct_->LightSize(bdrynen_);
-  nxyz_.LightShape(bdrynsd_,bdrynen_);
+  nxyz_->LightShape(nsd_,bdrynen_);
+  pxyz_->LightShape(nsd_,bdrynep_);
 
   //------------------------------------------------------------------------
   // get values, switches and spatial functions from the condition
@@ -153,14 +155,21 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
   // get local node coordinates
   //------------------------------------------------------------------------
 
-  // matrix for nodes position in dimensions of parent cell
-  LINALG::SerialDenseMatrix nxyz_pdim(nsd_,bdrynen_,false);
   // get nodes position in dimensions of parent cell
-  double const * cnxyz_pdim;
+  double const * cnxyz;
   for (int j=0; j<bdrynen_; j++){
-    cnxyz_pdim =  cell->Nodes()[j]->X();
+    cnxyz =  cell->Nodes()[j]->X();
     for (int k=0; k<nsd_; k++){
-      nxyz_pdim(k,j) = cnxyz_pdim[k];
+      (*nxyz_)(k,j) = cnxyz[k];
+    }
+  }
+
+  // fill matrix of cell point positions in reduced dimensions
+  double const * cpxyz;
+  for (int j=0; j<bdrynep_; j++){
+    cpxyz =  cell->Points()[j]->X();
+    for (int k=0; k<nsd_; ++k){
+      (*pxyz_)(k,j) = cpxyz[k];
     }
   }
 
@@ -171,16 +180,17 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
   //------------------------------------------------------------------------
 
   // get matrix of cell node positions in reduced dimensions
-  std::vector<int> dims = DRT::MESHFREE::ReduceDimensionOfFaceNodes(nxyz_pdim,nxyz_);
-  if ((int)(dims.size())!=bdrynsd_) dserror("Nodes lie on a face of dimension unequal to dimension of boundary element.");
-
-  // fill matrix of cell point positions in reduced dimensions
-  double const * kxyz_pdim;
-  for (int ipoint=0; ipoint<bdrynek_; ipoint++){
-    kxyz_pdim =  cell->Points()[ipoint]->X();
-    for (int idim=0; idim<bdrynsd_; ++idim){
-      kxyz_(idim,ipoint) = kxyz_pdim[dims[idim]];
-    }
+  DRT::MESHFREE::MovePointOfReferenceToFace(nxyz_,pxyz_);
+  DRT::MESHFREE::ReduceCloudDimensionOnFaces(nxyz_,pxyz_);
+  if (nxyz_->M()!=bdrynsd_)
+  {
+    std::cout << "nxyz_: " << std::endl << *nxyz_ << std::endl;
+    dserror("Dimension of boundary node cloud is %i instead of %i.",nxyz_->M(),bdrynsd_);
+  }
+  if (pxyz_->M()!=bdrynsd_)
+  {
+    std::cout << "pxyz_: " << std::endl << *pxyz_ << std::endl;
+    dserror("Dimension of boundary point cloud is %i instead of %i.",pxyz_->M(),bdrynsd_);
   }
 
   //------------------------------------------------------------------------
@@ -188,11 +198,18 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
   //------------------------------------------------------------------------
 
   // get integrations points and weights in xyz-system
-  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(kxyz_, gxyz_, gw_);
+  int ngp = DRT::MESHFREE::CellGaussPointInterface::Impl(distype)->GetCellGaussPointsAtX(*pxyz_, gxyz_, gw_);
+  if (ngp<0)
+  {
+    std::cout << "For cell " << cell->Id() << " with points";
+    for(int i=0; i< bdrynep_; ++i)
+      std::cout << " " << cell->Points()[i]->Id();
+    std::cout << ":" << std::endl;
+    dserror("Jacobi determinant is negative! Check elements in input file!");
+  }
 
   LINALG::SerialDenseMatrix distng(bdrynsd_,bdrynen_); // matrix for distance between node and Gauss point
   double const * cgxyz; // read: current Gauss xyz-coordinate
-  double const * cnxyz; // read: current node xyz-coordinate
 
   //------------------------------------------------------------------------
   //  loop over integration points for current cell
@@ -210,7 +227,7 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
     // coordinates of the current integration point
     for (int i=0; i<bdrynen_; ++i){
       // get current node xyz-coordinate
-      cnxyz = nxyz_[i];
+      cnxyz = (*nxyz_)[i];
       for (int j=0; j<bdrynsd_; ++j){
         // get distance between
         distng(j,i) = cnxyz[j] - cgxyz[j];
@@ -218,8 +235,8 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
     }
 
     // calculate basis functions and derivatives via max-ent optimization
-    int error = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(bdrynsd_,Teuchos::rcpFromRef(distng),funct_);
-    if (error) dserror("Something went wrong when calculating the meshfree basis functions.");
+    int err = discret_->GetSolutionApprox()->GetMeshfreeBasisFunction(bdrynsd_,Teuchos::rcpFromRef(distng),funct_);
+    if (err>0) DRT::MESHFREE::OutputMeshfreeError(err);
 
     // get the required material information
     Teuchos::RCP<MAT::Material> material = cell->ParentElement()->Material();

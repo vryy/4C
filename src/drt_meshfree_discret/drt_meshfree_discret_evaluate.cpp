@@ -92,7 +92,6 @@ void DRT::MESHFREE::MeshfreeDiscretization::EvaluateDirichlet(
     }
     if (numdof!=fool->second->GetInt("numdof"))
       dserror("NUMDOF must be the same for all meshfree Dirichlet BCs! Check dat-file!");
-
     FillDBCMatrix(*(fool->second), 0, numdof, nodegids, isconst, constvalue, dbcmatrix, dbcdofmap);
   }
   // Do LineDirichlet
@@ -312,7 +311,12 @@ void DRT::MESHFREE::MeshfreeDiscretization::FillDBCMatrix(
 
           // get basis function values of neighbours
           basisfunct->LightSize(nneighbour);
-          this->GetSolutionApprox()->GetMeshfreeBasisFunction(facedim,Teuchos::rcpFromRef(distnn),basisfunct);
+          int err = this->GetSolutionApprox()->GetMeshfreeBasisFunction(facedim,Teuchos::rcpFromRef(distnn),basisfunct);
+          if (err>0)
+          {
+            std::cout << "At dof " << idof << " of node " << inode << ":" << std::endl;
+            DRT::MESHFREE::OutputMeshfreeError(err);
+          }
 
           // use neighbourhood-variables for node gids and basis functions
           temp_ngids = &ngids;

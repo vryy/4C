@@ -6,6 +6,7 @@ f2_impingingtip20x20_oseen_maxent
 // is testing:
 // ===========
 // - maxent with Oseen problems in general
+// - maxent with iterative solver
 // - linearity of maxent implementation of Oseen problems
 // - maxent boundaries that are plane but not aligned with coordinate axes (PCA)
 // - stable velocity field for streamline-based weighting functions
@@ -34,7 +35,7 @@ W_COMPLIANCE                    stream
 ------------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE                   Oseen
 OSEENFIELDFUNCNO                1
-LINEAR_SOLVER                   1
+LINEAR_SOLVER                   2
 TIMEINTEGR                      Stationary
 NONLINITER                      fixed_point_like
 PREDICTOR                       steady_state
@@ -51,8 +52,21 @@ INCONSISTENT                    No
 SUPG                            no
 GRAD_DIV                        no
 -----------------------------------------------------------SOLVER 1
-NAME                            Fluid_Solver
+NAME                            DBC_Solver
 SOLVER                          UMFPACK
+-----------------------------------------------------------SOLVER 2
+NAME                            Fluid_Solver
+SOLVER                          Aztec_MSR //UMFPACK // Aztec_MSR //UMFPACK // Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        50           // output every so often, 0 no output
+AZSOLVE                         GMRES        // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ILU //MLFLUID2 //ILU //MLFLUID2     // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         1            // how often to recompute some preconditioners
+IFPACKGFILL                     0            // (3 for edgebased stabilization pattern) graph fill for ILU
+AZTOL                           1.0E-014      // tolerance in unscaled residual
+AZCONV                          AZ_r0        // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000         // max iterations
+AZSUB                           1000           // size of krylov space for gmres
+IFPACKOVERLAP                   0            // amount of ASM overlap for ILU, ILU, ICC, LU
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0e-2 DENSITY 1.0 GAMMA 1.0
 -------------------------------------------------------------CURVE1
