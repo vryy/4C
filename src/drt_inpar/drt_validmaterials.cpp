@@ -1415,6 +1415,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+   // integration point based and scalar dependent growth
+   {
+     Teuchos::RCP<MaterialDefinition> m
+       = Teuchos::rcp(new MaterialDefinition("MAT_GrowthScd",
+                                             "integration point based and scalar dependent growth",
+                                             INPAR::MAT::m_growthscd));
+
+     AddNamedInt(m,"GROWTHLAW","growth function: linear(Default) or exponential");
+     AddNamedInt(m,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
+     AddNamedReal(m,"STARTTIME","start growth after this time");
+     AddNamedReal(m,"ENDTIME","end growth after this time");
+     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+     AddNamedReal(m,"SATCOEFF","saturation coefficient for concentration dependent growth law");
+
+     AppendMaterialDefinition(matlist,m);
+   }
+
+  /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   // linear growth law
   {
@@ -1647,23 +1665,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
-  /*----------------------------------------------------------------------*/
-   // integration point based and scalar dependent growth
-   {
-     Teuchos::RCP<MaterialDefinition> m
-       = Teuchos::rcp(new MaterialDefinition("MAT_GrowthScd",
-                                             "integration point based and scalar dependent growth",
-                                             INPAR::MAT::m_growthscd));
-
-     AddNamedInt(m,"GROWTHFUNCTION","growth function: linear(Default) or exponential");
-     AddNamedInt(m,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
-     AddNamedReal(m,"STARTTIME","start growth after this time");
-     AddNamedReal(m,"ENDTIME","end growth after this time");
-     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
-     AddNamedReal(m,"SATCOEFF","saturation coefficient for concentration dependent growth law");
-
-     AppendMaterialDefinition(matlist,m);
-   }
    /*----------------------------------------------------------------------*/
    // nutrient diffusion modeling (diffusion-reaction equation). Contains a growth-dependent
    //reaction-term of the form 3*theta^2*time_derivative_theta*structure_density that is coupled with

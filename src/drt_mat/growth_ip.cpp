@@ -42,7 +42,7 @@ MAT::PAR::Growth::Growth(
   )
 : Parameter(matdata),
   idmatelastic_(matdata->GetInt("IDMATELASTIC")),
-  idgrowthlaw_(matdata->GetInt("GROWTHFUNCTION")),
+  idgrowthlaw_(matdata->GetInt("GROWTHLAW")),
   starttime_(matdata->GetDouble("STARTTIME")),
   endtime_(matdata->GetDouble("ENDTIME")),
   abstol_(matdata->GetDouble("TOL"))
