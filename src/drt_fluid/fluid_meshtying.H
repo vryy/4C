@@ -113,16 +113,13 @@ class Meshtying
         Teuchos::RCP<Epetra_Vector>& veln     ///> solution vector n
         );
 
+    //! evaluation of matrix P with potential mesh relocation in ALE case
+    void EvaluateWithMeshRelocation(Teuchos::RCP<Epetra_Vector>& dispnp); ///> current ALE displacement vector
+
     //! Prepare matrix and residual for meshtying
     void PrepareMeshtyingSystem(Teuchos::RCP<LINALG::SparseOperator>&  sysmat,     ///> sysmat established by the element routine
                       Teuchos::RCP<Epetra_Vector>&                     residual, ///> residual established by the element routine
                       Teuchos::RCP<Epetra_Vector>&                     velnp); ///> current ALE displacement vector
-
-    //! Prepare matrix and residual for meshtying in ALE case
-    void PrepareMeshtyingSystem(Teuchos::RCP<LINALG::SparseOperator>&  sysmat,     ///> sysmat established by the element routine
-                      Teuchos::RCP<Epetra_Vector>&                     residual, ///> residual established by the element routine
-                      Teuchos::RCP<Epetra_Vector>&                     velnp, ///> current velocity vector
-                      Teuchos::RCP<Epetra_Vector>&                     dispnp); ///> current ALE displacement vector
 
     //! The residual has another length in case of bmat_merged --> residual has to be calculated in split form
     void ApplyPTToResidual(

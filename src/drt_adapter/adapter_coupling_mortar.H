@@ -77,26 +77,32 @@ namespace ADAPTER
                 Teuchos::RCP<DRT::Discretization>   slavedis,       ///> slave discretization
                 Teuchos::RCP<DRT::Discretization>   aledis,         ///> ale discretization
                 std::vector<int>                    coupleddof,     ///> vector defining coupled degree's of freedom
-                const std::string&                       couplingcond,   ///> string for coupling condition
+                const std::string&                  couplingcond,   ///> string for coupling condition
                 const Epetra_Comm&                  comm,           ///> communicate
-                bool                                slavewithale=false,  ///> flag defining if structure is slave side
+                bool                                slavewithale=false,  ///> flag defining if slave is ALE
                 bool                                slidingale=false);  //> flag defining sliding ale case
 
-    /// perform mesh initialization
-    void MeshInit( Teuchos::RCP<DRT::Discretization> slavedis,
-                   Teuchos::RCP<DRT::Discretization> aledis,
-                   Teuchos::RCP<Epetra_Map> masterdofrowmap,
-                   Teuchos::RCP<Epetra_Map> slavedofrowmap,
-                   const Epetra_Comm& comm,
-                   bool   slavewithale);
+    /// perform mesh relocation
+    void MeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,
+                        Teuchos::RCP<DRT::Discretization> aledis,
+                        Teuchos::RCP<Epetra_Map>          masterdofrowmap,
+                        Teuchos::RCP<Epetra_Map>          slavedofrowmap,
+                        Teuchos::RCP<Epetra_Vector>&      idisp,
+                        const Epetra_Comm&                comm,
+                        bool                              slavewithale);
 
-    /// perform mesh initialization
-    void ReEvaluate(const Epetra_Comm& comm);
-
+    /// filling matrices
     void Evaluate(Teuchos::RCP<Epetra_Vector> idisp);
 
     /// filling matrices (case of transferring same dofs on two different meshes)
     void Evaluate(Teuchos::RCP<Epetra_Vector> idispma, Teuchos::RCP<Epetra_Vector> idispsl);
+
+    //! filling matrices, including mesh correction
+    void EvaluateWithMeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,  ///> slave discretization
+                                    Teuchos::RCP<DRT::Discretization> aledis,    ///> ale discretization
+                                    Teuchos::RCP<Epetra_Vector>&      idisp, ///> ALE displacements
+                                    const Epetra_Comm&                comm,           ///> communicate
+                                    bool                              slavewithale);   ///> flag defining if slave is ALE
 
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_Vector> MasterToSlave

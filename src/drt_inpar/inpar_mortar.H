@@ -79,6 +79,15 @@ namespace INPAR
       search_binarytree   ///< binary tree element based
     };
 
+    /// Type of mesh relocation
+    /// (this enum represents the input file parameter MESH_RELOCATION)
+    enum MeshRelocation
+    {
+      relocation_initial,  ///< only initial mesh relocation
+      relocation_timestep, ///< mesh relocation in every time step, but no initial mesh relocation
+      relocation_none      ///< no mesh relocation
+    };
+
     /// Type of redudancy in interface storage
     /// (this enum represents the input file parameter REDUNDANT_STORAGE)
     enum RedundantStorage

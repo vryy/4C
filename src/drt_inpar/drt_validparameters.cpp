@@ -1558,8 +1558,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("LM_NODAL_SCALE","No","If chosen a nodal scaling factor is calculated for each LM",
                                yesnotuple,yesnovalue,&mortar);
 
-  setStringToIntegralParameter<int>("MESH_INIT","Yes","Flag if mesh is initialized during the setup process",
-                               yesnotuple,yesnovalue,&mortar);
+  setStringToIntegralParameter<int>("MESH_RELOCATION","Initial","Type of mesh relocation",
+      tuple<std::string>("Initial","initial",
+                         "Every_Timestep", "every_timestep",
+                         "No", "no"),
+      tuple<int>(
+              INPAR::MORTAR::relocation_initial,  INPAR::MORTAR::relocation_initial,
+              INPAR::MORTAR::relocation_timestep, INPAR::MORTAR::relocation_timestep,
+              INPAR::MORTAR::relocation_none,     INPAR::MORTAR::relocation_none),
+      &mortar);
 
   setStringToIntegralParameter<int>("REDUNDANT_STORAGE","Master","Type of redundancy in interface storage",
       tuple<std::string>("All","all",

@@ -53,7 +53,7 @@ TEMPERATURE                     11604.506 // abused as a scaling factor in order
 SHAPEFCN                        Dual
 PARALLEL_REDIST                 no
 REDUNDANT_STORAGE               all
-MESH_INIT                       no
+MESH_RELOCATION                 no
 ----------------------------------------------------------SOLVER 1
 SOLVER         UMFPACK //Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 ----------------------------------------------------------MATERIALS

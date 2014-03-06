@@ -39,7 +39,7 @@ FILESTEPS                       1000
 PARALLEL_REDIST                 No
 SHAPEFCN                        Dual
 REDUNDANT_STORAGE               all
-MESH_INIT                       yes
+MESH_RELOCATION                 initial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 DYNAMICTYP                      OneStepTheta

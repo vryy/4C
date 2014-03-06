@@ -376,31 +376,34 @@ void ADAPTER::CouplingMortar::Setup(
   // store interface
   interface_ = interface;
 
-  // mesh initialization:
-  //
-  // In the case of curved internal or fsi coupling interfaces a mesh initialization is critical,
-  // since the integration over curved interface (generation of mortar coupling matries) result
-  // in inaccuracies. These inaccuracies may lead to unwanted node displacements.
-  // Example: nodes at the interface are also moved for matching discretizations (P should be "unity matrix")!
-  if (DRT::INPUT::IntegralValue<bool>(input,"MESH_INIT") == true)
+  // initial mesh relocation:
+  // For curved internal or fsi coupling interfaces, a mesh relocation is critical,
+  // since the integration over curved interface (generation of mortar coupling
+  // matrices) results in inaccuracies. These inaccuracies may lead to undesired node 
+  // displacements.
+  // Example: nodes at the interface are also moved for matching discretizations
+  // (P should be "unity matrix")!
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(input,"MESH_RELOCATION") == INPAR::MORTAR::relocation_initial)
   {
-    if(numcoupleddof<dim)
+    // Warning:
+    // Mesh relocation is not possible if coupled degrees of freedom are less than
+    // the spatial dimensions!
+    if (numcoupleddof<dim)
     {
       std::cout << "Warning: " << std::endl;
-      std::cout << "Mesh initialization is not possible since the coupled degrees of freedom are " << std::endl;
-      std::cout << "less than the space dimensions!!" << std::endl;
+      std::cout << "Initial mesh relocation is not possible, since the coupled degrees of freedom are " << std::endl;
+      std::cout << "less than the spatial dimensions!!" << std::endl;
       std::cout << "Additional information is provided by comments in the code!" << std::endl;
     }
 
-    // Warning:
-    // Mesh initialization is not possible since the coupled degrees of freedom are less than the space dimensions!!
-    //
-    // Originally, this method was written for structural problems coupling the spatial displacements.
-    // Therefore, the slave and master map could be also used to store the coordinates of the interface nodes
-    // which is necessary to perform the mesh intialization step!!
-    // Hence, this method cannot be used for problem types like elch, scatra, ... having less
-    // coupling degrees of freedom than spacial dimensions.
-    MeshInit(slavedis, aledis, redistmaster, redistslave, comm, slavewithale);
+    // Originally, this method was written for structural problems coupling the 
+    // spatial displacements. Therefore, the slave and master map could be also used 
+    // to store the coordinates of the interface nodes, which is necessary to perform 
+    // the mesh relocation. Hence, this method cannot be used for problem types such
+    // as elch, scatra, etc., having less coupling degrees of freedom than spatial 
+    // dimensions.
+    Teuchos::RCP<Epetra_Vector> idisp(Teuchos::null);
+    MeshRelocation(slavedis,aledis,redistmaster,redistslave,idisp,comm,slavewithale);
   }
 
   // only for parallel redistribution case
@@ -459,16 +462,18 @@ void ADAPTER::CouplingMortar::Setup(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::MeshInit(
+void ADAPTER::CouplingMortar::MeshRelocation(
     Teuchos::RCP<DRT::Discretization> slavedis,
     Teuchos::RCP<DRT::Discretization> aledis,
-    Teuchos::RCP<Epetra_Map> masterdofrowmap,
-    Teuchos::RCP<Epetra_Map> slavedofrowmap,
-    const Epetra_Comm& comm, bool slavewithale)
+    Teuchos::RCP<Epetra_Map>          masterdofrowmap,
+    Teuchos::RCP<Epetra_Map>          slavedofrowmap,
+    Teuchos::RCP<Epetra_Vector>&      idisp,
+    const Epetra_Comm&                comm,
+    bool                              slavewithale)
 {
   // problem dimension
   const int dim = DRT::Problem::Instance()->NDim();
-
+  
   //**********************************************************************
   // (0) check constraints in reference configuration
   //**********************************************************************
@@ -499,10 +504,23 @@ void ADAPTER::CouplingMortar::MeshInit(
       lmowner[k] = mtnode->Owner();
     }
 
+
+    // add ALE displacements, if required
+    if (idisp != Teuchos::null)
+    {
+      // get degrees of freedom of a node
+      std::vector<int> gdofs = interface_->Discret().Dof(node);
+
+      for (int k=0;k<dim;++k)
+      {
+        val[k] += (*idisp)[(idisp->Map()).LID(gdofs[k])];
+      }
+   }
+    
     // do assembly
     LINALG::Assemble(*xs,val,lm,lmowner);
   }
-
+  
   // loop over all master row nodes
   for (int j=0; j<interface_->MasterRowNodes()->NumMyElements(); ++j)
   {
@@ -526,10 +544,22 @@ void ADAPTER::CouplingMortar::MeshInit(
       lmowner[k] = mtnode->Owner();
     }
 
+    // add ALE displacements, if required
+    if (idisp != Teuchos::null)
+    {
+      // get degrees of freedom of a node
+      std::vector<int> gdofs = interface_->Discret().Dof(node);
+
+      for (int k=0;k<dim;++k)
+      {
+        val[k] += (*idisp)[(idisp->Map()).LID(gdofs[k])];
+      }
+    }
+    
     // do assembly
     LINALG::Assemble(*xm,val,lm,lmowner);
   }
-
+  
   // compute g-vector at global level
   Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*slavedofrowmap));
   D_->Multiply(false,*xs,*Dxs);
@@ -543,7 +573,7 @@ void ADAPTER::CouplingMortar::MeshInit(
   gnorm /= sqrt((double) gold->GlobalLength()); // scale with length of vector
 
   const double tol = 1.0e-12;
-  // no need to do mesh initialization if g already very small
+  // no need to do mesh relocation if g already very small
 
   if ( comm.MyPID()==0 )
   {
@@ -551,7 +581,7 @@ void ADAPTER::CouplingMortar::MeshInit(
               << gnorm << " < " << tol << std::endl;
 
     if ( gnorm < tol )
-      std::cout << "  --> Mesh initialization is not necessary. " << std::endl;
+      std::cout << "  --> Mesh relocation is not necessary. " << std::endl;
   }
 
   if (gnorm < tol)  return;
@@ -559,12 +589,12 @@ void ADAPTER::CouplingMortar::MeshInit(
   // print message
   if(comm.MyPID()==0)
   {
-    std::cout << "Performing mesh initialization...........";
+    std::cout << "Performing mesh relocation...........";
     fflush(stdout);
   }
 
   //**********************************************************************
-  // perform mesh initialization node by node
+  // perform mesh relocation node by node
   //**********************************************************************
   // IMPORTANT NOTE:
   // We have to be very careful on which nodes on which processor to
@@ -615,21 +645,25 @@ void ADAPTER::CouplingMortar::MeshInit(
     {
       int dof = mtnode->Dofs()[k];
       (*Xmaster)[(Xmaster->Map()).LID(dof)] = mtnode->X()[k];
+
+      // add ALE displacements, if required
+      if (idisp != Teuchos::null)
+        (*Xmaster)[(Xmaster->Map()).LID(dof)] += (*idisp)[(idisp->Map()).LID(dof)];
     }
   }
 
   //**********************************************************************
   // (2) solve for modified slave positions on global level
   //**********************************************************************
-  // initialize modified slave positions
+  // relocate modified slave positions
   Teuchos::RCP<Epetra_Vector> Xslavemod = LINALG::CreateVector(*slavedofrowmap,true);
 
   // this is trivial for dual Lagrange multipliers
   DinvM_->Multiply(false,*Xmaster,*Xslavemod);
 
-
+  
   //**********************************************************************
-  // (3) perform mesh initialization node by node
+  // (3) perform mesh relocation node by node
   //**********************************************************************
   // export Xslavemod to fully overlapping column map for current interface
   Teuchos::RCP<Epetra_Map> fullsdofs  = LINALG::AllreduceEMap(*(interface_->SlaveRowDofs()));
@@ -684,7 +718,8 @@ void ADAPTER::CouplingMortar::MeshInit(
       }
     }
 
-    // new nodal position and problem dimension
+    // old and new nodal position and problem dimension
+    double Xold[3] = {0.0, 0.0, 0.0};
     double Xnew[3] = {0.0, 0.0, 0.0};
     double Xnewglobal[3] = {0.0, 0.0, 0.0};
 
@@ -711,6 +746,9 @@ void ADAPTER::CouplingMortar::MeshInit(
           locindex[dof] = (Xslavemodcol.Map()).LID(mtnode->Dofs()[dof]);
           if (locindex[dof]<0) dserror("ERROR: Did not find dof in map");
           Xnew[dof] = Xslavemodcol[locindex[dof]];
+          Xold[dof] = mtnode->X()[dof];
+          if (idisp != Teuchos::null)
+            Xold[dof] += (*idisp)[(idisp->Map()).LID(interface_->Discret().Dof(node)[dof])];
         }
 
         // check is mesh distortion is still OK
@@ -720,14 +758,14 @@ void ADAPTER::CouplingMortar::MeshInit(
         double relocation = 0.0;
         if (dim==2)
         {
-          relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
-                           +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1]));
+          relocation = sqrt((Xnew[0]-Xold[0])*(Xnew[0]-Xold[0])
+                           +(Xnew[1]-Xold[1])*(Xnew[1]-Xold[1]));
         }
         else if (dim==3)
         {
-          relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
-                           +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1])
-                           +(Xnew[2]-mtnode->X()[2])*(Xnew[2]-mtnode->X()[2]));
+          relocation = sqrt((Xnew[0]-Xold[0])*(Xnew[0]-Xold[0])
+                           +(Xnew[1]-Xold[1])*(Xnew[1]-Xold[1])
+                           +(Xnew[2]-Xold[2])*(Xnew[2]-Xold[2]));
         }
         else dserror("ERROR: Problem dimension must be either 2 or 3!");
         bool isok = mtnode->CheckMeshDistortion(relocation,limit);
@@ -745,23 +783,56 @@ void ADAPTER::CouplingMortar::MeshInit(
     // const_cast to force modifed X() into pnode
     // const_cast to force modifed X() into alenode if fluid=slave
     // (remark: this is REALLY BAD coding)
-    for (int k=0;k<dim;++k)
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(DRT::Problem::Instance()->MortarCouplingParams(),"MESH_RELOCATION") == INPAR::MORTAR::relocation_initial)
     {
-      // modification in interface discretization
-      if (isininterfacecolmap)
+      for (int k=0;k<dim;++k)
       {
-        const_cast<double&>(mtnode->X()[k])        = Xnewglobal[k];
-        const_cast<double&>(mtnode->xspatial()[k]) = Xnewglobal[k];
+        // modification in interface discretization
+        if (isininterfacecolmap)
+        {
+          const_cast<double&>(mtnode->X()[k])        = Xnewglobal[k];
+          const_cast<double&>(mtnode->xspatial()[k]) = Xnewglobal[k];
+        }
+
+        // modification in problem discretization
+        if (isinproblemcolmap)
+          const_cast<double&>(pnode->X()[k])       = Xnewglobal[k];
+
+        // modification in ALE discretization
+        if (isinproblemcolmap2 and slavewithale)
+          const_cast<double&>(alenode->X()[k])     = Xnewglobal[k];
       }
-
-      // modification in problem discretization
-      if (isinproblemcolmap)
-        const_cast<double&>(pnode->X()[k])       = Xnewglobal[k];
-
-      // modification in ALE discretization
-      if (isinproblemcolmap2 and slavewithale)
-        const_cast<double&>(alenode->X()[k])     = Xnewglobal[k];
     }
+    else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(DRT::Problem::Instance()->MortarCouplingParams(),"MESH_RELOCATION") == INPAR::MORTAR::relocation_timestep)
+    {
+      // modification of ALE displacements
+      if (isininterfacecolmap and idisp != Teuchos::null)
+      {
+        // insertion solely done by owner processor of this node
+        if (comm.MyPID()==node->Owner())
+        {
+          // define error variable
+          int err(0);
+
+          // get all degrees of freedom of this node
+          std::vector<int> gdofs = interface_->Discret().Dof(node);
+
+          // loop over spatial directions
+          for (int k=0;k<dim;++k)
+          {
+            // get global ID of degree of freedom for this spatial direction
+            int dofgid = (idisp->Map()).LID(gdofs[k]);
+            // get new coordinate value for this spatial direction
+            const double value = Xnewglobal[k]-node->X()[k];
+            // replace respective value in displacement vector
+            err = idisp->ReplaceMyValues(1,&value,&dofgid);
+            // check whether there was a problem in the replacement process
+            if (err != 0) dserror("error while inserting a value into ALE displacement vector!");
+          }
+        }
+      }
+    }
+    else dserror("ERROR: wrong input parameter for mortar-based MESH_RELOCATION!");
   }
 
   //**********************************************************************
@@ -791,6 +862,18 @@ void ADAPTER::CouplingMortar::MeshInit(
       lmowner[k] = mtnode->Owner();
     }
 
+    // add ALE displacements, if required
+    if (idisp != Teuchos::null)
+    {
+      // get degrees of freedom of a node
+      std::vector<int> gdofs = interface_->Discret().Dof(node);
+
+      for (int k=0;k<dim;++k)
+      {
+        val[k] += (*idisp)[(idisp->Map()).LID(gdofs[k])];
+      }
+    }
+    
     // do assembly
     LINALG::Assemble(*xs,val,lm,lmowner);
   }
@@ -815,6 +898,18 @@ void ADAPTER::CouplingMortar::MeshInit(
       lmowner[k] = mtnode->Owner();
     }
 
+    // add ALE displacements, if required
+    if (idisp != Teuchos::null)
+    {
+      // get degrees of freedom of a node
+      std::vector<int> gdofs = interface_->Discret().Dof(node);
+
+      for (int k=0;k<dim;++k)
+      {
+        val[k] += (*idisp)[(idisp->Map()).LID(gdofs[k])];
+      }
+    }
+    
     // do assembly
     LINALG::Assemble(*xm,val,lm,lmowner);
   }
@@ -829,23 +924,19 @@ void ADAPTER::CouplingMortar::MeshInit(
   gnew->Update(-1.0,*Mxm,1.0);
   gnew->Norm2(&gnorm);
 
-  if( gnorm > tol )
-  {
-    dserror("ERROR: Mesh initialization was not successful! \n "
-        "Gap norm %e is larger than tolerance %e", gnorm, tol);
-  }
+  if (gnorm > tol) dserror("ERROR: Mesh relocation was not successful! \n "
+                           "Gap norm %e is larger than tolerance %e", gnorm, tol);
 
   //**********************************************************************
-  // (5) re-initialize finite elements (if slave=structure)
+  // (5) re-relocate finite elements (if slave=structure)
   //**********************************************************************
   // if slave=fluid, we are lucky because fluid elements do not
-  // need any re-initialization (unlike structural elements)
+  // need any re-relocation (unlike structural elements)
   // fluid elements: empty implementation (return 0)
   DRT::ParObjectFactory::Instance().InitializeElements(*slavedis);
 
   // print message
-  if ( comm.MyPID()==0 )
-    std::cout << "done!" << std::endl;
+  if (comm.MyPID()==0) std::cout << "done!" << std::endl;
 
   return;
 
@@ -936,6 +1027,84 @@ void ADAPTER::CouplingMortar::Evaluate()
   Dinv_->ReplaceDiagonalValues(*diag);
   Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
   DinvM_ = MLMultiply(*Dinv_,*M_,false,false,true);
+
+  // only for parallel redistribution case
+  if (parredist)
+  {
+    // transform everything back to old distribution
+    D_     = MORTAR::MatrixRowColTransform(D_,slavedofrowmap_,slavedofrowmap_);
+    M_     = MORTAR::MatrixRowColTransform(M_,slavedofrowmap_,masterdofrowmap_);
+    Dinv_  = MORTAR::MatrixRowColTransform(Dinv_,slavedofrowmap_,slavedofrowmap_);
+    DinvM_ = MORTAR::MatrixRowColTransform(DinvM_,slavedofrowmap_,masterdofrowmap_);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
+    Teuchos::RCP<DRT::Discretization>  slavedis,
+    Teuchos::RCP<DRT::Discretization>  aledis,
+    Teuchos::RCP<Epetra_Vector>&       idisp,
+    const Epetra_Comm&                 comm,
+    bool                               slavewithale)
+{
+  // set new displacement state in mortar interface
+  interface_->SetState("displacement",idisp);
+
+  // check for parallel redistribution
+  bool parredist = false;
+  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+    parredist = true;
+
+  // in the following two steps MORTAR does all the work for new interface displacements
+  interface_->Initialize();
+  interface_->Evaluate();
+
+  // preparation for AssembleDM
+  // (Note that redistslave and redistmaster are the slave and master row maps
+  // after parallel redistribution. If no redistribution was performed, they
+  // are of course identical to slavedofrowmap_/masterdofrowmap_!)
+  Teuchos::RCP<Epetra_Map> redistslave  = interface_->SlaveRowDofs();
+  Teuchos::RCP<Epetra_Map> redistmaster = interface_->MasterRowDofs();
+  Teuchos::RCP<LINALG::SparseMatrix> dmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*redistslave, 10));
+  Teuchos::RCP<LINALG::SparseMatrix> mmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*redistslave, 100));
+  interface_->AssembleDM(*dmatrix, *mmatrix);
+
+  // Complete() global Mortar matrices
+  dmatrix->Complete();
+  mmatrix->Complete(*redistmaster, *redistslave);
+  D_ = dmatrix;
+  M_ = mmatrix;
+
+  // Build Dinv
+  Dinv_ = Teuchos::rcp(new LINALG::SparseMatrix(*D_));
+
+  // extract diagonal of invd into diag
+  Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*redistslave,true);
+  Dinv_->ExtractDiagonalCopy(*diag);
+
+  // set zero diagonal values to dummy 1.0
+  for (int i=0;i<diag->MyLength();++i)
+    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+
+  // scalar inversion of diagonal values
+  diag->Reciprocal(*diag);
+  Dinv_->ReplaceDiagonalValues(*diag);
+  Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
+  DinvM_ = MLMultiply(*Dinv_,*M_,false,false,true);
+
+  // mesh relocation if required:
+  // For curved internal or fsi coupling interfaces, a mesh relocation is critical,
+  // since the integration over curved interface (generation of mortar coupling
+  // matrices) results in inaccuracies. These inaccuracies may lead to undesired node 
+  // displacements.
+  // Example: nodes at the interface are also moved for matching discretizations
+  // (P should be "unity matrix")!
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(DRT::Problem::Instance()->MortarCouplingParams(),"MESH_RELOCATION") == INPAR::MORTAR::relocation_timestep)
+    MeshRelocation(slavedis,aledis,redistmaster,redistslave,idisp,comm,slavewithale);
 
   // only for parallel redistribution case
   if (parredist)

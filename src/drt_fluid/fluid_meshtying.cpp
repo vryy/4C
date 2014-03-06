@@ -73,6 +73,7 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coup
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  1)   Setup Meshtying");
   if(coupleddof[nsd_]==0)
     pcoupled_=false;
+
   // Setup of meshtying adapter
  adaptermeshtying_->Setup(discret_,
                           discret_,
@@ -429,44 +430,30 @@ void FLD::Meshtying::IncludeDirichletInCondensation(
 
 
 /*---------------------------------------------------*/
-/*  Prepare Meshtying system            ehrl (04/11) */
-/* (including ALE case   vg 01/14)                   */
+/*  evaluation of matrix P with potential            */
+/*  mesh relocation in ALE case             vg 01/14 */
 /*---------------------------------------------------*/
-void FLD::Meshtying::PrepareMeshtyingSystem(
-    Teuchos::RCP<LINALG::SparseOperator>&  sysmat,
-    Teuchos::RCP<Epetra_Vector>&           residual,
-    Teuchos::RCP<Epetra_Vector>&           velnp)
+void FLD::Meshtying::EvaluateWithMeshRelocation(
+    Teuchos::RCP<Epetra_Vector>& dispnp)
 {
-  switch (msht_)
-  {
-  case INPAR::FLUID::condensed_bmat:
-  case INPAR::FLUID::condensed_bmat_merged:
-    CondensationBlockMatrix(sysmat,residual,velnp);
-    break;
-  case INPAR::FLUID::condensed_smat:
-    CondensationSparseMatrix(sysmat,residual,velnp);
-    break;
-  default:
-    dserror("");
-    break;
-  }
+  // get ALE discretization
+  Teuchos::RCP<DRT::Discretization> aledis = DRT::Problem::Instance()->GetDis("ale");
+
+  // call mortar evaluate routine including mesh correction
+  adaptermeshtying_->EvaluateWithMeshRelocation(discret_,aledis,dispnp,discret_->Comm(),true);
 
   return;
 }
 
 
 /*---------------------------------------------------*/
-/*  Prepare Meshtying system in ALE case    vg 01/14 */
+/*  Prepare Meshtying system            ehrl (04/11) */
 /*---------------------------------------------------*/
 void FLD::Meshtying::PrepareMeshtyingSystem(
     Teuchos::RCP<LINALG::SparseOperator>&  sysmat,
     Teuchos::RCP<Epetra_Vector>&           residual,
-    Teuchos::RCP<Epetra_Vector>&           velnp,
-    Teuchos::RCP<Epetra_Vector>&           dispnp)
+    Teuchos::RCP<Epetra_Vector>&           velnp)
 {
-  // call mortar evaluate routine
-  adaptermeshtying_->Evaluate(dispnp);
-
   switch (msht_)
   {
   case INPAR::FLUID::condensed_bmat:

@@ -870,6 +870,13 @@ void FLD::FluidImplicitTimeInt::Solve()
     RecomputeMeanCsgsB();
 
   // -------------------------------------------------------------------
+  // meshtying: evaluation of matrix P with potential mesh relocation
+  // in ALE case
+  // -------------------------------------------------------------------
+  if (msht_ != INPAR::FLUID::no_meshtying and alefluid_)
+    meshtying_->EvaluateWithMeshRelocation(dispnp_);
+    
+  // -------------------------------------------------------------------
   // prepare print out for (multiple) corrector
   // -------------------------------------------------------------------
   if (myrank_ == 0)
@@ -975,13 +982,9 @@ void FLD::FluidImplicitTimeInt::Solve()
         locsysman_->RotateGlobalToLocal(residual_);
      }
 
-    // take meshtying into account if required
+    // prepare meshtying system
     if (msht_ != INPAR::FLUID::no_meshtying)
-    {
-      if (alefluid_)
-           meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,velnp_,dispnp_);
-      else meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,velnp_);
-    }
+      meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,velnp_);
     
     // print to screen
     ConvergenceCheck(0,itmax,ittol);
@@ -995,14 +998,10 @@ void FLD::FluidImplicitTimeInt::PrepareSolve()
 {
   // call elements to calculate system matrix and rhs and assemble
   AssembleMatAndRHS();
-
-  // take meshtying into account if required
+  
+  // prepare meshtying system
   if (msht_ != INPAR::FLUID::no_meshtying)
-  {
-    if (alefluid_)
-         meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,velnp_,dispnp_);
-    else meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,velnp_);
-  }
+    meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,velnp_);
     
   // update local coordinate systems for ALE fluid case
   // (which may be time and displacement dependent)
