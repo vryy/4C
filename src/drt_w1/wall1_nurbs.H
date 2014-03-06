@@ -2,10 +2,10 @@
 \file wall1_nurbs.H
 
 <pre>
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15251
 </pre>
 
 *----------------------------------------------------------------------*/

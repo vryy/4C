@@ -1,9 +1,16 @@
-/*
- * wall1_scatra.H
- *
- *  Created on: Jan 20, 2014
- *      Author: farah
- */
+/*----------------------------------------------------------------------*/
+/*!
+ \file wall1_scatra.H
+
+ \brief
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15251
+ </pre>
+ *----------------------------------------------------------------------*/
 
 #ifndef WALL1_SCATRA_H_
 #define WALL1_SCATRA_H_

@@ -13,7 +13,7 @@ See also Bachelor thesis Jasper Rieser (2013)
    Maintainer: Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15264
+               089 - 289-15251
  </pre>
  *----------------------------------------------------------------------*/
 

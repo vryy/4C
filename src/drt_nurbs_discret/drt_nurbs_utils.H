@@ -6,10 +6,10 @@
        element of a nurbs discretisations
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/

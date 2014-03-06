@@ -8,10 +8,10 @@ FluidEleParameter::SetElementPoroParameter(Teuchos::ParameterList& params)
 set all general porofluid parameter once for all elements.
 
 <pre>
-Maintainers: Ursula Rasthofer & Volker Gravemeier
-             {rasthofer,vgravem}@lnm.mw.tum.de
+Maintainers: Anh-Tu Vuong and Andreas Rauch
+             {vuong,rauch}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15236/-245
+             089 - 289-15251/-15240
 </pre>
 */
 /*----------------------------------------------------------------------*/

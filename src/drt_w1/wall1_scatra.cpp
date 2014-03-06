@@ -1,9 +1,16 @@
-/*
- * wall1_scatra.cpp
- *
- *  Created on: Jan 20, 2014
- *      Author: farah
- */
+/*----------------------------------------------------------------------*/
+/*!
+ \file wall1_scatra.cpp
+
+ \brief
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15251
+ </pre>
+ *----------------------------------------------------------------------*/
 
 #include "wall1_scatra.H"
 
