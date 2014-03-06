@@ -234,6 +234,11 @@ public:
   template <DRT::Element::DiscretizationType distype>
   Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected( GEO::CUT::IntegrationCell * ic );
 
+  /*!
+  \brief Returns whether this volumecell is negligibly small (used only in DirectDIvergence approach)
+   */
+  bool IsNegligiblySmall(){ return this->isNegligibleSmall_; }
+
 private:
 
   void SetTetPoints( const int * totet4,
@@ -289,6 +294,9 @@ private:
 
   /// volume of this volumecell
   double volume_;
+
+  /// Returns true if this volumecell is negligibly small (used only in DirectDivergence method)
+  bool isNegligibleSmall_;
 
  /// store the Gauss point weights and location for volumecells when moment fitting equations are used to arrive at them
   Epetra_SerialDenseVector weights_;

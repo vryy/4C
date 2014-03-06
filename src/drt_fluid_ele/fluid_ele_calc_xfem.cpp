@@ -144,6 +144,11 @@ int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*               
       const DRT::UTILS::GaussIntegration intcell = *i;
       GEO::CUT::VolumeCell * vc = cells[i-intpoints.begin()];
 
+      // This happens when the volume of the cell is too small that the integration method
+      // predicts negative volume for this
+      if( vc->IsNegligiblySmall() )
+        continue;
+
       //----------------------------------------------------------------------
       //integration over the main gauss points to get the required integral
       //----------------------------------------------------------------------

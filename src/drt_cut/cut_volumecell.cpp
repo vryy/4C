@@ -789,7 +789,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
     parpts[1] = par_nodes[1]->point();
     parpts[2] = par_nodes[2]->point();
 
-    std::vector<double> eqnpar(4),eqnfac(4);
+		std::vector<double> eqnpar(4),eqnfac(4);
     // equation of plane denotes normal direction
     eqnpar = KERNEL::EqnPlane( parpts[0], parpts[1], parpts[2] );
 
@@ -799,7 +799,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
     // when finding eqn of plane for the facet, inline points should not be taken
    CUT::KERNEL::DeleteInlinePts( cornersTemp );
 
-   bool rever = false;
+	 bool rever = false;
    if( cornersTemp.size()!=0 )
    {
      eqnfac = KERNEL::EqnPlanePolygon( cornersTemp );
@@ -809,7 +809,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
    if(rever)                                       // normal from facet is in wrong direction
    {
      std::reverse(corners.begin(),corners.end());  // change ordering to correct this
-     std::reverse(cornersTemp.begin(),cornersTemp.end());
+		 std::reverse(cornersTemp.begin(),cornersTemp.end());
    }
 
    //if no of corners are 3 or 4, just add them as boundary integrationcells directly
@@ -919,11 +919,11 @@ bool GEO::CUT::VolumeCell::ToReverse(const GEO::CUT::Point::PointPosition posi,
                                      std::vector<double> parEqn,
                                      std::vector<double> facetEqn)
 {
-	bool rever = false;
+  bool rever = false;
 
-	// position is inside
-	if(posi==-3)
-	{
+  // position is inside
+  if(posi==-3)
+  {
     if(fabs(parEqn[0])>TOL_EQN_PLANE && parEqn[0]*facetEqn[0]>0.0)
       rever = true;
     else if(fabs(parEqn[1])>TOL_EQN_PLANE && parEqn[1]*facetEqn[1]>0.0)
@@ -932,21 +932,21 @@ bool GEO::CUT::VolumeCell::ToReverse(const GEO::CUT::Point::PointPosition posi,
       rever = true;
     else
       rever = false;
-	}
+  }
 
-	// position is outside
-	else if(posi==-2)
-	{
-		if(fabs(parEqn[0])>TOL_EQN_PLANE && parEqn[0]*facetEqn[0]<0.0)
+  // position is outside
+  else if(posi==-2)
+  {
+    if(fabs(parEqn[0])>TOL_EQN_PLANE && parEqn[0]*facetEqn[0]<0.0)
       rever = true;
-		else if(fabs(parEqn[1])>TOL_EQN_PLANE && parEqn[1]*facetEqn[1]<0.0)
+    else if(fabs(parEqn[1])>TOL_EQN_PLANE && parEqn[1]*facetEqn[1]<0.0)
       rever = true;
-		else if(fabs(parEqn[2])>TOL_EQN_PLANE && parEqn[2]*facetEqn[2]<0.0)
+    else if(fabs(parEqn[2])>TOL_EQN_PLANE && parEqn[2]*facetEqn[2]<0.0)
       rever = true;
-		else
-			rever = false;
-	}
-	return rever;
+    else
+      rever = false;
+  }
+  return rever;
 }
 
 /*------------------------------------------------------------------------------------------*
@@ -958,6 +958,9 @@ void GEO::CUT::VolumeCell::GenerateInternalGaussRule()
   DRT::UTILS::GaussIntegration grule(gp_);
 
   intGP_.resize( grule.NumPoints(), grule );
+
+  if( grule.NumPoints() == 0 )
+    std::cout<<"WARNING::: This volumecell does not have a single Gauss point-----------------------\n";//blockkk?
 
   int num = 0;
   for ( DRT::UTILS::GaussIntegration::iterator quadint=grule.begin(); quadint!=grule.end(); ++quadint )
@@ -1013,18 +1016,18 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
                                                  std::string BCellgausstype)
 {
 
-	//position is used to decide whether the ordering of points are in clockwise or not
-	const GEO::CUT::Point::PointPosition posi = Position();
+  //position is used to decide whether the ordering of points are in clockwise or not
+  const GEO::CUT::Point::PointPosition posi = Position();
 
-	if( posi==0 )
-	  dserror( "undefined position for the volumecell" );
+  if( posi==0 )
+    dserror( "undefined position for the volumecell" );
 
-	//if the volumecell is inside and includeinner is false, no need to compute the Gaussian points
-	//as this vc will never be computed in xfem algorithm
-	if(posi==-2 && include_inner==false)
-		return;
+  //if the volumecell is inside and includeinner is false, no need to compute the Gaussian points
+  //as this vc will never be computed in xfem algorithm
+  if(posi==-2 && include_inner==false)
+    return;
 
-	int BaseNos=84;                                     // number of base functions to be used in the integration
+  int BaseNos=84;                                     // number of base functions to be used in the integration
   VolumeIntegration vc_inte(this,elem,posi,BaseNos);
 
   weights_ = vc_inte.compute_weights();              // obtain the integration weight at all points
@@ -1063,6 +1066,8 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
   if( Facets().size() < 4 )
     return;
 
+  isNegligibleSmall_ = false;
+
   DirectDivergence dd(this,elem,posi,mesh);
 
   RefEqnPlane_.reserve(4);                   //it has to store a,b,c,d in ax+by+cz=d
@@ -1081,6 +1086,7 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
   if( isNegVol )
   {
     gp_.reset();
+    isNegligibleSmall_ = true;
   }
 
 #if 0 // integrate a predefined function
