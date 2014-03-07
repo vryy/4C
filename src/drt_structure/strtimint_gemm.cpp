@@ -195,12 +195,10 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
   EvaluateMidState();
 
   // add forces and stiffness due to Windkessel bcs
-  // necessarily has to be done BEFORE fextm_ is built, since the Windkessel manager calls EvaluateNeumann and thus
-  // the correct application and linearization of the follower load is needed !!! (mhv 11/2013)
+  // necessarily has to be done BEFORE fextm_ is built, since the Windkessel manager calls an EvaluateNeumann
+  // function and thus the correct application and linearization of the follower load is needed !!! (mhv 11/2013)
   Teuchos::ParameterList pwindk;
-  pwindk.set("scale_timint", (1.0-alphaf_));
-  pwindk.set("scale_gamma", gamma_);
-  pwindk.set("scale_beta", beta_);
+  pwindk.set("scale_timint", (1.-alphaf_));
   pwindk.set("time_step_size", (*dt_)[0]);
   ApplyForceStiffWindkessel(timen_, (*dis_)(0), disn_, pwindk);
 

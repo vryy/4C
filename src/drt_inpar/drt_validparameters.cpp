@@ -1062,6 +1062,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TOLWINDKESSEL",1.0E-08,
                   "tolerance in the Windkessel error norm for the newton iteration",
                   &sdyn);
+  DoubleParameter("WINDKESSEL_TIMINT_THETA",0.5,
+                  "theta for one-step-theta time-integration scheme of Windkessel",
+                  &sdyn);
   IntParameter("MAXITER",50,
                "maximum number of iterations allowed for Newton-Raphson iteration before failure",
                &sdyn);

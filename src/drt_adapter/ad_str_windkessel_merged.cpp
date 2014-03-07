@@ -144,10 +144,10 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureWindkesselMerged::SystemMat
   Teuchos::RCP<LINALG::SparseMatrix> strustiff = structure_->SystemMatrix();
   strustiff->Complete();
   
-  Teuchos::RCP<LINALG::SparseOperator> coupoffdiag_vol_d = structure_->GetWindkesselManager()->GetCoupOffdiagVolD();
+  Teuchos::RCP<LINALG::SparseOperator> coupoffdiag_vol_d = structure_->GetWindkesselManager()->GetMatDwindkDd();
   coupoffdiag_vol_d->Complete();
 
-  Teuchos::RCP<LINALG::SparseOperator> coupoffdiag_fext_p = structure_->GetWindkesselManager()->GetCoupOffdiagFextP();
+  Teuchos::RCP<LINALG::SparseOperator> coupoffdiag_fext_p = structure_->GetWindkesselManager()->GetMatDstructDp();
   coupoffdiag_fext_p->Complete();
 
   Teuchos::RCP<LINALG::SparseMatrix> windkstiff = structure_->GetWindkesselManager()->GetWindkesselStiffness();
