@@ -67,8 +67,12 @@ namespace INPAR
     {
       initdensfield_zero_field,
       initdensfield_field_by_function,
-      initdensfield_poro_channelflow,
-      initdensfield_poro_channelstepflow
+      initdensfield_channelflow0,
+      initdensfield_channelflow05,
+      initdensfield_channelflow1,
+      initdensfield_channelstepflow0,
+      initdensfield_channelstepflow05,
+      initdensfield_channelstepflow1
     };
 
     /// type of initial fluid field

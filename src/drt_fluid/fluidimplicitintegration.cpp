@@ -4166,7 +4166,8 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
     (*relerror)[0] = sqrt((*errors)[0])/sqrt((*errors)[3]);
     (*relerror)[1] = sqrt((*errors)[1])/sqrt((*errors)[4]);
 
-    if(calcerr==INPAR::FLUID::beltrami_flow)
+    if ((calcerr==INPAR::FLUID::beltrami_flow) or
+        (calcerr==INPAR::FLUID::topoptchannel))
       (*relerror)[2] = sqrt((*errors)[2])/sqrt((*errors)[5]);
     else
     {

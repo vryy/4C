@@ -312,9 +312,70 @@ void TOPOPT::Optimizer::SetInitialDensityField(
     }
     break;
   }
-  case INPAR::TOPOPT::initdensfield_poro_channelflow:
-  case INPAR::TOPOPT::initdensfield_poro_channelstepflow:
+  case INPAR::TOPOPT::initdensfield_channelflow0:
+  case INPAR::TOPOPT::initdensfield_channelflow05:
+  case INPAR::TOPOPT::initdensfield_channelflow1:
+  {
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<optidis_->NumMyColNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = optidis_->lColNode(lnodeid);
+      const double* coords = lnode->X();
+
+      // case with border value 0
+      double initialval = 0.0;
+      if (abs(coords[1])<0.2-1.0e-12)
+        initialval = 1.0;
+      else
+        initialval = 0.0;
+
+      // case with border value 0.5
+      if ((initfield==INPAR::TOPOPT::initdensfield_channelflow05) and
+          (abs(abs(coords[1])-0.2)<1.0e-12))
+        initialval = 0.5;
+
+      // case with border value 1.0
+      if ((initfield==INPAR::TOPOPT::initdensfield_channelflow1) and
+          (abs(abs(coords[1])-0.2)<1.0e-12))
+        initialval = 1.0;
+
+      // evaluate component k of spatial function
+      int err = dens_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
+      if (err != 0) dserror("dof not on proc");
+    }
     break;
+  }
+  case INPAR::TOPOPT::initdensfield_channelstepflow0:
+  case INPAR::TOPOPT::initdensfield_channelstepflow05:
+  case INPAR::TOPOPT::initdensfield_channelstepflow1:
+  {
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<optidis_->NumMyColNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = optidis_->lColNode(lnodeid);
+      const double* coords = lnode->X();
+
+      // case with border value 0
+      double initialval = 1.0; // default case with density one
+      if ((coords[1]<0.4+1.0e-12) and (coords[0]>1.5-1.0e-12) and (coords[0]<1.9+1.0e-12))
+        initialval = 0.0; // edge area with val 0
+
+      if ((coords[1]>0.4-1.0e-12) and (coords[1]<0.4+1.0e-12) and
+          (coords[0]>1.5-1.0e-12) and (coords[0]<1.5+1.0e-12) and
+          (coords[0]>1.9-1.0e-12) and (coords[0]<1.9+1.0e-12)) // boundary area
+      {
+        if (initfield==INPAR::TOPOPT::initdensfield_channelflow05) initialval = 0.5; // case with border value 0.5
+        if (initfield==INPAR::TOPOPT::initdensfield_channelflow1) initialval = 1.0; // case with border value 1.0
+      }
+
+      // evaluate component k of spatial function
+      int err = dens_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
+      if (err != 0) dserror("dof not on proc");
+    }
+    break;
+  }
   default:
   {
     dserror("unknown initial field");

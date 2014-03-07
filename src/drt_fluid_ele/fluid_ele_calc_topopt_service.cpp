@@ -45,7 +45,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetPorosityAtGP(
       LINALG::Matrix<nsd_,1> gp(true);
       gp.Multiply(xyze_,funct_);
 
-      if (gp(1)<-0.1 || gp(1)>0.1) // wall area
+      if (gp(1)<-0.2 || gp(1)>0.2) // wall area
         reacoeff_ = params[1];
       else
         reacoeff_ = params[0];

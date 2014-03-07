@@ -174,6 +174,12 @@ void FLD::TimIntStationary::SolveStationaryProblem()
     // -------------------------------------------------------------------
     EvaluateDivU();
 
+
+    //Evaluate integral error
+    EvaluateErrorComparedToAnalyticalSol();
+
+
+
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------

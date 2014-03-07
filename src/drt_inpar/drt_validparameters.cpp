@@ -5276,13 +5276,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "zero_field",
                                  "field_by_function",
-                                 "poro_channel",
-                                 "poro_channel_with_step"),
+                                 "channel0",
+                                 "channel05",
+                                 "channel1",
+                                 "channelstep0",
+                                 "channelstep05",
+                                 "channelstep1"),
                                tuple<int>(
                                    INPAR::TOPOPT::initdensfield_zero_field,
                                    INPAR::TOPOPT::initdensfield_field_by_function,
-                                   INPAR::TOPOPT::initdensfield_poro_channelflow,
-                                   INPAR::TOPOPT::initdensfield_poro_channelstepflow),
+                                   INPAR::TOPOPT::initdensfield_channelflow0,
+                                   INPAR::TOPOPT::initdensfield_channelflow05,
+                                   INPAR::TOPOPT::initdensfield_channelflow1,
+                                   INPAR::TOPOPT::initdensfield_channelstepflow0,
+                                   INPAR::TOPOPT::initdensfield_channelstepflow05,
+                                   INPAR::TOPOPT::initdensfield_channelstepflow1),
                                &topoptoptimizer);
 
   setStringToIntegralParameter<int>("TESTCASE","test_no","test case for optimizer",

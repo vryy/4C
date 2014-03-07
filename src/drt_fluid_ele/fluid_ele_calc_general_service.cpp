@@ -812,8 +812,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     break;
     case INPAR::FLUID::channel2D:
     {
-      const double maxvel=1.25;
-      const double hight = 1.0;
+      const double maxvel=1.0;
+      const double height = 1.0;
       const double visc = 1.0;
       const double pressure_gradient = 10.0;
 
@@ -823,7 +823,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
       {
         p = 1.0;
         //p = -10*xyzint(0)+20;
-        u(0) = maxvel -((hight*hight)/(2.0*visc)*pressure_gradient*(xyzint(1)/hight)*(xyzint(1)/hight));
+        u(0) = maxvel -((height*height)/(2.0*visc)*pressure_gradient*(xyzint(1)/height)*(xyzint(1)/height));
         u(1) = 0.0;
       }
       else
@@ -831,22 +831,34 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     }
     break;
     case INPAR::FLUID::topoptchannel:
-     {
+    {
       // Y=xyzint(1); y=0 is located in the middle of the channel
 
-      if (xyzint(1)>-0.1-1.0e-014 && xyzint(1)<0.1+1.0e-014){
-        u(0) = 1-100*xyzint(1)*xyzint(1);
+      if (xyzint(1)>-0.2-1.0e-014 && xyzint(1)<0.2+1.0e-014)
+      {
+        u(0) = 1-25*xyzint(1)*xyzint(1);
         u(1) = 0.0;
-        p = -200*xyzint(0)+100;
-        }
-      else{
+        p = (xyzint(0)-0.5)*(10 - 50*visc_); // 10 bof-o, 50 visc-part
+
+        dervel(0,0)=0.0;
+        dervel(0,1)=-50*xyzint(1);
+        dervel(1,0)=0.0;
+        dervel(1,1)=0.0;
+      }
+      else
+      {
         u(0) = 0.0;
         u(1) = 0.0;
         //p = preint; //pressure error outside of channel not factored in
         p=0.0;
         preint=0.0;
-        }
+
+        dervel(0,0)=0.0;
+        dervel(0,1)=0.0;
+        dervel(1,0)=0.0;
+        dervel(1,1)=0.0;
       }
+    }
     break;
     case INPAR::FLUID::jeffery_hamel_flow:
     {
