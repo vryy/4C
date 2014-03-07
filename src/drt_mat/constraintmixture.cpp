@@ -757,334 +757,334 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     }
   }
 
-    if (!output)
+  if (!output)
+  {
+    // set actual time as it might have changed after an restart etc. but just once
+    double temptime = 0.0;
+    double tempdt = 0.0;
+    history_->back().GetTime(&temptime, &tempdt);
+    if (temptime == 0.0 && tempdt == 0.0)
     {
-      // set actual time as it might have changed after an restart etc. but just once
-      double temptime = 0.0;
-      double tempdt = 0.0;
-      history_->back().GetTime(&temptime, &tempdt);
-      if (temptime == 0.0 && tempdt == 0.0)
+      int sizehistory = history_->size();
+      history_->at(sizehistory-2).GetTime(&temptime, &tempdt);
+      // for restart the function ApplyForceInternal calls the material with the old time
+      // (i.e. time = temptime) thus make sure not to store it
+      if (time > temptime + 1.0e-11)
       {
-        int sizehistory = history_->size();
-        history_->at(sizehistory-2).GetTime(&temptime, &tempdt);
-        // for restart the function ApplyForceInternal calls the material with the old time
-        // (i.e. time = temptime) thus make sure not to store it
-        if (time > temptime + 1.0e-11)
+        history_->back().SetTime(time, dt);
+        temptime = time;
+        // if you change your time step size the basal mass production rate changes
+        // basal mass production rate determined by DENS, PHIE and degradation function
+        double intdegr = 0.0;
+        double degrtime = 0.0;
+        double degrdt = 0.0;
+        for (int idpast = minindex_; idpast < sizehistory - firstiter; idpast++)
         {
-          history_->back().SetTime(time, dt);
-          temptime = time;
-          // if you change your time step size the basal mass production rate changes
-          // basal mass production rate determined by DENS, PHIE and degradation function
-          double intdegr = 0.0;
-          double degrtime = 0.0;
-          double degrdt = 0.0;
-          for (int idpast = minindex_; idpast < sizehistory - firstiter; idpast++)
+          double degr = 0.0;
+          history_->at(idpast).GetTime(&degrtime, &degrdt);
+          if (firstiter == 1)
           {
-            double degr = 0.0;
-            history_->at(idpast).GetTime(&degrtime, &degrdt);
-            if (firstiter == 1)
-            {
-              double timeloc = 0.0;
-              double dtloc = 0.0;
-              history_->at(idpast+1).GetTime(&timeloc, &dtloc);
-              degrdt = dtloc;
-            }
-            Degradation(time-degrtime, degr);
-            intdegr += degr * degrdt;
+            double timeloc = 0.0;
+            double dtloc = 0.0;
+            history_->at(idpast+1).GetTime(&timeloc, &dtloc);
+            degrdt = dtloc;
           }
-          massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 4.0 / intdegr;
-  //        massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 10.0 / intdegr;
+          Degradation(time-degrtime, degr);
+          intdegr += degr * degrdt;
+        }
+        massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 4.0 / intdegr;
+//        massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 10.0 / intdegr;
 
-          // update degradation values (not possible in Update, as dt not known there)
-          if (params_->degoption_ == "ExpVar")
+        // update degradation values (not possible in Update, as dt not known there)
+        if (params_->degoption_ == "ExpVar")
+        {
+          if (*params_->integration_ == "Implicit")
+            dserror("ExpVar not implemented for implicit time integration");
+          int sizehistory = history_->size();
+          // stretch of previous time step
+          LINALG::Matrix<4,1> actstretch(true);
+          history_->at(sizehistory-2).GetStretches(gp, &actstretch);
+          for (int idfiber = 0; idfiber < 4; idfiber ++)
           {
-            if (*params_->integration_ == "Implicit")
-              dserror("ExpVar not implemented for implicit time integration");
-            int sizehistory = history_->size();
-            // stretch of previous time step
-            LINALG::Matrix<4,1> actstretch(true);
-            history_->at(sizehistory-2).GetStretches(gp, &actstretch);
-            for (int idfiber = 0; idfiber < 4; idfiber ++)
+            double homstrain = 0.0;
+            double fac_cmat = 0.0;
+            EvaluateSingleFiberScalars(localprestretch_->at(gp)(idfiber)*localprestretch_->at(gp)(idfiber), fac_cmat, homstrain);
+            homstrain = homstrain * localprestretch_->at(gp)(idfiber);
+            for (int idtime = minindex_; idtime < sizehistory-2; idtime++)
             {
-              double homstrain = 0.0;
+              LINALG::Matrix<4,1> depstretch(true);
+              history_->at(idtime).GetStretches(gp, &depstretch);
+              double strain = 0.0;
               double fac_cmat = 0.0;
-              EvaluateSingleFiberScalars(localprestretch_->at(gp)(idfiber)*localprestretch_->at(gp)(idfiber), fac_cmat, homstrain);
-              homstrain = homstrain * localprestretch_->at(gp)(idfiber);
-              for (int idtime = minindex_; idtime < sizehistory-2; idtime++)
-              {
-                LINALG::Matrix<4,1> depstretch(true);
-                history_->at(idtime).GetStretches(gp, &depstretch);
-                double strain = 0.0;
-                double fac_cmat = 0.0;
-                double stretch = localprestretch_->at(gp)(idfiber) * actstretch(idfiber) / depstretch(idfiber);
-                double I4 = stretch * stretch;
-                EvaluateSingleFiberScalars(I4, fac_cmat, strain);
-                strain = strain * stretch;
-                double olddegrad = 0.0;
-                history_->at(idtime).GetVarDegrad(gp,idfiber,&olddegrad);
-                double newdegrad = exp(-(strain/homstrain - 1.0) * (strain/homstrain - 1.0) * dt * log(2.0) / params_->lifetime_);
-                newdegrad = newdegrad * olddegrad;
-                history_->at(idtime).SetVarDegrad(gp, idfiber, newdegrad);
-              }
+              double stretch = localprestretch_->at(gp)(idfiber) * actstretch(idfiber) / depstretch(idfiber);
+              double I4 = stretch * stretch;
+              EvaluateSingleFiberScalars(I4, fac_cmat, strain);
+              strain = strain * stretch;
+              double olddegrad = 0.0;
+              history_->at(idtime).GetVarDegrad(gp,idfiber,&olddegrad);
+              double newdegrad = exp(-(strain/homstrain - 1.0) * (strain/homstrain - 1.0) * dt * log(2.0) / params_->lifetime_);
+              newdegrad = newdegrad * olddegrad;
+              history_->at(idtime).SetVarDegrad(gp, idfiber, newdegrad);
             }
-          } // expvar
-        }
+          }
+        } // expvar
       }
-      else if (time > temptime + 1.0e-11)
+    }
+    else if (time > temptime + 1.0e-11)
+    {
+      // in remodeling time might be wrong depending on the time integration used
+      // correct this for the computation but do not store it
+      time = temptime;
+    }
+
+    //--------------------------------------------------------------------------------------
+    // build identity tensor I
+    LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
+    for (int i = 0; i < 3; i++) Id(i) = 1.0;
+    // right Cauchy-Green Tensor  C = 2 * E + I
+    LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
+    C.Scale(2.0);
+    C += Id;
+
+    //--------------------------------------------------------------------------------------
+    // compute actual collagen stretches
+    LINALG::Matrix<4,1> actstretch(true);
+    double actcollagenstretch =  a1_->at(gp)(0)*a1_->at(gp)(0)*C(0) + a1_->at(gp)(1)*a1_->at(gp)(1)*C(1)
+          + a1_->at(gp)(2)*a1_->at(gp)(2)*C(2) + a1_->at(gp)(0)*a1_->at(gp)(1)*C(3)
+          + a1_->at(gp)(1)*a1_->at(gp)(2)*C(4) + a1_->at(gp)(0)*a1_->at(gp)(2)*C(5); // = trace(A1:C)
+    actcollagenstretch = sqrt(actcollagenstretch);
+    actstretch(0) = actcollagenstretch;
+    actcollagenstretch =  a2_->at(gp)(0)*a2_->at(gp)(0)*C(0) + a2_->at(gp)(1)*a2_->at(gp)(1)*C(1)
+          + a2_->at(gp)(2)*a2_->at(gp)(2)*C(2) + a2_->at(gp)(0)*a2_->at(gp)(1)*C(3)
+          + a2_->at(gp)(1)*a2_->at(gp)(2)*C(4) + a2_->at(gp)(0)*a2_->at(gp)(2)*C(5); // = trace(A2:C)
+    actcollagenstretch = sqrt(actcollagenstretch);
+    actstretch(1) = actcollagenstretch;
+    actcollagenstretch =  a3_->at(gp)(0)*a3_->at(gp)(0)*C(0) + a3_->at(gp)(1)*a3_->at(gp)(1)*C(1)
+          + a3_->at(gp)(2)*a3_->at(gp)(2)*C(2) + a3_->at(gp)(0)*a3_->at(gp)(1)*C(3)
+          + a3_->at(gp)(1)*a3_->at(gp)(2)*C(4) + a3_->at(gp)(0)*a3_->at(gp)(2)*C(5); // = trace(A3:C)
+    actcollagenstretch = sqrt(actcollagenstretch);
+    actstretch(2) = actcollagenstretch;
+    actcollagenstretch =  a4_->at(gp)(0)*a4_->at(gp)(0)*C(0) + a4_->at(gp)(1)*a4_->at(gp)(1)*C(1)
+          + a4_->at(gp)(2)*a4_->at(gp)(2)*C(2) + a4_->at(gp)(0)*a4_->at(gp)(1)*C(3)
+          + a4_->at(gp)(1)*a4_->at(gp)(2)*C(4) + a4_->at(gp)(0)*a4_->at(gp)(2)*C(5); // = trace(A4:C)
+    actcollagenstretch = sqrt(actcollagenstretch);
+    actstretch(3) = actcollagenstretch;
+
+    // store them
+    // time <= starttime needs further considerations
+    if (time > params_->starttime_ + eps)
+    {
+      history_->back().SetStretches(gp, actstretch);
+    }
+    else if (*params_->initstretch_ == "Homeo")
+    {  // this is not working for all material parameters
+      int numsteps = history_->size();
+      for (int i = 0; i < numsteps; i++)
+        history_->at(i).SetStretches(gp, actstretch);
+    }
+    else if (*params_->initstretch_ == "SetConstantHistory" && time > (0.9*params_->starttime_ - dt + 1.0e-12) && time <= (0.9*params_->starttime_ + 1.0e-12))
+    {
+      LINALG::Matrix<4,1> tempstretch(actstretch);
+      for (int i=0; i<4; i++)
       {
-        // in remodeling time might be wrong depending on the time integration used
-        // correct this for the computation but do not store it
-        time = temptime;
+        if (tempstretch(i) < 1.0)
+          tempstretch(i) = 1.0;
       }
+      history_->back().SetStretches(gp, tempstretch);
+    }
+    else if (*params_->initstretch_ == "SetLinearHistory" && time <= (0.9*params_->starttime_ + 1.0e-12) && time > (0.9*params_->starttime_ - dt + 1.0e-12))
+    {
+      LINALG::Matrix<4,1> tempstretch(actstretch);
+      history_->back().SetStretches(gp, tempstretch);
+    }
 
-      //--------------------------------------------------------------------------------------
-      // build identity tensor I
-      LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
-      for (int i = 0; i < 3; i++) Id(i) = 1.0;
-      // right Cauchy-Green Tensor  C = 2 * E + I
-      LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
-      C.Scale(2.0);
-      C += Id;
-
-      //--------------------------------------------------------------------------------------
-      // compute actual collagen stretches
-      LINALG::Matrix<4,1> actstretch(true);
-      double actcollagenstretch =  a1_->at(gp)(0)*a1_->at(gp)(0)*C(0) + a1_->at(gp)(1)*a1_->at(gp)(1)*C(1)
-            + a1_->at(gp)(2)*a1_->at(gp)(2)*C(2) + a1_->at(gp)(0)*a1_->at(gp)(1)*C(3)
-            + a1_->at(gp)(1)*a1_->at(gp)(2)*C(4) + a1_->at(gp)(0)*a1_->at(gp)(2)*C(5); // = trace(A1:C)
-      actcollagenstretch = sqrt(actcollagenstretch);
-      actstretch(0) = actcollagenstretch;
-      actcollagenstretch =  a2_->at(gp)(0)*a2_->at(gp)(0)*C(0) + a2_->at(gp)(1)*a2_->at(gp)(1)*C(1)
-            + a2_->at(gp)(2)*a2_->at(gp)(2)*C(2) + a2_->at(gp)(0)*a2_->at(gp)(1)*C(3)
-            + a2_->at(gp)(1)*a2_->at(gp)(2)*C(4) + a2_->at(gp)(0)*a2_->at(gp)(2)*C(5); // = trace(A2:C)
-      actcollagenstretch = sqrt(actcollagenstretch);
-      actstretch(1) = actcollagenstretch;
-      actcollagenstretch =  a3_->at(gp)(0)*a3_->at(gp)(0)*C(0) + a3_->at(gp)(1)*a3_->at(gp)(1)*C(1)
-            + a3_->at(gp)(2)*a3_->at(gp)(2)*C(2) + a3_->at(gp)(0)*a3_->at(gp)(1)*C(3)
-            + a3_->at(gp)(1)*a3_->at(gp)(2)*C(4) + a3_->at(gp)(0)*a3_->at(gp)(2)*C(5); // = trace(A3:C)
-      actcollagenstretch = sqrt(actcollagenstretch);
-      actstretch(2) = actcollagenstretch;
-      actcollagenstretch =  a4_->at(gp)(0)*a4_->at(gp)(0)*C(0) + a4_->at(gp)(1)*a4_->at(gp)(1)*C(1)
-            + a4_->at(gp)(2)*a4_->at(gp)(2)*C(2) + a4_->at(gp)(0)*a4_->at(gp)(1)*C(3)
-            + a4_->at(gp)(1)*a4_->at(gp)(2)*C(4) + a4_->at(gp)(0)*a4_->at(gp)(2)*C(5); // = trace(A4:C)
-      actcollagenstretch = sqrt(actcollagenstretch);
-      actstretch(3) = actcollagenstretch;
-
-      // store them
-      // time <= starttime needs further considerations
-      if (time > params_->starttime_ + eps)
+    // set prestretch according to time curve or adapt prestretch
+    if (time < params_->starttime_ - eps && params_->timecurve_ != 0)
+    {
+      // increase prestretch according to time curve
+      int curvenum = params_->timecurve_;
+      double curvefac = 1.0;
+      // numbering starts from zero here, thus use curvenum-1
+      if (curvenum)
+        curvefac = DRT::Problem::Instance()->Curve(curvenum-1).f(time);
+      if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
+        dserror("correct your time curve for prestretch, just values in [0,1] are allowed %f", curvefac);
+      if (params_->numhom_ == 1)
       {
-        history_->back().SetStretches(gp, actstretch);
-      }
-      else if (*params_->initstretch_ == "Homeo")
-      {  // this is not working for all material parameters
-        int numsteps = history_->size();
-        for (int i = 0; i < numsteps; i++)
-          history_->at(i).SetStretches(gp, actstretch);
-      }
-      else if (*params_->initstretch_ == "SetConstantHistory" && time > (0.9*params_->starttime_ - dt + 1.0e-12) && time <= (0.9*params_->starttime_ + 1.0e-12))
-      {
-        LINALG::Matrix<4,1> tempstretch(actstretch);
-        for (int i=0; i<4; i++)
-        {
-          if (tempstretch(i) < 1.0)
-            tempstretch(i) = 1.0;
-        }
-        history_->back().SetStretches(gp, tempstretch);
-      }
-      else if (*params_->initstretch_ == "SetLinearHistory" && time <= (0.9*params_->starttime_ + 1.0e-12) && time > (0.9*params_->starttime_ - dt + 1.0e-12))
-      {
-        LINALG::Matrix<4,1> tempstretch(actstretch);
-        history_->back().SetStretches(gp, tempstretch);
-      }
-
-      // set prestretch according to time curve or adapt prestretch
-      if (time < params_->starttime_ - eps && params_->timecurve_ != 0)
-      {
-        // increase prestretch according to time curve
-        int curvenum = params_->timecurve_;
-        double curvefac = 1.0;
-        // numbering starts from zero here, thus use curvenum-1
-        if (curvenum)
-          curvefac = DRT::Problem::Instance()->Curve(curvenum-1).f(time);
-        if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
-          dserror("correct your time curve for prestretch, just values in [0,1] are allowed %f", curvefac);
-        if (params_->numhom_ == 1)
-        {
-          double prestretch = 1.0 + (params_->prestretchcollagen_[0] - 1.0)*curvefac;
-          localprestretch_->at(gp).PutScalar(prestretch);
-        }
-        else
-        {
-          double prestretch = 1.0 + (params_->prestretchcollagen_[0] - 1.0)*curvefac;
-          localprestretch_->at(gp)(0) = prestretch;
-          prestretch = 1.0 + (params_->prestretchcollagen_[1] - 1.0)*curvefac;
-          localprestretch_->at(gp)(1) = prestretch;
-          prestretch = 1.0 + (params_->prestretchcollagen_[2] - 1.0)*curvefac;
-          localprestretch_->at(gp)(2) = prestretch;
-          localprestretch_->at(gp)(3) = prestretch;
-        }
-      }
-      else if (abs(time - params_->starttime_) < eps && *params_->initstretch_ == "UpdatePrestretch")
-      {
-        // use current stretch as prestretch
-        if (params_->numhom_ == 1)
-          localprestretch_->at(gp).Update(params_->prestretchcollagen_[0],actstretch);
-        else
-        {
-          localprestretch_->at(gp)(0) = params_->prestretchcollagen_[0] * actstretch(0);
-          localprestretch_->at(gp)(1) = params_->prestretchcollagen_[1] * actstretch(1);
-          localprestretch_->at(gp)(2) = params_->prestretchcollagen_[2] * actstretch(2);
-          localprestretch_->at(gp)(3) = params_->prestretchcollagen_[2] * actstretch(3);
-        }
-        // adopt deposition stretch
-        int numsteps = history_->size();
-        for (int i = 0; i < numsteps; i++)
-          history_->at(i).SetStretches(gp, actstretch);
-        homradius_ = inner_radius;
-      }
-
-      // start in every iteration from the original value, this is important for implicit only
-      LINALG::Matrix<4,1> massprodstart(true);
-      for (int id = 0; id < 4; id++)
-        massprodstart(id) = massprodbasal_;
-  //    massprodstart(2) = massprodstart(2)*4;
-  //    massprodstart(3) = massprodstart(3)*4;
-      history_->back().SetMass(gp, massprodstart);
-
-      EvaluateStress(glstrain, gp, cmat, stress, firstiter, time, elastin_survival);
-
-      //--------------------------------------------------------------------------------------
-      // compute new deposition rates
-      // either for future use or just for visualization
-      LINALG::Matrix<4,1> massstress(true);
-      LINALG::Matrix<4,1> massprodcomp(true);
-      if (*params_->growthforce_ == "All")
-      {
-        MassProduction(gp, *defgrd, *stress, &massstress, inner_radius, &massprodcomp);
-      }
-      else if (*params_->growthforce_ == "ElaCol")
-      {
-        double masstemp = 0.0;
-        LINALG::Matrix<NUM_STRESS_3D,1> stresstemp(true);
-        LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmattemp(true);
-
-        // 1st step: elastin
-        //==========================
-        LINALG::Matrix<NUM_STRESS_3D,1> Siso(true);
-        LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatiso(true);
-        EvaluateElastin(C, &cmatiso, &Siso, time, &masstemp, elastin_survival);
-        stresstemp = Siso;
-        cmattemp = cmatiso;
-
-        // 2nd step: collagen
-        //==========================
-        EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a1_->at(gp), &masstemp, firstiter, time, 0);
-        EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a2_->at(gp), &masstemp, firstiter, time, 1);
-        EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a3_->at(gp), &masstemp, firstiter, time, 2);
-        EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a4_->at(gp), &masstemp, firstiter, time, 3);
-
-        MassProduction(gp, *defgrd, stresstemp, &massstress, inner_radius, &massprodcomp);
+        double prestretch = 1.0 + (params_->prestretchcollagen_[0] - 1.0)*curvefac;
+        localprestretch_->at(gp).PutScalar(prestretch);
       }
       else
       {
-        double massstresstemp = 0.0;
-        double massprodtemp = 0.0;
-        LINALG::Matrix<NUM_STRESS_3D,1> stresstemp(true);
-        LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmattemp(true);
-        double masstemp = 0.0;
-        EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a1_->at(gp), &masstemp, firstiter, time, 0);
-        MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius, &massprodtemp, a1_->at(gp), 0);
-        massstress(0) = massstresstemp;
-        massprodcomp(0) = massprodtemp;
-        stresstemp.Scale(0.0);
-        EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a2_->at(gp), &masstemp, firstiter, time, 1);
-        MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius, &massprodtemp, a2_->at(gp), 1);
-        massstress(1) = massstresstemp;
-        massprodcomp(1) = massprodtemp;
-        stresstemp.Scale(0.0);
-        EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a3_->at(gp), &masstemp, firstiter, time, 2);
-        MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius, &massprodtemp, a3_->at(gp), 2);
-        massstress(2) = massstresstemp;
-        massprodcomp(2) = massprodtemp;
-        stresstemp.Scale(0.0);
-        EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a4_->at(gp), &masstemp, firstiter, time, 3);
-        MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius, &massprodtemp, a4_->at(gp), 3);
-        massstress(3) = massstresstemp;
-        massprodcomp(3) = massprodtemp;
+        double prestretch = 1.0 + (params_->prestretchcollagen_[0] - 1.0)*curvefac;
+        localprestretch_->at(gp)(0) = prestretch;
+        prestretch = 1.0 + (params_->prestretchcollagen_[1] - 1.0)*curvefac;
+        localprestretch_->at(gp)(1) = prestretch;
+        prestretch = 1.0 + (params_->prestretchcollagen_[2] - 1.0)*curvefac;
+        localprestretch_->at(gp)(2) = prestretch;
+        localprestretch_->at(gp)(3) = prestretch;
       }
-
-      // set new homstress
-      if (abs(time - params_->starttime_) < eps && *params_->initstretch_ == "UpdatePrestretch")
+    }
+    else if (abs(time - params_->starttime_) < eps && *params_->initstretch_ == "UpdatePrestretch")
+    {
+      // use current stretch as prestretch
+      if (params_->numhom_ == 1)
+        localprestretch_->at(gp).Update(params_->prestretchcollagen_[0],actstretch);
+      else
       {
-        localhomstress_->at(gp).Update(massstress);
-        // perhaps add time < params_->starttime_? correction factor actstretch needed?
+        localprestretch_->at(gp)(0) = params_->prestretchcollagen_[0] * actstretch(0);
+        localprestretch_->at(gp)(1) = params_->prestretchcollagen_[1] * actstretch(1);
+        localprestretch_->at(gp)(2) = params_->prestretchcollagen_[2] * actstretch(2);
+        localprestretch_->at(gp)(3) = params_->prestretchcollagen_[2] * actstretch(3);
       }
+      // adopt deposition stretch
+      int numsteps = history_->size();
+      for (int i = 0; i < numsteps; i++)
+        history_->at(i).SetStretches(gp, actstretch);
+      homradius_ = inner_radius;
+    }
 
-      if (time > params_->starttime_ + eps && (params_->growthfactor_ != 0.0 || params_->sheargrowthfactor_ != 0.0))
-      {
-        // start values for local Newton iteration are computed
-        // distinguish between explicit and implicit integration
-        if (*params_->integration_ == "Explicit")
-        {
-          history_->back().SetMass(gp,massprodcomp);
-          vismassstress_->at(gp)(0) = massstress(0);
-          vismassstress_->at(gp)(1) = massstress(1);
-          vismassstress_->at(gp)(2) = massstress(2);
-        }
-        else
-        {
-          if (*params_->elastindegrad_ != "None" || *params_->massprodfunc_ != "Lin"
-              || *params_->initstretch_ == "SetConstantHistory" || *params_->initstretch_ == "SetLinearHistory")
-            dserror("Your desired option of elastin degradation, mass production function or initstretch\n is not implemented in implicit time integration");
-          if (*params_->growthforce_ == "All")
-          {
-            EvaluateImplicitAll(*defgrd, glstrain, gp, cmat, stress, dt, time, massprodcomp, massstress);
-          }
-          else if (*params_->growthforce_ == "Single")
-          {
-            EvaluateImplicitSingle(*defgrd, glstrain, gp, cmat, stress, dt, time);
-          }
-          else if (*params_->growthforce_ == "ElaCol")
-          {
-            dserror("GROWTHFORCE ElaCol not implemented for implicit integration");
-          }
-        }
+    // start in every iteration from the original value, this is important for implicit only
+    LINALG::Matrix<4,1> massprodstart(true);
+    for (int id = 0; id < 4; id++)
+      massprodstart(id) = massprodbasal_;
+//    massprodstart(2) = massprodstart(2)*4;
+//    massprodstart(3) = massprodstart(3)*4;
+    history_->back().SetMass(gp, massprodstart);
 
-      } else {
-        // visualization of massstresss for the other cases
-        vismassstress_->at(gp)(0) = massstress(0);
-        vismassstress_->at(gp)(1) = massstress(1);
-        vismassstress_->at(gp)(2) = massstress(2);
-        if ((*params_->initstretch_ == "SetConstantHistory" || *params_->initstretch_ == "SetLinearHistory")
-            && time > (0.6*params_->starttime_ + 1.0e-12) && time <= (0.9*params_->starttime_ - dt + 1.0e-12))
-          history_->back().SetMass(gp,massprodcomp);
-      }
+    EvaluateStress(glstrain, gp, cmat, stress, firstiter, time, elastin_survival);
+
+    //--------------------------------------------------------------------------------------
+    // compute new deposition rates
+    // either for future use or just for visualization
+    LINALG::Matrix<4,1> massstress(true);
+    LINALG::Matrix<4,1> massprodcomp(true);
+    if (*params_->growthforce_ == "All")
+    {
+      MassProduction(gp, *defgrd, *stress, &massstress, inner_radius, &massprodcomp);
+    }
+    else if (*params_->growthforce_ == "ElaCol")
+    {
+      double masstemp = 0.0;
+      LINALG::Matrix<NUM_STRESS_3D,1> stresstemp(true);
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmattemp(true);
+
+      // 1st step: elastin
+      //==========================
+      LINALG::Matrix<NUM_STRESS_3D,1> Siso(true);
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatiso(true);
+      EvaluateElastin(C, &cmatiso, &Siso, time, &masstemp, elastin_survival);
+      stresstemp = Siso;
+      cmattemp = cmatiso;
+
+      // 2nd step: collagen
+      //==========================
+      EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a1_->at(gp), &masstemp, firstiter, time, 0);
+      EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a2_->at(gp), &masstemp, firstiter, time, 1);
+      EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a3_->at(gp), &masstemp, firstiter, time, 2);
+      EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a4_->at(gp), &masstemp, firstiter, time, 3);
+
+      MassProduction(gp, *defgrd, stresstemp, &massstress, inner_radius, &massprodcomp);
     }
     else
     {
-      // in case of output everything is fully converged, we just have to evaluate stress etc.
-      // should be independent of order of update and output, as new steps are set with dt = 0.0
-      // and oldest fibers are carefully erased
-      double temptime = 0.0;
-      double tempdt = 0.0;
-      history_->back().GetTime(&temptime,&tempdt);
-      if (time != temptime)
+      double massstresstemp = 0.0;
+      double massprodtemp = 0.0;
+      LINALG::Matrix<NUM_STRESS_3D,1> stresstemp(true);
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmattemp(true);
+      double masstemp = 0.0;
+      EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a1_->at(gp), &masstemp, firstiter, time, 0);
+      MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius, &massprodtemp, a1_->at(gp), 0);
+      massstress(0) = massstresstemp;
+      massprodcomp(0) = massprodtemp;
+      stresstemp.Scale(0.0);
+      EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a2_->at(gp), &masstemp, firstiter, time, 1);
+      MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius, &massprodtemp, a2_->at(gp), 1);
+      massstress(1) = massstresstemp;
+      massprodcomp(1) = massprodtemp;
+      stresstemp.Scale(0.0);
+      EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a3_->at(gp), &masstemp, firstiter, time, 2);
+      MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius, &massprodtemp, a3_->at(gp), 2);
+      massstress(2) = massstresstemp;
+      massprodcomp(2) = massprodtemp;
+      stresstemp.Scale(0.0);
+      EvaluateFiberFamily(C, gp, &cmattemp, &stresstemp, a4_->at(gp), &masstemp, firstiter, time, 3);
+      MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius, &massprodtemp, a4_->at(gp), 3);
+      massstress(3) = massstresstemp;
+      massprodcomp(3) = massprodtemp;
+    }
+
+    // set new homstress
+    if (abs(time - params_->starttime_) < eps && *params_->initstretch_ == "UpdatePrestretch")
+    {
+      localhomstress_->at(gp).Update(massstress);
+      // perhaps add time < params_->starttime_? correction factor actstretch needed?
+    }
+
+    if (time > params_->starttime_ + eps && (params_->growthfactor_ != 0.0 || params_->sheargrowthfactor_ != 0.0))
+    {
+      // start values for local Newton iteration are computed
+      // distinguish between explicit and implicit integration
+      if (*params_->integration_ == "Explicit")
       {
-        if (temptime == 0.0)
-        {
-          int size = history_->size();
-          history_->at(size-2).GetTime(&temptime,&tempdt);
-          EvaluateStress(glstrain, gp, cmat, stress, firstiter, temptime, elastin_survival);
-          dserror("has to be checked, update called before output");
-        } else
-          dserror("times do not match: %f actual time, %f deposition time of last fiber",time,temptime);
+        history_->back().SetMass(gp,massprodcomp);
+        vismassstress_->at(gp)(0) = massstress(0);
+        vismassstress_->at(gp)(1) = massstress(1);
+        vismassstress_->at(gp)(2) = massstress(2);
       }
       else
       {
-        EvaluateStress(glstrain, gp, cmat, stress, firstiter, time, elastin_survival);
+        if (*params_->elastindegrad_ != "None" || *params_->massprodfunc_ != "Lin"
+            || *params_->initstretch_ == "SetConstantHistory" || *params_->initstretch_ == "SetLinearHistory")
+          dserror("Your desired option of elastin degradation, mass production function or initstretch\n is not implemented in implicit time integration");
+        if (*params_->growthforce_ == "All")
+        {
+          EvaluateImplicitAll(*defgrd, glstrain, gp, cmat, stress, dt, time, massprodcomp, massstress);
+        }
+        else if (*params_->growthforce_ == "Single")
+        {
+          EvaluateImplicitSingle(*defgrd, glstrain, gp, cmat, stress, dt, time);
+        }
+        else if (*params_->growthforce_ == "ElaCol")
+        {
+          dserror("GROWTHFORCE ElaCol not implemented for implicit integration");
+        }
       }
+
+    } else {
+      // visualization of massstresss for the other cases
+      vismassstress_->at(gp)(0) = massstress(0);
+      vismassstress_->at(gp)(1) = massstress(1);
+      vismassstress_->at(gp)(2) = massstress(2);
+      if ((*params_->initstretch_ == "SetConstantHistory" || *params_->initstretch_ == "SetLinearHistory")
+          && time > (0.6*params_->starttime_ + 1.0e-12) && time <= (0.9*params_->starttime_ - dt + 1.0e-12))
+        history_->back().SetMass(gp,massprodcomp);
     }
+  }
+  else
+  {
+    // in case of output everything is fully converged, we just have to evaluate stress etc.
+    // should be independent of order of update and output, as new steps are set with dt = 0.0
+    // and oldest fibers are carefully erased
+    double temptime = 0.0;
+    double tempdt = 0.0;
+    history_->back().GetTime(&temptime,&tempdt);
+    if (time != temptime)
+    {
+      if (temptime == 0.0)
+      {
+        int size = history_->size();
+        history_->at(size-2).GetTime(&temptime,&tempdt);
+        EvaluateStress(glstrain, gp, cmat, stress, firstiter, temptime, elastin_survival);
+        dserror("has to be checked, update called before output");
+      } else
+        dserror("times do not match: %f actual time, %f deposition time of last fiber",time,temptime);
+    }
+    else
+    {
+      EvaluateStress(glstrain, gp, cmat, stress, firstiter, time, elastin_survival);
+    }
+  }
 } // Evaluate
 
 /*----------------------------------------------------------------------*
