@@ -633,11 +633,16 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcArtificialDiff(
     const double vel_norm = convelint.Norm2();
 
     // parameter relating convective and diffusive forces + respective switch
-    const double epe = mk * densnp * vel_norm * h / diffmanager_->GetIsotropicDiff(k);
-    const double xi = std::max(epe,1.0);
+    double epe = 0.0;
+    double xi = 1.0;
+    if (diffmanager_->GetIsotropicDiff(k)>1.0e-8)
+    {
+      epe = 0.5 * mk * densnp * vel_norm * h / diffmanager_->GetIsotropicDiff(k);
+      xi = std::min(epe,1.0);
+    }
 
     // compute subgrid diffusivity
-    artdiff = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(densnp))/(2.0*diffmanager->GetIsotropicDiff(k)*xi);
+    artdiff = xi*0.5*densnp*vel_norm*h;
   }
   else if (scatrapara_->ASSGDType() == INPAR::SCATRA::assgd_lin_reinit)
   {

@@ -5088,6 +5088,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Definition of (all-scale) subgrid diffusivity",
                                  tuple<std::string>(
                                    "artificial_linear",
+                                   "artificial_linear_reinit",
                                    "Hughes_etal_86_nonlinear",
                                    "Tezduyar_Park_86_nonlinear",
                                    "Tezduyar_Park_86_nonlinear_wo_phizero",
@@ -5096,6 +5097,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    "YZbeta_nonlinear",
                                    "Codina_nonlinear"),
                                  tuple<std::string>(
+                                   "simple linear artificial diffusion",
                                    "simple linear artificial diffusion const*h",
                                    "nonlinear isotropic according to Hughes et al. (1986)",
                                    "nonlinear isotropic according to Tezduyar and Park (1986)",
@@ -5105,6 +5107,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    "nonlinear YZ beta model",
                                    "nonlinear isotropic according to Codina")  ,
                                   tuple<int>(
+                                      INPAR::SCATRA::assgd_artificial,
                                       INPAR::SCATRA::assgd_lin_reinit,
                                       INPAR::SCATRA::assgd_hughes,
                                       INPAR::SCATRA::assgd_tezduyar,
@@ -5114,6 +5117,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       INPAR::SCATRA::assgd_yzbeta,
                                       INPAR::SCATRA::assgd_codina),
                                  &ls_reinit);
+
     setStringToIntegralParameter<int>("SMOOTHED_SIGN_TYPE",
                                       "SussmanSmerekaOsher1994",
                                       "sign function for reinitialization equation",

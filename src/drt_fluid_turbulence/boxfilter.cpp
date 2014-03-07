@@ -28,7 +28,6 @@ Maintainer: Benjamin Krank
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     krank 09/13|
  *----------------------------------------------------------------------*/
-
 FLD::Boxfilter::Boxfilter(
   Teuchos::RCP<DRT::Discretization>     actdis             ,
   Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
@@ -38,32 +37,29 @@ FLD::Boxfilter::Boxfilter(
   discret_            (actdis             ),
   pbcmapmastertoslave_(pbcmapmastertoslave),
   params_             (params             ),
-  physicaltype_       (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type"))
-
+  physicaltype_       (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type")),
+  //  available control settings
+  apply_dynamic_smagorinsky_(false),
+  vreman_dynamic_(false),
+  apply_box_filter_(false),
+  loma_(false),
+  incomp_(false),
+  velocity_(false),
+  reynoldsstress_(false),
+  modeled_subgrid_stress_(false),
+  expression_(false),
+  strainrate_(false),
+  alphaij_(false),
+  alpha2_(false),
+  finescale_velocity_(false),
+  densvelocity_(false),
+  densstrainrate_(false),
+  density_(false),
+  phi_(false),
+  phi2_(false),
+  phiexpression_(false),
+  alphaijsc_(false)
 {
-//  Available control settings
-  apply_dynamic_smagorinsky_ = false;
-  vreman_dynamic_ = false;
-  apply_box_filter_ = false;
-  loma_ = false;
-  incomp_=false;
-
-  velocity_ = false;
-  reynoldsstress_ = false;
-  modeled_subgrid_stress_ = false;
-  expression_ = false;
-  strainrate_=false;
-  alphaij_ = false;
-  alpha2_ = false;
-  finescale_velocity_ = false;
-  densvelocity_ = false;
-  densstrainrate_ = false;
-  density_ = false;
-  phi_=false;
-  phi2_=false;
-  phiexpression_=false;
-  alphaijsc_=false;
-
   Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
 
@@ -118,7 +114,7 @@ FLD::Boxfilter::Boxfilter(
     modeled_subgrid_stress_ = true;
   }
   if (loma_ and vreman_dynamic_)
-    dserror("Loma not implemented for dynamic vreman.");
+    dserror("Dynamic Vreman model not implemented for loma!");
 
   return;
 }
@@ -1127,9 +1123,6 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
     filtered_phiexpression_=Teuchos::rcp(new Epetra_Vector(*noderowmap,true));
   if (alphaijsc_)
     filtered_alphaijsc_ =Teuchos::rcp(new Epetra_MultiVector(*noderowmap,numdim*numdim,true));
-
-
-
 
   // ---------------------------------------------------------------
   // do the integration of the (not normalized) box filter function

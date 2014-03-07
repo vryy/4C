@@ -744,8 +744,8 @@ private:
   bool                         velocity_;
   bool                         reynoldsstress_;
   bool                         modeled_subgrid_stress_;
-  bool                         strainrate_;
   bool                         expression_;
+  bool                         strainrate_;
   bool                         alphaij_;
   bool                         alpha2_;
   bool                         finescale_velocity_;

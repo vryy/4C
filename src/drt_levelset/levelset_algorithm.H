@@ -137,7 +137,7 @@ namespace SCATRA
     /// the parameter list for level-set problems
     Teuchos::RCP<Teuchos::ParameterList> levelsetparams_;
 
-    // pointer to particle algorithm
+    /// pointer to particle algorithm
     Teuchos::RCP<PARTICLE::ScatraParticleCoupling> particle_;
 
     /// convective velocity at time n

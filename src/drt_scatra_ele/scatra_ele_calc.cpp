@@ -32,8 +32,6 @@ Maintainer: Andreas Ehrl
 #include "../drt_lib/drt_condition_utils.H"
 
 #include "../drt_mat/scatra_mat.H"
-//#include "../drt_mat/myocard.H"
-//#include "../drt_mat/biofilm.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/newtonianfluid.H"
 
@@ -334,7 +332,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractTurbulenceApproach(
   }
 
   // get fine-scale values
-  if ((scatraparatimint_->IsIncremental() and scatrapara_->WhichFssgd() == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
+  if ((scatraparatimint_->IsIncremental() and
+      (scatrapara_->WhichFssgd() == INPAR::SCATRA::fssugrdiff_smagorinsky_all or scatrapara_->WhichFssgd() == INPAR::SCATRA::fssugrdiff_smagorinsky_small))
       or scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
   {
     // get fine scale scalar field
@@ -354,8 +353,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractTurbulenceApproach(
     }
 
     // get fine-scale velocity at nodes
-    const Teuchos::RCP<Epetra_MultiVector> fsvelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("fine-scale velocity field");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,efsvel_,fsvelocity,nsd_);
+    if (scatrapara_->WhichFssgd() == INPAR::SCATRA::fssugrdiff_smagorinsky_small or scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+    {
+      const Teuchos::RCP<Epetra_MultiVector> fsvelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("fine-scale velocity field");
+      DRT::UTILS::ExtractMyNodeBasedValues(ele,efsvel_,fsvelocity,nsd_);
+    }
   }
 
   return;
