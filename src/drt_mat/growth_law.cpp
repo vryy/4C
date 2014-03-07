@@ -34,8 +34,10 @@ MAT::PAR::GrowthLawLinear::GrowthLawLinear(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
+  thetaplus_(matdata->GetDouble("THETAPLUS")),
   kthetaplus_(matdata->GetDouble("KPLUS")),
   mthetaplus_(matdata->GetDouble("MPLUS")),
+  thetaminus_(matdata->GetDouble("THETAMINUS")),
   kthetaminus_(matdata->GetDouble("KMINUS")),
   mthetaminus_(matdata->GetDouble("MMINUS")),
   hommandel_(matdata->GetDouble("HOMMANDEL"))
@@ -72,12 +74,12 @@ void MAT::GrowthLawLinear::EvaluateGrowthFunction
 {
   // parameters
   const double hommandel   = params_->hommandel_;
+  const double thetaplus   = params_->thetaplus_; //1.5;
   const double kthetaplus  = params_->kthetaplus_; //1.0; 0.5;
   const double mthetaplus  = params_->mthetaplus_; //2.0; 4.0;
-  const double thetaplus   = 1.5;
+  const double thetaminus  = params_->thetaminus_; //0.5;
   const double kthetaminus = params_->kthetaminus_; //2.0; 0.25;
   const double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
-  const double thetaminus  = 0.5;
 
   double ktheta  = 0.0;
 
@@ -104,12 +106,12 @@ void MAT::GrowthLawLinear::EvaluateGrowthFunctionDerivTheta
 {
   // parameters
   const double hommandel   = params_->hommandel_;
+  const double thetaplus   = params_->thetaplus_; //1.5;
   const double kthetaplus  = params_->kthetaplus_; //1.0; 0.5;
   const double mthetaplus  = params_->mthetaplus_; //2.0; 4.0;
-  const double thetaplus   = 1.5;
+  const double thetaminus  = params_->thetaminus_; //0.5;
   const double kthetaminus = params_->kthetaminus_; //2.0; 0.25;
   const double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
-  const double thetaminus  = 0.5;
 
   double ktheta  = 0.0;
   double dktheta = 0.0;
@@ -153,12 +155,12 @@ void MAT::GrowthLawLinear::EvaluateGrowthFunctionDerivC
 {
   // parameters
   const double hommandel   = params_->hommandel_;
+  const double thetaplus   = params_->thetaplus_; //1.5;
   const double kthetaplus  = params_->kthetaplus_; //1.0; 0.5;
   const double mthetaplus  = params_->mthetaplus_; //2.0; 4.0;
-  const double thetaplus   = 1.5;
+  const double thetaminus  = params_->thetaminus_; //0.5;
   const double kthetaminus = params_->kthetaminus_; //2.0; 0.25;
   const double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
-  const double thetaminus  = 0.5;
 
   double ktheta  = 0.0;
 

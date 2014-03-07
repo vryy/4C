@@ -1441,8 +1441,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "linear growth law",
                                             INPAR::MAT::m_growth_linear));
 
+    AddNamedReal(m,"THETAPLUS","maximal growth stretch");
     AddNamedReal(m,"KPLUS","growth law parameter kthetaplus");
     AddNamedReal(m,"MPLUS","growth law parameter mthetaplus");
+    AddNamedReal(m,"THETAMINUS","minimal growth stretch");
     AddNamedReal(m,"KMINUS","growth law parameter kthetaminus");
     AddNamedReal(m,"MMINUS","growth law parameter mthetaminus");
     AddNamedReal(m,"HOMMANDEL","homeostatic value for mandelstress");
@@ -1504,6 +1506,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"CURVE","number of timecurve for increase of prestretch in time",0);
     AddNamedString(m,"DEGOPTION","which degradation function (Lin, Cos, Exp, ExpVar)","Lin");
     AddNamedReal(m,"MAXMASSPRODFAC","maximal factor of mass production");
+    AddNamedBool(m,"STOREHISTORY","store all history variables, not recommended for forward simulations",false,true);
 
     AppendMaterialDefinition(matlist,m);
   }

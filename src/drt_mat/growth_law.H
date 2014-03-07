@@ -84,10 +84,14 @@ namespace MAT
 
       /// @name material parameters
       //@{
+      /// maximal growth stretch
+      const double thetaplus_;
       /// growth law parameter kthetaplus
       const double kthetaplus_;
       /// growth law parameter mthetaplus
       const double mthetaplus_;
+      /// minimal growth stretch
+      const double thetaminus_;
       /// growth law parameter kthetaminus
       const double kthetaminus_;
       /// growth law parameter mthetaminus

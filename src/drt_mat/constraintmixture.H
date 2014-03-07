@@ -4,11 +4,14 @@
 This file contains routines for constraint mixture growth and remodeling.
 example input line
 example input line
-MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0 PHIE 0.08 PREELA 1.0
-K1 1.0 K2 1.0 PRECOLL 1.06 K1M 1.0 K2M 1.0 PHIM 1.0 PREMUS 1.0
-SMAX 0.0 KAPPA 1.0E6 LIFETIME 5.0 HOMSTR 6.75E4 GROWTHFAC 0.5
-STARTTIME 5.0 INTEGRATION Explicit TOL 1.0E-4 GROWTHFORCE Single
-INITSTRETCH None DEGOPTION Cos
+MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0 NUE 0.49 PHIE 0.08
+PREELA 1.0 K1 1.0 K2 1.0 NUMHOM 1 PRECOLL 1.06 DAMAGE 1.5 K1M 1.0 K2M 1.0
+PHIM 1.0 PREMUS 1.0 SMAX 0.0 KAPPA 1.0E6 LIFETIME 5.0 GROWTHFAC 0.5
+HOMSTR 6.75E4 SHEARGROWTHFAC 0.0 HOMRAD 1.0 STARTTIME 5.0
+INTEGRATION Explicit TOL 1.0E-4 GROWTHFORCE Single ELASTINDEGRAD None
+MASSPROD Lin INITSTRETCH None CURVE 0 DEGOPTION Cos MAXMASSPRODFAC 4.0
+STOREHISTORY No
+
 
 Here an approach for growth and remodeling of an artery is modeled.
 For a detailed description see:
@@ -119,6 +122,8 @@ namespace MAT
       const std::string degoption_;
       /// maximal factor of mass production
       const double maxmassprodfac_;
+      /// store all history variables
+      const int storehistory_;
       /// tolerance for degradation
       const double degtol_;
       //@}
@@ -130,101 +135,7 @@ namespace MAT
 
   }  // namespace PAR
 
-  class ConstraintMixtureHistoryType : public DRT::ParObjectType
-  {
-  public:
-
-    std::string Name() const { return "ConstraintMixtureHistoryType"; }
-
-    static ConstraintMixtureHistoryType & Instance() { return instance_; };
-
-    virtual DRT::ParObject* Create( const std::vector<char> & data );
-
-  private:
-
-    static ConstraintMixtureHistoryType instance_;
-  };
-
-  /*----------------------------------------------------------------------*/
-  /// Wrapper for history of constraint mixture material
-  class ConstraintMixtureHistory : public DRT::ParObject
-  {
-    friend class ConstraintMixture;
-  public:
-    /// construct empty history object
-    ConstraintMixtureHistory(){;}
-    /// destruct history object
-    virtual ~ConstraintMixtureHistory() { ;}
-
-    //! @name Packing and Unpacking
-    virtual int UniqueParObjectId() const { return ConstraintMixtureHistoryType::Instance().UniqueParObjectId(); }
-    virtual void Pack(DRT::PackBuffer& data) const;
-    virtual void Unpack(const std::vector<char>& data);
-    //@}
-
-    /// Setup
-    void Setup(int ngp, const double massprodbasal, bool expvar);
-
-  private:
-
-    /// @name Access to History
-    //@{
-    /// set time variables
-    void SetTime(double deptime, double dt) {depositiontime_ = deptime; dt_ = dt;};
-    /// get time variables
-    void GetTime(double* deptime, double* dt) {*deptime = depositiontime_; *dt = dt_;};
-    /// set stretches
-    void SetStretches(int gp, LINALG::Matrix<4,1> stretches);
-    /// get stretches
-    void GetStretches(int gp, LINALG::Matrix<4,1>* stretches);
-    /// set mass production rates
-    void SetMass(int gp, LINALG::Matrix<4,1> massprod);
-    /// set mass production rate of single fiber
-    void SetMass(int gp, double massprod, int idfiber);
-    /// get mass production rates
-    void GetMass(int gp, LINALG::Matrix<4,1>* massprod);
-    /// set vardegrad
-    void SetVarDegrad(int gp, int idfiber, double vardegrad);
-    /// get vardegrad
-    void GetVarDegrad(int gp, int idfiber, double* vardegrad);
-    /// return number of gausspoints
-    int NumGP() const { return numgp_;}
-    //@}
-
-    /// deposition time of collagen fibers
-    double depositiontime_;
-    /// time step at this time
-    double dt_;
-    /// number of gausspoints
-    int numgp_;
-    /// variable degradation of collagen?
-    bool expvar_;
-    /// stretch of first collagen fiber family
-    Teuchos::RCP<std::vector<double> > collagenstretch1_;
-    /// stretch of second collagen fiber family
-    Teuchos::RCP<std::vector<double> > collagenstretch2_;
-    /// stretch of third collagen fiber family
-    Teuchos::RCP<std::vector<double> > collagenstretch3_;
-    /// stretch of fourth collagen fiber family
-    Teuchos::RCP<std::vector<double> > collagenstretch4_;
-    /// mass production rate of first fiber family
-    Teuchos::RCP<std::vector<double> > massprod1_;
-    /// mass production rate of second fiber family
-    Teuchos::RCP<std::vector<double> > massprod2_;
-    /// mass production rate of third fiber family
-    Teuchos::RCP<std::vector<double> > massprod3_;
-    /// mass production rate of fourth fiber family
-    Teuchos::RCP<std::vector<double> > massprod4_;
-    /// variable degradation of first fiber family
-    Teuchos::RCP<std::vector<double> > vardegrad1_;
-    /// variable degradation of second fiber family
-    Teuchos::RCP<std::vector<double> > vardegrad2_;
-    /// variable degradation of third fiber family
-    Teuchos::RCP<std::vector<double> > vardegrad3_;
-    /// variable degradation of fourth fiber family
-    Teuchos::RCP<std::vector<double> > vardegrad4_;
-
-  };
+  class ConstraintMixtureHistory;
 
   class ConstraintMixtureType : public DRT::ParObjectType
   {
@@ -401,6 +312,8 @@ namespace MAT
     double homradius_;
     /// list of fibers which have been overstretched and are deleted at the end of the time step (gp, idpast, idfiber)
     Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > deletemass_;
+    /// index of oldest fiber still alive, needed if the complete history is stored to avoid summation of zeros
+    int minindex_;
     /// indicates if material is initialized
     bool isinit_;
 

@@ -445,6 +445,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/cnst_1d_art.cpp
   src/drt_mat/compogden.cpp
   src/drt_mat/constraintmixture.cpp
+  src/drt_mat/constraintmixture_history.cpp
   src/drt_mat/elasthyper.cpp
   src/drt_mat/plasticelasthyper.cpp
   src/drt_mat/viscogenmax.cpp

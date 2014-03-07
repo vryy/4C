@@ -3,11 +3,13 @@
 \brief
 This file contains routines for constraint mixture growth and remodeling.
 example input line
-MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0 NUE 0.49 PHIE 0.08 PREELA 1.0
-K1 1.0 K2 1.0 PRECOLL 1.06 DAMAGE 10.0 K1M 1.0 K2M 1.0 PHIM 1.0 PREMUS 1.0
-SMAX 0.0 KAPPA 1.0E6 LIFETIME 5.0 GROWTHFAC 0.5 HOMSTR 6.75E4
-SHEARGROWTHFAC 0.5 HOMRAD 10.0 STARTTIME 5.0 INTEGRATION Explicit TOL 1.0E-4
-GROWTHFORCE All ELASTINDEGRAD None MASSPROD Lin INITSTRETCH None CURVE 0 DEGOPTION Cos
+MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0 NUE 0.49 PHIE 0.08
+PREELA 1.0 K1 1.0 K2 1.0 NUMHOM 1 PRECOLL 1.06 DAMAGE 1.5 K1M 1.0 K2M 1.0
+PHIM 1.0 PREMUS 1.0 SMAX 0.0 KAPPA 1.0E6 LIFETIME 5.0 GROWTHFAC 0.5
+HOMSTR 6.75E4 SHEARGROWTHFAC 0.0 HOMRAD 1.0 STARTTIME 5.0
+INTEGRATION Explicit TOL 1.0E-4 GROWTHFORCE Single ELASTINDEGRAD None
+MASSPROD Lin INITSTRETCH None CURVE 0 DEGOPTION Cos MAXMASSPRODFAC 4.0
+STOREHISTORY No
 
 Here an approach for growth and remodeling of an artery is modeled.
 For a detailed description see:
@@ -25,6 +27,7 @@ Maintainer: Susanna Tinkl
 
 
 #include "constraintmixture.H"
+#include "constraintmixture_history.H"
 #include "../drt_lib/drt_globalproblem.H"
 //#include "../drt_lib/standardtypes_cpp.H" // for PI, not needed here?
 #include "matpar_bundle.H"
@@ -75,6 +78,7 @@ MAT::PAR::ConstraintMixture::ConstraintMixture(
   timecurve_(matdata->GetInt("CURVE")),
   degoption_(*(matdata->Get<std::string>("DEGOPTION"))),
   maxmassprodfac_(matdata->GetDouble("MAXMASSPRODFAC")),
+  storehistory_(matdata->GetInt("STOREHISTORY")),
   degtol_(1.0e-6)
 {
 }
@@ -161,6 +165,8 @@ void MAT::ConstraintMixture::Pack(DRT::PackBuffer& data) const
       AddtoPack(data,deletemass_->at(iddel));
 
     // Pack history
+    int minindex = minindex_;
+    AddtoPack(data, minindex);
     int sizehistory = history_->size();
     AddtoPack(data, sizehistory);
     for (int idpast = 0; idpast < sizehistory; idpast++)
@@ -259,6 +265,8 @@ void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
   }
 
   // unpack history
+  ExtractfromPack(position,data,delsize);
+  minindex_ = delsize;
   int sizehistory;
   ExtractfromPack(position, data, sizehistory);
   history_ = Teuchos::rcp(new std::vector<ConstraintMixtureHistory> (sizehistory));
@@ -409,6 +417,7 @@ void MAT::ConstraintMixture::ResetAll(const int numgp)
     double taumax = - log(params_->degtol_) / log(2.0) * params_->lifetime_;
     numpast = static_cast<int>(round(taumax / dt)) + firstiter;
   }
+  minindex_ = 0;
 
   // prestress time
   INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(timeintegr,"PRESTRESS");
@@ -470,23 +479,26 @@ void MAT::ConstraintMixture::Update()
   // just do update in case of growth
   if (deptime > params_->starttime_ + 1.0e-11)
   {
-    // delete just the steps that surely won't be needed, especially with a smaller timestep later
-    // thus reference time is deposition time of last collagen fibers
-    double acttime = deptime;
-    int eraseiter = 0;
-    history_->at(eraseiter).GetTime(&deptime, &depdt);
-    double degrad = 0.0;
-    Degradation(acttime-deptime, degrad);
-    while (degrad < params_->degtol_ && eraseiter < sizehistory)
+    if (!params_->storehistory_)
     {
-      eraseiter +=1;
+      // delete just the steps that surely won't be needed, especially with a smaller timestep later
+      // thus reference time is deposition time of last collagen fibers
+      double acttime = deptime;
+      int eraseiter = 0;
       history_->at(eraseiter).GetTime(&deptime, &depdt);
+      double degrad = 0.0;
       Degradation(acttime-deptime, degrad);
-    }
-    if (eraseiter > 0)
-    {
-      history_->erase(history_->begin(),history_->begin()+eraseiter);
-      //std::cout << "erased " << eraseiter << " history variables" << std::endl;
+      while (degrad < params_->degtol_ && eraseiter < sizehistory)
+      {
+        eraseiter +=1;
+        history_->at(eraseiter).GetTime(&deptime, &depdt);
+        Degradation(acttime-deptime, degrad);
+      }
+      if (eraseiter > 0)
+      {
+        history_->erase(history_->begin(),history_->begin()+eraseiter);
+        //std::cout << "erased " << eraseiter << " history variables" << std::endl;
+      }
     }
 
     // append new collagen
@@ -660,19 +672,20 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   bool output = false;
   if (action == "calc_struct_stress") output = true;
   // int eleid = params.get<int>("eleID",0);
-  LINALG::Matrix<1,3> point_refe(true);
-  point_refe = params.get<LINALG::Matrix<1,3> >("gprefecoord");
   double inner_radius = 0.0;
   if (params_->sheargrowthfactor_ > 0.0)
     inner_radius = params.get<double>("inner radius");
   double eps = 1.0e-11;
 
+  // elastin degradation
   double elastin_survival = 1.0;
   if (time > params_->starttime_ + eps)
   {
     if (*params_->elastindegrad_ == "Rectangle" || *params_->elastindegrad_ == "RectanglePlate"
         || *params_->elastindegrad_ == "Wedge")
     {
+      LINALG::Matrix<1,3> point_refe(true);
+      point_refe = params.get<LINALG::Matrix<1,3> >("gprefecoord");
       ElastinDegradation(point_refe, elastin_survival);
     }
     else if (*params_->elastindegrad_ == "Time")
@@ -686,6 +699,8 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     if (*params_->elastindegrad_ == "Rectangle" || *params_->elastindegrad_ == "RectanglePlate"
         || *params_->elastindegrad_ == "Wedge")
     {
+      LINALG::Matrix<1,3> point_refe(true);
+      point_refe = params.get<LINALG::Matrix<1,3> >("gprefecoord");
       ElastinDegradation(point_refe, elastin_survival);
     }
   }
@@ -697,6 +712,28 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   int firstiter = 0;
   if (*params_->integration_ == "Explicit")
     firstiter = 1;
+
+  // determine minimal index
+  if (params_->storehistory_)
+  {
+    double acttime = 0.0;
+    minindex_ = 0;
+    int sizehistory = history_->size();
+    double temptime = 0.0;
+    double tempdt = 0.0;
+    history_->at(minindex_).GetTime(&temptime, &tempdt);
+    history_->back().GetTime(&acttime, &tempdt);
+    if (acttime == 0.0 || time <= acttime)
+      acttime = time;
+    double degrad = 0.0;
+    Degradation(acttime-temptime, degrad);
+    while (degrad < params_->degtol_ && minindex_ < sizehistory - 1)
+    {
+      minindex_ +=1;
+      history_->at(minindex_).GetTime(&temptime, &tempdt);
+      Degradation(acttime-temptime, degrad);
+    }
+  }
 
   // this is not nice, but I see no different way to make inverse analysis of prestretch work
   // only in first time step
@@ -728,8 +765,8 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
       history_->back().GetTime(&temptime, &tempdt);
       if (temptime == 0.0 && tempdt == 0.0)
       {
-        int numpast = history_->size();
-        history_->at(numpast-2).GetTime(&temptime, &tempdt);
+        int sizehistory = history_->size();
+        history_->at(sizehistory-2).GetTime(&temptime, &tempdt);
         // for restart the function ApplyForceInternal calls the material with the old time
         // (i.e. time = temptime) thus make sure not to store it
         if (time > temptime + 1.0e-11)
@@ -741,7 +778,7 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
           double intdegr = 0.0;
           double degrtime = 0.0;
           double degrdt = 0.0;
-          for (int idpast = 0; idpast < numpast - firstiter; idpast++)
+          for (int idpast = minindex_; idpast < sizehistory - firstiter; idpast++)
           {
             double degr = 0.0;
             history_->at(idpast).GetTime(&degrtime, &degrdt);
@@ -773,7 +810,7 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
               double fac_cmat = 0.0;
               EvaluateSingleFiberScalars(localprestretch_->at(gp)(idfiber)*localprestretch_->at(gp)(idfiber), fac_cmat, homstrain);
               homstrain = homstrain * localprestretch_->at(gp)(idfiber);
-              for (int idtime = 0; idtime < sizehistory-2; idtime++)
+              for (int idtime = minindex_; idtime < sizehistory-2; idtime++)
               {
                 LINALG::Matrix<4,1> depstretch(true);
                 history_->at(idtime).GetStretches(gp, &depstretch);
@@ -870,7 +907,7 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
         // numbering starts from zero here, thus use curvenum-1
         if (curvenum)
           curvefac = DRT::Problem::Instance()->Curve(curvenum-1).f(time);
-        if (curvefac > 1.0 || curvefac < 0.0)
+        if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
           dserror("correct your time curve for prestretch, just values in [0,1] are allowed %f", curvefac);
         if (params_->numhom_ == 1)
         {
@@ -1175,7 +1212,7 @@ void MAT::ConstraintMixture::EvaluateFiberFamily
 
   //--------------------------------------------------------------------------------------
   // calculate stress and elasticity matrix
-  for (int idpast = 0; idpast < sizehistory - firstiter; idpast++)
+  for (int idpast = minindex_; idpast < sizehistory - firstiter; idpast++)
   {
     double deptime = 0.0;
     double depdt = 0.0;
@@ -2883,288 +2920,6 @@ bool MAT::ConstraintMixture::VisData(const std::string& name, std::vector<double
     return false;
   }
   return true;
-}
-
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-// History
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-
-MAT::ConstraintMixtureHistoryType MAT::ConstraintMixtureHistoryType::instance_;
-
-DRT::ParObject* MAT::ConstraintMixtureHistoryType::Create( const std::vector<char> & data )
-{
-  MAT::ConstraintMixtureHistory* cmhis = new MAT::ConstraintMixtureHistory();
-  cmhis->Unpack(data);
-  return cmhis;
-}
-
-/*----------------------------------------------------------------------*
- |  History: Pack                                 (public)         03/11|
- *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::Pack(DRT::PackBuffer& data) const
-{
-  DRT::PackBuffer::SizeMarker sm( data );
-  sm.Insert();
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data, type);
-
-  // Pack internal variables
-  AddtoPack(data, depositiontime_);
-  AddtoPack(data, dt_);
-  AddtoPack(data, numgp_);
-  AddtoPack(data, expvar_);
-  for (int gp = 0; gp < numgp_; ++gp)
-  {
-    AddtoPack(data, collagenstretch1_->at(gp));
-    AddtoPack(data, collagenstretch2_->at(gp));
-    AddtoPack(data, collagenstretch3_->at(gp));
-    AddtoPack(data, collagenstretch4_->at(gp));
-    AddtoPack(data, massprod1_->at(gp));
-    AddtoPack(data, massprod2_->at(gp));
-    AddtoPack(data, massprod3_->at(gp));
-    AddtoPack(data, massprod4_->at(gp));
-    if(expvar_)
-    {
-      AddtoPack(data, vardegrad1_->at(gp));
-      AddtoPack(data, vardegrad2_->at(gp));
-      AddtoPack(data, vardegrad3_->at(gp));
-      AddtoPack(data, vardegrad4_->at(gp));
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  History: Unpack                               (public)         03/11|
- *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::Unpack(const std::vector<char>& data)
-{
-  std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-
-  // unpack internal variables
-  double a;
-  ExtractfromPack(position, data, a);
-  depositiontime_ = a;
-  ExtractfromPack(position, data, a);
-  dt_ = a;
-  int b;
-  ExtractfromPack(position, data, b);
-  numgp_ = b;
-  ExtractfromPack(position, data, b);
-  expvar_ = b;
-
-  collagenstretch1_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  collagenstretch2_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  collagenstretch3_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  collagenstretch4_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  massprod1_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  massprod2_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  massprod3_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  massprod4_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  if (expvar_)
-  {
-    vardegrad1_ = Teuchos::rcp(new std::vector<double> (numgp_));
-    vardegrad2_ = Teuchos::rcp(new std::vector<double> (numgp_));
-    vardegrad3_ = Teuchos::rcp(new std::vector<double> (numgp_));
-    vardegrad4_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  }
-
-  for (int gp = 0; gp < numgp_; ++gp) {
-    ExtractfromPack(position, data, a);
-    collagenstretch1_->at(gp) = a;
-    ExtractfromPack(position, data, a);
-    collagenstretch2_->at(gp) = a;
-    ExtractfromPack(position, data, a);
-    collagenstretch3_->at(gp) = a;
-    ExtractfromPack(position, data, a);
-    collagenstretch4_->at(gp) = a;
-    ExtractfromPack(position, data, a);
-    massprod1_->at(gp) = a;
-    ExtractfromPack(position, data, a);
-    massprod2_->at(gp) = a;
-    ExtractfromPack(position, data, a);
-    massprod3_->at(gp) = a;
-    ExtractfromPack(position, data, a);
-    massprod4_->at(gp) = a;
-    if (expvar_)
-    {
-      ExtractfromPack(position, data, a);
-      vardegrad1_->at(gp) = a;
-      ExtractfromPack(position, data, a);
-      vardegrad2_->at(gp) = a;
-      ExtractfromPack(position, data, a);
-      vardegrad3_->at(gp) = a;
-      ExtractfromPack(position, data, a);
-      vardegrad4_->at(gp) = a;
-    }
-  }
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  History: Setup                                (public)         03/11|
- *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::Setup(const int ngp,const double massprodbasal, bool expvar)
-{
-  dt_ = 0.0;
-  depositiontime_ = 0.0;
-
-  numgp_=ngp;
-  expvar_ = expvar;
-  // history variables
-  collagenstretch1_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  collagenstretch2_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  collagenstretch3_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  collagenstretch4_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  massprod1_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  massprod2_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  massprod3_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  massprod4_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  if (expvar_)
-  {
-    vardegrad1_ = Teuchos::rcp(new std::vector<double> (numgp_));
-    vardegrad2_ = Teuchos::rcp(new std::vector<double> (numgp_));
-    vardegrad3_ = Teuchos::rcp(new std::vector<double> (numgp_));
-    vardegrad4_ = Teuchos::rcp(new std::vector<double> (numgp_));
-  }
-
-  for (int gp = 0; gp < numgp_; gp++)
-  {
-    collagenstretch1_->at(gp) = 1.0;
-    collagenstretch2_->at(gp) = 1.0;
-    collagenstretch3_->at(gp) = 1.0;
-    collagenstretch4_->at(gp) = 1.0;
-    massprod1_->at(gp) = massprodbasal;
-    massprod2_->at(gp) = massprodbasal;
-    massprod3_->at(gp) = massprodbasal; //*4.;
-    massprod4_->at(gp) = massprodbasal; //*4.;
-    if (expvar_)
-    {
-      vardegrad1_->at(gp) = 1.0;
-      vardegrad2_->at(gp) = 1.0;
-      vardegrad3_->at(gp) = 1.0;
-      vardegrad4_->at(gp) = 1.0;
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*
- |  History: SetStretches                         (private)        03/11|
- *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::SetStretches(int gp, LINALG::Matrix<4,1> stretches)
-{
-  if (gp < numgp_) {
-    collagenstretch1_->at(gp) = stretches(0);
-    collagenstretch2_->at(gp) = stretches(1);
-    collagenstretch3_->at(gp) = stretches(2);
-    collagenstretch4_->at(gp) = stretches(3);
-  } else dserror("gp out of range in SetStretches");
-}
-
-/*----------------------------------------------------------------------*
- |  History: GetStretches                         (private)        03/11|
- *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::GetStretches(int gp, LINALG::Matrix<4,1>* stretches)
-{
-  if (gp < numgp_) {
-    (*stretches)(0) = collagenstretch1_->at(gp);
-    (*stretches)(1) = collagenstretch2_->at(gp);
-    (*stretches)(2) = collagenstretch3_->at(gp);
-    (*stretches)(3) = collagenstretch4_->at(gp);
-  } else dserror("gp out of range in GetStretches");
-}
-
-/*----------------------------------------------------------------------*
- |  History: SetMass                              (private)        03/11|
- *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::SetMass(int gp, LINALG::Matrix<4,1> massprod)
-{
-  if (gp < numgp_) {
-    massprod1_->at(gp) = massprod(0);
-    massprod2_->at(gp) = massprod(1);
-    massprod3_->at(gp) = massprod(2);
-    massprod4_->at(gp) = massprod(3);
-  } else dserror("gp out of range in SetMass");
-}
-
-/*----------------------------------------------------------------------*
- |  History: SetMass                              (private)        04/13|
- *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::SetMass(int gp, double massprod, int idfiber)
-{
-  if (gp < numgp_) {
-    if (idfiber == 0) {
-      massprod1_->at(gp) = massprod;
-    } else if (idfiber == 1) {
-      massprod2_->at(gp) = massprod;
-    } else if (idfiber == 2) {
-      massprod3_->at(gp) = massprod;
-    } else if (idfiber == 3) {
-      massprod4_->at(gp) = massprod;
-    } else dserror("no valid fiber id: %d", idfiber);
-  } else dserror("gp out of range in SetMass");
-}
-
-/*----------------------------------------------------------------------*
- |  History: GetMass                              (private)        03/11|
- *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::GetMass(int gp, LINALG::Matrix<4,1>* massprod)
-{
-  if (gp < numgp_) {
-    (*massprod)(0) = massprod1_->at(gp);
-    (*massprod)(1) = massprod2_->at(gp);
-    (*massprod)(2) = massprod3_->at(gp);
-    (*massprod)(3) = massprod4_->at(gp);
-  } else dserror("gp out of range in GetMass");
-}
-
-/*----------------------------------------------------------------------*
- |  History: SetVarDegrad                         (private)        07/13|
- *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::SetVarDegrad(int gp, int idfiber, double vardegrad)
-{
-  if (gp < numgp_) {
-    if (idfiber == 0) {
-      vardegrad1_->at(gp) = vardegrad;
-    } else if (idfiber == 1) {
-      vardegrad2_->at(gp) = vardegrad;
-    } else if (idfiber == 2) {
-      vardegrad3_->at(gp) = vardegrad;
-    } else if (idfiber == 3) {
-      vardegrad4_->at(gp) = vardegrad;
-    } else dserror("no valid fiber id: %d", idfiber);
-  } else dserror("gp out of range in SetVarDegrad");
-}
-
-/*----------------------------------------------------------------------*
- |  History: GetVarDegrad                         (private)        07/13|
- *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::GetVarDegrad(int gp, int idfiber, double* vardegrad)
-{
-  if (gp < numgp_) {
-    if (idfiber == 0) {
-      *vardegrad = vardegrad1_->at(gp);
-    } else if (idfiber == 1) {
-      *vardegrad = vardegrad2_->at(gp);
-    } else if (idfiber == 2) {
-      *vardegrad = vardegrad3_->at(gp);
-    } else if (idfiber == 3) {
-      *vardegrad = vardegrad4_->at(gp);
-    } else dserror("no valid fiber id: %d", idfiber);
-  } else dserror("gp out of range in GetVarDegrad");
 }
 
 /*----------------------------------------------------------------------*

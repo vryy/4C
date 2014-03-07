@@ -104,6 +104,7 @@
 #include "../drt_mat/growth_scd.H"
 #include "../drt_mat/scatra_growth_scd.H"
 #include "../drt_mat/constraintmixture.H"
+#include "../drt_mat/constraintmixture_history.H"
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mat/plasticlinelast.H"
 #include "../drt_mat/robinson.H"
