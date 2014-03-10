@@ -146,11 +146,16 @@ namespace INVANA
     //! let the vector of material parameters be filled by the derived classes
     virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params) = 0;
 
-    //! contract gradient wrt on physical material parameter (dfintp)
+    //! contract gradient wrt one physical material parameter (dfintp)
     //! to the optimization parameter space (dfint) for that physical parameter
+    //! but in a distributed proc environment -> call Consolidate() finally
     virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
-                                  Teuchos::RCP<Epetra_Vector>dfintp,
+                                  double val,
+                                  int elepos,
                                   int parapos) = 0;
+
+    //! consolidate gradient among all procs.
+    virtual void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint) = 0;
 
   };
 

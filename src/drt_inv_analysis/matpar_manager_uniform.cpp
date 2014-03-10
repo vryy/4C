@@ -55,15 +55,29 @@ void STR::INVANA::MatParManagerUniform::FillParameters(Teuchos::RCP<Epetra_Multi
 
 
 void STR::INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
-                                                         Teuchos::RCP<Epetra_Vector> dfintp,
+                                                         double val,
+                                                         int elepos,
                                                          int parapos)
 {
-  double val;
-  Epetra_Vector ones(*(discret_->ElementRowMap()),true);
-  ones.PutScalar(1.0);
+  // only row elements contribute
+  if (not discret_->ElementRowMap()->MyGID(elepos)) return;
 
-  STR::INVANA::MVDotProduct(dfintp,Teuchos::rcp(&ones),&val,discret_->ElementRowMap());
-  dfint->SumIntoGlobalValue(0,parapos,val);
+  //double valall = 0.0;
+  //discret_->Comm().SumAll(&ival,&valall,1);
+
+  // no every proc should get this
+  int success = dfint->SumIntoGlobalValue(0,parapos,val);
+  if (success!=0) dserror("gid %d is not on this processor", elepos);
+}
+
+void STR::INVANA::MatParManagerUniform::Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint)
+{
+  double val=0.0;
+  for (int i=0; i<dfint->NumVectors(); i++)
+  {
+    discret_->Comm().SumAll((*dfint)(i)->Values(),&val,1);
+    dfint->ReplaceGlobalValue(0,i,val);
+  }
 }
 
 STR::INVANA::MatParManagerPerElement::MatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret)
@@ -88,8 +102,10 @@ void STR::INVANA::MatParManagerPerElement::FillParameters(Teuchos::RCP<Epetra_Mu
 }
 
 void STR::INVANA::MatParManagerPerElement::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
-                                                            Teuchos::RCP<Epetra_Vector> dfintp,
-                                                            int parapos)
+                                                         double val,
+                                                         int elepos,
+                                                         int parapos)
 {
-  (*dfint)(parapos)->Update(1.0,*dfintp,1.0);
+  int success = dfint->SumIntoGlobalValue(elepos,parapos,val);
+  if (success!=0) dserror("gid %d is not on this processor", elepos);
 }

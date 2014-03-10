@@ -212,10 +212,6 @@ void STR::INVANA::MatParManager::ResetParams()
 /*----------------------------------------------------------------------*/
 void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
 {
-
-  // this temporarily hold the derivative of the residual wrt one physical parameter multiplied by the dual displacements
-  Epetra_Vector dfintp(*(discret_->ElementColMap()),true);
-
   Teuchos::RCP<const Epetra_Vector> disdual = discret_->GetState("dual displacement");
 
   // the reason not to do this loop via a discretizations evaluate call is that if done as is,
@@ -242,8 +238,6 @@ void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_Multi
     std::vector<int>::const_iterator it;
     for ( it=actparams.begin(); it!=actparams.end(); it++)
     {
-      dfintp.PutScalar(0.0);
-
       p.set("action", "calc_struct_internalforce");
       p.set("matparderiv", *it);
 
@@ -275,17 +269,15 @@ void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_Multi
       }
       double val2 = elevector2.Dot(elevector1);
 
-      //Assemble the gradient wrt one physical parameter
-      int success = dfintp.SumIntoGlobalValue(actele->Id(),0,val2);
-      if (success!=0) dserror("gid %d is not on this processor", actele->LID());
-
-
-      // contraction to (optimization) parameter space:
-      ContractGradient(dfint,Teuchos::rcp(&dfintp,false),parapos_.at(elematid).at(it-actparams.begin()));
+      // Assemble the final gradient; this is parametrization class business
+      // (i.e contraction to (optimization)-parameter space:
+      ContractGradient(dfint,val2,actele->Id(),parapos_.at(elematid).at(it-actparams.begin()));
 
     }//loop this elements material parameters (only the ones to be optimized)
 
   }//loop elements
+
+  Consolidate(dfint);
 }
 
 /*----------------------------------------------------------------------*/

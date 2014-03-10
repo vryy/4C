@@ -18,7 +18,8 @@ Maintainer: Sebastian Kehl
 
 
 /*----------------------------------------------------------------------*/
-/* Evaluate the objective function                          keh 10/13   */
+/* Compute norm of two vectors stored in                    keh 03/14   */
+/* multivector format for storage reasons only                          */
 /*----------------------------------------------------------------------*/
 void STR::INVANA::MVNorm(Teuchos::RCP<Epetra_MultiVector> avector, int anorm, double* result, const Epetra_Map* uniquemap)
 {
@@ -39,6 +40,11 @@ void STR::INVANA::MVNorm(Teuchos::RCP<Epetra_MultiVector> avector, int anorm, do
   *result = vnorm.Norm2();
 }
 
+
+/*----------------------------------------------------------------------*/
+/* Compute dot product of two vectors stored in             keh 03/14   */
+/* multivector format for storage reasons only                          */
+/*----------------------------------------------------------------------*/
 //! compute dot product of two vectors stored in multivector fomat for storage reasons only
 void STR::INVANA::MVDotProduct(Teuchos::RCP<Epetra_MultiVector> avector, Teuchos::RCP<Epetra_MultiVector> bvector, double* result, const Epetra_Map* uniquemap)
 {
