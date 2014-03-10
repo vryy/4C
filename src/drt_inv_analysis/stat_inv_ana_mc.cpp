@@ -260,6 +260,9 @@ int STR::INVANA::StatInvAnaMC::SetMatParamsBasedOnParticle(SMCParticle my_partic
 {
   std::vector<double> my_position(my_particle.GetSizeOfPosition(),0.0);
 
+  // the matman needs this format:
+  Epetra_MultiVector mypos(*(matman_->ParamLayoutMap()),matman_->NumParams(),true);
+
   // get position vector
   if(eval_prop_pos)
     my_position = my_particle.GetPropPosition();
@@ -269,12 +272,17 @@ int STR::INVANA::StatInvAnaMC::SetMatParamsBasedOnParticle(SMCParticle my_partic
   // quick and dirty check if proposal is usefull
   for(unsigned int i=0; i< my_position.size();i++ )
   {
-    if(my_position.at(i)<0.05)
+    if( my_position.at(i)<0.05 )
       return(1);
   }
-  Teuchos::RCP<Epetra_MultiVector> params = Teuchos::null;
-  matman_->ComputeParamsMultiVectorFromSMCParticlePosition(params, my_position);
-  matman_->ReplaceParams(params);
+
+  //rewrite in Epetra_MultiVector Layout to bring to matman:
+  for(int i=0; i< mypos.NumVectors();i++ )
+  {
+    mypos(i)->PutScalar(my_position[i]);
+  }
+
+  matman_->ReplaceParams(Teuchos::rcp(&mypos,false));
   return 0;
 
 }

@@ -23,10 +23,7 @@ Maintainer: Sebastian Kehl
 #include "../drt_lib/drt_element.H"
 
 #include "../drt_mat/material.H"
-#include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "../drt_inpar/inpar_material.H"
-#include "smc_particle.H"
 
 #include "../linalg/linalg_utils.H"
 
@@ -36,31 +33,23 @@ Maintainer: Sebastian Kehl
 STR::INVANA::MatParManager::MatParManager(Teuchos::RCP<DRT::Discretization> discret):
 numparams_(0),
 discret_(discret),
-elecolmap_(NULL),
 params_(Teuchos::null),
-params_o_(Teuchos::null)
+optparams_(Teuchos::null),
+optparams_o_(Teuchos::null),
+paramlayoutmap_(Teuchos::null)
 {
   const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
 
   if (not discret_->Filled() || not discret_->HaveDofs())
       dserror("Discretisation is not complete or has no dofs!");
-  else
-    elecolmap_ = discret_->ElementColMap();
 
   // set up maps to link against materials, parameters and materials/parameters for the optimization
   SetupMatOptMap();
 
-  params_ = Teuchos::rcp(new Epetra_MultiVector(*elecolmap_,numparams_,true));
-  params_o_ = Teuchos::rcp(new Epetra_MultiVector(*elecolmap_,numparams_,true));
+  params_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()),numparams_,true));
 
   // want metaparametrization
   metaparams_ = DRT::INPUT::IntegralValue<bool>(statinvp, "METAPARAMS");
-
-  //initialize parameter vector from material parameters given in the input file
-  InitParams();
-
-  // set these parameters to the elements
-  SetParams();
 }
 
 /*----------------------------------------------------------------------*/
@@ -70,26 +59,26 @@ void STR::INVANA::MatParManager::InitParams()
 {
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
-  std::map<int,std::vector<std::string> >::const_iterator it;
+  std::map<int,std::vector<int> >::const_iterator it;
   for (it=paramap_.begin(); it!=paramap_.end(); it++)
   {
     Teuchos::RCP<MAT::PAR::Material> actmat = mats.at(it->first);
     switch(actmat->Parameter()->Type())
     {
-      case INPAR::MAT::m_aaaneohooke_stopro:
+      case INPAR::MAT::m_aaaneohooke:
       {
-        std::vector<std::string>::const_iterator jt;
+        std::vector<int>::const_iterator jt;
         for (jt = it->second.begin(); jt != it->second.end(); jt++)
         {
           if (metaparams_)
-            (*params_)( parapos_.at(it->first).at(jt-it->second.begin()) )->PutScalar( sqrt(2*(actmat->GetDouble(*jt)-0.1)) );
+            (*optparams_)( parapos_.at(it->first).at(jt-it->second.begin()) )->PutScalar( sqrt(2*((actmat->Parameter()->GetParameter(*jt,0))-0.1)) );
           else
-            (*params_)( parapos_.at(it->first).at(jt-it->second.begin()) )->PutScalar( actmat->GetDouble(*jt) );
+            (*optparams_)( parapos_.at(it->first).at(jt-it->second.begin()) )->PutScalar( (actmat->Parameter()->GetParameter(*jt,0)) );
         }
       }
       break;
       default:
-        dserror("Material not provided by the Material Manager for Optimization");
+        dserror("Materiall not provided by the Material Manager for Optimization");
       break;
     }
   }
@@ -102,6 +91,9 @@ void STR::INVANA::MatParManager::InitParams()
 void STR::INVANA::MatParManager::SetupMatOptMap()
 {
   const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
+
+  // the materials of the problem
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
   // parameters to be optimized
   std::string word2;
@@ -121,7 +113,17 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
 
     if (word2!="none" && actmatid!=0)
     {
-      paramap_[actmatid].push_back(word2);
+      //check whether this material exists in the problem
+      if ( mats.find(actmatid) == mats.end() )
+        dserror("material %d not found in matset", actmatid);
+
+      //check if this material has parameters to be optimized:
+      std::map<std::string, int> optparams;
+      mats.at(actmatid)->Parameter()->OptParams(&optparams);
+      if ( optparams.find(word2) == optparams.end() )
+        dserror("parameter %s is not prepared to be optimized for mat %s", word2.c_str(), mats.at(actmatid)->Name().c_str());
+
+      paramap_[actmatid].push_back(optparams.at(word2));
       parapos_[actmatid].push_back(numparams_);
       numparams_ += 1;
     }
@@ -131,62 +133,75 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
 
   std::cout << "the number of parameters is: " << numparams_ << std::endl;
 
-  // check input consistency
-  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
-
-  //loop materials to be optimized
-  std::map<int,std::vector<std::string> >::const_iterator curr;
-  for (curr=paramap_.begin(); curr != paramap_.end(); curr++ )
-  {
-    //check whether this mat exists in the problem
-    if ( mats.find(curr->first) == mats.end() )
-      dserror("material %d not found in matset", curr->first);
-    else
-    {
-      //check whether input params for this material are valid parameters for optimization
-      Teuchos::RCP<MAT::PAR::Material> actmat = mats.at(curr->first);
-      std::vector<std::string> actmatparams;
-      actmat->Parameter()->OptParams(&actmatparams);
-      std::set<std::string> actmatparamsset(actmatparams.begin(),actmatparams.end());
-      for(std::vector<std::string>::const_iterator it = curr->second.begin(); it != curr->second.end(); ++it)
-      {
-        if ( actmatparamsset.find(*it) == actmatparamsset.end() )
-          dserror("invalid optimization parameters for material %d", curr->first);
-      }
-    }
-  }
-
 }
 
 /*----------------------------------------------------------------------*/
-/* update material parameters and keep them as "old"         keh 10/13  */
+/* bring current set of parameters to the material           keh 10/13  */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::MatParManager::SetParams()
+{
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+
+  // get the actual set of elementwise material parameters from the derived classes
+  Teuchos::RCP<Epetra_MultiVector> getparams;
+  getparams = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()),numparams_,true));
+  FillParameters(getparams);
+
+
+  if (metaparams_)
+  {
+    params_->PutScalar(0.1);
+    params_->Multiply(0.5,*getparams,*getparams,1.0);
+  }
+  else
+    params_->Scale(1.0,*getparams);
+
+
+  //loop materials to be optimized
+  std::map<int,std::vector<int> >::const_iterator curr;
+  for (curr=paramap_.begin(); curr != paramap_.end(); curr++ )
+  {
+    Teuchos::RCP<MAT::PAR::Material> actmat = mats.at(curr->first);
+
+    // loop the parameters to be optimized
+    std::vector<int> actparams = paramap_.at(curr->first);
+    std::vector<int>::const_iterator it;
+    for ( it=actparams.begin(); it!=actparams.end(); it++)
+    {
+      actmat->Parameter()->SetParameter(*it,Teuchos::rcp((*params_)( parapos_.at(curr->first).at(it-actparams.begin()) ),false));
+    }
+  }//loop optimized materials
+}
+
+/*----------------------------------------------------------------------*/
+/* update material parameters and keep them as "old"         keh 03/14  */
 /*----------------------------------------------------------------------*/
 void STR::INVANA::MatParManager::UpdateParams(Teuchos::RCP<Epetra_MultiVector> toadd)
 {
-  params_o_->Scale(1.0, *params_);
-  params_->Update(1.0,*toadd,1.0);
+  optparams_o_->Scale(1.0, *optparams_);
+  optparams_->Update(1.0,*toadd,1.0);
 
   // bring updated parameters to the elements
   SetParams();
 }
 
 /*----------------------------------------------------------------------*/
-/* replace material parameters AND DONT touch old ones       keh 10/13  */
+/* replace material parameters AND DONT touch old ones       keh 03/14  */
 /*----------------------------------------------------------------------*/
 void STR::INVANA::MatParManager::ReplaceParams(Teuchos::RCP<Epetra_MultiVector> toreplace)
 {
-  params_->Update(1.0,*toreplace,0.0);
+  optparams_->Update(1.0,*toreplace,0.0);
 
   // bring updated parameters to the elements
   SetParams();
 }
 
 /*----------------------------------------------------------------------*/
-/* reset to last set of material parameters                  keh 10/13  */
+/* reset to last set of material parameters                  keh 03/14  */
 /*----------------------------------------------------------------------*/
 void STR::INVANA::MatParManager::ResetParams()
 {
-  params_->Scale(1.0, *params_o_);
+  optparams_->Scale(1.0, *optparams_o_);
 
   // bring updated parameters to the elements
   SetParams();
@@ -198,8 +213,18 @@ void STR::INVANA::MatParManager::ResetParams()
 void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
 {
 
+  // this temporarily hold the derivative of the residual wrt one physical parameter multiplied by the dual displacements
+  Epetra_Vector dfintp(*(discret_->ElementColMap()),true);
+
   Teuchos::RCP<const Epetra_Vector> disdual = discret_->GetState("dual displacement");
 
+  // the reason not to do this loop via a discretizations evaluate call is that if done as is,
+  // all elements have to be looped only once and evaluation is done only in case when an
+  // element really has materials with parameters to be optimized. And "Nachdifferenzieren"
+  // with respect to the parameters to be optimized can be done without setting up the whole
+  // gradient dR/dp_m and postmultiply it with dp_m\dp_o
+  // with R: Residual forces; p_m: material params; p_o parametrization of p_m
+  // TODO: Think of a more standard baci design way!
   for (int i=0; i<discret_->NumMyColElements(); i++)
   {
     DRT::Element* actele;
@@ -213,10 +238,12 @@ void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_Multi
     Teuchos::ParameterList p;
     p.set("total time", time);
 
-    std::vector<std::string> actparams = paramap_.at( elematid );
-    std::vector<std::string>::const_iterator it;
+    std::vector<int> actparams = paramap_.at( elematid );
+    std::vector<int>::const_iterator it;
     for ( it=actparams.begin(); it!=actparams.end(); it++)
     {
+      dfintp.PutScalar(0.0);
+
       p.set("action", "calc_struct_internalforce");
       p.set("matparderiv", *it);
 
@@ -236,7 +263,7 @@ void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_Multi
       if (metaparams_)
       {
         double val1 = (*(*params_)( parapos_.at(elematid).at(it-actparams.begin()) ))[actele->LID()];
-        elevector1.Scale(val1);
+        elevector1.Scale(sqrt(2*(val1-0.1)));
       }
 
       //reuse elevector2
@@ -248,9 +275,13 @@ void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_Multi
       }
       double val2 = elevector2.Dot(elevector1);
 
-      int success = dfint->SumIntoMyValue(actele->LID(),parapos_.at(elematid).at(it-actparams.begin()),val2);
+      //Assemble the gradient wrt one physical parameter
+      int success = dfintp.SumIntoGlobalValue(actele->Id(),0,val2);
       if (success!=0) dserror("gid %d is not on this processor", actele->LID());
 
+
+      // contraction to (optimization) parameter space:
+      ContractGradient(dfint,Teuchos::rcp(&dfintp,false),parapos_.at(elematid).at(it-actparams.begin()));
 
     }//loop this elements material parameters (only the ones to be optimized)
 
@@ -280,8 +311,8 @@ void STR::INVANA::MatParManager::EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfi
     // list to define routines at elementlevel
     Teuchos::ParameterList p;
 
-    std::vector<std::string> actparams = paramap_.at( elematid );
-    std::vector<std::string>::const_iterator it;
+    std::vector<int> actparams = paramap_.at( elematid );
+    std::vector<int>::const_iterator it;
     for ( it=actparams.begin(); it!=actparams.end(); it++)
     {
       p.set("action", "calc_struct_internalforce");
@@ -356,38 +387,6 @@ void STR::INVANA::MatParManager::EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfi
 }
 
 /*----------------------------------------------------------------------*/
-/* bring current set of material parameters to the elements  keh 10/13  */
-/*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManager::SetParams()
-{
-  for (int i=0; i< discret_->NumMyColElements(); i++)
-  {
-    // get material of current colelement
-    Teuchos::RCP<MAT::Material> actmat = discret_->lColElement(i)->Material();
-    // get material ID as defined in input file
-    int actmatid = actmat->Parameter()->Id();
-    // do we have this material in our list of to be optimized materials
-    if ( paramap_.find( actmatid ) != paramap_.end() )
-    {
-      // get string of parameter names to be optimized
-      std::vector<std::string> actparams = paramap_.at( actmatid );
-      std::vector<std::string>::const_iterator it;
-      // loop over all these parameters
-      for ( it=actparams.begin(); it!=actparams.end(); it++)
-      {
-        double val = (*( *params_)( parapos_.at(actmatid).at(it-actparams.begin()) ))[discret_->lColElement(i)->LID()];
-        if (metaparams_)
-          actmat->Init(0.5*val*val+0.1,*it);
-        else
-          actmat->Init(val,*it);
-      }
-
-    }//is optimizable material?
-
-  }//loop elements
-}
-
-/*----------------------------------------------------------------------*/
 /* return vector index of an elements material parameter     keh 10/13  */
 /*----------------------------------------------------------------------*/
 int STR::INVANA::MatParManager::GetParameterLocation(int eleid, std::string name)
@@ -397,19 +396,26 @@ int STR::INVANA::MatParManager::GetParameterLocation(int eleid, std::string name
   if (!discret_->HaveGlobalElement(eleid))
     dserror("provide only ids of elements on this processor");
 
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+
   DRT::Element* actele = discret_->gElement(eleid);
   int matid = actele->Material()->Parameter()->Id();
+
+  std::map<std::string, int> optparams;
+  mats.at(matid)->Parameter()->OptParams(&optparams);
+  if ( optparams.find(name) == optparams.end() )
+    dserror("parameter %s is not prepared to be optimized for mat %s", name.c_str(), mats.at(matid)->Name().c_str());
 
   if (paramap_.find(matid) == paramap_.end())
     dserror("Material with matid %d is not given for optimization in datfile", matid);
   else
   {
     //this is the vector index
-    std::vector<std::string> actparams = paramap_.at(matid);
-    std::vector<std::string>::const_iterator it;
+    std::vector<int> actparams = paramap_.at(matid);
+    std::vector<int>::const_iterator it;
     for ( it=actparams.begin(); it!=actparams.end(); it++)
     {
-      if (actparams.at(it-actparams.begin()) == name)
+      if (actparams.at(it-actparams.begin()) == optparams.at(name))
         loc = parapos_.at(matid).at(it-actparams.begin());
     }
   }
@@ -417,14 +423,3 @@ int STR::INVANA::MatParManager::GetParameterLocation(int eleid, std::string name
 return loc;
 
 }
-
-
-void STR::INVANA::MatParManager::ComputeParamsMultiVectorFromSMCParticlePosition(Teuchos::RCP<Epetra_MultiVector> & params, std::vector<double> my_global_params)
-{
-  dserror("No implementation in base class");
-}
-
-
-
-
-

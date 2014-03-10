@@ -14,6 +14,7 @@ Maintainer: Sebastian Kehl
 #include <fstream>
 #include <cstdlib>
 
+#include "invana_utils.H"
 #include "stat_inv_ana_graddesc.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
@@ -22,15 +23,7 @@ Maintainer: Sebastian Kehl
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
-#include "../drt_inpar/inpar_invanalysis.H"
 #include "../drt_adapter/ad_str_structure.H"
-#include "../drt_inpar/drt_validparameters.H"
-
-// needed to deal with materials
-#include "../drt_mat/material.H"
-#include "../drt_mat/aaaneohooke_stopro.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_inpar/inpar_material.H"
 
 #include "objective_funct.H"
 #include "timint_adjoint.H"
@@ -57,8 +50,8 @@ convcritc_(0)
   //get tolerance
   convtol_ = invap.get<double>("CONVTOL");
 
-  p_= Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumParams(),true));
-  step_= Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumParams(), true));
+  p_= Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(),true));
+  step_= Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(), true));
 
 }
 
@@ -88,7 +81,7 @@ void STR::INVANA::StatInvAnaGradDesc::Optimize()
 
   objval_o_ = objval_;
 
-  MVNorm(objgrad_o_,2,&convcritc_);
+  MVNorm(objgrad_o_,2,&convcritc_,discret_->ElementRowMap());
 
   PrintOptStep(0,0);
 
@@ -107,7 +100,7 @@ void STR::INVANA::StatInvAnaGradDesc::Optimize()
     }
 
     //get the L2-norm:
-    MVNorm(objgrad_,2,&convcritc_);
+    MVNorm(objgrad_,2,&convcritc_,discret_->ElementRowMap());
 
     //compute new direction only for runs
     p_->Update(-1.0, *objgrad_, 0.0);
@@ -147,7 +140,7 @@ int STR::INVANA::StatInvAnaGradDesc::EvaluateArmijoRule(double* tauopt, int* num
   double blow=0.1;
   double bhigh=0.5;
 
-  MVNorm(objgrad_o_,2,&gnorm);
+  MVNorm(objgrad_o_,2,&gnorm,discret_->ElementRowMap());
 
   double tau_n=std::min(1.0, 100/(1+gnorm));
   //std::cout << "trial step size: " << tau_n << std::endl;
@@ -166,7 +159,7 @@ int STR::INVANA::StatInvAnaGradDesc::EvaluateArmijoRule(double* tauopt, int* num
 
     // check sufficient decrease:
     double dfp_o=0.0;
-    MVDotProduct(objgrad_o_,p_,&dfp_o);
+    MVDotProduct(objgrad_o_,p_,&dfp_o,discret_->ElementRowMap());
 
     if ( (objval_-objval_o_) < c1*tau_n*dfp_o )
     {

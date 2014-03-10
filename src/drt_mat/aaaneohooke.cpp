@@ -56,10 +56,10 @@ MAT::AAAneohookeType MAT::AAAneohookeType::instance_;
 
 
 
-void MAT::PAR::AAAneohooke::OptParams(std::vector<std::string>* pnames)
+void MAT::PAR::AAAneohooke::OptParams(std::map<std::string,int>* pnames)
 {
-  pnames->push_back("YOUNG");
-  pnames->push_back("BETA");
+  pnames->insert(std::pair<std::string,int>("YOUNG", young));
+  pnames->insert(std::pair<std::string,int>("BETA", beta));
 }
 
 DRT::ParObject* MAT::AAAneohookeType::Create( const std::vector<char> & data )
@@ -199,7 +199,7 @@ void MAT::AAAneohooke::Evaluate(
 
   // material parameters for volumetric part
   const double beta2 = -2.0;                                                   // parameter from Holzapfel
-  const double komp  = (nue!=0.5) ? 2.0*alpha / (1.0-2.0*nue) : 0.0;              // bulk modulus
+  double komp  = (nue!=0.5) ? 2.0*alpha / (1.0-2.0*nue) : 0.0;              // bulk modulus
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
@@ -245,15 +245,43 @@ void MAT::AAAneohooke::Evaluate(
   const double third = 1.0/3.0;
   const double twthi = 2.0/3.0;
 
+  double isochor1 = 0.0;
+  double isochor2 = 0.0;
 
-  //--- determine 2nd Piola Kirchhoff stresses pktwo -------------------------------------
-  // 1st step: isochoric part
-  //=========================
-  double isochor1 = 2.0*(alpha*pow(iiinv,third)
-			 + 2.0*beta*inv - 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
-  double isochor2 = -twthi*inv*(alpha*pow(iiinv,third)
-				+ 2.0*beta*inv
-				- 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
+  int deriv = params.get<int>("matparderiv",-1);
+  if (deriv == params_->young)
+  {
+    //std::cout << "DERIV YOUNGS" << std::endl;
+    //deriv. w.r.t YOUNG!! -> factor 0.1666666666666666667 in here
+    isochor1 = 2.0*pow(iiinv,third)*pow(iiinv,-twthi)*0.1666666666666666667;
+    isochor2 = -twthi*inv*pow(iiinv,third)*pow(iiinv,-twthi)*0.1666666666666666667;
+
+    //do komp too:
+    komp = 2.0/(1.0-2.0*nue)*0.1666666666666666667;
+  }
+  else if(deriv == params_->beta)
+  {
+    //std::cout << "DERIV BETA" << std::endl;
+    //deriv. w.r.t beta
+    isochor1 = 2.0*(2.0*inv - 6.0*pow(iiinv,third))*pow(iiinv,-twthi);
+    isochor2 = -twthi*inv*(2.0*inv - 6.0*pow(iiinv,third))*pow(iiinv,-twthi);
+
+    // vol part is not a function of beta -> derivative has to be zero
+    komp = 0.0;
+  }
+  else if(deriv == -1)
+  {
+    //--- determine 2nd Piola Kirchhoff stresses pktwo -------------------------------------
+    // 1st step: isochoric part
+    //=========================
+    isochor1 = 2.0*(alpha*pow(iiinv,third)
+    + 2.0*beta*inv - 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
+    isochor2 = -twthi*inv*(alpha*pow(iiinv,third)
+    + 2.0*beta*inv
+    - 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
+  }
+  else
+    dserror("give valid parameter for differentiation");
 
   // contribution: Cinv
   LINALG::Matrix<6,1> pktwoiso(invc);

@@ -71,7 +71,7 @@ LOADLIN                         yes
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_AAANeoHookeStopro YOUNG 0.1 BETA 10.0 NUE 0.49 DENS 0.001 SIGMA 0.25 CORRLENGTH 5.0
+MAT 1 MAT_Struct_AAANeoHooke YOUNG 0.1 BETA 10.0 NUE 0.49 DENS 0.001
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.02 FACTOR 0.0 3.200072e-02
 

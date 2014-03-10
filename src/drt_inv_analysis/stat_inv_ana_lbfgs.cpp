@@ -14,6 +14,7 @@ Maintainer: Sebastian Kehl
 #include <fstream>
 #include <cstdlib>
 
+#include "invana_utils.H"
 #include "stat_inv_ana_lbfgs.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
@@ -23,15 +24,7 @@ Maintainer: Sebastian Kehl
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_timintmstep.H"
 #include "../drt_comm/comm_utils.H"
-#include "../drt_inpar/inpar_invanalysis.H"
 #include "../drt_adapter/ad_str_structure.H"
-#include "../drt_inpar/drt_validparameters.H"
-
-// needed to deal with materials
-#include "../drt_mat/material.H"
-#include "../drt_mat/aaaneohooke_stopro.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_inpar/inpar_material.H"
 
 #include "objective_funct.H"
 #include "timint_adjoint.H"
@@ -63,11 +56,11 @@ convcritc_(0)
   ssize_=ssize_*matman_->NumParams();
   actsize_=0;
 
-  sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, discret_->ElementColMap(), true));
-  ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, discret_->ElementColMap(), true));
+  sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, matman_->ParamLayoutMap(), true));
+  ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, matman_->ParamLayoutMap(), true));
 
-  p_= Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumParams(),true));
-  step_= Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumParams(), true));
+  p_= Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(),true));
+  step_= Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(), true));
 
 }
 
@@ -103,7 +96,7 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
   objval_o_ = objval_;
   error_incr_ = objval_;
 
-  MVNorm(objgrad_o_,2,&convcritc_);
+  MVNorm(objgrad_o_,2,&convcritc_,discret_->ElementRowMap());
 
   PrintOptStep(0,0);
 
@@ -122,7 +115,7 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
     }
 
     //get the L2-norm:
-    MVNorm(objgrad_,2,&convcritc_);
+    MVNorm(objgrad_,2,&convcritc_,discret_->ElementRowMap());
 
     //compute new direction only for runs>0
     if (runc_<1)
@@ -171,7 +164,7 @@ int STR::INVANA::StatInvAnaLBFGS::EvaluateArmijoRule(double* tauopt, int* numste
   double blow=0.1;
   double bhigh=0.5;
 
-  MVNorm(objgrad_o_,2,&gnorm);
+  MVNorm(objgrad_o_,2,&gnorm,discret_->ElementRowMap());
 
   double tau_n=std::min(stepsize_, 100.0/(1+gnorm));
   //std::cout << "trial step size: " << tau_n << std::endl;
@@ -191,7 +184,7 @@ int STR::INVANA::StatInvAnaLBFGS::EvaluateArmijoRule(double* tauopt, int* numste
 
     // check sufficient decrease:
     double dfp_o=0.0;
-    MVDotProduct(objgrad_o_,p_,&dfp_o);
+    MVDotProduct(objgrad_o_,p_,&dfp_o,discret_->ElementRowMap());
 
     if ( (objval_-objval_o_) < c1*tau_n*dfp_o )
     {
@@ -290,7 +283,7 @@ void STR::INVANA::StatInvAnaLBFGS::StoreVectors()
   if (runc_*matman_->NumParams()<=ssize_) // we have "<=" since we do not store the first run
     actsize_+=matman_->NumParams();
 
-  Epetra_MultiVector s(*(discret_->ElementColMap()), (matman_->NumParams()),true);
+  Epetra_MultiVector s(*(matman_->ParamLayoutMap()), (matman_->NumParams()),true);
 
   //push back s
   s.Update(1.0,*(matman_->GetParams()),-1.0,*(matman_->GetParamsOld()),0.0);
@@ -324,8 +317,8 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
     int ind=0;
     for (int j=matman_->NumParams(); j>0; j--)
     {
-      MVDotProduct((*ystore_)(i-j+1),(*sstore_)(i-j+1),&a);
-      MVDotProduct((*sstore_)(i-j+1),Teuchos::rcp((*p_)(ind), false),&b);
+      MVDotProduct((*ystore_)(i-j+1),(*sstore_)(i-j+1),&a,discret_->ElementRowMap());
+      MVDotProduct((*sstore_)(i-j+1),Teuchos::rcp((*p_)(ind), false),&b,discret_->ElementRowMap());
       ind++;
       aa += a;
       bb += b;
@@ -353,8 +346,8 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
 
     for (int j=0; j<matman_->NumParams(); j++)
     {
-      MVDotProduct((*ystore_)(i+j),(*sstore_)(i+j),&a);
-      MVDotProduct((*ystore_)(i+j),Teuchos::rcp((*p_)(j), false),&b);
+      MVDotProduct((*ystore_)(i+j),(*sstore_)(i+j),&a,discret_->ElementRowMap());
+      MVDotProduct((*ystore_)(i+j),Teuchos::rcp((*p_)(j), false),&b,discret_->ElementRowMap());
       aa += a;
       bb += b;
     }
@@ -378,7 +371,7 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
 void STR::INVANA::StatInvAnaLBFGS::PrintOptStep(double tauopt, int numsteps)
 {
   double stepincr;
-  MVNorm(step_,0,&stepincr);
+  MVNorm(step_,0,&stepincr,discret_->ElementRowMap());
 
   if (discret_->Comm().MyPID()==0)
   {

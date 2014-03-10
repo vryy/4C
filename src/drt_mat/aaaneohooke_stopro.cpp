@@ -245,8 +245,8 @@ void MAT::AAAneohooke_stopro::Evaluate(
   double isochor1 = 0.0;
   double isochor2 = 0.0;
 
-  std::string deriv = params.get<std::string>("matparderiv","none");
-  if (deriv == "YOUNG")
+  int deriv = params.get<int>("matparderiv",-1);
+  if (deriv == 0)
   {
     //std::cout << "DERIV YOUNGS" << std::endl;
     //deriv. w.r.t YOUNG!! -> factor 0.1666666666666666667 in here
@@ -256,7 +256,7 @@ void MAT::AAAneohooke_stopro::Evaluate(
     //do komp too:
     komp = 2.0/(1.0-2.0*nue)*0.1666666666666666667;
   }
-  else if(deriv == "BETA")
+  else if(deriv == 2)
   {
     //std::cout << "DERIV BETA" << std::endl;
     //deriv. w.r.t beta
@@ -266,7 +266,7 @@ void MAT::AAAneohooke_stopro::Evaluate(
     // vol part is not a function of beta -> derivative has to be zero
     komp = 0.0;
   }
-  else if(deriv == "none")
+  else if(deriv == -1)
   {
     //--- determine 2nd Piola Kirchhoff stresses pktwo -------------------------------------
     // 1st step: isochoric part

@@ -22,6 +22,7 @@ Maintainer: Sebastian Kehl
 #include "Epetra_Vector.h"
 #include "../drt_inpar/inpar_material.H"
 #include "Epetra_SerialDenseVector.h"
+#include "../drt_lib/drt_dserror.H"
 
 
 // forward declarations
@@ -79,35 +80,34 @@ namespace INVANA
     //! reset params
     void ResetParams();
 
-    //! Return the material parameters
-    const Teuchos::RCP<Epetra_MultiVector> GetParams(){ return params_; };
+    //! Return material parameters
+    const Teuchos::RCP<Epetra_MultiVector> GetMatParams(){SetParams(); return params_;};
 
-    //! Return the material parameters of the last run
-    const Teuchos::RCP<Epetra_MultiVector> GetParamsOld(){ return params_o_; };
+    //! Return optimization parameters
+    const Teuchos::RCP<Epetra_MultiVector> GetParams(){return optparams_;};
+
+    //! Return optimization parameters  of the last run
+    const Teuchos::RCP<Epetra_MultiVector> GetParamsOld(){return optparams_o_;};
+
+    //! Return the map layout for the parameter distribution
+    const Epetra_Map* ParamLayoutMap(){return paramlayoutmap_.get();};
 
     //! Return number of physically different parameters
     int NumParams(){ return numparams_; };
 
-    //! Return weight of the regularization
-    double GetRegWeight(){return reg_weight_;};
-
-    //! Set weight of the regularization
-    void SetRegWeight(double weight){reg_weight_=weight;};
-
     //! Put vector index of a given material parameter <string> into loc
     int GetParameterLocation(int eleid, std::string name);
 
-    //! brief compute optimization parameter multivector from an SMC Particle position
-    virtual void ComputeParamsMultiVectorFromSMCParticlePosition(Teuchos::RCP<Epetra_MultiVector> &params , std::vector<double> my_global_params);
   protected:
 
     //! map of names for each material parameter
-    //! key: matid, value: vector of names of the parameters
+    //! key: matid, value:
+    //! value is of enum type and can be used to set the respective material parameter directly
     //! i.e  < 1 ;  ( youngs, beta)>
     //!      < 2 ;  ( k1 , k2   )  >
-    std::map<int, std::vector<std::string> > paramap_;
+    std::map<int, std::vector<int> > paramap_;
 
-    //! map of matids to parameterids for the parameter vector
+    //! map of matids to parameterids for the parameter vector kept in here
     //! i.e  < 1 ; (1 , 2)>
     //! i.e  < 2 ; (3 , 4)>
     std::map<int,std::vector<int> > parapos_;
@@ -119,20 +119,17 @@ namespace INVANA
     //! discretization
     Teuchos::RCP<DRT::Discretization> discret_;
 
-    //! discret_'s elecolmap for the distribution of parameters
-    const Epetra_Map* elecolmap_;
-
-    //! actual set of parameters
+    //! actual set of material parameters in elementwise colmap layout
     Teuchos::RCP<Epetra_MultiVector> params_;
 
-    //! old set of parameters
-    Teuchos::RCP<Epetra_MultiVector> params_o_;
+    //! actual set of material parameters in some parametrization layout
+    Teuchos::RCP<Epetra_MultiVector> optparams_;
 
-    //! initial parameters as initial guess:
-    Teuchos::RCP<Epetra_MultiVector> params_init_;
+    //! old set of material parameters in some parametrization layout
+    Teuchos::RCP<Epetra_MultiVector> optparams_o_;
 
-    //! weight of the regularization:
-    double reg_weight_;
+    //! parametrization layout of the optimization parameters
+    Teuchos::RCP<Epetra_Map> paramlayoutmap_;
 
     //! inidicates meta parmaetrization of the material parameters k_m = k^2+0.1
     bool metaparams_;
@@ -145,6 +142,15 @@ namespace INVANA
 
     //! initialze parameter vector
     void InitParams();
+
+    //! let the vector of material parameters be filled by the derived classes
+    virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params) = 0;
+
+    //! contract gradient wrt on physical material parameter (dfintp)
+    //! to the optimization parameter space (dfint) for that physical parameter
+    virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
+                                  Teuchos::RCP<Epetra_Vector>dfintp,
+                                  int parapos) = 0;
 
   };
 

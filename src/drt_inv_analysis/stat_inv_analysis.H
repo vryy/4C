@@ -157,12 +157,6 @@ protected:
   void MStepDToStdVecD(Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > mstepvec,
                        Teuchos::RCP<std::vector<double> > stdvec);
 
-  //! compute some norm on a vector stored in multivector format for storage reasons only
-  void MVNorm(Teuchos::RCP<Epetra_MultiVector> avector, int anorm, double* result);
-
-  //! compute dot product of two vectors stored in multivector fomat for storage reasons only
-  void MVDotProduct(Teuchos::RCP<Epetra_MultiVector> avector, Teuchos::RCP<Epetra_MultiVector> bvector, double* result);
-
   // DEBUG PRINT OUT
   void PrintDataToScreen(Epetra_MultiVector& vec);
 
@@ -187,7 +181,7 @@ public:
   double GetError(){return objval_;};
 
   // return the value of the gradient 2-norm
-  double GetGrad2Norm(){double res; MVNorm(objgrad_,2,&res); return res;};
+  double GetGrad2Norm();
 
 
 }; // class StatInvAnalysis

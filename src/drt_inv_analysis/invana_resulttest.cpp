@@ -31,7 +31,7 @@ STR::INVANA::InvAnaResultTest::InvAnaResultTest(StatInvAnalysis& ia)
 {
     discret_= ia_.Discretization();
     matman_ = ia_.MatParManager();
-    mysol_ = matman_->GetParams();
+    mysol_ = matman_->GetMatParams();
 }
 
 

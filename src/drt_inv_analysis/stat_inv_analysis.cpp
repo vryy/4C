@@ -3,9 +3,9 @@
  * \file stat_inv_analysis.cpp
 
 <pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
+Maintainer: Sebastian Kehl
+            kehl@mhpc.mw.tum.de
+            http://www.mhpc.mw.tum.de/
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -15,6 +15,7 @@ Maintainer: Jonas Biehler
 #include <cstdlib>
 
 #include "stat_inv_analysis.H"
+#include "invana_utils.H"
 #include "invana_resulttest.H"
 
 #include "../drt_io/io_control.H"
@@ -26,16 +27,9 @@ Maintainer: Jonas Biehler
 #include "../drt_lib/drt_utils_timintmstep.H"
 #include "../drt_comm/comm_utils.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_inpar/inpar_invanalysis.H"
 #include "../drt_inpar/inpar_statinvanalysis.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_inpar/drt_validparameters.H"
-
-// needed to deal with materials
-#include "../drt_mat/material.H"
-#include "../drt_mat/aaaneohooke_stopro.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_inpar/inpar_material.H"
 
 #include "timint_adjoint.H"
 #include "matpar_manager.H"
@@ -127,7 +121,7 @@ regweight_(0.0)
     break;
     case INPAR::STR::stat_inv_mp_elementwise:
     {
-      matman_ = Teuchos::rcp(new STR::INVANA::MatParManager(discret_));
+      matman_ = Teuchos::rcp(new STR::INVANA::MatParManagerPerElement(discret_));
     }
     break;
     case INPAR::STR::stat_inv_mp_uniform:
@@ -145,8 +139,8 @@ regweight_(0.0)
   objval_o_ = 1.0e16;
   error_incr_ = 1.0e16;
 
-  objgrad_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumParams(),true));
-  objgrad_o_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()), matman_->NumParams(),true));
+  objgrad_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(),true));
+  objgrad_o_ = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(),true));
 
 
 }
@@ -352,52 +346,20 @@ void STR::INVANA::StatInvAnalysis::EvaluateError()
   if (havereg_)
   {
     double val = 0.0;
-    MVNorm(matman_->GetParams(),2,&val);
+    STR::INVANA::MVNorm(matman_->GetParams(),2,&val,discret_->ElementRowMap());
     objval_ += 0.5*regweight_*val*val;
   }
 }
 
-/*----------------------------------------------------------------------*/
-/* Evaluate the objective function                          keh 10/13   */
-/*----------------------------------------------------------------------*/
-void STR::INVANA::StatInvAnalysis::MVNorm(Teuchos::RCP<Epetra_MultiVector> avector, int anorm, double* result)
+
+// return the value of the gradient 2-norm
+double STR::INVANA::StatInvAnalysis::GetGrad2Norm()
 {
-  Epetra_SerialDenseVector vnorm(avector->NumVectors());
-
-  Teuchos::RCP<Epetra_MultiVector> unique = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()), avector->NumVectors(),true));
-  LINALG::Export(*avector, *unique);
-
-  if (anorm==2)
-    unique->Norm2(vnorm.Values());
-  else if (anorm==0)
-    unique->NormInf(vnorm.Values());
-  else if(anorm==1)
-    unique->Norm1(vnorm.Values());
-  else
-    dserror("provide norm to be computed: 0 (inf-Norm), 1 (1-Norm) or 2 (2-Norm)");
-
-  *result = vnorm.Norm2();
+  double res;
+  STR::INVANA::MVNorm(objgrad_,2,&res,discret_->ElementRowMap());
+  return res;
 }
 
-//! compute dot product of two vectors stored in multivector fomat for storage reasons only
-void STR::INVANA::StatInvAnalysis::MVDotProduct(Teuchos::RCP<Epetra_MultiVector> avector, Teuchos::RCP<Epetra_MultiVector> bvector, double* result)
-{
-  dsassert(avector->NumVectors()==bvector->NumVectors(), "give proper multivectors!");
-
-  Epetra_SerialDenseVector anorm(avector->NumVectors());
-
-  Teuchos::RCP<Epetra_MultiVector> uniquea = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()), avector->NumVectors(),true));
-  LINALG::Export(*avector, *uniquea);
-  Teuchos::RCP<Epetra_MultiVector> uniqueb = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()), bvector->NumVectors(),true));
-  LINALG::Export(*bvector, *uniqueb);
-
-  // do dot product with unique vectors now
-  uniquea->Dot(*uniqueb,anorm.Values());
-
-  *result=0.0;
-  for (int j=0; j<anorm.Length(); j++) *result+=anorm[j];
-
-}
 
 /*----------------------------------------------------------------------*/
 /* Creates the field test                                               */

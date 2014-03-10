@@ -27,7 +27,7 @@ FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-WRITE_TO_SCREEN                 no
+WRITE_TO_SCREEN                 yes
 STDOUTEVRY                      0
 -------------------------------------------------------STAT INVERSE ANALYSIS
 STAT_INV_ANALYSIS               LBFGS //GradientDescent
@@ -72,7 +72,7 @@ LOADLIN							yes
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_AAANeoHookeStopro YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 0.001 SIGMA 0.25 CORRLENGTH 5.0
+MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 0.001
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 3.200072e-02
 ------------------------------------------------DESIGN DESCRIPTION

@@ -1207,6 +1207,7 @@ set(OBJS_STATINV_ANALYSIS
   src/drt_inv_analysis/smc_particle_list.cpp
   src/drt_inv_analysis/stat_inv_ana_lbfgs.cpp
   src/drt_inv_analysis/invana_resulttest.cpp
+  src/drt_inv_analysis/invana_utils.cpp
 )  
 set(OBJS_STATINV_ANALYSIS_LIB
 	src/drt_inv_analysis/smc_particle.cpp

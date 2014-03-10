@@ -15,6 +15,7 @@ Maintainer: Jonas Biehler
 #include "matpar_manager.H"
 #include "matpar_manager_uniform.H"
 
+#include "invana_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
@@ -26,55 +27,69 @@ Maintainer: Jonas Biehler
 #include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_inpar/inpar_material.H"
-#include "smc_particle.H"
+#include "../drt_comm/comm_utils.H"
 
 STR::INVANA::MatParManagerUniform::MatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret)
-   :MatParManager(discret){ ; }
-
-void STR::INVANA::MatParManagerUniform::ComputeParamsMultiVectorFromSMCParticlePosition(Teuchos::RCP<Epetra_MultiVector>& params , std::vector<double> my_global_params)
+   :MatParManager(discret)
 {
+  paramlayoutmap_ = Teuchos::rcp(new Epetra_Map(1,1,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm())));
 
-  //check if size is a match
-  if(my_global_params.size()!=(unsigned) numparams_)
-    dserror("Size mismatch try again");
+  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,numparams_,true));
+  optparams_o_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,numparams_,true));
 
-  //int numparams = my_particle.GetSizeOfPosition();
-  params = Teuchos::rcp(new Epetra_MultiVector(*elecolmap_,numparams_,true));
+  //initialize parameter vector from material parameters given in the input file
+  InitParams();
 
-
-  // get all materials from drt::problem
-  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
-
-  std::map<int,std::vector<std::string> >::const_iterator it;
-  // loop over all mats that we have in the optimization
-  for (it=paramap_.begin(); it!=paramap_.end(); it++)
-  {
-    // loop all mats in the DRT::Problem
-    Teuchos::RCP<MAT::PAR::Material> actmat = mats.at(it->first);
-    switch(actmat->Parameter()->Type())
-    {
-    // for now this is only implemented for aaa_neohook_stopro
-    case INPAR::MAT::m_aaaneohooke_stopro:
-    {
-      // get vector with mat parameter names
-      std::vector<std::string> mat_param_names = it->second;
-      int curr_mat_id = it->first;
-      for (unsigned int i=0; i< mat_param_names.size();i++)
-      {
-        //get vector in which opt param id is stored
-        std::vector<int> opt_param_ids = parapos_.at(curr_mat_id);
-        (*params)( opt_param_ids.at(i))->PutScalar(my_global_params.at( opt_param_ids.at(i)) );
-      }
-    }
-    break;
-    default:
-      dserror("Material not provided by the Material Manager for Optimization");
-      break;
-    }
-  }
-
-  //return params;
+  // set the parameters to be available for the elements
+  SetParams();
 
 }
 
+void STR::INVANA::MatParManagerUniform::FillParameters(Teuchos::RCP<Epetra_MultiVector> params)
+{
+  params->PutScalar(0.0);
 
+  for (int i=0; i<numparams_; i++)
+    (*params)(i)->PutScalar((*(*optparams_)(i))[0]);
+}
+
+
+void STR::INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
+                                                         Teuchos::RCP<Epetra_Vector> dfintp,
+                                                         int parapos)
+{
+  double val;
+  Epetra_Vector ones(*(discret_->ElementRowMap()),true);
+  ones.PutScalar(1.0);
+
+  STR::INVANA::MVDotProduct(dfintp,Teuchos::rcp(&ones),&val,discret_->ElementRowMap());
+  dfint->SumIntoGlobalValue(0,parapos,val);
+}
+
+STR::INVANA::MatParManagerPerElement::MatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret)
+   :MatParManager(discret)
+{
+  paramlayoutmap_ = Teuchos::rcp(new Epetra_Map(*(discret->ElementColMap())));
+
+  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,numparams_,true));
+  optparams_o_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,numparams_,true));
+
+  //initialize parameter vector from material parameters given in the input file
+  InitParams();
+
+  // set the parameters to be available for the elements
+  SetParams();
+
+}
+
+void STR::INVANA::MatParManagerPerElement::FillParameters(Teuchos::RCP<Epetra_MultiVector> params)
+{
+  params->Scale(1.0,*optparams_);
+}
+
+void STR::INVANA::MatParManagerPerElement::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
+                                                            Teuchos::RCP<Epetra_Vector> dfintp,
+                                                            int parapos)
+{
+  (*dfint)(parapos)->Update(1.0,*dfintp,1.0);
+}

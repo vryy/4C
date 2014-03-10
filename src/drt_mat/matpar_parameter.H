@@ -81,7 +81,7 @@ namespace MAT
       virtual Teuchos::RCP<MAT::Material> CreateMaterial() = 0;
 
       /// return number of parameters being optimizable
-      virtual void OptParams(std::vector<std::string>* pnames){dserror("This material does not implement OptParams()");};
+      virtual void OptParams(std::map<std::string, int>* pnames){dserror("This material does not implement OptParams()");};
 
       //! \brief set element specific or global material parameter using enum parametername which is defined in respective MAT::PAR classes
       void SetParameter(int parametername,Teuchos::RCP<Epetra_Vector> myparameter);
