@@ -590,7 +590,7 @@ int DRT::ELEMENTS::Beam3Type::Initialize(DRT::Discretization& dis)
 
 
 /*----------------------------------------------------------------------*
- | (public) change active linker length                   mueller 10/12 |
+ | (public) set new reference length                      mueller 10/12 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3::SetReferenceLength(const double& scalefac)
 {

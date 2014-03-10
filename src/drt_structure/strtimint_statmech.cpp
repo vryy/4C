@@ -1208,6 +1208,9 @@ void STR::TimIntStatMech::PTC()
   double nc;
   fres_->NormInf(&nc);
   double resinit = nc;
+  
+  if(nc==0.0)
+    dserror("nc == 0.0! PTC scheme not applicable! Choose fullnewton");
 
   //printf("fresnorm %10.5e disinorm %10.5e nc %10.5e\n",normfres_,normdisi_,nc);
 
@@ -1355,6 +1358,9 @@ void STR::TimIntStatMech::PTCStatMechUpdate(double& ctransptc, double& crotptc, 
 {
   double np;
   fres_->NormInf(&np);
+
+  if(nc==0.0)
+    dserror("nc == 0.0! PTC scheme not applicable! Choose fullnewton");
 
   // SER step size control
   crotptc *= std::pow((np/nc),alphaptc);
@@ -1697,16 +1703,13 @@ void STR::TimIntStatMech::StatMechUpdate()
     Teuchos::ParameterList statmechparams = statmechman_->GetStatMechParams();
     //assuming that iterations will converge
     isconverged_ = true;
-
     const double t_admin = Teuchos::Time::wallTime();
     if(HaveBeamContact())
       statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_,beamcman_,buildoctree_, printscreen_);
     else
       statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_, Teuchos::null,false,printscreen_);
-
     // print to screen
     StatMechPrintUpdate(t_admin);
-
     /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
      *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
      *for synchrinisation of these random numbers in parallel computing*/
@@ -1767,7 +1770,7 @@ void STR::TimIntStatMech::StatMechRestoreConvState()
       Teuchos::ParameterList p;
       p.set("action","calc_struct_reset_istep");
       discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-      statmechman_->RestoreConv(stiff_, beamcman_);
+      statmechman_->RestoreConv((*dis_)(0), stiff_, beamcman_,printscreen_);
       buildoctree_ = true;
     }
   }

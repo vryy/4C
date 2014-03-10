@@ -185,12 +185,6 @@ public:
   \brief Print this element
   */
   virtual void Print(std::ostream& os) const;
-
-  /*!
-  \brief Get current nodal triads as quaternions
-  */
-  std::vector<LINALG::Matrix<4,1> > Quaternion() { return Qnew_;};
-
   /*!
   \brief Get moment of inertia of area Iyy_ of this element
   */

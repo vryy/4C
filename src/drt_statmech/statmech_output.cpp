@@ -1002,11 +1002,14 @@ void STATMECH::StatMechManager::Output(const int                            ndim
     break;
     case INPAR::STATMECH::statout_motassay:
     {
-      std::ostringstream filename;
-      filename  << outputrootpath_ << "/StatMechOutput/filcoords_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
-      std::ostringstream filename2;
-      filename2  << outputrootpath_ << "/StatMechOutput/linkerforce_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
-      MotilityAssayOutput(dis,time,dt,filename,filename2);
+      if ((time>=starttime && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
+      {
+        std::ostringstream filename;
+        filename  << outputrootpath_ << "/StatMechOutput/filcoords_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+        std::ostringstream filename2;
+        filename2  << outputrootpath_ << "/StatMechOutput/linkerforce_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+        MotilityAssayOutput(dis,time,dt,filename,filename2);
+      }
     }
     break;
     case INPAR::STATMECH::statout_none:

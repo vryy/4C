@@ -170,6 +170,7 @@ DRT::ELEMENTS::BeamCL::BeamCL(int id, int owner) :
 DRT::Element(id,owner),
 isinit_(false),
 eps_(0.0),
+Qrot_(LINALG::Matrix<4,1>(true)),
 nodeI_(0),
 nodeJ_(0),
 crosssec_(0),
@@ -557,22 +558,34 @@ int DRT::ELEMENTS::BeamCLType::Initialize(DRT::Discretization& dis)
 }
 
 /*----------------------------------------------------------------------*
- |  Initialize quaternions (public)                        mueller 05/13|
+ |  Initialize quaternions (public)                        mueller 10/12|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::BeamCL::SetInitialQuaternions(std::vector<LINALG::Matrix<4,1> >& initquaternions)
 {
   if((int)initquaternions.size()!=(int)rQconv_.size())
     dserror("Check size=%i of input quaternion vector!",(int)initquaternions.size());
   rQconv_ = initquaternions;
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ | Manipulate rotations a priori to element eval  (public) mueller 03/14|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::BeamCL::SetRotation(LINALG::Matrix<3,1>& theta)
+{
+  // get the corresponding quaternion
+  LARGEROTATIONS::angletoquaternion(theta, Qrot_);
+  // do quaternion product qtheta*nodequat in order to rotate the nodal quaternions by thetaabs
+  for(int j=0; j<(int)rQold_.size(); j++)
+    LARGEROTATIONS::quaternionproduct(rQold_[j],Qrot_,rQold_[j]);
+  // set (precalculated) quaternions
   return;
 }
 
 /*----------------------------------------------------------------------*
  | (public) change active linker length                   mueller 10/12 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::BeamCL::SetReferenceLength(const double& scalefac,
-                                               const bool changetoshort)
+void DRT::ELEMENTS::BeamCL::SetReferenceLength(const double& scalefac)
 {
   // new reference length = initial reference length * scale
   xrefe_.at(3) = xrefe_.at(0) + (scalefac * (xrefe_.at(3)-xrefe_.at(0)));

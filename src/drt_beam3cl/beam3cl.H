@@ -207,20 +207,6 @@ namespace DRT
          \brief Print this element
          */
         virtual void Print(std::ostream& os) const;
-
-        /*!
-         \brief Get current nodal triads as quaternions
-         */
-        std::vector<LINALG::Matrix<4, 1> >& Quaternion()
-        {
-          return Qnew_;
-        }
-        ;
-        std::vector<LINALG::Matrix<4, 1> >& rQuaternion()
-        {
-          return rQnew_;
-        }
-        ;
         /*!
          \brief Get moment of inertia of area Iyy_ of this element
          */
@@ -376,55 +362,38 @@ namespace DRT
         const LINALG::Matrix<3,1>& MatForceGp() const {return Ngp_;}
 
         //! brief epsilonnormal
-        const double& EpsilonSgn() const
-        {
-          return eps_;
-        }
+        const double& EpsilonSgn() const {return eps_;}
 
         //@}
 
         //! \brief return reference Coordinates of interpolated nodes
-        const std::vector<double>& XRef() const
-        {
-          return xrefe_;
-        }
+        const std::vector<double>& XRef() const {return xrefe_;}
 
-        /*!
-         \brief Get current nodal triads as quaternions
-         */
-        const std::vector<LINALG::Matrix<4, 1> >& Qnew() const
-        {
-          return Qnew_;
-        }
+        //! \brief Get current fictitious nodal triads as quaternions
+        const std::vector<LINALG::Matrix<4, 1> >& Qnew() const {return Qnew_;}
 
-        /*!
-         \brief Set moment of inertia of area Iyy_ of this element
-         */
+        //! \brief Get converged real nodal triads as quaternions
+        const std::vector<LINALG::Matrix<4, 1> >& rQold() const {return rQold_;}
+
+        //! \brief Get rotation quaternion previously set by SetRotation()
+        const LINALG::Matrix<4,1>& Qrot() const {return Qrot_;}
+
+        //!\brief Set moment of inertia of area Iyy_ of this element
         void SetIyy(const double& Iyy);
 
-        /*!
-         \brief Set moment of inertia of area Iyy_ of this element
-         */
+        //! \brief Set moment of inertia of area Iyy_ of this element
         void SetIzz(const double& Izz);
 
-        /*!
-         \brief Set moment of inertia of area Iyy_ of this element
-         */
+        // !\brief Set moment of inertia of area Iyy_ of this element
         void SetIrr(const double& Irr);
 
-        /*!
-         \brief Set cross section area of this element
-         */
+        // !\brief Set cross section area of this element
         void SetCrossSec(const double& crosssec);
 
-        /*!
-         \brief Set cross section with shear correction factor of this element
-         */
+        // !\brief Set cross section with shear correction factor of this element
         void SetCrossSecShear(const double& crosssecshear);
 
-        /*!
-         \brief Set (Internodal) Binding Position of this element
-         */
+        // !\brief Set (Internodal) Binding Position of this element
         void SetBindingPosition(const double& pos1, const double& pos2);
 
         //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
@@ -459,7 +428,7 @@ namespace DRT
             dispthetaold_.resize(fnnode);
             dispthetanew_.resize(fnnode);
 
-            //set nodal tridas according to input file
+            //set nodal triads according to input file
             rQnew_.resize(4);
             rQold_.resize(4);
             rQconv_.resize(4);
@@ -625,7 +594,7 @@ namespace DRT
                 rQnew_[i] = Qconv_[0];
                 rQold_[i] = Qconv_[0];
               }
-              //compute local rotational vectors phi according to Crisfield 1999,(4.6) in quaterion form
+              //compute local rotational vectors phi according to Crisfield 1999,(4.6) in quaternion form
               LINALG::Matrix<4, 1> phi12;
               LARGEROTATIONS::quaternionproduct(Qnew_[1],LARGEROTATIONS::inversequaternion(Qnew_[0]), phi12);
 
@@ -716,12 +685,14 @@ namespace DRT
 
         } //DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry()
 
-          //!\brief Set initial quaternions rQconv_ depending on nodal quaternions from already existing beam elements
+        //!\brief Set initial quaternions rQconv_ depending on nodal quaternions from already existing beam elements
         void SetInitialQuaternions(std::vector<LINALG::Matrix<4, 1> >& initquaternions);
 
         //! changes the actual linker length
-        void SetReferenceLength(const double& scalefac,
-                                const bool changetoshort = true);
+        void SetReferenceLength(const double& scalefac);
+      
+        //! Set rotation to precalculated value and update additive rotation increment (this is something like a 'prescribed' rotation)
+        void SetRotation(LINALG::Matrix<3,1>& theta);
 
       private:
 
@@ -766,11 +737,11 @@ namespace DRT
 
         //------------- nodal triads and angle displacements for real nodes
 
-        //! interpolated nodal triads in quaternion form at the end of the preceeding time step
+        //! triads of 'real' nodes in quaternion form at the end of the preceeding time step
         std::vector<LINALG::Matrix<4, 1> > rQconv_;
-        //! interpolated nodal triads in quaternion form at the end of the preceeding iteration step
+        //! triads of 'real' nodes in quaternion form at the end of the preceeding iteration step
         std::vector<LINALG::Matrix<4, 1> > rQold_;
-        //! interpolated nodal triads in quaternion during the current iteration step
+        //! triads of 'real' nodes in quaternion form during the current iteration step
         std::vector<LINALG::Matrix<4, 1> > rQnew_;
         //!rotation angle displacement at interpolated nodes; relates to the end of the preceeding time step
         std::vector<LINALG::Matrix<3, 1> > rdispthetaconv_;
@@ -790,6 +761,8 @@ namespace DRT
         std::vector<LINALG::Matrix<4, 1> > Qconvmass_;
         //! current triads at Gauss points for exact integration in quaternion (required for computation of angular velocity)
         std::vector<LINALG::Matrix<4, 1> > Qnewmass_;
+        //! rotation increment set by SetRotation()
+        LINALG::Matrix<4,1> Qrot_;
         //!rotation angle displacement at nodes; relates to the end of the preceeding time step
         std::vector<LINALG::Matrix<3, 1> > dispthetaconv_;
         //!rotation angle displacement at nodes; relates to the end of the preceeding iteration step

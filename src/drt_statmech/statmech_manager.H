@@ -127,8 +127,10 @@ public:
   void WriteConv(Teuchos::RCP<CONTACT::Beam3cmanager>);
 
   //! \brief resets all relevant variables *_ to *conv_ in order to return to the state at the beginning of the time step
-  void RestoreConv(Teuchos::RCP<LINALG::SparseOperator>& stiff,
-                   Teuchos::RCP<CONTACT::Beam3cmanager>  beamcmanager);
+  void RestoreConv(Teuchos::RCP<Epetra_Vector>            dis,
+                   Teuchos::RCP<LINALG::SparseOperator>& stiff,
+                   Teuchos::RCP<CONTACT::Beam3cmanager>  beamcmanager,
+                   const bool                            printscreen);
 
   /*! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
    *  \param istep    (in)  i-th time step
@@ -487,13 +489,28 @@ protected:
    *  \param (in)  actlinklengthin linker length before
    *  \param (out) actlinklengthout linker length after
    *  \param (in) revertchanges self-explanatory
+   *  \param (in) print to stdout
+   *  \param (in) binding site positions
+   *  \param (in) binding site rotations
    */
-  void ChangeActiveLinkerLength(const double&               timen,
-                                const double&               dt,
-                                Teuchos::RCP<Epetra_Vector> actlinklengthin,
-                                Teuchos::RCP<Epetra_Vector> actlinklengthout,
-                                bool                        revertchanges = false);
+  void ChangeActiveLinkerLength(const double&                    timen,
+                                const double&                    dt,
+                                Teuchos::RCP<Epetra_Vector>      actlinklengthin,
+                                Teuchos::RCP<Epetra_Vector>      actlinklengthout,
+                                const bool                       revertchanges = false,
+                                const bool                       printsreen = true,
+                                Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::null,
+                                Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::null);
 
+  //! accounts for the rotational part (swinging) of the power stroke of an active linker
+  void ActiveLinkerPowerStroke(const int&                       elecollid,
+                               const int&                       crosslid,
+                               Teuchos::RCP<Epetra_MultiVector> bspotpositions,
+                               Teuchos::RCP<Epetra_MultiVector> bspotquaternions,
+                               Teuchos::RCP<Epetra_MultiVector> nodalquaternions,
+                               const bool                       revertchanges);
+
+  
   //! polarity check for active linkers upon bond breaking
   bool LinkerPolarityCheckAttach(Teuchos::RCP<Epetra_MultiVector> bspottriadscol,
                                  Epetra_SerialDenseMatrix&        LID,
@@ -503,6 +520,15 @@ protected:
   int LinkerPolarityCheckDetach(Teuchos::RCP<Epetra_MultiVector>       punlink,
                                  const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
                                  const Teuchos::RCP<Epetra_MultiVector> bspottriadscol);
+  
+  LINALG::Matrix<3,3> ExtractTriadFromGlobalQuaternionVector(const int&                       lid,
+                                                             Teuchos::RCP<Epetra_MultiVector> quaternionvec);
+  
+  //! Decompose vector vec into its parallel and orthogonal contribution with respect to some vector refvec
+  void DoVectorDecomposition(LINALG::Matrix<3,1>& vec,
+                             LINALG::Matrix<3,1>& parvec,
+                             LINALG::Matrix<3,1>& orthovec,
+                             LINALG::Matrix<3,1>& refvec);
 
   /*! \brief reduce number of currently existing crosslinker elements by numtoreduce
    *  \param (in) numtoreduce number of crosslinkers by which overall number of crosslinkers is reduced

@@ -83,7 +83,7 @@ GMSHOUTPUT          No                   // visualization via Gmsh
 GMSHNETSTRUCT       No                    // visualize structure detection
 PlotFactorThick     0                     // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
 SPECIAL_OUTPUT      none                  // structanaly viscoelasticity
-GMSHOUTINTERVALS    1000                  // gmsh output interval
+GMSHOUTINTERVALS    1                  // gmsh output interval
 OUTPUTINTERVALS     5000                  // specialoutput interval
 //============== EVENT TRIGGERS =============
 STARTTIMEOUT        0                     // start writing output
@@ -3007,8 +3007,8 @@ CURVE1 on EXPR FUNC sin(2*pi*5*(t-10000)) t1 10000 t2 10000
 ------------------------------------------------------------CURVE2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000.0 FACTOR 1.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 27 QUANTITY dispx VALUE -1.00568087788190208e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 101 QUANTITY dispy VALUE 1.11709192597383114e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 500 QUANTITY dispz VALUE 1.72125969937418216e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 27 QUANTITY dispx VALUE 2.77728738110635032e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 101 QUANTITY dispy VALUE 3.58056245220303784e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 500 QUANTITY dispz VALUE 8.84789940630001798e-02 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END

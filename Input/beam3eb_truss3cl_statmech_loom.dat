@@ -59,7 +59,7 @@ FRICTION_MODEL      anisotropicconsistent // isotropicconsistent isotropiclumped
 DBCTYPE             std                    // none shearfixed sheartrans pinnodes affineshear movablesupport1d,  choose DBC type
 NBCTYPE             std                   // constcreep, choose NBC type
 NETWORKTYPE         std                  // specify network / simulation type 
-BINDINGSITESEARCH   binning //volpart                    // search routine: volpart, binning, octree
+BINDINGSITESEARCH   volpart                    // search routine: volpart, binning, octree
 SEARCHRES           25                    // resolution for search routine linkers x binding spots
 CHECKORIENT         No                    // check orientation betw. two filaments before linking them
 FIXEDSEED           Yes                   // (de)activate pesudo-randomness
@@ -606,6 +606,6 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09 
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC sin(2*pi*5*(t-10000)) t1 10000 t2 10000
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 101 QUANTITY dispx VALUE 9.13207832179172424e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 101 QUANTITY dispx VALUE 1.21715280765229930e-01  TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END

@@ -2131,7 +2131,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("FILAMENTPOLARITY","No","toggles filament polarity",yesnotuple,yesnovalue,&statmech);
   //Rise per monomer in the actin double helix according to Howard, p. 125
-  DoubleParameter("RISEPERBSPOT",0.00277,"rise per monomer in the actin one-start helix",&statmech);
+  setNumericStringParameter("RISEPERBSPOT","0.00277","rise per monomer in the actin one-start helix",&statmech);
   //Rotation per monomer in the actin double helix according to Howard, p. 125
   DoubleParameter("ROTPERBSPOT",-2.8999,"rotation per monomer in the actin double-helix",&statmech);
   //angular offset of the binding spot orientation (constant for each filament)
@@ -2165,7 +2165,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // chemical rate for extensional conformation change
   DoubleParameter("K_ACT_LONG_end",0.0,"rate",&statmech);
   // sclaingn factor for linker length changes
-  DoubleParameter("LINKERSCALEFACTOR",0.0,"Scaling factor for active linker length changes",&statmech);
+  DoubleParameter("LINKERSCALEFACTOR",0.0,"Scaling factor for active linker length changes. No effect on BEAM3CL elements!",&statmech);
   //displacement in the reaction coordinate used in Bell's euqations
   DoubleParameter("DELTABELLSEQ",0.0,"displacement in the reaction coordinate used in Bell's eqation (<0.0 -> catch bond, >0 -> std bond, 0 == no Bell's equation ",&statmech);
   // active linker fraction
