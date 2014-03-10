@@ -505,10 +505,11 @@ protected:
   //! accounts for the rotational part (swinging) of the power stroke of an active linker
   void ActiveLinkerPowerStroke(const int&                       elecollid,
                                const int&                       crosslid,
+                               const int&                       conformation,
+                               const bool                       revertchanges,
                                Teuchos::RCP<Epetra_MultiVector> bspotpositions,
                                Teuchos::RCP<Epetra_MultiVector> bspotquaternions,
-                               Teuchos::RCP<Epetra_MultiVector> nodalquaternions,
-                               const bool                       revertchanges);
+                               Teuchos::RCP<Epetra_MultiVector> nodalquaternions);
 
   
   //! polarity check for active linkers upon bond breaking
@@ -721,6 +722,7 @@ protected:
 
   //! \brief output for motility assay
   void MotilityAssayOutput(const Epetra_Vector&      disrow,
+                           const int&                istep,
                            const double&             timen,
                            const double&             dt,
                            const std::ostringstream& filename01,
@@ -1000,6 +1002,8 @@ protected:
 
   //! \brief vector holding the dimensions of the periodic box
   Teuchos::RCP<std::vector<double> > periodlength_;
+
+  Teuchos::RCP<std::vector<double> > riseperbspot_;
 
   //! \brief vector holding the spatial resolution of the search algorithm binding spots x crosslinkers
   Teuchos::RCP<std::vector<int> > searchres_;

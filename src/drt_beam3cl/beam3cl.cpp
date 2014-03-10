@@ -578,7 +578,6 @@ void DRT::ELEMENTS::BeamCL::SetRotation(LINALG::Matrix<3,1>& theta)
   // do quaternion product qtheta*nodequat in order to rotate the nodal quaternions by thetaabs
   for(int j=0; j<(int)rQold_.size(); j++)
     LARGEROTATIONS::quaternionproduct(rQold_[j],Qrot_,rQold_[j]);
-  // set (precalculated) quaternions
   return;
 }
 
@@ -592,8 +591,15 @@ void DRT::ELEMENTS::BeamCL::SetReferenceLength(const double& scalefac)
   xrefe_.at(4) = xrefe_.at(1) + (scalefac * (xrefe_.at(4)-xrefe_.at(1)));
   xrefe_.at(5) = xrefe_.at(2) + (scalefac * (xrefe_.at(5)-xrefe_.at(2)));
 
+  lscalefac_ = scalefac;
   // call function to update the linker with the new coordinates
+  // SetUpReferenceGeoemetry recalculates rQold_, which is unwanted in case of a change of reference length only
+  // Hence, it is temporarily stored and reassigned afterwards. rQconv_ is assigned the value of rQold prior to SetUpRefGeo
+
+  std::vector<LINALG::Matrix<4,1> > rQoldtmp = rQold_;
   SetUpReferenceGeometry<2>(xrefe_,rotrefe_,true);
+  rQold_ = rQoldtmp;
+
   return;
 }
 

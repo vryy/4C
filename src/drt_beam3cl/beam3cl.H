@@ -372,11 +372,11 @@ namespace DRT
         //! \brief Get current fictitious nodal triads as quaternions
         const std::vector<LINALG::Matrix<4, 1> >& Qnew() const {return Qnew_;}
 
-        //! \brief Get converged real nodal triads as quaternions
-        const std::vector<LINALG::Matrix<4, 1> >& rQold() const {return rQold_;}
-
         //! \brief Get rotation quaternion previously set by SetRotation()
         const LINALG::Matrix<4,1>& Qrot() const {return Qrot_;}
+
+        //! \brief get length scaling factor
+        const double& LScaleFac() const {return lscalefac_;}
 
         //!\brief Set moment of inertia of area Iyy_ of this element
         void SetIyy(const double& Iyy);
@@ -490,7 +490,7 @@ namespace DRT
             }
 
             // When BeamCL is initialized as a crosslinker, it additionally needs all 12 Rotational DOFs
-            // Do not overwrite rotational displacements in case of a second initialization due to breakage by Periodic Boundary
+            // Do not overwrite rotational displacements in case of a second initialization (e.g. due to breakage by Periodic Boundary)
             xrefe_.resize(3*fnnode);
             xrefe_ = xrefe;
             if (rotrefe.size() > 6 && !secondinit)
@@ -594,6 +594,7 @@ namespace DRT
                 rQnew_[i] = Qconv_[0];
                 rQold_[i] = Qconv_[0];
               }
+
               //compute local rotational vectors phi according to Crisfield 1999,(4.6) in quaternion form
               LINALG::Matrix<4, 1> phi12;
               LARGEROTATIONS::quaternionproduct(Qnew_[1],LARGEROTATIONS::inversequaternion(Qnew_[0]), phi12);
@@ -679,7 +680,6 @@ namespace DRT
               //Store Jacobi determinant for each node (Jacobi determinant refers by definition always to the reference configuration)
               jacobinode_[numgp] = drdxi.Norm2();
             } //for(int numgp=0; numgp< fnnode; numgp++)
-
           } //if(!isinit_)
           return;
 
@@ -784,6 +784,9 @@ namespace DRT
 
         //! cross section area including shear corretion factor
         double crosssecshear_;
+
+        //! length scaling factor due to SetReferenceLength() (in order to be able to switch back and forth
+        double lscalefac_;
 
         //!moment of inertia of area around y-axis(orthognoal to beam axis in yz-plane)
         double Iyy_;

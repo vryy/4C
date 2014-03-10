@@ -2099,6 +2099,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("PLANELINKERMOTION","No",
                                  "Plane Brownian Motion of linkers",
                                  yesnotuple,yesnovalue,&statmech);
+  setStringToIntegralParameter<int>("CROSSBRIDGEMODEL","No",
+                                 "swinging cross bridge model for active linkers",
+                                 yesnotuple,yesnovalue,&statmech);
   //Reading which kind of filament model should be applied
   setStringToIntegralParameter<int>("FILAMENTMODEL","std","Filament model applied in Statmech simulations",
                                  //listing possible std::strings in input file in category FILAMENTMODEL
@@ -2164,7 +2167,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("K_ACT_LONG_start",0.0,"rate",&statmech);
   // chemical rate for extensional conformation change
   DoubleParameter("K_ACT_LONG_end",0.0,"rate",&statmech);
-  // sclaingn factor for linker length changes
+  // active linker stroke distance
+  DoubleParameter("STROKEDISTANCE",0.005,"active linker stroke distance",&statmech);
+  // scaling factor for linker length changes
   DoubleParameter("LINKERSCALEFACTOR",0.0,"Scaling factor for active linker length changes. No effect on BEAM3CL elements!",&statmech);
   //displacement in the reaction coordinate used in Bell's euqations
   DoubleParameter("DELTABELLSEQ",0.0,"displacement in the reaction coordinate used in Bell's eqation (<0.0 -> catch bond, >0 -> std bond, 0 == no Bell's equation ",&statmech);

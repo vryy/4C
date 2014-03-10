@@ -76,7 +76,7 @@ CHECKORIENT         Yes                   // check orientation betw. two filamen
 FIXEDSEED           Yes                    // (de)activate pesudo-randomness
 INITIALSEED         1                     // manipulate initial seed of pseudo random numbers
 //============== OUTPUT SET UP ==============
-GMSHOUTPUT          No                    // visualization via Gmsh
+GMSHOUTPUT          No                   // visualization via Gmsh
 GMSHNETSTRUCT       No                    // visualize structure detection
 PlotFactorThick     0                     // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
 SPECIAL_OUTPUT      none             // structanaly viscoelasticity
@@ -505,6 +505,6 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09 
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC sin(2*pi*5*(t-10000)) t1 10000 t2 10000
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 101 QUANTITY dispx VALUE -5.06573233039841586e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 101 QUANTITY dispx VALUE -3.40893619775525070e-01 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END

@@ -1005,10 +1005,10 @@ void STATMECH::StatMechManager::Output(const int                            ndim
       if ((time>=starttime && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
       {
         std::ostringstream filename;
-        filename  << outputrootpath_ << "/StatMechOutput/filcoords_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+        filename  << outputrootpath_ << "/StatMechOutput/filcoords.dat";
         std::ostringstream filename2;
-        filename2  << outputrootpath_ << "/StatMechOutput/linkerforce_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
-        MotilityAssayOutput(dis,time,dt,filename,filename2);
+        filename2  << outputrootpath_ << "/StatMechOutput/linkerforces.dat";
+        MotilityAssayOutput(dis,istep,time,dt,filename,filename2);
       }
     }
     break;
@@ -5683,6 +5683,7 @@ void STATMECH::StatMechManager::BellsEquationOutput(const Epetra_Vector&      di
 | motility assay output                                  (private) mueller 10/13|
 *-------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      disrow,
+                                                    const int&                istep,
                                                     const double&             timen,
                                                     const double&             dt,
                                                     const std::ostringstream& nodeposfilename,
@@ -5705,13 +5706,15 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
   LINALG::Export(disrow, discol);
 
   // Output of filament node positions
-  if(discret_->Comm().MyPID()==0)
+  if(!discret_->Comm().MyPID())
   {
     FILE* fp = NULL;
     // open file and append new data line
-    fp = fopen(nodeposfilename.str().c_str(), "w");
+    fp = fopen(nodeposfilename.str().c_str(), "a");
     //defining temporary stringstream variable
     std::stringstream nodecoords;
+
+    nodecoords<<istep<<"\t"<<-1e9<<"\t"<<-1e9<<"\t"<<-1e9<<std::endl;
 
     for(int i=subfil; i<(int)filaments.size(); i++)
     {
@@ -5732,28 +5735,32 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
     fclose(fp);
   }
 
+  discret_->Comm().Barrier();
+
   //output of forces within crosslinkers
   FILE* fp02 = NULL;
-  // open file and append new data line
-  if(!discret_->Comm().MyPID())
-    fp02 = fopen(forcefilename.str().c_str(), "w");
-  else
-    fp02 = fopen(forcefilename.str().c_str(), "a");
+  fp02 = fopen(forcefilename.str().c_str(), "a");
   //defining temporary stringstream variable
   std::stringstream linkerforces;
 
   Epetra_SerialDenseVector force;
   double eps = 0.0;
-  double normalforce = 0.0;
+  LINALG::Matrix<3,1> matforces;
 
   for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
   {
     if(pid==discret_->Comm().MyPID())
     {
-      if(!pid)
+      if(!pid && istep==statmechparams_.get<int>("OUTPUTINTERVALS",1))
       {
-        linkerforces<<kt<<"\t"<<koff0<<"\t"<<delta<<"\t"<<dt<<"\t"<<subfil<<std::endl;
-        linkerforces<<filaments[0]->Nodes()->size()<<"\t"<<-1e9<<"\t"<<-1e9<<"\t"<<-1e9<<"\t"<<-1e9<<std::endl;
+        linkerforces<<kt<<"\t"<<koff0<<"\t"<<delta<<"\t"<<dt<<"\t"<<statmechparams_.get<int>("OUTPUTINTERVALS",1)<<"\t"<<subfil<<"\t"<<filaments[0]->Nodes()->size()<<std::endl;
+
+        linkerforces<<periodlength_->at(0)<<"\t"<<periodlength_->at(1)<<"\t"<<periodlength_->at(2)<<"\t"<<riseperbspot_->at(0)<<"\t";
+        if((int)riseperbspot_->size()>1)
+          linkerforces<<riseperbspot_->at(1)<<"\t";
+        else
+          linkerforces<<-1e9<<"\t";
+        linkerforces<<-1e9<<"\t"<<-1e9<<std::endl;
       }
       for(int i=0; i<crosslink2element_->MyLength(); i++)
       {
@@ -5769,7 +5776,7 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
           {
             force.Resize(crosslinker->NumNode()*6);
             force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->InternalForceVector();
-            normalforce = ((dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->MatForceGp())(0);
+            matforces = ((dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->MatForceGp());
             eps = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->EpsilonSgn();
           }
           else if(eot == DRT::ELEMENTS::BeamCLType::Instance())
@@ -5778,7 +5785,7 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
               dserror("Currently only implemented for BEAM3CL with four nodes.");
             force.Resize(crosslinker->NumNode()/2*6);
             force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->InternalForceVector();
-            normalforce = ((dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->MatForceGp())(0);
+            matforces = ((dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->MatForceGp());
             eps = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->EpsilonSgn();
           }
           else
@@ -5790,7 +5797,7 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
 
           double Fbspot0 = f0.Norm2();
 
-          linkerforces<<bspotgid0<<"\t"<<bspotgid1<<"\t"<<std::scientific<<std::setprecision(8)<<Fbspot0<<"\t"<<normalforce<<"\t"<<eps<<std::endl;
+          linkerforces<<bspotgid0<<"\t"<<bspotgid1<<"\t"<<std::scientific<<std::setprecision(8)<<Fbspot0<<"\t"<<matforces(0)<<"\t"<<matforces(1)<<"\t"<<matforces(2)<<"\t"<<eps<<std::endl;
         }
       }
     }

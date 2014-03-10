@@ -272,16 +272,16 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
   }
 
   // check linker fraction
-  std::vector<double> riseperbspot;
-  riseperbspot.clear();
+  riseperbspot_ = Teuchos::rcp(new std::vector<double>());
+  riseperbspot_->clear();
   {
     std::istringstream RPB(Teuchos::getNumericStringParameter(statmechparams_,"RISEPERBSPOT"));
     std::string word;
     char* input;
     while (RPB >> word)
-      riseperbspot.push_back(std::strtod(word.c_str(), &input));
+      riseperbspot_->push_back(std::strtod(word.c_str(), &input));
   }
-  if((int)riseperbspot.size()>2)
+  if((int)riseperbspot_->size()>2)
     dserror("Currently only a maximum of two values is supported!");
 
   if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>1.0 || statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)<0.0)
@@ -292,8 +292,8 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     dserror("Active linkers need a non-zero value DELTABELLSEQ for a force-dependent off-rate");
   if((linkermodel_==statmech_linker_std || linkermodel_==statmech_linker_stdintpol) && statmechparams_.get<double>("DELTABELLSEQ",0.0)!=0.0)
     dserror("This linker model does not work with DELTABELLSEQ!=0.0! Check your input file!");
-  if((linkermodel_==statmech_linker_stdintpol || linkermodel_ == statmech_linker_bellseqintpol || linkermodel_ == statmech_linker_activeintpol) && riseperbspot.at(0)<=0.0)
-    dserror("The input parameter RISEPERBSPOT has an invalid value %f", riseperbspot.at(0));
+  if((linkermodel_==statmech_linker_stdintpol || linkermodel_ == statmech_linker_bellseqintpol || linkermodel_ == statmech_linker_activeintpol) && riseperbspot_->at(0)<=0.0)
+    dserror("The input parameter RISEPERBSPOT has an invalid value %f", riseperbspot_->at(0));
 
   switch(DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(statmechparams_, "FRICTION_MODEL"))
   {
@@ -630,8 +630,6 @@ void STATMECH::StatMechManager::Update(const int&                               
      * handled as row map vector*/
     Epetra_Vector discol(*discret_->DofColMap(), true);
     LINALG::Export(disrow, discol);
-    
-    //cout<<discol<<endl;
 
     GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
 
@@ -3087,7 +3085,7 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
           for(int j=0; j<(int)nodequat[i].M(); j++)
             (nodequat[i])(j) =(*nodalquaternions)[j][nodalquaternions->Map().LID((*globalnodeids)[i])];
 
-         newcrosslinker->SetInitialQuaternions(nodequat);
+        newcrosslinker->SetInitialQuaternions(nodequat);
 
          //add element to discretization
         if(!addinitlinks)
@@ -3369,7 +3367,10 @@ bool STATMECH::StatMechManager::LinkerPolarityCheckAttach(Teuchos::RCP<Epetra_Mu
 
     // 1. criterion: angle
     double alpha = acos(linkorthodir.Norm2()/linkdir.Norm2());
-    if (alpha > statmechparams_.get<double>("PHIBSPOT", 1.0472) || alpha < 0.176)
+
+    if(DRT::INPUT::IntegralValue<int>(statmechparams_,"CROSSBRIDGEMODEL") && alpha > statmechparams_.get<double>("PHIBSPOT", 1.0472))
+      return false;
+    else if(!(DRT::INPUT::IntegralValue<int>(statmechparams_,"CROSSBRIDGEMODEL")) && (alpha > statmechparams_.get<double>("PHIBSPOT", 1.0472) || alpha<(statmechparams_.get<double>("PHIBSPOT", 1.0472)/10.0)))
       return false;
 
     // 2. criterion: polarity
@@ -4186,7 +4187,6 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
   discret_->Comm().SumAll(&numproblong, &numproblongglob, 1);
 
   // for rigid body rotation of reference frame (only interpolated elements)
-  //TODO
   Teuchos::RCP<Epetra_MultiVector> nodalquaternions = Teuchos::null;
   Teuchos::RCP<Epetra_MultiVector> bspotquaternions = Teuchos::null;
   if(linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_myosinthick)
@@ -4233,8 +4233,7 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
               break;
               case statmech_linker_activeintpol:
               case statmech_linker_myosinthick:
-                //(dynamic_cast<DRT::ELEMENTS::BeamCL*>(discret_->lColElement(collid)))->SetReferenceLength(sca);
-                ActiveLinkerPowerStroke(collid,i,bspotpositions, bspotquaternions,nodalquaternions,revertchanges);
+                ActiveLinkerPowerStroke(collid,i,(int)(*actlinklengthout)[i],revertchanges, bspotpositions, bspotquaternions,nodalquaternions);
               break;
               default: dserror("Unknown active linker beam element!");
             }
@@ -4255,8 +4254,7 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
               break;
               case statmech_linker_activeintpol:
               case statmech_linker_myosinthick:
-                //ActiveLinkerPowerStroke(collid,i,bspotpositions, bspotquaternions,nodalquaternions,revertchanges);
-                (dynamic_cast<DRT::ELEMENTS::BeamCL*>(discret_->lColElement(collid)))->SetReferenceLength(1.0/sca);
+                ActiveLinkerPowerStroke(collid, i, (int)(*actlinklengthout)[i], revertchanges,bspotpositions, bspotquaternions,nodalquaternions);
               break;
               default: dserror("Unknown active linker beam element!");
             }
@@ -4310,102 +4308,108 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::ActiveLinkerPowerStroke(const int&                       elecollid,
                                                         const int&                       crosslid,
+                                                        const int&                       conformation,
+                                                        const bool                       revertchanges,
                                                         Teuchos::RCP<Epetra_MultiVector> bspotpositions,
                                                         Teuchos::RCP<Epetra_MultiVector> bspotquaternions,
-                                                        Teuchos::RCP<Epetra_MultiVector> nodalquaternions,
-                                                        const bool                       revertchanges)
+                                                        Teuchos::RCP<Epetra_MultiVector> nodalquaternions)
 {
  /*This method changes the reference configuration of the linker beam element.
  * It scales the reference length by a factor "sca". Additionally, it rotates the 
  * reference orientation, which is the result of the latest converged time step,
  * by an angle "thetarot".
  * Both quantities "sca" and "thetarot" are computed such that the ensuing restoring forces 
- * and moments lead to a relaxed configuration, which is perpendicular to the material triad's tangent
- * of the binding site the motor attaches to.
+ * and moments lead to a relaxed configuration, which assumes a covered distance delta along the inverse binding spot tangent (due to positive polarity)
  * */
   // default length scale factor (going to be adjusted below)
   double sca = statmechparams_.get<double>("LINKERSCALEFACTOR", 0.8);
   DRT::Element* activeele = discret_->lColElement(elecollid);
   
-  // difference vector between the two binding sites involved as well as its parallel and orthogonal projection with respect to the tangent of the binding site
-  LINALG::Matrix<3,1> linkdir(true);
-  LINALG::Matrix<3,1> linkpardir(true);
-  LINALG::Matrix<3,1> linkorthodir(true);
-
-  // rotation angle as pseudovector
-  LINALG::Matrix<3,1> thetarot(true);
-
-  if(revertchanges)
+  // more complex cross bridge model
+  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"CROSSBRIDGEMODEL"))
   {
-    //cout<<"REVERT"<<endl;
-    // get inverse rotation
-    LINALG::Matrix<4,1> Qtheta = LARGEROTATIONS::inversequaternion((dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->Qrot());
-    LARGEROTATIONS::quaterniontoangle(Qtheta,thetarot);
-    // reversion of the contraction
-    sca = 1.0/cos(thetarot.Norm2());
-//    cout<<"sca 0 "<<sca<<endl;
-//    cout<<"theta_- = "<<thetarot<<endl;
-  }
-  else
-  {
-//    //cout<<"FORWARD"<<endl;
-//    // retrieve hypotenuse vector (vector from one binding spot to the other)
-//    // get binding spot LIDs
-//    int lid0 = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][crosslid]);
-//    int lid1 = bspotcolmap_->LID((int)(*crosslinkerbond_)[1][crosslid]);
-//
-//    for(int j=0;j<(int)linkdir.M(); j++)
-//      linkdir(j) = (*bspotpositions)[j][lid1]-(*bspotpositions)[j][lid0];
-//
-//    // calculate vector decomposition of hypotenuse for subsequent calculation of the rotation pseudo vector theta
-//    LINALG::Matrix<3,1> bspottangent(true);
-//    LINALG::Matrix<3,3> bspottriad = ExtractTriadFromGlobalQuaternionVector(lid1, bspotquaternions);
-//
-//    for(int j=0; j<(int)bspottangent.M(); j++)
-//      bspottangent(j) = bspottriad(j,0);
-//    bspottangent.Scale(1.0/bspottangent.Norm2());
-//
-//    DoVectorDecomposition(linkdir, linkpardir, linkorthodir, bspottangent);
-//
-//    sca = linkorthodir.Norm2()/linkdir.Norm2();
-//    // security measure in case of no contraction
-//    if(fabs(sca-1.0)<1e-9)
-//      sca = 1.0;
+    // difference vector between the two binding sites involved as well as its parallel and orthogonal projection with respect to the tangent of the binding site
+    LINALG::Matrix<3,1> linkdirstart;
+    LINALG::Matrix<3,1> linkdirend;
 
-    //cout<<"sca_+ = "<<sca<<endl;
-  }
+    // rotation angle as pseudovector
+    LINALG::Matrix<3,1> thetarot;
 
-  // set new reference length
-  (dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->SetReferenceLength(sca);
-
-  // vector for new quaternions (4 for 4 real nodes)
-  // get current nodal quaternions  
-  std::vector<LINALG::Matrix<4,1> > rotatednodequat = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->rQold();
-
-  if(revertchanges)
-  {
-    Teuchos::ParameterList p;
-    p.set("action","calc_struct_reset_istep");
-    discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  }
-  if(!revertchanges)
-  {
-    thetarot(0) = linkdir(1)*linkorthodir(2)-linkdir(2)*linkorthodir(1);
-    thetarot(1) = linkdir(2)*linkorthodir(0)-linkdir(0)*linkorthodir(2);
-    thetarot(2) = linkdir(0)*linkorthodir(1)-linkdir(1)*linkorthodir(0);
-    if(thetarot.Norm2()>1e-16)
-      thetarot.Scale(1.0/thetarot.Norm2());
+    // short to long (back swing; usually not required for swinging crossbridge model)
+    if(conformation==0)
+    {
+      // revertchanges is only TRUE, when the iterative scheme has diverged. Then, all values are reset to the latest converged state.
+      // We don't have to do anything then, the reset is done by discret_->Evaluate()!!!
+      if(!revertchanges)
+      {
+        // note: this only works because we an active linker always starts out long and then contracts/swings. So, when arriving here, it's
+        // supposed to be always short!!!
+        // get inverse rotation
+        LINALG::Matrix<4,1> invQtheta = LARGEROTATIONS::inversequaternion((dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->Qrot());
+        LARGEROTATIONS::quaterniontoangle(invQtheta,thetarot);
+        // reversion of the contraction
+        sca = 1.0/(dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->LScaleFac();
+      }
+    }
     else
-      thetarot.Scale(0.0);
-    // calculate rotation angle
-    //rotation angle in radian
-    double thetaabs = acos(sca);
-    // make theta a pseudo vector
-    thetarot.Scale(thetaabs);
-    //out<<"theta_+ = "<<thetarot<<endl;
+    {
+      // retrieve hypotenuse vector (vector from one binding spot to the other)
+      // get binding spot LIDs
+      int lid0 = bspotcolmap_->LID((int)(*crosslinkerbond_)[0][crosslid]);
+      int lid1 = bspotcolmap_->LID((int)(*crosslinkerbond_)[1][crosslid]);
+
+      for(int j=0;j<(int)linkdirstart.M(); j++)
+        linkdirstart(j) = (*bspotpositions)[j][lid1]-(*bspotpositions)[j][lid0];
+
+      // calculate vector decomposition of hypotenuse for subsequent calculation of the rotation pseudo vector theta
+      LINALG::Matrix<3,1> bspottangent(true);
+      LINALG::Matrix<3,3> bspottriad = ExtractTriadFromGlobalQuaternionVector(lid1, bspotquaternions);
+
+      for(int j=0; j<(int)bspottangent.M(); j++)
+        bspottangent(j) = bspottriad(j,0);
+      bspottangent.Scale(1.0/bspottangent.Norm2());
+
+      // calculate end position assuming polarity criterion is met (i.e. the stroke direction is -bspottangent
+      // calculate remaining distance to be covered
+      linkdirend = bspottangent;
+      linkdirend.Scale(-statmechparams_.get<double>("STROKEDISTANCE", 0.005));
+      linkdirend += linkdirstart;
+
+      // ensure parallel trajectory of filament by an additional corresponding contraction
+      sca = linkdirend.Norm2()/linkdirstart.Norm2();
+      // security measure in case of no contraction
+      if(fabs(sca-1.0)<1e-9)
+        sca = 1.0;
+
+      thetarot(0) = linkdirstart(1)*linkdirend(2)-linkdirstart(2)*linkdirend(1);
+      thetarot(1) = linkdirstart(2)*linkdirend(0)-linkdirstart(0)*linkdirend(2);
+      thetarot(2) = linkdirstart(0)*linkdirend(1)-linkdirstart(1)*linkdirend(0);
+      if(thetarot.Norm2()>1e-16)
+        thetarot.Scale(1.0/thetarot.Norm2());
+      // calculate rotation angle
+      //rotation angle in radian
+      linkdirstart.Scale(1.0/linkdirstart.Norm2());
+      linkdirend.Scale(1.0/linkdirend.Norm2());
+      double thetaabs = acos(linkdirstart.Dot(linkdirend));
+      // make theta a pseudo vector
+      thetarot.Scale(thetaabs);
+    }
+
+    // set new reference length
+    (dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->SetReferenceLength(sca);
+
+    // Set converged quaternions to rotated values. Currently only direction long->short, no inverse operation.
+    if(!revertchanges)
+      (dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->SetRotation(thetarot);
   }
-  // Set converged quaternions to rotated values. Currently only direction long->short, no inverse operation.
-  //(dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->SetRotation(thetarot);
+  else // standard case without rotation
+  {
+    if(conformation==1)
+      (dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->SetReferenceLength(sca);
+    else
+      (dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->SetReferenceLength(1.0/sca);
+  }
+
   return;
 }
 
@@ -5625,19 +5629,6 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
   if(filamentmodel_ == statmech_filament_helical)
   {
     // rise and rotation per binding spot (default values: 2.77nm and -166.15deg (left-handed, one-start helix))
-    std::vector<double> riseperbspotvec;
-    riseperbspotvec.clear();
-    {
-      std::istringstream RPB(Teuchos::getNumericStringParameter(statmechparams_,"RISEPERBSPOT"));
-      std::string word;
-      char* input;
-      while (RPB >> word)
-        riseperbspotvec.push_back(std::strtod(word.c_str(), &input));
-    }
-
-    if((int)riseperbspotvec.size()>2)
-      dserror("Currently only a maximum of two values is supported!");
-
     double rotperbspot = statmechparams_.get<double>("ROTPERBSPOT", -2.8999);
 
     //getting a vector consisting of pointers to all filament number conditions set
@@ -5668,9 +5659,9 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       //loop over filaments to create redundant column map
       for (int i=0; i<(int)filaments.size(); i++)
       {
-        double riseperbspot = riseperbspotvec.at(0);
-        if(riseperbspotvec.size()>1 && statmechparams_.get<int>("NUMSUBSTRATEFIL",0)>0 && i<statmechparams_.get<int>("NUMSUBSTRATEFIL",0))
-          riseperbspot = riseperbspotvec.at(1);
+        double riseperbspot = riseperbspot_->at(0);
+        if(riseperbspot_->size()>1 && statmechparams_.get<int>("NUMSUBSTRATEFIL",0)>0 && i<statmechparams_.get<int>("NUMSUBSTRATEFIL",0))
+          riseperbspot = riseperbspot_->at(1);
 
         //get a pointer to nodal cloud covered by the current condition
         const std::vector<int>* nodeids = filaments[i]->Nodes();
@@ -5872,7 +5863,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
           else
           {
             // determine orientation (relative to second triad vector)
-            phibs = (((double)(j)*(elelength/riseperbspotvec.at(0))*rotperbspot)/(2.0*M_PI)-floor(((double)(j-1)*(elelength/riseperbspotvec.at(0))*rotperbspot)/(2.0*M_PI)))*2.0*M_PI;
+            phibs = (((double)(j)*(elelength/riseperbspot_->at(0))*rotperbspot)/(2.0*M_PI)-floor(((double)(j-1)*(elelength/riseperbspot_->at(0))*rotperbspot)/(2.0*M_PI)))*2.0*M_PI;
             (*bspotorientations_)[bspotcolmap_->LID(bspotgid)] = phibs;
           }
           // assumption:
@@ -5891,18 +5882,6 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
         linkermodel_ == statmech_linker_myosinthick)
     {
       // rise and rotation per binding spot (default values: 2.77nm and -166.15deg (left-handed, one-start helix))
-      std::vector<double> riseperbspotvec;
-      riseperbspotvec.clear();
-      {
-        std::istringstream RPB(Teuchos::getNumericStringParameter(statmechparams_,"RISEPERBSPOT"));
-        std::string word;
-        char* input;
-        while (RPB >> word)
-          riseperbspotvec.push_back(std::strtod(word.c_str(), &input));
-      }
-      if((int)riseperbspotvec.size()>2)
-        dserror("Currently only a maximum of two values is supported!");
-
       //getting a vector consisting of pointers to all filament number conditions set
       std::vector<DRT::Condition*> filaments(0);
       discret_->GetCondition("FilamentNumber",filaments);
@@ -5921,9 +5900,9 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       //loop over filaments to create redundant column map
       for (int i=0; i<(int)filaments.size(); i++)
       {
-        double riseperbspot = riseperbspotvec.at(0);
-        if(riseperbspotvec.size()>1 && statmechparams_.get<int>("NUMSUBSTRATEFIL",0)>0 && i<statmechparams_.get<int>("NUMSUBSTRATEFIL",0))
-          riseperbspot = riseperbspotvec.at(1);
+        double riseperbspot = riseperbspot_->at(0);
+        if(riseperbspot_->size()>1 && statmechparams_.get<int>("NUMSUBSTRATEFIL",0)>0 && i<statmechparams_.get<int>("NUMSUBSTRATEFIL",0))
+          riseperbspot = riseperbspot_->at(1);
         // filament length
         double lfil = 0;
         //get a pointer to nodal cloud covered by the current condition
