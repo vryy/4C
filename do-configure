@@ -8,6 +8,7 @@ EXTRA_ARGS=$@
 #default options
 BUILD_TYPE="RELEASE"
 TRILINOS_BUILD_TYPE="release"
+COVERAGE=0
 USE_ACML=0
 USE_FORCEBUILD=0
 TRILINOS_EXPERIMENTAL=0  # use experimental Trilinos version
@@ -23,7 +24,7 @@ ADDITIONAL_TESTS_PATH=""
 # version, though). This can then give per-line cost information
 # using 'valgrind --tool=callgrind ./baci-relwithdebinfo input output'
 
-OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,trilinos-debug,profiling,useACML,experimental,forceBuild -- "$@"`
+OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
@@ -48,6 +49,9 @@ while true; do
       ;;
     -p|--profiling) 
       BUILD_TYPE="RELWITHDEBINFO"
+      ;;
+    -c|--coverage) 
+      COVERAGE=1
       ;;
     --trilinos-debug)
       TRILINOS_BUILD_TYPE="dbg"
@@ -175,6 +179,11 @@ else
   echo "no configuration file found! This is fatal!"
   exit
 fi
+
+if [ $COVERAGE == 1 ]; then
+  CXXFLAGSRELEASE="$CXXFLAGSRELEASE -O0 -g -fprofile-arcs -ftest-coverage"
+  LINKERFLAGSRELEASE="$LINKERFLAGSRELEASE -g -fprofile-arcs -ftest-coverage"
+fi  
 
 Trilinos_DIR="$Trilinos_PREFIX/lib/cmake/Trilinos"
 echo $Trilinos_DIR
