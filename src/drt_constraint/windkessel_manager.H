@@ -1,36 +1,7 @@
 /*!----------------------------------------------------------------------
 \file windkessel_manager.cpp
 
-\brief Class controlling Windkessel boundary conditions and containing the necessary data
-
-**************************************************************************************************************************
-Monolithic coupling of structure and a three-element Windkessel governed by
-c dp/dt - c r2 dQ/dt + (p-p_0)/r1 - (1 + r2/r1) Q(d) = 0
-[c: compliance, r1: first resistance, r2: second resistance, Q = -dV/dt: flux, p: pressure variable]
-                            ____
-                       ____|R_1 |___
-                      |    |____|   |
-----Q >----|_R_2_|----|             |--->----| p_0
-                      |______|C|____|
-                             | |
-
-There are three different versions:
-a) the standard model,
-
-b) a special trimodular one where every parameter is pressure-dependent in terms of
-PARAM(p) = (PARAM_b - PARAM_c)*0.5*(1.0 - tanh[(p-p_bc)/k_p] ) + PARAM_c + (PARAM_a - PARAM_b)*(1.0 - tanh[(p-p_ab)/k_p] )
-
-c) a heart-specific model governing the arterial pressure with a three-element Windkessel with an additional valve law
-(resistive Windkessel) infront of it, opening when arterial pressure is reached in the ventricels and closing when flux is
-beginning to be reversed (cf. Sainte-Marie et. al. "Modeling and estimation of the cardiac electromechanical activity",
-Comp. & Struct. 84 (2006) 1743-1759)
-
-The Windkessel is momolithically coupled with the standard structural dynamics governing equation
-
-M a + C v + f_int(d) - f_ext(d,p) = 0,
-
-with Q being a function of the displacement vector d and f_ext additionally being a function of the Windkessel pressure p.
-**************************************************************************************************************************
+\brief Class controlling Windkessel coupling conditions and containing the necessary data
 
 <pre>
 Maintainer: Marc Hirschvogel
@@ -345,7 +316,6 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> windk_rhs_p_; ///< Windkessel rhs associated with p
     Teuchos::RCP<Epetra_Vector> windk_rhs_dp_; ///< Windkessel rhs associated with pressure rate dp/dt
     Teuchos::RCP<Epetra_Vector> windk_rhs_q_; ///< Windkessel rhs associated with q
-    Teuchos::RCP<Epetra_Vector> windk_rhs_dq_; ///< Windkessel rhs associated with dq/dt
     Teuchos::RCP<Epetra_Vector> windk_rhs_s_; ///< Windkessel rhs associated with s
     Teuchos::RCP<Epetra_Vector> windk_rhs_ds_; ///< Windkessel rhs associated with ds/dt
     Teuchos::RCP<Epetra_Vector> windk_rhs_1_; ///< Windkessel rhs associated with 1
@@ -358,7 +328,6 @@ namespace UTILS
     Teuchos::RCP<LINALG::SparseMatrix> windkesselstiffness_;  ///< additional rectangular matrix
     bool havewindkessel_;  ///< are there Windkessel bcs at all?
     Teuchos::RCP<Windkessel> wk_std_;
-    Teuchos::RCP<Windkessel> wk_trimodular_;
     Teuchos::RCP<Windkessel> wk_heartvalvearterial_;
     int myrank_;
     Teuchos::RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system

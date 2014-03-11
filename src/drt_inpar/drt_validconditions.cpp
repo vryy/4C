@@ -3188,7 +3188,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfredairtis);
 
   /*--------------------------------------------------------------------*/
-  // Monolithic coupling of structure and a three-element Windkessel - mhv 11/13
+  // Monolithic coupling of structure and a four-element Windkessel - mhv 11/13
 
   Teuchos::RCP<ConditionDefinition> windkesselcondition =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF WINDKESSEL CONDITIONS",
@@ -3199,46 +3199,18 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Surface));
 
   AddNamedInt(windkesselcondition,"id");
-  AddNamedReal(windkesselcondition,"resistance");
-  AddNamedReal(windkesselcondition,"compliance");
-  AddNamedReal(windkesselcondition,"resistance2");
+  AddNamedReal(windkesselcondition,"C");
+  AddNamedReal(windkesselcondition,"R_p");
+  AddNamedReal(windkesselcondition,"Z_c");
+  AddNamedReal(windkesselcondition,"L");
   AddNamedReal(windkesselcondition,"p_0");
   AddNamedReal(windkesselcondition,"p_init");
 
   condlist.push_back(windkesselcondition);
 
-  /*--------------------------------------------------------------------*/
-  // Monolithic coupling of structure and a trimodular three-element Windkessel - mhv 01/14
-
-  Teuchos::RCP<ConditionDefinition> windkesseltrimodularcondition =
-    Teuchos::rcp(new ConditionDefinition("DESIGN SURF TRIMODULAR WINDKESSEL CONDITIONS",
-                                         "WindkesselTrimodularStructureCond",
-                                         "Surface Windkessel Trimod",
-                                         DRT::Condition::WindkesselTrimodularStructure,
-                                         true,
-                                         DRT::Condition::Surface));
-
-  AddNamedInt(windkesseltrimodularcondition,"id");
-  AddNamedReal(windkesseltrimodularcondition,"R1_a");
-  AddNamedReal(windkesseltrimodularcondition,"R1_b");
-  AddNamedReal(windkesseltrimodularcondition,"R1_c");
-  AddNamedReal(windkesseltrimodularcondition,"C_a");
-  AddNamedReal(windkesseltrimodularcondition,"C_b");
-  AddNamedReal(windkesseltrimodularcondition,"C_c");
-  AddNamedReal(windkesseltrimodularcondition,"R2_a");
-  AddNamedReal(windkesseltrimodularcondition,"R2_b");
-  AddNamedReal(windkesseltrimodularcondition,"R2_c");
-  AddNamedReal(windkesseltrimodularcondition,"p_0");
-  AddNamedReal(windkesseltrimodularcondition,"p_ab");
-  AddNamedReal(windkesseltrimodularcondition,"p_bc");
-  AddNamedReal(windkesseltrimodularcondition,"k_p");
-  AddNamedReal(windkesseltrimodularcondition,"p_init");
-
-  condlist.push_back(windkesseltrimodularcondition);
-
 
   /*--------------------------------------------------------------------*/
-  // Monolithic coupling of structure and a special heart valve arterial three-element Windkessel - mhv 02/14
+  // Monolithic coupling of structure and a special heart valve arterial four-element Windkessel - mhv 02/14
 
   Teuchos::RCP<ConditionDefinition> windkesselheartvalvearterialcondition =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF HEART VALVE ARTERIAL WINDKESSEL CONDITIONS",
@@ -3253,8 +3225,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkesselheartvalvearterialcondition,"K_p");
   AddNamedReal(windkesselheartvalvearterialcondition,"K_ar");
   AddNamedReal(windkesselheartvalvearterialcondition,"C");
-  AddNamedReal(windkesselheartvalvearterialcondition,"R_c");
   AddNamedReal(windkesselheartvalvearterialcondition,"R_p");
+  AddNamedReal(windkesselheartvalvearterialcondition,"Z_c");
+  AddNamedReal(windkesselheartvalvearterialcondition,"L");
   AddNamedReal(windkesselheartvalvearterialcondition,"p_ve");
   AddNamedReal(windkesselheartvalvearterialcondition,"p_ar_init");
   AddNamedReal(windkesselheartvalvearterialcondition,"p_at_init");

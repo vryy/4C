@@ -174,7 +174,6 @@ public:
     AreaMonitor_3D,
     AreaMonitor_2D,
     WindkesselStructure,
-    WindkesselTrimodularStructure,
     WindkesselHeartValveArterialStructure,
     WindkesselStructureCoupling,
     ImpedanceCond,
