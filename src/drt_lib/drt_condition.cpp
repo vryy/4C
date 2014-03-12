@@ -154,6 +154,8 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==MovingFluid)                   os << "Moving Fluid Vol condition: ";
   else if (Type()==LineLIFTDRAG)                  os << "Line LIFTDRAG condition: ";
   else if (Type()==SurfLIFTDRAG)                  os << "Surf LIFTDRAG condition: ";
+  else if (Type()==FREESURFCoupling)              os << "Free surface condition: ";
+  else if (Type()==LOCALLAGRANGECoupling)         os << "Local Lagrange condition: ";
   else if (Type()==SurfaceTension)                os << "Surface tension condition: ";
   else if (Type()==Surfactant)                    os << "Surfactant condition: ";
   else if (Type()==MicroBoundary)                 os << "Microscale boundary condition: ";
@@ -183,6 +185,8 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==SurfaceFlowDepPressure)        os << "surface flow-dependent pressure condition: ";
   else if (Type()==LineBCFree)                    os << "line bc-free boundary condition: ";
   else if (Type()==SurfaceBCFree)                 os << "surface bc-free boundary condition: ";
+  else if (Type()==LineNavierSlip)                os << "line navier-slip boundary condition: ";
+  else if (Type()==SurfNavierSlip)                os << "surface navier-slip boundary condition: ";
   else if (Type()==LineWeakDirichlet)             os << "line weak Dirichlet condition: ";
   else if (Type()==SurfaceWeakDirichlet)          os << "surface weak Dirichlet condition: ";
   else if (Type()==LinePeriodic)                  os << "line periodic boundary condition: ";

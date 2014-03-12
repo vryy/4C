@@ -966,6 +966,10 @@ void FLD::FluidImplicitTimeInt::Solve()
     // -------------------------------------------------------------------
     FreeSurfaceFlowUpdate();
 
+    // -------------------------------------------------------------------
+    // local lagrange conditions update
+    // -------------------------------------------------------------------
+    LocalLagrangeUpdate();
   }
 
   // -------------------------------------------------------------------
@@ -979,7 +983,7 @@ void FLD::FluidImplicitTimeInt::Solve()
         // Transform newly built residual to local coordinate system
         // in order to later properly erase the lines containing
         // Dirichlet conditions in function ConvergenceCheck()
-        locsysman_->RotateGlobalToLocal(residual_);
+        locsysman_->RotateGlobalToLocal(residual_, false);
      }
 
     // prepare meshtying system
@@ -1201,6 +1205,7 @@ void FLD::FluidImplicitTimeInt::TreatTurbulenceModels(Teuchos::ParameterList& el
  | 3) weak Dirichlet boundary conditions                                |
  | 4) mixed/hybrid Dirichlet boundary conditions                        |
  | 5) BC-free boundary conditions                                       |
+ | 6) Navier-slip boundary conditions                                   |
  |                                                             vg 06/13 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
@@ -1707,6 +1712,80 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       discret_->EvaluateCondition(bcfreeparams,sysmat_,Teuchos::null,
                                   residual_,Teuchos::null,Teuchos::null,
                                   bcfcondname,bcfcondid);
+
+      // clear state
+      discret_->ClearState();
+    }
+  }
+
+  //------------------------------------------------------------------------
+  // 6) Navier-slip boundary conditions                         [hahn 03/14]
+  //    At the boundary, apply a shear stress which is proportional to the
+  //    tangential/bi-tangential velocity. In BACI, this is achieved by
+  //    applying h = sigma*n = -beta*u under the condition that u*n=0 has
+  //    been set as Dirichlet BC! For details on the Navier slip condition
+  //    please refer to e.g. Behr M., 2003, "On the Application of Slip
+  //    Boundary Condition on Curved Boundaries".
+  //------------------------------------------------------------------------
+
+  // check whether there are navier-slip boundary conditions
+  std::vector<DRT::Condition*> navierslipline;
+  discret_->GetCondition("LineNavierSlip",navierslipline);
+  std::vector<DRT::Condition*> navierslipsurf;
+  discret_->GetCondition("SurfNavierSlip",navierslipsurf);
+
+  if (navierslipline.size() != 0 or navierslipsurf.size() != 0)
+  {
+    // decide on whether it is a line or a surface condition and set condition
+    // name accordingly. Both types simultaneously is not supported
+    if ((navierslipline.size() != 0) && (navierslipsurf.size() != 0))
+      dserror("Line and surface Navier slip boundary conditions simultaneously prescribed!");
+
+    std::string nscondname;
+    if (navierslipline.size() != 0)      nscondname = "LineNavierSlip";
+    else if (navierslipsurf.size() != 0) nscondname = "SurfNavierSlip";
+
+    // get condition vector
+    std::vector<DRT::Condition*> nscond;
+    discret_->GetCondition(nscondname,nscond);
+
+    // assign ID to all conditions
+    for (int nscondid = 0; nscondid < (int) nscond.size(); nscondid++)
+    {
+      // check for already existing ID and add ID
+      const std::vector<int>* nscondidvec = nscond[nscondid]->Get<std::vector<int> >("ConditionID");
+      if (nscondidvec)
+      {
+        if ((*nscondidvec)[0] != nscondid) dserror("Navier slip boundary condition %s has non-matching ID",nscondname.c_str());
+      }
+      else nscond[nscondid]->Add("ConditionID",nscondid);
+    }
+
+    //----------------------------------------------------------------------
+    // evaluate navier slip boundary conditions
+    //----------------------------------------------------------------------
+
+    for (int nscondid = 0; nscondid < (int) nscond.size(); nscondid++)
+    {
+      // create parameter list
+      Teuchos::ParameterList navierslipparams;
+
+      // set action for elements
+      navierslipparams.set<int>("action",FLD::navier_slip_bc);
+
+      // set required state vectors
+      SetStateTimInt();
+      if (alefluid_) discret_->SetState("dispnp",dispnp_);
+
+      // set slip coefficient
+      DRT::Condition* currnavierslip = nscond[nscondid];
+      const double beta = currnavierslip->GetDouble("slipcoefficient");
+      navierslipparams.set<double>("beta",beta);
+
+      // evaluate navier slip boundary condition
+      discret_->EvaluateCondition(navierslipparams,sysmat_,Teuchos::null,
+                                  residual_,Teuchos::null,Teuchos::null,
+                                  nscondname,nscondid);
 
       // clear state
       discret_->ClearState();
@@ -2351,6 +2430,26 @@ void FLD::FluidImplicitTimeInt::FreeSurfaceFlowUpdate()
 
     surfacesplitter_->InsertFSCondVector(fsdispnp,dispnp_);
     surfacesplitter_->InsertFSCondVector(fsvelnp,gridv_);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | local lagrange update                                     hahn 03/14 |
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::LocalLagrangeUpdate()
+{
+  if (alefluid_ and surfacesplitter_->LLCondRelevant())
+  {
+    Teuchos::RCP<Epetra_Vector> llvelnp = surfacesplitter_->ExtractLLCondVector(velnp_);
+    Teuchos::RCP<Epetra_Vector> lldisp = surfacesplitter_->ExtractLLCondVector(dispn_);
+    Teuchos::RCP<Epetra_Vector> lldispnp = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->LLCondMap()));
+
+    lldispnp->Update(1.0,*lldisp,dta_,*llvelnp,0.0);
+
+    surfacesplitter_->InsertLLCondVector(lldispnp,dispnp_);
+    surfacesplitter_->InsertLLCondVector(llvelnp,gridv_);
   }
 
   return;
@@ -3291,6 +3390,13 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
       gridv_->Update(-((1.0/theta)-1.0),*veln_,1.0);
     break;
   }
+
+  // Set proper grid velocities at the free-surface and for the local lagrange conditions
+  Teuchos::RCP<Epetra_Vector> llveln = surfacesplitter_->ExtractLLCondVector(veln_);
+  surfacesplitter_->InsertLLCondVector(llveln,gridv_);
+
+  Teuchos::RCP<Epetra_Vector> fsveln = surfacesplitter_->ExtractFSCondVector(veln_);
+  surfacesplitter_->InsertFSCondVector(fsveln,gridv_);
 }
 
 

@@ -260,6 +260,58 @@ template <DRT::Element::DiscretizationType distype>
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+   void  DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
+     DRT::ELEMENTS::FluidBoundary*  surfele,
+     Teuchos::ParameterList&        params,
+     DRT::Discretization&           discretization,
+     std::vector<int>&              lm,
+     Epetra_SerialDenseMatrix&      elemat,
+     Epetra_SerialDenseVector&      elevec)
+{
+  switch (surfele->Shape())
+  {
+  // 2D:
+  case DRT::Element::line2:
+  {
+    if (surfele->ParentElement()->Shape()==DRT::Element::quad4)
+    {
+      NavierSlipBC<DRT::Element::line2,DRT::Element::quad4>(
+          surfele,
+          params,
+          discretization,
+          lm,
+          elemat,
+          elevec);
+    }
+    else dserror("expected combination line2/quad4 for surface/parent pair");
+    break;
+  }
+  // 3D:
+  case DRT::Element::quad4:
+  {
+    if (surfele->ParentElement()->Shape()==DRT::Element::hex8)
+    {
+      NavierSlipBC<DRT::Element::quad4,DRT::Element::hex8>(
+          surfele,
+          params,
+          discretization,
+          lm,
+          elemat,
+          elevec);
+    }
+    else dserror("expected combination quad4/hex8 for surface/parent pair");
+    break;
+  }
+  default:
+  {
+    dserror("not implemented yet\n");
+    break;
+  }
+  }
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1373,7 +1425,7 @@ template <DRT::Element::DiscretizationType bdistype,
 
         const double temp = timefacFac*pfunct(ui)*pfunct(vi);
         for (int idim=0; idim<nsd; ++idim) { // Write into 'pressure' column (nsd) of each 'spatial' row (idim)
-          elemat(vi*(nsd+1)+idim, ui*(nsd+1)+nsd) += temp * (-boundaryNormal(idim)+normalProd*nodeNormal(idim,vi));
+          elemat(vi*(nsd+1)+idim, ui*(nsd+1)+nsd) -= temp * (-boundaryNormal(idim)+normalProd*nodeNormal(idim,vi));
         }
 
         // Velocity terms
@@ -1400,10 +1452,9 @@ template <DRT::Element::DiscretizationType bdistype,
             }
             velTermB += nodeNormal(jdim,vi)*nodeNormal(idim,vi)*sumNablaBoundaryNormal;
 
-            elemat(vi*(nsd+1)+idim, ui*(nsd+1)+jdim) += timefacFacNu * pfunct(vi) * (velTermA - velTermB);
+            elemat(vi*(nsd+1)+idim, ui*(nsd+1)+jdim) -= timefacFacNu * pfunct(vi) * (velTermA - velTermB);
           }
         }
-
       }
     }
 
@@ -1450,13 +1501,261 @@ template <DRT::Element::DiscretizationType bdistype,
         elevec(vi*(nsd+1)+idim) += pfunct(vi)*timefacrhsFacNu * (velTermA - velTermB);
       }
     }
-
   } // end of integration loop
 
   return;
 } //DRT::ELEMENTS::FluidBoundaryParent<distype>::BCFreeBC
 
-  
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType bdistype,
+          DRT::Element::DiscretizationType pdistype>
+   void  DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
+     DRT::ELEMENTS::FluidBoundary*  surfele,
+     Teuchos::ParameterList&        params,
+     DRT::Discretization&           discretization,
+     std::vector<int>&              plm,
+     Epetra_SerialDenseMatrix&      elemat_epetra,
+     Epetra_SerialDenseVector&      elevec_epetra)
+{
+  //---------------------------------------------------------------------
+  // get time-integration parameters
+  //---------------------------------------------------------------------
+  const double timefac    = fldparatimint_->TimeFac();
+  const double timefacrhs = fldparatimint_->TimeFacRhs();
+
+  //---------------------------------------------------------------------
+  // get parent element data
+  //---------------------------------------------------------------------
+  DRT::Element* parent = surfele->ParentElement();
+
+  // parent element id
+  int pid = parent->Id();
+
+  // number of parent spatial dimensions
+  static const int nsd = DRT::UTILS::DisTypeToDim<pdistype>::dim;
+
+  // number of parent element nodes
+  static const int piel = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+
+  // reshape element matrices and vectors and init to zero, construct views
+  const int peledim = (nsd +1)*piel;
+  elemat_epetra.Shape(peledim,peledim);
+  elevec_epetra.Size (peledim);
+  LINALG::Matrix<peledim,peledim> elemat(elemat_epetra.A(),true);
+  LINALG::Matrix<peledim,      1> elevec(elevec_epetra.A(),true);
+
+  // get local node coordinates
+  LINALG::Matrix<nsd,piel> pxyze(true);
+  GEO::fillInitialPositionArray<pdistype,nsd,LINALG::Matrix<nsd,piel> >(parent,pxyze);
+
+  // get Gaussian integration points
+  const DRT::UTILS::IntPointsAndWeights<nsd>
+      pintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+
+  //---------------------------------------------------------------------
+  // get boundary element data
+  //---------------------------------------------------------------------
+  // local surface id
+  int bid = surfele->SurfaceNumber();
+
+  // number of boundary spatial dimensions
+  static const int bnsd = DRT::UTILS::DisTypeToDim<bdistype>::dim;
+
+  // number of boundary element nodes
+  static const int biel = DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+
+  // get local node coordinates
+  LINALG::Matrix<nsd,biel> bxyze(true);
+  GEO::fillInitialPositionArray<bdistype,nsd,LINALG::Matrix<nsd,biel> >(surfele,bxyze);
+
+  // get Gaussian integration points
+  const DRT::UTILS::IntPointsAndWeights<bnsd>
+      bintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+
+  // get location vector and ownerships for boundary element
+  std::vector<int> blm ;
+  std::vector<int> blmowner;
+  std::vector<int> blmstride;
+  surfele->DRT::Element::LocationVector(discretization,blm,blmowner,blmstride);
+
+  // get slip coefficient
+  const double beta = params.get<double>("beta");
+
+  //---------------------------------------------------------------------
+  // map Gaussian integration points to parent element for one-sided
+  // derivatives on boundary
+  //---------------------------------------------------------------------
+  // coordinates of current integration point
+  Epetra_SerialDenseMatrix gps(bintpoints.IP().nquad,bnsd);
+  for (int iquad=0; iquad<bintpoints.IP().nquad; ++iquad)
+  {
+    const double* gpcoord = (bintpoints.IP().qxg)[iquad];
+    for (int idim=0;idim<bnsd ;idim++)
+    {
+      gps(iquad,idim) = gpcoord[idim];
+    }
+  }
+
+  // distinguish 2- and 3-D case
+  Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad,nsd);
+  if (nsd==2)
+    DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,bid);
+  else if(nsd==3)
+    DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,bid);
+
+  //---------------------------------------------------------------------
+  // extract parent and boundary values from global distributed vectors
+  //---------------------------------------------------------------------
+  // parent velocity at n+alpha_F
+  Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
+  if (velaf==Teuchos::null) dserror("Cannot get state vector 'velaf'");
+
+  std::vector<double> mypvelaf(plm.size());
+  DRT::UTILS::ExtractMyValues(*velaf,mypvelaf,plm);
+
+  LINALG::Matrix<nsd,piel> pevelaf(true);
+  for (int inode=0;inode<piel;++inode)
+  {
+    for (int idim=0; idim<nsd ; ++idim)
+    {
+      pevelaf(idim,inode) = mypvelaf[(nsd +1)*inode+idim];
+    }
+  }
+
+  // parent and boundary displacement at n+1
+  std::vector<double> mypedispnp((plm).size());
+  std::vector<double> mybedispnp((blm).size());
+  if (surfele->ParentElement()->IsAle())
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+
+    DRT::UTILS::ExtractMyValues(*dispnp,mypedispnp,plm);
+    DRT::UTILS::ExtractMyValues(*dispnp,mybedispnp,blm);
+
+    // add parent and boundary displacement at n+1
+    for (int idim=0; idim<nsd ; ++idim)
+    {
+      for (int pnode=0;pnode<piel;++pnode)
+      {
+        pxyze(idim,pnode) += mypedispnp[(nsd +1)*pnode+idim];
+      }
+      for (int bnode=0;bnode<biel;++bnode)
+      {
+        bxyze(idim,bnode) += mybedispnp[(nsd +1)*bnode+idim];
+      }
+    }
+  }
+
+  //---------------------------------------------------------------------
+  // definitions and initializations for parent and boundary element
+  //---------------------------------------------------------------------
+  LINALG::Matrix<nsd,1>    pxsi(true);
+  LINALG::Matrix<piel,1>   pfunct(true);
+  LINALG::Matrix<nsd,piel> pderiv(true);
+  LINALG::Matrix<nsd,nsd>  pxjm(true);
+  LINALG::Matrix<nsd,nsd>  pxji(true);
+  LINALG::Matrix<nsd,1>    boundaryNormal(true); // outward unit ('surface/line') normal of boundary element at integration point
+  LINALG::Matrix<nsd,piel> pderxy(true);         // nabla of parent element at integration point
+  LINALG::Matrix<nsd,nsd>  pvderxyaf(true);      // nabla*u of parent element at integration point
+  LINALG::Matrix<1,1>      pressint (true);      // pressure of boundary element at integration point (N_C * p_C)
+  LINALG::Matrix<nsd,1>    pvelint (true);       // velocity of parent element at integration point (N_B * U_B_i)
+
+  LINALG::Matrix<bnsd,1>    xsi(true);
+  LINALG::Matrix<biel,1>    funct(true);
+  LINALG::Matrix<bnsd,biel> deriv(true);
+
+  //---------------------------------------------------------------------
+  // integration loop
+  //---------------------------------------------------------------------
+  for (int iquad=0; iquad<bintpoints.IP().nquad; ++iquad)
+  {
+    // coordinates of integration point w.r.t. parent element
+    for (int idim=0;idim<nsd;idim++)
+    {
+      pxsi(idim) = pqxg(iquad,idim);
+    }
+
+    // coordinates of integration point w.r.t. boundary element
+    for (int idim=0;idim<bnsd ;idim++)
+    {
+      xsi(idim) = gps(iquad,idim);
+    }
+
+    // shape functions and derivatives of parent element at integration point
+    DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
+    DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv);
+
+    // shape functions and derivatives of boundary element at integration point
+    DRT::UTILS::shape_function       <bdistype>(xsi,funct);
+    DRT::UTILS::shape_function_deriv1<bdistype>(xsi,deriv);
+
+    // Compute velocity of parent element at integration point
+    pvelint.Multiply(pevelaf,  pfunct);
+
+    // compute (inverse of) Jacobian matrix and determinant for parent element
+    // and check its value
+    pxjm.MultiplyNT(pderiv,pxyze);
+    const double pdet = pxji.Invert(pxjm);
+    if (pdet < 1E-16) dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",pid,pdet);
+
+    // compute measure tensor, infinitesimal area and outward unit normal
+    // for boundary element
+    drs_ = 0.0;
+    LINALG::Matrix<bnsd,bnsd> metrictensor(true);
+    DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(bxyze,deriv,metrictensor,drs_,&boundaryNormal);
+
+    // compute integration factor for boundary element
+    fac_ = bintpoints.IP().qwgt[iquad]*drs_;
+
+    //---------------------------------------------------------------------
+    // Contributions to element matrix and element vector
+    //---------------------------------------------------------------------
+    if ((nsd != 3) && (nsd != 2))
+      dserror("Incorrect number of spatial dimensions for parent element!");
+
+    // Contributions to element matrix on left-hand side
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    const double timefacFacBeta=timefac*fac_*beta;
+
+    for (int ui=0; ui<piel; ++ui)   // Columns
+    {
+      for (int vi=0; vi<piel; ++vi) // Rows
+      {
+        // Navier slip term
+        // ****************
+        for (int idim=0;idim<nsd;++idim)
+        {
+          for (int jdim=0;jdim<nsd;++jdim)
+          {
+            if (idim==jdim) {
+              elemat(vi*(nsd+1)+idim, ui*(nsd+1)+jdim) += timefacFacBeta * pfunct(vi) * pfunct(ui);
+            }
+          }
+        }
+      }
+    }
+
+    // Contribution to element vector on right-hand side
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    const double timefacrhsFacBeta = timefacrhs*fac_*beta;
+
+    for (int vi=0; vi<piel; ++vi)
+    {
+      // Navier slip term
+      // ****************
+      for (int idim=0; idim<nsd; ++idim) {
+        elevec(vi*(nsd+1)+idim) -= pfunct(vi)*timefacrhsFacBeta*pvelint(idim,0);
+      }
+    }
+  } // end of integration loop
+
+  return;
+} //DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

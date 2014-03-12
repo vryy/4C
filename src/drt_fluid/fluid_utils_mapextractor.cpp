@@ -21,6 +21,7 @@ void FLD::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, bool withpr
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"VolumetricSurfaceFlowCond",0,ndim+withpressure)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"Mortar",0,ndim+withpressure)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"TotalTractionCorrectionCond",0,ndim+withpressure)));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"LOCALLAGRANGECoupling",0,ndim+withpressure)));
   mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
 }
 
@@ -35,6 +36,7 @@ Teuchos::RCP<std::set<int> > FLD::UTILS::MapExtractor::ConditionedElementMap(con
   Teuchos::RCP<std::set<int> > condelements4 = DRT::UTILS::ConditionedElementMap(dis,"VolumetricSurfaceFlowCond");
   Teuchos::RCP<std::set<int> > condelements5 = DRT::UTILS::ConditionedElementMap(dis,"Mortar");
   Teuchos::RCP<std::set<int> > condelements6 = DRT::UTILS::ConditionedElementMap(dis,"TotalTractionCorrectionCond");
+  Teuchos::RCP<std::set<int> > condelements7 = DRT::UTILS::ConditionedElementMap(dis,"LOCALLAGRANGECoupling");
   std::copy(condelements2->begin(),condelements2->end(),
             std::inserter(*condelements,condelements->begin()));
   std::copy(condelements3->begin(),condelements3->end(),
@@ -42,6 +44,8 @@ Teuchos::RCP<std::set<int> > FLD::UTILS::MapExtractor::ConditionedElementMap(con
   std::copy(condelements4->begin(),condelements4->end(),
             std::inserter(*condelements,condelements->begin()));
   std::copy(condelements5->begin(),condelements5->end(),
+            std::inserter(*condelements,condelements->begin()));
+  std::copy(condelements7->begin(),condelements7->end(),
             std::inserter(*condelements,condelements->begin()));
   return condelements;
 }

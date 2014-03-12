@@ -26,7 +26,8 @@ namespace UTILS
       cond_lung_asi                 = 3,
       cond_vol_surf_flow            = 4,
       cond_total_traction_corrector = 5,
-      cond_bio_gr                   = 6
+      cond_bio_gr                   = 6,
+      cond_ll                       = 7
     };
 
     /// setup the whole thing
@@ -42,6 +43,7 @@ namespace UTILS
     MAP_EXTRACTOR_VECTOR_METHODS(VolumetricSurfaceFlowCond,cond_vol_surf_flow)
     MAP_EXTRACTOR_VECTOR_METHODS(TotalTractionCorrectionCond,cond_total_traction_corrector)
     MAP_EXTRACTOR_VECTOR_METHODS(BioGrCond,cond_bio_gr)
+    MAP_EXTRACTOR_VECTOR_METHODS(LLCond, cond_ll)
   };
 
   /// specific MultiMapExtractor to handle the part of fluid with Krylov space projection

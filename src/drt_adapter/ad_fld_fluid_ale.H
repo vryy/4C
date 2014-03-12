@@ -107,6 +107,9 @@ namespace ADAPTER
     /// coupling of fluid and ale at the free surface
     Teuchos::RCP<Coupling>               fscoupfa_;
 
+    /// coupling of fluid and ale for the local lagrange condition
+    Teuchos::RCP<Coupling>               llcoupfa_;
+
   };
 
 }

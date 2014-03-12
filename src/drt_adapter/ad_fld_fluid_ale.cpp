@@ -46,6 +46,14 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                                     "FREESURFCoupling",
                                     ndim);
 
+  llcoupfa_ = Teuchos::rcp(new Coupling());
+  llcoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
+                                     FluidField().Interface()->LLCondMap(),
+                                    *AleField().Discretization(),
+                                     AleField().Interface()->LLCondMap(),
+                                    "LOCALLAGRANGECoupling",
+                                    ndim);
+
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
   const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
@@ -134,6 +142,15 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
     }
   }
 
+  // Update the local lagrange part
+  if (FluidField().Interface()->LLCondRelevant())
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
+    Teuchos::RCP<Epetra_Vector> lldispnp = FluidField().Interface()->ExtractLLCondVector(dispnp);
+    AleField().ApplyLocalLagrangeDisplacements(llcoupfa_->MasterToSlave(lldispnp));
+  }
+
+  // Update the free-surface part
   if (FluidField().Interface()->FSCondRelevant())
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();

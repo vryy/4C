@@ -895,6 +895,12 @@ protected:
   void FreeSurfaceFlowUpdate();
 
   /*!
+  \brief update local lagrange
+
+  */
+  void LocalLagrangeUpdate();
+
+  /*!
   \brief add mat and rhs of edge-based stabilization
 
   */

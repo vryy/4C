@@ -19,6 +19,7 @@ void ALE::UTILS::MapExtractor::Setup(const DRT::Discretization& dis)
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"StructAleCoupling",0,ndim)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"AleWear",0,ndim)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"BioGrCoupling",0,ndim)));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"LOCALLAGRANGECoupling",0,ndim)));
   mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
 }
 
@@ -31,11 +32,14 @@ Teuchos::RCP<std::set<int> > ALE::UTILS::MapExtractor::ConditionedElementMap(con
   Teuchos::RCP<std::set<int> > condelements2 = DRT::UTILS::ConditionedElementMap(dis,"FREESURFCoupling");
   Teuchos::RCP<std::set<int> > condelements3 = DRT::UTILS::ConditionedElementMap(dis,"StructAleCoupling");
   Teuchos::RCP<std::set<int> > condelements4 = DRT::UTILS::ConditionedElementMap(dis,"AleWear");
+  Teuchos::RCP<std::set<int> > condelements6 = DRT::UTILS::ConditionedElementMap(dis,"LOCALLAGRANGECoupling");
   std::copy(condelements2->begin(),condelements2->end(),
             std::inserter(*condelements,condelements->begin()));
   std::copy(condelements3->begin(),condelements3->end(),
             std::inserter(*condelements,condelements->begin()));
   std::copy(condelements4->begin(),condelements4->end(),
+            std::inserter(*condelements,condelements->begin()));
+  std::copy(condelements6->begin(),condelements6->end(),
             std::inserter(*condelements,condelements->begin()));
   return condelements;
 }

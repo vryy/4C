@@ -683,23 +683,47 @@ private:
   LINALG::Matrix<3,1> acc_B_;
 };
 
-/// special implementation for the node normals of a sphere
-class NodeNormalSphereFunction : public Function
+/// special implementation for the node normals of a specified geometry
+class NodeNormalFunction : public Function
 {
 public:
   /// ctor
-  NodeNormalSphereFunction(std::vector<double>* origin);
+  NodeNormalFunction(std::string type, std::vector<double>* origin, double radius, double cylinderHeight, std::vector<double>* orientation, double CassiniA);
 
-  /// evaluate function at given position in space
+  /// Evaluate function at given position in space
   double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+  // Determine node normal of a sphere
+  double NodeNormalSphere(int index, const double* xp, std::vector<double> origin);
+
+  // Determine node normal of a Cassini volume
+  double NodeNormalCassini(int index, const double* xp, std::vector<double> origin);
 
 private:
   // Problem dimension (2D or 3D, i.e. 2 or 3)
   int dim_;
 
-  // Origin of the sphere
+  // Geometry type
+  int type_;
+
+  // Origin of the geometry
   std::vector<double> origin_;
 
+  // Radius
+  double radius_;
+
+  // Cylinder height, divided by 2
+  double cylinderHeightHalf_;
+
+  // Orientation of the geometry (symmetry axis)
+  std::vector<double> orientation_;
+
+  // Cassini value a
+  double CassiniA_;
+
+  // New reference origin, if nodes lie in the positive or negative spherical part
+  std::vector<double> originRefSpherePos_;
+  std::vector<double> originRefSphereNeg_;
 };
 
 /// special implementation for the rotation vector used in locsys conditions
@@ -719,7 +743,6 @@ private:
 
   // Function that calculates the node normal for the specified geometry
   int geoFunct_;
-
 };
 
 } // end namespace UTILS
@@ -972,12 +995,17 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedString("FILE")
     ;
 
-  DRT::INPUT::LineDefinition nodenormalsphere;
-  nodenormalsphere
+  DRT::INPUT::LineDefinition nodenormal;
+  nodenormal
     .AddNamedInt("FUNCT")
-    .AddTag("NODENORMALSPHERE")
+    .AddTag("NODENORMAL")
+    .AddNamedString("GEOMETRY")
     .AddNamedDoubleVector("ORIGIN",3)
-    ;
+    .AddNamedDouble("RADIUS")
+    .AddNamedDouble("CYLINDERHEIGHT")
+    .AddNamedDoubleVector("ORIENTATION",3)
+    .AddNamedDouble("CASSINIA")
+   ;
 
   DRT::INPUT::LineDefinition rotationvectorfornormalsystem;
   rotationvectorfornormalsystem
@@ -1036,7 +1064,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(levelsetcuttest);
   lines->Add(controlledrotation);
   lines->Add(accelerationprofile);
-  lines->Add(nodenormalsphere);
+  lines->Add(nodenormal);
   lines->Add(rotationvectorfornormalsystem);
   lines->Add(componentexpr);
   lines->Add(expr);
@@ -1369,37 +1397,52 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       }
       else if (function->HaveNamed("CONTROLLEDROTATION"))
       {
-          std::string fileName;
-          function->ExtractString("FILE", fileName);
+        std::string fileName;
+        function->ExtractString("FILE", fileName);
 
-          std::string type;
-          function->ExtractString("TYPE", type);
+        std::string type;
+        function->ExtractString("TYPE", type);
 
-          std::vector<double> origin;
-          function->ExtractDoubleVector("ORIGIN",origin);
+        std::vector<double> origin;
+        function->ExtractDoubleVector("ORIGIN",origin);
 
-          functions_.push_back(Teuchos::rcp(new ControlledRotationFunction(fileName, type, origin[0], origin[1], origin[2])));
+        functions_.push_back(Teuchos::rcp(new ControlledRotationFunction(fileName, type, origin[0], origin[1], origin[2])));
       }
       else if (function->HaveNamed("ACCELERATIONPROFILE"))
       {
-          std::string fileName;
-          function->ExtractString("FILE", fileName);
+        std::string fileName;
+        function->ExtractString("FILE", fileName);
 
-          functions_.push_back(Teuchos::rcp(new AccelerationProfileFunction(fileName)));
+        functions_.push_back(Teuchos::rcp(new AccelerationProfileFunction(fileName)));
       }
-      else if (function->HaveNamed("NODENORMALSPHERE"))
+      else if (function->HaveNamed("NODENORMAL"))
       {
-          std::vector<double> origin;
-          function->ExtractDoubleVector("ORIGIN",origin);
+        std::string type;
+        function->ExtractString("GEOMETRY", type);
 
-          functions_.push_back(Teuchos::rcp(new NodeNormalSphereFunction(&origin)));
+        std::vector<double> origin;
+        function->ExtractDoubleVector("ORIGIN",origin);
+
+        double radius;
+        function->ExtractDouble("RADIUS",radius);
+
+        double cylinderHeight;
+        function->ExtractDouble("CYLINDERHEIGHT",cylinderHeight);
+
+        std::vector<double> orientation;
+        function->ExtractDoubleVector("ORIENTATION",orientation);
+
+        double CassiniA;
+        function->ExtractDouble("CASSINIA",CassiniA);
+
+        functions_.push_back(Teuchos::rcp(new NodeNormalFunction(type, &origin, radius, cylinderHeight, &orientation, CassiniA)));
       }
       else if (function->HaveNamed("ROTATIONVECTORFORNORMALSYSTEM"))
       {
-          int geoFunct;
-          function->ExtractInt("FUNCTFORGEOMETRY",geoFunct);
+        int geoFunct;
+        function->ExtractInt("FUNCTFORGEOMETRY",geoFunct);
 
-          functions_.push_back(Teuchos::rcp(new RotationVectorForNormalSystemFunction(geoFunct)));
+        functions_.push_back(Teuchos::rcp(new RotationVectorForNormalSystemFunction(geoFunct)));
       }
       else if (function->HaveNamed("EXPR"))
       {
@@ -3635,38 +3678,184 @@ double DRT::UTILS::AccelerationProfileFunction::Evaluate(int index, const double
 }
 
 /*----------------------------------------------------------------------*
- | Constructor of NodeNormalSphere                           hahn 12/13 |
+ | Constructor of NodeNormal                                 hahn 12/13 |
  *----------------------------------------------------------------------*/
-DRT::UTILS::NodeNormalSphereFunction::NodeNormalSphereFunction(std::vector<double>* origin) :
+DRT::UTILS::NodeNormalFunction::NodeNormalFunction(std::string type, std::vector<double>* origin, double radius,
+                           double cylinderHeight, std::vector<double>* orientation, double CassiniA) :
 Function()
 {
+  // Initialize geometry type
+  if (type == "sphere") {            // sphere tank
+    type_ = 1;
+  } else if (type == "sphericalCylindrical") { // tank with spherical domes and cylindrical middle part
+    type_ = 2;
+  } else if (type == "cylinder") {       // cylindrical tank
+    type_ = 3;
+  } else if (type == "cassini") {        // Cassini tank
+    type_ = 4;
+  } else if (type == "cassiniCylindrical") {   // tank with Cassini domes and cylindrical middle part
+    type_ = 5;
+  } else {
+    dserror("When using the function NODENORMAL, a supported geometry must be given.");
+  }
+
   // Get problem dimension (2D or 3D)
   dim_ = DRT::Problem::Instance()->NDim();
 
-  // Get origin of the sphere
+  // Get origin of the geometry
   origin_ = *origin;
+
+  // Get radius
+  radius_ = radius;
+
+  // Get cylinder height, divided by 2
+  cylinderHeightHalf_ = cylinderHeight / 2;
+
+  // Get normalized orientation of the geometry
+  orientation_ = *orientation;
+  const double orientationLength = sqrt(orientation_[0]*orientation_[0]+orientation_[1]*orientation_[1]+orientation_[2]*orientation_[2]);
+  if (orientationLength > 1e-9) {
+    for (int i=0; i<3; ++i) {
+      orientation_[i] = orientation_[i] / orientationLength;
+    }
+  }
+
+  // Get Cassini parameter a
+  CassiniA_ = CassiniA;
+
+  // Calculate new reference origin, if nodes lie in the positive spherical part
+  originRefSpherePos_ = origin_;
+  originRefSpherePos_[0] += cylinderHeightHalf_ * orientation_[0];
+  originRefSpherePos_[1] += cylinderHeightHalf_ * orientation_[1];
+  originRefSpherePos_[2] += cylinderHeightHalf_ * orientation_[2];
+
+  // Calculate new reference origin, if nodes lie in the negative spherical part
+  originRefSphereNeg_ = origin_;
+  originRefSphereNeg_[0] -= cylinderHeightHalf_ * orientation_[0];
+  originRefSphereNeg_[1] -= cylinderHeightHalf_ * orientation_[1];
+  originRefSphereNeg_[2] -= cylinderHeightHalf_ * orientation_[2];
 }
 
 /*---------------------------------------------------------------------*
- | Evaluate NodeNormalSphere and return the resp. unit normal vector   |
- | of the given node on the sphere with the given index.    hahn 12/13 |
+ | Evaluate NodeNormal and return the resp. unit normal vector of the  |
+ | given node on the given geometry with the given index.   hahn 12/13 |
  *---------------------------------------------------------------------*/
-double DRT::UTILS::NodeNormalSphereFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::NodeNormalFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  double result = 0.0;
+
+  if (type_ == 1) {
+    // Sphere tank
+    // #################################################################################
+
+    result = NodeNormalSphere(index, xp, origin_);
+
+  } else if (type_ == 2) {
+    // Tank with spherical domes and cylindrical middle part
+    // Note: Here, the origin is assumed to be in the middle of the cylindrical part
+    // #################################################################################
+
+    // Find height of node in geometry
+    double nodeVecHeight;
+    if (dim_ == 2) {
+      nodeVecHeight = orientation_[0]*(xp[0]-origin_[0]) +
+                      orientation_[1]*(xp[1]-origin_[1]);
+    } else if (dim_ == 3) {
+      nodeVecHeight = orientation_[0]*(xp[0]-origin_[0]) +
+                      orientation_[1]*(xp[1]-origin_[1]) +
+                      orientation_[2]*(xp[2]-origin_[2]);
+    } else {
+      nodeVecHeight = 0.0;
+      dserror("Dimension must be 2 or 3!");
+    }
+
+    // Check, if node is in the spherical or cylindrical part
+    if (nodeVecHeight >= cylinderHeightHalf_) {         // spherical part in positive z-direction
+      result = NodeNormalSphere(index, xp, originRefSpherePos_);
+    } else if (nodeVecHeight <= -cylinderHeightHalf_) { // spherical part in negative z-direction
+      result = NodeNormalSphere(index, xp, originRefSphereNeg_);
+    } else {                                            // cylindrical part
+      result = (xp[index] - origin_[index]) - nodeVecHeight * orientation_[index];
+    }
+
+  } else if (type_ == 3) {
+    // Cylindrical tank
+    // #################################################################################
+
+    // Find height of node in geometry
+    double nodeVecHeight;
+    if (dim_ == 2) {
+      nodeVecHeight = orientation_[0]*(xp[0]-origin_[0]) +
+                      orientation_[1]*(xp[1]-origin_[1]);
+    } else if (dim_ == 3) {
+      nodeVecHeight = orientation_[0]*(xp[0]-origin_[0]) +
+                      orientation_[1]*(xp[1]-origin_[1]) +
+                      orientation_[2]*(xp[2]-origin_[2]);
+    } else {
+      nodeVecHeight = 0.0;
+      dserror("Dimension must be 2 or 3!");
+    }
+
+    // Determine node normal
+    result = (xp[index] - origin_[index]) - nodeVecHeight * orientation_[index];
+
+  } else if (type_ == 4) {
+    // Cassini tank
+    // #################################################################################
+
+    result = NodeNormalCassini(index, xp, origin_);
+
+  } else if (type_ == 5) {
+    // Tank with Cassini domes and cylindrical middle part
+    // Note: Here, the origin is assumed to be in the middle of the cylindrical part
+    // #################################################################################
+
+    // Find height of node in geometry
+    double nodeVecHeight;
+    if (dim_ == 2) {
+      nodeVecHeight = orientation_[0]*(xp[0]-origin_[0]) +
+                      orientation_[1]*(xp[1]-origin_[1]);
+    } else if (dim_ == 3) {
+      nodeVecHeight = orientation_[0]*(xp[0]-origin_[0]) +
+                      orientation_[1]*(xp[1]-origin_[1]) +
+                      orientation_[2]*(xp[2]-origin_[2]);
+    } else {
+      nodeVecHeight = 0.0;
+      dserror("Dimension must be 2 or 3!");
+    }
+
+    // Check, if node is in the Cassini or cylindrical part
+    if (nodeVecHeight >= cylinderHeightHalf_) {     // Cassini part in positive z-direction
+      result = NodeNormalCassini(index, xp, originRefSpherePos_);
+    } else if (nodeVecHeight <= -cylinderHeightHalf_) { // Cassini part in negative z-direction
+      result = NodeNormalCassini(index, xp, originRefSphereNeg_);
+    } else {                       // cylindrical part
+      result = (xp[index] - origin_[index]) - nodeVecHeight * orientation_[index];
+    }
+  }
+
+  return result;
+}
+
+/*----------------------------------------------------------------------*
+ | Calculate node normals of a sphere                        hahn 12/13 |
+ *----------------------------------------------------------------------*/
+double DRT::UTILS::NodeNormalFunction::NodeNormalSphere(int index, const double* xp, std::vector<double> origin)
 {
   // Calculate node vector length
   double nodeVecLength = 0;
   if (dim_ == 2) {
 
-    const double diffX = xp[0] - origin_[0];
-    const double diffY = xp[1] - origin_[1];
+    const double diffX = xp[0] - origin[0];
+    const double diffY = xp[1] - origin[1];
 
     nodeVecLength = sqrt(diffX*diffX + diffY*diffY);
 
   } else if (dim_ == 3) {
 
-    const double diffX = xp[0] - origin_[0];
-    const double diffY = xp[1] - origin_[1];
-    const double diffZ = xp[2] - origin_[2];
+    const double diffX = xp[0] - origin[0];
+    const double diffY = xp[1] - origin[1];
+    const double diffZ = xp[2] - origin[2];
 
     nodeVecLength = sqrt(diffX*diffX + diffY*diffY + diffZ*diffZ);
 
@@ -3675,7 +3864,42 @@ double DRT::UTILS::NodeNormalSphereFunction::Evaluate(int index, const double* x
   }
 
   // Return unit node normal for the given node and given index
-  return (xp[index] - origin_[index]) / nodeVecLength;
+  return (xp[index] - origin[index]) / nodeVecLength;
+}
+
+/*----------------------------------------------------------------------*
+ | Calculate node normals of a Cassini volume                hahn 12/13 |
+ *----------------------------------------------------------------------*/
+double DRT::UTILS::NodeNormalFunction::NodeNormalCassini(int index, const double* xp, std::vector<double> origin)
+{
+  // Determine relative positions
+  const double x = xp[0] - origin[0];
+  const double y = xp[1] - origin[1];
+  double z = 0.0;
+  if (dim_ == 2) {
+    // Do nothing, cause z has already been set to 0
+  } else if (dim_ == 3) {
+    z = xp[2] - origin[2];
+  } else {
+    dserror("Dimension must be 2 or 3!");
+  }
+
+  // Calculate the square of the node vector length
+  const double nodeVecLengthSquared = x*x + y*y + z*z;
+
+  // Calculate node normal
+  double nodeNormal[3];
+  nodeNormal[0] = x*(nodeVecLengthSquared - CassiniA_*CassiniA_);
+  nodeNormal[1] = y*(nodeVecLengthSquared - CassiniA_*CassiniA_);
+  nodeNormal[2] = z*(nodeVecLengthSquared + CassiniA_*CassiniA_);
+
+  // Calculate node normal length
+  const double nodeNormalLength = sqrt(nodeNormal[0]*nodeNormal[0] +
+                                       nodeNormal[1]*nodeNormal[1] +
+                                       nodeNormal[2]*nodeNormal[2]);
+
+  // Return unit node normal for the given node and given index
+  return nodeNormal[index] / nodeNormalLength;
 }
 
 /*----------------------------------------------------------------------*
@@ -3728,7 +3952,7 @@ double DRT::UTILS::RotationVectorForNormalSystemFunction::Evaluate(int index, co
   // Calculate the requested rotation vector component
   double rotVectorComp = 0;
 
-  if (rotVecNorm > 1e-9) { // normal vector is not (+-1,0,0), thus rotate as planned
+  if (rotVecNorm > 1e-12) { // normal vector is not (+-1,0,0), thus rotate as planned
     if (index == 1) {
       rotVectorComp = rotAngle * (-1) * nodeNormal[2] / rotVecNorm;
     } else if (index == 2) {

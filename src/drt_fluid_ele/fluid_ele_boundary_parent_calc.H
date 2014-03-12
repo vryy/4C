@@ -76,6 +76,14 @@ namespace DRT
         Epetra_SerialDenseMatrix&      elemat1,
         Epetra_SerialDenseVector&      elevec1) = 0;
 
+      virtual void NavierSlipBC(
+        DRT::ELEMENTS::FluidBoundary*  ele1,
+        Teuchos::ParameterList&        params,
+        DRT::Discretization&           discretization,
+        std::vector<int>&              lm,
+        Epetra_SerialDenseMatrix&      elemat1,
+        Epetra_SerialDenseVector&      elevec1) = 0;
+
       virtual void EvaluateWeakDBC(
         DRT::ELEMENTS::FluidBoundary*  ele1,
         Teuchos::ParameterList&        params,
@@ -145,6 +153,14 @@ namespace DRT
         Epetra_SerialDenseMatrix&      elemat,
         Epetra_SerialDenseVector&      elevec);
 
+      void  NavierSlipBC(
+        DRT::ELEMENTS::FluidBoundary*  surfele,
+        Teuchos::ParameterList&        params,
+        DRT::Discretization&           discretization,
+        std::vector<int>&              lm,
+        Epetra_SerialDenseMatrix&      elemat,
+        Epetra_SerialDenseVector&      elevec);
+
       void EvaluateWeakDBC(
         DRT::ELEMENTS::FluidBoundary*  surfele,
         Teuchos::ParameterList&        params,
@@ -185,6 +201,16 @@ namespace DRT
       template <DRT::Element::DiscretizationType bdistype,
                 DRT::Element::DiscretizationType pdistype>
       void BCFreeBC(
+        DRT::ELEMENTS::FluidBoundary*  ele,
+        Teuchos::ParameterList&        params,
+        DRT::Discretization&           discretization,
+        std::vector<int>&              lm,
+        Epetra_SerialDenseMatrix&      elemat,
+        Epetra_SerialDenseVector&      elevec);
+
+      template <DRT::Element::DiscretizationType bdistype,
+                DRT::Element::DiscretizationType pdistype>
+      void NavierSlipBC(
         DRT::ELEMENTS::FluidBoundary*  ele,
         Teuchos::ParameterList&        params,
         DRT::Discretization&           discretization,

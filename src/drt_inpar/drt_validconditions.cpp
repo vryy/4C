@@ -1120,6 +1120,39 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(linebcfree);
   condlist.push_back(surfbcfree);
 
+  /*--------------------------------------------------------------------*/
+  // Navier-slip boundary conditions
+
+  std::vector<Teuchos::RCP<ConditionComponent> > navierslipcomponents;
+
+  navierslipcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT")));
+  navierslipcomponents.push_back(Teuchos::rcp(new RealConditionComponent("slipcoefficient")));
+
+  Teuchos::RCP<ConditionDefinition> linenavierslip =
+   Teuchos::rcp(new ConditionDefinition("DESIGN LINE NAVIER-SLIP BOUNDARY CONDITIONS",
+                                        "LineNavierSlip",
+                                        "LineNavierSlip",
+                                        DRT::Condition::LineNavierSlip,
+                                        true,
+                                        DRT::Condition::Line));
+
+  Teuchos::RCP<ConditionDefinition> surfnavierslip =
+   Teuchos::rcp(new ConditionDefinition("DESIGN SURF NAVIER-SLIP BOUNDARY CONDITIONS",
+                                        "SurfNavierSlip",
+                                        "SurfNavierSlip",
+                                        DRT::Condition::SurfNavierSlip,
+                                        true,
+                                        DRT::Condition::Surface));
+
+  for (unsigned i=0; i<navierslipcomponents.size(); ++i)
+   {
+     linenavierslip->AddComponent(navierslipcomponents[i]);
+     surfnavierslip->AddComponent(navierslipcomponents[i]);
+   }
+
+  condlist.push_back(linenavierslip);
+  condlist.push_back(surfnavierslip);
+
    /*--------------------------------------------------------------------*/
   // weak Dirichlet conditions
 
@@ -1485,6 +1518,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(linefreesurf);
   condlist.push_back(surffreesurf);
+
+  /*--------------------------------------------------------------------*/
+  // Local Lagrange boundary condition
+
+  Teuchos::RCP<ConditionDefinition> linelocallagrange =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LOCAL LAGRANGE LINE CONDITIONS",
+                                         "LOCALLAGRANGECoupling",
+                                         "LOCALLAGRANGE Coupling",
+                                         DRT::Condition::LOCALLAGRANGECoupling,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surflocallagrange =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LOCAL LAGRANGE SURF CONDITIONS",
+                                         "LOCALLAGRANGECoupling",
+                                         "LOCALLAGRANGE Coupling",
+                                         DRT::Condition::LOCALLAGRANGECoupling,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  condlist.push_back(linelocallagrange);
+  condlist.push_back(surflocallagrange);
 
   /*--------------------------------------------------------------------*/
   // Additional coupling of structure and ale fields (for lung fsi)
