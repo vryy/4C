@@ -4189,7 +4189,8 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
   // for rigid body rotation of reference frame (only interpolated elements)
   Teuchos::RCP<Epetra_MultiVector> nodalquaternions = Teuchos::null;
   Teuchos::RCP<Epetra_MultiVector> bspotquaternions = Teuchos::null;
-  if(linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_myosinthick)
+  if((linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_myosinthick) &&
+      DRT::INPUT::IntegralValue<int>(statmechparams_,"CROSSBRIDGEMODEL"))
   {
     nodalquaternions = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),4));
     bspotquaternions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4));
@@ -5022,13 +5023,19 @@ void STATMECH::StatMechManager::RestoreConv(Teuchos::RCP<Epetra_Vector>         
     additionalcross2ele_ = Teuchos::rcp(new Epetra_MultiVector(*additionalcross2eleconv_));
   if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_myosinthick)
   {
-    Teuchos::RCP<Epetra_Vector> discol = Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap(), true));
-    LINALG::Export(*dis, *discol);
-    //  reverts reference lengths of elements back to the way they were before... (has to be done prior to restoring actlinklength_. Otherwise, fatal loss of information)
-    Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
-    Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
-    GetBindingSpotPositions(*discol, bspotpositions, bspotrotations);
-    ChangeActiveLinkerLength(1e9, 1e9, crosslinkeractlength_, crosslinkeractlengthconv_, printscreen, true, Teuchos::null, Teuchos::null);
+    Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::null;
+    Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::null;
+
+    if(DRT::INPUT::IntegralValue<int>(statmechparams_,"CROSSBRIDGEMODEL"))
+    {
+      Teuchos::RCP<Epetra_Vector> discol = Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap(), true));
+      LINALG::Export(*dis, *discol);
+      //  reverts reference lengths of elements back to the way they were before... (has to be done prior to restoring actlinklength_. Otherwise, fatal loss of information)
+      bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
+      bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
+      GetBindingSpotPositions(*discol, bspotpositions, bspotrotations);
+    }
+    ChangeActiveLinkerLength(1e9, 1e9, crosslinkeractlength_, crosslinkeractlengthconv_, printscreen, true, bspotpositions, bspotrotations);
     crosslinkeractlength_ = Teuchos::rcp(new Epetra_Vector(*crosslinkeractlengthconv_));
   }
 
