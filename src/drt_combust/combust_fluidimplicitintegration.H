@@ -493,7 +493,6 @@ protected:
   /// import geometrical information about the interface and incorporate it into the fluid field
   void IncorporateInterface(const Teuchos::RCP<COMBUST::FlameFront>& flamefront);
 
-
   /*!
   \brief compute values at intermediate time steps for gen.-alpha
 
@@ -505,6 +504,20 @@ protected:
 
   */
   void GenAlphaUpdateAcceleration();
+
+
+  /// prepare AVM3-based scale separation
+  void AVM3Preparation();
+
+  /// AVM3-based scale separation
+  void AVM3Separation();
+
+  /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
+  ///
+  /// This method provides backward compatability only. Formerly, the Dirichlet conditions
+  /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
+  /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
+  const Teuchos::RCP<const Epetra_Vector> Dirichlet();
 
   //! @name general algorithm parameters
   Teuchos::ParameterList&                       xparams_;
@@ -526,6 +539,9 @@ protected:
   INPAR::COMBUST::VelocityJumpType veljumptype_;
   INPAR::COMBUST::FluxJumpType fluxjumptype_;
 
+  /// do we have a turbulence model?
+  enum INPAR::FLUID::TurbModelAction turbmodel_;
+
   /// xfem time integration
   INPAR::COMBUST::XFEMTimeIntegration xfemtimeint_;
   INPAR::COMBUST::XFEMTimeIntegrationEnr xfemtimeint_enr_;
@@ -541,8 +557,6 @@ protected:
   const double nitschevel_;
   // Nitsche parameter pressure
   const double nitschepres_;
-  // boolean indicating condensation of element dofs on/off
-  const bool condensation_;
   // boolean turning output in Gmsh files on/off
   const bool gmshoutput_;
 
@@ -602,6 +616,12 @@ protected:
   /// flag for special flow: currently channel flow or flow in a lid-driven cavity
   std::string special_flow_;
 
+  /// flag for fine scale subgrid viscosity used in AVM3 turbulence approach
+  string fssgv_;
+
+  /// flag deactivate XFEM dofs in fine-scale velocity (for AVM3)
+  bool excludeXfem_;
+
   //! store dof distribution information for output
   Teuchos::RCP<XFEM::DofManager>      dofmanagerForOutput_;
 
@@ -613,9 +633,6 @@ protected:
 
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
-
-  /// increment of old iteration step for condensation of element dofs
-  Teuchos::RCP<Epetra_Vector> oldinc_;
 
   /// maps for extracting Dirichlet and free DOF sets
   Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
@@ -637,6 +654,18 @@ protected:
 
   /// Nonlinear iteration increment vector
   Teuchos::RCP<Epetra_Vector>    incvel_;
+
+  /// only necessary for AVM3: scale-separation matrix
+  Teuchos::RCP<LINALG::SparseMatrix> Sep_;
+
+  /// only necessary for AVM3: fine-scale solution vector
+  Teuchos::RCP<Epetra_Vector> fsvelafStd_;
+
+  /// only necessary for AVM3: fine-scale solution vector
+  Teuchos::RCP<Epetra_Vector> fsvelafXfem_;
+
+  /// only necessary for AVM3: Smagorinsky constant
+  double Cs_;
 
   /// this struct holds all state vectors needed for time integration
   ///

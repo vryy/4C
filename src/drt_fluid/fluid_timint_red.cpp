@@ -586,7 +586,7 @@ void FLD::TimIntRedModels::AVM3Preparation()
   // add impedance Neumann loads
   impedancebc_->UpdateResidual(residual_);
 
-  AVM3Evaluate(eleparams);
+  AVM3AssembleMatAndRHS(eleparams);
 
   // apply Womersley as a Dirichlet BC
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bcmaps_));

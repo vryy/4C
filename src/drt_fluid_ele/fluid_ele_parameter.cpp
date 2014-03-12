@@ -611,9 +611,9 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
       near_wall_limit_scatra_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"NEAR_WALL_LIMIT_CSGS_PHI");
 
       if (turbmodelparamsmfs.get<std::string>("EVALUATION_B") == "element_center")
-      B_gp_ = false;
+        B_gp_ = false;
       else if (turbmodelparamsmfs.get<std::string>("EVALUATION_B") == "integration_point")
-      B_gp_ = true;
+        B_gp_ = true;
       else
         dserror("Unknown evaluation point!");
 
@@ -629,10 +629,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
       turb_mod_action_ = INPAR::FLUID::vreman;
       Cs_ = turbmodelparamssgvisc.get<double>("C_SMAGORINSKY");
 
-//      const std::string fssgvdef = turbmodelparams.get<std::string>("FSSUGRVISC","No");
-//
-//      if (fssgvdef == "Smagorinsky_all")        fssgv_ = INPAR::FLUID::smagorinsky_all;
-//      else if (fssgvdef == "Smagorinsky_small") fssgv_ = INPAR::FLUID::smagorinsky_small;
       if(turbmodelparamssgvisc.get<std::string>("FILTER_WIDTH","CubeRootVol")=="Direction_dependent")
         vrfi_ = INPAR::FLUID::dir_dep;
       else if(turbmodelparamssgvisc.get<std::string>("FILTER_WIDTH","CubeRootVol")=="Minimum_length")
@@ -653,7 +649,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
     }
     else
     {
-      dserror("Up to now, only Smagorinsky, Scale Similarity and Multifractal Subgrid Scales are available");
+      dserror("Up to now, only Smagorinsky, Vreman, Scale Similarity and Multifractal Subgrid Scales are available");
     }
   } // end if(Classical LES)
 }

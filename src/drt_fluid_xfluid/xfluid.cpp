@@ -2899,11 +2899,6 @@ void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
     // check XFLUID DYNAMIC/STABILIZATION parameter list
     // ----------------------------------------------------------------------
 
-    // condensation of distributed Lagrange multiplier for MSH
-    bool msh_dlm_condensation = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"DLM_CONDENSATION");
-    if(msh_dlm_condensation == false) dserror("INPUT CHECK: 'DLM_CONDENSATION', switch always to 'yes', just condensation implemented");
-
-
     // convective stabilization parameter (scaling factor and stabilization factor)
     if(conv_stab_fac_ != 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none)
       std::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC != 0.0 has no effect for CONV_STAB_SCALING == none" << END_COLOR << endl;

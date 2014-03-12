@@ -3311,7 +3311,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   //before the Neumann loads are added
   residual_->PutScalar(0.0);
 
-  AVM3Evaluate(eleparams);
+  AVM3AssembleMatAndRHS(eleparams);
 
   // get scale-separation matrix
   AVM3GetScaleSeparationMatrix();
@@ -3322,9 +3322,9 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 
 /*----------------------------------------------------------------------*
  | prepare AVM3-based scale separation:                        vg 10/08 |
- | Evaluate                                                    bk 12/13 |
+ | assemble mat and rhs                                                 |
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::AVM3Evaluate(Teuchos::ParameterList& eleparams)
+void FLD::FluidImplicitTimeInt::AVM3AssembleMatAndRHS(Teuchos::ParameterList& eleparams)
 {
   // AVM3 can't be used with locsys conditions cause it hasn't been implemented yet
   if (locsysman_ != Teuchos::null) {
@@ -3415,8 +3415,10 @@ void FLD::FluidImplicitTimeInt::AVM3Evaluate(Teuchos::ParameterList& eleparams)
 
   // apply DBC to system matrix
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  | prepare AVM3-based scale separation:                         vg 10/08 |

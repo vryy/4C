@@ -390,6 +390,96 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
 
 
 /*----------------------------------------------------------------------*
+ | transform standard vector to XFEM vector             rasthofer 03/14 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformStandardToXFEMVector(
+    const Epetra_Vector&                   stdvector,
+    const DRT::DofSet&                     stddofset,
+    const std::map<DofKey, DofGID>&        nodalDofDistributionMap,
+    const std::set<XFEM::PHYSICS::Field>&  outputfields
+) const
+{
+  // get DofRowMaps for output and XFEM vectors
+  const Epetra_Map* stddofrowmap = stddofset.DofRowMap();
+  const Epetra_Map* xfemdofrowmap = ih_->FluidDis()->DofRowMap();
+
+  // create XFEM vector (initialized with zeros)
+  Teuchos::RCP<Epetra_Vector> xfemvector = Teuchos::rcp(new Epetra_Vector(*xfemdofrowmap,true));
+  xfemvector->PutScalar(0.0);
+
+  // loop nodes on this processor
+  for (int inode=0; inode<ih_->FluidDis()->NumMyRowNodes(); ++inode)
+  {
+    // get XFEM GID of this node
+    const DRT::Node* xfemnode = ih_->FluidDis()->lRowNode(inode);
+    const int nodegid = xfemnode->Id();
+
+    // get vector of dof GIDs for this node according standard FEM layout
+    const std::vector<int> stdgid(stddofset.Dof(xfemnode));
+    // find the set of field enrichments (~ XFEM dofs) for this node
+    std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator nodeentry = nodalDofSet_.find(nodegid);
+
+    // node was not found in nodalDofSet_
+    if (nodeentry == nodalDofSet_.end())
+    {
+      dserror("Every node should have (at least a standard) field enrichments!");
+      // one dof for every physical field (standard FEM)
+      //const std::size_t numdof = outputfields.size();
+      // write zero values in output vector at position of original (standard FEM) degree of freedom
+      //for (std::size_t idof = 0; idof < numdof; ++idof)
+      //{
+      //  (*outvector)[outdofrowmap->LID(outgid[idof])] = 0.0;
+      //}
+    }
+    else // node was found in nodalDofSet_
+    {
+      // get set of field enrichments for this node
+      const std::set<FieldEnr> fieldenrset = nodeentry->second;
+      // build a standard enrichment (label = 0)
+      const XFEM::Enrichment stdenr(XFEM::Enrichment::typeStandard,0);
+
+      size_t idof = 0;
+      // loop over desired physical output fields
+      for(std::set<XFEM::PHYSICS::Field>::const_iterator outputfield = outputfields.begin(); outputfield != outputfields.end(); ++outputfield)
+      {
+        // build a standard field enrichment with this physical field
+        XFEM::FieldEnr fieldstdenr(*outputfield,stdenr);
+        // check if there is a standard enrichment for this physical field available for this node
+        std::set<FieldEnr>::const_iterator fieldenrentry = fieldenrset.find(fieldstdenr);
+
+        // there is no standard enrichment for this desired output field
+        if (fieldenrentry == fieldenrset.end())
+        {
+          dserror("There should be a standard enrichment for every physical output field!");
+        }
+        else // there is a standard enrichment for this desired output field
+        {
+          // build a dofkey (= XFEM dof)
+          const XFEM::DofKey dofkey(nodegid,*fieldenrentry);
+          // get dof GID (XFEM layout) corresponding to this dofkey
+          const int xfemgid = nodalDofDistributionMap.find(dofkey)->second;
+          if (xfemgid < 0)
+            dserror("bug!");
+          if (stdgid[idof] < 0)
+            dserror("bug!");
+          // fill output vector by writing value of standard enrichment (XFEM)
+
+          (*xfemvector)[xfemdofrowmap->LID(xfemgid)]=stdvector[stddofrowmap->LID(stdgid[idof])];
+        }
+        idof++;
+      }
+#ifdef DEBUG
+      if (idof != outgid.size())
+        // this is not really an error, but it would be unusual to intentionally skip fields for output
+        dserror("Not all available fields have been transformed to output vector!");
+#endif
+    }
+  };
+  return xfemvector;
+}
+
+
+/*----------------------------------------------------------------------*
  | write values of a certain physical field              rasthofer 09/11|
  |                                                          DA wichmann |
  *----------------------------------------------------------------------*/

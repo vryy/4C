@@ -145,7 +145,6 @@ STABTYPE                        SUPG
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
-DLM_CONDENSATION                Yes                             // No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

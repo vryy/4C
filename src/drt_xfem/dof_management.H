@@ -131,6 +131,18 @@ namespace XFEM
       ) const;
 
       /*!
+        \author tansfor from Standard to XFEM
+       */
+       Teuchos::RCP<Epetra_Vector> transformStandardToXFEMVector(
+           const Epetra_Vector&                        originalvector,
+           const DRT::DofSet&                          dofsetout,
+           const std::map<XFEM::DofKey, XFEM::DofGID>& nodalDofDistributionMap,
+           const std::set<XFEM::PHYSICS::Field>&       fieldsout
+       ) const;
+
+
+
+      /*!
        \brief overwrite the values of a certain physical field and enrichment
       */
       void overwritePhysicalField(

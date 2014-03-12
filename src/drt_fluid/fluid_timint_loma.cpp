@@ -249,7 +249,7 @@ void FLD::TimIntLoma::AVM3Preparation()
   eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
-  AVM3Evaluate(eleparams);
+  AVM3AssembleMatAndRHS(eleparams);
 
   // get scale-separation matrix
   AVM3GetScaleSeparationMatrix();

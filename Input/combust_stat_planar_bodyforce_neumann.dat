@@ -127,7 +127,6 @@ STABTYPE                        SUPG
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
-DLM_CONDENSATION                Yes                             // No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK

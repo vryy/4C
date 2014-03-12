@@ -234,7 +234,7 @@ public:
   \brief Evaluate for AVM3 Separation
 
   */
-  void AVM3Evaluate(Teuchos::ParameterList& eleparams);
+  void AVM3AssembleMatAndRHS(Teuchos::ParameterList& eleparams);
 
   /*!
   \brief Get scale separation matrix
