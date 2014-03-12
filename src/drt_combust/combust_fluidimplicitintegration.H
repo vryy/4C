@@ -617,7 +617,7 @@ protected:
   std::string special_flow_;
 
   /// flag for fine scale subgrid viscosity used in AVM3 turbulence approach
-  string fssgv_;
+  std::string fssgv_;
 
   /// flag deactivate XFEM dofs in fine-scale velocity (for AVM3)
   bool excludeXfem_;

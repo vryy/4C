@@ -1905,8 +1905,17 @@ void COMBUST::Algorithm::Redistribute()
 void COMBUST::Algorithm::TestResults()
 {
   DRT::Problem::Instance()->AddFieldTest(FluidField().CreateFieldTest());
-  // DRT::Problem::Instance()->TestAll() is called in level-set field after adding particles
-  Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->TestResults();
+
+  if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_gen_alpha)
+  {
+    // DRT::Problem::Instance()->TestAll() is called in level-set field after adding particles
+    Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->TestResults();
+  }
+  else
+  {
+    DRT::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
+    DRT::Problem::Instance()->TestAll(Comm());
+  }
 
   return;
 }
