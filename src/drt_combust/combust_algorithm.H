@@ -68,6 +68,9 @@ namespace COMBUST
                     const bool restartscatrainput = false,
                     const bool restartturbinflow  = false);
 
+    /// perform result test
+    void TestResults();
+
   protected:
 
     /// output of initial field

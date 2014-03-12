@@ -1310,16 +1310,19 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // create empty discretizations
     fluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
     scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
+    particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
     scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+    particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
 
     AddDis("fluid", fluiddis);
     AddDis("scatra", scatradis);
+    AddDis("particle", particledis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ParticleReader(particledis, reader)));
     break;
   }
 

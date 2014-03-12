@@ -92,7 +92,7 @@ void combust_dyn()
     dserror("no linear solver defined for ELCH problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
   // create a COMBUST::Algorithm instance
-  Teuchos::RCP<COMBUST::Algorithm> combust_ = Teuchos::rcp(new COMBUST::Algorithm(comm, combustdyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+  Teuchos::RCP<COMBUST::Algorithm> combust = Teuchos::rcp(new COMBUST::Algorithm(comm, combustdyn, DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
   //------------------------------------------------------------------------------------------------
   // restart
@@ -106,7 +106,7 @@ void combust_dyn()
     const bool restartscatrainput = (bool)DRT::INPUT::IntegralValue<int>(combustdyn,"RESTART_SCATRA_INPUT");
 
     // read the restart information, set vectors and variables
-    combust_->Restart(restart, restartscatrainput, restartfromfluid);
+    combust->Restart(restart, restartscatrainput, restartfromfluid);
   }
   //------------------------------------------------------------------------------------------------
   // call one of the available time integration schemes
@@ -118,12 +118,12 @@ void combust_dyn()
       timeintscheme == INPAR::FLUID::timeint_bdf2)
   {
     // solve a dynamic combustion problem
-    combust_->TimeLoop();
+    combust->TimeLoop();
   }
   else if (timeintscheme == INPAR::FLUID::timeint_stationary)
   {
     // solve a static combustion problem
-    combust_->SolveStationaryProblem();
+    combust->SolveStationaryProblem();
   }
   else
   {
@@ -140,9 +140,7 @@ void combust_dyn()
   IO::cout << IO::flush;
 
   // perform the result test
-  DRT::Problem::Instance()->AddFieldTest(combust_->FluidField().CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(combust_->CreateScaTraFieldTest());
-  DRT::Problem::Instance()->TestAll(comm);
+  combust->TestResults();
 
   return;
 

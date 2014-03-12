@@ -1897,3 +1897,16 @@ void COMBUST::Algorithm::Redistribute()
   }
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | perform result test                                  rasthofer 01/14 |
+ *----------------------------------------------------------------------*/
+void COMBUST::Algorithm::TestResults()
+{
+  DRT::Problem::Instance()->AddFieldTest(FluidField().CreateFieldTest());
+  // DRT::Problem::Instance()->TestAll() is called in level-set field after adding particles
+  Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->TestResults();
+
+  return;
+}

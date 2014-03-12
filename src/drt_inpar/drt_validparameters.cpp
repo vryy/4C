@@ -4022,6 +4022,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Value of imposed mean-scalar gradient to force scalar field.",
     &fdyn_turbu);
 
+  // filtering with xfem
+  //--------------
+
+  BoolParameter("EXCLUDE_XFEM","No","Flag to (de)activate XFEM dofs in calculation fine-scale velocity.",&fdyn_turbu);
+
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for Smagorinsky model
   Teuchos::ParameterList& fdyn_turbsgv = fdyn.sublist("SUBGRID VISCOSITY",false,"");
@@ -5195,6 +5200,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     DoubleParameter("PARTICLEBANDWIDTH",3.0,"multiple of maximal element length defining band around interface filled with particles, i.e., alpha*max(dx,dy,dz): here we give alpha, max(dx,dy,dz) is defined by the cut_off radius for the bins!",&ls_particle);
     DoubleParameter("MIN_RADIUS",0.1,"minimal radius of particles, usually a multiple of min(dx,dy,dz)",&ls_particle);
     DoubleParameter("MAX_RADIUS",0.5,"maximal radius of particles, usually a multiple of min(dx,dy,dz)",&ls_particle);
+    IntParameter("RESEEDING",10000,"reseeding interval",&ls_particle);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& biofilmcontrol = list->sublist(
@@ -6382,9 +6388,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("NITSCHE_EVP","no","switch on/off calculating nitsche parameter via solving a local eigenvalue problem",&xfluid_stab);
 
   DoubleParameter("NITSCHE_EVP_FAC",  2, "define the factor the Eigenvalue is multiplied with",&xfluid_stab);
-
-  setStringToIntegralParameter<int>("DLM_CONDENSATION","Yes","Do you want to condense the discontinuous stress field?",
-                               yesnotuple,yesnovalue,&xfluid_stab);
 
   /*----------------------------------------------------------------------*/
    Teuchos::ParameterList& particledyn = list->sublist(

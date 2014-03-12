@@ -80,7 +80,7 @@ namespace PARTICLE
     void Output();
 
     /// compute velocities of particles at intermediate time n+theta
-    Teuchos::RCP<Epetra_Vector> GetVelocity(const double theta);
+    Teuchos::RCP<Epetra_Vector> GetVelocity(const double theta); /// intermediate point in time
 
   protected:
 
@@ -101,14 +101,23 @@ namespace PARTICLE
     /// reseeding of particles
     void Reseeding();
 
-    /// compute level-set value of particle
-    double GetPhiParticle(
-      const int particle_lid              ///< local particle id
-      );
+    /// attract particle to their correct side of interface
+    void Attraction(
+      const int global_num_particles,
+      Teuchos::RCP<Epetra_Vector> inc_dis,
+      Teuchos::RCP<Epetra_Vector> lambda,
+      Teuchos::RCP<Epetra_Vector> phi_target,
+      Teuchos::RCP<Epetra_Vector> phi_particle,
+      Teuchos::RCP<Epetra_Vector> norm_gradphi_particle,
+      Teuchos::RCP<Epetra_Vector> disn
+    );
+
+    /// delete particles
+    void DeleteParticles(std::vector<int> part_del); ///< global ids of particles to be deleted
 
     /// get underlying element as well as particle position
     DRT::Element* GetEleCoordinates(
-      const int particle_lid,             ///< local particle id
+      const int particle_gid,             ///< global particle id
       LINALG::Matrix<3,1>& elecoord       ///< matrix to be filled with particle coordinates in element space
     );
 
@@ -135,14 +144,11 @@ namespace PARTICLE
     /// descending order
     static bool MyComparePairs (const std::pair<int,double>& first, const std::pair<int,double>& second)
     {
-      if (fabs(first.second) > fabs(second.second))
+      if (first.second > second.second)
         return true;
       else
         return false;
     };
-
-    //! @name scatra related stuff
-    //@{
 
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;     ///< underlying scatra time integrator
 
@@ -152,9 +158,21 @@ namespace PARTICLE
 
     INPAR::PARTICLE::ParticleDim particle_dim_;         ///< dimension of problem
 
-    //@}
+    int reseeding_;                                     ///< reseeding frequency
 
-  }; // Algorithm
+    int num_particles_per_bin_;                         ///< number of particles per bin of each type
+
+    double binlength_max_;                              ///< characteristic bin length: maximal edge length
+
+    double binlength_min_;                              ///< characteristic bin length: minmal edge length
+
+    double b_max_;                                      ///< width of band with particles
+
+    double r_min_;                                      ///< minimal radius of particles
+
+    double r_max_;                                      ///< maximal radius of particles
+
+  }; // ScatraParticleCoupling
 
 
 } // namespace PARTICLE
