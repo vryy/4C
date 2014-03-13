@@ -5,7 +5,7 @@
 <pre>
 Maintainer: Sebastian Kehl
             kehl@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de/
+            089 - 289-10361
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -50,8 +50,8 @@ convcritc_(0)
   //get tolerance
   convtol_ = invap.get<double>("CONVTOL");
 
-  p_= Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(),true));
-  step_= Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(), true));
+  p_= Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMap()), Matman()->NumParams(),true));
+  step_= Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMap()), Matman()->NumParams(), true));
 
 }
 
@@ -74,14 +74,15 @@ void STR::INVANA::StatInvAnaGradDesc::Optimize()
     std::cout << "gradient approx: " << *objgrad_ << std::endl;
 #endif
 
-  objgrad_o_->Update(1.0, *objgrad_, 0.0);
+  // old is current now
+  UpdateGradient();
 
   //get search direction from gradient:
-  p_->Update(-1.0, *objgrad_o_, 0.0);
+  p_->Update(-1.0, *GetGradient(), 0.0);
 
   objval_o_ = objval_;
 
-  MVNorm(objgrad_o_,2,&convcritc_,discret_->ElementRowMap());
+  MVNorm(GetGradient(),2,&convcritc_,discret_->ElementRowMap());
 
   PrintOptStep(0,0);
 
@@ -100,13 +101,13 @@ void STR::INVANA::StatInvAnaGradDesc::Optimize()
     }
 
     //get the L2-norm:
-    MVNorm(objgrad_,2,&convcritc_,discret_->ElementRowMap());
+    MVNorm(GetGradient(),2,&convcritc_,discret_->ElementRowMap());
 
     //compute new direction only for runs
-    p_->Update(-1.0, *objgrad_, 0.0);
+    p_->Update(-1.0, *GetGradient(), 0.0);
 
     // bring quantities to the next run
-    objgrad_o_->Update(1.0, *objgrad_, 0.0);
+    UpdateGradient();
     objval_o_=objval_;
     runc_++;
 
@@ -140,7 +141,7 @@ int STR::INVANA::StatInvAnaGradDesc::EvaluateArmijoRule(double* tauopt, int* num
   double blow=0.1;
   double bhigh=0.5;
 
-  MVNorm(objgrad_o_,2,&gnorm,discret_->ElementRowMap());
+  MVNorm(GetGradientOld(),2,&gnorm,discret_->ElementRowMap());
 
   double tau_n=std::min(1.0, 100/(1+gnorm));
   //std::cout << "trial step size: " << tau_n << std::endl;
@@ -151,7 +152,7 @@ int STR::INVANA::StatInvAnaGradDesc::EvaluateArmijoRule(double* tauopt, int* num
     step_->Update(tau_n, *p_, 0.0);
 
     //make a step
-    matman_->UpdateParams(step_);
+    Matman()->UpdateParams(step_);
     SolveForwardProblem();
     SolveAdjointProblem();
     EvaluateGradient();
@@ -159,7 +160,7 @@ int STR::INVANA::StatInvAnaGradDesc::EvaluateArmijoRule(double* tauopt, int* num
 
     // check sufficient decrease:
     double dfp_o=0.0;
-    MVDotProduct(objgrad_o_,p_,&dfp_o,discret_->ElementRowMap());
+    MVDotProduct(GetGradientOld(),p_,&dfp_o,discret_->ElementRowMap());
 
     if ( (objval_-objval_o_) < c1*tau_n*dfp_o )
     {
@@ -179,7 +180,7 @@ int STR::INVANA::StatInvAnaGradDesc::EvaluateArmijoRule(double* tauopt, int* num
     e_l=objval_;
     tau_l=tau_n;
     tau_n=*tauopt;
-    matman_->ResetParams();
+    Matman()->ResetParams();
     i++;
 
 #if 0
@@ -264,7 +265,7 @@ void STR::INVANA::StatInvAnaGradDesc::PrintOptStep(double tauopt, int numsteps)
 void STR::INVANA::StatInvAnaGradDesc::Summarize()
 {
   std::cout << "the final vector of parameters: " << std::endl;
-  std::cout << *(matman_->GetParams()) << std::endl;
+  std::cout << *(Matman()->GetParams()) << std::endl;
   return;
 }
 

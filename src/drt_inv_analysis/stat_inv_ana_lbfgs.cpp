@@ -5,7 +5,7 @@
 <pre>
 Maintainer: Sebastian Kehl
             kehl@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de/
+            089 - 289-10361
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -53,14 +53,14 @@ convcritc_(0)
 
   //initialize storage vectors
   ssize_=invap.get<int>("SIZESTORAGE");
-  ssize_=ssize_*matman_->NumParams();
+  ssize_=ssize_*Matman()->NumParams();
   actsize_=0;
 
-  sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, matman_->ParamLayoutMap(), true));
-  ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, matman_->ParamLayoutMap(), true));
+  sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, Matman()->ParamLayoutMap(), true));
+  ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, Matman()->ParamLayoutMap(), true));
 
-  p_= Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(),true));
-  step_= Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumParams(), true));
+  p_= Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMap()), Matman()->NumParams(),true));
+  step_= Teuchos::rcp(new Epetra_MultiVector(*(Matman()->ParamLayoutMap()), Matman()->NumParams(), true));
 
 }
 
@@ -80,23 +80,23 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
   //check gradient by fd:
 #if 0
     std::cout << "gradient: " << std::endl;
-    PrintDataToScreen(*objgrad_);
+    PrintDataToScreen(*GetGradient());
     EvaluateGradientFD();
 
     std::cout << "gradient approx: " << std::endl;
-    PrintDataToScreen(*objgrad_);
+    PrintDataToScreen(*GetGradient());
     exit(0);
 #endif
 
-  objgrad_o_->Update(1.0, *objgrad_, 0.0);
+  UpdateGradient();
 
   //get search direction from gradient:
-  p_->Update(-1.0, *objgrad_o_, 0.0);
+  p_->Update(-1.0, *GetGradientOld(), 0.0);
 
   objval_o_ = objval_;
   error_incr_ = objval_;
 
-  MVNorm(objgrad_o_,2,&convcritc_,discret_->ElementRowMap());
+  MVNorm(GetGradientOld(),2,&convcritc_,discret_->ElementRowMap());
 
   PrintOptStep(0,0);
 
@@ -115,12 +115,12 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
     }
 
     //get the L2-norm:
-    MVNorm(objgrad_,2,&convcritc_,discret_->ElementRowMap());
+    MVNorm(GetGradient(),2,&convcritc_,discret_->ElementRowMap());
 
     //compute new direction only for runs>0
     if (runc_<1)
     {
-      p_->Update(-1.0, *objgrad_, 0.0);
+      p_->Update(-1.0, *GetGradient(), 0.0);
     }
     else
     {
@@ -129,7 +129,7 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
     }
 
     // bring quantities to the next run
-    objgrad_o_->Update(1.0, *objgrad_, 0.0);
+    UpdateGradient();
     error_incr_=objval_o_-objval_;
     objval_o_=objval_;
     runc_++;
@@ -164,7 +164,7 @@ int STR::INVANA::StatInvAnaLBFGS::EvaluateArmijoRule(double* tauopt, int* numste
   double blow=0.1;
   double bhigh=0.5;
 
-  MVNorm(objgrad_o_,2,&gnorm,discret_->ElementRowMap());
+  MVNorm(GetGradientOld(),2,&gnorm,discret_->ElementRowMap());
 
   double tau_n=std::min(stepsize_, 100.0/(1+gnorm));
   //std::cout << "trial step size: " << tau_n << std::endl;
@@ -175,7 +175,7 @@ int STR::INVANA::StatInvAnaLBFGS::EvaluateArmijoRule(double* tauopt, int* numste
   while (i<imax && tau_n<tau_max)
   {
     //make a step
-    matman_->UpdateParams(step_);
+    Matman()->UpdateParams(step_);
     ResetDiscretization();
     SolveForwardProblem();
     SolveAdjointProblem();
@@ -184,7 +184,7 @@ int STR::INVANA::StatInvAnaLBFGS::EvaluateArmijoRule(double* tauopt, int* numste
 
     // check sufficient decrease:
     double dfp_o=0.0;
-    MVDotProduct(objgrad_o_,p_,&dfp_o,discret_->ElementRowMap());
+    MVDotProduct(GetGradientOld(),p_,&dfp_o,discret_->ElementRowMap());
 
     if ( (objval_-objval_o_) < c1*tau_n*dfp_o )
     {
@@ -209,7 +209,7 @@ int STR::INVANA::StatInvAnaLBFGS::EvaluateArmijoRule(double* tauopt, int* numste
     step_->Update(tau_n, *p_, 0.0);
 
 
-    matman_->ResetParams();
+    Matman()->ResetParams();
     i++;
 
 #if 0
@@ -219,11 +219,11 @@ int STR::INVANA::StatInvAnaLBFGS::EvaluateArmijoRule(double* tauopt, int* numste
       for (int k=0; k<100; k++)
       {
         step_->Update(tau_n*k/100, *p_, 0.0);
-        matman_->UpdateParams(step_);
+        Matman()->UpdateParams(step_);
         SolveForwardProblem();
-        double ee = objfunct_->Evaluate(dis_,matman_);
+        double ee = objfunct_->Evaluate(dis_,Matman());
         std::cout << " run " << tau_n*k/100 << " " << ee << endl;
-        matman_->ResetParams();
+        Matman()->ResetParams();
       }
     }
 #endif
@@ -280,18 +280,18 @@ int STR::INVANA::StatInvAnaLBFGS::polymod(double e_o, double dfp, double tau_n, 
 /* store vectors*/
 void STR::INVANA::StatInvAnaLBFGS::StoreVectors()
 {
-  if (runc_*matman_->NumParams()<=ssize_) // we have "<=" since we do not store the first run
-    actsize_+=matman_->NumParams();
+  if (runc_*Matman()->NumParams()<=ssize_) // we have "<=" since we do not store the first run
+    actsize_+=Matman()->NumParams();
 
-  Epetra_MultiVector s(*(matman_->ParamLayoutMap()), (matman_->NumParams()),true);
+  Epetra_MultiVector s(*(Matman()->ParamLayoutMap()), (Matman()->NumParams()),true);
 
   //push back s
-  s.Update(1.0,*(matman_->GetParams()),-1.0,*(matman_->GetParamsOld()),0.0);
+  s.Update(1.0,*(Matman()->GetParams()),-1.0,*(Matman()->GetParamsOld()),0.0);
   for (int i=0; i<s.NumVectors(); i++)
     sstore_->UpdateSteps(*s(i));
 
   // push back y
-  s.Update(1.0,*objgrad_,-1.0,*objgrad_o_,0.0);
+  s.Update(1.0,*GetGradient(),-1.0,*GetGradientOld(),0.0);
   for (int i=0; i<s.NumVectors(); i++)
     ystore_->UpdateSteps(*s(i));
 
@@ -303,11 +303,11 @@ void STR::INVANA::StatInvAnaLBFGS::StoreVectors()
 /* compute new direction*/
 void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
 {
-  p_->Update(1.0,*objgrad_,0.0);
+  p_->Update(1.0,*GetGradient(),0.0);
   std::vector<double> alpha;
 
   // loop steps
-  for (int i=0; i>-actsize_; i-=matman_->NumParams())
+  for (int i=0; i>-actsize_; i-=Matman()->NumParams())
   {
     double a=0.0;
     double b=0.0;
@@ -315,7 +315,7 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
     double bb=0.0;
 
     int ind=0;
-    for (int j=matman_->NumParams(); j>0; j--)
+    for (int j=Matman()->NumParams(); j>0; j--)
     {
       MVDotProduct((*ystore_)(i-j+1),(*sstore_)(i-j+1),&a,discret_->ElementRowMap());
       MVDotProduct((*sstore_)(i-j+1),Teuchos::rcp((*p_)(ind), false),&b,discret_->ElementRowMap());
@@ -326,7 +326,7 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
     alpha.push_back(1/aa*bb);
 
     ind=0;
-    for (int j=matman_->NumParams(); j>0; j--)
+    for (int j=Matman()->NumParams(); j>0; j--)
     {
       (*p_)(ind)->Update(-1.0*alpha.back(), *(*ystore_)(i-j+1),1.0 );
       ind++;
@@ -336,7 +336,7 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
   // Some scaling of the initial hessian might come in here but has not been proven to be effective
   // altough they say so
 
-  for (int i=-actsize_+1; i<=0; i+=matman_->NumParams())
+  for (int i=-actsize_+1; i<=0; i+=Matman()->NumParams())
   {
     double a=0.0;
     double b=0.0;
@@ -344,7 +344,7 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
     double bb=0.0;
     double beta=0.0;
 
-    for (int j=0; j<matman_->NumParams(); j++)
+    for (int j=0; j<Matman()->NumParams(); j++)
     {
       MVDotProduct((*ystore_)(i+j),(*sstore_)(i+j),&a,discret_->ElementRowMap());
       MVDotProduct((*ystore_)(i+j),Teuchos::rcp((*p_)(j), false),&b,discret_->ElementRowMap());
@@ -356,7 +356,7 @@ void STR::INVANA::StatInvAnaLBFGS::ComputeDirection()
     double alphac=alpha.back();
     alpha.pop_back();
 
-    for (int j=0; j<matman_->NumParams(); j++)
+    for (int j=0; j<Matman()->NumParams(); j++)
       (*p_)(j)->Update(alphac-beta, *(*sstore_)(i+j),1.0 );
   }
 
@@ -391,7 +391,7 @@ void STR::INVANA::StatInvAnaLBFGS::PrintOptStep(double tauopt, int numsteps)
 void STR::INVANA::StatInvAnaLBFGS::Summarize()
 {
   std::cout << "the final vector of parameters: " << std::endl;
-  std::cout << *(matman_->GetParams()) << std::endl;
+  std::cout << *(Matman()->GetParams()) << std::endl;
   return;
 }
 

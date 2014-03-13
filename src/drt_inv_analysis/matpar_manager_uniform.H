@@ -7,7 +7,7 @@
 Maintainer: Sebastian Kehl
             kehl@mhpc.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15249
+            089 - 289-10361
 </pre>
 */
 
@@ -18,11 +18,7 @@ Maintainer: Sebastian Kehl
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Vector.h"
 #include "matpar_manager.H"
-#include "../drt_inpar/inpar_material.H"
-#include "Epetra_SerialDenseVector.h"
 
 
 // forward declarations
@@ -67,6 +63,7 @@ namespace INVANA
 
     void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos, int parapos);
 
+    //! nothing to be done in case of elementwise parameters
     void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint){return;}
 
   public:

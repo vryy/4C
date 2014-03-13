@@ -6,8 +6,7 @@
 <pre>
 Maintainer: Sebastian Kehl
             kehl@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
+            089 - 289-10361
 </pre>
 
 !*/
@@ -22,6 +21,7 @@ Maintainer: Sebastian Kehl
 
 #include "../drt_lib/drt_element.H"
 
+#include "../drt_inpar/inpar_material.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
 
@@ -31,12 +31,12 @@ Maintainer: Sebastian Kehl
 /* constructor                                               keh 10/13  */
 /*----------------------------------------------------------------------*/
 STR::INVANA::MatParManager::MatParManager(Teuchos::RCP<DRT::Discretization> discret):
-numparams_(0),
 discret_(discret),
-params_(Teuchos::null),
 optparams_(Teuchos::null),
 optparams_o_(Teuchos::null),
-paramlayoutmap_(Teuchos::null)
+paramlayoutmap_(Teuchos::null),
+numparams_(0),
+params_(Teuchos::null)
 {
   const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
 
@@ -143,8 +143,7 @@ void STR::INVANA::MatParManager::SetParams()
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
   // get the actual set of elementwise material parameters from the derived classes
-  Teuchos::RCP<Epetra_MultiVector> getparams;
-  getparams = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()),numparams_,true));
+  Teuchos::RCP<Epetra_MultiVector> getparams = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()),numparams_,false));
   FillParameters(getparams);
 
 

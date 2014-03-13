@@ -3,9 +3,9 @@
  * \file stat_inv_analysis.H
  *
 <pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+Maintainer: Sebastian Kehl
+            kehl@mhpc.mw.tum.de
+            089 - 289-10361
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -86,6 +86,47 @@ protected:
   /// discretisation
   Teuchos::RCP<DRT::Discretization> discret_;
 
+  //! value of the objective function
+  double  objval_;
+
+  //! value of the objective function of the prevous step
+  double objval_o_;
+
+  //! increment of the objective function
+  double error_incr_;
+
+  //! solve the primal problem
+  void SolveForwardProblem();
+
+  //! solve the adjoint problem
+  void SolveAdjointProblem();
+
+  //! Evaluate the objective functions gradient w.r.t the material parameters
+  void EvaluateGradient();
+
+  //! Upate Gradient: push current to old
+  void UpdateGradient(){objgrad_o_->Update(1.0, *objgrad_, 0.0);};
+
+  //! Evaluate the objective function
+  void EvaluateError();
+
+  //! Evaluate FD approximation of the objective functions gradient w.r.t the design parameters
+  void EvaluateGradientFD();
+
+  //! Reset discretization
+  void ResetDiscretization();
+
+  //! a reference to the material parameter manager
+  const Teuchos::RCP<STR::INVANA::MatParManager> Matman(){return matman_; };
+
+  //! get current gradient
+  const Teuchos::RCP<Epetra_MultiVector> GetGradient(){return objgrad_;};
+
+  //! get current gradient
+  const Teuchos::RCP<Epetra_MultiVector> GetGradientOld(){return objgrad_o_;};
+
+private:
+
   //! a dofrowmap of the discretization
   const Epetra_Map* dofrowmap_;
 
@@ -107,15 +148,6 @@ protected:
   //! number of simulation steps in the primal problem
   int msteps_;
 
-  //! value of the objective function
-  double  objval_;
-
-  //! value of the objective function of the prevous step
-  double objval_o_;
-
-  //! increment of the objective function
-  double error_incr_;
-
   //! gradient of the objective function
   Teuchos::RCP<Epetra_MultiVector> objgrad_;
 
@@ -130,24 +162,6 @@ protected:
 
   //! weight of the regularization when being added to the objective function
   double regweight_;
-
-  //! solve the primal problem
-  void SolveForwardProblem();
-
-  //! solve the adjoint problem
-  void SolveAdjointProblem();
-
-  //! Evaluate the objective functions gradient w.r.t the material parameters
-  void EvaluateGradient();
-
-  //! Evaluate the objective function
-  void EvaluateError();
-
-  //! Evaluate FD approximation of the objective functions gradient w.r.t the design parameters
-  void EvaluateGradientFD();
-
-  //! Reset discretization
-  void ResetDiscretization();
 
   //! MStep EpetraVector to EpetraMultiVector
   void MStepEpetraToEpetraMulti(Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > mstepvec,

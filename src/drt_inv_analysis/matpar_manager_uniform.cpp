@@ -4,8 +4,7 @@
 <pre>
 Maintainer: Jonas Biehler
             kehl@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
+            089 - 289-10361
 </pre>
 
 !*/
@@ -34,8 +33,8 @@ STR::INVANA::MatParManagerUniform::MatParManagerUniform(Teuchos::RCP<DRT::Discre
 {
   paramlayoutmap_ = Teuchos::rcp(new Epetra_Map(1,1,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm())));
 
-  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,numparams_,true));
-  optparams_o_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,numparams_,true));
+  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumParams(),true));
+  optparams_o_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumParams(),true));
 
   //initialize parameter vector from material parameters given in the input file
   InitParams();
@@ -47,9 +46,10 @@ STR::INVANA::MatParManagerUniform::MatParManagerUniform(Teuchos::RCP<DRT::Discre
 
 void STR::INVANA::MatParManagerUniform::FillParameters(Teuchos::RCP<Epetra_MultiVector> params)
 {
+  // zero out to make sure
   params->PutScalar(0.0);
 
-  for (int i=0; i<numparams_; i++)
+  for (int i=0; i<NumParams(); i++)
     (*params)(i)->PutScalar((*(*optparams_)(i))[0]);
 }
 
@@ -62,9 +62,6 @@ void STR::INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_Mul
   // only row elements contribute
   if (not discret_->ElementRowMap()->MyGID(elepos)) return;
 
-  //double valall = 0.0;
-  //discret_->Comm().SumAll(&ival,&valall,1);
-
   // no every proc should get this
   int success = dfint->SumIntoGlobalValue(0,parapos,val);
   if (success!=0) dserror("gid %d is not on this processor", elepos);
@@ -72,6 +69,7 @@ void STR::INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_Mul
 
 void STR::INVANA::MatParManagerUniform::Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint)
 {
+
   double val=0.0;
   for (int i=0; i<dfint->NumVectors(); i++)
   {
@@ -85,8 +83,8 @@ STR::INVANA::MatParManagerPerElement::MatParManagerPerElement(Teuchos::RCP<DRT::
 {
   paramlayoutmap_ = Teuchos::rcp(new Epetra_Map(*(discret->ElementColMap())));
 
-  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,numparams_,true));
-  optparams_o_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,numparams_,true));
+  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumParams(),true));
+  optparams_o_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumParams(),true));
 
   //initialize parameter vector from material parameters given in the input file
   InitParams();

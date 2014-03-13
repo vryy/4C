@@ -6,8 +6,7 @@
 <pre>
 Maintainer: Sebastian Kehl
             kehl@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
+            089 - 289-10361
 </pre>
 */
 
@@ -18,16 +17,9 @@ Maintainer: Sebastian Kehl
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <string>
-#include <iostream>
-#include <fstream>
-
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Epetra_Vector.h>
-#include <Epetra_Operator.h>
-#include <Epetra_Time.h>
+#include <Teuchos_ParameterList.hpp>
 
 
 // forward declarations

@@ -6,8 +6,7 @@
 <pre>
 Maintainer: Sebastian Kehl
             kehl@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
+            089 - 289-10361
 </pre>
 */
 
@@ -20,8 +19,6 @@ Maintainer: Sebastian Kehl
 /* headers */
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
-#include "../drt_inpar/inpar_material.H"
-#include "Epetra_SerialDenseVector.h"
 #include "../drt_lib/drt_dserror.H"
 
 
@@ -38,21 +35,33 @@ namespace INVANA
 
 {
 
-
-
   /*!
   \brief A class to handle material parameters for optimization
 
-  The MatParManager handels the mapping between the elemental material parameters and
-  the vector of material parameters held in the optimization process.
+  The MatParManager handles the mapping between the elemenwise material parameters and
+  the vector of material parameters held in the optimization process. Specific choices of
+  parametrizations are to be derived from this class (e.g. elementwise distribution,
+  uniform distribution, kernel based parametrization, ...). Basic functionality common to
+  all parametrizations is given here.
 
-  Material Parameters are stored as Epetra_MultiVector where each vector refers to a
+  <B>Material Parameters<\B>(MatParManager::params_) are stored as Epetra_MultiVector where each vector refers to a
   physical material property (e.g. youngs modulus for St. Venant Kirchhoff, alpha "stiffness"
-  and beta "stiffness" in the AAA material). The layout of each vector is given by the
-  underlying discretization's elecolmap.
+  and beta "stiffness" in the AAA material) corresponding to one input file material.
+  The layout of each vector is given by the underlying discretization's elecolmap.
 
-  It furthermore handles the evaluation of the gradient of the problem residual w.r.t to the material
-  parameters choosen to be identified.
+  <B>Optimization parameters<\B>(MatParManager::optparams_) are stored as Epetra_MultiVetor too, where the layout over
+  the columns directly corresponds to the material parameters. The row-wise layout (MatParManager::paramlayoutmap_)
+  must be given by the respective parametrizations. Access to the optimization parameters is given by access functions.
+
+  Core functionality is the evaluation of the derivative of the residual vector wrt to the
+  optimization parameters \f$ \frac{\partial \underline{R}}{\underline{p}_o}\f$ and the assembly into the gradient
+  \f$ \frac{\partial \pi}{\underline{p}_o}\f$ of some objective function \f$ \pi \f$ via directly evaluating
+  \f$ \lambda^T \cdot \frac{\partial \pi}{\underline{p}_o}\f$. With \f$ \lambda \f$ being the lagrange multiplier
+  given by the solution of an adjoint problem. Parametrizations are respected via application of
+  the chain rule. MatParManager::ContractGradient() therefore needs to be implemented in derived classes. To allow
+  for parallel processing, the different procs results are accounted for finally in MatParManager::Consolidate(),
+  which is also derived classes business.
+
  */
   class MatParManager
   {
@@ -86,7 +95,7 @@ namespace INVANA
     //! Return optimization parameters
     const Teuchos::RCP<Epetra_MultiVector> GetParams(){return optparams_;};
 
-    //! Return optimization parameters  of the last run
+    //! Return optimization parameters of the last run
     const Teuchos::RCP<Epetra_MultiVector> GetParamsOld(){return optparams_o_;};
 
     //! Return the map layout for the parameter distribution
@@ -100,27 +109,8 @@ namespace INVANA
 
   protected:
 
-    //! map of names for each material parameter
-    //! key: matid, value:
-    //! value is of enum type and can be used to set the respective material parameter directly
-    //! i.e  < 1 ;  ( youngs, beta)>
-    //!      < 2 ;  ( k1 , k2   )  >
-    std::map<int, std::vector<int> > paramap_;
-
-    //! map of matids to parameterids for the parameter vector kept in here
-    //! i.e  < 1 ; (1 , 2)>
-    //! i.e  < 2 ; (3 , 4)>
-    std::map<int,std::vector<int> > parapos_;
-
-    //! number of physically different material parameters
-    //! -> number of vectors in params_
-    int numparams_;
-
-    //! discretization
+    //! discretization for convenience
     Teuchos::RCP<DRT::Discretization> discret_;
-
-    //! actual set of material parameters in elementwise colmap layout
-    Teuchos::RCP<Epetra_MultiVector> params_;
 
     //! actual set of material parameters in some parametrization layout
     Teuchos::RCP<Epetra_MultiVector> optparams_;
@@ -131,12 +121,6 @@ namespace INVANA
     //! parametrization layout of the optimization parameters
     Teuchos::RCP<Epetra_Map> paramlayoutmap_;
 
-    //! inidicates meta parmaetrization of the material parameters k_m = k^2+0.1
-    bool metaparams_;
-
-    //! construct map of material parameters to be optimized
-    void SetupMatOptMap();
-
     //! set elementwise material parameters
     virtual void SetParams();
 
@@ -146,16 +130,42 @@ namespace INVANA
     //! let the vector of material parameters be filled by the derived classes
     virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params) = 0;
 
-    //! contract gradient wrt one physical material parameter (dfintp)
-    //! to the optimization parameter space (dfint) for that physical parameter
-    //! but in a distributed proc environment -> call Consolidate() finally
+    //! apply chain rule for derivation wrt the optimization parameters
     virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
                                   double val,
                                   int elepos,
                                   int parapos) = 0;
 
-    //! consolidate gradient among all procs.
+    //! "consolidate" chain rule application among procs
     virtual void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint) = 0;
+
+  private:
+
+    //! map of names for each material parameter
+    //! key: matid, value: value-enum <BR>
+    //! value is of enum type and can be used to set the respective material parameter directly<BR>
+    //! e.g. < 1 ; ( youngs, beta)> <BR>
+    //!      < 2 ; ( k1 , k2 )>
+    std::map<int, std::vector<int> > paramap_;
+
+    //! map of matids to parameter-ids for the parameter vector kept in here<BR>
+    //! e.g.  < 1 ; (0 , 1)> <BR>
+    //!       < 2 ; (2 , 3)> <BR>
+    //! wrt the above example this means youngs is stored in vector 0, beta in vector 1, k1 in vector 3, etc.
+    std::map<int,std::vector<int> > parapos_;
+
+    //! number of physically different material parameters
+    //! -> number of vectors in MatParManager::params_
+    int numparams_;
+
+    //! actual set of material parameters in elementwise colmap layout
+    Teuchos::RCP<Epetra_MultiVector> params_;
+
+    //! inidicates meta parametrization of the material parameters. Hard coded: \f$ p_m = 0.5*p_o^2+0.1\f$
+    bool metaparams_;
+
+    //! setup paramap_, parapos_ from input and check for validity
+    void SetupMatOptMap();
 
   };
 

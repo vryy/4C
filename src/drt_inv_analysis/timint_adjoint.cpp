@@ -6,24 +6,18 @@
 <pre>
 Maintainer: Sebastian Kehl
             kehl@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
+            089 - 289-10361
 </pre>
 
 !*/
+#include "timint_adjoint.H"
 
 #include <iostream>
 #include "../drt_io/io_pstream.H"
 #include "Epetra_SerialDenseVector.h"
-#include "Teuchos_TimeMonitor.hpp"
-
-#include "../drt_structure/stru_aux.H"
-
-#include "timint_adjoint.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
-#include "../drt_mat/matpar_bundle.H"
 
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_lib/drt_colors.H"

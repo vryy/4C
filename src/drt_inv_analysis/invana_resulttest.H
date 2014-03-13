@@ -3,13 +3,15 @@
 \file invana_resulttest.H
 
 \brief tesing of inverse analysis results
-
 <pre>
 Maintainer: Sebastian Kehl
-kehl@mhpc.mw.tum.de
-089 - 289-15249
+            kehl@mhpc.mw.tum.de
+            089 - 289-10361
 </pre>
+
 */
+
+
 /*----------------------------------------------------------------------*/
 
 #ifndef INVANA_RESULTTEST_H
