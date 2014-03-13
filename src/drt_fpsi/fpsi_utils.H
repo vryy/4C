@@ -6,7 +6,7 @@
 
  <pre>
    Maintainer: Rauch Andreas
-               rauch.andreas@mytum.de
+               rauch@lnm.mw.tum.de
  </pre>
  *-----------------------------------------------------------------------*/
 #ifndef FPSI_UTILS_H_

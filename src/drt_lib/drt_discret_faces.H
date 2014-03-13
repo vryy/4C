@@ -8,7 +8,7 @@
 
 <pre>
 Maintainer: Benedikt Schott, Martin Kronbichler
-            [schott,kronbichler]@lnm.mw.tum.de
+            {schott,kronbichler}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>

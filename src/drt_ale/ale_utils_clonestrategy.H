@@ -6,7 +6,7 @@
 
 <pre>
 Maintainer: Matthias Mayr
-            mayr@lnm.mw.tum.de
+            mayr@mhpc.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
 </pre>

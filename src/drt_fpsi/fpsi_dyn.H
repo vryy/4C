@@ -5,7 +5,7 @@
 
  <pre>
    Maintainer: Rauch Andreas
-               rauch.andreas@mytum.de
+               rauch@lnm.mw.tum.de
  </pre>
  *------------------------------------------------------------------------------------------------*/
 

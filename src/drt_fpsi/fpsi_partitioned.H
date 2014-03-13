@@ -4,7 +4,7 @@
 
 <pre>
 Maintainer: Andreas Rauch
-            rauch.andreas@mytum.de
+            rauch@lnm.mw.tum.de
 
 </pre>
 

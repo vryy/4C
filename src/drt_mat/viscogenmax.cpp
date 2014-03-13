@@ -15,7 +15,7 @@ MAT 0   MAT_ViscoGenMax   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 RELAX_ISOT_PRINC 0 BET
 
 <pre>
 Maintainer: Aline Bel
-            brunon@lnm.mw.tum.de
+            bel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15255
 </pre>

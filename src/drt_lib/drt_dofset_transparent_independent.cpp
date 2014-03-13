@@ -5,7 +5,7 @@
 
 <pre>
 Maintainer: Shadan Shahmiri
-            Shahmiri@lnm.mw.tum.de
+            shahmiri@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15240
 </pre>

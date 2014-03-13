@@ -6,7 +6,7 @@
 
 <pre>
 Maintainer: Sebastian Kehl
-kehl@lnm.mw.tum.de
+kehl@mhpc.mw.tum.de
 089 - 289-15249
 </pre>
 */

@@ -5,7 +5,7 @@
 
 <pre>
 Maintainer: Sebastian Kehl
-            Kehl@lnm.mw.tum.de
+            kehl@mhpc.mw.tum.de
             http://www.lnm.mw.tum.de
 
 </pre>

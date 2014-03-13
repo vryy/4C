@@ -4,7 +4,7 @@
 
 <pre>
 Maintainer: Jonas Biehler
-            biehler @lnm.mw.tum.de
+            biehler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
 </pre>
 */

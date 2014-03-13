@@ -7,7 +7,7 @@
 
  <pre>
    Maintainer: Moritz Thon
-               thon@lnm.mw.tum.de
+               thon@mhpc.mw.tum.de
                http://www.lnm.mw.tum.de
  </pre>
  *----------------------------------------------------------------------*/

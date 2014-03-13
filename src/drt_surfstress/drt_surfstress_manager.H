@@ -43,7 +43,7 @@ namespace UTILS
 \brief Class controlling surface stresses due to interfacial phenomena
 and containing all necessary history data
 
-\author wiechert (wiechert@lnm.mw.tum.de)
+\author wiechert (yoshihara@lnm.mw.tum.de)
 */
 class SurfStressManager
 {
