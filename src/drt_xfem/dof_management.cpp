@@ -469,9 +469,10 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformStandardToXFEMVector(
         idof++;
       }
 #ifdef DEBUG
-      if (idof != outgid.size())
-        // this is not really an error, but it would be unusual to intentionally skip fields for output
-        dserror("Not all available fields have been transformed to output vector!");
+      // TAW: error: ‘outgid’ was not declared in this scope
+      //if (idof != outgid.size())
+      //  // this is not really an error, but it would be unusual to intentionally skip fields for output
+      //  dserror("Not all available fields have been transformed to output vector!");
 #endif
     }
   };
