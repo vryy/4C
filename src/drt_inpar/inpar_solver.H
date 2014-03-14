@@ -82,8 +82,6 @@ namespace INPAR
       azprec_MLfluid2,           ///< energy optimal unsymmetric ML for Fluids
       azprec_MLAPI,              ///< experimental mlapi preconditioner
       azprec_ML,                 ///< standard ML for structures
-      azprec_AMGBS,              ///< AMG(Braess-Sarazin) preconditioner for Fluids
-      azprec_AMG,                ///< AMG preconditioner for Fluids (without ML)
       azprec_BGS2x2,             ///< Block Gauss-Seidel for 2x2 system
       azprec_TekoSIMPLE,         ///< SIMPLE preconditioner for 2x2 block system (Teko)
       azprec_BGSnxn,             ///< Block Gauss-Seidel for nxn system (Teko)
@@ -95,18 +93,6 @@ namespace INPAR
       azprec_MueLuAMG_contact3,  ///< MueLu AMG preconditioner (special enhanced handling for condensed contact formulation)
       azprec_MueLuAMG_contactSP, ///< MueLu AMG preconditioner for saddlepoint formulation
       azprec_MueLuAMG_contactPen ///< MueLu AMG preconditioner for penalty formulation
-    };
-
-    /// Different prolongation smoothing strategies for AMGBS preconditioner
-    ///
-    /// \author tw
-    /// \date 03/10
-    enum ProlongatorSmoothingStrategy
-    {
-        PA_AMG,         ///< plain aggregation: no smoothing
-        SA_AMG,         ///< SA-AMG (smoothed aggregation)
-        PG_AMG,         ///< PG-AMG (Petrov Galerkin energy minimization)
-        PG2_AMG         ///< PG-AMG (Petrov Galerkin energy minimization), same as MATLAB variant
     };
 
     /// permutation strategies for linear solvers

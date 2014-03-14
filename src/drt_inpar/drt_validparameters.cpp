@@ -6748,8 +6748,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   {
     // this one is longer than 15 and the tuple<> function does not support this,
     // so build the Tuple class directly (which can be any size)
-    Teuchos::Tuple<std::string,29> name;
-    Teuchos::Tuple<int,29>  number;
+    Teuchos::Tuple<std::string,27> name;
+    Teuchos::Tuple<int,27>  number;
 
     name[0] = "none";                         number[0] = INPAR::SOLVER::azprec_none;
     name[1] = "ILU";                          number[1] = INPAR::SOLVER::azprec_ILU;
@@ -6767,19 +6767,17 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     name[13] = "MLAPI";                       number[13] = INPAR::SOLVER::azprec_MLAPI;
     name[14] = "GaussSeidel";                 number[14] = INPAR::SOLVER::azprec_GaussSeidel;
     name[15] = "DownwindGaussSeidel";         number[15] = INPAR::SOLVER::azprec_DownwindGaussSeidel;
-    name[16] = "AMG(Braess-Sarazin)";         number[16] = INPAR::SOLVER::azprec_AMGBS;
-    name[17] = "AMG";                         number[17] = INPAR::SOLVER::azprec_AMG;
-    name[18] = "BGS2x2";                      number[18] = INPAR::SOLVER::azprec_BGS2x2;
-    name[19] = "BGSnxn";                      number[19] = INPAR::SOLVER::azprec_BGSnxn;
-    name[20] = "TekoSIMPLE";                  number[20] = INPAR::SOLVER::azprec_TekoSIMPLE;
-    name[21] = "CheapSIMPLE";                 number[21] = INPAR::SOLVER::azprec_CheapSIMPLE;
-    name[22] = "MueLu_sym";                   number[22] = INPAR::SOLVER::azprec_MueLuAMG_sym;
-    name[23] = "MueLu_nonsym";                number[23] = INPAR::SOLVER::azprec_MueLuAMG_nonsym;
-    name[24] = "MueLu_contact";               number[24] = INPAR::SOLVER::azprec_MueLuAMG_contact;
-    name[25] = "MueLu_contact2";              number[25] = INPAR::SOLVER::azprec_MueLuAMG_contact2;
-    name[26] = "MueLu_contact3";              number[26] = INPAR::SOLVER::azprec_MueLuAMG_contact3;
-    name[27] = "MueLu_contactSP";             number[27] = INPAR::SOLVER::azprec_MueLuAMG_contactSP;
-    name[28] = "MueLu_contactPenalty";        number[28] = INPAR::SOLVER::azprec_MueLuAMG_contactPen;
+    name[16] = "BGS2x2";                      number[16] = INPAR::SOLVER::azprec_BGS2x2;
+    name[17] = "BGSnxn";                      number[17] = INPAR::SOLVER::azprec_BGSnxn;
+    name[18] = "TekoSIMPLE";                  number[18] = INPAR::SOLVER::azprec_TekoSIMPLE;
+    name[19] = "CheapSIMPLE";                 number[19] = INPAR::SOLVER::azprec_CheapSIMPLE;
+    name[20] = "MueLu_sym";                   number[20] = INPAR::SOLVER::azprec_MueLuAMG_sym;
+    name[21] = "MueLu_nonsym";                number[21] = INPAR::SOLVER::azprec_MueLuAMG_nonsym;
+    name[22] = "MueLu_contact";               number[22] = INPAR::SOLVER::azprec_MueLuAMG_contact;
+    name[23] = "MueLu_contact2";              number[23] = INPAR::SOLVER::azprec_MueLuAMG_contact2;
+    name[24] = "MueLu_contact3";              number[24] = INPAR::SOLVER::azprec_MueLuAMG_contact3;
+    name[25] = "MueLu_contactSP";             number[25] = INPAR::SOLVER::azprec_MueLuAMG_contactSP;
+    name[26] = "MueLu_contactPenalty";        number[26] = INPAR::SOLVER::azprec_MueLuAMG_contactPen;
 
     setStringToIntegralParameter<int>(
       "AZPREC", "ILU",
@@ -6993,48 +6991,48 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
       );
   }
 
-  // parameters for AMG(BS)
-  setNumericStringParameter("AMGBS_BS_DAMPING","1.3 1.3 1.3",
-                            "Relaxation factor for Braess-Sarazin smoother within AMGBS method",
-                            &list);
-
-  setNumericStringParameter("AMGBS_BS_PCSWEEPS","2 2 2",
-                            "number of jacobi/sgs sweeps for smoothing/solving pressure correction equation within Braess-Sarazin. only necessary for jacobi/gauss seidel",
-                            &list);
-
-  setNumericStringParameter("AMGBS_BS_PCDAMPING","1.0 1.0 1.0",
-                              "jacobi damping factors for smoothing/solving pressure correction equation within Braess-Sarazin. only necessary for jacobi/gauss seidel",
-                              &list);
-
-
-  setStringToIntegralParameter<int>(
-    "AMGBS_PSMOOTHER_VEL","PA-AMG","Prolongation/Restriction smoothing strategy (velocity part in AMGBS preconditioner)",
-    tuple<std::string>("PA-AMG","SA-AMG","PG-AMG","PG2-AMG"),
-    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG,INPAR::SOLVER::PG_AMG,INPAR::SOLVER::PG2_AMG),
-    &list);
-  setStringToIntegralParameter<int>(
-    "AMGBS_PSMOOTHER_PRE","PA-AMG","Prolongation/Restriction smoothing strategy (pressure part in AMGBS preconditioner)",
-    tuple<std::string>("PA-AMG","SA-AMG","PG-AMG","PG2-AMG"),
-    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG,INPAR::SOLVER::PG_AMG,INPAR::SOLVER::PG2_AMG),
-    &list);
-
-  setStringToIntegralParameter<int>(
-    "AMGBS_BS_PCCOARSE","Umfpack","approximation algorithm for solving pressure correction equation (coarsest level)",
-    tuple<std::string>("Umfpack","KLU","ILU","Jacobi","Gauss-Seidel","symmetric Gauss-Seidel","Jacobi stand-alone","Gauss-Seidel stand-alone","symmetric Gauss-Seidel stand-alone"),
-    tuple<int>(0,1,2,3,4,5,6,7,8),
-    &list);
-
-  setStringToIntegralParameter<int>(
-    "AMGBS_BS_PCMEDIUM","Umfpack","approximation algorithm for solving pressure correction equation (medium level)",
-    tuple<std::string>("Umfpack","KLU","ILU","Jacobi","Gauss-Seidel","symmetric Gauss-Seidel","Jacobi stand-alone","Gauss-Seidel stand-alone","symmetric Gauss-Seidel stand-alone"),
-    tuple<int>(0,1,2,3,4,5,6,7,8),
-    &list);
-
-  setStringToIntegralParameter<int>(
-    "AMGBS_BS_PCFINE","Umfpack","approximation algorithm for solving pressure correction equation (finest level)",
-    tuple<std::string>("Umfpack","KLU","ILU","Jacobi","Gauss-Seidel","symmetric Gauss-Seidel","Jacobi stand-alone","Gauss-Seidel stand-alone","symmetric Gauss-Seidel stand-alone"),
-    tuple<int>(0,1,2,3,4,5,6,7,8),
-    &list);
+//  // parameters for AMG(BS)
+//  setNumericStringParameter("AMGBS_BS_DAMPING","1.3 1.3 1.3",
+//                            "Relaxation factor for Braess-Sarazin smoother within AMGBS method",
+//                            &list);
+//
+//  setNumericStringParameter("AMGBS_BS_PCSWEEPS","2 2 2",
+//                            "number of jacobi/sgs sweeps for smoothing/solving pressure correction equation within Braess-Sarazin. only necessary for jacobi/gauss seidel",
+//                            &list);
+//
+//  setNumericStringParameter("AMGBS_BS_PCDAMPING","1.0 1.0 1.0",
+//                              "jacobi damping factors for smoothing/solving pressure correction equation within Braess-Sarazin. only necessary for jacobi/gauss seidel",
+//                              &list);
+//
+//
+//  setStringToIntegralParameter<int>(
+//    "AMGBS_PSMOOTHER_VEL","PA-AMG","Prolongation/Restriction smoothing strategy (velocity part in AMGBS preconditioner)",
+//    tuple<std::string>("PA-AMG","SA-AMG","PG-AMG","PG2-AMG"),
+//    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG,INPAR::SOLVER::PG_AMG,INPAR::SOLVER::PG2_AMG),
+//    &list);
+//  setStringToIntegralParameter<int>(
+//    "AMGBS_PSMOOTHER_PRE","PA-AMG","Prolongation/Restriction smoothing strategy (pressure part in AMGBS preconditioner)",
+//    tuple<std::string>("PA-AMG","SA-AMG","PG-AMG","PG2-AMG"),
+//    tuple<int>(INPAR::SOLVER::PA_AMG,INPAR::SOLVER::SA_AMG,INPAR::SOLVER::PG_AMG,INPAR::SOLVER::PG2_AMG),
+//    &list);
+//
+//  setStringToIntegralParameter<int>(
+//    "AMGBS_BS_PCCOARSE","Umfpack","approximation algorithm for solving pressure correction equation (coarsest level)",
+//    tuple<std::string>("Umfpack","KLU","ILU","Jacobi","Gauss-Seidel","symmetric Gauss-Seidel","Jacobi stand-alone","Gauss-Seidel stand-alone","symmetric Gauss-Seidel stand-alone"),
+//    tuple<int>(0,1,2,3,4,5,6,7,8),
+//    &list);
+//
+//  setStringToIntegralParameter<int>(
+//    "AMGBS_BS_PCMEDIUM","Umfpack","approximation algorithm for solving pressure correction equation (medium level)",
+//    tuple<std::string>("Umfpack","KLU","ILU","Jacobi","Gauss-Seidel","symmetric Gauss-Seidel","Jacobi stand-alone","Gauss-Seidel stand-alone","symmetric Gauss-Seidel stand-alone"),
+//    tuple<int>(0,1,2,3,4,5,6,7,8),
+//    &list);
+//
+//  setStringToIntegralParameter<int>(
+//    "AMGBS_BS_PCFINE","Umfpack","approximation algorithm for solving pressure correction equation (finest level)",
+//    tuple<std::string>("Umfpack","KLU","ILU","Jacobi","Gauss-Seidel","symmetric Gauss-Seidel","Jacobi stand-alone","Gauss-Seidel stand-alone","symmetric Gauss-Seidel stand-alone"),
+//    tuple<int>(0,1,2,3,4,5,6,7,8),
+//    &list);
 
   // switch order of blocks in BGS2x2 preconditioner
   setStringToIntegralParameter<int>(
