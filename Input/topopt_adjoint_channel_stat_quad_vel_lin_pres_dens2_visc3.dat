@@ -10,7 +10,7 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-- stationary adjoint fluid example in the topopt frame
+- stationary continuous adjoint fluid example in the topopt frame
 - academical, two-dimensional test case with a duct
 - linear fluid velocity field:
 o u_1 = x + 2*y
@@ -71,6 +71,7 @@ ADAPTCONV_BETTER                0.1
 CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
 CONVTOL                         1e-10
+GMSH_OUTPUT                     yes
 INITIALFIELD                    field_by_function
 ITEMAX                          5
 NONLINITER Newton //fixed_point_like

@@ -10,7 +10,7 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-- pseudo-instationary adjoint fluid example in the topopt frame with a time-independent solution
+- pseudo-instationary continuous adjoint fluid example in the topopt frame with a time-independent solution
 - academical, two-dimensional test case with a duct
 - linear fluid velocity field:
 o u_1 = x + 2*y
