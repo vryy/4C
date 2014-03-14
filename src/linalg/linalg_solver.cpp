@@ -762,9 +762,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     mllist.set("energy minimization: type",3); // 1,2,3 cheap -> expensive
     mllist.set("aggregation: block scaling",false);
     break;
-  case INPAR::SOLVER::azprec_AMG:   // set flag to use AMGPreconditioner
-    mllist.set<bool>("LINALG::AMGPreconditioner",true);
-    break;
   default: dserror("Unknown type of ml preconditioner");
     break;
   } // end switch prec typ
@@ -777,7 +774,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   case INPAR::SOLVER::azprec_MLAPI: // set flag to use mlapi operator
   case INPAR::SOLVER::azprec_MLfluid: // unsymmetric, unsmoothed restriction
   case INPAR::SOLVER::azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
-  case INPAR::SOLVER::azprec_AMG:   // set flag to use AMGPreconditioner
   {
 #if defined(PARALLEL) && defined(PARMETIS) // these are the hard-coded ML repartitioning settings
     mllist.set("repartition: enable",1);
@@ -1218,8 +1214,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
   case INPAR::SOLVER::azprec_MueLuAMG_contact3:
     beloslist.set("Preconditioner Type","ML");
     break;
-  case INPAR::SOLVER::azprec_AMGBS:
-  case INPAR::SOLVER::azprec_AMG:
   case INPAR::SOLVER::azprec_BGS2x2:
     beloslist.set("Preconditioner Type","ML");
     break;
@@ -1300,8 +1294,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
   if (azprectyp == INPAR::SOLVER::azprec_ML       ||
       azprectyp == INPAR::SOLVER::azprec_MLfluid  ||
       azprectyp == INPAR::SOLVER::azprec_MLfluid2 ||
-      azprectyp == INPAR::SOLVER::azprec_MLAPI ||
-      azprectyp == INPAR::SOLVER::azprec_AMG)          // new AMG preconditioner
+      azprectyp == INPAR::SOLVER::azprec_MLAPI )
   {
     Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
     mllist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);
@@ -1516,8 +1509,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     case INPAR::SOLVER::azprec_MLfluid:
     case INPAR::SOLVER::azprec_MLAPI:
     case INPAR::SOLVER::azprec_MLfluid2:
-    case INPAR::SOLVER::azprec_AMGBS:
-    case INPAR::SOLVER::azprec_AMG:
     case INPAR::SOLVER::azprec_BGS2x2:
     case INPAR::SOLVER::azprec_BGSnxn:
     case INPAR::SOLVER::azprec_TekoSIMPLE:
@@ -1616,9 +1607,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     if (azprectyp == INPAR::SOLVER::azprec_ML       ||
         azprectyp == INPAR::SOLVER::azprec_MLfluid  ||
         azprectyp == INPAR::SOLVER::azprec_MLfluid2 ||
-        azprectyp == INPAR::SOLVER::azprec_MLAPI    ||
-        azprectyp == INPAR::SOLVER::azprec_AMG)  // new AMG preconditioner
-
+        azprectyp == INPAR::SOLVER::azprec_MLAPI   )
     {
       Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
       mllist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);
@@ -1649,327 +1638,12 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
       muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);         // MueLu reuses the ML parameter list
       muelulist.set("MueLu: Prec Type", "ContactSP"); // not used?
-      // append AMGBS information
-      //muelulist.set("amgbs: prolongator smoother (vel)",inparams.get<std::string>("AMGBS_PSMOOTHER_VEL"));
-      //muelulist.set("amgbs: prolongator smoother (pre)",inparams.get<std::string>("AMGBS_PSMOOTHER_PRE"));
     }
     if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contactPen)
     {
       Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (PenaltyContact) Parameters");
       muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);         // MueLu reuses the ML parameter list
     }
-    //------------------------------------- set parameters for AMGBS if used
-    if (azprectyp == INPAR::SOLVER::azprec_AMGBS      )
-    {
-      Teuchos::ParameterList& amglist = outparams.sublist("AMGBS Parameters");
-      ML_Epetra::SetDefaults("SA",amglist);
-      amglist.set("amgbs: smoother: pre or post"    ,"both");
-      amglist.set("amgbs: prolongator smoother (vel)",inparams.get<std::string>("AMGBS_PSMOOTHER_VEL"));
-      amglist.set("amgbs: prolongator smoother (pre)",inparams.get<std::string>("AMGBS_PSMOOTHER_PRE"));
-
-      amglist.set("output"                          ,inparams.get<int>("ML_PRINT"));
-      amglist.set("coarse: max size"                ,inparams.get<int>("ML_MAXCOARSESIZE"));
-      amglist.set("max levels"                      ,inparams.get<int>("ML_MAXLEVEL"));
-      amglist.set("aggregation: threshold"          ,inparams.get<double>("ML_PROLONG_THRES"));
-      amglist.set("aggregation: damping factor"     ,inparams.get<double>("ML_PROLONG_SMO"));
-      amglist.set("aggregation: nodes per aggregate",inparams.get<int>("ML_AGG_SIZE"));
-      // override the default sweeps=2 with a default sweeps=1
-      // individual level sweeps are set below
-      amglist.set("smoother: sweeps",1);
-      switch (DRT::INPUT::IntegralValue<int>(inparams,"ML_COARSEN"))
-      {
-      case 0:  amglist.set("aggregation: type","Uncoupled");  break;
-      case 1:  amglist.set("aggregation: type","METIS");      break;
-      case 2:  amglist.set("aggregation: type","VBMETIS");    break;
-      case 3:  amglist.set("aggregation: type","MIS");        break;
-      default: dserror("Unknown type of coarsening for ML"); break;
-      }
-
-      //////////////////// set braess-sarazin smoothers
-      const int mlmaxlevel = inparams.get<int>("ML_MAXLEVEL");
-      // create vector of integers containing smoothing steps with braess-sarazin
-      std::vector<int> mlsmotimessteps;
-      {
-        std::istringstream mlsmotimes(Teuchos::getNumericStringParameter(inparams,"ML_SMOTIMES"));
-        std::string word;
-        while (mlsmotimes >> word)
-          mlsmotimessteps.push_back(std::atoi(word.c_str()));
-      }
-
-      if ((int)mlsmotimessteps.size() < mlmaxlevel)
-        dserror("Not enough smoothing steps ML_SMOTIMES=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
-            mlsmotimessteps.size(),mlmaxlevel);
-
-      //////////////////// read in damping parameters for Braess Sarazin
-      std::vector<double> bsdamping;   // damping parameters for Braess-Sarazin
-      {
-        double word;
-        std::istringstream bsdampingstream(Teuchos::getNumericStringParameter(inparams,"AMGBS_BS_DAMPING"));
-        while (bsdampingstream >> word)
-          bsdamping.push_back(word);
-      }
-      if ((int)bsdamping.size() < mlmaxlevel)
-        dserror("Not enough damping factors AMGBS_BS_DAMPING=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
-            bsdamping.size(),mlmaxlevel);
-
-      //////////////////// read in smoothing time steps for pressure correction equation with jacobi/sgs iteration
-      std::vector<int> bspcsweeps;
-      {
-        std::istringstream bsdampingstream(Teuchos::getNumericStringParameter(inparams,"AMGBS_BS_PCSWEEPS"));
-        std::string word;
-        while (bsdampingstream >> word)
-          bspcsweeps.push_back(std::atoi(word.c_str()));
-      }
-      if ((int)bspcsweeps.size() < mlmaxlevel)
-        dserror("Not enough integers for number of smoothing iterations of pressure correction equation within Braess-Sarazin. AMGBS_BS_PCSWEEPS=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
-            bspcsweeps.size(),mlmaxlevel);
-
-      //////////////////// read in damping parameters for jacobi/sgs iteration in pressure correction solver
-      std::vector<double> bspcdamping;
-      {
-        double word;
-        std::istringstream bspcdampingstream(Teuchos::getNumericStringParameter(inparams,"AMGBS_BS_PCDAMPING"));
-        while (bspcdampingstream >> word)
-          bspcdamping.push_back(word);
-      }
-      if ((int)bspcdamping.size() < mlmaxlevel)
-        dserror("Not enough damping factors AMGBS_BS_PCDAMPING=%d, must be larger/equal than ML_MAXLEVEL=%d\n",
-            bspcdamping.size(),mlmaxlevel);
-
-      // Parameters for presssure correction smoother
-      for (int i=0; i<mlmaxlevel; ++i)
-      {
-        char levelstr[11];
-        sprintf(levelstr,"(level %d)",i);
-        Teuchos::ParameterList& smolevelsublist = amglist.sublist("braess-sarazin: list "+(string)levelstr);
-
-        smolevelsublist.set("braess-sarazin: sweeps"                      ,mlsmotimessteps[i]);
-        smolevelsublist.set("braess-sarazin: damping factor"              ,bsdamping[i]);
-        smolevelsublist.set("pressure correction approx: type"      ,"ILU");   // TODO choose Umfpack, KLU, ILU, Jacobi, Gauss-Seidel, symmetric Gauss-Seidel
-        smolevelsublist.set("Ifpack overlap",inparams.get<int>("IFPACKOVERLAP"));
-
-        switch (DRT::INPUT::IntegralValue<int>(inparams,"AMGBS_BS_PCCOARSE"))
-        {
-        case 0:
-        {
-          smolevelsublist.set("coarse: type","Umfpack");
-        }
-        break;
-        case 1:
-        {
-          smolevelsublist.set("coarse: type","KLU");
-        }
-        break;
-        case 2: // ILU is chosen
-        {
-          smolevelsublist.set("coarse: type"          ,"ILU");
-          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
-          ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-          ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
-          ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-        }
-        break;
-        case 3:
-        case 6:
-        {
-          smolevelsublist.set("coarse: type","Jacobi");
-          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
-          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-          ifpacklist.set("relaxation: type","Jacobi");
-          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-          break;
-        }
-        case 4:
-        case 7:
-        {
-          smolevelsublist.set("coarse: type","Gauss-Seidel");
-          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
-          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-          ifpacklist.set("relaxation: type","Gauss-Seidel");
-          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-          break;
-        }
-        case 5:
-        case 8:
-        {
-          smolevelsublist.set("coarse: type","symmetric Gauss-Seidel");
-          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
-          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-          ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
-          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-          break;
-        }
-        default: dserror("Unknown type of coarse solver for pressure correction equation"); break;
-        } // switch (azvar->mlsmotype_coarse)
-
-        switch (DRT::INPUT::IntegralValue<int>(inparams,"AMGBS_BS_PCMEDIUM"))
-        {
-        case 0:
-        {
-          smolevelsublist.set("medium: type","Umfpack");
-        }
-        break;
-        case 1:
-        {
-          smolevelsublist.set("medium: type","KLU");
-        }
-        break;
-        case 2:
-        {
-          smolevelsublist.set("medium: type"          ,"ILU");
-          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
-          ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-          ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
-          ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-        }
-        break;
-        case 3:
-        case 6:
-        {
-          smolevelsublist.set("medium: type","Jacobi");
-          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
-          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-          ifpacklist.set("relaxation: type","Jacobi");
-          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-          break;
-        }
-        case 4:
-        case 7:
-        {
-          smolevelsublist.set("medium: type","Gauss-Seidel");
-          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
-          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-          ifpacklist.set("relaxation: type","Gauss-Seidel");
-          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-          break;
-        }
-        case 5:
-        case 8:
-        {
-          smolevelsublist.set("medium: type","symmetric Gauss-Seidel");
-          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
-          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-          ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
-          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-          break;
-        }
-        default: dserror("Unknown type of medium level solver for pressure correction equation"); break;
-        }
-
-        switch (DRT::INPUT::IntegralValue<int>(inparams,"AMGBS_BS_PCFINE"))
-        {
-        case 0:
-        {
-          smolevelsublist.set("fine: type","Umfpack");
-        }
-        break;
-        case 1:
-        {
-          smolevelsublist.set("fine: type","KLU");
-        }
-        break;
-        case 2:
-        {
-          smolevelsublist.set("fine: type"          ,"ILU");
-          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
-          ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-          ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
-          ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-        }
-        break;
-        case 3:
-        case 6:
-        {
-          smolevelsublist.set("fine: type","Jacobi");
-          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
-          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-          ifpacklist.set("relaxation: type","Jacobi");
-          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-          break;
-        }
-        case 4:
-        case 7:
-        {
-          smolevelsublist.set("fine: type","Gauss-Seidel");
-          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
-          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-          ifpacklist.set("relaxation: type","Gauss-Seidel");
-          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-          break;
-        }
-        case 5:
-        case 8:
-        {
-          smolevelsublist.set("fine: type","symmetric Gauss-Seidel");
-          Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
-          ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-          ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
-          ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
-          ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
-          ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
-          ifpacklist.set("relaxation: damping factor",bspcdamping[i]);
-          break;
-        }
-        default: dserror("Unknown type of coarse solver for pressure correction equation"); break;
-        } // switch (azvar->mlsmotype_coarse)
-
-
-      } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
-
-
-
-      amglist.set("PDE equations",1);
-      amglist.set("null space: dimension",1);
-      amglist.set("null space: type","pre-computed");
-      amglist.set("null space: add default vectors",false);
-      amglist.set<double*>("null space: vectors",NULL);
-
-    } // if AMGBS preconditioner
     if (azprectyp == INPAR::SOLVER::azprec_BGS2x2)
     {
       Teuchos::ParameterList& bgslist = outparams.sublist("BGS Parameters");

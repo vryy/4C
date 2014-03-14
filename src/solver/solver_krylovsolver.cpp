@@ -260,10 +260,6 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
 #endif
 #endif
     }
-    else if ( Params().isSublist("AMGBS Parameters") )
-    {
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::AMGBSPreconditioner( outfile_, Params() ) );
-    }
     else if (azlist.get<int>("AZ_precond") == AZ_none)  // FIXME Attention: this is dangerous.
     {
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::NonePreconditioner( outfile_, Params() ) );
@@ -315,10 +311,6 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
     else if ( Params().isSublist("BGS Parameters") )
     {
       preconditioner_ = Teuchos::rcp( new BGSPreconditioner( outfile_, Params(), Params().sublist("BGS Parameters") ) );
-    }
-    else if ( Params().isSublist("AMGBS Parameters") )
-    {
-      preconditioner_ = Teuchos::rcp( new AMGBSPreconditioner( outfile_, Params() ) );
     }
     else if ( Params().isSublist("Teko Parameters") )
     {

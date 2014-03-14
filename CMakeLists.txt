@@ -1381,18 +1381,6 @@ set(OBJS_LINALG
 )
 set(OBJS_SOLVER
   src/linalg/linalg_solver.cpp
-  src/solver/amg/aggregation_method.cpp
-  src/solver/amg/aggregation_method_ml.cpp
-  src/solver/amg/aggregation_method_uncoupled.cpp
-  src/solver/amg/smoother.cpp
-  src/solver/amg/transfer_operator.cpp
-  src/solver/amg/transfer_operator_pgamg.cpp
-  src/solver/amg/transfer_operator_pgamg2.cpp
-  src/solver/amg/transfer_operator_saamg.cpp
-  src/solver/amg/transfer_operator_tentative.cpp
-  src/solver/amg/amgpreconditioner.cpp
-  src/solver/amg/braesssarazin_smoother.cpp
-  src/solver/saddlepointpreconditioner.cpp
   src/solver/bgs2x2_operator.cpp
   src/solver/solver_cheapsimplepreconditioner.cpp
   src/solver/solver_preconditionertype.cpp

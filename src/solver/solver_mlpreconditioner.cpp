@@ -29,7 +29,6 @@ Maintainer: Tobias Wiesner
 #include "ml_MultiLevelPreconditioner.h"
 
 #include "../linalg/linalg_mlapi_operator.H"  // Michael's MLAPI based ML preconditioner
-#include "amg/amgpreconditioner.H"      // Tobias' smoothed aggregation AMG implementation in BACI (only for fluids)
 
 #include "../linalg/linalg_utils.H"
 
@@ -116,14 +115,9 @@ void LINALG::SOLVER::MLPreconditioner::Setup( bool create,
 
     // see whether we use standard ml or our own mlapi operator
     const bool domlapioperator = mllist_.get<bool>("LINALG::AMG_Operator",false);
-    const bool doamgpreconditioner = mllist_.get<bool>("LINALG::AMGPreconditioner",false);
     if (domlapioperator)
     {
       P_ = Teuchos::rcp(new LINALG::AMG_Operator(Pmatrix_,mllist_,true));
-    }
-    else if (doamgpreconditioner)
-    {
-      P_ = Teuchos::rcp(new LINALG::AMGPreconditioner(Pmatrix_,mllist_,outfile_));
     }
     else
     {

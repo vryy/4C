@@ -80,31 +80,6 @@ namespace LINALG
       Teuchos::RCP<Epetra_Operator>    P_;
     };
 
-    /// AMG BS
-    class AMGBSPreconditioner : public PreconditionerType
-    {
-    public:
-
-      AMGBSPreconditioner( FILE * outfile,
-          Teuchos::ParameterList & params );
-
-      virtual void Setup( bool create,
-                          Epetra_Operator * matrix,
-                          Epetra_MultiVector * x,
-                          Epetra_MultiVector * b );
-
-      virtual Epetra_Operator * PrecOperator() const { return &*P_; }
-
-      virtual void Print( std::ostream & stream ) { stream << "AMG BS"; }
-
-      /// return name of sublist in paramterlist which contains parameters for preconditioner
-      virtual const std::string getParameterListName() const { return "AMGBS Parameters"; }
-
-    private:
-      Teuchos::ParameterList & params_;
-      Teuchos::RCP<Epetra_Operator>    P_;
-    };
-
     /// General purpose block gauss-seidel preconditioner
     /*!
       2x2 block preconditioner

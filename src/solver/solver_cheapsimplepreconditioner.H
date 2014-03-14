@@ -80,7 +80,7 @@ public:
 	/*!
   \brief Setup the label of this class.
 	 */
-	const string SetupLabel() {
+	const std::string SetupLabel() {
 	  std::stringstream strLabel;
 
 	  strLabel << "CheapSIMPLE ";

@@ -28,7 +28,6 @@
 
 // include header files for concrete implementation
 #include "bgs2x2_operator.H"                   // Lena's BGS implementation
-#include "saddlepointpreconditioner.H"         // Tobias' saddle point preconditioner
 #include "solver_cheapsimplepreconditioner.H"  // Tobias' CheapSIMPLE
 
 //----------------------------------------------------------------------------------
@@ -133,7 +132,7 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
       // create velocity null space
       Teuchos::RCP<MultiVector> nspVector1 = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(strMap1,nv,true);
       for (int i=0; i<ndofpernode-1; ++i) {
-        ArrayRCP<Scalar> nsValues = nspVector1->getDataNonConst(i);
+        Teuchos::ArrayRCP<Scalar> nsValues = nspVector1->getDataNonConst(i);
         int numBlocks = nsValues.size() / (ndofpernode - 1);
         for (int j=0; j< numBlocks; ++j) {
           nsValues[j*(ndofpernode - 1) + i] = 1.0;
@@ -142,7 +141,7 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
 
       // create pressure null space
       Teuchos::RCP<MultiVector> nspVector2 = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(strMap2,np,true);
-      ArrayRCP<Scalar> nsValues2 = nspVector2->getDataNonConst(0);
+      Teuchos::ArrayRCP<Scalar> nsValues2 = nspVector2->getDataNonConst(0);
       for (int j=0; j< nsValues2.size(); ++j) {
         nsValues2[j] = 1.0;
       }
@@ -237,7 +236,7 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
 
       // extract null space for secondary field
       Teuchos::RCP<MultiVector> nspVector2 = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(strMap2,1,true);
-      ArrayRCP<Scalar> nsValues2 = nspVector2->getDataNonConst(0);
+      Teuchos::ArrayRCP<Scalar> nsValues2 = nspVector2->getDataNonConst(0);
       for (int j=0; j< nsValues2.size(); ++j) {
         nsValues2[j] = 1.0;
       }
@@ -445,35 +444,6 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
       //P_ = Teuchos::rcp(new LINALG::SOLVER::SIMPLER_Operator(Teuchos::rcp( matrix, false ),params_,params_.sublist("SIMPLER"),outfile_));
       dserror("old SIMPLE not supported any more");
     }
-  }
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-LINALG::SOLVER::AMGBSPreconditioner::AMGBSPreconditioner( FILE * outfile,
-    Teuchos::ParameterList & params )
-  : LINALG::SOLVER::PreconditionerType( outfile ),
-    params_( params )
-{
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-void LINALG::SOLVER::AMGBSPreconditioner::Setup( bool create,
-                                                 Epetra_Operator * matrix,
-                                                 Epetra_MultiVector * x,
-                                                 Epetra_MultiVector * b )
-{
-  SetupLinearProblem( matrix, x, b );
-
-  if ( create )
-  {
-    // free old matrix first
-    P_ = Teuchos::null;
-
-    // Params().sublist("AMGBS") just contains the Fluid Pressure Solver block
-    // from the dat file (not needed anymore)
-    P_ = Teuchos::rcp(new LINALG::SaddlePointPreconditioner(Teuchos::rcp( matrix, false ),params_,outfile_));
   }
 }
 
