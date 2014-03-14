@@ -75,7 +75,7 @@ done
 
 if [ $# -ne 0 ]; then
   echo "unknown option(s): $@"
-  echo "usage: do-configure [--debug] [--trilinos-debug] [--experimental] [--profiling] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
+  echo "usage: do-configure [--debug] [--trilinos-debug] [--experimental] [--profiling] [--coverage] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
   exit 1
 fi
 
