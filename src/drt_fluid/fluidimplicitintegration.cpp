@@ -810,7 +810,13 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // ----------------------------------------------------------------
   GenAlphaIntermediateValues();
 
-
+  // -------------------------------------------------------------------
+  // meshtying: evaluation of matrix P with potential mesh relocation
+  // in ALE case
+  // -------------------------------------------------------------------
+  if (msht_ != INPAR::FLUID::no_meshtying and alefluid_)
+    meshtying_->EvaluateWithMeshRelocation(dispnp_);
+    
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
   // -------------------------------------------------------------------
@@ -869,13 +875,6 @@ void FLD::FluidImplicitTimeInt::Solve()
   if ((physicaltype_ == INPAR::FLUID::loma or statisticsmanager_->WithScaTra()) and turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
     RecomputeMeanCsgsB();
 
-  // -------------------------------------------------------------------
-  // meshtying: evaluation of matrix P with potential mesh relocation
-  // in ALE case
-  // -------------------------------------------------------------------
-  if (msht_ != INPAR::FLUID::no_meshtying and alefluid_)
-    meshtying_->EvaluateWithMeshRelocation(dispnp_);
-    
   // -------------------------------------------------------------------
   // prepare print out for (multiple) corrector
   // -------------------------------------------------------------------
