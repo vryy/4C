@@ -33,24 +33,24 @@ eval set -- $OPTIONS
 while true; do
   case "$1" in
     -h|--help) 
-      echo "usage: do-configure [--debug] [--trilinos-debug] [--profiling] [--experimental] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
+      echo "usage: do-configure [--debug] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
       exit 1
       ;;
     -c|--config) 
       CONFIGURATION_FILE="$2" ; 
       shift
       ;;
-    -t|--additionaltests)
+    --additionaltests)
       ADDITIONAL_TESTS_PATH="$2" ;
       shift
       ;;
     -d|--debug) 
       BUILD_TYPE="DEBUG"
       ;;
-    -p|--profiling) 
+    --profiling) 
       BUILD_TYPE="RELWITHDEBINFO"
       ;;
-    -c|--coverage) 
+    --coverage) 
       COVERAGE=1
       ;;
     --trilinos-debug)
