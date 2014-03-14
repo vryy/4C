@@ -47,46 +47,7 @@ CENTERLINEPOINT                 0.0 0.0 0.0
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
---------------------------------------------------------------------SOLVER 1
-AMGBS_BS_DAMPING                1.3 1.3 1.3                  
-AMGBS_BS_PCCOARSE               Umfpack
-AMGBS_BS_PCFINE                 Umfpack
-AMGBS_BS_PCMEDIUM               Umfpack
-AMGBS_PSMOOTHER_PRE             PA-AMG
-AMGBS_PSMOOTHER_VEL             PA-AMG
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-IFPACKFILL                      1.0
-IFPACKGFILL                     0
-IFPACKOVERLAP                   0
-IFPACKCOMBINE                   Add                           // Add Insert Zero
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1                    
+--------------------------------------------------------------------SOLVER 1                  
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
