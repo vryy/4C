@@ -341,11 +341,11 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   scale_sep_ = INPAR::FLUID::no_scale_sep;
 
   // fine-scale subgrid viscosity?
-  fssgv_ = params_->sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC","No");
+  fssgv_ = DRT::INPUT::IntegralValue<INPAR::FLUID::FineSubgridVisc>(params_->sublist("TURBULENCE MODEL"),"FSSUGRVISC");
 
   // warning if classical (all-scale) turbulence model and fine-scale
   // subgrid-viscosity approach are intended to be used simultaneously
-  if (fssgv_ != "No"
+  if (fssgv_ != INPAR::FLUID::no_fssgv
       and (physmodel == "Smagorinsky"
         or physmodel == "Dynamic_Smagorinsky"
         or physmodel == "Smagorinsky_with_van_Driest_damping"))
@@ -425,7 +425,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
                                             row_pbcmapmastertoslave_,
                                             *params_             ));
 
-        if (fssgv_ != "No")
+        if (fssgv_ != INPAR::FLUID::no_fssgv)
           dserror("No fine-scale subgrid viscosity for this scale separation operator!");
       }
       else if (scale_sep == "algebraic_multigrid_operator")
@@ -437,7 +437,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
         scale_sep_ = INPAR::FLUID::geometric_multigrid_operator;
         ScaleSepGMO_ = Teuchos::rcp(new LESScaleSeparation(scale_sep_,discret_));
 
-        if (fssgv_ != "No")
+        if (fssgv_ != INPAR::FLUID::no_fssgv)
           dserror("No fine-scale subgrid viscosity for this scale separation operator!");
       }
       else
@@ -477,7 +477,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   // necessary only for the AVM3 approach:
   // fine-scale solution vector + respective output
   // -------------------------------------------------------------------
-  if (fssgv_ != "No")
+  if (fssgv_ != INPAR::FLUID::no_fssgv)
   {
     fsvelaf_  = LINALG::CreateVector(*dofrowmap,true);
 
@@ -820,7 +820,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
   // -------------------------------------------------------------------
-  if (step_==1 and (fssgv_ != "No" or scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator))
+  if (step_==1 and (fssgv_ != INPAR::FLUID::no_fssgv or scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator))
    AVM3Preparation();
 
   return;
@@ -1103,7 +1103,8 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   //----------------------------------------------------------------------
   // AVM3-based solution approach if required
   //----------------------------------------------------------------------
-  if (fssgv_ != "No") AVM3Separation();
+  if (fssgv_ != INPAR::FLUID::no_fssgv)
+    AVM3Separation();
 
   //----------------------------------------------------------------------
   // multifractal subgrid-scale modeling
@@ -3249,7 +3250,7 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 
   statisticsmanager_->Restart(reader,step);
 
-  if ((fssgv_ != "No") or
+  if ((fssgv_ != INPAR::FLUID::no_fssgv) or
       (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator))
   {
     AVM3Preparation();
@@ -3340,7 +3341,7 @@ void FLD::FluidImplicitTimeInt::SetRestart(
   accnp_->Update(1.0,*readaccnp,0.0);
   accn_->Update(1.0,*readaccn,0.0);
 
-  if ((fssgv_ != "No") or
+  if ((fssgv_ != INPAR::FLUID::no_fssgv) or
       (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator))
   {
     SetElementTimeParameter();
@@ -3482,7 +3483,7 @@ void FLD::FluidImplicitTimeInt::AVM3AssembleMatAndRHS(Teuchos::ParameterList& el
   // has already been set in SetParameters()
   // Therefore, the function Evaluate() already
   // expects the state vector "fsvelaf" and "fsscaaf" for loma
-  if (fssgv_ != "No" or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+  if (fssgv_ != INPAR::FLUID::no_fssgv or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
   {
     discret_->SetState("fsvelaf",fsvelaf_);
     if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)

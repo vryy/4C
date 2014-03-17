@@ -294,7 +294,9 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
 {
   // get DofRowMaps for output and XFEM vectors
   const Epetra_Map* outdofrowmap = outdofset.DofRowMap();
-  const Epetra_Map* xfemdofrowmap = ih_->FluidDis()->DofRowMap();
+  const Epetra_BlockMap* xfemdofrowmap = &xfemvector.Map();
+
+//  const Epetra_Map* xfemdofrowmap = ih_->FluidDis()->DofRowMap();
   // create output vector (standard FEM layout)
   Teuchos::RCP<Epetra_Vector> outvector = Teuchos::rcp(new Epetra_Vector(*outdofrowmap,true));
 
@@ -396,12 +398,12 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformStandardToXFEMVector(
     const Epetra_Vector&                   stdvector,
     const DRT::DofSet&                     stddofset,
     const std::map<DofKey, DofGID>&        nodalDofDistributionMap,
-    const std::set<XFEM::PHYSICS::Field>&  outputfields
+    const std::set<XFEM::PHYSICS::Field>&  outputfields,
+    const Epetra_BlockMap*                 xfemdofrowmap
 ) const
 {
   // get DofRowMaps for output and XFEM vectors
   const Epetra_Map* stddofrowmap = stddofset.DofRowMap();
-  const Epetra_Map* xfemdofrowmap = ih_->FluidDis()->DofRowMap();
 
   // create XFEM vector (initialized with zeros)
   Teuchos::RCP<Epetra_Vector> xfemvector = Teuchos::rcp(new Epetra_Vector(*xfemdofrowmap,true));

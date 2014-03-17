@@ -137,7 +137,8 @@ namespace XFEM
            const Epetra_Vector&                        originalvector,
            const DRT::DofSet&                          dofsetout,
            const std::map<XFEM::DofKey, XFEM::DofGID>& nodalDofDistributionMap,
-           const std::set<XFEM::PHYSICS::Field>&       fieldsout
+           const std::set<XFEM::PHYSICS::Field>&       fieldsout,
+           const Epetra_BlockMap*                      xfemdofrowmap
        ) const;
 
 

@@ -4025,7 +4025,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // filtering with xfem
   //--------------
 
-  BoolParameter("EXCLUDE_XFEM","No","Flag to (de)activate XFEM dofs in calculation fine-scale velocity.",&fdyn_turbu);
+  BoolParameter("EXCLUDE_XFEM","No","Flag to (de)activate XFEM dofs in calculation of fine-scale velocity.",&fdyn_turbu);
 
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for Smagorinsky model
@@ -4095,7 +4095,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter(
     "ML_SOLVER",
     -1,
-    "Set solver number for scale separtion via level set transfer operators from plain aggregation.",
+    "Set solver number for scale separation via level set transfer operators from plain aggregation.",
   &fdyn_turbmfs);
 
   BoolParameter("CALC_N","No","Flag to (de)activate calculation of N from the Reynolds number.",&fdyn_turbmfs);

@@ -982,7 +982,7 @@ protected:
   std::string convform_;
 
   /// fine-scale subgrid-viscosity flag
-  std::string fssgv_;
+  INPAR::FLUID::FineSubgridVisc fssgv_;
 
   /// cpu-time measures
   double  dtele_;

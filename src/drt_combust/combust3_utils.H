@@ -315,6 +315,47 @@ namespace COMBUST
   }
 
 
+  /*
+  \brief calculate rate of strain of (fine-scale) velocity
+  \param velderxy   (o) velocity derivatives
+ \return computed rate of strain
+ */
+template <DRT::Element::DiscretizationType DISTYPE>
+    double GetStrainRate(const LINALG::Matrix<3,3>& velderxy
+                     )
+{
+  double rateofstrain=0.0;
+  const size_t nsd=3;
+
+  // compute (resolved) rate of strain
+  //
+  //          +-                                 -+ 1
+  //          |          /   \           /   \    | -
+  //          | 2 * eps | vel |   * eps | vel |   | 2
+  //          |          \   / ij        \   / ij |
+  //          +-                                 -+
+  //
+
+  static LINALG::Matrix<nsd,nsd> two_epsilon;
+  for(unsigned rr=0;rr<nsd;++rr)
+  {
+    for(unsigned mm=0;mm<nsd;++mm)
+    {
+      two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
+    }
+  }
+
+  for(unsigned rr=0;rr<nsd;++rr)
+  {
+    for(unsigned mm=0;mm<nsd;++mm)
+    {
+      rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
+    }
+  }
+
+  return(sqrt(rateofstrain/2.0));
+}
+
 } // namespace COMBUST
 
 #endif

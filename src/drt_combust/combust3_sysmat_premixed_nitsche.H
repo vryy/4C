@@ -22,6 +22,7 @@ Maintainer: Ursula Rasthofer
 
 #include "combust3_sysmat_standard.H"
 #include "combust3_sysmat_surfacetension.H"
+#include "combust3_sysmat_turbulence.H"
 #include "combust_defines.H"
 #include "combust3_stabilization.H"
 #ifdef DEBUG
@@ -50,6 +51,7 @@ void SysmatDomainNitsche(
     const M1&                      evelnm,       ///< nodal velocity n-1 values for this element
     const M1&                      eaccn,        ///< nodal acceleration n values for this element
     const M1&                      eaccam,       ///< nodal acceleration n values for this element
+    const M1&                      efsvel,       ///< nodal fine-scale velocity n+1 values for this element
     const V1&                      eprenp,       ///< nodal pressure n+1 values for this element
     const V2&                      ephi,         ///< nodal G-function values for this element
     Teuchos::RCP<const MAT::Material> material,  ///< fluid material
@@ -69,7 +71,20 @@ void SysmatDomainNitsche(
     const bool                     genalpha,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     double&                        ele_meas_plus,      // set measure of element in plus domain
-    double&                        ele_meas_minus      // set measure of element in minus domain
+    double&                        ele_meas_minus,     // set measure of element in minus domain
+    const INPAR::FLUID::TurbModelAction    turbmodel,
+    const INPAR::FLUID::FineSubgridVisc    fssgv,
+    const double                           Cs,
+    const double                           Csgs,
+    const double                           alpha,
+    const bool                             CalcN,
+    const double                           N,
+    const INPAR::FLUID::RefVelocity        refvel,
+    const INPAR::FLUID::RefLength          reflength,
+    const double                           c_nu,
+    const bool                             near_wall_limit,
+    const bool                             B_gp,
+    const bool                             mfs_is_conservative
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - domain");
@@ -108,6 +123,9 @@ void SysmatDomainNitsche(
   // stabilization parameter
   const double hk = COMBUST::UTILS::HK<DISTYPE>(xyze);
   const double mk = COMBUST::UTILS::MK<DISTYPE>();
+
+  // element volume
+  const double elevol = COMBUST::UTILS::VolumeViaNumIntegration<DISTYPE>(xyze);
 
   // get domain integration cells for this element
   const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(ele->Id()));
@@ -381,6 +399,69 @@ void SysmatDomainNitsche(
           instationary, dynvisc, densaf, vel_norm, hk, hk, mk, timefac, dt,
           tautype, tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
+      //------------------------------------------
+      // prepare turbulence models
+      //------------------------------------------
+
+      static LINALG::Matrix<3,nsd> fsvderxy(true);
+      fsvderxy.Clear();
+      if(fssgv != INPAR::FLUID::no_fssgv or turbmodel == INPAR::FLUID::multifractal_subgrid_scales)
+      {
+        // get fine scale velocity (np,i) derivatives at integration point
+         for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+         {
+           for (size_t isd = 0; isd < nsd; ++isd)
+           {
+             fsvderxy(isd,0) += efsvel(isd,iparam) * shp.dx(iparam);
+             fsvderxy(isd,1) += efsvel(isd,iparam) * shp.dy(iparam);
+             fsvderxy(isd,2) += efsvel(isd,iparam) * shp.dz(iparam);
+           }
+         }
+      }
+
+      //----------------
+      // calculate finscale subgrid viscosity
+      // for turbulent two-phase flows with AVM3 approach
+      //----------------
+      // kinematic fine-scale viscosity
+      // (multiplication by density below in element term)
+      double fssgvisc=0.0;
+      if (fssgv != INPAR::FLUID::no_fssgv)
+        fssgvisc = COMBUST::CalcFineScaleSubgrVisc<DISTYPE>(vderxy,fsvderxy,elevol, Cs,fssgv);
+
+      //----------------
+      // multifractal subgrid-scales
+      //----------------
+
+      LINALG::Matrix<nsd,1> gpmfsvelnp(true);
+      LINALG::Matrix<3,nsd> mfsvderxy(true);
+      double mfsvdiv = 0.0;
+      double vdiv = 0.0;
+
+      if (turbmodel == INPAR::FLUID::multifractal_subgrid_scales)
+      {
+        // get fine-scale velocity at integration point
+        LINALG::Matrix<nsd,1> gpfsvelnp = XFEM::interpolateVectorFieldToIntPoint(efsvel, shp.d0, numparamvelx);
+
+        // calculate parameters of multifractal subgrid-scales
+        double B_mfs = 0.0;
+        PrepareMultifractalSubgrScales<DISTYPE>(B_mfs, gpvelnp, gpfsvelnp, vderxy, elevol,
+          Csgs, alpha, CalcN, N, reflength, refvel, c_nu, near_wall_limit, densaf, dynvisc);
+
+        // calculate fine-scale velocity, its derivative and divergence for multifractal subgrid-scale modeling
+        for (std::size_t idim=0; idim<nsd; idim++)
+            gpmfsvelnp(idim,0) = gpfsvelnp(idim,0) * B_mfs;
+
+        for (std::size_t idim=0; idim<nsd; idim++)
+        {
+          for (std::size_t jdim=0; jdim<nsd; jdim++)
+              mfsvderxy(idim,jdim) = fsvderxy(idim,jdim) * B_mfs;
+        }
+
+        mfsvdiv = mfsvderxy(0,0) + mfsvderxy(1,1) + mfsvderxy(2,2);
+        vdiv = vderxy(0,0) + vderxy(1,1) + vderxy(2,2);
+      }
+
       //------------------------------------------------------------------------
       // build RHS vector at integration point (scaled with timefac and density)
       //------------------------------------------------------------------------
@@ -528,12 +609,14 @@ void SysmatDomainNitsche(
           instationary, genalpha, newton, pstab, supg, graddiv,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
-      //COMBUST::BuildStandardDomainIntegralsStab<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
-      //    assembler, shp, shp, fac, timefac, timefacfac, ga_alphaM, densaf, dynvisc,
-      //    gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
-      //    instationary, genalpha, newton, pstab, supg, graddiv,
-      //    tau_stab_Mu, tau_stab_Mp, tau_stab_C);
-
+      //-------------------------------------------
+      // build stiffness matrix turbulence entries
+      //-------------------------------------------
+      if (fssgv != INPAR::FLUID::no_fssgv or turbmodel == INPAR::FLUID::multifractal_subgrid_scales)
+        COMBUST::BuildTurbulenceDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
+               fssgv, turbmodel,
+               assembler, shp, fsvderxy, gpvelnp, gpmfsvelnp, vderxy, mfsvderxy, vdiv, mfsvdiv,
+               genalpha, fac, timefac, rhsfac, densaf, fssgvisc, mfs_is_conservative);
     } // end loop over gauss points
   } // end loop over integration cells
 

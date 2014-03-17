@@ -101,6 +101,7 @@ private:
               const bool                             genalpha,
               const bool                             gradphi,
               const bool                             gradphi2,
+              const bool                             avm3,
               const DRT::ELEMENTS::Combust3*         ele,
               const Epetra_Vector*                   phinp,
               const Epetra_MultiVector*              gradphinp,
@@ -112,12 +113,14 @@ private:
           const bool genalpha_;
           const bool gradphi_;
           const bool gradphi2_;
+          const bool avm3_;
           std::vector<double> velnp_;     ///< velocity/pressure unknowns at n+1
           std::vector<double> veln_;      ///< velocity/pressure unknowns at n
           std::vector<double> velnm_;     ///< velocity/pressure unknowns at n-1
           std::vector<double> velaf_;     ///< velocity/pressure unknowns at alpha+f for generalized alpha scheme
           std::vector<double> accn_;      ///< time derivative of unknowns at n
           std::vector<double> accam_;     ///< time derivative of unknowns at alpha+m for generalized alpha scheme
+          std::vector<double> fsvelaf_;   ///< fine-scale velocity at n+1
           std::vector<double> phinp_;     ///< G-function unknowns at n+1
           std::vector<double> gradphinp_; ///< smoothed G-function gradient at n+1
           std::vector<double> gradphi2np_; ///< smoothed G-function second derivative at n+1
@@ -289,53 +292,6 @@ private:
           set_standard_mode
         };
 
-        //! stabilization actions recognized by fluid3 (genalpha implementation)
-        enum StabilisationAction
-        {
-          stabaction_unspecified,
-          subscales_quasistatic,
-          subscales_time_dependent,
-          inertia_stab_drop,
-          inertia_stab_keep,
-          pstab_assume_inf_sup_stable,
-          pstab_use_pspg,
-          convective_stab_none,
-          convective_stab_supg,
-          viscous_stab_none,
-          viscous_stab_gls,
-          viscous_stab_gls_only_rhs,
-          viscous_stab_usfem,
-          viscous_stab_usfem_only_rhs,
-          continuity_stab_none,
-          continuity_stab_yes,
-          continuity_stab_td,
-          cross_stress_stab_none,
-          cross_stress_stab,
-          cross_stress_stab_only_rhs,
-          reynolds_stress_stab_none,
-          reynolds_stress_stab_only_rhs,
-          fssgv_no,
-          fssgv_artificial_all,
-          fssgv_artificial_small,
-          fssgv_Smagorinsky_all,
-          fssgv_Smagorinsky_small,
-          fssgv_mixed_Smagorinsky_all,
-          fssgv_mixed_Smagorinsky_small,
-          fssgv_scale_similarity
-        };
-
-        //! physical turbulence models recognized by fluid3_genalpha implementation
-        enum TurbModelAction
-        {
-          no_model,
-          smagorinsky,
-          smagorinsky_with_wall_damping,
-          dynamic_smagorinsky
-        };
-
-        //! map that converts std::strings to actions (stabilization)
-        static std::map<std::string,StabilisationAction>          stabstrtoact_;
-
         //! store information about the unknowns of this element
         //!
         //! this dofman will answer to the outside world, how many dofs this element has
@@ -409,9 +365,6 @@ private:
         );
 
         ActionType convertStringToActionType(const std::string& action) const;
-
-        //! convert std::string to stabilization action
-        StabilisationAction ConvertStringToStabAction (const std::string& action) const;
 
     }; // class Combust3
 

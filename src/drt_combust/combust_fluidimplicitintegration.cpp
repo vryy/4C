@@ -344,18 +344,18 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // -------------------------------------------------------------------
 
   // fine-scale subgrid viscosity for AVM3 approach
-  fssgv_ = modelparams->get<string>("FSSUGRVISC","No");
+  fssgv_ = DRT::INPUT::IntegralValue<INPAR::FLUID::FineSubgridVisc>(params_->sublist("TURBULENCE MODEL"),"FSSUGRVISC");
 
-  if (fssgv_ != "No")
+  if (fssgv_ != INPAR::FLUID::no_fssgv)
   {
-    excludeXfem_ = modelparams->get<bool>("EXCLUDE_XFEM");
-    //if (modelparams->get<string>("EXCLUDE_XFEM","no") == "yes" or modelparams->get<string>("EXCLUDE_XFEM","no") == "Yes") excludeXfem_= true;
+    excludeXfem_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENCE MODEL"),"EXCLUDE_XFEM");
     Cs_=params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
 
-    // create dofrowmap of standard dofs on standard dofset
-    const Epetra_Map* stddofrowmap = standarddofset_->DofRowMap();
-    fsvelafStd_  = LINALG::CreateVector(*stddofrowmap,true);
+    // create dofrowmap of standard dofs of initial field
+    fsvelafStd_  = LINALG::CreateVector(*dofrowmap,true);
     fsvelafXfem_  = LINALG::CreateVector(*dofrowmap,true);
+    // store dof distribution map of inital unenriched fluid field
+    plainnodalDofDistributionMap_ = state_.nodalDofDistributionMap_;
 
     if (myrank_ == 0)
     {
@@ -375,13 +375,13 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   if (physmodel == "Multifractal_Subgrid_Scales")
   {
     turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
+    excludeXfem_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENCE MODEL"),"EXCLUDE_XFEM");
 
-    excludeXfem_ = modelparams->get<bool>("EXCLUDE_XFEM");
-
-    // create dofrowmap of standard dofs on standard dofset
-    const Epetra_Map* stddofrowmap = standarddofset_->DofRowMap();
-    fsvelafStd_  = LINALG::CreateVector(*stddofrowmap,true);
+    // create dofrowmap of standard dofs of initial field
+    fsvelafStd_  = LINALG::CreateVector(*dofrowmap,true);
     fsvelafXfem_  = LINALG::CreateVector(*dofrowmap,true);
+    // store dof distribution map of inital unenriched fluid field
+    plainnodalDofDistributionMap_ = state_.nodalDofDistributionMap_;
 
     if (myrank_ == 0)
     {
@@ -1273,7 +1273,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
   // fine-scale velocity vector based on new dofset
   // -----------------------------------------------
 
-  if (fssgv_!="No" or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+  if (fssgv_ != INPAR::FLUID::no_fssgv or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     fsvelafXfem_= LINALG::CreateVector(newdofrowmap,true);
 
   // -------------------------------------------------------------------
@@ -1620,13 +1620,13 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
 
         // parameters for turbulence
         eleparams.set<INPAR::FLUID::TurbModelAction>("turbmodel",turbmodel_);
-        eleparams.set<string>("fssgv",fssgv_);
+        eleparams.set<INPAR::FLUID::FineSubgridVisc>("fssgv",fssgv_);
         eleparams.set<double>("Cs",Cs_);
 
         //----------------------------------------------------------------------
         // decide whether AVM3-based solution approach or standard approach
         //----------------------------------------------------------------------
-        if (fssgv_!="No" or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+        if (fssgv_ != INPAR::FLUID::no_fssgv or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
         {
           AVM3Separation();
 
@@ -2580,9 +2580,15 @@ void FLD::CombustFluidImplicitTimeInt::Output()
         Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_->ExtractCondVector(velnp_out);
         output_->WriteVector("pressure_smoothed", pressure);
       }
-      else if (outputfields.find(XFEM::PHYSICS::Temp) != outputfields.end())
+
+      // output finescale velocity field for visualization
+      if(fssgv_!= INPAR::FLUID::no_fssgv or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
       {
-        output_->WriteVector("temperature_smoothed", velnp_out);
+        // transfer to standard dofset
+        Teuchos::RCP<Epetra_Vector> fsvel_out = dofmanagerForOutput_->transformXFEMtoStandardVector(
+          *fsvelafXfem_, *standarddofset_, state_.nodalDofDistributionMap_, outputfields);
+
+        output_->WriteVector("fsvelocity", fsvel_out);
       }
 
       // write domain decomposition for visualization
@@ -4914,17 +4920,13 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
   //           preparation of AVM3-based scale separation
   // -------------------------------------------------------------------
 
-  // remark: we decided to call thid function here, since
+  // remark: we decided to call this function here, since
   //         (i) it has to be called only once
   //         (ii) we do not want to have any XFEM dofs etc already
   // (ii) means that merely the standard field is used for scale-separtion,
   // and the enrichment is thus part for the fine-scales
-   if(fssgv_!="No" or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-   {
-      std::cout<<"----------------------------\nAVM3-Preparation\n----------------------------\n\n"<<std::endl;
-      AVM3Preparation();
-      std::cout<<"----------------------------\n      done      \n----------------------------\n\n"<<std::endl;
-   }
+   if (fssgv_ != INPAR::FLUID::no_fssgv or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+     AVM3Preparation();
 
   return;
 }
@@ -5763,6 +5765,9 @@ void FLD::CombustFluidImplicitTimeInt::AVM3Preparation()
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
 
+  // pass dof information to elements (no enrichments yet, standard FEM!)
+  TransferDofInformationToElements(Teuchos::null, dofmanagerForOutput_);
+
   // zero matrix
   sysmat_->Zero();
 
@@ -5790,7 +5795,7 @@ void FLD::CombustFluidImplicitTimeInt::AVM3Preparation()
   eleparams.set("theta",theta_);
 
   // evaluate Neumann conditions
-  neumann_loads_->PutScalar(0.0);
+  neumann_loads_= LINALG::CreateVector(*discret_->DofRowMap(),true);
   discret_->EvaluateNeumann(eleparams,*neumann_loads_);
   discret_->ClearState();
   residual_->Update(1.0,*neumann_loads_,0.0);
@@ -5808,10 +5813,6 @@ void FLD::CombustFluidImplicitTimeInt::AVM3Preparation()
   eleparams.set<double>("nitschepres",nitschepres_);
 
   // parameter for suppressing additional enrichment dofs in two-phase flow problems
-  eleparams.set<int>("selectedenrichment",DRT::INPUT::IntegralValue<INPAR::COMBUST::SelectedEnrichment>(params_->sublist("COMBUSTION FLUID"),"SELECTED_ENRICHMENT"));
-
-  // parameter for suppressing additional enrichment dof's in two-phase flow problems
-  eleparams.set<int>("suppress_enrichment",DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"SUPPRESS_ENR"));
   eleparams.set<int>("selectedenrichment",DRT::INPUT::IntegralValue<INPAR::COMBUST::SelectedEnrichment>(params_->sublist("COMBUSTION FLUID"),"SELECTED_ENRICHMENT"));
 
   // parameters for two-phase flow problems with surface tension
@@ -5850,7 +5851,7 @@ void FLD::CombustFluidImplicitTimeInt::AVM3Preparation()
   // parameters for turbulence
   eleparams.set<INPAR::FLUID::TurbModelAction>("turbmodel",turbmodel_);
   eleparams.set<double>("Cs",Cs_);
-  eleparams.set<string>("fssgv",fssgv_);
+  eleparams.set<INPAR::FLUID::FineSubgridVisc>("fssgv",fssgv_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -5867,14 +5868,10 @@ void FLD::CombustFluidImplicitTimeInt::AVM3Preparation()
   if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
     discret_->SetState("accam",state_.accam_);
 
-  // no phi-vector available at this time
-  // set dummy vector to phi=0.0
   // further level-set values (gradient etc) are not required, since boundary integrals are not evaluated
   // all elements are considered uncut
-  const Teuchos::RCP<Epetra_Vector> phicol = Teuchos::rcp(new Epetra_Vector(*discret_->NodeColMap()));
-  int err=phicol->PutScalar(0.0);
-  if(err!=0) std::cout<<"PutScalar Not Succesful!"<<std::endl;
-  eleparams.set<Teuchos::RCP<Epetra_Vector> >("phinpcol",phicol);
+  eleparams.set<Teuchos::RCP<Epetra_Vector> >("phinpcol",phinp_);
+  eleparams.set<Teuchos::RCP<COMBUST::InterfaceHandleCombust> >("interfacehandle_",interfacehandle_);
 
   // set fine-scale vector
   // dummy vector initialized with zeros
@@ -5883,9 +5880,9 @@ void FLD::CombustFluidImplicitTimeInt::AVM3Preparation()
   // has already been set in SetParameters()
   // Therefore, the function Evaluate() already
   // expects the state vector "fsvelaf"
-  if (fssgv_!="No" or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+  if (fssgv_ != INPAR::FLUID::no_fssgv or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
   {
-    discret_->SetState("fsvelaf",fsvelafStd_);
+    discret_->SetState("fsvelaf",fsvelafXfem_);
 
     if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
       eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
@@ -5911,9 +5908,6 @@ void FLD::CombustFluidImplicitTimeInt::AVM3Preparation()
   // get scale-separation matrix
   {
     // this is important to have!!!
-    MLAPI::Init();
-
-    // this is important to have!!!
     // MLAPI::Init() without arguments uses internally MPI_COMM_WOLRD
     MLAPI::Init();
 
@@ -5933,30 +5927,6 @@ void FLD::CombustFluidImplicitTimeInt::AVM3Preparation()
       // and, finally, extract the ML parameters
       mlparams = solver->Params().sublist("ML Parameters");
     }
-
-//    // remark: 'true' is needed to prevent iterative solver from crashing
-//    if(solverparams.isSublist("ML Parameters"))
-//    {
-//        std::cout<<"FOUND A ML PARAMETER sublist!"<<std::endl;
-//    }
-//    else
-//    {
-//        std::cout<<"DID NOT FIND A ML PARAMETER sublist!-> temporarily set"<<std::endl;
-//        solverparams.sublist("ML Parameters");
-//    }
-//    if(solverparams.isSublist("Aztec Parameters"))
-//    {
-//        std::cout<<"FOUND Aztec Parameters!"<<std::endl;
-//    }
-//    else
-//    {
-//        std::cout<<"DID NOT FIND Aztec Parameters!-> temporarily set"<<std::endl;
-//        solverparams.sublist("Aztec Parameters");
-//    }
-//    discret_->ComputeNullSpaceIfNecessary(solverparams,true);
-//
-//    // extract the ML parameters
-//    Teuchos::ParameterList&  mlparams = solverparams.sublist("ML Parameters");
 
     // get toggle vector for Dirchlet boundary conditions
     const Epetra_Vector& dbct = *Dirichlet();
@@ -5997,8 +5967,6 @@ void FLD::CombustFluidImplicitTimeInt::AVM3Preparation()
     if (!Sep_->DomainMap().SameAs(SystemMatrix()->DomainMap())) dserror("domainmap not equal");
   }
 
-  //std::cout<<"FINISHED THE PREPARATION!"<<std::endl;
-  //std::cout<<"Separation Matrix:"<<*Sep_<<std::endl;
   return;
 }// CombustFluidImplicitTimeInt::AVM3Preparation
 
@@ -6025,79 +5993,53 @@ void FLD::CombustFluidImplicitTimeInt::AVM3Separation()
   Teuchos::RCP<Epetra_Vector> csvelafStd = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> csvelafXFEM = Teuchos::null;
 
-  // standard dofrowmap
-  const Epetra_Map* stddofrowmap = standarddofset_->DofRowMap();
-  // xfem dofrowmap
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
   // -------------------------------------------------------
   // calculate fine scale velocity based on standard dofset
   // -------------------------------------------------------
 
   if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
   {
-    Teuchos::RCP<Epetra_Vector> velafstd= dofmanagerForOutput_->transformXFEMtoStandardVector(
-      *state_.velaf_, *standarddofset_, state_.nodalDofDistributionMap_, physicalfields);
-
-    Sep_->Multiply(false,*velafstd,*fsvelafStd_);
-
-    if(not excludeXfem_)
-    {
-      // --------------------------------------------
-      // include XFEM dofs in fs-velocity
-      // --------------------------------------------
-      csvelafStd = Teuchos::rcp(new Epetra_Vector(*stddofrowmap,true));
-      csvelafXFEM = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
-
-      // calculate coarse scale velocity based on Std dofset
-      csvelafStd->Update(1.0,*velafstd,-1.0,*fsvelafStd_,0.0);
-
-      // transform to XFEM dofset
-      csvelafXFEM=dofmanagerForOutput_->transformStandardToXFEMVector(
-        *csvelafStd, *standarddofset_, state_.nodalDofDistributionMap_, physicalfields);
-
-      fsvelafXfem_->Update(1.0,*state_.velaf_,-1.0,*csvelafXFEM,0.0);
-    }
-    else
-    {
-      // --------------------------------------------
-      // take only the standard dofs for fs-velocity
-      // --------------------------------------------
-      fsvelafXfem_=dofmanagerForOutput_->transformStandardToXFEMVector(
-        *fsvelafStd_, *standarddofset_, state_.nodalDofDistributionMap_, physicalfields);
-    }
+    dserror("Genalpha not supported, yet!");
   }
   else
   {
-    Teuchos::RCP<Epetra_Vector> velnpstd= dofmanagerForOutput_->transformXFEMtoStandardVector(
+    // vectors and matrix using initial unenriched dof field
+
+    // from current enriched field to standard field
+    Teuchos::RCP<Epetra_Vector> velnpstddof = dofmanagerForOutput_->transformXFEMtoStandardVector(
        *state_.velnp_, *standarddofset_, state_.nodalDofDistributionMap_, physicalfields);
+
+    // from standard field to initial unenriched dof field
+    Teuchos::RCP<Epetra_Vector> velnpstd = dofmanagerForOutput_->transformStandardToXFEMVector(
+       *velnpstddof,*standarddofset_, plainnodalDofDistributionMap_, physicalfields, &(fsvelafStd_->Map()));
 
     Sep_->Multiply(false,*velnpstd,*fsvelafStd_);
 
-    if(not excludeXfem_)
+    // from initial unenriched dof field to standard field
+    Teuchos::RCP<Epetra_Vector> fsvelnpstd = dofmanagerForOutput_->transformXFEMtoStandardVector(
+       *fsvelafStd_, *standarddofset_, plainnodalDofDistributionMap_, physicalfields);
+
+    // from standard field to current enriched field
+    Teuchos::RCP<Epetra_Vector> fsvelnpxfem = dofmanagerForOutput_->transformStandardToXFEMVector(
+       *fsvelnpstd,*standarddofset_, state_.nodalDofDistributionMap_, physicalfields,discret_->DofRowMap());
+
+    if (not excludeXfem_)
     {
-      // --------------------------------------------
-      // include XFEM dofs in fs-velocity
-      // --------------------------------------------
-      csvelafStd = Teuchos::rcp(new Epetra_Vector(*stddofrowmap,true));
-      csvelafXFEM = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
+      Teuchos::RCP<Epetra_Vector> csvelnpstd = Teuchos::rcp(new Epetra_Vector(fsvelafStd_->Map(),true));
+      csvelnpstd->Update(1.0,*velnpstd,-1.0,*fsvelafStd_,0.0);
 
-      // calculate coarse scale velocity based on Std dofset
-      csvelafStd->Update(1.0,*velnpstd,-1.0,*fsvelafStd_,0.0);
-      // transform to XFEM dofset
-      csvelafXFEM=dofmanagerForOutput_->transformStandardToXFEMVector(
-         *csvelafStd, *standarddofset_, state_.nodalDofDistributionMap_, physicalfields);
+      // from initial unenriched dof field to standard field
+      Teuchos::RCP<Epetra_Vector> csvelnpstddof = dofmanagerForOutput_->transformXFEMtoStandardVector(
+         *csvelnpstd, *standarddofset_, plainnodalDofDistributionMap_, physicalfields);
 
-      fsvelafXfem_->Update(1.0,*state_.velnp_,-1.0,*csvelafXFEM,0.0);
+      // from standard field to current enriched field
+      Teuchos::RCP<Epetra_Vector> csvelnpxfem = dofmanagerForOutput_->transformStandardToXFEMVector(
+         *csvelnpstddof,*standarddofset_, state_.nodalDofDistributionMap_, physicalfields,discret_->DofRowMap());
+
+      fsvelafXfem_->Update(1.0,*state_.velnp_,-1.0,*csvelnpxfem,0.0);
     }
     else
-    {
-      // --------------------------------------------
-      // take only the standard dofs for fs-velocity
-      // --------------------------------------------
-      fsvelafXfem_=dofmanagerForOutput_->transformStandardToXFEMVector(
-        *fsvelafStd_, *standarddofset_, state_.nodalDofDistributionMap_, physicalfields);
-    }
+      fsvelafXfem_->Update(1.0,*fsvelnpxfem,0.0);
   }
 
   // set fine-scale vector

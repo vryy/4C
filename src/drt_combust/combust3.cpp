@@ -127,11 +127,6 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3LineType::Create( const int id
 }
 
 
-/*----------------------------------------------------------------------*/
-// map to convert std::strings to actions (stabilization)
-/*----------------------------------------------------------------------*/
-std::map<std::string,DRT::ELEMENTS::Combust3::StabilisationAction> DRT::ELEMENTS::Combust3::stabstrtoact_;
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 02/08|
  |  id             (in)  this element's global id                       |
@@ -365,6 +360,7 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
     const bool                                  genalpha,
     const bool                                  gradphi,
     const bool                                  gradphi2,
+    const bool                                  avm3,
     const DRT::ELEMENTS::Combust3*              ele,
     const Epetra_Vector*                        phinp,
     const Epetra_MultiVector*                   gradphinp,
@@ -374,7 +370,8 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
       instationary_(instationary),
       genalpha_(genalpha),
       gradphi_(gradphi),
-      gradphi2_(gradphi2)
+      gradphi2_(gradphi2),
+      avm3_(avm3)
 {
   if (!genalpha_)
     DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),velnp_,lm);
@@ -389,6 +386,8 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
       DRT::UTILS::ExtractMyValues(*discretization.GetState("accam") ,accam_ ,lm);
     }
   }
+  if(avm3_)
+    DRT::UTILS::ExtractMyValues(*discretization.GetState("fsvelaf"),fsvelaf_,lm);
 
 #ifdef DEBUG
   // check if this element is the first element on this processor

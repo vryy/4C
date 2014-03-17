@@ -384,6 +384,12 @@ public:
   Teuchos::RCP<const Epetra_Vector> Velaf()         { return state_.velaf_; }
   Teuchos::RCP<const Epetra_Vector> Veln()          { return state_.veln_; }
   Teuchos::RCP<const Epetra_Vector> Accam()         { return state_.accam_; }
+  Teuchos::RCP<const Epetra_Vector> FsVel() {
+    // get fine-scale part of velocity at time n+alpha_F or n+1
+    if (Sep_ != Teuchos::null)
+      AVM3Separation();
+
+    return fsvelafStd_; } // return vector based on standard dofs
 
   /// provide access to the Dirichlet map
   const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
@@ -617,7 +623,7 @@ protected:
   std::string special_flow_;
 
   /// flag for fine scale subgrid viscosity used in AVM3 turbulence approach
-  std::string fssgv_;
+  INPAR::FLUID::FineSubgridVisc fssgv_;
 
   /// flag deactivate XFEM dofs in fine-scale velocity (for AVM3)
   bool excludeXfem_;
@@ -660,6 +666,9 @@ protected:
 
   /// only necessary for AVM3: fine-scale solution vector
   Teuchos::RCP<Epetra_Vector> fsvelafStd_;
+
+  /// only necessary for AVM3: dof distribution map corresponding to initial unenriched configuration
+  std::map<XFEM::DofKey, XFEM::DofGID>   plainnodalDofDistributionMap_;
 
   /// only necessary for AVM3: fine-scale solution vector
   Teuchos::RCP<Epetra_Vector> fsvelafXfem_;

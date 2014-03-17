@@ -39,6 +39,7 @@ void fillElementUnknownsArrays(
     M1& evelnm,
     M1& eaccn,
     M1& eaccam,
+    M1& fsevelaf,
     V1& epreaf,
     V2& ephi,
     M2& etensor,
@@ -133,6 +134,16 @@ void fillElementUnknownsArrays(
   {
     for (size_t iparam=0; iparam<numparampres; ++iparam)
       epreaf(iparam) = mystate.velnp_[presdof[iparam]];
+  }
+  
+  if(mystate.avm3_)
+  {
+    for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+      fsevelaf( 0,iparam) = mystate.fsvelaf_[ velxdof[iparam]];
+    for (size_t iparam=0; iparam<numparamvely; ++iparam)
+      fsevelaf( 1,iparam) = mystate.fsvelaf_[ velydof[iparam]];
+    for (size_t iparam=0; iparam<numparamvelz; ++iparam)
+      fsevelaf( 2,iparam) = mystate.fsvelaf_[ velzdof[iparam]];
   }
 
   const bool epsilonele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Epsilonxx, 0) > 0);
@@ -781,7 +792,20 @@ void Sysmat(
     const bool                              nitsche_convflux,
     const bool                              nitsche_convstab,
     const bool                              nitsche_convpenalty,
-    const bool                              nitsche_mass
+    const bool                              nitsche_mass,
+    const INPAR::FLUID::TurbModelAction    turbmodel,
+    const INPAR::FLUID::FineSubgridVisc    fssgv,
+    const double                           Cs,
+    const double                           Csgs,
+    const double                           alpha,
+    const bool                             CalcN,
+    const double                           N,
+    const INPAR::FLUID::RefVelocity        refvel,
+    const INPAR::FLUID::RefLength          reflength,
+    const double                           c_nu,
+    const bool                             near_wall_limit,
+    const bool                             B_gp,
+    const bool                             mfs_is_conservative
 )
 {
   // initialize element stiffness matrix and force vector
@@ -806,12 +830,13 @@ void Sysmat(
   LINALG::Matrix<3,shpVecSize> eaccn(true);
   LINALG::Matrix<3,shpVecSize> eaccam(true);
   LINALG::Matrix<shpVecSize,1> epreaf(true);
+  LINALG::Matrix<3,shpVecSize> fsevelaf(true);
   LINALG::Matrix<numnode,1> ephi(true);
   LINALG::Matrix<6,shpVecSizeStress> etensor(true);
   LINALG::Matrix<shpVecSizeDiscPres,1> ediscpres(true);
 
   COMBUST::fillElementUnknownsArrays<DISTYPE,ASSTYPE>(
-      dofman, mystate, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor, ediscpres);
+      dofman, mystate, evelaf, eveln, evelnm, eaccn, eaccam, fsevelaf, epreaf, ephi, etensor, ediscpres);
 
   switch(combusttype)
   {
@@ -820,9 +845,10 @@ void Sysmat(
     double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
     double ele_meas_minus = 0.0; // for different averages <> and {}
       COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
+          ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, fsevelaf, epreaf, ephi,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
-          ele_meas_plus, ele_meas_minus);
+          ele_meas_plus, ele_meas_minus,
+          turbmodel, fssgv, Cs, Csgs, alpha, CalcN, N, refvel, reflength, c_nu, near_wall_limit, B_gp, mfs_is_conservative);
 
 #ifndef COMBUST_DECOUPLEDXFEM
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
@@ -849,6 +875,10 @@ void Sysmat(
   break;
   case INPAR::COMBUST::combusttype_twophaseflow:
   {
+    if (fssgv!=INPAR::FLUID::no_fssgv
+        or turbmodel == INPAR::FLUID::multifractal_subgrid_scales)
+      dserror("Turbulence models not yet supported for kink enrichments");
+
     COMBUST::SysmatTwoPhaseFlow<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor,
         material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary,
@@ -857,6 +887,10 @@ void Sysmat(
   break;
   case INPAR::COMBUST::combusttype_twophaseflow_surf:
   {
+    if (fssgv!=INPAR::FLUID::no_fssgv
+        or turbmodel == INPAR::FLUID::multifractal_subgrid_scales)
+      dserror("Turbulence models not yet supported for kink enrichments");
+
     COMBUST::SysmatTwoPhaseFlow<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor,
         material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary,
@@ -889,9 +923,10 @@ void Sysmat(
     double ele_meas_minus = 0.0; // for different averages <> and {}
 
     COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
+        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, fsevelaf, epreaf, ephi,
         material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
-        ele_meas_plus, ele_meas_minus);
+        ele_meas_plus, ele_meas_minus,
+        turbmodel, fssgv, Cs, Csgs, alpha, CalcN, N, refvel, reflength, c_nu, near_wall_limit, B_gp, mfs_is_conservative);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
     if (ele->Intersected())
@@ -964,7 +999,20 @@ void COMBUST::callSysmat(
     const bool                             nitsche_convflux,
     const bool                             nitsche_convstab,
     const bool                             nitsche_convpenalty,
-    const bool                             nitsche_mass
+    const bool                             nitsche_mass,
+    const INPAR::FLUID::TurbModelAction    turbmodel,
+    const INPAR::FLUID::FineSubgridVisc    fssgv,
+    const double                           Cs,
+    const double                           Csgs,
+    const double                           alpha,
+    const bool                             CalcN,
+    const double                           N,
+    const INPAR::FLUID::RefVelocity        refvel,
+    const INPAR::FLUID::RefLength          reflength,
+    const double                           c_nu,
+    const bool                             near_wall_limit,
+    const bool                             B_gp,
+    const bool                             mfs_is_conservative
 )
 {
   if (assembly_type == XFEM::standard_assembly)
@@ -977,7 +1025,8 @@ void COMBUST::callSysmat(
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens, second_deriv,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,
-          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
+          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass,
+          turbmodel, fssgv, Cs, Csgs, alpha, CalcN, N, refvel, reflength, c_nu, near_wall_limit, B_gp, mfs_is_conservative);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
@@ -985,7 +1034,8 @@ void COMBUST::callSysmat(
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox, variablesurftens, second_deriv,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,
-          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
+          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass,
+          turbmodel, fssgv, Cs, Csgs, alpha, CalcN, N, refvel, reflength, c_nu, near_wall_limit, B_gp, mfs_is_conservative);
     break;
     default:
       dserror("standard_assembly Sysmat not templated yet");
@@ -1002,7 +1052,8 @@ void COMBUST::callSysmat(
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens, second_deriv,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,
-          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
+          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass,
+          turbmodel, fssgv, Cs, Csgs, alpha, CalcN, N, refvel, reflength, c_nu, near_wall_limit, B_gp, mfs_is_conservative);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
@@ -1010,7 +1061,8 @@ void COMBUST::callSysmat(
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox, variablesurftens, second_deriv,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,
-          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
+          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass,
+          turbmodel, fssgv, Cs, Csgs, alpha, CalcN, N, refvel, reflength, c_nu, near_wall_limit, B_gp, mfs_is_conservative);
     break;
     default:
       dserror("xfem_assembly Sysmat not templated yet");
@@ -1923,5 +1975,4 @@ void COMBUST::callFacemat(
 
   return;
 }
-
 

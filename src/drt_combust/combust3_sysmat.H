@@ -20,6 +20,7 @@ Maintainer: Ursula Rasthofer
 #include "combust3.H"
 #include "../drt_geometry/geo_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_turbulence.H"
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_xfem/xfem_utils.H"
 #include "combust3.H"
@@ -111,7 +112,20 @@ namespace COMBUST
       const bool                              nitsche_convflux,
       const bool                              nitsche_convstab,
       const bool                              nitsche_convpenalty,
-      const bool                              nitsche_mass
+      const bool                              nitsche_mass,
+      const INPAR::FLUID::TurbModelAction    turbmodel,
+      const INPAR::FLUID::FineSubgridVisc    fssgv,
+      const double                           Cs,
+      const double                           Csgs,
+      const double                           alpha,
+      const bool                             CalcN,
+      const double                           N,
+      const INPAR::FLUID::RefVelocity        refvel,
+      const INPAR::FLUID::RefLength          reflength,
+      const double                           c_nu,
+      const bool                             near_wall_limit,
+      const bool                             B_gp,
+      const bool                             mfs_is_conservative
   );
 
   /// get material parameters for both domains

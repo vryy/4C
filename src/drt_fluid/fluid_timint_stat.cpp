@@ -146,7 +146,8 @@ void FLD::TimIntStationary::SolveStationaryProblem()
     // -------------------------------------------------------------------
     //           preparation of AVM3-based scale separation
     // -------------------------------------------------------------------
-    if (step_==1 and fssgv_ != "No") AVM3Preparation();
+    if (step_==1 and fssgv_ != INPAR::FLUID::no_fssgv)
+      AVM3Preparation();
 
     // -------------------------------------------------------------------
     //                     solve equation system

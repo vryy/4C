@@ -897,7 +897,7 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
         Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->SetVelocityField(convel,
                                                                                               Teuchos::null,
                                                                                               Teuchos::null,
-                                                                                              Teuchos::null,
+                                                                                              FluidField().FsVel(),
                                                                                               FluidField().DofSet(),
                                                                                               FluidField().Discretization(),
                                                                                               init);
@@ -909,7 +909,7 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
         ScaTraField()->SetVelocityField(convel,
                                         Teuchos::null,
                                         Teuchos::null,
-                                        Teuchos::null,
+                                        FluidField().FsVel(),
                                         FluidField().DofSet(),
                                         FluidField().Discretization());
       }
@@ -926,7 +926,7 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
         Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
                                                                                               Teuchos::null,
                                                                                               Teuchos::null,
-                                                                                              Teuchos::null,
+                                                                                              FluidField().FsVel(),
                                                                                               FluidField().DofSet(),
                                                                                               FluidField().Discretization(),
                                                                                               init);
@@ -938,7 +938,7 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
         ScaTraField()->SetVelocityField(ComputeFlameVel(convel,FluidField().DofSet()),
                                         Teuchos::null,
                                         Teuchos::null,
-                                        Teuchos::null,
+                                        FluidField().FsVel(),
                                         FluidField().DofSet(),
                                         FluidField().Discretization());
       }
@@ -1236,7 +1236,8 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
 
   // assign the fluid velocity field to the G-function as convective velocity field
   // bool true allows for setting old convective velocity required for particle coupling
-  SetVelocityLevelSet(true);
+  if (not gen_flow_)
+    SetVelocityLevelSet(true);
 
   //UpdateTimeStep();
 
