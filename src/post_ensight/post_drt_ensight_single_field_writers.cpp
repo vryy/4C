@@ -4,9 +4,9 @@
   \brief main routine of the Ensight filter
 
   <pre>
-  Maintainer: Axel Gerstenberger
-  gerstenberger@lnm.mw.tum.de
-  http://www.lnm.mw.tum.de/Members/gerstenberger
+  Maintainer: Martin Kronbichler
+  kronbichler@lnm.mw.tum.de
+  http://www.lnm.mw.tum.de/Members/kronbichler
   089 - 289-15236
   </pre>
 
@@ -214,7 +214,7 @@ void XFluidEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("pressure_smoothed", "pressure_smoothed", dofbased, 1);
   EnsightWriter::WriteResult("averaged_velnp", "averaged_velocity", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("averaged_pressure", "averaged_pressure", dofbased, 1);
-  EnsightWriter::WriteResult("fsvelocity", "fsvelocity, dofbased", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("fsvelocity", "fsvelocity", dofbased, field->problem()->num_dim());
 
   WriteElementResults(field);
 }
