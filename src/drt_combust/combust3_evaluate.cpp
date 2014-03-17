@@ -26,6 +26,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_xfem/xdofmapcreation_combust.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_turbulence.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -63,28 +64,6 @@ DRT::ELEMENTS::Combust3::ActionType DRT::ELEMENTS::Combust3::convertStringToActi
     act = Combust3::set_standard_mode;
   else
     dserror("Unknown type of action for Combust3");
-  return act;
-}
-
-/*----------------------------------------------------------------------*
- // converts a std::string into an stabilisation action for this element
- //                                                          gammi 08/07
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Combust3::StabilisationAction DRT::ELEMENTS::Combust3::ConvertStringToStabAction(
-  const std::string& action) const
-{
-  DRT::ELEMENTS::Combust3::StabilisationAction act = stabaction_unspecified;
-
-  std::map<std::string,StabilisationAction>::const_iterator iter=stabstrtoact_.find(action);
-
-  if (iter != stabstrtoact_.end())
-  {
-    act = (*iter).second;
-  }
-  else
-  {
-    dserror("looking for stab action (%s) not contained in map",action.c_str());
-  }
   return act;
 }
 
@@ -223,7 +202,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       const INPAR::COMBUST::FluxJumpType fluxjumptype    = DRT::INPUT::get<INPAR::COMBUST::FluxJumpType>(params, "fluxjumptype");
       const INPAR::COMBUST::SmoothGradPhi smoothgradphi  = DRT::INPUT::get<INPAR::COMBUST::SmoothGradPhi>(params, "smoothgradphi");
 
-
       const double nitschevel = params.get<double>("nitschevel");
       const double nitschepres = params.get<double>("nitschepres");
 
@@ -309,6 +287,99 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
         gradphi2 = false;
       }
 
+      // turbulence models
+      const INPAR::FLUID::TurbModelAction turbmodel = params.get<INPAR::FLUID::TurbModelAction>("turbmodel");
+      const INPAR::FLUID::FineSubgridVisc fssgv= params.get<INPAR::FLUID::FineSubgridVisc>("fssgv");
+      double Cs = 0.0;
+      double Csgs = 0.0;
+      double alpha = 0.0;
+      bool CalcN = true;
+      double N = 0.0;
+      INPAR::FLUID::RefVelocity refvel = INPAR::FLUID::strainrate;
+      INPAR::FLUID::RefLength reflength = INPAR::FLUID::cube_edge;
+      double c_nu = 0.0;
+      bool near_wall_limit = false;
+      bool B_gp = false;
+      bool mfs_is_conservative = false;
+
+      bool avm3=false;
+      if (fssgv!=INPAR::FLUID::no_fssgv
+          or turbmodel == INPAR::FLUID::multifractal_subgrid_scales)
+      {
+        avm3=true;
+        //----------------------------------------------------------------------------//
+        // get phinp for avm3 preparation (only in this case, this parameter is set!)
+        // normally this vector comes from the flamefront, but there is no flamefront
+        // at the moment of AVM3 preparation
+        // this is a dummy vector containing only 1.0 values
+        if (params.get<Teuchos::RCP<Epetra_Vector> >("phinpcol",Teuchos::null)!=Teuchos::null)
+          epetra_phinp_=params.get<Teuchos::RCP<Epetra_Vector> >("phinpcol",Teuchos::null).get();
+        if (params.get<Teuchos::RCP<COMBUST::InterfaceHandleCombust> >("interfacehandle_",Teuchos::null)!=Teuchos::null)
+          ih_ = params.get<Teuchos::RCP<COMBUST::InterfaceHandleCombust> >("interfacehandle_",Teuchos::null).get();
+
+        // prepare avm3
+        if (fssgv!=INPAR::FLUID::no_fssgv)
+          Cs = params.get<double>("Cs");
+
+        // prepare avm4
+        if (turbmodel == INPAR::FLUID::multifractal_subgrid_scales)
+        {
+          Teuchos::ParameterList& turbmodelparamsmfs = params.sublist("MULTIFRACTAL SUBGRID SCALES");
+
+          // get parameters of model
+          Csgs = turbmodelparamsmfs.get<double>("CSGS");
+
+          if (turbmodelparamsmfs.get<std::string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
+            alpha = 3.0;
+          else
+            dserror("Unknown filter type for mfs in combust!");
+
+          CalcN = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"CALC_N");
+
+          N = turbmodelparamsmfs.get<double>("N");
+
+          if (turbmodelparamsmfs.get<std::string>("REF_VELOCITY") == "strainrate")
+            refvel = INPAR::FLUID::strainrate;
+          else if (turbmodelparamsmfs.get<std::string>("REF_VELOCITY") == "resolved")
+            refvel = INPAR::FLUID::resolved;
+          else if (turbmodelparamsmfs.get<std::string>("REF_VELOCITY") == "fine_scale")
+            refvel = INPAR::FLUID::fine_scale;
+          else
+            dserror("Unknown velocity!");
+
+          if (turbmodelparamsmfs.get<std::string>("REF_LENGTH") == "cube_edge")
+            reflength = INPAR::FLUID::cube_edge;
+          else if (turbmodelparamsmfs.get<std::string>("REF_LENGTH") == "sphere_diameter")
+            reflength = INPAR::FLUID::sphere_diameter;
+          else if (turbmodelparamsmfs.get<std::string>("REF_LENGTH") == "streamlength")
+            reflength = INPAR::FLUID::streamlength;
+          else if (turbmodelparamsmfs.get<std::string>("REF_LENGTH") == "gradient_based")
+            reflength = INPAR::FLUID::gradient_based;
+          else if (turbmodelparamsmfs.get<std::string>("REF_LENGTH") == "metric_tensor")
+            reflength = INPAR::FLUID::metric_tensor;
+          else
+            dserror("Unknown length!");
+
+          c_nu = turbmodelparamsmfs.get<double>("C_NU");
+
+          near_wall_limit = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"NEAR_WALL_LIMIT");
+
+          if (turbmodelparamsmfs.get<std::string>("EVALUATION_B") == "element_center")
+            B_gp = false;
+          else if (turbmodelparamsmfs.get<std::string>("EVALUATION_B") == "integration_point")
+            B_gp = true;
+          else
+            dserror("Unknown evaluation point!");
+
+          if (turbmodelparamsmfs.get<double>("BETA") > 1.0e-9) dserror("No linearization of mfs. Rhs terms only");
+
+          if (turbmodelparamsmfs.get<std::string>("CONVFORM") == "conservative")
+            mfs_is_conservative = true;
+          else
+            mfs_is_conservative = false;
+        }
+      }
+
       // extract local (element level) vectors from global state vectors
       DRT::ELEMENTS::Combust3::MyState mystate(
           discretization,
@@ -317,6 +388,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
           genalpha,
           gradphi,
           gradphi2,
+          avm3,
           this,
           epetra_phinp_,
           gradphi_,
@@ -335,7 +407,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens, second_deriv,
           connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration,
-          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass);
+          weighttype,nitsche_convflux,nitsche_convstab,nitsche_convpenalty,nitsche_mass,
+          turbmodel, fssgv, Cs, Csgs, alpha, CalcN, N, refvel, reflength, c_nu, near_wall_limit, B_gp, mfs_is_conservative);
     }
     break;
     case calc_fluid_beltrami_error:
@@ -407,6 +480,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
             false,
             gradphi,
             gradphi2,
+            false,
             this,
             epetra_phinp_,
             gradphi_,
@@ -435,6 +509,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
           lm,
           false,
           true,
+          false,
           false,
           false,
           this,
