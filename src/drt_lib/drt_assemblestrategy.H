@@ -1,3 +1,19 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file drt_assemblestrategy.H
+
+\brief Setup of the list of valid conditions for input
+
+<pre>
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
+
 #ifndef DRT_ASSEMBLESTRATEGY_H
 #define DRT_ASSEMBLESTRATEGY_H
 

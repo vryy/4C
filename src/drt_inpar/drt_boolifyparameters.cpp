@@ -5,10 +5,10 @@
 \brief Auxiliar routine to boolify integral Yes/No data
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15235
 </pre>
 */
 
