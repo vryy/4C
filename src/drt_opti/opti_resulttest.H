@@ -19,6 +19,8 @@ Maintainer: Martin Winklmaier
 #include "../drt_lib/drt_resulttest.H"
 
 
+class Epetra_SerialDenseVector;
+class Epetra_MultiVector;
 class Epetra_Vector;
 
 namespace DRT
@@ -60,8 +62,17 @@ private:
 
     /// pointer to fluid discretization
     const Teuchos::RCP<const DRT::Discretization> optidis_;
-    /// pointer to vector with values
-    const Teuchos::RCP<const Epetra_Vector> sol_;
+
+    /// optimization variable
+    const Teuchos::RCP<const Epetra_Vector> x_;
+    /// objective value
+    const double obj_;
+    /// spatial derivative of objective value
+    const Teuchos::RCP<const Epetra_Vector> obj_deriv_;
+    /// constraint value(s)
+    const Teuchos::RCP<const Epetra_SerialDenseVector> constr_;
+    /// spatial derivative of constraint value(s)
+    const Teuchos::RCP<const Epetra_MultiVector> constr_deriv_;
 };
 }
 

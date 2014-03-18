@@ -59,6 +59,10 @@ void TOPOPT::Algorithm::OptimizationLoop()
   // solve the primary field
   DoFluidField();
 
+  // stop if only primal equations are tested
+  if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"),"TESTCASE")==INPAR::TOPOPT::adjointtest_primal)
+    return;
+
   // required when restart is called, otherwise only objective value required
   FinishOptimizationStep();
 
@@ -147,9 +151,7 @@ bool TOPOPT::Algorithm::OptimizationFinished()
       DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(
           AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"),"TESTCASE");
 
-  if (testcase==INPAR::TOPOPT::adjointtest_primal)
-    return true; // test of primal equations
-  else if (testcase!=INPAR::TOPOPT::adjointtest_no and optimizer_->Iter()>=1)
+  if (testcase!=INPAR::TOPOPT::adjointtest_no and optimizer_->Iter()>=1)
     return true; // special test cases for adjoint equations -> no optimization
 
   if (FluidField().Discretization()->Comm().MyPID()==0)
@@ -259,8 +261,9 @@ void TOPOPT::Algorithm::FDGradient(const int numFDPoints)
 
   if (density->GlobalLength()>5000) dserror("really that much fluid solutions for gradient computation???");
 
-  double c = 1.0e-5; /// good step size for gradient approximation (low discretization and round-off error)
-  for (int i=0;i<density->GlobalLength();i++)
+  double c = 1.0e-5; // good step size for gradient approximation (low discretization and round-off error)
+
+  for (int i=0;i<Optimizer()->OptiDis()->NodeRowMap()->NumGlobalElements();i++)
   {
     if (Optimizer()->OptiDis()->Comm().MyPID() == 0)
     {
@@ -298,6 +301,8 @@ void TOPOPT::Algorithm::FDGradient(const int numFDPoints)
       Optimizer()->AdoptDensityForFD(-c,i);
     }
   }
+
+
 }
 
 

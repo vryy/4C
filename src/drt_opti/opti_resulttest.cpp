@@ -25,7 +25,11 @@ OPTI::OptiResultTest::OptiResultTest(
 )
 : DRT::ResultTest("OPTI"),
   optidis_(optimizer.Discretization()),
-  sol_(optimizer.X())
+  x_(optimizer.X()),
+  obj_(optimizer.Obj()),
+  obj_deriv_(optimizer.ObjDeriv()),
+  constr_(optimizer.Constr()),
+  constr_deriv_(optimizer.ConstrDeriv())
 {
   return;
 }
@@ -69,14 +73,22 @@ void OPTI::OptiResultTest::TestNode(
 
       double result = 0.;
 
-      const Epetra_BlockMap& optimap = sol_->Map();
+      const Epetra_BlockMap& optimap = x_->Map();
 
       std::string position;
       res.ExtractString("QUANTITY",position);
       if (position=="x")
-        result = (*sol_)[optimap.LID(optidis_->Dof(0,node,0))];
+        result = (*x_)[optimap.LID(optidis_->Dof(0,node,0))];
+      else if (position=="obj")
+        result = obj_;
+      else if (position=="obj_deriv")
+        result = (*obj_deriv_)[optimap.LID(optidis_->Dof(0,node,0))];
+      else if (position=="constr1")
+        result = (*constr_)(0);
+      else if (position=="constr1_deriv")
+        result = (*((*constr_deriv_)(0)))[optimap.LID(optidis_->Dof(0,node,0))];
       else
-        dserror("Quantity '%s' not supported in fluid testing", position.c_str());
+        dserror("Quantity '%s' not supported in opti testing", position.c_str());
 
       nerr += CompareValues(result, "NODE", res);
       test_count++;

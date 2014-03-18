@@ -111,12 +111,20 @@ namespace OPTI
     Teuchos::RCP<IO::DiscretizationReader> ReadRestart(int step);
 
     const Teuchos::RCP<const DRT::Discretization> Discretization() const {return discret_;}
+    const Teuchos::RCP<IO::DiscretizationWriter> OutputWriter() const {return output_;}
 
-    /// current optimization variable (saved as x_mma_)
     const Teuchos::RCP<const Epetra_Vector> X() const {return x_mma_;}
     Teuchos::RCP<Epetra_Vector> X() {return x_mma_;}
+    const double Obj() const {return obj_;}
+    double Obj() {return obj_;}
+    const Teuchos::RCP<const Epetra_Vector> ObjDeriv() const {return obj_deriv_;}
+    Teuchos::RCP<Epetra_Vector> ObjDeriv() {return obj_deriv_;}
+    const Teuchos::RCP<const Epetra_SerialDenseVector> Constr() const {return constr_;}
+    Teuchos::RCP<Epetra_SerialDenseVector> Constr() {return constr_;}
+    const Teuchos::RCP<const Epetra_MultiVector> ConstrDeriv() const {return constr_deriv_;}
+    Teuchos::RCP<Epetra_MultiVector> ConstrDeriv() {return constr_deriv_;}
+
     const int Iter() const {return total_iter_;}
-    const Teuchos::RCP<IO::DiscretizationWriter> OutputWriter() const {return output_;}
 
 
   private:
