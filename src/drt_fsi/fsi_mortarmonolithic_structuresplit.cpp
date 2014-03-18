@@ -8,7 +8,6 @@ with condensed structure interface displacements
 <pre>
 Maintainer: Matthias Mayr
             mayr@mhpc.mw.tum.de
-            http://www.mhpc.mw.tum.de
             089 - 289-10362
 </pre>
 */
