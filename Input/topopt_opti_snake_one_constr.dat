@@ -10,20 +10,9 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-- stationary adjoint fluid example in the topopt frame
-- academical, two-dimensional test case with a duct
-- most basic example
-- constant fluid velocity field:
-o u_1 = 1
-o u_2 = 0
-- constant fluid pressure field:
-p = 0
-- constant adjoint velocity field:
-o v_1 = 1
-o v_2 = 0
-- constant adjoint pressure field:
-q = 10
-- all right hand side terms set adequate (fluid bodyforce, DBC, NBC, adjoint bodyforce contforce, DBC, NBC)
+- pure academical test case for optimization algorithm GCMMA
+- similar type of optimization problem compared to final fluid domain topopt problems
+- does not use fluid and adjoint equations
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      20
 //NODES                         33

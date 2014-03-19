@@ -2,7 +2,13 @@
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-created by pre_exodus 
+- pure academical test case for optimization algorithm GCMMA
+- similar type of optimization problem compared to final fluid domain topopt problems
+- does not use fluid and adjoint equations
+- more than one optimal solutions
+- slight changes of the code might result in a different optimal solution with
+  the same optimal value of the objective function
+- thus, currently only tested with 2 processors (different result for 1 processor)
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    25
 //NODES       36
