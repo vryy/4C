@@ -487,11 +487,14 @@ protected:
   virtual void nlnstiffmass(
       std::vector<int>& lm,  ///< location matrix
       std::vector<double>& disp,  ///< current displacements
+      std::vector<double>*      vel,           // current velocities
+      std::vector<double>*      acc,           // current accelerations
       std::vector<double>& residual,  ///< current residual displ
       std::vector<double>& dispmat,  ///< current material displacements
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
+      LINALG::Matrix<NUMDOF_SOH8,1>* forceinert,                 // element inertial force vector
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
       LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP

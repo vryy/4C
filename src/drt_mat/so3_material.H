@@ -43,6 +43,15 @@ namespace MAT
                           LINALG::Matrix<6,6>* cmat,
                           const int eleGID) = 0;
 
+    /// Evaluate material law
+    virtual void EvaluateNonLinMass(const LINALG::Matrix<3,3>* defgrd,
+                          const LINALG::Matrix<6,1>* glstrain,
+                          Teuchos::ParameterList& params,
+                          LINALG::Matrix<6,1>* linmass_disp,
+                          LINALG::Matrix<6,1>* linmass_vel,
+                          const int eleGID)
+    { dserror("Material does not support evaluation of nonlinear mass matrix"); };
+
     /// Evaluate strain energy function (for hyperelastic materials only)
     virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
                               double& psi)
@@ -60,6 +69,12 @@ namespace MAT
     { dserror("Material does not support evaluation for GEMM"); };
 
     //@}
+
+    /// Return whether material includes a varying material density
+    virtual bool VaryingDensity() const
+    {
+      return false;
+    }
 
     //! @name Handling of Gauss point data
 

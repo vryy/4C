@@ -100,7 +100,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
 
-        nlnstiffmass(lm,mydisp,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
@@ -129,7 +129,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
 
-        nlnstiffmass(lm,mydisp,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
@@ -160,7 +160,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
 
-        nlnstiffmass(lm,mydisp,myres,mydispmat,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&myemat,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
@@ -195,7 +195,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
 
-        nlnstiffmass(lm,mydisp,myres,mydispmat,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,NULL,params,
                      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // lump mass
@@ -242,7 +242,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
             DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
           }
 
-          nlnstiffmass(lm,mydisp,myres,mydispmat,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
+          nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,NULL,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         }
         {
           DRT::PackBuffer data;
@@ -436,6 +436,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
     break;
     default:
       dserror("Unknown type of action for So_sh8");
+      break;
   }
   return 0;
 }
@@ -777,6 +778,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       break;
     default:
       dserror("requested strain option not available");
+      break;
     }
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -821,6 +823,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       break;
     default:
       dserror("requested stress option not available");
+      break;
     }
 
     const double detJ_w = detJ*gpweights[gp];

@@ -571,6 +571,94 @@ void MAT::Growth::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
 }
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::Growth::EvaluateNonLinMass( const LINALG::Matrix<3, 3>* defgrd,
+                            const LINALG::Matrix<6, 1>* glstrain,
+                            Teuchos::ParameterList& params,
+                            LINALG::Matrix<NUM_STRESS_3D,1>* linmass_disp,
+                            LINALG::Matrix<NUM_STRESS_3D,1>* linmass_vel,
+                            const int eleGID)
+{
+  double eps = 1.0e-12;
+  double endtime = params_->endtime_;
+  double time = params.get<double>("total time", -1.0);
+
+  if (time > params_->starttime_ + eps and time <= endtime + eps)
+  {
+    // get gauss point number
+    const int gp = params.get<int>("gp", -1);
+    if (gp == -1)
+      dserror("no Gauss point number provided in material");
+
+    LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelastic(true);
+    LINALG::Matrix<NUM_STRESS_3D, 1> Sdach(true);
+    double theta = theta_->at(gp);
+
+    //--------------------------------------------------------------------------------------
+    // build identity tensor I
+    LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
+    for (int i = 0; i < 3; i++)
+      Id(i) = 1.0;
+
+    // right Cauchy-Green Tensor  C = 2 * E + I
+    LINALG::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
+    C.Scale(2.0);
+    C += Id;
+
+    // elastic right Cauchy-Green Tensor Cdach = F_g^-T C F_g^-1
+    LINALG::Matrix<NUM_STRESS_3D, 1> Cdach(C);
+    Cdach.Scale(1.0 / theta / theta);
+    LINALG::Matrix<3, 3> defgrddach(*defgrd);
+    defgrddach.Scale(1.0 / theta);
+    // elastic Green Lagrange strain
+    LINALG::Matrix<NUM_STRESS_3D, 1> glstraindach(Cdach);
+    glstraindach -= Id;
+    glstraindach.Scale(0.5);
+    // elastic 2 PK stress and constitutive matrix
+    matelastic_->Evaluate( &defgrddach,
+                           &glstraindach,
+                           params,
+                           &Sdach,
+                           &cmatelastic,
+                           eleGID);
+
+    // trace of elastic Mandel stress Mdach = Cdach Sdach
+    double mandel =   Cdach(0) * Sdach(0)
+                    + Cdach(1) * Sdach(1)
+                    + Cdach(2) * Sdach(2)
+                    + Cdach(3) * Sdach(3)
+                    + Cdach(4) * Sdach(4)
+                    + Cdach(5) * Sdach(5);
+
+    double dgrowthfunctheta = 0.0;
+    //evaluate derivative of growth function w.r.t. growth factor
+    EvaluateGrowthFunctionDerivTheta(dgrowthfunctheta, mandel, theta, Cdach, cmatelastic);
+
+    // 2PK stress S = F_g^-1 Sdach F_g^-T
+    LINALG::Matrix<NUM_STRESS_3D, 1> S(Sdach);
+    S.Scale(1.0 / theta / theta);
+
+    // constitutive matrix including growth
+    cmatelastic.Scale(1.0 / theta / theta / theta / theta);
+
+    EvaluateGrowthFunctionDerivC(*linmass_disp,mandel,theta,C,S,cmatelastic);
+
+    double dt = params.get<double>("delta time", -1.0);
+
+    double thetaquer =   1.0 - dgrowthfunctheta * dt;
+
+    linmass_disp->Scale(dt / thetaquer * 3.0*theta*theta*matelastic_->Density());
+    linmass_vel->Clear();
+  }
+  else
+  {
+    //no growth. set to zero
+    linmass_disp->Clear();
+    linmass_vel->Clear();
+  }
+}
+
+/*----------------------------------------------------------------------*
  |  Evaluate growth function                           (protected)        02/10|
  *----------------------------------------------------------------------*/
 void MAT::Growth::EvaluateGrowthFunction

@@ -817,6 +817,8 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->SetState(0,"residual displacement", zeros_);
     discret_->SetState(0,"displacement", (*dis_)(0));
+    discret_->SetState(0,"velocity", (*vel_)(0));
+    discret_->SetState(0,"acceleration", (*acc_)(0));
     if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", (*vel_)(0));
 
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);

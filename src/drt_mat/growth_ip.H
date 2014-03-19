@@ -170,6 +170,14 @@ namespace MAT
                           LINALG::Matrix<6,6>* cmat, ///< material stiffness matrix
                           const int eleGID );
 
+    /// Evaluate material law
+    virtual void EvaluateNonLinMass(const LINALG::Matrix<3,3>* defgrd,
+                          const LINALG::Matrix<6,1>* glstrain,
+                          Teuchos::ParameterList& params,
+                          LINALG::Matrix<6,1>* linmass_disp,
+                          LINALG::Matrix<6,1>* linmass_vel,
+                          const int eleGID);
+
     /// Return density
     virtual double Density() const {dserror("growth material needs gauss point data for density!"); return 0.0;}
     virtual double Density(int gp) const
@@ -178,6 +186,12 @@ namespace MAT
       double theta_gp = (*theta_)[gp];
       return density * theta_gp * theta_gp * theta_gp;
     };
+
+    /// Return whether material has a varying material density
+    virtual bool VaryingDensity() const
+    {
+      return true;
+    }
 
     /// Return theta
     Teuchos::RCP<std::vector<double> > Gettheta() const {return theta_;}

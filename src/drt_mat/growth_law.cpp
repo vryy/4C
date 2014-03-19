@@ -170,15 +170,13 @@ void MAT::GrowthLawLinear::EvaluateGrowthFunctionDerivC
     ktheta  = kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus);
   }
 
+  for (int j = 0; j < NUM_STRESS_3D; j++)
   {
-    for (int j = 0; j < NUM_STRESS_3D; j++)
-    {
-      double Ccmatelasj =    cmat(0, j) * C(0) + cmat(1, j) * C(1)
-                          + cmat(2, j) * C(2) + cmat(3, j) * C(3)
-                          + cmat(4, j) * C(4) + cmat(5, j) * C(5);
+    double Ccmatelasj =    cmat(0, j) * C(0) + cmat(1, j) * C(1)
+                         + cmat(2, j) * C(2) + cmat(3, j) * C(3)
+                         + cmat(4, j) * C(4) + cmat(5, j) * C(5);
 
-      dgrowthfuncdC(j) = ktheta * (S(j)+0.5*Ccmatelasj);
-    }
+    dgrowthfuncdC(j) = ktheta * (S(j)+0.5*Ccmatelasj);
   }
 
   return;
