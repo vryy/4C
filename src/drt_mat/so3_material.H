@@ -65,7 +65,8 @@ namespace MAT
                               LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
                               LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
                               LINALG::Matrix<3,3>* rcg_new,
-                              LINALG::Matrix<3,3>* rcg_old)
+                              LINALG::Matrix<3,3>* rcg_old,
+                              const int eleGID)
     { dserror("Material does not support evaluation for GEMM"); };
 
     //@}

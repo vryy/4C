@@ -2280,7 +2280,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
     double density;
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->EvaluateGEMM(&stress,&cmat,&density,&glstrainm,&glstrain,&glstraino,&rcg,&rcgo);
+    so3mat->EvaluateGEMM(&stress,&cmat,&density,&glstrainm,&glstrain,&glstraino,&rcg,&rcgo,Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses

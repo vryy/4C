@@ -326,8 +326,9 @@ namespace MAT
                                  LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
                                  LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
                                  LINALG::Matrix<3,3>* rcg_new,
-                                 LINALG::Matrix<3,3>* rcg_old)
-      {mat_->EvaluateGEMM(stress,cmat,density,glstrain_m,glstrain_new,glstrain_old,rcg_new,rcg_old);};
+                                 LINALG::Matrix<3,3>* rcg_old,
+                                 const int eleGID)
+      {mat_->EvaluateGEMM(stress,cmat,density,glstrain_m,glstrain_new,glstrain_old,rcg_new,rcg_old,eleGID);};
 
       //@}
 
