@@ -2880,34 +2880,18 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteSUPG(
   conv_fluidvel.Multiply(fluidvelxy_,fluidvelint_);
   conv_fluidvel_old.Multiply(fluidvelxy_old_,fluidvelint_old_);
 
-#ifdef PRES_STAB
     momres.Update(fldAdPara_->Theta(),fluidgradp_);
-#endif
-#ifdef REAC_STAB
     momres.Update(fldAdPara_->Theta()*reacoeff_,fluidvelint_,1.0);
-#endif
-#ifdef CONV_STAB
     momres.Update(fldAdPara_->Theta()*fldAdPara_->Density(),conv_fluidvel,1.0);
-#endif
-#ifdef VISC_STAB
-  momres.Update(-2.0*fldAdPara_->Theta()*fldAdPara_->Viscosity(),fluidvisc_,1.0);
-#endif
+    momres.Update(-2.0*fldAdPara_->Theta()*fldAdPara_->Viscosity(),fluidvisc_,1.0);
     momres.Update(-fldAdPara_->Density()*fldAdPara_->Theta(),fluidbodyforce_,1.0);
 
     if (fldAdPara_->IsStationary()==false)
     {
-#ifdef PRES_STAB
       momres.Update(fldAdPara_->OmTheta(),fluidgradp_old_,1.0);
-#endif
-#ifdef REAC_STAB
       momres.Update(fldAdPara_->OmTheta()*reacoeff_,fluidvelint_old_,1.0);
-#endif
-#ifdef CONV_STAB
       momres.Update(fldAdPara_->OmTheta()*fldAdPara_->Density(),conv_fluidvel_old,1.0);
-#endif
-#ifdef VISC_STAB
       momres.Update(-2.0*fldAdPara_->OmTheta()*fldAdPara_->Viscosity(),fluidvisc_old_,1.0);
-#endif
       momres.Update(fldAdPara_->Density()*fldAdPara_->OmTheta(),fluidbodyforce_old_,1.0);
     }
 // TODO test momres
@@ -2961,7 +2945,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteSUPG(
 
 
 
-#ifdef PRES_STAB
+//#ifdef PRES_STAB
   for (int ui=0; ui<nen_; ++ui)
   {
     for (int idim = 0; idim <nsd_; ++idim)
@@ -2978,7 +2962,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteSUPG(
       }
     }
   }  // end for(idim)
-#endif
+//#endif
 
   return;
 }
