@@ -4,10 +4,10 @@
 \brief calculate second global derivatives w.r.t x/y/z at point r,s,t
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15235
 </pre>
 */
 #ifndef UTILS_GDER2_H
@@ -84,14 +84,14 @@ void gder2(
   // finally multiply by (dx/dr)^-1 from the left and (dx/dr)^-T from the right
   // write out the products by hand because derxy2 only stores the symmetric part
   // of the second derivative tensor (which means we cannot use matrix-matrix products)
-  double xjiData[nsd*nsd];
-  double *xji[nsd];
+  double xjiData[9];
+  double *xji[3];
   for (int i=0; i<nsd; ++i)
     xji[i] = &xjiData[nsd*i];
   LINALG::DENSEFUNCTIONS::invert<double,nsd,nsd>(xjiData, xjm.A());
   for (int node=0; node<numnode; ++node)
     {
-      double tmp[nsd][nsd];
+      double tmp[3][3];
       switch (nsd)
       {
       case 3:
