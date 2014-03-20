@@ -201,7 +201,7 @@ NUMSTEP                         10
 OUTMEAN                         No
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
-SCATRATYPE                      Undefined
+SCATRATYPE                      ConvectionDiffusion
 SKIPINITDER                     yes
 SOLVERTYPE                      linear_incremental
 THETA                           0.66

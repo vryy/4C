@@ -94,7 +94,7 @@ VSTAB                           no_vstab                        // no viscous st
 EVALUATION_TAU                  integration_point               // only evaluation at integration point available in combust fluid
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SCATRATYPE                      Undefined
+SCATRATYPE                      LevelSet
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function

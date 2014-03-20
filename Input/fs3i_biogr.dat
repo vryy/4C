@@ -198,7 +198,7 @@ NUMSTEP                         5
 OUTMEAN                         No
 OUTPUT_GMSH                     No
 RESTARTEVRY                     100
-SCATRATYPE                      Undefined
+SCATRATYPE                      Advanced_Reaction
 SKIPINITDER                     yes
 SOLVERTYPE                      nonlinear
 THETA                           0.66

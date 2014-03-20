@@ -187,40 +187,24 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 void SCATRA::ScaTraTimIntImpl::Init()
 {
   // what kind of equations do we actually want to solve?
-  // (For the moment, we directly conclude from the problem type, Only ELCH applications
-  //  allow the usage of a given user input)
-  // additional exception: turbulent passive scalar transport: only for this case and loma
-  // vectors and variables for turbulence models are provided
   PROBLEM_TYP prbtype = DRT::Problem::Instance()->ProblemType();
 
-  //TODO: SCATRA_ELE_CLEANING: Wollen wir hier einen Sicherheitscheck
   if (scatratype_ == INPAR::SCATRA::scatratype_undefined)
+    dserror("Please define SCATRATYPE in datfile!");
+
+  if (prbtype == prb_elch)              scatratype_ = INPAR::SCATRA::scatratype_elch;
+  else if (prbtype == prb_combust)      scatratype_ = INPAR::SCATRA::scatratype_levelset;
+  else if (prbtype == prb_level_set)    scatratype_ = INPAR::SCATRA::scatratype_levelset;
+  else if (prbtype == prb_loma)         scatratype_ = INPAR::SCATRA::scatratype_loma;
+  else
   {
-    if (prbtype == prb_elch)              scatratype_ = INPAR::SCATRA::scatratype_elch;
-    else if (prbtype == prb_combust)      scatratype_ = INPAR::SCATRA::scatratype_levelset;
-    else if (prbtype == prb_level_set)    scatratype_ = INPAR::SCATRA::scatratype_levelset;
-    else if (prbtype == prb_loma)         scatratype_ = INPAR::SCATRA::scatratype_loma;
-    else if (prbtype == prb_scatra)
+    if (myrank_ == 0)
     {
-      if(scatratype_ == INPAR::SCATRA::scatratype_undefined)
-        dserror("Please define SCATRATYPE in datfile!");
+      std::cout << "###################################################"<< std::endl;
+      std::cout << "# YOUR PROBLEM TYPE: " << DRT::Problem::Instance()->ProblemName() << std::endl;
+      PrintScatraType();
+      std::cout << "###################################################" << std::endl;
     }
-    else if (prbtype == prb_gas_fsi)      scatratype_ = INPAR::SCATRA::scatratype_condif;
-    else if (prbtype == prb_biofilm_fsi)  scatratype_ = INPAR::SCATRA::scatratype_advreac;
-    else if (prbtype == prb_thermo_fsi)   scatratype_ = INPAR::SCATRA::scatratype_loma;
-    else if (prbtype == prb_poroscatra)
-      {
-        if(scatratype_ == INPAR::SCATRA::scatratype_undefined)
-          dserror("Please define SCATRATYPE in datfile!");
-      }
-    else if (prbtype == prb_ssi)
-    {
-      if(scatratype_ == INPAR::SCATRA::scatratype_undefined)
-             dserror("Please define SCATRATYPE in datfile!");    // scatratype_ = INPAR::SCATRA::scatratype_condif;
-    }
-    else if (prbtype == prb_acou)         scatratype_ = INPAR::SCATRA::scatratype_condif;
-    else
-      dserror("Problemtype %s not supported", DRT::Problem::Instance()->ProblemName().c_str());
   }
 
   // -------------------------------------------------------------------

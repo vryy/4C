@@ -282,6 +282,9 @@ public:
   //! output solution and restart data to file
   virtual void Output(const int num =0);
 
+  //! print scatra typ
+  void PrintScatraType();
+
   /*========================================================================*/
   //! @name Time, time-step and related methods
   /*========================================================================*/

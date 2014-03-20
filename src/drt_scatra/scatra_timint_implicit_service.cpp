@@ -841,6 +841,50 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
 } // SCATRA::ScaTraTimIntImpl::SurfacePermeability
 
 
+/*----------------------------------------------------------------------*
+ |                                                      rasthofer 03/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::PrintScatraType()
+{
+  std::cout << "# YOUR SCATRA TYPE: ";
+
+  switch (scatratype_)
+  {
+  case INPAR::SCATRA::scatratype_undefined:
+    std::cout << "Undefined" << std::endl;
+    break;
+  case INPAR::SCATRA::scatratype_condif:
+    std::cout << "ConvectionDiffusion" << std::endl;
+    break;
+  case INPAR::SCATRA::scatratype_loma:
+    std::cout << "LowMachNumberFlow" << std::endl;
+    break;
+  case INPAR::SCATRA::scatratype_elch:
+    std::cout << "Elch" << std::endl;
+    break;
+  case INPAR::SCATRA::scatratype_levelset:
+    std::cout << "LevelSet" << std::endl;
+    break;
+  case INPAR::SCATRA::scatratype_poro:
+    std::cout << "Poroscatra" << std::endl;
+    break;
+  case INPAR::SCATRA::scatratype_advreac:
+    std::cout << "Advanced_Reaction" << std::endl;
+    break;
+  case INPAR::SCATRA::scatratype_pororeac:
+    std::cout << "Poro_Scatra_Reaction" << std::endl;
+    break;
+  case INPAR::SCATRA::scatratype_cardio_monodomain:
+    std::cout << "Cardio_Monodomain" << std::endl;
+    break;
+  default:
+    dserror("Fix your scatratype!");
+  }
+
+  return;
+}
+
+
 /*==========================================================================*
  |                                                                          |
  | protected:                                                               |

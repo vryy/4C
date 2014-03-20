@@ -121,6 +121,7 @@ ALPHA_F                         1.0
 ALPHA_M                         1.0
 GAMMA                           0.66
 OUTPUT_GMSH                     Yes
+SCATRATYPE                      LevelSet
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10
 ITEMAX                          15
