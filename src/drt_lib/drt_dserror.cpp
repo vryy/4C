@@ -44,6 +44,7 @@ Maintainer: Michael Gee
 
 #include <stdexcept>
 #include <string.h>
+#include <iostream>
 
 #include <mpi.h>
 #include <execinfo.h>
