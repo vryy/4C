@@ -217,7 +217,8 @@ void PARTICLE::Algorithm::Init(bool restarted)
   }
 
   // some output
-  IO::cout << "after ghosting of particles" << IO::endl;
+  if (myrank_ == 0)
+    IO::cout << "after ghosting of particles" << IO::endl;
   DRT::UTILS::PrintParallelDistribution(*particledis_);
 
   return;

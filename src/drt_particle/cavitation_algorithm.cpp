@@ -191,7 +191,8 @@ void CAVITATION::Algorithm::InitCavitation()
   }
 
   // some output
-  IO::cout << "after ghosting" << IO::endl;
+  if (myrank_ == 0)
+    IO::cout << "after ghosting" << IO::endl;
   DRT::UTILS::PrintParallelDistribution(*particledis_);
   DRT::UTILS::PrintParallelDistribution(*fluiddis_);
 

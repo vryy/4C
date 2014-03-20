@@ -99,7 +99,8 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   SetupGhosting(binrowmap, scatraelesinbins);
 
   // some output
-  IO::cout << "after ghosting" << IO::endl;
+  if (myrank_ == 0)
+    IO::cout << "after ghosting" << IO::endl;
   DRT::UTILS::PrintParallelDistribution(*particledis_);
   DRT::UTILS::PrintParallelDistribution(*scatradis_);
 
