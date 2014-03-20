@@ -74,7 +74,7 @@ NUMSTEP                         40
 OUTMEAN                         yes
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
-SCATRATYPE                      Undefined
+SCATRATYPE                      Elch
 SKIPINITDER                     no
 SOLVERTYPE                      nonlinear
 THETA                           0.66
