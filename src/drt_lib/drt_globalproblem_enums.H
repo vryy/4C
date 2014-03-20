@@ -3,10 +3,10 @@
 \brief Some important enums used in conjunction with DRT::Problem
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15235
 </pre>
 
 ---------------------------------------------------------------------*/

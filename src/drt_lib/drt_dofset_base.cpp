@@ -32,8 +32,8 @@ http://www.lnm.mw.tum.de
 </pre>
 
 <pre>
-Maintainer: Ulrrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
 </pre>

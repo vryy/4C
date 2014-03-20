@@ -4,10 +4,10 @@
 \brief A set of degrees of freedom special for contact
 
 <pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

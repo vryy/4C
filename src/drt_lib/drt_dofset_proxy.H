@@ -33,8 +33,8 @@ http://www.lnm.mw.tum.de
 </pre>
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
 

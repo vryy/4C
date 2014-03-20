@@ -31,10 +31,10 @@ http://www.lnm.mw.tum.de
 -------------------------------------------------------------------------
 </pre>
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15235
 </pre>
 */
 /*----------------------------------------------------------------------*/
