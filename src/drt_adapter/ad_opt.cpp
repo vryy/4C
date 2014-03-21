@@ -56,7 +56,10 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
           problem->ProblemName(),
           problem->SpatialApproximation(),
           problem->OutputControlFile()->InputFileName(),
-          TOPOPT::expandFilename(problem->OutputControlFile()->FileName(),"xxx_opti_"),
+          TOPOPT::expandFilename(
+              problem->OutputControlFile()->FileName(),
+              "xxx_opti_",
+              (bool)DRT::Problem::Instance()->Restart()),
           problem->NDim(),
           problem->Restart(),
           problem->OutputControlFile()->FileSteps(),

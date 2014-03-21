@@ -86,7 +86,10 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  std::string filename = TOPOPT::expandFilename(problem->OutputControlFile()->FileName(),"xxx_adjoint_");
+  std::string filename = TOPOPT::expandFilename(
+      problem->OutputControlFile()->FileName(),
+      "xxx_adjoint_",
+      (bool)DRT::Problem::Instance()->Restart());
 
   // output control for optimization field
   // equal to output for fluid equations except for the filename

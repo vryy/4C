@@ -2419,7 +2419,7 @@ Teuchos::RCP<IO::DiscretizationReader> OPTI::GCMMA::ReadRestart(int step)
   // discretization reader with opti filename (restart number reduced by one here for correct file names)
   Teuchos::RCP<IO::DiscretizationReader> reader = Teuchos::rcp(new IO::DiscretizationReader(
       discret_,
-      Teuchos::rcp(new IO::InputControl(TOPOPT::expandFilename(output_->Output()->FileName(),""))),
+      Teuchos::rcp(new IO::InputControl(TOPOPT::expandFilename(output_->Output()->FileName(),"",(bool)step))),
       step));
 
   // iteration counter
