@@ -111,7 +111,7 @@ UPRES                           50000
 CONVFORM                        convective
 MATID                           1
 OUTMEAN                         Yes
-SCATRATYPE                      Loma
+SCATRATYPE                      LowMachNumberFlow
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          2
 CONVTOL                         1e-4
