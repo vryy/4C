@@ -114,6 +114,7 @@ UPRES                           10
 CONVFORM                        convective
 MATID                           1
 OUTMEAN                         Yes
+SCATRATYPE                      Loma
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
 SUGRVEL                         yes
