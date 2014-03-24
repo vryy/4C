@@ -101,6 +101,9 @@ namespace INVANA
     //! Return the map layout for the parameter distribution
     const Epetra_Map* ParamLayoutMap(){return paramlayoutmap_.get();};
 
+    //! Return the uniqueGIDs map layout for the parameter distribution
+    const Epetra_Map* ParamLayoutMapUnique(){return paramlayoutmapunique_.get();};
+
     //! Return number of physically different parameters
     int NumParams(){ return numparams_; };
 
@@ -120,6 +123,9 @@ namespace INVANA
 
     //! parametrization layout of the optimization parameters
     Teuchos::RCP<Epetra_Map> paramlayoutmap_;
+
+    //! a uniqueGIDS version to be used for e.g.: writing restart data
+    Teuchos::RCP<Epetra_Map> paramlayoutmapunique_;
 
     //! set elementwise material parameters
     virtual void SetParams();

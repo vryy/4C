@@ -29,6 +29,8 @@ void MVNorm(Teuchos::RCP<Epetra_MultiVector> avector, int anorm, double* result,
 //! compute dot product of two vectors stored in multivector fomat for storage reasons only
 void MVDotProduct(Teuchos::RCP<Epetra_MultiVector> avector, Teuchos::RCP<Epetra_MultiVector> bvector, double* result, const Epetra_Map* uniquemap);
 
+//! reduce restart number in control file name in case of a restart
+std::string decreaseControlFileNum(const Epetra_Comm& comm, std::string filein, int restart);
 
 }  // namespace INVANA
 }  // namespace STR

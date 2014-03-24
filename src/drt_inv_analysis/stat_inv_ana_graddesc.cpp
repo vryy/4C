@@ -14,6 +14,7 @@ Maintainer: Sebastian Kehl
 #include <fstream>
 #include <cstdlib>
 
+#include "../linalg/linalg_utils.H"
 #include "invana_utils.H"
 #include "stat_inv_ana_graddesc.H"
 #include "../drt_io/io_control.H"
@@ -31,7 +32,8 @@ Maintainer: Sebastian Kehl
 
 
 /*----------------------------------------------------------------------*/
-/* constructor */
+/* constructor                                                keh 01/13 */
+/*----------------------------------------------------------------------*/
 STR::INVANA::StatInvAnaGradDesc::StatInvAnaGradDesc(Teuchos::RCP<DRT::Discretization> dis):
   StatInvAnalysis(dis),
 stepsize_(0.0),
@@ -55,8 +57,10 @@ convcritc_(0)
 
 }
 
+
 /*----------------------------------------------------------------------*/
-/* do the optimization loop*/
+/* optimization loop                                          keh 01/13 */
+/*----------------------------------------------------------------------*/
 void STR::INVANA::StatInvAnaGradDesc::Optimize()
 {
   int success=0;
@@ -111,6 +115,9 @@ void STR::INVANA::StatInvAnaGradDesc::Optimize()
     objval_o_=objval_;
     runc_++;
 
+    if (restartevry_ and (runc_%restartevry_ == 0))
+        WriteRestart();
+
     //do some on screen printing
     PrintOptStep(tauopt, numsteps);
   }
@@ -120,8 +127,10 @@ void STR::INVANA::StatInvAnaGradDesc::Optimize()
   return;
 }
 
+
 /*----------------------------------------------------------------------*/
-/* do a line search based on armijo rule */
+/* do a line search based on armijo rule                      keh 03/14 */
+/*----------------------------------------------------------------------*/
 int STR::INVANA::StatInvAnaGradDesc::EvaluateArmijoRule(double* tauopt, int* numsteps)
 {
   int i=0;
@@ -203,8 +212,10 @@ int STR::INVANA::StatInvAnaGradDesc::EvaluateArmijoRule(double* tauopt, int* num
   return 1;
 }
 
+
 /*----------------------------------------------------------------------*/
-/* quadratic model */
+/* quadratic model                                            keh 10/13 */
+/*----------------------------------------------------------------------*/
 int STR::INVANA::StatInvAnaGradDesc::polymod(double e_o, double dfp, double tau_n, double e_n, double blow, double bhigh, double* tauopt)
 {
   double lleft=tau_n*blow;
@@ -217,8 +228,10 @@ int STR::INVANA::StatInvAnaGradDesc::polymod(double e_o, double dfp, double tau_
   return 0;
 }
 
+
 /*----------------------------------------------------------------------*/
-/* cubic model model */
+/* cubic model                                               keh 10/13 */
+/*----------------------------------------------------------------------*/
 int STR::INVANA::StatInvAnaGradDesc::polymod(double e_o, double dfp, double tau_n, double e_n, double blow, double bhigh, double tau_l, double e_l, double* tauopt)
 {
   double lleft=tau_n*blow;
@@ -249,9 +262,13 @@ int STR::INVANA::StatInvAnaGradDesc::polymod(double e_o, double dfp, double tau_
 
 
 /*----------------------------------------------------------------------*/
-/* print final results*/
+/* print step information                                     keh 01/13 */
+/*----------------------------------------------------------------------*/
 void STR::INVANA::StatInvAnaGradDesc::PrintOptStep(double tauopt, int numsteps)
 {
+  if (discret_->Comm().MyPID())
+    return;
+
   printf("OPTIMIZATION STEP %3d | ", runc_);
   printf("Objective function: %10.8e | ", objval_o_);
   printf("Gradient : %10.8e | ", convcritc_);
@@ -261,11 +278,58 @@ void STR::INVANA::StatInvAnaGradDesc::PrintOptStep(double tauopt, int numsteps)
 }
 
 /*----------------------------------------------------------------------*/
-/* print final results*/
+/* print final results                                       kehl 01/13 */
+/*----------------------------------------------------------------------*/
 void STR::INVANA::StatInvAnaGradDesc::Summarize()
 {
-  std::cout << "the final vector of parameters: " << std::endl;
+  if (not discret_->Comm().MyPID())
+    std::cout << "the final vector of parameters: " << std::endl;
+
   std::cout << *(Matman()->GetParams()) << std::endl;
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/* Read restart                                               keh 03/14 */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::StatInvAnaGradDesc::ReadRestart(int run)
+{
+  IO::DiscretizationReader reader(discret_,RestartFromFile(),run);
+
+  if (not discret_->Comm().MyPID())
+    std::cout << "Reading invana restart from step " << run << " from file: " << RestartFromFile()->FileName() << std::endl;
+
+  //IO::DiscretizationReader reader(discret_, RestartFromFile(),run);
+  if (run != reader.ReadInt("run"))
+    dserror("Optimization step on file not equal to given step");
+
+  runc_ = run;
+
+  Teuchos::RCP<Epetra_MultiVector> params = Teuchos::rcp(new Epetra_MultiVector(*(Matman()->GetParams())));
+  reader.ReadMultiVector(params,"optimization_parameters");
+  Matman()->ReplaceParams(params);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* Write restart                                              keh 03/14 */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::StatInvAnaGradDesc::WriteRestart()
+{
+  if (not discret_->Comm().MyPID())
+    std::cout << "Writing invana restart for step " << runc_ <<  std::endl;
+
+  Writer()->NewStep(runc_, double(runc_));
+  Writer()->WriteInt("run", runc_);
+
+  // write vectors with unique gids only
+  Teuchos::RCP<Epetra_MultiVector> uniqueparams = Teuchos::rcp(new Epetra_MultiVector(*Matman()->ParamLayoutMapUnique(), Matman()->NumParams(),false));
+  LINALG::Export(*(Matman()->GetParams()), *uniqueparams);
+
+  Writer()->WriteVector("optimization_parameters", uniqueparams);
+
+  return;
+}

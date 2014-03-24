@@ -45,7 +45,9 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 STR::INVANA::StatInvAnalysis::StatInvAnalysis(Teuchos::RCP<DRT::Discretization> dis):
 discret_(dis),
+restartevry_(1),
 dofrowmap_(NULL),
+output_(Teuchos::null),
 regweight_(0.0)
 {
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -134,6 +136,44 @@ regweight_(0.0)
     break;
   }
 
+  //-----------------------------------------------------------------------
+  //Setup output and input ------------------------------------------------
+  restartevry_ = statinvp.get<int>("RESTARTEVRY");
+
+  // output for the inverse analysis: outputcontrol is "copied"/reproduced to "steal" it from the mighty discretization
+  // and give it to the inverse analysis algorithm
+  if (DRT::Problem::Instance()->Restart())
+    inputfile_ = Teuchos::rcp(new IO::InputControl(DRT::Problem::Instance()->InputControlFile()->FileName(), discret_->Comm()));
+
+  output_ = Teuchos::rcp(new IO::DiscretizationWriter(discret_));
+  output_->SetOutput(DRT::Problem::Instance()->OutputControlFile());
+
+  //output for the forward problem
+  std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string prefix = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+  size_t pos = filename.rfind('/');
+  size_t pos2 = prefix.rfind('-');
+  std::string filenameout = filename.substr(0,pos+1) + prefix.substr(0,pos2) + "_forward" + filename.substr(pos+1+prefix.length());
+  int restart= statinvp.get<int>("FPRESTART"); //this is supposed to be the forward problem restart
+
+  Teuchos::RCP<IO::OutputControl> controlfile =
+    Teuchos::rcp(new IO::OutputControl(
+      discret_->Comm(),
+      DRT::Problem::Instance()->ProblemName(),
+      DRT::Problem::Instance()->SpatialApproximation(),
+      DRT::Problem::Instance()->OutputControlFile()->InputFileName(),
+      filenameout,
+      DRT::Problem::Instance()->NDim(),
+      restart,
+      DRT::Problem::Instance()->OutputControlFile()->FileSteps(),
+      DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_BIN")
+    )
+  );
+  // give the discretization another controlfile for output
+  discret_->Writer()->SetOutput(controlfile);
+  //Setup output and input ------------------------------------------------
+  //-----------------------------------------------------------------------
+
   //set these infeasibly high:
   objval_ = 1.0e17;
   objval_o_ = 1.0e16;
@@ -171,11 +211,12 @@ void STR::INVANA::StatInvAnalysis::MStepDToStdVecD(Teuchos::RCP<DRT::UTILS::TimI
 /*----------------------------------------------------------------------*/
 void STR::INVANA::StatInvAnalysis::SolveForwardProblem()
 {
-  // resultfiles are overwritten every run since usually only the final results are of interest
+  // use the same control file for every run since usually the last one is of interest
   discret_->Writer()->OverwriteResultFile();
 
   // get input lists
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
 
   // major switch to different time integrators
   switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
@@ -185,10 +226,11 @@ void STR::INVANA::StatInvAnalysis::SolveForwardProblem()
       ADAPTER::StructureBaseAlgorithm adapterbase(sdyn,const_cast<Teuchos::ParameterList&>(sdyn), discret_);
       ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
 
-      // do restart
-      const int restart = DRT::Problem::Instance()->Restart();
+      // do restart but the one which is explicitly given in the INVERSE ANLYSIS section
+      const int restart= statinvp.get<int>("FPRESTART");
       if (restart)
       {
+        dserror("Restarting from within a timestep of the forward problem needs some tweaking first!");
         structadaptor.ReadRestart(restart);
       }
       structadaptor.Integrate();
@@ -367,6 +409,25 @@ Teuchos::RCP<DRT::ResultTest> STR::INVANA::StatInvAnalysis::CreateFieldTest()
 {
   return Teuchos::rcp(new InvAnaResultTest(*this));
 }
+
+
+/*----------------------------------------------------------------------*/
+/* Write restart information                                keh 03/14   */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::StatInvAnalysis::WriteRestart()
+{
+  dserror("must be implemented in specific algorithms.");
+}
+
+
+/*----------------------------------------------------------------------*/
+/* Write restart information                                keh 03/14   */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::StatInvAnalysis::ReadRestart(int run)
+{
+  dserror("must be implemented in specific algorithms.");
+}
+
 
 void STR::INVANA::StatInvAnalysis::PrintDataToScreen(Epetra_MultiVector& vec)
 {

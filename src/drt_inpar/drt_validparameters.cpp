@@ -1278,6 +1278,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       INPAR::STR::stat_inv_lbfgs),
                                     &statinvp);
 
+  // step to restart from
+  IntParameter("FPRESTART",0,"forward problem restart",&statinvp);
+
+  // write restart info every so often
+  IntParameter("RESTARTEVRY",1,"write restart information every x-th step",&statinvp);
+
   // decide which parametrization of material parameters to use
   setStringToIntegralParameter<int>("PARAMETRIZATION","none",
                                       "how to parametrize the parameter field",

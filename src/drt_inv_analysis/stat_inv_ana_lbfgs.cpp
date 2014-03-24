@@ -14,6 +14,7 @@ Maintainer: Sebastian Kehl
 #include <fstream>
 #include <cstdlib>
 
+#include "../linalg/linalg_utils.H"
 #include "invana_utils.H"
 #include "stat_inv_ana_lbfgs.H"
 #include "../drt_io/io_control.H"
@@ -92,6 +93,8 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
 
   //get search direction from gradient:
   p_->Update(-1.0, *GetGradientOld(), 0.0);
+  if (DRT::Problem::Instance()->Restart())
+    ComputeDirection();
 
   objval_o_ = objval_;
   error_incr_ = objval_;
@@ -133,6 +136,9 @@ void STR::INVANA::StatInvAnaLBFGS::Optimize()
     error_incr_=objval_o_-objval_;
     objval_o_=objval_;
     runc_++;
+
+    if (restartevry_ and (runc_%restartevry_ == 0))
+      WriteRestart();
 
     //do some on screen printing
     PrintOptStep(tauopt, numsteps);
@@ -395,3 +401,75 @@ void STR::INVANA::StatInvAnaLBFGS::Summarize()
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/* Read restart                                               keh 03/14 */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::StatInvAnaLBFGS::ReadRestart(int run)
+{
+  IO::DiscretizationReader reader(discret_,RestartFromFile(),run);
+
+  if (not discret_->Comm().MyPID())
+    std::cout << "Reading invana restart from step " << run << " from file: " << RestartFromFile()->FileName() << std::endl;
+
+  //IO::DiscretizationReader reader(discret_, RestartFromFile(),run);
+  if (run != reader.ReadInt("run"))
+    dserror("Optimization step on file not equal to given step");
+
+  runc_ = run;
+
+  Teuchos::RCP<Epetra_MultiVector> params = Teuchos::rcp(new Epetra_MultiVector(*(Matman()->GetParams())));
+  reader.ReadMultiVector(params,"optimization_parameters");
+  Matman()->ReplaceParams(params);
+
+  actsize_ = reader.ReadInt("storage_size");
+
+  Teuchos::RCP<Epetra_MultiVector> storage = Teuchos::rcp(new Epetra_MultiVector(*Matman()->ParamLayoutMap(),actsize_,false));
+  reader.ReadMultiVector(storage,"sstore");
+  for (int i=actsize_-1; i>=0; i--)
+    sstore_->UpdateSteps(*(*storage)(i));
+
+  storage->Scale(0.0);
+  reader.ReadMultiVector(storage,"ystore");
+  for (int i=actsize_-1; i>=0; i--)
+    ystore_->UpdateSteps(*(*storage)(i));
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* Write restart                                              keh 03/14 */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::StatInvAnaLBFGS::WriteRestart()
+{
+  if (not discret_->Comm().MyPID())
+    std::cout << "Writing invana restart for step " << runc_ <<  std::endl;
+
+  Writer()->NewStep(runc_, double(runc_));
+  Writer()->WriteInt("run", runc_);
+
+  // write vectors with unique gids only
+  Teuchos::RCP<Epetra_MultiVector> uniqueparams = Teuchos::rcp(new Epetra_MultiVector(*Matman()->ParamLayoutMapUnique(), Matman()->NumParams(),false));
+  LINALG::Export(*(Matman()->GetParams()), *uniqueparams);
+
+  Writer()->WriteVector("optimization_parameters", uniqueparams);
+
+
+  Writer()->WriteInt("storage_size", actsize_);
+  //write sstore
+  Teuchos::RCP<Epetra_MultiVector> uniquestorage = Teuchos::rcp(new Epetra_MultiVector(*Matman()->ParamLayoutMapUnique(),actsize_,false));
+  for (int i=0; i<actsize_; i++)
+    LINALG::Export(*(*sstore_)(-i),*(*uniquestorage)(i));
+
+  Writer()->WriteVector("sstore", uniquestorage);
+
+  // write ystore
+  uniquestorage->Scale(0.0);
+  for (int i=0; i<actsize_; i++)
+    LINALG::Export(*(*ystore_)(-i),*(*uniquestorage)(i));
+
+  Writer()->WriteVector("ystore", uniquestorage);
+
+  return;
+}

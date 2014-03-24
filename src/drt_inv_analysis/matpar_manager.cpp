@@ -35,6 +35,7 @@ discret_(discret),
 optparams_(Teuchos::null),
 optparams_o_(Teuchos::null),
 paramlayoutmap_(Teuchos::null),
+paramlayoutmapunique_(Teuchos::null),
 numparams_(0),
 params_(Teuchos::null)
 {

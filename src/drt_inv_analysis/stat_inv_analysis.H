@@ -30,6 +30,9 @@ namespace STR
 namespace IO
 {
   class DiscretizationWriter;
+  class DiscretizationReader;
+  class InputControl;
+  class OutputControl;
 }
 
 namespace LINALG
@@ -95,6 +98,9 @@ protected:
   //! increment of the objective function
   double error_incr_;
 
+  //! write restart every so often
+  int restartevry_;
+
   //! solve the primal problem
   void SolveForwardProblem();
 
@@ -118,6 +124,12 @@ protected:
 
   //! a reference to the material parameter manager
   const Teuchos::RCP<STR::INVANA::MatParManager> Matman(){return matman_; };
+
+  //! a reference to the discretization writer
+  const Teuchos::RCP<IO::DiscretizationWriter> Writer(){return output_;};
+
+  //! a reference to the file to restart from
+  const Teuchos::RCP<IO::InputControl> RestartFromFile(){return inputfile_;};
 
   //! get current gradient
   const Teuchos::RCP<Epetra_MultiVector> GetGradient(){return objgrad_;};
@@ -154,8 +166,11 @@ private:
   //! previous gradient of the objective function
   Teuchos::RCP<Epetra_MultiVector> objgrad_o_;
 
-  //! outputer
+  //! outputer for the inverse analysis
   Teuchos::RCP<IO::DiscretizationWriter> output_;
+
+  //! the file to start from in case of restarts
+  Teuchos::RCP<IO::InputControl> inputfile_;
 
   //! have regularization?
   bool havereg_;
@@ -184,6 +199,12 @@ public:
 
   //! use some specific optimization routine
   virtual void Optimize() = 0;
+
+  //! read restart information
+  virtual void ReadRestart(int run);
+
+  //! write restart information
+  virtual void WriteRestart();
 
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_;};
 

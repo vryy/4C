@@ -2,7 +2,7 @@
 /*!
 
 <pre>
-Maintainer: Jonas Biehler
+Maintainer: Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -15,6 +15,7 @@ Maintainer: Jonas Biehler
 #include "matpar_manager_uniform.H"
 
 #include "invana_utils.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
@@ -32,6 +33,7 @@ STR::INVANA::MatParManagerUniform::MatParManagerUniform(Teuchos::RCP<DRT::Discre
    :MatParManager(discret)
 {
   paramlayoutmap_ = Teuchos::rcp(new Epetra_Map(1,1,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm())));
+  paramlayoutmapunique_ = LINALG::AllreduceEMap(*paramlayoutmap_,0);
 
   optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumParams(),true));
   optparams_o_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumParams(),true));
@@ -82,6 +84,7 @@ STR::INVANA::MatParManagerPerElement::MatParManagerPerElement(Teuchos::RCP<DRT::
    :MatParManager(discret)
 {
   paramlayoutmap_ = Teuchos::rcp(new Epetra_Map(*(discret->ElementColMap())));
+  paramlayoutmapunique_ = Teuchos::rcp(new Epetra_Map(*(discret->ElementRowMap())));
 
   optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumParams(),true));
   optparams_o_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumParams(),true));

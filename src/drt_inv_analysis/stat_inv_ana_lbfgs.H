@@ -83,7 +83,7 @@ private:
   //! current direction of steepest descent maybe properly scaled by hessian approximation
   Teuchos::RCP<Epetra_MultiVector> p_;
 
-  //! current step made based on direction p_ using sacled with a proper stepsize
+  //! current step based on direction p_ scaled with a proper stepsize
   Teuchos::RCP<Epetra_MultiVector> step_;
 
 public:
@@ -95,6 +95,10 @@ public:
 
   //! start the optimization routine
   void Optimize();
+
+  void ReadRestart(int run);
+
+  void WriteRestart();
 
 }; // class StatInvAnaLBFGS
 }  // namespace INVANA

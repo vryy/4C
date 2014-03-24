@@ -37,8 +37,7 @@ void STR::statinvanalysis()
   if (!actdis->Filled()) actdis->FillComplete();
   if (!actdis->HaveDofs()) actdis->FillComplete();
 
-  // context for output and restart
-  //Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
+  int restart= DRT::Problem::Instance()->Restart();
 
   switch(DRT::INPUT::IntegralValue<INPAR::STR::StatInvAnalysisType>(statinvp,"STAT_INV_ANALYSIS"))
   {
@@ -46,6 +45,7 @@ void STR::statinvanalysis()
     case INPAR::STR::stat_inv_graddesc:
     {
       Teuchos::RCP<STR::INVANA::StatInvAnalysis>  ia = Teuchos::rcp(new STR::INVANA::StatInvAnaGradDesc(actdis));
+      if (restart) ia->ReadRestart(restart);
       ia->Optimize();
 
       DRT::Problem::Instance()->AddFieldTest(ia->CreateFieldTest());
@@ -56,6 +56,7 @@ void STR::statinvanalysis()
     case INPAR::STR::stat_inv_lbfgs:
     {
       Teuchos::RCP<STR::INVANA::StatInvAnalysis>  ia = Teuchos::rcp(new STR::INVANA::StatInvAnaLBFGS(actdis));
+      if (restart) ia->ReadRestart(restart);
       ia->Optimize();
 
       DRT::Problem::Instance()->AddFieldTest(ia->CreateFieldTest());

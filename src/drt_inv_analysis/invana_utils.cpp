@@ -9,7 +9,7 @@ Maintainer: Sebastian Kehl
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
+#include <string>
 
 #include "invana_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -63,5 +63,36 @@ void STR::INVANA::MVDotProduct(Teuchos::RCP<Epetra_MultiVector> avector, Teuchos
   *result=0.0;
   for (int j=0; j<anorm.Length(); j++) *result+=anorm[j];
 
+}
+
+//! reduce restart number in control file name and strip off ".control"
+std::string STR::INVANA::decreaseControlFileNum(const Epetra_Comm& comm, std::string filein, int restart)
+{
+  if (restart)
+  {
+    if (comm.MyPID()==0)
+    {
+      int number = 0;
+      size_t pos = filein.rfind('-');
+      if (pos!=std::string::npos)
+      {
+        number = atoi(filein.substr(pos+1).c_str());
+        filein = filein.substr(0,pos);
+      }
+      else
+        dserror("control file with at least \"-1\" exists at this point. Something went wrong");
+
+      number -= 1;
+      std::stringstream name;
+      if (number == 0)
+        name << filein;
+      else
+        name << filein << "-" << number;
+
+      filein = name.str();
+    }
+  }
+
+  return filein;
 }
 

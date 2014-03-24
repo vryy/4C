@@ -81,8 +81,11 @@ public:
 
   ~StatInvAnaGradDesc() {};
 
-  //! start the optimization routine
   void Optimize();
+
+  void ReadRestart(int run);
+
+  void WriteRestart();
 
 }; // class StatInvAnaGradDesc
 }  // namespace INVANA
