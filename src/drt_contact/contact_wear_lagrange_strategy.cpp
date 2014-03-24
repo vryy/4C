@@ -3632,36 +3632,109 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
         mapvec.push_back(gwmdofrowmap_);
     }
 
-    LINALG::MultiMapExtractor rowmapext(*mergedmap,mapvec);
-    LINALG::MultiMapExtractor dommapext(*mergedmap,mapvec);
-
     // set a helper flag for the CheapSIMPLE preconditioner (used to detect, if Teuchos::nullspace has to be set explicitely)
     // do we need this? if we set the Teuchos::nullspace when the solver is constructed?
     solver.Params().set<bool>("CONTACT",true); // for simpler precond
 
-    // build block matrix for SIMPLER
-    Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
-    mat->Assign(0,0,View,*stiffmt);
-    mat->Assign(0,1,View,*trkdz);
-    mat->Assign(1,0,View,*trkzd);
-    mat->Assign(1,1,View,*trkzz);
+    // MODIFICATION OF SYSTEM:
+    // =======================
+    // build 2x2 soe by inserting wear blocks into lm blocks
+    // this results to a well-suited block system for the iterative solvers
+    Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::null;
 
-    // add wear blocks
     if(weardiscr_)
     {
-      mat->Assign(2,0,View,*trkwd);
-      mat->Assign(2,1,View,*trkwz);
-      mat->Assign(2,2,View,*trkww);
-      mat->Assign(1,2,View,*trkzw);
+      Teuchos::RCP<LINALG::SparseMatrix> trkgd = Teuchos::null;
+      Teuchos::RCP<LINALG::SparseMatrix> trkgg = Teuchos::null;
 
-      if(wearbothdiscr_)
+      if(!wearbothdiscr_)
       {
-        mat->Assign(3,0,View,*trkwmd);
-        mat->Assign(3,1,View,*trkwmz);
-        mat->Assign(3,3,View,*trkwmwm);
+        // merged map ws + wm + z
+        Teuchos::RCP<Epetra_Map>     gmap   = Teuchos::null;
+        gmap   = LINALG::MergeMap(gwdofrowmap_,glmdofrowmap_,false);
+
+        // row map (equals domain map) extractor
+        LINALG::MapExtractor rowmapext(*mergedmap,gmap,ProblemDofs());
+        LINALG::MapExtractor dommapext(*mergedmap,gmap,ProblemDofs());
+
+        mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
+
+        trkgd = Teuchos::rcp(new LINALG::SparseMatrix(*gmap,100,false,true));
+        trkgg = Teuchos::rcp(new LINALG::SparseMatrix(*gmap,100,false,true));
+
+        trkgd->Add(*trkzd,false,1.0,1.0);
+        trkgd->Add(*trkwd,false,1.0,1.0);
+
+        trkgg->Add(*trkzz,false,1.0,1.0);
+        trkgg->Add(*trkwz,false,1.0,1.0);
+        trkgg->Add(*trkww,false,1.0,1.0);
+        trkgg->Add(*trkzw,false,1.0,1.0);
+
+        trkgd->Complete(*ProblemDofs(),*gmap);
+        trkgg->Complete(*gmap,*gmap);
+
+        trkdz->UnComplete();
+        trkdz->Complete(*gmap,*ProblemDofs());
+
       }
+      // BOTH_SIDED DISCRETE WEAR
+      else
+      {
+        // merged map ws + wm + z
+        Teuchos::RCP<Epetra_Map>     gmap   = Teuchos::null;
+        Teuchos::RCP<Epetra_Map> map_dummyg = LINALG::MergeMap(gwdofrowmap_,gwmdofrowmap_,false);
+        gmap   = LINALG::MergeMap(map_dummyg,glmdofrowmap_,false);
+
+        // row map (equals domain map) extractor
+        LINALG::MapExtractor rowmapext(*mergedmap,gmap,ProblemDofs());
+        LINALG::MapExtractor dommapext(*mergedmap,gmap,ProblemDofs());
+
+        mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
+
+
+        trkgd = Teuchos::rcp(new LINALG::SparseMatrix(*gmap,100,false,true));
+        trkgg = Teuchos::rcp(new LINALG::SparseMatrix(*gmap,100,false,true));
+
+        trkgd->Add(*trkzd,false,1.0,1.0);
+        trkgd->Add(*trkwd,false,1.0,1.0);
+        trkgd->Add(*trkwmd,false,1.0,1.0);
+
+        trkgg->Add(*trkzz,false,1.0,1.0);
+        trkgg->Add(*trkwz,false,1.0,1.0);
+        trkgg->Add(*trkww,false,1.0,1.0);
+        trkgg->Add(*trkzw,false,1.0,1.0);
+        trkgg->Add(*trkwmz,false,1.0,1.0);
+        trkgg->Add(*trkwmwm,false,1.0,1.0);
+
+        trkgd->Complete(*ProblemDofs(),*gmap);
+        trkgg->Complete(*gmap,*gmap);
+
+        trkdz->UnComplete();
+        trkdz->Complete(*gmap,*ProblemDofs());
+      }
+
+
+      mat->Assign(0,0,View,*stiffmt);
+      mat->Assign(0,1,View,*trkdz);
+      mat->Assign(1,0,View,*trkgd);
+      mat->Assign(1,1,View,*trkgg);
+
     }
+    // without wear unknowns...
+    else
+    {
+      LINALG::MultiMapExtractor rowmapext(*mergedmap,mapvec);
+      LINALG::MultiMapExtractor dommapext(*mergedmap,mapvec);
+
+      // build block matrix for SIMPLER
+      mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
+
+      mat->Assign(0,0,View,*stiffmt);
+      mat->Assign(0,1,View,*trkdz);
+      mat->Assign(1,0,View,*trkzd);
+      mat->Assign(1,1,View,*trkzz);
+    }
+
 
     // matrix filling done
     mat->Complete();
