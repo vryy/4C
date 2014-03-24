@@ -343,6 +343,14 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
       searchres_->at(i) = (int)(floor((periodlength_->at(i)/Hmax) * (double)(statmechparams_.get<int>("SEARCHRES",1))));
   }
 
+  if(!discret_->Comm().MyPID())
+  {
+    std::cout<<"search resolution: [x y z] = [";
+    for(int i=0; i<(int)searchres_->size(); i++)
+      std::cout<<searchres_->at(i)<<" ";
+    std::cout<<"]"<<std::endl;
+  }
+
   // read times for actions and the corresponding step sizes from input file
   actiontime_ = Teuchos::rcp(new std::vector<double>);
   actiontime_->clear();

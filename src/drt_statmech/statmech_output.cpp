@@ -864,6 +864,10 @@ void STATMECH::StatMechManager::Output(const int                            ndim
           //DDCorrOutput(dis, ddcorrfilename, istep, dt);
         }
 
+        std::ostringstream linkerfilename;
+        linkerfilename << outputrootpath_ << "/StatMechOutput/LinkerPosition_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+        OutputLinkerPositions(linkerfilename);
+
         std::ostringstream nodepairfilename;
         nodepairfilename << outputrootpath_ << "/StatMechOutput/NodePairPosition_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
         OutputSlidingMotion(dis, nodepairfilename);
@@ -5531,6 +5535,25 @@ void STATMECH::StatMechManager::CreepDisplacementOutput(Epetra_Vector&      disc
   fputs(filecontent.str().c_str(), fp);
   fclose(fp);
 
+  return;
+}
+
+/*------------------------------------------------------------------------------*
+ | Output of linker positions and bond status             (public) mueller 03/14|
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::OutputLinkerPositions(std::ostringstream& filename)
+{
+  if(!discret_->Comm().MyPID())
+  {
+    FILE* fp = NULL;
+    std::stringstream filecontent;
+    fp = fopen(filename.str().c_str(), "a");
+
+    for(int i=0; i<numbond_->MyLength(); i++)
+      filecontent<<std::scientific<<std::setprecision(8)<<(*crosslinkerpositions_)[0][i]<<"\t"<<(*crosslinkerpositions_)[1][i]<<"\t"<<(*crosslinkerpositions_)[2][i]<<"\t"<<(*numbondconv_) [i]<<"\t"<<(*numbond_)[i]<<std::endl;
+    fputs(filecontent.str().c_str(), fp);
+    fclose(fp);
+  }
   return;
 }
 

@@ -705,6 +705,9 @@ protected:
   void CreepDisplacementOutput(Epetra_Vector&      discol,
                                std::ostringstream& filename);
 
+  //! \brief Output of linker positions and bond status
+  void OutputLinkerPositions(std::ostringstream& filename);
+
   //! \brief Output of selected node positions
   void OutputSlidingMotion(const Epetra_Vector& disrow,
                            std::ostringstream&  filename);
