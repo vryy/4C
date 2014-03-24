@@ -29,9 +29,6 @@
 #include "MueLu_Level.hpp"
 #include "MueLu_Monitor.hpp"
 
-#define sumAll(rcpComm, in, out)                                        \
-  Teuchos::reduceAll(*rcpComm, Teuchos::REDUCE_SUM, in, Teuchos::outArg(out));
-
 namespace MueLu {
 
 template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
@@ -71,6 +68,66 @@ void MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, L
   LocalOrdinal blockid = -1;         // block id in strided map
   LocalOrdinal nStridedOffset = 0;   // DOF offset for strided block id "blockid" (default = 0)
   LocalOrdinal stridedblocksize = fullblocksize; // size of strided block id "blockid" (default = fullblocksize, only if blockid!=-1 stridedblocksize <= fullblocksize)
+
+#ifdef HAVE_Trilinos_Q1_2014
+
+  // This is the cleaned code for Trilinos_Q1_2014
+
+  // 1) check for blocking/striding information
+  if(A->IsView("stridedMaps") &&
+     Teuchos::rcp_dynamic_cast<const StridedMap>(A->getRowMap("stridedMaps")) != Teuchos::null) {
+    Xpetra::viewLabel_t oldView = A->SwitchToView("stridedMaps"); // note: "stridedMaps are always non-overlapping (correspond to range and domain maps!)
+    TEUCHOS_TEST_FOR_EXCEPTION(Teuchos::rcp_dynamic_cast<const StridedMap>(A->getRowMap()) == Teuchos::null,Exceptions::BadCast,"MueLu::CoalesceFactory::Build: cast to strided row map failed.");
+    fullblocksize = Teuchos::rcp_dynamic_cast<const StridedMap>(A->getRowMap())->getFixedBlockSize(); // TODO shorten code
+    offset   = Teuchos::rcp_dynamic_cast<const StridedMap>(A->getRowMap())->getOffset();
+    blockid  = Teuchos::rcp_dynamic_cast<const StridedMap>(A->getRowMap())->getStridedBlockId();
+    if (blockid > -1) {
+      std::vector<size_t> stridingInfo = Teuchos::rcp_dynamic_cast<const StridedMap>(A->getRowMap())->getStridingData();
+      for(size_t j=0; j<Teuchos::as<size_t>(blockid); j++) {
+        nStridedOffset += stridingInfo[j];
+      }
+      stridedblocksize = Teuchos::as<LocalOrdinal>(stridingInfo[blockid]);
+    } else {
+      stridedblocksize = fullblocksize;
+    }
+    oldView = A->SwitchToView(oldView);
+    GetOStream(Runtime1, 0) << "MeshtyingSPAmalgamationFactory::Build(): found fullblocksize=" << fullblocksize << " and stridedblocksize=" << stridedblocksize << " from strided maps. offset=" << offset << std::endl;
+  } else GetOStream(Warnings0, 0) << "MeshtyingSPAmalgamationFactory::Build(): no striding information available. Use blockdim=1 with offset=0" << std::endl;
+
+  // 2) prepare maps for amalgamated graph of A and
+  //    setup unamalgamation information
+
+  Teuchos::RCP<std::vector<GlobalOrdinal> > gNodeIds; // contains global node ids on current proc
+  gNodeIds = Teuchos::rcp(new std::vector<GlobalOrdinal>);
+  gNodeIds->empty();
+
+  // use row map (this is only working if A is zero matrix, otherwise we would have to use the column map)
+  Teuchos::RCP<const Map> colMap = A->getDomainMap();
+  LocalOrdinal nColEle = Teuchos::as<LocalOrdinal>(A->getDomainMap()->getNodeNumElements());
+  for(LocalOrdinal i=0; i<nColEle;i++) {
+    // get global DOF id
+    GlobalOrdinal gDofId = colMap->getGlobalElement(i);
+
+    // translate DOFGid to node id
+    GlobalOrdinal gNodeId = AmalgamationFactory::DOFGid2NodeId(gDofId, fullblocksize, offset, 0 /*indexBase*/);
+
+    if(A->getRowMap()->isNodeGlobalElement(gDofId)) {
+      gNodeIds->push_back(gNodeId);
+    }
+
+  }
+
+  // remove duplicates // TODO use a set instead of a vector
+  std::sort(gNodeIds->begin(), gNodeIds->end());
+  gNodeIds->erase(std::unique(gNodeIds->begin(), gNodeIds->end()), gNodeIds->end());
+
+  // store (un)amalgamation information on current level
+  Teuchos::RCP<AmalgamationInfo> amalgamationData = rcp(new AmalgamationInfo(gNodeIds,colMap,fullblocksize, offset,blockid,nStridedOffset,stridedblocksize));
+  Set(currentLevel, "UnAmalgamationInfo", amalgamationData);
+
+#else
+
+  // This is the old code variant before Jonathans changes in the Amalgamation routines
 
   // 1) check for blocking/striding information
   if(A->IsView("stridedMaps") &&
@@ -153,18 +210,14 @@ void MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, L
   }
 
   // store (un)amalgamation information on current level
-#ifdef HAVE_Trilinos_Q1_2014
-  Teuchos::RCP<AmalgamationInfo> amalgamationData = rcp(new AmalgamationInfo(nodegid2dofgids_,gNodeIds));
-  Set(currentLevel, "UnAmalgamationInfo", amalgamationData);
-#else
   Teuchos::RCP<AmalgamationInfo> amalgamationData = rcp(new AmalgamationInfo());
   amalgamationData->SetAmalgamationParams(nodegid2dofgids_);
   amalgamationData->SetNodeGIDVector(gNodeIds);
   amalgamationData->SetNumberOfNodes(cnt_amalRows);
   Set(currentLevel, "UnAmalgamationInfo", amalgamationData);
-#endif
 
-  //currentLevel.Set("Aggregates", aggregates, this);
+#endif // else not Q1_2014
+
 }
 } // namespace MueLu
 
