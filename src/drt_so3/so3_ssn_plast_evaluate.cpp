@@ -5324,7 +5324,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::MatrixExponentialDerivativeSym3x
       MAT::ElastSymTensorMultiply(MatrixExpDeriv,-1.*s3,MatrixIn,MatrixIn,1.);
       MAT::ElastSymTensorMultiply(MatrixExpDeriv,s4,MatrixIn,id2,1.);
       MAT::ElastSymTensorMultiply(MatrixExpDeriv,s5,id2,MatrixIn,1.);
-      MAT::ElastSymTensorMultiply(MatrixExpDeriv,s6,id2,id2,1.);
+      MAT::ElastSymTensorMultiply(MatrixExpDeriv,-s6,id2,id2,1.);
     }
 
     else if ( abs(EW(0,0)-EW(1,1))>EWtolerance && abs(EW(1,1)-EW(2,2))>EWtolerance ) // ----------------- x_a != x_b != x_c
