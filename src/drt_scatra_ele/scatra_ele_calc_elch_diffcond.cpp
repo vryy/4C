@@ -306,7 +306,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalMatAndRhs(
   my::ComputeRhsInt(rhsint,eps_[0],eps_[0],hist);
 
   if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
-    CalcRHSLinMass(erhs,k,rhsfac,fac,eps_[0],eps_[0],vmdc->ConInt(k),hist);
+    this->CalcRHSLinMass(erhs,k,rhsfac,fac,eps_[0],eps_[0],vmdc->ConInt(k),hist);
 
   // add RHS and history contribution
   my::CalcRHSHistAndSource(erhs,k,fac*eps_[0],rhsint);

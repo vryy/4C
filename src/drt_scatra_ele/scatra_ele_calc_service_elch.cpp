@@ -365,7 +365,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateFlux(
   double visc(0.0);
 
   // get material parameters (evaluation at element center)
-  if (not my::scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
+  if (not my::scatrapara_->MatGP()) this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
 
   // integration rule
   DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -377,7 +377,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateFlux(
     const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
     // get material parameters (evaluation at integration point)
-    if (my::scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
+    if (my::scatrapara_->MatGP()) this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
 
     // get velocity at integration point
     LINALG::Matrix<my::nsd_,1> velint(true);
@@ -488,7 +488,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
   double visc(0.0);
 
   // get material parameter (constants values)
-  GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
+  this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
 
 //  if(diffcond_==true)
 //  {
@@ -724,7 +724,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
   double visc(0.0);
 
   // material parameter at the element center
-  GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
+  this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
 
   // compute the conductivity (1/(\Omega m) = 1 Siemens / m)
   double sigma_all(0.0);
@@ -775,7 +775,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
     double visc(0.0);
 
     // material parameter at the element center
-    GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc,iquad);
+    this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc,iquad);
 
     // set internal variables
     varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,epotnp_,my::econvelnp_);

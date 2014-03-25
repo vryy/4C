@@ -184,7 +184,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
 
   // material parameter at the element center
   if (not my::scatrapara_->MatGP())
-    GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
+    this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
 
   //----------------------------------------------------------------------
   // integration loop for one element
@@ -200,7 +200,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (my::scatrapara_->MatGP())
-      GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc,iquad);
+      this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc,iquad);
 
     // set internal variables
     varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,epotnp_,my::econvelnp_);
