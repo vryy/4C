@@ -234,6 +234,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==PoroCoupling)                  os << "porous media coupling condition: ";
   else if (Type()==PoroPartInt)                   os << "porous media partial integration condition: ";
   else if (Type()==PoroPresInt)                   os << "porous media pressure integration condition: ";
+  else if (Type()==NeumannIntegration)            os << "fpsi neumann integration condition: ";
   else if (Type()==ScaTraCoupling)                os << "scatra coupling condition";
   else if (Type()==RedAirwayPrescribedScatraCond) os << "Reduced d airway prescribed scatra boundary condition";
   else if (Type()==ArtPrescribedScatraCond)       os << "one-D Arterial prescribed scatra boundary condition";
@@ -254,6 +255,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==HomoScaTraCoupling)            os << "Homogeneous ScaTra Coulping";
   else if (Type()==LsContact)                     os << "level-set condition for contact points";
   else if (Type()==Absorb)                        os << "Absorbing boundary for acoustics";
+  else if (Type()==ImmersedSearchbox)             os << "Box for search algorithm in immersed method";
   else dserror("no output std::string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);

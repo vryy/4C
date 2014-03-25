@@ -2393,9 +2393,9 @@ void STR::TimInt::ApplyForceInternal
 (
   const double time,
   const double dt,
-  const Teuchos::RCP<Epetra_Vector> dis,  // displacement state
-  const Teuchos::RCP<Epetra_Vector> disi,  // incremental displacements
-  const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
+  Teuchos::RCP<const Epetra_Vector> dis,  // displacement state
+  Teuchos::RCP<const Epetra_Vector> disi,  // incremental displacements
+  Teuchos::RCP<const Epetra_Vector> vel,  // velocity state
   Teuchos::RCP<Epetra_Vector> fint  // internal force
 )
 {

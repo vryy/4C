@@ -69,6 +69,10 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Accn()
     { return structure_->Accn(); }
 
+    /// known FSI force for immersed FSI
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInternalForceVector(double time, double dt, Teuchos::RCP<const Epetra_Vector> dis,Teuchos::RCP<Epetra_Vector> fint)
+    { return structure_->ExtractInternalForceVector(time,dt,dis,fint); }
+
     /// return displacements at all the time steps
     virtual Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > DispMStep()
     { return structure_->DispMStep(); }

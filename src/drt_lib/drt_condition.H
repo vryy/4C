@@ -265,7 +265,10 @@ public:
     SurfaceCurrent,
     HomoScaTraCoupling,
     LsContact,
-    Absorb
+    Absorb,
+    ImmersedSearchbox,
+    ImmersedFSIForceEvaluation,
+    ImmersedInterpolatingElement
   };
 
   /*!

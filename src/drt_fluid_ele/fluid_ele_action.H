@@ -56,7 +56,8 @@ enum Action {
 //    calc_adjoint_neumann,
     set_general_adjoint_parameter,
     set_adjoint_time_parameter,
-    calc_volume
+    calc_volume,
+    ImmersedFSIForceEvaluation
 }; // enum Action
 
 /*--------------------------------------------------------------------------
@@ -89,7 +90,8 @@ enum BoundaryAction {
     poro_boundary,
     poro_prescoupl,
     ba_calc_adjoint_neumann,
-    fpsi_coupling
+    fpsi_coupling,
+    interpolatetoimmersednodes
 }; // enum BoundaryAction
 
 /*--------------------------------------------------------------------------

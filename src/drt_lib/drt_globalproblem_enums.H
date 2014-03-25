@@ -51,6 +51,7 @@ typedef enum _PROBLEM_TYP
      prb_combust,       // combustion problem
      prb_art_net,       // arterial network problem _1D_ARTERY_
      prb_red_airways,   // reduced dimensional airways
+     prb_immersed_fsi,  // immersed fsi
      prb_poroelast,     // poroelasticity
      prb_fluid_topopt,  // fluid topology optimization
      prb_np_support,    // supporting procs for nested parallelism

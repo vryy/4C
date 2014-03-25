@@ -517,9 +517,9 @@ namespace STR
     (
       const double time,  //!< evaluation time
       const double dt,  //!< step size
-      const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-      const Teuchos::RCP<Epetra_Vector> disi,  //!< incremental displacements
-      const Teuchos::RCP<Epetra_Vector> vel,  // velocity state
+      Teuchos::RCP<const Epetra_Vector> dis,  //!< displacement state
+      Teuchos::RCP<const Epetra_Vector> disi, //!< incremental displacements
+      Teuchos::RCP<const Epetra_Vector> vel,  // velocity state
       Teuchos::RCP<Epetra_Vector> fint  //!< internal force
     );
 
@@ -705,6 +705,10 @@ namespace STR
 
     //! known accelerations at \f$t_{n}\f$
     Teuchos::RCP<const Epetra_Vector> Accn() { return (*acc_)(0); }
+
+    //! known FSI force for immersed FSI
+    Teuchos::RCP<Epetra_Vector> ExtractInternalForceVector(double time, double dt, Teuchos::RCP<const Epetra_Vector> dis,Teuchos::RCP<Epetra_Vector> fint)
+        { ApplyForceInternal(time,dt,dis,Teuchos::null,Teuchos::null,fint); return fint; }
 
     //@}
 
@@ -1153,6 +1157,7 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> accn_;   //!< global accelerations
                                          //!< \f${A}_{n+1}\f$
                                          //!< at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fint_;   //!< global internal force
     //! additional external forces
     Teuchos::RCP<Epetra_Vector> fifc_;   //!< interface force in e.g. FSI
     //@}

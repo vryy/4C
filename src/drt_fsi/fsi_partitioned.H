@@ -173,6 +173,9 @@ private:
   /// newly created crack surfaces are added to the XFEM cut interface
   void AddNewCrackSurfaceToCutInterface();
 
+  /// extract idispn_ iveln_
+  void ExtractPreviousInterfaceSolution();
+
   /// coupling of structure and fluid at the interface, with mortar.
   Teuchos::RCP<ADAPTER::CouplingMortar>         coupsfm_;
 

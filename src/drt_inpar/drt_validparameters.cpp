@@ -46,6 +46,7 @@ Maintainer: Martin Kronbichler
 #include "../drt_inpar/inpar_mlmc.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_inpar/inpar_poroscatra.H"
+#include "../drt_inpar/inpar_immersed.H"
 #include "../drt_inpar/inpar_fpsi.H"
 #include "../drt_inpar/inpar_ssi.H"
 #include "../drt_inpar/inpar_cavitation.H"
@@ -6078,6 +6079,44 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::GEO::Quadtree3D,
                                      INPAR::GEO::Quadtree2D),
                                      &search_tree);
+
+  /*----------------------------------------------------------------------*/
+    Teuchos::ParameterList& immersedmethod = list->sublist(
+      "IMMERSED METHOD",false,
+      "General parameters for any immersed problem"
+      );
+
+    setStringToIntegralParameter<int>(
+                                 "COUPALGO","partitioned",
+                                 "Coupling strategies for immersed method.",
+                                 tuple<std::string>(
+                                   "partitioned",
+                                   "monolithic"),
+                                   tuple<int>(
+                                   INPAR::IMMERSED::partitioned,
+                                   INPAR::IMMERSED::monolithic),
+                                   &immersedmethod);
+
+    setStringToIntegralParameter<int>(
+                                 "SCHEME","neumannneumann",
+                                 "Coupling schemes for partitioned immersed method.",
+                                 tuple<std::string>(
+                                   "neumannneumann"),
+                                   tuple<int>(
+                                   INPAR::IMMERSED::neumannneumann),
+                                   &immersedmethod);
+
+
+    setStringToIntegralParameter<int>(
+                                 "PROJECTION","shapefunctions",
+                                 "Projection of nodal values between the coupled fields.",
+                                 tuple<std::string>(
+                                   "shapefunctions",
+                                   "mortar"),
+                                   tuple<int>(
+                                   INPAR::IMMERSED::shapefunctions,
+                                   INPAR::IMMERSED::mortar),
+                                   &immersedmethod);
 
   /*----------------------------------------------------------------------*/
     Teuchos::ParameterList& fpsidyn = list->sublist(

@@ -497,7 +497,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
         const std::string&                  condname,
         const std::string&                  discret_name,
         const std::string&                  element_name,
-        const std::vector<std::string>&          conditions_to_copy
+        const std::vector<std::string>&     conditions_to_copy
         )
 {
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(sourcedis->Comm().Clone());

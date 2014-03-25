@@ -61,7 +61,7 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
-  if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD"))
+  if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") and DRT::Problem::Instance()->ProblemType() != prb_immersed_fsi) // IMMERSEDFSI
   {
     matchingnodes_ = true;
     const int ndim = DRT::Problem::Instance()->NDim();
@@ -75,7 +75,7 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     if (coupsf.MasterDofMap()->NumGlobalElements()==0)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
   }
-  else
+  else if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") == 0 and DRT::Problem::Instance()->ProblemType() != prb_immersed_fsi)
   {
     // coupling condition at the fsi interface: displacements (=number spacial dimensions) are coupled)
     // e.g.: 3D: coupleddof = [1, 1, 1]
@@ -89,6 +89,11 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
                      "FSICoupling",
                      comm,
                      true);
+  }
+  else // immersed interface, thus no coupling
+  {
+    coupsfm_ = Teuchos::null;
+    matchingnodes_ = false;
   }
 
   // enable debugging
@@ -364,8 +369,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
   }
 
   // get an idea of interface displacement
-  idispn_ = StructureField()->ExtractInterfaceDispn();
-  iveln_ = FluidToStruct(MBFluidField().ExtractInterfaceVeln());
+  ExtractPreviousInterfaceSolution();
 
   Teuchos::Time timer("time step timer");
 
@@ -506,8 +510,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
     // extract final displacement and velocity
     // since we did update, this is very easy to extract
-    idispn_ = StructureField()->ExtractInterfaceDispn();
-    iveln_ = FluidToStruct(MBFluidField().ExtractInterfaceVeln());
+    ExtractPreviousInterfaceSolution();
 
     // write current solution
     Output();
@@ -932,3 +935,17 @@ const ADAPTER::CouplingMortar& FSI::Partitioned::StructureFluidCouplingMortar() 
   return *coupsfm_;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Partitioned::ExtractPreviousInterfaceSolution()
+{
+  if(DRT::Problem::Instance()->ProblemType() == prb_immersed_fsi)
+  {
+    // no interface
+  }
+  else
+  {
+    idispn_ = StructureField()->ExtractInterfaceDispn();
+    iveln_ = FluidToStruct(MBFluidField().ExtractInterfaceVeln());
+  }
+}

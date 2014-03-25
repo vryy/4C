@@ -1476,6 +1476,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surffsicd);
 
   /*--------------------------------------------------------------------*/
+  // IMMERSED FSI
+
+  Teuchos::RCP<ConditionDefinition> immersedsearchbox =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOLUME IMMERSED SEARCHBOX",
+                                         "ImmersedSearchbox",
+                                         "Immersed Searchbox",
+                                         DRT::Condition::ImmersedSearchbox,
+                                         true,
+                                         DRT::Condition::Volume));
+
+  condlist.push_back(immersedsearchbox);
+
+  /*--------------------------------------------------------------------*/
   // FREESURF
 
   std::vector<Teuchos::RCP<ConditionComponent> > freesurfcomponents;
@@ -3897,17 +3910,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(poropresint_line);
 
   /*--------------------------------------------------------------------*/
-   // condition for evaluation of boundary terms in fpsi problems
+  // condition for evaluation of boundary terms in fpsi problems
+  // necessary where neumann term needs to be integrated in interface
+  // elements which share a node with the fpsi interface. Tangential
+  // Beaver-Joseph-Condition must not be overwritten by prescribed value!
 
-   Teuchos::RCP<ConditionDefinition> neumannintegration_surf =
-     Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE NEUMANN INTEGRATION",
-                                          "NeumannIntegration",
-                                          "Neumann Integration",
-                                          DRT::Condition::NeumannIntegration,
-                                          true,
-                                          DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> neumannintegration_surf =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE NEUMANN INTEGRATION",
+                                           "NeumannIntegration",
+                                           "Neumann Integration",
+                                           DRT::Condition::NeumannIntegration,
+                                           true,
+                                           DRT::Condition::Surface));
 
-   condlist.push_back(neumannintegration_surf);
+  condlist.push_back(neumannintegration_surf);
 
    /*--------------------------------------------------------------------*/
    // condition for evaluation of boundary terms in fpsi problems

@@ -430,6 +430,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     switch(probtype)
     {
     case prb_fsi:
+    case prb_immersed_fsi:
     case prb_fsi_redmodels:
     case prb_fsi_lung:
     case prb_gas_fsi:

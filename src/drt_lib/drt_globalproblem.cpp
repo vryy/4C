@@ -255,6 +255,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FSI DYNAMIC/MONOLITHIC SOLVER", *list);
   reader.ReadGidSection("--FSI DYNAMIC/PARTITIONED SOLVER", *list);
   reader.ReadGidSection("--FSI DYNAMIC/TIMEADAPTIVITY", *list);
+  reader.ReadGidSection("--IMMERSED METHOD", *list);
   reader.ReadGidSection("--FPSI DYNAMIC", *list);
   reader.ReadGidSection("--ARTERIAL DYNAMIC", *list);
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS DYNAMIC", *list);
@@ -1436,6 +1437,27 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("FLUID");
     fluidelementtypes.insert("FLUID2");
     fluidelementtypes.insert("FLUID3");
+
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS",fluidelementtypes)));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+
+    break;
+  }
+  case prb_immersed_fsi:
+  {
+    // create empty discretizations
+    structdis     = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
+    fluiddis      = Teuchos::rcp(new DRT::Discretization("fluid",   reader.Comm()));
+
+    // create discretization writer - in constructor set into and owned by corresponding discret
+    structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+    fluiddis ->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+
+    AddDis("structure", structdis);
+    AddDis("fluid",     fluiddis);
+
+    std::set<std::string> fluidelementtypes;
+    fluidelementtypes.insert("FLUIDIMMERSED");
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS",fluidelementtypes)));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));

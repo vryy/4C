@@ -48,6 +48,7 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     case prb_fluid_xfem:
     case prb_fsi_xfem:
     case prb_fsi_crack:
+    case prb_immersed_fsi:
     {
       //std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;
       fluid_ = Teuchos::rcp(new FluidXFEM(prbdyn,condname));

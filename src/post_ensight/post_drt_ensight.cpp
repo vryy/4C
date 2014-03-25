@@ -538,6 +538,20 @@ int main(
 
       break;
     }
+    case prb_immersed_fsi:
+    {
+      std::string basename = problem.outname();
+
+      PostField* structfield = problem.get_discretization(0);
+      StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+
+      PostField* fluidfield = problem.get_discretization(1);
+      FluidEnsightWriter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
+
+      break;
+    }
     case prb_ssi:
     {
       std::string basename = problem.outname();

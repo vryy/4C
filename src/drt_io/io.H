@@ -263,7 +263,7 @@ public:
   virtual void ParticleOutput(const int step, const double time, const bool writerestart);
 
   //! write element data to file
-  virtual void WriteElementData(bool writeowner);
+  virtual void WriteElementData(bool writeowner, bool writeisimmersed = false);
 
   //! write a non discretisation based vector of doubles
   /*!

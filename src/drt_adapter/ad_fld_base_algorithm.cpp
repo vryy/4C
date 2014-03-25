@@ -750,6 +750,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
     break;
     case prb_fsi:
+    case prb_immersed_fsi:
     case prb_gas_fsi:
     case prb_biofilm_fsi:
     case prb_thermo_fsi:

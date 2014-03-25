@@ -1472,6 +1472,7 @@ set(OBJS_DRT_B3_LIB
 )
 set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele.cpp
+  src/drt_fluid_ele/fluid_ele_immersed.cpp
   src/drt_fluid_ele/fluid_ele_boundary_calc.cpp
   src/drt_fluid_ele/fluid_ele_boundary_calc_std.cpp
   src/drt_fluid_ele/fluid_ele_boundary_calc_poro.cpp
@@ -1492,6 +1493,7 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_calc_poro.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro_p1.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro_p2.cpp
+  src/drt_fluid_ele/fluid_ele_calc_immersed.cpp
   src/drt_fluid_ele/fluid_ele_calc_std.cpp
   src/drt_fluid_ele/fluid_ele_calc_turbulence_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_xfem.cpp
@@ -1733,6 +1735,14 @@ src/drt_ssi/ssi_partitioned.cpp
 src/drt_ssi/ssi_partitioned_1wc.cpp
 src/drt_ssi/ssi_partitioned_2wc.cpp
 )
+
+set(OBJS_DRT_IMMERSED_PROBLEM
+src/drt_immersed_problem/immersed_base.cpp
+src/drt_immersed_problem/immersed_problem_dyn.cpp
+src/drt_immersed_problem/immersed_partitioned.cpp
+src/drt_immersed_problem/immersed_partitioned_fsi.cpp
+src/drt_immersed_problem/immersed_partitioned_fsi_neumannneumann.cpp
+)
 ###------------------------------------------------------------------ Element flags
 
 #   all possible elements
@@ -1858,6 +1868,7 @@ add_library(alg_tsi ${OBJS_DRT_TSI})
 add_library(alg_wear ${OBJS_DRT_WEAR})
 add_library(alg_poroelast ${OBJS_DRT_POROELAST})
 add_library(alg_fpsi ${OBJS_DRT_FPSI})
+add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
 add_library(alg_topopt ${OBJS_DRT_TOPOPT})
 add_library(alg_ssi ${OBJS_DRT_SSI})
@@ -1870,6 +1881,7 @@ set(MULTIFIELD_LIBRARIES
   alg_tsi
   alg_wear
   alg_poroelast
+  alg_immersed_problem
   alg_fpsi
   alg_fs3i
   alg_topopt

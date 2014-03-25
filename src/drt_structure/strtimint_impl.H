@@ -870,8 +870,8 @@ namespace STR
                                         //!< \f$\Delta{D}^{<k>}_{n+1}\f$
     //! @name Various global forces
     //@{
-    Teuchos::RCP<Epetra_Vector> fres_;  //!< force residual used for solution
-    Teuchos::RCP<Epetra_Vector> freact_;  //!< reaction force
+    Teuchos::RCP<Epetra_Vector> fres_;   //!< force residual used for solution
+    Teuchos::RCP<Epetra_Vector> freact_; //!< reaction force
     //@}
 
     //! @name NOX variables

@@ -1141,7 +1141,7 @@ void IO::DiscretizationWriter::ParticleOutput(const int step,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteElementData(bool writeowner)
+void IO::DiscretizationWriter::WriteElementData(bool writeowner, bool writeisimmersed)
 {
   if(binio_)
   {
@@ -1156,6 +1156,15 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
       {
         // write owner of every element
         dis_->lRowElement(i)->VisOwner(names);
+      }
+    }
+    if(writeisimmersed == true)
+    {
+      for (int i=0; i<elerowmap->NumMyElements(); ++i)
+      {
+        // write information fo immersed method
+        dis_->lRowElement(i)->VisIsImmersed(names);
+        dis_->lRowElement(i)->VisIsImmersedBoundary(names);
       }
     }
     for (int i=0; i<elerowmap->NumMyElements(); ++i)

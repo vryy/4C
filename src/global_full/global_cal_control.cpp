@@ -31,6 +31,7 @@ Maintainer: Michael Gee
 #include "../drt_wear/wear_dyn.H"
 #include "../drt_poroelast/poro_dyn.H"
 #include "../drt_fpsi/fpsi_dyn.H"
+#include "../drt_immersed_problem/immersed_problem_dyn.H"
 #include "../drt_ssi/ssi_dyn.H"
 #include "../drt_particle/particle_dyn.H"
 #include "../drt_stru_multi/microstatic_npsupport.H"
@@ -132,6 +133,10 @@ void ntacal()
 
     case prb_struct_ale:
       wear_dyn_drt(restart);
+      break;
+
+    case prb_immersed_fsi:
+      immersed_problem_drt();
       break;
 
     case prb_poroelast:

@@ -2980,7 +2980,15 @@ void FLD::FluidImplicitTimeInt::Output()
 #endif
 
     // write domain decomposition for visualization (only once!)
-    if (step_==upres_) output_->WriteElementData(true);
+    /////////////////////////////////////////////////////////////////////
+    // Immersed method under development. This is experimental and will
+    // vanish soon along with this ugly comment. Temporary hack.
+    /////////////////////////////////////////////////////////////////////
+    bool isimmersed = false;
+    if(DRT::Problem::Instance()->ProblemType()==prb_immersed_fsi)
+      isimmersed = true;
+    ////////////////////////////////////////////////////////////////////
+    if (step_==upres_ or step_ == 0) output_->WriteElementData(true,isimmersed); // rauch todo
 
     if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
     {
