@@ -79,10 +79,11 @@ namespace TOPOPT
    *    o the filename within the folder starts with the expansion
    *    o optionally the restart number is lowered by 1 (-1 vanishes)
    */
-  std::string expandFilename(
+  std::string modifyFilename(
       const std::string& filename,
       const std::string& expansion,
-      bool handleRestart = true);
+      bool handleRestart = true,
+      bool firstcall = false);
 }
 
 #endif /* TOPOPT_UTILS_H_ */

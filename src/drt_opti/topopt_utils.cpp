@@ -130,41 +130,46 @@ void TOPOPT::printTopOptLogo()
 
 
 /// expands a filename
-std::string TOPOPT::expandFilename(
+std::string TOPOPT::modifyFilename(
     const std::string& filename,
     const std::string& expansion,
-    bool handleRestart
+    bool handleRestart,
+    bool firstcall
 )
 {
   size_t pos = filename.rfind('/');
   std::string filenameout = filename.substr(0,pos+1) + expansion + filename.substr(pos+1);
-
   if (handleRestart)
   {
-    int number = 0;
     pos = filenameout.rfind('-');
     if (pos!=std::string::npos)
     {
-      number = atoi(filenameout.substr(pos+1).c_str())-1; // at restart: start with one number smaller
+      int number = 0;
       filenameout = filenameout.substr(0,pos);
-      if (number!=0)
+      for (;;)
       {
-        for (;;)
+        number += 1;
+        std::stringstream helpname;
+        helpname << filenameout << "-" << number << ".control";
+        std::ifstream file(helpname.str().c_str());
+        if (not file)
         {
-          number += 1;
-          std::stringstream helpname;
-          helpname << filenameout << "-" << number << ".control";
-          std::ifstream file(helpname.str().c_str());
-          if (not file)
-          {
-            std::stringstream name;
+          std::stringstream name;
+          if (firstcall)
             name << filenameout << "-" << number-1 << ".control"; // at restart -1 required here
-            filenameout = name.str();
-            filenameout = filenameout.substr(0,filenameout.length()-8);
-            break;
-          }
+          else
+            name << filenameout << "-" << number-2 << ".control"; // at restart -1 required here
+          filenameout = name.str();
+          filenameout = filenameout.substr(0,filenameout.length()-8);
+          break;
         }
       }
+
+      // delete -0 at end of filename if present
+      pos = filenameout.rfind('-');
+      number = atoi(filenameout.substr(pos+1).c_str());
+      if (number==0)
+        filenameout = filenameout.substr(0,filenameout.length()-2);
     }
   }
 
