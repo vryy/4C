@@ -407,6 +407,7 @@ public:
   \param length (output): length of message upon receive
   */
   void ReceiveAny(int& source, int& tag, std::vector<double>& recvbuff, int& length);
+  void Receive(const int source,const int tag, std::vector<double>& recvbuff, int& length);
 
   /*!
   \brief wait for nonblocking send to finish

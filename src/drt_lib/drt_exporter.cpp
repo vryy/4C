@@ -277,6 +277,27 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
 
 #ifdef PARALLEL
 /*----------------------------------------------------------------------*
+ |  receive specific (public)                                mwgee 03/07|
+ *----------------------------------------------------------------------*/
+void DRT::Exporter::Receive(const int source,const int tag,
+    std::vector<double>& recvbuff,int& length)
+{
+  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Status status;
+  // probe for any message to come
+  MPI_Probe(source,tag,comm->Comm(),&status);
+  MPI_Get_count(&status,MPI_DOUBLE,&length);
+  if (length>(int)recvbuff.size()) recvbuff.resize(length);
+  // receive the message
+  MPI_Recv(&recvbuff[0],length,MPI_DOUBLE,source,tag,comm->Comm(),&status);
+  return;
+}
+#endif
+
+
+#ifdef PARALLEL
+/*----------------------------------------------------------------------*
  |  reduce all (public)                                		  umay 10/07|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::Allreduce(std::vector<int>& sendbuff, std::vector<int>& recvbuff,

@@ -94,7 +94,7 @@ void EnsightWriter::WriteFiles()
   if (myrank_ > 0) dserror("have serial filter version, but myrank_ = %d",myrank_);
 #endif
 
-  PostResult result = PostResult(field_);
+  PostResult result(field_);
 
   // timesteps when the solution is written
   const std::vector<double> soltime = result.get_result_times(field_->name());
@@ -1060,7 +1060,7 @@ void EnsightWriter::WriteResult(const std::string groupname,
                                 const int from/*=0*/,
                                 const bool fillzeros/*=false*/)
 {
-  PostResult result = PostResult(field_);
+  PostResult result(field_);
   bool foundit = false;
   while (result.next_result(groupname))
   {

@@ -541,7 +541,7 @@ protected:
   std::map<std::string,int> timesetnumbermap_;
   std::map<std::string,int> filesetnumbermap_;
 
-	std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos_;
+  std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos_;
 
   //! maps a distype to the corresponding Ensight cell type
   std::map<DRT::Element::DiscretizationType, std::string> distype2ensightstring_;
