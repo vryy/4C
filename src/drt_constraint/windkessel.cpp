@@ -24,10 +24,10 @@ Q = K_at*(p_v-p_at) if p_v < p_at, Q = K_p*(p_v-p_at) if p_at < p_v < p_ar, Q = 
 C) an arterial Windkessel model derived from physical considerations of mass and momentum balance in the proximal and distal
 arterial part (formulation proposed by Cristobal Bertoglio) (DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS):
 
-C_arp * d(p_arp)/dt + y_arp = Q_av
-L_arp * d(y_arp)/dt + R_arp * y_arp = p_arp - p_ard
-C_ard * d(p_ard)/dt + y_ard = y_arp
-R_ard * y_ard = p_ard - p_ref
+proximal mass balance: C_arp * d(p_arp)/dt + y_arp = Q_av
+proximal lin momentum balance: L_arp * d(y_arp)/dt + R_arp * y_arp = p_arp - p_ard
+distal mass balance: C_ard * d(p_ard)/dt + y_ard = y_arp
+distal lin momentum balance: R_ard * y_ard = p_ard - p_ref
 
 combined with laws for the mitral valve (mv): p_at - p_v = R_mv * Q_mv, and the aortic valve (av): p_v - p_ar_p = R_av * Q_av, with
 R_mv = 0.5*(R_mv_max - R_mv_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_mv_min,

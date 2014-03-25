@@ -24,10 +24,10 @@ Q = K_at*(p_v-p_at) if p_v < p_at, Q = K_p*(p_v-p_at) if p_at < p_v < p_ar, Q = 
 C) an arterial Windkessel model derived from physical considerations of mass and momentum balance in the proximal and distal
 arterial part (formulation proposed by Cristobal Bertoglio) (DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS):
 
-C_arp * d(p_arp)/dt + y_arp = Q_av
-L_arp * d(y_arp)/dt + R_arp * y_arp = p_arp - p_ard
-C_ard * d(p_ard)/dt + y_ard = y_arp
-R_ard * y_ard = p_ard - p_ref
+proximal mass balance: C_arp * d(p_arp)/dt + y_arp = Q_av
+proximal lin momentum balance: L_arp * d(y_arp)/dt + R_arp * y_arp = p_arp - p_ard
+distal mass balance: C_ard * d(p_ard)/dt + y_ard = y_arp
+distal lin momentum balance: R_ard * y_ard = p_ard - p_ref
 
 combined with laws for the mitral valve (mv): p_at - p_v = R_mv * Q_mv, and the aortic valve (av): p_v - p_ar_p = R_av * Q_av, with
 R_mv = 0.5*(R_mv_max - R_mv_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_mv_min,
@@ -300,11 +300,11 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   vn_->PutScalar(0.0);
   vn_->Export(*vnredundant,*windkimpo_,Add);
 
-  // pressure and volume at generalized mid-point
+  // solution and volume at generalized mid-point
   solm_->Update(theta, *soln_, 1.-theta, *sol_, 0.0);
   vm_->Update(theta, *vn_, 1.-theta, *v_, 0.0);
 
-  // update pressure rate
+  // update rate of solution
   dsoln_->Update(1.0,*soln_,-1.0,*sol_,0.0);
   dsoln_->Update((theta-1.)/theta,*dsol_,1./(theta*ts_size));
   dsolm_->Update(theta, *dsoln_, 1.-theta, *dsol_, 0.0);
@@ -366,7 +366,6 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   // ATTENTION: We necessarily need the end-point and NOT the generalized mid-point pressure here
   // since the external load vector will be set to the generalized mid-point by the respective time integrator!
   LINALG::Export(*soln_,*solnredundant);
-  //solnredundant->Scale(1./sc_strtimint);
   EvaluateNeumannWindkesselCoupling(solnredundant);
 
   return;
@@ -389,7 +388,7 @@ void UTILS::WindkesselManager::UpdateTimeStep()
 /* iterative iteration update of state */
 void UTILS::WindkesselManager::UpdatePres(Teuchos::RCP<Epetra_Vector> solincrement)
 {
-  // new end-point pressures
+  // new end-point solution
   // sol_{n+1}^{i+1} := sol_{n+1}^{i} + Incsol_{n+1}^{i}
   soln_->Update(1.0, *solincrement, 1.0);
 
@@ -503,10 +502,6 @@ void UTILS::WindkesselManager::PrintPresFlux() const
         printf("%2d pres rate ventricle: %10.5e \n",currentID[i],(*dsolmredundant)[4*i]);
         printf("%2d pres rate artery prox: %10.5e \n",currentID[i],(*dsolmredundant)[4*i+1]);
         printf("%2d pres rate artery dist: %10.5e \n",currentID[i],(*dsolmredundant)[4*i+3]);
-//        printf("%2d vol: %10.5e \n",currentID[i],(*vmredundant)[4*i]);
-//        printf("%2d flux: %10.5e \n",currentID[i],(*qmredundant)[4*i]);
-//        printf("%2d flux rate: %10.5e \n",currentID[i],(*dqmredundant)[4*i]);
-//        printf("%2d flux rate rate: %10.5e \n",currentID[i],(*ddqmredundant)[4*i]);
       }
     }
   }
