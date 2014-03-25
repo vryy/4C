@@ -1585,7 +1585,8 @@ set(OBJS_DRT_CRACK
   src/drt_crack/InsertCohesiveElements.cpp
   src/drt_crack/dcohesive.cpp
   src/drt_crack/dcohesive_evaluate.cpp
-	src/drt_crack/propagateCrack.cpp
+  src/drt_crack/propagateCrack.cpp
+  src/drt_crack/crackUtils.cpp
 )
 set(OBJS_DRT_CUT
   src/drt_cut/base_vol.cpp
