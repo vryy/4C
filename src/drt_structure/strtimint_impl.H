@@ -165,10 +165,11 @@ namespace STR
     //! convention like its tangent #stiff_, i.e. to use
     //! Newton--Raphson's method the residual will be scaled by -1.
     //!
-    //! For structural contact simulations, it is of importance
-    //! whether this method is called from a predictor step or
-    //! from a regular Newton step. Thus we hand in a boolean flag
-    //! which reflects the respective situation.
+    //! A parameter list is used to pass on additional information
+    //! from from the non-linear solution procedure. For instance,
+    //! in structural contact simulations and semi-smooth newton plasticity,
+    //! it is of importance whether this method is called from a predictor step
+    //! or from a regular Newton step.
     virtual void EvaluateForceStiffResidual(Teuchos::ParameterList& params) = 0;
 
     //! Evaluate forces due to constraints
