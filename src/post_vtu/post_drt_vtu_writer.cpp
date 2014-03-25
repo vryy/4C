@@ -224,7 +224,8 @@ namespace
       int err = compress2((Bytef *) compressed_data, &compressed_data_length,
                           (const Bytef *) &data[0], data.size() * sizeof(T),
                           Z_BEST_COMPRESSION);
-      dsassert(err == Z_OK, "zlib compression failed");
+      if (err != Z_OK)
+        dserror("zlib compression failed");
 
       // now encode the compression header
       const uint32_t compression_header[4] =
