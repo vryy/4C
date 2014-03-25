@@ -1316,20 +1316,20 @@ std::vector<int> DRT::CRACK::PropagateCrack::findNewCrackTip1()
           if( not found_tip )
             dserror("The surface we got does not contain the neighboring node that is given as input\n");
 
-          // FInd possible node ids. This means through which ids the crack can propagate
-          // For Tri surface there is no problem
-          // But if the surface is a Quad, then we must avoid the diagonal node as possible id
-          //
-          //                                                                    === crack surface
-          //            o---------------                    o                     * crack tip
-          //            |               |                   | \                   o possible id nodes
-          //            |               |                   |  \
-          //            |               |                   |   \
-          //            |               |                   |    \
-          //            |               |                   |     \
-          //       =====*---------------o                ===*------o
-          //
-          //
+          /* FInd possible node ids. This means through which ids the crack can propagate
+             For Tri surface there is no problem
+             But if the surface is a Quad, then we must avoid the diagonal node as possible id
+
+                                                                              === crack surface
+                        o---------------                    o                     * crack tip
+                        |               |                   | \                   o possible id nodes
+                        |               |                   |  \
+                        |               |                   |   \
+                        |               |                   |    \
+                        |               |                   |     \
+                   =====*---------------o                ===*------o
+
+          */
 
           DRT::Node * possible1 = searchnodes[(tip_index+1)%numnodes];
           int temp_index = 0;

@@ -135,9 +135,8 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
 
       //update x-position of cutter node for current time step (update with displacement)
       x.Update( 1, disp, 1 );
-
-      std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
     }
+    std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
   }
     
 		// add the side of the cutter-discretization to the FluidWizard
