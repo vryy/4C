@@ -5,13 +5,13 @@
 
 ************************************************************************************************************************************
 A) a four-element Windkessel (DESIGN SURF WINDKESSEL CONDITIONS):
-C * dp/dt + (p(t)-p_0)/R_p - (1 + Z_c/R_p) Q(d) - (C R_c  + L/R_p) * dQ(d)/dt - L * C * d2Q(d)/dt2 = 0
+C * dp/dt + (p-p_ref)/R_p - (1 + Z_c/R_p) Q - (C R_c  + L/R_p) * dQ/dt - L * C * d2Q/dt2 = 0
 The classical 3- or 2-element Windkessel models are reproduced by setting L or L and Z_c to zero, respectively
                ____
             __|Z_c_|__
 ____->Q____|          |_________
            |||| L  ||||   |    _|_
-p(t)-p_0                 |C|  |R_p|  [C: compliance, Z_c: (aortic) characteristic impedance, R_p: (peripheral) resistance, L: inductance]
+p-p_ref                  |C|  |R_p|  [C: compliance, Z_c: (aortic) characteristic impedance, R_p: (peripheral) resistance, L: inductance]
 ____   ___________________|_____|    [Q = -dVolume/dt: flux, p: pressure]
     <-Q
 
@@ -24,16 +24,16 @@ Q = K_at*(p_v-p_at) if p_v < p_at, Q = K_p*(p_v-p_at) if p_at < p_v < p_ar, Q = 
 C) an arterial Windkessel model derived from physical considerations of mass and momentum balance in the proximal and distal
 arterial part (formulation proposed by Cristobal Bertoglio) (DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS):
 
-C_ar_p * d(p_ar_p)/dt + y_ar_p = Q_av
-L_ar_p * d(y_ar_p)/dt + R_ar_p * y_ar_p = p_ar_p - p_ar
-C_ar * d(p_ar)/dt + y_ar = y_ar_p
-R_ar * y_ar = p_ar
+C_arp * d(p_arp)/dt + y_arp = Q_av
+L_arp * d(y_arp)/dt + R_arp * y_arp = p_arp - p_ard
+C_ard * d(p_ard)/dt + y_ard = y_arp
+R_ard * y_ard = p_ard - p_ref
 
 combined with laws for the mitral valve (mv): p_at - p_v = R_mv * Q_mv, and the aortic valve (av): p_v - p_ar_p = R_av * Q_av, with
 R_mv = 0.5*(R_mv_max - R_mv_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_mv_min,
-R_av = 0.5*(R_av_max - R_av_min)*(tanh((p_ar_p-p_v)/k_p) + 1.) + R_av_min, k_p << 1
+R_av = 0.5*(R_av_max - R_av_min)*(tanh((p_ar-p_v)/k_p) + 1.) + R_av_min, k_p << 1
 
-[p_*: pressure, C_*: compliance, R_*: resistance, *_v: ventricular, *_at: atrial, *_ar_p: arterial proximal, *_ar: arterial distal]
+[p_*: pressure, C_*: compliance, R_*: resistance, *_v: ventricular, *_at: atrial, *_arp: arterial proximal, *_ard: arterial distal]
 ************************************************************************************************************************************
 
 <pre>

@@ -3270,8 +3270,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkesselcondition,"R_p");
   AddNamedReal(windkesselcondition,"Z_c");
   AddNamedReal(windkesselcondition,"L");
+  AddNamedReal(windkesselcondition,"p_ref");
   AddNamedReal(windkesselcondition,"p_0");
-  AddNamedReal(windkesselcondition,"p_init");
 
   condlist.push_back(windkesselcondition);
 
@@ -3295,9 +3295,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkesselheartvalvearterialcondition,"R_p");
   AddNamedReal(windkesselheartvalvearterialcondition,"Z_c");
   AddNamedReal(windkesselheartvalvearterialcondition,"L");
-  AddNamedReal(windkesselheartvalvearterialcondition,"p_ve");
-  AddNamedReal(windkesselheartvalvearterialcondition,"p_ar_init");
-  AddNamedReal(windkesselheartvalvearterialcondition,"p_at_init");
+  AddNamedReal(windkesselheartvalvearterialcondition,"p_ref");
+  AddNamedReal(windkesselheartvalvearterialcondition,"p_ar_0");
+  AddNamedReal(windkesselheartvalvearterialcondition,"p_at_0");
 
   condlist.push_back(windkesselheartvalvearterialcondition);
 
@@ -3318,20 +3318,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkesselheartvalvearterialproxdistcondition,"R_av_min");
   AddNamedReal(windkesselheartvalvearterialproxdistcondition,"R_mv_max");
   AddNamedReal(windkesselheartvalvearterialproxdistcondition,"R_mv_min");
-  AddNamedReal(windkesselheartvalvearterialproxdistcondition,"L_ar_p");
-  AddNamedReal(windkesselheartvalvearterialproxdistcondition,"C_ar_p");
-  AddNamedReal(windkesselheartvalvearterialproxdistcondition,"R_ar_p");
-  AddNamedReal(windkesselheartvalvearterialproxdistcondition,"C_ar");
-  AddNamedReal(windkesselheartvalvearterialproxdistcondition,"R_ar");
+  AddNamedReal(windkesselheartvalvearterialproxdistcondition,"L_arp");
+  AddNamedReal(windkesselheartvalvearterialproxdistcondition,"C_arp");
+  AddNamedReal(windkesselheartvalvearterialproxdistcondition,"R_arp");
+  AddNamedReal(windkesselheartvalvearterialproxdistcondition,"C_ard");
+  AddNamedReal(windkesselheartvalvearterialproxdistcondition,"R_ard");
   AddNamedReal(windkesselheartvalvearterialproxdistcondition,"k_p");
   AddNamedReal(windkesselheartvalvearterialproxdistcondition,"p_ref");
-  AddNamedReal(windkesselheartvalvearterialproxdistcondition,"p_ar_p_0");
+  AddNamedReal(windkesselheartvalvearterialproxdistcondition,"p_arp_0");
   AddNamedReal(windkesselheartvalvearterialproxdistcondition,"p_at_0");
 
   condlist.push_back(windkesselheartvalvearterialproxdistcondition);
 
   /*--------------------------------------------------------------------*/
-  // Monolithic coupling of structure and three-element Windkessel: Neumann coupling surface - mhv 11/13
+  // Monolithic coupling of structure and Windkessel: Neumann coupling surface - mhv 11/13
 
   std::vector<Teuchos::RCP<ConditionComponent> > windkstructcomponents;
 

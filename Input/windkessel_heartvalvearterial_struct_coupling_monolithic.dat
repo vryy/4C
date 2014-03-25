@@ -145,7 +145,7 @@ DSURF  1
 E 8 - 1
 ------------DESIGN SURF HEART VALVE ARTERIAL WINDKESSEL CONDITIONS
 DSURF  1
-E 8 - id 1 K_at 1.0e6 K_p 1.0e-6 K_ar 1.0e6 C 9150.75 R_p 1.05325e-4 Z_c 7.46605e-6 L 6.79952e-7 p_ve 0.0 p_ar_init 9.30 p_at_init 0.0
+E 8 - id 1 K_at 1.0e6 K_p 1.0e-6 K_ar 1.0e6 C 9150.75 R_p 1.05325e-4 Z_c 7.46605e-6 L 6.79952e-7 p_ref 0.0 p_ar_0 9.30 p_at_0 0.0
 --------------DESIGN SURF WINDKESSEL STRUCTURE COUPLING CONDITIONS
 DSURF  1
 E 8 - 1

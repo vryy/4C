@@ -5,13 +5,13 @@
 
 ************************************************************************************************************************************
 A) a four-element Windkessel (DESIGN SURF WINDKESSEL CONDITIONS):
-C * dp/dt + (p(t)-p_0)/R_p - (1 + Z_c/R_p) Q(d) - (C R_c  + L/R_p) * dQ(d)/dt - L * C * d2Q(d)/dt2 = 0
+C * dp/dt + (p-p_ref)/R_p - (1 + Z_c/R_p) Q - (C R_c  + L/R_p) * dQ/dt - L * C * d2Q/dt2 = 0
 The classical 3- or 2-element Windkessel models are reproduced by setting L or L and Z_c to zero, respectively
                ____
             __|Z_c_|__
 ____->Q____|          |_________
            |||| L  ||||   |    _|_
-p(t)-p_0                 |C|  |R_p|  [C: compliance, Z_c: (aortic) characteristic impedance, R_p: (peripheral) resistance, L: inductance]
+p-p_ref                  |C|  |R_p|  [C: compliance, Z_c: (aortic) characteristic impedance, R_p: (peripheral) resistance, L: inductance]
 ____   ___________________|_____|    [Q = -dVolume/dt: flux, p: pressure]
     <-Q
 
@@ -24,16 +24,16 @@ Q = K_at*(p_v-p_at) if p_v < p_at, Q = K_p*(p_v-p_at) if p_at < p_v < p_ar, Q = 
 C) an arterial Windkessel model derived from physical considerations of mass and momentum balance in the proximal and distal
 arterial part (formulation proposed by Cristobal Bertoglio) (DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS):
 
-C_ar_p * d(p_ar_p)/dt + y_ar_p = Q_av
-L_ar_p * d(y_ar_p)/dt + R_ar_p * y_ar_p = p_ar_p - p_ar
-C_ar * d(p_ar)/dt + y_ar = y_ar_p
-R_ar * y_ar = p_ar
+C_arp * d(p_arp)/dt + y_arp = Q_av
+L_arp * d(y_arp)/dt + R_arp * y_arp = p_arp - p_ard
+C_ard * d(p_ard)/dt + y_ard = y_arp
+R_ard * y_ard = p_ard - p_ref
 
 combined with laws for the mitral valve (mv): p_at - p_v = R_mv * Q_mv, and the aortic valve (av): p_v - p_ar_p = R_av * Q_av, with
 R_mv = 0.5*(R_mv_max - R_mv_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_mv_min,
-R_av = 0.5*(R_av_max - R_av_min)*(tanh((p_ar_p-p_v)/k_p) + 1.) + R_av_min, k_p << 1
+R_av = 0.5*(R_av_max - R_av_min)*(tanh((p_ar-p_v)/k_p) + 1.) + R_av_min, k_p << 1
 
-[p_*: pressure, C_*: compliance, R_*: resistance, *_v: ventricular, *_at: atrial, *_ar_p: arterial proximal, *_ar: arterial distal]
+[p_*: pressure, C_*: compliance, R_*: resistance, *_v: ventricular, *_at: atrial, *_arp: arterial proximal, *_ard: arterial distal]
 ************************************************************************************************************************************
 
 <pre>
@@ -338,7 +338,7 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
     double R_p = windkesselcond_[i]->GetDouble("R_p");
     double Z_c = windkesselcond_[i]->GetDouble("Z_c");
     double L = windkesselcond_[i]->GetDouble("L");
-    double p_0 = windkesselcond_[i]->GetDouble("p_0");
+    double p_ref = windkesselcond_[i]->GetDouble("p_ref");
 
     // Windkessel stiffness
     double wkstiff = 0.;
@@ -358,7 +358,7 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
       factor_q = 1. + Z_c/R_p;
       factor_dq = Z_c*C + L/R_p;
       factor_ddq = L*C;
-      factor_1 = -p_0/R_p;
+      factor_1 = -p_ref/R_p;
     }
 
 
@@ -579,8 +579,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
     double R_p = windkesselcond_[i]->GetDouble("R_p");
     double Z_c = windkesselcond_[i]->GetDouble("Z_c");
     double L = windkesselcond_[i]->GetDouble("L");
-    double p_ve = windkesselcond_[i]->GetDouble("p_ve");
-    double p_at_init = windkesselcond_[i]->GetDouble("p_at_init");
+    double p_ref = windkesselcond_[i]->GetDouble("p_ref");
+    double p_at_0 = windkesselcond_[i]->GetDouble("p_at_0");
 
     // Windkessel stiffness
     Epetra_SerialDenseMatrix wkstiff(2,2);
@@ -605,9 +605,9 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
       //arterial pressure
       p_ar = (*sysvec8)[2*i+1];
       //constant atrial pressure
-      p_at = p_at_init;
+      p_at = p_at_0;
       //decaying atrial pressure function over time -> to be further tested for reasonability!
-      //p_at = p_at_init * (exp(-tim/0.01));
+      //p_at = p_at_0 * (exp(-tim/0.01));
 
       //rhs contributions for valve law Windkessel
       if (p_v < p_at)
@@ -646,7 +646,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         factor_q[1] = 0.;
         factor_dq[1] = 0.;
         factor_ddq[1] = 0.;
-        factor_1[1] = -p_ve/R_p;
+        factor_1[1] = -p_ref/R_p;
       }
       if (p_v >= p_ar)
       {
@@ -655,7 +655,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         factor_q[1] = 1. + Z_c/R_p;
         factor_dq[1] = Z_c*C + L/R_p;
         factor_ddq[1] = L*C;
-        factor_1[1] = -p_ve/R_p;
+        factor_1[1] = -p_ref/R_p;
       }
 
     }
@@ -926,11 +926,11 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
     double R_av_min = windkesselcond_[i]->GetDouble("R_av_min");
     double R_mv_max = windkesselcond_[i]->GetDouble("R_mv_max");
     double R_mv_min = windkesselcond_[i]->GetDouble("R_mv_min");
-    double L_ar_p = windkesselcond_[i]->GetDouble("L_ar_p");
-    double C_ar_p = windkesselcond_[i]->GetDouble("C_ar_p");
-    double R_ar_p = windkesselcond_[i]->GetDouble("R_ar_p");
-    double C_ar = windkesselcond_[i]->GetDouble("C_ar");
-    double R_ar = windkesselcond_[i]->GetDouble("R_ar");
+    double L_arp = windkesselcond_[i]->GetDouble("L_arp");
+    double C_arp = windkesselcond_[i]->GetDouble("C_arp");
+    double R_arp = windkesselcond_[i]->GetDouble("R_arp");
+    double C_ard = windkesselcond_[i]->GetDouble("C_ard");
+    double R_ard = windkesselcond_[i]->GetDouble("R_ard");
 
     double k_p = windkesselcond_[i]->GetDouble("k_p");
 
@@ -947,9 +947,9 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
     std::vector<double> factor_1(4);
 
     double p_v = 0.;
-    double p_ar_p = 0.;
-    double psi_ar_p = 0.;
-    double p_ar = 0.;
+    double p_arp = 0.;
+    double y_arp = 0.;
+    double p_ard = 0.;
 
     //double p_at = 0.;
 
@@ -964,38 +964,38 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
     {
       //extract values of solution vector solm
       p_v = (*sysvec6)[4*i];
-      p_ar_p = (*sysvec6)[4*i+1];
-      psi_ar_p = (*sysvec6)[4*i+2];
-      p_ar = (*sysvec6)[4*i+3];
+      p_arp = (*sysvec6)[4*i+1];
+      y_arp = (*sysvec6)[4*i+2];
+      p_ard = (*sysvec6)[4*i+3];
 
       //nonlinear aortic and mitral valve resistances
-      Rav = 0.5*(R_av_max - R_av_min)*(tanh((p_ar_p-p_v)/k_p) + 1.) + R_av_min;
+      Rav = 0.5*(R_av_max - R_av_min)*(tanh((p_arp-p_v)/k_p) + 1.) + R_av_min;
       Rmv = 0.5*(R_mv_max - R_mv_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_mv_min;
 
-      dRavdpv = (R_av_max - R_av_min)*(1.-tanh((p_ar_p-p_v)/k_p)*tanh((p_ar_p-p_v)/k_p)) / (-2.*k_p);
-      dRmvdpv = (R_mv_max - R_mv_min)*(1.-tanh((p_v-p_at)/k_p)*tanh((p_v-p_at)/k_p)) / (2.*k_p);;
-      dRavdparp = (R_av_max - R_av_min)*(1.-tanh((p_ar_p-p_v)/k_p)*tanh((p_ar_p-p_v)/k_p)) / (2.*k_p);
+      dRavdpv = (R_av_max - R_av_min)*(1.-tanh((p_arp-p_v)/k_p)*tanh((p_arp-p_v)/k_p)) / (-2.*k_p);
+      dRmvdpv = (R_mv_max - R_mv_min)*(1.-tanh((p_v-p_at)/k_p)*tanh((p_v-p_at)/k_p)) / (2.*k_p);
+      dRavdparp = (R_av_max - R_av_min)*(1.-tanh((p_arp-p_v)/k_p)*tanh((p_arp-p_v)/k_p)) / (2.*k_p);
 
       //fill multipliers for rhs vector
       factor_sol[0] = 1./Rav + 1./Rmv;
       factor_dsol[0] = 0.;
       factor_q[0] = 1.;
-      factor_1[0] = -p_at/Rmv - p_ar_p/Rav;
+      factor_1[0] = -p_at/Rmv - p_arp/Rav;
 
       factor_sol[1] = 1./Rav;
-      factor_dsol[1] = C_ar_p;
+      factor_dsol[1] = C_arp;
       factor_q[1] = 0.;
-      factor_1[1] = -p_v/Rav + psi_ar_p;
+      factor_1[1] = -p_v/Rav + y_arp;
 
-      factor_sol[2] = R_ar_p;
-      factor_dsol[2] = L_ar_p;
+      factor_sol[2] = R_arp;
+      factor_dsol[2] = L_arp;
       factor_q[2] = 0.;
-      factor_1[2] = -p_ar_p + p_ar;
+      factor_1[2] = -p_arp + p_ard;
 
-      factor_sol[3] = 1./R_ar;
-      factor_dsol[3] = C_ar;
+      factor_sol[3] = 1./R_ard;
+      factor_dsol[3] = C_ard;
       factor_q[3] = 0.;
-      factor_1[3] = -p_ref/R_ar - psi_ar_p;
+      factor_1[3] = -p_ref/R_ard - y_arp;
 
     }
 
@@ -1029,25 +1029,25 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
       colvec[2]=gindex3;
       colvec[3]=gindex4;
 
-      wkstiff(0,0) = theta * ((p_v-p_at)*dRmvdpv/(-Rmv*Rmv) + 1./Rmv + (p_v-p_ar_p)*dRavdpv/(-Rav*Rav) + 1./Rav);
-      wkstiff(0,1) = theta * ((p_v-p_ar_p)*dRavdparp/(-Rav*Rav) - 1./Rav);
+      wkstiff(0,0) = theta * ((p_v-p_at)*dRmvdpv/(-Rmv*Rmv) + 1./Rmv + (p_v-p_arp)*dRavdpv/(-Rav*Rav) + 1./Rav);
+      wkstiff(0,1) = theta * ((p_v-p_arp)*dRavdparp/(-Rav*Rav) - 1./Rav);
       wkstiff(0,2) = 0.;
       wkstiff(0,3) = 0.;
 
-      wkstiff(1,0) = theta * (-(p_v-p_ar_p)*dRavdpv/(-Rav*Rav) - 1./Rav);
-      wkstiff(1,1) = theta * (C_ar_p/(theta*ts_size) - (p_v-p_ar_p)*dRavdparp/(-Rav*Rav) + 1./Rav);
+      wkstiff(1,0) = theta * (-(p_v-p_arp)*dRavdpv/(-Rav*Rav) - 1./Rav);
+      wkstiff(1,1) = theta * (C_arp/(theta*ts_size) - (p_v-p_arp)*dRavdparp/(-Rav*Rav) + 1./Rav);
       wkstiff(1,2) = theta * (1.);
       wkstiff(1,3) = 0.;
 
       wkstiff(2,0) = 0.;
       wkstiff(2,1) = theta * (-1.);
-      wkstiff(2,2) = theta * (L_ar_p/(theta*ts_size) + R_ar_p);
+      wkstiff(2,2) = theta * (L_arp/(theta*ts_size) + R_arp);
       wkstiff(2,3) = theta * (1.);
 
       wkstiff(3,0) = 0.;
       wkstiff(3,1) = 0.;
       wkstiff(3,2) = theta * (-1.);
-      wkstiff(3,3) = theta * (C_ar/(theta*ts_size) + 1./R_ar);
+      wkstiff(3,3) = theta * (C_ard/(theta*ts_size) + 1./R_ard);
 
       sysmat1->UnComplete();
 
@@ -1255,8 +1255,6 @@ void UTILS::Windkessel::InitializeStdWindkessel(
   // get the current time
   //const double time = params.get("total time",-1.0);
 
-  std::vector<double> p_init;
-
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
@@ -1272,11 +1270,11 @@ void UTILS::Windkessel::InitializeStdWindkessel(
     int offsetID = params.get<int> ("OffsetID");
     int gindex = condID-offsetID;
 
-    p_init.push_back(windkesselcond_[i]->GetDouble("p_init"));
+    double p_0=windkesselcond_[i]->GetDouble("p_0");
 
     std::vector<int> colvec(1);
     colvec[0]=gindex;
-    int err1 = sysvec2->SumIntoGlobalValues(1,&p_init[i],&colvec[0]);
+    int err1 = sysvec2->SumIntoGlobalValues(1,&p_0,&colvec[0]);
     if (err1) dserror("SumIntoGlobalValues failed!");
 
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
@@ -1362,12 +1360,12 @@ void UTILS::Windkessel::InitializeHeartValveArterialWindkessel(
     int gindex = condID-offsetID + i;
     int gindex2 = gindex+1;
 
-    double p_ar_init=windkesselcond_[i]->GetDouble("p_ar_init");
+    double p_ar_0=windkesselcond_[i]->GetDouble("p_ar_0");
 
     std::vector<int> colvec(2);
     colvec[0]=gindex;
     colvec[1]=gindex2;
-    int err = sysvec2->SumIntoGlobalValues(1,&p_ar_init,&colvec[1]);
+    int err = sysvec2->SumIntoGlobalValues(1,&p_ar_0,&colvec[1]);
     if (err) dserror("SumIntoGlobalValues failed!");
 
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
@@ -1458,14 +1456,14 @@ void UTILS::Windkessel::InitializeHeartValveArterialProxDistWindkessel(
     int gindex3 = gindex+2;
     int gindex4 = gindex+3;
 
-    double p_ar_p_0=windkesselcond_[i]->GetDouble("p_ar_p_0");
+    double p_arp_0=windkesselcond_[i]->GetDouble("p_arp_0");
 
     std::vector<int> colvec(4);
     colvec[0]=gindex;
     colvec[1]=gindex2;
     colvec[2]=gindex3;
     colvec[3]=gindex4;
-    int err = sysvec2->SumIntoGlobalValues(1,&p_ar_p_0,&colvec[1]);
+    int err = sysvec2->SumIntoGlobalValues(1,&p_arp_0,&colvec[1]);
     if (err) dserror("SumIntoGlobalValues failed!");
 
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
