@@ -34,11 +34,12 @@ namespace NOX
     {
     public:
 
-      Group(::FSI::MonolithicInterface& mfsi,
-            Teuchos::ParameterList& printParams,
-            const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
-            const NOX::Epetra::Vector& x,
-            const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys);
+      Group(::FSI::MonolithicInterface& mfsi,                         ///< monolithic FSI interface
+            Teuchos::ParameterList& printParams,                      ///< printing parameters
+            const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,  ///< NOX interface
+            const NOX::Epetra::Vector& x,                             ///< initial guess
+            const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys     ///< linear system
+            );
 
       /// fetch the known Jacobian and RHS from the field solvers
       void CaptureSystemState();
