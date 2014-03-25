@@ -170,7 +170,8 @@ private:
   /// setup list with default parameters
   void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
-  void modifyCutInterfaceXFEM();
+  /// newly created crack surfaces are added to the XFEM cut interface
+  void AddNewCrackSurfaceToCutInterface();
 
   /// coupling of structure and fluid at the interface, with mortar.
   Teuchos::RCP<ADAPTER::CouplingMortar>         coupsfm_;

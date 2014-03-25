@@ -396,6 +396,21 @@ namespace ADAPTER
 
     //@}
 
+    //! @name Crack specific methods
+    //@{
+
+    /// Propagate crack within the structure and accordingly modify the discretization
+    virtual bool UpdateCrackInformation(Teuchos::RCP<const Epetra_Vector> displace){ return structure_->UpdateCrackInformation( displace ); }
+
+		/// Write Gmsh output for structural field
+    virtual void writeGmshStrucOutputStep() { return structure_->writeGmshStrucOutputStep(); }
+
+		/// Get map of newly introduced node ids with their corresponding old node ids
+    virtual std::map<int,int> getOldNewCrackNodes(){ return structure_->getOldNewCrackNodes(); }
+
+    //@}
+
+
   protected:
 
     Teuchos::RCP<Structure> structure_;   ///< underlying structural time integration

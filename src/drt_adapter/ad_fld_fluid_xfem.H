@@ -124,6 +124,8 @@ namespace ADAPTER
     /// create the testing of fields
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
+		/// Rebuild FSI interface in case of FSI-crack problem
+    virtual void RebuildFSIInterface();
 
   private:
 

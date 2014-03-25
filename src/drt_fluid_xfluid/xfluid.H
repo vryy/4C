@@ -485,11 +485,6 @@ namespace FLD
 
 //    Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f){ return state_->fluidfluidsplitter_.ExtractFluidVector(f); }
 
-    /// return boundary discretization
-    Teuchos::RCP<DRT::Discretization> Boundary_Dis() { return boundarydis_; }
-
-    void BoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ) { boun = boundarydis2_; }
-
     /// provide access to the Dirichlet maps
     //const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return state_->dbcmaps_;}
 
@@ -505,7 +500,7 @@ namespace FLD
     void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
     /// implements the ADAPTER::Fluid and returns the boundary discretization which is matching to the structure mesh
-    const Teuchos::RCP<DRT::Discretization>& Discretization() { return boundarydis_; }
+    const Teuchos::RCP<DRT::Discretization>& Discretization() { return boundarydis2_; }
 
 
     /// set the maximal number of nonlinear steps
@@ -551,15 +546,27 @@ namespace FLD
     /// Given the nodes that defines crack tip, this function builds proper crack tip elements and add to boundary discretization
     //void addCrackTipElements( const std::vector<int>* tipNodes );
 
+    /// return boundary discretization
+    Teuchos::RCP<DRT::Discretization> Boundary_Dis() { return boundarydis_; }
+
+    void BoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ) { boun = boundarydis2_; }
+
+		/// set the given discretization as the boundary discretization
+    void setBoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ){ boundarydis2_ = boun; }
+
     /// Get the nodes that defines crack tip
     void GetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes ){tip_nodes = tip_nodes_;}
 
+		/// Set the crack tip nodes. The displacement at these nodes are pre-specified to control FSI-crack problem
     void SetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
     {
       tip_nodes_.clear();
       if( tip_nodes.size() > 0 )
         tip_nodes_.insert( tip_nodes.begin(), tip_nodes.end() );
     }
+
+    /// Properly initialize the DOFs of new nodes introduced after the crack propagation
+    void UpdateBoundaryValuesAfterCrack( const std::map<int,int>& oldnewIds );
 
 
   private:

@@ -69,6 +69,7 @@ Maintainer: Alexander Popp
 #include "../drt_io/io_pstream.H"
 
 #include "../drt_crack/propagateCrack.H"
+#include "../drt_crack/crackUtils.H"
 
 /*----------------------------------------------------------------------*/
 /* print tea time logo */
@@ -1344,7 +1345,7 @@ void STR::TimInt::OutputStep(bool forced_writerestart)
 /*-----------------------------------------------------------------------------*
  * write GMSH output of displacement field
  *-----------------------------------------------------------------------------*/
-void STR::TimInt::GmshOutputStep()
+void STR::TimInt::writeGmshStrucOutputStep()
 {
   if( not gmsh_out_ )
     return;
@@ -2486,7 +2487,7 @@ int STR::TimInt::Integrate()
       OutputStep();
 
       // write Gmsh output
-      GmshOutputStep();
+      writeGmshStrucOutputStep();
 
       // print info about finished time step
       PrintStep();
@@ -2780,8 +2781,8 @@ void STR::TimInt::ResizeMStepTimAda()
  * ---------------------------------------------------------------------------------*/
 void STR::TimInt::PrepareCrackSimulation()
 {
-  if( DRT::Problem::Instance()->ProblemType() == prb_crack )
-   //or DRT::Problem::Instance()->ProblemType() == prb_fsi_crack)
+  if( DRT::Problem::Instance()->ProblemType() == prb_crack
+   or DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
   {
     isCrack_ = true;
     propcrack_ = Teuchos::rcp(new DRT::CRACK::PropagateCrack( discret_ ) );
@@ -2794,11 +2795,10 @@ void STR::TimInt::PrepareCrackSimulation()
 /*-------------------------------------------------------------------------------------------------*
  * update all the field variables to the new discretization                           sudhakar 01/14
  * ------------------------------------------------------------------------------------------------*/
-void STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> displace )
+bool STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> displace )
 {
-
   if( not isCrack_ )
-    return;
+    return false;
 
   propcrack_->propagateOperations( displace );
 
@@ -2810,7 +2810,7 @@ void STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> disp
   std::map<int,int> oldnewIds = propcrack_->GetOldNewNodeIds();
   if( oldnewIds.size() == 0 )
   {
-    return;
+    return false;
   }
 
   std::cout<<"===============updating crack information==================\n";
@@ -2820,13 +2820,13 @@ void STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> disp
   dbcmaps_= Teuchos::rcp(new LINALG::MapExtractor());
   createFields( solver_ );
 
-  UpdateThisEpetraVectorCrack( disn_, oldnewIds );
-  UpdateThisEpetraVectorCrack( veln_, oldnewIds );
-  UpdateThisEpetraVectorCrack( accn_, oldnewIds );
-  UpdateThisEpetraVectorCrack( fifc_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, disn_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, veln_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, accn_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fifc_, oldnewIds );
 
   if( dismatn_ != Teuchos::null )
-    UpdateThisEpetraVectorCrack( dismatn_, oldnewIds );
+    DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, dismatn_, oldnewIds );
 
   if ((*dis_)(0) != Teuchos::null)
   {
@@ -2854,26 +2854,17 @@ void STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> disp
 
 	// update other field vectors related to specific integration method
   updateEpetraVectorsCrack( oldnewIds );
+
+  return true;
 }
 
-
-/*----------------------------------------------------------------------------------------*
- * The DOFs corresponding to the new node are zeros.
- * We copy the field values for this node from the old node that is already       sudhakar 12/13
- * existing at the same position
- *----------------------------------------------------------------------------------------*/
-void STR::TimInt::UpdateThisEpetraVectorCrack( Teuchos::RCP<Epetra_Vector>& vec,
-                                               std::map<int,int>& oldnewIds )
+/*---------------------------------------------------------------------------------*
+ * During propagation of crack, new nodes corresponding to the old tip        sudhakar 02/14
+ * nodes are created. Here we get the map of old and new node ids
+ *---------------------------------------------------------------------------------*/
+std::map<int,int> STR::TimInt::getOldNewCrackNodes()
 {
-  Teuchos::RCP<Epetra_Vector> old = vec;
-  vec = LINALG::CreateVector(*discret_->DofRowMap(),true);
-  LINALG::Export( *old, *vec );
-
-  for( std::map<int,int>::iterator it = oldnewIds.begin(); it != oldnewIds.end(); it++ )
-  {
-    int oldid = it->first;
-    int newid = it->second;
-
-    DRT::UTILS::EquateValuesAtTheseNodes( *vec, discret_, oldid, newid );
-  }
+  if( not isCrack_ )
+    dserror( "You are trying to access crack nodes; but this is not a crack problem" );
+  return propcrack_->GetOldNewNodeIds();
 }

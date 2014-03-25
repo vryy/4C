@@ -1016,6 +1016,8 @@ void DRT::CRACK::PropagateCrack::AddConditions()
           access[ii] = (*conNodes)[ii];
         access[ conNodes->size() ] = it->second;
 
+        // sorting is mandatory, as Baci assumes condition nodes are always sorted
+        std::sort( storage->begin(), storage->end() );
         cond->Add( "Node Ids", storage );
       }
     }

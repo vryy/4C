@@ -19,6 +19,7 @@ Maintainer: Alexander Popp
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_crack/crackUtils.H"
 
 
 /*======================================================================*/
@@ -349,6 +350,6 @@ void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter
  *---------------------------------------------------------------------------------------------*/
 void STR::TimIntStatics::updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew )
 {
-  UpdateThisEpetraVectorCrack( fintn_, oldnew );
-  UpdateThisEpetraVectorCrack( fextn_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fintn_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fextn_, oldnew );
 }

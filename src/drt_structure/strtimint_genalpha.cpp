@@ -22,6 +22,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_locsys.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_crack/crackUtils.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::VerifyCoeff()
@@ -699,22 +700,22 @@ void STR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWrite
  *---------------------------------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew )
 {
-  UpdateThisEpetraVectorCrack( dism_, oldnew );
-  UpdateThisEpetraVectorCrack( velm_, oldnew );
-  UpdateThisEpetraVectorCrack( accm_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, dism_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, velm_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, accm_, oldnew );
 
-  UpdateThisEpetraVectorCrack( fint_, oldnew );
-  UpdateThisEpetraVectorCrack( fintm_, oldnew );
-  UpdateThisEpetraVectorCrack( fintn_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fint_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fintm_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fintn_, oldnew );
 
-  UpdateThisEpetraVectorCrack( fext_, oldnew );
-  UpdateThisEpetraVectorCrack( fextm_, oldnew );
-  UpdateThisEpetraVectorCrack( fextn_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fext_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fextm_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fextn_, oldnew );
 
-  UpdateThisEpetraVectorCrack( finert_, oldnew );
-  UpdateThisEpetraVectorCrack( finertm_, oldnew );
-  UpdateThisEpetraVectorCrack( finertn_, oldnew );
-  UpdateThisEpetraVectorCrack( fviscm_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, finert_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, finertm_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, finertn_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fviscm_, oldnew );
 
   if (!HaveNonlinearMass())
   {

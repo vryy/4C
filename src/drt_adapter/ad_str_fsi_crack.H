@@ -21,25 +21,8 @@ Maintainer: Sudhakar
 
 /*----------------------------------------------------------------------*/
 /* headers */
-//#include <Teuchos_RCP.hpp>
-//#include <Teuchos_ParameterList.hpp>
-
-//#include <Epetra_Vector.h>
-//#include <Epetra_Map.h>
-//#include <Epetra_Operator.h>
-
 #include "ad_str_fsiwrapper.H"
 #include "../drt_lib/drt_element.H"
-
-
-// forward declarations
-/*namespace STR
-{
-  namespace AUX
-  {
-    class MapExtractor;
-  }
-}*/
 
 namespace DRT
 {
@@ -128,14 +111,6 @@ namespace ADAPTER {
       int dcohId;
     };
 
-    //! Return MapExtractor for Dirichlet boundary conditions
-    /*virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
-    {
-      return structure_->GetDBCMapExtractor();
-    };
-
-    virtual int Integrate() { return structure_->Integrate(); }*/
-
 
     //! this means that the crack has propagated fully through the structure, and no need to calculate any further
     bool allDone_;
@@ -149,13 +124,28 @@ namespace ADAPTER {
 
   private:
 
+    //! underlying structual discretization
     Teuchos::RCP<DRT::Discretization> structdis_;
+
+    //! underlying fluid discretization
+    Teuchos::RCP<DRT::Discretization> fluiddis_;
+
+    //! history of crack tip nodes during the crack propagation
+    // This is necessary because we do not add crack surfaces as soon as it appears in structures.
+    // We wait until the crack mouth opening reaches a perdefined value, and only then we add these surfaces
+    std::vector<std::map<int,int> > tipHistory_;
+
+    //! bool to check whether we are adding the crack elements for the first time
+    bool firstTime_;
+
 
     //! all possible surfaces that can be added as a crack surface
     std::map<DRT::Element*,crackSurface_> possSurfaces_;
 
     //! store cohesive element id and its corresponding master and slave node ids
     std::map<int, std::pair<int,int> > coheEleMasSla_;   // std::map<cohesive element id, std::pair<masternodeid, slavenodeid> >
+
+    void addNodesToConditions( DRT::Condition * cond, std::map<int,int> oldnew );
 
     /*!
      * \brief Check whether all dcohesive elements are added to the FSI interface

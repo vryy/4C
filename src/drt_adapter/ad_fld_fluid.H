@@ -603,11 +603,17 @@ namespace ADAPTER {
     /// return the boundary discretization of XFEM problems
     virtual void BoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ) = 0;
 
+    /// set the given discretization as the boundary discretization for XFEM
+    virtual void setBoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ) = 0;
+
     /// Get crack tip nodes in case of crack-FSI simulations
     virtual void GetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes ) = 0;
 
 		/// set crack tip nodes in case of crack-FSI simulations
     virtual void SetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes ) = 0;
+
+    /// Properly initialize the DOFs of new nodes introduced after the crack propagation
+    virtual void UpdateBoundaryValuesAfterCrack( const std::map<int,int>& oldnewIds ) = 0;
   };
 }
 

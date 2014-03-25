@@ -126,7 +126,7 @@ private:
   void DeleteConditions();
 
 
-  void printConditions(std::multimap<std::string,Teuchos::RCP<Condition> > allcondn); //blockkk
+  void printConditions(std::multimap<std::string,Teuchos::RCP<Condition> > allcondn);
 
   //! underlying structural discretization
   Teuchos::RCP<DRT::Discretization> discret_;

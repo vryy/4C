@@ -49,6 +49,8 @@ Maintainer: Alexander Popp
 #include "../drt_io/io_control.H"
 #include "../drt_plastic_ssn/plastic_ssn_manager.H"
 
+#include "../drt_crack/crackUtils.H"
+
 /*----------------------------------------------------------------------*/
 /* constructor */
 STR::TimIntImpl::TimIntImpl
@@ -3611,9 +3613,9 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
  *----------------------------------------------------------------------*/
 void STR::TimIntImpl::updateEpetraVectorsCrack( std::map<int,int>& oldnew )
 {
-  UpdateThisEpetraVectorCrack( disi_, oldnew );
-  UpdateThisEpetraVectorCrack( fres_, oldnew );
-  UpdateThisEpetraVectorCrack( freact_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, disi_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fres_, oldnew );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, freact_, oldnew );
 
   updateMethodSpecificEpetraCrack( oldnew );
 }

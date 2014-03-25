@@ -92,15 +92,6 @@ FSI::DirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
 
     MBFluidField().SetItemax(itemax);
 
-    // in case of FSI with cracking structures, rebuild the fluid interface
-    // because we added new elements as interface
-    if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack ) // and crackUpdate_ == true)
-    {
-      ADAPTER::FluidXFEM& ad_xfem = dynamic_cast<ADAPTER::FluidXFEM&>(MBFluidField());
-      ADAPTER::XFluidFSI& ad_flui = dynamic_cast<ADAPTER::XFluidFSI&>(ad_xfem.FluidField());
-      ad_flui.RebuildFluidInterface();
-    }
-
     return FluidToStruct(MBFluidField().ExtractInterfaceForces());
   }
 }
@@ -124,6 +115,7 @@ FSI::DirichletNeumann::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
     // normal structure solve
     StructureField()->ApplyInterfaceForces(iforce);
     StructureField()->Solve();
+    StructureField()->writeGmshStrucOutputStep();
     return StructureField()->ExtractInterfaceDispnp();
   }
 }

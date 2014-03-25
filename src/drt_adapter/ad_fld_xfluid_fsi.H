@@ -108,12 +108,6 @@ namespace ADAPTER {
 
     Teuchos::RCP<Epetra_Vector> RHS_Struct_Vec();
 
-		//! rebuild FSI interface from fluid side
-    void RebuildFluidInterface();
-
-
-
-
   protected:
     /// A casted pointer to the fluid itself
     Teuchos::RCP<FLD::XFluid>              xfluid_;

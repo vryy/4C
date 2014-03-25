@@ -370,7 +370,7 @@ namespace STR
     void OutputStep(bool forced_writerestart = false);
 
     //! write output of step to the Gmsh format
-    void GmshOutputStep();
+    void writeGmshStrucOutputStep();
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07
@@ -996,13 +996,13 @@ namespace STR
     void PrepareCrackSimulation();
     
     //! After introducing new nodes in crack, this performs all related operations in discretization
-    void UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> displace );
-
-		//! DOFs corresponding to the new nodes are filled with appropriate values from the already existing nodes
-    void UpdateThisEpetraVectorCrack( Teuchos::RCP<Epetra_Vector>& vec, std::map<int,int>& oldnewIds );
+    bool UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> displace );
 
 		//! update all Epectra_vectors related to the chosen time integration
     virtual void updateEpetraVectorsCrack( std::map<int,int>& oldnew ) = 0;
+
+    //! Get map of old and new crack tip nodes
+    std::map<int,int> getOldNewCrackNodes();
     //@}
 
   protected:

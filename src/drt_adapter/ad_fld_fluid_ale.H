@@ -75,6 +75,8 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
+    virtual void RebuildFSIInterface(){ dserror("rebuilding is necessary only in case of FSI-with crack problems"); };
+
   protected:
 
     //! @name Transfer helpers

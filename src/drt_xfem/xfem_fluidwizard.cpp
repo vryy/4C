@@ -114,9 +114,7 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
 
         LINALG::Matrix<3, 1> disp( &mydisp[0], true );
 
-        //update x-position of cutter node for current time step (update with displacement)
-        x.Update( 1, disp, 1 );
-      }
+
 
       // ------------------------------------------------------------------------------------------------
       // --- when simulating FSI with crack, nodes that represent crack are treated separately        ---
@@ -131,12 +129,16 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
         std::map<int, LINALG::Matrix<3,1> >::iterator itt = tip_nodes_.find( node.Id() );
         if( itt != tip_nodes_.end() )
         {
-          x = itt->second;
+          disp = itt->second;
         }
       }
 
+      //update x-position of cutter node for current time step (update with displacement)
+      x.Update( 1, disp, 1 );
+
       std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
     }
+  }
     
 		// add the side of the cutter-discretization to the FluidWizard
     cw.AddCutSide( 0, element, xyze );

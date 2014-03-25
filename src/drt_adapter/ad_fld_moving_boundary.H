@@ -134,6 +134,9 @@ namespace ADAPTER
 
     /// create result test for encapulated fluid algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+
+		/// Rebuild FSI interface in case of FSI-crack problem
+    virtual void RebuildFSIInterface() = 0;
   };
 
 

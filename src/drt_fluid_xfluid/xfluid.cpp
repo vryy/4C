@@ -84,6 +84,8 @@ Maintainer:  Benedikt Schott
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
 
+#include "../drt_crack/crackUtils.H"
+
 /*----------------------------------------------------------------------*
  |  Constructor for XFluidState                            schott 03/12 |
  *----------------------------------------------------------------------*/
@@ -2250,7 +2252,7 @@ FLD::XFluid::XFluid(
     for(std::vector<int>::const_iterator inod=tipnodes->begin(); inod!=tipnodes->end();inod++ )
     {
       const int nodid = *inod;
-      LINALG::Matrix<3, 1> xnod( soliddis_->gNode( nodid )->X() );
+      LINALG::Matrix<3, 1> xnod( true );
 
       tip_nodes_[nodid] = xnod;
     }
@@ -6192,6 +6194,31 @@ void FLD::XFluid::ReadRestart(int step)
 
 }
 
+/*---------------------------------------------------------------------------------------------*
+ * When boundary values are updated after crack propagation, there are new nodes          sudhakar 03/14
+ * in the updated boundary discretization. Properly set values of DOFS at
+ * these new nodes
+ *---------------------------------------------------------------------------------------------*/
+void FLD::XFluid::UpdateBoundaryValuesAfterCrack( const std::map<int,int>& oldnewIds )
+{
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, ivelnp_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, iveln_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, ivelnm_, oldnewIds );
+
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, idispnp_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, idispn_, oldnewIds );
+
+
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis2_, itrueresidual_, oldnewIds );
+
+  //TODO: I guess the following lines are unnecessary (Sudhakar)
+  {
+    iforcenp_ = LINALG::CreateVector(*boundarydis2_->DofRowMap(),true);
+    LINALG::Export( *itrueresidual_, *iforcenp_ );
+
+  }
+}
+
 
 // -------------------------------------------------------------------
 // Read Restart data for boundary discretization
@@ -6240,10 +6267,10 @@ void FLD::XFluid::ReadRestartBound(int step)
   if( not tipNodes->size() == 4 )
     dserror( "at the moment handle only one element in z-direction -- pseudo-2D" );
 
-  int nodeids[4]={0.,0.,0.,0.};
+  int nodeids[4]={0,0,0,0};
   std::vector<double> eqn_plane(4), eqn_ref(4);
 
-  std::cout<<"number of points = "<<tipNodes->size()<<"\n";//blockkk
+  std::cout<<"number of points = "<<tipNodes->size()<<"\n";
 
   if ( tipNodes->size() == 3 )
     dserror("at the moment handling triangular elements is not possible\n");
@@ -6384,7 +6411,7 @@ void FLD::XFluid::ReadRestartBound(int step)
   if( not check )
     dserror("no element in boundary discretization that shares a node in crack tip?");
 
-  std::cout<<"ref eqn = "<<eqn_ref[0]<<"\t"<<eqn_ref[1]<<"\t"<<eqn_ref[2]<<"\t"<<eqn_ref[3]<<"\n";//blockkk
+  std::cout<<"ref eqn = "<<eqn_ref[0]<<"\t"<<eqn_ref[1]<<"\t"<<eqn_ref[2]<<"\t"<<eqn_ref[3]<<"\n";
 
   // Add proper tip element to the boundary discretization
   if ( tipNodes->size() == 3 )          // add Tri3 element
@@ -6413,7 +6440,7 @@ void FLD::XFluid::ReadRestartBound(int step)
     int neweleid = boundarydis2_->NumGlobalElements();
     Teuchos::RCP<DRT::Element> spr = DRT::UTILS::Factory("BELE3","quad4", neweleid, boundarydis2_->gNode(nodeids[0])->Owner() );
     spr->SetNodeIds( 4, finalids );
-    spr->Print(std::cout); //blockkk
+    spr->Print(std::cout);
     boundarydis2_->AddElement( spr );
     boundarydis2_->FillComplete();
 
