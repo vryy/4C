@@ -36,23 +36,6 @@ MAT::ELASTIC::PAR::IsoVarga::IsoVarga(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::IsoVarga::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::IsoVarga( this ) );
-}
-
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)  bborn 04/09 |
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::IsoVarga::IsoVarga()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/

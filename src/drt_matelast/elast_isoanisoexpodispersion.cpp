@@ -72,23 +72,6 @@ MAT::ELASTIC::PAR::IsoAnisoExpoDispersion::IsoAnisoExpoDispersion(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::IsoAnisoExpoDispersion::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::IsoAnisoExpoDispersion( this ) );
-}
-
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)  st    03/12 |
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::IsoAnisoExpoDispersion::IsoAnisoExpoDispersion()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   st         03/12 |
  *----------------------------------------------------------------------*/

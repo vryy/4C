@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupansioexpotwocoup.cpp
+\file elast_coupanisoexpotwocoup.cpp
 \brief
 
 the input line should read
@@ -9,7 +9,7 @@ the input line should read
 <pre>
 Maintainer: Andreas Nagler
             nagler@lnm.mw.tum.de
-            089/289 15255
+            089/289 15264
 </pre>
 */
 
@@ -40,25 +40,8 @@ MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::CoupAnisoExpoTwo( this ) );
-}
-
-
 /*----------------------------------------------------------------------*
- |  Constructor                                   (public)  bborn 04/09 |
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   bborn 04/09 |
+ |  Constructor                                                         |
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params)
   : params_(params)

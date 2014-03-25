@@ -15,10 +15,8 @@ Maintainer: Sophie Rausch
 #ifndef ELAST_COUP2POW_H_
 #define ELAST_COUP2POW_H_
 
-#include "../drt_inpar/inpar_material.H"
-#include "../drt_mat/matpar_parameter.H"
 #include "elast_summand.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_mat/matpar_parameter.H"
 
 namespace MAT
 {
@@ -55,7 +53,14 @@ namespace ELASTIC
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      ///
+      /// Remark:                                                  AN 03/2014
+      /// Function has to be implemented, since it is a pure virtual
+      /// function in the MAT::PAR::Material class.
+      /// Function stays empty, since the call within the material factory is done only
+      /// respective the elasthyper class
+      ///
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial(){ return Teuchos::null; };
 
       /// @name Write methods
       //@{
@@ -63,7 +68,7 @@ namespace ELASTIC
       void SetD(const int d) { d_ = d; }
       //@}
 
-    };  // class Coup2Pow
+    };  // class Coup1Pow
 
   }  // namespace PAR
 
@@ -86,9 +91,6 @@ namespace ELASTIC
 
   public:
 
-    /// empty constructor
-    Coup2Pow();
-
     /// constructor with given material parameters
     Coup2Pow(MAT::ELASTIC::PAR::Coup2Pow* params);
 
@@ -106,7 +108,6 @@ namespace ELASTIC
         LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
     );
-
 
     /// @name Access methods
     //@{

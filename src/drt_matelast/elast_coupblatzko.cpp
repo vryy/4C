@@ -37,23 +37,6 @@ MAT::ELASTIC::PAR::CoupBlatzKo::CoupBlatzKo(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::CoupBlatzKo::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::CoupBlatzKo( this ) );
-}
-
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)  bborn 04/09 |
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::CoupBlatzKo::CoupBlatzKo()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/

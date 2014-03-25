@@ -15,11 +15,6 @@ maintainer: Andreas Maier
 #ifndef ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_
 #define ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_
 
-// Linalg matrices used instead; included in elast_summand
-//#include <Epetra_SerialDenseVector.h>
-//#include <Epetra_SerialDenseMatrix.h>
-// included in elast_summand
-//#include "../drt_inpar/inpar_material.H"
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
 
@@ -81,7 +76,14 @@ namespace ELASTIC
 
       //@}
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      ///
+      /// Remark:                                                  AN 03/2014
+      /// Function has to be implemented, since it is a pure virtual
+      /// function in the MAT::PAR::Material class.
+      /// Function stays empty, since the call within the material factory is done only
+      /// respective the elasthyper class
+      ///
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial(){ return Teuchos::null; };
 
     };  // class IsoVolHUDependentNeoHooke
 
@@ -92,9 +94,6 @@ namespace ELASTIC
   {
 
   public:
-
-    /// empty constructor
-    IsoVolHUDependentNeoHooke();
 
     /// constructor with given material parameters
     IsoVolHUDependentNeoHooke(MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params);

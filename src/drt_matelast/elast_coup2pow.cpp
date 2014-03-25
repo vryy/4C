@@ -23,6 +23,7 @@ Maintainer: Sophie Rausch
 #include "../drt_mat/matpar_material.H"
 
 /*----------------------------------------------------------------------*
+ *         Constructor Material Parameter Class                         *
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::Coup2Pow::Coup2Pow(
   Teuchos::RCP<MAT::PAR::Material> matdata
@@ -34,23 +35,8 @@ MAT::ELASTIC::PAR::Coup2Pow::Coup2Pow(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::Coup2Pow::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::Coup2Pow( this ) );
-}
-
-
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::Coup2Pow::Coup2Pow()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
-/*----------------------------------------------------------------------*
+ *            Constructor Material Class                               *
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::Coup2Pow::Coup2Pow(MAT::ELASTIC::PAR::Coup2Pow* params)
   : params_(params)

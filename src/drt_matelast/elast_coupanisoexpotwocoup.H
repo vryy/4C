@@ -8,7 +8,7 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 <pre>
 Maintainer: Andreas Nagler
             nagler@lnm.mw.tum.de
-            089/289 15249
+            089/289 15264
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -63,7 +63,14 @@ namespace ELASTIC
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      ///
+      /// Remark:                                                  AN 03/2014
+      /// Function has to be implemented, since it is a pure virtual
+      /// function in the MAT::PAR::Material class.
+      /// Function stays empty, since the call within the material factory is done only
+      /// respective the elasthyper class
+      ///
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial(){ return Teuchos::null; };
 
       /// @name Write methods
       //@{
@@ -93,7 +100,7 @@ namespace ELASTIC
   /// <h3>References</h3>
   /// <ul>
   /// <li> [1] GA Holzapfel, RW Ogden, Constitutive modelling of passive myocardium: a structurally based framework for material characterization
-  /// </ul>
+  /// </ul>#include "../drt_mat/matpar_parameter.H"
   /// <ul>
   /// <li> [2] C Sansour, On the physical assumptions underlying the volumatric-isochoric split and the case of anisotropy
   /// </ul>
@@ -104,9 +111,6 @@ namespace ELASTIC
   {
 
   public:
-
-    /// empty constructor
-    CoupAnisoExpoTwoCoup();
 
     /// constructor with given material parameters
     CoupAnisoExpoTwoCoup(MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params);

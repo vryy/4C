@@ -33,22 +33,6 @@ MAT::ELASTIC::PAR::IsoQuad::IsoQuad(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::IsoQuad::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::IsoQuad( this ) );
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::IsoQuad::IsoQuad()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::IsoQuad::IsoQuad(MAT::ELASTIC::PAR::IsoQuad* params)

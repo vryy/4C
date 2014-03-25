@@ -39,23 +39,6 @@ MAT::ELASTIC::PAR::CoupAnisoExpo::CoupAnisoExpo(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::CoupAnisoExpo::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::CoupAnisoExpo( this ) );
-}
-
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)  st    03/12 |
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::CoupAnisoExpo::CoupAnisoExpo()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   st         03/12 |
  *----------------------------------------------------------------------*/

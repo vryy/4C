@@ -33,22 +33,6 @@ MAT::ELASTIC::PAR::IsoRateDep::IsoRateDep(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::IsoRateDep::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::IsoRateDep( this ) );
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::IsoRateDep::IsoRateDep()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::IsoRateDep::IsoRateDep(MAT::ELASTIC::PAR::IsoRateDep* params)

@@ -33,22 +33,6 @@ MAT::ELASTIC::PAR::IsoCub::IsoCub(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::IsoCub::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::IsoCub( this ) );
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::IsoCub::IsoCub()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::IsoCub::IsoCub(MAT::ELASTIC::PAR::IsoCub* params)

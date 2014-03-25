@@ -34,22 +34,6 @@ MAT::ELASTIC::PAR::Iso1Pow::Iso1Pow(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::Iso1Pow::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::Iso1Pow( this ) );
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::Iso1Pow::Iso1Pow()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::Iso1Pow::Iso1Pow(MAT::ELASTIC::PAR::Iso1Pow* params)

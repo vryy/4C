@@ -42,23 +42,6 @@ MAT::ELASTIC::PAR::IsoAnisoExpo::IsoAnisoExpo(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::IsoAnisoExpo::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::IsoAnisoExpo( this ) );
-}
-
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)  st    03/12 |
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::IsoAnisoExpo::IsoAnisoExpo()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   st         03/12 |
  *----------------------------------------------------------------------*/

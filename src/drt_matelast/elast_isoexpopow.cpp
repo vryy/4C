@@ -32,23 +32,6 @@ MAT::ELASTIC::PAR::IsoExpoPow::IsoExpoPow(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::IsoExpoPow::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::IsoExpoPow( this ) );
-}
-
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)  bborn 04/09 |
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::IsoExpoPow::IsoExpoPow()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/

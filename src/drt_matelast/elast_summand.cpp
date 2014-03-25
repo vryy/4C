@@ -317,8 +317,12 @@ void MAT::ELASTIC::Summand::Unpack(const std::vector<char>& data)
   return;
 };
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *
+ * Function for computing the structural tensor for anisotropic materials
+ * via a dyadic product of the current fiber direction
+ *
+ *----------------------------------------------------------------------*/
 void MAT::ELASTIC::Summand::SetupStructuralTensor(
     LINALG::Matrix<3,1>  &fiber_vector,
     LINALG::Matrix<6,1>  &structural_tensor

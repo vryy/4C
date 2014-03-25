@@ -38,22 +38,6 @@ MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::CoupAnisoPow::CreateMaterial()
-{
-  return Teuchos::null;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Constructor
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::CoupAnisoPow::CoupAnisoPow()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  |  Constructor
  *----------------------------------------------------------------------*/

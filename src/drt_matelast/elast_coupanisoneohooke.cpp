@@ -36,23 +36,6 @@ MAT::ELASTIC::PAR::CoupAnisoNeoHooke::CoupAnisoNeoHooke(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::CoupAnisoNeoHooke::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::CoupAnisoNeoHooke( this ) );
-}
-
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)  bborn 04/09 |
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::CoupAnisoNeoHooke::CoupAnisoNeoHooke()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/

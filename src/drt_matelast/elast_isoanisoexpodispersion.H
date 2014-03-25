@@ -66,7 +66,14 @@ namespace ELASTIC
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      ///
+      /// Remark:                                                  AN 03/2014
+      /// Function has to be implemented, since it is a pure virtual
+      /// function in the MAT::PAR::Material class.
+      /// Function stays empty, since the call within the material factory is done only
+      /// respective the elasthyper class
+      ///
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial(){ return Teuchos::null; };
 
       /// @name Write methods
       //@{
@@ -118,9 +125,6 @@ namespace ELASTIC
   {
 
   public:
-
-    /// empty constructor
-    IsoAnisoExpoDispersion();
 
     /// constructor with given material parameters
     IsoAnisoExpoDispersion(MAT::ELASTIC::PAR::IsoAnisoExpoDispersion* params);

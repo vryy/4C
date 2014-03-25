@@ -15,10 +15,8 @@ Maintainer: Sophie Rausch
 #ifndef ELAST_COUP1POW_H_
 #define ELAST_COUP1POW_H_
 
-#include "../drt_inpar/inpar_material.H"
-#include "../drt_mat/matpar_parameter.H"
 #include "elast_summand.H"
-#include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_mat/matpar_parameter.H"
 
 namespace MAT
 {
@@ -55,7 +53,14 @@ namespace ELASTIC
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      ///
+      /// Remark:                                                  AN 03/2014
+      /// Function has to be implemented, since it is a pure virtual
+      /// function in the MAT::PAR::Material class.
+      /// Function stays empty, since the call within the material factory is done only
+      /// respective the elasthyper class
+      ///
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial(){ return Teuchos::null; };
 
       /// @name Write methods
       //@{
@@ -71,7 +76,7 @@ namespace ELASTIC
   /// Isochoric general power material
   ///
   /// This is a summand of a variable order hyperelastic, isotropic
-  /// material depending on the modified trace of the right Cauchy-Green tensor.
+  /// material depending on the first invariant of the right Cauchy-Green tensor.
   ///
   /// Strain energy function is given by
   ///\f[
@@ -85,9 +90,6 @@ namespace ELASTIC
   {
 
   public:
-
-    /// empty constructor
-    Coup1Pow();
 
     /// constructor with given material parameters
     Coup1Pow(MAT::ELASTIC::PAR::Coup1Pow* params);

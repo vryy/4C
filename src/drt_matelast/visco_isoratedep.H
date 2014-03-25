@@ -15,10 +15,8 @@ Maintainer: Anna Birzle
 #ifndef VISCO_ISORATEDEP_H_
 #define VISCO_ISORATEDEP_H_
 
-#include "../drt_inpar/inpar_material.H"
 #include "../drt_mat/matpar_parameter.H"
 #include "elast_summand.H"
-#include "../linalg/linalg_fixedsizematrix.H"
 
 namespace MAT
 {
@@ -54,7 +52,14 @@ namespace ELASTIC
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      ///
+      /// Remark:                                                  AN 03/2014
+      /// Function has to be implemented, since it is a pure virtual
+      /// function in the MAT::PAR::Material class.
+      /// Function stays empty, since the call within the material factory is done only
+      /// respective the elasthyper class
+      ///
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial(){ return Teuchos::null; };
 
       /// @name Write methods
       //@{
@@ -84,9 +89,6 @@ namespace ELASTIC
   {
 
   public:
-
-    /// empty constructor
-    IsoRateDep();
 
     /// constructor with given material parameters
     IsoRateDep(MAT::ELASTIC::PAR::IsoRateDep* params);

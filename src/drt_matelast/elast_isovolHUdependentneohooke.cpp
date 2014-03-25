@@ -37,21 +37,6 @@ MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(
 {
 }
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke::CreateMaterial()
-{
-  return Teuchos::null;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public) AMaier 06/11 |
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke()
-  : Summand(),
-    params_(NULL)
-{
-}
-
 
 /*----------------------------------------------------------------------*
  |  Constructor                                 (public)   AMaier 06/11 |

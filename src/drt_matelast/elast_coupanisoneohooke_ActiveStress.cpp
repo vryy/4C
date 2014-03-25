@@ -43,34 +43,17 @@ MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress::CoupAnisoNeoHooke_ActiveStres
 {
 }
 
-
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress::CreateMaterial()
-{
-  return Teuchos::null;
-  //return Teuchos::rcp( new MAT::ELASTIC::CoupAnisoNeoHooke( this ) );
-}
-
-
 /*----------------------------------------------------------------------*
- |  Constructor                                   (public)  bborn 04/09 |
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::CoupAnisoNeoHooke_ActiveStress()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   bborn 04/09 |
+ *         Constructor Material Parameter Class                         *
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::CoupAnisoNeoHooke_ActiveStress(MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress* params)
   : params_(params)
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *            Constructor Material Class                               *
+ *----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data,a_);

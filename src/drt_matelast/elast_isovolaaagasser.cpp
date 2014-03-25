@@ -38,22 +38,6 @@ MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(
 }
 
 
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::IsoVolAAAGasser::CreateMaterial()
-{
-  return Teuchos::null;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public) AMaier 04/09 |
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::IsoVolAAAGasser::IsoVolAAAGasser()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  |  Constructor                                 (public)   AMaier 04/09 |
  *----------------------------------------------------------------------*/

@@ -56,22 +56,6 @@ MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
     dserror("unknown parameter set for NeoHooke material!\n Must be either YN (Young's modulus and Poisson's ratio) or Lame");
 }
 
-
-Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::CoupLogNeoHooke::CreateMaterial()
-{
-  return Teuchos::null;
-}
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)  bborn 04/09 |
- *----------------------------------------------------------------------*/
-MAT::ELASTIC::CoupLogNeoHooke::CoupLogNeoHooke()
-  : Summand(),
-    params_(NULL)
-{
-}
-
-
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/
