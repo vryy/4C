@@ -1,36 +1,40 @@
 /*!----------------------------------------------------------------------
 \file windkessel_manager.cpp
 
-\brief Class controlling Windkessel coupling conditions and containing the necessary data
+\brief Monolithic coupling of 3D structure 0D Windkessel models
 
-**************************************************************************************************************************
-Monolithic coupling of 3D structure and a four-element Windkessel governed by
-C dp/dt + (p(t)-p_0)/R_p - (1 + Z_c/R_p) Q(d) - (C R_c  + L/R_p) dQ(d)/dt - L C d2Q(d)/dt2 = 0
-[C: compliance, Z_c: (aortic) characteristic impedance, R_p: (peripheral) resistance, L: inductance,Q = -dV/dt: flux, p: pressure]
+************************************************************************************************************************************
+A) a four-element Windkessel (DESIGN SURF WINDKESSEL CONDITIONS):
+C * dp/dt + (p(t)-p_0)/R_p - (1 + Z_c/R_p) Q(d) - (C R_c  + L/R_p) * dQ(d)/dt - L * C * d2Q(d)/dt2 = 0
 The classical 3- or 2-element Windkessel models are reproduced by setting L or L and Z_c to zero, respectively
                ____
             __|Z_c_|__
 ____->Q____|          |_________
            |||| L  ||||   |    _|_
-p(t)-p_0                 |C|  |R_p|
-____   ___________________|_____|
+p(t)-p_0                 |C|  |R_p|  [C: compliance, Z_c: (aortic) characteristic impedance, R_p: (peripheral) resistance, L: inductance]
+____   ___________________|_____|    [Q = -dVolume/dt: flux, p: pressure]
     <-Q
 
-There are two different versions:
-a) the standard model just couples the Windkessel from above to the structure,
+B) an arterial Windkessel model governing the arterial pressure with a four-element Windkessel with an additional valve law
+(resistive Windkessel) infront of it (DESIGN SURF HEART VALVE ARTERIAL WINDKESSEL CONDITIONS):
+Q = K_at*(p_v-p_at) if p_v < p_at, Q = K_p*(p_v-p_at) if p_at < p_v < p_ar, Q = K_ar*(p_v-p_ar) + K_p*(p_ar-p_at) if p_v > p_ar
+"penalty parameters" (inverse resistances) K_at, K_ar >> K_p
+(cf. Sainte-Marie et. al. "Modeling and estimation of the cardiac electromechanical activity", Comp. & Struct. 84 (2006) 1743-1759),
 
-b) a heart-specific model governing the arterial pressure with a four-element Windkessel with an additional valve law
-(resistive Windkessel) infront of it, allowing flux to go through to the Windkessel or not by opening when arterial pressure
-is reached in the ventricels and closing when flux is beginning to be reversed
-(cf. Sainte-Marie et. al. "Modeling and estimation of the cardiac electromechanical activity",
-Comp. & Struct. 84 (2006) 1743-1759)
+C) an arterial Windkessel model derived from physical considerations of mass and momentum balance in the proximal and distal
+arterial part (formulation proposed by Cristobal Bertoglio) (DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS):
 
-The Windkessel is monolithically coupled with the structural dynamics governing equation
+C_ar_p * d(p_ar_p)/dt + y_ar_p = Q_av
+L_ar_p * d(y_ar_p)/dt + R_ar_p * y_ar_p = p_ar_p - p_ar
+C_ar * d(p_ar)/dt + y_ar = y_ar_p
+R_ar * y_ar = p_ar
 
-M a + c v + f_int(d) - f_ext(d,p) = 0,
+combined with laws for the mitral valve (mv): p_at - p_v = R_mv * Q_mv, and the aortic valve (av): p_v - p_ar_p = R_av * Q_av, with
+R_mv = 0.5*(R_mv_max - R_mv_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_mv_min,
+R_av = 0.5*(R_av_max - R_av_min)*(tanh((p_ar_p-p_v)/k_p) + 1.) + R_av_min, k_p << 1
 
-with Q being a function of the displacement vector d and f_ext additionally being a function of the Windkessel pressure p.
-**************************************************************************************************************************
+[p_*: pressure, C_*: compliance, R_*: resistance, *_v: ventricular, *_at: atrial, *_ar_p: arterial proximal, *_ar: arterial distal]
+************************************************************************************************************************************
 
 <pre>
 Maintainer: Marc Hirschvogel
@@ -103,8 +107,9 @@ UTILS::WindkesselManager::WindkesselManager
   //Check what kind of Windkessel boundary conditions there are
   wk_std_=Teuchos::rcp(new Windkessel(actdisc_,"WindkesselStdStructureCond",offsetID_,maxWindkesselID,currentID));
   wk_heartvalvearterial_=Teuchos::rcp(new Windkessel(actdisc_,"WindkesselHeartValveArterialStructureCond",offsetID_,maxWindkesselID,currentID));
+  wk_heartvalvearterial_proxdist_=Teuchos::rcp(new Windkessel(actdisc_,"WindkesselHeartValveArterialProxDistStructureCond",offsetID_,maxWindkesselID,currentID));
 
-  havewindkessel_ = (wk_std_->HaveWindkessel() or wk_heartvalvearterial_->HaveWindkessel());
+  havewindkessel_ = (wk_std_->HaveWindkessel() or wk_heartvalvearterial_->HaveWindkessel() or wk_heartvalvearterial_proxdist_->HaveWindkessel());
 
   if (wk_std_->HaveWindkessel())
   {
@@ -120,13 +125,21 @@ UTILS::WindkesselManager::WindkesselManager
     windkesseldofset_->AssignDegreesOfFreedom(actdisc_,numWindkesselID_,0);
     offsetID_ -= windkesseldofset_->FirstGID();
   }
-  if (wk_std_->HaveWindkessel() or wk_heartvalvearterial_->HaveWindkessel())
+  if (wk_heartvalvearterial_proxdist_->HaveWindkessel())
+  {
+    numWindkesselID_ = 4 * std::max(maxWindkesselID-offsetID_+1,0);
+    windkesseldofset_ = Teuchos::rcp(new WindkesselDofSet());
+    windkesseldofset_->AssignDegreesOfFreedom(actdisc_,numWindkesselID_,0);
+    offsetID_ -= windkesseldofset_->FirstGID();
+  }
+
+  if (wk_std_->HaveWindkessel() or wk_heartvalvearterial_->HaveWindkessel() or wk_heartvalvearterial_proxdist_->HaveWindkessel())
   {
     Teuchos::ParameterList p;
     //double time = params.get<double>("total time",0.0);
     double sc_timint = params.get("scale_timint",1.0);
     double ts_size = params.get("time_step_size",1.0);
-    theta_ = params.get("WINDKESSEL_TIMINT_THETA",1.0);
+    theta_ = params.get("WINDKESSEL_TIMINT_THETA",0.5);
     if ( (theta_ <= 0.0) or (theta_ > 1.0) )
       dserror("theta for Windkessel time integration out of range (0.0,1.0] !");
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
@@ -142,72 +155,60 @@ UTILS::WindkesselManager::WindkesselManager
     //initialize Windkessel stiffness and offdiagonal matrices
     windkesselstiffness_=Teuchos::rcp(new LINALG::SparseMatrix(*windkesselmap_,numWindkesselID_,false,true));
     mat_dwindk_dd_=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,numWindkesselID_,false,true));
-    mat_dstruct_dp_=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,numWindkesselID_,false,true));
+    mat_dstruct_dsol_=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,numWindkesselID_,false,true));
 
     // Initialize vectors
     actdisc_->ClearState();
-    p_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    pn_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    pm_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    dp_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    dpn_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    dpm_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    sol_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    soln_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    solm_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    dsol_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    dsoln_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    dsolm_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     v_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     vn_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     vm_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    dv_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    dvn_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    dvm_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     q_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     qn_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     qm_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     dq_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     dqn_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     dqm_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    s_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    sn_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    sm_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    ds_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    dsn_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    dsm_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    ddq_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    ddqn_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    ddqm_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     windkesselrhsm_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    windk_rhs_p_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    windk_rhs_dp_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    windk_rhs_sol_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    windk_rhs_dsol_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     windk_rhs_q_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    windk_rhs_s_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
-    windk_rhs_ds_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    windk_rhs_dq_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    windk_rhs_ddq_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     windk_rhs_1_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
 
-    p_->PutScalar(0.0);
-    pn_->PutScalar(0.0);
-    pm_->PutScalar(0.0);
-    dp_->PutScalar(0.0);
-    dpn_->PutScalar(0.0);
-    dpm_->PutScalar(0.0);
+    sol_->PutScalar(0.0);
+    soln_->PutScalar(0.0);
+    solm_->PutScalar(0.0);
+    dsol_->PutScalar(0.0);
+    dsoln_->PutScalar(0.0);
+    dsolm_->PutScalar(0.0);
     v_->PutScalar(0.0);
     vn_->PutScalar(0.0);
     vm_->PutScalar(0.0);
-    dv_->PutScalar(0.0);
-    dvn_->PutScalar(0.0);
-    dvm_->PutScalar(0.0);
     q_->PutScalar(0.0);
     qn_->PutScalar(0.0);
     qm_->PutScalar(0.0);
     dq_->PutScalar(0.0);
     dqn_->PutScalar(0.0);
     dqm_->PutScalar(0.0);
-    s_->PutScalar(0.0);
-    sn_->PutScalar(0.0);
-    sm_->PutScalar(0.0);
-    ds_->PutScalar(0.0);
-    dsn_->PutScalar(0.0);
-    dsm_->PutScalar(0.0);
+    ddq_->PutScalar(0.0);
+    ddqn_->PutScalar(0.0);
+    ddqm_->PutScalar(0.0);
     windkesselrhsm_->PutScalar(0.0);
-    windk_rhs_p_->PutScalar(0.0);
-    windk_rhs_dp_->PutScalar(0.0);
+    windk_rhs_sol_->PutScalar(0.0);
+    windk_rhs_dsol_->PutScalar(0.0);
     windk_rhs_q_->PutScalar(0.0);
-    windk_rhs_s_->PutScalar(0.0);
-    windk_rhs_ds_->PutScalar(0.0);
+    windk_rhs_dq_->PutScalar(0.0);
+    windk_rhs_ddq_->PutScalar(0.0);
     windk_rhs_1_->PutScalar(0.0);
     windkesselstiffness_->Zero();
 
@@ -219,21 +220,22 @@ UTILS::WindkesselManager::WindkesselManager
     actdisc_->SetState("displacement",disp);
 
     Teuchos::RCP<Epetra_Vector> vredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-    Teuchos::RCP<Epetra_Vector> predundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-    wk_std_->Initialize(p,vredundant,predundant);
-    wk_heartvalvearterial_->Initialize(p,vredundant,predundant);
+    Teuchos::RCP<Epetra_Vector> solredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+    wk_std_->Initialize(p,vredundant,solredundant);
+    wk_heartvalvearterial_->Initialize(p,vredundant,solredundant);
+    wk_heartvalvearterial_proxdist_->Initialize(p,vredundant,solredundant);
     v_->Export(*vredundant,*windkimpo_,Add);
-    p_->Export(*predundant,*windkimpo_,Insert);
+    sol_->Export(*solredundant,*windkimpo_,Insert);
 
   }
 
   return;
 }
 
-/*----------------------------------------------------------------------*
-|(public)                                                      mhv 11/13|
-|Compute difference between current and prescribed values.              |
-|Change Stiffnessmatrix and internal force vector                       |
+/*-----------------------------------------------------------------------*
+|(public)                                                       mhv 11/13|
+|do all the time integration, evaluation and assembling of stiffnesses   |
+|and right-hand sides                                                    |
  *-----------------------------------------------------------------------*/
 void UTILS::WindkesselManager::StiffnessAndInternalForces(
     const double time,
@@ -253,7 +255,7 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
 
   windkesselstiffness_->Zero();
   mat_dwindk_dd_->Zero();
-  mat_dstruct_dp_->Zero();
+  mat_dstruct_dsol_->Zero();
 
   // other parameters that might be needed by the elements
   p.set("total time",time);
@@ -267,113 +269,105 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
 
   Teuchos::RCP<Epetra_Vector> voldummy = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   Teuchos::RCP<Epetra_Vector> vnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> pnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> pmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> dpmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> solnredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> solmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> dsolmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   Teuchos::RCP<Epetra_Vector> qmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   Teuchos::RCP<Epetra_Vector> dqmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> smredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> dsmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> windk_rhs_p_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> windk_rhs_dp_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> ddqmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> windk_rhs_sol_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> windk_rhs_dsol_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   Teuchos::RCP<Epetra_Vector> windk_rhs_q_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> windk_rhs_s_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> windk_rhs_ds_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> windk_rhs_dq_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> windk_rhs_ddq_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   Teuchos::RCP<Epetra_Vector> windk_rhs_1_red = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
 
   actdisc_->ClearState();
   actdisc_->SetState("displacement",disp);
 
-  // start of Windkessel time integration: we reduce the ODE with 3rd order vol derivatives to a system of 3 ODEs with 1st order vol derivatives:
-  // [dv/dt - q                                                       ]   [0]
-  // [dq/dt - s                                                       ] = [0]
-  // [c dp/dt + (p-p_0)/r1 + (1 + r2/r1)q + (c r2 + L/r1)s + L c ds/dt]   [0]
+  // start of Windkessel time integration
+  // the solution vector "sol" for ONE Windkessel bc holds depending on case A, B or C (see description at top of this file):
+  // A) sol = p
+  // B) sol = [p_v  p_ar]^T
+  // C) sol = [p_v  p_ar_p  y_ar_p  p_ar]^T
 
   // evaluate current volume only
   wk_std_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,vnredundant,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   wk_heartvalvearterial_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,vnredundant,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  wk_heartvalvearterial_proxdist_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,vnredundant,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
+  // import into vol vector at end-point
   vn_->PutScalar(0.0);
   vn_->Export(*vnredundant,*windkimpo_,Add);
 
-  // pressure and volume at generalized midpoint
-  pm_->Update(theta, *pn_, 1.-theta, *p_, 0.0);
+  // pressure and volume at generalized mid-point
+  solm_->Update(theta, *soln_, 1.-theta, *sol_, 0.0);
   vm_->Update(theta, *vn_, 1.-theta, *v_, 0.0);
 
   // update pressure rate
-  dpn_->Update(1.0,*pn_,-1.0,*p_,0.0);
-  dpn_->Update((theta-1.)/theta,*dp_,1./(theta*ts_size));
-  dpm_->Update(theta, *dpn_, 1.-theta, *dp_, 0.0);
+  dsoln_->Update(1.0,*soln_,-1.0,*sol_,0.0);
+  dsoln_->Update((theta-1.)/theta,*dsol_,1./(theta*ts_size));
+  dsolm_->Update(theta, *dsoln_, 1.-theta, *dsol_, 0.0);
 
-  // update vol rate
-  dvn_->Update(1.0,*vn_,-1.0,*v_,0.0);
-  dvn_->Update((theta-1.)/theta,*dv_,1./(theta*ts_size));
-  dvm_->Update(theta, *dvn_, 1.-theta, *dv_, 0.0);
-
-  // solve first ODE
-  q_->Update(1.0,*dv_,0.0);
-  qn_->Update(1.0,*dvn_,0.0);
-  qm_->Update(1.0,*dvm_,0.0);
+  // update flux
+  qn_->Update(1.0,*vn_,-1.0,*v_,0.0);
+  qn_->Update((theta-1.)/theta,*q_,1./(theta*ts_size));
+  qm_->Update(theta, *qn_, 1.-theta, *q_, 0.0);
 
   // update flux rate
   dqn_->Update(1.0,*qn_,-1.0,*q_,0.0);
   dqn_->Update((theta-1.)/theta,*dq_,1./(theta*ts_size));
   dqm_->Update(theta, *dqn_, 1.-theta, *dq_, 0.0);
 
-  // solve second ODE
-  s_->Update(1.0,*dq_,0.0);
-  sn_->Update(1.0,*dqn_,0.0);
-  sm_->Update(1.0,*dqm_,0.0);
-
   // update rate of flux rate
-  dsn_->Update(1.0,*sn_,-1.0,*s_,0.0);
-  dsn_->Update((theta-1.)/theta,*ds_,1./(theta*ts_size));
-  dsm_->Update(theta, *dsn_, 1.-theta, *ds_, 0.0);
+  ddqn_->Update(1.0,*dqn_,-1.0,*dq_,0.0);
+  ddqn_->Update((theta-1.)/theta,*ddq_,1./(theta*ts_size));
+  ddqm_->Update(theta, *ddqn_, 1.-theta, *ddq_, 0.0);
 
-  // end of Windkessel time integration: now we have values for pm_, dpm_, qm_, sm_, dsm_ and can proceed
+  // end of Windkessel time integration: now we have values for solm_, dsolm_, qm_, dqm, ddqm and can proceed
 
-  LINALG::Export(*pm_,*pmredundant);
-  LINALG::Export(*dpm_,*dpmredundant);
+  LINALG::Export(*solm_,*solmredundant);
+  LINALG::Export(*dsolm_,*dsolmredundant);
   LINALG::Export(*qm_,*qmredundant);
   LINALG::Export(*dqm_,*dqmredundant);
-  LINALG::Export(*sm_,*smredundant);
-  LINALG::Export(*dsm_,*dsmredundant);
+  LINALG::Export(*ddqm_,*ddqmredundant);
 
-  // assemble Windkessel stiffness and offdiagonal coupling matrices as well as rhs contributions (of c, r1, r2)
-  wk_std_->Evaluate(p,windkesselstiffness_,mat_dwindk_dd_,mat_dstruct_dp_,windk_rhs_p_red,windk_rhs_dp_red,windk_rhs_q_red,windk_rhs_s_red,windk_rhs_ds_red,windk_rhs_1_red,voldummy,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  wk_heartvalvearterial_->Evaluate(p,windkesselstiffness_,mat_dwindk_dd_,mat_dstruct_dp_,windk_rhs_p_red,windk_rhs_dp_red,windk_rhs_q_red,windk_rhs_s_red,windk_rhs_ds_red,windk_rhs_1_red,voldummy,pmredundant,Teuchos::null,Teuchos::null,Teuchos::null);
-  //wk_heartvalvearterial_->Evaluate(p,windkesselstiffness_,mat_dwindk_dd_,mat_dstruct_dp_,windk_rhs_p_red,windk_rhs_dp_red,windk_rhs_q_red,windk_rhs_s_red,windk_rhs_ds_red,windk_rhs_1_red,voldummy,pmredundant,dpmredundant,qmredundant,smredundant);
+  // assemble Windkessel stiffness and offdiagonal coupling matrices as well as rhs contributions
+  wk_std_->Evaluate(p,windkesselstiffness_,mat_dwindk_dd_,mat_dstruct_dsol_,windk_rhs_sol_red,windk_rhs_dsol_red,windk_rhs_q_red,windk_rhs_dq_red,windk_rhs_ddq_red,windk_rhs_1_red,voldummy,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  wk_heartvalvearterial_->Evaluate(p,windkesselstiffness_,mat_dwindk_dd_,mat_dstruct_dsol_,windk_rhs_sol_red,windk_rhs_dsol_red,windk_rhs_q_red,windk_rhs_dq_red,windk_rhs_ddq_red,windk_rhs_1_red,voldummy,solmredundant,Teuchos::null,Teuchos::null,Teuchos::null);
+  wk_heartvalvearterial_proxdist_->Evaluate(p,windkesselstiffness_,mat_dwindk_dd_,mat_dstruct_dsol_,windk_rhs_sol_red,windk_rhs_dsol_red,windk_rhs_q_red,windk_rhs_1_red,voldummy,solmredundant,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
-  windk_rhs_p_->PutScalar(0.0);
-  windk_rhs_p_->Export(*windk_rhs_p_red,*windkimpo_,Insert);
-  windk_rhs_dp_->PutScalar(0.0);
-  windk_rhs_dp_->Export(*windk_rhs_dp_red,*windkimpo_,Insert);
+  windk_rhs_sol_->PutScalar(0.0);
+  windk_rhs_sol_->Export(*windk_rhs_sol_red,*windkimpo_,Insert);
+  windk_rhs_dsol_->PutScalar(0.0);
+  windk_rhs_dsol_->Export(*windk_rhs_dsol_red,*windkimpo_,Insert);
   windk_rhs_q_->PutScalar(0.0);
   windk_rhs_q_->Export(*windk_rhs_q_red,*windkimpo_,Insert);
-  windk_rhs_s_->PutScalar(0.0);
-  windk_rhs_s_->Export(*windk_rhs_s_red,*windkimpo_,Insert);
-  windk_rhs_ds_->PutScalar(0.0);
-  windk_rhs_ds_->Export(*windk_rhs_ds_red,*windkimpo_,Insert);
+  windk_rhs_dq_->PutScalar(0.0);
+  windk_rhs_dq_->Export(*windk_rhs_dq_red,*windkimpo_,Insert);
+  windk_rhs_ddq_->PutScalar(0.0);
+  windk_rhs_ddq_->Export(*windk_rhs_ddq_red,*windkimpo_,Insert);
   windk_rhs_1_->PutScalar(0.0);
   windk_rhs_1_->Export(*windk_rhs_1_red,*windkimpo_,Insert);
 
-  // Windkessel rhs at generalized midpoint
-  windkesselrhsm_->Multiply(1.0,*pm_,*windk_rhs_p_,0.0);
-  windkesselrhsm_->Multiply(1.0,*dpm_,*windk_rhs_dp_,1.0);
+  // Windkessel rhs at generalized mid-point
+  windkesselrhsm_->Multiply(1.0,*solm_,*windk_rhs_sol_,0.0);
+  windkesselrhsm_->Multiply(1.0,*dsolm_,*windk_rhs_dsol_,1.0);
   windkesselrhsm_->Multiply(1.0,*qm_,*windk_rhs_q_,1.0);
-  windkesselrhsm_->Multiply(1.0,*sm_,*windk_rhs_s_,1.0);
-  windkesselrhsm_->Multiply(1.0,*dsm_,*windk_rhs_ds_,1.0);
+  windkesselrhsm_->Multiply(1.0,*dqm_,*windk_rhs_dq_,1.0);
+  windkesselrhsm_->Multiply(1.0,*ddqm_,*windk_rhs_ddq_,1.0);
   windkesselrhsm_->Update(1.0,*windk_rhs_1_,1.0);
 
   // Complete matrices
   windkesselstiffness_->Complete(*windkesselmap_,*windkesselmap_);
   mat_dwindk_dd_->Complete(*windkesselmap_,*dofrowmap);
-  mat_dstruct_dp_->Complete(*windkesselmap_,*dofrowmap);
+  mat_dstruct_dsol_->Complete(*windkesselmap_,*dofrowmap);
 
   // ATTENTION: We necessarily need the end-point and NOT the generalized mid-point pressure here
   // since the external load vector will be set to the generalized mid-point by the respective time integrator!
-  LINALG::Export(*pn_,*pnredundant);
-  EvaluateNeumannWindkesselCoupling(pnredundant);
+  LINALG::Export(*soln_,*solnredundant);
+  //solnredundant->Scale(1./sc_strtimint);
+  EvaluateNeumannWindkesselCoupling(solnredundant);
 
   return;
 }
@@ -381,25 +375,23 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
 
 void UTILS::WindkesselManager::UpdateTimeStep()
 {
-  p_->Update(1.0,*pn_,0.0);
-  dp_->Update(1.0,*dpn_,0.0);
+  sol_->Update(1.0,*soln_,0.0);
+  dsol_->Update(1.0,*dsoln_,0.0);
   v_->Update(1.0,*vn_,0.0);
-  dv_->Update(1.0,*dvn_,0.0);
   q_->Update(1.0,*qn_,0.0);
   dq_->Update(1.0,*dqn_,0.0);
-  s_->Update(1.0,*sn_,0.0);
-  ds_->Update(1.0,*dsn_,0.0);
+  ddq_->Update(1.0,*ddqn_,0.0);
 }
 
 
 
 /*----------------------------------------------------------------------*/
 /* iterative iteration update of state */
-void UTILS::WindkesselManager::UpdatePres(Teuchos::RCP<Epetra_Vector> presincrement)
+void UTILS::WindkesselManager::UpdatePres(Teuchos::RCP<Epetra_Vector> solincrement)
 {
   // new end-point pressures
-  // p_{n+1}^{i+1} := p_{n+1}^{i} + Incp_{n+1}^{i}
-  pn_->Update(1.0, *presincrement, 1.0);
+  // sol_{n+1}^{i+1} := sol_{n+1}^{i} + Incsol_{n+1}^{i}
+  soln_->Update(1.0, *solincrement, 1.0);
 
   return;
 }
@@ -411,8 +403,8 @@ void UTILS::WindkesselManager::UpdatePres(Teuchos::RCP<Epetra_Vector> presincrem
 void UTILS::WindkesselManager::SetRefBaseValues(Teuchos::RCP<Epetra_Vector> newrefval,const double& time)
 {
   wk_std_->Initialize(time);
-
   wk_heartvalvearterial_->Initialize(time);
+  wk_heartvalvearterial_proxdist_->Initialize(time);
 
   v_->Update(1.0, *newrefval,0.0);
   return;
@@ -450,6 +442,7 @@ void UTILS::WindkesselManager::EvaluateNeumannWindkesselCoupling(Teuchos::RCP<Ep
     std::vector<double> newval(6,0.0);
     if (wk_std_->HaveWindkessel()) newval[0] = -(*actpres)[i];
     if (wk_heartvalvearterial_->HaveWindkessel()) newval[0] = -(*actpres)[2*i];
+    if (wk_heartvalvearterial_proxdist_->HaveWindkessel()) newval[0] = -(*actpres)[4*i];
     cond->Add("val",newval);
   }
 
@@ -461,20 +454,18 @@ void UTILS::WindkesselManager::PrintPresFlux() const
   // prepare stuff for printing to screen
   // ATTENTION: we print the mid-point pressure (NOT the end-point pressure at t_{n+1}),
   // since this is the one where mechanical equlibrium is guaranteed
-  Teuchos::RCP<Epetra_Vector> pmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> dpmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> solmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> dsolmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   Teuchos::RCP<Epetra_Vector> vmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> dvmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
   Teuchos::RCP<Epetra_Vector> qmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> smredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  Teuchos::RCP<Epetra_Vector> dsmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
-  LINALG::Export(*pm_,*pmredundant);
-  LINALG::Export(*dpm_,*dpmredundant);
+  Teuchos::RCP<Epetra_Vector> dqmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  Teuchos::RCP<Epetra_Vector> ddqmredundant = Teuchos::rcp(new Epetra_Vector(*redwindkesselmap_));
+  LINALG::Export(*solm_,*solmredundant);
+  LINALG::Export(*dsolm_,*dsolmredundant);
   LINALG::Export(*vm_,*vmredundant);
-  LINALG::Export(*dvm_,*dvmredundant);
   LINALG::Export(*qm_,*qmredundant);
-  LINALG::Export(*sm_,*smredundant);
-  LINALG::Export(*dsm_,*dsmredundant);
+  LINALG::Export(*dqm_,*dqmredundant);
+  LINALG::Export(*ddqm_,*ddqmredundant);
 
   if (myrank_ == 0)
   {
@@ -483,24 +474,39 @@ void UTILS::WindkesselManager::PrintPresFlux() const
       if (wk_std_->HaveWindkessel())
       {
         printf("Windkessel output id%2d:\n",currentID[i]);
-        printf("%2d pres: %10.5e \n",currentID[i],(*pmredundant)[i]);
-        printf("%2d pres rate: %10.5e \n",currentID[i],(*dpmredundant)[i]);
+        printf("%2d pres: %10.5e \n",currentID[i],(*solmredundant)[i]);
+        printf("%2d pres rate: %10.5e \n",currentID[i],(*dsolmredundant)[i]);
         printf("%2d vol: %10.5e \n",currentID[i],(*vmredundant)[i]);
         printf("%2d flux: %10.5e \n",currentID[i],(*qmredundant)[i]);
-        printf("%2d flux rate: %10.5e \n",currentID[i],(*smredundant)[i]);
-        printf("%2d flux rate rate: %10.5e \n",currentID[i],(*dsmredundant)[i]);
+        printf("%2d flux rate: %10.5e \n",currentID[i],(*dqmredundant)[i]);
+        printf("%2d flux rate rate: %10.5e \n",currentID[i],(*ddqmredundant)[i]);
       }
       if (wk_heartvalvearterial_->HaveWindkessel())
       {
         printf("Windkessel output id%2d:\n",currentID[i]);
-        printf("%2d pres ventricle: %10.5e \n",currentID[i],(*pmredundant)[2*i]);
-        printf("%2d pres artery: %10.5e \n",currentID[i],(*pmredundant)[2*i+1]);
-        printf("%2d pres rate ventricle: %10.5e \n",currentID[i],(*dpmredundant)[2*i]);
-        printf("%2d pres rate artery: %10.5e \n",currentID[i],(*dpmredundant)[2*i+1]);
+        printf("%2d pres ventricle: %10.5e \n",currentID[i],(*solmredundant)[2*i]);
+        printf("%2d pres artery: %10.5e \n",currentID[i],(*solmredundant)[2*i+1]);
+        printf("%2d pres rate ventricle: %10.5e \n",currentID[i],(*dsolmredundant)[2*i]);
+        printf("%2d pres rate artery: %10.5e \n",currentID[i],(*dsolmredundant)[2*i+1]);
         printf("%2d vol: %10.5e \n",currentID[i],(*vmredundant)[2*i]);
         printf("%2d flux: %10.5e \n",currentID[i],(*qmredundant)[2*i]);
-        printf("%2d flux rate: %10.5e \n",currentID[i],(*smredundant)[2*i]);
-        printf("%2d flux rate rate: %10.5e \n",currentID[i],(*dsmredundant)[2*i]);
+        printf("%2d flux rate: %10.5e \n",currentID[i],(*dqmredundant)[2*i]);
+        printf("%2d flux rate rate: %10.5e \n",currentID[i],(*ddqmredundant)[2*i]);
+      }
+      if (wk_heartvalvearterial_proxdist_->HaveWindkessel())
+      {
+        printf("Windkessel output id%2d:\n",currentID[i]);
+        printf("%2d pres ventricle: %10.5e \n",currentID[i],(*solmredundant)[4*i]);
+        printf("%2d pres artery prox: %10.5e \n",currentID[i],(*solmredundant)[4*i+1]);
+        printf("%2d flux artery prox: %10.5e \n",currentID[i],(*dsolmredundant)[4*i+2]);
+        printf("%2d pres artery dist: %10.5e \n",currentID[i],(*solmredundant)[4*i+3]);
+        printf("%2d pres rate ventricle: %10.5e \n",currentID[i],(*dsolmredundant)[4*i]);
+        printf("%2d pres rate artery prox: %10.5e \n",currentID[i],(*dsolmredundant)[4*i+1]);
+        printf("%2d pres rate artery dist: %10.5e \n",currentID[i],(*dsolmredundant)[4*i+3]);
+//        printf("%2d vol: %10.5e \n",currentID[i],(*vmredundant)[4*i]);
+//        printf("%2d flux: %10.5e \n",currentID[i],(*qmredundant)[4*i]);
+//        printf("%2d flux rate: %10.5e \n",currentID[i],(*dqmredundant)[4*i]);
+//        printf("%2d flux rate rate: %10.5e \n",currentID[i],(*ddqmredundant)[4*i]);
       }
     }
   }

@@ -1,36 +1,40 @@
 /*!----------------------------------------------------------------------
 \file windkessel.cpp
 
-\brief Basic Windkessel class, dealing with Windkessel coupling conditions
+\brief Monolithic coupling of 3D structure 0D Windkessel models
 
-**************************************************************************************************************************
-Monolithic coupling of 3D structure and a four-element Windkessel governed by
-C dp/dt + (p(t)-p_0)/R_p - (1 + Z_c/R_p) Q(d) - (C R_c  + L/R_p) dQ(d)/dt - L C d2Q(d)/dt2 = 0
-[C: compliance, Z_c: (aortic) characteristic impedance, R_p: (peripheral) resistance, L: inductance,Q = -dV/dt: flux, p: pressure]
+************************************************************************************************************************************
+A) a four-element Windkessel (DESIGN SURF WINDKESSEL CONDITIONS):
+C * dp/dt + (p(t)-p_0)/R_p - (1 + Z_c/R_p) Q(d) - (C R_c  + L/R_p) * dQ(d)/dt - L * C * d2Q(d)/dt2 = 0
 The classical 3- or 2-element Windkessel models are reproduced by setting L or L and Z_c to zero, respectively
                ____
             __|Z_c_|__
 ____->Q____|          |_________
            |||| L  ||||   |    _|_
-p(t)-p_0                 |C|  |R_p|
-____   ___________________|_____|
+p(t)-p_0                 |C|  |R_p|  [C: compliance, Z_c: (aortic) characteristic impedance, R_p: (peripheral) resistance, L: inductance]
+____   ___________________|_____|    [Q = -dVolume/dt: flux, p: pressure]
     <-Q
 
-There are two different versions:
-a) the standard model just couples the Windkessel from above to the structure,
+B) an arterial Windkessel model governing the arterial pressure with a four-element Windkessel with an additional valve law
+(resistive Windkessel) infront of it (DESIGN SURF HEART VALVE ARTERIAL WINDKESSEL CONDITIONS):
+Q = K_at*(p_v-p_at) if p_v < p_at, Q = K_p*(p_v-p_at) if p_at < p_v < p_ar, Q = K_ar*(p_v-p_ar) + K_p*(p_ar-p_at) if p_v > p_ar
+"penalty parameters" (inverse resistances) K_at, K_ar >> K_p
+(cf. Sainte-Marie et. al. "Modeling and estimation of the cardiac electromechanical activity", Comp. & Struct. 84 (2006) 1743-1759),
 
-b) a heart-specific model governing the arterial pressure with a four-element Windkessel with an additional valve law
-(resistive Windkessel) infront of it, allowing flux to go through to the Windkessel or not by opening when arterial pressure
-is reached in the ventricels and closing when flux is beginning to be reversed
-(cf. Sainte-Marie et. al. "Modeling and estimation of the cardiac electromechanical activity",
-Comp. & Struct. 84 (2006) 1743-1759)
+C) an arterial Windkessel model derived from physical considerations of mass and momentum balance in the proximal and distal
+arterial part (formulation proposed by Cristobal Bertoglio) (DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS):
 
-The Windkessel is monolithically coupled with the structural dynamics governing equation
+C_ar_p * d(p_ar_p)/dt + y_ar_p = Q_av
+L_ar_p * d(y_ar_p)/dt + R_ar_p * y_ar_p = p_ar_p - p_ar
+C_ar * d(p_ar)/dt + y_ar = y_ar_p
+R_ar * y_ar = p_ar
 
-M a + c v + f_int(d) - f_ext(d,p) = 0,
+combined with laws for the mitral valve (mv): p_at - p_v = R_mv * Q_mv, and the aortic valve (av): p_v - p_ar_p = R_av * Q_av, with
+R_mv = 0.5*(R_mv_max - R_mv_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_mv_min,
+R_av = 0.5*(R_av_max - R_av_min)*(tanh((p_ar_p-p_v)/k_p) + 1.) + R_av_min, k_p << 1
 
-with Q being a function of the displacement vector d and f_ext additionally being a function of the Windkessel pressure p.
-**************************************************************************************************************************
+[p_*: pressure, C_*: compliance, R_*: resistance, *_v: ventricular, *_at: atrial, *_ar_p: arterial proximal, *_ar: arterial distal]
+************************************************************************************************************************************
 
 <pre>
 Maintainer: Marc Hirschvogel
@@ -163,6 +167,8 @@ UTILS::Windkessel::WindkesselType UTILS::Windkessel::GetWindkesselType(const std
     return wk_std;
   else if (name=="WindkesselHeartValveArterialStructureCond")
     return wk_heartvalvearterial;
+  else if (name=="WindkesselHeartValveArterialProxDistStructureCond")
+    return wk_heartvalvearterial_proxdist;
   return none;
 }
 
@@ -186,6 +192,10 @@ void UTILS::Windkessel::Initialize(
   case wk_heartvalvearterial:
     params.set("action","calc_struct_constrvol");
     InitializeHeartValveArterialWindkessel(params,sysvec1,sysvec2);
+    break;
+  case wk_heartvalvearterial_proxdist:
+    params.set("action","calc_struct_constrvol");
+    InitializeHeartValveArterialProxDistWindkessel(params,sysvec1,sysvec2);
     break;
   case none:
     return;
@@ -256,7 +266,10 @@ void UTILS::Windkessel::Evaluate(
   case wk_heartvalvearterial:
     params.set("action","calc_struct_volconstrstiff");
     EvaluateHeartValveArterialWindkessel(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7,sysvec8);
-    //EvaluateHeartValveArterialWindkessel_Experimental(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7,sysvec8,sysvec9,sysvec10,sysvec11);
+    break;
+  case wk_heartvalvearterial_proxdist:
+    params.set("action","calc_struct_volconstrstiff");
+    EvaluateHeartValveArterialProxDistWindkessel(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6);
     break;
   case none:
     return;
@@ -334,8 +347,8 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
     double factor_p = 0.;
     double factor_dp = 0.;
     double factor_q = 0.;
-    double factor_s = 0.;
-    double factor_ds = 0.;
+    double factor_dq = 0.;
+    double factor_ddq = 0.;
     double factor_1 = 0.;
 
     if (assvec1 or assvec2 or assvec3 or assvec4 or assvec5 or assvec6)
@@ -343,8 +356,8 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
       factor_p = 1./R_p;
       factor_dp = C;
       factor_q = 1. + Z_c/R_p;
-      factor_s = Z_c*C + L/R_p;
-      factor_ds = L*C;
+      factor_dq = Z_c*C + L/R_p;
+      factor_ddq = L*C;
       factor_1 = -p_0/R_p;
     }
 
@@ -402,20 +415,20 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
       int err3 = sysvec3->SumIntoGlobalValues(1,&factor_q,&colvec[0]);
       if (err3) dserror("SumIntoGlobalValues failed!");
     }
-    // rhs part associated with s
+    // rhs part associated with dq/dt
     if (assvec4)
     {
       std::vector<int> colvec(1);
       colvec[0]=gindex;
-      int err4 = sysvec4->SumIntoGlobalValues(1,&factor_s,&colvec[0]);
+      int err4 = sysvec4->SumIntoGlobalValues(1,&factor_dq,&colvec[0]);
       if (err4) dserror("SumIntoGlobalValues failed!");
     }
-    // rhs part associated with ds/dt
+    // rhs part associated with d2q/dt2
     if (assvec5)
     {
       std::vector<int> colvec(1);
       colvec[0]=gindex;
-      int err5 = sysvec5->SumIntoGlobalValues(1,&factor_ds,&colvec[0]);
+      int err5 = sysvec5->SumIntoGlobalValues(1,&factor_ddq,&colvec[0]);
       if (err5) dserror("SumIntoGlobalValues failed!");
     }
     // rhs part associated with 1
@@ -474,7 +487,7 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
         // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
         std::vector<int> colvec(1);
         colvec[0]=gindex;
-        elevector2.Scale(-(factor_q/ts_size + factor_s/(theta*ts_size*ts_size) + factor_ds/(theta*theta*ts_size*ts_size*ts_size)));
+        elevector2.Scale(-(factor_q/ts_size + factor_dq/(theta*ts_size*ts_size) + factor_ddq/(theta*theta*ts_size*ts_size*ts_size)));
         sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
       }
       if (assmat3)
@@ -576,8 +589,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
     std::vector<double> factor_p(2);
     std::vector<double> factor_dp(2);
     std::vector<double> factor_q(2);
-    std::vector<double> factor_s(2);
-    std::vector<double> factor_ds(2);
+    std::vector<double> factor_dq(2);
+    std::vector<double> factor_ddq(2);
     std::vector<double> factor_1(2);
 
     double p_v = 0.;
@@ -602,8 +615,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         factor_p[0] = K_at;
         factor_dp[0] = 0.;
         factor_q[0] = 1.;
-        factor_s[0] = 0.;
-        factor_ds[0] = 0.;
+        factor_dq[0] = 0.;
+        factor_ddq[0] = 0.;
         factor_1[0] = -K_at*p_at;
       }
       if (p_v >= p_at and p_v < p_ar)
@@ -611,8 +624,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         factor_p[0] = K_p;
         factor_dp[0] = 0.;
         factor_q[0] = 1.;
-        factor_s[0] = 0.;
-        factor_ds[0] = 0.;
+        factor_dq[0] = 0.;
+        factor_ddq[0] = 0.;
         factor_1[0] = -K_p*p_at;
       }
       if (p_v >= p_ar)
@@ -620,8 +633,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         factor_p[0] = K_ar;
         factor_dp[0] = 0.;
         factor_q[0] = 1.;
-        factor_s[0] = 0.;
-        factor_ds[0] = 0.;
+        factor_dq[0] = 0.;
+        factor_ddq[0] = 0.;
         factor_1[0] = -K_ar*p_ar + K_p*p_ar - K_p*p_at;
       }
 
@@ -631,8 +644,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         factor_p[1] = 1./R_p;
         factor_dp[1] = C;
         factor_q[1] = 0.;
-        factor_s[1] = 0.;
-        factor_ds[1] = 0.;
+        factor_dq[1] = 0.;
+        factor_ddq[1] = 0.;
         factor_1[1] = -p_ve/R_p;
       }
       if (p_v >= p_ar)
@@ -640,8 +653,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         factor_p[1] = 1./R_p;
         factor_dp[1] = C;
         factor_q[1] = 1. + Z_c/R_p;
-        factor_s[1] = Z_c*C + L/R_p;
-        factor_ds[1] = L*C;
+        factor_dq[1] = Z_c*C + L/R_p;
+        factor_ddq[1] = L*C;
         factor_1[1] = -p_ve/R_p;
       }
 
@@ -727,24 +740,24 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
       int err32 = sysvec3->SumIntoGlobalValues(1,&factor_q[1],&colvec[1]);
       if (err31 or err32) dserror("SumIntoGlobalValues failed!");
     }
-    // rhs part associated with s
+    // rhs part associated with dq/dt
     if (assvec4)
     {
       std::vector<int> colvec(2);
       colvec[0]=gindex;
       colvec[1]=gindex2;
-      int err41 = sysvec4->SumIntoGlobalValues(1,&factor_s[0],&colvec[0]);
-      int err42 = sysvec4->SumIntoGlobalValues(1,&factor_s[1],&colvec[1]);
+      int err41 = sysvec4->SumIntoGlobalValues(1,&factor_dq[0],&colvec[0]);
+      int err42 = sysvec4->SumIntoGlobalValues(1,&factor_dq[1],&colvec[1]);
       if (err41 or err42) dserror("SumIntoGlobalValues failed!");
     }
-    // rhs part associated with ds/dt
+    // rhs part associated with d2q/dt2
     if (assvec5)
     {
       std::vector<int> colvec(2);
       colvec[0]=gindex;
       colvec[1]=gindex2;
-      int err51 = sysvec5->SumIntoGlobalValues(1,&factor_ds[0],&colvec[0]);
-      int err52 = sysvec5->SumIntoGlobalValues(1,&factor_ds[1],&colvec[1]);
+      int err51 = sysvec5->SumIntoGlobalValues(1,&factor_ddq[0],&colvec[0]);
+      int err52 = sysvec5->SumIntoGlobalValues(1,&factor_ddq[1],&colvec[1]);
       if (err51 or err52) dserror("SumIntoGlobalValues failed!");
     }
     // rhs part associated with 1
@@ -817,7 +830,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         colvec2[0]=gindex2;
         elevector2a.Scale(-factor_q[0]/ts_size);
         sysmat2->Assemble(eid,lmstride,elevector2a,lm,lmowner,colvec1);
-        elevector2b.Scale(-(factor_q[1]/ts_size + factor_s[1]/(theta*ts_size*ts_size) + factor_ds[1]/(theta*theta*ts_size*ts_size*ts_size)));
+        elevector2b.Scale(-(factor_q[1]/ts_size + factor_dq[1]/(theta*ts_size*ts_size) + factor_ddq[1]/(theta*theta*ts_size*ts_size*ts_size)));
         sysmat2->Assemble(eid,lmstride,elevector2b,lm,lmowner,colvec2);
 
       }
@@ -852,13 +865,14 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
 } // end of EvaluateCondition
 
 
+
 /*-----------------------------------------------------------------------*
- |(private)                                                    mhv 02/14 |
- |Evaluate method for heart valve arterial 3-element Windkessel,         |
+ |(private)                                                    mhv 03/14 |
+ |Evaluate method for heart valve arterial Windkessel,         |
  |calling element evaluates of a condition and assembing results         |
  |based on this conditions                                               |
  *----------------------------------------------------------------------*/
-void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
+void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
     Teuchos::ParameterList&        params,
     Teuchos::RCP<LINALG::SparseMatrix> sysmat1,
     Teuchos::RCP<LINALG::SparseOperator> sysmat2,
@@ -868,12 +882,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
     Teuchos::RCP<Epetra_Vector>    sysvec3,
     Teuchos::RCP<Epetra_Vector>    sysvec4,
     Teuchos::RCP<Epetra_Vector>    sysvec5,
-    Teuchos::RCP<Epetra_Vector>    sysvec6,
-    Teuchos::RCP<Epetra_Vector>    sysvec7,
-    Teuchos::RCP<Epetra_Vector>    sysvec8,
-    Teuchos::RCP<Epetra_Vector>    sysvec9,
-    Teuchos::RCP<Epetra_Vector>    sysvec10,
-    Teuchos::RCP<Epetra_Vector>    sysvec11)
+    Teuchos::RCP<Epetra_Vector>    sysvec6)
 {
 
   if (!actdisc_->Filled()) dserror("FillComplete() was not called");
@@ -883,9 +892,13 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
   double sc_strtimint = params.get("scale_timint",1.0);
   double theta = params.get("scale_theta",1.0);
   double ts_size = params.get("time_step_size",1.0);
+  //double tim = params.get("total time",-1.0);
+
 
   bool havegid = false;
   bool havegid2 = false;
+  bool havegid3 = false;
+  bool havegid4 = false;
 
   const bool assmat1 = sysmat1!=Teuchos::null;
   const bool assmat2 = sysmat2!=Teuchos::null;
@@ -896,7 +909,6 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
   const bool assvec4 = sysvec4!=Teuchos::null;
   const bool assvec5 = sysvec5!=Teuchos::null;
   const bool assvec6 = sysvec6!=Teuchos::null;
-  const bool assvec7 = sysvec7!=Teuchos::null;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -910,62 +922,82 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
     //std::cout << "" << condition << std::endl;
     params.set("id",condID);
 
-    double K_at = windkesselcond_[i]->GetDouble("K_at");
-    double K_p = windkesselcond_[i]->GetDouble("K_p");
-    double K_ar = windkesselcond_[i]->GetDouble("K_ar");
-    double C = windkesselcond_[i]->GetDouble("C");
-    double R_p = windkesselcond_[i]->GetDouble("R_p");
-    double Z_c = windkesselcond_[i]->GetDouble("Z_c");
-    //double L = windkesselcond_[i]->GetDouble("L");
-    double p_ve = windkesselcond_[i]->GetDouble("p_ve");
-    double p_at = windkesselcond_[i]->GetDouble("p_at");
+    double R_av_max = windkesselcond_[i]->GetDouble("R_av_max");
+    double R_av_min = windkesselcond_[i]->GetDouble("R_av_min");
+    double R_mv_max = windkesselcond_[i]->GetDouble("R_mv_max");
+    double R_mv_min = windkesselcond_[i]->GetDouble("R_mv_min");
+    double L_ar_p = windkesselcond_[i]->GetDouble("L_ar_p");
+    double C_ar_p = windkesselcond_[i]->GetDouble("C_ar_p");
+    double R_ar_p = windkesselcond_[i]->GetDouble("R_ar_p");
+    double C_ar = windkesselcond_[i]->GetDouble("C_ar");
+    double R_ar = windkesselcond_[i]->GetDouble("R_ar");
+
+    double k_p = windkesselcond_[i]->GetDouble("k_p");
+
+    double p_ref = windkesselcond_[i]->GetDouble("p_ref");
+    double p_at = windkesselcond_[i]->GetDouble("p_at_0");
 
     // Windkessel stiffness
-    Epetra_SerialDenseMatrix wkstiff(2,2);
+    Epetra_SerialDenseMatrix wkstiff(4,4);
 
     // Windkessel rhs contributions
-    std::vector<double> factor_p(2);
-    std::vector<double> factor_dp(2);
-    std::vector<double> factor_q(2);
-    std::vector<double> factor_s(2);
-    std::vector<double> factor_1(2);
-
-    double qmid = 0.;
-    double smid = 0.;
+    std::vector<double> factor_sol(4);
+    std::vector<double> factor_dsol(4);
+    std::vector<double> factor_q(4);
+    std::vector<double> factor_1(4);
 
     double p_v = 0.;
+    double p_ar_p = 0.;
+    double psi_ar_p = 0.;
     double p_ar = 0.;
 
-    double k_p = 0.00000000001;
+    //double p_at = 0.;
 
-    if (assvec1 or assvec2 or assvec3 or assvec4 or assvec5 or assvec7)
+    double Rav = 0.;
+    double Rmv = 0.;
+
+    double dRavdpv = 0.;
+    double dRmvdpv = 0.;
+    double dRavdparp = 0.;
+
+    if (assvec1 or assvec2 or assvec3 or assvec4 or assvec6)
     {
+      //extract values of solution vector solm
+      p_v = (*sysvec6)[4*i];
+      p_ar_p = (*sysvec6)[4*i+1];
+      psi_ar_p = (*sysvec6)[4*i+2];
+      p_ar = (*sysvec6)[4*i+3];
 
-      p_v = (*sysvec8)[2*i];
-      p_ar = (*sysvec8)[2*i+1];
+      //nonlinear aortic and mitral valve resistances
+      Rav = 0.5*(R_av_max - R_av_min)*(tanh((p_ar_p-p_v)/k_p) + 1.) + R_av_min;
+      Rmv = 0.5*(R_mv_max - R_mv_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_mv_min;
 
-      qmid = (*sysvec9)[i];
-      smid = (*sysvec10)[i];
+      dRavdpv = (R_av_max - R_av_min)*(1.-tanh((p_ar_p-p_v)/k_p)*tanh((p_ar_p-p_v)/k_p)) / (-2.*k_p);
+      dRmvdpv = (R_mv_max - R_mv_min)*(1.-tanh((p_v-p_at)/k_p)*tanh((p_v-p_at)/k_p)) / (2.*k_p);;
+      dRavdparp = (R_av_max - R_av_min)*(1.-tanh((p_ar_p-p_v)/k_p)*tanh((p_ar_p-p_v)/k_p)) / (2.*k_p);
 
-      //std::cout << "" << p_v << std::endl;
-      //std::cout << "" << p_ar << std::endl;
-
-      //treat rhs contributions for valve law Windkessel
-      factor_p[0] = (K_at + K_ar + tanh((p_v-p_at)/k_p)*(K_p - K_at) + tanh((p_v-p_ar)/k_p)*(K_ar - K_p))/2.;
-      factor_dp[0] = 0.;
+      //fill multipliers for rhs vector
+      factor_sol[0] = 1./Rav + 1./Rmv;
+      factor_dsol[0] = 0.;
       factor_q[0] = 1.;
-      factor_s[0] = 0.;
-      factor_1[0] = (-(K_at + K_p)*p_at + (K_p-K_ar)*p_ar + (K_at - K_p)*p_at*tanh((p_v-p_at)/k_p) + (K_p - K_ar)*p_ar*tanh((p_v-p_ar)/k_p))/2.;
+      factor_1[0] = -p_at/Rmv - p_ar_p/Rav;
 
-      //treat rhs contributions for arterial/pulmonal Windkessel
-      factor_p[1] = 1./R_p;
-      factor_dp[1] = C;
-      factor_q[1] = (1.+Z_c/R_p)*(1.+tanh((p_v-p_ar)/k_p))/2.;
-      factor_s[1] = Z_c*C*(1.+tanh((p_v-p_ar)/k_p))/2.;
-      factor_1[1] = -p_ve/R_p;
+      factor_sol[1] = 1./Rav;
+      factor_dsol[1] = C_ar_p;
+      factor_q[1] = 0.;
+      factor_1[1] = -p_v/Rav + psi_ar_p;
+
+      factor_sol[2] = R_ar_p;
+      factor_dsol[2] = L_ar_p;
+      factor_q[2] = 0.;
+      factor_1[2] = -p_ar_p + p_ar;
+
+      factor_sol[3] = 1./R_ar;
+      factor_dsol[3] = C_ar;
+      factor_q[3] = 0.;
+      factor_1[3] = -p_ref/R_ar - psi_ar_p;
 
     }
-
 
     // is condition already labeled as active?
     if(activecons_.find(condID)->second==false)
@@ -982,85 +1014,121 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
     const int offsetID = params.get<int>("OffsetID");
     int gindex = condID-offsetID + i ;
     int gindex2 = gindex+1;
+    int gindex3 = gindex+2;
+    int gindex4 = gindex+3;
 
     // elements might need condition
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
-    // assemble the Windkessel stiffness matrix and scale with time-integrator dependent value
+    // assemble of Windkessel stiffness matrix, scale with time-integrator dependent value
     if (assmat1)
     {
-      std::vector<int> colvec(2);
+      std::vector<int> colvec(4);
       colvec[0]=gindex;
       colvec[1]=gindex2;
+      colvec[2]=gindex3;
+      colvec[3]=gindex4;
 
-      wkstiff(0,0) = theta*(((K_p - K_at)*(1.-tanh((p_v-p_at)/k_p)*tanh((p_v-p_at)/k_p))/(2.*k_p) + (K_ar - K_p)*(1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))/(2.*k_p)) * p_v + factor_p[0] + (K_at - K_p)*p_at*(1.-tanh((p_v-p_at)/k_p)*tanh((p_v-p_at)/k_p))/(2.*k_p) + (K_p - K_ar)*p_ar*(1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))/(2.*k_p));
+      wkstiff(0,0) = theta * ((p_v-p_at)*dRmvdpv/(-Rmv*Rmv) + 1./Rmv + (p_v-p_ar_p)*dRavdpv/(-Rav*Rav) + 1./Rav);
+      wkstiff(0,1) = theta * ((p_v-p_ar_p)*dRavdparp/(-Rav*Rav) - 1./Rav);
+      wkstiff(0,2) = 0.;
+      wkstiff(0,3) = 0.;
 
-      wkstiff(0,1) = theta*((K_ar - K_p)*(1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))/(-2.*k_p) + (K_p - K_ar)/2. + (K_p - K_ar)*p_ar*(1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))/(-2.*k_p) + (K_p - K_ar)*tanh((p_v-p_ar)/k_p)/2.);
+      wkstiff(1,0) = theta * (-(p_v-p_ar_p)*dRavdpv/(-Rav*Rav) - 1./Rav);
+      wkstiff(1,1) = theta * (C_ar_p/(theta*ts_size) - (p_v-p_ar_p)*dRavdparp/(-Rav*Rav) + 1./Rav);
+      wkstiff(1,2) = theta * (1.);
+      wkstiff(1,3) = 0.;
 
-      wkstiff(1,0) = theta*(1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))*(factor_q[1]*qmid + factor_s[1]*smid)/(2.*k_p);
+      wkstiff(2,0) = 0.;
+      wkstiff(2,1) = theta * (-1.);
+      wkstiff(2,2) = theta * (L_ar_p/(theta*ts_size) + R_ar_p);
+      wkstiff(2,3) = theta * (1.);
 
-      wkstiff(1,1) = theta*(factor_dp[1]/(theta*ts_size)+factor_p[1] - (1.-tanh((p_v-p_ar)/k_p)*tanh((p_v-p_ar)/k_p))*(factor_q[1]*qmid + factor_s[1]*smid)/(2.*k_p));
+      wkstiff(3,0) = 0.;
+      wkstiff(3,1) = 0.;
+      wkstiff(3,2) = theta * (-1.);
+      wkstiff(3,3) = theta * (C_ar/(theta*ts_size) + 1./R_ar);
 
       sysmat1->UnComplete();
 
       havegid = sysmat1->RowMap().MyGID(gindex);
       havegid2 = sysmat1->RowMap().MyGID(gindex2);
+      havegid3 = sysmat1->RowMap().MyGID(gindex3);
+      havegid4 = sysmat1->RowMap().MyGID(gindex4);
 
       if(havegid) sysmat1->Assemble(wkstiff(0,0),colvec[0],colvec[0]);
       if(havegid) sysmat1->Assemble(wkstiff(0,1),colvec[0],colvec[1]);
+      if(havegid) sysmat1->Assemble(wkstiff(0,2),colvec[0],colvec[2]);
+      if(havegid) sysmat1->Assemble(wkstiff(0,3),colvec[0],colvec[3]);
       if(havegid2) sysmat1->Assemble(wkstiff(1,0),colvec[1],colvec[0]);
       if(havegid2) sysmat1->Assemble(wkstiff(1,1),colvec[1],colvec[1]);
+      if(havegid2) sysmat1->Assemble(wkstiff(1,2),colvec[1],colvec[2]);
+      if(havegid2) sysmat1->Assemble(wkstiff(1,3),colvec[1],colvec[3]);
+      if(havegid3) sysmat1->Assemble(wkstiff(2,0),colvec[2],colvec[0]);
+      if(havegid3) sysmat1->Assemble(wkstiff(2,1),colvec[2],colvec[1]);
+      if(havegid3) sysmat1->Assemble(wkstiff(2,2),colvec[2],colvec[2]);
+      if(havegid3) sysmat1->Assemble(wkstiff(2,3),colvec[2],colvec[3]);
+      if(havegid4) sysmat1->Assemble(wkstiff(3,0),colvec[3],colvec[0]);
+      if(havegid4) sysmat1->Assemble(wkstiff(3,1),colvec[3],colvec[1]);
+      if(havegid4) sysmat1->Assemble(wkstiff(3,2),colvec[3],colvec[2]);
+      if(havegid4) sysmat1->Assemble(wkstiff(3,3),colvec[3],colvec[3]);
 
     }
-    // rhs part associated with p
+    // rhs part associated with sol
     if (assvec1)
     {
-      std::vector<int> colvec(2);
+      std::vector<int> colvec(4);
       colvec[0]=gindex;
       colvec[1]=gindex2;
-      int err11 = sysvec1->SumIntoGlobalValues(1,&factor_p[0],&colvec[0]);
-      int err12 = sysvec1->SumIntoGlobalValues(1,&factor_p[1],&colvec[1]);
-      if (err11 or err12) dserror("SumIntoGlobalValues failed!");
+      colvec[2]=gindex3;
+      colvec[3]=gindex4;
+      int err11 = sysvec1->SumIntoGlobalValues(1,&factor_sol[0],&colvec[0]);
+      int err12 = sysvec1->SumIntoGlobalValues(1,&factor_sol[1],&colvec[1]);
+      int err13 = sysvec1->SumIntoGlobalValues(1,&factor_sol[2],&colvec[2]);
+      int err14 = sysvec1->SumIntoGlobalValues(1,&factor_sol[3],&colvec[3]);
+      if (err11 or err12 or err13 or err14) dserror("SumIntoGlobalValues failed!");
     }
-    // rhs part associated with dp/dt
+    // rhs part associated with dsol/dt
     if (assvec2)
     {
-      std::vector<int> colvec(2);
+      std::vector<int> colvec(4);
       colvec[0]=gindex;
       colvec[1]=gindex2;
-      int err21 = sysvec2->SumIntoGlobalValues(1,&factor_dp[0],&colvec[0]);
-      int err22 = sysvec2->SumIntoGlobalValues(1,&factor_dp[1],&colvec[1]);
-      if (err21 or err22) dserror("SumIntoGlobalValues failed!");
+      colvec[2]=gindex3;
+      colvec[3]=gindex4;
+      int err21 = sysvec2->SumIntoGlobalValues(1,&factor_dsol[0],&colvec[0]);
+      int err22 = sysvec2->SumIntoGlobalValues(1,&factor_dsol[1],&colvec[1]);
+      int err23 = sysvec2->SumIntoGlobalValues(1,&factor_dsol[2],&colvec[2]);
+      int err24 = sysvec2->SumIntoGlobalValues(1,&factor_dsol[3],&colvec[3]);
+      if (err21 or err22 or err23 or err24) dserror("SumIntoGlobalValues failed!");
     }
     // rhs part associated with q
     if (assvec3)
     {
-      std::vector<int> colvec(2);
+      std::vector<int> colvec(4);
       colvec[0]=gindex;
       colvec[1]=gindex2;
+      colvec[2]=gindex3;
+      colvec[3]=gindex4;
       int err31 = sysvec3->SumIntoGlobalValues(1,&factor_q[0],&colvec[0]);
       int err32 = sysvec3->SumIntoGlobalValues(1,&factor_q[1],&colvec[1]);
-      if (err31 or err32) dserror("SumIntoGlobalValues failed!");
-    }
-    // rhs part associated with dq/dt
-    if (assvec4)
-    {
-      std::vector<int> colvec(2);
-      colvec[0]=gindex;
-      colvec[1]=gindex2;
-      int err41 = sysvec4->SumIntoGlobalValues(1,&factor_s[0],&colvec[0]);
-      int err42 = sysvec4->SumIntoGlobalValues(1,&factor_s[1],&colvec[1]);
-      if (err41 or err42) dserror("SumIntoGlobalValues failed!");
+      int err33 = sysvec3->SumIntoGlobalValues(1,&factor_q[2],&colvec[2]);
+      int err34 = sysvec3->SumIntoGlobalValues(1,&factor_q[3],&colvec[3]);
+      if (err31 or err32 or err33 or err34) dserror("SumIntoGlobalValues failed!");
     }
     // rhs part associated with 1
-    if (assvec5)
+    if (assvec4)
     {
-      std::vector<int> colvec(2);
+      std::vector<int> colvec(4);
       colvec[0]=gindex;
       colvec[1]=gindex2;
-      int err51 = sysvec5->SumIntoGlobalValues(1,&factor_1[0],&colvec[0]);
-      int err52 = sysvec5->SumIntoGlobalValues(1,&factor_1[1],&colvec[1]);
-      if (err51 or err52) dserror("SumIntoGlobalValues failed!");
+      colvec[2]=gindex3;
+      colvec[3]=gindex4;
+      int err41 = sysvec4->SumIntoGlobalValues(1,&factor_1[0],&colvec[0]);
+      int err42 = sysvec4->SumIntoGlobalValues(1,&factor_1[1],&colvec[1]);
+      int err43 = sysvec4->SumIntoGlobalValues(1,&factor_1[2],&colvec[2]);
+      int err44 = sysvec4->SumIntoGlobalValues(1,&factor_1[3],&colvec[3]);
+      if (err41 or err42 or err43 or err44) dserror("SumIntoGlobalValues failed!");
     }
 
     // define element matrices and vectors
@@ -1096,7 +1164,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
       elevector2b.Size(eledim);
       elevector3a.Size(eledim);
       elevector3b.Size(eledim);
-      elevector4.Size(2);
+      elevector4.Size(4);
 
 
       Epetra_SerialDenseMatrix dummat(0,0);
@@ -1118,12 +1186,18 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
         // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
         std::vector<int> colvec1(1);
         std::vector<int> colvec2(1);
+        std::vector<int> colvec3(1);
+        std::vector<int> colvec4(1);
         colvec1[0]=gindex;
         colvec2[0]=gindex2;
-        elevector2a.Scale(-factor_q[0]/(ts_size));
+        colvec3[0]=gindex3;
+        colvec4[0]=gindex4;
+        elevector2a.Scale(-factor_q[0]/ts_size);
+        elevector2b.Scale(0.);
         sysmat2->Assemble(eid,lmstride,elevector2a,lm,lmowner,colvec1);
-        elevector2b.Scale(-(factor_q[1]/(ts_size)+factor_s[1]/(theta*ts_size*ts_size)));
         sysmat2->Assemble(eid,lmstride,elevector2b,lm,lmowner,colvec2);
+        sysmat2->Assemble(eid,lmstride,elevector2b,lm,lmowner,colvec3);
+        sysmat2->Assemble(eid,lmstride,elevector2b,lm,lmowner,colvec4);
 
       }
       if (assmat3)
@@ -1131,23 +1205,35 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
         // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
         std::vector<int> colvec1(1);
         std::vector<int> colvec2(1);
+        std::vector<int> colvec3(1);
+        std::vector<int> colvec4(1);
         colvec1[0]=gindex;
         colvec2[0]=gindex2;
+        colvec3[0]=gindex3;
+        colvec4[0]=gindex4;
         elevector3a.Scale(sc_strtimint);
-        sysmat3->Assemble(eid,lmstride,elevector3a,lm,lmowner,colvec1);
         elevector3b.Scale(0.0);
+        sysmat3->Assemble(eid,lmstride,elevector3a,lm,lmowner,colvec1);
         sysmat3->Assemble(eid,lmstride,elevector3b,lm,lmowner,colvec2);
+        sysmat3->Assemble(eid,lmstride,elevector3b,lm,lmowner,colvec3);
+        sysmat3->Assemble(eid,lmstride,elevector3b,lm,lmowner,colvec4);
       }
-      if (assvec6)
+      if (assvec5)
       {
         elevector4[1]=elevector4[0];
+        elevector4[2]=elevector4[0];
+        elevector4[3]=elevector4[0];
         std::vector<int> windkessellm;
         std::vector<int> windkesselowner;
         windkessellm.push_back(gindex);
         windkessellm.push_back(gindex2);
+        windkessellm.push_back(gindex3);
+        windkessellm.push_back(gindex4);
         windkesselowner.push_back(curr->second->Owner());
         windkesselowner.push_back(curr->second->Owner());
-        LINALG::Assemble(*sysvec6,elevector4,windkessellm,windkesselowner);
+        windkesselowner.push_back(curr->second->Owner());
+        windkesselowner.push_back(curr->second->Owner());
+        LINALG::Assemble(*sysvec5,elevector4,windkessellm,windkesselowner);
       }
 
     }
@@ -1155,8 +1241,6 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel_Experimental(
   }
   return;
 } // end of EvaluateCondition
-
-
 
 
 /*-----------------------------------------------------------------------*
@@ -1325,6 +1409,110 @@ void UTILS::Windkessel::InitializeHeartValveArterialWindkessel(
 
       windkessellm.push_back(gindex);
       windkessellm.push_back(gindex2);
+      windkesselowner.push_back(curr->second->Owner());
+      windkesselowner.push_back(curr->second->Owner());
+      LINALG::Assemble(*sysvec1,elevector3,windkessellm,windkesselowner);
+    }
+    // remember next time, that this condition is already initialized, i.e. active
+    activecons_.find(condID)->second=true;
+
+    if (actdisc_->Comm().MyPID()==0)
+    {
+      std::cout << "===== Welcome to monolithic 3D structure 0D Windkessel coupling (coupling id = " << condID << ") ====="<< std::endl;
+    }
+
+
+  }
+  return;
+} // end of Initialize Windkessel
+
+
+/*-----------------------------------------------------------------------*
+ *-----------------------------------------------------------------------*/
+void UTILS::Windkessel::InitializeHeartValveArterialProxDistWindkessel(
+    Teuchos::ParameterList&        params,
+    Teuchos::RCP<Epetra_Vector>    sysvec1,
+    Teuchos::RCP<Epetra_Vector>    sysvec2)
+{
+  if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
+  if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  // get the current time
+  //const double time = params.get("total time",-1.0);
+
+
+  //----------------------------------------------------------------------
+  // loop through conditions and evaluate them if they match the criterion
+  //----------------------------------------------------------------------
+  for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
+  {
+    DRT::Condition& cond = *(windkesselcond_[i]);
+
+    // Get ConditionID of current condition if defined and write value in parameterlist
+    int condID=cond.GetInt("id");
+    params.set("id",condID);
+
+    // global and local ID of this bc in the redundant vectors
+    int offsetID = params.get<int> ("OffsetID");
+    int gindex = condID-offsetID + i;
+    int gindex2 = gindex+1;
+    int gindex3 = gindex+2;
+    int gindex4 = gindex+3;
+
+    double p_ar_p_0=windkesselcond_[i]->GetDouble("p_ar_p_0");
+
+    std::vector<int> colvec(4);
+    colvec[0]=gindex;
+    colvec[1]=gindex2;
+    colvec[2]=gindex3;
+    colvec[3]=gindex4;
+    int err = sysvec2->SumIntoGlobalValues(1,&p_ar_p_0,&colvec[1]);
+    if (err) dserror("SumIntoGlobalValues failed!");
+
+    params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+
+    // define element matrices and vectors
+    Epetra_SerialDenseMatrix elematrix1;
+    Epetra_SerialDenseMatrix elematrix2;
+    Epetra_SerialDenseVector elevector1;
+    Epetra_SerialDenseVector elevector2;
+    Epetra_SerialDenseVector elevector3;
+
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
+    // no check for empty geometry here since in parallel computations
+    // can exist processors which do not own a portion of the elements belonging
+    // to the condition geometry
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    {
+      // get element location vector and ownerships
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
+
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      elevector3.Size(4);
+
+      // call the element specific evaluate method
+      int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,
+          elevector1,elevector2,elevector3);
+      if (err) dserror("error while evaluating elements");
+
+      // assembly
+
+      elevector3[1]=elevector3[0];
+      elevector3[2]=elevector3[0];
+      elevector3[3]=elevector3[0];
+      std::vector<int> windkessellm;
+      std::vector<int> windkesselowner;
+
+      windkessellm.push_back(gindex);
+      windkessellm.push_back(gindex2);
+      windkessellm.push_back(gindex3);
+      windkessellm.push_back(gindex4);
+      windkesselowner.push_back(curr->second->Owner());
+      windkesselowner.push_back(curr->second->Owner());
       windkesselowner.push_back(curr->second->Owner());
       windkesselowner.push_back(curr->second->Owner());
       LINALG::Assemble(*sysvec1,elevector3,windkessellm,windkesselowner);

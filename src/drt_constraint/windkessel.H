@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file windkessel.cpp
 
-\brief Basic Windkessel class, dealing with Windkessel coupling conditions
+\brief Monolithic coupling of 3D structure 0D Windkessel models
 
 <pre>
 Maintainer: Marc Hirschvogel
@@ -51,6 +51,7 @@ namespace UTILS
       none,
       wk_std,
       wk_heartvalvearterial,
+      wk_heartvalvearterial_proxdist,
     };
 
     /*!
@@ -200,6 +201,21 @@ namespace UTILS
     );
 
     //! Evaluate Windkessel conditions and assemble the results
+    void EvaluateHeartValveArterialProxDistWindkessel
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Windkessel stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Windkessel offdiagonal matrix dV/dd
+      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Windkessel offdiagonal matrix dfext/dp
+      Teuchos::RCP<Epetra_Vector>    sysvec1,  ///< distributed vectors that may be filled by aasembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec2,
+      Teuchos::RCP<Epetra_Vector>    sysvec3,
+      Teuchos::RCP<Epetra_Vector>    sysvec4,
+      Teuchos::RCP<Epetra_Vector>    sysvec5,
+      Teuchos::RCP<Epetra_Vector>    sysvec6
+    );
+
+    //! Evaluate Windkessel conditions and assemble the results
     void EvaluateHeartValveArterialWindkessel_Experimental
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
@@ -229,6 +245,14 @@ namespace UTILS
 
     //! Compute and assemble initial Windkessel values
     void InitializeHeartValveArterialWindkessel
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<Epetra_Vector>    sysvec1, ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec2 ///< distributed vector that may be filled by assembly of element contributions
+    );
+
+    //! Compute and assemble initial Windkessel values
+    void InitializeHeartValveArterialProxDistWindkessel
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<Epetra_Vector>    sysvec1, ///< distributed vector that may be filled by assembly of element contributions

@@ -178,6 +178,7 @@ public:
     AreaMonitor_2D,
     WindkesselStructure,
     WindkesselHeartValveArterialStructure,
+    WindkesselHeartValveArterialProxDistStructure,
     WindkesselStructureCoupling,
     ImpedanceCond,
     Impedance_Calb_Cond,
