@@ -22,6 +22,7 @@ Maintainer: Matthias Mayr
 
 #include "fsi_dyn.H"
 #include "fsi_dirichletneumann.H"
+#include "fsi_dirichletneumanncrack.H"
 #include "fsi_dirichletneumannslideale.H"
 #include "fsi_monolithicfluidsplit.H"
 #include "fsi_monolithicstructuresplit.H"
@@ -1110,7 +1111,12 @@ void xfsi_drt()
 
     if (method==INPAR::FSI::DirichletNeumann)
     {
-      fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
+      if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+      {
+        fsi = Teuchos::rcp(new FSI::DirichletNeumann_Crack(comm));
+      }
+      else
+        fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
     }
     else
       dserror("only Dirichlet-Neumann partitioned schemes with XFEM");

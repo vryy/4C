@@ -19,7 +19,6 @@ Maintainer: Matthias Mayr
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_adapter/ad_str_fsi_crack.H"
 #include "../drt_adapter/ad_fld_fluid_xfem.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_adapter/ad_fld_xfluid_fsi.H"
@@ -469,38 +468,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
     // Add newly created crack surfaces to cut discretization in XFEM
     // This is for FSI with cracking structure simulations
-    // rebuild FSI interface from fluid and structure side, and match coupling conditions
-    if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
-    {
-      // propagate crack within the structure
-      bool isCrackProp = StructureField()->UpdateCrackInformation( StructureField()->Dispnp() );
-
-      if( isCrackProp )
-      {
-        // add newly created cut surfaces to the XFEM cut interface
-        AddNewCrackSurfaceToCutInterface();
-
-        // rebuild FSI interface of fluid side
-        MBFluidField().RebuildFSIInterface();
-
-        // rebuild FSI interface of structure side
-        StructureField()->RebuildInterface();
-
-        // Setup coupling conditions on the updated interface
-        ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-        matchingnodes_ = true;
-        const int ndim = DRT::Problem::Instance()->NDim();
-        coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
-                                       StructureField()->Interface()->FSICondMap(),
-                                       *MBFluidField().Discretization(),
-                                       MBFluidField().Interface().FSICondMap(),
-                                      "FSICoupling",
-                                      ndim);
-
-        if (coupsf.MasterDofMap()->NumGlobalElements()==0)
-          dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
-      }
-    }
+    update_FSI_interface_Crack();
 
     // calculate stresses, strains, energies
     PrepareOutput();
@@ -516,33 +484,6 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     Output();
   }
 }
-
-/*-------------------------------------------------------------------------------------*
- * When crack propagates, it creates new crack surfaces. These new surfaces
- * are added to the XFEM cut discretization. Also, the EpetraVectors that       sudhakar 03/14
- * are defined on the boundary discretization are rebuild to account for
- * the added new node
- *-------------------------------------------------------------------------------------*/
-void FSI::Partitioned::AddNewCrackSurfaceToCutInterface()
-{
-  const Teuchos::RCP<ADAPTER::FSICrackingStructure>& structfield =
-                                Teuchos::rcp_dynamic_cast<ADAPTER::FSICrackingStructure>(StructureField());
-
-  ADAPTER::FluidXFEM& ad_xfem = dynamic_cast<ADAPTER::FluidXFEM&>(MBFluidField());
-  ADAPTER::Fluid& ad_flui = ad_xfem.FluidField();
-
-  Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
-  ad_flui.BoundaryDis( boundary_dis );
-
-  std::map<int, LINALG::Matrix<3,1> > tip_nodes;
-  ad_flui.GetCrackTipNodes( tip_nodes );
-  structfield->addCrackSurfacesToCutSides( boundary_dis, tip_nodes );
-  ad_flui.setBoundaryDis( boundary_dis );
-  ad_flui.SetCrackTipNodes( tip_nodes );
-
-  ad_flui.UpdateBoundaryValuesAfterCrack( structfield->getOldNewCrackNodes() );
-}
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -827,6 +768,12 @@ bool FSI::Partitioned::computeF(const Epetra_Vector &x, Epetra_Vector &F, const 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::Partitioned::Remeshing()
+{
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Partitioned::update_FSI_interface_Crack()
 {
 }
 

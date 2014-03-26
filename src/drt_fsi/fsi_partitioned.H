@@ -78,6 +78,9 @@ public:
 
   virtual void Remeshing();
 
+  /// Perform all operations related to updating FSI interface for FSI-crack problem
+  virtual void update_FSI_interface_Crack();
+
 protected:
 
   //! @name Transfer helpers
@@ -170,9 +173,6 @@ private:
   /// setup list with default parameters
   void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
-  /// newly created crack surfaces are added to the XFEM cut interface
-  void AddNewCrackSurfaceToCutInterface();
-
   /// extract idispn_ iveln_
   void ExtractPreviousInterfaceSolution();
 
@@ -212,8 +212,6 @@ private:
 protected:
   int mfresitemax_;
 
-  //! whether crack update is necessary at this time step
-  bool crackUpdate_;
 private:
 
   /// nodes at the fluid-structure interface match
