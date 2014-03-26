@@ -586,6 +586,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
     double p_ref = windkesselcond_[i]->GetDouble("p_ref");
     double p_at_0 = windkesselcond_[i]->GetDouble("p_at_0");
 
+    const std::string* valvelaw = windkesselcond_[i]->Get<std::string>("valvelaw");
+
     // Windkessel stiffness
     Epetra_SerialDenseMatrix wkstiff(2,2);
 
@@ -609,6 +611,11 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
     double dRmvdpv = 0.;
     double dRavdpar = 0.;
 
+    //for piecewise linear law - not used anymore!
+    double K_at = 0.;
+    double K_p = 0.;
+    double K_ar = 0.;
+
     if (assvec1 or assvec2 or assvec3 or assvec4 or assvec5 or assvec6 or assvec8)
     {
 
@@ -629,43 +636,53 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
       dRmvdpv = (R_mv_max - R_mv_min)*(1.-tanh((p_v-p_at)/k_p)*tanh((p_v-p_at)/k_p)) / (2.*k_p);
       dRavdpar = (R_av_max - R_av_min)*(1.-tanh((p_ar-p_v)/k_p)*tanh((p_ar-p_v)/k_p)) / (2.*k_p);
 
+      K_at = 1./R_mv_min;
+      K_p = 1./R_av_max;
+      K_ar = 1./R_av_min;
 
-      //fill multipliers for rhs vector
-      factor_sol[0] = 1./Rav + 1./Rmv;
-      factor_dsol[0] = 0.;
-      factor_q[0] = 1.;
-      factor_dq[0] = 0.;
-      factor_ddq[0] = 0.;
-      factor_1[0] = -p_at/Rmv - p_ar/Rav;
+      // fill multipliers for rhs vector
+      // smooth nonlinear valve law
+      if (*valvelaw == "valve_smooth")
+      {
+        factor_sol[0] = 1./Rav + 1./Rmv;
+        factor_dsol[0] = 0.;
+        factor_q[0] = 1.;
+        factor_dq[0] = 0.;
+        factor_ddq[0] = 0.;
+        factor_1[0] = -p_at/Rmv - p_ar/Rav;
+      }
+      // piecewise linear valve law
+      if (*valvelaw == "valve_pwlin")
+      {
+        if (p_v < p_at)
+        {
+          factor_sol[0] = K_at;
+          factor_dsol[0] = 0.;
+          factor_q[0] = 1.;
+          factor_dq[0] = 0.;
+          factor_ddq[0] = 0.;
+          factor_1[0] = -K_at*p_at;
+        }
+        if (p_v >= p_at and p_v < p_ar)
+        {
+          factor_sol[0] = K_p;
+          factor_dsol[0] = 0.;
+          factor_q[0] = 1.;
+          factor_dq[0] = 0.;
+          factor_ddq[0] = 0.;
+          factor_1[0] = -K_p*p_at;
+        }
+        if (p_v >= p_ar)
+        {
+          factor_sol[0] = K_ar;
+          factor_dsol[0] = 0.;
+          factor_q[0] = 1.;
+          factor_dq[0] = 0.;
+          factor_ddq[0] = 0.;
+          factor_1[0] = -K_ar*p_ar + K_p*p_ar - K_p*p_at;
+        }
+      }
 
-      //old piecewise-linear valve law, not used anymore
-//      if (p_v < p_at)
-//      {
-//        factor_sol[0] = K_at;
-//        factor_dsol[0] = 0.;
-//        factor_q[0] = 1.;
-//        factor_dq[0] = 0.;
-//        factor_ddq[0] = 0.;
-//        factor_1[0] = -K_at*p_at;
-//      }
-//      if (p_v >= p_at and p_v < p_ar)
-//      {
-//        factor_sol[0] = K_p;
-//        factor_dsol[0] = 0.;
-//        factor_q[0] = 1.;
-//        factor_dq[0] = 0.;
-//        factor_ddq[0] = 0.;
-//        factor_1[0] = -K_p*p_at;
-//      }
-//      if (p_v >= p_ar)
-//      {
-//        factor_sol[0] = K_ar;
-//        factor_dsol[0] = 0.;
-//        factor_q[0] = 1.;
-//        factor_dq[0] = 0.;
-//        factor_ddq[0] = 0.;
-//        factor_1[0] = -K_ar*p_ar + K_p*p_ar - K_p*p_at;
-//      }
 
       if (p_v < p_ar)
       {
@@ -715,17 +732,23 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
       colvec[0]=gindex;
       colvec[1]=gindex2;
 
-      wkstiff(0,0) = theta * ((p_v-p_at)*dRmvdpv/(-Rmv*Rmv) + 1./Rmv + (p_v-p_ar)*dRavdpv/(-Rav*Rav) + 1./Rav);
-      wkstiff(0,1) = theta * ((p_v-p_ar)*dRavdpar/(-Rav*Rav) - 1./Rav);
+      // stiffness entries for smooth nonlinear valve law
+      if (*valvelaw == "valve_smooth")
+      {
+        wkstiff(0,0) = theta * ((p_v-p_at)*dRmvdpv/(-Rmv*Rmv) + 1./Rmv + (p_v-p_ar)*dRavdpv/(-Rav*Rav) + 1./Rav);
+        wkstiff(0,1) = theta * ((p_v-p_ar)*dRavdpar/(-Rav*Rav) - 1./Rav);
+      }
+      // stiffness entries for piecewise linear valve law
+      if (*valvelaw == "valve_pwlin")
+      {
+        if (p_v < p_at) wkstiff(0,0) = theta*K_at;
+        if (p_v >= p_at and p_v < p_ar) wkstiff(0,0) = theta*K_p;
+        if (p_v >= p_ar) wkstiff(0,0) = theta*K_ar;
 
-      // stiffness entries for old piecewise-linear valve law, not used anymore
-//      if (p_v < p_at) wkstiff(0,0) = theta*K_at;
-//      if (p_v >= p_at and p_v < p_ar) wkstiff(0,0) = theta*K_p;
-//      if (p_v >= p_ar) wkstiff(0,0) = theta*K_ar;
-//
-//      if (p_v < p_at) wkstiff(0,1) = 0.;
-//      if (p_v >= p_at and p_v < p_ar) wkstiff(0,1) = 0.;
-//      if (p_v >= p_ar) wkstiff(0,1) = theta*(K_p-K_ar);
+        if (p_v < p_at) wkstiff(0,1) = 0.;
+        if (p_v >= p_at and p_v < p_ar) wkstiff(0,1) = 0.;
+        if (p_v >= p_ar) wkstiff(0,1) = theta*(K_p-K_ar);
+      }
 
       wkstiff(1,0) = 0.;
 
@@ -742,7 +765,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
       if(havegid2) sysmat1->Assemble(wkstiff(1,1),colvec[1],colvec[1]);
 
     }
-    // rhs part associated with p
+    // rhs part associated with sol
     if (assvec1)
     {
       std::vector<int> colvec(2);
@@ -752,7 +775,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
       int err12 = sysvec1->SumIntoGlobalValues(1,&factor_sol[1],&colvec[1]);
       if (err11 or err12) dserror("SumIntoGlobalValues failed!");
     }
-    // rhs part associated with dp/dt
+    // rhs part associated with dsol/dt
     if (assvec2)
     {
       std::vector<int> colvec(2);
@@ -1016,7 +1039,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
       dRmvdpv = (R_mv_max - R_mv_min)*(1.-tanh((p_v-p_at)/k_p)*tanh((p_v-p_at)/k_p)) / (2.*k_p);
       dRavdparp = (R_av_max - R_av_min)*(1.-tanh((p_arp-p_v)/k_p)*tanh((p_arp-p_v)/k_p)) / (2.*k_p);
 
-      //fill multipliers for rhs vector
+      // fill multipliers for rhs vector
       factor_sol[0] = 1./Rav + 1./Rmv;
       factor_dsol[0] = 0.;
       factor_q[0] = 1.;

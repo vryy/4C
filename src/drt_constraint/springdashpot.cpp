@@ -131,12 +131,12 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
   const Epetra_Map* nodemap = discret->NodeRowMap();
   Epetra_IntVector nodevec = Epetra_IntVector(*nodemap, true);
 
-  std::string springdasgpotcondname = "SpringDashpot";
+  std::string springdashpotcondname = "SpringDashpot";
   Teuchos::RCP<Epetra_Vector> refnodalnormals = Teuchos::rcp(new Epetra_Vector(*(discret->DofRowMap())));
   Teuchos::ParameterList eleparams1;
   Teuchos::ParameterList eleparams2;
   eleparams1.set("action","calc_ref_nodal_normals");
-  discret->EvaluateCondition(eleparams1,Teuchos::null,Teuchos::null,refnodalnormals,Teuchos::null,Teuchos::null,springdasgpotcondname);
+  discret->EvaluateCondition(eleparams1,Teuchos::null,Teuchos::null,refnodalnormals,Teuchos::null,Teuchos::null,springdashpotcondname);
 
 
   int dnodecount = 0;
