@@ -66,6 +66,8 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     max_ls_iter_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<int>("INV_LS_MAX_RUN")),
     output_count_(0),
     fdcheck_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("FDCHECK"))),
+    ls_c_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("LS_DECREASECOND")),
+    ls_rho_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("LS_STEPLENGTHRED")),
     alpha_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("ALPHA_MUA")),
     beta_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("BETA_MUA")),
     calcacougrad_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("INV_TOL_GRAD_YN"))),
@@ -76,6 +78,8 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     tstart_(Teuchos::Time::wallTime())
 {
   if(phys_==INPAR::ACOU::acou_viscous) dserror("inverse analysis for now only implemented for lossless fluid");
+  if(ls_rho_>=1.0) dserror("LS_STEPLENGTHRED has to be smaller than 1.0");
+  if(ls_c_>1.0) dserror("LS_DECREASECOND is usually chosen in between 0.0 and 0.01, decrease it!");
 
   scatra_output_ = scatra_discret_->Writer();
 
@@ -1181,14 +1185,12 @@ Epetra_SerialDenseVector ACOU::InvAnalysis::LineSearch(Epetra_SerialDenseVector 
   // This is a backtracking line search, starting with initial alpha and reducing it,
   // as long as the sufficient decrease condition is not yet satisfied
 
-  double alpha_0 = 1.0;// / d.Norm2();
-  double c = 1.0e-4;
-  double rho = 0.2;
+  double alpha_0 = 1.0;
 
   // does alpha_0 already satisfy the Armijo (sufficient decrease) condition?
   double alpha = alpha_0;
   double J_before = J_;
-  double condition = J_before;// + c * alpha * d.Dot(G_);
+  double condition = J_before + ls_c_ * alpha * d.Dot(G_);
 
   int count = 0;
 
@@ -1205,7 +1207,7 @@ Epetra_SerialDenseVector ACOU::InvAnalysis::LineSearch(Epetra_SerialDenseVector 
     SetParameters(pnew);
     SolveStandardProblem();
     CalculateObjectiveFunctionValue();
-    alpha *= rho;
+    alpha *= ls_rho_;
 
   } while(J_ >= condition && count<max_ls_iter_);
 

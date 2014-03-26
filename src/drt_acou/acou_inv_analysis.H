@@ -96,7 +96,9 @@ private:
   int max_iter_;       /// maximal iteration number for inverse analysis
   int max_ls_iter_;    /// maximal iteration number for line search
   int output_count_;   /// auxiliary variable for nicely named output files
-  bool fdcheck_;       /// flog indicating performance of finite difference check
+  bool fdcheck_;       /// flag indicating performance of finite difference check
+  double ls_c_;        /// parameter for calculation of sufficient decrease condition
+  double ls_rho_;      /// step length reduction given by this parameter
 
   /// regularization coefficient for absorption coefficient
   double alpha_;
