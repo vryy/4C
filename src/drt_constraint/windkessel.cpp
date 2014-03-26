@@ -863,6 +863,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         elevector2a.Scale(-factor_q[0]/ts_size);
         sysmat2->Assemble(eid,lmstride,elevector2a,lm,lmowner,colvec1);
         elevector2b.Scale(-(factor_q[1]/ts_size + factor_dq[1]/(theta*ts_size*ts_size) + factor_ddq[1]/(theta*theta*ts_size*ts_size*ts_size)));
+        //elevector2b.Scale(0.);
         sysmat2->Assemble(eid,lmstride,elevector2b,lm,lmowner,colvec2);
 
       }
@@ -1051,7 +1052,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
 
     // global and local ID of this bc in the redundant vectors
     const int offsetID = params.get<int>("OffsetID");
-    int gindex = condID-offsetID + i ;
+    int gindex = condID-offsetID + 3*i ;
     int gindex2 = gindex+1;
     int gindex3 = gindex+2;
     int gindex4 = gindex+3;
@@ -1490,7 +1491,7 @@ void UTILS::Windkessel::InitializeHeartValveArterialProxDistWindkessel(
 
     // global and local ID of this bc in the redundant vectors
     int offsetID = params.get<int> ("OffsetID");
-    int gindex = condID-offsetID + i;
+    int gindex = condID-offsetID + 3*i;
     int gindex2 = gindex+1;
     int gindex3 = gindex+2;
     int gindex4 = gindex+3;

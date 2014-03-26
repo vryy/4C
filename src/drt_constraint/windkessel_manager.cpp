@@ -548,7 +548,7 @@ void UTILS::WindkesselManager::Solve
   // allocate additional vectors and matrices
   Teuchos::RCP<Epetra_Vector> rhswindk
   = Teuchos::rcp(new Epetra_Vector(*(GetWindkesselRHS())));
-  Teuchos::RCP<Epetra_Vector> presincr
+  Teuchos::RCP<Epetra_Vector> solincr
   = Teuchos::rcp(new Epetra_Vector(*(GetWindkesselMap())));
   Teuchos::RCP<LINALG::SparseMatrix> mat_windkstiff =
       (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetWindkesselStiffness()));
@@ -558,7 +558,7 @@ void UTILS::WindkesselManager::Solve
       (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(GetMatDstructDp()));
 
   // prepare residual pressure
-  presincr->PutScalar(0.0);
+  solincr->PutScalar(0.0);
 
 
   // apply DBC to additional offdiagonal coupling matrices
@@ -596,6 +596,8 @@ void UTILS::WindkesselManager::Solve
   blockmat->Assign(1,1,View,*mat_windkstiff);
   blockmat->Complete();
 
+  //std::cout << "" << *mat_windkstiff << std::endl;
+
   // fill merged vectors using Export
   LINALG::Export(*rhswindk,*mergedrhs);
   mergedrhs -> Scale(-1.0);
@@ -619,12 +621,12 @@ void UTILS::WindkesselManager::Solve
 
   // store results in smaller vectors
   mapext.ExtractVector(mergedsol,0,dispinc);
-  mapext.ExtractVector(mergedsol,1,presincr);
+  mapext.ExtractVector(mergedsol,1,solincr);
 
   counter_++;
 
   // update Windkessel pressure
-  UpdatePres(presincr);
+  UpdatePres(solincr);
 
   return;
 }
