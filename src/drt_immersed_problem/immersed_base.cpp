@@ -64,7 +64,7 @@ std::vector<int> IMMERSED::ImmersedBase::DetermineImmersionDomain(Teuchos::RCP<D
   std::vector<double> my_displacements_np;
   double xi[DRT::Problem::Instance()->NDim()];
   double x [DRT::Problem::Instance()->NDim()];
-  int inode;
+  int inode = 0;
 
   Teuchos::RCP<const Epetra_Vector> displacements_np;
   if(firstcall)
@@ -208,7 +208,7 @@ std::vector<int> IMMERSED::ImmersedBase::DetermineImmersionBoundaryDomain(Teucho
   std::vector<double> my_displacements_np;
   double xi[DRT::Problem::Instance()->NDim()];
   double x [DRT::Problem::Instance()->NDim()];
-  int inode;
+  int inode = 0;
 
   Teuchos::RCP<const Epetra_Vector> displacements_np;
   if(firstcall)
