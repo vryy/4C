@@ -289,7 +289,7 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   // the solution vector "sol" for ONE Windkessel bc holds depending on case A, B or C (see description at top of this file):
   // A) sol = p
   // B) sol = [p_v  p_ar]^T
-  // C) sol = [p_v  p_ar_p  y_ar_p  p_ar]^T
+  // C) sol = [p_v  p_arp  y_arp  p_ard]^T
 
   // evaluate current volume only
   wk_std_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,vnredundant,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);

@@ -145,7 +145,7 @@ DSURF  1
 E 8 - 1
 --DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS
 DSURF  1
-E 8 - id 1 R_av_max 10. R_av_min 0.001 R_mv_max 10. R_mv_min 0.001 L_arp 0.5 C_arp 50. R_arp 1. C_ard 50. R_ard 0.01 k_p 0.001 p_ref 0.0 p_arp_0 6. p_at_0 0.0
+E 8 - id 1 R_av_max 10. R_av_min 0.001 R_mv_max 10. R_mv_min 0.001 k_p 0.001 L_arp 0.5 C_arp 50. R_arp 1. C_ard 50. R_ard 0.01 p_ref 0.0 p_arp_0 6. p_at_0 0.0
 --------------DESIGN SURF WINDKESSEL STRUCTURE COUPLING CONDITIONS
 DSURF  1
 E 8 - 1
