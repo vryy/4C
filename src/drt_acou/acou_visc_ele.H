@@ -1,5 +1,5 @@
 /*!
-\file acou_ele.H
+\file acou_visc_ele.H
 
 \brief A C++ wrapper for the acoustic element
 
@@ -14,32 +14,26 @@ Maintainer: Svenja Schoeder
 </pre>
 */
 
-#ifndef ACOU_ELE_H
-#define ACOU_ELE_H
+#ifndef ACOU_VISC_ELE_H
+#define ACOU_VISC_ELE_H
 
-#include "Teuchos_RCP.hpp"
-
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
-#include "../drt_fem_general/drt_utils_polynomial.H"
+#include "acou_ele.H"
 
 namespace DRT
 {
-// forward declarations
+
 class Discretization;
 
 namespace ELEMENTS
 {
 
-class AcouType : public DRT::ElementType
+class AcouViscType : public AcouType
 {
 public:
 
-  std::string Name() const { return "AcouType"; }
+  std::string Name() const { return "AcouViscType"; }
 
-  static AcouType & Instance() { return instance_; };
+  static AcouViscType & Instance() { return instance_; };
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -50,34 +44,22 @@ public:
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
-  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
-
-  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
-
   virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
-
-  /// pre-evaluation
-  virtual void PreEvaluate(DRT::Discretization&                dis,
-                          Teuchos::ParameterList&              p,
-                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-                          Teuchos::RCP<Epetra_Vector>          systemvector1,
-                          Teuchos::RCP<Epetra_Vector>          systemvector2,
-                          Teuchos::RCP<Epetra_Vector>          systemvector3);
 
 private:
 
-  static AcouType instance_;
-
+  static AcouViscType instance_;
 };
 
+
 /*!
-\brief A C++ wrapper for the acoustic element
+\brief Viscoelastic acoustic element
 */
-class Acou : public DRT::Element
+class AcouVisc : public Acou
 {
 public:
   static const int degree = 3; // hardcoded right now, assuming quad/hex geometry in polynomial space
+
 
   //@}
   //! @name constructors and destructors and related methods
@@ -85,18 +67,17 @@ public:
   /*!
   \brief standard constructor
   */
-  Acou(
+  AcouVisc(
     int id,    ///< A unique global id
     int owner  ///< ???
     );
-
   /*!
   \brief Copy Constructor
 
   Makes a deep copy of a Element
 
   */
-  Acou(const Acou& old);
+  AcouVisc(const AcouVisc& old);
 
   /*!
   \brief Deep copy this instance and return pointer to the copy
@@ -106,11 +87,6 @@ public:
 
   */
   DRT::Element* Clone() const;
-
-  /*!
-  \brief Destructor
-  */
-  virtual ~Acou();
 
   /*!
   \brief Get shape type of element
@@ -180,14 +156,14 @@ public:
                                                 const int lsurface_slave,            //!< local surface number w.r.t slave parent element
                                                 const std::vector<int>& localtrafomap//! local trafo map
       );
-
   /*!
   \brief Return unique ParObject id
 
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return AcouType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return AcouViscType::Instance().UniqueParObjectId(); }
+
   /*!
   \brief Pack this class so it can be communicated
 
@@ -203,13 +179,10 @@ public:
   */
   virtual void Unpack(const std::vector<char>& data);
 
-  //@}
-
-  //! @name Geometry related methods
-
-  //@}
-
-  //! @name Acess methods
+  /*!
+  \brief Destructor
+  */
+  virtual ~AcouVisc();
 
   /*!
   \brief Get number of degrees of freedom per node
@@ -223,7 +196,8 @@ public:
   */
   virtual int NumDofPerFace(const unsigned /* face */) const
   {
-    return fixedPower(this->degree+1,DRT::UTILS::getDimension(this->Shape())-1); // tensor product assumed
+    return DRT::UTILS::getDimension(this->Shape())*
+        fixedPower(this->degree+1,DRT::UTILS::getDimension(this->Shape())-1); // tensor product assumed
   }
 
   virtual int NumDofPerElement() const { return 0;}
@@ -249,62 +223,6 @@ public:
 
   //@}
 
-  //! @name Evaluation
-
-  /*!
-  \brief Evaluate an element, that is, call the element routines to evaluate acou
-  element matrices and vectors or evaluate errors, statistics or updates etc. directly.
-
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
-  int Evaluate(Teuchos::ParameterList&   params,
-               DRT::Discretization&      discretization,
-               std::vector<int>&         lm,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
-
-
-  /*!
-  \brief Evaluate Neumann boundary condition
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): reference to the underlying discretization
-  \param condition (in)     : condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              std::vector<int>&         lm,
-                              Epetra_SerialDenseVector& elevec1,
-                              Epetra_SerialDenseMatrix* elemat1 = NULL);
-
-  //@}
-
 protected:
 
   //! discretization type
@@ -322,56 +240,30 @@ private:
   }
 
   // don't want = operator
-  Acou& operator = (const Acou& old);
+  AcouVisc& operator = (const AcouVisc& old);
 
-}; // class Acou
+}; // class AcouVisc
 
+// class AcouViscBoundaryType
 
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
-/*!
-\brief An element representing a boundary element of an acou element
-
-\note This is a pure Neumann boundary condition element. It's only
-      purpose is to evaluate surface Neumann boundary conditions that might be
-      adjacent to a parent acou element. It therefore does not implement
-      the DRT::Element::Evaluate method and does not have its own ElementRegister class.
-
-*/
-
-class AcouBoundaryType : public DRT::ElementType
+class AcouViscBoundaryType : public AcouBoundaryType
 {
 public:
 
-  std::string Name() const { return "AcouBoundaryType"; }
+  std::string Name() const { return "AcouViscBoundaryType"; }
 
-  static AcouBoundaryType & Instance() { return instance_; };
+  static AcouViscBoundaryType & Instance() { return instance_; };
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
-  virtual void NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np ) {}
-
-  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns ) {}
-
 private:
 
-  static AcouBoundaryType instance_;
+  static AcouViscBoundaryType instance_;
 };
 
-// class AcouBoundary
+// class AcouViscBoundary
 
-class AcouBoundary : public DRT::Element
+class AcouViscBoundary : public AcouBoundary
 {
 public:
 
@@ -389,8 +281,8 @@ public:
   \param parent: The parent acou element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
-  AcouBoundary(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::ELEMENTS::Acou* parent, const int lsurface);
+  AcouViscBoundary(int id, int owner, int nnode, const int* nodeids,
+             DRT::Node** nodes, DRT::ELEMENTS::AcouVisc* parent, const int lsurface);
 
   /*!
   \brief Copy Constructor
@@ -398,7 +290,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  AcouBoundary(const AcouBoundary& old);
+  AcouViscBoundary(const AcouViscBoundary& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -410,45 +302,12 @@ public:
   DRT::Element* Clone() const;
 
   /*!
-  \brief Get shape type of element
-  */
-  virtual DiscretizationType Shape() const;
-
-  /*!
-  \brief Return number of lines of this element
-  */
-  virtual int NumLine() const
-  {
-    return DRT::UTILS::getNumberOfElementLines(Shape());
-  }
-
-  /*!
-  \brief Return number of surfaces of this element
-  */
-  virtual int NumSurface() const
-  {
-    return DRT::UTILS::getNumberOfElementSurfaces(Shape());
-  }
-
-  /*!
-  \brief Get vector of Teuchos::RCPs to the lines of this element
-
-  */
-  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
-
-  /*!
-  \brief Get vector of Teuchos::RCPs to the surfaces of this element
-  */
-
-  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
-
-  /*!
   \brief Return unique ParObject id
 
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return AcouBoundaryType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return AcouViscBoundaryType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -470,7 +329,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~AcouBoundary();
+  virtual ~AcouViscBoundary();
 
   //@}
 
@@ -491,15 +350,13 @@ public:
     return ParentElement()->NumDofPerNode(node);
   }
 
-  virtual int NumDofPerElement() const { return 0; }
-
   /*!
   \brief Print this element
   */
   void Print(std::ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
-  { return AcouBoundaryType::Instance(); }
+  { return AcouViscBoundaryType::Instance(); }
 
   //@}
 
@@ -535,29 +392,6 @@ public:
                Epetra_SerialDenseVector& elevec1,
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
-
-  //@}
-
-  //! @name Evaluate methods
-
-  /*!
-  \brief Evaluate Neumann boundary condition
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): reference to the underlying discretization
-  \param condition (in)     : condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              std::vector<int>&         lm,
-                              Epetra_SerialDenseVector& elevec1,
-                              Epetra_SerialDenseMatrix* elemat1 = NULL);
 
   //@}
 
@@ -602,34 +436,19 @@ private:
 
 
   // don't want = operator
-  AcouBoundary& operator = (const AcouBoundary& old);
+  AcouViscBoundary& operator = (const AcouViscBoundary& old);
 
-}; // class AcouBoundary
+}; // class AcouViscBoundary
 
+// class AcouViscIntFaceType
 
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
-/*!
-\brief An element representing an internal face element between two acou elements
-*/
-class AcouIntFaceType : public DRT::ElementType
+class AcouViscIntFaceType : public DRT::ElementType
 {
 public:
 
-  std::string Name() const { return "AcouIntFaceType"; }
+  std::string Name() const { return "AcouViscIntFaceType"; }
 
-  static AcouIntFaceType & Instance() { return instance_; };
+  static AcouViscIntFaceType & Instance() { return instance_; };
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -639,13 +458,12 @@ public:
 
 private:
 
-  static AcouIntFaceType instance_;
+  static AcouViscIntFaceType instance_;
 };
 
+// class AcouViscIntFace
 
-// class AcouIntFace
-
-class AcouIntFace : public DRT::Element
+class AcouViscIntFace : public AcouIntFace
 {
 public:
 
@@ -666,13 +484,13 @@ public:
   \param lsurface_slave: the local surface number of this surface w.r.t. the slave parent element
   \param localtrafomap: transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
   */
-  AcouIntFace( int id,
+  AcouViscIntFace( int id,
                 int owner,
                 int nnode,
                 const int* nodeids,
                 DRT::Node** nodes,
-                DRT::ELEMENTS::Acou* parent_master,
-                DRT::ELEMENTS::Acou* parent_slave,
+                DRT::ELEMENTS::AcouVisc* parent_master,
+                DRT::ELEMENTS::AcouVisc* parent_slave,
                 const int lsurface_master,
                 const int lsurface_slave,
                 const std::vector<int> localtrafomap
@@ -683,7 +501,7 @@ public:
 
   Makes a deep copy of a Element
   */
-  AcouIntFace(const AcouIntFace& old);
+  AcouViscIntFace(const AcouViscIntFace& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -700,60 +518,17 @@ public:
   virtual DiscretizationType Shape() const;
 
   /*!
-  \brief Return number of lines of this element
-  */
-  virtual int NumLine() const
-  {
-    return DRT::UTILS::getNumberOfElementLines(Shape());
-  }
-
-  /*!
-  \brief Return number of surfaces of this element
-  */
-  virtual int NumSurface() const
-  {
-    return DRT::UTILS::getNumberOfElementSurfaces(Shape());
-  }
-
-  /*!
-  \brief Get vector of Teuchos::RCPs to the lines of this element
-  */
-  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
-
-  /*!
   \brief Return unique ParObject id
 
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class implementing ParObject needs a unique id defined at the
-  top of the drt_parobject.H file.
-  */
-  virtual int UniqueParObjectId() const { return AcouIntFaceType::Instance().UniqueParObjectId(); }
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-  */
-  virtual void Pack(DRT::PackBuffer& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-  */
-  virtual void Unpack(const std::vector<char>& data);
+  virtual int UniqueParObjectId() const { return AcouViscIntFaceType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Destructor
   */
-  virtual ~AcouIntFace();
+  virtual ~AcouViscIntFace();
 
   //@}
 
@@ -786,7 +561,6 @@ public:
         element dofs that are condensed internally should NOT be considered.
   */
   virtual int NumDofPerElement() const { return 0; }
-
   /*!
   \brief create the location vector for patch of master and slave element
 
@@ -806,93 +580,36 @@ public:
       std::vector<int>&     lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
       std::vector<int>&     lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
       );
-
   /*!
   \brief Print this element
   */
   void Print(std::ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
-  { return AcouIntFaceType::Instance(); }
+  { return AcouViscIntFaceType::Instance(); }
 
   //@}
-
-  //! @name Evaluation
-
-  /*!
-  \brief Evaluate element
-
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not epxect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
-  int Evaluate(Teuchos::ParameterList&   params,
-               DRT::Discretization&      discretization,
-               std::vector<int>&         lm,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
-
-  //@}
-
-  //! @name Evaluate methods
-
-  /*!
-  \brief Evaluate Neumann boundary condition
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): reference to the underlying discretization
-  \param condition (in)     : condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              std::vector<int>&         lm,
-                              Epetra_SerialDenseVector& elevec1,
-                              Epetra_SerialDenseMatrix* elemat1 = NULL);
 
   /*!
   \brief return the master parent acou element
   */
-  DRT::ELEMENTS::Acou* ParentMasterElement() const
+  DRT::ELEMENTS::AcouVisc* ParentMasterElement() const
   {
     DRT::Element* parent = this->DRT::Element::ParentMasterElement();
     // make sure the static cast below is really valid
-    dsassert(dynamic_cast<DRT::ELEMENTS::Acou*>(parent) != NULL, "Master element is no acou element");
-    return static_cast<DRT::ELEMENTS::Acou*>(parent);
+    dsassert(dynamic_cast<DRT::ELEMENTS::AcouVisc*>(parent) != NULL, "Master element is no acou visc element");
+    return static_cast<DRT::ELEMENTS::AcouVisc*>(parent);
   }
 
   /*!
   \brief return the slave parent acou element
   */
-  DRT::ELEMENTS::Acou* ParentSlaveElement() const
+  DRT::ELEMENTS::AcouVisc* ParentSlaveElement() const
   {
     DRT::Element* parent = this->DRT::Element::ParentSlaveElement();
     // make sure the static cast below is really valid
-    dsassert(dynamic_cast<DRT::ELEMENTS::Acou*>(parent) != NULL, "Slave element is no acou element");
-    return static_cast<DRT::ELEMENTS::Acou*>(parent);
+    dsassert(dynamic_cast<DRT::ELEMENTS::AcouVisc*>(parent) != NULL, "Slave element is no acou visc element");
+    return static_cast<DRT::ELEMENTS::AcouVisc*>(parent);
   }
 
   /*!
@@ -908,7 +625,7 @@ public:
 private:
 
   // don't want = operator
-  AcouIntFace& operator = (const AcouIntFace& old);
+  AcouViscIntFace& operator = (const AcouViscIntFace& old);
 
   /*!
    \brief map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
@@ -916,12 +633,11 @@ private:
    */
   std::vector<int> localtrafomap_;
 
-}; // class AcouIntFace
-
-
+}; // class AcouViscIntFace
 
 } // namespace ELEMENTS
 } // namespace DRT
 
 
-#endif /* ACOU_ELE_H */
+
+#endif // ACOU_VISC_ELE_H

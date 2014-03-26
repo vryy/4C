@@ -120,6 +120,7 @@ namespace INPAR
       m_0d_o2_hemoglobin_saturation, ///< 0D hemoglobin o2 saturation material
       m_0d_o2_air_saturation, ///< 0D air o2 saturation material
       m_acousticmat,  ///< acoustic material
+      m_acousticviscmat, ///< viscous acoustic material
       m_none          ///< undefined
     };
 

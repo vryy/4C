@@ -83,6 +83,9 @@ void ACOU::TimIntImplDIRK::Integrate(Teuchos::RCP<Epetra_MultiVector> history, T
 
     // output of solution
     Output(history,splitter);
+
+    // evaluate error
+    EvaluateErrorComparedToAnalyticalSol();
   }
 
   if (!myrank_) printf("\n");
@@ -113,6 +116,7 @@ void ACOU::TimIntImplDIRK::AssembleMatAndRHS()
   eleparams.set<double>("dt",dtp_*dirk_a_[0][0]);
   eleparams.set<int>("action",ACOU::calc_systemmat_and_residual);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+  eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
   eleparams.set<bool>("adjoint",adjoint_);
   eleparams.set<int>("step",step_);
   eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
@@ -158,6 +162,7 @@ void ACOU::TimIntImplDIRK::UpdateInteriorVariables(int stage)
 
   eleparams.set<int>("action",ACOU::update_secondary_solution);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+  eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
   discret_->SetState(0,"trace",t_[stage]);
 
@@ -210,7 +215,7 @@ void ACOU::TimIntImplDIRK::Solve()
 
     // solve the linear equation
     const double tcpusolve = Teuchos::Time::wallTime();
-    solver_->Solve(sysmat_->EpetraOperator(),t_[i],residual_,false,false,Teuchos::null);
+    solver_->Solve(sysmat_->EpetraOperator(),t_[i],residual_,true,false,Teuchos::null);
     dtsolve_ += Teuchos::Time::wallTime()-tcpusolve;
 
     // update interior variables

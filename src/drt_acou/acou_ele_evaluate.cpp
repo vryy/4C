@@ -11,7 +11,7 @@ Maintainer: Svenja Schoeder
 */
 
 #include "acou_ele_factory.H"
-
+#include "../drt_inpar/inpar_acou.H"
 #include "acou_ele_interface.H"
 #include "acou_ele.H"
 
@@ -40,7 +40,10 @@ int DRT::ELEMENTS::Acou::Evaluate(Teuchos::ParameterList&            params,
                                     Epetra_SerialDenseVector& elevec3)
 {
   Teuchos::RCP<MAT::Material> mat = Material();
-  return DRT::ELEMENTS::AcouFactory::ProvideImpl(Shape())->Evaluate(
+
+  INPAR::ACOU::PhysicalType phys = params.get<INPAR::ACOU::PhysicalType>("physical type");
+  if(phys == INPAR::ACOU::acou_lossless)
+    return DRT::ELEMENTS::AcouFactory::ProvideImpl(Shape(),"std")->Evaluate(
                 this,
                 discretization,
                 lm,
@@ -51,6 +54,22 @@ int DRT::ELEMENTS::Acou::Evaluate(Teuchos::ParameterList&            params,
                 elevec1,
                 elevec2,
                 elevec3);
+  else if(phys == INPAR::ACOU::acou_viscous)
+    return DRT::ELEMENTS::AcouFactory::ProvideImpl(Shape(),"visc")->Evaluate(
+                this,
+                discretization,
+                lm,
+                params,
+                mat,
+                elemat1,
+                elemat2,
+                elevec1,
+                elevec2,
+                elevec3);
+  else
+    dserror("unknown physical type");
+
+  return -1;
 }
 
 /*---------------------------------------------------------------------*

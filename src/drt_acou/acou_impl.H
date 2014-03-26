@@ -124,6 +124,9 @@ public:
   /// function to output user information
   void OutputToScreen();
 
+  /// evaluate error compared to analytical solution
+  void EvaluateErrorComparedToAnalyticalSol();
+
   /// Call elements to update interior variabels and to calculate the RHS vector (in this way, we can save some computing time)
   virtual void UpdateInteriorVariablesAndAssemebleRHS();
 
@@ -165,6 +168,7 @@ protected:
   int     upres_;                       /// write output every upres_ steps
 
   INPAR::ACOU::DynamicType dyna_;       /// time integration scheme
+  INPAR::ACOU::PhysicalType phys_;      /// physical type
 
   int numdim_;                          /// number of spatial dimensions
   double dtp_;                          /// time step size
@@ -175,6 +179,7 @@ protected:
 
   bool invana_;                         /// flag indicating whether inverse analysis is performed
   bool errormaps_;                      /// flag indicating whether error maps are calculated
+  INPAR::ACOU::CalcError calcerr_;      /// flag for error calculation
 
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;

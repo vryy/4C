@@ -55,6 +55,14 @@ namespace ELEMENTS
         Epetra_SerialDenseVector& elevec1)
     { dserror("Not implemented"); return 1; };
 
+    void ComputeError(
+        DRT::ELEMENTS::Acou*          ele,
+        Teuchos::ParameterList&       params,
+        Teuchos::RCP<MAT::Material>&  mat,
+        DRT::Discretization&          discretization,
+        const std::vector<int>&       lm,
+        Epetra_SerialDenseVector&     elevec);
+
     /// projection of function field
     virtual int ProjectField(DRT::ELEMENTS::Acou*                 ele,
                              Teuchos::ParameterList&              params,
@@ -193,8 +201,7 @@ namespace ELEMENTS
                            Epetra_SerialDenseVector          & interiorVeln,
                            Epetra_SerialDenseVector          & interiorPressn,
                            std::vector<double>               traceVal,
-                           INPAR::ACOU::DynamicType          dyna,
-                           Epetra_SerialDenseVector          & interiorPressni);
+                           INPAR::ACOU::DynamicType          dyna);
 
       /// add terms corresponding to the absorbing boundary condition
       void ComputeAbsorbingBC(DRT::ELEMENTS::Acou*        ele,
@@ -214,10 +221,7 @@ namespace ELEMENTS
       /// set up interior matrices
       void ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
                                    double                            dt,
-                                   INPAR::ACOU::DynamicType          dyna,
-                                   Epetra_SerialDenseVector          & interiorPressni,
-                                   Epetra_SerialDenseVector          & interiorPressnm,
-                                   bool                              nolionly);
+                                   INPAR::ACOU::DynamicType          dyna);
 
       /// set up face matrices
       void ComputeFaceMatrices(const int                          face,
@@ -257,11 +261,6 @@ namespace ELEMENTS
       Epetra_SerialDenseMatrix  Imat;     /// velocity trace
       Epetra_SerialDenseMatrix  Jmat;     /// pressure trace
 
-      // additional matrices for nonlinear material behavior
-      Epetra_SerialDenseMatrix  MPnmat;   /// M evaluated at P^n
-      Epetra_SerialDenseMatrix  MPimat;   /// M evaluated at P^i
-      Epetra_SerialDenseMatrix  dMdPPimat;/// derivative of M with respect to P evaluated at P^i
-
     };
 
     /// updates interior variables and calculates residual
@@ -279,8 +278,7 @@ namespace ELEMENTS
                          DRT::ELEMENTS::Acou &             ele,
                          double                            dt,
                          INPAR::ACOU::DynamicType          dyna,
-                         bool                              adjoint,
-                         bool                              nolionly);
+                         bool                              adjoint);
 
     /// reads from global vectors
     void ReadGlobalVectors(const DRT::Element     & ele,
@@ -308,10 +306,6 @@ namespace ELEMENTS
 
     /// local solver object
     LocalSolver localSolver_;
-
-    LINALG::Matrix<nsd_,nen_> ebofoaf_;     /// body force (see fluid_ele_calc.cpp)
-    LINALG::Matrix<nsd_,nen_> eprescpgaf_;  /// pressure gradient body force
-    LINALG::Matrix<nen_,1>    escabofoaf_;  /// scalar body force for loma
 
     std::vector<double> traceVal_;          /// extracted values from trace solution vector
     std::vector<double> traceValm_;         /// extracted values from old trace

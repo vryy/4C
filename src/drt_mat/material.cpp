@@ -78,6 +78,7 @@ Maintainer: Lena Wiechert
 #include "air_0d_O2_saturation.H"
 #include "particle_mat.H"
 #include "acoustic.H"
+#include "acoustic_visc.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -554,6 +555,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::AcousticMat(curmat));
     MAT::PAR::AcousticMat* params = static_cast<MAT::PAR::AcousticMat*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_acousticviscmat:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::AcousticViscMat(curmat));
+    MAT::PAR::AcousticViscMat* params = static_cast<MAT::PAR::AcousticViscMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   default:

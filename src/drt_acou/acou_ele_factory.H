@@ -35,12 +35,12 @@ public:
   virtual ~AcouFactory(){ return; }
 
   //! ProvideImpl
-  static AcouEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype);
+  static AcouEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype, std::string problem);
 
 private:
   //! define AcouEle instances dependent on problem
   template<DRT::Element::DiscretizationType distype>
-  static AcouEleInterface* DefineProblemType();
+  static AcouEleInterface* DefineProblemType(std::string problem);
 
 };
 

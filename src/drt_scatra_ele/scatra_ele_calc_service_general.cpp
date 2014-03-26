@@ -518,7 +518,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
       double reacoeff = reamanager_->GetReaCoeff(0);
 
       // integralvalue = 0.5 * ( diffus_[0]*diffus_[0] + reacoeff_[0]*reacoeff_[0] ) * fac;
-      integralvalue = 0.5 * ( reacoeff * reacoeff ) * fac;
+      integralvalue = 0.5 * ( reacoeff * reacoeff );
       params.set<double>("integr_objf",integralvalue);
     }
     break;
@@ -602,8 +602,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
       double aux(1.0);
       GetMaterialParams(ele,aux,aux,aux,diffmanager_,reamanager_,aux);
       double reacoeff = reamanager_->GetReaCoeff(0);
-      integralvalue *= reacoeff;
-      integralvalue += temp * params.get<double>("regular_mu") * reacoeff;
+      integralvalue *= reacoeff;// / temp;
+      integralvalue += params.get<double>("regular_mu") * reacoeff;
       integr_grad_reac += integralvalue;
       params.set<double>("integr_grad_reac",integr_grad_reac);
     }

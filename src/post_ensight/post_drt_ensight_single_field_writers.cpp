@@ -282,6 +282,9 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("scfld_growth_displ", "scfld_growth_displ", nodebased, 3);
   EnsightWriter::WriteResult("scstr_growth_displ", "scstr_growth_displ", nodebased, 3);
 
+
+  EnsightWriter::WriteResult("rea_coeff","rea_coeff",elementbased,1);
+
   // write element results (e.g. element owner)
   WriteElementResults(field);
 }
@@ -430,9 +433,13 @@ void ParticleEnsightWriter::WriteCells(
 void AcouEnsightWriter::WriteAllResults(PostField* field)
 {
   EnsightWriter::WriteResult("velnp", "velocity", nodebased, 3);
+  EnsightWriter::WriteResult("velocity_gradient", "velocity_gradient", nodebased, 6);
   EnsightWriter::WriteResult("pressure", "pressure", nodebased, 1);
+  EnsightWriter::WriteResult("density", "density", nodebased, 1);
   EnsightWriter::WriteResult("par_vel", "par_vel", nodebased, 1);
+  EnsightWriter::WriteResult("trace_velocity", "trace_velocity", nodebased, 3);
   EnsightWriter::WriteResult("pressure_avg", "pressure_avg", elementbased, 1);
+  EnsightWriter::WriteResult("density_avg", "density_avg", elementbased, 1);
   EnsightWriter::WriteResult("error", "error", elementbased, 1);
   WriteElementResults(field);
 }

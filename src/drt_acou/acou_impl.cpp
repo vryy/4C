@@ -12,6 +12,7 @@ Maintainer: Svenja Schoeder
 
 #include "acou_impl.H"
 #include "acou_ele.H"
+#include "acou_visc_ele.H"
 #include "acou_ele_action.H"
 #include "acou_resulttest.H"
 #include "acou_utils.H"
@@ -48,12 +49,14 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   uprestart_      (params_->get<int>("RESTARTEVRY", -1)),
   upres_          (params_->get<int>("UPRES", -1)),
   dyna_           (DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(*params_,"TIMEINT")),
+  phys_           (DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(*params,"PHYSICAL_TYPE")),
   numdim_         (DRT::Problem::Instance()->NDim()),
   dtp_            (params_->get<double>("TIMESTEP")),
   dtele_          (0.0),
   dtsolve_        (0.0),
   invana_         (params_->get<bool>("invana")),
   errormaps_      (DRT::INPUT::IntegralValue<bool>(*params_,"ERRORMAPS")),
+  calcerr_      (DRT::INPUT::IntegralValue<INPAR::ACOU::CalcError>(*params,"CALCERROR")),
   adjoint_rhs_    (Teuchos::null)
 {
 
@@ -79,8 +82,6 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   if(adjoint_)
     adjoint_rhs_ = params_->get<Teuchos::RCP<Epetra_MultiVector> >("rhsvec");
 
-  /* we don't have Dirichlet conditions (up to now)
-
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_   = LINALG::CreateVector(*dofrowmap,true);
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
@@ -89,12 +90,12 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
-    eleparams.set("total time",time_);
+    //eleparams.set("total time",time_);
     discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
+    zeros_->PutScalar(0.0);
 
   }
-  */
 
   // print user information which might not be known by everyone
   if (errormaps_ && !myrank_ )
@@ -164,6 +165,7 @@ void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno, double pulse)
   initParams.set<int>("action",ACOU::project_field);
   initParams.set<int>("startfuncno",startfuncno);
   initParams.set<double>("pulse",pulse);
+  initParams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
   DRT::Element::LocationArray la(2);
   int err = 0;
@@ -194,6 +196,7 @@ void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno, double pulse)
     // intveln_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
     // intvelnm_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
   }
+
   veln_->Update(1.0,*velnp_,0.0);
   velnm_->Update(1.0,*velnp_,0.0);
   intveln_->Update(1.0,*intvelnp_,0.0);
@@ -225,6 +228,7 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
   initParams.set<int>("action",ACOU::project_optical_field);
   initParams.set<double>("pulse",pulse);
   initParams.set<bool>("mesh conform",meshconform);
+  initParams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
   int numoptele = scatradis->NumGlobalElements();
 
@@ -431,7 +435,10 @@ void ACOU::AcouImplicitTimeInt::PrintInformationToScreen()
     std::cout << "number of faces             " << discret_->NumGlobalFaces() << std::endl;
     std::cout << "number of trace unknowns    " << discret_->DofRowMap(0)->NumGlobalElements() << std::endl;
     std::cout << "number of interior unknowns " << discret_->DofRowMap(1)->NumGlobalElements() << std::endl;
-    std::cout << "polynomial order            " << DRT::ELEMENTS::Acou::degree << std::endl;
+    if(phys_ == INPAR::ACOU::acou_lossless)
+      std::cout << "polynomial order            " << DRT::ELEMENTS::Acou::degree << std::endl;
+    else
+      std::cout << "polynomial order            " << DRT::ELEMENTS::AcouVisc::degree << std::endl;
     std::cout << "time step size              " << dtp_ << std::endl;
     std::cout << "time integration scheme     " << Name() << std::endl;
     std::cout << "---------------------------------------------------------------------------------" << std::endl;
@@ -479,6 +486,9 @@ void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> histo
 
     // output of solution
     Output(history,splitter);
+
+    // evaluate error
+    EvaluateErrorComparedToAnalyticalSol();
   } // while (step_<stepmax_ and time_<maxtime_)
 
   if (!myrank_) printf("\n");
@@ -493,21 +503,24 @@ void ACOU::AcouImplicitTimeInt::Solve()
 {
   // solve linear equation and timing
   const double tcpusolve=Teuchos::Time::wallTime();
-  solver_->Solve(sysmat_->EpetraOperator(),velnp_,residual_,false,false,Teuchos::null);
+
+  solver_->Solve(sysmat_->EpetraOperator(),velnp_,residual_,true,false,Teuchos::null);
 
   // update interior variables
   UpdateInteriorVariablesAndAssemebleRHS();
+  ApplyDirichletToSystem();
 
   dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
   return;
 } // Solve
 
 /*----------------------------------------------------------------------*
- |  Dummy Dirichlet function (public)                    schoeder 01/14 |
+ |  Dirichlet function (public)                    schoeder 01/14 |
  *----------------------------------------------------------------------*/
 void ACOU::AcouImplicitTimeInt::ApplyDirichletToSystem()
 {
-  // do nothing - just a dummy function - to implement if you have Dirichlet conditions
+  TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
+  LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,residual_,Teuchos::null,zeros_,*(dbcmaps_->CondMap()));
   return;
 } // ApplyDirichletToSystem
 
@@ -549,9 +562,9 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set<bool>("adjoint",adjoint_);
   eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
   eleparams.set<int>("step",step_);
+  eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
   discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
-
   discret_->ClearState();
 
   if(!resonly || adjoint_)
@@ -607,6 +620,7 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
   eleparams.set<double>("dt",dtp_);
   eleparams.set<bool>("adjoint",adjoint_);
   eleparams.set<bool>("errormaps",errormaps_);
+  eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
   Teuchos::RCP<std::vector<double> > elevals = Teuchos::rcp(new std::vector<double>(discret_->NumGlobalElements(),0.0));
   eleparams.set<Teuchos::RCP<std::vector<double> > >("elevals",elevals);
@@ -671,7 +685,8 @@ namespace
                           Teuchos::RCP<Epetra_MultiVector>  &velocity,
                           Teuchos::RCP<Epetra_Vector>       &pressure,
                           Teuchos::RCP<Epetra_Vector>       &tracevel,
-                          Teuchos::RCP<Epetra_Vector>       &cellPres)
+                          Teuchos::RCP<Epetra_Vector>       &cellPres,
+                          INPAR::ACOU::PhysicalType         phys)
   {
     //if (pressure.get() == NULL || pressure->MyLength() != dis.NumMyRowNodes())
     {
@@ -687,6 +702,7 @@ namespace
     params.set<int>("action",ACOU::interpolate_hdg_to_node);
     dis.SetState(1,"intvel",interiorValues);
     dis.SetState(0,"trace",traceValues);
+    params.set<INPAR::ACOU::PhysicalType>("physical type",phys);
 
     std::vector<int> dummy;
     DRT::Element::LocationArray la(2);
@@ -741,6 +757,106 @@ namespace
 
     return;
   } // getNodeVectorsHDG
+  void getNodeVectorsHDGVisc(DRT::Discretization              &dis,
+                            const Teuchos::RCP<Epetra_Vector> &interiorValues,
+                            const Teuchos::RCP<Epetra_Vector> &traceValues,
+                            const int                          ndim,
+                            Teuchos::RCP<Epetra_MultiVector>  &velocitygradient,
+                            Teuchos::RCP<Epetra_MultiVector>  &velocity,
+                            Teuchos::RCP<Epetra_Vector>       &pressure,
+                            Teuchos::RCP<Epetra_Vector>       &density,
+                            Teuchos::RCP<Epetra_MultiVector>  &tracevelocity,
+                            Teuchos::RCP<Epetra_Vector>       &cellPres,
+                            Teuchos::RCP<Epetra_Vector>       &cellDensity,
+                            INPAR::ACOU::PhysicalType         phys)
+  {
+    {
+      const Epetra_Map* nodemap = dis.NodeRowMap();
+      velocity.reset(new Epetra_MultiVector(*nodemap,3));
+      velocitygradient.reset(new Epetra_MultiVector(*nodemap,6));
+      pressure.reset(new Epetra_Vector(*nodemap));
+      density.reset(new Epetra_Vector(*nodemap));
+      tracevelocity.reset(new Epetra_MultiVector(*nodemap,3));
+      cellPres.reset(new Epetra_Vector(*dis.ElementRowMap()));
+      cellDensity.reset(new Epetra_Vector(*dis.ElementRowMap()));
+    }
+
+    // call element routine for interpolate HDG to elements
+    Teuchos::ParameterList params;
+    params.set<int>("action",ACOU::interpolate_hdg_to_node);
+    params.set<INPAR::ACOU::PhysicalType>("physical type",phys);
+    dis.SetState(1,"intvel",interiorValues);
+    dis.SetState(0,"trace",traceValues);
+
+    std::vector<int> dummy;
+    DRT::Element::LocationArray la(2);
+
+    Epetra_SerialDenseMatrix dummyMat;
+    Epetra_SerialDenseVector dummyVec;
+    Epetra_SerialDenseVector interpolVec;
+    std::vector<unsigned char> touchCount(pressure->MyLength());
+
+    velocity->PutScalar(0.0);
+    pressure->PutScalar(0.0);
+    density->PutScalar(0.0);
+    tracevelocity->PutScalar(0.0);
+    cellPres->PutScalar(0.0);
+    cellDensity->PutScalar(0.0);
+
+    for (int el=0; el<dis.NumMyColElements();++el)
+    {
+      DRT::Element *ele = dis.lColElement(el);
+      ele->LocationVector(dis,la,false);
+      if (interpolVec.M() == 0)
+        interpolVec.Resize(ele->NumNode()*(2*ndim+2+6)+2);
+
+      ele->Evaluate(params,dis,la[0].lm_,dummyMat,dummyMat,interpolVec,dummyVec,dummyVec);
+
+      // sum values on nodes into vectors and record the touch count (build average of values)
+      for (int i=0; i<ele->NumNode(); ++i)
+      {
+        DRT::Node* node = ele->Nodes()[i];
+        const int localIndex = pressure->Map().LID(node->Id());
+
+        if (localIndex < 0)
+          continue;
+
+        touchCount[localIndex]++;
+        for (int d=0; d<ndim; ++d)
+        {
+          velocity->SumIntoMyValue(localIndex,d,interpolVec(d*ele->NumNode()+i));
+          tracevelocity->SumIntoMyValue(localIndex,d,interpolVec((d+ndim)*ele->NumNode()+i));
+        }
+        for (int d=0; d<6; ++d)
+          velocitygradient->SumIntoMyValue(localIndex,d,interpolVec(ele->NumNode()*(2*ndim+2+d)+i+2));
+        (*pressure)[localIndex] += interpolVec(ele->NumNode()*(2*ndim)+i);
+        (*density)[localIndex] += interpolVec(ele->NumNode()*(2*ndim+1)+i);
+      }
+      const int eleIndex = dis.ElementRowMap()->LID(ele->Id());
+      if (eleIndex >= 0)
+      {
+        (*cellPres)[eleIndex] += interpolVec(ele->NumNode()*(2*ndim+2));
+        (*cellDensity)[eleIndex] += interpolVec(ele->NumNode()*(2*ndim+2)+1);
+      }
+    } // for (int el=0; el<dis.NumMyColElements();++el)
+
+    for (int i=0; i<pressure->MyLength(); ++i)
+    {
+      (*pressure)[i] /= touchCount[i];
+      (*density)[i] /= touchCount[i];
+      for (int d=0; d<ndim; ++d)
+      {
+        (*velocity)[d][i] /= touchCount[i];
+        (*tracevelocity)[d][i] /= touchCount[i];
+      }
+      for (int d=0; d<6; ++d)
+        (*velocitygradient)[d][i] /= touchCount[i];
+    }
+    dis.ClearState();
+
+    return;
+  } // getNodeVectorsHDGVisc
+
 } // namespace
 
 
@@ -752,43 +868,77 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
   TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::Output");
 
   // output of solution
-
-  Teuchos::RCP<Epetra_Vector> traceVel, cellPres;
-
-  getNodeVectorsHDG(*discret_, intvelnp_, velnp_,numdim_,
-                    interpolatedVelocity_, interpolatedPressure_, traceVel, cellPres);
-
-  if( history != Teuchos::null )
+  if(phys_ == INPAR::ACOU::acou_lossless)
   {
-    // std::cout<<"======= History written in step "<<step_<<std::endl;
-    Teuchos::RCP<Epetra_Vector> temp = (splitter->ExtractCondVector(traceVel));
+    Teuchos::RCP<Epetra_Vector> traceVel, cellPres;
 
-    for(int i=0; i<temp->MyLength(); ++i)
-      history->ReplaceMyValue(i,step_,temp->operator [](i));
-  }
+    getNodeVectorsHDG(*discret_, intvelnp_, velnp_, numdim_,
+                      interpolatedVelocity_, interpolatedPressure_, traceVel, cellPres, phys_);
 
-  if (step_%upres_ == 0)
-  {
-    if (myrank_ == 0 && !invana_)
-      std::cout<<"======= Output written in step "<<step_<<std::endl;
-    // step number and time
-    output_->NewStep(step_,time_);
-    // write element data only once
-    if (step_==0) output_->WriteElementData(true);
-
-    output_->WriteVector("velnp",interpolatedVelocity_);
-    output_->WriteVector("pressure",interpolatedPressure_);
-    output_->WriteVector("par_vel",traceVel);
-    output_->WriteVector("pressure_avg",cellPres);
-    if(errormaps_) output_->WriteVector("error",error_);
-
-    // add restart data
-    if (uprestart_ != 0 && step_%uprestart_ == 0)
+    if( history != Teuchos::null )
     {
-      WriteRestart();
+      // std::cout<<"======= History written in step "<<step_<<std::endl;
+      Teuchos::RCP<Epetra_Vector> temp = (splitter->ExtractCondVector(traceVel));
+
+      for(int i=0; i<temp->MyLength(); ++i)
+        history->ReplaceMyValue(i,step_,temp->operator [](i));
+    }
+
+    if (step_%upres_ == 0)
+    {
+      if (myrank_ == 0 && !invana_)
+        std::cout<<"======= Output written in step "<<step_<<std::endl;
+      // step number and time
+      output_->NewStep(step_,time_);
+      // write element data only once
+      if (step_==0) output_->WriteElementData(true);
+
+      output_->WriteVector("velnp",interpolatedVelocity_);
+      output_->WriteVector("pressure",interpolatedPressure_);
+      output_->WriteVector("par_vel",traceVel);
+      output_->WriteVector("pressure_avg",cellPres);
+      if(errormaps_) output_->WriteVector("error",error_);
+
+      // add restart data
+      if (uprestart_ != 0 && step_%uprestart_ == 0)
+      {
+        WriteRestart();
+      }
     }
   }
+  else
+  {
+    Teuchos::RCP<Epetra_Vector> interpolatedPressure, cellPres, interpolatedDensity, cellDensity;
+    Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity, traceVelocity;
+    Teuchos::RCP<Epetra_MultiVector> interpolatedVelocityGradient;
 
+    getNodeVectorsHDGVisc(*discret_, intvelnp_, velnp_, numdim_,
+        interpolatedVelocityGradient,interpolatedVelocity,interpolatedPressure,interpolatedDensity,
+        traceVelocity,cellPres,cellDensity,phys_);
+
+    if (step_%upres_ == 0)
+    {
+      if (myrank_ == 0 && !invana_)
+        std::cout<<"======= Output written in step "<<step_<<std::endl;
+      // step number and time
+      output_->NewStep(step_,time_);
+
+      output_->WriteVector("velnp",interpolatedVelocity);
+      output_->WriteVector("pressure",interpolatedPressure);
+      output_->WriteVector("density",interpolatedDensity);
+      output_->WriteVector("pressure_avg",cellPres);
+      output_->WriteVector("density_avg",cellDensity);
+      output_->WriteVector("trace_velocity",traceVelocity);
+      output_->WriteVector("velocity_gradient",interpolatedVelocityGradient,output_->nodevector);
+
+      // add restart data
+      if (uprestart_ != 0 && step_%uprestart_ == 0)
+      {
+        WriteRestart();
+      }
+    }
+
+  }
   return;
 } // Output
 
@@ -832,16 +982,73 @@ void ACOU::AcouImplicitTimeInt::OutputToScreen()
  *----------------------------------------------------------------------*/
 void ACOU::AcouImplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec)
 {
-  Teuchos::RCP<Epetra_Vector> traceVel, cellPres;
+  if(phys_ == INPAR::ACOU::acou_lossless)
+  {
+    Teuchos::RCP<Epetra_Vector> traceVel, cellPres;
 
-  getNodeVectorsHDG(*discret_, intvelnp_, velnp_,numdim_,
-                      interpolatedVelocity_, interpolatedPressure_, traceVel, cellPres);
+    getNodeVectorsHDG(*discret_, intvelnp_, velnp_,numdim_,
+                        interpolatedVelocity_, interpolatedPressure_, traceVel, cellPres, phys_);
 
-  for(int i=0; i<traceVel->MyLength(); ++i)
-    outvec->ReplaceMyValue(i,0,interpolatedPressure_->operator [](i));
+    for(int i=0; i<traceVel->MyLength(); ++i)
+      outvec->ReplaceMyValue(i,0,interpolatedPressure_->operator [](i));
+  }
+  else
+  {
+    Teuchos::RCP<Epetra_Vector> interpolatedPressure, cellPres, interpolatedDensity, cellDensity;
+    Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity, traceVelocity;
+    Teuchos::RCP<Epetra_MultiVector> interpolatedVelocityGradient;
 
+    getNodeVectorsHDGVisc(*discret_, intvelnp_, velnp_, numdim_,
+        interpolatedVelocityGradient,interpolatedVelocity,interpolatedPressure,interpolatedDensity,
+        traceVelocity,cellPres,cellDensity, phys_);
+
+    for(int i=0; i<interpolatedPressure->MyLength(); ++i)
+      outvec->ReplaceMyValue(i,0,interpolatedPressure->operator [](i));
+  }
   return;
 } // NodalPressureField
+
+/*----------------------------------------------------------------------*
+ |  Return discretization (public)                       schoeder 01/14 |
+ *----------------------------------------------------------------------*/
+void ACOU::AcouImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
+{
+  if(calcerr_ != INPAR::ACOU::calcerror_no)
+  {
+    // call element routine
+    Teuchos::ParameterList params;
+    params.set<int>("action",ACOU::calc_acou_error);
+    params.set<double>("time",time_);
+    params.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
+    params.set<INPAR::ACOU::CalcError>("error calculation",calcerr_);
+    params.set<int>("startfuncno",params_->get<int>("STARTFUNCNO"));
+
+    discret_->SetState(1,"intvel",intvelnp_);
+    discret_->SetState(0,"trace",velnp_);
+
+    Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(3+3));
+
+    // call loop over elements (assemble nothing)
+    discret_->EvaluateScalars(params, errors);
+    discret_->ClearState();
+
+    // std::vector containing
+    // [0]: relative L2 velocity error
+    // [1]: relative L2 pressure error
+    // [2]: relative H1 velocity error
+    Teuchos::RCP<std::vector<double> > relerror = Teuchos::rcp(new std::vector<double>(3));
+
+    if ( (*errors)[3] != 0.0 )
+      (*relerror)[1] = sqrt((*errors)[1])/sqrt((*errors)[3]);
+    else if ((*errors)[1] != 0.0)
+      (*relerror)[1] = 1.0;
+    else
+      (*relerror)[1] = 0.0;
+
+    std::cout<<"time "<<time_<<" relative L2 pressure error "<<(*relerror)[1]<<std::endl;
+  }
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  Return discretization (public)                       schoeder 01/14 |

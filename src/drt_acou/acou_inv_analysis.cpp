@@ -35,6 +35,9 @@ Maintainer: Svenja Schoeder
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "Epetra_SerialDenseSolver.h"
 
+#include <Teuchos_TimeMonitor.hpp>
+
+
 /*----------------------------------------------------------------------*/
 ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
                                Teuchos::RCP<DRT::DiscretizationHDG> acoudis,
@@ -54,6 +57,7 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     acousolver_(acousolv),
     acououtput_(acouout),
     dyna_(DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(*acouparams_,"TIMEINT")),
+    phys_(DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(*acouparams_,"PHYSICAL_TYPE")),
     myrank_(acoudis->Comm().MyPID()),
     error_(1.0e6),
     tol_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("INV_TOL")),
@@ -63,12 +67,16 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     output_count_(0),
     fdcheck_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("FDCHECK"))),
     alpha_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("ALPHA_MUA")),
+    beta_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("BETA_MUA")),
     calcacougrad_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("INV_TOL_GRAD_YN"))),
     nm_(0),
     dtacou_(acouparams_->get<double>("TIMESTEP")),
     J_(0.0),
-    normdiffp_(0.0)
+    normdiffp_(0.0),
+    tstart_(Teuchos::Time::wallTime())
 {
+  if(phys_==INPAR::ACOU::acou_viscous) dserror("inverse analysis for now only implemented for lossless fluid");
+
   scatra_output_ = scatra_discret_->Writer();
 
   // get the output name
@@ -252,15 +260,16 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
   node_mu_a_ = LINALG::CreateVector(*(scatra_discret_->NodeRowMap()),true);
 
   // now: fill the vectors
+  int maxnodeidacou = acou_discret_->NodeRowMap()->MaxAllGID();
   for(int nd=0; nd<acou_discret_->NumGlobalNodes(); ++nd) // cannot loop scatra nodes, because they don't necessarily start with gid 0
   {
     // get node and owner
     int myoptnodeowner = -1;
     int optnodeowner = -1;
     DRT::Node* opti_node = NULL;
-    if( scatra_discret_->HaveGlobalNode(nd) )
+    if( scatra_discret_->HaveGlobalNode(nd+maxnodeidacou) )
     {
-      opti_node = scatra_discret_->gNode(nd);
+      opti_node = scatra_discret_->gNode(nd+maxnodeidacou);
       myoptnodeowner = opti_node->Owner();
       if( myoptnodeowner != scatra_discret_->Comm().MyPID() ) myoptnodeowner = -1; // cannot use myrank_ because that is acou_discret_->Comm().MyPID()
     }
@@ -312,7 +321,7 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     glo_rho /= double(glo_numacouele);
 
     // now, every proc knows the speed of sound and density of this node -> write them to vector
-    int nodelid = scatra_discret_->NodeRowMap()->LID(nd);
+    int nodelid = scatra_discret_->NodeRowMap()->LID(nd+maxnodeidacou);
     if( nodelid >= 0 ) // only on owning proc
     {
       node_c_->ReplaceMyValue(nodelid,0,glo_c);
@@ -328,7 +337,7 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
       const int* nodeids = roptele->NodeIds();
       int numnode = roptele->NumNode();
       for(int i=0; i<numnode; ++i)
-        if( nodeids[i] == nd )
+        if( nodeids[i] == nd+maxnodeidacou )
         {
           const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(roptele->Material().get());
           loc_mu_a += actmat->ReaCoeff();
@@ -610,6 +619,30 @@ void ACOU::InvAnalysis::CalculateObjectiveFunctionValue()
     J_ *= alpha_; // regularization parameter (0.5 already in element routine)
   }
 
+  Teuchos::RCP<Epetra_Vector> node_mu_a_col = LINALG::CreateVector(*(scatra_discret_->NodeColMap()),true);
+  LINALG::Export(*node_mu_a_,*node_mu_a_col);
+
+  Teuchos::RCP<Epetra_Vector> rea_grad_ele = LINALG::CreateVector(*(scatra_discret_->ElementRowMap()),true);
+  // now, we do not have to do all communication manually!
+  for(int i=0; i<scatra_discret_->NumMyRowElements(); ++i)
+  {
+    DRT::Element* ele = scatra_discret_->lRowElement(i);
+    double rea_ele = static_cast<const MAT::ScatraMat*>(ele->Material().get())->ReaCoeff();
+    const int* nodeids = ele->NodeIds();
+    int numnode = ele->NumNode();
+    double grad = rea_ele;
+    for(int j=0; j<numnode; ++j)
+    {
+      double loc_rea_node = node_mu_a_col->operator [](scatra_discret_->NodeColMap()->LID(nodeids[j]));
+      grad -= loc_rea_node/double(numnode);
+    }
+    rea_grad_ele->operator [](i) = (grad);
+  }
+  double reg_grad = 0.0;
+  rea_grad_ele->Dot(*rea_grad_ele,&reg_grad);
+  J_ += reg_grad * beta_ / 2.0;
+
+
   // now the last term  0.5 || p - p_m ||^2_L2G
   {
     Teuchos::RCP<Epetra_MultiVector> temp = Teuchos::rcp(new Epetra_MultiVector(*abcnodes_map_,acou_rhs_->NumVectors()));;
@@ -619,7 +652,7 @@ void ACOU::InvAnalysis::CalculateObjectiveFunctionValue()
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",ACOU::calc_integr_objf);
     eleparams.set<double>("integr_objf",0.0);
-
+    eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
     eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("rhsvec",temp);
     eleparams.set<double>("dt",dtacou_);
@@ -865,6 +898,51 @@ void ACOU::InvAnalysis::CalculateGradient()
 
   G_.Scale(0.0);
 
+  Teuchos::RCP<Epetra_Vector> node_mu_a_col = LINALG::CreateVector(*(scatra_discret_->NodeColMap()),true);
+  LINALG::Export(*node_mu_a_,*node_mu_a_col);
+
+  Teuchos::RCP<Epetra_Vector> rea_grad_ele = LINALG::CreateVector(*(scatra_discret_->ElementRowMap()),true);
+  // now, we do not have to do all communication manually!
+  for(int i=0; i<scatra_discret_->NumMyRowElements(); ++i)
+  {
+    DRT::Element* ele = scatra_discret_->lRowElement(i);
+    double rea_ele = static_cast<const MAT::ScatraMat*>(ele->Material().get())->ReaCoeff();
+    const int* nodeids = ele->NodeIds();
+    int numnode = ele->NumNode();
+    double grad = rea_ele;
+    for(int j=0; j<numnode; ++j)
+    {
+      double loc_rea_node = node_mu_a_col->operator [](scatra_discret_->NodeColMap()->LID(nodeids[j]));
+      grad -= loc_rea_node/double(numnode);
+    }
+    rea_grad_ele->operator [](i) = (grad);
+  }
+  Teuchos::RCP<Epetra_Vector> rea_grad_ele_i = LINALG::CreateVector(*(scatra_discret_->ElementRowMap()),true);
+  for(int mats=0; mats<nm_; mats++)
+  {
+    Epetra_SerialDenseVector tempparam(np_);
+    tempparam.Scale(0.0);
+    tempparam(mats) = 1.0;
+    SetParameters(tempparam);
+    Teuchos::RCP<Epetra_Vector> node_mu_a_col = LINALG::CreateVector(*(scatra_discret_->NodeColMap()),true);
+    LINALG::Export(*node_mu_a_,*node_mu_a_col);
+    for(int i=0; i<scatra_discret_->NumMyRowElements(); ++i)
+    {
+      DRT::Element* ele = scatra_discret_->lRowElement(i);
+      double rea_ele = static_cast<const MAT::ScatraMat*>(ele->Material().get())->ReaCoeff();
+      const int* nodeids = ele->NodeIds();
+      int numnode = ele->NumNode();
+      double grad = rea_ele;
+      for(int j=0; j<numnode; ++j)
+      {
+        double loc_rea_node = node_mu_a_col->operator [](scatra_discret_->NodeColMap()->LID(nodeids[j]));
+        grad -= loc_rea_node/double(numnode);
+      }
+      rea_grad_ele_i->operator [](i) = (grad);
+    }
+    rea_grad_ele_i->Dot(*rea_grad_ele,&G_(mats));
+  }
+  G_.Scale(beta_);
   // this implementation depends heavily on the number of considered materials
   // if we got much less materials than elements we act differently than if we
   // got approximately as many materials as elements
@@ -878,15 +956,16 @@ void ACOU::InvAnalysis::CalculateGradient()
   scatra_discret_->SetState("phi",phi_);
   Teuchos::RCP<Epetra_Vector> psi = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
 
+  int maxnodeidacou = acou_discret_->NodeRowMap()->MaxAllGID();
   for(int nd=0; nd<acou_discret_->NumGlobalNodes(); ++nd)
   {
     // get node and owner
     int myoptnodeowner = -1;
     int optnodeowner = -1;
     DRT::Node* opti_node = NULL;
-    if( scatra_discret_->HaveGlobalNode(nd) )
+    if( scatra_discret_->HaveGlobalNode(nd+maxnodeidacou) )
     {
-      opti_node = scatra_discret_->gNode(nd);
+      opti_node = scatra_discret_->gNode(nd+maxnodeidacou);
       myoptnodeowner = opti_node->Owner();
       if( myoptnodeowner != scatra_discret_->Comm().MyPID() ) myoptnodeowner = -1; // cannot use myrank_ because that is acou_discret_->Comm().MyPID()
     }
@@ -905,7 +984,7 @@ void ACOU::InvAnalysis::CalculateGradient()
     // ok, we got the value, we still need c, rho and mu_a, but they are stored on the nodemap of the scatra dis, so this should not be a problem
     if(scatra_discret_->Comm().MyPID() == optnodeowner)
     {
-      int lnodeid = node_mu_a_->Map().LID(nd);
+      int lnodeid = node_mu_a_->Map().LID(nd+maxnodeidacou);
       double c    = node_c_->operator [](lnodeid);
       int dofgid = scatra_discret_->Dof(opti_node,0);
       int doflid = scatra_discret_->DofRowMap()->LID(dofgid);
@@ -914,7 +993,6 @@ void ACOU::InvAnalysis::CalculateGradient()
     }
   }
   scatra_discret_->SetState("psi",psi);
-
 
   Teuchos::RCP<Epetra_Vector> chi = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
   chi->Update(1.0,*adjoint_w_,0.0);
@@ -1022,10 +1100,10 @@ void ACOU::InvAnalysis::UpdateHessian()
 {
   if(iter_==0)
   {
-    if(p_.Norm2()<1.0)
-      H_.Scale(1.0);///G_.Norm2());
-    else
-      H_.Scale(p_.Norm2()/G_.Norm2()/10.0);
+//    if(p_.Norm2()<1.0)
+//      H_.Scale(1.0);///G_.Norm2());
+//    else
+//      H_.Scale(p_.Norm2()/G_.Norm2()/10.0);
     return;
   }
   Epetra_SerialDenseVector s(np_);
@@ -1071,6 +1149,9 @@ void ACOU::InvAnalysis::UpdateParameters()
 {
   pm_ = p_;
 
+//  if(iter_==0)
+//    H_.Scale(1.0/G_.Norm2());//*p_.Norm2()/10.0);
+
   // BFGS
   Epetra_SerialDenseVector d(np_); // search direction
   d.Multiply('N','N',-1.0,H_,G_,0.0);
@@ -1107,7 +1188,7 @@ Epetra_SerialDenseVector ACOU::InvAnalysis::LineSearch(Epetra_SerialDenseVector 
   // does alpha_0 already satisfy the Armijo (sufficient decrease) condition?
   double alpha = alpha_0;
   double J_before = J_;
-  double condition = J_before + c * alpha * d.Dot(G_);
+  double condition = J_before;// + c * alpha * d.Dot(G_);
 
   int count = 0;
 
@@ -1183,7 +1264,9 @@ void ACOU::InvAnalysis::OutputStats()
     std::cout<<"*** error value:                          "<<error_<<std::endl;
     std::cout<<"*** norm of the gradient:                 "<<G_.Norm2()<<std::endl;
     std::cout<<"*** norm of the difference of parameters: "<<normdiffp_<<std::endl;
+    std::cout<<"*** output count:                         "<<output_count_<<std::endl;
     std::cout<<"*** norm H "<<normH<<" norm B "<<normB<<" cond "<<normH*normB<<std::endl;
+    std::cout<<"*** simulation time since start           "<<Teuchos::Time::wallTime()-tstart_<<std::endl;
     std::cout<<"*** parameters: ";
     for(int i=0; i<np_; ++i)
       std::cout<<p_(i)<<" ";
@@ -1274,15 +1357,16 @@ void ACOU::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
 
   // we have to recalculate node_mu_a_ every time we update parameters
   // now: fill the vectors
+  int maxnodeidacou = acou_discret_->NodeRowMap()->MaxAllGID();
   for(int nd=0; nd<acou_discret_->NumGlobalNodes(); ++nd) // cannot loop scatra nodes, because they don't necessarily start with gid 0
   {
     // get node and owner
     int myoptnodeowner = -1;
     int optnodeowner = -1;
     DRT::Node* opti_node = NULL;
-    if( scatra_discret_->HaveGlobalNode(nd) )
+    if( scatra_discret_->HaveGlobalNode(nd+maxnodeidacou) )
     {
-      opti_node = scatra_discret_->gNode(nd);
+      opti_node = scatra_discret_->gNode(nd+maxnodeidacou);
       myoptnodeowner = opti_node->Owner();
       if( myoptnodeowner != scatra_discret_->Comm().MyPID() ) myoptnodeowner = -1; // cannot use myrank_ because that is acou_discret_->Comm().MyPID()
     }
@@ -1290,7 +1374,7 @@ void ACOU::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
     if( optnodeowner == -1 ) // in this case, this node does not exist in the scatra discretization
       continue;
 
-    int nodelid = scatra_discret_->NodeRowMap()->LID(nd);
+    int nodelid = scatra_discret_->NodeRowMap()->LID(nd+maxnodeidacou);
 
     int loc_numoptiele = 0;
     double loc_mu_a = 0.0;
@@ -1300,7 +1384,7 @@ void ACOU::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       const int* nodeids = roptele->NodeIds();
       int numnode = roptele->NumNode();
       for(int i=0; i<numnode; ++i)
-        if( nodeids[i] == nd )
+        if( nodeids[i] == nd+maxnodeidacou )
         {
           const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(roptele->Material().get());
           loc_mu_a += actmat->ReaCoeff();

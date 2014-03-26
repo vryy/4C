@@ -82,6 +82,8 @@ private:
 
   /// time integration scheme
   INPAR::ACOU::DynamicType dyna_;
+  /// physical type
+  INPAR::ACOU::PhysicalType phys_;
 
   /// processor id
   int myrank_;
@@ -98,6 +100,7 @@ private:
 
   /// regularization coefficient for absorption coefficient
   double alpha_;
+  double beta_;
 
   /// flag whether we want to do check for the gradient as convergence criteria
   bool calcacougrad_;
@@ -151,6 +154,9 @@ private:
 
   /// norm of the difference of old and new parameters (which can also be used as stopping criteria)
   double normdiffp_;
+
+  /// time measurement
+  double tstart_;
 
 public:
 

@@ -25,13 +25,13 @@ enum Action {
   none,
   calc_systemmat_and_residual,
   calc_abc,
+  calc_acou_error,
   project_field,
   project_optical_field,
   update_secondary_solution,
   interpolate_hdg_to_node,
   calc_integr_objf,
-  update_secondary_solution_and_calc_residual,
-  update_secondary_solution_and_calc_mat_residual_noli
+  update_secondary_solution_and_calc_residual
 }; // enum Action
 
 } // namespace ACOU

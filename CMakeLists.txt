@@ -536,6 +536,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/air_0d_O2_saturation.cpp
   src/drt_mat/particle_mat.cpp
   src/drt_mat/acoustic.cpp
+  src/drt_mat/acoustic_visc.cpp
 )
 set(OBJS_DRT_STATMECH
   src/drt_statmech/statmech_manager.cpp
@@ -1350,7 +1351,6 @@ set(OBJS_DRT_ACOU
   src/drt_acou/acou_impl_bdf.cpp
   src/drt_acou/acou_impl_dirk.cpp
   src/drt_acou/acou_impl_euler.cpp
-  src/drt_acou/acou_impl_noli.cpp
   src/drt_acou/acou_impl.cpp
   src/drt_acou/acou_impl_trap.cpp
   src/drt_acou/acou_inv_analysis.cpp
@@ -1365,6 +1365,8 @@ set(OBJS_DRT_ACOU_LIB
   src/drt_acou/acou_ele_evaluate.cpp
   src/drt_acou/acou_ele_factory.cpp
   src/drt_acou/acou_ele_intfaces_calc.cpp
+  src/drt_acou/acou_visc_ele_calc.cpp
+  src/drt_acou/acou_visc_ele.cpp
 )
 set(OBJS_LINALG
   src/linalg/linalg_ana.cpp

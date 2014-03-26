@@ -273,6 +273,7 @@ void ACOU::TimIntImplBDF::AssembleMatAndRHS()
   eleparams.set<bool>("adjoint",adjoint_);
   eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
   eleparams.set<int>("step",step_);
+  eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
   discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
 
@@ -345,6 +346,7 @@ void ACOU::TimIntImplBDF::UpdateInteriorVariablesAndAssemebleRHS()
 
   eleparams.set<int>("action",ACOU::update_secondary_solution_and_calc_residual);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+  eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
   discret_->SetState("trace",velnp_);
   discret_->SetState("trace_m",veln_);

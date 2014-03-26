@@ -632,6 +632,9 @@ void DRT::Discretization::DoDirichletCondition(
     std::vector<int> dofs = this->Dof(0,actnode);
     const unsigned total_numdf = dofs.size();
 
+    // only continue if there are node dofs
+    if (total_numdf == 0) continue;
+
     // Get native number of dofs at this node. There might be multiple dofsets
     // (in xfem cases), thus the size of the dofs vector might be a multiple
     // of this.
@@ -707,6 +710,7 @@ void DRT::Discretization::DoDirichletCondition(
         (*dbcgids).insert(gid);
     }  // loop over nodal DOFs
   }  // loop over nodes
+
   return;
 }
 

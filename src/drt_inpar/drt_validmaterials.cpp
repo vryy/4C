@@ -1685,7 +1685,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
      AppendMaterialDefinition(matlist,m);
    }
 
-/*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
   // acoustic material
   {
     Teuchos::RCP<MaterialDefinition> m
@@ -1695,11 +1695,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DENSITY","mass density");
     AddNamedReal(m,"C","speed of sound");
-    AddNamedReal(m,"NOLIPARA","nonlinearity parameter",true);
 
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*----------------------------------------------------------------------*/
+    // acoustic viscous material
+    {
+      Teuchos::RCP<MaterialDefinition> m
+        = Teuchos::rcp(new MaterialDefinition("MAT_AcousticVisc",
+                                              "acoustic viscous material",
+                                              INPAR::MAT::m_acousticviscmat));
+
+      AddNamedReal(m,"DENSITY","mass density");
+      AddNamedReal(m,"C","speed of sound");
+      AddNamedReal(m,"VISC","combined viscosities");
+      AddNamedReal(m,"THERM","combined thermal properties");
+
+
+      AppendMaterialDefinition(matlist,m);
+    }
   /*----------------------------------------------------------------------*/
   // deliver
   return vm;

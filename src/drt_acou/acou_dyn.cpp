@@ -18,12 +18,12 @@ Maintainer: Svenja Schoeder
 
 #include "acou_dyn.H"
 #include "acou_ele.H"
+#include "acou_visc_ele.H"
 #include "acou_impl.H"
 #include "acou_impl_euler.H"
 #include "acou_impl_trap.H"
 #include "acou_impl_bdf.H"
 #include "acou_impl_dirk.H"
-#include "acou_impl_noli.H"
 #include "acou_inv_analysis.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_acou.H"
@@ -71,12 +71,20 @@ void acoustics_drt()
 
 
   const int dim = DRT::Problem::Instance()->NDim();
-  int degreep1 = 3 + 1;
+  int degreep1 = 0;
+  if(DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(acouparams,"PHYSICAL_TYPE") == INPAR::ACOU::acou_lossless)
+    degreep1 = DRT::ELEMENTS::Acou::degree + 1;
+  else
+    degreep1 = DRT::ELEMENTS::AcouVisc::degree +1;
   int nscalardofs = 1;
   for(int i=0; i<dim; ++i)
     nscalardofs *= degreep1;
 
-  const int elementndof =  dim * nscalardofs + nscalardofs; // velocity DoFs +  pressure DoFs
+  int elementndof = 0;
+  if(DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(acouparams,"PHYSICAL_TYPE") == INPAR::ACOU::acou_lossless)
+    elementndof =  dim * nscalardofs + nscalardofs; // velocity DoFs +  pressure DoFs
+  else
+    elementndof = nscalardofs * ( dim * dim + dim + 2); // velocity gradient, velocity, pressure, density
 
   // set degrees of freedom in the discretization
   //  Teuchos::RCP<DRT::IndependentDofSet> secondary = Teuchos::rcp(new DRT::IndependentDofSet());
@@ -164,11 +172,6 @@ void acoustics_drt()
     case INPAR::ACOU::acou_dirk54:
     {
       acoualgo = Teuchos::rcp(new ACOU::TimIntImplDIRK(acoudishdg,solver,params,output));
-      break;
-    }
-    case INPAR::ACOU::acou_noli:
-    {
-      acoualgo = Teuchos::rcp(new ACOU::TimIntImplNoli(acoudishdg,solver,params,output));
       break;
     }
     default:

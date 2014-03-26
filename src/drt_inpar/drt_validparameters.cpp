@@ -6645,11 +6645,35 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 	DoubleParameter("TIMESTEP",0.01,"Time increment dt",&acousticdyn);
 	IntParameter("NUMSTEP",100,"Total number of time steps",&acousticdyn);
 	DoubleParameter("MAXTIME",1.0,"Total simulation time",&acousticdyn);
+  setStringToIntegralParameter<int>("CALCERROR","No",
+                               "compute error compared to analytical solution",
+                               tuple<std::string>(
+                                 "No",
+                                 "1D"
+                                 ),
+                               tuple<int>(
+                                   INPAR::ACOU::calcerror_no,
+                                   INPAR::ACOU::calcerror_1d
+                                   ),
+                               &acousticdyn);
+
 
 	IntParameter("UPRES",1,"Increment for writing solution",&acousticdyn);
 	IntParameter("RESTARTEVRY",1,"Increment for writing restart",&acousticdyn);
 	IntParameter("LINEAR_SOLVER",-1,"Number of linear solver used for acoustical problem",&acousticdyn);
 	IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&acousticdyn);
+
+	// distinguish viscous and lossless flows
+	setStringToIntegralParameter<int>("PHYSICAL_TYPE","lossless",
+	                  "fluid properties",
+	                  tuple<std::string>(
+                    "lossless",
+                    "viscous"),
+                    tuple<int>(
+                    INPAR::ACOU::acou_lossless,
+                    INPAR::ACOU::acou_viscous),
+                    &acousticdyn);
+
 
 	// for nonlinear time integration
 	DoubleParameter("CONVTOL",1.0e-9,"Convergence tolerance for Newton loop",&acousticdyn);
@@ -6674,8 +6698,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                     "dirk54",
 										"bdf2",
 										"bdf3",
-										"bdf4",
-										"noli"),
+										"bdf4"),
 									  tuple<int>(
 										INPAR::ACOU::acou_impleuler,
 										INPAR::ACOU::acou_trapezoidal,
@@ -6685,8 +6708,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                     INPAR::ACOU::acou_dirk54,
 										INPAR::ACOU::acou_bdf2,
 										INPAR::ACOU::acou_bdf3,
-										INPAR::ACOU::acou_bdf4,
-										INPAR::ACOU::acou_noli),
+										INPAR::ACOU::acou_bdf4),
 									  &acousticdyn);
 
 	setStringToIntegralParameter<int>("INV_ANALYSIS","none",
@@ -6709,8 +6731,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 	IntParameter("INV_MAX_RUN",10,"Maximal run number for inverse pat analysis",&acou_inv);
 	IntParameter("INV_LS_MAX_RUN",10,"Maximal run number for line search in inverse pat analysis",&acou_inv);
 	DoubleParameter("ALPHA_MUA",0.0,"Regularization parameter for absorption coefficient",&acou_inv);
+	DoubleParameter("BETA_MUA",0.0,"Regularization parameter for gradient of absorption coefficient",&acou_inv);
 
-  /*----------------------------------------------------------------------*/
+	/*----------------------------------------------------------------------*/
   // set valid parameters for solver blocks
 
   // Note: the maximum number of solver blocks is hardwired here. If you change this,

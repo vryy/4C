@@ -125,6 +125,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
 
   PrintSectionHeader(stream,"ACOUSTIC ELEMENTS");
   PrintElementLines(stream,"ACOUSTIC");
+  PrintElementLines(stream,"ACOUSTICVISC");
 
 }
 

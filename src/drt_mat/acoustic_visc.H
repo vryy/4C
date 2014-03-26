@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
-\file acoustic.H
-\brief contains a density and a speed of sound to characterize all
-       necessary properties for sound propagation in acoustic material
+\file acoustic_visc.H
+\brief contains a density, a speed of sound and a viscsity to characterize
+       all necessary properties for sound propagation in acoustic material
        example input line:
-       MAT 1 MAT_Acoustic DENSITY 1000.0 C 1500.0
+       MAT 1 MAT_AcousticVisc DENSITY 1000.0 C 1500.0 VISC  1.0
 <pre>
 Maintainer: Svenja Schoeder
             schoeder@lnm.mw.tum.de
@@ -12,9 +12,8 @@ Maintainer: Svenja Schoeder
 </pre>
  */
 /*----------------------------------------------------------------------*/
-
-#ifndef ACOUSTIC_H
-#define ACOUSTIC_H
+#ifndef ACOUSTIC_VISC_H
+#define ACOUSTIC_VISC_H
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -31,17 +30,17 @@ namespace PAR
 
 /*----------------------------------------------------------------------*/
 /// material parameters for sound propagation
-class AcousticMat : public Parameter
+class AcousticViscMat : public Parameter
 {
 public:
 
   /// standard constructor
-  AcousticMat(
+  AcousticViscMat(
       Teuchos::RCP<MAT::PAR::Material> matdata
   );
 
   /// destructor
-  virtual ~AcousticMat() { ; }
+  virtual ~AcousticViscMat() { ; }
 
   /// @name material parameters
   //@{
@@ -50,6 +49,10 @@ public:
   const double c_;
   /// mass density
   const double density_;
+  /// combined viscosities 4/3 mu + mu_B
+  const double visc_;
+  /// kappa * beta^2 * T_0 / c_p
+  const double therm_;
 
   //@}
 
@@ -60,33 +63,33 @@ public:
 
 } // namespace PAR
 
-class AcousticMatType : public DRT::ParObjectType
+class AcousticViscMatType : public DRT::ParObjectType
 {
 public:
 
-  std::string Name() const { return "AcousticMatType"; }
+  std::string Name() const { return "AcousticViscMatType"; }
 
-  static AcousticMatType & Instance() { return instance_; };
+  static AcousticViscMatType & Instance() { return instance_; };
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
-  static AcousticMatType instance_;
+  static AcousticViscMatType instance_;
 
-}; // class AcousticMatType
+}; // class AcousticViscMatType
 
 /*----------------------------------------------------------------------*/
 /// Wrapper for Sound propagation material
-class AcousticMat : public Material
+class AcousticViscMat : public Material
 {
 public:
 
   /// construct empty material object
-  AcousticMat();
+  AcousticViscMat();
 
   /// construct the material object given material parameters
-  explicit AcousticMat(MAT::PAR::AcousticMat* params);
+  explicit AcousticViscMat(MAT::PAR::AcousticViscMat* params);
 
   //! @name Packing and Unpacking
 
@@ -96,7 +99,7 @@ public:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
    */
-  virtual int UniqueParObjectId() const { return AcousticMatType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return AcousticViscMatType::Instance().UniqueParObjectId(); }
 
   /*!
       \brief Pack this class so it can be communicated
@@ -129,10 +132,10 @@ public:
   //! @name Access methods
 
   /// material type
-  virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_acousticmat; }
+  virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_acousticviscmat; }
 
   /// return copy of this material object
-  virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AcousticMat( *this ) ); }
+  virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AcousticViscMat( *this ) ); }
 
 
 
@@ -141,6 +144,12 @@ public:
 
   /// density
   virtual double Density() const { return params_->density_; }
+
+  /// combined viscosities 4/3 mu + mu_B
+  double Viscosity() const { return params_->visc_; }
+
+  /// combined thermal quantities
+  double Therm() const { return params_->therm_; }
 
   /// Return quick accessible material parameter data
   virtual MAT::PAR::Parameter* Parameter() const { return params_; }
@@ -151,7 +160,7 @@ public:
 private:
 
   /// my material parameters
-  MAT::PAR::AcousticMat* params_;
+  MAT::PAR::AcousticViscMat* params_;
 
 };
 
