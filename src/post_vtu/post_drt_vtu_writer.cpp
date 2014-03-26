@@ -251,6 +251,40 @@ namespace
     }
   }
 
+  /**
+   \brief Helper function to determine output file string from time step number
+   */
+  std::string int2string(const unsigned int i,
+                         const unsigned int digits)
+  {
+    dsassert(i<std::pow(10,digits), "Invalid digits information");
+    if (digits == 0 || digits > 9)
+      return "invalid_digit";
+
+    std::string digitstring (digits, '0');
+    unsigned int divisor = 1;
+    for (unsigned int d=0; d<digits; ++d, divisor *= 10)
+      digitstring[digits-1-d] = '0' + (i%(divisor*10))/divisor;
+    return digitstring;
+  }
+
+  /**
+   \brief Helper function to determine output file string from time step number
+   */
+  unsigned int ndigits (unsigned int number)
+  {
+    // start numbering from 0, so need count digits based on number one less
+    if (number > 1)
+      number -= 1;
+    unsigned int digits = 0;
+    while (number > 0) {
+      digits++;
+      number /= 10;
+    }
+    return digits;
+  }
+
+
 } // end of anonymous namespace
 
 
@@ -260,6 +294,7 @@ VtuWriter::VtuWriter(PostField* field,
   : field_(field),
     filename_(filename),
     myrank_(((field->problem())->comm())->MyPID()),
+    numproc_(((field->problem())->comm())->NumProc()),
     time_ (std::numeric_limits<double>::min()),
     timestep_ (0),
     cycle_ (std::numeric_limits<int>::max())
@@ -270,18 +305,19 @@ VtuWriter::VtuWriter(PostField* field,
 void
 VtuWriter::WriteVtuHeader ()
 {
-  if (myrank_ != 0)
-    return;
-
   if (!currentout_)
     dserror("Invalid output stream");
+
+  // TODO: might need BigEndian on some systems
+  const std::string byteorder = "LittleEndian";
+
   currentout_ << "<?xml version=\"1.0\" ?> \n";
   currentout_ << "<!-- \n";
   currentout_ << "# vtk DataFile Version 3.0\n";
   currentout_ << "-->\n";
   currentout_ << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\"";
   currentout_ << " compressor=\"vtkZLibDataCompressor\"";
-  currentout_ << " byte_order=\"LittleEndian\""; // TODO: might need BigEndian on some systems
+  currentout_ << " byte_order=\"" << byteorder << "\"";
   currentout_ << ">\n";
   currentout_ << "<UnstructuredGrid>\n";
 
@@ -301,16 +337,28 @@ VtuWriter::WriteVtuHeader ()
 
     currentout_ << "</FieldData>\n";
   }
+
+  // Also start master file on processor 0
+  if (myrank_ == 0) {
+    if (!currentmasterout_)
+      dserror("Invalid output stream");
+
+    currentmasterout_ << "<?xml version=\"1.0\" ?> \n";
+    currentmasterout_ << "<!-- \n";
+    currentmasterout_ << "# vtk DataFile Version 3.0\n";
+    currentmasterout_ << "-->\n";
+    currentmasterout_ << "<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\"";
+    currentmasterout_ << " byte_order=\"" << byteorder << "\"";
+    currentmasterout_ << ">\n";
+    currentmasterout_ << "  <PUnstructuredGrid GhostLevel=\"0\">\n";
+  }
 }
 
 
 
 void
-VtuWriter::WriteVtuFooter()
+VtuWriter::WriteVtuFooter(const std::string &filenamebase)
 {
-  if (myrank_ != 0)
-    return;
-
   if (!currentout_)
     dserror("Invalid output stream");
 
@@ -321,6 +369,22 @@ VtuWriter::WriteVtuFooter()
   currentout_ << "</VTKFile>\n";
 
   currentout_ << std::flush;
+
+  // Also start master file on processor 0
+  if (myrank_ == 0) {
+    if (!currentmasterout_)
+      dserror("Invalid output stream");
+
+    currentmasterout_ << "    </PPointData>\n";
+    for (int i=0; i<numproc_; ++i)
+      currentmasterout_ << "    <Piece Source=\""
+                        << filenamebase << "-" << i << ".vtu\"/>\n";
+
+    currentmasterout_ << "  </PUnstructuredGrid>\n";
+    currentmasterout_ << "</VTKFile>\n";
+
+    currentmasterout_ << std::flush;
+  }
 }
 
 
@@ -330,101 +394,37 @@ VtuWriter::WriteGeo()
 {
   Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
 
-  // count number of nodes and number of elements globally
-  int nelements = dis->NumGlobalElements();
-  int myNnodes = 0, nnodes = 0;
-  for (int e=0; e<dis->NumMyRowElements(); ++e)
-    myNnodes += dis->lRowElement(e)->NumNode();
-  dis->Comm().SumAll(&myNnodes, &nnodes, 1);
+  // count number of nodes and number for each processor; output is completely independent of
+  // the number of processors involved
+  int nelements = dis->NumMyRowElements();
+  int nnodes = 0;
+  for (int e=0; e<nelements; ++e)
+    nnodes += dis->lRowElement(e)->NumNode();
 
   // do not need to store connectivity indices here because we create a
   // contiguous array by the order in which we fill the coordinates (otherwise
   // need to adjust filling in the coordinates).
   std::vector<double> coordinates;
-  coordinates.reserve(3*myNnodes);
-  std::vector<int> mycelltypes;
-  mycelltypes.reserve(dis->NumMyRowElements());
-  std::vector<int> mycelloffset;
-  mycelloffset.reserve(dis->NumMyRowElements());
+  coordinates.reserve(3*nnodes);
+  std::vector<uint8_t> celltypes;
+  celltypes.reserve(nelements);
+  std::vector<int32_t> celloffset;
+  celloffset.reserve(nelements);
 
   // loop over my elements and write the data
   int outNodeId = 0;
   for (int e=0; e<dis->NumMyRowElements(); ++e) {
     const DRT::Element* ele = dis->lRowElement(e);
-    mycelltypes.push_back(vtk_element_types[ele->Shape()]);
+    celltypes.push_back(vtk_element_types[ele->Shape()]);
     const DRT::Node* const* nodes = ele->Nodes();
     for (int n=0; n<ele->NumNode(); ++n) {
       for (int d=0; d<3; ++d)
         coordinates.push_back(nodes[n]->X()[d]);
     }
     outNodeId += ele->NumNode();
-    mycelloffset.push_back(outNodeId);
+    celloffset.push_back(outNodeId);
   }
-  dsassert((int)coordinates.size() == 3*myNnodes, "internal error");
-
-  // in parallel, need to send data from other processors to proc 0 and possibly
-  // shift their node ids
-
-  std::vector<int32_t> celloffset;
-  std::vector<uint8_t> celltypes;
-  std::vector<float> owner;
-  if (myrank_ == 0) {
-    coordinates.reserve(nnodes*3);
-
-    // set owner for data of first processor
-    owner.reserve(nnodes*3);
-    owner.resize(myNnodes, 0.);
-
-    celltypes.reserve(nelements);
-    for (unsigned int i=0; i<mycelltypes.size(); ++i)
-      celltypes.push_back(static_cast<uint8_t>(mycelltypes[i]));
-
-    celloffset.reserve(nelements);
-    celloffset.insert(celloffset.begin(), mycelloffset.begin(), mycelloffset.end());
-  }
-
-#ifdef PARALLEL
-  DRT::Exporter exporter(dis->Comm());
-  if (myrank_ > 0) {
-    MPI_Request request[3];
-    exporter.ISend(myrank_, 0, &coordinates[0],  coordinates.size(),  3*myrank_+0, request[0]);
-    exporter.ISend(myrank_, 0, &mycelltypes[0],  mycelltypes.size(),  3*myrank_+1, request[1]);
-    exporter.ISend(myrank_, 0, &mycelloffset[0], mycelloffset.size(), 3*myrank_+2, request[2]);
-    for (int i=0; i<3; ++i)
-      exporter.Wait(request[i]);
-  }
-  else {
-    std::vector<double> othercoordinates;
-    std::vector<int> otherintegers;
-    for (int i=1; i<dis->Comm().NumProc(); ++i) {
-      int length = 0;
-      exporter.Receive(i, 3*i+0, othercoordinates, length);
-      coordinates.insert(coordinates.end(), othercoordinates.begin(), othercoordinates.end());
-
-      // add ownership for ith processor
-      owner.resize(owner.size()+(othercoordinates.size()/3), i);
-
-      exporter.Receive(i, 3*i+1, otherintegers, length);
-      for (int k=0; k<length; ++k)
-        celltypes.push_back(static_cast<uint8_t>(otherintegers[k]));
-      exporter.Receive(i, 3*i+2, otherintegers, length);
-      // need to shift indices by the number of entries from previous processors
-      const int shift = celloffset.empty() ? 0 : celloffset.back();
-      for (int k=0; k<length; ++k)
-        celloffset.push_back(otherintegers[k]+shift);
-    }
-  }
-#endif
-
-  // now do the actual write on processor 0
-  if (myrank_ != 0)
-    return;
-
-  // check dimensions
-  dsassert((int)coordinates.size() == nnodes*3, "Incorrect communication");
-  dsassert((int)celltypes.size() == nelements, "Incorrect communication");
-  dsassert((int)celloffset.size() == nelements, "Incorrect communication");
-
+  dsassert((int)coordinates.size() == 3*nnodes, "internal error");
 
   // step 1: write node coordinates into file
   currentout_ << "<Piece NumberOfPoints=\"" << nnodes
@@ -444,7 +444,7 @@ VtuWriter::WriteGeo()
   // step 2: write mesh-node topology into file. we assumed contiguous order of coordinates
   // in this format, so fill the vector only here
   currentout_ << "  <Cells>\n"
-      << "    <DataArray type=\"Int32\" Name=\"connectivity\" format=\"binary\">\n";
+              << "    <DataArray type=\"Int32\" Name=\"connectivity\" format=\"binary\">\n";
   {
     std::vector<int32_t> connectivity;
     connectivity.reserve(nnodes);
@@ -466,11 +466,21 @@ VtuWriter::WriteGeo()
 
   currentout_ << "  </Cells>\n\n";
 
-  // step 5: start data fields by writing out the owner of the cells
+  // step 5: start data fields by writing out the owner of the cells, an easy task ;-)
+  std::vector<float> owner (nnodes, static_cast<float>(myrank_));
   currentout_ << "  <PointData Scalars=\"scalars\">\n";
   currentout_ << "    <DataArray type=\"Float32\" Name=\"owner\" format=\"binary\">\n";
   writeCompressedBlock(owner, currentout_);
   currentout_ << "    </DataArray>\n";
+
+
+  if (myrank_ == 0) {
+    currentmasterout_ << "    <PPoints>\n";
+    currentmasterout_ << "      <PDataArray type=\"Float64\" NumberOfComponents=\"3\"/>\n";
+    currentmasterout_ << "    </PPoints>\n";
+    currentmasterout_ << "    <PPointData Scalars=\"scalars\">\n";
+    currentmasterout_ << "      <PDataArray type=\"Float32\" Name=\"owner\" format=\"ascii\"/>\n";
+  }
 }
 
 
@@ -513,6 +523,8 @@ VtuWriter::WriteResult(const std::string groupname,
 
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
 
+  // Here is the only thing we need to do for parallel computations: We need read access to all dofs
+  // on the row elements, so need to get the DofColMap to have this access
   const Epetra_Map* colmap = dis->DofColMap(0);
   const Epetra_BlockMap& vecmap = data->Map();
   int offset = vecmap.MinAllGID()-dis->DofRowMap(0)->MinAllGID();
@@ -531,16 +543,13 @@ VtuWriter::WriteResult(const std::string groupname,
   if (numdf > 1 && numdf == field_->problem()->num_dim())
     ncomponents = 3;
 
-  // count number of nodes and number of elements globally
-  const int myrank = dis->Comm().MyPID();
-  int myNnodes = 0, nnodes = 0;
+  // count number of nodes and number of elements for each processor
+  int nnodes = 0;
   for (int e=0; e<dis->NumMyRowElements(); ++e)
-    myNnodes += dis->lRowElement(e)->NumNode();
-  dis->Comm().SumAll(&myNnodes, &nnodes, 1);
+    nnodes += dis->lRowElement(e)->NumNode();
 
-  // get the data on the respective owner in complete analogy to the geometry
   std::vector<double> solution;
-  solution.reserve(ncomponents*myNnodes);
+  solution.reserve(ncomponents*nnodes);
 
   std::vector<int> nodedofs;
   for (int e=0; e<dis->NumMyRowElements(); ++e) {
@@ -566,81 +575,25 @@ VtuWriter::WriteResult(const std::string groupname,
         solution.push_back(0.);
     }
   }
-  dsassert((int)solution.size() == ncomponents*myNnodes, "internal error");
+  dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
 
-#ifdef PARALLEL
-  DRT::Exporter exporter(dis->Comm());
-  if (myrank > 0) {
-    MPI_Request request;
-    exporter.ISend(myrank, 0, &solution[0],  solution.size(),  myrank, request);
-    exporter.Wait(request);
-  }
-  else {
-    solution.reserve(numdf*nnodes);
-    std::vector<double> othersolution;
-    for (int i=1; i<dis->Comm().NumProc(); ++i) {
-      int length = 0;
-      exporter.Receive(i, i, othersolution, length);
-      solution.insert(solution.end(), othersolution.begin(), othersolution.end());
-    }
-  }
-#endif
+  currentout_ << "    <DataArray type=\"Float64\" Name=\"" << name << "\"";
+  if (numdf > 1)
+    currentout_ << " NumberOfComponents=\"3\"";
+  currentout_ << " format=\"binary\">\n";
 
-  if (myrank == 0) {
-    dsassert((int)solution.size() == ncomponents*nnodes, "Incorrect communication");
-    currentout_ << "    <DataArray type=\"Float64\" Name=\"" << name << "\"";
+  writeCompressedBlock(solution, currentout_);
+
+  currentout_<< "    </DataArray>\n";
+
+  if (myrank_ == 0) {
+    currentmasterout_ << "      <PDataArray type=\"Float64\" Name=\"" << name << "\"";
     if (numdf > 1)
-      currentout_ << " NumberOfComponents=\"3\"";
-    currentout_ << " format=\"binary\">\n";
-
-    writeCompressedBlock(solution, currentout_);
-
-    currentout_<< "    </DataArray>\n";
+      currentmasterout_ << " NumberOfComponents=\"3\"";
+    currentmasterout_ << " format=\"ascii\"/>\n";
   }
 }
 
-
-
-namespace
-{
-  /**
-   \brief Helper function to determine output file string from time step number
-   */
-  std::string int2string(const unsigned int i,
-                         const unsigned int digits)
-  {
-    dsassert(i<std::pow(10,digits), "Invalid digits information");
-    std::string string;
-    switch (digits)
-    {
-    // note: no break at the end of case, so fall through
-    case 10:
-      string += '0' + i/1000000000;
-    case 9:
-      string += '0' + (i%1000000000)/100000000;
-    case 8:
-      string += '0' + (i%100000000)/10000000;
-    case 7:
-      string += '0' + (i%10000000)/1000000;
-    case 6:
-      string += '0' + (i%1000000)/100000;
-    case 5:
-      string += '0' + (i%100000)/10000;
-    case 4:
-      string += '0' + (i%10000)/1000;
-    case 3:
-      string += '0' + (i%1000)/100;
-    case 2:
-      string += '0' + (i%100)/10;
-    case 1:
-      string += '0' + i%10;
-      break;
-    default:
-      string += "invalid_digit";
-    }
-    return string;
-  }
-}
 
 
 void
@@ -650,18 +603,21 @@ VtuWriter::WriteFiles()
 
   // timesteps when the solution is written
   const std::vector<double> soltime = result.get_result_times(field_->name());
-  unsigned int ndigits = 0, solsize = soltime.size();
-  while (solsize > 0) {
-    ndigits++;
-    solsize /= 10;
-  }
+  unsigned int ntdigits = ndigits(soltime.size()),
+      npdigits = ndigits(field_->discretization()->Comm().NumProc());
   std::vector<std::pair<double, std::string> > filenames;
   for (timestep_=0; timestep_<(int)soltime.size(); ++timestep_) {
-    const std::string filename = filename_ + "-" + field_->name() + "-" + int2string(timestep_,ndigits) + ".vtu";
+    const std::string filename_base = filename_ + "-" + field_->name() + "-" + int2string(timestep_,ntdigits);
     time_ = soltime[timestep_];
-    filenames.push_back(std::pair<double,std::string>(time_, filename));
+    filenames.push_back(std::pair<double,std::string>(time_, filename_base+".pvtu"));
+
     currentout_.close();
-    currentout_.open(filename.c_str());
+    currentout_.open((filename_base+"-" + int2string(myrank_,npdigits) + ".vtu").c_str());
+
+    if (myrank_ == 0) {
+      currentmasterout_.close();
+      currentmasterout_.open((filename_base+".pvtu").c_str());
+    }
 
     WriteVtuHeader();
 
@@ -669,7 +625,7 @@ VtuWriter::WriteFiles()
 
     WriteAllResults(field_);
 
-    WriteVtuFooter();
+    WriteVtuFooter(filename_base);
   }
 
 

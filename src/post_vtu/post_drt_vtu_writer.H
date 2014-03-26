@@ -109,7 +109,7 @@ protected:
   /*!
    \brief write epilogue of the VTU file
    */
-  void WriteVtuFooter ();
+  void WriteVtuFooter (const std::string &filenamebase);
 
   /// write all element based results
   /*!
@@ -136,11 +136,17 @@ protected:
   //! Current file name
   const std::string filename_;
 
-  //! Rank of current processor; only processor 0 does the output
+  //! Rank of current processor, all processors output one file each, and proc 0 an additional master file
   const int myrank_;
+
+  //! Total number of MPI processors
+  const int numproc_;
 
   //! Output stream for current time step
   std::ofstream currentout_;
+
+  //! Output stream for master file of current time step (only proc 0)
+  std::ofstream currentmasterout_;
 
   //! Time value for the current time step
   double time_;
