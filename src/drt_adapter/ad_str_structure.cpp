@@ -534,8 +534,8 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver
   std::vector<DRT::Condition*> windkesselcond2(0);
   std::vector<DRT::Condition*> windkesselcond3(0);
   actdis->GetCondition("WindkesselStdStructureCond", windkesselcond1);
-  actdis->GetCondition("WindkesselTrimodularStructureCond", windkesselcond2);
-  actdis->GetCondition("WindkesselHeartValveArterialStructureCond", windkesselcond3);
+  actdis->GetCondition("WindkesselHeartValveArterialStructureCond", windkesselcond2);
+  actdis->GetCondition("WindkesselHeartValveArterialProxDistStructureCond", windkesselcond3);
   if ((windkesselcond1.size() > 0) || (windkesselcond2.size() > 0) || (windkesselcond3.size() > 0))
   {
     {
