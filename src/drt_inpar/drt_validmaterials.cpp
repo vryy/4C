@@ -1215,6 +1215,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"B8","exponential anisotropic constant for fiber 1 relating fiber 2");
     AddNamedReal(m,"GAMMA","angle");
     AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
+    AddNamedBool(m,"FIB_COMP","fibers support compression: yes (true) or no (false)", true, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
 
     AppendMaterialDefinition(matlist,m);

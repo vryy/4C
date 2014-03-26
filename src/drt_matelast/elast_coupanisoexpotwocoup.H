@@ -27,10 +27,10 @@ namespace ELASTIC
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for isochoric contribution of a passive cardiac material
+    /// material parameters for coupled passive cardiac material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436 GAMMA 0.0 INIT 0 ADAPT_ANGLE No
+    /// MAT 1 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436 GAMMA 0.0 [INIT 1] [FIB_COMP Yes] [ADAPT_ANGLE No]
     class CoupAnisoExpoTwoCoup : public MAT::PAR::Parameter
     {
       public:
@@ -57,6 +57,8 @@ namespace ELASTIC
       double gamma_;
       /// fiber initalization status
       int init_;
+      /// fibers support compression - or not
+      int fib_comp_;
       /// adapt angle during remodeling
       int adapt_angle_;
 
@@ -102,7 +104,7 @@ namespace ELASTIC
   /// <li> [1] GA Holzapfel, RW Ogden, Constitutive modelling of passive myocardium: a structurally based framework for material characterization
   /// </ul>#include "../drt_mat/matpar_parameter.H"
   /// <ul>
-  /// <li> [2] C Sansour, On the physical assumptions underlying the volumatric-isochoric split and the case of anisotropy
+  /// <li> [2] C Sansour, On the physical assumptions underlying the volumetric-isochoric split and the case of anisotropy
   /// </ul>
   ///
   /// \author nagler

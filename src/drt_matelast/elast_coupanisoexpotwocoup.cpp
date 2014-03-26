@@ -4,7 +4,7 @@
 \brief
 
 the input line should read
-    MAT 1 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436 GAMMA 0.0 INIT 0 ADAPT_ANGLE No
+  MAT 1 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436 GAMMA 0.0 [INIT 1] [FIB_COMP Yes] [ADAPT_ANGLE No]
 
 <pre>
 Maintainer: Andreas Nagler
@@ -35,6 +35,7 @@ MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
   B8_(matdata->GetDouble("B8")),
   gamma_(matdata->GetDouble("GAMMA")),
   init_(matdata->GetInt("INIT")),
+  fib_comp_(matdata->GetInt("FIB_COMP")),
   adapt_angle_(matdata->GetInt("ADAPT_ANGLE"))
 {
 }
@@ -165,6 +166,14 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(
   double B6=params_->B6_;
   double A8=params_->A8_;
   double B8=params_->B8_;
+
+  // check if fibers should support compression or not - if not, set the multipliers infront of their strain-energy contribution
+  // to zero when the square of their stretches (fiber invariants I4, I6) is smaller than one, respectively - mhv 03/14
+  if (!(params_->fib_comp_))
+  {
+    if (I4 < 1.0) A4 = 0.;
+    if (I6 < 1.0) A6 = 0.;
+  }
 
   double gamma = 2.0 * A4 * (I4-1.0) * exp(B4 * (I4-1.0)*(I4-1.0));
   stress.Update(gamma, A1_, 1.0);
