@@ -3687,7 +3687,7 @@ void FLD::XFluid::Solve()
     state_->velnp_->Update(1.0,*state_->incvel_,1.0);
     double f_norm = 0;
     state_->velnp_->Norm2(&f_norm);
-    std::cout << std::setprecision(14) << f_norm << std::endl;
+    //std::cout << std::setprecision(14) << f_norm << std::endl;
 
 
     // -------------------------------------------------------------------
@@ -4361,7 +4361,9 @@ void FLD::XFluid::CutAndSetStateVectors( bool isnewNewtonIncrement )
     //------------------------------------------------------------------------------------
     //                      SEMILAGRANGE RECONSTRUCTION of std values
     //------------------------------------------------------------------------------------
-    //return;  // Do nothing in time integration----> active for crack-fsi problem ???
+    if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+      return;  // Do nothing in time integration----> active for crack-fsi problem ???
+      
     if(timint_semi_lagrangean)
     {
 
