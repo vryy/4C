@@ -279,43 +279,7 @@ void ThermoEnsightWriter::WriteNodalHeatfluxStep(
     dserror("Cannot handle numdf=%g", numdf);
   }
 
-  const Epetra_BlockMap& datamap = nodal_heatfluxes->Map();
-  // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
-  Epetra_Import proc0dofimporter(*proc0map_,datamap);
-  int err = data_proc0->Import(*nodal_heatfluxes,proc0dofimporter,Insert);
-  if (err>0)
-    dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-
-  //--------------------------------------------------------------------
-  // write some key words
-  //--------------------------------------------------------------------
-  std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
-  Write(file, "BEGIN TIME STEP");
-  filepos.push_back(file.tellp());
-  Write(file, "description");
-  Write(file, "part");
-  Write(file, field_->field_pos()+1);
-  Write(file, "coordinates");
-
-  //--------------------------------------------------------------------
-  // write results
-  //--------------------------------------------------------------------
-  const int finalnumnode = proc0map_->NumGlobalElements();
-
-  if (myrank_ == 0) // ensures pointer dofgids is valid
-  {
-    for (int idf=0; idf<numdf; ++idf)
-    {
-      for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
-      {
-        Write(file, static_cast<float>((*((*data_proc0)(idf)))[inode]));
-      }
-    }
-  } // if (myrank_==0)
-
-  Write(file, "END TIME STEP");
-  return;
+  EnsightWriter::WriteNodalResultStep(file, nodal_heatfluxes, resultfilepos, groupname, name, numdf);
 } // ThermoEnsightWriter::WriteNodalHeatfluxStep
 
 
@@ -464,84 +428,7 @@ void ThermoEnsightWriter::WriteElementCenterHeatfluxStep(
     dserror("vector containing element center heatfluxes/tempgradients not available");
   }
 
-  //--------------------------------------------------------------------
-  // write some key words
-  //--------------------------------------------------------------------
-  std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
-  Write(file, "BEGIN TIME STEP");
-  filepos.push_back(file.tellp());
-  Write(file, "description");
-  Write(file, "part");
-  Write(file, field_->field_pos()+1);
-
-  const Epetra_BlockMap& datamap = eleheatflux->Map();
-
-  // do stupid conversion into Epetra map
-  Teuchos::RCP<Epetra_Map> epetradatamap;
-  epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
-                                              datamap.NumMyElements(),
-                                              datamap.MyGlobalElements(),
-                                              0,
-                                              datamap.Comm()));
-
-  Teuchos::RCP<Epetra_Map> proc0datamap;
-  proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
-  // sort proc0datamap so that we can loop it and get nodes in ascending order.
-  std::vector<int> sortmap;
-  sortmap.reserve(proc0datamap->NumMyElements());
-  sortmap.assign(proc0datamap->MyGlobalElements(), proc0datamap->MyGlobalElements()+proc0datamap->NumMyElements());
-  std::sort(sortmap.begin(), sortmap.end());
-  proc0datamap = Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), &sortmap[0], 0, proc0datamap->Comm()));
-
-  // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,numdf));
-  Epetra_Import proc0dofimporter(*proc0datamap,datamap);
-  int err = data_proc0->Import(*eleheatflux,proc0dofimporter,Insert);
-  if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-
-  //--------------------------------------------------------------------
-  // specify the element type
-  //--------------------------------------------------------------------
-  // loop over the different element types present
-  if (myrank_ == 0)
-  {
-    if (eleGidPerDisType_.empty()==true) dserror("no element types available");
-  }
-  EleGidPerDisType::const_iterator iter;
-  for (iter = eleGidPerDisType_.begin(); iter != eleGidPerDisType_.end(); ++iter)
-  {
-    const std::string ensighteleString = GetEnsightString(iter->first);
-    const int numelepertype = (iter->second).size();
-    std::vector<int> actelegids(numelepertype);
-    actelegids = iter->second;
-    // write element type
-    Write(file, ensighteleString);
-
-    //------------------------------------------------------------------
-    // write results
-    //------------------------------------------------------------------
-    if (myrank_ == 0) // ensures pointer dofgids is valid
-    {
-      for (int idf=0; idf<numdf; ++idf)
-      {
-        for (int iele=0; iele<numelepertype; iele++) // inode == lid of node because we use proc0map_
-        {
-          // extract element global id
-          const int gid = actelegids[iele];
-          // get the dof local id w.r.t. the final datamap
-          int lid = proc0datamap->LID(gid);
-          if (lid > -1)
-          {
-            Write(file, static_cast<float>((*((*data_proc0)(idf)))[lid]));
-          }
-        }
-      }
-    } // if (myrank_ == 0)
-  }
-
-  Write(file, "END TIME STEP");
-
-  return;
+  EnsightWriter::WriteElementResultStep(file, eleheatflux, resultfilepos, groupname, name, numdf, 0);
 } // ThermoEnsightWriter::WriteElementCenterHeatfluxStep
 
 

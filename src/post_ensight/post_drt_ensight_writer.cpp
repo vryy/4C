@@ -1695,6 +1695,23 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
                                          const std::string name,
                                          const int numdf) const
 {
+  const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
+  WriteNodalResultStep(file,data,resultfilepos,groupname,name,numdf);
+}
+
+
+
+/*!
+  \brief Write nodal values for one timestep for node-based vectors
+  Each node has to have the same number of dofs.
+*/
+void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
+                                         const Teuchos::RCP<Epetra_MultiVector>& data,
+                                         std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                         const std::string groupname,
+                                         const std::string name,
+                                         const int numdf) const
+{
   //-------------------------------------------
   // write some key words and read result data
   //-------------------------------------------
@@ -1707,16 +1724,7 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   Write(file, field_->field_pos()+1);
   Write(file, "coordinates");
 
-  const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
-
-  // do stupid conversion into Epetra map
-  Teuchos::RCP<Epetra_Map> epetradatamap;
-  epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
-                                     datamap.NumMyElements(),
-                                     datamap.MyGlobalElements(),
-                                     0,
-                                     datamap.Comm()));
 
   //switch between nurbs an others
   if(field_->problem()->SpatialApproximation()=="Nurbs")
@@ -1756,11 +1764,11 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
       }
     }
   } // if (myrank_==0)
-} // polynomial
-else
-{
-  dserror("spatial approximation neither Nurbs nor Polynomial\n");
-}
+  } // polynomial || meshfree
+  else
+  {
+    dserror("spatial approximation neither Nurbs nor Polynomial\n");
+  }
 
   Write(file, "END TIME STEP");
   return;
@@ -1807,8 +1815,8 @@ void EnsightWriter::WriteElementDOFResultStep(
                                      0,
                                      datamap.Comm()));
 #if 0
-  if (epetradatamap->PointSameAs(*proc0map_))
-    std::cout<<"INFO: proc0map and epetradatamap are identical."<<std::endl;
+  if (datamap->PointSameAs(*proc0map_))
+    std::cout<<"INFO: proc0map and datamap are identical."<<std::endl;
   // check if the data is distributed over several processors
   bool isdistributed = (data->DistributedGlobal());
 #endif
@@ -1924,6 +1932,8 @@ void EnsightWriter::WriteElementDOFResultStep(
   return;
 }
 
+
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief Write element values for one timestep
@@ -1943,6 +1953,31 @@ void EnsightWriter::WriteElementResultStep(
   const int from
   ) const
 {
+  const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
+  WriteElementResultStep(file, data, resultfilepos, groupname, name, numdf, from);
+}
+
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Write element values for one timestep
+
+  Each element has to have the same number of dofs.
+  \author gjb
+  \date 01/08
+*/
+/*----------------------------------------------------------------------*/
+void EnsightWriter::WriteElementResultStep(
+  std::ofstream& file,
+  const Teuchos::RCP<Epetra_MultiVector>& data,
+  std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+  const std::string groupname,
+  const std::string name,
+  const int numdf,
+  const int from
+  ) const
+{
 
   //-------------------------------------------
   // write some key words and read result data
@@ -1954,8 +1989,6 @@ void EnsightWriter::WriteElementResultStep(
   Write(file, "part");
   Write(file, field_->field_pos()+1);
 
-  // read the results
-  const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
   const int numcol = data->NumVectors();
 

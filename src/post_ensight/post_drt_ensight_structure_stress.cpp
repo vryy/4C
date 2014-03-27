@@ -245,43 +245,7 @@ void StructureEnsightWriter::WriteNodalStressStep(std::ofstream& file,
     dserror("vector containing element center stresses/strains not available");
   }
 
-  // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,6));
-  Epetra_Export exporter(*noderowmap,*proc0map_);
-  int err = data_proc0->Export(*nodal_stress,exporter,Insert);
-  if (err>0) dserror("Exporting everything to proc 0 went wrong. Export returns %d",err);
-
-  //--------------------------------------------------------------------
-  // write some key words
-  //--------------------------------------------------------------------
-
-  std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
-  Write(file, "BEGIN TIME STEP");
-  filepos.push_back(file.tellp());
-  Write(file, "description");
-  Write(file, "part");
-  Write(file, field_->field_pos()+1);
-  Write(file, "coordinates");
-
-  //--------------------------------------------------------------------
-  // write results
-  //--------------------------------------------------------------------
-
-  const int finalnumnode = proc0map_->NumGlobalElements();
-
-  if (myrank_==0) // ensures pointer dofgids is valid
-  {
-    for (int idf=0; idf<6; ++idf)
-    {
-      for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
-      {
-        Write(file, static_cast<float>((*((*data_proc0)(idf)))[inode]));
-      }
-    }
-  } // if (myrank_==0)
-
-  Write(file, "END TIME STEP");
-  return;
+  EnsightWriter::WriteNodalResultStep(file, nodal_stress, resultfilepos, groupname, name, 6);
 }
 
 /*----------------------------------------------------------------------*/
@@ -433,85 +397,7 @@ void StructureEnsightWriter::WriteElementCenterStressStep(std::ofstream& file,
   {
     dserror("vector containing element center stresses/strains not available");
   }
-
-  //--------------------------------------------------------------------
-  // write some key words
-  //--------------------------------------------------------------------
-
-  std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
-  Write(file, "BEGIN TIME STEP");
-  filepos.push_back(file.tellp());
-  Write(file, "description");
-  Write(file, "part");
-  Write(file, field_->field_pos()+1);
-
-  const Epetra_BlockMap& datamap = elestress->Map();
-
-  // do stupid conversion into Epetra map
-  Teuchos::RCP<Epetra_Map> epetradatamap;
-  epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
-                                     datamap.NumMyElements(),
-                                     datamap.MyGlobalElements(),
-                                     0,
-                                     datamap.Comm()));
-
-  Teuchos::RCP<Epetra_Map> proc0datamap;
-  proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
-  // sort proc0datamap so that we can loop it and get nodes in ascending order.
-  std::vector<int> sortmap;
-  sortmap.reserve(proc0datamap->NumMyElements());
-  sortmap.assign(proc0datamap->MyGlobalElements(), proc0datamap->MyGlobalElements()+proc0datamap->NumMyElements());
-  std::sort(sortmap.begin(), sortmap.end());
-  proc0datamap = Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), &sortmap[0], 0, proc0datamap->Comm()));
-
-  // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,6));
-  Epetra_Import proc0dofimporter(*proc0datamap,datamap);
-  int err = data_proc0->Import(*elestress,proc0dofimporter,Insert);
-  if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-
-  //--------------------------------------------------------------------
-  // specify the element type
-  //--------------------------------------------------------------------
-  // loop over the different element types present
-  if (myrank_==0)
-  {
-    if (eleGidPerDisType_.empty()==true) dserror("no element types available");
-  }
-  EleGidPerDisType::const_iterator iter;
-  for (iter=eleGidPerDisType_.begin(); iter != eleGidPerDisType_.end(); ++iter)
-  {
-    const std::string ensighteleString = GetEnsightString(iter->first);
-    const int numelepertype = (iter->second).size();
-    std::vector<int> actelegids(numelepertype);
-    actelegids = iter->second;
-    // write element type
-    Write(file, ensighteleString);
-
-    //------------------------------------------------------------------
-    // write results
-    //------------------------------------------------------------------
-
-    if (myrank_==0) // ensures pointer dofgids is valid
-    {
-      for (int idf=0; idf<6; ++idf)
-      {
-        for (int iele=0; iele<numelepertype; iele++) // inode == lid of node because we use proc0map_
-        {
-          // extract element global id
-          const int gid = actelegids[iele];
-          // get the dof local id w.r.t. the final datamap
-          int lid = proc0datamap->LID(gid);
-          if (lid > -1)
-          {
-            Write(file, static_cast<float>((*((*data_proc0)(idf)))[lid]));
-          }
-        }
-      }
-    } // if (myrank_==0)
-  }
-  Write(file, "END TIME STEP");
-  return;
+  EnsightWriter::WriteElementResultStep(file, elestress, resultfilepos, groupname, name, 6, 0);
 }
 
 
@@ -771,7 +657,11 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<Teuchos::RCP<
   }
 
   // Epetra_MultiVector with eigenvalues (3) and eigenvectors (9 components) in each row (=node)
-  Teuchos::RCP<Epetra_MultiVector> nodal_eigen_val_vec = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,12));
+  std::vector<Teuchos::RCP<Epetra_MultiVector> > nodal_eigen_val_vec(6);
+  for (int i=0; i<3; ++i)
+    nodal_eigen_val_vec[i] = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,1));
+  for (int i=3; i<6; ++i)
+    nodal_eigen_val_vec[i] = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3));
 
   const int numnodes = dis->NumMyRowNodes();
   bool threedim = true;
@@ -797,19 +687,12 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<Teuchos::RCP<
 
       LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
-      (*((*nodal_eigen_val_vec)(0)))[i] = eigenval(0);
-      (*((*nodal_eigen_val_vec)(1)))[i] = eigenval(1);
-      (*((*nodal_eigen_val_vec)(2)))[i] = eigenval(2);
-      (*((*nodal_eigen_val_vec)(3)))[i] = eigenvec(0,0);
-      (*((*nodal_eigen_val_vec)(4)))[i] = eigenvec(1,0);
-      (*((*nodal_eigen_val_vec)(5)))[i] = eigenvec(2,0);
-      (*((*nodal_eigen_val_vec)(6)))[i] = eigenvec(0,1);
-      (*((*nodal_eigen_val_vec)(7)))[i] = eigenvec(1,1);
-      (*((*nodal_eigen_val_vec)(8)))[i] = eigenvec(2,1);
-      (*((*nodal_eigen_val_vec)(9)))[i] = eigenvec(0,2);
-      (*((*nodal_eigen_val_vec)(10)))[i] = eigenvec(1,2);
-      (*((*nodal_eigen_val_vec)(11)))[i] = eigenvec(2,2);
-
+      for (int d=0; d<3; ++d)
+      {
+        (*((*nodal_eigen_val_vec[d])(0)))[i] = eigenval(d);
+        for (int e=0; e<3; ++e)
+          (*((*nodal_eigen_val_vec[d+3])(e)))[i] = eigenvec(e,d);
+      }
     }
   }
   // the two-dimensional case
@@ -827,74 +710,25 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<Teuchos::RCP<
 
       LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
-      (*((*nodal_eigen_val_vec)(0)))[i] = eigenval(0);
-      (*((*nodal_eigen_val_vec)(1)))[i] = eigenval(1);
-      (*((*nodal_eigen_val_vec)(2)))[i] = 0.0;
-      (*((*nodal_eigen_val_vec)(3)))[i] = eigenvec(0,0);
-      (*((*nodal_eigen_val_vec)(4)))[i] = eigenvec(1,0);
-      (*((*nodal_eigen_val_vec)(5)))[i] = 0.0;
-      (*((*nodal_eigen_val_vec)(6)))[i] = eigenvec(0,1);
-      (*((*nodal_eigen_val_vec)(7)))[i] = eigenvec(1,1);
-      (*((*nodal_eigen_val_vec)(8)))[i] = 0.0;
-      (*((*nodal_eigen_val_vec)(9)))[i] = 0.0;
-      (*((*nodal_eigen_val_vec)(10)))[i] = 0.0;
-      (*((*nodal_eigen_val_vec)(11)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec[0])(0)))[i] = eigenval(0);
+      (*((*nodal_eigen_val_vec[1])(0)))[i] = eigenval(1);
+      (*((*nodal_eigen_val_vec[2])(0)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec[3])(0)))[i] = eigenvec(0,0);
+      (*((*nodal_eigen_val_vec[3])(1)))[i] = eigenvec(1,0);
+      (*((*nodal_eigen_val_vec[3])(2)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec[4])(0)))[i] = eigenvec(0,1);
+      (*((*nodal_eigen_val_vec[4])(1)))[i] = eigenvec(1,1);
+      (*((*nodal_eigen_val_vec[4])(2)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec[5])(0)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec[5])(1)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec[5])(2)))[i] = 0.0;
     }
   }
 
-  // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,12));
-  Epetra_Export exporter(*noderowmap,*proc0map_);
-  int err = data_proc0->Export(*nodal_eigen_val_vec,exporter,Insert);
-  if (err>0) dserror("Exporting everything to proc 0 went wrong. Export returns %d",err);
-
-  //--------------------------------------------------------------------
-  // write some key words
-  //--------------------------------------------------------------------
-
-  int numfiles=6;
-  for (int i=0;i<numfiles;++i)
-  {
-    std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name[i]];
-    Write(*(files[i]), "BEGIN TIME STEP");
-    filepos.push_back(files[i]->tellp());
-    Write(*(files[i]), "description");
-    Write(*(files[i]), "part");
-    Write(*(files[i]), field_->field_pos()+1);
-    Write(*(files[i]), "coordinates");
-  }
-
-  //--------------------------------------------------------------------
-  // write results
-  //--------------------------------------------------------------------
-
-  if (myrank_==0)
-  {
-    const int finalnumnode = proc0map_->NumGlobalElements();
-
-    for (int inode=0; inode<finalnumnode; inode++)
-    {
-      for (int i=0;i<3;++i)
-      {
-        Write(*(files[i]), static_cast<float>((*((*data_proc0)(i)))[inode]));
-      }
-    }
-
-    for (int idf=0; idf<3; ++idf)
-    {
-      for (int inode=0; inode<finalnumnode; inode++)
-      {
-        for (int i=0;i<3;++i)
-        {
-          Write(*(files[i+3]), static_cast<float>((*((*data_proc0)(3*i+3+idf)))[inode]));
-        }
-      }
-    }
-  }
-
-  for (int i=0;i<numfiles;++i) Write(*(files[i]), "END TIME STEP");
-
-  return;
+  for (int i=0; i<3; ++i)
+    EnsightWriter::WriteNodalResultStep(*files[i], nodal_eigen_val_vec[i], resultfilepos, groupname, name[i], 1);
+  for (int i=3; i<6; ++i)
+    EnsightWriter::WriteNodalResultStep(*files[i], nodal_eigen_val_vec[i], resultfilepos, groupname, name[i], 3);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1153,153 +987,77 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<Teuch
     dserror("vector containing element center stresses/strains not available");
   }
 
-  const Epetra_BlockMap& datamap = elestress->Map();
+  std::vector<Teuchos::RCP<Epetra_MultiVector> > nodal_eigen_val_vec(6);
+  for (int i=0; i<3; ++i)
+    nodal_eigen_val_vec[i] = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),1));
+  for (int i=3; i<6; ++i)
+    nodal_eigen_val_vec[i] = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),3));
 
-  // do stupid conversion into Epetra map
-  Teuchos::RCP<Epetra_Map> epetradatamap;
-  epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
-                                     datamap.NumMyElements(),
-                                     datamap.MyGlobalElements(),
-                                     0,
-                                     datamap.Comm()));
+  const int numnodes = dis->NumMyRowNodes();
+  bool threedim = true;
+  if (field_->problem()->num_dim()==2) threedim = false;
 
-  Teuchos::RCP<Epetra_Map> proc0datamap;
-  proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
-  // sort proc0datamap so that we can loop it and get nodes in acending order.
-  std::vector<int> sortmap;
-  sortmap.reserve(proc0datamap->NumMyElements());
-  sortmap.assign(proc0datamap->MyGlobalElements(), proc0datamap->MyGlobalElements()+proc0datamap->NumMyElements());
-  std::sort(sortmap.begin(), sortmap.end());
-  proc0datamap = Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), &sortmap[0], 0, proc0datamap->Comm()));
-
-  // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,6));
-  Epetra_Import proc0dofimporter(*proc0datamap,datamap);
-  int err = data_proc0->Import(*elestress,proc0dofimporter,Insert);
-  if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-
-  //--------------------------------------------------------------------
-  // write some key words
-  //--------------------------------------------------------------------
-
-  int numfiles=6;
-  for (int i=0;i<numfiles;++i)
+  // the three-dimensional case
+  if (threedim)
   {
-    std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name[i]];
-    Write(*(files[i]), "BEGIN TIME STEP");
-    filepos.push_back(files[i]->tellp());
-    Write(*(files[i]), "description");
-    Write(*(files[i]), "part");
-    Write(*(files[i]), field_->field_pos()+1);
-  }
-
-  //--------------------------------------------------------------------
-  // specify the element type
-  //--------------------------------------------------------------------
-  // loop over the different element types present
-  if (myrank_==0)
-  {
-    if (eleGidPerDisType_.empty()==true) dserror("no element types available");
-  }
-  EleGidPerDisType::const_iterator iter;
-  for (iter=eleGidPerDisType_.begin(); iter != eleGidPerDisType_.end(); ++iter)
-  {
-    const std::string ensighteleString = GetEnsightString(iter->first);
-    const int numelepertype = (iter->second).size();
-    std::vector<int> actelegids(numelepertype);
-    actelegids = iter->second;
-    // write element type
-    for (int i=0;i<numfiles;++i) Write(*(files[i]), ensighteleString);
-
-    //--------------------------------------------------------------------
-    // write results
-    //--------------------------------------------------------------------
-
-    if (myrank_==0) // ensures pointer dofgids is valid
+    for (int i=0;i<dis->NumMyRowElements();++i)
     {
-      std::vector<Epetra_SerialDenseMatrix> eigenvec(numelepertype, Epetra_SerialDenseMatrix(3,3));
-      std::vector<Epetra_SerialDenseVector> eigenval(numelepertype, Epetra_SerialDenseVector(3));
+      Epetra_SerialDenseMatrix eigenvec(3,3);
+      Epetra_SerialDenseVector eigenval(3);
 
-      bool threedim = true;
-      if (field_->problem()->num_dim()==2) threedim = false;
+      eigenvec(0,0) = (*((*elestress)(0)))[i];
+      eigenvec(0,1) = (*((*elestress)(3)))[i];
+      eigenvec(0,2) = (*((*elestress)(5)))[i];
+      eigenvec(1,0) = eigenvec(0,1);
+      eigenvec(1,1) = (*((*elestress)(1)))[i];
+      eigenvec(1,2) = (*((*elestress)(4)))[i];
+      eigenvec(2,0) = eigenvec(0,2);
+      eigenvec(2,1) = eigenvec(1,2);
+      eigenvec(2,2) = (*((*elestress)(2)))[i];
 
-      // the three-dimensional case
-      if (threedim)
+      LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
+
+      for (int d=0; d<3; ++d)
       {
-        for (int i=0;i<numelepertype;++i)
-        {
-          // extract element global id
-          const int gid = actelegids[i];
-          // get the dof local id w.r.t. the final datamap
-          int lid = proc0datamap->LID(gid);
-
-          (eigenvec[i])(0,0) = (*(*data_proc0)(0))[lid];
-          (eigenvec[i])(0,1) = (*(*data_proc0)(3))[lid];
-          (eigenvec[i])(0,2) = (*(*data_proc0)(5))[lid];
-          (eigenvec[i])(1,0) = (eigenvec[i])(0,1);
-          (eigenvec[i])(1,1) = (*(*data_proc0)(1))[lid];
-          (eigenvec[i])(1,2) = (*(*data_proc0)(4))[lid];
-          (eigenvec[i])(2,0) = (eigenvec[i])(0,2);
-          (eigenvec[i])(2,1) = (eigenvec[i])(1,2);
-          (eigenvec[i])(2,2) = (*(*data_proc0)(2))[lid];
-
-          LINALG::SymmetricEigenProblem((eigenvec[i]), eigenval[i], true);
-        }
+        (*((*nodal_eigen_val_vec[d])(0)))[i] = eigenval(d);
+        for (int e=0; e<3; ++e)
+          (*((*nodal_eigen_val_vec[d+3])(e)))[i] = eigenvec(e,d);
       }
-      // the two-dimensional case
-      else
-      {
-        for (int i=0;i<numelepertype;++i)
-        {
-          // extract element global id
-          const int gid = actelegids[i];
-          // get the dof local id w.r.t. the final datamap
-          int lid = proc0datamap->LID(gid);
+    }
+  }
+  // the two-dimensional case
+  else
+  {
+    for (int i=0;i<numnodes;++i)
+    {
+      Epetra_SerialDenseMatrix eigenvec(2,2);
+      Epetra_SerialDenseVector eigenval(2);
 
-          // local 2x2 eigenproblem
-          Epetra_SerialDenseMatrix twodeigenvec(2,2);
-          Epetra_SerialDenseVector twodeigenval(2);
+      eigenvec(0,0) = (*((*elestress)(0)))[i];
+      eigenvec(0,1) = (*((*elestress)(3)))[i];
+      eigenvec(1,0) = eigenvec(0,1);
+      eigenvec(1,1) = (*((*elestress)(1)))[i];
 
-          twodeigenvec(0,0) = (*(*data_proc0)(0))[lid];
-          twodeigenvec(0,1) = (*(*data_proc0)(3))[lid];
-          twodeigenvec(1,0) = twodeigenvec(0,1);
-          twodeigenvec(1,1) = (*(*data_proc0)(1))[lid];
+      LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
-          LINALG::SymmetricEigenProblem(twodeigenvec, twodeigenval, true);
-
-          (eigenvec[i])(0,0) = twodeigenvec(0,0);
-          (eigenvec[i])(0,1) = twodeigenvec(0,0);
-          (eigenvec[i])(0,2) = 0.0;
-          (eigenvec[i])(1,0) = twodeigenvec(0,0);
-          (eigenvec[i])(1,1) = twodeigenvec(0,0);
-          (eigenvec[i])(1,2) = 0.0;
-          (eigenvec[i])(2,0) = 0.0;
-          (eigenvec[i])(2,1) = 0.0;
-          (eigenvec[i])(2,2) = 0.0;
-
-          (eigenval[i])[0] = twodeigenval[0];
-          (eigenval[i])[1] = twodeigenval[1];
-          (eigenval[i])[2] = 0.0;
-        }
-      }
-
-      for (int iele=0; iele<numelepertype; iele++)
-      {
-        for (int i=0;i<3;++i) Write(*(files[i]), static_cast<float>((eigenval[iele])[i]));
-      }
-
-      for (int idf=0; idf<3; ++idf)
-      {
-        for (int iele=0; iele<numelepertype; iele++)
-        {
-          for (int i=0;i<3;++i) Write(*(files[i+3]), static_cast<float>((eigenvec[iele])(idf,i)));
-        }
-      }
-    } // if (myrank_==0)
+      (*((*nodal_eigen_val_vec[0])(0)))[i] = eigenval(0);
+      (*((*nodal_eigen_val_vec[1])(0)))[i] = eigenval(1);
+      (*((*nodal_eigen_val_vec[2])(0)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec[3])(0)))[i] = eigenvec(0,0);
+      (*((*nodal_eigen_val_vec[3])(1)))[i] = eigenvec(1,0);
+      (*((*nodal_eigen_val_vec[3])(2)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec[4])(0)))[i] = eigenvec(0,1);
+      (*((*nodal_eigen_val_vec[4])(1)))[i] = eigenvec(1,1);
+      (*((*nodal_eigen_val_vec[4])(2)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec[5])(0)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec[5])(1)))[i] = 0.0;
+      (*((*nodal_eigen_val_vec[5])(2)))[i] = 0.0;
+    }
   }
 
-  for (int i=0;i<numfiles;++i) Write(*(files[i]), "END TIME STEP");
-
-  return;
+  for (int i=0; i<3; ++i)
+    EnsightWriter::WriteElementResultStep(*files[i], nodal_eigen_val_vec[i], resultfilepos, groupname, name[i], 1, 0);
+  for (int i=3; i<6; ++i)
+    EnsightWriter::WriteElementResultStep(*files[i], nodal_eigen_val_vec[i], resultfilepos, groupname, name[i], 3, 0);
 }
 
