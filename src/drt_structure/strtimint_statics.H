@@ -172,6 +172,22 @@ namespace STR
     void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
     //@}
 
+    virtual void ApplyDirichletBC
+    (
+      const double time,  //!< at time
+      Teuchos::RCP<Epetra_Vector> dis,  //!< displacements
+                                        //!< (may be Teuchos::null)
+      Teuchos::RCP<Epetra_Vector> vel,  //!< velocities
+                                        //!< (may be Teuchos::null)
+      Teuchos::RCP<Epetra_Vector> acc,  //!< accelerations
+                                       //!< (may be Teuchos::null)
+      bool recreatemap  //!< recreate mapextractor/toggle-vector
+                        //!< which stores the DOF IDs subjected
+                        //!< to Dirichlet BCs
+                        //!< This needs to be true if the bounded DOFs
+                        //!< have been changed.
+    );
+
     //! @name Access methods
     //@{
 

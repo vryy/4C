@@ -224,7 +224,8 @@ namespace STR
     void DetermineMassDampConsistAccel();
 
     //! Apply Dirichlet boundary conditions on provided state vectors
-    void ApplyDirichletBC
+    //! (reimplemented in static time integrator)
+    virtual void ApplyDirichletBC
     (
       const double time,  //!< at time
       Teuchos::RCP<Epetra_Vector> dis,  //!< displacements

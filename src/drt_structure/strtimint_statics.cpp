@@ -353,3 +353,24 @@ void STR::TimIntStatics::updateMethodSpecificEpetraCrack( std::map<int,int>& old
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fintn_, oldnew );
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fextn_, oldnew );
 }
+
+/*---------------------------------------------------------------*/
+/* Apply Dirichlet boundary conditions on provided state vectors */
+void STR::TimIntStatics::ApplyDirichletBC
+(
+  const double time,
+  Teuchos::RCP<Epetra_Vector> dis,
+  Teuchos::RCP<Epetra_Vector> vel,
+  Teuchos::RCP<Epetra_Vector> acc,
+  bool recreatemap
+)
+{
+  //call base ApplyDirichletBC
+  STR::TimInt::ApplyDirichletBC(time,dis,vel,acc,recreatemap);
+
+  //statics: set velocities and accelerations to zero
+  if( vel!=Teuchos::null ) vel->PutScalar(0.0);
+  if( acc!=Teuchos::null ) acc->PutScalar(0.0);
+
+  return;
+}
