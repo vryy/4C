@@ -456,11 +456,13 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
            for(int inode = 0; inode < ele->NumNode(); ++inode)
            {
              const int nodegid = nodeids[inode];
-             const int nodelid = phinpcol->Map().LID(nodegid);
-             if (nodelid < 0)
-               dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",myrank_,nodegid);
+             DRT::Node* node = discret_->gNode(nodegid);
+             const int dofgid = discret_->Dof(node,0);
+             const int doflid = phinpcol->Map().LID(dofgid);
+             if (doflid < 0)
+               dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",myrank_,dofgid);
 
-             if (XFEM::plusDomain((*phinpcol)[nodelid]) == false)
+             if (XFEM::plusDomain((*phinpcol)[doflid]) == false)
                gotnegativephi = true;
              else
                gotpositivephi = true;
