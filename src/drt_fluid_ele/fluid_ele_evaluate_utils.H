@@ -894,7 +894,6 @@ void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele,
     {
       // t aligned
       elenormdirect =2;
-      std::cout << "upsidedown false" <<&std::endl;
     }
     else if (xyze(normdirect,3)-xyze(normdirect,0)>2e-9)
     {
@@ -908,11 +907,9 @@ void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele,
     }
     else if(xyze(normdirect,4)-xyze(normdirect,0)<-2e-9)
     {
-      std::cout << xyze(normdirect,4)-xyze(normdirect,0) << &std::endl;
       // -t aligned
       elenormdirect =2;
       upsidedown =true;
-      std::cout << "upsidedown true" <<&std::endl;
     }
     else if (xyze(normdirect,3)-xyze(normdirect,0)<-2e-9)
     {
