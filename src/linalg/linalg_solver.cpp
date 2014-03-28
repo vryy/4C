@@ -812,6 +812,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     //mllist.set("repartition: partitioner","ParMETIS");
     mllist.set("muelu repartition: max min ratio",inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
     mllist.set("muelu repartition: min per proc",inparams.get<int>("MueLu_REBALANCE_MINROWS"));
+
+    mllist.set("aggregation: min nodes per aggregate",inparams.get<int>("MueLu_MIN_AGG_SIZE"));
   }
   break;
   default: dserror("Unknown type of ml preconditioner");

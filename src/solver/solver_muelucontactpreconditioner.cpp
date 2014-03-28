@@ -158,6 +158,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   double agg_damping = 4/3;
   //int    agg_smoothingsweeps = 1;
   int    minPerAgg = 3;       // optimal for 2d
+  int    maxPerAgg = 27;      // optimal for 3d
   int    maxNbrAlreadySelected = 0;
   std::string agg_type = "Uncoupled";
   //bool   bEnergyMinimization = false; // PGAMG
@@ -169,8 +170,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   if(params.isParameter("aggregation: damping factor"))     agg_damping         = params.get<double>("aggregation: damping factor");
   //if(params.isParameter("aggregation: smoothing sweeps"))   agg_smoothingsweeps = params.get<int>   ("aggregation: smoothing sweeps");
   if(params.isParameter("aggregation: type"))               agg_type            = params.get<std::string> ("aggregation: type");
-  if(params.isParameter("aggregation: nodes per aggregate"))minPerAgg           = params.get<int>("aggregation: nodes per aggregate");
-  //if(params.isParameter("energy minimization: enable"))  bEnergyMinimization = params.get<bool>("energy minimization: enable");
+  if(params.isParameter("aggregation: nodes per aggregate"))maxPerAgg           = params.get<int>("aggregation: nodes per aggregate");
+  if(params.isParameter("aggregation: min nodes per aggregate"))minPerAgg           = params.get<int>("aggregation: min nodes per aggregate");
 
   // set DofsPerNode in A operator
   A->SetFixedBlockSize(nDofsPerNode);
@@ -285,6 +286,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   UCAggFact->SetFactory("DofsPerNode", dropFact);
   UCAggFact->SetParameter("MaxNeighAlreadySelected",Teuchos::ParameterEntry(maxNbrAlreadySelected));
   UCAggFact->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(minPerAgg));
+  UCAggFact->SetParameter("MaxNodesPerAggregate",Teuchos::ParameterEntry(maxPerAgg));
   UCAggFact->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
   UCAggFact->SetParameter("UseOnePtAggregationAlgorithm",Teuchos::ParameterEntry(true));
   UCAggFact->SetParameter("OnePt aggregate map name", Teuchos::ParameterEntry(std::string("SlaveDofMap")));

@@ -359,6 +359,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   //double agg_threshold = 0.0;   // aggregation parameters
   double agg_damping = 4/3;
   int    minPerAgg = 3;       // optimal for 2d
+  int    maxPerAgg = 27;       // optimal for 3d
   int    maxNbrAlreadySelected = 0;
   std::string agg_type = "Uncoupled";
   std::string reuseStrategy = "none";
@@ -374,8 +375,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   if(params.isParameter("aggregation: damping factor"))     agg_damping         = params.get<double>("aggregation: damping factor");
   //if(params.isParameter("aggregation: smoothing sweeps"))   agg_smoothingsweeps = params.get<int>   ("aggregation: smoothing sweeps");
   if(params.isParameter("aggregation: type"))               agg_type            = params.get<std::string> ("aggregation: type");
-  if(params.isParameter("aggregation: nodes per aggregate"))minPerAgg           = params.get<int>("aggregation: nodes per aggregate");
-  //if(params.isParameter("energy minimization: enable"))  bEnergyMinimization = params.get<bool>("energy minimization: enable");
+
+  if(params.isParameter("aggregation: min nodes per aggregate")) minPerAgg           = params.get<int>("aggregation: min nodes per aggregate");
+  if(params.isParameter("aggregation: nodes per aggregate"))     maxPerAgg           = params.get<int>("aggregation: nodes per aggregate");
   if(params.isParameter("muelu reuse: strategy"))           reuseStrategy       = params.get<std::string>("muelu reuse: strategy");
 #ifdef HAVE_MUELU_ISORROPIA
   if(params.isParameter("muelu repartition: enable")) {
@@ -444,6 +446,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   UCAggFact->SetFactory("DofsPerNode", dropFact);
   UCAggFact->SetParameter("MaxNeighAlreadySelected",Teuchos::ParameterEntry(maxNbrAlreadySelected));
   UCAggFact->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(minPerAgg));
+  UCAggFact->SetParameter("MaxNodesPerAggregate",Teuchos::ParameterEntry(maxPerAgg));
   UCAggFact->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
 
   if(xSingleNodeAggMap != Teuchos::null) { // declare single node aggregates

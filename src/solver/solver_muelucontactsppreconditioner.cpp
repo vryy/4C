@@ -130,6 +130,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     int verbosityLevel = 10;
     int maxCoarseSize = 100;
     int minPerAgg = 9;       // optimal for 2d
+    int maxPerAgg = 27;      // optimal for 3d
     int maxNbrAlreadySelected = 0;
     std::string agg_type = "Uncoupled";
     double agg_damping = 0.0;
@@ -137,7 +138,8 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     if(mllist_.isParameter("ML output"))  verbosityLevel = mllist_.get<int>("ML output");
     if(mllist_.isParameter("coarse: max size")) maxCoarseSize = mllist_.get<int>("coarse: max size");
     if(mllist_.isParameter("aggregation: type"))               agg_type            = mllist_.get<std::string> ("aggregation: type");
-    if(mllist_.isParameter("aggregation: nodes per aggregate"))minPerAgg           = mllist_.get<int>("aggregation: nodes per aggregate");
+    if(mllist_.isParameter("aggregation: nodes per aggregate"))maxPerAgg           = mllist_.get<int>("aggregation: nodes per aggregate");
+    if(mllist_.isParameter("aggregation: min nodes per aggregate"))minPerAgg       = mllist_.get<int>("aggregation: min nodes per aggregate");
 
     if(mllist_.isParameter("aggregation: damping factor"))     agg_damping          = mllist_.get<double>("aggregation: damping factor");
 
@@ -319,6 +321,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<UncoupledAggregationFactory> UCAggFact11 = Teuchos::rcp(new UncoupledAggregationFactory());
     UCAggFact11->SetParameter("MaxNeighAlreadySelected",Teuchos::ParameterEntry(maxNbrAlreadySelected));
     UCAggFact11->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(minPerAgg));
+    UCAggFact11->SetParameter("MaxNodesPerAggregate",Teuchos::ParameterEntry(maxPerAgg));
     UCAggFact11->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
     UCAggFact11->SetParameter("UseIsolatedNodeAggregationAlgorithm",Teuchos::ParameterEntry(false));
 
