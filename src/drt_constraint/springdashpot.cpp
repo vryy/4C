@@ -218,7 +218,8 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
           for (int k=0; k<numdof; ++k)
           {
             double val = nodalarea*(springstiff*(u[k]-springoffset) + dashpotvisc*v[k]);
-            fint->SumIntoGlobalValues(1,&val,&dofs[k]);
+            int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
+            if (err) dserror("SumIntoGlobalValues failed!");
             stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size)),dofs[k],dofs[k]);
           }
         }
@@ -229,8 +230,9 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
             for (int m=0; m<numdof; ++m)
             {
               double val = nodalarea*N_x_N(k,m)*(springstiff*(u[m]-springoffset) + dashpotvisc*v[m]);
+              int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
+              if (err) dserror("SumIntoGlobalValues failed!");
               stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size))*N_x_N(k,m),dofs[k],dofs[m]);
-              fint->SumIntoGlobalValues(1,&val,&dofs[k]);
             }
           }
         }
