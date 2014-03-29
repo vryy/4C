@@ -377,8 +377,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   if(params.isParameter("aggregation: type"))               agg_type            = params.get<std::string> ("aggregation: type");
   if(params.isParameter("aggregation: min nodes per aggregate")) minPerAgg           = params.get<int>("aggregation: min nodes per aggregate");
   if(params.isParameter("aggregation: nodes per aggregate"))     maxPerAgg           = params.get<int>("aggregation: nodes per aggregate");
-
-#endif
   if(params.isParameter("muelu reuse: strategy"))           reuseStrategy       = params.get<std::string>("muelu reuse: strategy");
 #ifdef HAVE_MUELU_ISORROPIA
   if(params.isParameter("muelu repartition: enable")) {
