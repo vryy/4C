@@ -285,8 +285,12 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   UCAggFact->SetFactory("Graph", dropFact);
   UCAggFact->SetFactory("DofsPerNode", dropFact);
   UCAggFact->SetParameter("MaxNeighAlreadySelected",Teuchos::ParameterEntry(maxNbrAlreadySelected));
+#ifdef HAVE_Trilinos_Q1_2014
   UCAggFact->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(minPerAgg));
   UCAggFact->SetParameter("MaxNodesPerAggregate",Teuchos::ParameterEntry(maxPerAgg));
+#else
+  UCAggFact->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(maxPerAgg));
+#endif
   UCAggFact->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
   UCAggFact->SetParameter("UseOnePtAggregationAlgorithm",Teuchos::ParameterEntry(true));
   UCAggFact->SetParameter("OnePt aggregate map name", Teuchos::ParameterEntry(std::string("SlaveDofMap")));

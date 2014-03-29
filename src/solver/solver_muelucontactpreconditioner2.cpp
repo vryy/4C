@@ -375,9 +375,10 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   if(params.isParameter("aggregation: damping factor"))     agg_damping         = params.get<double>("aggregation: damping factor");
   //if(params.isParameter("aggregation: smoothing sweeps"))   agg_smoothingsweeps = params.get<int>   ("aggregation: smoothing sweeps");
   if(params.isParameter("aggregation: type"))               agg_type            = params.get<std::string> ("aggregation: type");
-
   if(params.isParameter("aggregation: min nodes per aggregate")) minPerAgg           = params.get<int>("aggregation: min nodes per aggregate");
   if(params.isParameter("aggregation: nodes per aggregate"))     maxPerAgg           = params.get<int>("aggregation: nodes per aggregate");
+
+#endif
   if(params.isParameter("muelu reuse: strategy"))           reuseStrategy       = params.get<std::string>("muelu reuse: strategy");
 #ifdef HAVE_MUELU_ISORROPIA
   if(params.isParameter("muelu repartition: enable")) {
@@ -445,8 +446,12 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   UCAggFact->SetFactory("Graph", dropFact);
   UCAggFact->SetFactory("DofsPerNode", dropFact);
   UCAggFact->SetParameter("MaxNeighAlreadySelected",Teuchos::ParameterEntry(maxNbrAlreadySelected));
+#ifdef HAVE_Trilinos_Q1_2014
   UCAggFact->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(minPerAgg));
   UCAggFact->SetParameter("MaxNodesPerAggregate",Teuchos::ParameterEntry(maxPerAgg));
+#else
+  UCAggFact->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(maxPerAgg)); // confusing
+#endif
   UCAggFact->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
 
   if(xSingleNodeAggMap != Teuchos::null) { // declare single node aggregates

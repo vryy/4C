@@ -320,8 +320,12 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     //dropFact11->setDefaultVerbLevel(Teuchos::VERB_EXTREME);
     Teuchos::RCP<UncoupledAggregationFactory> UCAggFact11 = Teuchos::rcp(new UncoupledAggregationFactory());
     UCAggFact11->SetParameter("MaxNeighAlreadySelected",Teuchos::ParameterEntry(maxNbrAlreadySelected));
+#ifdef HAVE_Trilinos_Q1_2014
     UCAggFact11->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(minPerAgg));
     UCAggFact11->SetParameter("MaxNodesPerAggregate",Teuchos::ParameterEntry(maxPerAgg));
+#else
+    UCAggFact11->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(maxPerAgg));
+#endif
     UCAggFact11->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
     UCAggFact11->SetParameter("UseIsolatedNodeAggregationAlgorithm",Teuchos::ParameterEntry(false));
 
