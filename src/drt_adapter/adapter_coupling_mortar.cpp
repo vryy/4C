@@ -578,7 +578,7 @@ void ADAPTER::CouplingMortar::MeshRelocation(
   if ( comm.MyPID()==0 )
   {
     std::cout << "Analyze interface quality: L2-norm of gap vector = "
-              << gnorm << " < " << tol << std::endl;
+              << gnorm << " whereas tol = " << tol << std::endl;
 
     if ( gnorm < tol )
       std::cout << "  --> Mesh relocation is not necessary. " << std::endl;
@@ -923,6 +923,7 @@ void ADAPTER::CouplingMortar::MeshRelocation(
   gnew->Update(1.0,*Dxs,1.0);
   gnew->Update(-1.0,*Mxm,1.0);
   gnew->Norm2(&gnorm);
+  gnorm /= sqrt((double) gnew->GlobalLength()); // scale with length of vector
 
   if (gnorm > tol) dserror("ERROR: Mesh relocation was not successful! \n "
                            "Gap norm %e is larger than tolerance %e", gnorm, tol);
@@ -936,7 +937,16 @@ void ADAPTER::CouplingMortar::MeshRelocation(
   DRT::ParObjectFactory::Instance().InitializeElements(*slavedis);
 
   // print message
-  if (comm.MyPID()==0) std::cout << "done!" << std::endl;
+  if ( comm.MyPID()==0 )
+  {
+    std::cout << "done!" << std::endl << std::endl
+              << "Analyze interface quality: L2-norm of gap vector = "
+              << gnorm << " whereas tol = " << tol << std::endl;
+
+    if ( gnorm < tol )
+      std::cout << "  --> Mesh relocation was successful. " << std::endl;
+  }
+
 
   return;
 
