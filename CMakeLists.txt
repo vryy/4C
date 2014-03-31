@@ -1790,7 +1790,10 @@ endif(D_RED_AIRWAYS)
 #   other flags
 option (HAVENOT_SUPERLU "if no super lu is available, turn it on" OFF)
 if (HAVENOT_SUPERLU)
+  MESSAGE("WW No SuperLUDist available")
   add_definitions("-DHAVENOT_SUPERLU")
+ELSE(HAVENOT_SUPERLU)
+  MESSAGE("II Found SuperLUDist")
 endif(HAVENOT_SUPERLU)
 
 ###------------------------------------------------------------------ Binaries
