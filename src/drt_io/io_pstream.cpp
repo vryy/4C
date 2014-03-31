@@ -53,8 +53,7 @@ void IO::Pstream::setup(
 )
 {
   // make sure that setup is called only once or we get unpredictable behavior
-  if (is_initialized_)
-    dserror("Thou shalt not call setup on the output twice!");
+  if (is_initialized_) dserror("Thou shalt not call setup on the output twice!");
   is_initialized_ = true;
 
   comm_          = comm;
@@ -66,8 +65,7 @@ void IO::Pstream::setup(
   groupID_       = groupID;
 
   // make sure the target processor exists
-  if (targetpid_ >= comm_->NumProc())
-    dserror("Chosen target processor does not exist.");
+  if (targetpid_ >= comm_->NumProc()) dserror("Chosen target processor does not exist.");
 
   // prepare the file handle
   if (OnPid() and writetofile_)
@@ -78,8 +76,7 @@ void IO::Pstream::setup(
           << std::setfill('0') << std::setw(2) << comm_->MyPID()
           << ".log";
     outfile_ = new std::ofstream(fname.str().c_str());
-    if (!outfile_)
-      dserror("could not open output file");
+    if (!outfile_) dserror("could not open output file");
   }
 
   // prepare the very first line of output
@@ -114,7 +111,7 @@ void IO::Pstream::close()
   groupID_        = -2;
 
   // flush the buffer
-  if(writetoscreen_ and OnPid() and buffer_.str().size() > 0)
+  if(writetoscreen_ and OnPid() and buffer_.str().size() > 0) \
     std::cout << buffer_.str() << std::flush;
   buffer_.str(std::string());
 
@@ -126,8 +123,7 @@ void IO::Pstream::close()
  *----------------------------------------------------------------------*/
 void IO::Pstream::flush()
 {
-  if (not is_initialized_)
-    dserror("Setup the output before you use it!");
+  if (not is_initialized_) dserror("Setup the output before you use it!");
 
   if (OnPid() and writetoscreen_ and buffer_.str().size() > 0)
   {

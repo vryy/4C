@@ -59,6 +59,12 @@ Maintainer: Martin Kronbichler
 #include <Ifpack_METISReordering.h>
 #include <Ifpack_AMDReordering.h>
 
+// Bandwidth optimization is currently not working and to prevent it from
+// generating compiler warnings, it is disabled by the following define.
+#ifdef BW_OPT
+  #undef BW_OPT
+#endif
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
@@ -244,6 +250,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   // Also, this method is also called from filters where the parameter list from input
   // does not exist. This is not resolved yet.
   // mwgee 01/13
+#ifdef BW_OPT
   //bool bw = DRT::Problem::Instance()->BandWidthOpt();
   bool bw = false;
   if (bw)
@@ -462,7 +469,8 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
   else // don't do bandwidth optimization
-  {  
+#endif /* BW_OPT */
+  {
 
     // do the nodes first
     Epetra_IntVector numdfrownodes(*dis.NodeRowMap());
@@ -679,11 +687,13 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   // localcoldofs in ascending order for the optimization to take effect.
   // the linear solver will operate in local ids, so it does not care for
   // gids to be renumbered if the lids do not change
+#ifdef BW_OPT
   if (bw)
   {
     std::sort(localrowdofs.begin(),localrowdofs.end());
     std::sort(localcoldofs.begin(),localcoldofs.end());
   }
+#endif
 
   dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,localrowdofs.size(),&localrowdofs[0],0,dis.Comm()));
   if (!dofrowmap_->UniqueGIDs()) dserror("Dof row map is not unique");

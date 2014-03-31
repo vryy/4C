@@ -75,8 +75,7 @@ namespace IO
     template <typename CharT>
     Pstream& stream(CharT s)  ///< text to be added
     {
-      if (not is_initialized_)
-        dserror("Setup the output before you use it!");
+      if (not is_initialized_) dserror("Setup the output before you use it!");
 
       // are we on a proc that is allowed to output
       if (OnPid())
@@ -94,8 +93,7 @@ namespace IO
         if (writetofile_)
         {
     #ifdef DEBUG
-          if (!outfile_)
-            dserror("outputfile does not exist - file handle lost");
+          if (!outfile_) dserror("outputfile does not exist - file handle lost");
     #endif
           (*outfile_) << str;
         }

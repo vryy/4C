@@ -28,6 +28,7 @@ NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
+WRITE_TO_FILE                   yes
 ----------------------------------------------------------COMBUSTION CONTROL
 CONVTOL                         1e-06
 ITEMAX                          1
