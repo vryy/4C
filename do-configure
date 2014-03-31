@@ -13,7 +13,7 @@ USE_ACML=0
 USE_FORCEBUILD=0
 TRILINOS_EXPERIMENTAL=0  # use experimental Trilinos version
 ADDITIONAL_TESTS_PATH=""
-
+FOUND_NO_SUPERLU=ON
 
 # activate debug version: ./do-configure --debug 
 # or choose do-configure-debug which does the same
@@ -204,11 +204,12 @@ $CMAKE_COMMAND \
     -D CMAKE_Fortran_FLAGS:STRING="-Wall" \
     -D CMAKE_Fortran_FLAGS_RELEASE:STRING="-O5 -funroll-all-loops -malign-double" \
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
-    -D HAVENOT_SUPERLU:BOOL=OFF \
+    -D HAVENOT_SUPERLU:BOOL=$FOUND_NO_SUPERLU \
     -D HAVE_TEKO:BOOL=$BUILD_Teko \
     -D HAVE_MueLu:BOOL=$BUILD_MueLu \
     -D HAVE_Trilinos_Q1_2013:BOOL=$BUILD_HAVE_Trilinos_Q1_2013 \
     -D HAVE_Trilinos_Q3_2013:BOOL=$BUILD_HAVE_Trilinos_Q3_2013 \
+    -D HAVE_Trilinos_Q1_2014:BOOL=$BUILD_HAVE_Trilinos_Q1_2014 \
     -D HAVE_Stratimikos:BOOL=$BUILD_Stratimikos \
     -D TRILINOS_DEV:BOOL=$TRILINOSDEV \
     -D D_ARTNET:BOOL=ON \
