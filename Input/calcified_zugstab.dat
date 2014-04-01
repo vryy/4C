@@ -54,7 +54,7 @@ MAXITER                         100
 UZAWAPARAM                      1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          Superlu                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK //Superlu                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 11 DENS 0.001
 MAT 10 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 1.0E4 CT_MIN 50.0 CT_MAX 600.0 NUE 0.475 BETA -2.0

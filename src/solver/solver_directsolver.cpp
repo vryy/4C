@@ -107,7 +107,7 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> Ablock = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(matrix);
 
       int matrixDim = Ablock->FullRangeMap().NumGlobalElements();
-      if(matrixDim > 33000) {
+      if(matrixDim > 50000) {
         Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
         fos->setOutputToRootOnly( 0 );
         *fos << "---------------------------- ATTENTION -----------------------" << std::endl;
@@ -148,13 +148,12 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
     else if ( solvertype_=="superlu" )
     {
 #ifndef HAVENOT_SUPERLU
-#ifdef PARALLEL
       amesos_ = Teuchos::rcp(new Amesos_Superludist((*reindexer_)(*lp_)));
 #else
-      dserror("Distributed SuperLU only in parallel");
-#endif
-#else
-      dserror( "no superlu_dist here" );
+      Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+      fos->setOutputToRootOnly( 0 );
+      *fos << "Warning: No SuperLU_dist available. Linear system will be solved with KLU instead..." << std::endl;
+      amesos_ = Teuchos::rcp(new Amesos_Klu((*reindexer_)(*lp_)));
 #endif
     }
     else if ( solvertype_=="lapack" )

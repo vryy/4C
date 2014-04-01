@@ -1549,11 +1549,8 @@ baci_test(meshtying3D_duallagr_muelu_contact2 1 "")
 baci_test(meshtying3D_duallagr_muelu_contact2 2 "")
 
 # meshtying saddlepoint formulation
-baci_test(meshtying3D_contactsp_duallagr_simple 1 "")
 baci_test(meshtying3D_contactsp_duallagr_simple 2 "")
-baci_test(meshtying3D_contactsp_stdlagr_braesssarazin 1 "")
 baci_test(meshtying3D_contactsp_stdlagr_braesssarazin 2 "")
-baci_test(meshtying3D_contactsp_duallagr_braesssarazin 1 "")
 baci_test(meshtying3D_contactsp_duallagr_braesssarazin 2 "")
 
 # 2 block contact (saddlepoint formulation)
