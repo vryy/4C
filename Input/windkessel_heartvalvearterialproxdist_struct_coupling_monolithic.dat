@@ -116,6 +116,7 @@ MAT 12 ELAST_VolSussmanBathe KAPPA 100000.0
 -------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*16.0*(1.0-cos(pi*t/0.25)) t1 0.0 t2 0.5
 -------------------------------------------------------------CURVE2
+CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 0.0
 -------------------------------------------------------------CURVE3
 -------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
@@ -145,7 +146,7 @@ DSURF  1
 E 8 - 1
 --DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS
 DSURF  1
-E 8 - id 1 R_av_max 10. R_av_min 0.001 R_mv_max 10. R_mv_min 0.001 k_p 0.001 L_arp 0.5 C_arp 50. R_arp 1. C_ard 50. R_ard 0.01 p_ref 0.0 p_arp_0 6. p_at_0 0.0
+E 8 - id 1 R_av_max 10. R_av_min 0.001 R_mv_max 10. R_mv_min 0.001 k_p 0.001 L_arp 0.5 C_arp 50. R_arp 1. C_ard 50. R_ard 0.01 p_ref 0.0 p_arp_0 6.0 P_AT fac 1.0 crv 2
 --------------DESIGN SURF WINDKESSEL STRUCTURE COUPLING CONDITIONS
 DSURF  1
 E 8 - 1

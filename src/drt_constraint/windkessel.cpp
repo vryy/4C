@@ -542,8 +542,10 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
   double sc_strtimint = params.get("scale_timint",1.0);
   double theta = params.get("scale_theta",1.0);
   double ts_size = params.get("time_step_size",1.0);
-  //double tim = params.get("total time",-1.0);
 
+  bool usetime = true;
+  const double tim = params.get("total time",-1.0);
+  if (tim<0.0) usetime = false;
 
   bool havegid = false;
   bool havegid2 = false;
@@ -584,7 +586,16 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
     double L = windkesselcond_[i]->GetDouble("L");
 
     double p_ref = windkesselcond_[i]->GetDouble("p_ref");
-    double p_at_0 = windkesselcond_[i]->GetDouble("p_at_0");
+
+    double p_at_fac = windkesselcond_[i]->GetDouble("fac");
+
+    // find out whether we will use a time curve and get the factor
+    const std::vector<int>* curve  = windkesselcond_[i]->Get<std::vector<int> >("curve");
+    int curvenum = -1;
+    if (curve) curvenum = (*curve)[0];
+    double curvefac = 1.0;
+    if (curvenum>=0 && usetime)
+      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(tim);
 
     const std::string* valvelaw = windkesselcond_[i]->Get<std::string>("valvelaw");
 
@@ -623,10 +634,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
       p_v = (*sysvec8)[2*i];
       //arterial pressure
       p_ar = (*sysvec8)[2*i+1];
-      //constant atrial pressure
-      p_at = p_at_0;
-      //decaying atrial pressure function over time -> to be further tested for reasonability!
-      //p_at = p_at_0 * (exp(-tim/0.01));
+      //atrial pressure
+      p_at = p_at_fac * curvefac;
 
       //nonlinear aortic and mitral valve resistances
       Rav = 0.5*(R_av_max - R_av_min)*(tanh((p_ar-p_v)/k_p) + 1.) + R_av_min;
@@ -642,7 +651,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
 
       // fill multipliers for rhs vector
       // smooth nonlinear valve law
-      if (*valvelaw == "valve_smooth")
+      if (*valvelaw == "smooth")
       {
         factor_sol[0] = 1./Rav + 1./Rmv;
         factor_dsol[0] = 0.;
@@ -652,7 +661,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
         factor_1[0] = -p_at/Rmv - p_ar/Rav;
       }
       // piecewise linear valve law
-      if (*valvelaw == "valve_pwlin")
+      if (*valvelaw == "pwlin")
       {
         if (p_v < p_at)
         {
@@ -733,13 +742,13 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
       colvec[1]=gindex2;
 
       // stiffness entries for smooth nonlinear valve law
-      if (*valvelaw == "valve_smooth")
+      if (*valvelaw == "smooth")
       {
         wkstiff(0,0) = theta * ((p_v-p_at)*dRmvdpv/(-Rmv*Rmv) + 1./Rmv + (p_v-p_ar)*dRavdpv/(-Rav*Rav) + 1./Rav);
         wkstiff(0,1) = theta * ((p_v-p_ar)*dRavdpar/(-Rav*Rav) - 1./Rav);
       }
       // stiffness entries for piecewise linear valve law
-      if (*valvelaw == "valve_pwlin")
+      if (*valvelaw == "pwlin")
       {
         if (p_v < p_at) wkstiff(0,0) = theta*K_at;
         if (p_v >= p_at and p_v < p_ar) wkstiff(0,0) = theta*K_p;
@@ -950,8 +959,10 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
   double sc_strtimint = params.get("scale_timint",1.0);
   double theta = params.get("scale_theta",1.0);
   double ts_size = params.get("time_step_size",1.0);
-  //double tim = params.get("total time",-1.0);
 
+  bool usetime = true;
+  const double tim = params.get("total time",-1.0);
+  if (tim<0.0) usetime = false;
 
   bool havegid = false;
   bool havegid2 = false;
@@ -993,7 +1004,16 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
     double R_ard = windkesselcond_[i]->GetDouble("R_ard");
 
     double p_ref = windkesselcond_[i]->GetDouble("p_ref");
-    double p_at_0 = windkesselcond_[i]->GetDouble("p_at_0");
+
+    double p_at_fac = windkesselcond_[i]->GetDouble("fac");
+
+    // find out whether we will use a time curve and get the factor
+    const std::vector<int>* curve  = windkesselcond_[i]->Get<std::vector<int> >("curve");
+    int curvenum = -1;
+    if (curve) curvenum = (*curve)[0];
+    double curvefac = 1.0;
+    if (curvenum>=0 && usetime)
+      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(tim);
 
     // Windkessel stiffness
     Epetra_SerialDenseMatrix wkstiff(4,4);
@@ -1026,10 +1046,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
       y_arp = (*sysvec6)[4*i+2];
       p_ard = (*sysvec6)[4*i+3];
 
-      //constant atrial pressure
-      p_at = p_at_0;
-      //decaying atrial pressure function over time -> to be further tested for reasonability!
-      //p_at = p_at_0 * (exp(-tim/0.01));
+      //atrial pressure
+      p_at = p_at_fac * curvefac;
 
       //nonlinear aortic and mitral valve resistances
       Rav = 0.5*(R_av_max - R_av_min)*(tanh((p_arp-p_v)/k_p) + 1.) + R_av_min;

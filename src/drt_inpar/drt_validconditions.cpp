@@ -3299,10 +3299,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkesselheartvalvearterialcond,"L");
   AddNamedReal(windkesselheartvalvearterialcond,"p_ref");
   AddNamedReal(windkesselheartvalvearterialcond,"p_ar_0");
-  AddNamedReal(windkesselheartvalvearterialcond,"p_at_0");
-  windkesselheartvalvearterialcond->AddComponent(Teuchos::rcp(new StringConditionComponent("valvelaw", "valve_smooth",
-                                                                                       Teuchos::tuple<std::string>("valve_smooth","valve_pwlin"),
-                                                                                       Teuchos::tuple<std::string>("valve_smooth","valve_pwlin"),
+  windkesselheartvalvearterialcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("P_AT")));
+  AddNamedReal(windkesselheartvalvearterialcond,"fac");
+  windkesselheartvalvearterialcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("crv")));
+  windkesselheartvalvearterialcond->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+  windkesselheartvalvearterialcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VALVE")));
+  windkesselheartvalvearterialcond->AddComponent(Teuchos::rcp(new StringConditionComponent("valvelaw", "smooth",
+                                                                                       Teuchos::tuple<std::string>("smooth","pwlin"),
+                                                                                       Teuchos::tuple<std::string>("smooth","pwlin"),
                                                                                        true)));
 
   condlist.push_back(windkesselheartvalvearterialcond);
@@ -3332,7 +3336,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"R_ard");
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"p_ref");
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"p_arp_0");
-  AddNamedReal(windkesselheartvalvearterialproxdistcond,"p_at_0");
+  windkesselheartvalvearterialproxdistcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("P_AT")));
+  AddNamedReal(windkesselheartvalvearterialproxdistcond,"fac");
+  windkesselheartvalvearterialproxdistcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("crv")));
+  windkesselheartvalvearterialproxdistcond->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
 
   condlist.push_back(windkesselheartvalvearterialproxdistcond);
 
