@@ -37,6 +37,9 @@ SCATRA::TimIntBDF2::TimIntBDF2(
   phinm_(Teuchos::null),
   fsphinp_(Teuchos::null)
 {
+  // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
+  // this is important since we have problems which require an extended ghosting
+  // this has to be done before all state vectors are initialized
   return;
 }
 

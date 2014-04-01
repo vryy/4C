@@ -45,6 +45,9 @@ SCATRA::TimIntLomaGenAlpha::TimIntLomaGenAlpha(
     thermpressdtaf_(0.0),
     thermpressdtam_(0.0)
 {
+  // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
+  // this is important since we have problems which require an extended ghosting
+  // this has to be done before all state vectors are initialized
   return;
 }
 
