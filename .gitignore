@@ -74,3 +74,6 @@ doc/html/
 .Trash-*
 Thumbs.db
 Thumbs.db:encryptable
+
+#ctags
+tags
