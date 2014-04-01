@@ -51,6 +51,7 @@
 #ifdef HAVE_TEKO
 #include "solver_tekopreconditioner.H"
 #endif
+#include "solver_amgnxn_preconditioner.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -340,7 +341,11 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
 #else
       dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer.");
 #endif
-#endif
+#endif 
+    }
+    else if ( Params().isSublist("AMGnxn Parameters") )
+    {
+      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::AMGnxn_Preconditioner(outfile_,Params()) );
     }
     else
     {

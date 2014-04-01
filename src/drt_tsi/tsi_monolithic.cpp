@@ -317,6 +317,7 @@ void TSI::Monolithic::CreateLinearSolver()
     break;
   }
   case INPAR::SOLVER::azprec_MueLuAMG_sym:
+  case INPAR::SOLVER::azprec_AMGnxn:
   {
     // no plausibility checks here
     // if you forget to declare an xml file you will get an error message anyway
@@ -334,6 +335,7 @@ void TSI::Monolithic::CreateLinearSolver()
   case INPAR::SOLVER::azprec_BGS2x2:
   case INPAR::SOLVER::azprec_BGSnxn:
   case INPAR::SOLVER::azprec_TekoSIMPLE:
+  case INPAR::SOLVER::azprec_AMGnxn:
   {
     // This should be the default case (well-tested and used)
     solver_ = Teuchos::rcp(new LINALG::Solver(

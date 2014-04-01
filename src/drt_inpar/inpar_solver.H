@@ -92,7 +92,8 @@ namespace INPAR
       azprec_MueLuAMG_contact2,  ///< MueLu AMG preconditioner (special enhanced handling for condensed contact formulation)
       azprec_MueLuAMG_contact3,  ///< MueLu AMG preconditioner (special enhanced handling for condensed contact formulation)
       azprec_MueLuAMG_contactSP, ///< MueLu AMG preconditioner for saddlepoint formulation
-      azprec_MueLuAMG_contactPen ///< MueLu AMG preconditioner for penalty formulation
+      azprec_MueLuAMG_contactPen, ///< MueLu AMG preconditioner for penalty formulation
+      azprec_AMGnxn               ///< AMG preconditioner for a nxn block matrix 
     };
 
     /// permutation strategies for linear solvers

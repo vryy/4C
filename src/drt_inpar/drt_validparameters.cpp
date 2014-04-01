@@ -6818,8 +6818,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   {
     // this one is longer than 15 and the tuple<> function does not support this,
     // so build the Tuple class directly (which can be any size)
-    Teuchos::Tuple<std::string,27> name;
-    Teuchos::Tuple<int,27>  number;
+    Teuchos::Tuple<std::string,28> name;
+    Teuchos::Tuple<int,28>  number;
 
     name[0] = "none";                         number[0] = INPAR::SOLVER::azprec_none;
     name[1] = "ILU";                          number[1] = INPAR::SOLVER::azprec_ILU;
@@ -6848,6 +6848,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     name[24] = "MueLu_contact3";              number[24] = INPAR::SOLVER::azprec_MueLuAMG_contact3;
     name[25] = "MueLu_contactSP";             number[25] = INPAR::SOLVER::azprec_MueLuAMG_contactSP;
     name[26] = "MueLu_contactPenalty";        number[26] = INPAR::SOLVER::azprec_MueLuAMG_contactPen;
+    name[27] = "AMGnxn";                      number[27] = INPAR::SOLVER::azprec_AMGnxn;
 
     setStringToIntegralParameter<int>(
       "AZPREC", "ILU",
@@ -7157,6 +7158,21 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   // damping parameter for SIMPLE
   DoubleParameter("SIMPLE_DAMPING",1.,"damping parameter for SIMPLE preconditioner",&list);
 
+
+
+  // Parameters for AMGnxn Preconditioner
+  IntParameter("AMGNXN_MAXLEVEL",10,
+               "Max number of levels for AMGnxn preconditioner. The actual number of levels is the minimum of the levels in the individual hierarchies and the value given here.",
+               &list);
+  setNumericStringParameter("AMGNXN_SMOTIMES","1 1 1 1 1 1 1 1 1 1",
+                            "Number of sweeps for the block smoothers of the AMGnxn preconditioner (one value per level)",
+                            &list);
+  setNumericStringParameter("AMGNXN_SMODAMP","1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0",
+                            "Damping for the block smoothers of the AMGnxn preconditioner (one value per level)",
+                            &list);
+  setNumericStringParameter("AMGNXN_SMOFLIP","0 0 0 0 0 0 0 0 0 0",
+                            "Flip the order (1=yes, 0=no) of the BGS smoothers of the AMGnxn preconditioner (one value per level)",
+                            &list);
 }
 
 
