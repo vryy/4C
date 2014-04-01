@@ -151,7 +151,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if (amlclass) aisml_ = true;
   bool candofsiamg = (SisAMG() && FisAMG() && AisAMG());
   if (strategy_==INPAR::FSI::FSIAMG && !candofsiamg)
-    dserror("All fields have to be configured as AMG to do FSIAMG");
+    dserror("All field solvers have to be configured as AMG to do FSIAMG");
 
   // get copy of ML parameter list
   if (SisAMG()) sparams_ = structuresolver_->Params().sublist("ML Parameters");
