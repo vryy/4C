@@ -3530,9 +3530,10 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
     int row = activen_->GID(i);
 
 
-    double mesh_h = 0.; // mesh size scaling parameter
+    double mesh_h = 1.0; // mesh size scaling parameter
     std::map<int,double> deriv_mesh_h; // derivative of row sum of D matrix entries
-    if(adaptive_cn)
+    if (adaptive_cn)
+    {
       if (cnode->MoData().GetD().size()!=0) // only do that if there is a D matrix
       {
         double sumd = 0.; // row sum of D matrix entries for cn-scaling
@@ -3554,17 +3555,19 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
             deriv_mesh_h[p->first] += fac*p->second;
         }
       }
+    }
 
     for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
     {
       int col = colcurr->first;
       double val = colcurr->second;
-      if (scale && cnode->MoData().GetScale() != 0.0)
-        val /= cnode->MoData().GetScale();
-      if (adaptive_cn && mesh_h!=0.)
-        val /= mesh_h;
+      if (scale)
+        if (cnode->MoData().GetScale() != 0.0)
+          val /= cnode->MoData().GetScale();
+      if (adaptive_cn)
+        if (mesh_h != 0.0)
+          val /= mesh_h;
 
-      //std::cout << "Assemble S: " << row << " " << col << " " << val << std::endl;
       // do not assemble zeros into s matrix
 #ifdef CONTACTCONSTRAINTXYZ
         for (int j=0; j<cnode->NumDof(); j++)
@@ -3576,47 +3579,56 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
     }
 
     // nodal scaling linearization
-    if (scale==true && cnode->MoData().GetScale() != 0.0)
+    if (scale)
     {
-      std::map<int,double>& dscalemap = cnode->CoData().GetDerivScale();
-      double scalefac = cnode->MoData().GetScale();
-      for (colcurr=dscalemap.begin(); colcurr!=dscalemap.end(); ++colcurr)
+      if (cnode->MoData().GetScale() != 0.0)
       {
-        int col = colcurr->first;
-        double val = -cnode->CoData().Getg()*(colcurr->second) / (scalefac*scalefac);
-        if (adaptive_cn && mesh_h!=0.)
-          val /= mesh_h;
-        // do not assemble zeros into s matrix
+        std::map<int,double>& dscalemap = cnode->CoData().GetDerivScale();
+        double scalefac = cnode->MoData().GetScale();
+        for (colcurr=dscalemap.begin(); colcurr!=dscalemap.end(); ++colcurr)
+        {
+          int col = colcurr->first;
+          double val = -cnode->CoData().Getg()*(colcurr->second) / (scalefac*scalefac);
+          if (adaptive_cn)
+            if (mesh_h != 0.0)
+              val /= mesh_h;
+
+          // do not assemble zeros into s matrix
 #ifdef CONTACTCONSTRAINTXYZ
-        for (int j=0; j<cnode->NumDof(); j++)
-          if (abs(val*cnode->MoData().n()[j])>1.0e-12)
-               sglobal.Assemble(val*cnode->MoData().n()[j],cnode->Dofs()[j],col);
+          for (int j=0; j<cnode->NumDof(); j++)
+            if (abs(val*cnode->MoData().n()[j])>1.0e-12)
+                 sglobal.Assemble(val*cnode->MoData().n()[j],cnode->Dofs()[j],col);
 #else
-        if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+          if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
 #endif
+        }
       }
     }
 
     // complementarity parameter scaling linearization
-    if (adaptive_cn && mesh_h != 0.0)
+    if (adaptive_cn)
     {
-      for (colcurr=deriv_mesh_h.begin(); colcurr!=deriv_mesh_h.end(); ++colcurr)
+      if (mesh_h != 0.0)
       {
-        int col = colcurr->first;
-        double val = -cnode->CoData().Getg()*(colcurr->second) / (mesh_h*mesh_h);
-        if (scale && cnode->MoData().GetScale() != 0.0)
-          val /= cnode->MoData().GetScale();
-        // do not assemble zeros into s matrix
+        for (colcurr=deriv_mesh_h.begin(); colcurr!=deriv_mesh_h.end(); ++colcurr)
+        {
+          int col = colcurr->first;
+          double val = -cnode->CoData().Getg()*(colcurr->second) / (mesh_h*mesh_h);
+          if (scale)
+            if(cnode->MoData().GetScale() != 0.0)
+              val /= cnode->MoData().GetScale();
+
+          // do not assemble zeros into s matrix
 #ifdef CONTACTCONSTRAINTXYZ
-        for (int j=0; j<cnode->NumDof(); j++)
-          if (abs(val*cnode->MoData().n()[j])>1.0e-12)
-               sglobal.Assemble(val*cnode->MoData().n()[j],cnode->Dofs()[j],col);
+          for (int j=0; j<cnode->NumDof(); j++)
+            if (abs(val*cnode->MoData().n()[j])>1.0e-12)
+                 sglobal.Assemble(val*cnode->MoData().n()[j],cnode->Dofs()[j],col);
 #else
-        if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+          if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
 #endif
+        }
       }
     }
-
   } //for (int i=0;i<activenodes_->NumMyElements();++i)
 
   return;
