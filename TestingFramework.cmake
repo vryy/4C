@@ -125,11 +125,11 @@ endmacro(codetesting)
  
 ###------------------------------------------------------------------ List of tests
 ##if(NOT TRILINOS_DEV)
-baci_test(acou_pat_1d_dirk23 1 "")
+baci_test(acou_1d_dirk23 1 "")
 baci_test(acou_pat_1d_impl 1 "")
 baci_test(acou_pat_1d_impl 2 "" minimal)
 baci_test(acou_pat_1d_trap_inv 2 "")
-baci_test(acou_pat_2d_bdf 2 "")
+baci_test(acou_2d_bdf 2 "")
 baci_test(acou_visc0_1d 1 "")
 baci_test(acou_visc_1d 1 "")
 baci_test(acou_visc_1d 2 "" minimal)

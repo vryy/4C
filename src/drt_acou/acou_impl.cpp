@@ -757,6 +757,66 @@ namespace
 
     return;
   } // getNodeVectorsHDG
+  void getNodalPsiHDG (DRT::Discretization               &dis,
+                       const Teuchos::RCP<Epetra_Vector> &interiorValues,
+                       const Teuchos::RCP<Epetra_Vector> &traceValues,
+                       Teuchos::RCP<Epetra_Vector>       &psi,
+                       INPAR::ACOU::PhysicalType         phys,
+                       double                            dt)
+  {
+
+    const Epetra_Map* nodemap = dis.NodeRowMap();
+    psi.reset(new Epetra_Vector(*nodemap));
+
+    // call element routine for interpolate HDG to elements
+    Teuchos::ParameterList params;
+    params.set<int>("action",ACOU::interpolate_psi_to_node);
+    dis.SetState(1,"intvel",interiorValues);
+    dis.SetState(0,"trace",traceValues);
+    params.set<INPAR::ACOU::PhysicalType>("physical type",phys);
+    params.set<double>("dt",dt);
+
+    std::vector<int> dummy;
+    DRT::Element::LocationArray la(2);
+
+    Epetra_SerialDenseMatrix dummyMat;
+    Epetra_SerialDenseVector dummyVec;
+    Epetra_SerialDenseVector interpolVec;
+    std::vector<unsigned char> touchCount(psi->MyLength());
+
+    psi->PutScalar(0.);
+
+    for (int el=0; el<dis.NumMyColElements();++el)
+    {
+      DRT::Element *ele = dis.lColElement(el);
+      ele->LocationVector(dis,la,false);
+      if (interpolVec.M() == 0)
+        interpolVec.Resize(ele->NumNode());
+
+      ele->Evaluate(params,dis,la[0].lm_,dummyMat,dummyMat,interpolVec,dummyVec,dummyVec);
+
+      // sum values on nodes into vectors and record the touch count (build average of values)
+      for (int i=0; i<ele->NumNode(); ++i)
+      {
+        DRT::Node* node = ele->Nodes()[i];
+        const int localIndex = psi->Map().LID(node->Id());
+
+        if (localIndex < 0)
+          continue;
+
+        touchCount[localIndex]++;
+        (*psi)[localIndex] += interpolVec(i);
+      }
+
+    }
+
+    for (int i=0; i<psi->MyLength(); ++i)
+      (*psi)[i] /= touchCount[i];
+
+    dis.ClearState();
+
+    return;
+  } // getNodeVectorsHDG
   void getNodeVectorsHDGVisc(DRT::Discretization              &dis,
                             const Teuchos::RCP<Epetra_Vector> &interiorValues,
                             const Teuchos::RCP<Epetra_Vector> &traceValues,
@@ -870,10 +930,11 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
   // output of solution
   if(phys_ == INPAR::ACOU::acou_lossless)
   {
-    Teuchos::RCP<Epetra_Vector> traceVel, cellPres;
+    Teuchos::RCP<Epetra_Vector> interpolatedPressure, traceVel, cellPres;
+    Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity;
 
     getNodeVectorsHDG(*discret_, intvelnp_, velnp_, numdim_,
-                      interpolatedVelocity_, interpolatedPressure_, traceVel, cellPres, phys_);
+                      interpolatedVelocity, interpolatedPressure, traceVel, cellPres, phys_);
 
     if( history != Teuchos::null )
     {
@@ -893,8 +954,8 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
       // write element data only once
       if (step_==0) output_->WriteElementData(true);
 
-      output_->WriteVector("velnp",interpolatedVelocity_);
-      output_->WriteVector("pressure",interpolatedPressure_);
+      output_->WriteVector("velnp",interpolatedVelocity);
+      output_->WriteVector("pressure",interpolatedPressure);
       output_->WriteVector("par_vel",traceVel);
       output_->WriteVector("pressure_avg",cellPres);
       if(errormaps_) output_->WriteVector("error",error_);
@@ -980,17 +1041,39 @@ void ACOU::AcouImplicitTimeInt::OutputToScreen()
 /*----------------------------------------------------------------------*
  |  Calculate node based values (public)                 schoeder 01/14 |
  *----------------------------------------------------------------------*/
+void ACOU::AcouImplicitTimeInt::NodalPsiField(Teuchos::RCP<Epetra_Vector> outvec)
+{
+  if(phys_ == INPAR::ACOU::acou_lossless)
+  {
+    Teuchos::RCP<Epetra_Vector> interpolatedPressure;
+    getNodalPsiHDG(*discret_, intvelnp_, velnp_,interpolatedPressure, phys_, dtp_);
+
+    for(int i=0; i<interpolatedPressure->MyLength(); ++i)
+      outvec->ReplaceMyValue(i,0,interpolatedPressure->operator [](i));
+  }
+  else
+  {
+    dserror("NodalPsiField not yet implemented for lossy fluid!");
+    // TODO: implement calculation of psi for lossy fluid
+  }
+  return;
+} // NodalPsiField
+
+/*----------------------------------------------------------------------*
+ |  Calculate node based values (public)                 schoeder 01/14 |
+ *----------------------------------------------------------------------*/
 void ACOU::AcouImplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec)
 {
   if(phys_ == INPAR::ACOU::acou_lossless)
   {
-    Teuchos::RCP<Epetra_Vector> traceVel, cellPres;
+    Teuchos::RCP<Epetra_Vector> interpolatedPressure, traceVel, cellPres;
+    Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity;
 
-    getNodeVectorsHDG(*discret_, intvelnp_, velnp_,numdim_,
-                        interpolatedVelocity_, interpolatedPressure_, traceVel, cellPres, phys_);
+    getNodeVectorsHDG(*discret_, intvelnp_, velnp_, numdim_,
+                      interpolatedVelocity, interpolatedPressure, traceVel, cellPres, phys_);
 
     for(int i=0; i<traceVel->MyLength(); ++i)
-      outvec->ReplaceMyValue(i,0,interpolatedPressure_->operator [](i));
+      outvec->ReplaceMyValue(i,0,interpolatedPressure->operator [](i));
   }
   else
   {
@@ -1000,13 +1083,13 @@ void ACOU::AcouImplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> o
 
     getNodeVectorsHDGVisc(*discret_, intvelnp_, velnp_, numdim_,
         interpolatedVelocityGradient,interpolatedVelocity,interpolatedPressure,interpolatedDensity,
-        traceVelocity,cellPres,cellDensity, phys_);
+        traceVelocity,cellPres,cellDensity,phys_);
 
-    for(int i=0; i<interpolatedPressure->MyLength(); ++i)
+    for(int i=0; i<traceVelocity->MyLength(); ++i)
       outvec->ReplaceMyValue(i,0,interpolatedPressure->operator [](i));
   }
   return;
-} // NodalPressureField
+} // NodalPressurField
 
 /*----------------------------------------------------------------------*
  |  Return discretization (public)                       schoeder 01/14 |

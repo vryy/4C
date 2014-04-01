@@ -526,7 +526,6 @@ public:
   */
   DRT::Element* ParentSlaveElement() const
   {
-    dsassert(parent_slave_ != NULL, "Parent slave element has not been set or this is not a face element");
     return parent_slave_;
   }
 

@@ -6735,6 +6735,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 	DoubleParameter("ALPHA_MUA",0.0,"Regularization parameter for absorption coefficient",&acou_inv);
 	DoubleParameter("BETA_MUA",0.0,"Regularization parameter for gradient of absorption coefficient",&acou_inv);
 
+  // decide which parametrization of material parameters to use
+  setStringToIntegralParameter<int>("PARAMETRIZATION","none",
+                                      "how to parametrize the parameter field",
+                                    tuple<std::string>(
+                                      "none",
+                                      "elementwise",
+                                      "uniform"),
+                                    tuple<int>(
+                                      INPAR::ACOU::inv_mat_none,
+                                      INPAR::ACOU::inv_mat_elementwise,
+                                      INPAR::ACOU::inv_mat_uniform),
+                                    &acou_inv);
+
+
 	/*----------------------------------------------------------------------*/
   // set valid parameters for solver blocks
 

@@ -133,6 +133,9 @@ public:
   /// Output nodal internal pressure field at new time step
   void NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec);
 
+  /// Output nodal internal psi field at new time step
+  void NodalPsiField(Teuchos::RCP<Epetra_Vector> outvec);
+
   /// For result tests
   Teuchos::RCP<DRT::Discretization> Discretization();
   Teuchos::RCP<Epetra_Vector> Velnp()   { return velnp_; }
@@ -206,9 +209,6 @@ protected:
   Teuchos::RCP<Epetra_Vector>    intvelnp_;
   Teuchos::RCP<Epetra_Vector>    intveln_;
   Teuchos::RCP<Epetra_Vector>    intvelnm_;
-
-  Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity_;
-  Teuchos::RCP<Epetra_Vector>      interpolatedPressure_;
 
   /// element based error vector, only if desired by user
   Teuchos::RCP<Epetra_Vector>    error_;

@@ -42,6 +42,13 @@ namespace INPAR
       acou_viscous
     };
 
+    /// Calculation of the error
+    enum CalcError
+    {
+      calcerror_no,
+      calcerror_1d
+    };
+
     /// Type of Inverse Analysis
     enum InvAnalysisType
     {
@@ -49,11 +56,12 @@ namespace INPAR
       inv_pat            // photoacoustic inverse analysis
     };
 
-    /// Calculation of the error
-    enum CalcError
+    /// Paramterization of material parameters
+    enum InvAnalysisMatParametrization
     {
-      calcerror_no,
-      calcerror_1d
+      inv_mat_none,        // nothing defined
+      inv_mat_elementwise, // parameters per element
+      inv_mat_uniform      // uniform i.e. spatially constant parameters
     };
 
   } // namespace ACOU
