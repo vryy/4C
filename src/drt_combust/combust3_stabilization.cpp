@@ -578,7 +578,7 @@ void COMBUST::UTILS::computeStabilizationParamsEdgeBased(
       // Applied Numerical Mathematics 2012
 
       // each face has to be evaluated only once
-      gamma_p = 0.05;
+      gamma_p = 0.005;
       gamma_u = 0.05;
       gamma_div = 0.05 * gamma_u;
 
