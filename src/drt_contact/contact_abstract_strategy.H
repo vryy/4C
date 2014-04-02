@@ -146,6 +146,19 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     const Teuchos::RCP<Epetra_Map> SlaveMasterRowDofs() { return gsmdofrowmap_; }
 
     /*!
+    \brief Return not redistributed global slave dof row map
+
+    */
+    const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() { return pgsdofrowmap_; }
+
+    /*!
+    \brief Return not redistributed global master dof row map
+
+    */
+    const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() { return pgmdofrowmap_; }
+
+
+    /*!
     \brief provides maps needed for contact/meshtying specific multigrid preconditioners
 
     */

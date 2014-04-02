@@ -39,6 +39,7 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
+#include "../drt_mortar/mortar_utils.H"
 #include "../drt_contact/contact_analytical.H"
 #include "../drt_contact/contact_defines.H"
 #include "../drt_contact/meshtying_manager.H"
@@ -278,7 +279,7 @@ STR::TimInt::TimInt
     PrepareStatMech();
   }
 
-	// check for crack propagation
+  // check for crack propagation
   {
     PrepareCrackSimulation();
   }
@@ -510,12 +511,19 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     // is defined just the other way round as alphaf in GenAlpha schemes.
     // Thus, we have to hand in 1-theta for OST!!!)
     double alphaf = 0.0;
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_genalpha)
-      alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_gemm)
-      alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
-    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_onesteptheta)
-      alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+    bool do_endtime = DRT::INPUT::IntegralValue<int>(scontact,"CONTACTFORCE_ENDTIME");
+    if (!do_endtime)
+    {
+      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
+          "DYNAMICTYP") == INPAR::STR::dyna_genalpha)
+        alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
+      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
+          "DYNAMICTYP") == INPAR::STR::dyna_gemm)
+        alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
+      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
+          "DYNAMICTYP") == INPAR::STR::dyna_onesteptheta)
+        alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+    }
 
     // decide whether this is meshtying or contact and create manager
     if (apptype == INPAR::CONTACT::app_mortarmeshtying)
@@ -990,18 +998,455 @@ void STR::TimInt::UpdateStepContactVUM()
 {
   if (HaveContactMeshtying())
   {
-    bool do_vum = DRT::INPUT::IntegralValue<int>(cmtman_->GetStrategy().Params(),"VELOCITY_UPDATE");
+    bool do_vum = DRT::INPUT::IntegralValue<int>(
+        cmtman_->GetStrategy().Params(), "VELOCITY_UPDATE");
 
     //********************************************************************
     // VELOCITY UPDATE METHOD
     //********************************************************************
     if (do_vum)
     {
-      // not yet implemented
-      dserror("ERROR: Velocity update method not yet implemented");
+      // check for actual contact and leave if active set empty
+      bool isincontact = cmtman_->GetStrategy().IsInContact();
+      if (!isincontact)
+        return;
+
+      // check for contact force evaluation
+      bool do_end = DRT::INPUT::IntegralValue<int>(
+          cmtman_->GetStrategy().Params(), "CONTACTFORCE_ENDTIME");
+      if (do_end == false)
+      {
+        std::cout
+            << "***** WARNING: VelUpdate ONLY for contact force evaluated at the end time -> skipping ****"
+            << endl;
+        return;
+      }
+
+      // parameter list
+      const Teuchos::ParameterList& sdynparams =
+          DRT::Problem::Instance()->StructuralDynamicParams();
+
+      // time integration parameter
+      double alpham = 0.0;
+      double beta = 0.0;
+      double gamma = 0.0;
+      if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
+          "DYNAMICTYP") == INPAR::STR::dyna_genalpha)
+      {
+        alpham = sdynparams.sublist("GENALPHA").get<double>("ALPHA_M");
+        beta = sdynparams.sublist("GENALPHA").get<double>("BETA");
+        gamma = sdynparams.sublist("GENALPHA").get<double>("GAMMA");
+      }
+      else if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
+          "DYNAMICTYP") == INPAR::STR::dyna_gemm)
+      {
+        alpham = sdynparams.sublist("GEMM").get<double>("ALPHA_M");
+        beta = sdynparams.sublist("GEMM").get<double>("BETA");
+        gamma = sdynparams.sublist("GEMM").get<double>("GAMMA");
+      }
+      else
+      {
+        std::cout
+            << "***** WARNING: VelUpdate ONLY for Gen-alpha and GEMM -> skipping ****"
+            << endl;
+        return;
+      }
+
+      // the four velocity update constants
+      double R1 = 2 * (alpham - 1) / (gamma * (*dt_)[0]);
+      double R2 = (1 - alpham) / gamma;
+      double R3 = (*dt_)[0] * (1 - 2 * beta - alpham) / (2 * gamma);
+      double R4 = beta * (alpham - 1) / pow(gamma, 2);
+
+      // maps
+      const Epetra_Map* dofmap = discret_->DofRowMap();
+      Teuchos::RCP<Epetra_Map> activenodemap =
+          cmtman_->GetStrategy().ActiveRowNodes();
+      Teuchos::RCP<Epetra_Map> slavenodemap =
+          cmtman_->GetStrategy().SlaveRowNodes();
+      Teuchos::RCP<Epetra_Map> notredistslavedofmap =
+          cmtman_->GetStrategy().NotReDistSlaveRowDofs();
+      Teuchos::RCP<Epetra_Map> notredistmasterdofmap =
+          cmtman_->GetStrategy().NotReDistMasterRowDofs();
+      Teuchos::RCP<Epetra_Map> notactivenodemap = LINALG::SplitMap(
+          *slavenodemap, *activenodemap);
+
+      // the lumped mass matrix and its inverse
+      if (lumpmass_ == false)
+      {
+        std::cout
+            << "***** WARNING: VelUpdate ONLY for lumped mass matrix -> skipping ****"
+            << endl;
+        return;
+      }
+      Teuchos::RCP<LINALG::SparseMatrix> Mass = Teuchos::rcp_dynamic_cast<
+          LINALG::SparseMatrix>(mass_);
+      Teuchos::RCP<LINALG::SparseMatrix> Minv = Teuchos::rcp(
+          new LINALG::SparseMatrix(*Mass));
+      Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*dofmap, true);
+      int err = 0;
+      Minv->ExtractDiagonalCopy(*diag);
+      err = diag->Reciprocal(*diag);
+      if (err > 0)
+        dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      err = Minv->ReplaceDiagonalValues(*diag);
+      Minv->Complete(*dofmap, *dofmap);
+
+      // displacement increment Dd
+      Teuchos::RCP<Epetra_Vector> Dd = LINALG::CreateVector(*dofmap, true);
+      Dd->Update(1.0, *disn_, 0.0);
+      Dd->Update(-1.0, (*dis_)[0], 1.0);
+
+      // mortar operator Bc
+      Teuchos::RCP<LINALG::SparseMatrix> Mmat =
+          cmtman_->GetStrategy().MMatrix();
+      Teuchos::RCP<LINALG::SparseMatrix> Dmat =
+          cmtman_->GetStrategy().DMatrix();
+      Teuchos::RCP<Epetra_Map> slavedofmap = Teuchos::rcp(
+          new Epetra_Map(Dmat->RangeMap()));
+      Teuchos::RCP<LINALG::SparseMatrix> Bc = Teuchos::rcp(
+          new LINALG::SparseMatrix(*dofmap, 10));
+      Teuchos::RCP<LINALG::SparseMatrix> M = Teuchos::rcp(
+          new LINALG::SparseMatrix(*slavedofmap, 10));
+      Teuchos::RCP<LINALG::SparseMatrix> D = Teuchos::rcp(
+          new LINALG::SparseMatrix(*slavedofmap, 10));
+      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+          cmtman_->GetStrategy().Params(), "PARALLEL_REDIST")
+          != INPAR::MORTAR::parredist_none)
+      {
+        M = MORTAR::MatrixColTransform(Mmat, notredistmasterdofmap);
+        D = MORTAR::MatrixColTransform(Dmat, notredistslavedofmap);
+      }
+      else
+      {
+        M = Mmat;
+        D = Dmat;
+      }
+      Bc->Add(*M, true, -1.0, 1.0);
+      Bc->Add(*D, true, 1.0, 1.0);
+      Bc->Complete(*slavedofmap, *dofmap);
+      Bc->ApplyDirichlet(*(dbcmaps_->CondMap()), false);
+
+      // matrix of the normal vectors
+      Teuchos::RCP<LINALG::SparseMatrix> N =
+          cmtman_->GetStrategy().EvaluateNormals(disn_);
+
+      // lagrange multiplier z
+      Teuchos::RCP<Epetra_Vector> LM = cmtman_->GetStrategy().LagrMult();
+      Teuchos::RCP<Epetra_Vector> Z = LINALG::CreateVector(*slavenodemap, true);
+      Teuchos::RCP<Epetra_Vector> z = LINALG::CreateVector(*activenodemap,
+          true);
+      N->Multiply(false, *LM, *Z);
+      LINALG::Export(*Z, *z);
+
+      // auxiliary operator BN = Bc * N
+      Teuchos::RCP<LINALG::SparseMatrix> BN = LINALG::MLMultiply(*Bc, false, *N,
+          true, false, false, true);
+
+      // operator A
+      Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
+      Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
+      Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
+      Teuchos::RCP<LINALG::SparseMatrix> A;
+      Teuchos::RCP<LINALG::SparseMatrix> Atemp1 = LINALG::MLMultiply(*BN, true,
+          *Minv, false, false, false, true);
+      Teuchos::RCP<LINALG::SparseMatrix> Atemp2 = LINALG::MLMultiply(*Atemp1,
+          false, *BN, false, false, false, true);
+      Atemp2->Scale(R4);
+      LINALG::SplitMatrix2x2(Atemp2, notactivenodemap, activenodemap,
+          notactivenodemap, activenodemap, tempmtx1, tempmtx2, tempmtx3, A);
+      A->Complete(*activenodemap, *activenodemap);
+
+      // diagonal of A
+      Teuchos::RCP<Epetra_Vector> AD = LINALG::CreateVector(*activenodemap,
+          true);
+      A->ExtractDiagonalCopy(*AD);
+
+      // operator b
+      Teuchos::RCP<Epetra_Vector> btemp1 = LINALG::CreateVector(*dofmap, true);
+      Teuchos::RCP<Epetra_Vector> btemp2 = LINALG::CreateVector(*slavenodemap,
+          true);
+      Teuchos::RCP<Epetra_Vector> b = LINALG::CreateVector(*activenodemap,
+          true);
+      btemp1->Update(R1, *Dd, 0.0);
+      btemp1->Update(R2, (*vel_)[0], 1.0);
+      btemp1->Update(R3, (*acc_)[0], 1.0);
+      BN->Multiply(true, *btemp1, *btemp2);
+      LINALG::Export(*btemp2, *b);
+
+      // operatior c
+      Teuchos::RCP<Epetra_Vector> ctemp = LINALG::CreateVector(*slavenodemap,
+          true);
+      Teuchos::RCP<Epetra_Vector> c = LINALG::CreateVector(*activenodemap,
+          true);
+      BN->Multiply(true, *Dd, *ctemp);
+      LINALG::Export(*ctemp, *c);
+
+      // contact work wc
+      Teuchos::RCP<Epetra_Vector> wc = LINALG::CreateVector(*activenodemap,
+          true);
+      wc->Multiply(1.0, *c, *z, 0.0);
+
+      // gain and loss of energy
+      double gain = 0;
+      double loss = 0;
+      Teuchos::RCP<Epetra_Vector> wp = LINALG::CreateVector(*activenodemap,
+          true);
+      Teuchos::RCP<Epetra_Vector> wn = LINALG::CreateVector(*activenodemap,
+          true);
+      Teuchos::RCP<Epetra_Vector> wd = LINALG::CreateVector(*activenodemap,
+          true);
+      Teuchos::RCP<Epetra_Vector> wt = LINALG::CreateVector(*activenodemap,
+          true);
+      for (int i = 0; i < activenodemap->NumMyElements(); ++i)
+      {
+        if ((*wc)[i] > 0)
+        {
+          (*wp)[i] = (*wc)[i];
+          (*wn)[i] = 0;
+          (*wd)[i] = 0;
+          (*wt)[i] = 0;
+        }
+        else
+        {
+          (*wp)[i] = 0;
+          (*wn)[i] = (*wc)[i];
+          (*wd)[i] = pow((*b)[i], 2) / (4 * (*AD)[i]);
+          if ((*wc)[i] > (*wd)[i])
+          {
+            (*wt)[i] = (*wc)[i];
+          }
+          else
+          {
+            (*wt)[i] = (*wd)[i];
+          }
+        }
+      }
+      wp->Norm1(&loss);
+      wn->Norm1(&gain);
+
+      // manipulated contact work w
+      double tolerance = 0.01;
+      Teuchos::RCP<Epetra_Vector> wtemp1 = LINALG::CreateVector(*activenodemap,
+          true);
+      Teuchos::RCP<Epetra_Vector> wtemp2 = LINALG::CreateVector(*activenodemap,
+          true);
+      Teuchos::RCP<Epetra_Vector> w = LINALG::CreateVector(*activenodemap,
+          true);
+      if (abs(gain - loss) < 1.0e-8)
+      {
+        return;
+      }
+      else if (gain > loss)
+      {
+        double C = (gain - loss) / gain;
+        wtemp1->Update(C, *wn, 0.0);
+        for (int i = 0; i < activenodemap->NumMyElements(); ++i)
+        {
+          (*wtemp2)[i] = pow((*b)[i], 2) / (4 * (*AD)[i]);
+          if ((*wtemp1)[i] > (*wtemp2)[i])
+          {
+            (*w)[i] = (*wtemp1)[i];
+          }
+          else
+          {
+            (*w)[i] = (1 - tolerance) * (*wtemp2)[i];
+            std::cout
+                << "***** WARNING: VelUpdate is not able to compensate the gain of energy****"
+                << endl;
+          }
+        }
+      }
+      else
+      {
+        double C = (loss - gain) / loss;
+        w->Update(C, *wp, 0.0);
+      }
+
+// (1) initial solution p_0
+      Teuchos::RCP<Epetra_Vector> p1 = LINALG::CreateVector(*activenodemap,
+          true);
+      Teuchos::RCP<Epetra_Vector> p2 = LINALG::CreateVector(*activenodemap,
+          true);
+      Teuchos::RCP<Epetra_Vector> p = LINALG::CreateVector(*activenodemap,
+          true);
+      if (gain > loss)
+      {
+        for (int i = 0; i < activenodemap->NumMyElements(); ++i)
+        {
+          (*p1)[i] = (-(*b)[i]
+              + pow(pow((*b)[i], 2) - 4 * (*AD)[i] * (*w)[i], 0.5))
+              / (2 * (*AD)[i]);
+
+          (*p2)[i] = (-(*b)[i]
+              - pow(pow((*b)[i], 2) - 4 * (*AD)[i] * (*w)[i], 0.5))
+              / (2 * (*AD)[i]);
+          if ((*w)[i] == 0)
+            (*p)[i] = 0;
+          else if (abs((*p1)[i]) < abs((*p2)[i]))
+            (*p)[i] = (*p1)[i];
+          else
+            (*p)[i] = (*p2)[i];
+        }
+      }
+      else
+      {
+        for (int i = 0; i < activenodemap->NumMyElements(); ++i)
+        {
+          (*p1)[i] = (-(*b)[i]
+              + pow(pow((*b)[i], 2) - 4 * (*AD)[i] * (*w)[i], 0.5))
+              / (2 * (*AD)[i]);
+
+          (*p2)[i] = (-(*b)[i]
+              - pow(pow((*b)[i], 2) - 4 * (*AD)[i] * (*w)[i], 0.5))
+              / (2 * (*AD)[i]);
+          if ((*w)[i] == 0)
+            (*p)[i] = 0;
+          else if (((*p1)[i] > 0) == ((*b)[i] < 0))
+            (*p)[i] = (*p1)[i];
+          else
+            (*p)[i] = (*p2)[i];
+        }
+      }
+
+// (2) initial residual f_0, |f_0|, DF_0
+      Teuchos::RCP<Epetra_Vector> x = LINALG::CreateVector(*activenodemap,
+          true);
+      Teuchos::RCP<Epetra_Vector> f = LINALG::CreateVector(*activenodemap,
+          true);
+      int NumEntries = 0;
+      int* Indices = NULL;
+      double* Values = NULL;
+      double res = 1.0;
+      double initres = 1.0;
+      double dfik = 0;
+      Teuchos::RCP<LINALG::SparseMatrix> DF = Teuchos::rcp(
+          new LINALG::SparseMatrix(*activenodemap, 10));
+
+      // rhs f
+      for (int i = 0; i < activenodemap->NumMyElements(); ++i)
+      {
+        x->Scale(0.0);
+        (A->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
+        x->ReplaceMyValues(NumEntries, Values, Indices);
+        (*f)[i] = (*b)[i] * (*p)[i] + (*w)[i];
+        for (int j = 0; j < activenodemap->NumMyElements(); ++j)
+        {
+          (*f)[i] += (*x)[j] * (*p)[i] * (*p)[j];
+        }
+      }
+
+      // residual res
+      f->Norm2(&initres);
+      res = initres;
+
+      // jacobian DF
+      for (int i = 0; i < activenodemap->NumMyElements(); ++i)
+      {
+        x->Scale(0.0);
+        (A->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
+        x->ReplaceMyValues(NumEntries, Values, Indices);
+        for (int k = 0; k < activenodemap->NumMyElements(); ++k)
+        {
+          if (k == i)
+          {
+            dfik = (*x)[i] * (*p)[i] + (*b)[i];
+            for (int j = 0; j < activenodemap->NumMyElements(); ++j)
+            {
+              dfik += (*x)[j] * (*p)[j];
+            }
+            DF->Assemble(dfik, activenodemap->GID(i), activenodemap->GID(k));
+          }
+          else
+            DF->Assemble((*x)[k] * (*p)[i], activenodemap->GID(i),
+                activenodemap->GID(k));
+        }
+      }
+      DF->Complete(*activenodemap, *activenodemap);
+
+// (3) Newton-Iteration
+      Teuchos::RCP<Epetra_Vector> mf = LINALG::CreateVector(*activenodemap,
+          true);
+      Teuchos::RCP<Epetra_Vector> dp = LINALG::CreateVector(*activenodemap,
+          true);
+      double tol = 0.00000001;
+      double numiter = 0;
+      double stopcrit = 100;
+
+      while (res > tol)
+      {
+        // solver for linear equations DF * dp = -f
+        mf->Update(-1.0, *f, 0.0);
+        solver_->Solve(DF->EpetraOperator(), dp, mf, true);
+
+        // Update solution p_n = p_n-1 + dp
+        p->Update(1.0, *dp, 1.0);
+
+        // rhs f
+        for (int i = 0; i < activenodemap->NumMyElements(); ++i)
+        {
+          x->Scale(0.0);
+          (A->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
+          x->ReplaceMyValues(NumEntries, Values, Indices);
+          (*f)[i] = (*b)[i] * (*p)[i] + (*w)[i];
+          for (int j = 0; j < activenodemap->NumMyElements(); ++j)
+          {
+            (*f)[i] += (*x)[j] * (*p)[i] * (*p)[j];
+          }
+        }
+
+        // residual res
+        f->Norm2(&res);
+        res /= initres;
+
+        // jacobian DF
+        DF->Scale(0.0);
+        for (int i = 0; i < activenodemap->NumMyElements(); ++i)
+        {
+          x->Scale(0.0);
+          (A->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
+          x->ReplaceMyValues(NumEntries, Values, Indices);
+          for (int k = 0; k < activenodemap->NumMyElements(); ++k)
+          {
+            if (k == i)
+            {
+              dfik = (*x)[i] * (*p)[i] + (*b)[i];
+              for (int j = 0; j < activenodemap->NumMyElements(); ++j)
+              {
+                dfik += (*x)[j] * (*p)[j];
+              }
+              DF->Assemble(dfik, activenodemap->GID(i), activenodemap->GID(k));
+            }
+            else
+              DF->Assemble((*x)[k] * (*p)[i], activenodemap->GID(i),
+                  activenodemap->GID(k));
+          }
+        }
+
+        // stop criteria
+        numiter += 1;
+        if (numiter == stopcrit)
+        {
+          std::cout
+              << "***** WARNING: VelUpdate is not able to converge -> skipping ****"
+              << endl;
+          return;
+        }
+      }
+
+      // (4) VelocityUpdate
+      Teuchos::RCP<Epetra_Vector> ptemp1 = LINALG::CreateVector(*slavenodemap,
+          true);
+      Teuchos::RCP<Epetra_Vector> ptemp2 = LINALG::CreateVector(*dofmap, true);
+      Teuchos::RCP<Epetra_Vector> VU = LINALG::CreateVector(*dofmap, true);
+      LINALG::Export(*p, *ptemp1);
+      BN->Multiply(false, *ptemp1, *ptemp2);
+      Minv->Multiply(false, *ptemp2, *VU);
+      veln_->Update(1.0, *VU, 1.0);
     }
   }
 
+  // Believe in the energy!
   return;
 }
 
@@ -2852,7 +3297,7 @@ bool STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> disp
     LINALG::Export(*dismatn_, *(*dism_)(0));
   }
 
-	// update other field vectors related to specific integration method
+  // update other field vectors related to specific integration method
   updateEpetraVectorsCrack( oldnewIds );
 
   return true;

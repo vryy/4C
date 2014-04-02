@@ -454,7 +454,11 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void EvaluateReferenceState (int step,const Teuchos::RCP<Epetra_Vector> vec){}
     void EvaluateRelMov() {}
     void EvaluateRelMovPredict() {}
+    const Teuchos::RCP<Epetra_Map> SlaveRowNodes() { return gsnoderowmap_; }
     const Teuchos::RCP<Epetra_Map> ActiveRowNodes() {return Teuchos::null;}
+    const Teuchos::RCP<Epetra_Map> ActiveRowDofs() {return Teuchos::null;}
+    const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() { return pgsdofrowmap_; }
+    const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() { return pgmdofrowmap_; }
     const Teuchos::RCP<Epetra_Map> SlipRowNodes() {return Teuchos::null;}
     Teuchos::RCP<Epetra_Vector> WSolveIncr() { return Teuchos::null; }
     Teuchos::RCP<Epetra_Vector> WearRhs() {return Teuchos::null;}

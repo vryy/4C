@@ -180,7 +180,11 @@ class StrategyBase
     // As the base class MORTAR::StrategyBase is always called from the control routine
     // (time integrator), these functions need to be defined purely virtual here.
 
+    virtual const Teuchos::RCP<Epetra_Map> SlaveRowNodes() = 0;
     virtual const Teuchos::RCP<Epetra_Map> ActiveRowNodes() = 0;
+    virtual const Teuchos::RCP<Epetra_Map> ActiveRowDofs() = 0;
+    virtual const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() = 0;
+    virtual const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() = 0;
     virtual bool ActiveSetConverged() = 0;
     virtual bool ActiveSetSemiSmoothConverged() = 0;
     virtual void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step, const int iter, bool predictor = false) = 0;

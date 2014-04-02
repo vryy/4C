@@ -1709,6 +1709,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("SEMI_SMOOTH_CN",1.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
   DoubleParameter("SEMI_SMOOTH_CT",1.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
 
+  setStringToIntegralParameter<int>(
+      "CONTACTFORCE_ENDTIME",
+      "No",
+      "If chosen, the contact force is not evaluated at the generalized midpoint, but at the end of the time step",
+      yesnotuple, yesnovalue, &scontact);
+
   setStringToIntegralParameter<int>("VELOCITY_UPDATE","No","If chosen, velocity update method is applied",
                                yesnotuple,yesnovalue,&scontact);
 
