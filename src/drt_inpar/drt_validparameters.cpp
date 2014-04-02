@@ -5181,6 +5181,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                               INPAR::SCATRA::fixed_point),
                                               &ls_reinit);
     BoolParameter("CORRECTOR_STEP", "yes", "correction of interface position via volume constraint according to Sussman & Fatemi", &ls_reinit);
+    DoubleParameter("CONVTOL_REINIT", -1.0, "tolerance for convergence check according to Sussman et al. 1994 (turned off negative)", &ls_reinit);
 
     BoolParameter("REINITVOLCORRECTION","No","volume correction after reinitialization",&ls_reinit);
 
