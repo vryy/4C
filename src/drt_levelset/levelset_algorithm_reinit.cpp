@@ -151,60 +151,13 @@ void SCATRA::LevelSetAlgorithm::PrepareTimeLoopReinit()
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::TimeLoopReinit()
 {
-#if 0
-  // set required variables
-  // bool to quit while-loop if solution has converged before max number
-  // of steps is reached or gradient has converged
-  bool stoploop = false;
-  // reset internal step counter
-  pseudostep_ = 0;
-  // relative tolerance for stop criterion with relative L2-gradient-norm
-  // TODO: sollte input parameter werden
-  const double gradtol = 1.0e-008;
-  // calculate gradient error before reinitialization
-  double graderr = EvaluateGradientNormError();
-
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + reinitialization time loop");
 
-  while ((pseudostep_ < pseudostepmax_) and stoploop==false)
-  {
-    // -------------------------------------------------------------------
-    //                  check convergence
-    // -------------------------------------------------------------------
-    // aborts reinitialization loop if gardient of phi has converged
-    if (CheckReinitSteadyState(graderr,gradtol))
-      break;
-
-    // -------------------------------------------------------------------
-    //                  prepare time step
-    // -------------------------------------------------------------------
-    PrepareTimeStepReinit();
-
-    // -------------------------------------------------------------------
-    //                  solve nonlinear equation
-    // -------------------------------------------------------------------
-    SolveReinit();
-
-    // -------------------------------------------------------------------
-    //              check for steady state and update solution
-    //        current solution becomes old solution of next timestep
-    // TODO: comment
-    // -------------------------------------------------------------------
-    UpdateReinit(graderr,stoploop);
-  }
-#endif
-
-
-
-  // time measurement: time loop
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + reinitialization time loop");
-
-  // TODO: add adequate criterion
   //       e.g., steady state of interface nodal values
   //             integrated gradient norm
-  bool steady_state = false;
-  while (pseudostep_ < pseudostepmax_ and not steady_state)
+  bool converged = false;
+  while (pseudostep_ < pseudostepmax_ and not converged)
   {
     // -------------------------------------------------------------------
     //                  prepare time step
@@ -223,9 +176,9 @@ void SCATRA::LevelSetAlgorithm::TimeLoopReinit()
       CorrectionReinit();
 
     // -------------------------------------------------------------------
-    //                        check for steady state
+    //                        check for convergence
     // -------------------------------------------------------------------
-//    steady_state = ReinitSteadyState();
+    converged = ConvergenceCheckReinit();
 
     // -------------------------------------------------------------------
     //                        update solution
@@ -294,25 +247,53 @@ void SCATRA::LevelSetAlgorithm::FinishTimeLoopReinit()
 }
 
 
-#if 0
 /*----------------------------------------------------------------------*
- | convergence check of gradient of phi                 rasthofer 09/13 |
+ | convergence check for reinitialization equation      rasthofer 03/14 |
  *----------------------------------------------------------------------*/
-bool SCATRA::LevelSetAlgorithm::CheckReinitSteadyState(
-  const double actgraderr,
-  const double gradtol
-)
+bool SCATRA::LevelSetAlgorithm::ConvergenceCheckReinit()
 {
   bool abortreinitloop = false;
-  
-  // abort reinitialization time loop if gradient of phi is smaller
-  // than prescribed tolerance
-  if (actgraderr <= gradtol)
-    abortreinitloop = true;
-  
+
+  if (reinit_tol_ > 0.0)
+  {
+    if (myrank_ == 0)
+      std::cout << "## WARNING: convergence criterion for reinitialization equation not yet carefully checked" << std::endl;
+
+    // stop criterion according to Sussman et al 1994
+    //         sum_(nodes A with abs(phi_n) < alpha) abs(phi_A_n+1 -phi_A_n)
+    //  err = --------------------------------------------------------------- < dtau*h^2
+    //                      sum_(nodes A with abs(phi_n) < alpha) 1
+
+    double local_sum = 0.0;
+    int local_num_nodes = 0;
+
+    for (int inode=0; inode<discret_->NumMyRowNodes(); inode++)
+    {
+      if (std::abs((*phin_)[inode]) < reinitbandwidth_)
+      {
+        local_sum += std::abs((*phinp_)[inode]-(*phin_)[inode]);
+        local_num_nodes += 1;
+      }
+    }
+
+    // communicate sums
+    double global_sum = 0.0;
+    int global_num_nodes = 0;
+    discret_->Comm().SumAll(&local_sum,&global_sum,1);
+    discret_->Comm().SumAll(&local_num_nodes,&global_num_nodes,1);
+
+    // compute current error in band
+    const double err = global_sum / ((double)global_num_nodes);
+
+    if (myrank_ == 0)
+      std::cout << "Convergence Check Reinitialization: Err  " << err << "  Tol  " << reinit_tol_ << " Number of nodes in band  "<< global_num_nodes << std::endl;
+
+    if (err < reinit_tol_) //(dtau_*char_ele_length*char_ele_length) suggested by Sussman et al 1994
+      abortreinitloop = true;
+  }
+
   return abortreinitloop;
 }
-#endif
 
 
 /*----------------------------------------------------------------------*

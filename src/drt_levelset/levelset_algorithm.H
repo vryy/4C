@@ -203,6 +203,9 @@ namespace SCATRA
     /// correction step according to Sussman & Fatemi 1999 (helper function for ReinitEq())
     void CorrectionReinit();
 
+    /// convergence check for reinit equation according to Sussman et al. 1994 (helper function for ReinitEq())
+    bool ConvergenceCheckReinit();
+
     /// calculation of nodal velocity field via L2-projection for reinitalization (helper function for ReinitEq())
     void CalcNodeBasedReinitVel();
 
@@ -303,7 +306,7 @@ namespace SCATRA
     /// switch for reinitialization only within a band around the interface (ReinitGeo() only)
     bool reinitband_;
 
-    /// band width for reinitialization (maximum level-set value) (ReinitGeo() only)
+    /// band width for reinitialization (maximum level-set value)
     double reinitbandwidth_;
 
     /// flag to activate corrector step (ReinitEq() only)
@@ -318,6 +321,9 @@ namespace SCATRA
 //
 //    /// vector containing smoothed haevyside function for each dof (ReinitEq() only)
 //    Teuchos::RCP<Epetra_Vector> node_deriv_smoothfunct_;
+
+    /// tolerance for convergence check according to Sussman et al. 1994 (turned off negative) (ReinitEq() only)
+    double reinit_tol_;
 
     /// flag to correct volume after reinitialization
     bool reinitvolcorrection_;

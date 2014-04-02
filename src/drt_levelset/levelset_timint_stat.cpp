@@ -39,6 +39,9 @@ SCATRA::LevelSetTimIntStationary::LevelSetTimIntStationary(
   LevelSetAlgorithm(actdis,solver,params,sctratimintparams,extraparams,output),
   TimIntStationary(actdis,solver,sctratimintparams,extraparams,output)
 {
+  // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
+  // this is important since we have problems which require an extended ghosting
+  // this has to be done before all state vectors are initialized
   return;
 }
 

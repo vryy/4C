@@ -55,17 +55,22 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(
   reinitvel_(Teuchos::null),
   reinitinterval_(-1),
   reinitband_(false),
-  reinitbandwidth_(-1),
+  reinitbandwidth_(-1.0),
   reinitcorrector_(true),
   useprojectedreinitvel_(INPAR::SCATRA::vel_reinit_integration_point_based),
   //TODO:
 //  lambda_ele_denominator_(Teuchos::null),
 //  node_deriv_smoothfunct_(Teuchos::null),
+  reinit_tol_(-1.0),
   reinitvolcorrection_(false),
   extract_interface_vel_(false),
   convel_layers_(-1),
   cpbc_(false)
 {
+  // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
+  // this is important since we have problems which require an extended ghosting
+  // this has to be done before all state vectors are initialized
+
   // -------------------------------------------------------------------
   //               set-up of particle algorithm
   // -------------------------------------------------------------------
@@ -76,6 +81,7 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(
     // get particle object
     particle_ = Teuchos::rcp(new PARTICLE::ScatraParticleCoupling(Teuchos::rcp(this,false),levelsetparams_));
   }
+  // note: here, an extended ghosting is set up
 
   return;
 }
@@ -137,12 +143,14 @@ void SCATRA::LevelSetAlgorithm::Init()
     // how often to perform reinitialization
     reinitinterval_ = levelsetparams_->sublist("REINITIALIZATION").get<int>("REINITINTERVAL");
 
+    // define band for reinitialization (may either be used for geometric reinitialization or reinitialization equation
+    reinitbandwidth_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("REINITBANDWIDTH");
+
     // set parameters for geometric reinitialization
     if (reinitaction_ == INPAR::SCATRA::reinitaction_signeddistancefunction)
     {
       // reinitialization within band around interface only
       reinitband_ = DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("REINITIALIZATION"),"REINITBAND");
-      reinitbandwidth_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("REINITBANDWIDTH");
     }
 
     // set parameters for reinitialization equation
@@ -159,6 +167,9 @@ void SCATRA::LevelSetAlgorithm::Init()
 
       // theta of ost time integration
       thetareinit_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("THETAREINIT");
+
+      // tolerance for convergence of reinitialization equation
+      reinit_tol_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("CONVTOL_REINIT");
 
       // flag to activate corrector step
       reinitcorrector_ = DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("REINITIALIZATION"),"CORRECTOR_STEP");
