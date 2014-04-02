@@ -1485,11 +1485,32 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
       double phi = funct.Dot(ephinp);
 
       // compute portion of minus domain
+
       // characteristic bin length
       const double h = std::pow(bin_size_[0]*bin_size_[1]*bin_size_[2],1.0/3.0);
-      const double vol_center = 1.0 - (std::abs(phi) / (std::sqrt(3.0) * h) + 0.5);
+      // compute largest distance in bin
+      double h_ref = 0.0;
+      if (particle_dim_ == INPAR::PARTICLE::particle_3D)
+        h_ref = std::sqrt(3.0) * h;
+      else
+        h_ref = std::sqrt(2.0) * h;
+
+      double vol_center = 1.0 - (std::abs(phi) / h_ref + 0.5);
       // safety check
-      if (vol_center<0.0) dserror("Volume should be positive!");
+      //if (vol_center<0.0) dserror("Volume should be positive!");
+      if (vol_center<0.0)
+      {
+        // be tolerant
+        if (std::abs(vol_center)<0.2)
+          vol_center = 0.0;
+        else
+        {
+          std::cout << "vol " << vol_center << std::endl;
+          for (std::size_t rr=0; rr<myphinp.size(); rr++)
+            std::cout << myphinp[rr] << std::endl;
+          dserror("Volume should be positive!");
+        }
+      }
 
       // number of desired negative particles
       int num_particles_minus = 0.0;
@@ -1660,7 +1681,16 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
         }
       }
     }
-    else dserror("Unknown situation!");
+    //else dserror("Unknown situation!");
+    else
+    {
+      std::cout << "## WARNING: special case in reseeding function" << std::endl;
+
+      for (std::size_t rr=0; rr<myphinp.size(); rr++)
+            std::cout << myphinp[rr] << std::endl;
+
+      std::cout << "number of nodes in band  " << numnodes_in_band << "  number of nodes  " << numnode << "  intersected  " << intersected << std::endl;
+    }
 
   } // end: loop all bins
 
