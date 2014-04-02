@@ -47,11 +47,16 @@
 #include "solver_muelucontactpreconditioner3.H"
 #include "solver_muelucontactsppreconditioner.H"
 #include "solver_muelucontactpenaltypreconditioner.H"
-#endif
+#endif 
 #ifdef HAVE_TEKO
 #include "solver_tekopreconditioner.H"
 #endif
+
+#ifdef HAVE_MueLu
+#ifdef HAVE_Trilinos_Q1_2014
 #include "solver_amgnxn_preconditioner.H"
+#endif 
+#endif
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -345,7 +350,15 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
     }
     else if ( Params().isSublist("AMGnxn Parameters") )
     {
+#ifdef HAVE_MueLu
+#ifdef HAVE_Trilinos_Q1_2014
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::AMGnxn_Preconditioner(outfile_,Params()) );
+#else
+      dserror("AMGnxn preconditioner only works with Trilinos Q1_2014 or newer");
+#endif
+#else
+      dserror("AMGnxn preconditioner only works if MueLu is activated");
+#endif
     }
     else
     {

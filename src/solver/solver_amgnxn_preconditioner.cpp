@@ -9,6 +9,10 @@ Maintainer: Francesc Verdugo
 Created on: Feb 27, 2014
 </pre>
 *----------------------------------------------------------------------*/
+
+#ifdef HAVE_MueLu
+#ifdef HAVE_Trilinos_Q1_2014
+
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_ParameterListInterpreter.hpp> 
@@ -1531,4 +1535,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Preconditioner::BuildMueLuHierarc
 }
 
 
+#endif // HAVE_MueLu
+#endif // HAVE_Trilinos_Q1_2014
 
