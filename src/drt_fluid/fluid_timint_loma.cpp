@@ -39,32 +39,29 @@ FLD::TimIntLoma::TimIntLoma(
 
   // conservative formulation currently not supported in low-Mach-number case
   // when using generalized-alpha time-integration scheme
-  if (physicaltype_ == INPAR::FLUID::loma and convform_ == "conservative")
+  if (convform_ == "conservative")
      dserror("conservative formulation currently not supported for low-Mach-number flow within generalized-alpha time-integration scheme");
 
   // ---------------------------------------------------------------------
   // set density variable to 1.0 and get gas constant for low-Mach-number
   // flow and get constant density variable for incompressible flow
   // ---------------------------------------------------------------------
-  if (physicaltype_ == INPAR::FLUID::loma)
-  {
-    // get gas constant
-    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_sutherland);
-    if (id==-1)
-      dserror("Could not find sutherland material");
-    else
-    {
-      const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-      const MAT::PAR::Sutherland* actmat = static_cast<const MAT::PAR::Sutherland*>(mat);
-      // we need the kinematic viscosity here
-      gasconstant_ = actmat->gasconst_;
-    }
 
-    // potential check here -> currently not executed
-    //if (gasconstant_ < EPS15) dserror("received zero or negative gas constant");
-  }
+  // get gas constant
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_sutherland);
+  if (id==-1)
+    dserror("Could not find sutherland material");
   else
-    dserror("You are in TimIntLoma but do not use Loma.");
+  {
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::Sutherland* actmat = static_cast<const MAT::PAR::Sutherland*>(mat);
+    // we need the kinematic viscosity here
+    gasconstant_ = actmat->gasconst_;
+  }
+
+  // potential check here -> currently not executed
+  //if (gasconstant_ < EPS15) dserror("received zero or negative gas constant");
+
   //set some Loma-specific parameters
   SetElementCustomParameter();
   return;
