@@ -35,6 +35,20 @@ FLD::TimIntRedModelsGenAlpha::TimIntRedModelsGenAlpha(
 
 
 /*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntRedModelsGenAlpha::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntGenAlpha::Init();
+  TimIntRedModels::Init();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
 FLD::TimIntRedModelsGenAlpha::~TimIntRedModelsGenAlpha()

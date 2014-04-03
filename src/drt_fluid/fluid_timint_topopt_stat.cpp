@@ -34,6 +34,20 @@ FLD::TimIntTopOptStat::TimIntTopOptStat(
 
 
 /*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntTopOptStat::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntStationary::Init();
+  TimIntTopOpt::Init();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
 FLD::TimIntTopOptStat::~TimIntTopOptStat()

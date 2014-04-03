@@ -30,12 +30,18 @@ FLD::TimIntTopOpt::TimIntTopOpt(
         const Teuchos::RCP<Teuchos::ParameterList>&   params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output,
         bool                                          alefluid /*= false*/)
-    : FluidImplicitTimeInt(actdis,solver,params,output,alefluid)
+    : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
+      optimizer_(Teuchos::null)
 {
-  // initialize data for topology optimization as null
-  density_scaling_ = Teuchos::null;
-  optimizer_ = Teuchos::null;
+  return;
+}
 
+
+/*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntTopOpt::Init()
+{
   //set some Topopt-specific parameters
   SetElementCustomParameter();
   return;

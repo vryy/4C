@@ -100,7 +100,7 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
 
   // set initial scalar field and thermodynamic pressure for evaluation of
   // Neumann boundary conditions in fluid at beginning of first time step
-  fsi_->FluidField().SetTimeLomaFields(fluidscatra_->ScaTraField()->Phinp(),
+  fsi_->FluidField().SetScalarFields(fluidscatra_->ScaTraField()->Phinp(),
                                        Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->ThermPressNp(),
                                        Teuchos::null,
                                        fluidscatra_->ScaTraField()->Discretization());
@@ -236,7 +236,7 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
     // derivatives and discretization based on time-integration scheme
     /*if (fsi_->FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
     {
-      fsi_->FluidField().SetIterLomaFields(fluidscatra_->ScaTraField()->Phiaf(),
+      fsi_->FluidField().SetIterScalarFields(fluidscatra_->ScaTraField()->Phiaf(),
                                            fluidscatra_->ScaTraField()->Phiam(),
                                            fluidscatra_->ScaTraField()->Phidtam(),
                                            Teuchos::null,
@@ -250,7 +250,7 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
     }
     else
     {*/
-      fsi_->FluidField().SetIterLomaFields(fluidscatra_->ScaTraField()->Phinp(),
+      fsi_->FluidField().SetIterScalarFields(fluidscatra_->ScaTraField()->Phinp(),
                                            fluidscatra_->ScaTraField()->Phin(),
                                            fluidscatra_->ScaTraField()->Phidtnp(),
                                            Teuchos::null,
@@ -356,7 +356,7 @@ void FS3I::PartFS3I_2WC::TimeUpdateAndOutput()
   // set scalar and thermodynamic pressure at n+1 and SCATRA trueresidual
   // for statistical evaluation and evaluation of Neumann boundary
   // conditions at the beginning of the subsequent time step
-  fsi_->FluidField().SetTimeLomaFields(fluidscatra_->ScaTraField()->Phinp(),
+  fsi_->FluidField().SetScalarFields(fluidscatra_->ScaTraField()->Phinp(),
                                        Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->ThermPressNp(),
                                        fluidscatra_->ScaTraField()->TrueResidual(),
                                        fluidscatra_->ScaTraField()->Discretization());

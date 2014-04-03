@@ -41,6 +41,12 @@ public:
   virtual ~TimIntTopOpt();
 
   /*!
+  \brief initialization
+
+  */
+  virtual void Init();
+
+  /*!
   \brief import fluid data to optimizer
 
   */

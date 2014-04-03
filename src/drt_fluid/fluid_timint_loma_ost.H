@@ -37,7 +37,11 @@ public:
   /// Destructor
   virtual ~TimIntLomaOst();
 
+  /*!
+  \brief initialization
 
+  */
+  virtual void Init();
 
 
 protected:

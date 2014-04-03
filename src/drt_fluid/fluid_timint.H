@@ -72,6 +72,8 @@ public:
   */
   virtual ~TimInt();
 
+  virtual void Init() = 0;
+
   virtual Teuchos::RCP<const Epetra_Vector> InitialGuess()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
   virtual Teuchos::RCP<const Epetra_Vector> TrueResidual()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
@@ -320,8 +322,8 @@ public:
   /// apply external forces to the fluid
   virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
-  ///  set fields for low-Mach-number flow within outer iteration loop
-  virtual void SetIterLomaFields(
+  ///  set scalar fields within outer iteration loop
+  virtual void SetIterScalarFields(
       Teuchos::RCP<const Epetra_Vector> scalaraf,
       Teuchos::RCP<const Epetra_Vector> scalaram,
       Teuchos::RCP<const Epetra_Vector> scalardtam,
@@ -333,8 +335,8 @@ public:
       Teuchos::RCP<DRT::Discretization> scatradis)
   { dserror("Not implemented in the base class, may be overridden by a subclass."); }
 
-  /// set fields for low-Mach-number flow at end of time step
-  virtual void SetTimeLomaFields(
+  /// set scalar fields
+  virtual void SetScalarFields(
       Teuchos::RCP<const Epetra_Vector> scalarnp,
       const double                      thermpressnp,
       Teuchos::RCP<const Epetra_Vector> scatraresidual,

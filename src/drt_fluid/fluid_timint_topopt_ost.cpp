@@ -34,6 +34,23 @@ FLD::TimIntTopOptOst::TimIntTopOptOst(
 
 
 /*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntTopOptOst::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntOneStepTheta::Init();
+  TimIntTopOpt::Init();
+
+  // write output
+  Output();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
 FLD::TimIntTopOptOst::~TimIntTopOptOst()

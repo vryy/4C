@@ -180,6 +180,15 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
   // this has to be done before all state vectors are initialized
+
+  // -------------------------------------------------------------------
+  // connect degrees of freedom for periodic boundary conditions
+  // -------------------------------------------------------------------
+  // note: pbcs have to be correctly set up before extended ghosting is applied
+  pbc_ = Teuchos::rcp(new PeriodicBoundaryConditions (discret_, false));
+  pbc_->UpdateDofsForPeriodicBoundaryConditions();
+  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
+
   return;
 }
 
@@ -236,13 +245,6 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // -------------------------------------------------------------------
   if (neumanninflow_ and convheatrans_)
     dserror("Neumann inflow and convective heat transfer boundary conditions must not appear simultaneously for the same problem!");
-
-  // -------------------------------------------------------------------
-  // connect degrees of freedom for periodic boundary conditions
-  // -------------------------------------------------------------------
-  pbc_ = Teuchos::rcp(new PeriodicBoundaryConditions (discret_, false));
-  pbc_->UpdateDofsForPeriodicBoundaryConditions();
-  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
 
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 

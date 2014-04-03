@@ -57,6 +57,12 @@ public:
   virtual ~TimIntRedModels();
 
   /*!
+  \brief initialization
+
+  */
+  virtual void Init();
+
+  /*!
   \brief evaluate problem-dependent bounadry consitions: update the 3D-to-reduced_D coupling data for dirichlet bc in this context
 
   */

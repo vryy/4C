@@ -68,6 +68,9 @@ namespace ADAPTER {
         bool isale,
         bool dirichletcond);
 
+    /// initialize algorithm
+    virtual void Init();
+
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap();
 
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds);
@@ -191,6 +194,7 @@ namespace ADAPTER {
     Teuchos::RCP<DRT::Discretization>      dis_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
+    bool dirichletcond_;
     //@}
 
     //! \brief interface map setup for fsi interface, free surface, interior translation

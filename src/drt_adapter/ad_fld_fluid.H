@@ -114,6 +114,9 @@ namespace ADAPTER {
     /// virtual destructor to get polymorph destruction
     virtual ~Fluid();
 
+    /// initialize time integration
+    virtual void Init() = 0;
+
     //! @name Vector access
 
     /// initial guess of Newton's method
@@ -233,8 +236,8 @@ namespace ADAPTER {
     /// apply external forces to the fluid
     virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) = 0;
 
-    ///  set fields for low-Mach-number flow within outer iteration loop
-    virtual void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+    ///  set scalar fields within outer iteration loop
+    virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
                                    Teuchos::RCP<const Epetra_Vector> scalaram,
                                    Teuchos::RCP<const Epetra_Vector> scalardtam,
                                    Teuchos::RCP<const Epetra_Vector> fsscalaraf,
@@ -244,8 +247,8 @@ namespace ADAPTER {
                                    const double             thermpressdtam,
                                    Teuchos::RCP<DRT::Discretization> scatradis) = 0;
 
-    /// set fields for low-Mach-number flow at end of time step
-    virtual void SetTimeLomaFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
+    /// set scalar fields
+    virtual void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
                                    const double             thermpressnp,
                                    Teuchos::RCP<const Epetra_Vector> scatraresidual,
                                    Teuchos::RCP<DRT::Discretization> scatradis,

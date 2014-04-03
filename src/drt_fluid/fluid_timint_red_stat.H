@@ -37,7 +37,11 @@ public:
   /// Destructor
   virtual ~TimIntRedModelsStat();
 
+  /*!
+  \brief initialization
 
+  */
+  virtual void Init();
 
 
 protected:

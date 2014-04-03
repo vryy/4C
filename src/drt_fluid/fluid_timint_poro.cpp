@@ -31,7 +31,15 @@ FLD::TimIntPoro::TimIntPoro(
         bool                                          alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis,solver,params,output,alefluid)
 {
+  return;
+}
 
+
+/*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntPoro::Init()
+{
   Teuchos::ParameterList *  stabparams;
   if (discret_->Name()=="fluid" and DRT::Problem::Instance()->ProblemType()==prb_fpsi)
     stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));

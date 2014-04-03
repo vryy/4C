@@ -38,6 +38,12 @@ public:
   virtual ~TimIntStationary();
 
   /*!
+  \brief initialization
+
+  */
+  virtual void Init();
+
+  /*!
   \brief Do time integration (time loop)
 
   */
@@ -129,12 +135,6 @@ public:
   const double TimIntParam() const;
 
   /*!
-  \brief filtered quantities for classical LES models
-
-  */
-  void ApplyScaleSeparationForLES();
-
-  /*!
   \brief return scaling factor for the residual
 
   */
@@ -142,6 +142,12 @@ public:
   {
     return 1.0;
   }
+
+  /*!
+  \brief velocity required for evaluation of related quantites required on element level
+
+  */
+  const Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return Teuchos::null;};
 
 protected:
 

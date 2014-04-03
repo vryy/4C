@@ -29,10 +29,22 @@ FLD::TimIntRedModelsStat::TimIntRedModelsStat(
       TimIntStationary(actdis,solver,params,output,alefluid),
       TimIntRedModels(actdis,solver,params,output,alefluid)
 {
-
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntRedModelsStat::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntStationary::Init();
+  TimIntRedModels::Init();
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |

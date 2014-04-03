@@ -29,6 +29,19 @@ FLD::TimIntPoroStat::TimIntPoroStat(
       TimIntStationary(actdis,solver,params,output,alefluid),
       TimIntPoro(actdis,solver,params,output,alefluid)
 {
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntPoroStat::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntStationary::Init();
+  TimIntPoro::Init();
 
   return;
 }

@@ -314,6 +314,9 @@ namespace FLD
         bool                                          alefluid = false ///< flag for alefluid
       );
 
+    /// initialization
+    virtual void Init();
+
     /// check xfluid input parameter list
     void CheckXFluidParams(Teuchos::ParameterList& params_xfem,
         Teuchos::ParameterList& params_xf_gen,

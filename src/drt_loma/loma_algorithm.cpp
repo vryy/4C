@@ -211,7 +211,7 @@ void LOMA::Algorithm::TimeLoop()
   else
   // set scalar field and thermodynamic pressure for evaluation of
   // Neumann boundary conditions in FLUID at beginning of first time step
-  FluidField().SetTimeLomaFields(ScaTraField()->Phinp(),
+  FluidField().SetScalarFields(ScaTraField()->Phinp(),
                                  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressNp(),
                                  Teuchos::null,
                                  ScaTraField()->Discretization());
@@ -265,7 +265,7 @@ void LOMA::Algorithm::InitialCalculations()
 
   // set initial scalar field and thermodynamic pressure for evaluation of
   // Neumann boundary conditions in FLUID at beginning of first time step
-  FluidField().SetTimeLomaFields(ScaTraField()->Phinp(),
+  FluidField().SetScalarFields(ScaTraField()->Phinp(),
                                  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressNp(),
                                  Teuchos::null,
                                  ScaTraField()->Discretization());
@@ -494,7 +494,7 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
   {
   case INPAR::FLUID::timeint_afgenalpha:
   {
-    FluidField().SetIterLomaFields(ScaTraField()->Phiaf(),
+    FluidField().SetIterScalarFields(ScaTraField()->Phiaf(),
                                    ScaTraField()->Phiam(),
                                    ScaTraField()->Phidtam(),
                                    ScaTraField()->FsPhi(),
@@ -507,7 +507,7 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
   break;
   case INPAR::FLUID::timeint_one_step_theta:
   {
-    FluidField().SetIterLomaFields(ScaTraField()->Phinp(),
+    FluidField().SetIterScalarFields(ScaTraField()->Phinp(),
                                    ScaTraField()->Phin(),
                                    ScaTraField()->Phidtnp(),
                                    ScaTraField()->FsPhi(),
@@ -762,7 +762,7 @@ void LOMA::Algorithm::Output()
   // set scalar and thermodynamic pressure at n+1 and SCATRA trueresidual
   // for statistical evaluation and evaluation of Neumann boundary
   // conditions at the beginning of the subsequent time step
-  FluidField().SetTimeLomaFields(ScaTraField()->Phinp(),
+  FluidField().SetScalarFields(ScaTraField()->Phinp(),
                                  Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressNp(),
                                  ScaTraField()->TrueResidual(),
                                  ScaTraField()->Discretization());
@@ -790,7 +790,7 @@ void LOMA::Algorithm::ReadInflowRestart(int restart)
   //          to obtain non-zero values which otherwise cause troubles when dividing by them
   //          we have to set the temperature field here
   // set initial scalar field
-  FluidField().SetTimeLomaFields(ScaTraField()->Phinp(),
+  FluidField().SetScalarFields(ScaTraField()->Phinp(),
                                  0.0,
                                  Teuchos::null,
                                  ScaTraField()->Discretization());

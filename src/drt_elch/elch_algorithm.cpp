@@ -196,7 +196,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
   {
   case INPAR::FLUID::timeint_stationary:
   {
-    FluidField().SetIterLomaFields(
+    FluidField().SetIterScalarFields(
         Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchNp(),
         Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchNp(), // we have to provide something here
         Teuchos::null,
@@ -211,7 +211,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
   case INPAR::FLUID::timeint_one_step_theta:
   case INPAR::FLUID::timeint_bdf2:
   {
-    FluidField().SetIterLomaFields(
+    FluidField().SetIterScalarFields(
         Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchNp(),
         Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchN(),
         Teuchos::null,
@@ -343,7 +343,7 @@ void ELCH::Algorithm::UpdateConvection()
   // density time derivative is not used for OST and BDF2 (pass zero vector)
   // thermodynamic pressure values are set to 1.0 and its derivative to 0.0
 
-  // here SetIterLomaFields is only necessary if the density is used to update the accelerations
+  // here SetIterScalarFields is only necessary if the density is used to update the accelerations
   // otherwise it is a redundant step since the density is multiplied to the history vector in the element
   /*
   int numscal = 1;
@@ -354,7 +354,7 @@ void ELCH::Algorithm::UpdateConvection()
   case timeint_one_step_theta:
   case timeint_bdf2:
   {
-    FluidField().SetIterLomaFields(
+    FluidField().SetIterScalarFields(
         ScaTraField().DensElchNp(),
         ScaTraField().DensElchN(),
         Teuchos::null,
@@ -373,7 +373,7 @@ void ELCH::Algorithm::UpdateConvection()
   FluidField().Update();
 
   // Update density at time steps n+1 and n
-  // Update density after SetTimeLomaFields
+  // Update density after SetScalarFields
   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->UpdateDensityElch();
 
   return;
@@ -393,7 +393,7 @@ void ELCH::Algorithm::Output()
   {
     // if statistics for one-way coupled problems is performed, provide
     // the field for the first scalar!
-    FluidField().SetTimeLomaFields(
+    FluidField().SetScalarFields(
         ScaTraField()->Phinp(),
         0.0,
         Teuchos::null,
@@ -465,7 +465,7 @@ void ELCH::Algorithm::OuterIterationConvection()
     // pass actual density field to fluid discretisation
     // Density derivative is not used for OST, BDF2 and convective formulation
     Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->ComputeDensity();
-    FluidField().SetTimeLomaFields(
+    FluidField().SetScalarFields(
         Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->DensElchNp(),
         0.0,
         Teuchos::null,

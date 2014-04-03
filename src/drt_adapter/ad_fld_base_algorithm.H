@@ -37,10 +37,13 @@ namespace ADAPTER {
   public:
 
     /// constructor which distinguishes different discretizations for different fluids in multi-fluid field problems // rauch 09/13
-    explicit FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn, const std::string& disname, bool isale);
-
-    /// overloaded constructor which decides internally which fluid to build. (fsi/xffsi issue) // rauch 09/13
-    explicit FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn, bool isale);
+    explicit FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
+                                const Teuchos::ParameterList& fdyn,
+                                const std::string& disname,
+                                bool isale,
+                                bool init = true); // initialize time-integration scheme immediately
+    // remark: parameter init allows for distinguishing an immediate initialization of all members and state vectors and a
+    //         later initialization which enables a later modifications of the maps
 
     /// second constructor (special version for turbulent flows with separate inflow
     /// section for generation of turbulent inflow profiles)
@@ -70,7 +73,11 @@ namespace ADAPTER {
      * block preconditioner (BGS or SIMPLE type). The block preconditioners use the information form the
      * FLUID SOLVER and the FLUID PRESSURE SOLVER block for the velocity and pressure dofs.
      */
-    void SetupFluid(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn, const std::string& disname, bool& isale);
+    void SetupFluid(const Teuchos::ParameterList& prbdyn,
+                    const Teuchos::ParameterList& fdyn,
+                    const std::string& disname,
+                    bool isale,
+                    bool init);
 
     /// setup second fluid algorithm (overriding some fluid parameters with
     /// values specified in given problem-dependent Turbulent Inflow ParameterList)

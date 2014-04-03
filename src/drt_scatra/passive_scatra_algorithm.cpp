@@ -184,7 +184,7 @@ void SCATRA::PassiveScaTraAlgorithm::Output()
   {
     // if statistics for one-way coupled problems is performed, provide
     // the field for the first scalar!
-    FluidField().SetTimeLomaFields(
+    FluidField().SetScalarFields(
         ScaTraField()->Phinp(),
         0.0,
         ScaTraField()->TrueResidual(),

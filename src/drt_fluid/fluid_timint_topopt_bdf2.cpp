@@ -34,6 +34,23 @@ FLD::TimIntTopOptBDF2::TimIntTopOptBDF2(
 
 
 /*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntTopOptBDF2::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntBDF2::Init();
+  TimIntTopOpt::Init();
+
+  // write output
+  Output();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
 FLD::TimIntTopOptBDF2::~TimIntTopOptBDF2()

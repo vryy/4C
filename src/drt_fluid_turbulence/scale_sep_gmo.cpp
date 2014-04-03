@@ -803,7 +803,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
 
 
 void FLD::LESScaleSeparation::ApplyScaleSeparation(
-  Teuchos::RCP<Epetra_Vector> vel,
+  const Teuchos::RCP<const Epetra_Vector> vel,
   Teuchos::RCP<Epetra_Vector> fsvel)
 {
   if (!sepmat_build_)

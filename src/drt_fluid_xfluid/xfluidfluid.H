@@ -248,6 +248,9 @@ namespace FLD
         bool                                          monolithicfluidfluidfsi = false
       );
 
+    /// initialization
+    virtual void Init();
+
     ///  prepare embedded discretization for Nitsche-Coupling-Type Ale-Sided
     void PrepareEmbeddedDistribution();
 

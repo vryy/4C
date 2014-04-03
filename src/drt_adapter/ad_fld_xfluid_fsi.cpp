@@ -45,6 +45,15 @@ ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP< Fluid> fluid,   // the XFluid object
   // make sure
   if (fluid_ == Teuchos::null)
     dserror("Failed to create the underlying fluid adapter");
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::XFluidFSI::Init()
+{
+  // call base class init
+  FluidWrapper::Init();
 
   // cast fluid to fluidimplicit
   xfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid_);

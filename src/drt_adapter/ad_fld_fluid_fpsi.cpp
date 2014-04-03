@@ -30,8 +30,19 @@ ADAPTER::FluidFPSI::FluidFPSI(Teuchos::RCP<Fluid> fluid,
 : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond),
   fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor()))
 {
-  fpsiinterface_->Setup(*dis,true);
-
+  return;
 } // constructor
+
+
+/* initialization */
+void ADAPTER::FluidFPSI::Init()
+{
+  // call base class init
+  FluidFSI::Init();
+
+  fpsiinterface_->Setup(*dis_,true);
+
+  return;
+}
 
 

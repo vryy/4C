@@ -75,7 +75,7 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
   // ask base algorithm for the fluid time integrator
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,DRT::Problem::Instance()->FluidDynamicParams(),true));
+  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true));
   fluid_ = fluid->FluidFieldrcp();
 
   // ask base algorithm for the ale time integrator

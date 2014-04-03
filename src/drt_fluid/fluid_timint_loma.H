@@ -38,10 +38,16 @@ public:
   virtual ~TimIntLoma();
 
   /*!
-  \brief set fields for low-Mach-number flow within outer iteration loop
+  \brief initialization
 
   */
-  void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+  virtual void Init();
+
+  /*!
+  \brief set scalar fields within outer iteration loop
+
+  */
+  void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
                          Teuchos::RCP<const Epetra_Vector> scalaram,
                          Teuchos::RCP<const Epetra_Vector> scalardtam,
                          Teuchos::RCP<const Epetra_Vector> fsscalaraf,
@@ -53,10 +59,10 @@ public:
 
 
   /*!
-  \brief set fields for low-Mach-number flow at end of time step
+  \brief set scalar fields
 
   */
-  void SetTimeLomaFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
+  void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
                          const double             thermpressnp,
                          Teuchos::RCP<const Epetra_Vector> scatraresidual,
                          Teuchos::RCP<DRT::Discretization> scatradis,

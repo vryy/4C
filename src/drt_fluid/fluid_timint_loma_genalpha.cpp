@@ -29,6 +29,19 @@ FLD::TimIntLomaGenAlpha::TimIntLomaGenAlpha(
       TimIntGenAlpha(actdis,solver,params,output,alefluid),
       TimIntLoma(actdis,solver,params,output,alefluid)
 {
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntLomaGenAlpha::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntGenAlpha::Init();
+  TimIntLoma::Init();
 
   return;
 }

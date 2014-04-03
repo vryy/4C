@@ -107,11 +107,40 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   samstart_(-1),
   samstop_(-1),
   excludeXfem_(false),
+  external_loads_(Teuchos::null),
   Sep_(Teuchos::null),
   fsvelafStd_(Teuchos::null),
   fsvelafXfem_(Teuchos::null),
   Cs_(0.0),
-  redist_this_step_(true)
+  redist_this_step_(true),
+  repellant_force_(DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"REPELLANT_FORCE"))
+{
+  //------------------------------------------------------------------------------------------------
+  // connect degrees of freedom for periodic boundary conditions
+  //------------------------------------------------------------------------------------------------
+  {
+    // set elements to 'standard mode' so the parallel redistribution (includes call of FillComplete)
+    // hidden in the construction of periodic boundary condition runs correctly
+    // remark: the 'elementdofmanager' would get lost packing and unpacking the elements
+    Teuchos::ParameterList eleparams;
+    eleparams.set("action","set_standard_mode");
+    discret_->Evaluate(eleparams);
+
+    // we need to keep pbc_ in order to update the PBCDofset without
+    // losing the DofGid range that the PBCDofset is assigned here
+    pbc_ = Teuchos::rcp(new PeriodicBoundaryConditions(discret_));
+    pbc_->UpdateDofsForPeriodicBoundaryConditions();
+    col_pbcmapmastertoslave_ = pbc_->ReturnAllCoupledColNodes();
+    row_pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
+  }
+
+  return;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | Initialization                                                                 rasthofer 04/13 |
+ *------------------------------------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::Init()
 {
   //------------------------------------------------------------------------------------------------
   // time measurement: initialization
@@ -137,25 +166,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 
   numdim_ = params_->get<int>("number of velocity degrees of freedom");
   if (numdim_ != 3) dserror("COMBUST only supports 3D problems.");
-
-  //------------------------------------------------------------------------------------------------
-  // connect degrees of freedom for periodic boundary conditions
-  //------------------------------------------------------------------------------------------------
-  {
-    // set elements to 'standard mode' so the parallel redistribution (includes call of FillComplete)
-    // hidden in the construction of periodic boundary condition runs correctly
-    // remark: the 'elementdofmanager' would get lost packing and unpacking the elements
-    Teuchos::ParameterList eleparams;
-    eleparams.set("action","set_standard_mode");
-    discret_->Evaluate(eleparams);
-
-    // we need to keep pbc_ in order to update the PBCDofset without
-    // losing the DofGid range that the PBCDofset is assigned here
-    pbc_ = Teuchos::rcp(new PeriodicBoundaryConditions(discret_));
-    pbc_->UpdateDofsForPeriodicBoundaryConditions();
-    col_pbcmapmastertoslave_ = pbc_->ReturnAllCoupledColNodes();
-    row_pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
-  }
 
   //------------------------------------------------------------------------------------------------
   // consistency checks
@@ -739,22 +749,12 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::PrepareSolve()
 {
-
-  // -------------------------------------------------------------------
-  // set part of the rhs vector belonging to the old timestep
-  // -------------------------------------------------------------------
-  // TODO Do we need this?
-//  UTILS::SetOldPartOfRighthandside(
-//      state_.veln_, state_.velnm_, state_.accn_,
-//          timealgo_, dta_, theta_,
-//          hist_);
-
   // -------------------------------------------------------------------
   //                     do explicit predictor step
   // -------------------------------------------------------------------
   //
 //  {
-//    // TODO Was davon brauchen wir?
+//    // currently not available
 //    if (step_>1)
 //    {
 //      double timealgo_constant=theta_;
@@ -917,6 +917,14 @@ void FLD::CombustFluidImplicitTimeInt::PrepareSolve()
   else
     dserror("Received more than one KrylovSpaceCondition for fluid field");
 
+  // -------------------------------------------------------------------
+  //                     prepare external load
+  // -------------------------------------------------------------------
+  // evaluate node-based forces
+  // (currently only required for turbulent bubbly channel flow)
+  ComputeExternalForces();
+
+  return;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -1538,6 +1546,10 @@ void FLD::CombustFluidImplicitTimeInt::Solve()
 
         // add Neumann loads
         residual_->Update(1.0,*neumann_loads_,0.0);
+
+        // add external loads
+        if(external_loads_ != Teuchos::null)
+          residual_->Update(1.0/ResidualScaling(),*external_loads_,1.0);
 
         // create the parameters for the discretization
         Teuchos::ParameterList eleparams;
@@ -6093,3 +6105,94 @@ std::string FLD::CombustFluidImplicitTimeInt::MapTimIntEnumToString(const enum I
   return "";
 }
 
+
+/*------------------------------------------------------------------------------------------------*
+| evaluate node-based forces                                                      rasthofer 03/14 |
+*-------------------------------------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::ComputeExternalForces()
+{
+  // compute repellant bubble-wall interaction force for turbulent bubbly channel flow
+  if (special_flow_ == "bubbly_channel_flow" and repellant_force_ == true)
+  {
+    external_loads_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+
+    // reference for further details: Bolotnov et al. / International Journal of Multiphase Flow 31 (2011) 647-659
+    //
+    // F = mu * U * R * ( a_1 / d_w + a_2 / (d_w)^2) * n
+    //
+    // U: local mean axial fluid velocity -> computed here using a simplified version of inner layer velocity profile
+
+    // band around interface for application of force
+    const double epsilon = 0.0175;
+    // bubble radius
+    const double radius = 0.5;
+    // further constants
+    const double a1 = 550.0;
+    const double a2 = 35.0;
+    // friction Reynolds number
+    const double Retau = 180.0;
+    // friction velocity
+    const double utau = 0.065833;
+    // parameters for low-law
+    const double kappa_inv = 1.0/0.41;
+    const double B_log = 5.2;
+    // dynamic viscosity of liquid phase
+    const double visc = 0.00036574;
+
+    // loop all nodes on this proc
+    for (int inode=0; inode<discret_->NumMyRowNodes(); inode++)
+    {
+      // get node
+      DRT::Node* actnode = discret_->lRowNode(inode);
+      // get y-coordinate of node
+      const double ycoord = actnode->X()[1];
+
+      // check if node is close to the wall, i.e., within band for lubrication force
+      const double distance = 1.0-std::abs(ycoord);
+      if (distance < (4.0*epsilon))
+      {
+        // get gid of node
+        const int nodegid = actnode->Id();
+        // level-set value
+        const double phinode = (*phinp_)[(discret_->NodeColMap())->LID(nodegid)];
+
+        // check if node is in band around interface
+        if (std::abs(phinode) < epsilon)
+        {
+          // compute local mean axial fluid velocity
+          double U_ax = 0.0;
+
+          // compute approximate axial velocity according to law for viscous sublayer
+          const double u_visc = distance * Retau * utau;
+          // compute approximate axial velocity according to law for log-layer
+          double u_log = 1.0e12;
+          if (distance > 1.0e-7)
+            u_log = (kappa_inv * log(distance * Retau) + B_log) * utau;
+
+          if (u_visc < u_log) U_ax = u_visc;
+          else U_ax = u_log;
+
+          // compute force
+          const double force = visc * U_ax * radius * (a1/distance + a2/(distance*distance)) * (-1.0*ycoord/std::abs(ycoord));
+
+          // insert in vector
+          const std::set<XFEM::FieldEnr>& fieldenrset(dofmanagerForOutput_->getNodeDofSet(nodegid));
+          for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin(); fieldenr != fieldenrset.end();++fieldenr)
+          {
+            if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+            {
+              if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
+              {
+                const XFEM::DofKey dofkey(nodegid, *fieldenr);
+                const int dofpos = state_.nodalDofDistributionMap_.find(dofkey)->second;
+                (*external_loads_)[discret_->DofRowMap()->LID(dofpos)] = force;
+              }
+            }
+          }
+        } // end if in band
+      } // end if distance wall
+
+    } // end loop all nodes
+  }
+  return;
+}

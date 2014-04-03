@@ -38,6 +38,12 @@ public:
   virtual ~TimIntGenAlpha();
 
   /*!
+  \brief initialization
+
+  */
+  virtual void Init();
+
+  /*!
   \brief Print information about current time step to screen (reimplementation)
 
   */
@@ -140,12 +146,6 @@ public:
   */
   const double TimIntParam() const;
 
-  /*!
-  \brief filtered quantities for classical LES models
-
-  */
-  void ApplyScaleSeparationForLES();
-
   //! @name methods for fsi
   /// Extrapolation of vectors from mid-point to end-point t_{n+1}
   Teuchos::RCP<Epetra_Vector> ExtrapolateEndPoint(
@@ -180,6 +180,12 @@ protected:
     return alphaM_/(gamma_*dta_);
 
   }
+
+  /*!
+  \brief velocity required for evaluation of related quantites required on element level
+
+  */
+  const Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return velaf_;};
 
 
 private:

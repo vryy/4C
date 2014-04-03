@@ -62,20 +62,16 @@ Maintainer: Ulrich Kuettler
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn, const std::string& disname, bool isale)
+ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(
+  const Teuchos::ParameterList& prbdyn,
+  const Teuchos::ParameterList& fdyn,
+  const std::string& disname,
+  bool isale,
+  bool init)
 {
-  SetupFluid(prbdyn, fdyn, disname, isale);
+  SetupFluid(prbdyn, fdyn, disname, isale, init);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn, bool isale)
-{
-  if(DRT::Problem::Instance()->ProblemType()==prb_fluid_fluid_fsi)
-    SetupFluid(prbdyn, fdyn, "xfluid", isale);
-  else
-    SetupFluid(prbdyn, fdyn, "fluid", isale);
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -97,7 +93,12 @@ ADAPTER::FluidBaseAlgorithm::~FluidBaseAlgorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn, const std::string& disname, bool& isale)
+void ADAPTER::FluidBaseAlgorithm::SetupFluid(
+  const Teuchos::ParameterList& prbdyn,
+  const Teuchos::ParameterList& fdyn,
+  const std::string& disname,
+  bool isale,
+  bool init)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ADAPTER::FluidBaseAlgorithm::SetupFluid");
   Teuchos::TimeMonitor monitor(*t);
@@ -529,7 +530,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
   }
 
-
   // sanity checks and default flags
   if ( probtype == prb_fsi_xfem or probtype == prb_fsi_crack )
   {
@@ -572,11 +572,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
   else if (probtype == prb_fpsi and disname == "fluid")
   {
-	  if (timeint == INPAR::FLUID::timeint_stationary)
-		  dserror("Stationary fluid solver not allowed for FPSI.");
+    if (timeint == INPAR::FLUID::timeint_stationary)
+      dserror("Stationary fluid solver not allowed for FPSI.");
 
-	  fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(prbdyn,"SECONDORDER"));
-	  fluidtimeparams->set<bool>("shape derivatives", DRT::INPUT::IntegralValue<int>(prbdyn,"SHAPEDERIVATIVES"));
+    fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(prbdyn,"SECONDORDER"));
+    fluidtimeparams->set<bool>("shape derivatives", DRT::INPUT::IntegralValue<int>(prbdyn,"SHAPEDERIVATIVES"));
   }
 
   // -------------------------------------------------------------------
@@ -635,9 +635,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
 
     if (probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi)
-    {
       dirichletcond = false;
-    }
 
     //------------------------------------------------------------------
     // create all vectors and variables associated with the time
@@ -734,7 +732,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     break;
     case prb_fluid_fluid_fsi:
     {
-      Teuchos::RCP<DRT::Discretization> bgfluiddis  =  DRT::Problem::Instance()->GetDis("fluid");
+      Teuchos::RCP<DRT::Discretization> embfluiddis  =  DRT::Problem::Instance()->GetDis("xfluid");
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
       bool monolithicfluidfluidfsi;
@@ -745,8 +743,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       else
         monolithicfluidfluidfsi = false;
 
-      Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(bgfluiddis,actdis,solver,fluidtimeparams,output,isale,monolithicfluidfluidfsi));
-      fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid,actdis,bgfluiddis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
+      Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(actdis,embfluiddis,solver,fluidtimeparams,output,isale,monolithicfluidfluidfsi));
+      fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid,embfluiddis,actdis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
     }
     break;
     case prb_fsi:
@@ -877,7 +875,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     default:
     {
       dserror("Undefined problem type.");
-       //fluid_ = Teuchos::rcp(new FLD::FluidImplicitTimeInt(actdis, solver, fluidtimeparams, output, isale));
     }
     break;
     } // end switch (probtype)
@@ -887,22 +884,25 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     dserror("Unknown time integration for fluid\n");
   }
 
-  // set initial field by given function
-  // we do this here, since we have direct access to all necessary parameters
-  INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
-  if(initfield != INPAR::FLUID::initfield_zero_field)
+  // initialize algorithm for specific time-integration scheme
+  if (init)
   {
-    int startfuncno = fdyn.get<int>("STARTFUNCNO");
-    if (initfield != INPAR::FLUID::initfield_field_by_function and
-        initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
-    {
-      startfuncno=-1;
-    }
-    fluid_->SetInitialFlowField(initfield,startfuncno);
-  }
+    fluid_->Init();
 
-  if (probtype==prb_fluid_topopt and timeint!=INPAR::FLUID::timeint_stationary)
-    fluid_->Output();
+    // set initial field by given function
+    // we do this here, since we have direct access to all necessary parameters
+    INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
+    if(initfield != INPAR::FLUID::initfield_zero_field)
+    {
+      int startfuncno = fdyn.get<int>("STARTFUNCNO");
+      if (initfield != INPAR::FLUID::initfield_field_by_function and
+          initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
+      {
+        startfuncno=-1;
+      }
+      fluid_->SetInitialFlowField(initfield,startfuncno);
+    }
+  }
 
   return;
 }
@@ -1047,6 +1047,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   {
     dserror("Unknown time integration for fluid\n");
   }
+
+  // initialize algorithm for specific time-integration scheme
+  fluid_->Init();
 
   // set initial field for inflow section by given function
   // we do this here, since we have direct access to all necessary parameters

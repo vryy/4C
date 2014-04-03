@@ -40,6 +40,9 @@ namespace ADAPTER {
         bool isale,
         bool dirichletcond);
 
+    /// initialize algorithm
+    virtual void Init();
+
     /// communication object at the interface without pressure dofs for FPSI problems
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const { return fpsiinterface_; }
 

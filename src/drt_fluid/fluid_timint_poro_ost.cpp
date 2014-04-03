@@ -35,6 +35,20 @@ FLD::TimIntPoroOst::TimIntPoroOst(
 
 
 /*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntPoroOst::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntOneStepTheta::Init();
+  TimIntPoro::Init();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                     bk 11/13 |
 *----------------------------------------------------------------------*/
 FLD::TimIntPoroOst::~TimIntPoroOst()

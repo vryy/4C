@@ -21,9 +21,17 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid,
 : FluidFSI(fluid,dis,solver,params,output,isale,dirichletcond)
 {
   // make sure
-
   if (fluid_ == Teuchos::null)
     dserror("Failed to create the underlying fluid adapter");
+  return;
+}
+
+/*======================================================================*/
+/* initialization */
+void ADAPTER::FluidLung::Init()
+{
+  // call base class init
+  FluidFSI::Init();
 
   // get lung fluid-structure volume constraints
 

@@ -37,6 +37,12 @@ public:
   virtual ~TimIntBDF2();
 
   /*!
+  \brief initialization
+
+  */
+  virtual void Init();
+
+  /*!
   \brief Print information about current time step to screen
 
   */
@@ -128,12 +134,6 @@ public:
   const double TimIntParam() const;
 
   /*!
-  \brief filtered quantities for classical LES models
-
-  */
-  void ApplyScaleSeparationForLES();
-
-  /*!
   \brief return scaling factor for the residual
 
   */
@@ -146,6 +146,12 @@ protected:
 
   /// copy constructor
   TimIntBDF2 (const TimIntBDF2& old);
+
+  /*!
+  \brief velocity required for evaluation of related quantites required on element level
+
+  */
+  const Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return velnp_;};
 
 
 private:

@@ -104,6 +104,9 @@ public:
   */
   virtual ~CombustFluidImplicitTimeInt();
 
+  /// initialization of all members
+  void Init();
+
   /// return type of time integration scheme
   const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
 
@@ -525,6 +528,9 @@ protected:
   /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
   const Teuchos::RCP<const Epetra_Vector> Dirichlet();
 
+  /// evaluate node-based forces (currently only required for turbulent bubbly channel flow)
+  void ComputeExternalForces();
+
   //! @name general algorithm parameters
   Teuchos::ParameterList&                       xparams_;
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle_;
@@ -649,6 +655,9 @@ protected:
   /// the vector containing body and surface forces
   Teuchos::RCP<Epetra_Vector>    neumann_loads_;
 
+  /// the vector containing external loads
+  Teuchos::RCP<Epetra_Vector>    external_loads_;
+
   /// the vector containing potential Neumann-type outflow stabilization
   Teuchos::RCP<Epetra_Vector>    outflow_stabil_;
 
@@ -720,6 +729,9 @@ protected:
 
   //! did we do a redistribution in this TS
   bool redist_this_step_;
+
+  //! flag for repellant force for turbulent bubbly channel flow
+  bool repellant_force_;
 
 }; // class CombustFluidImplicitTimeInt
 

@@ -36,7 +36,15 @@ FLD::TimIntLoma::TimIntLoma(
       thermpressdtaf_(0.0),
       thermpressdtam_(0.0)
 {
+  return;
+}
 
+
+/*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntLoma::Init()
+{
   // conservative formulation currently not supported in low-Mach-number case
   // when using generalized-alpha time-integration scheme
   if (convform_ == "conservative")
@@ -79,7 +87,7 @@ FLD::TimIntLoma::~TimIntLoma()
 /*----------------------------------------------------------------------*
  | set fields for low-Mach-number flow within iteration loop   vg 09/09 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::SetIterLomaFields(
+void FLD::TimIntLoma::SetIterScalarFields(
    Teuchos::RCP<const Epetra_Vector> scalaraf,
    Teuchos::RCP<const Epetra_Vector> scalaram,
    Teuchos::RCP<const Epetra_Vector> scalardtam,
@@ -90,7 +98,7 @@ void FLD::TimIntLoma::SetIterLomaFields(
    const double             thermpressdtam,
    Teuchos::RCP<DRT::Discretization> scatradis)
 {
-  FluidImplicitTimeInt::SetIterLomaFields(scalaraf,scalaram,scalardtam,fsscalaraf,
+  FluidImplicitTimeInt::SetIterScalarFields(scalaraf,scalaram,scalardtam,fsscalaraf,
       thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,scatradis);
 
   //--------------------------------------------------------------------------
@@ -104,12 +112,12 @@ void FLD::TimIntLoma::SetIterLomaFields(
 
   return;
 
-} // TimIntLoma::SetIterLomaFields
+} // TimIntLoma::SetIterScalarFields
 
 /*----------------------------------------------------------------------*
- | set fields for low-Mach-number flow at end of time step     vg 09/09 |
+ | set scalar fields     vg 09/09 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::SetTimeLomaFields(
+void FLD::TimIntLoma::SetScalarFields(
    Teuchos::RCP<const Epetra_Vector> scalarnp,
    const double             thermpressnp,
    Teuchos::RCP<const Epetra_Vector> scatraresidual,
@@ -117,7 +125,7 @@ void FLD::TimIntLoma::SetTimeLomaFields(
    const int                whichscalar)
 {
 
-  FluidImplicitTimeInt::SetTimeLomaFields(scalarnp,thermpressnp,scatraresidual,scatradis,whichscalar);
+  FluidImplicitTimeInt::SetScalarFields(scalarnp,thermpressnp,scatraresidual,scatradis,whichscalar);
   //--------------------------------------------------------------------------
   // get thermodynamic pressure at n+1
   //--------------------------------------------------------------------------
@@ -126,7 +134,7 @@ void FLD::TimIntLoma::SetTimeLomaFields(
 
   return;
 
-} // TimIntLoma::SetTimeLomaFields
+} // TimIntLoma::SetScalarFields
 
 // -------------------------------------------------------------------
 // set loma parameters                               rasthofer 03/2012

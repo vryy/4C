@@ -27,11 +27,22 @@ ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> fluid,
   bgfluiddis_(bgfluiddis),
   solver_(solver),
   params_(params),
+  dirichletcond_(dirichletcond),
   monolithicfluidfluidfsi_(monolithicfluidfluidfsi)
 {
   // make sure
   if (fluid_ == Teuchos::null)
     dserror("Failed to create the underlying fluid adapter");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidFluidFSI::Init()
+{
+  // call base class init
+  FluidWrapper::Init();
 
   // cast fluid to fluidimplicit
   xfluidfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(fluid_);
@@ -43,9 +54,9 @@ ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> fluid,
 
 
   monolithic_approach_= DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
-                        (params->sublist("XFLUID DYNAMIC/GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
+                        (params_->sublist("XFLUID DYNAMIC/GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
 
-  interface_->Setup(*embfluiddis);
+  interface_->Setup(*embfluiddis_);
   xfluidfluid_->SetSurfaceSplitter(&(*interface_));
 
   // build inner velocity map
@@ -76,7 +87,7 @@ ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> fluid,
   finalmaps.push_back(VelocityRowMap());
   innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(finalmaps);
 
-  if (dirichletcond)
+  if (dirichletcond_)
   {
     // mark all interface velocities as dirichlet values
     xfluidfluid_->AddDirichCond(interface_->FSICondMap());

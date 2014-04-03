@@ -67,6 +67,9 @@ namespace ADAPTER {
         Teuchos::RCP<Teuchos::ParameterList>   params,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
+    /// initialize algorithm
+    virtual void Init();
+
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
 

@@ -35,6 +35,20 @@ FLD::TimIntRedModelsBDF2::TimIntRedModelsBDF2(
 
 
 /*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntRedModelsBDF2::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntBDF2::Init();
+  TimIntRedModels::Init();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
 FLD::TimIntRedModelsBDF2::~TimIntRedModelsBDF2()

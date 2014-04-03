@@ -51,6 +51,9 @@ namespace ADAPTER {
         bool isale,
         bool dirichletcond);
 
+    /// initialize algorithm
+    virtual void Init();
+
     /// List of fluid-structure volume constraints
     void ListLungVolCons(std::set<int>& LungVolConIDs,
                          int& MinLungVolConID);

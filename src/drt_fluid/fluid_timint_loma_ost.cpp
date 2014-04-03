@@ -36,6 +36,20 @@ FLD::TimIntLomaOst::TimIntLomaOst(
 
 
 /*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntLomaOst::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntOneStepTheta::Init();
+  TimIntLoma::Init();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                     bk 11/13 |
 *----------------------------------------------------------------------*/
 FLD::TimIntLomaOst::~TimIntLomaOst()

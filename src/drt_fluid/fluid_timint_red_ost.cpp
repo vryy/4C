@@ -35,6 +35,20 @@ FLD::TimIntRedModelsOst::TimIntRedModelsOst(
 
 
 /*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntRedModelsOst::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntOneStepTheta::Init();
+  TimIntRedModels::Init();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
 FLD::TimIntRedModelsOst::~TimIntRedModelsOst()

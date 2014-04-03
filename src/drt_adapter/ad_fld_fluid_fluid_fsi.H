@@ -66,6 +66,8 @@ namespace ADAPTER {
         bool dirichletcond,
         bool monolithicfluidfluidfsi);
 
+    virtual void Init();
+
     virtual double TimeScaling() const;
 
     virtual void Update();
@@ -157,6 +159,8 @@ namespace ADAPTER {
 
     /// all velocity dofs not at the interface
     Teuchos::RCP<Epetra_Map>       innervelmap_;
+
+    bool dirichletcond_;
 
     enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_; // xfluidfluid monolithic approach
 

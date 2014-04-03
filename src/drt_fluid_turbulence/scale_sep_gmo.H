@@ -54,7 +54,7 @@ public:
   */
   virtual ~LESScaleSeparation();
 
-  void ApplyScaleSeparation(Teuchos::RCP<Epetra_Vector> vel,
+  void ApplyScaleSeparation(const Teuchos::RCP<const Epetra_Vector> vel,
                             Teuchos::RCP<Epetra_Vector> fsvel);
 
 

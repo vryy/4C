@@ -36,6 +36,20 @@ FLD::TimIntLomaBDF2::TimIntLomaBDF2(
 
 
 /*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntLomaBDF2::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntBDF2::Init();
+  TimIntLoma::Init();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                     bk 11/13 |
 *----------------------------------------------------------------------*/
 FLD::TimIntLomaBDF2::~TimIntLomaBDF2()

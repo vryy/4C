@@ -5682,6 +5682,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                INPAR::COMBUST::selectedenrichment_none),
                &combustcontrolfluid);
 
+  BoolParameter("REPELLANT_FORCE","No","Activate repellant force for turbulent bubbly channel flow",&combustcontrolfluid);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,
       "control parameters for the G-function (level set) field of a combustion problem");

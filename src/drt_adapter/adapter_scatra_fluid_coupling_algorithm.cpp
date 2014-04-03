@@ -19,6 +19,7 @@ Maintainer: Georg Bauer
 #include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -30,20 +31,58 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     const Teuchos::ParameterList& solverparams
     )
 :  AlgorithmBase(comm,prbdyn),
-   FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",isale), // false -> no ALE in fluid algorithm
+   FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",isale,false), // false -> no immediate initialization of fluid time integration
    ScaTraBaseAlgorithm(prbdyn,isale,disname,solverparams), // false -> no ALE in scatra algorithm
    params_(prbdyn)
 {
-  // transfer the initial convective velocity from initial fluid field to scalar transport field
-  // subgrid scales not transferred since they are zero at time t=0.0
-  ScaTraField()->SetVelocityField(
+  // check whether fluid and scatra discret still have the same maps
+  // they may change due a modified ghosting required, i.e., for particle level-set methods
+  if (ScaTraField()->ScaTraType() == INPAR::SCATRA::scatratype_levelset)
+  {
+    const Epetra_Map* scatraelecolmap = ScaTraField()->Discretization()->ElementColMap();
+    if (not scatraelecolmap->PointSameAs(*FluidField().Discretization()->ElementColMap()))
+    {
+      if (comm.MyPID()==0)
+        std::cout << "----- adaption of fluid ghosting to scatra ghosting ------" << std::endl;
+
+      // adapt fluid ghosting to scatra ghosting
+      if (DRT::Problem::Instance()->ProblemType() != prb_combust)
+        FluidField().Discretization()->ExtendedGhosting(*scatraelecolmap,true,true,true,false);
+      else
+        FluidField().Discretization()->ExtendedGhosting(*scatraelecolmap,false,false,false,false);
+    }
+  }
+
+  // initialize fluid time integration scheme
+  FluidField().Init();
+
+  // set also initial field
+  if (DRT::Problem::Instance()->ProblemType() != prb_combust)
+  {
+    // set initial field by given function
+    // we do this here, since we have direct access to all necessary parameters
+    INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(DRT::Problem::Instance()->FluidDynamicParams(),"INITIALFIELD");
+    if(initfield != INPAR::FLUID::initfield_zero_field)
+    {
+      int startfuncno = DRT::Problem::Instance()->FluidDynamicParams().get<int>("STARTFUNCNO");
+      if (initfield != INPAR::FLUID::initfield_field_by_function and
+          initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
+        startfuncno=-1;
+
+      FluidField().SetInitialFlowField(initfield,startfuncno);
+    }
+
+    // transfer the initial convective velocity from initial fluid field to scalar transport field
+    // subgrid scales not transferred since they are zero at time t=0.0
+    ScaTraField()->SetVelocityField(
       FluidField().ConvectiveVel(),
       Teuchos::null,
       Teuchos::null,
       Teuchos::null,
       Teuchos::null,
       FluidField().Discretization()
-  );
+    );
+  }
 
   // ensure that both single field solvers use the same
   // time integration scheme

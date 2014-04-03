@@ -130,7 +130,13 @@ public:
   virtual ~FluidImplicitTimeInt();
 
   /*!
-  \brief start time loop for startingalgo, normal problems and restarts
+  \brief initialization
+
+  */
+  virtual void Init();
+
+  /*!
+  \brief start time loop for starting algorithm, normal problems and restarts
 
   */
   void Integrate();
@@ -189,7 +195,7 @@ public:
   \brief Initialize function which is called after that the constructor of the time integrator has been called
 
   */
-  void Initialize();
+  void CompleteGeneralInit();
 
   /*!
   \brief Set states in the time integration schemes: differs between GenAlpha and the others
@@ -680,10 +686,10 @@ public:
   }
 
   /*!
-  \brief set fields for low-Mach-number flow within outer iteration loop
+  \brief set scalar fields within outer iteration loop
 
   */
-  virtual void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+  virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
                          Teuchos::RCP<const Epetra_Vector> scalaram,
                          Teuchos::RCP<const Epetra_Vector> scalardtam,
                          Teuchos::RCP<const Epetra_Vector> fsscalaraf,
@@ -694,10 +700,10 @@ public:
                          Teuchos::RCP<DRT::Discretization> scatradis);
 
   /*!
-  \brief set fields for low-Mach-number flow at end of time step
+  \brief set scalar fields
 
   */
-  void SetTimeLomaFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
+  void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
                          const double             thermpressnp,
                          Teuchos::RCP<const Epetra_Vector> scatraresidual,
                          Teuchos::RCP<DRT::Discretization> scatradis,
@@ -760,7 +766,7 @@ public:
 
   //! @name methods for turbulence models
 
-  virtual void ApplyScaleSeparationForLES()=0;
+  virtual void ApplyScaleSeparationForLES();
 
   virtual void OutputofFilteredVel(Teuchos::RCP<Epetra_Vector> outvec,
                            Teuchos::RCP<Epetra_Vector> fsoutvec)=0;
@@ -911,6 +917,12 @@ protected:
 
   */
   virtual void SetupMeshtying();
+
+  /*!
+  \brief velocity required for evaluation of related quantites required on element level
+
+  */
+  virtual const Teuchos::RCP<const Epetra_Vector> EvaluationVel() = 0;
 
 
   //! @name general algorithm parameters

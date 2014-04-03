@@ -47,6 +47,7 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   dis_(dis),
   params_(params),
   output_(output),
+  dirichletcond_(dirichletcond),
   interface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
   meshmap_(Teuchos::rcp(new LINALG::MapExtractor())),
   locerrvelnp_(Teuchos::null),
@@ -56,13 +57,23 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   // make sure
   if (fluid_ == Teuchos::null)
     dserror("Failed to create the underlying fluid adapter");
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::Init()
+{
+  // call base class init
+  FluidWrapper::Init();
 
   // cast fluid to fluidimplicit
   fluidimpl_ = Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_);
   if (fluidimpl_ == Teuchos::null)
     dserror("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimeInt.");
 
-  interface_->Setup(*dis,false);
+  interface_->Setup(*dis_,false);
 
   fluidimpl_->SetSurfaceSplitter(&(*interface_));
 
@@ -76,7 +87,7 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   maps.push_back(dbcmaps->OtherMap());
   innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(maps);
 
-  if (dirichletcond)
+  if (dirichletcond_)
   {
     // mark all interface velocities as dirichlet values
     fluidimpl_->AddDirichCond(interface_->FSICondMap());

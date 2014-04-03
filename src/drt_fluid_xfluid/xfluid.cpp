@@ -2097,6 +2097,15 @@ FLD::XFluid::XFluid(
     fluid_output_(output_),
     alefluid_(alefluid)
 {
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::Init()
+{
   // -------------------------------------------------------------------
   // get input params and print Xfluid specific configurations
   // -------------------------------------------------------------------

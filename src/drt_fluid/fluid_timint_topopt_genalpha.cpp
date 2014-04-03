@@ -34,6 +34,23 @@ FLD::TimIntTopOptGenAlpha::TimIntTopOptGenAlpha(
 
 
 /*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntTopOptGenAlpha::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  TimIntGenAlpha::Init();
+  TimIntTopOpt::Init();
+
+  // write output
+  Output();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
 FLD::TimIntTopOptGenAlpha::~TimIntTopOptGenAlpha()

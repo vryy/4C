@@ -2005,7 +2005,15 @@ FLD::XFluidFluid::XFluidFluid(
   alefluid_(alefluid),
   monolithicfluidfluidfsi_(monolithicfluidfluidfsi)
 {
+  return;
+}
 
+
+/*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluidFluid::Init()
+{
   numdim_            = DRT::Problem::Instance()->NDim(); //params_->get<int>("DIM");
   dtp_               = params_->get<double>("time step size");
   theta_             = params_->get<double>("theta");
@@ -2177,12 +2185,12 @@ FLD::XFluidFluid::XFluidFluid(
   emboutput_->WriteMesh(0,0.0);
 
   // ensure that degrees of freedom in the discretization have been set
-  if ( not bgdis_->Filled() or not actdis->HaveDofs() )
+  if ( not bgdis_->Filled() or not discret_->HaveDofs() )
     bgdis_->FillComplete();
 
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("XFEMCoupling");
-  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(embdis, "XFEMCoupling", "boundary", element_name, conditions_to_copy);
+  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(embdis_, "XFEMCoupling", "boundary", element_name, conditions_to_copy);
 
   if (boundarydis_->NumGlobalNodes() == 0)
   {
@@ -2369,7 +2377,7 @@ FLD::XFluidFluid::XFluidFluid(
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
 
 
-  if ( not bgdis_->Filled() or not actdis->HaveDofs() )
+  if ( not bgdis_->Filled() or not bgdis_->HaveDofs() )
     bgdis_->FillComplete();
 
   //----------------------------------------------------------------
@@ -2377,7 +2385,7 @@ FLD::XFluidFluid::XFluidFluid(
   // Nistche-Eigenvalue-Problem
   //----------------------------------------------------------------
   if (nitsche_evp_)
-	 state_->CreateEmbeddedBoundarydis();
+    state_->CreateEmbeddedBoundarydis();
 
   //gmsh discretization output
   if(gmsh_discret_out_)
@@ -2389,6 +2397,7 @@ FLD::XFluidFluid::XFluidFluid(
     xfluidfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidFluidTimeIntegration(bgdis_, embdis_, state_->wizard_, step_,
                                                                               xfem_timeintapproach_,*params_));
 
+  return;
 }
 
 // ------------------------------------------------------------------------

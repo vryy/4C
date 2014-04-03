@@ -37,7 +37,11 @@ public:
   /// Destructor
   virtual ~TimIntTopOptBDF2();
 
+  /*!
+  \brief initialization
 
+  */
+  virtual void Init();
 
 
 protected:

@@ -13,6 +13,8 @@ namespace ADAPTER
 
     explicit FluidWrapper(Teuchos::RCP<Fluid> fluid) : fluid_(fluid) {}
 
+    virtual void Init()
+    { fluid_->Init(); return;}
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess()
     { return fluid_->InitialGuess(); }
     virtual Teuchos::RCP<const Epetra_Vector> RHS()
@@ -101,7 +103,7 @@ namespace ADAPTER
     { return fluid_->ApplyExternalForces(fext); };
     virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)
     { return fluid_->UpdateNewton(vel); };
-    virtual void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+    virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
                                    Teuchos::RCP<const Epetra_Vector> scalaram,
                                    Teuchos::RCP<const Epetra_Vector> scalardtam,
                                    Teuchos::RCP<const Epetra_Vector> fsscalaraf,
@@ -110,15 +112,15 @@ namespace ADAPTER
                                    const double             thermpressdtaf,
                                    const double             thermpressdtam,
                                    Teuchos::RCP<DRT::Discretization> scatradis)
-    { return fluid_->SetIterLomaFields(scalaraf, scalaram, scalardtam, fsscalaraf, thermpressaf,
+    { return fluid_->SetIterScalarFields(scalaraf, scalaram, scalardtam, fsscalaraf, thermpressaf,
                                        thermpressam, thermpressdtaf,
                                        thermpressdtam, scatradis); }
-    virtual void SetTimeLomaFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
+    virtual void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
                                    const double             thermpressnp,
                                    Teuchos::RCP<const Epetra_Vector> scatraresidual,
                                    Teuchos::RCP<DRT::Discretization> scatradis,
                                    const int whichscalar = -1)
-    { return fluid_->SetTimeLomaFields(scalarnp, thermpressnp, scatraresidual, scatradis, whichscalar); }
+    { return fluid_->SetScalarFields(scalarnp, thermpressnp, scatraresidual, scatradis, whichscalar); }
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
     { return fluid_->TurbulenceStatisticManager();}
     virtual Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter()

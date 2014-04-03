@@ -44,7 +44,15 @@ FLD::TimIntRedModels::TimIntRedModels(
       vol_flow_rates_bc_extractor_(Teuchos::null),
       strong_redD_3d_coupling_(false)
 {
+  return;
+}
 
+
+/*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntRedModels::Init()
+{
   // Vectors associated to boundary conditions
   // -----------------------------------------
 

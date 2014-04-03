@@ -37,6 +37,12 @@ public:
   virtual ~TimIntPoro();
 
   /*!
+  \brief initialization
+
+  */
+  virtual void Init();
+
+  /*!
   \brief call elements to calculate system matrix/rhs and assemble
 
   */

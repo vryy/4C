@@ -33,6 +33,18 @@ FLD::TimIntStationary::TimIntStationary(
     bool                                          alefluid /*= false*/)
 : FluidImplicitTimeInt(actdis,solver,params,output,alefluid)
 {
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  initialize algorithm                                rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntStationary::Init()
+{
+  // call Init()-functions of base classes
+  // note: this order is important
+  FLD::FluidImplicitTimeInt::Init();
 
   //check, if starting algorithm is desired
   if (numstasteps_ > 0)
@@ -40,7 +52,7 @@ FLD::TimIntStationary::TimIntStationary(
 
   SetElementTimeParameter();
 
-  Initialize();
+  CompleteGeneralInit();
   return;
 }
 
@@ -293,16 +305,4 @@ const double FLD::TimIntStationary::TimIntParam() const
     // no FSI with stationary time integrator
     dserror("FSI does not allow a stationary time integrator.");
   return retval;
-}
-
-/*----------------------------------------------------------------------*
- | filtered quantities for classical LES models          rasthofer 02/11|
- *----------------------------------------------------------------------*/
-void FLD::TimIntStationary::ApplyScaleSeparationForLES()
-{
-  //not implemented in the stationary case.
-  //if you want to restore it, you may copy it from the BDF2 or OneStepTheta time integration
-  //and adapt it for the stationary case.
-  dserror("ApplyScaleSeparationForLES() is currently not implemented for stationary time integration.");
-  return;
 }

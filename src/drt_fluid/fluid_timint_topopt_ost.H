@@ -37,7 +37,11 @@ public:
   /// Destructor
   virtual ~TimIntTopOptOst();
 
+  /*!
+  \brief initialization
 
+  */
+  virtual void Init();
 
 
 protected:
