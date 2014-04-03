@@ -38,13 +38,18 @@ VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::VolMortarIntegrator()
  |  Initialize gauss points                                  farah 01/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::InitializeGP(bool integrateele)
+void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::InitializeGP(bool integrateele, int domain)
 {
-  DRT::Element::DiscretizationType intshape;
+  DRT::Element::DiscretizationType intshape = DRT::Element::dis_none;
 
   if(integrateele)
   {
-    intshape=distypeS;
+    if(domain==0)
+      intshape=distypeS;
+    else if(domain==1)
+      intshape=distypeM;
+    else
+      dserror("integration domain not specified!");
   }
   else
   {
@@ -324,6 +329,8 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D(
 
     // Check parameter space mapping
     CheckMapping3D(Aele,Bele,Axi,Bxi);
+//    std::cout << "GP= " << globgp[0] << "  " << globgp[1] << "  " << globgp[2] << std::endl;
+//    cell->Print();
 //    bool proj = CheckMapping3D(Aele,Bele,Axi,Bxi);
 //    if (proj==false)
 //      jac=0.0;
@@ -482,6 +489,22 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEle3D(
 
     // Check parameter space mapping
     CheckMapping3D(Aele,Bele,Axi,Bxi);
+//    std::cout << "==================================" << std::endl;
+//    if(domain==0)
+//    {
+//      for(int i=0;i<Aele.NumNode();++i)
+//      {
+//        std::cout << "create vertex " << Aele.Nodes()[i]->X()[0] <<"  "<< Aele.Nodes()[i]->X()[1] <<"  "<< Aele.Nodes()[i]->X()[2] <<std::endl;
+//      }
+//    }
+//    if(domain==1)
+//    {
+//      for(int i=0;i<Bele.NumNode();++i)
+//      {
+//        std::cout << "create vertex " << Bele.Nodes()[i]->X()[0] <<"  "<< Bele.Nodes()[i]->X()[1] <<"  "<< Bele.Nodes()[i]->X()[2] <<std::endl;
+//      }
+//    }
+
 //    bool proj = CheckMapping3D(Aele,Bele,Axi,Bxi);
 //    if (proj==false)
 //      jac=0.0;
@@ -651,6 +674,17 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping3D(DRT::Elem
       std::cout << "\n***Warning: Gauss point projection outside!";
       std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
       std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << " " << sxi[2] << std::endl;
+
+      for(int i=0;i<sele.NumNode();++i)
+      {
+        std::cout << "create vertex " << sele.Nodes()[i]->X()[0] <<"  "<< sele.Nodes()[i]->X()[1] <<"  "<< sele.Nodes()[i]->X()[2] <<std::endl;
+      }
+      std::cout << "------------" << std::endl;
+      for(int i=0;i<mele.NumNode();++i)
+      {
+        std::cout << "create vertex " << mele.Nodes()[i]->X()[0] <<"  "<< mele.Nodes()[i]->X()[1] <<"  "<< mele.Nodes()[i]->X()[2] <<std::endl;
+      }
+
       return false;
     }
   }
@@ -661,6 +695,15 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping3D(DRT::Elem
       std::cout << "\n***Warning: Gauss point projection outside!";
       std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
       std::cout << "Master GP projection: " << sxi[0] << " " << sxi[1] << " " << sxi[2] << std::endl;
+      for(int i=0;i<sele.NumNode();++i)
+      {
+        std::cout << "create vertex " << sele.Nodes()[i]->X()[0] <<"  "<< sele.Nodes()[i]->X()[1] <<"  "<< sele.Nodes()[i]->X()[2] <<std::endl;
+      }
+      std::cout << "------------" << std::endl;
+      for(int i=0;i<mele.NumNode();++i)
+      {
+        std::cout << "create vertex " << mele.Nodes()[i]->X()[0] <<"  "<< mele.Nodes()[i]->X()[1] <<"  "<< mele.Nodes()[i]->X()[2] <<std::endl;
+      }
       return false;
     }
   }
@@ -675,6 +718,15 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping3D(DRT::Elem
       std::cout << "\n***Warning: Gauss point projection outside!";
       std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
       std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << " " << mxi[2] << std::endl;
+      for(int i=0;i<sele.NumNode();++i)
+      {
+        std::cout << "create vertex " << sele.Nodes()[i]->X()[0] <<"  "<< sele.Nodes()[i]->X()[1] <<"  "<< sele.Nodes()[i]->X()[2] <<std::endl;
+      }
+      std::cout << "------------" << std::endl;
+      for(int i=0;i<mele.NumNode();++i)
+      {
+        std::cout << "create vertex " << mele.Nodes()[i]->X()[0] <<"  "<< mele.Nodes()[i]->X()[1] <<"  "<< mele.Nodes()[i]->X()[2] <<std::endl;
+      }
       return false;
     }
   }
@@ -685,6 +737,15 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping3D(DRT::Elem
       std::cout << "\n***Warning: Gauss point projection outside!";
       std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
       std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << " " << mxi[2] << std::endl;
+      for(int i=0;i<sele.NumNode();++i)
+      {
+        std::cout << "create vertex " << sele.Nodes()[i]->X()[0] <<"  "<< sele.Nodes()[i]->X()[1] <<"  "<< sele.Nodes()[i]->X()[2] <<std::endl;
+      }
+      std::cout << "------------" << std::endl;
+      for(int i=0;i<mele.NumNode();++i)
+      {
+        std::cout << "create vertex " << mele.Nodes()[i]->X()[0] <<"  "<< mele.Nodes()[i]->X()[1] <<"  "<< mele.Nodes()[i]->X()[2] <<std::endl;
+      }
       return false;
     }
   }

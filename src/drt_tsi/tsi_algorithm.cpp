@@ -42,6 +42,7 @@ Maintainer: Caroline Danowski
 TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   : AlgorithmBase(comm,DRT::Problem::Instance()->TSIDynamicParams()),
     dispnp_(Teuchos::null),
+    tempnp_(Teuchos::null),
     matchinggrid_(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->TSIDynamicParams(),"MATCHINGGRID")),
     volcoupl_(Teuchos::null)
 {
@@ -73,6 +74,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   // (get noderowmap of discretisation for creating this multivector)
   // TODO: why nds 0 and not 1????
   dispnp_ = Teuchos::rcp(new Epetra_MultiVector(*(ThermoField()->Discretization()->NodeRowMap()),3,true));
+  tempnp_ = Teuchos::rcp(new Epetra_MultiVector(*(StructureField()->Discretization()->NodeRowMap()),1,true));
 
   return;
 }
@@ -107,8 +109,41 @@ void TSI::Algorithm::Output(bool forced_writerestart)
   // In here control file entries are written. And these entries define the
   // order in which the filters handle the Discretizations, which in turn
   // defines the dof number ordering of the Discretizations.
+
+  //===========================
+  // output for structurefield:
+  //===========================
   StructureField()->Output(forced_writerestart);
 
+  // mapped temperatures for structure field
+  if(!matchinggrid_)
+  {
+    //************************************************************************************
+    Teuchos::RCP<const Epetra_Vector> dummy1 = volcoupl_->ApplyVectorMappingAB(ThermoField()->Tempnp());
+
+    // loop over all local nodes of thermal discretisation
+    for (int lnodeid=0; lnodeid<(StructureField()->Discretization()->NumMyRowNodes()); lnodeid++)
+    {
+      DRT::Node* structnode = StructureField()->Discretization()->lRowNode(lnodeid);
+      std::vector<int> structdofs = StructureField()->Discretization()->Dof(1,structnode);
+
+      // global and processor's local fluid dof ID
+      const int sgid = structdofs[0];
+      const int slid = StructureField()->Discretization()->DofRowMap(1)->LID(sgid);
+
+      // get value of corresponding displacement component
+      double temp = (*dummy1)[slid];
+      // insert velocity value into node-based vector
+      int err = tempnp_->ReplaceMyValue(lnodeid, 0, temp);
+      if (err!= 0) dserror("error while inserting a value into tempnp_");
+    } // for lnodid
+
+    StructureField()->DiscWriter()->WriteVector("struct_temperature",tempnp_,IO::DiscretizationWriter::nodevector);
+  }
+
+  //========================
+  // output for thermofield:
+  //========================
   ThermoField()->Output(forced_writerestart);
 
   // call the TSI parameter list
@@ -174,16 +209,11 @@ void TSI::Algorithm::Output(bool forced_writerestart)
             err = dispnp_->ReplaceMyValue(lnodeid, index, 0.0);
             if (err!= 0) dserror("error while inserting a value into dispnp_");
           }
-
         } // for lnodid
-
-
-
 
         ThermoField()->DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
       }
     }
-
 }  // Output()
 
 

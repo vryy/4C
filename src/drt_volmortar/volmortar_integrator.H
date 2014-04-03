@@ -83,7 +83,7 @@ public:
   \brief Initialize Gauss rule (points, weights)
 
   */
-  void InitializeGP(bool integrateele=false);
+  void InitializeGP(bool integrateele=false, int domain=0);
 
   /*!
   \brief Integrate cell for 2D problems

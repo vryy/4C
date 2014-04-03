@@ -453,7 +453,9 @@ void CONTACT::WearLagrangeStrategy::AssembleMortar()
   // update is not elegant!
   // *********************************************************************************
   if (wear_ and Params().get<int>("PROBTYPE")!=INPAR::CONTACT::structalewear and !wearimpl_)
+  {
     g_->Update(1.0,*wearvector_,1.0);
+  }
   else
   {
     if (wearimpl_)
@@ -4024,7 +4026,11 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
       }
     }
   }
-  // weighted wear
+  //**********************************************************************************************
+  //**********************************************************************************************
+  //                                        weighted wear
+  //**********************************************************************************************
+  //**********************************************************************************************
   else
   {
     // only for dual Lagrange multiplier so far
@@ -4111,12 +4117,20 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
     LINALG::Export(*real_weara,*real_wearexp);
     real_wear->Update(1.0,*real_wearexp,0.0);
 
+    // different wear coefficients on both sides...
+    double wearcoeff_s = Params().get<double>("WEARCOEFF", 0.0);
+    double wearcoeff_m = Params().get<double>("WEARCOEFF_MASTER", 0.0);
+    if (wearcoeff_s<1e-12)
+      dserror("wcoeff negative!!!");
+
+    double fac         = wearcoeff_s / (wearcoeff_s+wearcoeff_m);
+
     // copy the local part of real_wear into wearoutput_
     for (int i=0; i<(int)gsdofrowmap_->NumMyElements(); ++i)
     {
      int gid = gsdofrowmap_->MyGlobalElements()[i];
      double tmp = (*real_wear)[real_wear->Map().LID(gid)];
-     (*wearoutput_)[wearoutput_->Map().LID(gid)] = tmp;
+     (*wearoutput_)[wearoutput_->Map().LID(gid)] = tmp*fac;
     }
 
     /**********************************************************************
@@ -4129,6 +4143,14 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(Params(),"BOTH_SIDED_WEAR")
         == INPAR::CONTACT::wear_both_map)
     {
+      // different wear coefficients on both sides...
+      double wearcoeff_s = Params().get<double>("WEARCOEFF", 0.0);
+      double wearcoeff_m = Params().get<double>("WEARCOEFF_MASTER", 0.0);
+      if (wearcoeff_s<1e-12)
+        dserror("wcoeff negative!!!");
+
+      double fac         = wearcoeff_m / (wearcoeff_s+wearcoeff_m);
+
       // extract involved parts of d2 matrix
       // matrices, maps - i: involved ; n: non-involved
       Teuchos::RCP<LINALG::SparseMatrix> d2ii,d2in,d2ni,d2nn;
@@ -4164,7 +4186,7 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
       {
        int gid = gmdofrowmap_->MyGlobalElements()[i];
        double tmp = (*real_wear2)[real_wear2->Map().LID(gid)];
-       (*wearoutput2_)[wearoutput2_->Map().LID(gid)] = -tmp; // negative sign because on other interface side
+       (*wearoutput2_)[wearoutput2_->Map().LID(gid)] = -(tmp*fac); // negative sign because on other interface side
        //--> this Wear-vector (defined on master side) is along slave-side normal field!
       }
     }

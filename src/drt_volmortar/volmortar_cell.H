@@ -66,6 +66,12 @@ public:
   void LocalToGlobal(double* local, double* global);
 
   /*!
+  \brief output for coordinates
+
+  */
+  void Print();
+
+  /*!
   \brief get shape
 
   */

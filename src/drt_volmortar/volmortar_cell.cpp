@@ -82,3 +82,14 @@ void VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
 
   return;
 }
+
+/*---------------------------------------------------------------------*
+ | output                                                  farah 03/14 |
+ *---------------------------------------------------------------------*/
+void VOLMORTAR::Cell::Print()
+{
+  for(int i=0;i<4;++i)
+    std::cout << "coords= " << coords_(0,i) << " "<< coords_(1,i) << " "<< coords_(2,i) << std::endl;
+
+  return;
+}

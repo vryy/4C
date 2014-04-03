@@ -1541,8 +1541,8 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
       }
 
       // information from interface contact parameter list
-      double frcoeff = 1.0;//IParams().get<double>("FRCOEFF");
-      double ct = 1.0;//IParams().get<double>("SEMI_SMOOTH_CT");
+      double frcoeff = IParams().get<double>("FRCOEFF");
+      double ct = IParams().get<double>("SEMI_SMOOTH_CT");
       double cn = IParams().get<double>("SEMI_SMOOTH_CN");
 
       // more information from node
@@ -1567,7 +1567,6 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
       else
         dserror("ERROR: AssemblelinStick: Dimension not correct");
 
-      // evaluation of specific components of entries to assemble
       // evaluation of specific components of entries to assemble
       double znor = 0;
       double jumptxi = 0;

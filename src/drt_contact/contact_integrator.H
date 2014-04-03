@@ -583,6 +583,7 @@ public:
        MORTAR::MortarElement& sele,
        MORTAR::MortarElement& mele,
        LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseVector& lm2val,
        LINALG::SerialDenseVector& sval,
        double& jac,
        double& wgt, double* jumpval,
@@ -661,9 +662,11 @@ public:
        LINALG::SerialDenseVector& sval,
        LINALG::SerialDenseVector& mval,
        LINALG::SerialDenseVector& lmval,
+       LINALG::SerialDenseVector& lm2val,
        LINALG::SerialDenseMatrix& sderiv,
        LINALG::SerialDenseMatrix& mderiv,
        LINALG::SerialDenseMatrix& lmderiv,
+       LINALG::SerialDenseMatrix& lm2deriv,
        double& jac,
        double& wgt, double* jumpval,
        const std::vector<std::map<int,double> >& dsxigp,
@@ -671,6 +674,7 @@ public:
        const std::map<int,double>& jacintcellmap,
        const std::map<int,double>& dsliptmatrixgp,
        const std::vector<std::vector<std::map<int,double> > >& dualmap,
+       const std::vector<std::vector<std::map<int,double> > >& dual2map,
        const Epetra_Comm& comm);
   /*!
   \brief evaluate matrix A for tsi-contact

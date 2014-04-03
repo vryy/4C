@@ -154,6 +154,10 @@ namespace TSI
     //! displacements at time n+1 for thermal output
     Teuchos::RCP<Epetra_MultiVector> dispnp_;
 
+    //! temperatures at time n+1 for structure output
+    //! introduced for non-matching discretizations
+    Teuchos::RCP<Epetra_MultiVector> tempnp_;
+
     //@}
 
 

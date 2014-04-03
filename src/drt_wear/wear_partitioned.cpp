@@ -156,6 +156,7 @@ void WEAR::Partitioned::TimeLoopIterStagg()
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   CONTACT::WearLagrangeStrategy& cstrategy = static_cast<CONTACT::WearLagrangeStrategy&>(strategy);
 
+  // reset waccu, wold and wcurr...
   cstrategy.UpdateWearDiscretIterate(false);
 
   /*************************************************************

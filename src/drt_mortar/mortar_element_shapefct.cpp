@@ -3062,7 +3062,8 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(const double* xi,
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarElement::DerivShapeDual(std::vector<std::vector<std::map<int,double> > >& derivdual)
 {
-  if (!IsSlave()) dserror("ERROR: DerivShapeDual called for master element");
+  // commented out this line for maste-sided wear (diagonal shaped wear matrix E_2)
+  //if (!IsSlave()) dserror("ERROR: DerivShapeDual called for master element");
 
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();

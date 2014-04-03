@@ -70,6 +70,7 @@ PARALLEL_REDIST                 dynamic
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARCOEFF                       0.0003
+WEARCOEFF_MASTER                0.0003
 BOTH_SIDED_WEAR                 map
 WEARTYPE                        explicit
 --------------------------------------------------------CLONING MATERIAL MAP

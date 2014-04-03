@@ -1579,7 +1579,9 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
               if(dof==0)
               {
                 FriNode* frinode = static_cast<FriNode*>(cnode);
-                double wearcoeff = Params().get<double>("WEARCOEFF", 0.0);
+                double wearcoeffs = Params().get<double>("WEARCOEFF", 0.0);
+                double wearcoeffm = Params().get<double>("WEARCOEFF_MASTER", 0.0);
+                double wearcoeff=wearcoeffs+wearcoeffm;
 
                 if (Params().get<int>("PROBTYPE")!=INPAR::CONTACT::structalewear)
                   frinode->FriDataPlus().Wear() += wearcoeff*frinode->FriDataPlus().DeltaWear(); // amount of wear
@@ -1594,7 +1596,6 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
           } // switch
         }
       } // end slave loop
-
     }
 
 

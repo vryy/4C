@@ -35,6 +35,9 @@ Maintainer: Philipp Farah
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_volumecell.H"
 
+#include "../drt_thermo/thermo_element.H"
+#include "../drt_so3/so3_thermo.H"
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
@@ -114,6 +117,23 @@ void VOLMORTAR::VolMortarCoupl::Evaluate()
       //TODO: make this more general
       Bele->AddMaterial(Aele->Material());
       Aele->AddMaterial(Bele->Material());
+
+      // initialise kinematic type to geo_linear.
+      // kintype is passed to the cloned thermo element
+      GenKinematicType kintype = geo_linear;
+      // if oldele is a so3_base element
+      DRT::ELEMENTS::So3_Base* so3_base = dynamic_cast<DRT::ELEMENTS::So3_Base*>(Aele);
+      if (so3_base != NULL)
+        kintype = so3_base->GetKinematicType();
+      else
+        dserror("oldele is not a so3_thermo element!");
+
+      // note: SetMaterial() was reimplemented by the thermo element!
+      DRT::ELEMENTS::Thermo* therm =dynamic_cast<DRT::ELEMENTS::Thermo*>(Bele);
+      if (therm != NULL)
+      {
+        therm->SetKinematicType(kintype);  // set kintype in cloned thermal element
+      }
 
       /**************************************************
        *                    2D                          *
@@ -864,7 +884,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
     case DRT::Element::hex8:
     {
       VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8> integrator;
-      integrator.InitializeGP(true);
+      integrator.InitializeGP(true,domain);
       integrator.IntegrateEle3D(domain,sele,mele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
           Adiscret_,Bdiscret_);
       break;
@@ -872,7 +892,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
     case DRT::Element::tet4:
     {
       static VolMortarIntegrator<DRT::Element::hex8,DRT::Element::tet4> integrator;
-      integrator.InitializeGP(true);
+      integrator.InitializeGP(true,domain);
       integrator.IntegrateEle3D(domain,sele,mele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
           Adiscret_,Bdiscret_);
       break;
@@ -893,7 +913,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
     case DRT::Element::hex8:
     {
       static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8> integrator;
-      integrator.InitializeGP(true);
+      integrator.InitializeGP(true,domain);
       integrator.IntegrateEle3D(domain,sele,mele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
           Adiscret_,Bdiscret_);
       break;
@@ -901,7 +921,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
     case DRT::Element::tet4:
     {
       static VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4> integrator;
-      integrator.InitializeGP(true);
+      integrator.InitializeGP(true,domain);
       integrator.IntegrateEle3D(domain,sele,mele,*dmatrixA_,*mmatrixA_,*dmatrixB_,*mmatrixB_,
           Adiscret_,Bdiscret_);
       break;
