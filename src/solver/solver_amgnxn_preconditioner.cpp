@@ -13,6 +13,8 @@ Created on: Feb 27, 2014
 #ifdef HAVE_MueLu
 #ifdef HAVE_Trilinos_Q1_2014
 
+#include <Teuchos_PtrDecl.hpp>
+#include <Teuchos_XMLParameterListHelpers.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_ParameterListInterpreter.hpp> 
@@ -901,6 +903,15 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
         myAcrs = MueLu::Utils<double,int,int,Node,LocalMatOps>::Op2NonConstEpetraCrs(myA); 
         myAspa = Teuchos::rcp(new SparseMatrix(*myAcrs,explicitdirichlet,savegraph)); // TODO Copy?
         ALocal_[block][level]=myAspa;
+
+        //TODO remove (begin)
+        std::cout << "===============================================" << std::endl;
+        std::cout << "Level = " << level << " block = " << block       << std::endl;
+        std::cout << "    NumGlobalElements = " << myAspa->RangeMap().NumGlobalElements()   << std::endl;
+        std::cout << "    MinAllGID = " << myAspa->RangeMap().MinAllGID()   << std::endl;
+        std::cout << "    MaxAllGID = " << myAspa->RangeMap().MaxAllGID()   << std::endl;
+        std::cout << "===============================================" << std::endl;
+        //TODO remove (end)
       }
       else
         dserror("Error in extracting A");
@@ -1333,42 +1344,6 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup
     dserror("The AMGnxn preconditioner works only for block square matrices");
 
   //=================================================================
-  // Build up MueLu Hierarchies of each one of the blocks
-  //=================================================================
-
-  //To be filled
-  std::vector< Teuchos::RCP<Hierarchy>  > H(NumBlocks,Teuchos::null);
-  // Auxiliary
-  std::string Inverse_str = "Inverse";
-  std::string xmlFileName;
-  Teuchos::RCP<Epetra_Operator> A_eop;
-  // loop in blocks
-  for(int block=0;block<NumBlocks;block++)
-  {
-
-    // Pick up the operator
-    A_eop = A_->Matrix(block,block).EpetraOperator();
-
-    // Get the right sublist  and build
-    if(!params_.isSublist(Inverse_str + ConvertInt(block+1)))
-      dserror("Not found inverse list for block %d", block);
-    Teuchos::ParameterList& inverse_list = params_.sublist(Inverse_str + ConvertInt(block+1));
-    if(inverse_list.isSublist("MueLu Parameters"))
-    {
-      Teuchos::ParameterList& mllist = inverse_list.sublist("MueLu Parameters");
-      H[block]=BuildMueLuHierarchy(mllist,A_eop,block,NumBlocks);
-    }
-    else if(inverse_list.isSublist("ML Parameters"))
-    {
-      Teuchos::ParameterList& mllist = inverse_list.sublist("ML Parameters");
-      H[block]=BuildMueLuHierarchy(mllist,A_eop,block,NumBlocks);
-    }
-    else
-      dserror("Not found MueLu Parameters nor ML Parameters for block %d", block+1);
-
-  } // loop in blocks
-
-  //=================================================================
   // Pick-up the input parameters 
   //=================================================================
 
@@ -1418,6 +1393,45 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup
   std::vector<bool>     flipPosSmoo=flipPreSmoo; 
 
   //=================================================================
+  // Build up MueLu Hierarchies of each one of the blocks
+  //=================================================================
+
+  //To be filled
+  std::vector< Teuchos::RCP<Hierarchy>  > H(NumBlocks,Teuchos::null);
+  // Auxiliary
+  std::string Inverse_str = "Inverse";
+  std::string xmlFileName;
+  Teuchos::RCP<Epetra_Operator> A_eop;
+  // Vector for the offsets
+   std::vector<int> offsets(NumLevelAMG-1,0);
+  // loop in blocks
+  for(int block=0;block<NumBlocks;block++)
+  {
+
+    // Pick up the operator
+    A_eop = A_->Matrix(block,block).EpetraOperator();
+
+    // Get the right sublist  and build
+    if(!params_.isSublist(Inverse_str + ConvertInt(block+1)))
+      dserror("Not found inverse list for block %d", block);
+    Teuchos::ParameterList& inverse_list = params_.sublist(Inverse_str + ConvertInt(block+1));
+    if(inverse_list.isSublist("MueLu Parameters"))
+    {
+      Teuchos::ParameterList& mllist = inverse_list.sublist("MueLu Parameters");
+      H[block]=BuildMueLuHierarchy(mllist,A_eop,block,NumBlocks,offsets);
+    }
+    else if(inverse_list.isSublist("ML Parameters"))
+    {
+      Teuchos::ParameterList& mllist = inverse_list.sublist("ML Parameters");
+      H[block]=BuildMueLuHierarchy(mllist,A_eop,block,NumBlocks,offsets);
+    }
+    else
+      dserror("Not found MueLu Parameters nor ML Parameters for block %d", block+1);
+
+  } // loop in blocks
+
+
+  //=================================================================
   // Build up the preconditioner operator
   //=================================================================
 
@@ -1456,9 +1470,17 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Preconditioner::BuildMueLuHierarc
  Teuchos::ParameterList& mllist,
  Teuchos::RCP<Epetra_Operator> A_eop,
  int block,
- int NumBlocks
+ int NumBlocks,
+ std::vector<int>& offsets
 )
 {
+  // Offset
+  // std::vector<int> offsets(2,0);
+  // offsets[0]=20;
+  // offsets[1]=30;
+
+  // create a string with the offsets
+
   //Pick up the right info in this list
   std::string xmlFileName = mllist.get<std::string>("xml file","none");
   int numdf = mllist.get<int>("PDE equations",-1);
@@ -1502,7 +1524,36 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Preconditioner::BuildMueLuHierarc
       std::cout << "AMGnxn Preconditioner in block " << block << " < " << NumBlocks 
         << " : Using XML file " << xmlFileName << std::endl; 
 #endif
-    ParameterListInterpreter mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()));
+
+    // Convert XML file contests to Teuchos::ParameterList
+    Teuchos::ParameterList paramListFromXml;
+    Teuchos::updateParametersFromXmlFileAndBroadcast
+      (xmlFileName, Teuchos::Ptr<Teuchos::ParameterList>(&paramListFromXml),
+       *(mueluOp->getRowMap()->getComm()));
+
+    // Add information about maps offsets
+    std::string offsets_str("{");
+    for(int i=0;i<(int)offsets.size();i++)
+    {
+      offsets_str= offsets_str + ConvertInt(offsets[i]); 
+      if(i<(int)offsets.size()-1)
+        offsets_str= offsets_str + ", "; 
+    }
+    offsets_str= offsets_str + "}"; 
+    if(paramListFromXml.sublist("Factories",true).isSublist("myCoarseMapFactory123"))
+      dserror("We are going to overwrite the factory 'myCoarseMapFactory123'. Please use an other name");
+    Teuchos::ParameterList& myCoarseMapFactoryList = 
+      paramListFromXml.sublist("Factories",true).sublist("myCoarseMapFactory123");
+    myCoarseMapFactoryList.set("factory","CoarseMapFactory");
+    myCoarseMapFactoryList.set("Domain GID offsets",offsets_str);
+    if(paramListFromXml.sublist("Hierarchy",true).sublist("All").isParameter("CoarseMap"))
+      dserror("We are going to overwrite 'CoarseMap'. Don't use 'CoarseMap' here.");
+    Teuchos::ParameterList& AllList = 
+      paramListFromXml.sublist("Hierarchy").sublist("All");
+    AllList.set("CoarseMap","myCoarseMapFactory123");
+
+    // Build up hierarchy
+    ParameterListInterpreter mueLuFactory(paramListFromXml);
     H = mueLuFactory.CreateHierarchy();
     H->SetDefaultVerbLevel(MueLu::Extreme); // TODO sure?
     H->GetLevel(0)->Set("A", mueluOp);
@@ -1510,6 +1561,29 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Preconditioner::BuildMueLuHierarc
     H->GetLevel(0)->setlib(Xpetra::UseEpetra);
     H->setlib(Xpetra::UseEpetra);
     mueLuFactory.SetupHierarchy(*H);
+
+
+
+    // Recover information about the maps
+    int NumLevel_block = H->GetNumberOfLevels();
+    Teuchos::RCP<Level>        this_level = Teuchos::null;
+    Teuchos::RCP<Matrix>              myA = Teuchos::null;
+    Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
+    for(int level=1;level<NumLevel_block;level++)
+    {
+      this_level=H->GetLevel(level);
+      if (this_level->IsAvailable("A"))
+      {
+        myA    = this_level->Get< Teuchos::RCP<Matrix> >("A"); //Matrix
+        myAcrs = MueLu::Utils<double,int,int,Node,LocalMatOps>::Op2NonConstEpetraCrs(myA); 
+      }
+      else
+        dserror("Error in extracting A");
+
+      offsets[level-1] =  offsets[level-1] + myAcrs->RangeMap().MaxAllGID() + 1;
+    }
+
+
   }
   else
   { // TODO. This branch is not working yet

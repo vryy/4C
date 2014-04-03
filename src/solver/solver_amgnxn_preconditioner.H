@@ -679,7 +679,8 @@ namespace LINALG
            Teuchos::ParameterList& mllist,
            Teuchos::RCP<Epetra_Operator> A_eop,
            int block,
-           int NumBlocks
+           int NumBlocks,
+           std::vector<int>& offsets
           );
 
         // Helper function to convert int to std::string 
