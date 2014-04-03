@@ -3550,8 +3550,8 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
 
   //reset nodes
   // loop over all master nodes on the current interface
-  const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(mnodecolmap_));
-  const Teuchos::RCP<Epetra_Map> mastereles = LINALG::AllreduceEMap(*(melecolmap_));
+  const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(mnoderowmap_));
+  const Teuchos::RCP<Epetra_Map> mastereles = LINALG::AllreduceEMap(*(melerowmap_));
 
   for (int j=0;j<masternodes->NumMyElements();++j)
   {
