@@ -547,7 +547,10 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
           Teuchos::rcp(new MueLu::RepartitionInterface<LO, GO, NO, LMO>());
       repInterface1->SetFactory("A", rebA11Fact);
       repInterface1->SetFactory("AmalgamatedPartition", isoInterface1);
+#ifdef HAVE_Trilinos_Q1_2014
+#else
       repInterface1->SetFactory("UnAmalgamationInfo", rebAmalgFact11);
+#endif
 
       // Repartitioning (creates "Importer" from "Partition")
       Teuchos::RCP<Factory> RepartitionFact1 = Teuchos::rcp(new RepartitionFactory());

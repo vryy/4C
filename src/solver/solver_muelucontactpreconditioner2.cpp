@@ -594,7 +594,10 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
     Teuchos::RCP<MueLu::RepartitionInterface<LO, GO, NO, LMO> > repInterface = Teuchos::rcp(new MueLu::RepartitionInterface<LO, GO, NO, LMO>());
     repInterface->SetFactory("A", AcFact);
     repInterface->SetFactory("AmalgamatedPartition", isoInterface);
+#ifdef HAVE_Trilinos_Q1_2014
+#else
     repInterface->SetFactory("UnAmalgamationInfo", rebAmalgFact);
+#endif
 
     // Repartitioning (creates "Importer" from "Partition")
     RepartitionFact = Teuchos::rcp(new RepartitionFactory());
