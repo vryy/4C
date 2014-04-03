@@ -311,40 +311,6 @@ namespace ELEMENTS
         const int MyPID  // processor id
         );
 
-    //! Calculate nonlinear stiffness and mass matrix
-    //! implementation for hex8fbar elements differs from standard implementation
-    virtual void nln_stiffmass_fbar(
-        std::vector<int>&              lm,             // location matrix
-        std::vector<double>&           disp,           // current displacements
-        std::vector<double>&           residual,       // current residual displ
-        LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
-        LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
-        LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
-        LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
-        LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
-        Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
-        const INPAR::STR::StressType   iostress,  // stress output option
-        const INPAR::STR::StrainType   iostrain,  // strain output option
-        const int MyPID  // processor id
-        );
-
-    //! Calculate nonlinear stiffness and mass matrix for Hill plasticity
-    //! implementation for hex8fbar elements differs from standard implementation
-    virtual void nln_stiffmassHill_fbar(
-        std::vector<int>&              lm,             // location matrix
-        std::vector<double>&           disp,           // current displacements
-        std::vector<double>&           residual,       // current residual displ
-        LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
-        LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
-        LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
-        LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
-        LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
-        Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
-        const INPAR::STR::StressType   iostress,  // stress output option
-        const INPAR::STR::StrainType   iostrain,  // strain output option
-        const int MyPID  // processor id
-        );
-
     //! Calculate linear stiffness and mass matrix
     virtual void lin_stiffmass(
         std::vector<int>&              lm,             // location matrix
