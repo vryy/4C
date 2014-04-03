@@ -102,7 +102,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck2D(MORTAR::MortarElement& sele,
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
+        MORTAR::MortarProjector::Impl(sele,*meles[bs_test])->ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
 
         if ((mxi_test[0]>=-1.0) && (mxi_test[0]<=1.0))
         {
@@ -139,7 +139,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck2D(MORTAR::MortarElement& sele,
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
+        MORTAR::MortarProjector::Impl(sele,*meles[bs_test])->ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
 
         if ((mxi_test[0]>=-1.0) && (mxi_test[0]<=1.0))
         {
@@ -708,7 +708,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
-    MORTAR::MortarProjector::Impl(mele)->ProjectGaussPoint(sele,sxi,mele,mxi);
+    MORTAR::MortarProjector::Impl(sele,mele)->ProjectGaussPoint(sele,sxi,mele,mxi);
 
     // check GP projection
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
@@ -984,7 +984,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
+        MORTAR::MortarProjector::Impl(sele,*meles[bs_test])->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
 
         if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
         {
@@ -1055,7 +1055,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
+        MORTAR::MortarProjector::Impl(sele,*meles[bs_test])->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
 
         if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
         {
@@ -1125,7 +1125,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
+        MORTAR::MortarProjector::Impl(sele,*meles[bs_test])->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
 
         if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
         {
@@ -1191,7 +1191,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
+        MORTAR::MortarProjector::Impl(sele,*meles[bs_test])->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
 
         if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
         {
@@ -1260,7 +1260,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
+        MORTAR::MortarProjector::Impl(sele,*meles[bs_test])->ProjectGaussPoint3D(sele,sxi_test,*meles[bs_test],mxi_test,alpha_test);
 
         if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
         {
@@ -1357,7 +1357,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_EleBased(
         meles[nummaster]->GetNodalCoords(mcoord);
 
         // project Gauss point onto master element
-        MORTAR::MortarProjector::Impl(*meles[nummaster])->ProjectGaussPoint3D(sele,sxi,*meles[nummaster],mxi,projalpha);
+        MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint3D(sele,sxi,*meles[nummaster],mxi,projalpha);
 
         is_on_mele=true;
 
@@ -2768,7 +2768,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
       {
         // project Gauss point onto master element
         double mxi[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,sxi,*meles[nummaster],mxi);
+        MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint(sele,sxi,*meles[nummaster],mxi);
 
         // gp on mele?
         if ((mxi[0]>=-1.0) && (mxi[0]<=1.0) && (kink_projection==false))

@@ -50,7 +50,7 @@ Maintainer: Alexander Popp
 
 #include "mortar_calc_utils.H"
 /*----------------------------------------------------------------------*
- |  impl...                                                  farah 01/14|
+ |  impl. for aux.-plane based projection                    farah 01/14|
  *----------------------------------------------------------------------*/
 MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& ele)
 {
@@ -114,10 +114,312 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& ele)
 }
 
 /*----------------------------------------------------------------------*
+ |  impl. for element based projection                       farah 04/14|
+ *----------------------------------------------------------------------*/
+MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele,
+                                                       MortarElement& mele)
+{
+  switch (sele.Shape())
+  {
+  case DRT::Element::quad4:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::quad4:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad4, DRT::Element::quad4>::Instance();
+    }
+    case DRT::Element::quad8:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad4, DRT::Element::quad8>::Instance();
+    }
+    case DRT::Element::quad9:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad4, DRT::Element::quad9>::Instance();
+    }
+    case DRT::Element::tri3:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad4, DRT::Element::tri3>::Instance();
+    }
+    case DRT::Element::tri6:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad4, DRT::Element::tri6>::Instance();
+    }
+    default:
+      dserror("Element shape not supported!"); break;
+    }
+    break;
+  }
+  case DRT::Element::quad8:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::quad4:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad8, DRT::Element::quad4>::Instance();
+    }
+    case DRT::Element::quad8:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad8, DRT::Element::quad8>::Instance();
+    }
+    case DRT::Element::quad9:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad8, DRT::Element::quad9>::Instance();
+    }
+    case DRT::Element::tri3:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad8, DRT::Element::tri3>::Instance();
+    }
+    case DRT::Element::tri6:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad8, DRT::Element::tri6>::Instance();
+    }
+    default:
+      dserror("Element shape not supported!"); break;
+    }
+    break;
+  }
+  case DRT::Element::quad9:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::quad4:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad9, DRT::Element::quad4>::Instance();
+    }
+    case DRT::Element::quad8:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad9, DRT::Element::quad8>::Instance();
+    }
+    case DRT::Element::quad9:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad9, DRT::Element::quad9>::Instance();
+    }
+    case DRT::Element::tri3:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad9, DRT::Element::tri3>::Instance();
+    }
+    case DRT::Element::tri6:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad9, DRT::Element::tri6>::Instance();
+    }
+    default:
+      dserror("Element shape not supported!"); break;
+    }
+    break;
+  }
+  case DRT::Element::tri3:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::quad4:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::tri3, DRT::Element::quad4>::Instance();
+    }
+    case DRT::Element::quad8:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::tri3, DRT::Element::quad8>::Instance();
+    }
+    case DRT::Element::quad9:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::tri3, DRT::Element::quad9>::Instance();
+    }
+    case DRT::Element::tri3:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::tri3, DRT::Element::tri3>::Instance();
+    }
+    case DRT::Element::tri6:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::tri3, DRT::Element::tri6>::Instance();
+    }
+    default:
+      dserror("Element shape not supported!"); break;
+    }
+    break;
+  }
+  case DRT::Element::tri6:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::quad4:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::tri6, DRT::Element::quad4>::Instance();
+    }
+    case DRT::Element::quad8:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::tri6, DRT::Element::quad8>::Instance();
+    }
+    case DRT::Element::quad9:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::tri6, DRT::Element::quad9>::Instance();
+    }
+    case DRT::Element::tri3:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::tri6, DRT::Element::tri3>::Instance();
+    }
+    case DRT::Element::tri6:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::tri6, DRT::Element::tri6>::Instance();
+    }
+    default:
+      dserror("Element shape not supported!"); break;
+    }
+    break;
+  }
+  case DRT::Element::line2:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::line2:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::line2, DRT::Element::line2>::Instance();
+    }
+    case DRT::Element::line3:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::line2, DRT::Element::line3>::Instance();
+    }
+    default:
+      dserror("Element shape not supported!"); break;
+    }
+    break;
+  }
+  case DRT::Element::line3:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::line2:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::line3, DRT::Element::line2>::Instance();
+    }
+    case DRT::Element::line3:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::line3, DRT::Element::line3>::Instance();
+    }
+    default:
+      dserror("Element shape not supported!"); break;
+    }
+    break;
+  }
+  //==================================================
+  //                     NURBS
+  //==================================================
+  case DRT::Element::nurbs2:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::nurbs2:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::nurbs2, DRT::Element::nurbs2>::Instance();
+    }
+    case DRT::Element::nurbs3:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::nurbs2, DRT::Element::nurbs3>::Instance();
+    }
+    default:
+      dserror("Element shape not supported!"); break;
+    }
+    break;
+  }
+  case DRT::Element::nurbs3:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::nurbs2:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::nurbs3, DRT::Element::nurbs2>::Instance();
+    }
+    case DRT::Element::nurbs3:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::nurbs3, DRT::Element::nurbs3>::Instance();
+    }
+    default:
+      dserror("Element shape not supported!"); break;
+    }
+    break;
+  }
+  case DRT::Element::nurbs4:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::nurbs4:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::nurbs4, DRT::Element::nurbs4>::Instance();
+    }
+    case DRT::Element::nurbs8:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::nurbs4, DRT::Element::nurbs8>::Instance();
+    }
+    case DRT::Element::nurbs9:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::nurbs4, DRT::Element::nurbs9>::Instance();
+    }
+    default:
+      dserror("Element shape not supported!"); break;
+    }
+    break;
+  }
+  case DRT::Element::nurbs8:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::nurbs4:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::nurbs8, DRT::Element::nurbs4>::Instance();
+    }
+    case DRT::Element::nurbs8:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::nurbs8, DRT::Element::nurbs8>::Instance();
+    }
+    case DRT::Element::nurbs9:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::nurbs8, DRT::Element::nurbs9>::Instance();
+    }
+    default:
+      dserror("Element shape not supported!"); break;
+    }
+    break;
+  }
+  case DRT::Element::nurbs9:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::nurbs4:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::nurbs9, DRT::Element::nurbs4>::Instance();
+    }
+    case DRT::Element::nurbs8:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::nurbs9, DRT::Element::nurbs8>::Instance();
+    }
+    case DRT::Element::nurbs9:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::nurbs9, DRT::Element::nurbs9>::Instance();
+    }
+    default:
+      dserror("Element shape not supported!"); break;
+    }
+    break;
+  }
+  default:
+    dserror("Element shape %d (%d nodes) not activated. Just do it.", sele.Shape(), sele.NumNode()); break;
+  }
+  return NULL;
+}
+
+/*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 MORTAR::MortarProjectorCalc<distype>::MortarProjectorCalc()
+{
+  //nothing
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor ele-based (public)                                  farah 04/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+MORTAR::MortarProjectorCalc_EleBased<distypeS,distypeM>::MortarProjectorCalc_EleBased()
 {
   //nothing
 }
@@ -144,6 +446,27 @@ MORTAR::MortarProjectorCalc<distype> * MORTAR::MortarProjectorCalc<distype>::Ins
 }
 
 /*----------------------------------------------------------------------*
+ |  Instance ele-based (public)                              farah 04/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM> * MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Instance(bool create)
+{
+  static MortarProjectorCalc_EleBased<distypeS, distypeM> * instance;
+  if (create)
+  {
+    if (instance==NULL)
+      instance = new MortarProjectorCalc_EleBased<distypeS, distypeM>();
+  }
+  else
+  {
+    if (instance!=NULL)
+      delete instance;
+    instance = NULL;
+  }
+  return instance;
+}
+
+/*----------------------------------------------------------------------*
  |  Done (public)                                             farah 01/14|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -154,6 +477,16 @@ void MORTAR::MortarProjectorCalc<distype>::Done()
   Instance( false );
 }
 
+/*----------------------------------------------------------------------*
+ |  Done ele-based (public)                                  farah 04/14|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+void MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Done()
+{
+  // delete this pointer! Afterwards we have to go! But since this is a
+  // cleanup call, we can do it this way.
+  Instance( false );
+}
 /*----------------------------------------------------------------------*
  |  Project a node along its nodal normal (public)            popp 01/08|
  *----------------------------------------------------------------------*/
@@ -271,8 +604,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectElementNormal(MORTAR::MortarNo
 /*----------------------------------------------------------------------*
  |  Project a Gauss point along its normal (public)           popp 01/08|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPoint(MORTAR::MortarElement& gpele,
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+bool MORTAR::MortarProjectorCalc_EleBased<distypeS,distypeM>::ProjectGaussPoint(MORTAR::MortarElement& gpele,
                                                 const double* gpeta,
                                                 MORTAR::MortarElement& ele,
                                                 double* xi)
@@ -280,24 +613,24 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPoint(MORTAR::MortarEleme
   bool ok = true;
   if (ndim_==2)
   {
-    LINALG::Matrix<n_,1>          val;
-    LINALG::Matrix<ndim_,n_>   coord;
+    LINALG::Matrix<ns_,1>          val;
+    LINALG::Matrix<ndim_,ns_>   coord;
 
     DRT::Node** mynodes = gpele.Nodes();
     if(!mynodes) dserror("ERROR: ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
-    if(distype==DRT::Element::nurbs2 || distype==DRT::Element::nurbs3)
+    if(distypeS==DRT::Element::nurbs2 || distypeS==DRT::Element::nurbs3)
     {
-      LINALG::SerialDenseVector auxval(n_);
-      LINALG::SerialDenseMatrix deriv(n_,1);
+      LINALG::SerialDenseVector auxval(ns_);
+      LINALG::SerialDenseMatrix deriv(ns_,1);
       gpele.EvaluateShape(gpeta, auxval, deriv, gpele.NumNode());
 
-      for(int i=0;i<n_;++i)
+      for(int i=0;i<ns_;++i)
         val(i)=auxval(i);
     }
     else
-      DRT::UTILS::shape_function_1D (val ,gpeta[0],distype);
+      DRT::UTILS::shape_function_1D (val ,gpeta[0],distypeS);
 
     // get interpolated GP normal and GP coordinates
     double gpn[ndim_];
@@ -308,7 +641,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPoint(MORTAR::MortarEleme
       gpx[i] = 0.0;
     }
 
-    for (int i=0;i<n_;++i)
+    for (int i=0;i<ns_;++i)
     {
       MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
 
@@ -359,8 +692,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPoint(MORTAR::MortarEleme
 /*----------------------------------------------------------------------*
  | Check projection for warped elements quad4 elements       farah 01/13|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-bool MORTAR::MortarProjectorCalc<distype>::CheckProjection4AUXPLANE(MORTAR::MortarElement& ele,
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+bool MORTAR::MortarProjectorCalc_EleBased<distypeS,distypeM>::CheckProjection4AUXPLANE(MORTAR::MortarElement& ele,
                                              double* ngp, double* globgp )
 {
   if (ele.Shape()==DRT::Element::tri3)
@@ -525,34 +858,34 @@ bool MORTAR::MortarProjectorCalc<distype>::CheckProjection4AUXPLANE(MORTAR::Mort
 /*----------------------------------------------------------------------*
  |  Project a Gauss point along its normal (3D)               popp 11/08|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
                                                   const double* gpeta,
                                                   MORTAR::MortarElement& ele,
                                                   double* xi, double& par)
 {
   if (ndim_==3)
   {
-    LINALG::Matrix<n_,1>          val;
-    LINALG::Matrix<ndim_,n_>      coord;
+    LINALG::Matrix<ns_,1>          val;
+    LINALG::Matrix<ndim_,ns_>      coord;
     coord.Clear();
 
     DRT::Node** mynodes = gpele.Nodes();
     if(!mynodes) dserror("ERROR: ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
-    if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs8 ||
-       distype==DRT::Element::nurbs9)
+    if(distypeS==DRT::Element::nurbs4 || distypeS==DRT::Element::nurbs8 ||
+       distypeS==DRT::Element::nurbs9)
     {
-      LINALG::SerialDenseVector auxval(n_);
-      LINALG::SerialDenseMatrix deriv(n_,1);
+      LINALG::SerialDenseVector auxval(ns_);
+      LINALG::SerialDenseMatrix deriv(ns_,1);
       gpele.EvaluateShape(gpeta, auxval, deriv, gpele.NumNode());
 
-      for(int i=0;i<n_;++i)
+      for(int i=0;i<ns_;++i)
         val(i)=auxval(i);
     }
     else
-      DRT::UTILS::shape_function_2D (val,gpeta[0],gpeta[1],distype);
+      DRT::UTILS::shape_function_2D (val,gpeta[0],gpeta[1],distypeS);
 
     // get interpolated GP normal and GP coordinates
     double gpn[3];
@@ -563,7 +896,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPoint3D(MORTAR::MortarEle
       gpx[i] = 0.0;
     }
 
-    for (int i=0;i<n_;++i)
+    for (int i=0;i<ns_;++i)
     {
       MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
 
@@ -625,12 +958,12 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPoint3D(MORTAR::MortarEle
       alpha  += -df(2,0)*f[0] - df(2,1)*f[1] - df(2,2)*f[2];
       
       //Projection Check
-      if (k==MORTARMAXITER-1) 
-      {
-        bool check = CheckProjection4AUXPLANE(ele, gpn,gpx); 
-        if (check==false)
-          dserror("!!! STOP !!!   -->   Projection Error: Newton unconverged but GP on mele !!!");
-      }
+//      if (k==MORTARMAXITER-1)
+//      {
+//        bool check = CheckProjection4AUXPLANE(ele, gpn,gpx);
+//        if (check==false)
+//          dserror("!!! STOP !!!   -->   Projection Error: Newton unconverged but GP on mele !!!");
+//      }
     }
 
     // Newton iteration unconverged
@@ -943,8 +1276,8 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(MORTAR::
 /*----------------------------------------------------------------------*
  |  Evaluate F for Gauss point case (public)                  popp 01/08|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-double MORTAR::MortarProjectorCalc<distype>::EvaluateFGaussPoint(const double* gpx,
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+double MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::EvaluateFGaussPoint(const double* gpx,
                                                     const double* gpn,
                                                     MORTAR::MortarElement& ele,
                                                     const double* eta)
@@ -961,7 +1294,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateFGaussPoint(const double* g
 
   // build interpolation of master node coordinates for current eta
   double nx[ndim_];
-  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nx,0);
+  MORTAR::UTILS::LocalToGlobal<distypeM>(ele,eta,nx,0);
 
   // subtract GP coordinates
   nx[0]-=gpx[0];
@@ -977,8 +1310,8 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateFGaussPoint(const double* g
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for Gauss point case (public)              popp 01/08|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFGaussPoint(const double* gpn,
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+double MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::EvaluateGradFGaussPoint(const double* gpn,
                                                         MORTAR::MortarElement& ele,
                                                         const double* eta)
 {
@@ -994,7 +1327,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFGaussPoint(const doubl
   // build interpolation of master node coordinates for current eta
   // use shape function derivatives for interpolation (hence "1")
   double nxeta[ndim_];
-  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nxeta,1);
+  MORTAR::UTILS::LocalToGlobal<distypeM>(ele,eta,nxeta,1);
 
   // calculate GradF
   fgrad = nxeta[0]*gpn[1]-nxeta[1]*gpn[0];
@@ -1005,8 +1338,8 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFGaussPoint(const doubl
 /*----------------------------------------------------------------------*
  |  Evaluate F for Gauss point case (3D)                      popp 11/08|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-bool MORTAR::MortarProjectorCalc<distype>::EvaluateFGaussPoint3D(
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::EvaluateFGaussPoint3D(
                               double* f,
                               const double* gpx,
                               const double* gpn,
@@ -1024,7 +1357,7 @@ bool MORTAR::MortarProjectorCalc<distype>::EvaluateFGaussPoint3D(
 
   // build interpolation of ele node coordinates for current eta
   double nx[ndim_];
-  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nx,0);
+  MORTAR::UTILS::LocalToGlobal<distypeM>(ele,eta,nx,0);
 
   // evaluate function f
   for (int i=0; i<ndim_; ++i)
@@ -1036,8 +1369,8 @@ bool MORTAR::MortarProjectorCalc<distype>::EvaluateFGaussPoint3D(
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for Gauss point case (3D)                  popp 11/08|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-bool MORTAR::MortarProjectorCalc<distype>::EvaluateGradFGaussPoint3D(
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::EvaluateGradFGaussPoint3D(
                               LINALG::Matrix<3,3>& fgrad,
                               const double* gpx,
                               const double* gpn,
@@ -1061,8 +1394,8 @@ bool MORTAR::MortarProjectorCalc<distype>::EvaluateGradFGaussPoint3D(
 
   double nxeta1[ndim_];
   double nxeta2[ndim_];
-  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nxeta1,1);
-  MORTAR::UTILS::LocalToGlobal<distype>(ele,eta,nxeta2,2);
+  MORTAR::UTILS::LocalToGlobal<distypeM>(ele,eta,nxeta1,1);
+  MORTAR::UTILS::LocalToGlobal<distypeM>(ele,eta,nxeta2,2);
 
   //evaluate function f gradient
   for (int i=0;i<ndim_;++i)

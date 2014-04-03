@@ -792,7 +792,7 @@ void MORTAR::MortarIntegratorCalc<distypeS,distypeM>::EleBased_Integration(
       double mxi[2] = {0.0, 0.0};
       sxi[0]=eta[0];
 
-      MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,eta,*meles[nummaster],mxi);
+      MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint(sele,eta,*meles[nummaster],mxi);
 
       // evaluate trace space shape functions (on both elements)
       meles[nummaster]->EvaluateShape(mxi,mval,mderiv,meles[nummaster]->NumNode());
@@ -1100,7 +1100,7 @@ void MORTAR::MortarIntegratorCalc<distypeS,distypeM>::IntegrateDerivSegment2D(
 
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
-    MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,sxi,mele,mxi);
+    MORTAR::MortarProjector::Impl(sele,mele)->ProjectGaussPoint(sele,sxi,mele,mxi);
 
     // check GP projection
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
@@ -1695,7 +1695,7 @@ Teuchos::RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegratorCalc<distypeS,dis
     sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
 
     // project Gauss point onto master element
-    MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint(sele,sxi,mele,mxi);
+    MORTAR::MortarProjector::Impl(sele,mele)->ProjectGaussPoint(sele,sxi,mele,mxi);
 
     // check GP projection
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
@@ -1841,7 +1841,7 @@ void MORTAR::MortarIntegratorCalc<distypeS,distypeM>::IntegrateDerivCell3D_EleBa
     for(int nummaster=0;nummaster<msize;++nummaster)
     {
       // project Gauss point onto master element
-      bool is_on_mele = MORTAR::MortarProjector::Impl(sele)->ProjectGaussPoint3D(sele,sxi,*meles[nummaster],mxi,projalpha);
+      bool is_on_mele = MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint3D(sele,sxi,*meles[nummaster],mxi,projalpha);
       if(not is_on_mele)
         continue;
 

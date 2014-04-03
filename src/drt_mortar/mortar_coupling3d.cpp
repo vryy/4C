@@ -4043,7 +4043,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
       for(int nummaster=0;nummaster<(int)Coupling().size();++nummaster)
       {
         // project Gauss point onto master element
-        MORTAR::MortarProjector::Impl(Coupling()[nummaster]->MasterElement())->ProjectGaussPoint3D(SlaveElement(),sxi,Coupling()[nummaster]->MasterElement(),mxi,projalpha);
+        MORTAR::MortarProjector::Impl(SlaveElement(),Coupling()[nummaster]->MasterElement())->ProjectGaussPoint3D(SlaveElement(),sxi,Coupling()[nummaster]->MasterElement(),mxi,projalpha);
 
         bool is_on_mele=true;
 

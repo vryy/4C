@@ -1405,7 +1405,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
         {
           double mxi_test[2] = {0.0, 0.0};
-          MORTAR::MortarProjector::Impl(SlaveElement())->ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
+          MORTAR::MortarProjector::Impl(SlaveElement(),Coupling()[bs_test]->MasterElement())->ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
 
           DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterElement().Shape();
           if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
@@ -1440,7 +1440,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
         {
           double mxi_test[2] = {0.0, 0.0};
-          MORTAR::MortarProjector::Impl(SlaveElement())->ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
+          MORTAR::MortarProjector::Impl(SlaveElement(),Coupling()[bs_test]->MasterElement())->ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
 
           DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterElement().Shape();
           if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
