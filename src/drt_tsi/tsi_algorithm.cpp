@@ -23,7 +23,6 @@ Maintainer: Caroline Danowski
 #include "tsi_algorithm.H"
 #include "tsi_defines.H"
 #include "../drt_adapter/ad_str_structure.H"
-#include "../drt_adapter/adapter_thermo.H"
 #include "../drt_inpar/inpar_tsi.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
@@ -113,6 +112,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
   //===========================
   // output for structurefield:
   //===========================
+  ApplyThermoCouplingState(ThermoField()->Tempnp());
   StructureField()->Output(forced_writerestart);
 
   // mapped temperatures for structure field
@@ -144,6 +144,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
   //========================
   // output for thermofield:
   //========================
+  ApplyStructCouplingState(StructureField()->Dispnp(),StructureField()->Velnp());
   ThermoField()->Output(forced_writerestart);
 
   // call the TSI parameter list
