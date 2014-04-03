@@ -157,108 +157,6 @@ namespace LINALG
   namespace SOLVER
   {
 
-    //==================================================================
-    /// Auxiliary class implementing a minimal Blocked sparse matrix.
-    /*!
-     * This class allows to build up a block matrix from simple matrices whose maps may begin with 0 
-     * (or any other arbitrary value). This class is used only to bypass the fact that muelu 
-     * furnishes matrices  whose maps begin with 0 in some cases. 
-     * Therefore we cannot use these matrices to build a 
-     * standard "BlockSparseMatrixBase" object.
-     *
-     * Don't use this class. We want to remove it in the future.
-     */
-    //==================================================================
-
-    class BlockSparseMatrixAUX : virtual public Epetra_Operator
-    {
-
-      public:
-
-        BlockSparseMatrixAUX( 
-            std::vector< Teuchos::RCP<SparseMatrix> > blocks,
-            int rows,
-            int cols,
-            Epetra_DataAccess access=Copy);
-
-        int Cols() const {return cols_;}
-
-        int Rows() const {return rows_;}
-
-        const SparseMatrix& Matrix(int i, int j) const {return *blocks_[i*Cols()+j];}
-
-        int ApplyBlock(int r,int c, const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
-
-        const MultiMapExtractor& DomainExtractor() const { return *domainmaps_; }
-
-        const MultiMapExtractor& RangeExtractor() const { return *rangemaps_; }
-
-        Teuchos::RCP<Epetra_Import> DomainImporters(int i) const {return domainimporters_[i];}
-
-        Teuchos::RCP<Epetra_Import> RangeImporters(int i) const {return rangeimporters_[i];}
-
-        virtual int   SetUseTranspose (bool UseTranspose)
-        {
-          dserror("Function not implemented");
-          return -1;
-        }
-
-        virtual int   Apply (const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
-
-        virtual int   ApplyInverse (const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
-        {
-          dserror("Function not implemented");
-          return -1;
-        }
-
-        virtual double   NormInf () const
-        {
-          dserror("Function not implemented");
-          return -1.0;
-        }
-
-        virtual const char *   Label () const
-        {
-          return "BlockSparseMatrixAUX";
-        }
-
-        virtual bool   UseTranspose () const
-        {
-          dserror("Function not implemented");
-          return false;
-        }
-        virtual bool   HasNormInf () const
-        {
-          dserror("Function not implemented");
-          return false;
-        }
-        virtual const Epetra_Comm &   Comm () const {return blocks_[0]->Comm();} 
-
-        virtual const Epetra_Map &   OperatorDomainMap () const { return *domainmaps_->FullMap(); } 
-
-        virtual const Epetra_Map &   OperatorRangeMap () const { return *rangemaps_->FullMap(); }
-
-
-      private:
-
-        void Setup(std::vector< Teuchos::RCP<SparseMatrix> > blocks,Epetra_DataAccess access);
-        void FillWithZeroOfDiagonalBlocks(
-            const std::vector<Teuchos::RCP<SparseMatrix> >& blocks,
-            std::vector<Teuchos::RCP<SparseMatrix> >& blocks_all);
-        Teuchos::RCP<Epetra_Map> ComputeShiftedMap(const Epetra_Map& Map,int shift);
-        const Epetra_Map& DomainMapUnShifted(int col) const {return Matrix(0,col).DomainMap();}
-        const Epetra_Map& RangeMapUnShifted (int row) const {return Matrix(row,0).RangeMap() ;}
-        Epetra_Map CopyMapByHand(const Epetra_Map& MapIn);
-
-        int rows_;
-        int cols_;
-        std::vector< Teuchos::RCP<SparseMatrix>  > blocks_;
-        Teuchos::RCP<MultiMapExtractor> domainmaps_;
-        Teuchos::RCP<MultiMapExtractor> rangemaps_;
-        std::vector<Teuchos::RCP<Epetra_Import> > domainimporters_;
-        std::vector<Teuchos::RCP<Epetra_Import> > rangeimporters_;
-
-    };
 
 
     //==================================================================
@@ -266,7 +164,7 @@ namespace LINALG
      * Helper class used to create an instance of BlockSparseMatrixBase
      * from a vector containing pointers to the individual blocks.
      */
-    //! Not used (yet)
+    //! 
     //==================================================================
 
     class FactoryBlockSparseMatrix
@@ -347,38 +245,6 @@ namespace LINALG
             bool InitialGuessIsZero) const=0;
     };
 
-    //==================================================================
-    /*! \brief
-     * Auxiliary class to bypass the problem with the maps in the
-     * smoothers
-     */
-    //==================================================================
-
-    class NonBlockSmootherAUX : public NonBlockSmootherWrapperBase
-    {
-      public:
-        NonBlockSmootherAUX(
-            Teuchos::RCP<NonBlockSmootherWrapperBase> S,
-            Teuchos::RCP<Epetra_Import> DomainImporter,
-            Teuchos::RCP<Epetra_Import> RangeImporter)
-          : S_(S), DomainImporter_(DomainImporter), RangeImporter_(RangeImporter) {}
-
-        virtual void Apply(const Epetra_MultiVector& X,
-            Epetra_MultiVector& Y,
-            bool InitialGuessIsZero) const
-        {
-          Epetra_MultiVector XU(DomainImporter_->TargetMap(),X.NumVectors());
-          Epetra_MultiVector YU( RangeImporter_->SourceMap(),Y.NumVectors());
-          XU.Import(X,*DomainImporter_,Insert);
-          S_->Apply(XU,YU,InitialGuessIsZero);
-          Y.Import(YU,*RangeImporter_,Insert);
-        }
-
-      private:
-        Teuchos::RCP<NonBlockSmootherWrapperBase> S_;
-        Teuchos::RCP<Epetra_Import> DomainImporter_;
-        Teuchos::RCP<Epetra_Import> RangeImporter_;
-    };
 
 
     //==================================================================
@@ -433,8 +299,7 @@ namespace LINALG
 
         BlockSmootherWrapperBGS
           (
-           //Teuchos::RCP<BlockSparseMatrixBase> A,
-           Teuchos::RCP<BlockSparseMatrixAUX> A,
+           Teuchos::RCP<BlockSparseMatrixBase> A,
            std::vector< Teuchos::RCP<NonBlockSmootherWrapperBase> > S,
            int global_iter,
            double global_omega,
@@ -450,8 +315,7 @@ namespace LINALG
         void RichardsonBGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
         /// Bock matrix
-        //Teuchos::RCP<BlockSparseMatrixBase>                       A_;  
-        Teuchos::RCP<BlockSparseMatrixAUX>                        A_;  
+        Teuchos::RCP<BlockSparseMatrixBase>                       A_;  
 
         /// Smoothers for the diagonal blocks 
         std::vector< Teuchos::RCP<NonBlockSmootherWrapperBase> >  S_;  

@@ -22,258 +22,6 @@ Created on: Feb 27, 2014
 #include "solver_amgnxn_preconditioner.H" 
 
 
-
-/*------------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------------*/
-
-LINALG::SOLVER::BlockSparseMatrixAUX::BlockSparseMatrixAUX
-( 
-    std::vector< Teuchos::RCP<SparseMatrix> > blocks,
-    int rows,
-    int cols,
-    Epetra_DataAccess access
-) : 
-    rows_(rows),
-    cols_(cols),
-    blocks_(rows*cols,Teuchos::null),
-    domainmaps_(Teuchos::null),
-    rangemaps_(Teuchos::null),
-    domainimporters_(cols,Teuchos::null),
-    rangeimporters_(rows,Teuchos::null)
-{
-
-  // Check if the number of given of blocks is consistent with rows and cols
-  // and decide what to do
-  int NumBlocks = blocks.size();
-  bool flag_all_blocks_are_given = false;
-  if(NumBlocks==rows*cols)
-    flag_all_blocks_are_given = true;
-  else if(NumBlocks==rows and NumBlocks==cols)
-    flag_all_blocks_are_given = false;
-  else
-    dserror("The number of given blocks is not consistent with the given number of block rows and columns");
-
-  //Build up the block matrix
-  if(flag_all_blocks_are_given) // All the blocks are given
-    Setup(blocks,access);
-  else // Only the diagonal blocks are given
-  {
-    std::vector< Teuchos::RCP<SparseMatrix> > blocks_all(Rows()*Cols(),Teuchos::null);
-    FillWithZeroOfDiagonalBlocks(blocks,blocks_all);
-    Setup(blocks_all,access);
-  }
-
-}
-
-/*------------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------------*/
-
-void LINALG::SOLVER::BlockSparseMatrixAUX::FillWithZeroOfDiagonalBlocks(
-   const std::vector< Teuchos::RCP<SparseMatrix> >& blocks,
-         std::vector< Teuchos::RCP<SparseMatrix> >& blocks_all)
-{
-
-  // We assume that blocks.size() == Rows() == Cols() and blocks_all.size == Rows()*Cols()
-
-  // Insert diagonal blocks
-  for(int i=0;i<Rows();i++)
-    blocks_all[i*Cols()+i]=blocks[i];
-
-  // Build up off diagonal blocks and insert them
-  for(int i=0;i<Rows();i++)
-    for(int j=0;j<Cols();j++)
-      if(i!=j)
-      {
-        const Epetra_Map& range_map_i  = blocks[i]->RangeMap();
-        const Epetra_Map& domain_map_j = blocks[j]->DomainMap();
-        Teuchos::RCP<SparseMatrix> block_ij = Teuchos::rcp(new SparseMatrix(range_map_i,1));
-        block_ij->Zero();
-        block_ij->Complete(domain_map_j,range_map_i);
-        blocks_all[i*Cols()+j]=block_ij;
-      }
-
-  return;
-}
-
-
-/*------------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------------*/
-
-void LINALG::SOLVER::BlockSparseMatrixAUX::Setup(
-    std::vector< Teuchos::RCP<SparseMatrix> > blocks,
-    Epetra_DataAccess access)
-{
-
-  // Check if the number of given of blocks is consistent with rows and cols
-  int NumBlocks = blocks.size();
-  if(NumBlocks!=Rows()*Cols())
-    dserror("The number of given blocks is not consistent with the given number of block rows and columns");
-
-  // Create the blocks
-  blocks_.assign(NumBlocks,Teuchos::null);
-  for(int i=0;i<NumBlocks;i++)
-  {
-    if(blocks[i]==Teuchos::null)
-      dserror("The supplied blocks cannot be null pointers");
-    blocks_[i] = Teuchos::rcp(new SparseMatrix(*blocks[i],access));
-  }
-
-  // check that all the rows have the same range map
-  for(int row=0;row<Rows();row++)
-    for(int col=1;col<Cols();col++) 
-      if(!((Matrix(row,col).RangeMap()).SameAs(Matrix(row,0).RangeMap())))
-        dserror("The range map must be the same for all blocks in the same row");
-
-  // check that all the cols have the same domain map
-  for(int col=0;col<Cols();col++) 
-    for(int row=1;row<Rows();row++)
-      if(!((Matrix(row,col).DomainMap()).SameAs(Matrix(0,col).DomainMap())))
-        dserror("The domain map must be the same for all blocks in the same col");
-
-  //  We assume that the maps have unique GIDs
-  for(int row=0;row<Rows();row++) 
-    if(!Matrix(row,0).RangeMap().UniqueGIDs())
-      dserror("At least on map in the given blocks is not unique");
-  for(int col=0;col<Cols();col++) 
-    if(!Matrix(0,col).DomainMap().UniqueGIDs())
-      dserror("At least on map in the given blocks is not unique");
-
-  // Compute the shift value
-  std::vector<int> domainShifts(Cols(),-1);
-  int domainStartPoint = 0;
-  for(int col=0;col<Cols();col++) 
-  {
-    int MaxGID   = Matrix(0,col).DomainMap().MaxAllGID();
-    int MinGID   = Matrix(0,col).DomainMap().MinAllGID();
-    int TotalGID = Matrix(0,col).DomainMap().NumGlobalElements(); 
-    if(TotalGID!=MaxGID-MinGID+1)
-      dserror("The given maps cannot have gaps");
-    domainShifts[col]= domainStartPoint - MinGID;
-    domainStartPoint += TotalGID;
-  }
-  std::vector<int> rangeShifts(Rows(),-1);
-  int rangeStartPoint = 0;
-  for(int row=0;row<Rows();row++) 
-  {
-    int MaxGID   = Matrix(row,0).RangeMap().MaxAllGID();
-    int MinGID   = Matrix(row,0).RangeMap().MinAllGID();
-    int TotalGID = Matrix(row,0).RangeMap().NumGlobalElements(); 
-    if(TotalGID!=MaxGID-MinGID+1)
-      dserror("The given maps cannot have gaps");
-    rangeShifts[row]= rangeStartPoint - MinGID;
-    rangeStartPoint += TotalGID;
-  }
-
-  // Compute shifted map
-  std::vector< Teuchos::RCP<const Epetra_Map> > domainmapsshifted(Cols(),Teuchos::null);
-  for(int col=0;col<Cols();col++) 
-    domainmapsshifted[col] = ComputeShiftedMap(Matrix(0,col).DomainMap(),domainShifts[col]);
-  std::vector< Teuchos::RCP<const Epetra_Map> > rangemapsshifted(Rows(),Teuchos::null);
-  for(int row=0;row<Rows();row++) 
-    rangemapsshifted[row] = ComputeShiftedMap(Matrix(row,0).RangeMap(),rangeShifts[row]);
-
-  // Create the multimap extractors using the shifted maps
-  Teuchos::RCP<Epetra_Map> fullmap_domain = MultiMapExtractor::MergeMaps(domainmapsshifted);
-  domainmaps_ = Teuchos::rcp(new MultiMapExtractor(*fullmap_domain ,domainmapsshifted ));
-  Teuchos::RCP<Epetra_Map> fullmap_range  = MultiMapExtractor::MergeMaps(rangemapsshifted );
-  rangemaps_  = Teuchos::rcp(new MultiMapExtractor(*fullmap_range  ,rangemapsshifted  ));
-
-  // Create the importers between shifted and unshifted maps
-  for(int col=0;col<Cols();col++) 
-    domainimporters_[col]=
-      Teuchos::rcp(new Epetra_Import(Matrix(0,col).DomainMap(),*domainmapsshifted[col]));
-  for(int row=0;row<Rows();row++) 
-  {
-    // We don't understand why, but we need to copy the source map here!
-    rangeimporters_[row] = 
-      Teuchos::rcp(new Epetra_Import(*rangemapsshifted[row],
-            CopyMapByHand(Matrix(row,0).RangeMap())));
-  }
-  return;
-}
-
-
-/*------------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------------*/
-
-Teuchos::RCP<Epetra_Map> LINALG::SOLVER::BlockSparseMatrixAUX::ComputeShiftedMap
-  (const Epetra_Map& Map,int shift)
-{
-  std::vector<int> NewGlobalElements(Map.NumMyElements(),0);
-  int myGID = 0;
-  for(int i=0;i<(int)NewGlobalElements.size();i++)
-  {
-    myGID = Map.GID(i);
-    if(myGID<0)
-      dserror("wrong global id");
-    NewGlobalElements[i] = shift + myGID;
-  }
-  Teuchos::RCP<Epetra_Map> New_Map = 
-    Teuchos::rcp(new Epetra_Map(-1,Map.NumMyElements(),&NewGlobalElements[0],0,Map.Comm()));
-  return New_Map;
-}
-
-
-/*------------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------------*/
-
-Epetra_Map LINALG::SOLVER::BlockSparseMatrixAUX::CopyMapByHand(const Epetra_Map& MapIn)
-{
-  std::vector<int> MyGlobalElements(MapIn.NumMyElements(),0);
-  for(int i=0;i<MapIn.NumMyElements();i++)
-    MyGlobalElements[i] = MapIn.GID(i);
-  Epetra_Map MapOut(-1,MyGlobalElements.size(),&MyGlobalElements[0],0,MapIn.Comm());
-  return MapOut;
-}
-
-/*------------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------------*/
-
-int LINALG::SOLVER::BlockSparseMatrixAUX::ApplyBlock
-  (int r,int c, const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
-{
-
-  Epetra_MultiVector XU(DomainMapUnShifted(c),X.NumVectors());
-  Epetra_MultiVector YU(RangeMapUnShifted(r) ,Y.NumVectors());
-
-  XU.Import(X,*domainimporters_[c],Insert);
-  Matrix(r,c).Apply(XU,YU);
-  Y.Import(YU,*rangeimporters_[r],Insert);
-
-  return 0;
-}
-
-
-/*------------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------------*/
-
-int LINALG::SOLVER::BlockSparseMatrixAUX::Apply 
- (const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
-{
-
-  int rows = Rows();
-  int cols = Cols();
-  Y.PutScalar(0.0);
-
-
-  for (int rblock=0; rblock<rows; ++rblock)
-  {
-    Teuchos::RCP<Epetra_MultiVector> rowresult = rangemaps_->Vector(rblock,Y.NumVectors());
-    Teuchos::RCP<Epetra_MultiVector> rowy      = rangemaps_->Vector(rblock,Y.NumVectors());
-    for (int cblock=0; cblock<cols; ++cblock)
-    {
-      Teuchos::RCP<Epetra_MultiVector> colx = domainmaps_->ExtractVector(X,cblock);
-      int err = ApplyBlock(rblock,cblock,*colx,*rowy);
-      if (err!=0)
-        dserror("failed to apply vector to matrix: err=%d",err);
-      rowresult->Update(1.0,*rowy,1.0);
-    }
-    rangemaps_->InsertVector(*rowresult,rblock,Y);
-  }
-
-  return 0;
-}
-
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
@@ -606,8 +354,7 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::Apply(const Epetra_MultiVector&
 
 LINALG::SOLVER::BlockSmootherWrapperBGS::BlockSmootherWrapperBGS
 (
-    //Teuchos::RCP<BlockSparseMatrixBase> A,
-    Teuchos::RCP<BlockSparseMatrixAUX> A,
+    Teuchos::RCP<BlockSparseMatrixBase> A,
     std::vector< Teuchos::RCP<LINALG::SOLVER::NonBlockSmootherWrapperBase> > S,
     int global_iter,
     double global_omega,
@@ -699,9 +446,8 @@ void LINALG::SOLVER::BlockSmootherWrapperBGS::RichardsonBGS(const Epetra_MultiVe
       for(int j=0;j<NumBlocks_;j++)
       {
         j_fliped = index_order_[j];
-        //const LINALG::SparseMatrix& Op_ij = A_->Matrix(i_fliped,j_fliped);
-        //Op_ij.Apply(*(Y_blocks[j_fliped]),*tmpX_i);
-        A_->ApplyBlock(i_fliped,j_fliped,*(Y_blocks[j_fliped]),*tmpX_i);
+        const LINALG::SparseMatrix& Op_ij = A_->Matrix(i_fliped,j_fliped);
+        Op_ij.Apply(*(Y_blocks[j_fliped]),*tmpX_i);
         X_i->Update(-1.0,*tmpX_i,1.0);
       }
 
@@ -904,14 +650,15 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
         myAspa = Teuchos::rcp(new SparseMatrix(*myAcrs,explicitdirichlet,savegraph)); // TODO Copy?
         ALocal_[block][level]=myAspa;
 
-        //TODO remove (begin)
-        std::cout << "===============================================" << std::endl;
-        std::cout << "Level = " << level << " block = " << block       << std::endl;
-        std::cout << "    NumGlobalElements = " << myAspa->RangeMap().NumGlobalElements()   << std::endl;
-        std::cout << "    MinAllGID = " << myAspa->RangeMap().MinAllGID()   << std::endl;
-        std::cout << "    MaxAllGID = " << myAspa->RangeMap().MaxAllGID()   << std::endl;
-        std::cout << "===============================================" << std::endl;
-        //TODO remove (end)
+       // //TODO remove (begin)
+       // std::cout << "===============================================" << std::endl;
+       // std::cout << "Level = " << level << " block = " << block       << std::endl;
+       // std::cout << "    NumGlobalElements = " << myAspa->RangeMap().NumGlobalElements()
+       //   << std::endl;
+       // std::cout << "    MinAllGID = " << myAspa->RangeMap().MinAllGID()   << std::endl;
+       // std::cout << "    MaxAllGID = " << myAspa->RangeMap().MaxAllGID()   << std::endl;
+       // std::cout << "===============================================" << std::endl;
+       // //TODO remove (end)
       }
       else
         dserror("Error in extracting A");
@@ -976,9 +723,12 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
   //==========================================
 
   // The number of monolithic AMG levels is the minimum number of levels in all the fields
-  std::vector< Teuchos::RCP<BlockSparseMatrixAUX> > AGlobal  (NumLevelAMG_  ,Teuchos::null);  
-  std::vector< Teuchos::RCP<BlockSparseMatrixAUX> > PGlobal  (NumLevelAMG_-1,Teuchos::null); 
-  std::vector< Teuchos::RCP<BlockSparseMatrixAUX> > RGlobal  (NumLevelAMG_-1,Teuchos::null); 
+  std::vector< Teuchos::RCP<BlockSparseMatrixBase> > AGlobal  (NumLevelAMG_  ,Teuchos::null);  
+  std::vector< Teuchos::RCP<BlockSparseMatrixBase> > PGlobal  (NumLevelAMG_-1,Teuchos::null); 
+  std::vector< Teuchos::RCP<BlockSparseMatrixBase> > RGlobal  (NumLevelAMG_-1,Teuchos::null); 
+
+  // Factory for creating the block matrices
+  FactoryBlockSparseMatrix myBlockMatrixCreator;
 
   // build projectors and restrictors
   // Loop in levels
@@ -998,10 +748,10 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
     }
 
     // Build the sparse Matrices
-    PGlobal[level] = 
-      Teuchos::rcp(new BlockSparseMatrixAUX(Pblocks,NumBlocks_,NumBlocks_,Copy)); //TODO copy?
-    RGlobal[level] =
-      Teuchos::rcp(new BlockSparseMatrixAUX(Rblocks,NumBlocks_,NumBlocks_,Copy)); //TODO copy?
+    PGlobal[level] =  
+      myBlockMatrixCreator.CreateBlockSparseMatrix(Pblocks,NumBlocks_,NumBlocks_,Copy);
+    RGlobal[level] =  
+      myBlockMatrixCreator.CreateBlockSparseMatrix(Rblocks,NumBlocks_,NumBlocks_,Copy);
 
   } // Loop in Levels
 
@@ -1011,21 +761,7 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
   for(int level=0;level<NumLevelAMG_;level++)
   {
     if(level==0) // if fine level
-     // AGlobal[level]= A_; //TODO Hypothesis: A_ and H_ are consistent
-    {
-
-      // Allocate vector containing all the individual blocks and fill it
-      std::vector< Teuchos::RCP<SparseMatrix> > Ablocks(NumBlocks_*NumBlocks_,Teuchos::null);
-      for(int row=0;row<NumBlocks_;row++) 
-        for(int col=0;col<NumBlocks_;col++)
-        {
-          Teuchos::RCP<SparseMatrix> Aij = 
-            Teuchos::rcp(new SparseMatrix(A_->Matrix(row,col),View)); 
-          Ablocks[row*NumBlocks_+col] = Aij;
-        }
-      AGlobal[level] =
-        Teuchos::rcp(new BlockSparseMatrixAUX(Ablocks,NumBlocks_,NumBlocks_,Copy)); //TODO copy?
-    }
+      AGlobal[level]= A_; // Hypothesis: A_ and H_ are consistent
     else // if coarse levels
     {
       // Allocate vector containing all the individual blocks
@@ -1061,7 +797,7 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
       // At this point the vector containing the blocks is filled!
       // Build the block sparse matrix
       AGlobal[level] =
-        Teuchos::rcp(new BlockSparseMatrixAUX(Ablocks,NumBlocks_,NumBlocks_,Copy)); //TODO copy?
+        myBlockMatrixCreator.CreateBlockSparseMatrix(Ablocks,NumBlocks_,NumBlocks_,Copy);
 
     } // if coarse levels
   } // Loop in levels
@@ -1081,7 +817,6 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
     Svec(NumBlocks_,Teuchos::null);
   Teuchos::RCP<LINALG::SOLVER::BlockSmootherWrapperBGS> S_bgs = Teuchos::null;
   Teuchos::RCP<LINALG::SOLVER::NonBlockSmootherWrapperBase> S_base = Teuchos::null;
-  Teuchos::RCP<LINALG::SOLVER::NonBlockSmootherAUX> S_aux = Teuchos::null;
 
   // Loop in levels
   for(int level=0;level<NumLevelAMG_;level++)
@@ -1089,15 +824,8 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
     if(level<NumLevelAMG_-1) // fine levels
     {
       for(int block=0;block<NumBlocks_;block++)
-       //  Svec[block] = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
-       //    (SPreLocal_[block][level]);
-      {
-        S_base = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
+        Svec[block] = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
           (SPreLocal_[block][level]);
-        S_aux = Teuchos::rcp(new NonBlockSmootherAUX
-            (S_base,AGlobal[level]->DomainImporters(block),AGlobal[level]->RangeImporters(block)));
-        Svec[block] = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>(S_aux);
-      }
       S_bgs = Teuchos::rcp(new BlockSmootherWrapperBGS(
             AGlobal[level],
             Svec,
@@ -1107,17 +835,9 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
       SPreGlobal[level] =
         Teuchos::rcp_dynamic_cast<LINALG::SOLVER::BlockSmootherWrapperBase>(S_bgs);
 
-
       for(int block=0;block<NumBlocks_;block++)
-      //  Svec[block] = 
-      //    Teuchos::rcp_dynamic_cast<NonBlockSmootherWrapperBase>(SPosLocal_[block][level]); 
-      {
-        S_base = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
-          (SPosLocal_[block][level]);
-        S_aux = Teuchos::rcp(new NonBlockSmootherAUX
-            (S_base,AGlobal[level]->DomainImporters(block),AGlobal[level]->RangeImporters(block)));
-        Svec[block] = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>(S_aux);
-      }
+        Svec[block] = 
+          Teuchos::rcp_dynamic_cast<NonBlockSmootherWrapperBase>(SPosLocal_[block][level]); 
       S_bgs = Teuchos::rcp(new BlockSmootherWrapperBGS(
             AGlobal[level],
             Svec,
@@ -1144,26 +864,13 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
           Teuchos::RCP<SmootherWrapperVcycle> S_vcycle =
             Teuchos::rcp(new LINALG::SOLVER::SmootherWrapperVcycle(myV));
 
-          //  Svec[block] = 
-          //    Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>(S_vcycle);
-          S_base = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>(S_vcycle);
-          S_aux = Teuchos::rcp(new NonBlockSmootherAUX
-              (S_base,AGlobal[level]->DomainImporters(block),AGlobal[level]->RangeImporters(block)));
           Svec[block] = 
-            Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>(S_aux);
+            Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>(S_vcycle);
 
         }//if this block has more levels
         else
-         //  Svec[block] = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
-         //    (SPreLocal_[block][level]);
-        {
-          S_base = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
-            (SPreLocal_[block][level]);
-          S_aux = Teuchos::rcp(new NonBlockSmootherAUX(S_base,
-                AGlobal[level]->DomainImporters(block),AGlobal[level]->RangeImporters(block)));
           Svec[block] = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
-            (S_aux);
-        }
+            (SPreLocal_[block][level]);
       } // Loop in blocks
 
       // Create the coarse level smoother
@@ -1474,12 +1181,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Preconditioner::BuildMueLuHierarc
  std::vector<int>& offsets
 )
 {
-  // Offset
-  // std::vector<int> offsets(2,0);
-  // offsets[0]=20;
-  // offsets[1]=30;
 
-  // create a string with the offsets
 
   //Pick up the right info in this list
   std::string xmlFileName = mllist.get<std::string>("xml file","none");
@@ -1563,13 +1265,12 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Preconditioner::BuildMueLuHierarc
     mueLuFactory.SetupHierarchy(*H);
 
 
-
     // Recover information about the maps
     int NumLevel_block = H->GetNumberOfLevels();
     Teuchos::RCP<Level>        this_level = Teuchos::null;
     Teuchos::RCP<Matrix>              myA = Teuchos::null;
     Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
-    for(int level=1;level<NumLevel_block;level++)
+    for(int level=1;(level<NumLevel_block) and (level<(int)offsets.size()+1);level++)
     {
       this_level=H->GetLevel(level);
       if (this_level->IsAvailable("A"))
