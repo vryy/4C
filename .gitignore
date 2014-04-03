@@ -77,3 +77,6 @@ Thumbs.db:encryptable
 
 #ctags
 tags
+
+#vim
+*.swp
