@@ -801,7 +801,7 @@ void CONTACT::WearInterface::AssembleLinT_LM(LINALG::SparseMatrix& lintglobal)
   if (slipnodes_==Teuchos::null)
     return;
 
-  typedef std::map<int,double>::const_iterator CI;
+  //typedef std::map<int,double>::const_iterator CI;
 
   // loop over all LM slave nodes (row map)
   for (int j=0;j<slipnodes_->NumMyElements();++j)
@@ -863,7 +863,7 @@ void CONTACT::WearInterface::AssembleLinT_LM_Master(LINALG::SparseMatrix& lintgl
   const Teuchos::RCP<Epetra_Map> slmasternodes = LINALG::AllreduceEMap(*(slipmasternodes_));
 
 
-  typedef std::map<int,double>::const_iterator CI;
+  //typedef std::map<int,double>::const_iterator CI;
 
   // loop over all LM slave nodes (row map)
   for (int j=0;j<slmasternodes->NumMyElements();++j)

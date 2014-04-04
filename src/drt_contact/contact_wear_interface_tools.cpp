@@ -2508,8 +2508,8 @@ void CONTACT::WearInterface::FDCheckMortarTDeriv()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* cnode = static_cast<FriNode*>(node);
 
-    typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    typedef std::map<int,double>::const_iterator CI;
+    //typedef std::map<int,std::map<int,double> >::const_iterator CID;
+    //typedef std::map<int,double>::const_iterator CI;
 
     if ((int)(cnode->FriDataPlus().GetT().size())==0)
       continue;
@@ -2682,8 +2682,8 @@ void CONTACT::WearInterface::FDCheckMortarT_Master_Deriv()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* cnode = static_cast<FriNode*>(node);
 
-    typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    typedef std::map<int,double>::const_iterator CI;
+    //typedef std::map<int,std::map<int,double> >::const_iterator CID;
+    //typedef std::map<int,double>::const_iterator CI;
 
     if ((int)(cnode->FriDataPlus().GetT().size())==0)
       continue;
@@ -2971,8 +2971,8 @@ void CONTACT::WearInterface::FDCheckMortarEDeriv()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* cnode = static_cast<FriNode*>(node);
 
-    typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    typedef std::map<int,double>::const_iterator CI;
+    //typedef std::map<int,std::map<int,double> >::const_iterator CID;
+    //typedef std::map<int,double>::const_iterator CI;
 
     if ((int)(cnode->FriDataPlus().GetE().size())==0)
       continue;
@@ -3145,8 +3145,8 @@ void CONTACT::WearInterface::FDCheckMortarE_Master_Deriv()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* cnode = static_cast<FriNode*>(node);
 
-    typedef std::map<int,std::map<int,double> >::const_iterator CID;
-    typedef std::map<int,double>::const_iterator CI;
+    //typedef std::map<int,std::map<int,double> >::const_iterator CID;
+    //typedef std::map<int,double>::const_iterator CI;
 
     if ((int)(cnode->FriDataPlus().GetE().size())==0)
       continue;

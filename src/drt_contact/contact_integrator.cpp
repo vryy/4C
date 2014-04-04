@@ -2876,7 +2876,7 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
   LINALG::SerialDenseMatrix deriv(nrow,2,true);
 
   // map iterator
-  typedef std::map<int,double>::const_iterator CI;
+  //typedef std::map<int,double>::const_iterator CI;
 
   // get slave element nodes themselves
   DRT::Node** mynodes = sele.Nodes();
@@ -2956,7 +2956,7 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
   LINALG::SerialDenseMatrix intderiv(nintrow,2,true);
 
   // map iterator
-  typedef std::map<int,double>::const_iterator CI;
+  //typedef std::map<int,double>::const_iterator CI;
 
   //**********************************************************************
   // loop over all Gauss points for integration
