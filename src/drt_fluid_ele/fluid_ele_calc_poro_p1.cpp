@@ -702,6 +702,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
 {
   // definition of velocity-based momentum residual vectors
   LINALG::Matrix< my::nsd_, my::nen_ * my::nsd_>  lin_resM_Dus(true);
+  LINALG::Matrix< my::nsd_, my::nen_>  lin_resM_Dphi(true);
 
   // set element area or volume
   const double vol = my::fac_;
@@ -709,6 +710,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     lin_resM_Dus.Clear();
+    lin_resM_Dphi.Clear();
 
     // evaluate shape functions and derivatives at integration point
     my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
@@ -832,9 +834,6 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
 
     //compute linearization of spatial reaction tensor w.r.t. structural displacements
     {
-      Teuchos::RCP<const MAT::FluidPoro> actmat = Teuchos::rcp_static_cast<const MAT::FluidPoro>(material);
-      if(actmat->VaryingPermeablity())
-        dserror("varying material permeablity not yet supported!");
 
       const double porosity_inv = 1.0/my::porosity_;
       const double J_inv = 1.0/my::J_;
@@ -931,19 +930,15 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
      */
     for (int ui=0; ui<my::nen_; ++ui)
     {
-      for (int vi=0; vi<my::nen_; ++vi)
+      const double tmp = 1.0/my::porosity_;
+      for (int idim = 0; idim <my::nsd_; ++idim)
       {
-        const int fvi = my::nsd_*vi;
-        const double tmp = my::funct_(vi)/my::porosity_;
-        for (int idim = 0; idim <my::nsd_; ++idim)
-        {
-          ecouplp1_u(fvi+idim,ui) += timefacfac * tmp * my::reavel_(idim) * my::funct_(ui);
-        } // end for (idim)
-      } //vi
+        lin_resM_Dphi(idim,ui) += timefacfac * tmp * my::reavel_(idim) * my::funct_(ui);
+      } // end for (idim)
     } // ui
 
 
-  if (not my::fldparatimint_->IsStationary())
+    if (not my::fldparatimint_->IsStationary())
     //transient terms
     /*  reaction  and time derivative*/
     /*
@@ -957,20 +952,29 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
       const double porosity_inv = 1.0/my::porosity_;
       for (int ui=0; ui<my::nen_; ++ui)
       {
-        for (int vi=0; vi<my::nen_; ++vi)
+        for (int idim = 0; idim <my::nsd_; ++idim)
         {
-          const int fvi = my::nsd_*vi;
-          const double tmp = my::funct_(vi)*porosity_inv;
-          for (int idim = 0; idim <my::nsd_; ++idim)
-          {
-            ecouplp1_u(fvi+idim,ui) += timefacfac * tmp * (-my::reagridvel_(idim)) * my::funct_(ui);
-          } // end for (idim)
-        } //vi
+          lin_resM_Dphi(idim,ui) += timefacfac * porosity_inv * (-my::reagridvel_(idim)) * my::funct_(ui);
+        } // end for (idim)
       } // ui
 
       for (int ui=0; ui<my::nen_; ++ui)
         for (int vi=0; vi<my::nen_; ++vi)
           ecouplp1_p(vi,ui) +=   my::fac_ * my::funct_(vi) * my::funct_(ui);
+    }
+
+    {
+      for (int ui=0; ui<my::nen_; ++ui)
+      {
+        for (int vi=0; vi<my::nen_; ++vi)
+        {
+          const int fvi = my::nsd_*vi;
+          for (int idim = 0; idim <my::nsd_; ++idim)
+          {
+            ecouplp1_u(fvi+idim,ui) += my::funct_(vi) * lin_resM_Dphi(idim,ui);
+          } // end for (idim)
+        } //vi
+      } // ui
     }
 
     LINALG::Matrix<my::nen_,1>    derxy_convel(true);
@@ -1040,6 +1044,104 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                                    ;
           }
         }
+      }
+    }
+
+    //*************************************************************************************************************
+    // PSPG
+    if(my::fldpara_->PSPG())
+    {
+      //linearization of stabilization parameter w.r.t. porosity
+      const double v1 = timefacfacpre / my::porosity_ ;
+      LINALG::Matrix<1, my::nen_ >   temp(true);
+      temp.MultiplyTN(my::sgvelint_,my::derxy_);
+
+      for (int ui=0; ui<my::nen_; ++ui)
+      {
+        for (int vi=0; vi<my::nen_; ++vi)
+        {
+          ecouplp1_p(vi,ui) += v1 * temp(vi) * my::funct_(ui);
+        }
+      }
+
+      //linearization of residual in stabilization term w.r.t. porosity
+      if (my::is_higher_order_ele_ || my::fldpara_->IsNewton())
+      {
+        double scal_grad_q=0.0;
+
+        if(my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
+        {
+          scal_grad_q=my::tau_(1);
+        }
+        else
+        {
+          scal_grad_q= 0.0; //my::fldpara_->AlphaF()*fac3;
+        }
+
+        LINALG::Matrix<my::nen_ , my::nen_ >   temp2(true);
+
+        for (int vi=0; vi<my::nen_; ++vi)
+          for (int ui=0; ui<my::nen_; ++ui)
+            for(int idim=0;idim<my::nsd_;++idim)
+                temp2(vi,ui) += my::derxy_(idim,vi)*lin_resM_Dphi(idim,ui);
+
+        for (int ui=0; ui<my::nen_; ++ui)
+        {
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            ecouplp1_p(vi,ui) +=  scal_grad_q * temp2(vi,ui);
+          } // vi
+        } // ui
+      } // end if (is_higher_order_ele_) or (newton_)
+    }
+
+    //*************************************************************************************************************
+    if(my::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
+    {
+      double reac_tau;
+      if (my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
+        reac_tau = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::tau_(1);
+      else
+      {
+        dserror("Is this factor correct? Check for bugs!");
+        reac_tau=0.0;
+        //reac_tau = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldpara_->AlphaF()*fac3;
+      }
+
+      if (my::is_higher_order_ele_ or my::fldpara_->IsNewton())
+      {
+        for (int vi=0; vi<my::nen_; ++vi)
+        {
+          const double v = reac_tau*my::funct_(vi);
+
+          for(int idim=0;idim<my::nsd_;++idim)
+          {
+            const int fvi_p_idim = my::nsd_*vi+idim;
+
+            for (int ui=0; ui<my::nen_; ++ui)
+            {
+              ecouplp1_u(fvi_p_idim,ui) += v*lin_resM_Dphi(idim,ui);
+            } // vi
+          } // ui
+        } //idim
+      } // end if (is_higher_order_ele_) or (newton_)
+
+      {//linearization of stabilization parameter w.r.t. porosity
+        const double v = my::fldpara_->ViscReaStabFac() * ( my::reacoeff_*my::dtaudphi_(1)/my::tau_(1) + my::reacoeff_/my::porosity_ );
+        for (int vi=0; vi<my::nen_; ++vi)
+        {
+          const double w = -1.0 * v * my::funct_(vi) ;
+
+          for (int idim = 0; idim <my::nsd_; ++idim)
+          {
+            const int fvi = my::nsd_*vi + idim;
+
+            for (int ui=0; ui<my::nen_; ++ui)
+            {
+              ecouplp1_u(fvi,ui) += w*my::sgvelint_(idim)*my::funct_(ui);
+            }
+          }
+        }  // end for(idim)
       }
     }
 

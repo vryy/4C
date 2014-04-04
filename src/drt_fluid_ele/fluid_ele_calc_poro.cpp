@@ -2222,6 +2222,30 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
         } // ui
       } //idim
     } // end if (is_higher_order_ele_) or (newton_)
+
+    {//linearization of stabilization parameter w.r.t. structure displacement
+      const double v = my::fldpara_->ViscReaStabFac()* ( my::reacoeff_*dtaudphi_(1)/my::tau_(1) + my::reacoeff_/porosity_ );
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        const double w = -1.0 * v * my::funct_(vi) ;
+
+        for (int idim = 0; idim <my::nsd_; ++idim)
+        {
+          const double w_sgvelint= w*my::sgvelint_(idim);
+          const int fvi_p_idim = my::nsd_*vi+idim;
+
+          for (int ui=0; ui<my::nen_; ++ui)
+          {
+            for (int jdim = 0; jdim <my::nsd_; ++jdim)
+            {
+              const int fui_p_jdim   = my::nsd_*ui + jdim;
+
+              ecoupl_u(fvi_p_idim,fui_p_jdim) += w_sgvelint*dphi_dus(fui_p_jdim);
+            }
+          }
+        }
+      }  // end for(idim)
+    }
   }
 
   //*************************************************************************************************************
