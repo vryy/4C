@@ -1,13 +1,21 @@
+//
+// Maintainer: Nagler Andreas
+// nagler@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15264
+//
 ==================================================================
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Contracting                     Cylinder
-Test for SolidScatra Material with Tet4 Elements
-Maintainer: A. Nagler
+Contracting Cylinder
+  - Test for SolidScatra Elements using the ELAST_CoupAnisoNeoHooke_VarProp 
+    Material with Tet4 Elements. 
+  - Test case uses a linear activation function for FUNCT1
+  - Beware that there is no fixation involved. The system is still, since
+    the dynamic case is used.
+  - Used unit system is mm/g/s
 ----------------------------------------------------------------PROBLEM SIZE
-//ELEMENTS                      4153
-//NODES                         928
 DIM                             3
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0
@@ -41,23 +49,17 @@ SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       no
-ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1                     
-CONTROLTYPE                     load
-DAMPING                         Rayleigh
+DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha
 ITERNORM                        Inf
-K_DAMP                          0.005
+K_DAMP                          0.0
+M_DAMP                          0.0
 LINEAR_SOLVER                   1
-LOADLIN                         no
-LUMPMASS                        No
 MAXITER                         100
 MAXTIME                         0.9
 MINITER                         0
 MODIFIEDEXPLEULER               Yes
-M_DAMP                          0.0
 NLNSOL                          fullnewton
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
@@ -66,22 +68,19 @@ NORM_DISP                       Abs
 NORM_INCO                       Abs
 NORM_PRES                       Abs
 NORM_RESF                       Abs
-NUMSTEP                         15
+NUMSTEP                         1
 PREDICT                         ConstDisVelAcc
-PRESTRESS                       none
-PRESTRESSTIME                   0
-PTCDT                           0.1
 RESEVRYERGY                     0
 RESTARTEVRY                     50
 RESULTSEVRY                     1
 STC_LAYER                       1
 STC_SCALING                     no
-TIMESTEP                        0.001
+TIMESTEP                        0.01
 TOLCONSTR                       1e-03
-TOLDISP                         1e-09
+TOLDISP                         1e-09 // 10^-12 m
 TOLINCO                         1e-03
-TOLPRE                          1e-03
-TOLRES                          1e-06
+TOLPRE                          1e-03 
+TOLRES                          1e-06 // 10^-12 N
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
@@ -111,7 +110,7 @@ MAT 20 ELAST_CoupAnisoNeoHooke_VarProp C 100000 SOURCE_ACTIVATION 1
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 5.0 FUNCTION (0.5*tanh((t-sqrt(z^2)/100)/0.00001)+0.5)*tanh((t-sqrt(z^2)/300)/0.1)*exp(-(((t-sqrt(z^2)/100)/0.5)^10))
+FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION t
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -5687,16 +5686,16 @@ NODE 928 COORD -1.7820130483767356e+00 -9.0798099947909394e-01 -3.37433303930192
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 // checking z-displacement of 4 points on top of the cylinder
-STRUCTURE DIS structure NODE 184 QUANTITY dispz VALUE -1.17647364025774845e-01 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 185 QUANTITY dispz VALUE -1.53180061014311614e-01 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 254 QUANTITY dispz VALUE -1.32836205061931029e-01 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 255 QUANTITY dispz VALUE -1.07755834826301133e-01 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 184 QUANTITY dispz VALUE -8.03244168085445603e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 185 QUANTITY dispz VALUE -8.03356649261150607e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 254 QUANTITY dispz VALUE -8.03350765458735044e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 255 QUANTITY dispz VALUE -8.03247851047703271e-02 TOLERANCE 1e-8
 // checking xyz displacement of 2 points at the middle
-STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE 1.08967571955530633e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 41 QUANTITY dispy VALUE -3.17822184997510540e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 41 QUANTITY dispz VALUE 2.00737511090049760e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE -7.79396266323952123e-03 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 42 QUANTITY dispy VALUE -1.41424957107789302e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 42 QUANTITY dispz VALUE 2.12950414277708125e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE  1.12575276144163353e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 41 QUANTITY dispy VALUE  4.87359133357971683e-03 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 41 QUANTITY dispz VALUE -2.19393621088561745e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE  5.97617069555408682e-03 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 42 QUANTITY dispy VALUE -3.60030007344365639e-03 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 42 QUANTITY dispz VALUE -8.79915196686819646e-03 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END
