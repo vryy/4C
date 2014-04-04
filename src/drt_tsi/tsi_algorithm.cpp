@@ -26,6 +26,8 @@ Maintainer: Caroline Danowski
 #include "../drt_inpar/inpar_tsi.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
+
+#include "../drt_adapter/adapter_thermo.H"
 #include "../drt_lib/drt_discret.H"
 
 //for coupling of nonmatching meshes
@@ -215,6 +217,10 @@ void TSI::Algorithm::Output(bool forced_writerestart)
         ThermoField()->DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
       }
     }
+
+  //reset states
+  StructureField()->Discretization()->ClearState(true);
+  ThermoField()->Discretization()->ClearState(true);
 }  // Output()
 
 
@@ -297,6 +303,18 @@ Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
   return vel;
 }  // CalcVelocity()
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void TSI::Algorithm::PrepareOutput()
+{
+  //set temperatures on structure field for evaluating stresses
+  ApplyThermoCouplingState(ThermoField()->Tempnp());
+  // prepare output (i.e. calculate stresses, strains, energies)
+  StructureField()->PrepareOutput();
+
+  //reset states
+  StructureField()->Discretization()->ClearState(true);
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

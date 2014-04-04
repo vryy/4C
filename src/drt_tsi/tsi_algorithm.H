@@ -24,9 +24,9 @@ Maintainer: Caroline Danowski
 /*----------------------------------------------------------------------*
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
-#include "../drt_adapter/ad_str_structure.H"
-#include "../drt_adapter/adapter_thermo.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
+
+#include "../drt_adapter/ad_str_structure.H"
 
 #include <Epetra_Vector.h>
 
@@ -114,11 +114,7 @@ namespace TSI
     virtual void PrepareTimeStep() = 0;
 
     //! calculate stresses, strains, energies
-    void PrepareOutput()
-    {
-      ApplyThermoCouplingState(ThermoField()->Tempnp());
-      StructureField()->PrepareOutput();
-    }
+    void PrepareOutput();
 
     //! take current results for converged and save for next time step
     virtual void Update();
