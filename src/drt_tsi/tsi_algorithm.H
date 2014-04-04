@@ -114,7 +114,7 @@ namespace TSI
     virtual void PrepareTimeStep() = 0;
 
     //! calculate stresses, strains, energies
-    void PrepareOutput();
+    virtual void PrepareOutput()=0;
 
     //! take current results for converged and save for next time step
     virtual void Update();

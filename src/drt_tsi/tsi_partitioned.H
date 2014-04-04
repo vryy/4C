@@ -99,6 +99,8 @@ namespace TSI
     //! start a new time step
     virtual void PrepareTimeStep();
 
+    //! calculate stresses, strains, energies
+    virtual void PrepareOutput();
     //@}
 
     //! @name Solve
@@ -160,6 +162,8 @@ namespace TSI
 
     //@}
 
+    //! coupling algorithm
+    INPAR::TSI::SolutionSchemeOverFields coupling_;
     //! we couple based on displacements
     bool displacementcoupling_;
     //! quasi-static solution of the mechancial equation

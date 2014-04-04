@@ -305,19 +305,6 @@ Teuchos::RCP<Epetra_Vector> TSI::Algorithm::CalcVelocity(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::PrepareOutput()
-{
-  //set temperatures on structure field for evaluating stresses
-  ApplyThermoCouplingState(ThermoField()->Tempnp());
-  // prepare output (i.e. calculate stresses, strains, energies)
-  StructureField()->PrepareOutput();
-
-  //reset states
-  StructureField()->Discretization()->ClearState(true);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void TSI::Algorithm::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp)
 {
   if(matchinggrid_)

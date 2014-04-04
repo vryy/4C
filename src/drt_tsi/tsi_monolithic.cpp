@@ -3329,5 +3329,16 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
 
 }  // CalculateNeckingTSIResults()
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::PrepareOutput()
+{
+  //set temperatures on structure field for evaluating stresses
+  ApplyThermoCouplingState(ThermoField()->Tempnp());
+  // prepare output (i.e. calculate stresses, strains, energies)
+  StructureField()->PrepareOutput();
 
+  //reset states
+  StructureField()->Discretization()->ClearState(true);
+}
 /*----------------------------------------------------------------------*/

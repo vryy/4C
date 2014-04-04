@@ -59,6 +59,9 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   normtypeinc_
     = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_INC");
 
+  // decide if apply one-way coupling or full coupling
+   coupling_ = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
+
   // decide if one-way coupling or full coupling
 //  INPAR::TSI::SolutionSchemeOverFields coupling =
 //    DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
@@ -157,13 +160,6 @@ void TSI::Partitioned::SetupSystem()
  *----------------------------------------------------------------------*/
 void TSI::Partitioned::TimeLoop()
 {
-  // call the TSI parameter list
-  const Teuchos::ParameterList& tsidyn
-    = DRT::Problem::Instance()->TSIDynamicParams();
-
-  // decide if apply one-way coupling or full coupling
-  INPAR::TSI::SolutionSchemeOverFields coupling
-    = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
 
   // get active nodes from structural contact simulation
   Teuchos::RCP<MORTAR::ManagerBase> cmtman = StructureField()->ContactManager();
@@ -186,7 +182,7 @@ void TSI::Partitioned::TimeLoop()
       // only the one field knows the 2nd field, that contains the coupling
       // variable
       // choose algorithm depending on solution type
-      switch (coupling)
+      switch (coupling_)
       {
       case INPAR::TSI::OneWay :
       {
@@ -249,7 +245,7 @@ void TSI::Partitioned::TimeLoop()
       //    with heat transfer over the contacting surface (as a result //
       //    from the structural problem).                               //
       //******************************************************************
-      if (coupling == INPAR::TSI::OneWay)
+      if (coupling_ == INPAR::TSI::OneWay)
       {
         // predict and solve structural system
         StructureField()->PrepareTimeStep();
@@ -268,7 +264,7 @@ void TSI::Partitioned::TimeLoop()
       // 2) The structural field is influenced by the thermal field     //
       //    with a temperature dependent material law.                  //
       //******************************************************************
-      else if (coupling == INPAR::TSI::IterStagg)
+      else if (coupling_ == INPAR::TSI::IterStagg)
       {
         // prepare time step
         ThermoField()->PrepareTimeStep();
@@ -1450,5 +1446,17 @@ bool TSI::Partitioned::ConvergenceCheck(
   return stopnonliniter;
 }  // TSI::Partitioned::ConvergenceCheck
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void TSI::Partitioned::PrepareOutput()
+{
+  if(coupling_!=INPAR::TSI::OneWay or not displacementcoupling_)
+    //set temperatures on structure field for evaluating stresses
+    ApplyThermoCouplingState(ThermoField()->Tempnp());
+  // prepare output (i.e. calculate stresses, strains, energies)
+  StructureField()->PrepareOutput();
 
+  //reset states
+  StructureField()->Discretization()->ClearState(true);
+}
 /*----------------------------------------------------------------------*/

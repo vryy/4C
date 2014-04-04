@@ -250,6 +250,8 @@ namespace TSI
     //! start a new time step
     virtual void PrepareTimeStep();
 
+    //! calculate stresses, strains, energies
+    virtual void PrepareOutput();
     //@}
 
     //! convergence check for Newton solver
