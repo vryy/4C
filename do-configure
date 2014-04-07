@@ -150,7 +150,7 @@ if [[ ! "$CONFIGURATION_FILE" ]]; then
       echo "Detected CentOS 6.2 (kaiser)"
       if [ $TRILINOS_EXPERIMENTAL == 0 ]; then
 	    #CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q12012_ACML.config
-	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q12013_ACML_ompi162.config
+	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q32013_ACML_ompi162.config
       else 
         CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q12014_ACML_ompi162.config
       fi
