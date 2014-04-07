@@ -15,7 +15,8 @@
 
        example input line:
        MAT 1 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0
-         YIELD 0.45 ISOHARD 0.0
+         YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715 HARDEXPO 16.93
+
 
 
 <pre>
@@ -47,7 +48,9 @@ MAT::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(
   poissonratio_(matdata->GetDouble("NUE")),
   density_(matdata->GetDouble("DENS")),
   yield_(matdata->GetDouble("YIELD")),
-  isohard_(matdata->GetDouble("ISOHARD"))
+  isohard_(matdata->GetDouble("ISOHARD")),
+  infyield_(matdata->GetDouble("SATHARDENING")),
+  hardexp_(matdata->GetDouble("HARDEXPO"))
 {
 }
 
@@ -291,6 +294,12 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(
   const double G = ym / (2.0 * (1.0 + nu));  // shear modulus, mu=G
   const double kappa = ym / (3.0 * (1.0 - 2.0 * nu));  // bulk modulus
 
+  // plastic material data
+  const double yield = params_->yield_; // initial yield stress
+  const double isohard = params_->isohard_; // linear isotropic hardening
+  const double infyield = params_->infyield_; // saturation yield stress
+  const double hardexp = params_->hardexp_; // nonlinear hardening exponent
+
   const double detF = defgrd->Determinant();
 
   LINALG::Matrix<3,3> invdefgrd(*defgrd);
@@ -394,9 +403,9 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(
     abs_dev_KH_trial += dev_KH_trial(i) * dev_KH_trial(i);
   abs_dev_KH_trial = std::sqrt(abs_dev_KH_trial);
 
-  // yield function at trial state
-  double f_trial = std::sqrt(3.0/2.0) * abs_dev_KH_trial - Yield()
-                    - IsoHard() * accplstrainlast_->at(gp);
+  double f_trial = std::sqrt(3.0/2.0) * abs_dev_KH_trial - yield
+                      - isohard * accplstrainlast_->at(gp)
+                      - (infyield-yield)*(1.-exp(-hardexp*accplstrainlast_->at(gp)));
 
   // switch elastic (f <= 0) and plastic (f > 0) state
   if (f_trial <= 0.0) // ----------------------------------- elastic step
@@ -411,9 +420,29 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(
 
   else // -------------------------------------------------- plastic step
   {
-    // closed form of plastic increment (no need for Newton loop, as only linear
-    // hardening is concidered), (7.59)
-    gamma = f_trial / (3.0 * G + IsoHard());
+    // local Newton iteration for nonlinear isotropic hardening
+    int maxiter = 10;
+    double tol = 1.e-12;
+    double res = 0.;
+    double tan = 0.;
+    int iter=0;
+
+    for (iter=0; iter<maxiter; ++iter)
+    {
+      res = sqrt(3.0/2.0) * abs_dev_KH_trial - yield
+          -3.*G*gamma
+          - isohard * (accplstrainlast_->at(gp)+gamma)
+          - (infyield-yield)*(1.-exp(-hardexp*(accplstrainlast_->at(gp)+gamma)));
+
+      if (abs(res)<tol)
+        break;
+        
+      tan = -3.*G- isohard - (infyield-yield)*hardexp*exp(-hardexp*(accplstrainlast_->at(gp)+gamma));
+      gamma -= res/tan;
+    }
+
+    if (iter==maxiter)
+      dserror("Local Newton iteration unconverged in %i iterations",iter);
 
     // flow vector (7.54a)
     LINALG::Matrix<3,1> flow_vector(dev_KH_trial);
@@ -439,8 +468,7 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(
     tmp1.MultiplyNT(flow_vector,flow_vector);
     double fac_D_ep_2 = 4.0 * G * G * (
                           sqrt(2.0/3.0) * gamma/abs_dev_KH_trial
-                          - 1.0 / (3.0 * G + IsoHard())
-                          );
+                          - 1.0 / (3.0 * G + isohard + (infyield-yield)*hardexp*exp(-hardexp*(accplstrainlast_->at(gp)+gamma))) );
     D_ep_principal.Update(fac_D_ep_2, tmp1, 1.0);
   }
 

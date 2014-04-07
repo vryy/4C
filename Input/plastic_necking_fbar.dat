@@ -79,7 +79,7 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 // units are [mm,ms,kg]
-MAT 1 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0 YIELD 4.5 ISOHARD 0.12924
+MAT 1 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0 YIELD 0.45e1 ISOHARD 0.12924 SATHARDENING 0.0 HARDEXPO 0.0
 ----------------------------------------------------------------------CURVE1
 // displacement-driven load
 CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 0.1 FACTOR 0 0.5

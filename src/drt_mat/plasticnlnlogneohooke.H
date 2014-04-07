@@ -68,6 +68,10 @@ namespace MAT
       const double yield_;
       //! linear isotropic hardening modulus
       const double isohard_;
+      //! saturation yield stress
+      const double infyield_;
+      //! nonlinear hardening exponent
+      const double hardexp_;
 
       //@}
 
@@ -196,6 +200,9 @@ namespace MAT
 
     //! return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+
+    /// Return whether the material requires the deformation gradient for its evaluation
+    virtual bool NeedsDefgrd() { return true; };
 
     //@}
 

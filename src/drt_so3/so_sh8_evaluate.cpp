@@ -781,7 +781,6 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       break;
     }
 
-    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     /* Caution!! the defgrd can not be modified with ANS to remedy locking
        To get the consistent F a spectral decomposition would be necessary, see sosh8_Cauchy.
        However if one only maps e.g. stresses from current to material configuration,
@@ -794,12 +793,25 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     defgrd.MultiplyTT(xcurr,N_XYZ);
-    //
+
+    // deformation gradient consistent with (potentially EAS-modified) GL strains
+    // without eas/ans this is equal to the regular defgrd.
+    // This is necessary for material formulations based on the deformation
+    // gradient rather than the GL strains.
+    LINALG::Matrix<3,3> defgrd_mod(defgrd);
+
+    // calculate deformation gradient consistent with modified GL strain tensor
+    if ( ( eastype_ != soh8_easnone || anstype_==ansnone )
+        && (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd()))
+      CalcConsistentDefgrd(defgrd,glstrain,defgrd_mod);
+
+
+    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
     params.set<int>("gp",gp);
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
+    so3mat->Evaluate(&defgrd_mod,&glstrain,params,&stress,&cmat,Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses if necessary

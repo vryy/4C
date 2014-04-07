@@ -1481,6 +1481,10 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
 
+    // deformation gradient consistent with (potentially EAS-modified) GL strains
+    // without eas this is equal to the regular defgrd.
+    LINALG::Matrix<3,3> defgrd_mod(defgrd);
+
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone)
     {
@@ -1506,6 +1510,10 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
       default: dserror("Don't know what to do with EAS type %d", eastype_); break;
       }
+
+      // calculate deformation gradient consistent with modified GL strain tensor
+      if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd())
+        CalcConsistentDefgrd(defgrd,glstrain,defgrd_mod);
     } // ------------------------------------------------------------------ EAS
 
     // return gp strains (only in case of stress/strain output)
@@ -1725,7 +1733,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
 
     params.set<int>("gp",gp);
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
+    so3mat->Evaluate(&defgrd_mod,&glstrain,params,&stress,&cmat,Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp plastic strains (only in case of plastic strain output)
@@ -3136,6 +3144,63 @@ void DRT::ELEMENTS::So_hex8::PK2toCauchy(
   (*cauchystress).MultiplyNT(temp,(*defgrd));
 
 }  // PK2toCauchy()
+
+/*----------------------------------------------------------------------*
+ |  Calculate consistent deformation gradient               seitz 04/14 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::CalcConsistentDefgrd(LINALG::Matrix<3,3> defgrd_disp,
+    LINALG::Matrix<6,1> glstrain_mod,
+    LINALG::Matrix<3,3>& defgrd_mod)
+{
+  LINALG::Matrix<3,3> R;      // rotation tensor
+  LINALG::Matrix<3,3> U_mod;  // modified right stretch tensor
+  LINALG::Matrix<3,3> U_disp; // displacement-based right stretch tensor
+  LINALG::Matrix<3,3> EW;     // temporarily store eigenvalues
+  LINALG::Matrix<3,3> tmp;    // temporary matrix for matrix matrix matrix products
+  LINALG::Matrix<3,3> tmp2;    // temporary matrix for matrix matrix matrix products
+
+  // ******************************************************************
+  // calculate modified right stretch tensor
+  // ******************************************************************
+  for (int i=0; i<3; i++)
+    U_mod(i,i) = 2.*glstrain_mod(i) + 1.;
+  U_mod(0,1) = glstrain_mod(3);
+  U_mod(1,0) = glstrain_mod(3);
+  U_mod(1,2) = glstrain_mod(4);
+  U_mod(2,1) = glstrain_mod(4);
+  U_mod(0,2) = glstrain_mod(5);
+  U_mod(2,0) = glstrain_mod(5);
+
+  LINALG::SYEV(U_mod,EW,U_mod);
+  for (int i=0; i<3; ++i)
+    EW(i,i) = sqrt(EW(i,i));
+  tmp.Multiply(U_mod,EW);
+  tmp2.MultiplyNT(tmp,U_mod);
+  U_mod.Update(tmp2);
+
+  // ******************************************************************
+  // calculate displacement-based right stretch tensor
+  // ******************************************************************
+  U_disp.MultiplyTN(defgrd_disp,defgrd_disp);
+
+  LINALG::SYEV(U_disp,EW,U_disp);
+  for (int i=0; i<3; ++i)
+    EW(i,i) = sqrt(EW(i,i));
+  tmp.Multiply(U_disp,EW);
+  tmp2.MultiplyNT(tmp,U_disp);
+  U_disp.Update(tmp2);
+
+  // ******************************************************************
+  // compose consistent deformation gradient
+  // ******************************************************************
+  U_disp.Invert();
+  R.Multiply(defgrd_disp,U_disp);
+  defgrd_mod.Multiply(R,U_mod);
+
+  // you're done here
+  return;
+
+}
 
 /*----------------------------------------------------------------------*
  | get and set temperature required for some materials        dano 09/13|

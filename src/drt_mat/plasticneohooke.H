@@ -169,6 +169,9 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
+    /// Return whether the material requires the deformation gradient for its evaluation
+    virtual bool NeedsDefgrd() { return true; };
+
   private:
 
     /// my material parameters

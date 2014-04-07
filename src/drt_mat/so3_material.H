@@ -111,6 +111,10 @@ namespace MAT
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleId)
     { /* do nothing for simple material models */ return false; };
 
+    /// Return whether the material requires the deformation gradient for its evaluation
+    virtual bool NeedsDefgrd()
+    { /* usual materials are based on GL-strains */ return false; };
+
     //@}
   };
 }

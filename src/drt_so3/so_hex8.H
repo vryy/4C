@@ -587,6 +587,20 @@ protected:
           LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& T0invT,   // maps M(origin) local to global
           const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe);    // material element coords
 
+  /*! \brief Calculate the deformation gradient that is consistent
+   *         with modified (e.g. EAS) GL strain tensor.
+   *         Expensive (two polar decomposition), but required, if
+   *         the material evaluation is based on the deformation
+   *         gradient rather than the GL strain tensor (e.g. plasticity).
+   *
+   * \param defgrd_disp  (in)  : displacement-based deformation gradient
+   * \param glstrain_mod (in)  : modified GL strain tensor (strain-like Voigt notation)
+   * \param defgrd_mod   (out) : consistent modified deformation gradient
+   */
+  void CalcConsistentDefgrd(LINALG::Matrix<3,3> defgrd_disp,
+                            LINALG::Matrix<6,1> glstrain_mod,
+                            LINALG::Matrix<3,3>& defgrd_mod);
+
 
   //! @name Multi-scale related stuff
 
