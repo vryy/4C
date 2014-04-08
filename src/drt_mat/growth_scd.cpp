@@ -33,7 +33,8 @@ MAT::PAR::GrowthScd::GrowthScd(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Growth(matdata),
-  satcoeff_(matdata->GetDouble("SATCOEFF"))
+  satcoeff_(matdata->GetDouble("SATCOEFF")),
+  growthcoupl_(matdata->Get<std::string>("GROWTHCOUPL"))
 {
 }
 
@@ -264,12 +265,22 @@ void MAT::GrowthScd::EvaluateGrowthFunction
 {
   //call stress based growth law
   Growth::EvaluateGrowthFunction(growthfunc,traceM,theta);
+  stressgrowthfunc = growthfunc;
 
   // parameters
   const double satcoeff = params_->satcoeff_;
+  const std::string* growthcoupl =params_->growthcoupl_;
 
-  // scale with concentration dependent factor
- growthfunc = concentration_/(satcoeff+concentration_) * growthfunc;
+  if (*growthcoupl == "ScaleConc")
+    // scale with concentration dependent factor
+    growthfunc = concentration_/(satcoeff+concentration_) * growthfunc;
+
+  else if (*growthcoupl == "StressRed")
+    // reduce the growth due to scalar transport because of the presence of stresses (biofilm)
+   growthfunc = concentration_/(satcoeff+concentration_) - abs(growthfunc);
+
+  else
+    dserror ("The chosen coupling law between stress dependent growth and reaction dependent growth is not implemented");
 
   return;
 }
@@ -291,9 +302,13 @@ void MAT::GrowthScd::EvaluateGrowthFunctionDerivTheta
 
   // parameters
   const double satcoeff = params_->satcoeff_;
+  const std::string* growthcoupl =params_->growthcoupl_;
 
-  // scale with concentration dependent factor
-  dgrowthfunctheta = concentration_/(satcoeff+concentration_) * dgrowthfunctheta;
+  if (*growthcoupl == "ScaleConc")
+    dgrowthfunctheta = concentration_/(satcoeff+concentration_) * dgrowthfunctheta;
+
+  if (*growthcoupl == "StressRed")
+    dgrowthfunctheta = - abs(stressgrowthfunc) / stressgrowthfunc * dgrowthfunctheta;
 
   return;
 }
@@ -316,9 +331,14 @@ void MAT::GrowthScd::EvaluateGrowthFunctionDerivC
 
   // parameters
   const double satcoeff = params_->satcoeff_;
+  const std::string* growthcoupl =params_->growthcoupl_;
 
-  // scale with concentration dependent factor
-  dgrowthfuncdC.Scale(concentration_/(satcoeff+concentration_));
+  if (*growthcoupl == "ScaleConc")
+    // scale with concentration dependent factor
+    dgrowthfuncdC.Scale(concentration_/(satcoeff+concentration_));
+
+  if (*growthcoupl == "StressRed")
+    dgrowthfuncdC.Scale(- abs(stressgrowthfunc) / stressgrowthfunc);
 
   return;
 }

@@ -49,6 +49,11 @@ namespace MAT
       const double satcoeff_;
       //@}
 
+      // Coupling between stress dependent growth and reaction dependent growth
+      // it could be that the stress dependent growth has to be scaled with the reeaction term (ScaleConc)
+      // or that the reaction dependent growth is reduced by the presence of stresses (StressRed)
+      const std::string* growthcoupl_;
+
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
     };  // class ScdGrowth
@@ -223,6 +228,9 @@ namespace MAT
     Teuchos::RCP<std::vector<double> > dtheta_;
     /// concentration (e.g. nutrients)
     double concentration_;
+
+
+    double stressgrowthfunc;
 
   };//class ScdGrowth
 

@@ -19,6 +19,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_scatra/passive_scatra_algorithm.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
 /*----------------------------------------------------------------------*/
@@ -26,6 +27,13 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 FS3I::PartFS3I_1WC::PartFS3I_1WC(const Epetra_Comm& comm)
   :PartFS3I(comm)
 {
+  // build a proxy of the scatra discretization for the structure field
+  Teuchos::RCP<DRT::DofSet> scatradofset
+    = scatravec_[1]->ScaTraField()->Discretization()->GetDofSetProxy();
+
+  // check if scatra field has 2 discretizations, so that coupling is possible
+  if (fsi_->StructureField()->Discretization()->AddDofSet(scatradofset)!=1)
+    dserror("unexpected dof sets in structure field");
 }
 
 
@@ -41,6 +49,7 @@ void FS3I::PartFS3I_1WC::Timeloop()
   while (NotFinished())
   {
     IncrementTimeAndStep();
+    SetStructScatraSolution();
     DoFSIStep();
     SetFSISolution();
     DoScatraStep();

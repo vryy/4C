@@ -319,6 +319,7 @@ void MAT::Growth::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
 
   double dt = params.get<double>("delta time", -1.0);
   double time = params.get<double>("total time", -1.0);
+  if(dt==-1.0 or time == -1.0) dserror("no time step or no total time given for growth material!");
   std::string action = params.get<std::string>("action", "none");
   bool output = false;
   if (action == "calc_struct_stress")

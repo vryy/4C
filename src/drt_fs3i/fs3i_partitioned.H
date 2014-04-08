@@ -90,6 +90,9 @@ namespace FS3I
     //! information transfer FSI -> ScaTra
     void SetFSISolution();
 
+    /// set scatra solution on structure field
+    void SetStructScatraSolution() ;
+
     //! evalute, solver and iteratively update coupled ScaTra problem
     void ScatraEvaluateSolveIterUpdate();
 

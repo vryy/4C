@@ -1329,6 +1329,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_area_poro")        act = StructuralSurface::calc_struct_area_poro;
+  else if (action=="calc_cur_nodal_normals")       act = StructuralSurface::calc_cur_nodal_normals;
+  else if (action=="calc_ref_nodal_normals")       act = StructuralSurface::calc_ref_nodal_normals;
   else
     dserror("Unknown type of action for StructuralSurface");
 
@@ -1338,6 +1340,21 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   case calc_struct_area_poro:
   {
     CalculateSurfacePorosity(params,discretization,la);
+  }
+  break;
+  case calc_ref_nodal_normals:
+  case calc_cur_nodal_normals:
+  {
+    Evaluate(
+          params,
+          discretization,
+          la[0].lm_, // location vector is build by the first column of la
+          elematrix1,
+          elematrix2,
+          elevector1,
+          elevector2,
+          elevector3
+          );
   }
   break;
   default:

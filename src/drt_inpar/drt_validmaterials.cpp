@@ -1431,6 +1431,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
      AddNamedReal(m,"ENDTIME","end growth after this time");
      AddNamedReal(m,"TOL","tolerance for local Newton iteration");
      AddNamedReal(m,"SATCOEFF","saturation coefficient for concentration dependent growth law");
+     AddNamedString(m,"GROWTHCOUPL","Coupling between stress dependent growth and reaction dependent growth","ScaleConc", true);
 
      AppendMaterialDefinition(matlist,m);
    }
@@ -1461,7 +1462,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_GROWTH_EXP",
-                                            "linear growth law",
+                                            "exponential growth law",
                                             INPAR::MAT::m_growth_exponential));
 
     AddNamedReal(m,"MANDEL","reference value for mandelstress");

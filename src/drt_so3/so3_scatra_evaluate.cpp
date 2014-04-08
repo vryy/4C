@@ -53,7 +53,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
         = discretization.GetState(1,"temperature");
 
       if (tempnp==Teuchos::null)
-        dserror("calc_struct_nlnstiff: Cannot get state vector 'fluidvel' ");
+        dserror("calc_struct_nlnstiff: Cannot get state vector 'temperature' ");
 
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double> >mytemp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
@@ -66,12 +66,25 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
        params.set<double>("scalar",meantemp);
 
     }
-   // Get pointer for scatra material in the same element
-    Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
-    scatradis = DRT::Problem::Instance()->GetDis("scatra");
-    DRT::Element* scatraele = scatradis->gElement(Id());
-    Teuchos::RCP<MAT::Material> scatramat = Teuchos::rcp_dynamic_cast<MAT::Material>(scatraele->Material());
-    params.set< Teuchos::RCP<MAT::Material> >("scatramat",scatramat);
+
+    DRT::Problem* problem = DRT::Problem::Instance();
+    const std::vector<std::string> disnames = problem->GetDisNames();
+    int numfield = 0;
+    numfield = problem->NumFields();
+
+    for (int i=0; i<numfield; ++i)
+    {
+      std::string name = problem->GetDis(disnames[i])->Name();
+      if (name =="scatra")
+      {
+        // Get pointer for scatra material in the same element
+        Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
+        scatradis = problem->GetDis("scatra");
+        DRT::Element* scatraele = scatradis->gElement(Id());
+        Teuchos::RCP<MAT::Material> scatramat = Teuchos::rcp_dynamic_cast<MAT::Material>(scatraele->Material());
+        params.set< Teuchos::RCP<MAT::Material> >("scatramat",scatramat);
+      }
+    }
 
   }
   Teuchos::RCP<std::vector<double> >xrefe = Teuchos::rcp(new std::vector<double>(3));
