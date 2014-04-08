@@ -481,7 +481,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/newtonianfluid.cpp
   src/drt_mat/optimization_density.cpp
   src/drt_mat/permeablefluid.cpp
-  src/drt_mat/plasticneohooke.cpp
   src/drt_mat/plasticnlnlogneohooke.cpp
   src/drt_mat/plasticlinelast.cpp
   src/drt_mat/damage.cpp

@@ -160,23 +160,8 @@ namespace MAT
     //! return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new PlasticNlnLogNeoHooke( *this ) ); }
 
-    //! Young's modulus
-    double Youngs() const { return params_->youngs_; }
-
-    //! Poisson's ratio
-    double PoissonRatio() const { return params_->poissonratio_; }
-
     //! density
     virtual double Density() const { return params_->density_; }
-
-    //! shear modulus
-    double ShearMod() const { return 0.5*params_->youngs_/(1.0+params_->poissonratio_); }
-
-    //! yield stress
-    virtual double Yield() const { return params_->yield_; }
-
-    //! isotropic hardening modulus
-    virtual double IsoHard() const { return params_->isohard_; }
 
     //! return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
