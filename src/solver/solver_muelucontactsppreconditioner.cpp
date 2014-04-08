@@ -129,7 +129,9 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     int maxLevels = 3;
     int verbosityLevel = 10;
     int maxCoarseSize = 100;
+#ifdef HAVE_Trilinos_Q1_2014
     int minPerAgg = 9;       // optimal for 2d
+#endif
     int maxPerAgg = 27;      // optimal for 3d
     int maxNbrAlreadySelected = 0;
     std::string agg_type = "Uncoupled";
@@ -139,7 +141,9 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     if(mllist_.isParameter("coarse: max size")) maxCoarseSize = mllist_.get<int>("coarse: max size");
     if(mllist_.isParameter("aggregation: type"))               agg_type            = mllist_.get<std::string> ("aggregation: type");
     if(mllist_.isParameter("aggregation: nodes per aggregate"))maxPerAgg           = mllist_.get<int>("aggregation: nodes per aggregate");
+#ifdef HAVE_Trilinos_Q1_2014
     if(mllist_.isParameter("aggregation: min nodes per aggregate"))minPerAgg       = mllist_.get<int>("aggregation: min nodes per aggregate");
+#endif
 
     if(mllist_.isParameter("aggregation: damping factor"))     agg_damping          = mllist_.get<double>("aggregation: damping factor");
 

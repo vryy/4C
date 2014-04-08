@@ -358,7 +358,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   int maxLevels = 10;       // multigrid prameters
   //double agg_threshold = 0.0;   // aggregation parameters
   double agg_damping = 4/3;
+#ifdef HAVE_Trilinos_Q1_2014
   int    minPerAgg = 3;       // optimal for 2d
+#endif
   int    maxPerAgg = 27;       // optimal for 3d
   int    maxNbrAlreadySelected = 0;
   std::string agg_type = "Uncoupled";
@@ -375,7 +377,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   if(params.isParameter("aggregation: damping factor"))     agg_damping         = params.get<double>("aggregation: damping factor");
   //if(params.isParameter("aggregation: smoothing sweeps"))   agg_smoothingsweeps = params.get<int>   ("aggregation: smoothing sweeps");
   if(params.isParameter("aggregation: type"))               agg_type            = params.get<std::string> ("aggregation: type");
+#ifdef HAVE_Trilinos_Q1_2014
   if(params.isParameter("aggregation: min nodes per aggregate")) minPerAgg           = params.get<int>("aggregation: min nodes per aggregate");
+#endif
   if(params.isParameter("aggregation: nodes per aggregate"))     maxPerAgg           = params.get<int>("aggregation: nodes per aggregate");
   if(params.isParameter("muelu reuse: strategy"))           reuseStrategy       = params.get<std::string>("muelu reuse: strategy");
 #ifdef HAVE_MUELU_ISORROPIA

@@ -157,7 +157,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   //double agg_threshold = 0.0;   // aggregation parameters
   double agg_damping = 4/3;
   //int    agg_smoothingsweeps = 1;
+#ifdef HAVE_Trilinos_Q1_2014
   int    minPerAgg = 3;       // optimal for 2d
+#endif
   int    maxPerAgg = 27;      // optimal for 3d
   int    maxNbrAlreadySelected = 0;
   std::string agg_type = "Uncoupled";
@@ -171,7 +173,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   //if(params.isParameter("aggregation: smoothing sweeps"))   agg_smoothingsweeps = params.get<int>   ("aggregation: smoothing sweeps");
   if(params.isParameter("aggregation: type"))               agg_type            = params.get<std::string> ("aggregation: type");
   if(params.isParameter("aggregation: nodes per aggregate"))maxPerAgg           = params.get<int>("aggregation: nodes per aggregate");
+#ifdef HAVE_Trilinos_Q1_2014
   if(params.isParameter("aggregation: min nodes per aggregate"))minPerAgg           = params.get<int>("aggregation: min nodes per aggregate");
+#endif
 
   // set DofsPerNode in A operator
   A->SetFixedBlockSize(nDofsPerNode);
