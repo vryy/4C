@@ -39,7 +39,7 @@ REINITVOLCORRECTION             yes
 -----------------------------------LEVEL-SET CONTROL/PARTICLE
 INCLUDE_PARTICLE                no
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
-SCATRATYPE                      ConvectionDiffusion
+SCATRATYPE                      LevelSet
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      3
 INITIALFIELD                    field_by_function

@@ -131,7 +131,6 @@ DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
     velhatdiv_(0.0),
     fsvderxy_(true),
     mffsvderxy_(true),
-    mfssgconv_c_(true),
     mffsvdiv_(0.0),
     sgvisc_(0.0),
     fssgvisc_(0.0),
@@ -1020,7 +1019,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
       {
         mfssgscaint_ = D_mfs * funct_.Dot(fsescaaf);
-        mfssgconv_c_.MultiplyTN(derxy_,mffsvelint_);
         grad_fsscaaf_.Multiply(derxy_,fsescaaf);
         for (int dim=0; dim<nsd_; dim++)
             grad_fsscaaf_(dim,0) *= D_mfs;
@@ -1028,7 +1026,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       else
       {
         mfssgscaint_ = 0.0;
-        mfssgconv_c_.Clear();
         grad_fsscaaf_.Clear();
       }
 
@@ -1113,30 +1110,37 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       // add to residual of continuity equation
       conres_old_ -= rhscon_;
 
-      // compute subgrid-scale part of scalar
-      // -> different for generalized-alpha and other time-integration schemes
-      ComputeSubgridScaleScalar(escaaf,escaam);
-
-      // update material parameters including subgrid-scale part of scalar
-      if (fldpara_->UpdateMat())
+      if (fldpara_->UpdateMat() or
+          fldpara_->ContiSUPG() or
+          fldpara_->ContiCross() != INPAR::FLUID::cross_stress_stab_none or
+          fldpara_->ContiReynolds() != INPAR::FLUID::reynolds_stress_stab_none or
+          fldpara_->MultiFracLomaConti())
       {
-        // since we update the viscosity in the next step, a potential subgrid-scale velocity would be overwritten
-        if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::vreman)
-           dserror("No material update in combination with smagorinsky model!");
+        // compute subgrid-scale part of scalar
+        // -> different for generalized-alpha and other time-integration schemes
+        ComputeSubgridScaleScalar(escaaf,escaam);
 
-        if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
-          UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,mfssgscaint_);
-        else
-          UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
-        visceff_ = visc_;
-        if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::vreman)
-          visceff_ += sgvisc_;
+        // update material parameters including subgrid-scale part of scalar
+        if (fldpara_->UpdateMat())
+        {
+          // since we update the viscosity in the next step, a potential subgrid-scale velocity would be overwritten
+          if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::vreman)
+             dserror("No material update in combination with smagorinsky model!");
+
+          if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
+            UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,mfssgscaint_);
+          else
+            UpdateMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,sgscaint_);
+          visceff_ = visc_;
+          if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::vreman)
+            visceff_ += sgvisc_;
+        }
+
+        // right-hand side of continuity equation based on updated material parameters
+        // and including all stabilization terms
+        // -> different for generalized-alpha and other time-integration schemes
+        RecomputeGalAndComputeCrossRHSContEq();
       }
-
-      // right-hand side of continuity equation based on updated material parameters
-      // and including all stabilization terms
-      // -> different for generalized-alpha and other time-integration schemes
-      RecomputeGalAndComputeCrossRHSContEq();
     }
     else if (fldpara_->PhysicalType() == INPAR::FLUID::artcomp)
     {
@@ -5097,7 +5101,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
 
   // SUPG and Reynolds-stress term on right-hand side of
   // continuity equation for low-Mach-number flow
-  if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+  if (fldpara_->PhysicalType() == INPAR::FLUID::loma and
+      (fldpara_->ContiSUPG() or fldpara_->ContiReynolds() != INPAR::FLUID::reynolds_stress_stab_none))
   {
     const double temp_supg = rhsfac*scaconvfacaf_*sgscaint_;
 
@@ -5108,20 +5113,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
         preforce(vi) -= temp_supg*conv_c_(vi);
       }
     }
-
-//    if (fldpara_->MultiFracLomaConti())
-//    {
-//      const double temp_mfs = rhsfac*scaconvfacaf_*mfssgscaint_;
-//
-//      for (int vi=0; vi<nen_; ++vi)
-//      {
-//        if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
-//        {
-//          preforce(vi) -= temp_mfs*conv_c_(vi); // second cross-stress term
-//          preforce(vi) -= temp_mfs*mfssgconv_c_(vi); // Reynolds-stress term
-//        }
-//      }
-//    }
 
     if (fldpara_->ContiReynolds() != INPAR::FLUID::reynolds_stress_stab_none)
     {

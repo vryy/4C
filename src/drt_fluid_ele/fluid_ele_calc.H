@@ -1194,8 +1194,6 @@ protected:
   LINALG::Matrix<nsd_,nsd_> fsvderxy_;
   //! fine-scale global velocity derivatives in gausspoint w.r.t x,y,z for multifractal subgrid-scale modeling
   LINALG::Matrix<nsd_,nsd_> mffsvderxy_;
-  //! multifractal subgrid-scale convection, convective part
-  LINALG::Matrix<nen_,1> mfssgconv_c_;
   //! fine scale velocity divergence for multifractal subgrid-scale modeling
   double mffsvdiv_;
   //! (all-scale) subgrid viscosity

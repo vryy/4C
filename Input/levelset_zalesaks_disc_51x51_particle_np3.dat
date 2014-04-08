@@ -37,7 +37,7 @@ CUTOFF_RADIUS                   0.0196
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      RK2
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
-SCATRATYPE                      ConvectionDiffusion
+SCATRATYPE                      LevelSet
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      3
 INITIALFIELD                    field_by_function
