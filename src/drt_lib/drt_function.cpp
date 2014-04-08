@@ -3389,16 +3389,7 @@ double DRT::UTILS::ControlledRotationFunction::Evaluate(int index, const double*
     // *****************************************************************************
     const int step = DRT::Problem::Instance()->Restart();
     if ((step > 0) && (timeOld_ == 0.0)) {
-
-      if (type_ != 1) { // fluid
-        dserror("When using the function CONTROLLEDROTATION, the restart functionality only works for structures");
-      }
-
-      Teuchos::RCP<DRT::Discretization> rcpdis = Teuchos::rcp(dis, false);
-      IO::DiscretizationReader reader(rcpdis,step);
-
-      // Set time from last completed time step
-      timeOld_ = reader.ReadDouble("time");
+      dserror("When using the function CONTROLLEDROTATION, the restart functionality cannot be used!");
     }
 
     // If new time step, apply angular acceleration (if desired) and determine
@@ -3409,60 +3400,36 @@ double DRT::UTILS::ControlledRotationFunction::Evaluate(int index, const double*
 
     if (deltaT > 1e-12) { // new time step
 
-      // Determine current angular acceleration (at t) over the total time
-      // -----------------------------------------------------------------------------
+        // Determine current angular acceleration (at t)
+        // -----------------------------------------------------------------------------
+        LINALG::Matrix<3,1> omegaDot_B;
+        omegaDot_B(0,0) = 0.0;
+        omegaDot_B(1,0) = 0.0;
+        omegaDot_B(2,0) = 0.0;
 
-      // initialize all these variables to zero
-      LINALG::Matrix<3,1> omegaDot_B;
-      omegaDot_B(0,0) = 0.0;
-      omegaDot_B(1,0) = 0.0;
-      omegaDot_B(2,0) = 0.0;
-
-      omega_B_(0,0) = 0.0;
-      omega_B_(1,0) = 0.0;
-      omega_B_(2,0) = 0.0;
-
-      satAtt_q_IB_(0,0) = 0.0;
-      satAtt_q_IB_(1,0) = 0.0;
-      satAtt_q_IB_(2,0) = 0.0;
-      satAtt_q_IB_(3,0) = 1.0;
-
-      // determine valid starting maneuvre and latest maneuvre
-      // at this stage "0.0 0 0 0" HAS to be filled in on the first line
-      int latest_maneuvre = 0;
-      for (int i=0; i<numManeuvers_; i++) {
-        if ((maneuvers_[0*NUMMANEUVERCELLS_+0] != 0.0) && (maneuvers_[0*NUMMANEUVERCELLS_+1] != 0.0) && (maneuvers_[0*NUMMANEUVERCELLS_+2] != 0.0) & (maneuvers_[0*NUMMANEUVERCELLS_+3] != 0.0))
-          dserror("First line of maneuver-file must be: '0.0 0 0 0'");
-
-        else if (t >= maneuvers_[i*NUMMANEUVERCELLS_+0]) {
-          latest_maneuvre = i;
+        for (int i=0; i<numManeuvers_; i++) {
+            if (t >= maneuvers_[i*NUMMANEUVERCELLS_+0]) {
+                omegaDot_B(0,0) = maneuvers_[i*NUMMANEUVERCELLS_+1];
+                omegaDot_B(1,0) = maneuvers_[i*NUMMANEUVERCELLS_+2];
+                omegaDot_B(2,0) = maneuvers_[i*NUMMANEUVERCELLS_+3];
+            }
         }
-      }
 
-      // Compute the omegaDot_B, omega_B_ and satAtt_q_IB_ from t=0 to t
-      // in order to avoid writing and reading all these variables into a restart
-      for (int curr = 0; curr<=latest_maneuvre; curr++) {
+        // Calculate current angular rate (at t) by integration
+        // of angular acceleration (trapezoidal rule):
+        // omega_(t) = deltaT * (omegaDotOld + omegaDot) / 2 + omega_(t-deltaT)
+        // -----------------------------------------------------------------------------
+        LINALG::Matrix<3,1> deltaOmega;
+        deltaOmega.Update(omegaDotOld_B_, omegaDot_B); // 1) deltaOmega <- omegaDotOld_ + omegaDot
+        deltaOmega.Scale(deltaT/2.0);                  // 2) deltaOmega <- deltaOmega * deltaT / 2.0
+        omega_B_ += deltaOmega;                        // 3) omega_ <- omega_ + deltaOmega
 
-        double maneuverDeltaT = 0.0;
-        //std::cout << "current maneuvre is: "<< curr << std::endl;
+        /* // Debugging output
+           cout << "omegaDot: "; omegaDot_B.Print(cout); // Print omegaDot_B
+           cout << "omega:    "; omega_B_.Print(cout);   // Print omega_B_
+        */
 
-        if (curr == latest_maneuvre) { //within the latest maneuvre
-          // std::cout << "current maneuvre considered is the latest maneuver: "<< curr << std::endl;
-          maneuverDeltaT = t-maneuvers_[curr*NUMMANEUVERCELLS_+0];
-        }
-        else { // all the maneuvres that happened prior to the latest one
-          // std::cout << "current maneuvre considered: "<< curr << std::endl;
-          maneuverDeltaT = maneuvers_[(curr+1)*NUMMANEUVERCELLS_+0]-maneuvers_[curr*NUMMANEUVERCELLS_+0];
-        }
-        //std::cout << "current maneuvreDeltaT is: "<< curr << std::endl;
-
-        omegaDot_B(0,0) = maneuvers_[curr*NUMMANEUVERCELLS_+1];
-        omegaDot_B(1,0) = maneuvers_[curr*NUMMANEUVERCELLS_+2];
-        omegaDot_B(2,0) = maneuvers_[curr*NUMMANEUVERCELLS_+3];
-        LINALG::Matrix<3,1> deltaOmega(omegaDot_B); // initialize as the latest omegaDot_B
-        deltaOmega.Scale(maneuverDeltaT);
-        omega_B_ += deltaOmega;
-        // std::cout << "delta_omega_x = omegaDot_x (t - t_currentmaneuvre) = " << deltaOmega(0,0) << " = " << omegaDot_B(0,0) << " x (" << t << " - " << maneuvers_[curr*NUMMANEUVERCELLS_+0] << ")" << std::endl;
+        omegaDotOld_B_ = omegaDot_B; // Set omegaDotOld_B_ for next time step
 
         // Calculate new attitude quaternion satAtt_q_IB_ [Wertz, p. 511f]
         // -----------------------------------------------------------------------------
@@ -3472,7 +3439,7 @@ double DRT::UTILS::ControlledRotationFunction::Evaluate(int index, const double*
         mOmega(2,0) =  omega_B_(1,0); mOmega(2,1) = -omega_B_(0,0); mOmega(2,2) =  0.0;           mOmega(2,3) = omega_B_(2,0);
         mOmega(3,0) = -omega_B_(0,0); mOmega(3,1) = -omega_B_(1,0); mOmega(3,2) = -omega_B_(2,0); mOmega(3,3) = 0.0;
 
-        mOmega.Scale(maneuverDeltaT/2.0);
+        mOmega.Scale(deltaT/2.0);
         mOmega(0,0) = 1.0;
         mOmega(1,1) = 1.0;
         mOmega(2,2) = 1.0;
@@ -3481,26 +3448,23 @@ double DRT::UTILS::ControlledRotationFunction::Evaluate(int index, const double*
         LINALG::Matrix<4,1> satAtt_q_IB_TMP(true);
         satAtt_q_IB_TMP.Multiply(mOmega, satAtt_q_IB_);
         satAtt_q_IB_ = satAtt_q_IB_TMP;
+
         satAtt_q_IB_.Scale(1/satAtt_q_IB_.Norm2()); // Normalize attitude quaternion
-      }
-      // std::cout << "The final omega_x = " << omega_B_(0,0) << std::endl;
-      // std::cout << "satAtt_q_IB_ (FINAL) = " << satAtt_q_IB_(0,0) << " " << satAtt_q_IB_(1,0) << " " << satAtt_q_IB_(2,0) << " " << satAtt_q_IB_(3,0) << std::endl;
 
-      // Create transformation matrix satAtt_dcm_IB_ [Wertz, (E-8)]
-      // -----------------------------------------------------------------------------
-      const double q1 = satAtt_q_IB_(0,0);
-      const double q2 = satAtt_q_IB_(1,0);
-      const double q3 = satAtt_q_IB_(2,0);
-      const double q4 = satAtt_q_IB_(3,0);
+        // Create transformation matrix satAtt_dcm_IB_ [Wertz, (E-8)]
+        // -----------------------------------------------------------------------------
+        const double q1 = satAtt_q_IB_(0,0);
+        const double q2 = satAtt_q_IB_(1,0);
+        const double q3 = satAtt_q_IB_(2,0);
+        const double q4 = satAtt_q_IB_(3,0);
 
-      satAtt_dcm_IB_(0,0) = q1*q1-q2*q2-q3*q3+q4*q4; satAtt_dcm_IB_(0,1) = 2.0*(q1*q2-q3*q4);        satAtt_dcm_IB_(0,2) = 2.0*(q1*q3+q2*q4);
-      satAtt_dcm_IB_(1,0) = 2.0*(q1*q2+q3*q4);       satAtt_dcm_IB_(1,1) = -q1*q1+q2*q2-q3*q3+q4*q4; satAtt_dcm_IB_(1,2) = 2.0*(q2*q3-q1*q4);
-      satAtt_dcm_IB_(2,0) = 2.0*(q1*q3-q2*q4);       satAtt_dcm_IB_(2,1) = 2.0*(q2*q3+q1*q4);        satAtt_dcm_IB_(2,2) = -q1*q1-q2*q2+q3*q3+q4*q4;
+        satAtt_dcm_IB_(0,0) = q1*q1-q2*q2-q3*q3+q4*q4; satAtt_dcm_IB_(0,1) = 2.0*(q1*q2-q3*q4);        satAtt_dcm_IB_(0,2) = 2.0*(q1*q3+q2*q4);
+        satAtt_dcm_IB_(1,0) = 2.0*(q1*q2+q3*q4);       satAtt_dcm_IB_(1,1) = -q1*q1+q2*q2-q3*q3+q4*q4; satAtt_dcm_IB_(1,2) = 2.0*(q2*q3-q1*q4);
+        satAtt_dcm_IB_(2,0) = 2.0*(q1*q3-q2*q4);       satAtt_dcm_IB_(2,1) = 2.0*(q2*q3+q1*q4);        satAtt_dcm_IB_(2,2) = -q1*q1-q2*q2+q3*q3+q4*q4;
 
-      // Update time of last time step
-      // -----------------------------------------------------------------------------
-      timeOld_ = t;
-
+        // Update time of last time step
+        // -----------------------------------------------------------------------------
+        timeOld_ = t;
     }
 
     // Obtain the current node position in the inertial system
