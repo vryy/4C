@@ -977,9 +977,13 @@ set(OBJS_DRT_REGISTER
   src/drt_lib/drt_parobjectregister.cpp
 )
 set(OBJS_DRT_SCATRA_LIB
-  src/drt_scatra_ele/scatra_ele_boundary_impl.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_calc.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_calc_std.cpp
+    src/drt_scatra_ele/scatra_ele_boundary_calc_elch.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_calc_poro.cpp
   src/drt_scatra_ele/scatra_ele_boundary_evaluate.cpp
   src/drt_scatra_ele/scatra_ele_factory.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_factory.cpp
   src/drt_scatra_ele/scatra_ele.cpp
   src/drt_scatra_ele/scatra_ele_evaluate.cpp
   src/drt_scatra_ele/scatra_ele_input.cpp

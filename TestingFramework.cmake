@@ -1512,7 +1512,7 @@ baci_test_Nested_Par_MC(mlmc_framework 4 2)
 baci_test_Nested_Par_MC(mlmc_framework_paracont 2 2)
 baci_test_Nested_Par_MC(mlmc_framework_paracont 4 2)
 baci_test(fpsi_bending_struct 2 3)
-
+baci_test(scatra_beltrami_8x8x8_ost_conv 2 "")
 
 # testing the whole framework: from cubit via pre_exodus and baci to the post-filter:
 baci_framework_test(tutorial_fluid 2)

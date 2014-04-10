@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_boundary_impl.H
+\file scatra_ele_boundary_calc_std.H
 
-\brief Internal implementation of scalar transport boundary elements
+\brief evaluation of scatra boundary terms at integration points
 
 <pre>
 Maintainer: Andreas Ehrl
@@ -10,80 +10,22 @@ Maintainer: Andreas Ehrl
             http://www.lnm.mw.tum.de
             089 - 289-15252
 </pre>
-*/
+ */
 /*----------------------------------------------------------------------*/
 
-#ifndef SCATRA_ELE_BOUNDARY_IMPL_H
-#define SCATRA_ELE_BOUNDARY_IMPL_H
+#ifndef SCATRA_ELE_BOUNDARY_CALC_H
+#define SCATRA_ELE_BOUNDARY_CALC_H
 
-#include "../drt_lib/drt_singletondestruction.H"
+#include "scatra_ele_boundary_interface.H"
 #include "scatra_ele_calc_utils.H"
+#include "scatra_ele_action.H"
+
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_discret.H"
+
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_elch.H"
 
-
-namespace DRT
-{
-namespace ELEMENTS
-{
-
-// forward declarations
-class Transport;
-class TransportBoundary;
-
-class ScaTraEleParameterElch;
-
-/// Interface base class for ScaTraImpl
-/*!
-  This class exists to provide a common interface for all template
-  versions of ScaTraImpl. The only function
-  this class actually defines is Impl, which returns a pointer to
-  the appropriate version of ScaTraImpl.
- */
-class ScaTraBoundaryImplInterface : public DRT::SingletonDestruction
-{
-
-public:
-  /// Empty constructor
-  ScaTraBoundaryImplInterface() {}
-  /// Empty destructor
-  virtual ~ScaTraBoundaryImplInterface() {}
-  /// Evaluate the element
-  /*!
-    This class does not provide a definition for this function, it
-    must be defined in ScaTraBoundaryImpl.
-   */
-  virtual int Evaluate(DRT::ELEMENTS::TransportBoundary* ele,
-                       Teuchos::ParameterList&    params,
-                       DRT::Discretization&       discretization,
-                       std::vector<int>&          lm,
-                       Epetra_SerialDenseMatrix&  elemat1_epetra,
-                       Epetra_SerialDenseMatrix&  elemat2_epetra,
-                       Epetra_SerialDenseVector&  elevec1_epetra,
-                       Epetra_SerialDenseVector&  elevec2_epetra,
-                       Epetra_SerialDenseVector&  elevec3_epetra
-                       ) = 0;
-
-  /// Evaluate a Neumann boundary condition
-  /*!
-    This class does not provide a definition for this function, it
-    must be defined in ScaTraBoundaryImpl.
-   */
-  virtual int EvaluateNeumann(DRT::ELEMENTS::TransportBoundary* ele,
-                              Teuchos::ParameterList&           params,
-                              DRT::Discretization&              discretization,
-                              DRT::Condition&                   condition,
-                              std::vector<int>&                 lm,
-                              Epetra_SerialDenseVector&         elevec1_epetra
-                              ) = 0;
-
-  /// Internal implementation class for scalar transport elements
-  static ScaTraBoundaryImplInterface* Impl(
-      const DRT::Element* ele,
-      const enum INPAR::SCATRA::ScaTraType scatratype);
-
-};
 
   /// Internal Scalar transport element implementation
   /*!
@@ -119,22 +61,22 @@ public:
     \author gjb
     \date 08/08
   */
+
+namespace DRT
+{
+
+namespace ELEMENTS
+{
+class ScaTraEleParameter;
+class ScaTraEleParameterTimInt;
+
 template<DRT::Element::DiscretizationType distype>
-class ScaTraBoundaryImpl: public ScaTraBoundaryImplInterface
+class ScaTraBoundaryImpl: public ScaTraBoundaryInterface
 {
 public:
-  /// Constructor
-  ScaTraBoundaryImpl(int numdofpernode, int numscal);
 
-  /// Singleton access method
-  static ScaTraBoundaryImpl<distype> * Instance(
-      const int numdofpernode,
-      const int numscal,
-      const bool create=true
-  );
-
-  //! called upon destruction
-  virtual void Done();
+  //! Constructor
+  ScaTraBoundaryImpl(const int numdofpernode, const int numscal);
 
   //! number of element nodes (nomenclature: T. Hughes, The finite element method)
   static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -184,18 +126,22 @@ public:
     return elediam;
   }
 
+  //! Evaluate Boundary ActionSetup some basic variables needed by all methods
+  int SetupCalc(DRT::ELEMENTS::TransportBoundary* ele,
+                 Teuchos::ParameterList&           params,
+                 DRT::Discretization&              discretization);
 
-  //! Evaluate
-  virtual int Evaluate(DRT::ELEMENTS::TransportBoundary* ele,
-                       Teuchos::ParameterList&    params,
-                       DRT::Discretization&       discretization,
-                       std::vector<int>&          lm,
-                       Epetra_SerialDenseMatrix&  elemat1_epetra,
-                       Epetra_SerialDenseMatrix&  elemat2_epetra,
-                       Epetra_SerialDenseVector&  elevec1_epetra,
-                       Epetra_SerialDenseVector&  elevec2_epetra,
-                       Epetra_SerialDenseVector&  elevec3_epetra
-                       );
+  //! Evaluate Boundary Action
+  int EvaluateAction( DRT::ELEMENTS::TransportBoundary*  ele1,
+                      Teuchos::ParameterList&         params,
+                      DRT::Discretization&            discretization,
+                      SCATRA::BoundaryAction          action,
+                      std::vector<int>&               lm,
+                      Epetra_SerialDenseMatrix&       elemat1,
+                      Epetra_SerialDenseMatrix&       elemat2,
+                      Epetra_SerialDenseVector&       elevec1,
+                      Epetra_SerialDenseVector&       elevec2,
+                      Epetra_SerialDenseVector&       elevec3);
 
   //! Evaluate a Neumann boundary condition
   virtual int EvaluateNeumann(DRT::ELEMENTS::TransportBoundary* ele,
@@ -206,59 +152,38 @@ public:
                               Epetra_SerialDenseVector&         elevec1_epetra
                               );
 
-  private:
+  protected:
+
+  //! calculate normal vectors
+  void CalcNormalVectors(
+      Teuchos::ParameterList&            params,
+      DRT::ELEMENTS::TransportBoundary*  ele
+      );
+
+  //! evaluate loma thermal press
+  void CalcLomaThermPress(
+      DRT::ELEMENTS::TransportBoundary* ele,
+      Teuchos::ParameterList&           params,
+      DRT::Discretization&              discretization,
+      std::vector<int>&                 lm
+      );
 
     //! evaluate shape functions and derivatives at int. point
     double EvalShapeFuncAndIntFac(
         const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
         const int                                    iquad,      ///< id of current Gauss point
         const int                                    eleid,      ///< the element id
-        LINALG::Matrix<1 + nsd_,1>*  normalvec = NULL  ///< normal vector at Gauss point(optional)
-    );
-
-    //! evaluate an electrode kinetics boundary condition
-    void EvaluateElectrodeKinetics(
-       const DRT::Element*          ele,          ///< the actual boundary element
-       Epetra_SerialDenseMatrix&    emat,         ///< element-matrix
-       Epetra_SerialDenseVector&    erhs,         ///< element-rhs
-       const std::vector<double>&   ephinp,       ///< actual conc. and pot. values
-       const std::vector<double>&   ehist,        ///< element history vector
-       double                       timefac,      ///< time factor
-       Teuchos::RCP<const MAT::Material>  material,   ///< the material
-       Teuchos::RCP<DRT::Condition>       cond,       ///< the condition
-       const int                 nume,                ///< number of transfered electrons
-       const std::vector<int>  stoich,                ///< stoichometry of the reaction
-       const int             kinetics,                ///< desired electrode kinetics model
-       const double              pot0,                ///< actual electrode potential on metal side
-       const double               frt,                ///< factor F/RT
-       const bool              iselch,                ///< problemtype elch or scatra
-       const INPAR::ELCH::ElchType elchtype     ///< scatra problem type
-       );
-
-    //! provide electrode kinetics status information
-    void ElectrodeStatus(
-        const DRT::Element*           ele,      ///< the actual boundary element
-        Teuchos::ParameterList&       params,   ///< the parameter list
-        Teuchos::RCP<DRT::Condition>  cond,     ///< the condition
-        const std::vector<double>&    ephinp,   ///< current conc. and potential values
-        const std::vector<double>&    ephidtnp, ///< time derivative vector evaluated at t_{n+1}
-        const int                     kinetics, ///< desired electrode kinetics model
-        const std::vector<int>        stoich,   ///< stoichometry of the reaction
-        const int                     nume,     ///<  number of transfered electrons
-        const double                  pot0,     ///< actual electrode potential on metal side at t_{n+1}
-        const double                  frt,      ///< factor F/RT
-        const bool                    iselch,   ///< problemtype elch or scatra
-        const double                  timefac   ///< factor due to time discretization
+        LINALG::Matrix<1 + nsd_,1>*  normalvec = NULL            ///< normal vector at Gauss point(optional)
     );
 
     //! evaluate surface/interface permeability
     void EvaluateSurfacePermeability(
-        const DRT::Element*        ele,  ///< the actual boundary element
-        const std::vector<double>&  ephinp, ///< scalar values at element nodes
-        Epetra_SerialDenseMatrix&  emat,  ///< element-matrix
-        Epetra_SerialDenseVector&  erhs,  ///< element-rhs
-        const double               timefac,  ///< time factor
-        const double               perm   ///< surface/interface permeability coefficient
+        const DRT::Element*        ele,    ///< the actual boundary element
+        const std::vector<double>& ephinp, ///< scalar values at element nodes
+        Epetra_SerialDenseMatrix&  emat,   ///< element-matrix
+        Epetra_SerialDenseVector&  erhs,   ///< element-rhs
+        const double               timefac,///< time factor
+        const double               perm    ///< surface/interface permeability coefficient
     );
 
      //! integral of shape functions over boundary surface
@@ -273,27 +198,27 @@ public:
     void NormDiffFluxAndVelIntegral(
         const DRT::Element*             ele,
         Teuchos::ParameterList&         params,
-        const std::vector<double>&       enormdiffflux,
-        const std::vector<double>&       enormvel);
+        const std::vector<double>&      enormdiffflux,
+        const std::vector<double>&      enormvel);
 
     //! compute integral of convective mass/heat flux over boundary surface
     std::vector<double> CalcConvectiveFlux(
         const DRT::Element*                 ele,
-        const std::vector<double>&           ephinp,
+        const std::vector<double>&          ephinp,
         const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
         Epetra_SerialDenseVector&           erhs);
 
     //! Compute a constant normal vector for a boundary element
     void GetConstNormal(
         LINALG::Matrix<nsd_+1,1>&            normal, ///< the constant normal vector
-        const LINALG::Matrix<nsd_+1,nen_>&    xyze    ///< element node coordinates
+        const LINALG::Matrix<nsd_+1,nen_>&   xyze    ///< element node coordinates
         );
 
     //! calculate potential Neumann inflow terms
     void NeumannInflow(
         const DRT::Element*                 ele,
         Teuchos::RCP<const MAT::Material>   material,
-        const std::vector<double>&           ephinp,
+        const std::vector<double>&          ephinp,
         const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
         Epetra_SerialDenseMatrix&           emat,
         Epetra_SerialDenseVector&           erhs,
@@ -322,7 +247,6 @@ public:
     \param elevec1 (out)      : vector to be filled by element.
 
     */
-
     template <DRT::Element::DiscretizationType bdistype,DRT::Element::DiscretizationType pdistype>
     void WeakDirichlet(DRT::ELEMENTS::TransportBoundary*  ele,
                        Teuchos::ParameterList&            params,
@@ -352,6 +276,11 @@ public:
         Epetra_SerialDenseMatrix&          elemat_epetra,        //!< ele sysmat
         Epetra_SerialDenseVector&          elevec_epetra         //!< ele rhs
         );
+
+    //! pointer to parameter list for time integration
+    DRT::ELEMENTS::ScaTraEleParameterTimInt* scatraparamstimint_;
+    //! pointer to parameter list
+    DRT::ELEMENTS::ScaTraEleParameter* scatraparams_;
 
      //! number of dof per node
     const int numdofpernode_;
@@ -403,16 +332,13 @@ public:
     //! thermodynamic pressure (LOMA specific)
     double thermpress_;
 
-    DRT::ELEMENTS::ScaTraEleParameterElch* elchparams_;
-
-    //! flag for closure equation
-    enum INPAR::ELCH::EquPot equpot_;
     //! porosity
     double eps_;
-  };
+
+};
 
 }
 }
+
 
 #endif
-

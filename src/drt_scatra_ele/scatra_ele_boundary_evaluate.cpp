@@ -13,9 +13,11 @@ Maintainer: Andreas Ehrl
  *----------------------------------------------------------------------*/
 
 #include "scatra_ele.H"
-#include "scatra_ele_boundary_impl.H"
-
+#include "scatra_ele_boundary_calc.H"
 #include "scatra_ele_action.H"
+#include "scatra_ele_boundary_factory.H"
+
+#include "../drt_mat/elchmat.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
@@ -35,13 +37,35 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
   if (scatratype == INPAR::SCATRA::scatratype_undefined)
     dserror("Element parameter SCATRATYPE has not been set!");
 
+  // we assume here, that numdofpernode is equal for every node within
+    // the discretization and does not change during the computations
+    const int numdofpernode = this->NumDofPerNode(*(this->Nodes()[0]));
+    int numscal = numdofpernode;
+
+    if (scatratype==INPAR::SCATRA::scatratype_elch)
+    {
+      numscal -= 1;
+
+      // get the material of the first element
+      // we assume here, that the material is equal for all elements in this discretization
+      // get the parent element including its material
+      const DRT::ELEMENTS::TransportBoundary* transele = static_cast<const DRT::ELEMENTS::TransportBoundary*>(this);
+      Teuchos::RCP<MAT::Material> material = transele->ParentElement()->Material();
+      if (material->MaterialType() == INPAR::MAT::m_elchmat)
+      {
+        const MAT::ElchMat* actmat = dynamic_cast<const MAT::ElchMat*>(material.get());
+
+        numscal = actmat->NumScal();
+      }
+    }
+
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Transport
   // boundary element)
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return DRT::ELEMENTS::ScaTraBoundaryImplInterface::Impl(this,scatratype)->Evaluate(
+  return DRT::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(this,scatratype,numdofpernode,numscal)->EvaluateAction(
       this,
       params,
       discretization,
@@ -71,13 +95,32 @@ int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
   if (scatratype == INPAR::SCATRA::scatratype_undefined)
     dserror("Element parameter SCATRATYPE has not been set!");
 
+  // we assume here, that numdofpernode is equal for every node within
+  // the discretization and does not change during the computations
+  const int numdofpernode = this->NumDofPerNode(*(this->Nodes()[0]));
+  int numscal = numdofpernode;
+  if (scatratype == INPAR::SCATRA::scatratype_elch)
+  {
+    numscal -= 1;
+
+    // get the material of the first element
+    // we assume here, that the material is equal for all elements in this discretization
+    Teuchos::RCP<MAT::Material> material = this->Material();
+    if (material->MaterialType() == INPAR::MAT::m_elchmat)
+    {
+      const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(material.get());
+
+      numscal = actmat->NumScal();
+    }
+  }
+
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Transport
   // boundary element)
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return DRT::ELEMENTS::ScaTraBoundaryImplInterface::Impl(this,scatratype)->EvaluateNeumann(
+  return DRT::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(this,scatratype, numdofpernode, numscal)->EvaluateNeumann(
       this,
       params,
       discretization,
@@ -103,8 +146,6 @@ void DRT::ELEMENTS::TransportBoundary::LocationVector(
   switch (action)
   {
   case SCATRA::bd_calc_weak_Dirichlet:
-  case SCATRA::bd_reinitialize_levelset:
-  case SCATRA::bd_calc_TG_outflow:
     // special cases: the boundary element assembles also into
     // the inner dofs of its parent element
     // note: using these actions, the element will get the parent location vector

@@ -138,8 +138,6 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
     const Teuchos::RCP<const MAT::ScatraMat>& actmat
       = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
 
-    dsassert(my::numdofpernode_==1,"more than 1 dof per node for SCATRA material");
-
     // set diffusivity (scaled with porosity)
     diffmanager->SetIsotropicDiff(actmat->Diffusivity()*porosity,k);
 

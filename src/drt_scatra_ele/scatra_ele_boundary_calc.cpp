@@ -1,0 +1,2789 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file scatra_ele_boundary_calc.cpp
+
+\brief evaluation of scatra boundary terms at integration points
+
+<pre>
+Maintainer: Andreas Ehrl
+            ehrl@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252
+</pre>
+ */
+/*----------------------------------------------------------------------*/
+
+// general Butler-Volmer is activated if the define-flag ButlerVolmer_Shifted is off
+// the shifted version of Butler-Volmer is activated if the define-flag ButlerVolmer_Shifted is on
+// define-flag PERCENT: how much is the curve shifted
+
+#include <cstdlib>
+
+#include "scatra_ele_boundary_calc.H"
+#include "scatra_ele_parameter_timint.H"
+#include "scatra_ele_parameter_std.H"
+#include "scatra_ele_action.H"
+#include "scatra_ele.H"
+
+#include "../drt_lib/drt_globalproblem.H" // for curves and functions
+#include "../drt_lib/standardtypes_cpp.H" // for EPS12 and so on
+#include "../drt_inpar/inpar_scatra.H"
+#include "../drt_inpar/inpar_elch.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "../drt_geometry/position_array.H"
+
+// material headers
+#include "../drt_mat/scatra_mat.H"
+#include "../drt_mat/myocard.H"
+#include "../drt_mat/mixfrac.H"
+#include "../drt_mat/sutherland.H"
+#include "../drt_mat/arrhenius_spec.H"
+#include "../drt_mat/arrhenius_temp.H"
+#include "../drt_mat/arrhenius_pv.H"
+#include "../drt_mat/ferech_pv.H"
+#include "../drt_mat/ion.H"
+#include "../drt_mat/fourieriso.H"
+#include "../drt_mat/thermostvenantkirchhoff.H"
+#include "../drt_mat/yoghurt.H"
+#include "../drt_mat/matlist.H"
+
+#include "../drt_mat/elchmat.H"
+#include "../drt_mat/newman.H"
+#include "../drt_mat/elchphase.H"
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl(const int numdofpernode, const int numscal)
+ : numdofpernode_(numdofpernode),
+   numscal_(numscal),
+   isale_(false),
+   is_stationary_(false),
+   is_genalpha_(false),
+   is_incremental_(true),
+   xyze_(true),  // initialize to zero
+   weights_(true),
+   myknots_(nsd_),
+   mypknots_(nsd_+1),
+   normalfac_(1.0),
+   edispnp_(true),
+   diffus_(numscal_,0),
+   //valence_(numscal_,0),
+   shcacp_(0.0),
+   xsi_(true),
+   funct_(true),
+   deriv_(true),
+   derxy_(true),
+   normal_(true),
+   velint_(true),
+   metrictensor_(true),
+   thermpress_(0.0),
+   eps_(1.0)
+{
+  // params for time integration
+  scatraparamstimint_ = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::SetupCalc(DRT::ELEMENTS::TransportBoundary* ele,
+                                                          Teuchos::ParameterList&           params,
+                                                          DRT::Discretization&              discretization)
+{
+  // get node coordinates (we have a nsd_+1 dimensional domain!)
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
+
+  // get additional state vector for ALE case: grid displacement
+  isale_ = params.get<bool>("isale");
+  if (isale_)
+  {
+    const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
+    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_+1);
+    // add nodal displacements
+    xyze_ += edispnp_;
+  }
+  else edispnp_.Clear();
+
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  if(DRT::NURBS::IsNurbs(distype))
+  {
+    // for isogeometric elements --- get knotvectors for parent
+    // element and boundary element, get weights
+    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
+        ele, ele->FaceParentNumber(), ele->ParentElement()->Id(), discretization, mypknots_, myknots_, weights_, normalfac_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size) return(0);
+  } // Nurbs specific stuff
+
+  return 1;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(
+    DRT::ELEMENTS::TransportBoundary* ele,
+    Teuchos::ParameterList&           params,
+    DRT::Discretization&              discretization,
+    SCATRA::BoundaryAction            action,
+    std::vector<int>&                 lm,
+    Epetra_SerialDenseMatrix&         elemat1_epetra,
+    Epetra_SerialDenseMatrix&         elemat2_epetra,
+    Epetra_SerialDenseVector&         elevec1_epetra,
+    Epetra_SerialDenseVector&         elevec2_epetra,
+    Epetra_SerialDenseVector&         elevec3_epetra
+)
+{
+  switch (action)
+  {
+  case SCATRA::bd_calc_normal_vectors:
+  {
+    CalcNormalVectors(params,ele);
+    break;
+  }
+  case SCATRA::bd_calc_loma_therm_press:
+  {
+    CalcLomaThermPress(ele,
+        params,
+        discretization,
+        lm);
+    break;
+  }
+  case SCATRA::bd_integrate_shape_functions:
+  {
+    // NOTE: add area value only for elements which are NOT ghosted!
+    const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
+    IntegrateShapeFunctions(ele,params,elevec1_epetra,addarea);
+
+    break;
+  }
+  case SCATRA::bd_calc_Neumann_inflow:
+  {
+    // check for the scatratype
+    const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
+    if (scatratype == INPAR::SCATRA::scatratype_undefined)
+      dserror("Element parameter SCATRATYPE has not been set!");
+
+    // get the parent element including its material
+    DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
+    Teuchos::RCP<MAT::Material> mat = parentele->Material();
+
+    // get control parameters
+    is_stationary_  = params.get<bool>("using stationary formulation");
+    is_genalpha_    = params.get<bool>("using generalized-alpha time integration");
+    is_incremental_ = params.get<bool>("incremental solver");
+
+    // get time factor and alpha_F if required
+    // one-step-Theta:    timefac = theta*dt
+    // BDF2:              timefac = 2/3 * dt
+    // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
+    double timefac = 1.0;
+    double alphaF  = 1.0;
+    if (not is_stationary_)
+    {
+      timefac = params.get<double>("time factor");
+      if (is_genalpha_)
+      {
+        alphaF = params.get<double>("alpha_F");
+        timefac *= alphaF;
+      }
+      if (timefac < 0.0) dserror("time factor is negative.");
+    }
+
+    // set thermodynamic pressure
+    thermpress_ = 0.0;
+    if (scatratype==INPAR::SCATRA::scatratype_loma)
+      thermpress_ = params.get<double>("thermodynamic pressure");
+
+    // get values of scalar
+    Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from global vector
+    std::vector<double> ephinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+
+    // we dont know the parent element's lm vector; so we have to build it here
+    const int nenparent = parentele->NumNode();
+    std::vector<int> lmparent(nenparent);
+    std::vector<int> lmparentowner;
+    std::vector<int> lmparentstride;
+    parentele->LocationVector(discretization,lmparent,lmparentowner,lmparentstride);
+
+    // get velocity values at nodes
+    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
+
+    // we deal with a (nsd_+1)-dimensional flow field
+    Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
+    DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
+
+    // insert velocity field into element array
+    LINALG::Matrix<nsd_+1,nen_> evelnp;
+    for (int i=0;i<nen_;++i)
+    {
+      for (int idim=0 ; idim < nsd_+1 ; idim++)
+      {
+        evelnp(idim,i) = evel[idim + i*(nsd_+1)];
+      }
+    }
+
+    NeumannInflow(ele,
+        mat,
+        ephinp,
+        evelnp,
+        elemat1_epetra,
+        elevec1_epetra,
+        timefac,
+        alphaF);
+
+    break;
+  }
+  case SCATRA::bd_calc_convective_heat_transfer:
+  {
+    // get the parent element including its material
+    DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
+    Teuchos::RCP<MAT::Material> mat = parentele->Material();
+
+    // get control parameters
+    is_stationary_  = params.get<bool>("using stationary formulation");
+    is_genalpha_    = params.get<bool>("using generalized-alpha time integration");
+    is_incremental_ = params.get<bool>("incremental solver");
+
+    // get time factor and alpha_F if required
+    // one-step-Theta:    timefac = theta*dt
+    // BDF2:              timefac = 2/3 * dt
+    // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
+    double timefac = 1.0;
+    double alphaF  = 1.0;
+    if (not is_stationary_)
+    {
+      timefac = params.get<double>("time factor");
+      if (is_genalpha_)
+      {
+        alphaF = params.get<double>("alpha_F");
+        timefac *= alphaF;
+      }
+      if (timefac < 0.0) dserror("time factor is negative.");
+    }
+
+    // get values of scalar
+    Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from global vector
+    std::vector<double> ephinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+
+    // get condition
+    Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+    if (cond == Teuchos::null)
+      dserror("Cannot access condition 'ThermoConvections'!");
+
+    // get heat transfer coefficient and surrounding temperature
+    const double heatranscoeff = cond->GetDouble("coeff");
+    const double surtemp       = cond->GetDouble("surtemp");
+
+    ConvectiveHeatTransfer(ele,
+        mat,
+        ephinp,
+        elemat1_epetra,
+        elevec1_epetra,
+        heatranscoeff,
+        surtemp,
+        timefac,
+        alphaF);
+
+    break;
+  }
+  case SCATRA::bd_calc_weak_Dirichlet:
+  {
+    // get the parent element including its material
+    DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
+    Teuchos::RCP<MAT::Material> mat = parentele->Material();
+
+    switch (distype)
+    {
+    if (numscal_>1) dserror("not yet implemented for more than one scalar\n");
+
+    // 2D:
+    case DRT::Element::line2:
+    {
+      if(ele->ParentElement()->Shape()==DRT::Element::quad4)
+      {
+        WeakDirichlet<DRT::Element::line2,DRT::Element::quad4>(ele,
+            params,
+            discretization,
+            mat,
+            elemat1_epetra,
+            elevec1_epetra);
+      }
+      else
+      {
+        dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
+      }
+      break;
+    }
+    // 3D:
+    case DRT::Element::quad4:
+    {
+      if(ele->ParentElement()->Shape()==DRT::Element::hex8)
+      {
+        WeakDirichlet<DRT::Element::quad4,DRT::Element::hex8>(ele,
+            params,
+            discretization,
+            mat,
+            elemat1_epetra,
+            elevec1_epetra);
+      }
+      else
+      {
+        dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
+      }
+      break;
+    }
+    default:
+    {
+      dserror("not implemented yet\n");
+    }
+    }
+
+    break;
+  }
+  case SCATRA::bd_calc_surface_permeability:
+  {
+    // get control parameters
+    is_stationary_  = params.get<bool>("using stationary formulation");
+    is_genalpha_    = params.get<bool>("using generalized-alpha time integration");
+    is_incremental_ = params.get<bool>("incremental solver");
+
+    double timefac = 1.0;
+    if (is_genalpha_ or not is_incremental_)
+      dserror("calc_surface_permeability: chosen option not available");
+    if (not is_stationary_)
+    {
+      timefac = params.get<double>("time factor");
+      if (timefac < 0.0) dserror("time factor is negative.");
+    }
+
+    // get values of scalar
+    Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from global vector
+    std::vector<double> ephinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+
+    // get current condition
+    Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+    if (cond == Teuchos::null) dserror("Cannot access condition 'SurfacePermeability'");
+
+    const double perm = cond->GetDouble("permeability coefficient");
+
+    EvaluateSurfacePermeability(
+        ele,
+        ephinp,
+        elemat1_epetra,
+        elevec1_epetra,
+        timefac,
+        perm
+    );
+
+    break;
+  }
+  case SCATRA::bd_add_convective_mass_flux:
+  {
+    //calculate integral of convective mass/heat flux
+    // NOTE: since results are added to a global vector via normal assembly
+    //       it would be wrong to suppress results for a ghosted boundary!
+
+    // get actual values of transported scalars
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from the global vector
+    std::vector<double> ephinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+
+    // get velocity values at nodes
+    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
+
+    // we deal with a (nsd_+1)-dimensional flow field
+    LINALG::Matrix<nsd_+1,nen_>  evel(true);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_+1);
+
+    // for the moment we ignore the return values of this method
+    CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
+    //vector<double> locfluxintegral = CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
+    //std::cout<<"locfluxintegral[0] = "<<locfluxintegral[0]<<std::endl;
+
+    // NOTE: add value only for boundary elements which are NOT ghosted!
+
+    // if the flux integral for the whole boundary shell be computed as well
+    // by summing up locfluxintegral[k] for each element, then, of course,
+    // values only for boundary elements which are NOT ghosted should be summed up
+    // and added to the parameter list for transport to the outside world
+    //    if(ele->Owner() == discretization.Comm().MyPID())
+
+    break;
+  }
+  default:
+  {
+    dserror("Not acting on this boundary action. Forgot implementation?");
+    break;
+  }
+  }
+
+  return 0;
+
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Integrate a Surface/Line Neumann boundary condition       gjb 01/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
+    DRT::ELEMENTS::TransportBoundary*   ele,
+    Teuchos::ParameterList&             params,
+    DRT::Discretization&                discretization,
+    DRT::Condition&                     condition,
+    std::vector<int>&                   lm,
+    Epetra_SerialDenseVector&           elevec1)
+{
+  // get the parent element including its material
+  DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
+  Teuchos::RCP<MAT::Material> mat = parentele->Material();
+
+  // get node coordinates (we have a nsd_+1 dimensional computational domain!)
+  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
+
+  // get additional state vector for ALE case: grid displacement
+  isale_ = params.get<bool>("isale");
+  if (isale_)
+  {
+    const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
+    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_+1);
+    // add nodal displacements to point coordinates
+    xyze_ += edispnp_;
+  }
+  else edispnp_.Clear();
+
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  if(DRT::NURBS::IsNurbs(distype))
+  {
+    // for isogeometric elements --- get knotvectors for parent
+    // element and boundary element, get weights
+    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
+        ele, ele->FaceParentNumber(), ele->ParentElement()->Id(), discretization, mypknots_, myknots_, weights_, normalfac_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size) return(0);
+  } // Nurbs specific stuff
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // find out whether we will use a time curve
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+  // find out whether we will use a time curve and get the factor
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0];
+  double curvefac = 1.0;
+  if (curvenum>=0 && usetime)
+    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+
+  // get values, switches and spatial functions from the condition
+  // (assumed to be constant on element boundary)
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+  const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
+
+    // multiply integration factor with the timecurve factor
+    fac *= curvefac;
+
+    // factor given by spatial function
+    double functfac = 1.0;
+    // determine global coordinates of current Gauss point
+    double coordgp[3]; // we always need three coordinates for function evaluation!
+    for (int i = 0; i< 3; i++)
+      coordgp[i] = 0.0;
+
+    for (int i = 0; i< nsd_; i++)
+    {
+      coordgp[i] = 0.0;
+      for (int j = 0; j < nen_; j++)
+      {
+        coordgp[i] += xyze_(i,j) * funct_(j);
+      }
+    }
+
+    int functnum = -1;
+    const double* coordgpref = &coordgp[0]; // needed for function evaluation
+
+
+    for(int dof=0;dof<numdofpernode_;dof++)
+    {
+      if ((*onoff)[dof]) // is this dof activated?
+      {
+        // factor given by spatial function
+        if (func) functnum = (*func)[dof];
+        {
+          if (functnum>0)
+          {
+            // evaluate function at current gauss point (provide always 3D coordinates!)
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time,NULL);
+          }
+          else
+            functfac = 1.0;
+        }
+
+        const double val_fac_functfac = (*val)[dof]*fac*functfac;
+
+        for (int node=0;node<nen_;++node)
+        {
+          elevec1[node*numdofpernode_+dof] += funct_(node)*val_fac_functfac*eps_;
+        }
+      } // if ((*onoff)[dof])
+    }
+  } //end of loop over integration points
+
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate normals vectors                  moved to here rauch 04/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcNormalVectors(Teuchos::ParameterList&           params,
+                                                                   DRT::ELEMENTS::TransportBoundary* ele
+                                                                  )
+{
+  // access the global vector
+  const Teuchos::RCP<Epetra_MultiVector> normals = params.get< Teuchos::RCP<Epetra_MultiVector> >("normal vectors",Teuchos::null);
+  if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
+
+  // determine constant outer normal to this element
+  GetConstNormal(normal_,xyze_);
+
+  // loop over the element nodes
+  for (int j=0;j<nen_;j++)
+  {
+    const int nodegid = (ele->Nodes()[j])->Id();
+    if (normals->Map().MyGID(nodegid) )
+    {// OK, the node belongs to this processor
+
+      // scaling to a unit vector is performed on the global level after
+      // assembly of nodal contributions since we have no reliable information
+      // about the number of boundary elements adjacent to a node
+      for (int dim=0; dim<(nsd_+1); dim++)
+      {
+        normals->SumIntoGlobalValue(nodegid,dim,normal_(dim));
+      }
+    }
+    //else: the node belongs to another processor; the ghosted
+    //      element will contribute the right value on that proc
+  }
+
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate loma therm pressure                moved here rauch 03/14  |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcLomaThermPress(
+    DRT::ELEMENTS::TransportBoundary* ele,
+    Teuchos::ParameterList&           params,
+    DRT::Discretization&              discretization,
+    std::vector<int>&                 lm
+    )
+{
+
+  DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
+  // we dont know the parent element's lm vector; so we have to build it here
+  const int nenparent = parentele->NumNode();
+  std::vector<int> lmparent(nenparent);
+  std::vector<int> lmparentowner;
+  std::vector<int> lmparentstride;
+  parentele->LocationVector(discretization,lmparent,lmparentowner,lmparentstride);
+
+  // get velocity values at nodes
+  const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
+
+  // we deal with a (nsd_+1)-dimensional flow field
+  Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
+  DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
+
+  // get values of scalar
+  Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+
+  // extract local values from the global vectors for the parent(!) element
+  std::vector<double> myphinp(lmparent.size());
+  DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
+
+  // define vector for normal diffusive and velocity fluxes
+  std::vector<double> mynormdiffflux(lm.size());
+  std::vector<double> mynormvel(lm.size());
+
+  // determine constant outer normal to this element
+  GetConstNormal(normal_,xyze_);
+
+  // extract temperature flux vector for each node of the parent element
+  LINALG::SerialDenseMatrix eflux(3,nenparent);
+  DRT::Element* peleptr = (DRT::Element*) parentele;
+  int k=numscal_-1;     // temperature is always last degree of freedom!!
+  std::ostringstream temp;
+  temp << k;
+  std::string name = "flux_phi_"+temp.str();
+  // try to get the pointer to the entry (and check if type is Teuchos::RCP<Epetra_MultiVector>)
+  Teuchos::RCP<Epetra_MultiVector>* f = params.getPtr< Teuchos::RCP<Epetra_MultiVector> >(name);
+  // check: field has been set and is not of type Teuchos::null
+  if (f!= NULL) DRT::UTILS::ExtractMyNodeBasedValues(peleptr,eflux,*f,3);
+  else          dserror("MultiVector %s has not been found!",name.c_str());
+
+  // calculate normal diffusive and velocity flux at each node of the
+  // present boundary element
+  for (int i=0; i<nen_; ++i)
+  {
+    for(int j = 0; j<nenparent;++j)
+    {
+      mynormdiffflux[i] = 0.0;
+      mynormvel[i]      = 0.0;
+      for (int l=0; l<nsd_+1; l++)
+      {
+        mynormdiffflux[i] += eflux(l,j)*normal_(l);
+        mynormvel[i]      += evel[i*(nsd_+1)+l]*normal_(l);
+      }
+    }
+  }
+
+  // calculate integral of normal diffusive and velocity flux
+  // NOTE: add integral value only for elements which are NOT ghosted!
+  if(ele->Owner() == discretization.Comm().MyPID())
+  {
+    NormDiffFluxAndVelIntegral(ele,params,mynormdiffflux,mynormvel);
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate Neumann inflow boundary conditions                vg 03/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
+    const DRT::Element*                 ele,
+    Teuchos::RCP<const MAT::Material>   material,
+    const std::vector<double>&          ephinp,
+    const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
+    Epetra_SerialDenseMatrix&           emat,
+    Epetra_SerialDenseVector&           erhs,
+    const double                        timefac,
+    const double                        alphaF)
+{
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // define vector for scalar values at nodes
+  LINALG::Matrix<nen_,1> phinod(true);
+
+  // loop over all scalars
+  for(int k=0;k<numdofpernode_;++k)
+  {
+    // compute scalar values at nodes
+    for (int inode=0; inode< nen_;++inode)
+    {
+      phinod(inode) = ephinp[inode*numdofpernode_+k];
+    }
+
+    // loop over all integration points
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+
+      // get velocity at integration point
+      velint_.Multiply(evelnp,funct_);
+
+      // normal velocity
+      const double normvel = velint_.Dot(normal_);
+
+      if (normvel<-0.0001)
+      {
+        // set density to 1.0
+        double dens = 1.0;
+
+        // get density if not equal one
+        if (material->MaterialType() == INPAR::MAT::m_matlist)
+        {
+          const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
+
+          const int matid = actmat->MatID(0);
+          Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
+
+          if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_temp)
+          {
+            const MAT::ArrheniusTemp* actsinglemat = static_cast<const MAT::ArrheniusTemp*>(singlemat.get());
+
+            // compute temperature values at nodes (always last scalar)
+            LINALG::Matrix<nen_,1> tempnod(true);
+            for (int inode=0; inode< nen_;++inode)
+            {
+              tempnod(inode) = ephinp[(inode+1)*numdofpernode_-1];
+            }
+
+            // compute temperature
+            const double temp = funct_.Dot(tempnod);
+
+            // compute density based on temperature and thermodynamic pressure
+            dens = actsinglemat->ComputeDensity(temp,thermpress_);
+          }
+          else dserror("type of material found in material list is not supported");
+        }
+        else if (material->MaterialType() == INPAR::MAT::m_scatra)
+        {
+          // set density
+          dens = 1.0;
+        }
+        else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
+        {
+          const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
+
+          // compute mixture fraction
+          const double mixfrac = funct_.Dot(phinod);
+
+          // compute density based on mixture fraction
+          dens = actmat->ComputeDensity(mixfrac);
+        }
+        else if (material->MaterialType() == INPAR::MAT::m_sutherland)
+        {
+          const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
+
+          // compute temperature
+          const double temp = funct_.Dot(phinod);
+
+          // compute density based on temperature and thermodynamic pressure
+          dens = actmat->ComputeDensity(temp,thermpress_);
+        }
+        else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+        {
+          const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+
+          // compute progress variable
+          const double provar = funct_.Dot(phinod);
+
+          // compute density
+          dens = actmat->ComputeDensity(provar);
+        }
+        else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
+        {
+          const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
+
+          // compute progress variable
+          const double provar = funct_.Dot(phinod);
+
+          // compute density
+          dens = actmat->ComputeDensity(provar);
+        }
+        else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
+        {
+          const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
+
+          // get constant density
+          dens = actmat->Density();
+        }
+        else dserror("Material type is not supported for Neumann inflow!");
+
+        // integration factor for left-hand side
+        const double lhsfac = dens*normvel*timefac*fac;
+
+        // integration factor for right-hand side
+        double rhsfac = 0.0;
+        if (is_incremental_ and is_genalpha_)
+          rhsfac = lhsfac/alphaF;
+        else if (not is_incremental_ and is_genalpha_)
+          rhsfac = lhsfac*(1.0-alphaF)/alphaF;
+        else if (is_incremental_ and not is_genalpha_)
+          rhsfac = lhsfac;
+
+        // matrix
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const double vlhs = lhsfac*funct_(vi);
+
+          const int fvi = vi*numdofpernode_+k;
+
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            const int fui = ui*numdofpernode_+k;
+
+            emat(fvi,fui) -= vlhs*funct_(ui);
+          }
+        }
+
+        // scalar at integration point
+        const double phi = funct_.Dot(phinod);
+
+        // rhs
+        const double vrhs = rhsfac*phi;
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          erhs[fvi] += vrhs*funct_(vi);
+        }
+      }
+    }
+  }
+
+  return;
+} //ScaTraBoundaryImpl<distype>::NeumannInflow
+
+
+/*----------------------------------------------------------------------*
+ | calculate integral of convective flux across boundary      gjb 11/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+std::vector<double> DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcConvectiveFlux(
+    const DRT::Element*                 ele,
+    const std::vector<double>&          ephinp,
+    const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
+    Epetra_SerialDenseVector&           erhs
+)
+{
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // define vector for scalar values at nodes
+  LINALG::Matrix<nen_,1> phinod(true);
+
+  std::vector<double> integralflux(numscal_);
+
+  // loop over all scalars
+  for(int k=0;k<numscal_;++k)
+  {
+    integralflux[k] = 0.0;
+
+    // compute scalar values at nodes
+    for (int inode=0; inode< nen_;++inode)
+    {
+      phinod(inode) = ephinp[inode*numdofpernode_+k];
+    }
+
+    // loop over all integration points
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+
+      // get velocity at integration point
+      velint_.Multiply(evelnp,funct_);
+
+      // normal velocity (note: normal_ is already a unit(!) normal)
+      const double normvel = velint_.Dot(normal_);
+
+      // scalar at integration point
+      const double phi = funct_.Dot(phinod);
+
+      const double val = phi*normvel*fac;
+      integralflux[k] += val;
+      // add contribution to provided vector (distribute over nodes using shape fct.)
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+        erhs[fvi] += val*funct_(vi);
+      }
+    }
+  }
+
+  return integralflux;
+
+} //ScaTraBoundaryImpl<distype>::ConvectiveFlux
+
+/*----------------------------------------------------------------------*
+ | calculate boundary cond. due to convective heat transfer    vg 10/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ConvectiveHeatTransfer(
+    const DRT::Element*                 ele,
+    Teuchos::RCP<const MAT::Material>   material,
+    const std::vector<double>&           ephinp,
+    Epetra_SerialDenseMatrix&           emat,
+    Epetra_SerialDenseVector&           erhs,
+    const double                        heatranscoeff,
+    const double                        surtemp,
+    const double                        timefac,
+    const double                        alphaF)
+{
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // define vector for scalar values at nodes
+  LINALG::Matrix<nen_,1> phinod(true);
+
+  // loop over all scalars
+  for(int k=0;k<numdofpernode_;++k)
+  {
+    // compute scalar values at nodes
+    for (int inode=0; inode< nen_;++inode)
+    {
+      phinod(inode) = ephinp[inode*numdofpernode_+k];
+    }
+
+    // loop over all integration points
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+
+      // get specific heat capacity at constant volume
+      double shc = 0.0;
+      if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+      {
+        const MAT::FourierIso* actmat = static_cast<const MAT::FourierIso*>(material.get());
+
+        shc = actmat->Capacity();
+      }
+      else if (material->MaterialType() == INPAR::MAT::m_thermostvenant)
+      {
+        const MAT::ThermoStVenantKirchhoff* actmat = static_cast<const MAT::ThermoStVenantKirchhoff*>(material.get());
+
+        shc = actmat->Capacity();
+      }
+      else dserror("Material type is not supported for convective heat transfer!");
+
+      // integration factor for left-hand side
+      const double lhsfac = heatranscoeff*timefac*fac/shc;
+
+      // integration factor for right-hand side
+      double rhsfac = 0.0;
+      if (is_incremental_ and is_genalpha_)
+        rhsfac = lhsfac/alphaF;
+      else if (not is_incremental_ and is_genalpha_)
+        rhsfac = lhsfac*(1.0-alphaF)/alphaF;
+      else if (is_incremental_ and not is_genalpha_)
+        rhsfac = lhsfac;
+
+      // matrix
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double vlhs = lhsfac*funct_(vi);
+
+        const int fvi = vi*numdofpernode_+k;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+
+          emat(fvi,fui) -= vlhs*funct_(ui);
+        }
+      }
+
+      // scalar at integration point
+      const double phi = funct_.Dot(phinod);
+
+      // rhs
+      const double vrhs = rhsfac*(phi-surtemp);
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        erhs[fvi] += vrhs*funct_(vi);
+      }
+    }
+  }
+
+  return;
+} //ScaTraBoundaryImpl<distype>::ConvectiveHeatTransfercteswt
+
+
+/*----------------------------------------------------------------------*
+ | evaluate shape functions and int. factor at int. point     gjb 01/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
+    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+    const int                                    iquad,      ///< id of current Gauss point
+    const int                                    eleid,      ///< the element id
+    LINALG::Matrix<1 + nsd_,1>*         normalvec ///< normal vector at Gauss point(optional)
+)
+{
+  // coordinates of the current integration point
+  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  for (int idim=0;idim<nsd_;idim++)
+  {xsi_(idim) = gpcoord[idim];}
+
+  if(not DRT::NURBS::IsNurbs(distype))
+  {
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+  }
+  else // nurbs elements are always somewhat special...
+  {
+    DRT::NURBS::UTILS::nurbs_get_funct_deriv(
+        funct_  ,
+        deriv_  ,
+        xsi_    ,
+        myknots_,
+        weights_,
+        distype );
+  }
+
+  // the metric tensor and the area of an infinitesimal surface/line element
+  // optional: get normal at integration point as well
+  // Note: this is NOT yet a unit normal. Its norm corresponds to the area/length of the element
+  double drs(0.0);
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_,deriv_,metrictensor_,drs,normalvec);
+
+  // for nurbs elements the normal vector must be scaled with a special orientation factor!!
+  if(DRT::NURBS::IsNurbs(distype))
+  {
+    if (normalvec != NULL)
+      normal_.Scale(normalfac_);
+  }
+
+  // return the integration factor
+  return intpoints.IP().qwgt[iquad] * drs;
+}
+
+
+/*----------------------------------------------------------------------*
+ | get constant normal                                        gjb 01/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
+    LINALG::Matrix<nsd_+1,1>&          normal,
+    const LINALG::Matrix<nsd_+1,nen_>&  xyze
+    )
+{
+  // determine normal to this element
+  if(not DRT::NURBS::IsNurbs(distype))
+  {
+  switch(nsd_)
+  {
+  case 2:
+  {
+    LINALG::Matrix<3,1> dist1(true), dist2(true);
+    for (int i=0; i<3; i++)
+    {
+      dist1(i) = xyze(i,1)-xyze(i,0);
+      dist2(i) = xyze(i,2)-xyze(i,0);
+    }
+
+    normal(0) = dist1(1)*dist2(2) - dist1(2)*dist2(1);
+    normal(1) = dist1(2)*dist2(0) - dist1(0)*dist2(2);
+    normal(2) = dist1(0)*dist2(1) - dist1(1)*dist2(0);
+  }
+  break;
+  case 1:
+  {
+    normal(0) = xyze(1,1) - xyze(1,0);
+    normal(1) = (-1.0)*(xyze(0,1) - xyze(0,0));
+  }
+  break;
+  default:
+    dserror("Illegal number of space dimensions: %d",nsd_);
+    break;
+  } // switch(nsd)
+  }
+  else // NURBS case
+  {
+    // ToDo: this is only a temporary solution in order to have something here.
+    // Current handling of node-based normal vectors not applicable in NURBS case
+#if 0
+    // use one integration point at element center
+    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+    // hack: ele-id = -1
+    // for nurbs elements the normal vector must be scaled with a special orientation factor!!
+    // this is already part of this function call
+    EvalShapeFuncAndIntFac(intpoints,0,-1,&normal);
+#endif
+    normal(0)= 1.0;
+  }
+
+  // length of normal to this element
+  const double length = normal.Norm2();
+  // outward-pointing normal of length 1.0
+  if (length > EPS10)
+    normal.Scale(1/length);
+  else
+    dserror("Zero length for element normal");
+
+  return;
+} // ScaTraBoundaryImpl<distype>::
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate surface/interface permeability                       |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateSurfacePermeability(
+    const DRT::Element*        ele,
+    const std::vector<double>&  ephinp,
+    Epetra_SerialDenseMatrix&  emat,
+    Epetra_SerialDenseVector&  erhs,
+    const double               timefac,
+    const double               perm
+    )
+{
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // define vector for scalar values at nodes
+  LINALG::Matrix<nen_,1> phinod(true);
+
+  // loop over all scalars
+  for(int k=0;k<numdofpernode_;++k)
+  {
+    // compute scalar values at nodes
+    for (int inode=0; inode< nen_;++inode)
+    {
+      phinod(inode) = ephinp[inode*numdofpernode_+k];
+    }
+
+    // loop over all integration points
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+
+      // integration factor for left-hand side
+      const double lhsfac = timefac*fac*perm;
+
+      // integration factor for right-hand side
+      double rhsfac = 0.0;
+      if (is_incremental_ and not is_genalpha_)
+        rhsfac = lhsfac;
+      else
+        dserror("EvaluateSurfacePermeability: Requested scheme not yet implemented");
+
+      // matrix
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double vlhs = lhsfac*funct_(vi);
+
+        const int fvi = vi*numdofpernode_+k;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+
+          emat(fvi,fui) += vlhs*funct_(ui);
+        }
+      }
+
+      // scalar at integration point
+      const double phi = funct_.Dot(phinod);
+
+      // rhs
+      const double vrhs = rhsfac*phi;
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        erhs[fvi] -= vrhs*funct_(vi);
+      }
+    }
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Integrate shapefunctions over surface (private)           gjb 02/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
+    const DRT::Element*        ele,
+    Teuchos::ParameterList&    params,
+    Epetra_SerialDenseVector&  elevec1,
+    const bool                 addarea
+)
+{
+  // access boundary area variable with its actual value
+  double boundaryint = params.get<double>("boundaryint");
+
+  bool outputall = false;
+  if(params.isParameter("alldof"))
+    outputall = true;
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+
+    // compute integral of shape functions
+    for (int node=0;node<nen_;++node)
+    {
+      for (int k=0; k< numscal_; k++)
+      {
+        elevec1[node*numdofpernode_+k] += funct_(node) * fac;
+      }
+      if(outputall==true)
+        elevec1[node*numdofpernode_+numdofpernode_-1] += funct_(node) * fac;
+    }
+
+    if (addarea)
+    {
+      // area calculation
+      boundaryint += fac;
+    }
+
+  } //loop over integration points
+
+  // add contribution to the global value
+  params.set<double>("boundaryint",boundaryint);
+
+  return;
+
+} //ScaTraBoundaryImpl<distype>::IntegrateShapeFunction
+
+
+/*----------------------------------------------------------------------*
+ | calculate integral of normal diffusive flux and velocity     vg 09/08|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NormDiffFluxAndVelIntegral(
+    const DRT::Element*             ele,
+    Teuchos::ParameterList&         params,
+    const std::vector<double>&       enormdiffflux,
+    const std::vector<double>&       enormvel
+)
+{
+  // get variables for integrals of normal diffusive flux and velocity
+  double normdifffluxint = params.get<double>("normal diffusive flux integral");
+  double normvelint      = params.get<double>("normal velocity integral");
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+
+    // compute integral of normal flux
+    for (int node=0;node<nen_;++node)
+    {
+      normdifffluxint += funct_(node) * enormdiffflux[node] * fac;
+      normvelint      += funct_(node) * enormvel[node] * fac;
+    }
+  } // loop over integration points
+
+  // add contributions to the global values
+  params.set<double>("normal diffusive flux integral",normdifffluxint);
+  params.set<double>("normal velocity integral",normvelint);
+
+  return;
+
+} //ScaTraBoundaryImpl<distype>::NormDiffFluxAndVelIntegral
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType bdistype,
+          DRT::Element::DiscretizationType pdistype>
+   void  DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::WeakDirichlet(
+     DRT::ELEMENTS::TransportBoundary*  ele,
+     Teuchos::ParameterList&            params,
+     DRT::Discretization&               discretization,
+     Teuchos::RCP<const MAT::Material>  material,
+     Epetra_SerialDenseMatrix&          elemat_epetra,
+     Epetra_SerialDenseVector&          elevec_epetra)
+{
+  //------------------------------------------------------------------------
+  // control parameters for time integration
+  //------------------------------------------------------------------------
+  is_stationary_  = params.get<bool>("using stationary formulation");
+  is_incremental_ = params.get<bool>("incremental solver");
+
+  // get time factor and alpha_F if required
+  // one-step-Theta:    timefac = theta*dt
+  // BDF2:              timefac = 2/3 * dt
+  // generalized-alpha: timefac = alphaF * (gamma/alpha_M) * dt
+  double timefac = 1.0;
+  double alphaF  = 1.0;
+  if (not is_stationary_)
+  {
+    timefac = params.get<double>("time factor");
+    if (is_genalpha_)
+    {
+      alphaF = params.get<double>("alpha_F");
+      timefac *= alphaF;
+    }
+    if (timefac < 0.0) dserror("time factor is negative.");
+  }
+
+  //------------------------------------------------------------------------
+  // Dirichlet boundary condition
+  //------------------------------------------------------------------------
+  Teuchos::RCP<DRT::Condition> dbc = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+
+  // check of total time
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+  // find out whether we will use a time curve and get the factor
+  const std::vector<int>* curve  = (*dbc).Get<std::vector<int> >("curve");
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0];
+  double curvefac = 1.0;
+  if (curvenum>=0 && usetime)
+    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+
+  // get values and spatial functions from condition
+  // (assumed to be constant on element boundary)
+  const std::vector<double>* val  = (*dbc).Get<std::vector<double> >("val"  );
+  const std::vector<int>*    func = (*dbc).Get<std::vector<int> >   ("funct");
+
+  // assign boundary value multiplied by time-curve factor
+  double dirichval=(*val)[0]*curvefac;
+
+  // spatial function number
+  const int funcnum = (*func)[0];
+
+  //------------------------------------------------------------------------
+  // preliminary definitions for (boundary) and parent element and
+  // evaluation of nodal values of velocity and scalar based on parent
+  // element nodes
+  //------------------------------------------------------------------------
+  // get the parent element
+  DRT::ELEMENTS::Transport* pele = ele->ParentElement();
+
+  // number of spatial dimensions regarding (boundary) element
+  static const int bnsd = DRT::UTILS::DisTypeToDim<bdistype>::dim;
+
+  // number of spatial dimensions regarding parent element
+  static const int pnsd = DRT::UTILS::DisTypeToDim<pdistype>::dim;
+
+  // number of (boundary) element nodes
+  static const int bnen = DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+
+  // number of parent element nodes
+  static const int pnen = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+
+  // parent element lm vector
+  std::vector<int>  plm ;
+  std::vector<int>  plmowner;
+  std::vector<int>  plmstride;
+  pele->LocationVector(discretization,plm,plmowner,plmstride);
+
+  // get velocity values at parent element nodes
+  const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
+  Epetra_SerialDenseVector evel(pnsd*pnen);
+  DRT::UTILS::ExtractMyNodeBasedValues(pele,evel,velocity,pnsd);
+
+  // get scalar values at parent element nodes
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+
+  // extract local values from global vectors for parent element
+  std::vector<double> myphinp(plm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,myphinp,plm);
+
+  // matrix and vector definition
+  LINALG::Matrix<pnsd,pnen>       evelnp;
+  std::vector<LINALG::Matrix<pnen,1> > ephinp(numscal_);
+
+  // insert into element arrays
+  for (int i=0;i<pnen;++i)
+  {
+    for (int k = 0; k< numscal_; ++k)
+    {
+      // split for each tranported scalar, insert into element arrays
+      ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
+    }
+
+    // insert velocity field into element array
+    for (int idim=0 ; idim < pnsd; idim++)
+    {
+      evelnp(idim,i) = evel[idim + i*pnsd];
+    }
+  }
+
+  //------------------------------------------------------------------------
+  // preliminary definitions for integration loop
+  //------------------------------------------------------------------------
+  // reshape element matrices and vectors and init to zero, construct views
+  elemat_epetra.Shape(pnen,pnen);
+  elevec_epetra.Size (pnen);
+  LINALG::Matrix<pnen,pnen> emat(elemat_epetra.A(),true);
+  LINALG::Matrix<pnen,   1> erhs(elevec_epetra.A(),true);
+
+  // (boundary) element local node coordinates
+  LINALG::Matrix<pnsd,bnen>  bxyze(true);
+  GEO::fillInitialPositionArray<bdistype,pnsd,LINALG::Matrix<pnsd,bnen> >(ele,bxyze);
+
+  // parent element local node coordinates
+  LINALG::Matrix<pnsd,pnen>  pxyze(true);
+  GEO::fillInitialPositionArray<pdistype,pnsd,LINALG::Matrix<pnsd,pnen> >(pele,pxyze);
+
+  // coordinates of integration points for (boundary) and parent element
+  LINALG::Matrix<bnsd,   1>  bxsi(true);
+  LINALG::Matrix<pnsd,   1>  pxsi(true);
+
+  // transposed jacobian "dx/ds" and inverse of transposed jacobian "ds/dx"
+  // for parent element
+  LINALG::Matrix<pnsd,pnsd>  pxjm(true);
+  LINALG::Matrix<pnsd,pnsd>  pxji(true);
+
+  // metric tensor for (boundary) element
+  LINALG::Matrix<bnsd,bnsd>  bmetrictensor(true);
+
+  // (outward-pointing) unit normal vector to (boundary) element
+  LINALG::Matrix<pnsd,   1>  bnormal(true);
+
+  // velocity vector at integration point
+  LINALG::Matrix<pnsd,   1>  velint;
+
+  // gradient of scalar value at integration point
+  LINALG::Matrix<pnsd,1> gradphi;
+
+  // (boundary) element shape functions, local and global derivatives
+  LINALG::Matrix<bnen,   1>  bfunct(true);
+  LINALG::Matrix<bnsd,bnen>  bderiv(true);
+  LINALG::Matrix<bnsd,bnen>  bderxy(true);
+
+  // parent element shape functions, local and global derivatives
+  LINALG::Matrix<pnen,   1>  pfunct(true);
+  LINALG::Matrix<pnsd,pnen>  pderiv(true);
+  LINALG::Matrix<pnsd,pnen>  pderxy(true);
+
+  //------------------------------------------------------------------------
+  // additional matrices and vectors for mixed-hybrid formulation
+  //------------------------------------------------------------------------
+  // for volume integrals
+  LINALG::Matrix<pnsd*pnen,pnsd*pnen> mat_s_q(true);
+  LINALG::Matrix<pnsd*pnen,     pnen> mat_s_gradphi(true);
+
+  LINALG::Matrix<pnsd*pnen,        1> vec_s_gradphi(true);
+
+  // for boundary integrals
+  LINALG::Matrix<     pnen,pnsd*pnen> mat_w_q_o_n(true);
+  LINALG::Matrix<pnsd*pnen,     pnen> mat_s_o_n_phi(true);
+
+  LINALG::Matrix<pnsd*pnen,        1> vec_s_o_n_phi_minus_g(true);
+
+  // inverse matrix
+  LINALG::Matrix<pnsd*pnen,pnsd*pnen> inv_s_q(true);
+
+  //------------------------------------------------------------------------
+  // check whether Nitsche (default) or mixed-hybrid formulation as well as
+  // preliminary definitions and computations for Nitsche stabilization term
+  //------------------------------------------------------------------------
+  // default is Nitsche formulation
+  bool mixhyb = false;
+
+  // stabilization parameter for Nitsche term
+  const double nitsche_stab_para = (*dbc).GetDouble("TauBscaling");
+
+  // if stabilization parameter negative: mixed-hybrid formulation
+  if (nitsche_stab_para < 0.0) mixhyb = true;
+
+  // pre-factor for adjoint-consistency term:
+  // either 1.0 (adjoint-consistent, default) or -1.0 (adjoint-inconsistent)
+  double gamma = 1.0;
+  const std::string* consistency = (*dbc).Get<std::string>("Choice of gamma parameter");
+  if      (*consistency=="adjoint-consistent") gamma = 1.0;
+  else if (*consistency=="diffusive-optimal")  gamma = -1.0;
+  else dserror("unknown definition for gamma parameter: %s",(*consistency).c_str());
+
+  // use one-point Gauss rule to do calculations at element center
+  DRT::UTILS::IntPointsAndWeights<bnsd> intpoints_tau(SCATRA::DisTypeToStabGaussRule<bdistype>::rule);
+
+  // element surface area (1D: element length)
+  // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
+  const double* gpcoord = (intpoints_tau.IP().qxg)[0];
+  for (int idim=0;idim<bnsd;idim++)
+  {
+    bxsi(idim) = gpcoord[idim];
+  }
+  DRT::UTILS::shape_function_deriv1<bdistype>(bxsi,bderiv);
+  double drs = 0.0;
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(bxyze,bderiv,bmetrictensor,drs,&bnormal);
+  const double area = intpoints_tau.IP().qwgt[0]*drs;
+
+  // get number of dimensions for (boundary) element (convert from int to double)
+  const double dim = (double) bnsd;
+
+  // computation of characteristic length of (boundary) element
+  // (2D: square root of element area, 1D: element length)
+  const double h = std::pow(area,(1.0/dim));
+
+  //------------------------------------------------------------------------
+  // preliminary computations for integration loop
+  //------------------------------------------------------------------------
+  // integrations points and weights for (boundary) element and parent element
+  const DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(SCATRA::DisTypeToOptGaussRule<bdistype>::rule);
+
+  const DRT::UTILS::IntPointsAndWeights<pnsd> pintpoints(SCATRA::DisTypeToOptGaussRule<pdistype>::rule);
+
+  // transfer integration-point coordinates of (boundary) element to parent element
+  Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad,pnsd);
+  {
+    Epetra_SerialDenseMatrix gps(bintpoints.IP().nquad,bnsd);
+
+    for (int iquad=0; iquad<bintpoints.IP().nquad; ++iquad)
+    {
+      const double* gpcoord = (bintpoints.IP().qxg)[iquad];
+
+      for (int idim=0;idim<bnsd ;idim++)
+      {
+        gps(iquad,idim) = gpcoord[idim];
+      }
+    }
+    if(pnsd==2)
+    {
+      DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,ele->FaceParentNumber());
+    }
+    else if (pnsd==3)
+    {
+      DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,ele->FaceParentNumber());
+    }
+
+  }
+
+  //------------------------------------------------------------------------
+  // integration loop 1: volume integrals (only for mixed-hybrid formulation)
+  //------------------------------------------------------------------------
+  if (mixhyb)
+  {
+    for (int iquad=0; iquad<pintpoints.IP().nquad; ++iquad)
+    {
+      // reference coordinates of integration point from (boundary) element
+      const double* gpcoord = (pintpoints.IP().qxg)[iquad];
+      for (int idim=0;idim<pnsd;idim++)
+      {
+        pxsi(idim) = gpcoord[idim];
+      }
+
+      // parent element shape functions and local derivatives
+      DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
+      DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv);
+
+      // Jacobian matrix and determinant of parent element (including check)
+      pxjm.MultiplyNT(pderiv,pxyze);
+      const double det = pxji.Invert(pxjm);
+      if (det < 1E-16) dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
+
+      // compute integration factor
+      const double fac = pintpoints.IP().qwgt[iquad]*det;
+
+      // compute global derivatives
+      pderxy.Multiply(pxji,pderiv);
+
+      //--------------------------------------------------------------------
+      // loop over scalars (not yet implemented for more than one scalar)
+      //--------------------------------------------------------------------
+      // for(int k=0;k<numdofpernode_;++k)
+      int k=0;
+      {
+        // get viscosity
+        if (material->MaterialType() == INPAR::MAT::m_scatra)
+        {
+          const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
+
+          dsassert(numdofpernode_==1,"more than 1 dof per node for SCATRA material");
+
+          // get constant diffusivity
+          diffus_[k] = actmat->Diffusivity();
+        }
+        else dserror("Material type is not supported");
+
+        // gradient of current scalar value
+        gradphi.Multiply(pderxy,ephinp[k]);
+
+        // integration factor for left-hand side
+        const double lhsfac = timefac*fac;
+
+        // integration factor for right-hand side
+        double rhsfac = 0.0;
+        if (is_incremental_ and is_genalpha_)
+          rhsfac = lhsfac/alphaF;
+        else if (not is_incremental_ and is_genalpha_)
+          rhsfac = lhsfac*(1.0-alphaF)/alphaF;
+        else if (is_incremental_ and not is_genalpha_)
+          rhsfac = lhsfac;
+
+        //--------------------------------------------------------------------
+        //  matrix and vector additions due to mixed-hybrid formulation
+        //--------------------------------------------------------------------
+        /*
+                       /         \
+                  1   |   h   h  |
+              - ----- |  s , q   |
+                kappa |          |
+                      \          / Omega
+        */
+        for (int vi=0; vi<pnen; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          //const double vlhs = lhsfac*pfunct(vi);
+          const double vlhs = lhsfac*(1.0/diffus_[k])*pfunct(vi);
+
+          for (int ui=0; ui<pnen; ++ui)
+          {
+            const int fui = ui*numdofpernode_+k;
+
+            for(int i=0;i<pnsd;++i)
+            {
+              mat_s_q(fvi*pnsd+i,fui*pnsd+i) -= vlhs*pfunct(ui);
+            }
+          }
+        }
+
+        /*
+                       /                  \
+                      |  h         /   h\  |
+                    + | s  , grad | phi  | |
+                      |            \    /  |
+                       \                  / Omega
+        */
+        for (int vi=0; vi<pnen; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          //const double vlhs = lhsfac*diffus_[k]*pfunct(vi);
+          const double vlhs = lhsfac*pfunct(vi);
+
+          for (int ui=0; ui<pnen; ++ui)
+          {
+            const int fui = ui*numdofpernode_+k;
+
+            for(int i=0;i<pnsd;++i)
+            {
+              mat_s_gradphi(fvi*pnsd+i,fui) += vlhs*pderxy(i,ui);
+            }
+          }
+
+          //const double vrhs = rhsfac*diffus_[k]*pfunct(vi);
+          const double vrhs = rhsfac*pfunct(vi);
+
+          for(int i=0;i<pnsd;++i)
+          {
+            vec_s_gradphi(fvi*pnsd+i) += vrhs*gradphi(i);
+          }
+        }
+      }
+    }
+  }
+
+  //------------------------------------------------------------------------
+  // integration loop 2: boundary integrals
+  //------------------------------------------------------------------------
+  for (int iquad=0; iquad<bintpoints.IP().nquad; ++iquad)
+  {
+    // reference coordinates of integration point from (boundary) element
+    const double* gpcoord = (bintpoints.IP().qxg)[iquad];
+    for (int idim=0;idim<bnsd;idim++)
+    {
+      bxsi(idim) = gpcoord[idim];
+    }
+
+    // (boundary) element shape functions
+    DRT::UTILS::shape_function       <bdistype>(bxsi,bfunct);
+    DRT::UTILS::shape_function_deriv1<bdistype>(bxsi,bderiv);
+
+    // global coordinates of current integration point from (boundary) element
+    LINALG::Matrix<pnsd,1> coordgp(true);
+    for (int A=0;A<bnen;++A)
+    {
+      for(int j=0;j<pnsd;++j)
+      {
+        coordgp(j)+=bxyze(j,A)*bfunct(A);
+      }
+    }
+
+    // reference coordinates of integration point from parent element
+    for (int idim=0;idim<pnsd;idim++)
+    {
+      pxsi(idim) = pqxg(iquad,idim);
+    }
+
+    // parent element shape functions and local derivatives
+    DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
+    DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv);
+
+    // Jacobian matrix and determinant of parent element (including check)
+    pxjm.MultiplyNT(pderiv,pxyze);
+    const double det = pxji.Invert(pxjm);
+    if (det < 1E-16) dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
+
+    // compute measure tensor for surface element, infinitesimal area element drs
+    // and (outward-pointing) unit normal vector
+    DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(bxyze,bderiv,bmetrictensor,drs,&bnormal);
+
+    // for nurbs elements the normal vector must be scaled with a special orientation factor!!
+    if(DRT::NURBS::IsNurbs(distype))
+      bnormal.Scale(normalfac_);
+
+    // compute integration factor
+    const double fac = bintpoints.IP().qwgt[iquad]*drs;
+
+    // compute global derivatives
+    pderxy.Multiply(pxji,pderiv);
+
+#if 1
+    //--------------------------------------------------------------------
+    // check whether integration-point coordinates evaluated from
+    // (boundary) and parent element match
+    //--------------------------------------------------------------------
+    LINALG::Matrix<pnsd,1> check(true);
+    LINALG::Matrix<pnsd,1> diff(true);
+
+    for (int A=0;A<pnen;++A)
+    {
+      for(int j=0;j<pnsd;++j)
+      {
+        check(j)+=pxyze(j,A)*pfunct(A);
+      }
+    }
+
+    diff=check;
+    diff-=coordgp;
+
+    const double norm=diff.Norm2();
+
+    if (norm>1e-9)
+    {
+      for (int j=0;j<pnsd;++j)
+      {
+        printf("%12.5e %12.5e\n",check(j),coordgp(j));
+      }
+      dserror("Gausspoint matching error %12.5e\n",norm);
+    }
+#endif
+
+    //--------------------------------------------------------------------
+    // factor for Dirichlet boundary condition given by spatial function
+    //--------------------------------------------------------------------
+    double functfac = 1.0;
+    if (funcnum > 0)
+    {
+      // evaluate function at current integration point (important: a 3D position vector is required)
+      double coordgp3D[3];
+      coordgp3D[0]=0.0;
+      coordgp3D[1]=0.0;
+      coordgp3D[2]=0.0;
+      for (int i=0; i<pnsd;i++)
+        coordgp3D[i]=coordgp(i);
+
+      functfac = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(0,&(coordgp3D[0]),time,NULL);
+    }
+    else functfac = 1.0;
+    dirichval *= functfac;
+
+    //--------------------------------------------------------------------
+    // loop over scalars (not yet implemented for more than one scalar)
+    //--------------------------------------------------------------------
+    // for(int k=0;k<numdofpernode_;++k)
+    int k=0;
+    {
+      // get viscosity
+      if (material->MaterialType() == INPAR::MAT::m_scatra)
+      {
+        const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
+
+        dsassert(numdofpernode_==1,"more than 1 dof per node for SCATRA material");
+
+        // get constant diffusivity
+        diffus_[k] = actmat->Diffusivity();
+      }
+      else dserror("Material type is not supported");
+
+      // get scalar value at integration point
+      const double phi = pfunct.Dot(ephinp[k]);
+
+      // integration factor for left-hand side
+      const double lhsfac = timefac*fac;
+
+      // integration factor for right-hand side
+      double rhsfac = 0.0;
+      if (is_incremental_ and is_genalpha_)
+        rhsfac = lhsfac/alphaF;
+      else if (not is_incremental_ and is_genalpha_)
+        rhsfac = lhsfac*(1.0-alphaF)/alphaF;
+      else if (is_incremental_ and not is_genalpha_)
+        rhsfac = lhsfac;
+
+      if (mixhyb)
+      {
+        //--------------------------------------------------------------------
+        //  matrix and vector additions due to mixed-hybrid formulation
+        //--------------------------------------------------------------------
+        /*  consistency term
+                    /           \
+                   |  h   h     |
+                 - | w , q  o n |
+                   |            |
+                   \            / Gamma
+        */
+        for (int vi=0; vi<pnen; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          const double vlhs = lhsfac*pfunct(vi);
+
+          for (int ui=0; ui<pnen; ++ui)
+          {
+            const int fui = ui*numdofpernode_+k;
+
+            for(int i=0;i<pnsd;++i)
+            {
+              mat_w_q_o_n(fvi,fui*pnsd+i) -= vlhs*pfunct(ui)*bnormal(i);
+            }
+          }
+        }
+
+        /*  adjoint consistency term
+                    /                 \
+                   |  h          h    |
+                 - | s  o n , phi - g |
+                   |                  |
+                   \                  / Gamma
+        */
+        for (int vi=0; vi<pnen; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          const double vlhs = lhsfac*pfunct(vi);
+
+          for (int ui=0; ui<pnen; ++ui)
+          {
+            const int fui = ui*numdofpernode_+k;
+
+            for(int i=0;i<pnsd;++i)
+            {
+              mat_s_o_n_phi(fvi*pnsd+i,fui) -= vlhs*pfunct(ui)*bnormal(i);
+            }
+          }
+
+          for(int i=0;i<pnsd;++i)
+          {
+            vec_s_o_n_phi_minus_g(fvi*pnsd+i) -= pfunct(vi)*bnormal(i)*(rhsfac*phi - timefac*fac*dirichval);
+          }
+        }
+      }
+      else
+      {
+        // parameter alpha for Nitsche stabilization term
+        const double alpha = nitsche_stab_para*diffus_[k]/h;
+
+        // get velocity at integration point
+        velint.Multiply(evelnp,pfunct);
+
+        // normal velocity
+        const double normvel = velint.Dot(bnormal);
+
+        // gradient of current scalar value
+        gradphi.Multiply(pderxy,ephinp[k]);
+
+        // gradient of current scalar value in normal direction
+        const double gradphi_norm = bnormal.Dot(gradphi);
+
+        //--------------------------------------------------------------------
+        //  matrix and vector additions due to Nitsche formulation
+        //--------------------------------------------------------------------
+        /*  consistency term
+                    /                           \
+                   |  h                  h      |
+                 - | w , kappa * grad(phi ) o n |
+                   |                            |
+                   \                            / Gamma
+        */
+        for (int vi=0; vi<pnen; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          const double vlhs = lhsfac*pfunct(vi)*diffus_[k];
+
+          for (int ui=0; ui<pnen; ++ui)
+          {
+            const int fui = ui*numdofpernode_+k;
+
+            for(int i=0;i<pnsd;++i)
+            {
+              emat(fvi,fui) -= vlhs*pderxy(i,ui)*bnormal(i);
+            }
+          }
+
+          const double vrhs = rhsfac*diffus_[k];
+
+          erhs(fvi) += vrhs*pfunct(vi)*gradphi_norm;
+        }
+
+        /*  adjoint consistency term, inflow/outflow part
+              / --          --                                        \
+             |  |         h  |                      h           h     |
+           - |  |(a o n) w  +| gamma * kappa *grad(w ) o n , phi - g  |
+             |  |            |                                        |
+             \  --          --                                        / Gamma_in/out
+        */
+        for (int vi=0; vi<pnen; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          // compute diffusive part
+          double prefac = 0.0;
+          for(int i=0;i<pnsd;++i)
+          {
+            prefac += gamma*diffus_[k]*pderxy(i,vi)*bnormal(i);
+          }
+
+          // add convective part in case of inflow boundary
+          if (normvel<-0.0001) prefac += normvel*pfunct(vi);
+
+          const double vlhs = lhsfac*prefac;
+
+          for (int ui=0; ui<pnen; ++ui)
+          {
+            const int fui = ui*numdofpernode_+k;
+
+            emat(fvi,fui) -= vlhs*pfunct(ui);
+          }
+
+          erhs(fvi) += prefac*(rhsfac*phi - timefac*fac*dirichval);
+        }
+
+        /*  stabilization term
+                            /             \
+                           |  h     h     |
+                 + alpha * | w , phi - g  |
+                           |              |
+                           \              / Gamma
+        */
+        for (int vi=0; vi<pnen; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          const double prefac = alpha*pfunct(vi);
+
+          for (int ui=0; ui<pnen; ++ui)
+          {
+            const int fui = ui*numdofpernode_+k;
+
+            emat(fvi,fui) += lhsfac*prefac*pfunct(ui);
+          }
+
+          erhs(fvi) -= prefac*(rhsfac*phi - timefac*fac*dirichval);
+        }
+      }
+    }
+  }
+
+  //------------------------------------------------------------------------
+  // local condensation (only for mixed-hybrid formulation)
+  //------------------------------------------------------------------------
+  if (mixhyb)
+  {
+    // matrix inversion of flux-flux block
+    inv_s_q = mat_s_q;
+
+    LINALG::FixedSizeSerialDenseSolver<pnsd*pnen,pnsd*pnen> solver;
+
+    solver.SetMatrix(inv_s_q);
+    solver.Invert();
+
+    // computation of matrix-matrix and matrix vector products, local assembly
+    for (int vi=0; vi<pnen; ++vi)
+    {
+      for (int ui=0; ui<pnen; ++ui)
+      {
+        for(int rr=0; rr<pnsd*pnen; ++rr)
+        {
+          for(int mm=0; mm<pnsd*pnen; ++mm)
+          {
+            emat(vi,ui)
+              -=mat_w_q_o_n(vi,rr)*inv_s_q(rr,mm)*(mat_s_gradphi(mm,ui)+mat_s_o_n_phi(mm,ui));
+          }
+        }
+      }
+    }
+
+    for (int vi=0; vi<pnen; ++vi)
+    {
+      for(int rr=0; rr<pnsd*pnen; ++rr)
+      {
+        for(int mm=0; mm<pnsd*pnen; ++mm)
+        {
+          erhs(vi)-= mat_w_q_o_n(vi,rr)*inv_s_q(rr,mm)*(-vec_s_o_n_phi_minus_g(mm)-vec_s_gradphi(mm));
+        }
+      }
+    }
+  }
+
+  return;
+}
+
+
+// TODO: SCATRA_ELE_CLEANING: Ursula delete
+/*----------------------------------------------------------------------*
+ | calculate boundary conditions for expl TaylorGalerkin3 and           |
+ | implicit Characteristic Galerkin time integration                    |
+ | just for the linear transport equation                  schott 04/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType bdistype,
+          DRT::Element::DiscretizationType pdistype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
+    DRT::ELEMENTS::TransportBoundary*  ele,                  //!< transport element
+    Teuchos::ParameterList&            params,               //!< parameter list
+    DRT::Discretization&               discretization,       //!< discretization
+    Teuchos::RCP<const MAT::Material>  material,             //!< material
+    Epetra_SerialDenseMatrix&          elemat_epetra,        //!< ele sysmat
+    Epetra_SerialDenseVector&          elevec_epetra         //!< ele rhs
+ )
+{
+    dserror("You sholud not use this function. It is out of date!");
+#if 0
+  INPAR::SCATRA::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::SCATRA::TimeIntegrationScheme>(params,"timealgo");
+
+
+  //------------------------------------------------------------------------
+  // preliminary definitions for (boundary) and parent element and
+  // evaluation of nodal values of velocity and scalar based on parent
+  // element nodes
+  //------------------------------------------------------------------------
+  // get the parent element
+  DRT::ELEMENTS::Transport* pele = ele->ParentElement();
+
+  // number of spatial dimensions regarding (boundary) element
+  static const int bnsd = DRT::UTILS::DisTypeToDim<bdistype>::dim;
+
+  // number of spatial dimensions regarding parent element
+  static const int pnsd = DRT::UTILS::DisTypeToDim<pdistype>::dim;
+
+  // number of (boundary) element nodes
+  static const int bnen = DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+
+  // number of parent element nodes
+  static const int pnen = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+
+  // parent element lm vector
+  std::vector<int>  plm;
+  std::vector<int>  plmowner;
+  std::vector<int>  plmstride;
+  pele->LocationVector(discretization,plm,plmowner,plmstride);
+
+  // get velocity values at parent element nodes
+  const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
+  Epetra_SerialDenseVector evel(pnsd*pnen);
+  DRT::UTILS::ExtractMyNodeBasedValues(pele,evel,velocity,pnsd);
+
+  // get scalar values at parent element nodes
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+  Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
+  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phin'");
+
+
+  // extract local values from global vectors for parent element
+  std::vector<double> myphinp(plm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,myphinp,plm);
+
+  std::vector<double> myphin(plm.size());
+  DRT::UTILS::ExtractMyValues(*phin,myphin,plm);
+
+  //    // matrix and vector definition
+  LINALG::Matrix<pnsd,pnen>       evelnp;
+  std::vector<LINALG::Matrix<pnen,1> > ephinp(numscal_);
+  std::vector<LINALG::Matrix<pnen,1> > ephin(numscal_);
+
+  // insert into element arrays
+  for (int i=0;i<pnen;++i)
+  {
+    for (int k = 0; k< numscal_; ++k)
+    {
+      // split for each tranported scalar, insert into element arrays
+      ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
+      ephin[k](i,0)  = myphin[k+(i*numdofpernode_)];
+    }
+
+    // insert velocity field into element array
+    for (int idim=0 ; idim < pnsd; idim++)
+    {
+      evelnp(idim,i) = evel[idim + i*pnsd];
+    }
+  }
+
+  //------------------------------------------------------------------------
+  // preliminary definitions for integration loop
+  //------------------------------------------------------------------------
+  // reshape element matrices and vectors and init to zero, construct views
+  elemat_epetra.Shape(pnen,pnen);
+  elevec_epetra.Size (pnen);
+  LINALG::Matrix<pnen,pnen> emat(elemat_epetra.A(),true);
+  LINALG::Matrix<pnen,   1> erhs(elevec_epetra.A(),true);
+
+  // (boundary) element local node coordinates
+  LINALG::Matrix<pnsd,bnen>  bxyze(true);
+  GEO::fillInitialPositionArray<bdistype,pnsd,LINALG::Matrix<pnsd,bnen> >(ele,bxyze);
+
+  // parent element local node coordinates
+  LINALG::Matrix<pnsd,pnen>  pxyze(true);
+  GEO::fillInitialPositionArray<pdistype,pnsd,LINALG::Matrix<pnsd,pnen> >(pele,pxyze);
+
+  // coordinates of integration points for (boundary) and parent element
+  LINALG::Matrix<bnsd,   1>  bxsi(true);
+  LINALG::Matrix<pnsd,   1>  pxsi(true);
+
+  // transposed jacobian "dx/ds" and inverse of transposed jacobian "ds/dx"
+  // for parent element
+  LINALG::Matrix<pnsd,pnsd>  pxjm(true);
+  LINALG::Matrix<pnsd,pnsd>  pxji(true);
+
+  // metric tensor for (boundary) element
+  LINALG::Matrix<bnsd,bnsd>  bmetrictensor(true);
+
+  // (outward-pointing) unit normal vector to (boundary) element
+  LINALG::Matrix<pnsd,   1>  bnormal(true);
+
+  // velocity vector at integration point
+  LINALG::Matrix<pnsd,   1>  velint;
+
+  // gradient of scalar value at integration point
+  LINALG::Matrix<pnsd,1> gradphi;
+
+  // (boundary) element shape functions, local and global derivatives
+  LINALG::Matrix<bnen,   1>  bfunct(true);
+  LINALG::Matrix<bnsd,bnen>  bderiv(true);
+  LINALG::Matrix<bnsd,bnen>  bderxy(true);
+
+  // parent element shape functions, local and global derivatives
+  LINALG::Matrix<pnen,   1>  pfunct(true);
+  LINALG::Matrix<pnsd,pnen>  pderiv(true);
+  LINALG::Matrix<pnsd,pnen>  pderxy(true);
+
+
+  // use one-point Gauss rule to do calculations at element center
+  DRT::UTILS::IntPointsAndWeights<bnsd> intpoints_tau(SCATRA::DisTypeToStabGaussRule<bdistype>::rule);
+
+  // element surface area (1D: element length)
+  // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
+  const double* gpcoord = (intpoints_tau.IP().qxg)[0];
+  for (int idim=0;idim<bnsd;idim++)
+  {
+    bxsi(idim) = gpcoord[idim];
+  }
+  DRT::UTILS::shape_function_deriv1<bdistype>(bxsi,bderiv);
+  double drs = 0.0;
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(bxyze,bderiv,bmetrictensor,drs,&bnormal);
+
+  //------------------------------------------------------------------------
+  // preliminary computations for integration loop
+  //------------------------------------------------------------------------
+  // integrations points and weights for (boundary) element and parent element
+  const DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(SCATRA::DisTypeToOptGaussRule<bdistype>::rule);
+
+  const DRT::UTILS::IntPointsAndWeights<pnsd> pintpoints(SCATRA::DisTypeToOptGaussRule<pdistype>::rule);
+
+  // transfer integration-point coordinates of (boundary) element to parent element
+  Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad,pnsd);
+  {
+    Epetra_SerialDenseMatrix gps(bintpoints.IP().nquad,bnsd);
+
+    for (int iquad=0; iquad<bintpoints.IP().nquad; ++iquad)
+    {
+      const double* gpcoord = (bintpoints.IP().qxg)[iquad];
+
+      for (int idim=0;idim<bnsd ;idim++)
+      {
+        gps(iquad,idim) = gpcoord[idim];
+      }
+    }
+    if(pnsd==2)
+    {
+      DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+    }
+    else if (pnsd==3)
+    {
+      DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+    }
+  }
+
+
+  const double dt = params.get<double>("time_step_size");
+
+  //------------------------------------------------------------------------
+  // integration loop: boundary integrals
+  //------------------------------------------------------------------------
+  for (int iquad=0; iquad<bintpoints.IP().nquad; ++iquad)
+  {
+    // reference coordinates of integration point from (boundary) element
+    const double* gpcoord = (bintpoints.IP().qxg)[iquad];
+    for (int idim=0;idim<bnsd;idim++)
+    {
+      bxsi(idim) = gpcoord[idim];
+    }
+
+    // (boundary) element shape functions
+    DRT::UTILS::shape_function       <bdistype>(bxsi,bfunct);
+    DRT::UTILS::shape_function_deriv1<bdistype>(bxsi,bderiv);
+
+    // global coordinates of current integration point from (boundary) element
+    LINALG::Matrix<pnsd,1> coordgp(true);
+    for (int A=0;A<bnen;++A)
+    {
+      for(int j=0;j<pnsd;++j)
+      {
+        coordgp(j)+=bxyze(j,A)*bfunct(A);
+      }
+    }
+
+    // reference coordinates of integration point from parent element
+    for (int idim=0;idim<pnsd;idim++)
+    {
+      pxsi(idim) = pqxg(iquad,idim);
+    }
+
+    // parent element shape functions and local derivatives
+    DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
+    DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv);
+
+    // Jacobian matrix and determinant of parent element (including check)
+    pxjm.MultiplyNT(pderiv,pxyze);
+    const double det = pxji.Invert(pxjm);
+    if (det < 1E-16) dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
+
+    // compute measure tensor for surface element, infinitesimal area element drs
+    // and (outward-pointing) unit normal vector
+    DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(bxyze,bderiv,bmetrictensor,drs,&bnormal);
+
+    // for nurbs elements the normal vector must be scaled with a special orientation factor!!
+    if(DRT::NURBS::IsNurbs(distype))
+      bnormal.Scale(normalfac_);
+
+    // compute integration factor
+    const double fac_surface = bintpoints.IP().qwgt[iquad]*drs;
+
+    // compute global derivatives
+    pderxy.Multiply(pxji,pderiv);
+
+
+    // decide if inflow or outflow
+
+
+
+    if(timealgo == INPAR::SCATRA::timeint_tg2)
+    {
+      //--------------------------------------------------------------------
+      // loop over scalars (not yet implemented for more than one scalar)
+      //--------------------------------------------------------------------
+      for(int dofindex=0;dofindex<numdofpernode_;++dofindex)
+      {
+
+        // get velocity at integration point
+        velint.Multiply(evelnp,pfunct);
+
+        // normal velocity
+        const double normvel = velint.Dot(bnormal);
+        //----------  --------------      |                          |
+        //  mat              -1/4* d^2    | w (u*n), u*grad(D(psi) ) |
+        //--------------------------      |                          |
+
+        LINALG::Matrix<1,pnen> derxy_vel;
+        derxy_vel.Clear();
+        derxy_vel.MultiplyTN(velint,pderxy);
+
+        // decide if inflow or outflow
+        bool assemble_inflow_outflow = true;
+
+        if(assemble_inflow_outflow)
+        {
+
+          for (int vi=0; vi<pnen; ++vi)
+          {
+            const int fvi = vi*numdofpernode_+dofindex;
+
+            for (int ui=0; ui<pnen; ++ui)
+            {
+              const int fui = ui*numdofpernode_+dofindex;
+
+              emat(fvi,fui) -= pfunct(vi)* normvel*(fac_surface*dt*dt/4.0) * derxy_vel(0,ui);
+            }
+          }
+
+          //----------  --------------      |                   n+1     n      |
+          //  rhs               1/4* dt^2   | w(u*n), u*grad(phi   + phi   )   |
+          //--------------------------      |                                  |
+
+          // update grad_dist_n
+          LINALG::Matrix<pnsd,1> grad_dist_n(true);
+          grad_dist_n.Multiply(pderxy,ephin[dofindex]);
+
+          LINALG::Matrix<pnsd,1> grad_dist_npi(true);
+          grad_dist_npi.Multiply(pderxy,ephinp[dofindex]);
+
+          LINALG::Matrix<pnsd,1> grad_dist_sum(true);
+          grad_dist_sum.Update(1.0,grad_dist_n, 1.0, grad_dist_npi);
+
+
+          LINALG::Matrix<1,1> uGradDistSum;
+          uGradDistSum.Clear();
+          uGradDistSum.MultiplyTN(grad_dist_sum,velint);
+
+          for (int vi=0; vi<pnen; ++vi)
+          {
+            const int fvi = vi*numdofpernode_+dofindex;
+
+            erhs(fvi) += pfunct(vi)*dt*dt/4.0*fac_surface *normvel* uGradDistSum(0,0);
+          }
+        } // end if(assemble_inflow_outflow)
+
+      } // loop over scalars
+    } // end if tg2
+    else if(timealgo == INPAR::SCATRA::timeint_tg3)
+    {
+      //--------------------------------------------------------------------
+      // loop over scalars (not yet implemented for more than one scalar)
+      //--------------------------------------------------------------------
+      for(int dofindex=0;dofindex<numdofpernode_;++dofindex)
+      {
+
+        // get velocity at integration point
+        velint.Multiply(evelnp,pfunct);
+
+        // get velocity at integration point
+        double phin  =  ephin[dofindex].Dot(pfunct);
+
+        // normal velocity
+        const double normvel = velint.Dot(bnormal);
+
+        //bool outflow_point = false;
+        //if(normvel > 0.0) outflow_point=true;
+
+
+        LINALG::Matrix<1,pnen> derxy_vel;
+        derxy_vel.Clear();
+        derxy_vel.MultiplyTN(velint,pderxy);
+
+        // decide if inflow or outflow
+        //          bool assemble_inflow_outflow = true;
+        //        if(normvel<0.0) assemble_inflow_outflow=false;
+
+
+        //----------  --------------      |                          |
+        //  mat              -1/6*dt^2    | w (a*n), a*grad(D(phi) ) |
+        //--------------------------      |                          |
+
+
+        double fac_term = fac_surface*dt*dt/6.0;
+
+        //            if(outflow_point)
+        for (int vi=0; vi<pnen; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+dofindex;
+
+          for (int ui=0; ui<pnen; ++ui)
+          {
+            const int fui = ui*numdofpernode_+dofindex;
+
+            emat(fvi,fui) -= fac_term * pfunct(vi)* normvel* derxy_vel(0,ui);
+          }
+        }
+
+
+        // update grad_dist_n
+        LINALG::Matrix<pnsd,1> grad_dist_n(true);
+        grad_dist_n.Multiply(pderxy,ephin[dofindex]);
+
+        LINALG::Matrix<pnsd,1> grad_dist_npi(true);
+        grad_dist_npi.Multiply(pderxy,ephinp[dofindex]);
+
+        // a*grad(phi_n)
+        double a_phi_n = velint.Dot(grad_dist_n);
+
+        // a*grad(phi_npi)
+        double a_phi_npi = velint.Dot(grad_dist_npi);
+
+        //----------  --------------      |                   n+1    n |
+        //  rhs               1/6* dt^2   | w(a*n), a*grad(phi   -phi) |
+        //--------------------------      |                   i        |
+
+        fac_term = fac_surface*dt*dt/6.0 * (a_phi_npi-a_phi_n) *normvel;
+
+        // if(outflow_point)
+        for (int vi=0; vi<pnen; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+dofindex;
+          erhs(fvi) += pfunct(vi) * fac_term;
+        }
+
+
+        //----------  --------------      |            n  |
+        //  rhs                     -dt   | w(a*n), phi   |
+        //--------------------------      |               |
+
+        fac_term = dt*fac_surface *normvel* phin;
+
+        // if(outflow_point)
+        for (int vi=0; vi<pnen; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+dofindex;
+          erhs(fvi) -= pfunct(vi)*fac_term;
+        }
+
+
+        //----------  --------------      |                    n  |
+        //  mat              +1/2*dt^2    | w (a*n), a*grad(phi ) |
+        //--------------------------      |                       |
+
+        fac_term= 0.5*dt*dt*normvel*fac_surface*a_phi_n;
+
+        // if(outflow_point)
+        for (int vi=0; vi<pnen; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+dofindex;
+          erhs(fvi) += pfunct(vi)*fac_term;
+        }
+      } //dofindex
+    } // end if timeint_tg3
+    else dserror("no valid timealgo for TaylorGalerkinBoundaryOutflow call");
+
+  } // loop over integration points
+#endif
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate boundary conditions for                                    |
+ | impl. Characteristic Galerkin (2nd order)                            |
+ | time integration just for the reinitialization equation schott 04/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType bdistype,
+          DRT::Element::DiscretizationType pdistype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBoundary(
+    DRT::ELEMENTS::TransportBoundary*  ele,                  //!< transport element
+    Teuchos::ParameterList&            params,               //!< parameter list
+    DRT::Discretization&               discretization,       //!< discretization
+    Teuchos::RCP<const MAT::Material>  material,             //!< material
+    Epetra_SerialDenseMatrix&          elemat_epetra,        //!< ele sysmat
+    Epetra_SerialDenseVector&          elevec_epetra         //!< ele rhs
+    )
+{
+
+  //------------------------------------------------------------------------
+  // preliminary definitions for (boundary) and parent element and
+  // evaluation of nodal values of velocity and scalar based on parent
+  // element nodes
+  //------------------------------------------------------------------------
+  // get the parent element
+  DRT::ELEMENTS::Transport* pele = ele->ParentElement();
+
+  // number of spatial dimensions regarding (boundary) element
+  static const int bnsd = DRT::UTILS::DisTypeToDim<bdistype>::dim;
+
+  // number of spatial dimensions regarding parent element
+  static const int pnsd = DRT::UTILS::DisTypeToDim<pdistype>::dim;
+
+  // number of (boundary) element nodes
+  static const int bnen = DRT::UTILS::DisTypeToNumNodePerEle<bdistype>::numNodePerElement;
+
+  // number of parent element nodes
+  static const int pnen = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
+
+  // parent element lm vector
+  std::vector<int>  plm ;
+  std::vector<int>  plmowner;
+  std::vector<int>  plmstride;
+  pele->LocationVector(discretization,plm,plmowner,plmstride);
+
+  // get scalar values at parent element nodes
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+  Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
+  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phin'");
+
+  // extract local values from global vectors for parent element
+  std::vector<double> myphinp(plm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,myphinp,plm);
+
+  std::vector<double> myphin(plm.size());
+  DRT::UTILS::ExtractMyValues(*phin,myphin,plm);
+
+  //    // matrix and vector definition
+  //    LINALG::Matrix<pnsd,pnen>       evelnp;
+  std::vector<LINALG::Matrix<pnen,1> > ephinp(numscal_);
+  std::vector<LINALG::Matrix<pnen,1> > ephin(numscal_);
+
+  // insert into element arrays
+  for (int i=0;i<pnen;++i)
+  {
+    for (int k = 0; k< numscal_; ++k)
+    {
+      // split for each tranported scalar, insert into element arrays
+      ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
+      ephin[k](i,0)  = myphin[k+(i*numdofpernode_)];
+    }
+  }
+
+  //------------------------------------------------------------------------
+  // preliminary definitions for integration loop
+  //------------------------------------------------------------------------
+  // reshape element matrices and vectors and init to zero, construct views
+  elemat_epetra.Shape(pnen,pnen);
+  elevec_epetra.Size (pnen);
+  LINALG::Matrix<pnen,pnen> emat(elemat_epetra.A(),true);
+  LINALG::Matrix<pnen,   1> erhs(elevec_epetra.A(),true);
+
+  // (boundary) element local node coordinates
+  LINALG::Matrix<pnsd,bnen>  bxyze(true);
+  GEO::fillInitialPositionArray<bdistype,pnsd,LINALG::Matrix<pnsd,bnen> >(ele,bxyze);
+
+  // parent element local node coordinates
+  LINALG::Matrix<pnsd,pnen>  pxyze(true);
+  GEO::fillInitialPositionArray<pdistype,pnsd,LINALG::Matrix<pnsd,pnen> >(pele,pxyze);
+
+  // coordinates of integration points for (boundary) and parent element
+  LINALG::Matrix<bnsd,   1>  bxsi(true);
+  LINALG::Matrix<pnsd,   1>  pxsi(true);
+
+  // transposed jacobian "dx/ds" and inverse of transposed jacobian "ds/dx"
+  // for parent element
+  LINALG::Matrix<pnsd,pnsd>  pxjm(true);
+  LINALG::Matrix<pnsd,pnsd>  pxji(true);
+
+  // metric tensor for (boundary) element
+  LINALG::Matrix<bnsd,bnsd>  bmetrictensor(true);
+
+  // (outward-pointing) unit normal vector to (boundary) element
+  LINALG::Matrix<pnsd,   1>  bnormal(true);
+
+  // velocity vector at integration point
+  LINALG::Matrix<pnsd,   1>  velint;
+
+  // gradient of scalar value at integration point
+  LINALG::Matrix<pnsd,1> gradphi;
+
+  // (boundary) element shape functions, local and global derivatives
+  LINALG::Matrix<bnen,   1>  bfunct(true);
+  LINALG::Matrix<bnsd,bnen>  bderiv(true);
+  LINALG::Matrix<bnsd,bnen>  bderxy(true);
+
+  // parent element shape functions, local and global derivatives
+  LINALG::Matrix<pnen,   1>  pfunct(true);
+  LINALG::Matrix<pnsd,pnen>  pderiv(true);
+  LINALG::Matrix<pnsd,pnen>  pderxy(true);
+
+
+  // use one-point Gauss rule to do calculations at element center
+  DRT::UTILS::IntPointsAndWeights<bnsd> intpoints_tau(SCATRA::DisTypeToStabGaussRule<bdistype>::rule);
+
+  // element surface area (1D: element length)
+  // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
+  const double* gpcoord = (intpoints_tau.IP().qxg)[0];
+  for (int idim=0;idim<bnsd;idim++)
+  {
+    bxsi(idim) = gpcoord[idim];
+  }
+  DRT::UTILS::shape_function_deriv1<bdistype>(bxsi,bderiv);
+  double drs = 0.0;
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(bxyze,bderiv,bmetrictensor,drs,&bnormal);
+
+  //------------------------------------------------------------------------
+  // preliminary computations for integration loop
+  //------------------------------------------------------------------------
+  // integrations points and weights for (boundary) element and parent element
+  const DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(SCATRA::DisTypeToOptGaussRule<bdistype>::rule);
+
+  const DRT::UTILS::IntPointsAndWeights<pnsd> pintpoints(SCATRA::DisTypeToOptGaussRule<pdistype>::rule);
+
+  // transfer integration-point coordinates of (boundary) element to parent element
+  Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad,pnsd);
+  {
+    Epetra_SerialDenseMatrix gps(bintpoints.IP().nquad,bnsd);
+
+    for (int iquad=0; iquad<bintpoints.IP().nquad; ++iquad)
+    {
+      const double* gpcoord = (bintpoints.IP().qxg)[iquad];
+
+      for (int idim=0;idim<bnsd ;idim++)
+      {
+        gps(iquad,idim) = gpcoord[idim];
+      }
+    }
+    if(pnsd==2)
+    {
+      DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,ele->FaceParentNumber());
+    }
+    else if (pnsd==3)
+    {
+      DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,ele->FaceParentNumber());
+    }
+  }
+
+
+  const double reinit_pseudo_timestepsize_factor = params.get<double>("pseudotimestepsize_factor");
+
+  const double meshsize = getEleDiameter<pdistype>(pxyze);
+
+  const double pseudo_timestep_size = meshsize * reinit_pseudo_timestepsize_factor;
+
+  //------------------------------------------------------------------------
+  // integration loop: boundary integrals
+  //------------------------------------------------------------------------
+  for (int iquad=0; iquad<bintpoints.IP().nquad; ++iquad)
+  {
+    // reference coordinates of integration point from (boundary) element
+    const double* gpcoord = (bintpoints.IP().qxg)[iquad];
+    for (int idim=0;idim<bnsd;idim++)
+    {
+      bxsi(idim) = gpcoord[idim];
+    }
+
+    // (boundary) element shape functions
+    DRT::UTILS::shape_function       <bdistype>(bxsi,bfunct);
+    DRT::UTILS::shape_function_deriv1<bdistype>(bxsi,bderiv);
+
+    // global coordinates of current integration point from (boundary) element
+    LINALG::Matrix<pnsd,1> coordgp(true);
+    for (int A=0;A<bnen;++A)
+    {
+      for(int j=0;j<pnsd;++j)
+      {
+        coordgp(j)+=bxyze(j,A)*bfunct(A);
+      }
+    }
+
+    // reference coordinates of integration point from parent element
+    for (int idim=0;idim<pnsd;idim++)
+    {
+      pxsi(idim) = pqxg(iquad,idim);
+    }
+
+    // parent element shape functions and local derivatives
+    DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
+    DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv);
+
+    // Jacobian matrix and determinant of parent element (including check)
+    pxjm.MultiplyNT(pderiv,pxyze);
+    const double det = pxji.Invert(pxjm);
+    if (det < 1E-16) dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
+
+    // compute measure tensor for surface element, infinitesimal area element drs
+    // and (outward-pointing) unit normal vector
+    DRT::UTILS::ComputeMetricTensorForBoundaryEle<bdistype>(bxyze,bderiv,bmetrictensor,drs,&bnormal);
+
+    // for nurbs elements the normal vector must be scaled with a special orientation factor!!
+    if(DRT::NURBS::IsNurbs(distype))
+      bnormal.Scale(normalfac_);
+
+    // compute integration factor
+    const double fac_surface = bintpoints.IP().qwgt[iquad]*drs;
+
+    // compute global derivatives
+    pderxy.Multiply(pxji,pderiv);
+
+    //--------------------------------------------------------------------
+    // loop over scalars (not yet implemented for more than one scalar)
+    //--------------------------------------------------------------------
+    for(int dofindex=0;dofindex<numdofpernode_;++dofindex)
+    {
+      //----------  --------------      |                    |
+      //  mat              -1/4* dtau^2 | w, n*grad(D(psi) ) |
+      //--------------------------      |                    |
+
+      LINALG::Matrix<1,pnen> derxy_normal;
+      derxy_normal.Clear();
+      derxy_normal.MultiplyTN(bnormal,pderxy);
+
+      for (int vi=0; vi<pnen; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+dofindex;
+
+        for (int ui=0; ui<pnen; ++ui)
+        {
+          const int fui = ui*numdofpernode_+dofindex;
+
+          emat(fvi,fui) -= pfunct(vi)* (fac_surface*pseudo_timestep_size*pseudo_timestep_size/4.0) * derxy_normal(0,ui);
+        }
+      }
+
+      //----------  --------------      |              m     |
+      //  rhs               0.5* dtau^2 | w, n*grad(psi )    |
+      //--------------------------      |                    |
+
+      // update grad_dist_n
+      LINALG::Matrix<pnsd,1> grad_dist_n(true);
+      grad_dist_n.Multiply(pderxy,ephin[dofindex]);
+
+      LINALG::Matrix<1,1> grad_dist_n_normal(true);
+      grad_dist_n_normal.MultiplyTN(bnormal,grad_dist_n);
+
+      for (int vi=0; vi<pnen; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+dofindex;
+
+        erhs(fvi) += pfunct(vi)*pseudo_timestep_size*pseudo_timestep_size*fac_surface/2.0 * grad_dist_n_normal(0,0);
+      }
+
+
+      //                    |              m+1     m  |
+      //    1/4*delta_tau^2 | w, n*grad(psi   - psi ) |
+      //                    |              i          |
+      // update grad_dist_n
+      LINALG::Matrix<pnsd,1> grad_dist_npi(true);
+      grad_dist_npi.Multiply(pderxy,ephinp[dofindex]);
+
+      LINALG::Matrix<1,1> grad_dist_npi_normal;
+      grad_dist_npi_normal.Clear();
+      grad_dist_npi_normal.MultiplyTN(bnormal,grad_dist_npi);
+
+      double Grad_Dpsi_normal = grad_dist_npi_normal(0,0) - grad_dist_n_normal(0,0);
+
+
+      for (int vi=0; vi<pnen; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+dofindex;
+
+        erhs(fvi) += pfunct(vi)*Grad_Dpsi_normal*fac_surface*pseudo_timestep_size*pseudo_timestep_size/4.0;
+      }
+
+    } // loop over scalars
+  } // loop over integration points
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+// template classes
+template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::quad4>;
+template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::quad8>;
+template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::quad9>;
+template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::tri3>;
+template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::nurbs3>;
+template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::nurbs9>;
+
