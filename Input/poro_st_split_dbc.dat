@@ -175,7 +175,7 @@ CURVE3 on EXPR FUNC -1.0 t1 2.0 t2 4.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS porofluid NODE 124 QUANTITY velx VALUE -3.56958833127629549e-01 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 124 QUANTITY velx VALUE -3.56958229152723905e-01 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 124 QUANTITY pressure VALUE 3.90653323920029791e+01 TOLERANCE 1e-4
 STRUCTURE DIS structure NODE 62 QUANTITY dispx VALUE 0 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 71 QUANTITY dispy VALUE 0 TOLERANCE 1e-14

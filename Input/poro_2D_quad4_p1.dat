@@ -219,6 +219,12 @@ E 2 -
 //E 3 -
 //                              Line_y-
 //E 4 -
+// ------------------------------DESIGN LINE PORO PRESSURE INTEGRATION
+// DLINE                           2
+// //                              Line_x+
+// E 1 -
+// //                              Line_x-
+// E 2 -  
 ----------------------------------------DESIGN LINE PORO PARTIAL INTEGRATION
 DLINE                           2
 //                              Line_x+

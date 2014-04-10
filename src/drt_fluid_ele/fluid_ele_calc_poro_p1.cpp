@@ -251,8 +251,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosityGradient(
                         const double&                                      dphidp,
                         const double&                                      dphidJ,
                         const LINALG::Matrix<my::nsd_,1>&                  gradJ,
-                        const LINALG::Matrix<my::nen_,1>*                  eporositynp,
-                        LINALG::Matrix<my::nsd_,1>&                        grad_porosity)
+                        const LINALG::Matrix<my::nen_,1>*                  eporositynp)
 {
   if(eporositynp == NULL)
     dserror("no porosity values given for calculation of porosity gradient!!");
@@ -260,8 +259,10 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosityGradient(
   //if( (my::fldpara_->PoroContiPartInt() == false) or my::visceff_)
   {
     //--------------------- current porosity gradient
-    grad_porosity.Multiply(my::derxy_,*eporositynp);
+    my::grad_porosity_.Multiply(my::derxy_,*eporositynp);
   }
+
+  my::refgrad_porosity_.Multiply(my::xjm_,my::grad_porosity_);
 }
 
 /*----------------------------------------------------------------------*
@@ -701,8 +702,8 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                         const DRT::UTILS::GaussIntegration &                            intpoints)
 {
   // definition of velocity-based momentum residual vectors
-  LINALG::Matrix< my::nsd_, my::nen_ * my::nsd_>  lin_resM_Dus(true);
-  LINALG::Matrix< my::nsd_, my::nen_>  lin_resM_Dphi(true);
+  static LINALG::Matrix< my::nsd_, my::nen_ * my::nsd_>  lin_resM_Dus(true);
+  static LINALG::Matrix< my::nsd_, my::nen_>  lin_resM_Dphi(true);
 
   // set element area or volume
   const double vol = my::fac_;
@@ -763,37 +764,37 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     double refporositydot = my::so_interface_->RefPorosityTimeDeriv();
 
     //---------------------------  dJ/dx = dJ/dF : dF/dx = JF^-T : dF/dx at gausspoint
-    LINALG::Matrix<my::nsd_,1> gradJ(true);
+    static LINALG::Matrix<my::nsd_,1> gradJ(false);
     // spatial porosity gradient
-    LINALG::Matrix<my::nsd_,1>             grad_porosity(true);
+    static LINALG::Matrix<my::nsd_,1>             grad_porosity(false);
     //--------------------- linearization of porosity w.r.t. structure displacements
-    LINALG::Matrix<1,my::nsd_*my::nen_> dphi_dus(true);
+    static LINALG::Matrix<1,my::nsd_*my::nen_> dphi_dus(false);
 
     //------------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J * N_x
-    LINALG::Matrix<1,my::nsd_*my::nen_> dJ_dus(true);
+    static LINALG::Matrix<1,my::nsd_*my::nen_> dJ_dus(false);
     //------------------ d( grad(\phi) ) / du_s = d\phi/(dJ du_s) * dJ/dx+ d\phi/dJ * dJ/(dx*du_s) + d\phi/(dp*du_s) * dp/dx
-    LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradphi_dus(true);
+    static LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradphi_dus(false);
 
     // -------------------------(material) deformation gradient F = d my::xyze_ / d XYZE = my::xyze_ * N_XYZ_^T
-    LINALG::Matrix<my::nsd_,my::nsd_> defgrd(false);
+    static LINALG::Matrix<my::nsd_,my::nsd_> defgrd(false);
     defgrd.MultiplyNT(my::xyze_,my::N_XYZ_);
 
     // inverse deformation gradient F^-1
-    LINALG::Matrix<my::nsd_,my::nsd_> defgrd_inv(false);
+    static LINALG::Matrix<my::nsd_,my::nsd_> defgrd_inv(false);
     defgrd_inv.Invert(defgrd);
 
     {
       //------------------------------------ build F^-T as vector 9x1
-      LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec;
+      static LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec(false);
       for(int i=0; i<my::nsd_; i++)
         for(int j=0; j<my::nsd_; j++)
           defgrd_IT_vec(i*my::nsd_+j) = defgrd_inv(j,i);
 
       // dF/dx
-      LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_> F_x(true);
+      static LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_> F_x(false);
 
       // dF/dX
-      LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_> F_X(true);
+      static LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_> F_X(false);
 
       my::ComputeFDerivative( edispnp,
                           defgrd_inv,
@@ -830,12 +831,19 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     // get material parameters at integration point
     my::GetMaterialParamters(material);
 
+    // set viscous term from previous iteration to zero (required for
+    // using routine for evaluation of momentum rhs/residual as given)
+    my::visc_old_.Clear();
+    my::viscs2_.Clear();
+    // compute viscous term from previous iteration and viscous operator
+    if (my::is_higher_order_ele_) my::CalcDivEps(evelaf);
+
     my::ComputeSpatialReactionTerms(material,defgrd_inv);
 
     //compute linearization of spatial reaction tensor w.r.t. structural displacements
     {
 
-      const double porosity_inv = 1.0/my::porosity_;
+      //const double porosity_inv = 1.0/my::porosity_;
       const double J_inv = 1.0/my::J_;
 
       my::reatensorlinODvel_.Clear();
@@ -848,8 +856,8 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
           {
             my::reatensorlinODvel_(i, gid)     += dJ_dus(gid)*J_inv * my::reavel_(i);
             my::reatensorlinODgridvel_(i, gid) += dJ_dus(gid)*J_inv * my::reagridvel_(i);
-            my::reatensorlinODvel_(i, gid)     += dphi_dus(gid)*porosity_inv * my::reavel_(i);
-            my::reatensorlinODgridvel_(i, gid) += dphi_dus(gid)*porosity_inv * my::reagridvel_(i);
+//            my::reatensorlinODvel_(i, gid)     += dphi_dus(gid)*porosity_inv * my::reavel_(i);
+//            my::reatensorlinODgridvel_(i, gid) += dphi_dus(gid)*porosity_inv * my::reagridvel_(i);
             for (int j=0; j<my::nsd_; ++j)
             {
               for (int k=0; k<my::nsd_; ++k)
@@ -963,21 +971,55 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
           ecouplp1_p(vi,ui) +=   my::fac_ * my::funct_(vi) * my::funct_(ui);
     }
 
+    //viscous terms (brinkman terms)
+    if(my::visceff_)
     {
+      static LINALG::Matrix<my::nsd_,my::nsd_> viscstress(false);
+      for (int jdim = 0; jdim < my::nsd_; ++jdim)
+      {
+        for (int idim = 0; idim < my::nsd_; ++idim)
+        {
+          viscstress(idim,jdim)=my::visceff_*(my::vderxy_(jdim,idim)+my::vderxy_(idim,jdim));
+        }
+      }
+
+      static LINALG::Matrix<my::nsd_,1> viscstress_gradphi(false);
+      viscstress_gradphi.Multiply(viscstress,my::grad_porosity_);
+
+      static LINALG::Matrix<my::nsd_,my::nen_> viscstress_derxy(false);
+      viscstress_derxy.Multiply(viscstress,my::derxy_);
+
+      const double porosity_inv = 1.0/my::porosity_;
+
       for (int ui=0; ui<my::nen_; ++ui)
       {
-        for (int vi=0; vi<my::nen_; ++vi)
+        for (int idim = 0; idim <my::nsd_; ++idim)
         {
-          const int fvi = my::nsd_*vi;
-          for (int idim = 0; idim <my::nsd_; ++idim)
-          {
-            ecouplp1_u(fvi+idim,ui) += my::funct_(vi) * lin_resM_Dphi(idim,ui);
-          } // end for (idim)
-        } //vi
-      } // ui
+          lin_resM_Dphi(idim,ui) += timefacfac * porosity_inv * ( porosity_inv*viscstress_gradphi(idim)*
+                                                                  my::funct_(ui)
+                                                                - viscstress_derxy(idim,ui)
+                                                              )
+                                      ;
+        }
+      }
     }
 
-    LINALG::Matrix<my::nen_,1>    derxy_convel(true);
+    for (int ui=0; ui<my::nen_; ++ui)
+    {
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        const int fvi = my::nsd_*vi;
+        for (int idim = 0; idim <my::nsd_; ++idim)
+        {
+          ecouplp1_u(fvi+idim,ui) += my::funct_(vi) * lin_resM_Dphi(idim,ui);
+        } // end for (idim)
+      } //vi
+    } // ui
+
+    //*************************************************************************************************************
+    //Continuity equation
+    static LINALG::Matrix<my::nen_,1>    derxy_convel(false);
+    derxy_convel.Clear();
 
     for (int i =0; i< my::nen_; i++)
       for (int j =0; j< my::nsd_; j++)
@@ -1051,34 +1093,38 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     // PSPG
     if(my::fldpara_->PSPG())
     {
-      //linearization of stabilization parameter w.r.t. porosity
-      const double v1 = timefacfacpre / my::porosity_ ;
-      LINALG::Matrix<1, my::nen_ >   temp(true);
-      temp.MultiplyTN(my::sgvelint_,my::derxy_);
+      double scal_grad_q=0.0;
 
-      for (int ui=0; ui<my::nen_; ++ui)
+      if(my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
       {
-        for (int vi=0; vi<my::nen_; ++vi)
+        scal_grad_q=my::tau_(1);
+      }
+      else
+      {
+        scal_grad_q= 0.0; //my::fldpara_->AlphaF()*fac3;
+      }
+
+      {
+        const double v1 = -timefacfacpre * my::dtaudphi_(1)/scal_grad_q;
+        for (int ui=0; ui<my::nen_; ++ui)
         {
-          ecouplp1_p(vi,ui) += v1 * temp(vi) * my::funct_(ui);
-        }
+          for (int idim = 0; idim <my::nsd_; ++idim)
+          {
+            const double v= v1 * my::sgvelint_(idim) * my::funct_(ui);
+
+            for (int vi=0; vi<my::nen_; ++vi)
+            {
+              ecouplp1_p(vi,ui) += v * my::derxy_(idim, vi);
+            } // vi
+          } // end for(idim)
+        }  // ui
       }
 
       //linearization of residual in stabilization term w.r.t. porosity
       if (my::is_higher_order_ele_ || my::fldpara_->IsNewton())
       {
-        double scal_grad_q=0.0;
-
-        if(my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
-        {
-          scal_grad_q=my::tau_(1);
-        }
-        else
-        {
-          scal_grad_q= 0.0; //my::fldpara_->AlphaF()*fac3;
-        }
-
-        LINALG::Matrix<my::nen_ , my::nen_ >   temp2(true);
+        static LINALG::Matrix<my::nen_ , my::nen_ >   temp2(false);
+        temp2.Clear();
 
         for (int vi=0; vi<my::nen_; ++vi)
           for (int ui=0; ui<my::nen_; ++ui)
@@ -1127,18 +1173,21 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
       } // end if (is_higher_order_ele_) or (newton_)
 
       {//linearization of stabilization parameter w.r.t. porosity
-        const double v = my::fldpara_->ViscReaStabFac() * ( my::reacoeff_*my::dtaudphi_(1)/my::tau_(1) + my::reacoeff_/my::porosity_ );
+        const double v = my::fldpara_->ViscReaStabFac() * ( my::reacoeff_*my::dtaudphi_(1)/my::tau_(1)
+        + my::reacoeff_/my::porosity_
+        );
         for (int vi=0; vi<my::nen_; ++vi)
         {
           const double w = -1.0 * v * my::funct_(vi) ;
 
           for (int idim = 0; idim <my::nsd_; ++idim)
           {
+            const double w_sgvelint= w*my::sgvelint_(idim);
             const int fvi = my::nsd_*vi + idim;
 
             for (int ui=0; ui<my::nen_; ++ui)
             {
-              ecouplp1_u(fvi,ui) += w*my::sgvelint_(idim)*my::funct_(ui);
+              ecouplp1_u(fvi,ui) += w_sgvelint*my::funct_(ui);
             }
           }
         }  // end for(idim)
@@ -1146,6 +1195,101 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     }
 
   }//loop over gausspoints
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearization(
+                                  const double&                                      dphi_dp,
+                                  const double&                                      dphi_dpp,
+                                  const double&                                      dphi_dJdp,
+                                  const LINALG::Matrix<my::nsd_,1>&                  gradJ,
+                                  LINALG::Matrix<my::nsd_,my::nen_>&                 dgradphi_dp)
+{
+  //porosity is a primary variable -> d(grad(phi)/d(pressure)) is zero!
+    dgradphi_dp.Clear();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearizationOD(
+                            const double&                                      dphi_dJ,
+                            const double&                                      dphi_dJJ,
+                            const double&                                      dphi_dJp,
+                            const LINALG::Matrix<my::nsd_,my::nsd_>&           defgrd_inv,
+                            const LINALG::Matrix<my::nsd_*my::nsd_,1>&         defgrd_IT_vec,
+                            const LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>&  F_x,
+                            const LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>&  F_X,
+                            const LINALG::Matrix<my::nsd_,1>&                  gradJ,
+                            LINALG::Matrix<1,my::nsd_*my::nen_>&               dJ_dus,
+                            LINALG::Matrix<1,my::nsd_*my::nen_>&               dphi_dus,
+                            LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&        dgradphi_dus)
+{
+  //------------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J * N_x
+  for (int i=0; i<my::nen_; i++)
+    for (int j=0; j<my::nsd_; j++)
+      dJ_dus(j+i*my::nsd_)=my::J_*my::derxy_(j,i);
+
+  //--------------------- linearization of porosity w.r.t. structure displacements
+  //porosity is a primary variable -> d(grad(phi)/d(displacement)) is zero!
+  dphi_dus.Clear();
+
+  //------------------ d( grad(\phi) ) / du_s is also zero
+  dgradphi_dus.Clear();
+
+  if( (static_cast<DRT::ELEMENTS::FluidEleParameterPoro*>(my::fldpara_)->PoroContiPartInt() == false) or my::visceff_)
+  {
+    //---------------------d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
+
+    //dF^-T/dus : dF/dx = - (F^-1. dN/dx . u_s)^T  : dF/dx
+    static LINALG::Matrix<my::nsd_,my::nsd_*my::nen_> dFinvdus_dFdx(false);
+    dFinvdus_dFdx.Clear();
+    for (int i=0; i<my::nsd_; i++)
+      for (int n =0; n<my::nen_; n++)
+        for(int j=0; j<my::nsd_; j++)
+        {
+          const int gid = my::nsd_ * n +j;
+          for (int k=0; k<my::nsd_; k++)
+            for(int p=0; p<my::nsd_; p++)
+              dFinvdus_dFdx(p, gid) += -defgrd_inv(i,j) * my::derxy_(k,n) * F_x(k*my::nsd_+i,p);
+        }
+
+    //F^-T : d(dF/dx)/dus =  F^-T : (N,XX * F^ -1 + dF/dX * F^-1 * N,x)
+    static LINALG::Matrix<my::nsd_,my::nsd_*my::nen_>        FinvT_dFx_dus(false);
+    FinvT_dFx_dus.Clear();
+
+    for (int n =0; n<my::nen_; n++)
+      for(int j=0; j<my::nsd_; j++)
+      {
+        const int gid = my::nsd_ * n +j;
+        for(int i=0; i<my::nsd_; i++)
+          for(int k=0; k<my::nsd_; k++)
+            for(int p=0; p<my::nsd_; p++)
+            {
+              FinvT_dFx_dus(p, gid) +=   defgrd_inv(i,j) * N_XYZ2full_(i*my::nsd_+k,n) * defgrd_inv(k,p) ;
+              for(int l=0; l<my::nsd_; l++)
+                FinvT_dFx_dus(p, gid) += - defgrd_inv(i,l) * F_X(i*my::nsd_+l,k) * defgrd_inv(k,j) * my::derxy_(p,n) ;
+            }
+      }
+
+    //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
+    static LINALG::Matrix<1,my::nsd_> temp;
+    temp.MultiplyTN( defgrd_IT_vec, F_x);
+
+    //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
+    static LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradJ_dus;
+
+    dgradJ_dus.MultiplyTN(temp,dJ_dus);
+
+    dgradJ_dus.Update(my::J_,dFinvdus_dFdx,1.0);
+
+    dgradJ_dus.Update(my::J_,FinvT_dFx_dus,1.0);
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1174,41 +1318,41 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::PSPG(
             timefacfacpre,
             rhsfac);
 
-  double scal_grad_q=0.0;
-
-  if(my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
-  {
-    scal_grad_q=0.0;//my::tau_(1);
-  }
-  else
-  {
-    scal_grad_q=my::fldparatimint_->AlphaF()*fac3;
-  }
-
-  for(int jdim=0;jdim<my::nsd_;++jdim)
-  {
-    for (int ui=0; ui<my::nen_; ++ui)
-    {
-      const int fui_p_jdim   = my::nsd_*ui + jdim;
-
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        const double temp_vi_idim=my::derxy_(jdim,vi)*scal_grad_q;
-
-        estif_q_u(vi,fui_p_jdim) += timefacfacpre*my::conres_old_*my::funct_(ui)*temp_vi_idim;
-      } // vi
-    } // ui
-  } //jdim
-
-  const double temp = rhsfac*scal_grad_q*my::conres_old_;
-  for (int idim = 0; idim <my::nsd_; ++idim)
-  {
-    for (int vi=0; vi<my::nen_; ++vi)
-    {
-      // pressure stabilisation
-      preforce(vi) -= temp*my::derxy_(idim, vi)*my::velint_(idim);
-    }
-  } // end for(idim)
+//  double scal_grad_q=0.0;
+//
+//  if(my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
+//  {
+//    scal_grad_q=0.0;//my::tau_(1);
+//  }
+//  else
+//  {
+//    scal_grad_q=my::fldparatimint_->AlphaF()*fac3;
+//  }
+//
+//  for(int jdim=0;jdim<my::nsd_;++jdim)
+//  {
+//    for (int ui=0; ui<my::nen_; ++ui)
+//    {
+//      const int fui_p_jdim   = my::nsd_*ui + jdim;
+//
+//      for (int vi=0; vi<my::nen_; ++vi)
+//      {
+//        const double temp_vi_idim=my::derxy_(jdim,vi)*scal_grad_q;
+//
+//        estif_q_u(vi,fui_p_jdim) += timefacfacpre*my::conres_old_*my::funct_(ui)*temp_vi_idim;
+//      } // vi
+//    } // ui
+//  } //jdim
+//
+//  const double temp = rhsfac*scal_grad_q*my::conres_old_;
+//  for (int idim = 0; idim <my::nsd_; ++idim)
+//  {
+//    for (int vi=0; vi<my::nen_; ++vi)
+//    {
+//      // pressure stabilisation
+//      preforce(vi) -= temp*my::derxy_(idim, vi)*my::velint_(idim);
+//    }
+//  } // end for(idim)
 }
 
 /*----------------------------------------------------------------------*
@@ -1236,44 +1380,8 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ReacStab(
            timefacfacpre,
            rhsfac,
            fac3);
-
-  //todo: check stabilization contributions due to poro_p1 approach
-//  double reac_tau;
-//  if (my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
-//    reac_tau = 0.0;//my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::tau_(1);
-//  else
-//  {
-//    dserror("Is this factor correct? Check for bugs!");
-//    reac_tau = my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::fldparatimint_->AlphaF()*fac3;
-//  }
-//
-//  for (int vi=0; vi<my::nen_; ++vi)
-//  {
-//    const double v = reac_tau*my::funct_(vi)*my::conres_old_;
-//
-//    for(int idim=0;idim<my::nsd_;++idim)
-//    {
-//      const int fvi_p_idim = my::nsd_*vi+idim;
-//
-//      for (int ui=0; ui<my::nen_; ++ui)
-//      {
-//        const int fui_p_idim   = my::nsd_*ui + idim;
-//
-//        estif_u(fvi_p_idim,fui_p_idim) += v*my::funct_(idim);
-//      } // ui
-//    } //idim
-//  } // vi
-//
-//  const double reac_fac = reac_tau*rhsfac;
-//  const double v = reac_fac*my::conres_old_;
-//  for (int idim =0;idim<my::nsd_;++idim)
-//  {
-//    for (int vi=0; vi<my::nen_; ++vi)
-//    {
-//        velforce(idim,vi) -= v*my::funct_(vi)*my::velint_(idim);
-//    }
-//  } // end for(idim)
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

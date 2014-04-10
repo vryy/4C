@@ -174,12 +174,12 @@ FUNCT1 EXPR 0 0.0 0 FUNCTION 0.4
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS porofluid NODE 4 QUANTITY velx VALUE -5.55360367269795874e-01 TOLERANCE 1e-8
-FLUID DIS porofluid NODE 5 QUANTITY pressure VALUE 1.69902880650852767e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -7.12957822724563789e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -7.37845204246083963e-02 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 4 QUANTITY velx VALUE -2.35030180294897278e-01 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 5 QUANTITY pressure VALUE 6.42920437145291790e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -6.55759325677030547e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -6.66425349901166308e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -1.46446609406726325e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -1.02364113843005436e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -9.79976901246710219e-02 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4
@@ -205,16 +205,22 @@ E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 //                              Line_y-
 E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 
----------------------------------DESIGN LINE NORMAL NO PENETRATION CONDITION
+// ---------------------------------DESIGN LINE NORMAL NO PENETRATION CONDITION
+// DLINE                           2
+// //                              Line_x+
+// E 1 -
+// //                              Line_x-
+// E 2 -
+// //                              Line_y+
+// //E 3 -
+// //                              Line_y-
+// //E 4 -
+------------------------------DESIGN LINE PORO PRESSURE INTEGRATION
 DLINE                           2
 //                              Line_x+
 E 1 -
 //                              Line_x-
-E 2 -
-//                              Line_y+
-//E 3 -
-//                              Line_y-
-//E 4 -
+E 2 -  
 ---------------------------------------DESIGN SURFACE POROCOUPLING CONDITION
 DSURF                           1
 //                              Surface

@@ -455,10 +455,17 @@ protected:
       const double & timefacfac,
       LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&  lin_resM_Du);
 
+  void ComputeLinResMDu_Stab(
+      const double & timefacfac,
+      LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&  lin_resM_Du);
+
   void ComputeLinResMDp(
       const double & timefacfacpre,
       const double & dphi_dp,
       LINALG::Matrix<my::nsd_,my::nen_>&  lin_resM_Du);
+
+  //! calculate div(epsilon(u))
+  void CalcDivEps(const LINALG::Matrix<my::nsd_,my::nen_>& evelaf);   ///< velocity at time n+alpha_f / n+1
 
   /*!
     \brief Compute derivatives of deformation gradient
@@ -517,7 +524,7 @@ protected:
     \param gradJ          (i) spatial gradient of jacobian determinant
     \param dgradphi_dp    (o) derivate of spatial gradient of porosity w.r.t. fluid pressure
    */
-  void ComputeLinearization(
+  virtual void ComputeLinearization(
       const double&                                      dphi_dp,
       const double&                                      dphi_dpp,
       const double&                                      dphi_dJp,
@@ -540,7 +547,7 @@ protected:
     \param dphi_dus       (o) derivative of porosity determinant w.r.t. structure displacments
     \param dgradphi_dus   (o) derivate of spatial gradient of porosity w.r.t. structure displacments
    */
-  void ComputeLinearizationOD(
+  virtual void ComputeLinearizationOD(
       const double&                                      dphi_dJ,
       const double&                                      dphi_dJJ,
       const double&                                      dphi_dJp,

@@ -361,8 +361,52 @@ protected:
         const double&                                      dphidp,
         const double&                                      dphidJ,
         const LINALG::Matrix<my::nsd_,1>&                  gradJ,
-        const LINALG::Matrix<my::nen_,1>*                  eporositynp,
-        LINALG::Matrix<my::nsd_,1>&                        grad_porosity);
+        const LINALG::Matrix<my::nen_,1>*                  eporositynp);
+
+    /*!
+      \brief Compute linearization needed for diagonal terms (lin. of porosity gradient w.r.t. fluid pressure)
+
+      \param dphidp         (i) derivative of porosity w.r.t. fluid pressure
+      \param dphi_dpp       (i) second derivative of porosity w.r.t. fluid pressure
+      \param dphi_dJp       (i) mixed derivative of porosity w.r.t. fluid pressure and jacobian determinant
+      \param gradJ          (i) spatial gradient of jacobian determinant
+      \param dgradphi_dp    (o) derivate of spatial gradient of porosity w.r.t. fluid pressure
+     */
+    void ComputeLinearization(
+        const double&                                      dphi_dp,
+        const double&                                      dphi_dpp,
+        const double&                                      dphi_dJp,
+        const LINALG::Matrix<my::nsd_,1>&                  gradJ,
+        LINALG::Matrix<my::nsd_,my::nen_>&                 dgradphi_dp);
+
+    /*!
+      \brief Compute linearization needed for off diagonal terms
+        (lin. of jacobian, porosity and porosity gradient w.r.t. structure displacement)
+
+      \param dphi_dJ        (i) derivative of porosity w.r.t. jacobian determinant
+      \param dphi_dJJ       (i) second derivative of porosity w.r.t. jacobian determinant
+      \param dphi_dJp       (i) mixed derivative of porosity w.r.t. fluid pressure and jacobian determinant
+      \param defgrd_inv     (i) inverse deformation gradient
+      \param defgrd_IT_vec  (o) inverse transposed deformation gradient in vector notation
+      \param F_x            (i) derivative of deformation gradient w.r.t. current coordinates xyz
+      \param F_X            (i) derivative of deformation gradient w.r.t. material coordinates XYZ
+      \param gradJ          (i) spatial gradient of jacobian determinant
+      \param dJ_dus         (o) derivative of jacobian determinant w.r.t. structure displacments
+      \param dphi_dus       (o) derivative of porosity determinant w.r.t. structure displacments
+      \param dgradphi_dus   (o) derivate of spatial gradient of porosity w.r.t. structure displacments
+     */
+    void ComputeLinearizationOD(
+        const double&                                      dphi_dJ,
+        const double&                                      dphi_dJJ,
+        const double&                                      dphi_dJp,
+        const LINALG::Matrix<my::nsd_,my::nsd_>&           defgrd_inv,
+        const LINALG::Matrix<my::nsd_*my::nsd_,1>&         defgrd_IT_vec,
+        const LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>&  F_x,
+        const LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>&  F_X,
+        const LINALG::Matrix<my::nsd_,1>&                  gradJ,
+        LINALG::Matrix<1,my::nsd_*my::nen_>&               dJ_dus,
+        LINALG::Matrix<1,my::nsd_*my::nen_>&               dphi_dus,
+        LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&        dgradphi_dus);
 
     //! Compute element matrix entries: PSPG
     virtual void PSPG(

@@ -418,8 +418,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::ComputePorosityGradient(
                         const double&                                      dphidp,
                         const double&                                      dphidJ,
                         const LINALG::Matrix<my::nsd_,1>&                  gradJ,
-                        const LINALG::Matrix<my::nen_,1>*                  eporositynp,
-                        LINALG::Matrix<my::nsd_,1>&                        grad_porosity)
+                        const LINALG::Matrix<my::nen_,1>*                  eporositynp)
 {
   if(eporositynp == NULL)
     dserror("no porosity values given for calculation of porosity gradient!!");
@@ -427,8 +426,9 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::ComputePorosityGradient(
   //if( (my::fldpara_->PoroContiPartInt() == false) or my::visceff_)
   {
     //--------------------- current porosity gradient
-    grad_porosity.Multiply(my::derxy_,*eporositynp);
+    my::grad_porosity_.Multiply(my::derxy_,*eporositynp);
   }
+  my::refgrad_porosity_.Multiply(my::xjm_,my::grad_porosity_);
 }
 
 

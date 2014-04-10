@@ -268,8 +268,7 @@ protected:
         const double&                                      dphidp,
         const double&                                      dphidJ,
         const LINALG::Matrix<my::nsd_,1>&                  gradJ,
-        const LINALG::Matrix<my::nen_,1>*                  eporositynp,
-        LINALG::Matrix<my::nsd_,1>&                        grad_porosity);
+        const LINALG::Matrix<my::nen_,1>*                  eporositynp);
 
     //! Compute element matrix entries: PSPG
     virtual void PSPG(
