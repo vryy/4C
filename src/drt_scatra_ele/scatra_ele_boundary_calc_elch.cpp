@@ -246,7 +246,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
+    double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
 
     // multiply integration factor with the timecurve factor
     fac *= curvefac;
@@ -740,7 +740,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
       DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
       for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
       {
-        const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+        const double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
         // elch-specific values at integration point:
         // concentration is evaluated at all GP since some reaction models depend on all concentrations
@@ -944,7 +944,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
   *----------------------------------------------------------------------*/
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+    const double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
     // elch-specific values at integration point:
     // concentration is evaluated at all GP since some reaction models depend on all concentrations
@@ -1770,7 +1770,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
     // loop over integration points
     for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
     {
-      const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+      const double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
       // elch-specific values at integration point:
       for (int kk=0; kk<my::numscal_; ++kk)
