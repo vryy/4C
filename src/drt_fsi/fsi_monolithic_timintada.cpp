@@ -215,9 +215,13 @@ void FSI::Monolithic::TimeloopAdaDt(const Teuchos::RCP<NOX::Epetra::Interface::R
        * time step size --> no more refinement is possible anyway!*/
       if (dtminused_)
       {
-        IO::cout<< "Time Step has already been calculated with minimum step size"
-                << " --> continue with next time step!"
-                << "\n";
+        if (Comm().MyPID() == 0)
+        {
+          IO::cout<< "Time Step has already been calculated with minimum step size"
+                  << " --> continue with next time step!"
+                  << "\n";
+        }
+
         accepted_ = true;
       }
 
