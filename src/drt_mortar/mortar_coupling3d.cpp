@@ -4083,7 +4083,6 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
 
   // various variables
    double detg=0.0;
-   typedef std::map<int,double>::const_iterator CI;
 
    // initialize matrices de and me
    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);

@@ -912,9 +912,6 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
 
-   // map iterator
-   typedef std::map<int,double>::const_iterator CI;
-
    for (int gp=0;gp<integrator.nGP();++gp)
    {
      LINALG::SerialDenseVector sval(nnodes);

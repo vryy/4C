@@ -199,7 +199,7 @@ int LINALG::SOLVER::BelosSolver::Solve()
   Teuchos::ParameterList& belist = Params().sublist("Belos Parameters");
 
   typedef double                            ST;
-  typedef Teuchos::ScalarTraits<ST>        SCT;
+  //typedef Teuchos::ScalarTraits<ST>        SCT;
   //typedef SCT::magnitudeType                MT;
   typedef Epetra_MultiVector                MV;
   typedef Epetra_Operator                   OP;

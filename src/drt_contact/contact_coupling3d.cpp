@@ -225,8 +225,6 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
 bool CONTACT::CoCoupling3d::VertexLinearization(std::vector<std::vector<std::map<int,double> > >& linvertex,
                                                 std::map<int,double>& projpar, bool printderiv)
 {
-  typedef std::map<int,double>::const_iterator CI;
-
   // linearize all aux.plane slave and master nodes only ONCE
   // and use these linearizations later during lineclip linearization
   // (this speeds up the vertex linearizations in most cases, as we
