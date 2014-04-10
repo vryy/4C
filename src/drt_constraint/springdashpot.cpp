@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file patspec.cpp
 
-\brief Methods for spring and dashpot constraints / boundary conditions
+\brief Methods for spring and dashpot constraints / boundary conditions:
 
 <pre>
 Maintainer: Marc Hirschvogel
@@ -43,34 +43,44 @@ void SPRINGDASHPOT::SpringDashpot(Teuchos::RCP<DRT::Discretization> dis)
     // loop over all spring dashpot conditions
     for (int cond=0; cond<(int)springdashpotcond.size(); ++cond)
     {
+
+      const std::string* dir = springdashpotcond[cond]->Get<std::string>("direction");
+
       // a vector for all row nodes to hold element area contributions
       Epetra_Vector nodalarea(*dis->NodeRowMap(),true);
+      // a vector for all row dofs to hold normals interpolated to the nodes
+      Epetra_Vector refnodalnormals(*dis->DofRowMap(),true);
 
-      //IO::cout << *springdashpotcond[cond];
       std::map<int,Teuchos::RCP<DRT::Element> >& geom = springdashpotcond[cond]->Geometry();
       std::map<int,Teuchos::RCP<DRT::Element> >::iterator ele;
       for (ele=geom.begin(); ele != geom.end(); ++ele)
       {
         DRT::Element* element = ele->second.get();
-        LINALG::SerialDenseMatrix x(element->NumNode(),3);
-        for (int i=0; i<element->NumNode(); ++i)
-        {
-          x(i,0) = element->Nodes()[i]->X()[0];
-          x(i,1) = element->Nodes()[i]->X()[1];
-          x(i,2) = element->Nodes()[i]->X()[2];
-        }
+
         Teuchos::ParameterList eparams;
+        Teuchos::ParameterList eparams2;
         eparams.set("action","calc_struct_area");
         eparams.set("area",0.0);
         std::vector<int> lm;
         std::vector<int> lmowner;
         std::vector<int> lmstride;
         element->LocationVector(actdis,lm,lmowner,lmstride);
+        const int eledim = (int)lm.size();
         Epetra_SerialDenseMatrix dummat(0,0);
         Epetra_SerialDenseVector dumvec(0);
+        Epetra_SerialDenseVector elevector;
+        elevector.Size(eledim);
         element->Evaluate(eparams,actdis,lm,dummat,dummat,dumvec,dumvec,dumvec);
+
+        // when refsurfnormal direction is chosen, call the respective element evaluation routine and assemble
+        if (*dir == "direction_refsurfnormal")
+        {
+          eparams2.set("action","calc_ref_nodal_normals");
+          element->Evaluate(eparams2,actdis,lm,dummat,dummat,elevector,dumvec,dumvec);
+          LINALG::Assemble(refnodalnormals,elevector,lm,lmowner);
+        }
+
         double a = eparams.get("area",-1.0);
-        //IO::cout << "Ele " << element->Id() << "a " << a << IO::endl;
 
         // loop over all nodes of the element that share the area
         // do only contribute to my own row nodes
@@ -86,6 +96,7 @@ void SPRINGDASHPOT::SpringDashpot(Teuchos::RCP<DRT::Discretization> dis)
       // now we have the area per node, put it in a vector that is equal to the nodes vector
       // consider only my row nodes
       const std::vector<int>* nodes = springdashpotcond[cond]->Nodes();
+
       std::vector<double> apern(nodes->size(),0.0);
       for (int i=0; i<(int)nodes->size(); ++i)
       {
@@ -93,10 +104,39 @@ void SPRINGDASHPOT::SpringDashpot(Teuchos::RCP<DRT::Discretization> dis)
         if (!nodalarea.Map().MyGID(gid)) continue;
         apern[i] = nodalarea[nodalarea.Map().LID(gid)];
       }
-      // set this vector to the condition
+      // set vector to the condition
       (*springdashpotcond[cond]).Add("areapernode",apern);
-      //IO::cout << *springdashpotcond[cond];
 
+
+      if (*dir == "direction_refsurfnormal")
+      {
+        std::vector<double> refndnorms(3 * nodes->size(),0.0);
+
+        const std::vector<int>& nds = *nodes;
+        for (int j=0; j<(int)nds.size(); ++j)
+        {
+          if (dis->NodeRowMap()->MyGID(nds[j]))
+          {
+            int gid = nds[j];
+
+            DRT::Node* node = dis->gNode(gid);
+            if (!node) dserror("Cannot find global node %d",gid);
+
+            int numdof = dis->NumDof(node);
+            std::vector<int> dofs = dis->Dof(node);
+
+            assert (numdof==3);
+
+            for (int k=0; k<numdof; ++k)
+            {
+              //if (!refnodalnormals.Map().MyGID(dofs[k])) continue;
+              refndnorms[numdof*j+k] = refnodalnormals[refnodalnormals.Map().LID(dofs[k])];
+            }
+          }
+        }
+        // set vector to the condition
+        (*springdashpotcond[cond]).Add("refnodalnormals",refndnorms);
+      }
 
     } // for (int cond=0; cond<(int)springdashpotcond.size(); ++cond)
 
@@ -128,18 +168,7 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
   std::vector<DRT::Condition*> springdashpotcond;
   discret->GetCondition("SpringDashpot",springdashpotcond);
 
-  const Epetra_Map* nodemap = discret->NodeRowMap();
-  Epetra_IntVector nodevec = Epetra_IntVector(*nodemap, true);
 
-  std::string springdashpotcondname = "SpringDashpot";
-  Teuchos::RCP<Epetra_Vector> refnodalnormals = Teuchos::rcp(new Epetra_Vector(*(discret->DofRowMap())));
-  Teuchos::ParameterList eleparams1;
-  Teuchos::ParameterList eleparams2;
-  eleparams1.set("action","calc_ref_nodal_normals");
-  discret->EvaluateCondition(eleparams1,Teuchos::null,Teuchos::null,refnodalnormals,Teuchos::null,Teuchos::null,springdashpotcondname);
-
-
-  int dnodecount = 0;
   for (int i=0; i<(int)springdashpotcond.size(); ++i)
   {
     const std::vector<int>* nodes = springdashpotcond[i]->Nodes();
@@ -149,70 +178,43 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
     const std::string* dir = springdashpotcond[i]->Get<std::string>("direction");
 
     const std::vector<double>* areapernode = springdashpotcond[i]->Get< std::vector<double> >("areapernode");
+    const std::vector<double>* refnodalnormals = springdashpotcond[i]->Get< std::vector<double> >("refnodalnormals");
 
 
     const std::vector<int>& nds = *nodes;
     for (int j=0; j<(int)nds.size(); ++j)
     {
 
-      if (nodemap->MyGID(nds[j]))
+      if (discret->NodeRowMap()->MyGID(nds[j]))
       {
         int gid = nds[j];
         double nodalarea = (*areapernode)[j];
-        //IO::cout << nodalarea << IO::endl;
+
         DRT::Node* node = discret->gNode(gid);
 
         if (!node) dserror("Cannot find global node %d",gid);
 
-        if (nodevec[nodemap->LID(gid)]==0)
-        {
-          nodevec[nodemap->LID(gid)] = 1;
-        }
-        else if (nodevec[nodemap->LID(gid)]==1)
-        {
-          dnodecount += 1;
-          continue;
-        }
 
         int numdof = discret->NumDof(node);
         std::vector<int> dofs = discret->Dof(node);
 
         assert (numdof==3);
 
-        // extract averaged nodal ref normal and compute its absolute value
-        std::vector<double> unitrefnormal(numdof);
-        double temp_ref = 0.;
-        for (int k=0; k<numdof; ++k)
-        {
-          unitrefnormal[k] = (*refnodalnormals)[refnodalnormals->Map().LID(dofs[k])];
-          temp_ref += unitrefnormal[k]*unitrefnormal[k];
-        }
-
-        double unitrefnormalabsval = sqrt(temp_ref);
-
-        for(int k=0; k<numdof; ++k)
-        {
-          unitrefnormal[k] /= unitrefnormalabsval;
-        }
-
+        // displacement vector of condition nodes
         std::vector<double> u(numdof);
         for (int k=0; k<numdof; ++k)
         {
           u[k] = (*disp)[disp->Map().LID(dofs[k])];
         }
 
+        // velocity vector of condition nodes
         std::vector<double> v(numdof);
         for (int k=0; k<numdof; ++k)
         {
           v[k] = (*velo)[velo->Map().LID(dofs[k])];
         }
 
-        //dyadic product of ref normal with itself
-        Epetra_SerialDenseMatrix N_x_N(numdof,numdof);
-        for (int l=0; l<numdof; ++l)
-          for (int m=0; m<numdof; ++m)
-            N_x_N(l,m)=unitrefnormal[l]*unitrefnormal[m];
-
+        // assemble into residual and stiffness matrix for case that spring / dashpot acts in every surface dof direction
         if (*dir == "direction_all")
         {
           for (int k=0; k<numdof; ++k)
@@ -223,8 +225,31 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
             stiff->Assemble(nodalarea*(springstiff + dashpotvisc*gamma/(beta*ts_size)),dofs[k],dofs[k]);
           }
         }
+        // assemble into residual and stiffness matrix for case that spring / dashpot acts in reference surface normal direction
         else if (*dir == "direction_refsurfnormal")
         {
+          // extract averaged nodal ref normal and compute its absolute value
+          std::vector<double> unitrefnormal(numdof);
+          double temp_ref = 0.;
+          for (int k=0; k<numdof; ++k)
+          {
+            unitrefnormal[k] = (*refnodalnormals)[numdof*j+k];
+            temp_ref += unitrefnormal[k]*unitrefnormal[k];
+          }
+
+          double unitrefnormalabsval = sqrt(temp_ref);
+
+          for(int k=0; k<numdof; ++k)
+          {
+            unitrefnormal[k] /= unitrefnormalabsval;
+          }
+
+          //dyadic product of ref normal with itself (N \otimes N)
+          Epetra_SerialDenseMatrix N_x_N(numdof,numdof);
+          for (int l=0; l<numdof; ++l)
+            for (int m=0; m<numdof; ++m)
+              N_x_N(l,m)=unitrefnormal[l]*unitrefnormal[m];
+
           for (int k=0; k<numdof; ++k)
           {
             for (int m=0; m<numdof; ++m)
@@ -238,7 +263,7 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
         }
         else dserror("Invalid direction option! Choose direction_all or direction_refsurfnormal!");
 
-      } //node owned by processor?
+      } //node owned by processor
 
     } //loop over nodes
 
