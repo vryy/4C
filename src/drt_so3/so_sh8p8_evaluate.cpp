@@ -793,6 +793,11 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     LINALG::Matrix<NUMDIM_,NUMDIM_> jac_cur;
     jac_cur.Multiply(derivs[gp],xcurr);
 
+    // compute determinant of Jacobian by Sarrus' rule
+    double detJ_cur = jac_cur.Determinant();
+    if (detJ_cur == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ_cur < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+
     // set up B-Operator in local(parameter) element space including ANS
     LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDISP_> bop_loc;
     for (int inode = 0; inode < NUMNOD_; ++inode) {

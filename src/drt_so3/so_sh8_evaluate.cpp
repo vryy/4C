@@ -601,6 +601,11 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac_cur;
     jac_cur.Multiply(derivs[gp],xcurr);
 
+    // compute determinant of Jacobian by Sarrus' rule
+    double detJ_cur = jac_cur.Determinant();
+    if (detJ_cur == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ_cur < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+
     // set up B-Operator in local(parameter) element space including ANS
     LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> bop_loc;
     for (int inode = 0; inode < NUMNOD_SOH8; ++inode) {
