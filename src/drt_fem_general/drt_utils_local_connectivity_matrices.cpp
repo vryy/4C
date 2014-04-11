@@ -1045,7 +1045,7 @@ LINALG::Matrix<3,1> DRT::UTILS::getNodeCoordinates(   const int                 
 
   LINALG::Matrix<3,1> coord(true);
 
-    if(distype == DRT::Element::quad4 ||  distype == DRT::Element::quad8 || distype == DRT::Element::quad9)
+    if(distype == DRT::Element::quad4)
     {
         switch(nodeId)
         {
@@ -1078,14 +1078,134 @@ LINALG::Matrix<3,1> DRT::UTILS::getNodeCoordinates(   const int                 
         }
         coord(2) = 0.0;
     }
-    else if(distype == DRT::Element::tri3 ||  distype == DRT::Element::tri6)
+    else if(distype == DRT::Element::quad8)
     {
         switch(nodeId)
         {
             case 0:
             {
-                coord(0) = 0.0;
-                coord(1) = 0.0;
+                coord(0) = -1.0;
+                coord(1) = -1.0;
+                break;
+            }
+            case 1:
+            {
+                coord(0) =  1.0;
+                coord(1) = -1.0;
+                break;
+            }
+            case 2:
+            {
+                coord(0) =  1.0;
+                coord(1) =  1.0;
+                break;
+            }
+            case 3:
+            {
+                coord(0) = -1.0;
+                coord(1) =  1.0;
+                break;
+            }
+            case 4:
+            {
+                coord(0) =   0.0;
+                coord(1) =  -1.0;
+                break;
+            }
+            case 5:
+            {
+                coord(0) =   1.0;
+                coord(1) =   0.0;
+                break;
+            }
+            case 6:
+            {
+                coord(0) =   0.0;
+                coord(1) =   1.0;
+                break;
+            }
+            case 7:
+            {
+                coord(0) =  -1.0;
+                coord(1) =   0.0;
+                break;
+            }
+            default:
+                dserror("node number not correct");
+        }
+        coord(2) = 0.0;
+    }
+    else if(distype == DRT::Element::quad9)
+    {
+        switch(nodeId)
+        {
+            case 0:
+            {
+                coord(0) = -1.0;
+                coord(1) = -1.0;
+                break;
+            }
+            case 1:
+            {
+                coord(0) =  1.0;
+                coord(1) = -1.0;
+                break;
+            }
+            case 2:
+            {
+                coord(0) =  1.0;
+                coord(1) =  1.0;
+                break;
+            }
+            case 3:
+            {
+                coord(0) = -1.0;
+                coord(1) =  1.0;
+                break;
+            }
+            case 4:
+            {
+                coord(0) =   0.0;
+                coord(1) =  -1.0;
+                break;
+            }
+            case 5:
+            {
+                coord(0) =   1.0;
+                coord(1) =   0.0;
+                break;
+            }
+            case 6:
+            {
+                coord(0) =   0.0;
+                coord(1) =   1.0;
+                break;
+            }
+            case 7:
+            {
+                coord(0) =  -1.0;
+                coord(1) =   0.0;
+                break;
+            }
+            case 8:
+            {
+                coord(0) =   0.0;
+                coord(1) =   0.0;
+                break;
+            }
+            default:
+                dserror("node number not correct");
+        }
+        coord(2) = 0.0;
+    }
+    else if(distype == DRT::Element::tri3)
+    {
+        switch(nodeId)
+        {
+            case 0:
+            {
+                coord(0) =  0.0;
+                coord(1) =  0.0;
                 break;
             }
             case 1:
@@ -1098,6 +1218,51 @@ LINALG::Matrix<3,1> DRT::UTILS::getNodeCoordinates(   const int                 
             {
                 coord(0) =  0.0;
                 coord(1) =  1.0;
+                break;
+            }
+            default:
+                dserror("node number not correct");
+        }
+        coord(2) = 0.0;
+    }
+    else if(distype == DRT::Element::tri6)
+    {
+        switch(nodeId)
+        {
+            case 0:
+            {
+                coord(0) =  0.0;
+                coord(1) =  0.0;
+                break;
+            }
+            case 1:
+            {
+                coord(0) =  1.0;
+                coord(1) =  0.0;
+                break;
+            }
+            case 2:
+            {
+                coord(0) =  0.0;
+                coord(1) =  1.0;
+                break;
+            }
+            case 3:
+            {
+                coord(0) =  0.5;
+                coord(1) =  0.0;
+                break;
+            }
+            case 4:
+            {
+                coord(0) =  0.5;
+                coord(1) =  0.5;
+                break;
+            }
+            case 5:
+            {
+                coord(0) =  0.0;
+                coord(1) =  0.5;
                 break;
             }
             default:
