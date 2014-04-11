@@ -198,13 +198,8 @@ int LINALG::SOLVER::BelosSolver::Solve()
 {
   Teuchos::ParameterList& belist = Params().sublist("Belos Parameters");
 
-  typedef double                            ST;
-  //typedef Teuchos::ScalarTraits<ST>        SCT;
-  //typedef SCT::magnitudeType                MT;
   typedef Epetra_MultiVector                MV;
   typedef Epetra_Operator                   OP;
-  //typedef Belos::MultiVecTraits<ST,MV>     MVT;
-  //typedef Belos::OperatorTraits<ST,MV,OP>  OPT;
 
   // build Belos linear problem
   Teuchos::RCP<Belos::LinearProblem<double, MV, OP> > problem = Teuchos::rcp(new Belos::LinearProblem<double,MV,OP>(A_, x_, b_) );
