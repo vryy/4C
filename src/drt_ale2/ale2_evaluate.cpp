@@ -660,9 +660,6 @@ void DRT::ELEMENTS::Ale2::static_ke(
       bop(2,node_start+1) = h1;
     }
 
-    if (this->Id() == 35)
-      d.Scale(5.0);
-
     // call material law
     actmat->SetupCmat2d(&d);
 
