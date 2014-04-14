@@ -96,7 +96,7 @@ EVALUATION_TAU                  integration_point               // only evaluati
 PHYSICAL_MODEL                  Multifractal_Subgrid_Scales
 TURBULENCE_APPROACH             CLASSICAL_LES
 EXCLUDE_XFEM                    no //yes
-TURBMODEL_LS                    yes //no
+TURBMODEL_LS                    no
 -----------------------------------FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES
 CSGS                            0.05 //0.25
 SCALE_SEPARATION                algebraic_multigrid_operator
