@@ -935,7 +935,7 @@ Teuchos::RCP<DRT::Discretization> dis)
     fsvelswitch = false;
   // as fsvelswitch is true in case of turned-off model in scalar field,
   // we have to ensure false
-  if (turbmodel_ == INPAR::FLUID::no_model or fssgd_ == INPAR::SCATRA::fssugrdiff_no)
+  if (turbmodel_ == INPAR::FLUID::no_model and fssgd_ == INPAR::SCATRA::fssugrdiff_no)
     fsvelswitch = false;
 
   //---------------------------------------------------------------------------

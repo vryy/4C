@@ -38,7 +38,7 @@ NUMSTEP                         8
 RESTARTEVRY                     5
 TIMESTEP                        0.05
 UPRES                           1
-GENERATE_FLOW_FIELD             yes
+GENERATE_FLOW_FIELD             no
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Premixed_Combustion
 XFEMSTABILIZATION               no
@@ -96,6 +96,7 @@ EVALUATION_TAU                  integration_point               // only evaluati
 PHYSICAL_MODEL                  Multifractal_Subgrid_Scales
 TURBULENCE_APPROACH             CLASSICAL_LES
 EXCLUDE_XFEM                    no //yes
+TURBMODEL_LS                    yes //no
 -----------------------------------FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES
 CSGS                            0.05 //0.25
 SCALE_SEPARATION                algebraic_multigrid_operator
