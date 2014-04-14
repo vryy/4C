@@ -25,6 +25,7 @@ Created on: Feb 27, 2014
 #include <MueLu_UseDefaultTypes.hpp>
 #include <MueLu_UseShortNames.hpp>
 
+#include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "solver_preconditionertype.H"
 
@@ -335,6 +336,32 @@ namespace LINALG
     }; //class BlockSmootherWrapperBGS
 
 
+
+    /// Class wrapping a linear solver for a BlockSparseMatrix 
+    // It is used to solve in the coarsest level of the AMGnxn preconditioner
+    class BlockSmootherWrapperKLU : public BlockSmootherWrapperBase
+    {
+
+      public:
+
+        BlockSmootherWrapperKLU();
+
+        void Setup(Teuchos::RCP<LINALG::BlockSparseMatrixBase>     matrix);
+
+        virtual void Apply(const Epetra_MultiVector& X, 
+            Epetra_MultiVector& Y, bool InitialGuessIsZero) const;
+
+      private:
+
+        Teuchos::RCP<LINALG::Solver>                    solver_;
+        Teuchos::RCP<LINALG::SparseMatrix>              sparse_matrix_;
+        Teuchos::RCP<Epetra_Operator>                   A_;
+        mutable Teuchos::RCP<Epetra_MultiVector>        x_;
+        mutable Teuchos::RCP<Epetra_MultiVector>        b_;
+        bool isSetUp_;
+
+    };
+
     //==================================================================
     ///  A general Vcycle
     //==================================================================
@@ -343,7 +370,9 @@ namespace LINALG
     {
       public:
 
-        Richardson_Vcycle_Operator(int NumLevels,int NumSweeps,double omega);
+        Richardson_Vcycle_Operator
+          (int NumLevels,int NumSweeps,double omega,
+           bool activate_analysis=false, std::string file_for_analysis="AMGnxn_analysis.txt");
 
         void SetOperators  (std::vector< Teuchos::RCP<Epetra_Operator> > Avec); 
         void SetProjectors (std::vector< Teuchos::RCP<Epetra_Operator> > Pvec);
@@ -356,7 +385,6 @@ namespace LINALG
           (const Epetra_MultiVector& X, Epetra_MultiVector& Y,int start_level) const;
         void Vcycle(const Epetra_MultiVector& X, 
             Epetra_MultiVector& Y, int level, bool InitialGuessIsZero) const;
-
 
       private:
 
@@ -375,6 +403,13 @@ namespace LINALG
         bool flag_set_up_R_;
         bool flag_set_up_Pre_;
         bool flag_set_up_Pos_;
+
+        // For analysis
+        bool activate_analysis_;
+        mutable Teuchos::RCP<std::ofstream> out_analysis_;
+        void compute_residual_and_write
+          (const Epetra_MultiVector& X,const Epetra_MultiVector& Y,
+           int lev,const  std::string& str) const;
 
     }; // class Richardson_Vcycle_Operator
 
@@ -419,7 +454,10 @@ namespace LINALG
            std::vector<bool>                       flipPreSmoo,      
            std::vector<int>                        NumSweepsPosSmoo,  
            std::vector<double>                     omegaPosSmoo,     
-           std::vector<bool>                       flipPosSmoo      
+           std::vector<bool>                       flipPosSmoo,
+           bool                                    klu_on_coarsest_level=false,
+           bool                                    analysis_AMG=false,
+           std::string                             file_analysis_AMG="amgnxn_analysis.txt"
           );
 
 
@@ -494,6 +532,8 @@ namespace LINALG
         std::vector<double>                       omegaPosSmoo_;     
         /// Flip the BGS post-smoother in each level
         std::vector<bool>                         flipPosSmoo_;      
+        // Use a direct solver on the coarsest level
+        bool                                      klu_on_coarsest_level_;
         /// Flag indicating if the preconditioner can be used
         bool                                      is_setup_flag_;    
         /// Where the AMG things happen
@@ -506,11 +546,15 @@ namespace LINALG
         matrix<Teuchos::RCP<SparseMatrix> >    RLocal_;    
         matrix<Teuchos::RCP<LINALG::SOLVER::NonBlockSmootherWrapperMueLu> > SPreLocal_;
         matrix<Teuchos::RCP<LINALG::SOLVER::NonBlockSmootherWrapperMueLu> > SPosLocal_;
+        /// For analysis
+        bool analysis_AMG_;
+        static int instance_id_;
+        std::string file_analysis_AMG_;
+
         Teuchos::RCP<Richardson_Vcycle_Operator> 
           CreateRemainingHierarchy(int start_level,int num_levels,int block);
 
     }; // class AMGnxn_Operator
-
 
 
     //==================================================================

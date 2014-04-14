@@ -13,6 +13,7 @@ Created on: Feb 27, 2014
 #ifdef HAVE_MueLu
 #ifdef HAVE_Trilinos_Q1_2014
 
+//#include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_PtrDecl.hpp>
 #include <Teuchos_XMLParameterListHelpers.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
@@ -137,7 +138,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase>
 /*------------------------------------------------------------------------------*/
 
 LINALG::SOLVER::Richardson_Vcycle_Operator::Richardson_Vcycle_Operator
-(int NumLevels,int NumSweeps,double omega):
+(int NumLevels,int NumSweeps,double omega,bool activate_analysis,std::string file_for_analysis):
 NumLevels_(NumLevels),
 NumSweeps_(NumSweeps),
 omega_(omega),
@@ -150,8 +151,14 @@ flag_set_up_A_(false),
 flag_set_up_P_(false),
 flag_set_up_R_(false),
 flag_set_up_Pre_(false),
-flag_set_up_Pos_(false)
-{}
+flag_set_up_Pos_(false),
+activate_analysis_(activate_analysis),
+out_analysis_(Teuchos::null)
+{
+
+  if (activate_analysis_)
+    out_analysis_ = Teuchos::rcp(new std::ofstream(file_for_analysis.c_str(),ios::app));
+}
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
@@ -255,10 +262,21 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::Vcycle(const Epetra_MultiVector
                                                 bool InitialGuessIsZero) const
 {
 
+  // Some analysis of the residual
+  if(activate_analysis_)
+  {
+    Epetra_MultiVector Y0(Y);
+    Y0.Scale(0.0);
+    compute_residual_and_write(X,Y0,level,"RHS ");
+    compute_residual_and_write(X,Y,level,"INI ");
+  }
+
   if(level!=NumLevels_-1) // Perform one iteration of the V-cycle
   {
     // Apply presmoother 
     SvecPre_[level]->Apply(X,Y,InitialGuessIsZero);
+    if(activate_analysis_)
+      compute_residual_and_write(X,Y,level,"SMO "); // Analysis
 
     // Compute residual TODO optimize if InitialGuessIsZero == true 
     Epetra_MultiVector DX(X.Map(),X.NumVectors());
@@ -278,13 +296,21 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::Vcycle(const Epetra_MultiVector
     Epetra_MultiVector DY(Y.Map(),X.NumVectors());
     Pvec_[level]->Apply(DYcoarse,DY);
     Y.Update(1.0,DY,1.0);
+    if(activate_analysis_)
+      compute_residual_and_write(X,Y,level,"CC  "); // Analysis
 
     // Apply post smoother 
     SvecPos_[level]->Apply(X,Y,false);
+    if(activate_analysis_)
+      compute_residual_and_write(X,Y,level,"PSMO"); // Analysis
   }
   else // Apply presmoother
+  {
+    Epetra_MultiVector X00(X.Map(),X.NumVectors());
     SvecPre_[level]->Apply(X,Y,InitialGuessIsZero);
-
+    if(activate_analysis_)
+      compute_residual_and_write(X,Y,level,"SMO "); // Analysis
+  }
 
   return;
 } //  Richardson_Vcycle_Operator::Vcycle
@@ -348,6 +374,136 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::Apply(const Epetra_MultiVector&
   Richardson_Vcycle(X,Y,start_level);
   return;
 }
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+
+void LINALG::SOLVER::Richardson_Vcycle_Operator::compute_residual_and_write
+          (const Epetra_MultiVector& X,const Epetra_MultiVector& Y,int level,
+           const  std::string& str) const
+{
+
+  Epetra_MultiVector X0(X.Map(),X.NumVectors());
+  Avec_[level]->Apply(Y,X0);
+  X0.Update(1.0,X,-1.0);
+
+  // standard or blocked matrix?
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> matrix_block =
+    Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(Avec_[level]) ;
+  if ( matrix_block != Teuchos::null)
+  {
+    const MultiMapExtractor& myExtractor = matrix_block->RangeExtractor();
+    Teuchos::RCP<Epetra_MultiVector> X0_rcp = Teuchos::rcp(new Epetra_MultiVector(X0));
+    for(int i=0;i<matrix_block->Rows();i++)
+    {
+      Teuchos::RCP<Epetra_MultiVector> X0_block = myExtractor.ExtractVector(X0_rcp,i);
+      double inf_norm = 0.0;
+      X0_block->NormInf(&inf_norm);
+      if (Avec_[level]->Comm().MyPID() ==0)
+      {
+        *out_analysis_ << "LEVEL " << level << " " << str;
+        *out_analysis_ << " FIELD " << i << " RESI " << inf_norm << std::endl;
+      }
+    }
+
+  }
+  else if ( (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrixBase>(Avec_[level])) != Teuchos::null)
+  {
+
+
+    double inf_norm = 0.0;
+    X0.NormInf(&inf_norm);
+    if (Avec_[level]->Comm().MyPID() ==0)
+    {
+      *out_analysis_ << "LEVEL " << level << " " << str;
+      *out_analysis_ << " FIELD -1 "<< " RESI " << inf_norm << std::endl;
+    }
+
+  }
+  else
+    dserror("Unknown matrix typ");
+
+  return;
+}
+
+////TODO Remove (begin)
+//void plotMap(const Epetra_Map& Map, std::string str)
+//{
+//  std::cout << "Print Map " << str << " (begin):" << std::endl;
+//  std::cout << "NumGlobalElements = " << Map.NumGlobalElements() << std::endl;
+//  std::cout << "MaxAllGID         = " << Map.MaxAllGID() << std::endl;
+//  std::cout << "MinAllGID         = " << Map.MinAllGID() << std::endl;
+//  std::cout << "Print Map " << str << " (end):" << std::endl;
+//  return;
+//}
+//TODO Remove (end)
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+LINALG::SOLVER::BlockSmootherWrapperKLU::BlockSmootherWrapperKLU():
+  solver_(Teuchos::null),
+  sparse_matrix_(Teuchos::null),
+  A_(Teuchos::null),
+  x_(Teuchos::null),
+  b_(Teuchos::null),
+  isSetUp_(false)
+{}
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+
+void LINALG::SOLVER::BlockSmootherWrapperKLU::Setup
+(
+ Teuchos::RCP<LINALG::BlockSparseMatrixBase>     matrix
+)
+{
+
+  //Set matrix  
+  sparse_matrix_ = matrix->Merge();
+  A_ = Teuchos::rcp_dynamic_cast<Epetra_Operator>(sparse_matrix_->EpetraMatrix());
+  Teuchos::RCP<Epetra_CrsMatrix> crsA = 
+    Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_);
+  if(crsA == Teuchos::null) dserror("Houston, tenemos un problema");
+
+  // Set sol vector and rhs
+  x_ = Teuchos::rcp(new Epetra_MultiVector(A_->OperatorDomainMap(),1));
+  b_ = Teuchos::rcp(new Epetra_MultiVector(A_->OperatorRangeMap(),1));
+
+  // Create linear solver
+  solver_ = Teuchos::rcp(new LINALG::Solver(A_->Comm(),NULL));
+
+  // Set up solver
+  solver_->Setup(A_,x_,b_,true,true);
+
+  isSetUp_=true;
+  return;
+
+}
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+
+void LINALG::SOLVER::BlockSmootherWrapperKLU::Apply
+(
+ const Epetra_MultiVector& X, 
+ Epetra_MultiVector& Y, 
+ bool InitialGuessIsZero
+) const
+{
+  if (not(isSetUp_))
+    dserror("The BlockSmootherWrapperKLU should be set up before calling Apply");
+
+  b_->Update( 1., X, 0. );
+  solver_->Solve(A_,x_,b_,false,false);
+  Y.Update( 1., *x_, 0. );
+
+  return;
+}
+
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
@@ -503,7 +659,10 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator
   std::vector<bool>                       flipPreSmoo,      
   std::vector<int>                        NumSweepsPosSmoo,  
   std::vector<double>                     omegaPosSmoo,     
-  std::vector<bool>                       flipPosSmoo      
+  std::vector<bool>                       flipPosSmoo,
+  bool                                    klu_on_coarsest_level,
+  bool                                    analysis_AMG,
+  std::string                             file_analysis_AMG
 )
 : 
   H_(H),
@@ -517,6 +676,7 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator
   NumSweepsPosSmoo_(NumSweepsPosSmoo),
   omegaPosSmoo_(omegaPosSmoo),   
   flipPosSmoo_(flipPosSmoo),    
+  klu_on_coarsest_level_(klu_on_coarsest_level),
   is_setup_flag_(false),
   P_(Teuchos::null),
   NumLevelMax_(-1000000),
@@ -526,7 +686,9 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator
   PLocal_   (1,1,Teuchos::null),
   RLocal_   (1,1,Teuchos::null),
   SPreLocal_(1,1,Teuchos::null),
-  SPosLocal_(1,1,Teuchos::null)
+  SPosLocal_(1,1,Teuchos::null),
+  analysis_AMG_(analysis_AMG),
+  file_analysis_AMG_(file_analysis_AMG)
 {
 
   // Determine the maximum and minimum number of levels
@@ -558,6 +720,14 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator
     dserror("The damping omega for the block post-smother should be given for all the levels!");
   if((int)flipPosSmoo_.size()<NumLevelAMG_-1)
     dserror("The flip option for the block post-smother should be given for all the levels!");
+
+  // check if possible to apply a direct solver on the coarsest level 
+  if (klu_on_coarsest_level_)
+  {
+    if( (NumLevelMax_ != NumLevelMin_) or (NumLevelMax_ != NumLevelAMG_)  )
+      dserror("A direct solver cannot be applied for the current input");
+
+  }
 
   // Print some parameters. 
 #ifdef DEBUG
@@ -596,10 +766,19 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator
   }
 #endif
 
+  // Delete contents of analysis file
+  if (analysis_AMG_ && (instance_id_==0))
+  {
+    ofstream auxfile(file_analysis_AMG_.c_str());
+    instance_id_++;
+  }
+
   // Setup the operator 
   SetUp();
 }
 
+// Initialize static member variable
+int LINALG::SOLVER::AMGnxn_Operator::instance_id_ = 0;
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
@@ -850,38 +1029,50 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
     }// fine levels
     else // Coarsest level
     {
-
-      // Loop in blocks
-      for(int block=0;block<NumBlocks_;block++)
+      if (klu_on_coarsest_level_) // Merge coarsest matrix and apply direct solve
       {
-        if(H_[block]->GetNumberOfLevels() > NumLevelAMG_) //if this block has more levels
+
+        Teuchos::RCP<BlockSmootherWrapperKLU> S_klu_wrapper = 
+          Teuchos::rcp(new BlockSmootherWrapperKLU());
+        S_klu_wrapper->Setup(AGlobal[level]);
+        SPreGlobal[level] = 
+          Teuchos::rcp_dynamic_cast<LINALG::SOLVER::BlockSmootherWrapperBase>(S_klu_wrapper);
+
+      }
+      else // Apply BGS with the remaining hierarchies
+      {
+        // Loop in blocks
+        for(int block=0;block<NumBlocks_;block++)
         {
-          // We create a AMG V cycle using the remainder levels
-          Teuchos::RCP<Richardson_Vcycle_Operator> myV = 
-            CreateRemainingHierarchy(level,H_[block]->GetNumberOfLevels(),block);
+          if(H_[block]->GetNumberOfLevels() > NumLevelAMG_) //if this block has more levels
+          {
+            // We create a AMG V cycle using the remainder levels
+            Teuchos::RCP<Richardson_Vcycle_Operator> myV = 
+              CreateRemainingHierarchy(level,H_[block]->GetNumberOfLevels(),block);
 
-          // We use the created AMG V cycle as coarse level smoother for this block
-          Teuchos::RCP<SmootherWrapperVcycle> S_vcycle =
-            Teuchos::rcp(new LINALG::SOLVER::SmootherWrapperVcycle(myV));
+            // We use the created AMG V cycle as coarse level smoother for this block
+            Teuchos::RCP<SmootherWrapperVcycle> S_vcycle =
+              Teuchos::rcp(new LINALG::SOLVER::SmootherWrapperVcycle(myV));
 
-          Svec[block] = 
-            Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>(S_vcycle);
+            Svec[block] = 
+              Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>(S_vcycle);
 
-        }//if this block has more levels
-        else
-          Svec[block] = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
-            (SPreLocal_[block][level]);
-      } // Loop in blocks
+          }//if this block has more levels
+          else
+            Svec[block] = Teuchos::rcp_dynamic_cast<LINALG::SOLVER::NonBlockSmootherWrapperBase>
+              (SPreLocal_[block][level]);
+        } // Loop in blocks
 
-      // Create the coarse level smoother
-      S_bgs =  Teuchos::rcp(new LINALG::SOLVER::BlockSmootherWrapperBGS(
-            AGlobal[level],
-            Svec,
-            NumSweepsPreSmoo_[level],
-            omegaPreSmoo_[level],
-            flipPreSmoo_[level]));   
-      SPreGlobal[level] = 
-        Teuchos::rcp_dynamic_cast<LINALG::SOLVER::BlockSmootherWrapperBase>(S_bgs);
+        // Create the coarse level smoother
+        S_bgs =  Teuchos::rcp(new LINALG::SOLVER::BlockSmootherWrapperBGS(
+              AGlobal[level],
+              Svec,
+              NumSweepsPreSmoo_[level],
+              omegaPreSmoo_[level],
+              flipPreSmoo_[level]));   
+        SPreGlobal[level] = 
+          Teuchos::rcp_dynamic_cast<LINALG::SOLVER::BlockSmootherWrapperBase>(S_bgs);
+      }
 
     }// Coarsest level
 
@@ -892,7 +1083,7 @@ void  LINALG::SOLVER::AMGnxn_Operator::SetUp()
   //==========================================
 
   P_ = Teuchos::rcp(new LINALG::SOLVER::Richardson_Vcycle_Operator
-      (NumLevelAMG_,NumSweepsAMG_,omegaAMG_));
+      (NumLevelAMG_,NumSweepsAMG_,omegaAMG_,analysis_AMG_,file_analysis_AMG_));
 
   std::vector< Teuchos::RCP<Epetra_Operator> > AGlobal_ep_op(NumLevelAMG_,Teuchos::null);
   for(int i=0;i<NumLevelAMG_;i++)
@@ -948,7 +1139,7 @@ Teuchos::RCP<LINALG::SOLVER::Richardson_Vcycle_Operator>
     Teuchos::rcp(new Richardson_Vcycle_Operator
          (NumLevels_amg_block,
           NumSweeps_amg_block,
-          omega_amg_block));
+          omega_amg_block,analysis_AMG_,file_analysis_AMG_));
 
   // Fetch building AMG operators for this block TODO check if we fetch the right things
   std::vector< Teuchos::RCP<Epetra_Operator> > Avec(NumLevels_amg_block,Teuchos::null);
@@ -1098,6 +1289,12 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup
   std::vector<int>      NumSweepsPosSmoo=NumSweepsPreSmoo;  
   std::vector<double>   omegaPosSmoo=omegaPreSmoo;     
   std::vector<bool>     flipPosSmoo=flipPreSmoo; 
+  bool                  klu_on_coarsest_level = false;
+  bool                  analysis_AMG          = false;
+  std::string           file_analysis_AMG     = "amgnxn_analysis.txt";
+
+  //std::cout <<  DRT::Problem::Instance()->OutputControlFile()->FileName() << std::endl;
+  //std::cout <<  DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() << std::endl;
 
   //=================================================================
   // Build up MueLu Hierarchies of each one of the blocks
@@ -1153,7 +1350,10 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup
         flipPreSmoo,      
         NumSweepsPosSmoo,  
         omegaPosSmoo,     
-        flipPosSmoo      
+        flipPosSmoo,      
+        klu_on_coarsest_level,
+        analysis_AMG,
+        file_analysis_AMG
         ));
 
   // Finished
