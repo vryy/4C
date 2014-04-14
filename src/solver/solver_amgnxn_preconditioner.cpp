@@ -134,6 +134,40 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase>
 }
 
 
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+void LINALG::SOLVER::NonBlockSmootherWrapperMueLu::Apply
+(const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
+{
+
+  // Convert to Tpetra
+  Teuchos::RCP<Epetra_MultiVector> X_rcp =
+    Teuchos::rcp(new Epetra_MultiVector(X));
+  Teuchos::RCP<Xpetra::EpetraMultiVector> Xex =
+    Teuchos::rcp(new Xpetra::EpetraMultiVector(X_rcp));
+  Teuchos::RCP<MultiVector> Xx =
+    Teuchos::rcp_dynamic_cast<MultiVector>(Xex);
+  Teuchos::RCP<Epetra_MultiVector> Y_rcp =
+    Teuchos::rcp(new Epetra_MultiVector(Y));
+  Teuchos::RCP<Xpetra::EpetraMultiVector> Yex =
+    Teuchos::rcp(new Xpetra::EpetraMultiVector(Y_rcp));
+  Teuchos::RCP<MultiVector> Yx = Teuchos::rcp_dynamic_cast<MultiVector>(Yex);
+
+  // Apply underlying smoother
+  S_->Apply(*Yx,*Xx,InitialGuessIsZero);
+
+  // Convert to Epetra
+  const Teuchos::RCP<Epetra_MultiVector>& Ye =
+    MueLu::Utils<double,int,int,Node,LocalMatOps>::MV2NonConstEpetraMV(Yx);
+  //Y = *Ye;
+  Y.Update(1.0,*Ye,0.0);
+
+  return;
+}
+
+
+
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
