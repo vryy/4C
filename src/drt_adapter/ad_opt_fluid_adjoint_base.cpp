@@ -70,12 +70,8 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
-  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave = Teuchos::rcp(new std::map<int,std::vector<int> > ());
-
   PeriodicBoundaryConditions pbc(actdis);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
-
-  pbcmapmastertoslave = pbc.ReturnAllCoupledColNodes();
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -172,9 +168,6 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> fluidadjointtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
-
-  // --------------------provide info about periodic boundary conditions
-  fluidadjointtimeparams->set<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc",pbcmapmastertoslave);
 
   fluidadjointtimeparams->set<int>("Simple Preconditioner",DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"));
   fluidadjointtimeparams->set<int>("AMG(BS) Preconditioner",DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC"));
