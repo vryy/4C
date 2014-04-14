@@ -496,7 +496,7 @@ void SCATRA::ScaTraTimIntImpl::InitTurbulenceModel(
   // necessary only for AVM3 approach:
   // initialize subgrid-diffusivity matrix + respective output
   // -------------------------------------------------------------------
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and DRT::INPUT::IntegralValue<int>(*turbparams,"TURBMODEL_LS"))
   {
     sysmat_sd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
 
@@ -526,11 +526,14 @@ void SCATRA::ScaTraTimIntImpl::InitTurbulenceModel(
         dserror ("Same subgrid-viscosity approach expected!");
     }
   }
+  else fssgd_ = INPAR::SCATRA::fssugrdiff_no; // in case of not "TURBMODEL_LS"
 
   // -------------------------------------------------------------------
-  // get turbulence model and parameters for low-Mach-number case
+  // get turbulence model and parameters
   // -------------------------------------------------------------------
   turbmodel_ = INPAR::FLUID::no_model;
+
+  if (DRT::INPUT::IntegralValue<int>(*turbparams,"TURBMODEL_LS"))
   {
     // set turbulence model
     if (turbparams->get<std::string>("PHYSICAL_MODEL") == "Smagorinsky")
@@ -929,6 +932,10 @@ Teuchos::RCP<DRT::Discretization> dis)
   // as fsvelswitch is also true for smagorinsky_all, we have to reset fsvelswitch
   // as the corresponding vector, which is not necessary, is not provided in scatra
   if (fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_all and fsvelswitch)
+    fsvelswitch = false;
+  // as fsvelswitch is true in case of turned-off model in scalar field,
+  // we have to ensure false
+  if (turbmodel_ == INPAR::FLUID::no_model or fssgd_ == INPAR::SCATRA::fssugrdiff_no)
     fsvelswitch = false;
 
   //---------------------------------------------------------------------------

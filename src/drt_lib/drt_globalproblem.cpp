@@ -612,10 +612,12 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
         curr->second->Add("Node Ids",dvol_fenode [curr->first]);
         break;
       case Condition::Particle:
-        // particle conditions are allowed for having empty nodal clouds
-        if (curr->first > 0 and static_cast<unsigned>(curr->first) < dparticle.size())
-          curr->second->Add("Node Ids",dparticle [curr->first]);
-        break;
+        if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dparticle.size())
+          // particle conditions are allowed for having empty nodal clouds
+          break;
+        else
+           curr->second->Add("Node Ids",dparticle [curr->first]);
+         break;
       default:
         dserror("geometry type unspecified");
         break;

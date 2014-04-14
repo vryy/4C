@@ -243,6 +243,14 @@ void DRT::ELEMENTS::ScaTraEleParameter::SetElementTurbulenceParameter( Teuchos::
   // check for combination of all-scale and fine-scale subgrid diffusivity
   if (assgd_ and fssgd_) dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
 
+  // in some cases we may want to switch off the turbulence model in the scalar field
+  if (not DRT::INPUT::IntegralValue<int>(turbulencelist,"TURBMODEL_LS"))
+  {
+    fssgd_ = false;
+    whichfssgd_ = INPAR::SCATRA::fssugrdiff_no;
+    turbmodel_ = INPAR::FLUID::no_model;
+  }
+
   if (turbmodel_!=INPAR::FLUID::no_model or (scatraparatimint_->IsIncremental() and fssgd_))
   {
     // get Smagorinsky constant and turbulent Prandtl number

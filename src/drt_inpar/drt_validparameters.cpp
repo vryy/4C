@@ -3890,6 +3890,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("OUTMEAN","No","Flag to (de)activate averaged paraview output",&fdyn_turbu);
 
+  BoolParameter("TURBMODEL_LS","Yes","Flag to (de)activate turbulence model in level-set equation",&fdyn_turbu);
+
   //----------------------------------------------------------------------
   // turbulent flow problem and general characteristics
   //----------------------------------------------------------------------
