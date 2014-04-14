@@ -298,14 +298,12 @@ int DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Evaluate(
     {
       if (HaveHillPlasticity())
       {
-        (*mDLp_last_iter_)[i]=(*mDLp_last_timestep_)[i];
         (*KbbInvHill_)[i].Clear();
         (*KbdHill_)[i].Clear();
         (*fbetaHill_)[i].Clear();
       }
       else
       {
-        (*DalphaK_last_iter_)[i]=(*DalphaK_last_timestep_)[i];
         (*KbbInv_)[i].Clear();
         (*Kbd_)[i].Clear();
         (*fbeta_)[i].Clear();
@@ -596,11 +594,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     )
 {
   // check for f-bar element
-  bool fbar = true;
-  DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
-  = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
-  if (!eleFBAR)
-    fbar = false;
+  bool fbar = (ElementType()==DRT::ELEMENTS::So_hex8fbarPlastType::Instance());
 
   // update element geometry
   LINALG::Matrix<nen_,3> xrefe;  // X, material coord. of element
@@ -683,6 +677,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
   // get references from parameter list
   double& lp_inc = params.get<double>("Lp_increment_square");
   double& lp_res = params.get<double>("Lp_residual_square");
+  double& eas_inc= params.get<double>("EAS_increment_square");
+  double& eas_res= params.get<double>("EAS_residual_square");
   int& num_active_gp = params.get<int>("number_active_plastic_gp");
   INPAR::STR::PredEnum pred = INPAR::STR::pred_vague;
   if (params.isParameter("predict_type"))
@@ -690,6 +686,84 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
   bool tang_pred = false;
   if (params.isParameter("eval_tang_pred"))
     tang_pred = params.get<bool>("eval_tang_pred");
+
+  /* evaluation of EAS variables (which are constant for the following):
+  ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
+  ** -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
+  ** -> T0^{-T}
+  */
+  std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;   // EAS matrix M at all GPs
+  LINALG::SerialDenseMatrix M;      // EAS matrix M at current GP
+  double detJ0;                     // detJ(origin)
+  Epetra_SerialDenseVector delta_alpha_eas(neas_); // incremental change of the alphas in this iteration
+  // transformation matrix T0, maps M-matrix evaluated at origin
+  // between local element coords and global coords
+  // here we already get the inverse transposed T0
+  LINALG::Matrix<numstr_,numstr_> T0invT;  // trafo matrix
+
+  if (eastype_!=soh8p_easnone)
+  {
+  EasSetup(&M_GP,detJ0,T0invT,xrefe);
+
+  /* end of EAS Update ******************/
+  // add Kda . res_d to feas
+  // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+  delta_alpha_eas.Size(neas_);
+  if (stiffmatrix!=NULL)
+  {
+    // constant predictor
+    if (pred == INPAR::STR::pred_constdis)
+      alpha_eas_=alpha_eas_last_timestep_;
+
+    // tangential predictor
+    else if (pred == INPAR::STR::pred_tangdis)
+      for (int i=0; i<neas_; i++)
+        (*alpha_eas_)(i) = 0.
+            + (*alpha_eas_last_timestep_)(i)
+            + (*alpha_eas_delta_over_last_timestep_)(i)
+        ;
+
+    // do usual recovery
+    else if (pred == INPAR::STR::pred_vague)
+    {
+      switch(eastype_)
+      {
+      case soh8p_easmild:
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d.A());
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,soh8p_easmild,1>(0.0,delta_alpha_eas,-1.0,*KaaInv_,*feas_);
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,soh8p_easmild,1>(1.0,*alpha_eas_,-1.0,*KaaInv_,*feas_);
+        break;
+      case soh8p_easfull:
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d.A());
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,soh8p_easfull,1>(0.0,delta_alpha_eas,-1.0,*KaaInv_,*feas_);
+        LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,soh8p_easfull,1>(1.0,*alpha_eas_,-1.0,*KaaInv_,*feas_);
+        break;
+      case soh8p_easnone: break;
+      default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+      }
+    }
+  }
+  eas_inc += pow(delta_alpha_eas.Norm2(),2.);
+
+  // reset EAS matrices
+  KaaInv_->Shape(neas_,neas_);
+  Kad_->Shape(neas_,numdofperelement_);
+  feas_->Size(neas_);
+  for (int gp=0; gp<numgpt_; gp++)
+    Kba_->at(gp).Shape(5,neas_);
+  /* end of EAS Update ******************/
+  }
+//  if (Id()==20)
+//      std::cout << "alpha_eas_: " << *alpha_eas_ << std::endl;
+
+
+  // EAS matrix block
+  Epetra_SerialDenseMatrix Kda(numdofperelement_,neas_);
+  // temporary Epetra matrix for this and that
+  Epetra_SerialDenseMatrix tmp;
+  // RHS of EAS equation without condensed plasticity
+  // (to calculate the residual of this equation)
+  Epetra_SerialDenseVector feas_uncondensed(neas_);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -714,7 +788,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     defgrd.MultiplyTT(xcurr,N_XYZ);
 
-    // calcualte total rcg/gl/ea for output
+    // calcualte total rcg
     // no F-bar modification here
     LINALG::Matrix<3,3> total_cauchygreen(false);
     total_cauchygreen.MultiplyTN(defgrd,defgrd);
@@ -724,6 +798,45 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     RCG(3)=total_cauchygreen(0,1)*2.;
     RCG(4)=total_cauchygreen(1,2)*2.;
     RCG(5)=total_cauchygreen(0,2)*2.;
+
+    // deformation gradient consistent with (potentially EAS-modified) GL strains
+    // without eas this is equal to the regular defgrd.
+    LINALG::Matrix<3,3> defgrd_mod(defgrd);
+
+    // EAS technology: "enhance the strains"  ----------------------------- EAS
+    if (eastype_ != soh8p_easnone)
+    {
+      // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+      LINALG::Matrix<numstr_,1> total_glstrain(false);
+      total_glstrain(0) = 0.5 * (total_cauchygreen(0,0) - 1.0);
+      total_glstrain(1) = 0.5 * (total_cauchygreen(1,1) - 1.0);
+      total_glstrain(2) = 0.5 * (total_cauchygreen(2,2) - 1.0);
+      total_glstrain(3) = total_cauchygreen(0,1);
+      total_glstrain(4) = total_cauchygreen(1,2);
+      total_glstrain(5) = total_cauchygreen(2,0);
+      M.LightShape(numstr_,neas_);
+      // map local M to global, also enhancement is refered to element origin
+      // M = detJ0/detJ T0^{-T} . M
+      //Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
+      // add enhanced strains = M . alpha to GL strains to "unlock" element
+      switch(eastype_)
+      {
+      case soh8p_easfull:
+        LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,soh8p_easfull>(M.A(), detJ0/detJ, T0invT.A(), (M_GP->at(gp)).A());
+        LINALG::DENSEFUNCTIONS::multiply<double,numstr_,soh8p_easfull,1>(1.0,total_glstrain.A(),1.0,M.A(),alpha_eas_->A());
+        break;
+      case soh8p_easmild:
+        LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,soh8p_easmild>(M.A(), detJ0/detJ, T0invT.A(), (M_GP->at(gp)).A());
+        LINALG::DENSEFUNCTIONS::multiply<double,numstr_,soh8p_easmild,1>(1.0,total_glstrain.A(),1.0,M.A(),alpha_eas_->A());
+        break;
+      case soh8p_easnone: break;
+      default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+      }
+
+      // calculate deformation gradient consistent with modified GL strain tensor
+      CalcConsistentDefgrd(defgrd,total_glstrain,defgrd_mod);
+    } // ------------------------------------------------------------------ EAS
+
 
     // calculate nonlinear B-operator
     LINALG::Matrix<numstr_,numdofperelement_> bop(false);
@@ -798,35 +911,58 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
       dserror("element distortion too large");
 
     // modify deformation gradient
-    // ATTENTION: defgrd now contains the F-bar deformation gradient
-    // everything that needs the regular deformation gradient needs
-    // to be calculated BEFORE !!!
+    // ATTENTION: defgrd_mod now contains the F-bar deformation gradient
+    // The compatible displacement-based deformation gradient is still
+    // available in defgrd.
     f_bar_factor=pow(detF_0/detF,1/3.);
-    defgrd.Scale(f_bar_factor);
+    defgrd_mod.Scale(f_bar_factor);
     }
 
     // recover condensed variables from last iteration step *********
     if (stiffmatrix!= NULL)
     {
+      LINALG::Matrix<5,1> tmp51;
+      LINALG::Matrix<5,numdofperelement_> tmp5x;
+      switch(pred)
+      {
       // constant predictor
-      if (pred == INPAR::STR::pred_constdis)
+      case INPAR::STR::pred_constdis:
         (*DalphaK_last_iter_)[gp].Clear();
+        break;
 
       // tangential predictor
-      else if (pred == INPAR::STR::pred_tangdis)
-        (*DalphaK_last_iter_)[gp] = (*DalphaK_last_timestep_)[gp];
+      case INPAR::STR::pred_tangdis:
+        // do nothing
+        break;
 
       // do usual recovery
-      else if (pred == INPAR::STR::pred_vague)
-      {
+      case INPAR::STR::pred_vague:
         // first part
-        LINALG::Matrix<5,1> tmp51;
         tmp51.Multiply((*KbbInv_)[gp],(*fbeta_)[gp]);
 
         // second part
-        LINALG::Matrix<5,numdofperelement_> tmp524;
-        tmp524.Multiply((*KbbInv_)[gp],(*Kbd_)[gp]);
-        tmp51.Multiply(1.,tmp524,res_d,1.);
+        tmp5x.Multiply((*KbbInv_)[gp],(*Kbd_)[gp]);
+        tmp51.Multiply(1.,tmp5x,res_d,1.);
+
+        // EAS part
+        if (eastype_!=soh8p_easnone)
+        {
+          tmp.Shape(5,neas_);
+          switch (eastype_)
+          {
+          case soh8p_easmild:
+            LINALG::DENSEFUNCTIONS::multiply<double,5,5,soh8p_easmild>(0.,tmp.A(),1.,KbbInv_->at(gp).A(),Kba_->at(gp).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,5,soh8p_easmild,1>(1.,tmp51.A(),1.,tmp.A(),delta_alpha_eas.A());
+            break;
+          case soh8p_easfull:
+            LINALG::DENSEFUNCTIONS::multiply<double,5,5,soh8p_easfull>(0.,tmp.A(),1.,KbbInv_->at(gp).A(),Kba_->at(gp).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,5,soh8p_easfull,1>(1.,tmp51.A(),1.,tmp.A(),delta_alpha_eas.A());
+            break;
+          case soh8p_easnone:
+            break;
+          default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+          }
+        }
         (*DalphaK_last_iter_)[gp].Update(-1.,tmp51,1.);
         lp_inc +=tmp51(0)*tmp51(0)
                 +tmp51(1)*tmp51(1)
@@ -834,12 +970,14 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
                 +tmp51(2)*tmp51(2)*2.
                 +tmp51(3)*tmp51(3)*2.
                 +tmp51(4)*tmp51(4)*2.;
-      }
+        break;
 
       // unknown predictor type
-      else
+      default:
         dserror("semi-smooth Newton plasticity algorithm doesn't know "
             "what to do with predictor type %i",pred);
+        break;
+      }
     }
     // end of recover **********************************************
 
@@ -870,7 +1008,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
     LINALG::Matrix<3,3> mandelstress(true);
     LINALG::Matrix<6,6> dmdc(true);
     LINALG::Matrix<6,9> dmdfpinv(true);
-    plmat->Evaluate(&defgrd,&InvPlasticDefgrd,params,&pk2_stress,&Cmat_ABCD,&dpk2dfpinv,&mandelstress,&dmdc,&dmdfpinv,Id());
+    plmat->Evaluate(&defgrd_mod,&InvPlasticDefgrd,params,&pk2_stress,&Cmat_ABCD,&dpk2dfpinv,&mandelstress,&dmdc,&dmdfpinv,Id());
 
     // return gp stresses
     switch (iostress)
@@ -1065,8 +1203,38 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
         stiffmatrix->MultiplyNT(1.,bopccg,htensor,1.);
       }
       // end of integrate additional fbar matrix*****************************
-    } // end of stiffness matrix
 
+      // EAS technology: integrate matrices --------------------------------- EAS
+      if (!tang_pred)
+      if (eastype_ != soh8p_easnone)
+      {
+        // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
+        // integrate Kda: Kad += (M^T . cmat . B) * detJ * w(gp)
+        // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
+        LINALG::SerialDenseMatrix cM(numstr_, neas_); // temporary c . M
+        switch(eastype_)
+        {
+        case soh8p_easfull:
+          LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,soh8p_easfull>(cM.A(), Cmat_ABCD.A(), M.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,soh8p_easfull>(1.0, *KaaInv_, detJ_w, M, cM);
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,numdofperelement_>(1.0, Kad_->A(), detJ_w, M.A(), cb.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,numdofperelement_,numstr_,soh8p_easfull>(1.0, Kda.A(), detJ_w,cb.A(), M.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,1>(1.0, feas_->A(), detJ_w, M.A(), pk2_stress.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,1>(1.0, feas_uncondensed.A(), detJ_w, M.A(), pk2_stress.A());
+          break;
+        case soh8p_easmild:
+          LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,soh8p_easmild>(cM.A(), Cmat_ABCD.A(), M.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,soh8p_easmild>(1.0, *KaaInv_, detJ_w, M, cM);
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,numdofperelement_>(1.0, Kad_->A(), detJ_w, M.A(), cb.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,numdofperelement_,numstr_,soh8p_easmild>(1.0, Kda.A(), detJ_w,cb.A(), M.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>(1.0, feas_->A(), detJ_w, M.A(), pk2_stress.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>(1.0, feas_uncondensed.A(), detJ_w, M.A(), pk2_stress.A());
+          break;
+        case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+        }
+      } // ---------------------------------------------------------------- EAS
+    } // end of stiffness matrix
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {
@@ -1144,6 +1312,24 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
         // end of stiffness matrix [k^e_{d beta}]_ij (i=1..numdof; j=1..5)
         // **************************************************************
 
+          // EAS matrix block
+          Epetra_SerialDenseMatrix Kab(neas_,5);
+          switch(eastype_)
+          {
+          case soh8p_easnone:
+            // do nothing
+            break;
+          case soh8p_easmild:
+            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,5>(1.,Kab.A(),detJ_w,M.A(),dSdbeta.A());
+            break;
+          case soh8p_easfull:
+            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,5>(1.,Kab.A(),detJ_w,M.A(),dSdbeta.A());
+            break;
+          default:
+            dserror("Don't know what to do with EAS type %d", eastype_);
+            break;
+          }
+
         if ((*activity_state_)[gp]==true || Dissipation>0.)
         {
 
@@ -1199,8 +1385,44 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
                 detadd(i,j) = dSigmadd(i+1,j);
             }
 
+          // derivative of Mandel stress tensor
+          Epetra_SerialDenseMatrix dSigmadalpha;
+          dSigmadalpha.Shape(numstr_,neas_);
+          switch(eastype_)
+          {
+          case soh8p_easnone:
+            // do nothing
+            break;
+          case soh8p_easmild:
+            LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,soh8p_easmild>(0.,dSigmadalpha.A(),1.,dmdc.A(),M.A());
+            break;
+          case soh8p_easfull:
+            LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,soh8p_easfull>(0.,dSigmadalpha.A(),1.,dmdc.A(),M.A());
+            break;
+          default:
+            dserror("Don't know what to do with EAS type %d", eastype_);
+            break;
+          }
+
+          // derivative of effective stress
+          Epetra_SerialDenseMatrix detadalpha;
+          if (eastype_!=soh8p_easnone)
+          {
+            detadalpha.Shape(5,neas_);
+            for (int i=0; i<5; i++)
+              for (int j=0; j<neas_; j++)
+              {
+                // diagonal entries
+                if (i==0 || i==1)
+                  detadalpha(i,j) = dSigmadalpha(i,j) - 1./3. * (dSigmadalpha(0,j) + dSigmadalpha(1,j) + dSigmadalpha(2,j));
+                else
+                  detadalpha(i,j) = dSigmadalpha(i+1,j);
+              }
+          }
+
           LINALG::Matrix<5,1> dYpl_dbeta(true);
           LINALG::Matrix<numdofperelement_,1> dYpl_dd(true);
+          Epetra_SerialDenseVector dYpl_dalpha(neas_);
           if (Dissipation>0.)
           {
             for (int j=0;j<2;j++)
@@ -1216,6 +1438,12 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
                 dYpl_dbeta(i) -= (2.*(*DalphaK_last_iter_)[gp](j)+(*DalphaK_last_iter_)[gp]((j+1)%2))*detadbeta(j,i)/abseta;
               }
               dYpl_dbeta(j) -= (2.*eta_vec(j) + eta_vec((j+1)%2))/abseta;
+              if (eastype_!=soh8p_easnone)
+                for (int i=0; i<neas_; i++)
+                {
+                  dYpl_dalpha(i) += -Dissipation/abseta/abseta*(2.*eta_vec(j) + eta_vec((j+1)%2))/abseta*detadalpha(j,i);
+                  dYpl_dalpha(i) -= (2.*(*DalphaK_last_iter_)[gp](j) + (*DalphaK_last_iter_)[gp]((j+1)%2))*detadalpha(j,i)/abseta;
+                }
             }
             for (int j=2; j<5; j++)
             {
@@ -1230,9 +1458,17 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
                 dYpl_dbeta(i) -= 2.*(*DalphaK_last_iter_)[gp](j)*detadbeta(j,i)/abseta;
               }
               dYpl_dbeta(j) -= 2.*eta_vec(j)/abseta;
+              if (eastype_!=soh8p_easnone)
+                for (int i=0; i<neas_; i++)
+                {
+                  dYpl_dalpha(i) += -Dissipation/abseta/abseta*2.*eta_vec(j)*detadalpha(j,i)/abseta;
+                  dYpl_dalpha(i) -= 2.*(*DalphaK_last_iter_)[gp](j)*detadalpha(j,i)/abseta;
+                }
             }
             dYpl_dd.Scale(2./3.*(isohard+(infyield-inityield)*expisohard*exp(-expisohard*((*last_alpha_isotropic_)[gp](0,0)+deltaAlphaI))));
             dYpl_dbeta.Scale(2./3.*(isohard+(infyield-inityield)*expisohard*exp(-expisohard*((*last_alpha_isotropic_)[gp](0,0)+deltaAlphaI))));
+            if (eastype_!=soh8p_easnone)
+              dYpl_dalpha.Scale(2./3.*(isohard+(infyield-inityield)*expisohard*exp(-expisohard*((*last_alpha_isotropic_)[gp](0,0)+deltaAlphaI))));
           }
 
           if ((*activity_state_)[gp]==true)
@@ -1291,6 +1527,55 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
             // **************************************************************
 
             // **************************************************************
+            // stiffness matrix [k^e_{beta alpha}]_ij (i=1..5; j=1..neas_)
+            // linearization of the complementarity function
+            // **************************************************************
+            if (eastype_!=soh8p_easnone)
+            {
+              Epetra_SerialDenseVector dabs_eta_trial_dalpha;
+              dabs_eta_trial_dalpha.Size(neas_);
+
+              for (int j=0;j<2; j++)
+                for (int i=0; i<neas_; i++)
+                  dabs_eta_trial_dalpha(i) += (2.*eta_trial_vec(j)+ eta_trial_vec((j+1)%2))*(detadalpha(j,i))/absetatrial;
+              for (int j=2; j<5; j++)
+                for (int i=0; i<neas_; i++)
+                  dabs_eta_trial_dalpha(i) += (2.*eta_trial_vec(j))*(detadalpha(j,i))/absetatrial;
+
+              switch(eastype_)
+              {
+              case soh8p_easnone:
+                break;
+              case soh8p_easmild:
+                LINALG::DENSEFUNCTIONS::update<double,5,soh8p_easmild>
+                  (Kba_->at(gp).A(),1.-Ypl/absetatrial,detadalpha.A());
+                LINALG::DENSEFUNCTIONS::multiplyNT<double,5,1,soh8p_easmild>
+                  (1.,Kba_->at(gp).A(),stab_s_*apl/absetatrial,eta_vec.A(),dabs_eta_trial_dalpha.A());
+                LINALG::DENSEFUNCTIONS::multiplyNT<double,5,1,soh8p_easmild>
+                  (1.,Kba_->at(gp).A(),(1.-stab_s_)*Ypl/absetatrial/absetatrial,eta_trial_vec.A(),dabs_eta_trial_dalpha.A());
+                LINALG::DENSEFUNCTIONS::multiplyNT<double,5,1,soh8p_easmild>
+                  (1.,Kba_->at(gp).A(),-1./absetatrial,eta_trial_vec.A(),dYpl_dalpha.A());
+                break;
+              case soh8p_easfull:
+                LINALG::DENSEFUNCTIONS::update<double,5,soh8p_easfull>
+                  (Kba_->at(gp).A(),1.-Ypl/absetatrial,detadalpha.A());
+                LINALG::DENSEFUNCTIONS::multiplyNT<double,5,1,soh8p_easfull>
+                  (1.,Kba_->at(gp).A(),stab_s_*apl/absetatrial,eta_vec.A(),dabs_eta_trial_dalpha.A());
+                LINALG::DENSEFUNCTIONS::multiplyNT<double,5,1,soh8p_easfull>
+                  (1.,Kba_->at(gp).A(),(1.-stab_s_)*Ypl/absetatrial/absetatrial,eta_trial_vec.A(),dabs_eta_trial_dalpha.A());
+                LINALG::DENSEFUNCTIONS::multiplyNT<double,5,1,soh8p_easfull>
+                  (1.,Kba_->at(gp).A(),-1./absetatrial,eta_trial_vec.A(),dYpl_dalpha.A());
+                break;
+              default:
+                dserror("Don't know what to do with EAS type %d", eastype_);
+                break;
+              }
+            }
+            // **************************************************************
+            // end of stiffness matrix [k^e_{beta alpha}]_ij (i=1..5; j=1..neas_)
+            // **************************************************************
+
+            // **************************************************************
             // right hand side term for complementarity function f^int_i (i=1..5)
             // **************************************************************
             (*fbeta_)[gp].Update(eta_vec);
@@ -1316,6 +1601,25 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
 
             // right hand side term
             (*fbeta_)[gp].Update(cpl_,(*DalphaK_last_iter_)[gp],0.);
+
+            // EAS terms
+            switch(eastype_)
+            {
+            case soh8p_easnone:
+              // do nothing
+              break;
+            case soh8p_easmild:
+              LINALG::DENSEFUNCTIONS::multiplyNT<double,5,1,soh8p_easmild>
+                (1.,Kba_->at(gp).A(),-1./absetatrial,eta_trial_vec.A(),dYpl_dalpha.A());
+              break;
+            case soh8p_easfull:
+              LINALG::DENSEFUNCTIONS::multiplyNT<double,5,1,soh8p_easfull>
+                (1.,Kba_->at(gp).A(),-1./absetatrial,eta_trial_vec.A(),dYpl_dalpha.A());
+              break;
+            default:
+              dserror("Don't know what to do with EAS type %d", eastype_);
+              break;
+            }
           }
 
           // **************************************************************
@@ -1328,16 +1632,54 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
           int err = solve_for_kbbinv.Invert();
           if ((err != 0) || (err2!=0)) dserror("Inversion of Kbb failed");
 
-          LINALG::Matrix<numdofperelement_,5> KdbKbb; // temporary  Kdb.Kbb^-1
-          KdbKbb.Multiply(kdbeta,(*KbbInv_)[gp]);
+          // temporary  Kdb.Kbb^-1
+          LINALG::Matrix<numdofperelement_,5> KdbKbb;
+          KdbKbb.Multiply(1.,kdbeta,KbbInv_->at(gp),0.);
 
           // "plastic displacement stiffness"
           // plstiff = [k_d beta] * [k_beta beta]^-1 * [k_beta d]
-          if (stiffmatrix!=NULL) stiffmatrix->Multiply(-1.,KdbKbb,(*Kbd_)[gp],1.);
+          if (stiffmatrix!=NULL)
+            stiffmatrix->Multiply(-1.,KdbKbb,Kbd_->at(gp),1.);
 
           // "plastic internal force"
           // plFint = [K_db.K_bb^-1].f_b
-          if (force!=NULL) force->Multiply(-1.,KdbKbb,(*fbeta_)[gp],1.);
+          if (force!=NULL)
+            force->Multiply(-1.,KdbKbb,fbeta_->at(gp),1.);
+
+          // condense plasticity into EAS matrix blocks
+          tmp.Shape(neas_,5);
+          switch (eastype_)
+          {
+          case soh8p_easfull:
+            LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,5,soh8p_easfull>
+              (1.,Kda.A(),-1.,KdbKbb.A(),Kba_->at(gp).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,5,5>
+              (0.,tmp.A(),1.,Kab.A(),KbbInv_->at(gp).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,5,numdofperelement_>
+              (1.,Kad_->A(),-1.,tmp.A(),Kbd_->at(gp).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,5,soh8p_easfull>
+              (1.,KaaInv_->A(),-1.,tmp.A(),Kba_->at(gp).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,5,1>
+              (1.,feas_->A(),-1.,tmp.A(),fbeta_->at(gp).A());
+            break;
+          case soh8p_easmild:
+            LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,5,soh8p_easmild>
+              (1.,Kda.A(),-1.,KdbKbb.A(),Kba_->at(gp).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,5,5>
+              (0.,tmp.A(),1.,Kab.A(),KbbInv_->at(gp).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,5,numdofperelement_>
+              (1.,Kad_->A(),-1.,tmp.A(),Kbd_->at(gp).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,5,soh8p_easmild>
+              (1.,KaaInv_->A(),-1.,tmp.A(),Kba_->at(gp).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,5,1>
+              (1.,feas_->A(),-1.,tmp.A(),fbeta_->at(gp).A());
+            break;
+          case soh8p_easnone:
+            // do nothing
+            break;
+          default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+          }
+
         }
         else if ((*activity_state_)[gp]==false && Dissipation<0.)
         {
@@ -1348,10 +1690,28 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
           (*KbbInv_)[gp].Update(1./cpl_,id5);
           // right hand side
           (*fbeta_)[gp].Update(cpl_,(*DalphaK_last_iter_)[gp]);
+          // independent of EAS parameters
+          if (eastype_!=soh8p_easnone)
+            Kba_->at(gp).Shape(5,neas_);
 
           // condensation to internal force vector
           if (force!=NULL)
             force->Multiply(-1./cpl_,kdbeta,(*fbeta_)[gp],1.);
+          switch(eastype_)
+          {
+          case soh8p_easnone:
+            // do nothing
+            break;
+          case soh8p_easmild:
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,5,1>
+              (1.,feas_->A(),-1./cpl_,Kab.A(),(*fbeta_)[gp].A());
+            break;
+          case soh8p_easfull:
+            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,5,1>
+              (1.,feas_->A(),-1./cpl_,Kab.A(),(*fbeta_)[gp].A());
+            break;
+          default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+          }
         }
       }
       // reset for elastic GP with no plastic flow increment in this time step
@@ -1360,6 +1720,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
         (*Kbd_)[gp].Clear();
         (*fbeta_)[gp].Clear();
         (*KbbInv_)[gp].Clear();
+        if (eastype_!=soh8p_easnone)
+          Kba_->at(gp).Shape(5,neas_);
       }
 
       // square of the residual L2 norm
@@ -1372,6 +1734,44 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
 
     } // modification for plastic Gauss points
   } // gp loop
+
+  if (stiffmatrix != NULL && !tang_pred && eastype_!=soh8p_easnone)
+  {
+    // Static condensation EAS --> stiff ********************************
+    Epetra_SerialDenseSolver solve_for_inverseKaa;
+    solve_for_inverseKaa.SetMatrix(*KaaInv_);
+    solve_for_inverseKaa.Invert();
+
+    tmp.Shape(numdofperelement_,neas_);
+    switch (eastype_)
+    {
+    case soh8p_easfull:
+      LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_easfull,soh8p_easfull>
+        (0.,tmp.A(),1.,Kda.A(),KaaInv_->A());
+      if (stiffmatrix!=NULL)
+        LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_easfull,numdofperelement_>
+          (1.,stiffmatrix->A(),-1.,tmp.A(),Kad_->A());
+      if (force!=NULL)
+        LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_easfull,1>
+          (1.,force->A(),-1.,tmp.A(),feas_->A());
+      break;
+    case soh8p_easmild:
+      LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_easmild,soh8p_easmild>
+        (0.,tmp.A(),1.,Kda.A(),KaaInv_->A());
+      if (stiffmatrix!=NULL)
+        LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_easmild,numdofperelement_>
+          (1.,stiffmatrix->A(),-1.,tmp.A(),Kad_->A());
+      if (force!=NULL)
+        LINALG::DENSEFUNCTIONS::multiply<double,numdofperelement_,soh8p_easmild,1>
+          (1.,force->A(),-1.,tmp.A(),feas_->A());
+      break;
+    case soh8p_easnone:
+      break;
+    default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+    }
+  }
+
+  eas_res += pow(feas_uncondensed.Norm2(),2.);
 
   // communicate unconverged active set to time integration
   if (converged_active_set==false)
@@ -1400,11 +1800,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
     )
 {
   // check for f-bar element
-  bool fbar = true;
-  DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
-  = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
-  if (!eleFBAR)
-    fbar = false;
+  bool fbar = (ElementType()==DRT::ELEMENTS::So_hex8fbarPlastType::Instance());
 
   // update element geometry
   LINALG::Matrix<nen_,3> xrefe;  // X, material coord. of element
@@ -1616,36 +2012,40 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass_hill(
     // first part
     if (stiffmatrix != NULL)
     {
-      // constant predictor
-      if (pred == INPAR::STR::pred_constdis)
-        (*mDLp_last_iter_)[gp].Clear();
+      LINALG::Matrix<8,1> tmp81;
+      LINALG::Matrix<8,numdofperelement_> tmp8x;
 
-      // tangential predictor
-      else if (pred == INPAR::STR::pred_tangdis)
-        (*mDLp_last_iter_)[gp] = (*mDLp_last_timestep_)[gp];
-
-      // do usual recovery
-      else if (pred == INPAR::STR::pred_vague)
+      switch(pred)
       {
-        LINALG::Matrix<8,1> tmp81;
-        tmp81.Multiply((*KbbInvHill_)[gp],(*fbetaHill_)[gp]);
+      // constant predictor
+      case INPAR::STR::pred_constdis:
+        (*mDLp_last_iter_)[gp].Clear();
+        break;
 
-        // second part
-        LINALG::Matrix<8,numdofperelement_> tmp824;
-        tmp824.Multiply((*KbbInvHill_)[gp],(*KbdHill_)[gp]);
-        tmp81.Multiply(1.,tmp824,res_d,1.);
+        // tangential predictor
+      case INPAR::STR::pred_tangdis:
+        // do nothing
+        break;
+
+        // do usual recovery
+      case INPAR::STR::pred_vague:
+        tmp81.Multiply((*KbbInvHill_)[gp],(*fbetaHill_)[gp]);
+        tmp8x.Multiply((*KbbInvHill_)[gp],(*KbdHill_)[gp]);
+        tmp81.Multiply(1.,tmp8x,res_d,1.);
         (*mDLp_last_iter_)[gp].Update(-1.,tmp81,1.);
         lp_inc +=tmp81(0)*tmp81(0)
-                           +tmp81(1)*tmp81(1)
-                           +(-tmp81(0)-tmp81(1))*(-tmp81(0)-tmp81(1));
+                +tmp81(1)*tmp81(1)
+                +(-tmp81(0)-tmp81(1))*(-tmp81(0)-tmp81(1));
         for (int i=2; i<8; i++)
           lp_inc +=tmp81(i)*tmp81(i)*2.;
-      }
+        break;
 
-      // unknown predictor type
-      else
-        dserror("semi-smooth Newton plasticity algorithm doesn't know "
-            "what to do with predictor type %i",pred);
+        // unknown predictor type
+        default:
+          dserror("semi-smooth Newton plasticity algorithm doesn't know "
+              "what to do with predictor type %i",pred);
+          break;
+      }
     }
     // end of recover *********************************************
 
@@ -3128,10 +3528,21 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformation_nln()
       (*last_plastic_defgrd_inverse_)[gp].Invert();
     }
 
-    (*DalphaK_last_timestep_)[gp]=(*DalphaK_last_iter_)[gp];
     (*KbbInv_)[gp].Clear();
     (*Kbd_)[gp].Clear();
     (*fbeta_)[gp].Clear();
+  }
+
+  if (eastype_!=soh8p_easnone)
+  {
+    for (int i=0; i<neas_; i++)
+    {
+      (*alpha_eas_delta_over_last_timestep_)(i) = (*alpha_eas_)(i)-(*alpha_eas_last_timestep_)(i);
+      (*alpha_eas_last_timestep_)(i) = (*alpha_eas_)(i);
+    }
+    Kad_->Shape(neas_,numdofperelement_);
+    KaaInv_->Shape(neas_,neas_);
+    feas_->Size(neas_);
   }
 
   return;
@@ -3190,7 +3601,6 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::UpdatePlasticDeformationHill_nln
       (*last_plastic_defgrd_inverse_)[gp].Multiply(tmp,FpLast);
       (*last_plastic_defgrd_inverse_)[gp].Invert();
     }
-    (*mDLp_last_timestep_)[gp]=(*mDLp_last_iter_)[gp];
     (*KbbInvHill_)[gp].Clear();
     (*KbdHill_)[gp].Clear();
     (*fbetaHill_)[gp].Clear();

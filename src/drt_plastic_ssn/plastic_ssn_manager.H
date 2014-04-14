@@ -69,17 +69,27 @@ public:
   /*
   \brief check active set for convergence
   */
-  bool ActiveSetConverged();
+  bool ActiveSetConverged() {return !unconvergedactiveset_;};
 
   /*
   \brief check constraint residual for convergence
   */
-  bool ConstraintConverged();
+  bool ConstraintConverged() {return lp_residual_norm_global_<pl_res_tol_;} ;
 
   /*
   \brief check plastic flow increment for convergence
   */
-  bool IncrementConverged();
+  bool IncrementConverged() {return lp_increment_norm_global_<pl_incr_tol_;};
+
+  /*
+  \brief check constraint residual for convergence
+  */
+  bool EasResConverged() {return eas_residual_norm_global_<eas_res_tol_;} ;
+
+  /*
+  \brief check plastic flow increment for convergence
+  */
+  bool EasIncrConverged() {return eas_increment_norm_global_<eas_incr_tol_;};
 
   /*
   \brief return total number of active Gauss points
@@ -97,9 +107,24 @@ public:
   double DeltaLp_residual_norm() {return lp_residual_norm_global_;};
 
   /*
+  \brief return L2 norm of plastic flow increment
+  */
+  double EAS_increment_norm() {return eas_increment_norm_global_;};
+
+  /*
+  \brief return L2 norm of constraint equations
+  */
+  double EAS_residual_norm() {return eas_residual_norm_global_;};
+
+  /*
   \brief return parameter list of plastic algorithmic parameters
   */
   Teuchos::RCP<Teuchos::ParameterList> Params() {return plparams_; };
+
+  /*
+  \brief return parameter list of plastic algorithmic parameters
+  */
+  bool EAS() {return have_eas; };
 
 private:
 
@@ -111,6 +136,15 @@ private:
 
   double lp_increment_norm_global_; // L2-norm of global vector of plastic flow
   double lp_residual_norm_global_; // L2-norm of global vector of plastic constraint residuals
+
+  bool have_eas;                    // is EAS technology used
+  double eas_increment_norm_global_; // L2-norm of global vector EAS variables
+  double eas_residual_norm_global_; // L2-norm of global vector of EAS residuals
+
+  double pl_incr_tol_;      // convergence tolerance for plastic flow increment
+  double pl_res_tol_;       // convergence tolerance for plastic constraints
+  double eas_incr_tol_;     // convergence tolerance for EAS increment
+  double eas_res_tol_;       // convergence tolerance for EAS residual
 };// class SsnPlastManager
 }//namespace UTILS
 

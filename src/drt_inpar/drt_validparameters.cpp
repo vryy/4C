@@ -1925,6 +1925,35 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "tolerance in the plastic flow (Delta Lp) norm for the Newton iteration",
                   &iplast);
 
+  setStringToIntegralParameter<int>("NORMCOMBI_EASRES","And",
+    "binary operator to combine EAS-residual and residual force values",
+    tuple<std::string>(
+      "And",
+      "Or"),
+    tuple<int>(
+      INPAR::STR::bop_and,
+      INPAR::STR::bop_or),
+    &iplast
+    );
+
+  setStringToIntegralParameter<int>("NORMCOMBI_EASINCR","And",
+      "binary operator to combine displacement increments and EAS increment values",
+      tuple<std::string>(
+        "And",
+        "Or"),
+      tuple<int>(
+        INPAR::STR::bop_and,
+        INPAR::STR::bop_or),
+      &iplast
+      );
+
+  DoubleParameter("TOLEASRES",1.0E-8,
+                  "tolerance in the EAS residual norm for the newton iteration",
+                  &iplast);
+  DoubleParameter("TOLEASINCR",1.0E-8,
+                  "tolerance in the EAS increment norm for the Newton iteration",
+                  &iplast);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");
 

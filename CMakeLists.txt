@@ -766,6 +766,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so3_ssn_plast.cpp
   src/drt_so3/so3_ssn_plast_evaluate.cpp
   src/drt_so3/so3_ssn_plast_eletypes.cpp
+  src/drt_so3/so3_ssn_plast_eas.cpp
 )
 set(OBJS_POST_DRT_ENSIGHT
   src/post_ensight/post_drt_ensight.cpp

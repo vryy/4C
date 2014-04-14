@@ -265,6 +265,25 @@ namespace ELEMENTS
       postprocess_stress  //!< postprocess stresses
     };
 
+    /*!
+     * \brief EAS technology enhancement types of so_hex8
+     *
+     * Solid Hex8 has EAS enhancement of GL-strains to avoid locking.
+     * New enum for so3_plast. Currently only for hex8
+     */
+    enum EASType  // with meaningfull value for matrix size info
+    {
+      soh8p_easnone = 0,  //!< no EAS i.e. displacement based with tremendous locking
+      soh8p_easmild = 9,  //!< 9 parameters consisting of modes to alleviate
+                         //!< shear locking (bending) and main incompressibility modes
+                         //!< (for Solid Hex8)
+      soh8p_easfull = 21,  //!< 21 parameters to prevent almost all locking modes.
+                          //!< Equivalent to all 30 parameters to fully complete element
+                          //!< with quadratic modes (see Andelfinger 1993 for details) and therefore
+                          //!< also suitable for distorted elements.
+                          //!< (for Solid Hex8)
+    };
+
     //! vector of inverses of the jacobian in material frame
     std::vector<LINALG::Matrix<nsd_,nsd_> > invJ_;
     //! determinant of Jacobian in material frame
@@ -385,6 +404,31 @@ namespace ELEMENTS
         LINALG::Matrix<numgpt_post,numstr_>& stresses,  ///< gp stresses
         Epetra_MultiVector& expolstresses);  ///< nodal stresses
 
+    // EAS element techonolgy *******************************************
+    //! Initialize data for EAS (once)
+    void EasInit();
+
+    //! setup EAS for each evaluation
+    void EasSetup(
+        std::vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
+        double& detJ0,                      // det of Jacobian at origin
+        LINALG::Matrix<numstr_,numstr_>& T0invT,   // maps M(origin) local to global
+        const LINALG::Matrix<nen_,nsd_>& xrefe)    // material element coords
+    ;
+
+    /*! \brief Calculate the deformation gradient that is consistent
+     *         with modified (e.g. EAS) GL strain tensor.
+     *         Expensive (two polar decomposition), but required, if
+     *         the material evaluation is based on the deformation
+     *         gradient rather than the GL strain tensor (e.g. plasticity).
+     *
+     * \param defgrd_disp  (in)  : displacement-based deformation gradient
+     * \param glstrain_mod (in)  : modified GL strain tensor (strain-like Voigt notation)
+     * \param defgrd_mod   (out) : consistent modified deformation gradient
+     */
+    void CalcConsistentDefgrd(LINALG::Matrix<3,3> defgrd_disp,
+                              LINALG::Matrix<6,1> glstrain_mod,
+                              LINALG::Matrix<3,3>& defgrd_mod);
 
     //! @name plasticity related stuff
 
@@ -408,13 +452,6 @@ namespace ELEMENTS
     // inverse plastic deformation gradient for each Gauss point at last converged state
     Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > last_plastic_defgrd_inverse_;
 
-    // plastic increment at each Gauss point at last Newton iteration
-    // for a slightly simpler implementation, we use Delta alpha^k=-Delta D^p instead of Delta D^p
-    Teuchos::RCP<std::vector<LINALG::Matrix<5,1> > > DalphaK_last_iter_;
-
-    // plastic increment at each Gauss point at converged time step (needed for tangential predictor)
-    Teuchos::RCP<std::vector<LINALG::Matrix<5,1> > > DalphaK_last_timestep_;
-
     // accumulated plastic strain for each Gauss point at last converged state
     Teuchos::RCP<std::vector<LINALG::Matrix<1,1> > > last_alpha_isotropic_;
 
@@ -424,6 +461,9 @@ namespace ELEMENTS
     // classification, if the Gauss point is currently in the active (true) or inactive (false) set
     Teuchos::RCP<std::vector<bool> > activity_state_;
 
+    // Hill plasticity ********************************************
+    // here we have 5 scalar plastic variables at each time step
+    // (symmetric, traceless 3x3 matrix)
     // Kbb^-1 at each Gauss point for recovery of inner variables
     Teuchos::RCP<std::vector<LINALG::Matrix<5,5> > > KbbInv_;
 
@@ -433,7 +473,9 @@ namespace ELEMENTS
     // f_b at each Gauss point for recovery of inner variables
     Teuchos::RCP<std::vector<LINALG::Matrix<5,1> > > fbeta_;
 
-
+    // plastic increment at each Gauss point at last Newton iteration
+    // for a slightly simpler implementation, we use Delta alpha^k=-Delta D^p instead of Delta D^p
+    Teuchos::RCP<std::vector<LINALG::Matrix<5,1> > > DalphaK_last_iter_;
 
     // Hill plasticity ********************************************
     // here we have 8 scalar plastic variables at each time step
@@ -450,11 +492,19 @@ namespace ELEMENTS
     // plastic increment at each Gauss point at last Newton iteration
     Teuchos::RCP<std::vector<LINALG::Matrix<8,1> > > mDLp_last_iter_;
 
-    // plastic increment at each Gauss point at converged time step (needed for tangential predictor)
-    Teuchos::RCP<std::vector<LINALG::Matrix<8,1> > > mDLp_last_timestep_;
-
     // accumulated plastic strain increment for each Gauss point
     Teuchos::RCP<std::vector<double> > deltaAlphaI_;
+
+    // EAS element technology ************************************
+    Teuchos::RCP<Epetra_SerialDenseMatrix> KaaInv_;
+    Teuchos::RCP<Epetra_SerialDenseMatrix> Kad_;
+    Teuchos::RCP<Epetra_SerialDenseVector> feas_;
+    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > Kba_;
+    Teuchos::RCP<Epetra_SerialDenseVector> alpha_eas_;
+    Teuchos::RCP<Epetra_SerialDenseVector> alpha_eas_last_timestep_;
+    Teuchos::RCP<Epetra_SerialDenseVector> alpha_eas_delta_over_last_timestep_;
+    EASType                  eastype_;
+    int                      neas_;
 
   };  // class So3_Plast
 

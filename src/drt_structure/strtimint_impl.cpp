@@ -181,13 +181,18 @@ STR::TimIntImpl::TimIntImpl
   // setup binary operators for convergence check of semi-smooth plasticity problems
   combfresplconstr_ = INPAR::STR::bop_and;
   combdisiLp_       = INPAR::STR::bop_and;
+  combfresEasres_   = INPAR::STR::bop_and;
+  combdisiEasIncr_  = INPAR::STR::bop_and;
   if (HaveSemiSmoothPlasticity())
   {
     combfresplconstr_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(*(plastman_->Params()),"NORMCOMBI_RESFPLASTCONSTR");
     combdisiLp_       = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(*(plastman_->Params()),"NORMCOMBI_DISPPLASTINCR");
+    if (plastman_->EAS())
+    {
+      combfresEasres_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(*(plastman_->Params()),"NORMCOMBI_EASRES");
+      combdisiEasIncr_= DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(*(plastman_->Params()),"NORMCOMBI_EASINCR");
+    }
   }
-
-
 
   // -------------------------------------------------------------------
   // setup Krylov projection if necessary
@@ -1075,8 +1080,26 @@ bool STR::TimIntImpl::Converged()
       convdis = convdis or plastman_->IncrementConverged();
     else
       dserror("Something went terribly wrong with binary operator!");
-  }
 
+    if (plastman_->EAS())
+    {
+      // convergence of residual
+      if (combfresEasres_==INPAR::STR::bop_and)
+        convfres = convfres and plastman_->EasResConverged();
+      else if (combfresEasres_==INPAR::STR::bop_or)
+        convfres = convfres or plastman_->EasResConverged();
+      else
+        dserror("Something went terribly wrong with binary operator!");
+
+      // convergence of increments
+      if (combdisiEasIncr_==INPAR::STR::bop_and)
+        convdis = convdis and plastman_->EasIncrConverged();
+      else if (combdisiEasIncr_==INPAR::STR::bop_or)
+        convdis = convdis or plastman_->EasIncrConverged();
+      else
+        dserror("Something went terribly wrong with binary operator!");
+    }
+  }
 
   //pressure related stuff
   if (pressure_ != Teuchos::null)
@@ -2744,7 +2767,11 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   {
     oss <<std::setw(20)<< "abs-plconstr-norm";
     oss <<std::setw(20)<< "abs-dLPincr-norm";
-
+    if (plastman_->EAS())
+    {
+      oss <<std::setw(20)<< "abs-easRes-norm";
+      oss <<std::setw(20)<< "abs-easIncr-norm";
+    }
   }
 
   // add constraint norm
@@ -2910,6 +2937,11 @@ void STR::TimIntImpl::PrintNewtonIterText
   {
     oss << std::setw(20) << std::setprecision(5) << std::scientific << plastman_->DeltaLp_residual_norm();
     oss << std::setw(20) << std::setprecision(5) << std::scientific << plastman_->DeltaLp_increment_norm();
+    if (plastman_->EAS())
+    {
+      oss << std::setw(20) << std::setprecision(5) << std::scientific << plastman_->EAS_residual_norm();
+      oss << std::setw(20) << std::setprecision(5) << std::scientific << plastman_->EAS_increment_norm();
+    }
   }
 
   // add constraint norm

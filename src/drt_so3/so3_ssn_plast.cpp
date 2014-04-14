@@ -37,20 +37,27 @@ DRT::ELEMENTS::So3_Plast<so3_ele,distype>::So3_Plast(
   stab_s_(-1.),
   cpl_(-1.),
   last_plastic_defgrd_inverse_(Teuchos::null),
-  DalphaK_last_iter_(Teuchos::null),
-  DalphaK_last_timestep_(Teuchos::null),
   last_alpha_isotropic_(Teuchos::null),
   last_alpha_kinematic_(Teuchos::null),
   activity_state_(Teuchos::null),
   KbbInv_(Teuchos::null),
   Kbd_(Teuchos::null),
   fbeta_(Teuchos::null),
+  DalphaK_last_iter_(Teuchos::null),
   KbbInvHill_(Teuchos::null),
   KbdHill_(Teuchos::null),
   fbetaHill_(Teuchos::null),
   mDLp_last_iter_(Teuchos::null),
-  mDLp_last_timestep_(Teuchos::null),
-  deltaAlphaI_(Teuchos::null)
+  deltaAlphaI_(Teuchos::null),
+  KaaInv_(Teuchos::null),
+  Kad_(Teuchos::null),
+  feas_(Teuchos::null),
+  Kba_(Teuchos::null),
+  alpha_eas_(Teuchos::null),
+  alpha_eas_last_timestep_(Teuchos::null),
+  alpha_eas_delta_over_last_timestep_(Teuchos::null),
+  eastype_(soh8p_easnone),
+  neas_(0)
 {
   numgpt_ = intpoints_.NumPoints();
   kintype_ = geo_nonlinear;
@@ -137,6 +144,17 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Pack(
   bool Hill=(bool)(mDLp_last_iter_!=Teuchos::null);
   so3_ele::AddtoPack(data,(int)Hill);
 
+  // EAS element technology
+  so3_ele::AddtoPack(data,(int)eastype_);
+  so3_ele::AddtoPack(data,neas_);
+  if (eastype_!=soh8p_easnone)
+  {
+    so3_ele::AddtoPack(data,(*alpha_eas_));
+    so3_ele::AddtoPack(data,(*alpha_eas_last_timestep_));
+    so3_ele::AddtoPack(data,(*alpha_eas_delta_over_last_timestep_));
+  }
+
+  // history at each Gauss point
   if (histsize!=0)
     for (int i=0; i<histsize; i++)
     {
@@ -144,10 +162,13 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Pack(
       so3_ele::AddtoPack(data,last_alpha_isotropic_->at(i));
       so3_ele::AddtoPack(data,last_alpha_kinematic_->at(i));
       so3_ele::AddtoPack(data,(int)activity_state_->at(i));
+      if (Hill)
+        so3_ele::AddtoPack(data,mDLp_last_iter_->at(i));
+      else
+        so3_ele::AddtoPack(data,DalphaK_last_iter_->at(i));
     }
 
   return;
-
 }  // Pack()
 
 
@@ -193,63 +214,92 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::Unpack(
 
    bool Hill=(bool)so3_ele::ExtractInt(position,data);
 
-   // initialize
+   // EAS element technology
+   eastype_=static_cast<EASType>(so3_ele::ExtractInt(position,data));
+   so3_ele::ExtractfromPack(position,data,neas_);
+   if ((int)eastype_!=neas_)
+     dserror("mismatch in EAS");
+   // no EAS
+   if (eastype_==soh8p_easnone)
+   {
+     KaaInv_                             =Teuchos::null;
+     Kad_                                =Teuchos::null;
+     feas_                               =Teuchos::null;
+     Kba_                                =Teuchos::null;
+     alpha_eas_                          =Teuchos::null;
+     alpha_eas_last_timestep_            =Teuchos::null;
+     alpha_eas_delta_over_last_timestep_ =Teuchos::null;
+   }
+   else
+   {
+     KaaInv_                             =Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,neas_));
+     Kad_                                =Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,numdofperelement_));
+     feas_                               =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
+     Kba_                                =Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(histsize,Epetra_SerialDenseMatrix(5,neas_)));
+     alpha_eas_                          =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
+     alpha_eas_last_timestep_            =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
+     alpha_eas_delta_over_last_timestep_ =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
+   }
+
+   // initialize plastic history data
    last_plastic_defgrd_inverse_ = Teuchos::rcp( new std::vector<LINALG::Matrix<3,3> >(numgpt_));
    last_alpha_isotropic_        = Teuchos::rcp( new std::vector<LINALG::Matrix<1,1> >(numgpt_));
    last_alpha_kinematic_        = Teuchos::rcp( new std::vector<LINALG::Matrix<3,3> >(numgpt_));
    activity_state_              = Teuchos::rcp( new std::vector<bool>(numgpt_));
 
-   LINALG::Matrix<3,3> tmp33;
-   LINALG::Matrix<1,1> tmp11;
-    for (int i=0; i<histsize; i++)
+   // initialize yield function specific stuff
+   if (Hill)
+   {
+     LINALG::Matrix<8,8> tmp88(true);
+     LINALG::Matrix<8,numdofperelement_> tmp8x(true);
+     LINALG::Matrix<8,1> tmp81(true);
+     KbbInvHill_                      = Teuchos::rcp( new std::vector<LINALG::Matrix<8,8> >(numgpt_,tmp88));
+     KbdHill_                         = Teuchos::rcp( new std::vector<LINALG::Matrix<8,numdofperelement_> >(numgpt_,tmp8x));
+     fbetaHill_                       = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >(numgpt_,tmp81));
+     mDLp_last_iter_                  = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >(numgpt_));
+     deltaAlphaI_                     = Teuchos::rcp( new std::vector<double>(numgpt_,0.));
+
+     // don't need
+     DalphaK_last_iter_     = Teuchos::null;
+     KbbInv_                = Teuchos::null;
+     Kbd_                   = Teuchos::null;
+     fbeta_                 = Teuchos::null;
+   }
+   else // von Mises
+   {
+     LINALG::Matrix<5,5> tmp55(true);
+     LINALG::Matrix<5,numdofperelement_> tmp5x(true);
+     LINALG::Matrix<5,1> tmp51(true);
+     KbbInv_                      = Teuchos::rcp( new std::vector<LINALG::Matrix<5,5> >(numgpt_,tmp55));
+     Kbd_                         = Teuchos::rcp( new std::vector<LINALG::Matrix<5,numdofperelement_> >(numgpt_,tmp5x));
+     fbeta_                       = Teuchos::rcp( new std::vector<LINALG::Matrix<5,1> >(numgpt_,tmp51));
+     DalphaK_last_iter_           = Teuchos::rcp( new std::vector<LINALG::Matrix<5,1> >(numgpt_));
+
+     // don't need
+     mDLp_last_iter_        = Teuchos::null;
+     deltaAlphaI_           = Teuchos::null;
+     KbbInvHill_            = Teuchos::null;
+     KbdHill_               = Teuchos::null;
+     fbetaHill_             = Teuchos::null;
+   }
+
+   if (eastype_!=soh8p_easnone)
+   {
+     so3_ele::ExtractfromPack(position,data,(*alpha_eas_));
+     so3_ele::ExtractfromPack(position,data,(*alpha_eas_last_timestep_));
+     so3_ele::ExtractfromPack(position,data,(*alpha_eas_delta_over_last_timestep_));
+   }
+
+   for (int i=0; i<histsize; i++)
     {
-      so3_ele::ExtractfromPack(position,data,tmp33);
-      (*last_plastic_defgrd_inverse_)[i]=tmp33;
-      so3_ele::ExtractfromPack(position,data,tmp11);
-      (*last_alpha_isotropic_)[i]=tmp11;
-      so3_ele::ExtractfromPack(position,data,tmp33);
-      (*last_alpha_kinematic_)[i]=tmp33;
+      so3_ele::ExtractfromPack(position,data,(*last_plastic_defgrd_inverse_)[i]);
+      so3_ele::ExtractfromPack(position,data,(*last_alpha_isotropic_)[i]);
+      so3_ele::ExtractfromPack(position,data,(*last_alpha_kinematic_)[i]);
       (*activity_state_)[i]=(bool)(so3_ele::ExtractInt(position,data));
-    }
-
-    // initialize yield function specific stuff
-    if (Hill)
-    {
-      LINALG::Matrix<8,8> tmp88(true);
-      LINALG::Matrix<8,numdofperelement_> tmp8x(true);
-      LINALG::Matrix<8,1> tmp81(true);
-      KbbInvHill_                      = Teuchos::rcp( new std::vector<LINALG::Matrix<8,8> >(numgpt_,tmp88));
-      KbdHill_                         = Teuchos::rcp( new std::vector<LINALG::Matrix<8,numdofperelement_> >(numgpt_,tmp8x));
-      fbetaHill_                       = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >(numgpt_,tmp81));
-      mDLp_last_iter_                  = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >(numgpt_,tmp81));
-      mDLp_last_timestep_              = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >(numgpt_,tmp81));
-      deltaAlphaI_                     = Teuchos::rcp( new std::vector<double>(numgpt_,0.));
-
-      // don't need
-      DalphaK_last_iter_     = Teuchos::null;
-      DalphaK_last_timestep_ = Teuchos::null;
-      KbbInv_                = Teuchos::null;
-      Kbd_                   = Teuchos::null;
-      fbeta_                 = Teuchos::null;
-    }
-    else // von Mises
-    {
-      LINALG::Matrix<5,5> tmp55(true);
-      LINALG::Matrix<5,numdofperelement_> tmp5x(true);
-      LINALG::Matrix<5,1> tmp51(true);
-      KbbInv_                      = Teuchos::rcp( new std::vector<LINALG::Matrix<5,5> >(numgpt_,tmp55));
-      Kbd_                         = Teuchos::rcp( new std::vector<LINALG::Matrix<5,numdofperelement_> >(numgpt_,tmp5x));
-      fbeta_                       = Teuchos::rcp( new std::vector<LINALG::Matrix<5,1> >(numgpt_,tmp51));
-      DalphaK_last_iter_           = Teuchos::rcp( new std::vector<LINALG::Matrix<5,1> >(numgpt_,tmp51));
-      DalphaK_last_timestep_       = Teuchos::rcp( new std::vector<LINALG::Matrix<5,1> >(numgpt_,tmp51));
-
-      // don't need
-      mDLp_last_iter_        = Teuchos::null;
-      mDLp_last_timestep_    = Teuchos::null;
-      deltaAlphaI_           = Teuchos::null;
-      KbbInvHill_            = Teuchos::null;
-      KbdHill_               = Teuchos::null;
-      fbetaHill_             = Teuchos::null;
+      if (Hill)
+        so3_ele::ExtractfromPack(position,data,(*mDLp_last_iter_)[i]);
+      else
+        so3_ele::ExtractfromPack(position,data,(*DalphaK_last_iter_)[i]);
     }
 
   if (position != data.size())
@@ -316,12 +366,10 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadElement(
     KbdHill_                         = Teuchos::rcp( new std::vector<LINALG::Matrix<8,numdofperelement_> >(numgpt_,tmp8x));
     fbetaHill_                       = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >(numgpt_,tmp81));
     mDLp_last_iter_                  = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >(numgpt_,tmp81));
-    mDLp_last_timestep_              = Teuchos::rcp( new std::vector<LINALG::Matrix<8,1> >(numgpt_,tmp81));
     deltaAlphaI_                     = Teuchos::rcp( new std::vector<double>(numgpt_,0.));
 
     // don't need
     DalphaK_last_iter_     = Teuchos::null;
-    DalphaK_last_timestep_ = Teuchos::null;
     KbbInv_                = Teuchos::null;
     Kbd_                   = Teuchos::null;
     fbeta_                 = Teuchos::null;
@@ -335,16 +383,39 @@ bool DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadElement(
     Kbd_                         = Teuchos::rcp( new std::vector<LINALG::Matrix<5,numdofperelement_> >(numgpt_,tmp5x));
     fbeta_                       = Teuchos::rcp( new std::vector<LINALG::Matrix<5,1> >(numgpt_,tmp51));
     DalphaK_last_iter_           = Teuchos::rcp( new std::vector<LINALG::Matrix<5,1> >(numgpt_,tmp51));
-    DalphaK_last_timestep_       = Teuchos::rcp( new std::vector<LINALG::Matrix<5,1> >(numgpt_,tmp51));
 
     // don't need
     mDLp_last_iter_        = Teuchos::null;
-    mDLp_last_timestep_    = Teuchos::null;
     deltaAlphaI_           = Teuchos::null;
     KbbInvHill_            = Teuchos::null;
     KbdHill_               = Teuchos::null;
     fbetaHill_             = Teuchos::null;
   }
+
+  // EAS
+  if (linedef->HaveNamed("EAS"))
+  {
+    if (distype != DRT::Element::hex8)
+      dserror("EAS in so3 plast currently only for HEX8 elements");
+
+    if (ElementType()==DRT::ELEMENTS::So_hex8fbarPlastType::Instance())
+      dserror("no combination of Fbar and EAS ... And, by the way, how did you get here???");
+    linedef->ExtractString("EAS",buffer);
+    if (buffer == "none")
+      eastype_=soh8p_easnone;
+    else if (buffer == "mild")
+      eastype_=soh8p_easmild;
+    else if (buffer == "full")
+      eastype_=soh8p_easfull;
+    else
+      dserror("unknown EAS type for so3_plast");
+
+    if (HaveHillPlasticity() && eastype_!=soh8p_easnone)
+      dserror("no EAS for Hill-plasticity yet");
+  }
+  else
+    eastype_=soh8p_easnone;
+  EasInit();
 
   return true;
 
@@ -521,6 +592,10 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::ReadParameterList(Teuchos::RCP<T
 
   cpl_=plparams->get<double>("SEMI_SMOOTH_CPL");
   stab_s_=plparams->get<double>("STABILIZATION_S");
+  if (eastype_!=soh8p_easnone)
+    plparams->get<int>("have_EAS")=1;
+
+  return;
 }
 
 
