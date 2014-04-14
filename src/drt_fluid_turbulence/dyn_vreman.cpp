@@ -218,7 +218,7 @@ void FLD::Vreman::DynVremanComputeDt(Teuchos::ParameterList&  extraparams)
   //const Teuchos::RCP<const MAT::ScatraMat>& actmatscatra = static_cast<const MAT::ScatraMat>(matscatra);
   //double dens = actmat->density_;
   //double visc = actmat->viscosity_/dens;
-  double diffus = actmatscatra->diffusivity_;
+  double diffus = MAT::PAR::ScatraMat(*actmatscatra).GetParameter(actmatscatra->diff,-1);// actmatscatra->diffusivity_;
   //double Sc=visc/diffus;
 
   // generate a parameterlist for communication and control

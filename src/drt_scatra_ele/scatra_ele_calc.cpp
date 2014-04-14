@@ -1013,7 +1013,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   const double det = xij_.Invert(xjm_);
 
   if (det < 1E-16)
-    dserror("GLOBAL ELEMENT NO. %lf \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
+    dserror("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
 
   // set integration factor: fac = Gauss weight * det(J)
   const double fac = intpoints.IP().qwgt[iquad]*det;
@@ -1090,6 +1090,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Materials(
   Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,         //!< fluid viscosity
   const int                               iquad         //!< id of current gauss point
+
   )
 {
   if (material->MaterialType() == INPAR::MAT::m_scatra)
@@ -1113,17 +1114,21 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatScaTra(
   Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
   Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,     //!< fluid viscosity
-  const int                               iquad     //!< id of current gauss point
+  const int                               iquad   //!< id of current gauss point (default = -1)
   )
 {
+
+  int leleid = -1;
+  if(DRT::Problem::Instance()->ProblemType()==prb_acou) leleid = DRT::Problem::Instance()->GetDis("scatra")->ElementColMap()->LID(eid_);
+
   const Teuchos::RCP<const MAT::ScatraMat>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
 
   // get constant diffusivity
-  diffmanager->SetIsotropicDiff(actmat->Diffusivity(),k);
+  diffmanager->SetIsotropicDiff(actmat->Diffusivity(leleid),k);
 
   // get reaction coefficient
-  reamanager->SetReaCoeff(actmat->ReaCoeff(),k);
+  reamanager->SetReaCoeff(actmat->ReaCoeff(leleid),k);
 
   // in case of multifractal subgrid-scales, read Schmidt number
   if (scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales or scatrapara_->RBSubGrVel()

@@ -42,12 +42,20 @@ INV_ANALYSIS                    pat
 ------------------------------------ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION
 MONITORFILE                     acou_pat_1d_trap_inv.monitor 
 FDCHECK                         No
-INV_TOL                         1e-20
+PARAMETRIZATION			elementwise
+INV_TOL                         1e-10
 INV_MAX_RUN                     20
 INV_TOL_GRAD_YN                 No
 INV_LS_MAX_RUN                  3
 ALPHA_MUA                       0.0
-BETA_MUA   0.0
+BETA_MUA                        0.0
+OPTIMIZATION			LBFGS   
+SIZESTORAGE                     10 
+ELE_SCALING			No
+LS_STEPLENGTHRED		0.1    
+-------------------------------------------------------STAT INVERSE ANALYSIS
+PARAMLIST                       2 REAC 
+METAPARAMS                      no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   2
 SOLVERTYPE                      linear_full

@@ -1361,6 +1361,7 @@ set(OBJS_DRT_ACOU
   src/drt_acou/acou_inv_resulttest.cpp
   src/drt_acou/acou_resulttest.cpp
   src/drt_acou/acou_utils.cpp
+  src/drt_acou/pat_matpar_manager.cpp
 )
 set(OBJS_DRT_ACOU_LIB
   src/drt_acou/acou_ele_boundary_calc.cpp

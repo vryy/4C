@@ -76,8 +76,15 @@ void STR::INVANA::MatParManager::InitParams()
           else
             (*optparams_)( parapos_.at(it->first).at(jt-it->second.begin()) )->PutScalar( (actmat->Parameter()->GetParameter(*jt,0)) );
         }
+        break;
       }
-      break;
+      case INPAR::MAT::m_scatra:
+      {
+        std::vector<int>::const_iterator jt;
+        for (jt = it->second.begin(); jt != it->second.end(); jt++)
+          (*optparams_)( parapos_.at(it->first).at(jt-it->second.begin()) )->PutScalar( (actmat->Parameter()->GetParameter(*jt,0)) );
+        break;
+      }
       default:
         dserror("Materiall not provided by the Material Manager for Optimization");
       break;

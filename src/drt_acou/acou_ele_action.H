@@ -30,7 +30,6 @@ enum Action {
   project_optical_field,
   update_secondary_solution,
   interpolate_hdg_to_node,
-  calc_integr_objf,
   update_secondary_solution_and_calc_residual,
   interpolate_psi_to_node
 }; // enum Action

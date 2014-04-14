@@ -69,7 +69,7 @@ void ACOU::AcouInvResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& 
 
       if (position == "absorptioncoeff")
       {
-        result = (*mysol_)[dis_->ElementColMap()->LID(element)];
+        result = mysol_->operator ()(0)->operator [](dis_->ElementColMap()->LID(element));
       }
       else
       {

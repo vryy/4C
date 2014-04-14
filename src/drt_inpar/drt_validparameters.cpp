@@ -6724,25 +6724,38 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 								 "Types of inverse analysis and on/off switch",
 								 tuple<std::string>(
 								   "none",
-								   "pat"),
+								   "pat"), // here, backprojection could be added
 								 tuple<int>(
 								   INPAR::ACOU::inv_none,
 								   INPAR::ACOU::inv_pat),
 								 &acousticdyn);
 
+
 	Teuchos::ParameterList& acou_inv = acousticdyn.sublist("PA IMAGE RECONSTRUCTION",false,"");
+
+  setStringToIntegralParameter<int>("OPTIMIZATION","LBFGS",
+                                    "types of optimization algorithm",
+                                    tuple<std::string>(
+                                      "GradientDescent",
+                                      "LBFGS"),
+                                    tuple<int>(
+                                      INPAR::ACOU::inv_gd,
+                                      INPAR::ACOU::inv_lbfgs),
+                                    &acou_inv);
 
 	StringParameter("MONITORFILE","none.monitor","Filename of file containing measured pressure values",&acou_inv);
 	BoolParameter("FDCHECK","No","Finite difference check",&acou_inv);
 	DoubleParameter("INV_TOL",1e-16,"Tolerance for objective function of inverse pat analysis",&acou_inv);
 	BoolParameter("INV_TOL_GRAD_YN","No","Flag to indicate check of the norm of the gradient",&acou_inv);
 	DoubleParameter("INV_TOL_GRAD",0.0,"Tolerance for norm of gradient of inverse pat analysis",&acou_inv);
+	BoolParameter("ELE_SCALING","No","Should gradient be scaled by element size?",&acou_inv);
 	IntParameter("INV_MAX_RUN",10,"Maximal run number for inverse pat analysis",&acou_inv);
 	IntParameter("INV_LS_MAX_RUN",10,"Maximal run number for line search in inverse pat analysis",&acou_inv);
 	DoubleParameter("LS_DECREASECOND",0.0,"coefficient for calculation of sufficient decrease condition",&acou_inv);
 	DoubleParameter("LS_STEPLENGTHRED",0.5,"step length is multiplied by this value if line search not yet sufficient",&acou_inv);
 	DoubleParameter("ALPHA_MUA",0.0,"Regularization parameter for absorption coefficient",&acou_inv);
 	DoubleParameter("BETA_MUA",0.0,"Regularization parameter for gradient of absorption coefficient",&acou_inv);
+  IntParameter("SIZESTORAGE",10,"number of vectors to keep in storage; defaults to 10 (lbfgs usage only)",&acou_inv);
 
   // decide which parametrization of material parameters to use
   setStringToIntegralParameter<int>("PARAMETRIZATION","none",

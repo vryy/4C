@@ -75,7 +75,7 @@ namespace INVANA
     virtual ~MatParManager() { ; };
 
     //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
-    void Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint);
+    virtual void Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint);
 
     //! evaluate derivative of the residual force vector w.r.t to the material parameters using FD
     void EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint);
@@ -127,6 +127,19 @@ namespace INVANA
     //! a uniqueGIDS version to be used for e.g.: writing restart data
     Teuchos::RCP<Epetra_Map> paramlayoutmapunique_;
 
+    //! map of names for each material parameter
+    //! key: matid, value: value-enum <BR>
+    //! value is of enum type and can be used to set the respective material parameter directly<BR>
+    //! e.g. < 1 ; ( youngs, beta)> <BR>
+    //!      < 2 ; ( k1 , k2 )>
+    std::map<int, std::vector<int> > paramap_;
+
+    //! map of matids to parameter-ids for the parameter vector kept in here<BR>
+    //! e.g.  < 1 ; (0 , 1)> <BR>
+    //!       < 2 ; (2 , 3)> <BR>
+    //! wrt the above example this means youngs is stored in vector 0, beta in vector 1, k1 in vector 3, etc.
+    std::map<int,std::vector<int> > parapos_;
+
     //! set elementwise material parameters
     virtual void SetParams();
 
@@ -146,19 +159,6 @@ namespace INVANA
     virtual void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint) = 0;
 
   private:
-
-    //! map of names for each material parameter
-    //! key: matid, value: value-enum <BR>
-    //! value is of enum type and can be used to set the respective material parameter directly<BR>
-    //! e.g. < 1 ; ( youngs, beta)> <BR>
-    //!      < 2 ; ( k1 , k2 )>
-    std::map<int, std::vector<int> > paramap_;
-
-    //! map of matids to parameter-ids for the parameter vector kept in here<BR>
-    //! e.g.  < 1 ; (0 , 1)> <BR>
-    //!       < 2 ; (2 , 3)> <BR>
-    //! wrt the above example this means youngs is stored in vector 0, beta in vector 1, k1 in vector 3, etc.
-    std::map<int,std::vector<int> > parapos_;
 
     //! number of physically different material parameters
     //! -> number of vectors in MatParManager::params_

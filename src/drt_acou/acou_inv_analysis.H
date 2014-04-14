@@ -35,6 +35,7 @@ namespace DRT
 namespace ACOU
 {
   class AcouImplicitTimeInt;
+  class PatMatParManager;
 }
 namespace SCATRA
 {
@@ -49,6 +50,21 @@ namespace IO
 {
   class DiscretizationWriter;
 }
+namespace STR
+{
+  namespace INVANA
+  {
+    class MatParManager;
+  }
+}
+
+namespace DRT
+{
+  namespace UTILS
+  {
+    template <typename> class TimIntMStep;
+  }
+}
 
 namespace ACOU
 {
@@ -59,20 +75,45 @@ namespace ACOU
 
 class InvAnalysis
 {
+
+public:
+
+  //! standard Constructor
+  InvAnalysis(
+    Teuchos::RCP<DRT::Discretization> scatradis, //!< the light discretization
+    Teuchos::RCP<DRT::DiscretizationHDG> acoudis, //!< the sound discretization
+    const Teuchos::ParameterList& scapara,
+    const Teuchos::ParameterList& scasolvpara,
+    Teuchos::RCP<Teuchos::ParameterList> acoupara,
+    Teuchos::RCP<LINALG::Solver> acousolv,
+    Teuchos::RCP<IO::DiscretizationWriter> acouout);
+
+  //! Actual inverse analysis loop
+  void Integrate();
+
+  //! create test field
+  Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
+  //! for result test frame work
+  Teuchos::RCP<DRT::Discretization> ScatraDiscretization() { return scatra_discret_; }
+
+  //! output of element based absorption coefficient vector for resulttest
+  const Teuchos::RCP<Epetra_MultiVector> ElementMatVec();
+
 private:
 
-  /// name given in command line
+  //! name given in command line
   std::string name_;
 
-  /// scatra and acoustical discretizations to work with
+  //! scatra and acoustical discretizations to work with
   Teuchos::RCP<DRT::Discretization> scatra_discret_;
   Teuchos::RCP<DRT::DiscretizationHDG> acou_discret_;
 
-  /// scatra and acoustical base algorithms to work with
+  //! scatra and acoustical base algorithms to work with
   Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo_;
   Teuchos::RCP<ACOU::AcouImplicitTimeInt> acoualgo_;
 
-  /// some things we need for the scatra and acou time integrators
+  //! some things we need for the scatra and acou time integrators
   const Teuchos::ParameterList& scatraparams_;
   const Teuchos::ParameterList& scatrasolverparams_;
   Teuchos::RCP<Teuchos::ParameterList> acouparams_;
@@ -80,155 +121,153 @@ private:
   Teuchos::RCP<IO::DiscretizationWriter> acououtput_;
   Teuchos::RCP<IO::DiscretizationWriter> scatra_output_;
 
-  /// time integration scheme
+  //! time integration scheme
   INPAR::ACOU::DynamicType dyna_;
-  /// physical type
+  //! physical type
   INPAR::ACOU::PhysicalType phys_;
+  //! optimization tyoe
+  INPAR::ACOU::OptimizationType opti_;
 
-  /// processor id
+  //! processor id
   int myrank_;
 
-  /// for iteration loop progress
-  double error_;       /// actual error
-  double tol_;         /// prescribed error tolerance
-  double tol_grad_;    /// prescribed norm of gradient tolerance
-  int iter_;           /// actual iteration number
-  int max_iter_;       /// maximal iteration number for inverse analysis
-  int max_ls_iter_;    /// maximal iteration number for line search
-  int output_count_;   /// auxiliary variable for nicely named output files
-  bool fdcheck_;       /// flag indicating performance of finite difference check
-  double ls_c_;        /// parameter for calculation of sufficient decrease condition
-  double ls_rho_;      /// step length reduction given by this parameter
+  //! for iteration loop progress
+  double error_;       //! actual error
+  double tol_;         //! prescribed error tolerance
+  double tol_grad_;    //! prescribed norm of gradient tolerance
+  int iter_;           //! actual iteration number
+  int max_iter_;       //! maximal iteration number for inverse analysis
+  int max_ls_iter_;    //! maximal iteration number for line search
+  int output_count_;   //! auxiliary variable for nicely named output files
+  bool fdcheck_;       //! flag indicating performance of finite difference check
+  double ls_c_;        //! parameter for calculation of sufficient decrease condition
+  double ls_rho_;      //! step length reduction given by this parameter
+  double ls_gd_scal_;  //! factor for line search step length scaling
 
-  /// regularization coefficient for absorption coefficient
+  //! regularization coefficient for absorption coefficient
   double alpha_;
   double beta_;
 
-  /// flag whether we want to do check for the gradient as convergence criteria
+  //! flag whether we want to do check for the gradient as convergence criteria
   bool calcacougrad_;
 
-  /// container for right hand side values of acoustical adjoint problem
+  //! gradient scaling
+  bool scalegradele_;
+
+  //! container for right hand side values of acoustical adjoint problem
   Teuchos::RCP<Epetra_MultiVector> acou_rhs_;
   Teuchos::RCP<Epetra_MultiVector> acou_rhsm_;
   Teuchos::RCP<Epetra_Map> abcnodes_map_;
 
-  /// map extractor for monitored / abc nodes
+  //! map extractor for monitored / abc nodes
   Teuchos::RCP<LINALG::MapExtractor> abcnodes_mapex_;
 
-  /// monitor file related things
-  unsigned int         nnodes_;        /// number of nodes observed
-  int                  nsteps_;        /// number of time steps observed
-  std::vector<int>     nodes_;         /// list of node gids observed
-  std::vector<double>  timesteps_;     /// time values where pressure values are measured
-  Epetra_SerialDenseVector mcurve_;    /// measured pressure values of the experiments (target value)
+  //! list of observed node gids
+  std::vector<int>     nodes_;
 
-  /// solution of the acoustical adjoint problem at initial step (so to say last step of the backward time integration)
+  //! solution of the acoustical adjoint problem at initial step (so to say last step of the backward time integration)
   Teuchos::RCP<Epetra_Vector> adjoint_phi_0_;
-
-  /// solution of the optical forward problem
+  //! solution of the optical forward problem
   Teuchos::RCP<Epetra_Vector> phi_;
-  /// solution of the optical adjoint problem
+  //! solution of the optical adjoint problem
   Teuchos::RCP<Epetra_Vector> adjoint_w_;
 
-  /// node based vector holding material properties
-  Teuchos::RCP<Epetra_Vector> node_c_;     /// speed of sound
-  Teuchos::RCP<Epetra_Vector> node_rho_;   /// density
-  Teuchos::RCP<Epetra_Vector> node_mu_a_;  /// absorption coefficient
+  //! material handling done by the MatParManager from Sebastian Kehl
+  Teuchos::RCP<STR::INVANA::MatParManager> matman_;
 
+  //! gradient of the objective function
+  Teuchos::RCP<Epetra_MultiVector> objgrad_;
 
-  Epetra_SerialDenseVector p_;        /// parameter vector
-  Epetra_SerialDenseVector pm_;       /// parameter vector from last iteration
-  int np_;                            /// number of parameters
-  int nm_;                            /// number of materials
-  double t_;                          /// maximal time of acoustical integration
-  double dtacou_;                     /// time step size for acoustical simulations
+  //! previous gradient of the objective function
+  Teuchos::RCP<Epetra_MultiVector> objgrad_o_;
 
+  //! current direction of steepest descent maybe properly scaled by hessian approximation
+  Teuchos::RCP<Epetra_MultiVector> direction_;
 
-  Epetra_SerialDenseVector G_;        /// the gradient
-  Epetra_SerialDenseVector Gm_;       /// gradient last iteration
+  //! current step based on direction direction_ scaled with a proper stepsize
+  Teuchos::RCP<Epetra_MultiVector> step_;
 
-  /// the approximation of the inverse Hessian (approximated via BFGS)
-  Epetra_SerialDenseMatrix H_;
-  Epetra_SerialDenseMatrix Hm_;       /// approximated Hessian from last iteration
+  //! current direction of steepest descent maybe properly scaled by hessian approximation
+  Teuchos::RCP<Epetra_MultiVector> d_;
 
-  /// the objective function value
+  //! norm of the gradient at current iteration
+  double normgrad_;
+
+  //! norm of the gradient in first iteration
+  double normgrad0_;
+
+  //! maximum size of storage (number of multivectors)
+  int ssize_;
+
+  //! current size of the storage
+  int actsize_;
+
+  //! storage of solution delta
+  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > sstore_;
+
+  //! storage of gradient delta
+  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > ystore_;
+
+  //! node based vector holding absorption coefficient
+  Teuchos::RCP<Epetra_Vector> node_mu_a_;
+
+  //! time step size for acoustical simulations
+  double dtacou_;
+
+  //! the objective function value
   double J_;
 
-  /// norm of the difference of old and new parameters (which can also be used as stopping criteria)
+  //! norm of the difference of old and new parameters (which can also be used as stopping criteria)
   double normdiffp_;
 
-  /// time measurement
+  //! time measurement
   double tstart_;
 
-public:
+  //! Read in measured values from the monitor file
+  void ReadMonitor(std::string monitorfilename);
 
-  /// standard Constructor
-  InvAnalysis(
-    Teuchos::RCP<DRT::Discretization> scatradis, ///< the light discretization
-    Teuchos::RCP<DRT::DiscretizationHDG> acoudis, ///< the sound discretization
-    const Teuchos::ParameterList& scapara,
-    const Teuchos::ParameterList& scasolvpara,
-    Teuchos::RCP<Teuchos::ParameterList> acoupara,
-    Teuchos::RCP<LINALG::Solver> acousolv,
-    Teuchos::RCP<IO::DiscretizationWriter> acouout);
+  //! Compute node based vectors
+  void ComputeNodeBasedVectors();
 
-  /// Read in routine for the material parameters
-  void ReadInParameters();
-
-  /// Set material parameters
-  void SetParameters(Epetra_SerialDenseVector p_cur);
-
-  /// Actual inverse analysis loop
-  void Integrate();
-
-  /// create test field
-  Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
-
-  /// for result test frame work
-  Teuchos::RCP<DRT::Discretization> ScatraDiscretization() { return scatra_discret_;};
-
-  /// output of element based absorption coefficient vector for resulttest
-  const Teuchos::RCP<Epetra_Vector> ElementMatVec();
-
-  /// The underlying subproblems
+  //! The underlying subproblems
   //@{
-  /// Solve the standard problem
+  //! Solve the standard problem
   void SolveStandardProblem();
 
-  /// Calculate the value of the objective function (after solving the forward problem)
+  //! Calculate the value of the objective function (after solving the forward problem)
   void CalculateObjectiveFunctionValue();
 
-  /// Solve the acoustical adjoint problem
+  //! Solve the acoustical adjoint problem
   void SolveAdjointAcouProblem();
 
-  /// Solve the optical adjoint problem
+  //! Solve the optical adjoint problem
   void SolveAdjointOptiProblem();
 
-  /// Build the gradient
+  //! Build the gradient
   void CalculateGradient();
 
-  /// Finite difference check on gradient
+  //! Finite difference check on gradient
   void FD_GradientCheck();
 
-  /// Update the BFGS approximation of the Hessian
-  void UpdateHessian();
+  //! store new vector quantities
+  void StoreVectors();
 
-  /// Update the sought parameters
-  void UpdateParameters();
+  //! compute new direction based on lbfgs formula
+  void ComputeDirection();
 
-  /// Line search routine to solve the internal BFGS problem
-  Epetra_SerialDenseVector LineSearch(Epetra_SerialDenseVector d);
+  //! Update the sought parameters, return argument is true if successful
+  bool UpdateParameters();
 
-  /// Tell all the elements their new material parameters
-  void UpdateMaterial();
+  //! Line search routine to solve the internal BFGS problem, return argument is true if successful
+  bool LineSearch();
 
-  /// Calculate the error and the value of the objective function, update iteration count, update Gradient
+  //! Calculate the error and the value of the objective function, update iteration count, update Gradient
   void CalculateStatsAndService();
 
-  /// Output some useful user information, like time consume, solution advance, ...
+  //! Output some useful user information, like time consume, solution advance, ...
   void OutputStats();
 
-  /// Check for convergence, returns false when converged
+  //! Check for convergence, returns false when converged
   bool ConvergenceCheck();
   //@}
 

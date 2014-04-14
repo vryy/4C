@@ -56,6 +56,13 @@ namespace INPAR
       inv_pat            // photoacoustic inverse analysis
     };
 
+    /// Type of Algorithm
+    enum OptimizationType
+    {
+      inv_lbfgs,        // limited memory BFGS
+      inv_gd            // gradient descent
+    };
+
     /// Paramterization of material parameters
     enum InvAnalysisMatParametrization
     {

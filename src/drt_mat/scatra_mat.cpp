@@ -14,6 +14,7 @@ Maintainer: Volker Gravemeier
 #include "scatra_mat.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_comm/comm_utils.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -21,10 +22,15 @@ Maintainer: Volker Gravemeier
 MAT::PAR::ScatraMat::ScatraMat(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata),
-  diffusivity_(matdata->GetDouble("DIFFUSIVITY")),
-  reacoeff_(matdata->GetDouble("REACOEFF"))
+: Parameter(matdata)
 {
+  Epetra_Map dummy_map(1,1,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm()));
+  for(int i=first ; i<=last; i++)
+  {
+    matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map,true)));
+  }
+  matparams_.at(diff)->PutScalar(matdata->GetDouble("DIFFUSIVITY"));
+  matparams_.at(reac)->PutScalar(matdata->GetDouble("REACOEFF"));
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMat::CreateMaterial()
@@ -35,6 +41,11 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMat::CreateMaterial()
 
 MAT::ScatraMatType MAT::ScatraMatType::instance_;
 
+void MAT::PAR::ScatraMat::OptParams(std::map<std::string,int>* pnames)
+{
+  pnames->insert(std::pair<std::string,int>("DIFF", diff));
+  pnames->insert(std::pair<std::string,int>("REAC", reac));
+}
 
 DRT::ParObject* MAT::ScatraMatType::Create( const std::vector<char> & data )
 {

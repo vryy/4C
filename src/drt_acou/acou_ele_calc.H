@@ -87,6 +87,14 @@ namespace ELEMENTS
                          const std::vector<int>&              lm,
                          Epetra_SerialDenseVector&            elevec1);
 
+    /// map solution values to nodes
+    void NodeBasedPsi(const Teuchos::RCP<MAT::Material>    &mat,
+                      DRT::ELEMENTS::Acou*                 ele,
+                      DRT::Discretization&                 discretization,
+                      const std::vector<int>&              lm,
+                      Epetra_SerialDenseVector&            elevec1,
+                      double                               dt);
+
     /// Evaluate the element
     /*!
       Generic virtual interface function. Called via base pointer.
@@ -210,13 +218,6 @@ namespace ELEMENTS
                               int                         face,
                               Epetra_SerialDenseMatrix    &elemat,
                               Epetra_SerialDenseVector    &elevec);
-
-      /// integrate the objective function over the given boundary
-      void ComputeObjfIntegral(DRT::ELEMENTS::Acou*       ele,
-                              Teuchos::ParameterList&     params,
-                              Teuchos::RCP<MAT::Material> & mat,
-                              int                         face,
-                              double                      dt);
 
       /// set up interior matrices
       void ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,

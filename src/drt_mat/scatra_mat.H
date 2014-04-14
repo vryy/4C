@@ -37,27 +37,12 @@ namespace MAT
       /// destructor
       virtual ~ScatraMat() { ; }
 
-      /// @name material parameters
-      //@{
-
-      /// kinematic diffusivity
-      double diffusivity_;
-      /// reaction coefficient
-      double reacoeff_;
-
-      //@}
-
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-      /// @name Write methods
-      //@{
+      void OptParams(std::map<std::string, int>* pnames);
 
-      /// set kinematic diffusivity
-      void SetDiffusivity (double diffusivity ) { diffusivity_ =  diffusivity; }
-      /// set reaction coefficient
-      void SetReaCoeff    (double reacoeff    ) { reacoeff_    =  reacoeff;    }
-      //@}
+      enum matparamnames_{diff, reac, first=diff, last=reac};
 
     };  // class Scatra
 
@@ -135,9 +120,10 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ScatraMat( *this ) ); }
 
     /// diffusivity
-    double Diffusivity() const { return params_->diffusivity_; }
+    double Diffusivity(int eleid=-1) const { return params_->GetParameter(params_->diff,eleid); }
+
     /// reaction coefficient
-    double ReaCoeff() const { return params_->reacoeff_; }
+    double ReaCoeff(int eleid=-1) const { return params_->GetParameter(params_->reac,eleid); }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

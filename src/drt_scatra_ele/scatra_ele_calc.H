@@ -931,7 +931,7 @@ namespace ELEMENTS
     //! @name can be very useful
     /*========================================================================*/
 
-    double eid_;
+    int eid_;
 
   };
 

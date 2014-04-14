@@ -281,8 +281,8 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
         if (elevec2.M() != discret_->NumDof(1,acouele))
           elevec2.Shape(discret_->NumDof(1,acouele), 1);
 
-        // we need the absorption coefficient of the light element
-        double absorptioncoeff = static_cast <MAT::ScatraMat*>((optele->Material()).get())->ReaCoeff();
+        // we need the absorption coefficient of the light element TODO: colmap or rowmap???
+        double absorptioncoeff = static_cast <MAT::ScatraMat*>((optele->Material()).get())->ReaCoeff(scatradis->ElementColMap()->LID(optele->Id()));
         initParams.set<double>("absorption",absorptioncoeff);
         Teuchos::RCP<std::vector<double> > nodevals = Teuchos::rcp(new std::vector<double>);
         int numlightnode = optele->NumNode();
@@ -343,7 +343,7 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
       if ( myrank_ == opteleowner )
       {
         // we need the absorption coefficient of the light element
-        absorptioncoeff = static_cast <MAT::ScatraMat*>((optele->Material()).get())->ReaCoeff();
+        absorptioncoeff = static_cast <MAT::ScatraMat*>((optele->Material()).get())->ReaCoeff(scatradis->ElementRowMap()->LID(optele->Id()));
 
         int numlightnode = optele->NumNode();
         size = (numdim_+1)*numlightnode;
@@ -661,6 +661,7 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
     std::string condname = "Absorbing";
     std::vector<DRT::Condition*> absorbingBC;
     discret_->GetCondition(condname,absorbingBC);
+
     if(absorbingBC.size())
     {
       eleparams.remove("action",false);

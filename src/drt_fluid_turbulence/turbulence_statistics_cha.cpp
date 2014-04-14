@@ -5687,7 +5687,7 @@ void FLD::TurbulenceStatisticsCha::StoreScatraDiscretAndParams(
        const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
        const MAT::PAR::ScatraMat* actmat = static_cast<const MAT::PAR::ScatraMat*>(mat);
 
-       double diffus = actmat->diffusivity_;
+       double diffus = MAT::PAR::ScatraMat(*actmat).GetParameter(actmat->diff,-1);// actmat->diffusivity_;
        // calculate Schmidt number
        // visc is the kinematic viscosity here
        scnum_ = visc_ / (diffus * dens_);

@@ -51,7 +51,7 @@ private:
   Teuchos::RCP<DRT::Discretization> dis_;
 
   /// Teuchos::RCP to solution vector
-  Teuchos::RCP<Epetra_Vector>       mysol_;
+  Teuchos::RCP<Epetra_MultiVector>       mysol_;
 
 }; // class AcouInvResultTest
 
