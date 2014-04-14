@@ -2258,10 +2258,10 @@ void FLD::XFluidFluid::Init()
   if(edge_based_ or ghost_penalty_ or ghost_penalty_2ndorder_)
   {
     Teuchos::RCP<DRT::DiscretizationFaces> actembdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(embdis_, true);
-    actembdis->CreateInternalFacesExtension(Teuchos::null);
+    actembdis->CreateInternalFacesExtension();
 
     Teuchos::RCP<DRT::DiscretizationFaces> actbgdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(bgdis_, true);
-    actbgdis->CreateInternalFacesExtension(Teuchos::null);
+    actbgdis->CreateInternalFacesExtension();
   }
   //-------------------------------------------------------------------
 
@@ -4786,7 +4786,7 @@ const double FLD::XFluidFluid::TimIntParam() const
 
 
 //----------------------------------------------------------------------
-// LiftDrag                                                  chfoe 11/07
+// LiftDrag                                               rasthofer
 //----------------------------------------------------------------------
 //calculate lift&drag forces and angular moments
 //
@@ -4802,7 +4802,7 @@ void FLD::XFluidFluid::LiftDrag() const
     // in this map, the results of the lift drag calculation are stored
     Teuchos::RCP<std::map<int,std::vector<double> > > liftdragvals;
 
-    FLD::UTILS::LiftDrag(*embdis_,*aletrueresidual_,*aledispnp_,numdim_,liftdragvals,alefluid_);
+    FLD::UTILS::LiftDrag(embdis_,aletrueresidual_,aledispnp_,numdim_,liftdragvals,alefluid_);
 
     if (liftdragvals!=Teuchos::null and embdis_->Comm().MyPID() == 0)
       FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);

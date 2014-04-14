@@ -22,16 +22,10 @@ Maintainer: Ursula Rasthofer
 #include "../drt_io/io_gmsh.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
-#include <Teuchos_TimeMonitor.hpp>
 #include "../drt_geometry/position_array.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-
-#ifdef PARALLEL
+#include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
-
 #ifdef DEBUG
 #include "combust3.H"
 #endif
@@ -260,7 +254,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     bool pbcnode = false;
     std::set<int> coupnodegid;
     // loop all nodes with periodic boundary conditions (master nodes)
-    for (std::map<int, std::vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
+    Teuchos::RCP<std::map<int,std::vector<int> > > pbccolmap = gfuncdis_->GetAllPBCCoupledColNodes();
+    for (std::map<int, std::vector<int>  >::const_iterator pbciter= (*pbccolmap).begin(); pbciter != (*pbccolmap).end(); ++pbciter)
     {
       if (pbciter->first == nodegid) // node is a pbc master node
       {
@@ -1917,7 +1912,8 @@ void COMBUST::FlameFront::ComputeAveragedNodalCurvature(const Teuchos::Parameter
        * slave:   skip                                                    *
        ********************************************************************/
 
-      for (std::map<int,std::vector<int> >::const_iterator ipbcmap = pbcmap_->begin(); ipbcmap != pbcmap_->end(); ++ipbcmap)
+      Teuchos::RCP<std::map<int, std::vector<int> > > pbccolmap = gfuncdis_->GetAllPBCCoupledColNodes();
+      for (std::map<int,std::vector<int> >::const_iterator ipbcmap = pbccolmap->begin(); ipbcmap != pbccolmap->end(); ++ipbcmap)
       {
         if (ipbcmap->first == gid)
         {
@@ -1959,7 +1955,7 @@ void COMBUST::FlameFront::ComputeAveragedNodalCurvature(const Teuchos::Parameter
       // now the PBC slave nodes
       if (!iscut and isPBCMaster)
       {
-        std::vector<int> slaveids = pbcmap_->find(gid)->second;
+        std::vector<int> slaveids = pbccolmap->find(gid)->second;
         for (std::vector<int>::const_iterator islave = slaveids.begin(); islave != slaveids.end(); ++islave)
         {
           size_t slavenumele = fluiddis_->gNode(*islave)->NumElement();
@@ -2042,7 +2038,7 @@ void COMBUST::FlameFront::ComputeAveragedNodalCurvature(const Teuchos::Parameter
       // now the PBC slave nodes
       if (isPBCMaster)
       {
-        std::vector<int> slaveids = pbcmap_->find(gid)->second;
+        std::vector<int> slaveids = pbccolmap->find(gid)->second;
         for (std::vector<int>::const_iterator islave = slaveids.begin(); islave != slaveids.end(); ++islave)
         {
           size_t slavenumele = fluiddis_->gNode(*islave)->NumElement();
@@ -2124,7 +2120,7 @@ void COMBUST::FlameFront::ComputeAveragedNodalCurvature(const Teuchos::Parameter
       // now the PBC slave nodes
       if (isPBCMaster)
       {
-        std::vector<int> slaveids = pbcmap_->find(gid)->second;
+        std::vector<int> slaveids = pbccolmap->find(gid)->second;
         for (std::vector<int>::const_iterator islave = slaveids.begin(); islave != slaveids.end(); ++islave)
         {
           const int slid = rowcurv.Map().LID(*islave);

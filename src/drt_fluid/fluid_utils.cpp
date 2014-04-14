@@ -282,15 +282,15 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
 // compute forces and moments                          rasthofer 08/13
 // -------------------------------------------------------------------
 void FLD::UTILS::LiftDrag(
-  const DRT::Discretization                         & dis,
-  const Epetra_Vector                               & trueresidual,
-  const Epetra_Vector                               & dispnp,
+  const Teuchos::RCP<const DRT::Discretization>       dis,
+  const Teuchos::RCP<const Epetra_Vector>             trueresidual,
+  const Teuchos::RCP<const Epetra_Vector>             dispnp,
   const int                                           ndim,
   Teuchos::RCP<std::map<int,std::vector<double> > > & liftdragvals,
   bool                                                alefluid
   )
 {
-  int myrank=dis.Comm().MyPID();
+  int myrank=dis->Comm().MyPID();
 
   std::map< const int, std::set<DRT::Node* > > ldnodemap;
   std::map< const int, const std::vector<double>* > ldcoordmap;
@@ -299,7 +299,7 @@ void FLD::UTILS::LiftDrag(
 
   // allocate and initialise LiftDrag conditions
   std::vector<DRT::Condition*> ldconds;
-  dis.GetCondition("LIFTDRAG",ldconds);
+  dis->GetCondition("LIFTDRAG",ldconds);
 
   // there is an L&D condition if it has a size
   if( ldconds.size() )
@@ -364,8 +364,8 @@ void FLD::UTILS::LiftDrag(
         // give me present node Id
         const int node_id = (*ids)[j];
         // put it into nodeset of actual label if node is new and mine
-        if( dis.HaveGlobalNode(node_id) && dis.gNode(node_id)->Owner()==myrank )
-          nodes.insert(dis.gNode(node_id));
+        if( dis->HaveGlobalNode(node_id) && dis->gNode(node_id)->Owner()==myrank )
+          nodes.insert(dis->gNode(node_id));
       }
     } // end loop over conditions
 
@@ -388,15 +388,15 @@ void FLD::UTILS::LiftDrag(
       for( std::set<DRT::Node*>::const_iterator actnode = nodes.begin(); actnode != nodes.end(); ++actnode)
       {
         const LINALG::Matrix<3,1> x((*actnode)->X(),false); // pointer to nodal coordinates
-        const Epetra_BlockMap& rowdofmap = trueresidual.Map();
-        const std::vector<int> dof = dis.Dof(*actnode);
+        const Epetra_BlockMap& rowdofmap = trueresidual->Map();
+        const std::vector<int> dof = dis->Dof(*actnode);
 
         // get nodal forces
         LINALG::Matrix<3,1> actforces (true);
         for (int idim=0; idim<ndim; idim++)
         {
-          actforces(idim,0) = trueresidual[rowdofmap.LID(dof[idim])];
-          myforces[idim] += trueresidual[rowdofmap.LID(dof[idim])];
+          actforces(idim,0) = (*trueresidual)[rowdofmap.LID(dof[idim])];
+          myforces[idim] += (*trueresidual)[rowdofmap.LID(dof[idim])];
         }
         // z-component remains zero for ndim=2
 
@@ -409,9 +409,10 @@ void FLD::UTILS::LiftDrag(
         // ALE case: take displacements into account
         if (alefluid)
         {
+          if (dispnp == Teuchos::null) dserror("Displacement expected for ale fluid!");
           for (int idim=0; idim<ndim; idim++)
           {
-            distances(idim,0) += dispnp[rowdofmap.LID(dof[idim])];
+            distances(idim,0) += (*dispnp)[rowdofmap.LID(dof[idim])];
           }
         }
         
@@ -449,8 +450,8 @@ void FLD::UTILS::LiftDrag(
       } // end: loop over nodes
 
       // care for the fact that we are (most likely) parallel
-      trueresidual.Comm().SumAll (&(myforces[0]), &(((*liftdragvals)[label])[0]), 3);
-      trueresidual.Comm().SumAll (&(mymoments[0]), &(((*liftdragvals)[label])[3]), 3);
+      trueresidual->Comm().SumAll (&(myforces[0]), &(((*liftdragvals)[label])[0]), 3);
+      trueresidual->Comm().SumAll (&(mymoments[0]), &(((*liftdragvals)[label])[3]), 3);
 
       // do the output
       if (myrank==0)

@@ -89,6 +89,9 @@ public:
   /// Update the coupled nodes map of dofset
   virtual void SetCoupledNodes(Teuchos::RCP<std::map<int,std::vector<int> > >  couplednodes);
 
+  /// Get coupled nodes map (corresponding col format)
+  virtual Teuchos::RCP<std::map<int,std::vector<int> > > GetCoupledNodes(){return perbndcouples_;};
+
 protected:
 
   /// get number of nodal dofs for this element at this node

@@ -268,7 +268,8 @@ public:
     Absorb,
     ImmersedSearchbox,
     ImmersedFSIForceEvaluation,
-    ImmersedInterpolatingElement
+    ImmersedInterpolatingElement,
+    ParticlePeriodic
   };
 
   /*!

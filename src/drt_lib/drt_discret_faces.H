@@ -213,8 +213,7 @@ public:
   \note Sets Filled()=true
   \author schott 03/12
   */
-  int FillCompleteFaces(Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave,
-                        bool assigndegreesoffreedom = true,
+  int FillCompleteFaces(bool assigndegreesoffreedom = true,
                         bool initelements           = true,
                         bool doboundaryconditions   = true,
                         bool createinternalfaces    = false);
@@ -320,8 +319,7 @@ public:
   /*!
   \brief Build internal faces extension
   */
-  void CreateInternalFacesExtension(Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave,
-                                    const bool verbose = false);
+  void CreateInternalFacesExtension(const bool verbose = false);
 
   /*!
   \brief Evaluate edge-based integrals
@@ -334,8 +332,7 @@ public:
   /*!
   \brief Complete construction of a face elements
   */
-  void BuildFaces(Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave,
-                  const bool verbose = false);
+  void BuildFaces(const bool verbose = false);
 
   /*!
   \brief Build intfacerowmap_ (Filled()==true NOT prerequisite)

@@ -70,9 +70,8 @@ public:
   \brief Standard Constructor (public)
 
   */
-  Vreman(    Teuchos::RCP<DRT::Discretization>     actdis             ,
-      Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
-      Teuchos::ParameterList&      params);
+  Vreman(Teuchos::RCP<DRT::Discretization>     actdis,
+         Teuchos::ParameterList&               params);
 
   /*!
   \brief Destructor
@@ -98,8 +97,7 @@ public:
 
   void AddScatra(
     Teuchos::RCP<DRT::Discretization>     scatradis,
-    INPAR::SCATRA::ScaTraType    scatratype,
-    Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
+    INPAR::SCATRA::ScaTraType    scatratype);
 
   void GetCv(double& Cv)
   {
@@ -121,8 +119,6 @@ private:
 
   //! the discretization
   Teuchos::RCP<DRT::Discretization>     discret_;
-  //! connection between master and slave nodes on this proc
-  Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave_;
   //! parameterlist including time params, stabilization params and turbulence sublist
   Teuchos::ParameterList&      params_ ;
   //! flag for physical type of fluid flow
@@ -130,7 +126,6 @@ private:
   //scatra specific
   Teuchos::RCP<DRT::Discretization>     scatradiscret_;
   INPAR::SCATRA::ScaTraType    scatratype_;
-  Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave_;
 
 
   double DynVremanComputeCv();

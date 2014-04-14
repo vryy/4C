@@ -1149,11 +1149,6 @@ protected:
   /// row dof map extractor
   const UTILS::MapExtractor* surfacesplitter_;
 
-  /// connection between master and slave nodes on this proc (based on row map!!!!)
-  Teuchos::RCP<std::map<int,std::vector<int> > > row_pbcmapmastertoslave_;
-  /// connection between master and slave nodes on this proc (based on col map!!!!)
-  Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave_;
-
   /// a manager doing the transfer of boundary data for
   /// turbulent inflow profiles from a separate (periodic) domain
   Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;

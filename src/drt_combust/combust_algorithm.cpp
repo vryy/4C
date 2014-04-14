@@ -103,7 +103,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
    * - ...
    *----------------------------------------------------------------------------------------------*/
   // construct initial flame front
-  flamefront_ = Teuchos::rcp(new COMBUST::FlameFront(fluiddis,gfuncdis,ScaTraField()->PBCmap()));
+  flamefront_ = Teuchos::rcp(new COMBUST::FlameFront(fluiddis,gfuncdis));
   flamefront_->UpdateFlameFront(combustdyn_,ScaTraField()->Phin(), ScaTraField()->Phinp());
   flamefront_->UpdateOldInterfaceHandle();
 
@@ -1298,7 +1298,7 @@ void COMBUST::Algorithm::Redistribute()
       const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
       const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField()->Discretization();
       const Epetra_Map* noderowmap = fluiddis->NodeRowMap();
-      Teuchos::RCP<std::map<int,std::vector<int> > > allcoupledcolnodes = ScaTraField()->PBC()->ReturnAllCoupledColNodes();
+      Teuchos::RCP<std::map<int,std::vector<int> > > allcoupledcolnodes = gfuncdis->GetAllPBCCoupledColNodes();
 
       // weights for graph partition
       Epetra_Vector weights(*noderowmap,false);

@@ -61,10 +61,6 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
   if (params_->get<std::string>("Nonlinear boundary conditions","no") == "yes")
     nonlinearbc_ = true;
 
-  // -------------------------------------------------------------------
-  // care for periodic boundary conditions
-  // -------------------------------------------------------------------
-  pbcmapmastertoslave_ = params_->get<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc");
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // ensure that degrees of freedom in the discretization have been set

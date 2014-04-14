@@ -131,8 +131,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   zeros_(Teuchos::null),
   dbcmaps_(Teuchos::null),
   neumann_loads_(Teuchos::null),
-  pbc_(Teuchos::null),
-  pbcmapmastertoslave_(Teuchos::null),
   normals_(Teuchos::null),
   residual_(Teuchos::null),
   trueresidual_(Teuchos::null),
@@ -185,9 +183,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
   // note: pbcs have to be correctly set up before extended ghosting is applied
-  pbc_ = Teuchos::rcp(new PeriodicBoundaryConditions (discret_, false));
-  pbc_->UpdateDofsForPeriodicBoundaryConditions();
-  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
+  Teuchos::RCP<PeriodicBoundaryConditions> pbc = Teuchos::rcp(new PeriodicBoundaryConditions (discret_, false));
+  pbc->UpdateDofsForPeriodicBoundaryConditions();
 
   return;
 }

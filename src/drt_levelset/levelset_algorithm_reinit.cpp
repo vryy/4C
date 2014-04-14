@@ -665,27 +665,33 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
     // - minimum in planenormaldirection
     // - maximum in planenormaldirection
     //========================================================================
-    std::vector<DRT::Condition*>* surfacepbcs = pbc_->ReturnSurfacePBCs();
+    //std::vector<DRT::Condition*>* surfacepbcs = pbc_->ReturnSurfacePBCs();
+    // get periodic surface boundary conditions
+    std::vector<DRT::Condition*> surfacepbcs;
+    discret_->GetCondition("SurfacePeriodic",surfacepbcs);
+    if(surfacepbcs.empty())
+      discret_->GetCondition("LinePeriodic",surfacepbcs);
+
     std::vector<int>    planenormal(0);
     std::vector<double> globalmins (0);
     std::vector<double> globalmaxs (0);
 
-    for (size_t i = 0; i < surfacepbcs->size(); ++i)
+    for (size_t i = 0; i < surfacepbcs.size(); ++i)
     {
-      const std::string* ismaster = (*surfacepbcs)[i]->Get<std::string>("Is slave periodic boundary condition");
+      const std::string* ismaster = surfacepbcs[i]->Get<std::string>("Is slave periodic boundary condition");
       if (*ismaster == "Master")
       {
-        const int masterid = (*surfacepbcs)[i]->GetInt("Id of periodic boundary condition");
-        std::vector<int> nodeids(*((*surfacepbcs)[i]->Nodes()));
-        for (size_t j = 0; j < surfacepbcs->size(); ++j)
+        const int masterid = surfacepbcs[i]->GetInt("Id of periodic boundary condition");
+        std::vector<int> nodeids(*(surfacepbcs[i]->Nodes()));
+        for (size_t j = 0; j < surfacepbcs.size(); ++j)
         {
-          const int slaveid = (*surfacepbcs)[j]->GetInt("Id of periodic boundary condition");
+          const int slaveid = surfacepbcs[j]->GetInt("Id of periodic boundary condition");
           if (masterid == slaveid)
           {
-            const std::string* isslave = (*surfacepbcs)[j]->Get<std::string>("Is slave periodic boundary condition");
+            const std::string* isslave = surfacepbcs[j]->Get<std::string>("Is slave periodic boundary condition");
             if (*isslave == "Slave")
             {
-              const std::vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
+              const std::vector<int>* slavenodeids = surfacepbcs[j]->Nodes();
               // append slave node Ids to node Ids for the complete condition
               for (size_t k = 0; k < slavenodeids->size(); ++k)
                 nodeids.push_back(slavenodeids->at(k));
@@ -694,7 +700,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
         }
 
         // Get normal direction of pbc plane
-        const std::string* pbcplane = (*surfacepbcs)[i]->Get<std::string>("degrees of freedom for the pbc plane");
+        const std::string* pbcplane = surfacepbcs[i]->Get<std::string>("degrees of freedom for the pbc plane");
         if (*pbcplane == "yz")
           planenormal.push_back(0);
         else if (*pbcplane == "xz")

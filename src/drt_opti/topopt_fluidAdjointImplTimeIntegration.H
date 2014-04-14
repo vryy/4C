@@ -243,9 +243,6 @@ protected:
   //! Extractor used for convergence check
   Teuchos::RCP<LINALG::MapExtractor>      velpressplitter_;
 
-  /// connection between master and slave nodes on this proc
-  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_;
-
 private:
 
   // don't want = operator and cctor

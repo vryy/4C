@@ -29,13 +29,11 @@ Maintainer: Benjamin Krank
  |  Constructor (public)                                     krank 09/13|
  *----------------------------------------------------------------------*/
 FLD::Boxfilter::Boxfilter(
-  Teuchos::RCP<DRT::Discretization>     actdis             ,
-  Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
+  Teuchos::RCP<DRT::Discretization>     actdis,
   Teuchos::ParameterList&      params)
   :
   // call constructor for "nontrivial" objects
   discret_            (actdis             ),
-  pbcmapmastertoslave_(pbcmapmastertoslave),
   params_             (params             ),
   physicaltype_       (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type")),
   //  available control settings
@@ -61,7 +59,6 @@ FLD::Boxfilter::Boxfilter(
   alphaijsc_(false)
 {
   Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-
 
   if (modelparams->get<std::string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES") == "CLASSICAL_LES")
   {
@@ -135,12 +132,11 @@ FLD::Boxfilter::~Boxfilter()
  * ---------------------------------------------------------------------*/
 void FLD::Boxfilter::AddScatra(
   Teuchos::RCP<DRT::Discretization>     scatradis,
-  INPAR::SCATRA::ScaTraType    scatratype,
-  Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
+  INPAR::SCATRA::ScaTraType             scatratype
+  )
 {
   scatradiscret_ = scatradis;
   scatratype_ = scatratype;
-  scatra_pbcmapmastertoslave_ = scatra_pbcmapmastertoslave;
 
   return;
 }
@@ -157,12 +153,12 @@ void FLD::Boxfilter::InitializeVreman()
 
 void FLD::Boxfilter::InitializeVremanScatra(
   Teuchos::RCP<DRT::Discretization>     scatradis,
-  INPAR::SCATRA::ScaTraType    scatratype,
-  Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
+  INPAR::SCATRA::ScaTraType             scatratype
+  )
 {
   scatradiscret_ = scatradis;
   scatratype_ = scatratype;
-  scatra_pbcmapmastertoslave_ = scatra_pbcmapmastertoslave;
+  
   phi_=true;
   phi2_=true;
   phiexpression_=true;
@@ -513,11 +509,16 @@ void FLD::Boxfilter::ApplyBoxFilter(
     double expression_val;
     double alpha2_val;
 
+    Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave = discret_->GetAllPBCCoupledColNodes();
     // loop all master nodes on this proc
-    for(masternode =pbcmapmastertoslave_->begin();
-        masternode!=pbcmapmastertoslave_->end();
+    for(masternode =pbcmapmastertoslave->begin();
+        masternode!=pbcmapmastertoslave->end();
         ++masternode)
     {
+      // loop only owned nodes
+      if ((discret_->gNode(masternode->first))->Owner() != discret_->Comm().MyPID())
+        continue;
+
       // add all slave values to master value
       std::vector<int>::iterator slavenode;
 
@@ -534,7 +535,6 @@ void FLD::Boxfilter::ApplyBoxFilter(
         expression_val =(*filtered_expression_)[lid];
       if(alpha2_)
         alpha2_val =(*filtered_alpha2_)[lid];
-
 
       for (int idim =0;idim<numdim;++idim)
       {
@@ -1273,10 +1273,16 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
     double phiexpression_val=0.0;
 
     // loop all master nodes on this proc
-    for(masternode =scatra_pbcmapmastertoslave_->begin();
-        masternode!=scatra_pbcmapmastertoslave_->end();
+    Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave = scatradiscret_->GetAllPBCCoupledColNodes();
+    // loop all master nodes on this proc
+    for(masternode =pbcmapmastertoslave->begin();
+        masternode!=pbcmapmastertoslave->end();
         ++masternode)
     {
+      // loop only owned nodes
+      if ((scatradiscret_->gNode(masternode->first))->Owner() != scatradiscret_->Comm().MyPID())
+        continue;
+
       // add all slave values to master value
       std::vector<int>::iterator slavenode;
 

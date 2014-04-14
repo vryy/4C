@@ -2226,7 +2226,7 @@ void FLD::XFluid::Init()
   if(edge_based_ or ghost_penalty_ or ghost_penalty_2ndorder_)
   {
     Teuchos::RCP<DRT::DiscretizationFaces> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
-    actdis->CreateInternalFacesExtension(Teuchos::null);
+    actdis->CreateInternalFacesExtension();
   }
 
 

@@ -259,12 +259,6 @@ public:
   //! return Dirichlet map
   const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
-  //! return information on periodic bondary conditions (row map)
-  Teuchos::RCP<std::map<int,std::vector<int> > > PBCmap() { return pbcmapmastertoslave_; };
-
-  //! return the periodic boundary condition member
-  Teuchos::RCP<PeriodicBoundaryConditions> PBC() { return pbc_; }
-
   //! return discretization
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
@@ -933,12 +927,6 @@ protected:
 
   //! the vector containing body and surface forces
   Teuchos::RCP<Epetra_Vector> neumann_loads_;
-
-  //! Periodic Boundary Conditions. Guess what.
-  Teuchos::RCP<PeriodicBoundaryConditions> pbc_;
-
-  //! connection between master and slave row nodes
-  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_;
 
   //! unit outer normal vector field for flux output
   Teuchos::RCP<Epetra_MultiVector> normals_;

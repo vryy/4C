@@ -374,10 +374,6 @@ protected:
   Teuchos::RCP<UTILS::ArtWriteGnuplotWrapper> artgnu_;
   //@}
 
-
-  /// connection between master and slave nodes on this proc
-  Teuchos::RCP<map<int,std::vector<int> > >     pbcmapmastertoslave_;
-
   //!
   bool coupledTo3D_;
   //@}

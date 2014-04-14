@@ -30,20 +30,16 @@ Maintainer: Benjamin Krank
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     krank 09/13|
  *----------------------------------------------------------------------*/
-FLD::Vreman::Vreman(Teuchos::RCP<DRT::Discretization>     actdis             ,
-    Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
-    Teuchos::ParameterList&      params)
+FLD::Vreman::Vreman(Teuchos::RCP<DRT::Discretization>     actdis,
+                    Teuchos::ParameterList&               params)
     :
     // call constructor for "nontrivial" objects
     discret_            (actdis             ),
-    pbcmapmastertoslave_(pbcmapmastertoslave),
     params_             (params             ),
     physicaltype_       (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type"))
 {
 
-  Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_            ,
-                                      pbcmapmastertoslave_,
-                                      params_             ));
+  Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_, params_));
   //Initialize Boxfilter
   Boxf_->InitializeVreman();
 
@@ -64,19 +60,16 @@ FLD::Vreman::~Vreman()
  * ---------------------------------------------------------------------*/
 void FLD::Vreman::AddScatra(
   Teuchos::RCP<DRT::Discretization>     scatradis,
-  INPAR::SCATRA::ScaTraType    scatratype,
-  Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
+  INPAR::SCATRA::ScaTraType             scatratype
+  )
 {
   scatradiscret_ = scatradis;
   scatratype_ = scatratype;
-  scatra_pbcmapmastertoslave_ = scatra_pbcmapmastertoslave;
 
-  Boxfsc_=Teuchos::rcp(new FLD::Boxfilter(scatradiscret_            ,
-                                      scatra_pbcmapmastertoslave_,
-                                      params_             ));
+  Boxfsc_=Teuchos::rcp(new FLD::Boxfilter(scatradiscret_, params_));
 
   //Initialize Boxfilter
-  Boxfsc_->InitializeVremanScatra(scatradiscret_,scatratype_,scatra_pbcmapmastertoslave_);
+  Boxfsc_->InitializeVremanScatra(scatradiscret_, scatratype_);
 
   return;
 }

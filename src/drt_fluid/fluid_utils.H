@@ -418,9 +418,9 @@ Maintainer: Ursula Rasthofer
   \date 11/07
  */
 void LiftDrag(
-  const DRT::Discretization                         & dis, //! fluid discretization (node distribution, conditions)
-  const Epetra_Vector                               & force, //! vector of nodalforces
-  const Epetra_Vector                               & dispnp, ///< solution vector with velocities (and pressure)
+  const Teuchos::RCP<const DRT::Discretization>       dis, //! fluid discretization (node distribution, conditions)
+  const Teuchos::RCP<const Epetra_Vector>             trueresidual, //! vector of nodalforces
+  const Teuchos::RCP<const Epetra_Vector>             dispnp, ///< solution vector with velocities (and pressure)
   const int                                           ndim, //! number of dimensions
   Teuchos::RCP<std::map<int,std::vector<double> > > & liftdragvals,  //! the computed values for lift and drag in an array
   bool                                                alefluid //! flag for ALE case

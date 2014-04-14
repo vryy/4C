@@ -47,6 +47,8 @@ Maintainer: Michael Gee
 #include "drt_exporter.H"
 #include "drt_dserror.H"
 #include "drt_utils_metis.H"
+#include "drt_dofset_pbc.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  |  Export nodes owned by a proc (public)                    mwgee 11/06|
@@ -753,15 +755,104 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,
   // first export the elements according to the processor local element column maps
   ExportColumnElements(elecolmap);
 
-  // get the node ids of the elements that are to be ghosted and create a proper node column map for their export
+  // periodic boundary conditions require ghosting of all master and slave nodes,
+  // if node of pbc set is contained in list of owned and ghosted elements
+  // in case of pbcs, this has to be restored
+  bool have_pbc = false;
+  Teuchos::RCP<PBCDofSet> pbcdofset = Teuchos::null;
+  // map of master nodes and corresponding slave nodes
+  std::map<int,std::vector<int> > pbcmap;
+  pbcmap.clear();
+  // create the inverse map --- slavenode -> masternode
+  std::map<int,std::vector<int> > inversenodecoupling;
+  inversenodecoupling.clear();
+  // map to be filled with new (extended) master nodes and corresponding slave nodes (in col layout)
+  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapnew = Teuchos::rcp(new std::map<int,std::vector<int> >);
+  (*pbcmapnew).clear();
+
+  // check for pbcs
+  for (int nds = 0; nds<NumDofSets(); nds++)
+  {
+    pbcdofset = Teuchos::rcp_dynamic_cast<PBCDofSet> (dofsets_[nds]);
+
+    if (pbcdofset!=Teuchos::null)
+    {
+      have_pbc = true;
+      pbcmap = *(pbcdofset->GetCoupledNodes());
+      // it is assumed that, if one pbc set is available, all other potential dofsets hold the same layout
+      break;
+    }
+  }
+
+  // if pbcs are available, get master and slave information
+  if (have_pbc)
+  {
+    // communicate all master and slave pairs
+    // caution: we build redundant maps here, containing all master nodes
+    LINALG::GatherAll(pbcmap,*comm_);
+
+    // and build slave master pairs
+    for(std::map<int,std::vector<int> >::iterator curr = pbcmap.begin();
+        curr != pbcmap.end();
+        ++curr )
+    {
+      for(unsigned rr=0;rr<curr->second.size();++rr)
+        inversenodecoupling[curr->second[rr]].push_back(curr->first);
+    }
+  }
+
+  // get the node ids of the elements that have to be ghosted and create a proper node column map for their export
   std::set<int> nodes;
   for (int lid=0;lid<elecolmap.NumMyElements();++lid)
   {
     DRT::Element* ele = this->gElement(elecolmap.GID(lid));
     const int* nodeids = ele->NodeIds();
     for(int inode=0; inode<ele->NumNode(); ++inode)
+    {
       nodes.insert(nodeids[inode]);
+
+      // for pbcs, take into account all master and slave pairs
+      if (have_pbc)
+      {
+        // is present node a master node?
+        std::map<int,std::vector<int> >::iterator foundmaster = pbcmap.find(nodeids[inode]);
+
+        if (foundmaster!=pbcmap.end())
+        {
+          // also store all corresponding slave nodes in set of col nodes
+          for (std::size_t rr=0; rr<foundmaster->second.size(); rr++)
+            nodes.insert(foundmaster->second[rr]);
+
+          // add master and corresponding slaves to new col list of master and slave pairs
+          std::pair<int,std::vector<int> > mpair(foundmaster->first,foundmaster->second);
+          (*pbcmapnew).insert(mpair);
+        }
+        else
+        {
+          // is present node a slave node?
+          std::map<int,std::vector<int> >::iterator foundslave = inversenodecoupling.find(nodeids[inode]);
+
+          if (foundslave!=inversenodecoupling.end())
+          {
+            // add corresponding master to set of col nodes
+            nodes.insert(foundslave->second[0]);
+
+            // store also all further slave nodes of this master (if multiple pbcs are used)
+            for (std::size_t rr=0; rr<pbcmap[foundslave->second[0]].size(); rr++)
+              nodes.insert((pbcmap[foundslave->second[0]])[rr]);
+
+            // add master and corresponding slaves to new col list of master and slave pairs
+            std::pair<int,std::vector<int> > mpair(foundslave->second[0],pbcmap[foundslave->second[0]]);
+            (*pbcmapnew).insert(mpair);
+          }
+        }
+      }
+    }
   }
+
+  // transfer master and slave information to pbc dofset
+  if (have_pbc)
+    pbcdofset->SetCoupledNodes(pbcmapnew);
 
   std::vector<int> colnodes(nodes.begin(),nodes.end());
   Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)colnodes.size(),&colnodes[0],0,Comm()));
@@ -774,8 +865,9 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap,
   if(err)
     dserror("FillComplete() threw error code %d",err);
 
-	return;
+  return;
 }
+
 
 /*----------------------------------------------------------------------*
 // this is to go away!!!!

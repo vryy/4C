@@ -1462,7 +1462,7 @@ void SCATRA::ScaTraTimIntImpl::AccessDynSmagFilter(
       std::cout << "Dynamic Smagorinsky model: provided access for ScaTra       " << std::endl;
       std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
     }
-    DynSmag_->AddScatra(discret_,scatratype_,pbcmapmastertoslave_);
+    DynSmag_->AddScatra(discret_,scatratype_);
   }
 
   return;
@@ -1488,7 +1488,7 @@ void SCATRA::ScaTraTimIntImpl::AccessVreman(
       std::cout << "Dynamic Vreman model: provided access for ScaTra            " << std::endl;
       std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
     }
-    Vrem_->AddScatra(discret_,scatratype_,pbcmapmastertoslave_);
+    Vrem_->AddScatra(discret_,scatratype_);
   }
 
   return;

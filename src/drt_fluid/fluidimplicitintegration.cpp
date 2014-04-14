@@ -157,12 +157,6 @@ void FLD::FluidImplicitTimeInt::Init()
   if (params_->get<std::string>("Nonlinear boundary conditions","no") == "yes")
     nonlinearbc_ = true;
 
-  // -------------------------------------------------------------------
-  // care for periodic boundary conditions
-  // -------------------------------------------------------------------
-
-  row_pbcmapmastertoslave_ = params_->get<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc (row)");
-  col_pbcmapmastertoslave_ = params_->get<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc (col)");
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // ensure that degrees of freedom in the discretization have been set
@@ -368,9 +362,7 @@ void FLD::FluidImplicitTimeInt::Init()
       turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
 
       // get one instance of the dynamic Smagorinsky class
-      DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_            ,
-                                          row_pbcmapmastertoslave_,
-                                          *params_             ));
+      DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_, *params_));
     }
     else if (physmodel == "Smagorinsky")
       turbmodel_ = INPAR::FLUID::smagorinsky;
@@ -388,9 +380,7 @@ void FLD::FluidImplicitTimeInt::Init()
       {
         scale_sep_ = INPAR::FLUID::box_filter;
         // get one instance of the Boxfilter class
-        Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_            ,
-                                            row_pbcmapmastertoslave_,
-                                            *params_             ));
+        Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_, *params_));
       }
       else if (scale_sep == "algebraic_multigrid_operator")
       {
@@ -425,14 +415,8 @@ void FLD::FluidImplicitTimeInt::Init()
       {
         scale_sep_ = INPAR::FLUID::box_filter;
 
-//        // get one instance of the dynamic Smagorinsky class
-//        DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_            ,
-//                                            row_pbcmapmastertoslave_,
-//                                            *params_             ));
         // get one instance of the Boxfilter class
-        Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_            ,
-                                            row_pbcmapmastertoslave_,
-                                            *params_             ));
+        Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_, *params_));
 
         if (fssgv_ != INPAR::FLUID::no_fssgv)
           dserror("No fine-scale subgrid viscosity for this scale separation operator!");
@@ -465,9 +449,7 @@ void FLD::FluidImplicitTimeInt::Init()
     else if (physmodel == "Dynamic_Vreman")
     {
       turbmodel_ = INPAR::FLUID::dynamic_vreman;
-      Vrem_=Teuchos::rcp(new FLD::Vreman(discret_            ,
-                                          row_pbcmapmastertoslave_,
-                                          *params_             ));
+      Vrem_=Teuchos::rcp(new FLD::Vreman(discret_, *params_));
     }
     else if (physmodel == "no_model")
       dserror("Turbulence model for LES expected!");
@@ -623,7 +605,7 @@ void FLD::FluidImplicitTimeInt::Integrate()
     // possible, we create interal faces via an enhanced discretization
     // including the faces between elements
     facediscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
-    facediscret_->CreateInternalFacesExtension(col_pbcmapmastertoslave_,true);
+    facediscret_->CreateInternalFacesExtension(true);
   }
 
   // TimeLoop() calls SolveStationaryProblem() in stationary case
@@ -3736,10 +3718,10 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
           // yes, we have one
 
           // get the list of all his slavenodes
-          std::map<int, std::vector<int> >::iterator master = row_pbcmapmastertoslave_->find(lnode->Id());
+          std::map<int, std::vector<int> >::iterator master = (discret_->GetAllPBCCoupledColNodes())->find(lnode->Id());
 
           // slavenodes are ignored
-          if(master == row_pbcmapmastertoslave_->end()) continue;
+          if(master == (discret_->GetAllPBCCoupledColNodes())->end()) continue;
         }
 
         // add random noise on initial function field
@@ -4500,7 +4482,7 @@ void FLD::FluidImplicitTimeInt::LiftDrag() const
     // in this map, the results of the lift drag calculation are stored
     Teuchos::RCP<std::map<int,std::vector<double> > > liftdragvals;
 
-    FLD::UTILS::LiftDrag(*discret_,*trueresidual_,*dispnp_,numdim_,liftdragvals,alefluid_);
+    FLD::UTILS::LiftDrag(discret_,trueresidual_,dispnp_,numdim_,liftdragvals,alefluid_);
 
     if (liftdragvals!=Teuchos::null and discret_->Comm().MyPID() == 0)
       FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);

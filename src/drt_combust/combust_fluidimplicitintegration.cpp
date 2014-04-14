@@ -130,9 +130,35 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     // losing the DofGid range that the PBCDofset is assigned here
     pbc_ = Teuchos::rcp(new PeriodicBoundaryConditions(discret_));
     pbc_->UpdateDofsForPeriodicBoundaryConditions();
-    col_pbcmapmastertoslave_ = pbc_->ReturnAllCoupledColNodes();
-    row_pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
   }
+
+  //------------------------------------------------------------------------------------------------
+  // prepare XFEM (initial degree of freedom management)
+  //------------------------------------------------------------------------------------------------
+  // special option for two-phase flows
+  // select enrichments for one or both fields or suppress enrichments completely, i.e., do usual FEM with intersected elements
+  xparams_.set<int>("SELECTED_ENRICHMENT",DRT::INPUT::IntegralValue<INPAR::COMBUST::SelectedEnrichment>(params_->sublist("COMBUSTION FLUID"),"SELECTED_ENRICHMENT"));
+
+  physprob_.xfemfieldset_.clear();
+  // declare physical fields of the problem (continuous fields and discontinuous XFEM fields)
+  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velx);
+  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Vely);
+  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velz);
+  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Pres);
+  // for the Nitsche method assign an arbitrary element ansatz to compile
+  physprob_.elementAnsatz_ = Teuchos::rcp(new COMBUST::TauPressureAnsatz());
+
+  // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = Teuchos::rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null));
+  // create dummy instance of dof manager assigning standard enrichments to all nodes
+  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = Teuchos::rcp(new XFEM::DofManager(ihdummy,Teuchos::null,physprob_.xfemfieldset_,xparams_,Teuchos::null));
+
+  // pass dof information to elements (no enrichments yet, standard FEM!)
+  TransferDofInformationToElements(Teuchos::null, dofmanagerdummy);
+  // ensure that degrees of freedom in the discretization have been set
+  discret_->FillComplete();
+
+  output_->WriteMesh(0,0.0);
 
   return;
 }
@@ -179,7 +205,7 @@ void FLD::CombustFluidImplicitTimeInt::Init()
     if ((surftensapprox_ != INPAR::COMBUST::surface_tension_approx_laplacebeltrami
         and surftensapprox_ != INPAR::COMBUST::surface_tension_approx_fixed_curvature)
         and smoothed_boundary_integration_!=true)
-      dserror("All surface tension approximations need a smooth gradient field of phi expect laplace-beltrami and fixed-curvature! Read remark!");
+      dserror("All surface tension approximations need a smooth gradient field of phi except laplace-beltrami and fixed-curvature! Read remark!");
     // surface_tension_approx_laplacebeltrami
     // surface_tension_approx_fixed_curvature: we can use a smoothed normal vector based on the smoothed gradient of phi (SMOOTHGRADPHI = Yes)
     //                                         or we simply use the normal vector of the boundary integration cell (SMOOTHGRADPHI = No)
@@ -223,22 +249,6 @@ void FLD::CombustFluidImplicitTimeInt::Init()
   if (params_->get<std::string>("Nonlinear boundary conditions","no") == "yes")
     nonlinearbc_ = true;
 
-  //------------------------------------------------------------------------------------------------
-  // prepare XFEM (initial degree of freedom management)
-  //------------------------------------------------------------------------------------------------
-  // special option for two-phase flows
-  // select enrichments for one or both fields or suppress enrichments completely, i.e., do usual FEM with intersected elements
-  xparams_.set<int>("SELECTED_ENRICHMENT",DRT::INPUT::IntegralValue<INPAR::COMBUST::SelectedEnrichment>(params_->sublist("COMBUSTION FLUID"),"SELECTED_ENRICHMENT"));
-
-  physprob_.xfemfieldset_.clear();
-  // declare physical fields of the problem (continuous fields and discontinuous XFEM fields)
-  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velx);
-  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Vely);
-  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velz);
-  physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Pres);
-  // for the Nitsche method assign an arbitrary element ansatz to compile
-  physprob_.elementAnsatz_ = Teuchos::rcp(new COMBUST::TauPressureAnsatz());
-
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = Teuchos::rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null));
   // create dummy instance of dof manager assigning standard enrichments to all nodes
@@ -252,10 +262,8 @@ void FLD::CombustFluidImplicitTimeInt::Init()
   // ensure that degrees of freedom in the discretization have been set
   discret_->FillComplete();
 
-  output_->WriteMesh(0,0.0);
-
   // store a dofset with the complete fluid unknowns
-  standarddofset_ = Teuchos::rcp(new DRT::IndependentPBCDofSet(col_pbcmapmastertoslave_));
+  standarddofset_ = Teuchos::rcp(new DRT::IndependentPBCDofSet(discret_->GetAllPBCCoupledColNodes()));
   standarddofset_->Reset();
   standarddofset_->AssignDegreesOfFreedom(*discret_,0,0);
 
@@ -452,9 +460,9 @@ void FLD::CombustFluidImplicitTimeInt::Init()
     // and CreateInternalFacesExtension() can be called once
     // in the constructor of the fluid time integration
     // since we want to keep the standard discretization as clean as
-    // possible, we create interal faces via an enhanced discretization
+    // possible, we create internal faces via an enhanced discretization
     // including the faces between elements
-    xfemdiscret_->CreateInternalFacesExtension(col_pbcmapmastertoslave_, true);
+    xfemdiscret_->CreateInternalFacesExtension(true);
   }
 
   if (xfemtimeint_ == INPAR::COMBUST::xfemtimeint_semilagrange)
@@ -963,7 +971,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
       phinp_,
       physprob_.xfemfieldset_,
       xparams_,
-      col_pbcmapmastertoslave_)
+      discret_->GetAllPBCCoupledColNodes())
   );
 
   // temporarely save old dofmanager
@@ -1118,7 +1126,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
               newdofrowmap,
               oldNodalDofColDistrib,
               state_.nodalDofDistributionMap_,
-              col_pbcmapmastertoslave_));
+              discret_->GetAllPBCCoupledColNodes()));
 
           switch (xfemtimeint_enr_)
           {
@@ -4599,10 +4607,10 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
           // yes, we have one
 
           // get the list of all his slavenodes
-          std::map<int, std::vector<int> >::iterator master = row_pbcmapmastertoslave_->find(lnode->Id());
+          std::map<int, std::vector<int> >::iterator master = (discret_->GetAllPBCCoupledColNodes())->find(lnode->Id());
 
           // slavenodes are ignored
-          if(master == row_pbcmapmastertoslave_->end()) continue;
+          if(master == (discret_->GetAllPBCCoupledColNodes())->end()) continue;
         }
 
         // add random noise on initial function field
@@ -5316,8 +5324,6 @@ void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_Cr
   // update the PBCs and PBCDofSet
   // includes call to FillComplete()
   pbc_->PutAllSlavesToMastersProc();
-  col_pbcmapmastertoslave_ = pbc_->ReturnAllCoupledColNodes();
-  row_pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
 
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = Teuchos::rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null));
@@ -5335,7 +5341,7 @@ void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_Cr
     discret_->FillComplete();
 
   // update the dofset with the complete fluid unknowns
-  standarddofset_->SetCoupledNodes(col_pbcmapmastertoslave_);
+  standarddofset_->SetCoupledNodes(discret_->GetAllPBCCoupledColNodes());
   standarddofset_->Reset();
   standarddofset_->AssignDegreesOfFreedom(*discret_,0,0);
 
@@ -5358,7 +5364,7 @@ void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_Cr
     // since we want to keep the standard discretization as clean as
     // possible, we create interal faces via an enhanced discretization
     // including the faces between elements
-    xfemdiscret_->CreateInternalFacesExtension(col_pbcmapmastertoslave_, true);
+    xfemdiscret_->CreateInternalFacesExtension(true);
   }
 
   // remember that we did a redist
@@ -5383,7 +5389,7 @@ void FLD::CombustFluidImplicitTimeInt::TransferVectorsToNewDistribution(
       flamefront->Phinp(),
       physprob_.xfemfieldset_,
       xparams_,
-      col_pbcmapmastertoslave_)
+      discret_->GetAllPBCCoupledColNodes())
   );
 
   // save dofmanager to be able to plot Gmsh stuff in Output()

@@ -54,7 +54,10 @@ PARTICLE::Algorithm::Algorithm(
   particles_(Teuchos::null),
   bincolmap_(Teuchos::null),
   structure_(Teuchos::null),
-  particlewalldis_(Teuchos::null)
+  particlewalldis_(Teuchos::null),
+  moving_walls_(false),
+  havepbc_(false),
+  pbcbounds_(0)
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
   // safety check
@@ -80,6 +83,9 @@ PARTICLE::Algorithm::Algorithm(
   particledis_->ReplaceDofSet(independentdofset);
 
   moving_walls_ = (DRT::INPUT::IntegralValue<int>(particleparams,"MOVING_WALLS") == 1);
+
+  // setup pbcs
+  BuildParticlePeriodicBC();
 
   return;
 }
@@ -794,7 +800,29 @@ void PARTICLE::Algorithm::TransferParticles(bool ghosting)
   std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less> homelessparticles;
 
   // current positions of particles
-  Teuchos::RCP<const Epetra_Vector> disnp = particles_->Dispnp();
+  Teuchos::RCP<Epetra_Vector> disnp = particles_->WriteAccessDispnp();
+
+  // apply periodic boundary conditions for particles
+  if(havepbc_)
+  {
+    // offset delta for pbc direction
+    // delta equal zero otherwise
+    std::vector<double> delta(3);
+    for(int dim=0; dim<3; ++dim)
+      delta[dim] = pbcbounds_[dim][1] - pbcbounds_[dim][0];
+
+    for(int i=0; i<disnp->MyLength(); i++)
+    {
+      int dim = i%3;
+      if((*disnp)[i] < pbcbounds_[dim][0])
+      {
+        (*disnp)[i] += delta[dim];
+         continue;
+      }
+      if((*disnp)[i] > pbcbounds_[dim][1])
+        (*disnp)[i] -= delta[dim];
+    }
+  }
 
   std::set<int> examinedbins;
   // check in each bin whether particles have moved out
@@ -992,6 +1020,48 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
   DRT::UTILS::PrintParallelDistribution(*particlewalldis_);
   if(moving_walls_)
     wallextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*(structure_->Discretization()->DofRowMap()),Teuchos::rcp(particlewalldis_->DofRowMap(), false)));
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | build periodic boundary conditions                       ghamm 04/14 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::BuildParticlePeriodicBC()
+{
+  // build periodic boundary condition
+  std::vector<DRT::Condition*> conds;
+  particledis_->GetCondition("ParticlePeriodic", conds);
+  if(conds.size() > 1)
+    dserror("only one periodic boundary condition allowed for particles");
+
+  // leave when no pbc available
+  if(conds.size() == 0)
+    return;
+  else
+    havepbc_ = true;
+
+  // now read in the available condition
+  const std::vector<int>* onoff = conds[0]->Get<std::vector<int> >("ONOFF");
+  const std::vector<double>* boundaries = conds[0]->Get<std::vector<double> >("boundaries");
+
+  // pbcbounds_ contains: x_min x_max y_min y_max z_min z_max
+  for(int dim=0; dim<3; ++dim)
+  {
+    if((*onoff)[dim])
+    {
+      std::vector<double> bound(2);
+      bound[0] = (*boundaries)[2*dim+0];
+      bound[1] = (*boundaries)[2*dim+1];
+      pbcbounds_.push_back(bound);
+    }
+    else
+    {
+      std::vector<double> nobound(2,0.0);
+      pbcbounds_.push_back(nobound);
+    }
+  }
 
   return;
 }

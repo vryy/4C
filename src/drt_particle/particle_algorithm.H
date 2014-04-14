@@ -156,6 +156,9 @@ namespace PARTICLE
       Teuchos::RCP<DRT::Discretization> basediscret
       );
 
+    /// build periodic boundary conditions
+    virtual void BuildParticlePeriodicBC();
+
     /// build connectivity from particle wall elements to bins
     virtual void BuildElementToBinPointers(
       bool wallpointer   ///< bool whether wall element pointer need rebuild
@@ -185,7 +188,11 @@ namespace PARTICLE
 
     Teuchos::RCP<LINALG::MapExtractor> wallextractor_;   ///< map extractor for particle wall
 
-    bool moving_walls_;
+    bool moving_walls_;   ///< flag whether walls are moving
+
+    bool havepbc_;   ///< flag whether periodic boundary conditions are specified for particles
+
+    std::vector<std::vector<double> > pbcbounds_;   ///< bounds for pbcs in x, y, z direction
 
     //@}
 

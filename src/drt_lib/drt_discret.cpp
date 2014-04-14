@@ -51,6 +51,7 @@ Maintainer: Michael Gee
 #include "drt_dofset_proxy.H"
 #include "drt_dofset_subproxy.H"
 #include "drt_dofset_aux_proxy.H"
+#include "drt_dofset_pbc.H"
 
 
 /*----------------------------------------------------------------------*
@@ -598,6 +599,26 @@ void DRT::Discretization::ReplaceDofSet(Teuchos::RCP<DofSet> newdofset, bool rep
   dofsets_[0] = newdofset;
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | get master to slave coupling for periodic domains    rasthofer 04/14 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<std::map<int,std::vector<int> > > DRT::Discretization::GetAllPBCCoupledColNodes()
+{
+  // check for pbcs
+  for (int nds = 0; nds<NumDofSets(); nds++)
+  {
+    Teuchos::RCP<PBCDofSet> pbcdofset = Teuchos::rcp_dynamic_cast<PBCDofSet> (dofsets_[nds]);
+
+    if (pbcdofset!=Teuchos::null)
+      // it is assumed that, if one pbc set is available, all other potential dofsets hold the same layout
+      return pbcdofset->GetCoupledNodes();
+  }
+
+  return Teuchos::rcp(new std::map<int,std::vector<int> >);
+}
+
 
 /*----------------------------------------------------------------------*
  |  set a reference to a data vector (public)                mwgee 12/06|

@@ -63,18 +63,6 @@ namespace ADAPTER {
     /// create result test for scalar transport field
     Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest();
 
-    /// set fluid displacement vector due to biofilm growth
-    void SetScFldGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp)
-    {
-      dserror("Not implemented in the base class!");
-    };
-
-    /// set structure displacement vector due to biofilm growth
-    void SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp)
-    {
-      dserror("Not implemented in the base class!");
-    };
-
   private:
 
     /// scalar transport field solver

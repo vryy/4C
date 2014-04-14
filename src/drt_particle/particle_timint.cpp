@@ -104,16 +104,6 @@ PARTICLE::TimInt::TimInt
     dserror("Discretisation is not complete or has no dofs!");
   }
 
-  // connect degrees of freedom for periodic boundary conditions
-//  {
-//    PeriodicBoundaryConditions pbc(discret_);
-//
-//    if (pbc.HasPBC())
-//    {
-//      pbc.UpdateDofsForPeriodicBoundaryConditions();
-//    }
-//  }
-
   // time state
   time_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (particledynparams.get<double>("TIMEINIT"))
   dt_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, particledynparams.get<double>("TIMESTEP")));

@@ -326,6 +326,11 @@ public:
   */
   virtual void ReplaceDofSet(Teuchos::RCP<DofSet> newdofset, bool replaceinstatdofsets = false);
 
+  /*!
+  \brief Get master to slave coupling in case of periodic boundary conditions
+  */
+  virtual Teuchos::RCP<std::map<int,std::vector<int> > > GetAllPBCCoupledColNodes();
+
   //@}
 
   /// @name Dof query methods for multi dof set discretizations

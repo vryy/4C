@@ -67,21 +67,10 @@ step_(0)
     std::cout << "#       INITIALIZE INFLOW FLUID ALGORITHM       #" << std::endl;
     std::cout << "#-----------------------------------------------#" << std::endl;
   }
-  // get node to node coupling of periodic boundary conditions
-  // we have to transfer the node to node coupling of periodic boundary conditions
-  // to the fluid time integration because it is necessary for initial field
-  // generation in case of disturbed functions
-  // as well as for box filtering in case of turbulence modeling
-  // this is the only way to transfer it to the fluid time integration
-  // otherwise the periodic boundary connection between the nodes has to be rebuild
-  // this results in a new dofmap and, hence, the connection between the parent dofset
-  // and the child dofset will be lost
-  Teuchos::RCP<std::map<int,std::vector<int> > > row_pbcmapmastertoslave = inflowgenerator_->GetCoupledRowNodesChildDiscretization();
-  Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave = inflowgenerator_->GetCoupledColNodesChildDiscretization();
 
   // initialize fluid inflow algorithm
   // this is a second fluid algorithm
-  inflowfluidalgo_ = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,inflowdis_,row_pbcmapmastertoslave,col_pbcmapmastertoslave));
+  inflowfluidalgo_ = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,inflowdis_));
 
   return;
 }

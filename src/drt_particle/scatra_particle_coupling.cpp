@@ -1180,8 +1180,7 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
           corrected_phi = phi_node_minus;
 
         // store new value
-        const int nodelid = scatradis_->NodeRowMap()->LID(actnode->Id());
-        int err = corrected_phinp->ReplaceMyValues(1,&corrected_phi,&nodelid);
+        int err = corrected_phinp->ReplaceMyValues(1,&corrected_phi,&doflid);
         if (err != 0) dserror("Could not store corrected value");
       }
     } // loop all nodes of element
@@ -2771,7 +2770,7 @@ void PARTICLE::ScatraParticleCoupling::SetupGhosting(Teuchos::RCP<Epetra_Map> bi
       reduscatraeleset.insert(iter->second.begin(),iter->second.end());
     }
 
-    // insert standard ghosting of scatra
+    // insert existing ghosting of scatra
     const Epetra_Map* elecolmap = scatradis_->ElementColMap();
     for(int lid=0; lid<elecolmap->NumMyElements(); ++lid)
       reduscatraeleset.insert(elecolmap->GID(lid));

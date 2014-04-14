@@ -3992,6 +3992,32 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(particlecond);
 
   /*--------------------------------------------------------------------*/
+  // particle periodic boundary condition
+
+  std::vector<Teuchos::RCP<ConditionComponent> > particlepbccomponents;
+  // two vertices describing the bounding box for the pbc
+  particlepbccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  particlepbccomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("ONOFF",3)));
+  particlepbccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("boundaries")));
+  particlepbccomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("boundaries",6)));
+
+  Teuchos::RCP<ConditionDefinition> particlepbccond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN PARTICLE PERIODIC BOUNDARY CONDITION",
+                                         "ParticlePeriodic",
+                                         "Particle Periodic Boundary Condition",
+                                         DRT::Condition::ParticlePeriodic,
+                                         false,
+                                         DRT::Condition::Particle));
+
+
+  for (unsigned i=0; i<particlepbccomponents.size(); ++i)
+  {
+    particlepbccond->AddComponent(particlepbccomponents[i]);
+  }
+
+  condlist.push_back(particlepbccond);
+
+  /*--------------------------------------------------------------------*/
   // particle init radius condition
 
   std::vector<Teuchos::RCP<ConditionComponent> > particleinitradiuscomponents;

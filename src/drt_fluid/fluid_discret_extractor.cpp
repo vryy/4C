@@ -2,6 +2,7 @@
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_io/io.H"
 
 
 /*----------------------------------------------------------------------*
@@ -425,6 +426,9 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     // idea: use a transparent dofset and hand through the dof numbering
     childdiscret_->ReplaceDofSet(Teuchos::rcp(new DRT::TransparentDofSet(parentdiscret_,true)));
+
+    // set discretization writer
+    childdiscret_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(childdiscret_)));
 
     // call FillComplete() to assign the dof
     // remark: equal Redistribute(*newrownodemap,*newcolnodemap,true,true,true) as

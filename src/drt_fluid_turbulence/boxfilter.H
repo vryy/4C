@@ -68,9 +68,8 @@ public:
 
   */
   Boxfilter(
-    Teuchos::RCP<DRT::Discretization>     actdis             ,
-    Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
-    Teuchos::ParameterList&      params             );
+    Teuchos::RCP<DRT::Discretization>     actdis,
+    Teuchos::ParameterList&               params);
 
   /*!
   \brief Destructor
@@ -80,13 +79,11 @@ public:
 
   void AddScatra(
     Teuchos::RCP<DRT::Discretization>     scatradis,
-    INPAR::SCATRA::ScaTraType    scatratype,
-    Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
+    INPAR::SCATRA::ScaTraType             scatratype);
 
   void InitializeVremanScatra(
     Teuchos::RCP<DRT::Discretization>     scatradis,
-    INPAR::SCATRA::ScaTraType    scatratype,
-    Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
+    INPAR::SCATRA::ScaTraType             scatratype);
 
   /*!
   \brief Perform box filter operation, compare filtered quantities
@@ -725,8 +722,6 @@ private:
   //
   //! the discretization
   Teuchos::RCP<DRT::Discretization>     discret_;
-  //! connection between master and slave nodes on this proc
-  Teuchos::RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave_;
   //! parameterlist including time params, stabilization params and turbulence sublist
   Teuchos::ParameterList&      params_ ;
   //! flag for physical type of fluid flow
@@ -763,7 +758,6 @@ private:
   //! the discretization
   Teuchos::RCP<DRT::Discretization>     scatradiscret_;
   INPAR::SCATRA::ScaTraType    scatratype_;
-  Teuchos::RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave_;
   //@}
 
   //! @name vectors used for filtering (for dynamic Smagorinsky model)

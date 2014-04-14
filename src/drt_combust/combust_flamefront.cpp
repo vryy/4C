@@ -57,12 +57,10 @@ Maintainer: Ursula Rasthofer
  *------------------------------------------------------------------------------------------------*/
 COMBUST::FlameFront::FlameFront(
     const Teuchos::RCP<DRT::Discretization> fluiddis,
-    const Teuchos::RCP<DRT::Discretization> gfuncdis,
-    const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap
+    const Teuchos::RCP<DRT::Discretization> gfuncdis
 ) :
 fluiddis_(fluiddis),
 gfuncdis_(gfuncdis),
-pbcmap_(pbcmap),
 phin_(Teuchos::null),
 phinp_(Teuchos::null),
 gradphi_(Teuchos::null),

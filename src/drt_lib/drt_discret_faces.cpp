@@ -46,8 +46,7 @@ DRT::DiscretizationFaces::DiscretizationFaces(const std::string name, Teuchos::R
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                          schott 03/12|
  *----------------------------------------------------------------------*/
-int DRT::DiscretizationFaces::FillCompleteFaces(Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave,
-                                                bool assigndegreesoffreedom,
+int DRT::DiscretizationFaces::FillCompleteFaces(bool assigndegreesoffreedom,
                                                 bool initelements,
                                                 bool doboundaryconditions,
                                                 bool createinternalfaces)
@@ -58,7 +57,7 @@ int DRT::DiscretizationFaces::FillCompleteFaces(Teuchos::RCP<std::map<int,std::v
 
   if(createinternalfaces)
   {
-    CreateInternalFacesExtension(col_pbcmapmastertoslave);
+    CreateInternalFacesExtension();
   }
 
   return 0;
@@ -70,14 +69,13 @@ int DRT::DiscretizationFaces::FillCompleteFaces(Teuchos::RCP<std::map<int,std::v
  |  Build internal faces extension (public)                 schott 03/12|
  *----------------------------------------------------------------------*/
 void DRT::DiscretizationFaces::CreateInternalFacesExtension(
-     Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave,
      const bool verbose)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationFaces::CreateInternalFaces" );
 
   // create internal faces for stabilization along edges
-  BuildFaces(col_pbcmapmastertoslave, verbose);
+  BuildFaces(verbose);
 
   // (re)build map of internal faces
   BuildFaceRowMap();
@@ -87,8 +85,6 @@ void DRT::DiscretizationFaces::CreateInternalFacesExtension(
 
   if (verbose)
   {
-    //std::cout << "my rank " << comm_->MyPID() << " row faces " << intfacerowptr_.size() << std::endl;
-
     int summyfaces = facerowptr_.size();
     int summall = 0;
     comm_->SumAll(&summyfaces,&summall,1);
@@ -110,9 +106,6 @@ void DRT::DiscretizationFaces::EvaluateEdgeBased(
         Teuchos::RCP<Epetra_Vector>          systemvector1
 )
 {
-
-//  std::cout << "->  EvaluateEdgeBased()" << std::endl;
-
   TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationFaces::EdgeBased" );
 
 
@@ -203,8 +196,7 @@ void DRT::DiscretizationFaces::EvaluateEdgeBased(
 /*----------------------------------------------------------------------*
  |  Build internal faces geometry (public)                  schott 03/12|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationFaces::BuildFaces(Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave,
-                                          const bool verbose)
+void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
 {
   if (verbose and comm_->MyPID()==0)
   {
@@ -347,6 +339,9 @@ void DRT::DiscretizationFaces::BuildFaces(Teuchos::RCP<std::map<int,std::vector<
   //       (this criterion is working in the same way on all procs holding this face)
 
   std::map< std::vector<int>, Teuchos::RCP<DRT::Element> >  faces;
+
+  // get pbcs
+  Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave = GetAllPBCCoupledColNodes();
 
   std::map<std::vector<int>, InternalFacesData >::iterator face_it;
   for (face_it=surfmapdata.begin(); face_it != surfmapdata.end(); ++face_it)

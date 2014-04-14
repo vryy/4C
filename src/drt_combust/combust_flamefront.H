@@ -65,9 +65,8 @@ namespace COMBUST
   public:
     /// constructor
     explicit FlameFront(
-             const Teuchos::RCP<DRT::Discretization>  fluiddis, ///< fluid discretization (combust3 elements) which will be intersected
-             Teuchos::RCP<DRT::Discretization>              gfuncdis, ///< G-function discretization (condif3 elements) describing the level set function
-             const Teuchos::RCP<std::map<int,std::vector<int> > >     pbcmap    ///< map holding nodes with periodic boundary conditions
+             const Teuchos::RCP<DRT::Discretization>  fluiddis,      ///< fluid discretization (combust3 elements) which will be intersected
+             Teuchos::RCP<DRT::Discretization>              gfuncdis ///< G-function discretization (condif3 elements) describing the level set function
     );
 
     /// destructor
@@ -312,9 +311,6 @@ namespace COMBUST
 
     /// pointer to level set (G-function) discretization that intersects the fluiddis_
     const Teuchos::RCP<DRT::Discretization> gfuncdis_;
-
-    ///  map holding pairs of nodes (master-slave) on periodic boundaries
-    const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap_;
 
     /// pointer to vector on fluid NodeColMap holding G-function values at n originally stored in phin
     Teuchos::RCP<Epetra_Vector> phin_;

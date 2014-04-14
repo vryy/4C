@@ -38,7 +38,7 @@ int DRT::DiscretizationHDG::FillComplete(bool assigndegreesoffreedom,
 
 {
   // call FillComleteFaces of base class with create_faces set to true
-  this->FillCompleteFaces(Teuchos::null, assigndegreesoffreedom, initelements,
+  this->FillCompleteFaces(assigndegreesoffreedom, initelements,
                           doboundaryconditions, true);
 
   // get the correct face orientation from the owner. since the elements in general do not allow

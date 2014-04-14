@@ -77,11 +77,9 @@ ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(
   const Teuchos::ParameterList& prbdyn,
-  const Teuchos::RCP<DRT::Discretization> discret,
-  const Teuchos::RCP<std::map<int,std::vector<int> > > row_pbcmapmastertoslave,
-  const Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave)
+  const Teuchos::RCP<DRT::Discretization> discret)
 {
-  SetupInflowFluid(prbdyn, discret,row_pbcmapmastertoslave,col_pbcmapmastertoslave);
+  SetupInflowFluid(prbdyn, discret);
   return;
 }
 
@@ -117,25 +115,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
-  Teuchos::RCP<std::map<int,std::vector<int> > > row_pbcmapmastertoslave
-    = Teuchos::rcp(new std::map<int,std::vector<int> > ());
-
-  Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave
-    = Teuchos::rcp(new std::map<int,std::vector<int> > ());
-
   if((probtype != prb_fsi) and
      (probtype != prb_combust))
   {
     PeriodicBoundaryConditions pbc(actdis);
     pbc.UpdateDofsForPeriodicBoundaryConditions();
-
-    // get node to node coupling of periodic boundary conditions
-    // we have to transfer the node to node coupling of periodic boundary conditions
-    // to the fluid time integration because it is necessary for initial field
-    // generation in case of disturbed functions
-    // as well as for box filtering in case of turbulence modeling
-    row_pbcmapmastertoslave = pbc.ReturnAllCoupledRowNodes();
-    col_pbcmapmastertoslave = pbc.ReturnAllCoupledColNodes();
   }
 
   // -------------------------------------------------------------------
@@ -167,6 +151,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   {
     output->WriteMesh(0,0.0);
   }
+  // in case Init() is not called in this, we have to be carefull with
+  // the order fields are written into the control file
+  // this order has to be respected by WriteMesh
+  // if problems with post_drt_ensight occur, a possible solution might be
+  // to move output->WriteMesh(0,0.0) from the Init()-function to the
+  // contructor of the xfluidfluid-class (see also combust algorithm)
+  if (init == false and (probtype == prb_fluid_fluid or
+      probtype == prb_fluid_fluid_ale or
+      probtype == prb_fluid_fluid_fsi))
+    dserror("Read remark!");
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -364,10 +358,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   // set parameters in list
   // -------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
-
-  // provide info about periodic boundary conditions
-  fluidtimeparams->set<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc (row)",row_pbcmapmastertoslave);
-  fluidtimeparams->set<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc (col)",col_pbcmapmastertoslave);
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma, poro)
   fluidtimeparams->set<int>("Physical Type",
@@ -911,9 +901,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   const Teuchos::ParameterList& prbdyn,
-  const Teuchos::RCP<DRT::Discretization> discret,
-  const Teuchos::RCP<std::map<int,std::vector<int> > > row_pbcmapmastertoslave,
-  const Teuchos::RCP<std::map<int,std::vector<int> > > col_pbcmapmastertoslave)
+  const Teuchos::RCP<DRT::Discretization> discret)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ADAPTER::FluidBaseAlgorithm::SetupFluid");
   Teuchos::TimeMonitor monitor(*t);
@@ -972,10 +960,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
-
-  // --------------------provide info about periodic boundary conditions
-  fluidtimeparams->set<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc (row)",row_pbcmapmastertoslave);
-  fluidtimeparams->set<Teuchos::RCP<std::map<int,std::vector<int> > > >("periodic bc (col)",col_pbcmapmastertoslave);
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma)
   fluidtimeparams->set<int>("Physical Type",

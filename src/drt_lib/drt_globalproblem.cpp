@@ -612,11 +612,9 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
         curr->second->Add("Node Ids",dvol_fenode [curr->first]);
         break;
       case Condition::Particle:
-        if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dparticle.size())
-          dserror("DParticle %d not in range [0:%d[\n"
-                  "DParticle condition on non existent DParticle?",
-                  curr->first,dparticle.size());
-        curr->second->Add("Node Ids",dparticle [curr->first]);
+        // particle conditions are allowed for having empty nodal clouds
+        if (curr->first > 0 and static_cast<unsigned>(curr->first) < dparticle.size())
+          curr->second->Add("Node Ids",dparticle [curr->first]);
         break;
       default:
         dserror("geometry type unspecified");
@@ -658,15 +656,11 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
         }
         else
         {
-          if(curr->second->GType() != Condition::Particle)
-            continue;
-          const std::vector<int>* nodes = curr->second->Nodes();
-          if (nodes->size()==0)
-            dserror("%s condition %d has no nodal cloud",
-                condlist[c]->Description().c_str(),
-                curr->second->Id());
-
-          actdis->SetCondition(condlist[c]->Name(),Teuchos::rcp(new Condition(*curr->second)));
+          // insert any particle condition into particle discret
+          if(curr->second->GType() == Condition::Particle)
+          {
+            actdis->SetCondition(condlist[c]->Name(),Teuchos::rcp(new Condition(*curr->second)));
+          }
         }
       }
     }
