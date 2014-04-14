@@ -403,7 +403,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
       // get the processor local node
       DRT::Node* lnode = strudis->lRowNode(lnodeid);
       // get the dofs of the node
-      std::vector<int> dofs= strudis->Dof(lnode);
+//      std::vector<int> dofs= strudis->Dof(lnode);
       // the set of degrees of freedom associated with the node
       const std::vector<int> nodedofset = strudis->Dof(0,lnode);
 
@@ -431,7 +431,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
       int gnodeid = condnodemap->GID(nodei);
       DRT::Node* strulnode = strudis->gNode(gnodeid);
       // get the degrees of freedom associated with this node
-      std::vector<int> strunodedofs = strudis->Dof(strulnode);
+      std::vector<int> strunodedofs = strudis->Dof(0,strulnode);
       // determine number of space dimensions
       const int numdim = ((int) strunodedofs.size());
 
@@ -591,7 +591,7 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(Teuchos::RCP<Epetra_Vector> idisp
     int nodegid = condnodemap->GID(i);
     if (strudis->HaveGlobalNode(nodegid)==false) dserror("node not found on this proc");
     DRT::Node* actnode = strudis->gNode(nodegid);
-    std::vector<int> globaldofs = strudis->Dof(actnode);
+    std::vector<int> globaldofs = strudis->Dof(0,actnode);
     const int numdim = (int)(globaldofs.size());
 
     // extract averaged nodal normal and compute its absolute value
@@ -801,7 +801,7 @@ void FS3I::BiofilmFSI::ChangeConfig(Teuchos::RCP<DRT::Discretization> dis, Teuch
     int gid = (dis->NodeRowMap())->GID(index);
     DRT::Node* mynode = dis->gNode(gid);
 
-    std::vector<int> globaldofs = dis->Dof(mynode);
+    std::vector<int> globaldofs = dis->Dof(0,mynode);
     std::vector<double> nvector(globaldofs.size());
 
     // determine number of space dimensions
