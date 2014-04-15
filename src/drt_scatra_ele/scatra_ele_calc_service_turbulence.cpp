@@ -684,62 +684,67 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrDiff(
   }
   else if (scatrapara_->TurbModel() == INPAR::FLUID::dynamic_vreman)
   {
-    double beta00;
-    double beta11;
-    double beta22;
-    double beta01;
-    double beta02;
-    double beta12;
-    double bbeta;
-    double alphavreman;
-    double hkxpow2;
-    double hkypow2;
-    double hkzpow2;
-    double sgviscwocv=0.0;
+    if(nsd_==3)
+    {
+      double beta00;
+      double beta11;
+      double beta22;
+      double beta01;
+      double beta02;
+      double beta12;
+      double bbeta;
+      double alphavreman;
+      double hkxpow2;
+      double hkypow2;
+      double hkzpow2;
+      double sgviscwocv=0.0;
 
-    LINALG::Matrix<nsd_,nsd_> velderxy(true);
+      LINALG::Matrix<nsd_,nsd_> velderxy(true);
 
-    velderxy.MultiplyNT(econvelnp_,derxy_);
+      velderxy.MultiplyNT(econvelnp_,derxy_);
 
-    //- cube root of element volume
+      //- cube root of element volume
 
-    hkxpow2=pow(vol,(2.0/3.0));
-    hkypow2=hkxpow2;
-    hkzpow2=hkxpow2;
+      hkxpow2=pow(vol,(2.0/3.0));
+      hkypow2=hkxpow2;
+      hkzpow2=hkxpow2;
 
-    beta00=hkxpow2 * velderxy(0,0) * velderxy(0,0) + hkypow2 * velderxy(0,1) * velderxy(0,1) + hkzpow2 * velderxy(0,2) * velderxy(0,2);
-    beta11=hkxpow2 * velderxy(1,0) * velderxy(1,0) + hkypow2 * velderxy(1,1) * velderxy(1,1) + hkzpow2 * velderxy(1,2) * velderxy(1,2);
-    beta22=hkxpow2 * velderxy(2,0) * velderxy(2,0) + hkypow2 * velderxy(2,1) * velderxy(2,1) + hkzpow2 * velderxy(2,2) * velderxy(2,2);
-    beta01=hkxpow2 * velderxy(0,0) * velderxy(1,0) + hkypow2 * velderxy(0,1) * velderxy(1,1) + hkzpow2 * velderxy(0,2) * velderxy(1,2);
-    beta02=hkxpow2 * velderxy(0,0) * velderxy(2,0) + hkypow2 * velderxy(0,1) * velderxy(2,1) + hkzpow2 * velderxy(0,2) * velderxy(2,2);
-    beta12=hkxpow2 * velderxy(1,0) * velderxy(2,0) + hkypow2 * velderxy(1,1) * velderxy(2,1) + hkzpow2 * velderxy(1,2) * velderxy(2,2);
+      beta00=hkxpow2 * velderxy(0,0) * velderxy(0,0) + hkypow2 * velderxy(0,1) * velderxy(0,1) + hkzpow2 * velderxy(0,2) * velderxy(0,2);
+      beta11=hkxpow2 * velderxy(1,0) * velderxy(1,0) + hkypow2 * velderxy(1,1) * velderxy(1,1) + hkzpow2 * velderxy(1,2) * velderxy(1,2);
+      beta22=hkxpow2 * velderxy(2,0) * velderxy(2,0) + hkypow2 * velderxy(2,1) * velderxy(2,1) + hkzpow2 * velderxy(2,2) * velderxy(2,2);
+      beta01=hkxpow2 * velderxy(0,0) * velderxy(1,0) + hkypow2 * velderxy(0,1) * velderxy(1,1) + hkzpow2 * velderxy(0,2) * velderxy(1,2);
+      beta02=hkxpow2 * velderxy(0,0) * velderxy(2,0) + hkypow2 * velderxy(0,1) * velderxy(2,1) + hkzpow2 * velderxy(0,2) * velderxy(2,2);
+      beta12=hkxpow2 * velderxy(1,0) * velderxy(2,0) + hkypow2 * velderxy(1,1) * velderxy(2,1) + hkzpow2 * velderxy(1,2) * velderxy(2,2);
 
-    bbeta = beta00 * beta11 - beta01 * beta01
-          + beta00 * beta22 - beta02 * beta02
-          + beta11 * beta22 - beta12 * beta12;
+      bbeta = beta00 * beta11 - beta01 * beta01
+            + beta00 * beta22 - beta02 * beta02
+            + beta11 * beta22 - beta12 * beta12;
 
-    alphavreman = velderxy(0,0) * velderxy(0,0)
-                + velderxy(0,1) * velderxy(0,1)
-                + velderxy(0,2) * velderxy(0,2)
-                + velderxy(1,0) * velderxy(1,0)
-                + velderxy(1,1) * velderxy(1,1)
-                + velderxy(1,2) * velderxy(1,2)
-                + velderxy(2,0) * velderxy(2,0)
-                + velderxy(2,1) * velderxy(2,1)
-                + velderxy(2,2) * velderxy(2,2);
+      alphavreman = velderxy(0,0) * velderxy(0,0)
+                  + velderxy(0,1) * velderxy(0,1)
+                  + velderxy(0,2) * velderxy(0,2)
+                  + velderxy(1,0) * velderxy(1,0)
+                  + velderxy(1,1) * velderxy(1,1)
+                  + velderxy(1,2) * velderxy(1,2)
+                  + velderxy(2,0) * velderxy(2,0)
+                  + velderxy(2,1) * velderxy(2,1)
+                  + velderxy(2,2) * velderxy(2,2);
 
-    if(alphavreman<1.0E-12)
-      sgviscwocv=0.0;
+      if(alphavreman<1.0E-12)
+        sgviscwocv=0.0;
+      else
+        sgviscwocv=sqrt(bbeta / alphavreman);
+
+
+      //remark: Cs corresponds to Dt, calculated in the vreman class
+      //        The vreman constant Cv is not required here, since it cancelles out with the
+      //        vreman constant omitted during the calculation of D_t
+      if (scatrapara_->Cs()<=1.0E-12) sgdiff=0.0;
+      else
+        sgdiff = densnp * sgviscwocv / scatrapara_->Cs();
+    }
     else
-      sgviscwocv=sqrt(bbeta / alphavreman);
-
-
-    //remark: Cs corresponds to Dt, calculated in the vreman class
-    //        The vreman constant Cv is not required here, since it cancelles out with the
-    //        vreman constant omitted during the calculation of D_t
-    if (scatrapara_->Cs()<=1.0E-12) sgdiff=0.0;
-    else
-      sgdiff = densnp * sgviscwocv / scatrapara_->Cs();
+      dserror("Vreman model only for nsd_==3");
 
   }
 
