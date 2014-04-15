@@ -1230,7 +1230,7 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::nln_stiffmass(
           LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>(1.0, feas_->A(), detJ_w, M.A(), pk2_stress.A());
           LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>(1.0, feas_uncondensed.A(), detJ_w, M.A(), pk2_stress.A());
           break;
-        //case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+        case soh8p_easnone: break;
         default: dserror("Don't know what to do with EAS type %d", eastype_); break;
         }
       } // ---------------------------------------------------------------- EAS
