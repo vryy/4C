@@ -179,8 +179,8 @@ void DRT::ELEMENTS::So3_Plast<so3_ele,distype>::EasSetup(
     if (!M_full_eval)// if true M already evaluated
     {
       // fill up M at each gp
-      for (int i=0; i<NUMGPT_SOH8; ++i) {
-        M_full[i].Shape(MAT::NUM_STRESS_3D,neas_);
+      for (int i=0; i<numgpt_; ++i) {
+        M_full[i].Shape(numstr_,neas_);
         M_full[i](0,0) = xsi_.at(i)(0);        M_full[i](0,15) = xsi_.at(i)(0)*xsi_.at(i)(1); M_full[i](0,16) = xsi_.at(i)(0)*xsi_.at(i)(2);
         M_full[i](1,1) = xsi_.at(i)(1);        M_full[i](1,17) = xsi_.at(i)(0)*xsi_.at(i)(1); M_full[i](1,18) = xsi_.at(i)(1)*xsi_.at(i)(2);
         M_full[i](2,2) = xsi_.at(i)(2);        M_full[i](2,19) = xsi_.at(i)(0)*xsi_.at(i)(2); M_full[i](2,20) = xsi_.at(i)(1)*xsi_.at(i)(2);
